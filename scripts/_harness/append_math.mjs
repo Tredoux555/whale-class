@@ -1,0 +1,799 @@
+import fs from 'fs';
+const P = 'scripts/data/curated-visual-memory/math.json';
+const j = JSON.parse(fs.readFileSync(P, 'utf8'));
+
+const NEW = [
+  {
+    work_key: "ma_number_rods_numerals",
+    work_name: "Number Rods with Numerals",
+    area: "mathematics",
+    visual_description: "The same ten red-and-blue segmented Number Rods laid out in a stair on a mat, but now paired with a set of loose printed numeral cards 1-10 placed at the end of each matching rod. The child fetches or matches a numeral card to each rod after counting its segments. The defining picture is the familiar red/blue rod stair PLUS individual numeral cards positioned beside or at the base of each rod — the numerals distinguish this from the plain counting-only Number Rods work.",
+    key_materials: [
+      "Ten red-and-blue segmented Number Rods (as in Number Rods)",
+      "Loose printed numeral cards 1-10",
+      "Numeral cards placed at the end of each rod",
+      "Worked on a floor mat"
+    ],
+    negative_descriptions: [
+      "NOT Number Rods: this work always shows loose numeral cards placed beside each rod; plain Number Rods is counted verbally with no cards present.",
+      "NOT Spindle Boxes: here the numerals sit beside long segmented rods on a mat; Spindle Boxes numerals are printed above open compartments holding bundled plain sticks."
+    ]
+  },
+  {
+    work_key: "ma_memory_game",
+    work_name: "Memory Game of Numbers",
+    area: "mathematics",
+    visual_description: "Numeral cards 1-10 (or higher) are placed face-down or held by the teacher at a distance from a pile of loose objects (beads, counters, or small items) on a mat. The child walks to view a numeral, memorises it, walks back, and counts out that quantity of objects without carrying the card. The defining picture is a physical DISTANCE between the numeral cards and the counting objects, with the child mid-walk or mid-count, and no card sitting directly next to the counted pile.",
+    key_materials: [
+      "Numeral cards placed at a distance from the work mat",
+      "Loose counting objects (beads, counters, or small items) in a separate pile",
+      "Child shown walking or standing between the two points",
+      "No numeral card resting beside the counted quantity"
+    ],
+    negative_descriptions: [
+      "NOT Cards and Counters: Memory Game separates the numeral cards and the objects by distance, testing recall; Cards and Counters has the numeral card resting directly above its matching row of counters."
+    ]
+  },
+  {
+    work_key: "ma_number_puzzles",
+    work_name: "Number Puzzles and Games",
+    area: "mathematics",
+    visual_description: "A loose collection of small-group numeracy games and puzzle materials for reinforcing 1-10 concepts: examples include number puzzle boards with removable numeral pieces, counting sorting trays, dice or spinner-based counting games, and small manipulatives grouped by quantity. Appearance varies by specific game but the defining picture is small-scale tabletop numeracy apparatus (not a fixed classic Montessori set) used for consolidation and review rather than first presentation.",
+    key_materials: [
+      "Assorted small numeracy puzzle boards or games",
+      "Numeral pieces or tokens",
+      "Small manipulatives grouped by quantity",
+      "Table-top scale, used for review/reinforcement"
+    ],
+    negative_descriptions: []
+  },
+  {
+    work_key: "ma_short_bead_stair",
+    work_name: "Short Bead Stair",
+    area: "mathematics",
+    visual_description: "Ten short bead bars, each a different COLOUR keyed to quantity: 1 red, 2 green, 3 pink, 4 yellow, 5 light blue, 6 purple/violet, 7 white, 8 brown/chestnut, 9 dark blue, arranged in ascending stair order on a mat or in a wooden stand. Beads are strung tightly on wire with no gaps. The defining picture is a rainbow STAIR of colour-coded bead bars increasing by one bead each step — distinct from the uniform-gold Golden Bead material.",
+    key_materials: [
+      "Nine or ten short bead bars, each a distinct colour per quantity (1 red through 9 dark blue)",
+      "Beads strung tightly on wire, no gaps",
+      "Arranged in ascending stair order",
+      "Often held in a wooden stand or laid on a mat"
+    ],
+    negative_descriptions: [
+      "NOT Introduction to Golden Beads: Short Bead Stair bars are each a DIFFERENT colour keyed to value; Golden Beads are uniformly GOLD across every quantity.",
+      "NOT Bead Cabinet: Short Bead Stair is a simple ascending stair 1-9; Bead Cabinet holds the SQUARES and CUBES of each colour bar stacked in a compartmented cabinet, not a simple stair."
+    ]
+  },
+  {
+    work_key: "ma_golden_beads_tray",
+    work_name: "Golden Bead Tray Exercises",
+    area: "mathematics",
+    visual_description: "A wooden tray holding a mixed static quantity of gold units, ten-bars, hundred-squares, and thousand-cubes that the child counts out and represents with large numeral cards to build a specific static number (e.g. 2,345). No exchange or carrying is performed — this is straightforward quantity building and labelling. The defining picture is a tray of assorted gold-bead categories matched to a stacked set of large numeral cards showing the built number.",
+    key_materials: [
+      "Wooden tray with gold units, ten-bars, hundred-squares, thousand-cubes",
+      "Large numeral cards (units, tens, hundreds, thousands) stacked to build one number",
+      "Static quantity — no exchanging",
+      "Mat or table surface"
+    ],
+    negative_descriptions: [
+      "NOT Golden Bead Addition: this is a single static tray of beads matched to one built numeral; Golden Bead Addition involves TWO OR MORE separate bead quantities being physically combined."
+    ]
+  },
+  {
+    work_key: "ma_large_numeral_cards",
+    work_name: "Large Numeral Cards",
+    area: "mathematics",
+    visual_description: "A set of large printed cards representing units (green ink), tens (blue ink), hundreds (red ink), and thousands (green ink again, larger card), each card printed with a numeral and trailing zeros matching its place value (e.g., '5', '40', '300', '6000'). Cards graduate in physical SIZE by place value — units cards are smallest, thousands cards largest — and stack together to build any number when overlaid. The defining picture is colour-and-size-coded numeral cards, often laid out in a grid or stacked to form a multi-digit number.",
+    key_materials: [
+      "Numeral cards colour-coded by place value (green units, blue tens, red hundreds, green thousands)",
+      "Cards graduate in size — larger card for larger place value",
+      "Trailing zeros printed to match place value",
+      "Often laid in a grid or stacked/overlaid to build numbers"
+    ],
+    negative_descriptions: [
+      "NOT Sandpaper Numerals: Large Numeral Cards are flat printed cards of varying size representing place value; Sandpaper Numerals are single rough-textured 0-9 digits on uniform green boards for tracing."
+    ]
+  },
+  {
+    work_key: "ma_formation_quantity",
+    work_name: "Formation of Quantity",
+    area: "mathematics",
+    visual_description: "The child builds increasingly large quantities using the golden bead material — moving from single units to ten-bars to hundred-squares to thousand-cubes — while physically exchanging ten of one category for one of the next (ten units traded for a ten-bar, ten bars for a hundred-square, and so on). The defining picture is gold beads mid-exchange on a mat, often with a small tray for the 'old' pieces being traded in, building understanding of the decimal hierarchy through hands-on exchange.",
+    key_materials: [
+      "Gold unit beads, ten-bars, hundred-squares, thousand-cubes",
+      "Exchange tray for trading up beads",
+      "Mat showing beads mid-build",
+      "Emphasis on the ten-for-one exchange"
+    ],
+    negative_descriptions: [
+      "NOT Exchange Game (Change Game): Formation of Quantity is the child's first hands-on discovery of the decimal exchange; Exchange Game is a more structured group game with numeral cards guiding which categories must be exchanged."
+    ]
+  },
+  {
+    work_key: "ma_formation_symbol",
+    work_name: "Formation of Symbol",
+    area: "mathematics",
+    visual_description: "Large numeral cards (green units, blue tens, red hundreds, green thousands) are laid out and stacked/overlaid by the child to construct multi-digit numbers, working WITHOUT any accompanying bead quantities present. The defining picture is only printed place-value numeral cards on the mat, being layered together (smallest card on top) to read a large number — no golden beads anywhere in the photo.",
+    key_materials: [
+      "Large numeral cards colour-coded by place value",
+      "Cards stacked/overlaid to build a multi-digit number",
+      "No bead material present",
+      "Mat or table surface"
+    ],
+    negative_descriptions: [
+      "NOT Large Numeral Cards: Formation of Symbol shows the cards actively being stacked to build a specific number; Large Numeral Cards may show the full set laid out for exploration without necessarily being combined.",
+      "NOT Association of Quantity and Symbol: Formation of Symbol has NO bead quantities present, only cards; Association of Quantity and Symbol always pairs the built numeral cards WITH a matching bead quantity."
+    ]
+  },
+  {
+    work_key: "ma_association_quantity_symbol",
+    work_name: "Association of Quantity and Symbol",
+    area: "mathematics",
+    visual_description: "Golden bead quantities (units, ten-bars, hundred-squares, thousand-cubes) are laid out on a tray or mat directly beside a matching stack of large place-value numeral cards that have been overlaid to form the corresponding number. The defining picture is beads AND stacked numeral cards shown TOGETHER, paired one-to-one, confirming the child can read the built symbol and match it to the correct quantity.",
+    key_materials: [
+      "Gold bead quantities (units through thousand-cubes)",
+      "Large place-value numeral cards stacked to match",
+      "Beads and cards shown paired together on the same tray",
+      "Mat or tray surface"
+    ],
+    negative_descriptions: [
+      "NOT Formation of Symbol: Association of Quantity and Symbol always shows beads paired with the cards; Formation of Symbol shows only cards with no beads present."
+    ]
+  },
+  {
+    work_key: "ma_exchange_game",
+    work_name: "Exchange Game (Change Game)",
+    area: "mathematics",
+    visual_description: "A group-oriented bead exchange activity: children roll dice or draw number cards to collect gold unit beads into a personal pot, then exchange every ten units for a ten-bar, every ten bars for a hundred-square, and so on, tracked with a scorecard or paper record. The defining picture is multiple small piles or pots of gold beads at different stations, dice or number cards nearby, and a visible tracking sheet or scoreboard — a more social, turn-based version of golden bead exchange.",
+    key_materials: [
+      "Gold unit beads, ten-bars, hundred-squares",
+      "Dice or drawn number cards to determine collection amount",
+      "Individual pots or piles per child/station",
+      "Scorecard or tracking sheet"
+    ],
+    negative_descriptions: [
+      "NOT Formation of Quantity: Exchange Game is a structured turn-based group game often with dice and a scorecard; Formation of Quantity is a solitary, teacher-guided introduction to decimal exchange with no game elements."
+    ]
+  },
+  {
+    work_key: "ma_golden_beads_addition",
+    work_name: "Golden Bead Addition",
+    area: "mathematics",
+    visual_description: "Two or more separate golden bead quantities (each represented by units, ten-bars, hundred-squares, thousand-cubes and its own stacked numeral-card label) are laid out on a large mat and then physically PUSHED TOGETHER/combined into one final total, which is exchanged where needed and relabelled with a new numeral-card stack. The defining picture is multiple gold bead groupings on one mat converging into a single larger combined pile, with a large green horizontal 'plus' layout and a final combined total shown at the bottom.",
+    key_materials: [
+      "Two or more separate gold bead quantities with their own numeral-card labels",
+      "Large floor mat with distinct starting groups",
+      "Beads physically combined into a single total group",
+      "Final combined numeral-card total at the bottom"
+    ],
+    negative_descriptions: [
+      "NOT Golden Bead Subtraction: Addition shows separate quantities being COMBINED into a larger total; Subtraction shows one large quantity with a portion being physically REMOVED and set aside.",
+      "NOT Introduction to Golden Beads: Addition always shows TWO OR MORE distinct starting groups converging; the introductory work shows a single static exploration of one quantity type at a time."
+    ]
+  },
+  {
+    work_key: "ma_golden_beads_subtraction",
+    work_name: "Golden Bead Subtraction",
+    area: "mathematics",
+    visual_description: "A single large golden bead quantity (with its numeral-card label) is laid out on a mat, and a smaller quantity is physically REMOVED and set apart to one side, leaving the remainder in place. The defining picture is one gold bead group with a visibly separated smaller subset moved away or placed in a distinct 'taken away' zone, and the remaining beads relabelled with a new smaller numeral-card total.",
+    key_materials: [
+      "One large gold bead quantity with numeral-card label",
+      "A smaller subset physically separated/removed to one side",
+      "Remaining beads relabelled with new numeral total",
+      "Large floor mat"
+    ],
+    negative_descriptions: [
+      "NOT Golden Bead Addition: Subtraction starts from ONE quantity with a portion removed; Addition starts from TWO OR MORE separate quantities that are combined."
+    ]
+  },
+  {
+    work_key: "ma_golden_beads_multiplication",
+    work_name: "Golden Bead Multiplication",
+    area: "mathematics",
+    visual_description: "The SAME golden bead quantity is laid out repeatedly — identical groups of units, ten-bars, hundred-squares, each with an identical numeral-card label — set out side by side in several equal rows/columns on the mat, representing the same number taken multiple times. The defining picture is several IDENTICAL bead groupings repeated in a grid pattern, each labelled with the same starting numeral, then combined and relabelled with the product.",
+    key_materials: [
+      "Several identical repeated gold bead quantities laid side by side",
+      "Each identical group labelled with the same starting numeral card",
+      "Groups arranged in equal rows/columns on the mat",
+      "Final combined product relabelled with a new numeral total"
+    ],
+    negative_descriptions: [
+      "NOT Golden Bead Addition: Multiplication repeats the SAME quantity multiple identical times; Addition combines DIFFERENT quantities."
+    ]
+  },
+  {
+    work_key: "ma_golden_beads_division",
+    work_name: "Golden Bead Division",
+    area: "mathematics",
+    visual_description: "A single large golden bead quantity is distributed EVENLY across several small trays or plates (one per 'sharer'), the child dealing out beads one category at a time until the whole amount is shared equally, sometimes exchanging down when a category can't be split evenly. The defining picture is one starting bead pile being fanned out into multiple identical small trays/plates arranged around it, each receiving the same amount.",
+    key_materials: [
+      "One large starting gold bead quantity",
+      "Several small trays or plates representing 'sharers'",
+      "Beads dealt evenly, one category at a time, across the trays",
+      "Trays arranged in a fan or circle around the starting pile"
+    ],
+    negative_descriptions: [
+      "NOT Golden Bead Subtraction: Division distributes the WHOLE quantity evenly across multiple trays; Subtraction removes just ONE portion and sets it aside, leaving a single remainder."
+    ]
+  },
+  {
+    work_key: "ma_teen_board_1",
+    work_name: "Teen Board 1 (Seguin Board A)",
+    area: "mathematics",
+    visual_description: "A wooden board with a fixed row of ten printed '10' tiles/tabs (or a repeated stack showing '1' with '0' slots), onto which loose unit numeral tiles 1-9 slot to form 11 through 19, paired with gold ten-bars and unit beads laid directly beneath to show the corresponding quantity. The defining picture is a wooden slotted board reading a fixed '10' with a movable single digit slotted on top, plus a ten-bead-bar-and-loose-units quantity directly below matching each teen number.",
+    key_materials: [
+      "Wooden slotted board with fixed '10' printed repeatedly, movable unit tiles 1-9 slotting on top",
+      "Gold ten-bead bars and loose unit beads laid beneath, matching quantity",
+      "Numbers formed range 11-19",
+      "Mat or table surface"
+    ],
+    negative_descriptions: [
+      "NOT Teen Board 2 (Seguin Board B): Board 1 pairs the slotted numeral board with actual GOLD BEAD quantities beneath; Board 2 uses only the slotted numeral board with LOOSE NUMERAL CARDS 1-9 stacked on top, no beads present.",
+      "NOT Ten Board 1 (Seguin Board C): Teen Board forms numbers 11-19 with a fixed '10'; Ten Board forms multiples of ten (10-90) with a fixed unit column and movable tens tiles."
+    ]
+  },
+  {
+    work_key: "ma_teen_board_2",
+    work_name: "Teen Board 2 (Seguin Board B)",
+    area: "mathematics",
+    visual_description: "The same wooden slotted board with a fixed repeated '10' printed on it as Teen Board 1, but here loose SMALL numeral cards 1-9 (not attached tiles) are being placed by the child into the slots to build 11-19, worked WITHOUT any accompanying bead quantity — pure numeral recognition and formation. The defining picture is the slotted board with loose small numeral cards being inserted, no gold beads anywhere in the frame.",
+    key_materials: [
+      "Wooden slotted board with fixed '10' repeated ten times",
+      "Loose small numeral cards 1-9 for the child to insert",
+      "No bead quantities present",
+      "Mat or table surface"
+    ],
+    negative_descriptions: [
+      "NOT Teen Board 1 (Seguin Board A): Board 2 has NO bead quantities present, just cards on the slotted board; Board 1 always pairs the slotted board with gold ten-bars and unit beads beneath."
+    ]
+  },
+  {
+    work_key: "ma_ten_board_1",
+    work_name: "Ten Board 1 (Seguin Board C)",
+    area: "mathematics",
+    visual_description: "A wooden slotted board with a fixed column of unit digit tiles (typically a repeated '0'), onto which loose tens-digit tiles 1-9 slot to form the multiples of ten (10, 20, 30... 90), paired with gold ten-bead bars laid directly beneath in matching quantity. The defining picture is a slotted board forming decade numbers (multiples of ten) with gold ten-bars laid below as the quantity — distinct from the teen board's 11-19 range.",
+    key_materials: [
+      "Wooden slotted board with fixed unit column (repeated zeros)",
+      "Movable tens-digit tiles 1-9 slotting to form multiples of ten",
+      "Gold ten-bead bars laid beneath matching each decade",
+      "Numbers formed range 10-90"
+    ],
+    negative_descriptions: [
+      "NOT Teen Board 1 (Seguin Board A): Ten Board 1 forms multiples of ten (10-90) with bead-bar quantities; Teen Board 1 forms 11-19 with a fixed '10' and mixed bead-bar-plus-units quantities.",
+      "NOT Ten Board 2 (Seguin Board D): Ten Board 1 pairs the slotted board with actual gold ten-bar quantities beneath; Ten Board 2 uses only loose numeral cards on the slotted board with no beads present."
+    ]
+  },
+  {
+    work_key: "ma_ten_board_2",
+    work_name: "Ten Board 2 (Seguin Board D)",
+    area: "mathematics",
+    visual_description: "The same slotted decade-forming board as Ten Board 1, but worked with loose numeral cards for the tens digit being inserted by the child WITHOUT any accompanying gold bead quantity — pure symbol recognition for the decades 10-90. The defining picture is the slotted board with loose numeral cards, no beads visible anywhere in the frame.",
+    key_materials: [
+      "Wooden slotted board with fixed unit column",
+      "Loose numeral cards for the tens digit",
+      "No bead quantities present",
+      "Mat or table surface"
+    ],
+    negative_descriptions: [
+      "NOT Ten Board 1 (Seguin Board C): Ten Board 2 has NO bead quantities present, just cards; Ten Board 1 always pairs the slotted board with gold ten-bead bars beneath."
+    ]
+  },
+  {
+    work_key: "ma_hundred_board",
+    work_name: "Hundred Board",
+    area: "mathematics",
+    visual_description: "A large flat wooden board divided into a 10x10 grid of 100 empty square recesses, alongside a box of loose printed numeral tiles 1-100 which the child places in sequential order, row by row, filling the grid left to right. The defining picture is a single flat wooden grid board with square slots and stacked loose numeral tiles being placed in a tidy sequential array — a flat 2D layout, not chains or towers.",
+    key_materials: [
+      "One large flat wooden board with a 10x10 grid of square recesses",
+      "Loose printed numeral tiles 1-100",
+      "Tiles placed sequentially row by row",
+      "Storage box for the tile set"
+    ],
+    negative_descriptions: [
+      "NOT Hundred Chain: Hundred Board is a flat 2D grid of numeral tiles; Hundred Chain is a physical chain of 100 loose beads laid out or folded into a squared pattern on the floor, with number labels placed at intervals."
+    ]
+  },
+  {
+    work_key: "ma_hundred_chain",
+    work_name: "Hundred Chain",
+    area: "mathematics",
+    visual_description: "A long chain of ten linked gold ten-bead bars (100 gold beads total) laid out on the floor, often folded at each ten-bead interval into a square/staircase pattern, with small printed number arrows or labels placed at every tenth bead as the child counts along the chain. Square 'skip counting' tags for each ten-bar may also be placed beside the folded sections. The defining picture is a long physical bead CHAIN on the floor, folded into a squared or zigzag shape, with paper number labels along its length — distinct from the flat tile-grid of the Hundred Board.",
+    key_materials: [
+      "Chain of ten gold ten-bead bars linked together (100 beads)",
+      "Small printed arrow/number labels placed along the chain",
+      "Chain folded into a square or zigzag pattern on the floor",
+      "Sometimes accompanied by a matching square/skip-counting label"
+    ],
+    negative_descriptions: [
+      "NOT Hundred Board: Hundred Chain is a long physical bead chain folded on the floor with number labels; Hundred Board is a flat tabletop grid board with numeral tiles slotted into squares.",
+      "NOT Thousand Chain: Hundred Chain is composed of exactly ten ten-bead bars (100 beads total, one square fold); Thousand Chain is composed of ten hundred-squares (1000 beads total) forming a much longer chain with ten square folds."
+    ]
+  },
+  {
+    work_key: "ma_thousand_chain",
+    work_name: "Thousand Chain",
+    area: "mathematics",
+    visual_description: "A very long chain of ten linked gold hundred-bead squares (1000 gold beads total) laid across the floor, typically folded at every hundred-bead interval into a repeating square pattern, dramatically longer than the Hundred Chain, with printed number labels at each interval and a large final '1000' cube placed at the end for comparison. The defining picture is an extensive, room-spanning gold bead chain with multiple square folds and a cube shown at the terminus.",
+    key_materials: [
+      "Chain of ten gold hundred-bead squares linked together (1000 beads)",
+      "Multiple square folds along the floor, much longer than the Hundred Chain",
+      "Printed number labels at intervals",
+      "A single gold thousand-cube often placed at the end for comparison"
+    ],
+    negative_descriptions: [
+      "NOT Hundred Chain: Thousand Chain spans the room with many square folds and 1000 beads total; Hundred Chain is a single shorter chain of 100 beads with only one fold."
+    ]
+  },
+  {
+    work_key: "ma_short_chains",
+    work_name: "Short Bead Chains (Squares)",
+    area: "mathematics",
+    visual_description: "A single colour-coded bead chain representing the SQUARE of a number (e.g. the chain of 4 squared = 16 beads, made of four 4-bead bars linked together), laid out straight or folded, with a matching bead SQUARE of the same colour placed at one end to show the squared value visually. The defining picture is ONE short chain (a handful of linked bars, not a long train) plus its matching flat bead SQUARE displayed together, all in the SAME colour as that number's bead-stair bar.",
+    key_materials: [
+      "One short bead chain made of linked bars of a single colour (e.g. all yellow for the chain of 4)",
+      "A matching flat bead SQUARE of the same colour and number placed alongside",
+      "Small printed number arrows/labels along the chain",
+      "Number rulers or skip-counting labels sometimes used"
+    ],
+    negative_descriptions: [
+      "NOT Long Bead Chains (Cubes): Short Bead Chains are matched with a flat SQUARE at the end; Long Bead Chains are matched with a three-dimensional CUBE at the end and are considerably longer.",
+      "NOT Bead Cabinet: Short Bead Chains are laid out flat on the floor as one continuous chain; Bead Cabinet stores the squares and cubes upright in drawers/compartments, not extended as a chain."
+    ]
+  },
+  {
+    work_key: "ma_long_chains",
+    work_name: "Long Bead Chains (Cubes)",
+    area: "mathematics",
+    visual_description: "A single colour-coded bead chain representing the CUBE of a number (e.g. the chain of 4 cubed = 64 beads, made of sixteen 4-bead bars linked together), considerably longer than the corresponding short chain, laid out and folded across the floor, with a matching three-dimensional bead CUBE of the same colour placed at the end alongside the flat square for comparison. The defining picture is a LONG chain (many linked bars, often folded repeatedly) ending in a physical 3D bead cube — the longest bead-chain work in the classroom.",
+    key_materials: [
+      "One long bead chain made of many linked bars of a single colour",
+      "A matching three-dimensional bead CUBE of the same colour at the end",
+      "Often the flat SQUARE also shown for comparison beside the cube",
+      "Small printed number labels along the chain, chain typically folded several times"
+    ],
+    negative_descriptions: [
+      "NOT Short Bead Chains (Squares): Long Bead Chains end in a 3D CUBE and are much longer; Short Bead Chains end in a flat SQUARE and are noticeably shorter."
+    ]
+  },
+  {
+    work_key: "ma_bead_cabinet",
+    work_name: "Bead Cabinet",
+    area: "mathematics",
+    visual_description: "A wooden cabinet or stand with rows of small drawers or pegs, each holding the SQUARE (a flat bead grid) and CUBE (a 3D bead block) for numbers 1 through 10, each number in its own bead-stair colour, arranged in ascending order top to bottom or left to right. The defining picture is a stationary storage unit displaying every square and cube TOGETHER as a reference set, rather than a chain being actively laid out on the floor.",
+    key_materials: [
+      "Wooden cabinet or stand with compartments/pegs",
+      "Bead squares and cubes for numbers 1-10, colour-coded per the bead stair",
+      "Arranged in ascending order",
+      "Displayed as a reference collection, not extended as a chain"
+    ],
+    negative_descriptions: [
+      "NOT Short Bead Chains (Squares): Bead Cabinet displays the squares and cubes stationary in a cabinet; Short/Long Bead Chains show ONE chain actively extended and folded on the floor."
+    ]
+  },
+  {
+    work_key: "ma_addition_snake_game",
+    work_name: "Addition Snake Game",
+    area: "mathematics",
+    visual_description: "Coloured bead-stair bars (from the Short Bead Stair, various colours 1-9) are laid end to end in a winding 'snake' line on the floor mat, then converted step by step into gold ten-bars by counting to ten and exchanging, with grey/black-and-white 'control' bead bars used to mark the tens as they're formed. The defining picture is a colourful zigzag/snake line of mixed-colour bead bars on the floor, being progressively broken into groups of ten and replaced by gold ten-bars alongside grey counting bars.",
+    key_materials: [
+      "Multiple coloured bead-stair bars (1-9, various colours) laid end to end in a snake shape",
+      "Gold ten-bead bars used to replace completed groups of ten",
+      "Grey/black-and-white control bars for counting",
+      "Long floor mat, snake winds back and forth"
+    ],
+    negative_descriptions: [
+      "NOT Subtraction Snake Game: Addition Snake starts with a colourful winding snake of MIXED bead bars being built up and exchanged into gold ten-bars; Subtraction Snake starts with a straight row of GOLD ten-bars from which coloured bars are removed."
+    ]
+  },
+  {
+    work_key: "ma_subtraction_snake_game",
+    work_name: "Subtraction Snake Game",
+    area: "mathematics",
+    visual_description: "A straight row of gold ten-bead bars laid on the floor mat, from which the child removes segments matching a set of coloured negative bead-stair bars, replacing the removed gold segments with the coloured negative bars to visually show what's been subtracted, then re-forming a new gold ten-bar chain from any leftover beads. The defining picture is a straight (not zigzag) line of gold ten-bars with coloured bars interspersed marking removed amounts, not the winding rainbow snake of the addition version.",
+    key_materials: [
+      "Straight row of gold ten-bead bars as the starting total",
+      "Coloured negative bead-stair bars marking amounts to be subtracted",
+      "Grey/control bars for verification",
+      "Long floor mat, laid in a straight line rather than a snake"
+    ],
+    negative_descriptions: [
+      "NOT Addition Snake Game: Subtraction Snake starts from a straight line of GOLD bars with colour bars marking removal; Addition Snake starts from a winding, mostly-COLOURED zigzag being converted into gold."
+    ]
+  },
+  {
+    work_key: "ma_addition_strip_board",
+    work_name: "Addition Strip Board",
+    area: "mathematics",
+    visual_description: "A wooden board printed with two rows of numerals 1-10 in RED and BLUE stripes forming a grid, onto which the child lays numbered strip pieces (red-and-blue segmented strips, similar coding to Number Rods) horizontally to compute sums, then reads the answer off the printed numeral column at the point where the strip ends. The defining picture is a flat printed grid board with red/blue numbered header rows and loose segmented strips laid across it horizontally.",
+    key_materials: [
+      "Flat wooden board printed with red/blue numeral grid 1-10 (or higher)",
+      "Loose red-and-blue segmented number strips",
+      "Strips laid horizontally to compute a sum",
+      "Answer read from the printed numeral column"
+    ],
+    negative_descriptions: [
+      "NOT Subtraction Strip Board: Addition Strip Board has RED strips laid to represent the addend then combined with blue; Subtraction Strip Board uses WHITE strips laid over the board to cover/remove a portion, revealing the remainder in blue.",
+      "NOT Addition Charts (Finger Charts): Strip Board uses physical strip pieces laid on a printed grid board; Addition Charts are flat pre-printed grid charts with no loose strip pieces, worked with a bead or fingertip pointer only."
+    ]
+  },
+  {
+    work_key: "ma_addition_charts",
+    work_name: "Addition Charts (Finger Charts)",
+    area: "mathematics",
+    visual_description: "A series of flat printed paper or laminated charts (Chart 1 fully filled with sums, later charts progressively blanked out for memorisation) showing a grid of addition equations or a matrix of addend rows/columns, worked by the child with a bead or finger tracing along rows and columns to find and later recall sums. The defining picture is a purely printed FLAT chart with no loose manipulative pieces — just gridded numerals and a control chart nearby for self-checking.",
+    key_materials: [
+      "Flat printed or laminated addition chart (grid of sums)",
+      "A control chart (fully completed) for self-checking",
+      "No loose strip or bead pieces — worked by finger or bead pointer only",
+      "Sometimes paired with a booklet of blank charts for memorisation practice"
+    ],
+    negative_descriptions: [
+      "NOT Addition Strip Board: Addition Charts are flat printed grids with no manipulative pieces, used chiefly for memorisation; Addition Strip Board involves loose red/blue segmented strips physically laid on a board to compute (not just recall) sums."
+    ]
+  },
+  {
+    work_key: "ma_subtraction_strip_board",
+    work_name: "Subtraction Strip Board",
+    area: "mathematics",
+    visual_description: "A wooden board printed with a numeral grid similar to the Addition Strip Board, but here the child covers a portion of the top row using WHITE strip pieces to represent the amount subtracted, revealing the remainder underneath in the printed blue numerals. The defining picture is the same style grid board as addition, but with plain WHITE strips laid over sections to obscure/remove quantity, rather than red/blue strips being combined.",
+    key_materials: [
+      "Flat wooden board printed with numeral grid",
+      "Loose plain WHITE strip pieces used to cover/remove a portion",
+      "Blue printed numerals revealed as the remainder",
+      "Mat or table surface"
+    ],
+    negative_descriptions: [
+      "NOT Addition Strip Board: Subtraction Strip Board uses plain WHITE strips to cover and remove quantity; Addition Strip Board uses RED-AND-BLUE segmented strips laid to combine and build a sum."
+    ]
+  },
+  {
+    work_key: "ma_subtraction_charts",
+    work_name: "Subtraction Charts",
+    area: "mathematics",
+    visual_description: "A series of flat printed paper or laminated charts showing subtraction equations in a grid (minuend rows against subtrahend columns), used with a control chart for self-checking and progressively blanked-out versions for memorisation, exactly parallel in format to the Addition Charts but for subtraction facts. The defining picture is a flat printed subtraction-fact grid, no manipulative pieces, often shown alongside its control chart.",
+    key_materials: [
+      "Flat printed or laminated subtraction chart (grid of differences)",
+      "A control chart (fully completed) for self-checking",
+      "No loose manipulative pieces",
+      "Sometimes a booklet of blank charts for memorisation"
+    ],
+    negative_descriptions: [
+      "NOT Addition Charts (Finger Charts): Subtraction Charts show a grid of DIFFERENCES (subtraction facts); Addition Charts show a grid of SUMS."
+    ]
+  },
+  {
+    work_key: "ma_multiplication_bead_board",
+    work_name: "Multiplication Bead Board",
+    area: "mathematics",
+    visual_description: "A pegged wooden board with rows and columns of small holes, into which the child places loose red beads to build a multiplication array (e.g. 4 rows of 3 beads for 4x3), counting the total beads to find the product, with a printed numeral strip along the top for reading the multiplicand/multiplier. The defining picture is a small pegged/holed board filling up with loose red beads arranged in a clear rectangular ARRAY, distinct from the linear bead-bar layout of the Snake Game.",
+    key_materials: [
+      "Pegged wooden board with grid of small holes",
+      "Loose small red beads placed to form a rectangular array",
+      "Printed numeral strip along one edge",
+      "Answer found by counting total beads placed"
+    ],
+    negative_descriptions: [
+      "NOT Golden Bead Multiplication: Multiplication Bead Board uses small LOOSE red beads placed into a pegged grid board; Golden Bead Multiplication uses the full gold bead hierarchy (units/bars/squares/cubes) repeated in identical groups on a floor mat.",
+      "NOT Checkerboard (Multiplication): Multiplication Bead Board is a small single pegged board for basic single-digit facts; Checkerboard is a large chequered mat used with gold bead bars/squares for multi-digit multiplication."
+    ]
+  },
+  {
+    work_key: "ma_multiplication_charts",
+    work_name: "Multiplication Charts",
+    area: "mathematics",
+    visual_description: "A series of flat printed or laminated charts showing a full multiplication table grid (factor rows against factor columns), used with a control chart for checking and progressively blanked charts for memorisation, in the same format family as the Addition and Subtraction Charts. The defining picture is a flat printed multiplication-fact grid with no manipulative beads or pegs.",
+    key_materials: [
+      "Flat printed or laminated multiplication chart (grid of products)",
+      "A control chart (fully completed) for self-checking",
+      "No manipulative pieces",
+      "Often a booklet of blank charts for memorisation practice"
+    ],
+    negative_descriptions: [
+      "NOT Multiplication Bead Board: Multiplication Charts are purely a flat printed grid; Multiplication Bead Board uses actual loose beads placed into a pegged board to physically build the array."
+    ]
+  },
+  {
+    work_key: "ma_unit_division_board",
+    work_name: "Unit Division Board",
+    area: "mathematics",
+    visual_description: "A pegged wooden board similar in style to the Multiplication Bead Board, but here loose red beads representing a dividend are distributed evenly by the child across a fixed set of rows (the divisor) to find the quotient, with a printed numeral strip for reading the division fact. The defining picture is beads being dealt evenly down fixed columns/rows on a small pegged board, distinguishing the sharing action from multiplication's array-building action.",
+    key_materials: [
+      "Pegged wooden board with rows/columns of holes",
+      "Loose small red beads being distributed evenly",
+      "Printed numeral strip for reading the division fact",
+      "A skittle or marker sometimes used to indicate the divisor"
+    ],
+    negative_descriptions: [
+      "NOT Multiplication Bead Board: Unit Division Board shows beads being SHARED OUT evenly row by row; Multiplication Bead Board shows beads being BUILT UP into a rectangular array."
+    ]
+  },
+  {
+    work_key: "ma_division_charts",
+    work_name: "Division Charts",
+    area: "mathematics",
+    visual_description: "A series of flat printed or laminated charts showing a division-fact grid, used with a control chart for self-checking and progressively blanked charts for memorisation, matching the same format family as the other three operation charts. The defining picture is a flat printed division-fact grid with no manipulative pieces present.",
+    key_materials: [
+      "Flat printed or laminated division chart (grid of quotients)",
+      "A control chart (fully completed) for self-checking",
+      "No manipulative pieces",
+      "Often a booklet of blank charts for memorisation"
+    ],
+    negative_descriptions: [
+      "NOT Unit Division Board: Division Charts are a purely flat printed grid; Unit Division Board uses actual loose beads distributed on a pegged board to physically demonstrate sharing."
+    ]
+  },
+  {
+    work_key: "ma_stamp_game",
+    work_name: "Stamp Game",
+    area: "mathematics",
+    visual_description: "A wooden box of small square wooden 'stamp' tiles, each printed with a single digit and colour-coded by place value (green '1' for units, blue '10' for tens, red '100' for hundreds, green '1000' for thousands), arranged by the child into stacked columns on a mat to represent numbers, then used for addition/subtraction/multiplication/division by adding, removing, or exchanging stamps. The defining picture is small flat square wooden tiles (much smaller than golden beads) stacked in columns, colour-and-numeral-coded, often accompanied by a small dish of loose extra stamps.",
+    key_materials: [
+      "Small square wooden tiles printed with 1, 10, 100, 1000",
+      "Colour-coded by place value (green units/thousands, blue tens, red hundreds)",
+      "Tiles arranged in stacked columns on a mat",
+      "Wooden storage box with dish for loose stamps"
+    ],
+    negative_descriptions: [
+      "NOT Introduction to Golden Beads: Stamp Game uses small flat printed WOODEN TILES stacked in columns; Golden Beads use actual three-dimensional bead units/bars/squares/cubes.",
+      "NOT Dot Game: Stamp Game uses physical stamp tiles arranged on a mat; Dot Game is worked entirely on PAPER with the child drawing coloured dots in a printed place-value grid, no physical tiles present."
+    ]
+  },
+  {
+    work_key: "ma_dot_game",
+    work_name: "Dot Game",
+    area: "mathematics",
+    visual_description: "A large paper or laminated sheet ruled into place-value columns (units, tens, hundreds, thousands), on which the child draws small coloured dots to represent quantities being added, then groups every ten dots and carries them to the next column, finally reading the sum from the completed column of dots. The defining picture is a paper worksheet covered in small hand-drawn coloured dots organised into vertical place-value columns — no physical manipulatives at all, purely a paper-and-pencil abstraction exercise.",
+    key_materials: [
+      "Large paper or laminated sheet ruled into place-value columns",
+      "Coloured pencils or markers for drawing dots",
+      "Dots grouped in tens and carried between columns",
+      "No physical bead or tile manipulatives present"
+    ],
+    negative_descriptions: [
+      "NOT Stamp Game: Dot Game is entirely paper-and-pencil with hand-drawn dots; Stamp Game uses physical small wooden tiles stacked on a mat."
+    ]
+  },
+  {
+    work_key: "ma_small_bead_frame",
+    work_name: "Small Bead Frame",
+    area: "mathematics",
+    visual_description: "A compact wooden frame with four horizontal wire rows, each strung with ten beads in a colour matching place value (green units, blue tens, red hundreds, and a mixed/green thousands row at top), with a small printed place-value key card attached to the frame. The child slides beads across each wire to represent quantities and works simple addition/subtraction directly on the frame, recording results on paper. The defining picture is a small, single hand-held wooden frame (roughly notebook-sized) with four rows of coloured beads on wires.",
+    key_materials: [
+      "Small wooden frame, four horizontal beaded wire rows",
+      "Beads colour-coded by place value (green, blue, red, green)",
+      "Ten beads per wire, slid to represent digits",
+      "Small printed place-value key card on the frame"
+    ],
+    negative_descriptions: [
+      "NOT Large Bead Frame: Small Bead Frame is compact with only FOUR rows (up to thousands); Large Bead Frame is a much bigger frame with SEVEN OR MORE rows extending well past thousands, and uses a single colour of bead throughout with a coloured place-value guide alongside instead."
+    ]
+  },
+  {
+    work_key: "ma_large_bead_frame",
+    work_name: "Large Bead Frame",
+    area: "mathematics",
+    visual_description: "A large freestanding wooden frame with SEVEN OR MORE horizontal wire rows extending place value well beyond thousands (into ten-thousands, hundred-thousands, millions), all beads typically a UNIFORM colour (unlike the colour-coded Small Bead Frame), with a printed place-value guide card mounted separately for reference. Worked at a table or on the floor for large multi-digit operations, often with a paper recording booklet beside it. The defining picture is a noticeably larger, taller frame than the Small Bead Frame, with many more rows and uniform-coloured beads.",
+    key_materials: [
+      "Large freestanding wooden frame, seven or more beaded wire rows",
+      "Beads typically a uniform colour across rows (not place-value colour-coded)",
+      "Separate printed place-value guide card",
+      "Paper recording booklet often used alongside"
+    ],
+    negative_descriptions: [
+      "NOT Small Bead Frame: Large Bead Frame has SEVEN OR MORE rows and is noticeably bigger with uniform bead colour; Small Bead Frame has only FOUR rows and colour-coded beads, and is small enough to be hand-held."
+    ]
+  },
+  {
+    work_key: "ma_checkerboard",
+    work_name: "Checkerboard (Multiplication)",
+    area: "mathematics",
+    visual_description: "A large mat printed with a chequered grid in alternating light and dark green squares, with a printed place-value key running along the bottom and left edges (units, tens, hundreds, thousands). Gold bead bars (or stamp-style tiles) are placed into the appropriate squares according to their place value, multiplied by a single multiplier bead-bar placed at the bottom, with resulting products counted and consolidated diagonally. The defining picture is a large chequered green-and-cream grid mat with gold bead bars arranged across it, used for multi-digit multiplication far beyond the small bead board.",
+    key_materials: [
+      "Large mat printed with a light/dark green chequered grid",
+      "Printed place-value key along two edges",
+      "Gold bead bars placed into grid squares according to place value",
+      "A single multiplier bead-bar placed along the edge"
+    ],
+    negative_descriptions: [
+      "NOT Multiplication Bead Board: Checkerboard is a large chequered floor/table mat for MULTI-DIGIT multiplication using gold bead bars; Multiplication Bead Board is a small pegged board for single-digit facts using loose small red beads."
+    ]
+  },
+  {
+    work_key: "ma_racks_tubes",
+    work_name: "Racks and Tubes (Long Division)",
+    area: "mathematics",
+    visual_description: "A set of wooden racks holding vertical glass or plastic TUBES, each tube representing a place-value category (units, tens, hundreds), into which gold beads are dropped to represent the dividend, then distributed evenly by the child across a row of numbered divisor tubes/skittles at the front to compute long division with remainders. The defining picture is upright glass/plastic TUBES mounted in wooden racks with beads visibly dropped inside them — a distinctive apparatus unlike any flat board or bead frame.",
+    key_materials: [
+      "Wooden racks holding vertical glass or plastic tubes",
+      "Gold beads dropped into tubes by place value",
+      "Numbered divisor skittles/tubes arranged at the front",
+      "Used for long division with multi-digit divisors"
+    ],
+    negative_descriptions: [
+      "NOT Unit Division Board: Racks and Tubes uses upright glass/plastic TUBES with beads dropped inside for long division; Unit Division Board is a flat pegged wooden board with beads distributed into rows for simple single-digit division."
+    ]
+  },
+  {
+    work_key: "ma_fraction_circles",
+    work_name: "Fraction Insets (Metal or Plastic)",
+    area: "mathematics",
+    visual_description: "A set of ten identical-sized circular frames, each frame containing a whole circle divided into a different number of equal wedge-shaped pieces (1 whole, then 2 halves, 3 thirds, up through 10 tenths), each piece fitted with a small knob for lifting, stored in a wooden stand or box. The child removes and compares pieces to explore fraction relationships. The defining picture is a stand or set of round frames each subdivided into an increasing number of knobbed wedge pieces, all circles the SAME overall diameter.",
+    key_materials: [
+      "Ten circular metal or plastic frames, same diameter",
+      "Each circle divided into a different number of wedge pieces (1 through 10)",
+      "Small knob on each wedge piece for lifting",
+      "Wooden stand or box for storage"
+    ],
+    negative_descriptions: [
+      "NOT Geometric Cabinet: Fraction Insets are all CIRCLES of the SAME size subdivided into wedges with knobs; the Geometric Cabinet holds many DIFFERENT shapes (triangles, polygons, curves) as single solid pieces, not subdivided wedges."
+    ]
+  },
+  {
+    work_key: "ma_fraction_addition",
+    work_name: "Fraction Addition",
+    area: "mathematics",
+    visual_description: "Loose fraction wedge pieces from the Fraction Insets are combined on a mat — for example, two quarter-pieces placed together and compared against a half-piece — to demonstrate equivalence and addition of fractions, often with small printed fraction-numeral cards (e.g. 1/4 + 1/4 = 1/2) placed beneath the pieces. The defining picture is multiple loose wedge pieces from DIFFERENT denominators being fitted together into a combined shape, with fraction cards showing the addition equation.",
+    key_materials: [
+      "Loose fraction wedge pieces from multiple different circles",
+      "Pieces combined/fitted together on a mat",
+      "Printed fraction-numeral cards showing the equation",
+      "Emphasis on equivalence between different denominators"
+    ],
+    negative_descriptions: [
+      "NOT Fraction Subtraction: Fraction Addition shows pieces being COMBINED together to build a whole or equivalent amount; Fraction Subtraction shows pieces being REMOVED from a starting whole, leaving a smaller remainder visible."
+    ]
+  },
+  {
+    work_key: "ma_fraction_subtraction",
+    work_name: "Fraction Subtraction",
+    area: "mathematics",
+    visual_description: "A whole or partial fraction circle is laid out on the mat, and the child physically lifts out and removes a smaller wedge piece, leaving a visible gap or reduced remainder, with printed fraction-numeral cards showing the subtraction equation beneath. The defining picture is a fraction circle with a wedge-shaped GAP where a piece has been lifted out and set aside, unlike addition's combining of separate pieces.",
+    key_materials: [
+      "Fraction wedge pieces, starting whole or partial circle",
+      "A piece physically lifted out and set to one side",
+      "Visible gap in the remaining circle",
+      "Printed fraction-numeral cards showing the subtraction"
+    ],
+    negative_descriptions: [
+      "NOT Fraction Addition: Fraction Subtraction shows a piece REMOVED leaving a gap; Fraction Addition shows separate pieces being COMBINED into a fuller shape."
+    ]
+  },
+  {
+    work_key: "ma_fraction_multiplication",
+    work_name: "Fraction Multiplication",
+    area: "mathematics",
+    visual_description: "Multiple identical fraction wedge pieces of the same denomination are repeated and grouped on the mat (e.g. three separate 1/4 pieces set out side by side to show 1/4 multiplied by 3), with printed fraction-numeral cards recording the repeated multiplication. The defining picture is several identical fraction wedges laid out in a repeated row/group, all the SAME size piece repeated multiple times.",
+    key_materials: [
+      "Multiple identical fraction wedge pieces of the same denomination",
+      "Pieces arranged in a repeated row or group",
+      "Printed fraction-numeral cards showing multiplication",
+      "Mat surface"
+    ],
+    negative_descriptions: [
+      "NOT Fraction Addition: Fraction Multiplication repeats the SAME piece multiple times; Fraction Addition combines DIFFERENT denomination pieces together."
+    ]
+  },
+  {
+    work_key: "ma_fraction_division",
+    work_name: "Fraction Division",
+    area: "mathematics",
+    visual_description: "A fraction wedge piece (or whole circle) is further subdivided or distributed evenly among several small dishes/plates to demonstrate dividing a fraction into smaller equal parts, with printed fraction-numeral cards recording the division. The defining picture is one starting fraction amount being SPLIT or shared evenly across several small containers, similar in spirit to Golden Bead Division but using fraction wedge pieces instead of beads.",
+    key_materials: [
+      "Fraction wedge pieces from the Fraction Insets",
+      "Several small dishes/plates for even distribution",
+      "Printed fraction-numeral cards showing the division",
+      "Mat surface"
+    ],
+    negative_descriptions: [
+      "NOT Fraction Multiplication: Fraction Division SPLITS one amount across several small dishes; Fraction Multiplication REPEATS one identical piece side by side without splitting it further."
+    ]
+  },
+  {
+    work_key: "ma_fraction_skittles",
+    work_name: "Fraction Skittles",
+    area: "mathematics",
+    visual_description: "A small set of numbered wooden skittles (bowling-pin-shaped pieces) used alongside the fraction wedge pieces to represent whole numbers and denominators in a game-like fraction exercise, where the child matches or arranges skittles with fraction pieces to explore mixed numbers or improper fractions. The defining picture is small numbered SKITTLE/pin-shaped pieces set among fraction wedges — the pin shape is the clear distinguishing feature from the flat wedge pieces alone.",
+    key_materials: [
+      "Small numbered wooden skittles (pin/bowling-pin shape)",
+      "Fraction wedge pieces used alongside the skittles",
+      "Used for matching/arranging exercises with mixed numbers",
+      "Mat or table surface"
+    ],
+    negative_descriptions: [
+      "NOT Fraction Insets: Fraction Skittles always includes small PIN-shaped numbered skittle pieces alongside the wedges; plain Fraction Insets work involves only the circular wedge pieces themselves with no skittles present."
+    ]
+  },
+  {
+    work_key: "ma_geometry_sticks",
+    work_name: "Geometry Sticks",
+    area: "mathematics",
+    visual_description: "A box or tin of loose wooden or plastic sticks of varying fixed lengths, which the child selects and arranges on a mat to construct polygons and explore properties of geometric shapes (triangles, quadrilaterals, etc.) by joining sticks end to end, sometimes with small connector joints. The defining picture is loose straight sticks of different lengths being physically arranged into shape outlines on a flat mat.",
+    key_materials: [
+      "Box or tin of loose wooden/plastic sticks in varying lengths",
+      "Sticks arranged end to end to form polygon outlines",
+      "Small joint connectors sometimes used",
+      "Flat mat surface"
+    ],
+    negative_descriptions: [
+      "NOT Geometry Nomenclature: Geometry Sticks are loose linear pieces physically ASSEMBLED into shape outlines; Geometry Nomenclature uses flat printed puzzle pieces or labelled cards naming pre-formed geometric figures, not constructed from sticks."
+    ]
+  },
+  {
+    work_key: "ma_classified_nomenclature",
+    work_name: "Geometry Nomenclature",
+    area: "mathematics",
+    visual_description: "A set of printed cards and matching wooden geometric-cabinet-style inset pieces (or flat cut-out shapes) used for classified language work, labelling the names of shapes, parts of shapes, and geometric vocabulary (e.g. 'equilateral triangle', 'radius', 'diameter') using the classic three-part-card format: picture card, label card, and control card together. The defining picture is a three-part card layout — flat printed shape image, a separate word label, and a combined control card — spread on a mat, sometimes alongside a geometric inset for reference.",
+    key_materials: [
+      "Three-part cards: picture card, label card, control card",
+      "Geometric shape images matched with vocabulary labels",
+      "Sometimes a geometric inset piece for reference",
+      "Mat surface, printed material predominant"
+    ],
+    negative_descriptions: [
+      "NOT Geometry Sticks: Geometry Nomenclature is a printed three-part card matching exercise; Geometry Sticks involves physically constructing shape outlines from loose linear sticks."
+    ]
+  },
+  {
+    work_key: "ma_area_introduction",
+    work_name: "Introduction to Area",
+    area: "mathematics",
+    visual_description: "Wooden frames or trays containing rearrangeable geometric insets (often rectangles or squares subdivided into smaller equal pieces) that the child manipulates to demonstrate that area stays constant even when shape is rearranged, frequently paired with a smaller grid of unit squares used to physically measure and count the area of a larger shape. The defining picture is a rectangular or square wooden frame with removable subdivided pieces, plus a grid of small unit squares used for counting/measuring area.",
+    key_materials: [
+      "Wooden frame or tray with rearrangeable subdivided inset pieces",
+      "Grid of small unit squares for measuring area",
+      "Pieces show shape can be rearranged with area unchanged",
+      "Mat or table surface"
+    ],
+    negative_descriptions: []
+  },
+  {
+    work_key: "ma_clock",
+    work_name: "Clock Work",
+    area: "mathematics",
+    visual_description: "A wooden or plastic teaching clock with movable hour and minute hands on a printed clock face (numerals 1-12, minute markings around the rim), used by the child to set and read specific times, often paired with matching digital time cards or a daily schedule activity. The defining picture is a single round analogue clock face with two moveable hands, sometimes shown beside printed time cards for matching.",
+    key_materials: [
+      "Wooden or plastic teaching clock with movable hour and minute hands",
+      "Printed clock face with numerals 1-12 and minute markings",
+      "Sometimes paired with digital time-matching cards",
+      "Table or mat surface"
+    ],
+    negative_descriptions: []
+  },
+  {
+    work_key: "ma_money",
+    work_name: "Money Work",
+    area: "mathematics",
+    visual_description: "A set of realistic or simplified play coins and banknotes of varying denominations, used by the child to count, sort, exchange, and make combinations of a given total value, often laid out in small labelled trays or alongside printed price cards for a pretend shopping/exchange exercise. The defining picture is loose coins and/or notes being sorted, counted, or exchanged on a mat or in small trays, sometimes with printed price tags nearby.",
+    key_materials: [
+      "Play coins and/or banknotes of varying denominations",
+      "Small trays or dishes for sorting by value",
+      "Sometimes printed price cards or a shopping-exercise setup",
+      "Mat or table surface"
+    ],
+    negative_descriptions: []
+  },
+  {
+    work_key: "ma_calendar",
+    work_name: "Calendar Work",
+    area: "mathematics",
+    visual_description: "A large wall or floor calendar grid (days of the week across the top, dated squares below) with movable date, day, month, or weather markers that the child updates daily, sometimes paired with a smaller personal calendar booklet or a strip showing the sequence of months and seasons. The defining picture is a grid calendar layout with printed or movable day/date labels, distinctly a wall chart or floor mat rather than a tabletop manipulative set.",
+    key_materials: [
+      "Large calendar grid (wall chart or floor mat) with days of the week and dated squares",
+      "Movable date/day/month/weather marker pieces",
+      "Sometimes a personal calendar booklet or month/season strip",
+      "Displayed as a wall or floor reference chart"
+    ],
+    negative_descriptions: []
+  }
+];
+
+const keys = new Set(j.entries.map(e => e.work_key));
+let added = 0;
+for (const e of NEW) {
+  if (!keys.has(e.work_key)) {
+    j.entries.push(e);
+    keys.add(e.work_key);
+    added++;
+  }
+}
+fs.writeFileSync(P, JSON.stringify(j, null, 2) + '\n');
+console.log('math +' + added + ' -> ' + j.entries.length);

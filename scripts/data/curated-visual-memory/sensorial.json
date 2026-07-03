@@ -1,0 +1,551 @@
+{
+  "_note": "CURATED global visual memory — SENSORIAL area. Opus-authored, spec-grounded discriminative checklists for standard Montessori works. Fields work_key/work_name/area/visual_description/key_materials/negative_descriptions are authored here; source='curated' and description_confidence are set by seed-global-visual-memory.mjs (0.95 for sensorial). visual_description stays under the 900-char cap. negative_descriptions lead with the literal 'NOT <Work Name>:' so the validator can parse and check mutuality. Cylinder Blocks 1-4: manufacturer numbering of the per-block grading dimension genuinely varies, so each entry leads with the UNIVERSAL block-vs-spindle-box signature (the actual discriminator) and keeps the per-block grading note soft.",
+  "entries": [
+    {
+      "work_key": "se_pink_tower",
+      "work_name": "Pink Tower",
+      "area": "sensorial",
+      "visual_description": "Ten solid wooden CUBES, all painted the same uniform pink, ranging from a tiny 1cm cube to a large 10cm cube with each cube's edge stepping up by 1cm. They are built into a vertical tower on a floor mat, the largest cube on the bottom up to the smallest on top; mid-work a few cubes often sit unstacked on the mat beside the growing tower. The defining picture is uniform-pink solid cubes graded in size (volume) and stacked upward — three-dimensional blocks, all the same colour, only their size changing.",
+      "key_materials": [
+        "Ten solid wooden cubes, all painted uniform pink",
+        "Sizes graduate from a 1cm cube to a 10cm cube",
+        "Built as a vertical tower, largest to smallest",
+        "Worked on a floor mat"
+      ],
+      "negative_descriptions": [
+        "NOT Brown Stair: the Pink Tower is uniform-pink CUBES graded in all three dimensions and stacked into a vertical tower; the Brown Stair is brown rectangular PRISMS of equal length graded in thickness and laid out flat as a staircase, not stacked.",
+        "NOT Knobless Cylinders: Pink Tower pieces are solid pink CUBES; Knobless Cylinders are round coloured cylinders (yellow, green, red or blue) with no knobs."
+      ]
+    },
+    {
+      "work_key": "se_brown_stair",
+      "work_name": "Brown Stair (Broad Stair)",
+      "area": "sensorial",
+      "visual_description": "Ten wooden rectangular PRISMS, all painted the same uniform brown and all the SAME length (about 20cm), differing only in the square cross-section — from a thick 10cm x 10cm prism down to a thin 1cm x 1cm prism in 1cm steps. Worked on a floor mat, they are laid flat side by side and arranged thickest-to-thinnest so the stepped top forms a staircase; mid-work a few prisms often lie loose on the mat beside the built stair. The defining picture is equal-length brown prisms that change in THICKNESS, laid out flat as a stair rather than stacked into a tower.",
+      "key_materials": [
+        "Ten wooden prisms, all painted uniform brown",
+        "All the same length; square cross-section graduates 1cm to 10cm",
+        "Laid flat on a mat forming a staircase, thickest to thinnest",
+        "Vary in thickness, not in length"
+      ],
+      "negative_descriptions": [
+        "NOT Pink Tower: the Brown Stair is brown PRISMS of equal length graded in thickness and laid out flat as a staircase; the Pink Tower is pink CUBES graded in size and stacked vertically into a tower.",
+        "NOT Red Rods: the Brown Stair is brown prisms of equal LENGTH that vary in thickness; Red Rods are long red rods of equal thickness that vary only in LENGTH."
+      ]
+    },
+    {
+      "work_key": "se_red_rods",
+      "work_name": "Red Rods (Long Rods)",
+      "area": "sensorial",
+      "visual_description": "Ten wooden rods of identical square cross-section, all painted the same uniform solid red, differing only in LENGTH — the shortest 10cm, the longest a full metre, in equal 10cm steps. They are worked on a floor mat, usually carried one at a time and arranged shortest-to-longest into a stair or fan. The defining picture is a set of rods that are all one continuous red with no divisions, segments, or second colour anywhere along them; only their length changes.",
+      "key_materials": [
+        "Ten wooden rods of equal thickness, all painted uniform solid red",
+        "Lengths graduate from 10cm to 100cm in 10cm steps",
+        "Each rod is one continuous red with no segments or divisions",
+        "Worked on a floor mat, often ordered shortest to longest"
+      ],
+      "negative_descriptions": [
+        "NOT Number Rods: Red Rods are entirely ONE uniform red and graded only by length; Number Rods are the same shape but each rod is divided into alternating RED and BLUE 10cm segments for counting.",
+        "NOT Brown Stair: Red Rods vary in LENGTH only (long rods of equal thickness); the Brown Stair is brown prisms of equal length that vary in THICKNESS."
+      ]
+    },
+    {
+      "work_key": "se_cylinder_block_1",
+      "work_name": "Cylinder Block 1",
+      "area": "sensorial",
+      "visual_description": "A single solid rectangular block of blond, unpainted hardwood lying horizontally, with a row of ten circular wells drilled into its top surface. Ten wooden cylinders sit in the wells, each cylinder topped by a small round knob (button handle) that the child pinches to lift it out. In this block the cylinders change mainly in DIAMETER across the row (widest to narrowest) while staying about the same height. During work the removed cylinders are often lined up on the mat beside the block, ready to be matched back into their wells. The whole material is one connected wooden block plus its knobbed cylinders — never loose sticks, never numerals, never colour.",
+      "key_materials": [
+        "One solid rectangular wooden block with ten graduated circular wells in a single row",
+        "Ten wooden cylinders, each with a small round knob / button handle on top",
+        "Natural unpainted blond hardwood",
+        "Each cylinder fits only its matching well (built-in control of error)"
+      ],
+      "negative_descriptions": [
+        "NOT Spindle Boxes: Cylinder Blocks are ONE solid block with round knobbed cylinders seated in drilled holes and show NO numerals; Spindle Boxes are open partitioned boxes holding loose plain rods with printed numerals 0-9 above the compartments.",
+        "NOT Knobless Cylinders: these cylinders HAVE knobs and sit inside a drilled wooden block; Knobless Cylinders are free-standing coloured cylinders with no knobs and no block."
+      ]
+    },
+    {
+      "work_key": "se_cylinder_block_2",
+      "work_name": "Cylinder Block 2",
+      "area": "sensorial",
+      "visual_description": "A single solid rectangular block of blond, unpainted hardwood lying horizontally, with a row of ten circular wells drilled into its top surface. Ten wooden cylinders sit in the wells, each topped by a small round knob (button handle) the child pinches to lift it out. In this block the cylinders change in BOTH diameter and height together (getting both narrower and shorter across the row). During work the removed cylinders are often lined up on the mat beside the block, ready to be matched back into their wells. The whole material is one connected wooden block plus its knobbed cylinders — never loose sticks, never numerals, never colour.",
+      "key_materials": [
+        "One solid rectangular wooden block with ten graduated circular wells in a single row",
+        "Ten wooden cylinders, each with a small round knob / button handle on top",
+        "Natural unpainted blond hardwood",
+        "Each cylinder fits only its matching well (built-in control of error)"
+      ],
+      "negative_descriptions": [
+        "NOT Spindle Boxes: Cylinder Blocks are ONE solid block with round knobbed cylinders seated in drilled holes and show NO numerals; Spindle Boxes are open partitioned boxes holding loose plain rods with printed numerals 0-9 above the compartments.",
+        "NOT Knobless Cylinders: these cylinders HAVE knobs and sit inside a drilled wooden block; Knobless Cylinders are free-standing coloured cylinders with no knobs and no block."
+      ]
+    },
+    {
+      "work_key": "se_cylinder_block_3",
+      "work_name": "Cylinder Block 3",
+      "area": "sensorial",
+      "visual_description": "A single solid rectangular block of blond, unpainted hardwood lying horizontally, with a row of ten circular wells drilled into its top surface. Ten wooden cylinders sit in the wells, each topped by a small round knob (button handle) the child pinches to lift it out. In this block the cylinders change in diameter and height inversely — as they get narrower they get taller across the row. During work the removed cylinders are often lined up on the mat beside the block, ready to be matched back into their wells. The whole material is one connected wooden block plus its knobbed cylinders — never loose sticks, never numerals, never colour.",
+      "key_materials": [
+        "One solid rectangular wooden block with ten graduated circular wells in a single row",
+        "Ten wooden cylinders, each with a small round knob / button handle on top",
+        "Natural unpainted blond hardwood",
+        "Each cylinder fits only its matching well (built-in control of error)"
+      ],
+      "negative_descriptions": [
+        "NOT Spindle Boxes: Cylinder Blocks are ONE solid block with round knobbed cylinders seated in drilled holes and show NO numerals; Spindle Boxes are open partitioned boxes holding loose plain rods with printed numerals 0-9 above the compartments.",
+        "NOT Knobless Cylinders: these cylinders HAVE knobs and sit inside a drilled wooden block; Knobless Cylinders are free-standing coloured cylinders with no knobs and no block."
+      ]
+    },
+    {
+      "work_key": "se_cylinder_block_4",
+      "work_name": "Cylinder Block 4",
+      "area": "sensorial",
+      "visual_description": "A single solid rectangular block of blond, unpainted hardwood lying horizontally, with a row of ten circular wells drilled into its top surface. Ten wooden cylinders sit in the wells, each topped by a small round knob (button handle) the child pinches to lift it out. In this block the cylinders change mainly in HEIGHT across the row (short to tall) while their diameter stays about the same. During work the removed cylinders are often lined up on the mat beside the block, ready to be matched back into their wells. The whole material is one connected wooden block plus its knobbed cylinders — never loose sticks, never numerals, never colour.",
+      "key_materials": [
+        "One solid rectangular wooden block with ten graduated circular wells in a single row",
+        "Ten wooden cylinders, each with a small round knob / button handle on top",
+        "Natural unpainted blond hardwood",
+        "Each cylinder fits only its matching well (built-in control of error)"
+      ],
+      "negative_descriptions": [
+        "NOT Spindle Boxes: Cylinder Blocks are ONE solid block with round knobbed cylinders seated in drilled holes and show NO numerals; Spindle Boxes are open partitioned boxes holding loose plain rods with printed numerals 0-9 above the compartments.",
+        "NOT Knobless Cylinders: these cylinders HAVE knobs and sit inside a drilled wooden block; Knobless Cylinders are free-standing coloured cylinders with no knobs and no block."
+      ]
+    },
+    {
+      "work_key": "se_cylinder_blocks_combined",
+      "work_name": "Cylinder Blocks Combined",
+      "area": "sensorial",
+      "visual_description": "Two, three, or four of the solid knobbed cylinder blocks worked together at once, arranged side by side or in a square on a floor mat. Each is a solid blond hardwood block with a row of ten circular wells holding ten knobbed cylinders; combined, up to forty knobbed cylinders may be removed and lined up on the mat, then graded and matched back across the several blocks. The defining picture is MULTIPLE solid drilled blocks plus their small round-knobbed cylinders — still natural wood, still no numerals, still no colour, just more than one block at a time.",
+      "key_materials": [
+        "Two to four solid wooden cylinder blocks used together",
+        "Up to forty knobbed wooden cylinders across the blocks",
+        "Natural unpainted blond hardwood",
+        "Cylinders graded and matched across several blocks at once"
+      ],
+      "negative_descriptions": [
+        "NOT Spindle Boxes: Cylinder Blocks are solid drilled blocks with round knobbed cylinders and NO numerals; Spindle Boxes are open partitioned boxes holding loose plain rods with printed numerals 0-9.",
+        "NOT Knobless Cylinders: these cylinders HAVE knobs and sit inside drilled wooden blocks; Knobless Cylinders are free-standing coloured cylinders with no knobs and no block."
+      ]
+    },
+    {
+      "work_key": "se_knobless_cylinders",
+      "work_name": "Knobless Cylinders",
+      "area": "sensorial",
+      "visual_description": "Cylinders that stand FREE on the table or mat with NO knobs and NO wooden block. They come in four sets of ten, each set a single bright colour — yellow, green, red and blue — usually stored in four flat wooden boxes with matching coloured lids. The child grades a set by size, builds them into towers, or arranges and matches them, and often combines the colours. The defining picture is smooth knob-free cylinders in a solid bright colour, standing loose — never seated in holes in a block.",
+      "key_materials": [
+        "Four sets of ten smooth cylinders, one colour per set (yellow, green, red, blue)",
+        "No knobs on any cylinder",
+        "No base block — cylinders stand free on the mat",
+        "Often stored in four colour-lidded wooden boxes"
+      ],
+      "negative_descriptions": [
+        "NOT Cylinder Blocks: Cylinder Blocks are a natural-wood block with round sockets where each cylinder has a small KNOB and fits a matching hole; Knobless Cylinders are loose, brightly coloured, knob-free and free-standing.",
+        "NOT Pink Tower: Knobless Cylinders are round coloured cylinders; the Pink Tower is uniform-pink solid cubes stacked into a tower."
+      ]
+    },
+    {
+      "work_key": "se_color_box_1",
+      "work_name": "Color Box 1 (Primary Colors)",
+      "area": "sensorial",
+      "visual_description": "A small wooden box holding six rigid colour tablets — three matched pairs of the primary colours red, yellow, and blue. Each tablet is a hard rectangle with a painted centre and lighter wooden holding edges the child grips. The child lays the tablets out and pairs the two identical colours by sight on a table or mat. The defining picture is just six hard tablets making three primary-colour pairs.",
+      "key_materials": [
+        "Small wooden box",
+        "Six rigid colour tablets",
+        "Three primary-colour pairs: red, yellow, blue",
+        "Matched visually into pairs"
+      ],
+      "negative_descriptions": [
+        "NOT Color Box 2: Color Box 1 holds only SIX tablets (three primary pairs); Color Box 2 holds eleven pairs (twenty-two tablets) covering primary and secondary colours.",
+        "NOT Color Box 3: Color Box 1 is simple pairing of primary colours; Color Box 3 is many graded shades of each colour arranged light-to-dark.",
+        "NOT Fabric Matching: colour tablets are rigid painted wood matched by LOOKING; fabric swatches are soft foldable cloth matched by TOUCH."
+      ]
+    },
+    {
+      "work_key": "se_color_box_2",
+      "work_name": "Color Box 2 (Secondary Colors)",
+      "area": "sensorial",
+      "visual_description": "A wooden box holding twenty-two rigid colour tablets — eleven matched pairs spanning the primary and secondary colours plus brown, pink, grey, black and white. Each tablet is a hard rectangle with a painted centre and lighter wooden holding edges. The child lays them out and pairs the identical colours, often in two columns on a mat. The defining picture is many hard tablets forming eleven distinct colour pairs.",
+      "key_materials": [
+        "Wooden box",
+        "Twenty-two rigid colour tablets",
+        "Eleven colour pairs (primary + secondary + brown, pink, grey, black, white)",
+        "Matched visually into pairs"
+      ],
+      "negative_descriptions": [
+        "NOT Color Box 1: Color Box 2 holds eleven pairs (twenty-two tablets); Color Box 1 holds only three primary-colour pairs (six tablets).",
+        "NOT Color Box 3: Color Box 2 is pairing of eleven distinct colours; Color Box 3 is grading many SHADES of the same colour from light to dark.",
+        "NOT Fabric Matching: colour tablets are rigid painted wood matched by LOOKING; fabric swatches are soft foldable cloth matched by TOUCH."
+      ]
+    },
+    {
+      "work_key": "se_color_box_3",
+      "work_name": "Color Box 3 (Color Gradations)",
+      "area": "sensorial",
+      "visual_description": "A wooden box divided into compartments, each holding a family of colour tablets in GRADED shades of one colour running from very pale to very dark (commonly nine colour families with about seven shades each). The child takes one family and lays the tablets in a row from lightest to darkest, or fans several families out. The defining picture is rigid tablets of the SAME colour in a smooth light-to-dark gradient — not simple pairing of different colours.",
+      "key_materials": [
+        "Compartmented wooden box",
+        "Colour families of rigid tablets in graded shades (about nine colours, seven shades each)",
+        "Arranged light-to-dark within each colour",
+        "A colour-grading (seriation) work, not pairing"
+      ],
+      "negative_descriptions": [
+        "NOT Color Box 1: Color Box 3 grades many SHADES of one colour light-to-dark; Color Box 1 is simple pairing of three primary colours.",
+        "NOT Color Box 2: Color Box 3 is shade grading within a colour; Color Box 2 is pairing eleven distinct colours.",
+        "NOT Fabric Matching: colour tablets are rigid painted wood matched/graded by LOOKING; fabric swatches are soft foldable cloth matched by TOUCH."
+      ]
+    },
+    {
+      "work_key": "se_fabric_matching",
+      "work_name": "Fabric Matching",
+      "area": "sensorial",
+      "visual_description": "A box or basket of paired cloth swatches — soft, foldable fabric squares in matching pairs of different textures and weaves (e.g. silk, wool, cotton, velvet, hessian). The child feels each swatch, usually blindfolded or with eyes closed, and pairs the two that feel the same by TOUCH. The defining picture is limp pieces of real cloth being handled and paired, often with a blindfold nearby — soft fabric, not rigid painted tablets.",
+      "key_materials": [
+        "Box or basket of paired fabric swatches",
+        "Soft, foldable real cloth of varied textures",
+        "Matched in pairs by touch, often blindfolded",
+        "A tactile (stereognostic) work"
+      ],
+      "negative_descriptions": [
+        "NOT Color Box 1: Fabric Matching uses soft cloth swatches matched by TOUCH; Color Box 1 uses rigid painted tablets matched by sight.",
+        "NOT Color Box 2: Fabric Matching is soft cloth matched by feel; Color Box 2 is rigid colour tablets paired by sight.",
+        "NOT Color Box 3: Fabric Matching pairs cloth textures by touch; Color Box 3 grades rigid colour tablets by sight."
+      ]
+    },
+    {
+      "work_key": "se_geometric_cabinet",
+      "work_name": "Geometric Cabinet",
+      "area": "sensorial",
+      "visual_description": "A WIDE, shallow wooden cabinet of stacked pull-out drawers, each drawer holding several flat wooden shape insets sitting in matching frames — circles in one drawer, triangles in another, rectangles, polygons, curved figures, and so on. Each inset has a small knob and lifts out to be traced and replaced; a demonstration tray and printed shape cards usually accompany it. The defining picture is a broad multi-drawer cabinet displaying MANY flat geometric shapes at once, matched to their frames or cards.",
+      "key_materials": [
+        "Wide wooden cabinet with several pull-out drawers",
+        "Flat wooden geometric shape insets, each with a small knob, in matching frames",
+        "Multiple shapes per drawer (circles, triangles, polygons, curved figures)",
+        "Presentation tray and matching shape cards"
+      ],
+      "negative_descriptions": [
+        "NOT Metal Insets: the Geometric Cabinet is a wide multi-drawer cabinet of flat shape insets used for shape matching; Metal Insets are ten separate metal square frames (one shape each) on small stands, used with coloured pencils and paper for tracing and writing preparation."
+      ]
+    },
+    {
+      "work_key": "se_binomial_cube",
+      "work_name": "Binomial Cube",
+      "area": "sensorial",
+      "visual_description": "A small wooden box that opens to reveal EIGHT blocks — cubes and rectangular prisms painted red, blue, and black — that fit together to build one larger cube (a concrete model of the binomial (a+b) cubed). The child rebuilds it by matching each block's painted faces to the coloured pattern printed on the box lid and to its neighbours. The defining picture is a small set of red, blue and black blocks assembling into a single two-colour cube inside a lidded box.",
+      "key_materials": [
+        "Lidded wooden box with a printed colour pattern on the lid",
+        "Eight blocks: cubes and rectangular prisms",
+        "Painted red, blue and black",
+        "Assemble into one larger cube"
+      ],
+      "negative_descriptions": [
+        "NOT Trinomial Cube: the Binomial Cube has only EIGHT blocks in two colours (red and blue with black); the Trinomial Cube has TWENTY-SEVEN blocks in three colours (red, blue and yellow with black) and builds a larger cube."
+      ]
+    },
+    {
+      "work_key": "se_trinomial_cube",
+      "work_name": "Trinomial Cube",
+      "area": "sensorial",
+      "visual_description": "A wooden box that opens to reveal TWENTY-SEVEN blocks — cubes and rectangular prisms painted red, blue, yellow, and black — that fit together to build one larger cube (a concrete model of the trinomial (a+b+c) cubed). The child rebuilds it layer by layer, matching each block's painted faces to the coloured pattern on the box lid and to its neighbours. The defining picture is a larger, busier set of red, blue, yellow and black blocks assembling into a single three-colour cube.",
+      "key_materials": [
+        "Lidded wooden box with a printed colour pattern on the lid",
+        "Twenty-seven blocks: cubes and rectangular prisms",
+        "Painted red, blue, yellow and black",
+        "Assemble into one larger cube in three layers"
+      ],
+      "negative_descriptions": [
+        "NOT Binomial Cube: the Trinomial Cube has TWENTY-SEVEN blocks in three colours (red, blue and yellow with black); the Binomial Cube has only EIGHT blocks in two colours (red and blue with black)."
+      ]
+    },
+    {
+      "work_key": "se_sound_boxes",
+      "work_name": "Sound Boxes (Sound Cylinders)",
+      "area": "sensorial",
+      "visual_description": "Two wooden boxes, one with red lids and one with blue lids, each holding six sealed wooden cylinders. Each cylinder is an opaque closed shaker with nothing visible inside; the child shakes one beside the ear and finds the cylinder in the other set that makes the same sound, pairing red to blue. The defining picture is small sealed shaker cylinders with plain coloured lids being held to the ear — closed, with no knobs and no openings.",
+      "key_materials": [
+        "Two wooden boxes, one red-lidded and one blue-lidded",
+        "Six sealed shaker cylinders per box",
+        "Opaque and closed — contents not visible",
+        "Paired by matching sound"
+      ],
+      "negative_descriptions": [
+        "NOT Cylinder Blocks: sound cylinders are sealed shakers held to the ear with plain coloured lids and no knobs; cylinder-block cylinders have round knobs and seat into a drilled wooden block.",
+        "NOT Spindle Boxes: sound cylinders are closed shakers matched by sound; Spindle Boxes are open numbered compartments holding loose plain sticks.",
+        "NOT Smelling Bottles: sound cylinders are shaken next to the ear; smelling bottles are opened and sniffed."
+      ]
+    },
+    {
+      "work_key": "se_touch_tablets",
+      "work_name": "Touch Tablets (Rough and Smooth)",
+      "area": "sensorial",
+      "visual_description": "A wooden box of small rectangular tablets, each surfaced with a different grade of sandpaper roughness from coarse to fine (plus smooth boards in some sets). The child feels each tablet with the fingertips, usually blindfolded or with eyes closed, and pairs or grades them from roughest to smoothest. The defining picture is small plain paired tablets whose only feature is their touch texture — no letters, no numerals, no colour.",
+      "key_materials": [
+        "Wooden box of small paired tablets",
+        "Graded sandpaper roughness (coarse to fine)",
+        "Matched or graded by touch, often blindfolded",
+        "Plain surfaces with no letter or numeral shapes"
+      ],
+      "negative_descriptions": [
+        "NOT Touch Boards: Touch Boards are larger flat boards with alternating rough and smooth strips; Touch Tablets are small loose paired tablets stored in a box.",
+        "NOT Sandpaper Letters: touch tablets have plain sandpaper surfaces with NO letter shapes; Sandpaper Letters show alphabet characters on pink or blue boards.",
+        "NOT Sandpaper Numerals: touch tablets are plain textured surfaces; Sandpaper Numerals show digits 0-9 on green boards."
+      ]
+    },
+    {
+      "work_key": "se_geometric_solids",
+      "work_name": "Geometric Solids",
+      "area": "sensorial",
+      "visual_description": "A set of solid, three-dimensional geometric shapes in blue-painted wood — a sphere, ovoid, egg (ellipsoid), cube, cuboid (rectangular prism), cylinder, cone, pyramids, and a triangular prism — presented in a basket or on a mat. The child handles them, names them, and often feels them blindfolded or matches them to cards or to flat bases. The defining picture is chunky solid 3D forms (a ball, a cube, a cone, a pyramid) rather than flat shapes.",
+      "key_materials": [
+        "Set of solid 3D wooden shapes (sphere, cube, cone, cylinder, pyramid, prism, ovoid)",
+        "Usually blue",
+        "Presented in a basket or on a mat",
+        "Sometimes with flat bases or nomenclature cards"
+      ],
+      "negative_descriptions": [
+        "NOT Geometric Cabinet: Geometric Solids are chunky THREE-DIMENSIONAL forms (spheres, cones, cubes) handled in the hand; the Geometric Cabinet holds FLAT shape insets in drawers."
+      ]
+    },
+    {
+      "work_key": "se_constructive_triangles_rect",
+      "work_name": "Constructive Triangles - Rectangular Box",
+      "area": "sensorial",
+      "visual_description": "A shallow RECTANGULAR wooden box holding an assortment of flat wooden triangles in several colours, with black or coloured guide lines along some edges. The child slides the triangles together edge-to-edge so the marked lines meet, discovering that triangles combine to form larger triangles, rectangles and other figures. The defining picture is loose flat coloured triangles being joined into bigger shapes, stored in a rectangular box.",
+      "key_materials": [
+        "Rectangular wooden box",
+        "Assorted flat coloured wooden triangles",
+        "Guide lines on some edges",
+        "Joined edge-to-edge to build figures"
+      ],
+      "negative_descriptions": [
+        "NOT Constructive Triangles - Triangular Box: this set comes in a RECTANGULAR box; the triangular-box set comes in a TRIANGULAR box and its triangles build one large equilateral triangle."
+      ]
+    },
+    {
+      "work_key": "se_constructive_triangles_tri",
+      "work_name": "Constructive Triangles - Triangular Box",
+      "area": "sensorial",
+      "visual_description": "A TRIANGULAR wooden box holding flat wooden triangles whose black guide lines let the child build one large equilateral triangle several different ways (from two, three or four smaller triangles). The child matches the black lines to join the pieces. The defining picture is coloured flat triangles combining into a single big triangle, stored in a triangle-shaped box.",
+      "key_materials": [
+        "Triangular wooden box",
+        "Flat coloured wooden triangles",
+        "Black guide lines",
+        "Build a large triangle multiple ways"
+      ],
+      "negative_descriptions": [
+        "NOT Constructive Triangles - Rectangular Box: this set comes in a TRIANGULAR box and builds one large equilateral triangle; the rectangular-box set holds a broader assortment that also forms rectangles and other figures."
+      ]
+    },
+    {
+      "work_key": "se_constructive_triangles_large_hex",
+      "work_name": "Constructive Triangles - Large Hexagonal Box",
+      "area": "sensorial",
+      "visual_description": "A LARGE HEXAGONAL wooden box holding flat wooden triangles (including large obtuse and equilateral triangles) that combine to build hexagons and other figures. Black guide lines direct how the pieces join. The defining picture is coloured flat triangles forming a hexagon, stored in a six-sided box larger than the small hexagonal set.",
+      "key_materials": [
+        "Large hexagonal wooden box",
+        "Flat coloured wooden triangles",
+        "Black guide lines",
+        "Build hexagons and rhombi"
+      ],
+      "negative_descriptions": [
+        "NOT Constructive Triangles - Small Hexagonal Box: this is the LARGER hexagonal set; the small hexagonal set is a smaller six-sided box with fewer, smaller triangles."
+      ]
+    },
+    {
+      "work_key": "se_constructive_triangles_small_hex",
+      "work_name": "Constructive Triangles - Small Hexagonal Box",
+      "area": "sensorial",
+      "visual_description": "A SMALL HEXAGONAL wooden box holding flat wooden triangles that combine into a hexagon and related figures, guided by black lines on the edges. The defining picture is coloured flat triangles forming a hexagon inside a small six-sided box.",
+      "key_materials": [
+        "Small hexagonal wooden box",
+        "Flat coloured wooden triangles",
+        "Black guide lines",
+        "Build a hexagon and rhombi"
+      ],
+      "negative_descriptions": [
+        "NOT Constructive Triangles - Large Hexagonal Box: this is the SMALLER hexagonal set; the large hexagonal set is a bigger six-sided box with more and larger triangles."
+      ]
+    },
+    {
+      "work_key": "se_constructive_triangles_blue",
+      "work_name": "Constructive Triangles - Blue Triangles",
+      "area": "sensorial",
+      "visual_description": "A box of twelve identical all-BLUE right-angled scalene triangles, all the same size and colour. The child arranges pairs and groups of these blue triangles to form many different figures (rectangle, parallelogram, rhombus, larger triangles), discovering the relationships purely by shape since colour gives no clue. The defining picture is a set of same-size, same-blue flat triangles being rearranged into varied shapes.",
+      "key_materials": [
+        "Box of twelve identical blue right-angled triangles",
+        "All one size and one colour",
+        "Arranged to form varied figures",
+        "No guide lines — relationships found by shape"
+      ],
+      "negative_descriptions": [
+        "NOT the coloured Constructive Triangles sets: these are all identical BLUE triangles of one size; the boxed sets (rectangular, triangular, hexagonal) use MULTIPLE colours and guide lines."
+      ]
+    },
+    {
+      "work_key": "se_superimposed_geometric_figures",
+      "work_name": "Superimposed Geometric Figures",
+      "area": "sensorial",
+      "visual_description": "A set of flat outlined geometric figures (often three of each shape) that graduate in size and can be laid one on top of another — nested or overlapping — to compare their forms and sizes. Usually thin coloured card or plastic shapes. The defining picture is flat outline shapes of the same kind in different sizes being stacked or overlapped.",
+      "key_materials": [
+        "Flat outlined geometric figures in graded sizes",
+        "Often three of each shape",
+        "Laid on top of one another to compare",
+        "Thin card or plastic"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "se_touch_boards",
+      "work_name": "Touch Boards",
+      "area": "sensorial",
+      "visual_description": "Flat wooden boards divided into alternating ROUGH (sandpaper) and SMOOTH strips. The child runs relaxed fingertips lightly across the board (often blindfolded) to feel the contrast between rough and smooth. The defining picture is a single larger board with striped rough/smooth bands, not small loose tablets.",
+      "key_materials": [
+        "Flat wooden board with alternating rough and smooth strips",
+        "Sandpaper strips vs bare wood",
+        "Felt with fingertips, often blindfolded",
+        "Introduces the tactile sense"
+      ],
+      "negative_descriptions": [
+        "NOT Touch Tablets: Touch Boards are larger fixed boards with striped rough/smooth bands; Touch Tablets are small loose paired tablets, each a single roughness grade, stored in a box."
+      ]
+    },
+    {
+      "work_key": "se_sorting_grains",
+      "work_name": "Sorting Grains",
+      "area": "sensorial",
+      "visual_description": "Small bowls or a divided tray holding a mixture of two or more kinds of grains, beans or seeds (e.g. rice, beans, lentils) that the child sorts into separate containers by hand or with fingers. The defining picture is loose dry grains being separated into piles or dishes — a tactile/practical sorting activity.",
+      "key_materials": [
+        "Bowls or divided tray",
+        "A mix of grains, beans or seeds",
+        "Sorted by kind into separate containers",
+        "Handled by fingertips"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "se_baric_tablets",
+      "work_name": "Baric Tablets",
+      "area": "sensorial",
+      "visual_description": "Sets of small flat wooden tablets that look identical but differ in WEIGHT — made from light, medium and dark woods of different densities. The child weighs a tablet in each hand (usually blindfolded) and pairs or grades them by heaviness. The defining picture is plain flat wooden tablets, often in two or three wood tones, being balanced on the fingertips to judge weight.",
+      "key_materials": [
+        "Flat wooden tablets of identical size",
+        "Different woods giving different weights (light/medium/heavy)",
+        "Judged by weight in the hand, often blindfolded",
+        "Introduces the baric (weight) sense"
+      ],
+      "negative_descriptions": [
+        "NOT Thermic Tablets: Baric Tablets are matched by WEIGHT (light vs heavy woods); Thermic Tablets are matched by how WARM or COOL each material feels.",
+        "NOT Color Box: Baric Tablets are plain natural wood judged by weight; Color Box tablets are painted and matched by colour."
+      ]
+    },
+    {
+      "work_key": "se_thermic_tablets",
+      "work_name": "Thermic Tablets",
+      "area": "sensorial",
+      "visual_description": "Pairs of flat tablets made of different materials — such as felt, wood, cork, metal, glass and stone — that feel warmer or cooler to the touch because they conduct heat differently. The child touches each (often blindfolded) and pairs the ones that feel the same temperature. The defining picture is small tablets of clearly DIFFERENT materials (a metal one, a wooden one, a felt one) matched by how warm or cool they feel.",
+      "key_materials": [
+        "Paired tablets of different materials (metal, wood, felt, cork, glass, stone)",
+        "Feel warmer or cooler by touch",
+        "Matched by temperature, often blindfolded",
+        "Introduces the thermic sense"
+      ],
+      "negative_descriptions": [
+        "NOT Thermic Bottles: Thermic Tablets are solid flat tablets of different materials matched by feel; Thermic Bottles are small BOTTLES filled with water at different temperatures.",
+        "NOT Baric Tablets: Thermic Tablets are matched by WARMTH; Baric Tablets are matched by WEIGHT."
+      ]
+    },
+    {
+      "work_key": "se_thermic_bottles",
+      "work_name": "Thermic Bottles",
+      "area": "sensorial",
+      "visual_description": "A set of small identical BOTTLES filled with water at different temperatures (cold to warm). The child holds each bottle and pairs the two that feel the same warmth. The defining picture is matching water-filled bottles, grasped in the hands to compare temperature.",
+      "key_materials": [
+        "Small identical bottles filled with water",
+        "Water at different temperatures (cold to warm)",
+        "Paired by warmth in the hands",
+        "Introduces the thermic sense"
+      ],
+      "negative_descriptions": [
+        "NOT Thermic Tablets: Thermic Bottles are water-filled BOTTLES paired by temperature; Thermic Tablets are solid flat tablets of different materials.",
+        "NOT Smelling Bottles: Thermic Bottles are matched by how WARM the water feels; Smelling Bottles are opaque bottles matched by SCENT."
+      ]
+    },
+    {
+      "work_key": "se_bells",
+      "work_name": "Montessori Bells",
+      "area": "sensorial",
+      "visual_description": "A row of identical-looking bells, each a metal cup mounted on a wooden stem over a small base, arranged on a long stand — plus a small wooden mallet and a damper. The bells look the same but sound different musical notes; the child strikes a bell with the mallet and pairs or grades them by pitch. The defining picture is a line of matching stem-mounted bells with a striker, not shaker cylinders.",
+      "key_materials": [
+        "Row of matching stem-mounted metal bells on a stand",
+        "Wooden mallet and damper",
+        "Bells look identical but sound different pitches",
+        "Paired and graded by musical tone"
+      ],
+      "negative_descriptions": [
+        "NOT Sound Boxes: bells are OPEN metal bells struck with a mallet to compare musical pitch; Sound Boxes are sealed wooden shaker cylinders matched by the noise they make."
+      ]
+    },
+    {
+      "work_key": "se_smelling_bottles",
+      "work_name": "Smelling Bottles",
+      "area": "sensorial",
+      "visual_description": "Two sets of small opaque bottles with perforated or coloured lids (one set often red, one blue), each holding a different scent (spices, herbs, essences). The child sniffs a bottle and finds its match in the other set by SMELL. The defining picture is small identical opaque bottles being held to the nose.",
+      "key_materials": [
+        "Two sets of small opaque scented bottles",
+        "Coloured lids (e.g. red and blue)",
+        "Contents hidden — matched by scent",
+        "Introduces the olfactory sense"
+      ],
+      "negative_descriptions": [
+        "NOT Sound Boxes: Smelling Bottles are opaque bottles held to the NOSE and matched by scent; Sound Boxes are sealed cylinders shaken beside the EAR and matched by sound.",
+        "NOT Tasting Bottles: Smelling Bottles are matched by SMELL; Tasting Bottles/Cups present flavours the child TASTES."
+      ]
+    },
+    {
+      "work_key": "se_tasting_bottles",
+      "work_name": "Tasting Bottles/Cups",
+      "area": "sensorial",
+      "visual_description": "Small bottles with droppers, or little cups, holding liquids of the basic tastes — sweet, salty, sour and bitter. The child tastes a drop (on the tongue or a spoon) and pairs or names the flavour. The defining picture is little cups or dropper bottles of clear liquids being tasted, with water for rinsing nearby.",
+      "key_materials": [
+        "Small dropper bottles or cups of flavoured liquids",
+        "Sweet, salty, sour, bitter",
+        "Tasted and matched or named",
+        "Water to rinse between tastes"
+      ],
+      "negative_descriptions": [
+        "NOT Smelling Bottles: Tasting Bottles/Cups present flavours the child TASTES on the tongue; Smelling Bottles are opaque bottles matched by SCENT at the nose."
+      ]
+    },
+    {
+      "work_key": "se_mystery_bag",
+      "work_name": "Mystery Bag",
+      "area": "sensorial",
+      "visual_description": "A soft drawstring cloth bag holding an assortment of small familiar objects. The child reaches in WITHOUT looking, feels an object, names or identifies it by touch alone, then draws it out to check. The defining picture is a fabric bag with a child's hand inside, objects hidden from view — identification by feel (stereognostic sense).",
+      "key_materials": [
+        "Soft drawstring cloth bag",
+        "Assorted small familiar objects",
+        "Identified by touch alone, without looking",
+        "Develops the stereognostic sense"
+      ],
+      "negative_descriptions": [
+        "NOT Sorting Objects Stereognostically: the Mystery Bag hides a mix of objects to NAME one by touch; the sorting work has the child SORT hidden objects into groups by feel."
+      ]
+    },
+    {
+      "work_key": "se_sorting_objects",
+      "work_name": "Sorting Objects Stereognostically",
+      "area": "sensorial",
+      "visual_description": "Pairs or groups of small objects (often two kinds mixed together) that the child sorts into separate containers by TOUCH — reaching into a bag or working blindfolded, feeling each object and placing it with its kind. The defining picture is hidden objects being separated into groups by feel rather than by sight.",
+      "key_materials": [
+        "Mixed small objects in a bag or covered tray",
+        "Sorted into groups by touch, blindfolded or unseen",
+        "Two or more object kinds",
+        "Develops the stereognostic sense"
+      ],
+      "negative_descriptions": [
+        "NOT Mystery Bag: this work SORTS hidden objects into groups by feel; the Mystery Bag has the child identify and NAME a single object by touch."
+      ]
+    }
+  ]
+}

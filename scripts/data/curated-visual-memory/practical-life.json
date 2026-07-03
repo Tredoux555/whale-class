@@ -1,0 +1,1062 @@
+{
+  "_note": "CURATED global visual memory — PRACTICAL LIFE area. source='curated' and description_confidence (0.85 for practical life — PL works vary per classroom, so author around FUNCTIONAL SIGNATURE not exact materials) set by seed-global-visual-memory.mjs. Empty in batch 1; populated in Phase 5. negative_descriptions lead with the literal 'NOT <Work Name>:' for the validator.",
+  "entries": [
+    {
+      "work_key": "pl_carrying_mat",
+      "work_name": "Carrying a Mat",
+      "area": "practical_life",
+      "visual_description": "A child carrying a rolled or unrolled rectangular work mat (usually a plain woven or felt mat) across the room, then unrolling it flat on the floor to define a personal workspace, or rolling it back up when finished. The defining picture is a mat being held horizontally in two hands, or lying flat and unrolled on the floor as the base for a floor work.",
+      "key_materials": [
+        "A rolled or flat rectangular work mat",
+        "Carried horizontally in both hands",
+        "Unrolled flat on the floor to mark a workspace"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_carrying_chair",
+      "work_name": "Carrying a Chair",
+      "area": "practical_life",
+      "visual_description": "A child lifting a small chair by its seat and back, carrying it quietly across the room, and placing it down without a bump or scrape. The defining picture is a child holding a child-sized chair off the ground while walking, not dragging it.",
+      "key_materials": [
+        "A child-sized chair",
+        "Lifted with both hands, back and seat",
+        "Carried, not dragged"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_carrying_tray",
+      "work_name": "Carrying a Tray",
+      "area": "practical_life",
+      "visual_description": "A child holding a tray flat and level with both hands, walking carefully across the room without spilling or tipping its contents, then setting the tray down on a table or mat. The defining picture is a tray held horizontally with small objects or materials on it, the child's eyes on the tray.",
+      "key_materials": [
+        "A tray, held flat with two hands",
+        "Small objects/materials arranged on the tray",
+        "Walked carefully, kept level"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_carrying_table",
+      "work_name": "Carrying a Table",
+      "area": "practical_life",
+      "visual_description": "Two children (or one child with an adult) lifting and carrying a small table together, coordinating their movement to keep it level, then setting it down gently in a new spot. The defining picture is a small table being carried at leg height by one or two people, not dragged across the floor.",
+      "key_materials": [
+        "A small child-sized table",
+        "Carried by legs/underside, kept level",
+        "Often a two-person cooperative carry"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_opening_closing_door",
+      "work_name": "Opening and Closing a Door",
+      "area": "practical_life",
+      "visual_description": "A child turning a door handle, pulling or pushing a door open smoothly, walking through, and closing it gently behind them without slamming. The defining picture is a hand on a door handle/knob, the door mid-swing, with the movement clearly controlled and quiet.",
+      "key_materials": [
+        "An interior door with a handle or knob",
+        "Opened and closed slowly and quietly"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_walking_line",
+      "work_name": "Walking on the Line",
+      "area": "practical_life",
+      "visual_description": "Children walking heel-to-toe along a taped or painted line (often an ellipse) on the floor, sometimes carrying an object like a bell or a flag to keep balance and control, moving slowly and deliberately as a group exercise. The defining picture is several children in single file, feet placed carefully along a floor line, often to music.",
+      "key_materials": [
+        "A taped or painted line on the floor (often ellipse-shaped)",
+        "Children walking heel-to-toe along it",
+        "Sometimes carrying a small object for balance"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_sitting_standing",
+      "work_name": "Sitting and Standing at a Table",
+      "area": "practical_life",
+      "visual_description": "A child practicing pulling a chair out quietly, sitting down with good posture, and standing back up and pushing the chair in — all done smoothly and without scraping noise. The defining picture is a child at a small table/chair set, demonstrating the controlled motion of sitting down or standing up.",
+      "key_materials": [
+        "A child-sized table and chair",
+        "Practiced sitting/standing motion, quiet chair movement"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_silence_game",
+      "work_name": "The Silence Game",
+      "area": "practical_life",
+      "visual_description": "A group of children sitting or lying very still with eyes closed, listening to ambient sounds, while the teacher may quietly call names one at a time for each child to come forward silently. The defining picture is a whole class deliberately motionless and quiet, often eyes closed, in a group circle — not an individual work with materials.",
+      "key_materials": [
+        "No physical materials — a group listening/stillness exercise",
+        "Children seated or lying still, eyes often closed"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_turning_pages",
+      "work_name": "Turning Pages of a Book",
+      "area": "practical_life",
+      "visual_description": "A child seated with a book, practicing turning pages one at a time from the top corner, carefully and without tearing or crumpling, moving through the book page by page. The defining picture is a child's fingers pinching a single page corner to turn it, book open on a table or lap.",
+      "key_materials": [
+        "A book",
+        "Pages turned one at a time by the corner"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_folding_cloth",
+      "work_name": "Folding Cloths",
+      "area": "practical_life",
+      "visual_description": "A child taking a square or rectangular cloth (often with a stitched or ironed fold line as a guide) and folding it in half and again into quarters, smoothing each fold with the hands. The defining picture is a cloth or napkin being folded flat on a table, corner to corner or edge to edge.",
+      "key_materials": [
+        "A square or rectangular cloth/napkin, sometimes with a guide line",
+        "Folded in half then quarters, smoothed by hand"
+      ],
+      "negative_descriptions": [
+        "NOT Folding Laundry: this is a single practice cloth folded on a mat/table as a preliminary exercise; Folding Laundry is a real care-of-environment task folding a basket of washed clothing/linens."
+      ]
+    },
+    {
+      "work_key": "pl_dry_transfer_hand",
+      "work_name": "Dry Transfer - Hands",
+      "area": "practical_life",
+      "visual_description": "A child moving small dry objects (beans, pom-poms, beads, or similar) one at a time by hand from one bowl or container to another, using a pincer or whole-hand grasp. The defining picture is bare fingers picking up small dry items and dropping them into a second container, no tool involved.",
+      "key_materials": [
+        "Two small bowls/containers",
+        "Small dry objects (beans, pom-poms, beads)",
+        "Moved by hand, one at a time"
+      ],
+      "negative_descriptions": [
+        "NOT Spooning: Dry Transfer - Hands uses BARE FINGERS to move the objects; Spooning uses a spoon as the tool.",
+        "NOT Tonging: Dry Transfer - Hands uses bare fingers; Tonging pinches items with a pair of tongs.",
+        "NOT Tweezers Transfer: Dry Transfer - Hands uses bare fingers; Tweezers Transfer uses fine-pointed tweezers held with fingertips."
+      ]
+    },
+    {
+      "work_key": "pl_spooning",
+      "work_name": "Spooning",
+      "area": "practical_life",
+      "visual_description": "A child scooping small dry materials (beans, rice, seeds) with a spoon from one bowl and carefully tipping them into a second bowl, controlling the wrist to avoid spilling. The defining picture is a hand holding a spoon mid-scoop over two bowls of dry material.",
+      "key_materials": [
+        "Two bowls",
+        "A spoon",
+        "Dry material (beans, rice, seeds) scooped and transferred"
+      ],
+      "negative_descriptions": [
+        "NOT Dry Transfer - Hands: Spooning uses a SPOON as the tool; hand transfer uses bare fingers with no tool.",
+        "NOT Tonging: Spooning scoops with a SPOON; Tonging pinches items with a pair of tongs."
+      ]
+    },
+    {
+      "work_key": "pl_tonging",
+      "work_name": "Tonging",
+      "area": "practical_life",
+      "visual_description": "A child squeezing a pair of tongs to pick up small objects (pom-poms, cotton balls, small blocks) one at a time and moving them from one bowl to another. The defining picture is a hand gripping a tong tool, its two prongs closed around a small object mid-transfer.",
+      "key_materials": [
+        "Two bowls",
+        "A pair of tongs",
+        "Small light objects (pom-poms, cotton balls)"
+      ],
+      "negative_descriptions": [
+        "NOT Tweezers Transfer: Tonging uses larger TONGS squeezed by the whole hand; Tweezers Transfer uses fine-pointed tweezers held with fingertips for smaller/precise items.",
+        "NOT Spooning: Tonging pinches items with a pair of tongs; Spooning scoops with a spoon.",
+        "NOT Dry Transfer - Hands: Tonging uses a spring-hinged pair of tongs squeezed by the whole hand; Dry Transfer - Hands uses bare fingers with no tool.",
+        "NOT Chopsticks Transfer: Tonging uses a spring-hinged pair of tongs squeezed by the whole hand; Chopsticks Transfer uses two parallel sticks pinched together."
+      ]
+    },
+    {
+      "work_key": "pl_tweezers",
+      "work_name": "Tweezers Transfer",
+      "area": "practical_life",
+      "visual_description": "A child pinching small tweezers between the thumb and first two fingers to pick up tiny objects (small beads, pom-poms, seeds) one at a time and transfer them between containers, often into an ice-cube tray or small compartments. The defining picture is a slim pair of tweezers held delicately, gripping one very small item.",
+      "key_materials": [
+        "Fine tweezers",
+        "Very small objects (tiny beads, seeds)",
+        "Containers, sometimes a compartmented tray"
+      ],
+      "negative_descriptions": [
+        "NOT Tonging: Tweezers Transfer uses fine TWEEZERS for precise fingertip control on small items; Tonging uses larger tongs gripped with the whole hand for bigger, lighter objects.",
+        "NOT Dry Transfer - Hands: Tweezers Transfer uses fine tweezers held with fingertips; Dry Transfer - Hands uses bare fingers with no tool.",
+        "NOT Chopsticks Transfer: Tweezers Transfer is a single spring-hinged tool; Chopsticks Transfer uses two parallel sticks pinched together."
+      ]
+    },
+    {
+      "work_key": "pl_chopsticks",
+      "work_name": "Chopsticks Transfer",
+      "area": "practical_life",
+      "visual_description": "A child holding a pair of chopsticks (sometimes joined/training chopsticks) to pick up and move objects like pom-poms, erasers, or beans from one container to another. The defining picture is two parallel wooden or plastic sticks held between the fingers, pinching an object.",
+      "key_materials": [
+        "A pair of chopsticks (often training/joined style)",
+        "Objects to transfer (pom-poms, small erasers)",
+        "Two containers"
+      ],
+      "negative_descriptions": [
+        "NOT Tweezers Transfer: Chopsticks Transfer uses TWO PARALLEL STICKS pinched together; Tweezers Transfer is a single spring-hinged tool.",
+        "NOT Tonging: Chopsticks Transfer uses two parallel sticks pinched together; Tonging uses a spring-hinged pair of tongs squeezed by the whole hand."
+      ]
+    },
+    {
+      "work_key": "pl_pouring_dry",
+      "work_name": "Pouring Dry Materials",
+      "area": "practical_life",
+      "visual_description": "A child lifting a small pitcher or jug filled with a dry material (rice, beans, lentils) and pouring it in a controlled stream into another container, watching the level and stopping before it overflows. The defining picture is a small pitcher tipped over a bowl or jug, a stream of dry granular material flowing between them.",
+      "key_materials": [
+        "Two small pitchers/jugs or a pitcher and bowl",
+        "Dry granular material (rice, lentils, beans)",
+        "Poured in a controlled stream"
+      ],
+      "negative_descriptions": [
+        "NOT Pouring Water: Pouring Dry Materials moves DRY granular material like rice or beans; Pouring Water moves liquid and often includes a sponge for spills."
+      ]
+    },
+    {
+      "work_key": "pl_pouring_water",
+      "work_name": "Pouring Water",
+      "area": "practical_life",
+      "visual_description": "A child lifting a small pitcher filled with water and pouring it carefully into a cup or another pitcher, watching the water level rise, sometimes practicing pouring up to a marked line. A sponge is often nearby for any spills. The defining picture is water visibly streaming from a pitcher into a glass or jug.",
+      "key_materials": [
+        "A small pitcher of water",
+        "A cup or second pitcher to pour into",
+        "Often a small sponge for spills nearby"
+      ],
+      "negative_descriptions": [
+        "NOT Pouring Dry Materials: Pouring Water moves visible LIQUID; Pouring Dry Materials moves dry rice, beans, or lentils and has no sponge for spill cleanup."
+      ]
+    },
+    {
+      "work_key": "pl_sponging",
+      "work_name": "Sponging",
+      "area": "practical_life",
+      "visual_description": "A child squeezing a wet sponge over a bowl or basin, or using the sponge to soak up water from one container and squeeze it out into another, practicing the squeeze-and-release motion. The defining picture is a hand gripping a sponge over water, water dripping or being squeezed out.",
+      "key_materials": [
+        "A sponge",
+        "A bowl or basin of water",
+        "Sometimes a second empty container to transfer water into via squeezing"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_basting",
+      "work_name": "Basting (Turkey Baster)",
+      "area": "practical_life",
+      "visual_description": "A child squeezing the bulb of a turkey baster to draw up colored water (often into a tray of small cups or an ice-cube tray) and release it into another container, one squeeze-transfer at a time. The defining picture is a baster with a bulb top and long tube, drawing or releasing colored liquid.",
+      "key_materials": [
+        "A turkey baster (bulb + tube)",
+        "Colored water",
+        "A container or tray with small compartments"
+      ],
+      "negative_descriptions": [
+        "NOT Eye Dropper: Basting uses a larger BULB BASTER with a wide tube for bigger volumes; the Eye Dropper is a thin glass/plastic dropper for single drops."
+      ]
+    },
+    {
+      "work_key": "pl_dropper",
+      "work_name": "Eye Dropper",
+      "area": "practical_life",
+      "visual_description": "A child squeezing a small eye dropper to draw up colored water one drop at a time and release individual drops into small compartments (like an ice-cube tray or small cups), building fine pincer control. The defining picture is a thin dropper with a small rubber bulb top, releasing a single visible drop of colored liquid.",
+      "key_materials": [
+        "A small eye dropper",
+        "Colored water",
+        "A tray of small compartments (e.g. ice-cube tray)"
+      ],
+      "negative_descriptions": [
+        "NOT Basting: Eye Dropper uses a THIN dropper for single drops; Basting uses a large bulb turkey baster for bigger volumes of liquid."
+      ]
+    },
+    {
+      "work_key": "pl_frame_velcro",
+      "work_name": "Velcro Frame",
+      "area": "practical_life",
+      "visual_description": "A wooden frame with two panels of fabric joined by a strip of VELCRO down the middle, which the child presses together to fasten and pulls apart to open. The defining picture is a frame with a fuzzy/hooked velcro strip being pressed shut or peeled open — no buttons, snaps, or laces.",
+      "key_materials": [
+        "Wooden dressing frame",
+        "Two fabric panels joined by a velcro strip",
+        "Pressed to fasten, pulled to open"
+      ],
+      "negative_descriptions": [
+        "NOT Snaps Frame: the Velcro Frame fastens with a soft VELCRO strip pressed together; the Snaps Frame fastens with round metal/plastic SNAP studs pressed one at a time."
+      ]
+    },
+    {
+      "work_key": "pl_frame_snaps",
+      "work_name": "Snaps Frame",
+      "area": "practical_life",
+      "visual_description": "A wooden frame with two fabric panels joined by a row of round SNAP fasteners (press studs), which the child presses together one by one to close and pulls apart to open. The defining picture is a line of small round snap buttons along the fabric edge, being pressed shut one at a time.",
+      "key_materials": [
+        "Wooden dressing frame",
+        "Fabric panels joined by round snap/press studs",
+        "Pressed closed one snap at a time"
+      ],
+      "negative_descriptions": [
+        "NOT Velcro Frame: the Snaps Frame closes with a row of round SNAP STUDS pressed one at a time; the Velcro Frame closes with one continuous velcro strip."
+      ]
+    },
+    {
+      "work_key": "pl_frame_large_buttons",
+      "work_name": "Large Buttons Frame",
+      "area": "practical_life",
+      "visual_description": "A wooden frame with two fabric panels joined by a row of LARGE buttons and correspondingly large buttonholes, which the child pushes through one at a time to fasten. The defining picture is oversized buttons being pushed through wide buttonholes on a fabric strip.",
+      "key_materials": [
+        "Wooden dressing frame",
+        "Fabric panels with large buttons and buttonholes",
+        "Buttons pushed through one at a time"
+      ],
+      "negative_descriptions": [
+        "NOT Small Buttons Frame: this frame uses LARGE, easy buttons introduced first; the Small Buttons Frame uses smaller buttons for finer control, introduced later."
+      ]
+    },
+    {
+      "work_key": "pl_frame_small_buttons",
+      "work_name": "Small Buttons Frame",
+      "area": "practical_life",
+      "visual_description": "A wooden frame with two fabric panels joined by a row of SMALL buttons and matching smaller buttonholes, requiring more precise finger control than the large-button version. The defining picture is a row of small buttons being fastened through narrow buttonholes.",
+      "key_materials": [
+        "Wooden dressing frame",
+        "Fabric panels with small buttons and buttonholes",
+        "Fine pincer control required"
+      ],
+      "negative_descriptions": [
+        "NOT Large Buttons Frame: this frame uses SMALL, finer buttons for advanced control; the Large Buttons Frame uses oversized easy buttons for beginners."
+      ]
+    },
+    {
+      "work_key": "pl_frame_zipper",
+      "work_name": "Zipper Frame",
+      "area": "practical_life",
+      "visual_description": "A wooden frame with two fabric panels joined by a ZIPPER, which the child holds at the base with one hand while pulling the zipper pull up or down with the other. The defining picture is a visible zipper track and pull-tab being drawn along the fabric.",
+      "key_materials": [
+        "Wooden dressing frame",
+        "Fabric panels joined by a zipper",
+        "Zipper pull drawn up/down, base held steady"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_frame_hook_eye",
+      "work_name": "Hook and Eye Frame",
+      "area": "practical_life",
+      "visual_description": "A wooden frame with two fabric panels joined by small metal HOOK-AND-EYE fasteners, which the child fits by hooking a small curved metal hook into a small metal loop. The defining picture is a tiny metal hook being guided into a small wire loop on the fabric edge.",
+      "key_materials": [
+        "Wooden dressing frame",
+        "Fabric panels with small metal hooks and eyes (loops)",
+        "Hook guided into loop one at a time"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_frame_buckles",
+      "work_name": "Buckles Frame",
+      "area": "practical_life",
+      "visual_description": "A wooden frame with two straps joined by a BUCKLE, which the child threads through the buckle frame and fastens the prong into a hole, similar to a belt buckle. The defining picture is a strap threaded through a metal or plastic buckle with a prong through a hole.",
+      "key_materials": [
+        "Wooden dressing frame",
+        "Straps joined by a buckle (prong-and-hole style)",
+        "Strap threaded and prong secured"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_frame_safety_pins",
+      "work_name": "Safety Pins Frame",
+      "area": "practical_life",
+      "visual_description": "A wooden frame with two fabric panels fastened by SAFETY PINS, which the child opens, pushes through both layers of fabric, and closes the clasp to secure. The defining picture is a metal safety pin, open with its point exposed, being pushed through fabric and clasped shut.",
+      "key_materials": [
+        "Wooden dressing frame",
+        "Fabric panels fastened with safety pins",
+        "Pin opened, pushed through fabric, clasped shut"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_frame_lacing",
+      "work_name": "Lacing Frame",
+      "area": "practical_life",
+      "visual_description": "A wooden frame with two fabric panels joined by a series of eyelet holes and a LACE (like a shoelace), which the child threads in and out of the holes crisscross-style and ties at the top. The defining picture is a lace being woven through a row of eyelets, crisscrossing like shoe lacing.",
+      "key_materials": [
+        "Wooden dressing frame",
+        "Fabric panels with eyelet holes",
+        "A lace threaded crisscross through the eyelets"
+      ],
+      "negative_descriptions": [
+        "NOT Bow Tying Frame: the Lacing Frame focuses on THREADING a lace through eyelets crisscross-style; the Bow Tying Frame is two fixed cords/ribbons the child ties into a bow, with no threading through holes."
+      ]
+    },
+    {
+      "work_key": "pl_frame_bow_tying",
+      "work_name": "Bow Tying Frame",
+      "area": "practical_life",
+      "visual_description": "A wooden frame with two fixed cords or ribbons attached to the fabric panels, which the child crosses, loops, and pulls into a finished BOW, practicing the shoelace-tying motion. The defining picture is two cords being formed into loops and a knot to make a bow, with no eyelet holes involved.",
+      "key_materials": [
+        "Wooden dressing frame",
+        "Two fixed cords/ribbons attached to fabric",
+        "Tied into a bow (loop, cross, pull)"
+      ],
+      "negative_descriptions": [
+        "NOT Lacing Frame: the Bow Tying Frame ties two FIXED cords into a bow with no eyelets; the Lacing Frame threads a single lace in and out of a row of eyelet holes."
+      ]
+    },
+    {
+      "work_key": "pl_shoe_polishing",
+      "work_name": "Shoe Polishing",
+      "area": "practical_life",
+      "visual_description": "A child applying polish with a small brush or cloth to a real or practice shoe, buffing it to a shine with a separate buffing cloth or brush, laid out on a mat with the polish tin and cloths arranged in sequence. The defining picture is a shoe on a mat with a small tin of polish and cloths/brushes, mid-polish or mid-buff.",
+      "key_materials": [
+        "A shoe (real or practice)",
+        "A tin of shoe polish",
+        "Applying cloth/brush and separate buffing cloth/brush"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_braiding",
+      "work_name": "Braiding Frame",
+      "area": "practical_life",
+      "visual_description": "A wooden frame or stand holding three strands of rope, ribbon, or fabric fixed at the top, which the child crosses over one another in sequence (right-over-middle, left-over-middle) to form a BRAID down the length of the strands. The defining picture is three strands visibly interwoven into a braid pattern, hands crossing strands over each other.",
+      "key_materials": [
+        "A braiding frame or fixed stand",
+        "Three strands of rope/ribbon/fabric",
+        "Crossed over one another to form a braid"
+      ],
+      "negative_descriptions": [
+        "NOT Weaving: Braiding crosses three strands over each other in sequence with no loom; Weaving interlaces a horizontal strand over-under vertical threads on a loom."
+      ]
+    },
+    {
+      "work_key": "pl_hand_washing",
+      "work_name": "Hand Washing",
+      "area": "practical_life",
+      "visual_description": "A child at a small basin or sink, wetting hands, applying soap, rubbing hands together to lather, rinsing, and drying with a towel — often set up as a full sequence with a pitcher, basin, soap dish, and towel on a tray or small table. The defining picture is soapy lathered hands over a basin of water, with a pitcher and towel nearby.",
+      "key_materials": [
+        "A basin or small sink",
+        "Pitcher of water, soap, towel",
+        "Hands lathered and rinsed"
+      ],
+      "negative_descriptions": [
+        "NOT Dish Washing: Hand Washing is the child washing their OWN HANDS at a basin; Dish Washing is the child washing crockery/cutlery in a basin."
+      ]
+    },
+    {
+      "work_key": "pl_face_washing",
+      "work_name": "Face Washing",
+      "area": "practical_life",
+      "visual_description": "A child at a mirror and basin, wetting a washcloth, applying it to their face, and patting dry with a towel, following the same care-of-self sequence as hand washing but directed at the face. The defining picture is a child holding a damp washcloth to their own face near a small mirror and basin.",
+      "key_materials": [
+        "A basin, mirror, washcloth, towel",
+        "Washcloth applied to the face and patted dry"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_teeth_brushing",
+      "work_name": "Teeth Brushing",
+      "area": "practical_life",
+      "visual_description": "A child holding a toothbrush with toothpaste, brushing their own teeth in front of a mirror, then rinsing and spitting into a cup or basin. The defining picture is a toothbrush at the mouth with visible toothpaste, a mirror and cup nearby.",
+      "key_materials": [
+        "A toothbrush and toothpaste",
+        "A mirror",
+        "A cup for rinsing"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_nose_blowing",
+      "work_name": "Nose Blowing",
+      "area": "practical_life",
+      "visual_description": "A child demonstrating how to hold a tissue over the nose and blow gently, then fold and discard the tissue, practiced as a hygiene skill often with a mirror and a small basket of tissues. The defining picture is a tissue held to the nose, a small tissue basket nearby.",
+      "key_materials": [
+        "Tissues",
+        "A small basket or box for used tissues"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_coughing_sneezing",
+      "work_name": "Covering Coughs and Sneezes",
+      "area": "practical_life",
+      "visual_description": "A child practicing coughing or sneezing into the crook of the elbow (or a tissue) rather than into open hands, demonstrated as a grace-and-courtesy hygiene routine, often role-played in a small group. The defining picture is an arm raised to cover the mouth/nose at the elbow.",
+      "key_materials": [
+        "No fixed materials — a demonstrated hygiene gesture",
+        "Elbow or tissue used to cover mouth/nose"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_hair_brushing",
+      "work_name": "Hair Brushing/Combing",
+      "area": "practical_life",
+      "visual_description": "A child holding a brush or comb and brushing their own hair in front of a small mirror, working through sections from ends to roots. The defining picture is a hairbrush or comb mid-stroke through hair, with a mirror nearby.",
+      "key_materials": [
+        "A hairbrush or comb",
+        "A small mirror"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_hair_washing",
+      "work_name": "Hair Washing",
+      "area": "practical_life",
+      "visual_description": "A child (often at a sink or basin set up for the activity) applying shampoo to wet hair, working up a lather, then rinsing — usually a demonstrated or simplified version rather than a full bath, sometimes shown on a doll or model. The defining picture is lathered wet hair over a basin or sink.",
+      "key_materials": [
+        "A basin or sink set up for hair washing",
+        "Shampoo",
+        "Water for wetting and rinsing"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_dressing_self",
+      "work_name": "Dressing Oneself",
+      "area": "practical_life",
+      "visual_description": "A child independently putting on or removing an item of clothing — a jacket, shoes, socks — practicing the sequence of steps (e.g. the \"flip trick\" for a jacket) without adult help. The defining picture is a child mid-way through putting on a real garment, working the fasteners themselves.",
+      "key_materials": [
+        "Real clothing item (jacket, shoes, socks)",
+        "Child dresses/undresses independently"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_dusting",
+      "work_name": "Dusting",
+      "area": "practical_life",
+      "visual_description": "A child holding a small duster or cloth, wiping it across a shelf, table surface, or object to remove dust, working in a systematic sweep. The defining picture is a duster or soft cloth being drawn across a flat surface, visible dust or a clean streak left behind.",
+      "key_materials": [
+        "A small duster or soft cloth",
+        "A shelf, table, or object surface being dusted"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_sweeping",
+      "work_name": "Sweeping",
+      "area": "practical_life",
+      "visual_description": "A child holding a small child-sized broom, sweeping debris on the floor into a pile, then using a dustpan and small brush to collect it into a bin. The defining picture is a broom pushing a small pile of dirt/debris toward a dustpan on the floor.",
+      "key_materials": [
+        "A child-sized broom",
+        "A dustpan and small hand brush",
+        "Floor debris being swept into a pile"
+      ],
+      "negative_descriptions": [
+        "NOT Mopping: Sweeping uses a DRY broom and dustpan for debris; Mopping uses a wet mop and bucket for a wet floor surface."
+      ]
+    },
+    {
+      "work_key": "pl_mopping",
+      "work_name": "Mopping",
+      "area": "practical_life",
+      "visual_description": "A child holding a small mop, dipping it into a bucket of water, wringing it out, and wiping it across the floor in sweeping strokes to clean a wet surface. The defining picture is a mop head being pushed/pulled across the floor with a bucket of water nearby.",
+      "key_materials": [
+        "A small mop",
+        "A bucket of water",
+        "Floor wiped in sweeping strokes"
+      ],
+      "negative_descriptions": [
+        "NOT Sweeping: Mopping uses a WET mop and bucket; Sweeping uses a dry broom and dustpan with no water involved."
+      ]
+    },
+    {
+      "work_key": "pl_table_scrubbing",
+      "work_name": "Table Scrubbing",
+      "area": "practical_life",
+      "visual_description": "A child at a small table with a basin of soapy water, using a scrub brush to work the surface of the table in circular motions, then rinsing with a cloth and drying. Often set up as a full sequential activity with an apron, basin, brush, and drying cloth on a tray. The defining picture is a scrub brush being worked in circles across a wet, soapy tabletop.",
+      "key_materials": [
+        "A basin of soapy water",
+        "A scrub brush",
+        "A table surface being scrubbed in circles, then dried"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_window_washing",
+      "work_name": "Window Washing",
+      "area": "practical_life",
+      "visual_description": "A child using a spray bottle or wet cloth/sponge to clean a window or mirror, then using a squeegee or dry cloth to wipe it streak-free. The defining picture is a squeegee or cloth being drawn across a glass surface, visible cleaning liquid or streaks on the glass.",
+      "key_materials": [
+        "A spray bottle or bucket with cleaning solution",
+        "A cloth or sponge, and a squeegee or dry cloth",
+        "A window or mirror surface"
+      ],
+      "negative_descriptions": [
+        "NOT Glass Polishing: Window Washing cleans a fixed window or mirror in place, sometimes with a squeegee; Glass Polishing works on a small glass object at a table."
+      ]
+    },
+    {
+      "work_key": "pl_polishing_wood",
+      "work_name": "Wood Polishing",
+      "area": "practical_life",
+      "visual_description": "A child applying wood polish with a cloth to a wooden object (a piece of furniture, a small wooden item), rubbing it in, then buffing with a dry cloth to a shine. The defining picture is a wooden surface being rubbed with a cloth, polish visible as a slight sheen or residue.",
+      "key_materials": [
+        "Wood polish",
+        "A wooden object or surface",
+        "Application cloth and buffing cloth"
+      ],
+      "negative_descriptions": [
+        "NOT Metal Polishing: Wood Polishing treats a WOODEN item with wood polish; Metal Polishing treats a metal object (often brass/silver) with metal polish, often leaving a dark tarnish residue on the cloth."
+      ]
+    },
+    {
+      "work_key": "pl_polishing_metal",
+      "work_name": "Metal Polishing",
+      "area": "practical_life",
+      "visual_description": "A child applying metal polish (often a paste or liquid) to a metal object — a small brass or silver item — with a cloth or cotton ball, rubbing until tarnish lifts, then buffing to a bright shine with a clean cloth. The defining picture is a metal object (like a small brass bell or spoon) being polished, often with visible dark tarnish transferring to the cloth.",
+      "key_materials": [
+        "Metal polish (paste or liquid)",
+        "A metal object (brass, silver, copper)",
+        "Application cloth/cotton and buffing cloth"
+      ],
+      "negative_descriptions": [
+        "NOT Wood Polishing: Metal Polishing works on a METAL object and often shows tarnish lifting onto the cloth; Wood Polishing works on wood with a different polish and no tarnish."
+      ]
+    },
+    {
+      "work_key": "pl_polishing_glass",
+      "work_name": "Glass Polishing",
+      "area": "practical_life",
+      "visual_description": "A child applying a cleaning solution or vinegar-water mix to a glass object (a small mirror, glass vase, or pane) with a cloth, then buffing it streak-free with a separate dry or crumpled paper cloth. The defining picture is a small glass item being wiped and buffed clear, distinct from a full window.",
+      "key_materials": [
+        "Glass cleaning solution",
+        "A glass object (small mirror, vase, or pane)",
+        "Application and buffing cloths"
+      ],
+      "negative_descriptions": [
+        "NOT Window Washing: Glass Polishing works on a SMALL glass OBJECT at a table; Window Washing cleans a fixed window or mirror in place, sometimes with a squeegee."
+      ]
+    },
+    {
+      "work_key": "pl_plant_care",
+      "work_name": "Plant Care",
+      "area": "practical_life",
+      "visual_description": "A child watering a potted plant with a small watering can, and/or wiping dust from its leaves with a soft cloth or small sponge, tending to the plant's needs. The defining picture is a small watering can pouring into a potted plant, or a leaf being gently wiped clean.",
+      "key_materials": [
+        "A potted plant",
+        "A small watering can",
+        "Sometimes a soft cloth for leaf-wiping"
+      ],
+      "negative_descriptions": [
+        "NOT Flower Arranging: Plant Care tends to a LIVING POTTED PLANT (watering, leaf care); Flower Arranging cuts and arranges CUT flowers in a vase."
+      ]
+    },
+    {
+      "work_key": "pl_flower_arranging",
+      "work_name": "Flower Arranging",
+      "area": "practical_life",
+      "visual_description": "A child selecting cut flowers and trimming their stems with small scissors, then arranging them one at a time into a small vase of water. The defining picture is loose cut flowers being placed into a vase, often with scissors and water nearby.",
+      "key_materials": [
+        "Cut flowers",
+        "Small scissors for trimming stems",
+        "A vase of water"
+      ],
+      "negative_descriptions": [
+        "NOT Plant Care: Flower Arranging works with CUT flowers being trimmed and vased; Plant Care tends to a living potted plant by watering or wiping leaves."
+      ]
+    },
+    {
+      "work_key": "pl_animal_care",
+      "work_name": "Animal Care",
+      "area": "practical_life",
+      "visual_description": "A child feeding a classroom pet (fish, guinea pig, or similar small animal), refilling its water, or gently cleaning its enclosure, following a set caretaking routine. The defining picture is a child's hand offering food or water to an animal in an enclosure or tank.",
+      "key_materials": [
+        "A classroom pet and its enclosure",
+        "Food and water containers for the animal"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_dish_washing",
+      "work_name": "Dish Washing",
+      "area": "practical_life",
+      "visual_description": "A child at a basin of soapy water, washing a plate, cup, or utensil with a sponge or brush, rinsing it in a second basin of clean water, and drying it with a towel, following the wash-rinse-dry sequence. The defining picture is a dish being scrubbed in a sudsy basin, with a second rinse basin and drying rack or towel nearby.",
+      "key_materials": [
+        "Two basins (wash and rinse) or a sink",
+        "Dishes/cutlery, soap, sponge/brush",
+        "Drying rack or towel"
+      ],
+      "negative_descriptions": [
+        "NOT Hand Washing: Dish Washing cleans CROCKERY/CUTLERY; Hand Washing is the child washing their own hands."
+      ]
+    },
+    {
+      "work_key": "pl_laundry",
+      "work_name": "Laundry - Hand Washing",
+      "area": "practical_life",
+      "visual_description": "A child at a basin of soapy water, scrubbing a small piece of fabric or clothing by hand, wringing it out, rinsing, wringing again, and hanging it to dry on a small line or rack. The defining picture is wet fabric being scrubbed or wrung out over a basin, often with a small drying line nearby.",
+      "key_materials": [
+        "A basin of soapy water",
+        "A cloth or small garment",
+        "Rinsing and wringing, then a drying line/rack"
+      ],
+      "negative_descriptions": [
+        "NOT Folding Laundry: Laundry - Hand Washing scrubs and RINSES wet fabric; Folding Laundry works with already-clean, dry items being folded, no water involved."
+      ]
+    },
+    {
+      "work_key": "pl_folding_laundry",
+      "work_name": "Folding Laundry",
+      "area": "practical_life",
+      "visual_description": "A child taking clean, dry items of clothing or linens from a basket and folding each one (shirts, towels, socks) into a neat stack, following a folding sequence for each item type. The defining picture is dry clothing being folded flat on a table or mat, stacked in a pile — no water or basin involved.",
+      "key_materials": [
+        "A basket of clean, dry laundry",
+        "Items folded and stacked"
+      ],
+      "negative_descriptions": [
+        "NOT Laundry - Hand Washing: Folding Laundry works with already-clean DRY items and no water; Laundry - Hand Washing scrubs and rinses WET fabric in a basin.",
+        "NOT Folding Cloths: Folding Laundry sorts and folds a BASKET of real washed clothing/linens as a care-of-environment task; Folding Cloths is a single preliminary-exercise cloth folded to practice the motion."
+      ]
+    },
+    {
+      "work_key": "pl_greetings",
+      "work_name": "Greetings",
+      "area": "practical_life",
+      "visual_description": "Two people (children or child and adult) role-playing a greeting — making eye contact, saying \"hello,\" and sometimes shaking hands or waving, practiced as a short scripted social exchange. The defining picture is two people facing each other exchanging a greeting gesture, no materials involved.",
+      "key_materials": [
+        "No physical materials — a role-played social exchange between two people"
+      ],
+      "negative_descriptions": [
+        "NOT Introductions: Greetings is a simple hello exchange between people who may already know each other; Introductions specifically practices naming oneself and the other person when meeting for the first time."
+      ]
+    },
+    {
+      "work_key": "pl_introductions",
+      "work_name": "Introductions",
+      "area": "practical_life",
+      "visual_description": "Two children role-playing introducing themselves by name to each other or to a third person (\"This is my friend...\"), practiced as a scripted social exchange with handshakes or eye contact. The defining picture is one child gesturing toward another while speaking, introducing them by name — no materials involved.",
+      "key_materials": [
+        "No physical materials — a role-played naming/introduction exchange"
+      ],
+      "negative_descriptions": [
+        "NOT Greetings: Introductions specifically practices NAMING oneself or another person when meeting; Greetings is a simple hello exchange, not necessarily naming anyone."
+      ]
+    },
+    {
+      "work_key": "pl_please_thank_you",
+      "work_name": "Please and Thank You",
+      "area": "practical_life",
+      "visual_description": "Children role-playing a small exchange — one asking for something with \"please\" and the other responding, then saying \"thank you\" upon receiving it — practiced as a scripted courtesy routine, sometimes with a small object passed between them. The defining picture is two children in a polite request-and-response exchange, a small object being handed over.",
+      "key_materials": [
+        "Optionally a small object passed between children",
+        "No fixed materials — a scripted courtesy phrase exchange"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_excuse_me",
+      "work_name": "Saying Excuse Me",
+      "area": "practical_life",
+      "visual_description": "A child practicing walking past or interrupting a small group and saying \"excuse me\" to get past or gain attention politely, role-played in a line or crowded space. The defining picture is a child squeezing past others or gently touching an arm while saying the phrase — no materials involved.",
+      "key_materials": [
+        "No physical materials — a role-played courtesy phrase for passing or interrupting"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_interrupting",
+      "work_name": "How to Interrupt",
+      "area": "practical_life",
+      "visual_description": "A child practicing placing a gentle hand on an adult's arm or shoulder and waiting quietly to be acknowledged before speaking, rather than talking over an ongoing conversation. The defining picture is a child's hand resting on an adult's arm while the adult continues speaking, then turns to the child.",
+      "key_materials": [
+        "No physical materials — a role-played waiting/touch cue for interrupting politely"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_offering_help",
+      "work_name": "Offering and Accepting Help",
+      "area": "practical_life",
+      "visual_description": "Two children role-playing one offering assistance (\"Would you like help?\") to another who is struggling with a task, and the second either accepting or politely declining. The defining picture is one child leaning toward another's work, offering a hand or asking, with the other responding verbally.",
+      "key_materials": [
+        "No fixed materials — role-played offer-and-response around another's task"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_apologizing",
+      "work_name": "Apologizing",
+      "area": "practical_life",
+      "visual_description": "Two children role-playing a small mishap (bumping into someone, taking a turn) followed by one saying \"I'm sorry\" and the other responding, practiced as a scripted social-repair exchange. The defining picture is two children facing each other, one gesturing an apology, no materials involved.",
+      "key_materials": [
+        "No physical materials — a role-played apology exchange"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_table_manners",
+      "work_name": "Table Manners",
+      "area": "practical_life",
+      "visual_description": "A child seated at a table with a place setting, practicing eating politely — napkin on lap, cutlery held correctly, chewing with mouth closed, passing dishes — as a demonstrated dining routine. The defining picture is a child seated at a set table using cutlery and napkin correctly during a meal or snack.",
+      "key_materials": [
+        "A set table with plate, cutlery, napkin",
+        "Food or a demonstrated eating routine"
+      ],
+      "negative_descriptions": [
+        "NOT Setting the Table: Table Manners is the BEHAVIOR of eating politely at an already-set table; Setting the Table is the task of PLACING the plates, cutlery, and napkins before the meal."
+      ]
+    },
+    {
+      "work_key": "pl_table_setting",
+      "work_name": "Setting the Table",
+      "area": "practical_life",
+      "visual_description": "A child placing a plate, cutlery, cup, and napkin at each seat around a table, following a template or reference card showing correct placement, working around the table setting seat after seat. The defining picture is a child positioning a fork, plate, or napkin at a place setting, table partially set.",
+      "key_materials": [
+        "Plates, cutlery, cups, napkins",
+        "A table",
+        "Sometimes a placemat template showing correct positions"
+      ],
+      "negative_descriptions": [
+        "NOT Table Manners: Setting the Table is the task of PLACING items on the table before eating; Table Manners is the behavior of eating politely once seated."
+      ]
+    },
+    {
+      "work_key": "pl_observing_work",
+      "work_name": "Observing Another's Work",
+      "area": "practical_life",
+      "visual_description": "A child sitting or kneeling quietly at a respectful distance, watching another child work with materials on a mat, without touching or interrupting. The defining picture is one child seated back and watching, hands in lap, while another child works with materials in front of them.",
+      "key_materials": [
+        "No physical materials of its own — a demonstrated respectful-watching posture near another child's work"
+      ],
+      "negative_descriptions": [
+        "NOT Walking Around Someone's Work: Observing Another's Work is sitting STILL and watching from a respectful distance; Walking Around Someone's Work is the skill of stepping AROUND a floor mat while moving through the room."
+      ]
+    },
+    {
+      "work_key": "pl_walking_around_work",
+      "work_name": "Walking Around Someone's Work",
+      "area": "practical_life",
+      "visual_description": "A child walking through the classroom, stepping carefully around a mat or workspace on the floor where another child is working, rather than stepping on or through it. The defining picture is a child's feet visibly detouring around a floor mat with materials on it, mid-walk.",
+      "key_materials": [
+        "A floor mat with another child's materials on it (as the obstacle)",
+        "No materials of its own"
+      ],
+      "negative_descriptions": [
+        "NOT Observing Another's Work: Walking Around Someone's Work is the skill of physically STEPPING AROUND a mat while moving through the room; Observing Another's Work is sitting still and watching from a respectful distance."
+      ]
+    },
+    {
+      "work_key": "pl_sharing",
+      "work_name": "Sharing and Taking Turns",
+      "area": "practical_life",
+      "visual_description": "Two children role-playing waiting for a turn with a popular material — one working while the other waits nearby, then handing it over when finished, sometimes using a small object as a \"turn\" marker. The defining picture is one child handing a material to another who has been waiting, or two children seated near one item taking turns.",
+      "key_materials": [
+        "A shared work/material as the focus of the turn-taking",
+        "Optionally a small marker object indicating whose turn it is"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_washing_produce",
+      "work_name": "Washing Fruits and Vegetables",
+      "area": "practical_life",
+      "visual_description": "A child holding a piece of fruit or vegetable under running water or in a basin, rubbing it clean with fingers or a small brush, then placing it on a towel to dry. The defining picture is a whole fruit/vegetable being rinsed and rubbed clean over a basin or sink.",
+      "key_materials": [
+        "A basin or sink with water",
+        "Whole fruit or vegetable",
+        "A drying towel"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_spreading",
+      "work_name": "Spreading",
+      "area": "practical_life",
+      "visual_description": "A child using a small spreading knife to spread butter, jam, or a similar spread evenly across a slice of bread or a cracker, working from center outward. The defining picture is a butter-knife-style tool drawing a spread across a flat food surface.",
+      "key_materials": [
+        "A small spreading knife",
+        "A spread (butter, jam)",
+        "Bread or a cracker"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_peeling_easy",
+      "work_name": "Peeling - Easy Items",
+      "area": "practical_life",
+      "visual_description": "A child peeling a food item that comes apart by hand — such as a banana, orange, or hard-boiled egg — using fingers to pull the skin/shell away without a tool. The defining picture is a peel being pulled back by hand from a fruit or shell being cracked and removed, no peeler tool visible.",
+      "key_materials": [
+        "A hand-peelable food item (banana, orange, boiled egg)",
+        "Peeled by fingers, no tool"
+      ],
+      "negative_descriptions": [
+        "NOT Peeling - With Peeler: Easy Items are peeled BY HAND with no tool; the peeler work uses a bladed vegetable peeler on firmer produce like carrots."
+      ]
+    },
+    {
+      "work_key": "pl_peeling_tool",
+      "work_name": "Peeling - With Peeler",
+      "area": "practical_life",
+      "visual_description": "A child holding a vegetable peeler and drawing it along a firmer vegetable (carrot, potato, cucumber) in controlled strokes to remove the skin, letting peelings fall onto a cutting board or tray. The defining picture is a hand-held peeler blade against a vegetable, curled peelings visible.",
+      "key_materials": [
+        "A vegetable peeler tool",
+        "A firm vegetable (carrot, potato, cucumber)",
+        "Peelings falling onto a board or tray"
+      ],
+      "negative_descriptions": [
+        "NOT Peeling - Easy Items: this work uses a bladed PEELER TOOL on firmer produce; Easy Items are peeled entirely by hand with no tool."
+      ]
+    },
+    {
+      "work_key": "pl_cutting_soft",
+      "work_name": "Cutting Soft Foods",
+      "area": "practical_life",
+      "visual_description": "A child using a child-safe knife to cut a soft food item (banana, boiled egg, soft cheese) into slices or pieces on a cutting board, using a controlled rocking or pressing motion. The defining picture is a child-safe blade slicing through a clearly soft food, pieces falling apart easily.",
+      "key_materials": [
+        "A child-safe knife",
+        "A cutting board",
+        "A soft food item (banana, boiled egg)"
+      ],
+      "negative_descriptions": [
+        "NOT Cutting Harder Foods: Cutting Soft Foods slices items that give way EASILY (banana, egg); Cutting Harder Foods requires more pressure/sawing on firmer produce like apple or carrot."
+      ]
+    },
+    {
+      "work_key": "pl_cutting_hard",
+      "work_name": "Cutting Harder Foods",
+      "area": "practical_life",
+      "visual_description": "A child using a child-safe knife with more pressure or a sawing motion to cut a firmer food item (apple, carrot, cucumber) into slices on a cutting board, requiring more controlled force than soft-food cutting. The defining picture is a blade pressed firmly through a visibly firm food, requiring more effort.",
+      "key_materials": [
+        "A child-safe knife (often slightly sturdier)",
+        "A cutting board",
+        "A firm food item (apple, carrot, cucumber)"
+      ],
+      "negative_descriptions": [
+        "NOT Cutting Soft Foods: Cutting Harder Foods needs more PRESSURE/sawing on firm produce; Cutting Soft Foods slices items that give way easily like banana or boiled egg."
+      ]
+    },
+    {
+      "work_key": "pl_grating",
+      "work_name": "Grating",
+      "area": "practical_life",
+      "visual_description": "A child holding a food item (cheese, carrot) and drawing it down across a hand-held grater over a bowl or plate, producing small shredded pieces that collect underneath. The defining picture is a grater with visible teeth/holes, shredded food falling from it into a container.",
+      "key_materials": [
+        "A hand-held grater",
+        "A food item (cheese, carrot)",
+        "A bowl or plate to catch the shreds"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_juicing",
+      "work_name": "Juicing",
+      "area": "practical_life",
+      "visual_description": "A child pressing a halved citrus fruit (orange, lemon) onto a hand juicer/reamer and twisting to extract juice into a bowl or cup below, with pulp and juice visibly separating. The defining picture is a citrus half being pressed and twisted on a juicer, juice collecting in a container underneath.",
+      "key_materials": [
+        "A hand juicer/reamer",
+        "A halved citrus fruit",
+        "A bowl or cup to collect the juice"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_cracking_eggs",
+      "work_name": "Cracking Eggs",
+      "area": "practical_life",
+      "visual_description": "A child tapping an egg against the edge of a bowl to crack the shell, then using both hands to pull the shell apart and let the contents drop cleanly into the bowl. The defining picture is a cracked eggshell over a bowl, egg white and yolk visibly falling in.",
+      "key_materials": [
+        "A whole egg",
+        "A bowl",
+        "Shell cracked and pulled apart by hand"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_making_snack",
+      "work_name": "Making a Snack",
+      "area": "practical_life",
+      "visual_description": "A child assembling a simple snack — spreading, cutting, or combining a few food-preparation steps in sequence (e.g. spreading butter on bread and adding a topping) — to produce a finished small food item on a plate. The defining picture is a completed or near-complete simple snack (like a sandwich or fruit plate) with the child's prep materials still visible around it.",
+      "key_materials": [
+        "Various food-prep materials from earlier steps (bread, spreads, fruit)",
+        "A plate for the finished snack"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_threading_beads",
+      "work_name": "Threading Beads",
+      "area": "practical_life",
+      "visual_description": "A child holding a string or lace with a stiffened end (or a needle) and threading beads onto it one at a time, sliding each bead down the string to build a chain or necklace. The defining picture is loose beads on a tray with a string mid-thread, several beads already slid onto it.",
+      "key_materials": [
+        "A string or lace, sometimes with a needle",
+        "Loose beads with holes",
+        "Beads threaded one at a time onto the string"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_sewing_cards",
+      "work_name": "Sewing Cards",
+      "area": "practical_life",
+      "visual_description": "A child holding a stiff card punched with a row of holes around its edge or in a pattern, and threading a blunt needle with yarn or lace in and out of the holes to \"sew\" along the pattern. The defining picture is a punched card with a yarn/lace threaded partway through its holes in a running line.",
+      "key_materials": [
+        "A punched card (with a picture or pattern outline)",
+        "Yarn or lace, sometimes with a blunt needle",
+        "Threaded in and out of the punched holes"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_punching",
+      "work_name": "Paper Punching",
+      "area": "practical_life",
+      "visual_description": "A child using a small hole punch or a needle-like punching tool (pushed into a cork or foam board beneath) to punch a series of holes along an outline drawn on paper, working the outline hole by hole. The defining picture is a paper with a dotted line of punched holes forming a shape, a punch tool nearby.",
+      "key_materials": [
+        "A small hole punch or push-pin tool",
+        "Paper with an outline pattern",
+        "A cork or foam board underneath to protect the surface"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_running_stitch",
+      "work_name": "Running Stitch",
+      "area": "practical_life",
+      "visual_description": "A child holding a needle and thread, pushing it in and out of a piece of fabric in a straight line to create a simple RUNNING STITCH — an evenly spaced dashed line of stitches. The defining picture is a needle mid-stitch through fabric with a visible line of evenly spaced straight stitches behind it.",
+      "key_materials": [
+        "A needle and thread",
+        "A piece of fabric (often with drawn guide lines)",
+        "A simple straight in-and-out stitch pattern"
+      ],
+      "negative_descriptions": [
+        "NOT Cross Stitch: Running Stitch produces a simple straight DASHED line of stitches; Cross Stitch produces small X-shaped crossed stitches."
+      ]
+    },
+    {
+      "work_key": "pl_cross_stitch",
+      "work_name": "Cross Stitch",
+      "area": "practical_life",
+      "visual_description": "A child holding a needle and thread, forming small X-shaped stitches across a piece of fabric by crossing two diagonal stitches at each point, building a row of X patterns. The defining picture is a line of small X-shaped stitches on fabric, distinct from a simple straight-line stitch.",
+      "key_materials": [
+        "A needle and thread",
+        "A piece of fabric (often gridded/aida cloth)",
+        "X-shaped crossed stitches"
+      ],
+      "negative_descriptions": [
+        "NOT Running Stitch: Cross Stitch forms small X-SHAPED crossed stitches; Running Stitch is a simple straight in-and-out dashed line."
+      ]
+    },
+    {
+      "work_key": "pl_button_sewing",
+      "work_name": "Sewing a Button",
+      "area": "practical_life",
+      "visual_description": "A child holding a needle and thread, passing it up and down through the holes of a button placed on fabric, securing the button in place with several passes, and tying off at the end. The defining picture is a needle and thread visibly passing through a button's holes onto fabric.",
+      "key_materials": [
+        "A needle and thread",
+        "A button (with holes)",
+        "Fabric the button is sewn onto"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "pl_weaving",
+      "work_name": "Weaving",
+      "area": "practical_life",
+      "visual_description": "A child working on a small hand loom or cardboard frame with vertical warp threads strung across it, passing a shuttle or strip of yarn/fabric horizontally over and under the warp threads to build up a woven pattern. The defining picture is horizontal strands interlaced over-under through a set of vertical threads on a frame.",
+      "key_materials": [
+        "A small loom or cardboard weaving frame",
+        "Vertical warp threads strung across it",
+        "A shuttle or yarn/fabric strip woven over-under horizontally"
+      ],
+      "negative_descriptions": [
+        "NOT Braiding Frame: Weaving interlaces a horizontal strand OVER-UNDER a set of VERTICAL threads on a loom; Braiding crosses three strands over each other in sequence with no loom or vertical warp."
+      ]
+    }
+  ]
+}

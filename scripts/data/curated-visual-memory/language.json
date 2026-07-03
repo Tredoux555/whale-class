@@ -1,0 +1,661 @@
+{
+  "_note": "CURATED global visual memory — LANGUAGE area. Opus-authored, spec-grounded discriminative checklists for standard Montessori works. source='curated' and description_confidence (0.95) set by seed-global-visual-memory.mjs. negative_descriptions lead with the literal 'NOT <Work Name>:' for the validator. Sandpaper Letters carries the mutual negative against Sandpaper Numerals (math) — the new cross-area pair registered this session — and against the Moveable Alphabet; Metal Insets carries the mutual negative against the Geometric Cabinet (sensorial).",
+  "entries": [
+    {
+      "work_key": "la_sandpaper_letters",
+      "work_name": "Sandpaper Letters",
+      "area": "language",
+      "visual_description": "Single alphabet letters cut from rough sandpaper, each mounted one-per-board on a smooth wooden board — vowels typically on PINK boards and consonants on BLUE boards. The child traces one rough letter with two fingers while saying its sound, then replaces it; boards are often stored upright in a wooden box. The defining picture is a single textured LETTER fixed on a pink or blue board being finger-traced — one letter per board, not loose and not built into words.",
+      "key_materials": [
+        "Smooth wooden boards, one letter each",
+        "Sandpaper alphabet letters (rough to the touch)",
+        "Vowels on pink boards, consonants on blue boards (typical)",
+        "Traced with two fingers while sounding out"
+      ],
+      "negative_descriptions": [
+        "NOT Sandpaper Numerals: Sandpaper Letters show alphabet CHARACTERS on PINK (vowel) or BLUE (consonant) boards; Sandpaper Numerals show DIGITS 0-9 on GREEN boards.",
+        "NOT Moveable Alphabet: Sandpaper Letters are single rough letters FIXED one-per-board and traced with fingers; the Moveable Alphabet is a compartmented box of many LOOSE cut-out letters used to BUILD words on a mat."
+      ]
+    },
+    {
+      "work_key": "la_moveable_alphabet",
+      "work_name": "Moveable Alphabet",
+      "area": "language",
+      "visual_description": "A large wooden box with a compartment for every letter, holding MANY loose cut-out letters (often colour-coded, commonly consonants one colour and vowels another). The child pulls out individual letters and lays them left-to-right on a mat to BUILD words and sentences from the sounds they hear. The defining picture is dozens of loose smooth letters spread on a mat forming words — movable pieces, not letters fixed on boards.",
+      "key_materials": [
+        "Large compartmented wooden box, one section per letter",
+        "Many loose cut-out letters (smooth, colour-coded)",
+        "Letters laid on a mat to build words",
+        "Encoding work — building words from sounds"
+      ],
+      "negative_descriptions": [
+        "NOT Sandpaper Letters: the Moveable Alphabet is a box of many LOOSE letters arranged on a mat to build words; Sandpaper Letters are single rough letters FIXED one-per-board on pink or blue boards and traced with fingers."
+      ]
+    },
+    {
+      "work_key": "la_metal_insets",
+      "work_name": "Metal Insets",
+      "area": "language",
+      "visual_description": "Ten flat metal geometric shapes, each a square metal frame (one shape per frame — circle, square, triangle, oval, curvilinear figures, etc.) usually displayed on two small sloped stands. The child pins paper over a frame or inset, traces its outline with a coloured pencil, then fills the shape with pencil lines — a writing-preparation exercise producing coloured drawings. The defining picture is separate metal shape frames used with paper and coloured pencils for tracing, not a cabinet of wooden shapes.",
+      "key_materials": [
+        "Ten metal square frames, one geometric shape each",
+        "Two small sloped display stands",
+        "Used with paper and coloured pencils",
+        "A writing-preparation tracing work"
+      ],
+      "negative_descriptions": [
+        "NOT Geometric Cabinet: Metal Insets are ten separate metal square frames (one shape each) on small stands, traced with coloured pencils on paper for writing preparation; the Geometric Cabinet is a wide multi-drawer wooden cabinet of flat shape insets used for shape matching."
+      ]
+    },
+    {
+      "work_key": "la_enrichment_vocabulary",
+      "work_name": "Vocabulary Enrichment",
+      "area": "language",
+      "visual_description": "A small basket, tray, or set of nomenclature-style picture/object cards on a mat, focused on a single theme (fruits, tools, vehicles, animal parts) rather than the classic three-part-card format. The teacher and child sit together naming real objects or realistic images one at a time, building specific vocabulary through repetition. The defining picture is a themed grouping of real miniatures or clear photographs on a mat with a child naming them one by one — casual, conversational, not a boxed reading system.",
+      "key_materials": [
+        "Small basket or tray of themed objects or picture cards",
+        "Real miniatures or realistic photographs",
+        "Single-topic grouping (fruits, tools, community helpers, etc.)",
+        "Adult names item, child repeats"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "la_classified_cards",
+      "work_name": "Classified Cards (Nomenclature Cards)",
+      "area": "language",
+      "visual_description": "A set of matching real-object miniatures paired with printed picture cards, plus separate small printed label cards bearing only the object's name — this is the three-part card system: object/picture, picture-only card, label-only card. The child matches label to picture to object, laid out in three columns on a mat. The defining picture is small rectangular cards with a single labeled image next to identical unlabeled picture cards and a stack of thin word-strip labels.",
+      "key_materials": [
+        "Picture cards with printed labels (control cards)",
+        "Matching picture-only cards (no label)",
+        "Separate word-strip label cards",
+        "Laid out in three-column matching format on a mat"
+      ],
+      "negative_descriptions": [
+        "NOT Object to Picture Matching: Classified Cards use the full three-part system (labeled card, unlabeled picture card, separate word label) for reading vocabulary building; Object to Picture Matching pairs a REAL object with its photograph only, with no label cards involved."
+      ]
+    },
+    {
+      "work_key": "la_object_picture_matching",
+      "work_name": "Object to Picture Matching",
+      "area": "language",
+      "visual_description": "A small tray or basket holding a handful of real miniature objects alongside a set of picture cards showing those exact objects. The child places each miniature directly onto or beside its matching picture. The defining picture is real three-dimensional miniatures sitting next to or on top of flat picture cards, one-to-one — no separate word labels present, unlike the three-part card system.",
+      "key_materials": [
+        "Small real miniature objects",
+        "Matching picture cards (no text labels)",
+        "Tray or basket for objects",
+        "One-to-one object-to-image pairing"
+      ],
+      "negative_descriptions": [
+        "NOT Classified Cards (Nomenclature Cards): Object to Picture Matching pairs real miniatures directly with picture-only cards and has no label cards; Classified Cards is the three-part system with a labeled card, unlabeled picture card, and separate printed word label."
+      ]
+    },
+    {
+      "work_key": "la_sound_games",
+      "work_name": "Sound Games (I Spy)",
+      "area": "language",
+      "visual_description": "No dedicated apparatus — a small group of children sitting in a circle or cluster on the floor or rug with the teacher, sometimes with a basket of small objects gathered nearby whose names begin or end with the target sound. The teacher says 'I spy with my sound something that starts with...' and children point to or fetch matching objects. The defining picture is a circle-time scene with scattered small objects on the floor and children listening and pointing, no boards, cards, or boxes.",
+      "key_materials": [
+        "Small everyday objects with clear beginning/ending sounds",
+        "No printed materials — purely oral/auditory",
+        "Small group or circle-time setting",
+        "Objects gathered on a rug or floor"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "la_rhyming",
+      "work_name": "Rhyming Activities",
+      "area": "language",
+      "visual_description": "A small collection of picture cards or objects grouped into matching rhyming-sound pairs (cat/hat, bee/tree) spread on a mat, or a rhyming picture book being read aloud. The child sorts or pairs images by their ending sound rather than their meaning. The defining picture is picture cards being grouped into pairs that sound alike at the end, sometimes with a simple picture-matching layout distinct from vocabulary or sound-game work.",
+      "key_materials": [
+        "Picture cards depicting rhyming word pairs",
+        "Sometimes a rhyming storybook",
+        "Cards grouped/paired by ending sound, not meaning",
+        "Mat-based sorting layout"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "la_storytelling",
+      "work_name": "Storytelling and Sequencing",
+      "area": "language",
+      "visual_description": "A set of picture cards depicting a story's events laid out in a row or grid, being arranged into the correct chronological order by the child, or a child/teacher narrating a story using a simple prop or picture set. The defining picture is a horizontal sequence of 3-6 picture cards being ordered left to right to tell a story, distinct from single-theme vocabulary cards.",
+      "key_materials": [
+        "Sequential picture cards (3-6 images telling a story)",
+        "Cards arranged left to right in order",
+        "Sometimes simple story props or a picture book",
+        "Emphasis on beginning-middle-end ordering"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "la_poems_songs",
+      "work_name": "Poems, Songs, and Fingerplays",
+      "area": "language",
+      "visual_description": "A small group or whole-class circle-time scene with children reciting a poem, singing, or performing hand and finger movements together, often led by the teacher with no physical apparatus at all. Occasionally a simple picture card or lyric sheet is held up as a prompt. The defining picture is children with hands raised or moving in unison during a group verbal/musical activity, not seated at individual table work.",
+      "key_materials": [
+        "No standard apparatus — oral and physical performance",
+        "Group circle-time formation",
+        "Occasional lyric card or picture prompt",
+        "Coordinated hand/finger movements"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "la_conversation",
+      "work_name": "Conversation and Discussion",
+      "area": "language",
+      "visual_description": "A child and teacher (or small group) seated together talking, with no materials on the table at all — an open-ended verbal exchange about the child's ideas, experiences, or a picture/object used purely as a conversation starter. The defining picture is a relaxed one-on-one or small-group seated exchange with empty hands or a single prop, distinct from any structured card or board work.",
+      "key_materials": [
+        "No dedicated apparatus",
+        "Seated one-on-one or small-group format",
+        "Open dialogue, question and answer",
+        "Occasional single object/picture as a conversation prompt"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "la_sand_tray",
+      "work_name": "Sand Tray Writing",
+      "area": "language",
+      "visual_description": "A shallow rectangular tray filled with a thin, even layer of fine sand or salt, in which the child draws letter shapes with a single finger, then shakes the tray flat to try again. The defining picture is a finger dragging a groove through loose granular material inside a low-sided tray — no paper, pencil, or chalk involved.",
+      "key_materials": [
+        "Shallow tray with a thin layer of sand or salt",
+        "Bare finger used as the writing tool",
+        "Tray shaken flat to erase and repeat",
+        "No paper or writing implement present"
+      ],
+      "negative_descriptions": [
+        "NOT Chalkboard Writing: Sand Tray Writing uses a bare finger dragging through loose sand or salt in a shallow tray; Chalkboard Writing uses a chalk stick making a mark on a hard slate or board surface.",
+        "NOT Handwriting on Paper: Sand Tray Writing has no paper or pencil at all — letters are traced in granular material with a finger; Handwriting on Paper uses a pencil or pen making permanent marks on paper."
+      ]
+    },
+    {
+      "work_key": "la_chalkboard_writing",
+      "work_name": "Chalkboard Writing",
+      "area": "language",
+      "visual_description": "A small handheld slate or a wall-mounted chalkboard, on which the child writes letters or words using a stick of chalk, often wiping the surface clean with a cloth or eraser afterward. The defining picture is white or coloured chalk marks on a dark slate/board surface, with a chalk stick visible in the child's hand — distinct from sand (granular, finger-traced) and paper (permanent pencil marks).",
+      "key_materials": [
+        "Small handheld slate or wall chalkboard",
+        "Stick of chalk",
+        "Cloth or eraser for wiping the surface",
+        "Chalk marks visible on a dark board"
+      ],
+      "negative_descriptions": [
+        "NOT Sand Tray Writing: Chalkboard Writing uses a chalk stick on a hard dark slate/board; Sand Tray Writing uses a bare finger dragged through loose sand or salt in a shallow tray.",
+        "NOT Handwriting on Paper: Chalkboard Writing marks are made with chalk on a board and can be wiped away; Handwriting on Paper uses pencil or pen making a permanent mark on a paper sheet."
+      ]
+    },
+    {
+      "work_key": "la_handwriting_paper",
+      "work_name": "Handwriting on Paper",
+      "area": "language",
+      "visual_description": "A sheet of lined or blank paper on a table, with a pencil or pen in the child's hand, producing permanent written letters, words, or short sentences — often using a handwriting practice booklet with dotted guide lines. The defining picture is a pencil making ink/graphite marks on paper with visible ruled lines, distinct from erasable sand or chalk surfaces.",
+      "key_materials": [
+        "Paper (lined, dotted-guide, or plain)",
+        "Pencil or pen",
+        "Permanent written marks",
+        "Sometimes a handwriting practice booklet"
+      ],
+      "negative_descriptions": [
+        "NOT Sand Tray Writing: Handwriting on Paper uses pencil on paper for permanent marks; Sand Tray Writing uses a bare finger in loose sand with no paper or pencil.",
+        "NOT Chalkboard Writing: Handwriting on Paper is pencil/pen marks on paper; Chalkboard Writing is chalk marks on a wipeable slate or board."
+      ]
+    },
+    {
+      "work_key": "la_creative_writing",
+      "work_name": "Creative Writing",
+      "area": "language",
+      "visual_description": "A child seated with paper or a notebook, independently composing original sentences or a short story in their own words — often with a picture prompt, journal, or blank storybook template nearby, and visibly more free-form, multi-line text than a single copied word or sentence. The defining picture is a child writing multiple original sentences or a small illustrated story on paper, without a control card being copied.",
+      "key_materials": [
+        "Paper, notebook, or blank storybook template",
+        "Pencil or pen",
+        "Multiple original sentences composed independently",
+        "Sometimes a picture prompt for inspiration"
+      ],
+      "negative_descriptions": [
+        "NOT Handwriting on Paper: Creative Writing involves the child COMPOSING original multi-sentence content independently; Handwriting on Paper is letter/word formation practice, often copying from a model or guide line."
+      ]
+    },
+    {
+      "work_key": "la_pink_object_box",
+      "work_name": "Pink Object Box",
+      "area": "language",
+      "visual_description": "A small wooden box or basket labeled pink, containing simple real miniature objects whose names are three-letter phonetic (CVC) words — e.g. cat, dog, pen — used with the Moveable Alphabet or sandpaper letters to build the object's name. The defining picture is real small objects grouped together, each easily spelled with three simple sounds, distinct from card-based Pink Series work.",
+      "key_materials": [
+        "Small wooden box (often pink-labeled)",
+        "Real miniature objects with 3-letter phonetic names",
+        "Used alongside Moveable Alphabet for word building",
+        "No cards — objects only"
+      ],
+      "negative_descriptions": [
+        "NOT Pink Series (CVC Words): the Pink Object Box holds REAL miniature objects for building their names; Pink Series uses printed WORD CARDS matched to picture cards, no physical objects.",
+        "NOT Blue Object Box: Pink Object Box objects have simple three-letter (CVC) names; Blue Object Box objects have names with consonant blends or digraphs (more complex phonetic structure)."
+      ]
+    },
+    {
+      "work_key": "la_pink_series",
+      "work_name": "Pink Series (CVC Words)",
+      "area": "language",
+      "visual_description": "A set of small printed word cards showing simple three-letter phonetic (CVC) words (cat, sun, hop) paired with matching picture cards, arranged on a mat in a card-matching or word-building layout. The defining picture is short printed word cards next to small picture cards, all featuring simple consonant-vowel-consonant words — flat printed cards, not real objects.",
+      "key_materials": [
+        "Printed word cards with simple 3-letter phonetic words",
+        "Matching picture cards",
+        "Mat-based word-to-picture matching layout",
+        "No real objects present"
+      ],
+      "negative_descriptions": [
+        "NOT Pink Object Box: Pink Series uses printed WORD CARDS and picture cards; Pink Object Box uses REAL miniature objects, no cards.",
+        "NOT Blue Series (Blends): Pink Series word cards contain simple three-letter phonetic words; Blue Series word cards contain longer words with consonant blends or digraphs (e.g. 'frog', 'shop')."
+      ]
+    },
+    {
+      "work_key": "la_blue_object_box",
+      "work_name": "Blue Object Box",
+      "area": "language",
+      "visual_description": "A small wooden box or basket labeled blue, containing real miniature objects whose names include consonant blends or simple digraphs (frog, clock, ship) — more phonetically complex than the Pink Object Box. The defining picture is grouped real objects with slightly longer, blended-sound names, no cards involved.",
+      "key_materials": [
+        "Small wooden box (often blue-labeled)",
+        "Real miniature objects with blend/digraph names",
+        "Used with Moveable Alphabet for word building",
+        "No cards — objects only"
+      ],
+      "negative_descriptions": [
+        "NOT Pink Object Box: Blue Object Box objects have names with consonant blends/digraphs (more complex); Pink Object Box objects have simple 3-letter CVC names.",
+        "NOT Blue Series (Blends): the Blue Object Box holds REAL miniature objects; Blue Series uses printed WORD CARDS matched to picture cards, no physical objects.",
+        "NOT Green Object Box: Blue Object Box focuses on blends/digraphs; Green Object Box objects have names involving advanced phonograms (multi-letter sound patterns like 'igh', 'ough')."
+      ]
+    },
+    {
+      "work_key": "la_blue_series",
+      "work_name": "Blue Series (Blends)",
+      "area": "language",
+      "visual_description": "Printed word cards showing words with consonant blends or simple digraphs (frog, clock, ship, chest) paired with matching picture cards, laid out on a mat similarly to the Pink Series but with visibly longer or more complex printed words. The defining picture is flat word cards with blended-consonant words next to matching pictures, no real objects.",
+      "key_materials": [
+        "Printed word cards with blend/digraph words",
+        "Matching picture cards",
+        "Mat-based word-to-picture matching layout",
+        "No real objects present"
+      ],
+      "negative_descriptions": [
+        "NOT Pink Series (CVC Words): Blue Series word cards contain blend/digraph words (frog, ship); Pink Series word cards contain simple 3-letter CVC words (cat, sun).",
+        "NOT Blue Object Box: Blue Series uses printed WORD CARDS and picture cards; Blue Object Box uses REAL miniature objects, no cards.",
+        "NOT Green Series (Phonograms): Blue Series covers consonant blends and simple digraphs; Green Series covers more advanced multi-letter phonogram patterns (e.g. 'igh', 'ough', 'tion')."
+      ]
+    },
+    {
+      "work_key": "la_phonogram_intro",
+      "work_name": "Phonogram Introduction",
+      "area": "language",
+      "visual_description": "A small set of cards, each showing a single multi-letter sound pattern (phonogram, e.g. 'ai', 'oo', 'sh') printed large, often paired with a key picture word illustrating that sound, presented one at a time in a simple three-period-lesson format. The defining picture is oversized letter-combination cards being introduced individually, distinct from the larger word-card sets of the Green Series.",
+      "key_materials": [
+        "Individual phonogram cards (large multi-letter patterns)",
+        "Sometimes paired key-word picture cues",
+        "Presented one phonogram at a time",
+        "Three-period-lesson introduction format"
+      ],
+      "negative_descriptions": [
+        "NOT Green Series (Phonograms): Phonogram Introduction presents SINGLE phonogram cards one at a time as a naming lesson; Green Series uses full WORD CARDS containing those phonograms matched to pictures, as an applied reading exercise."
+      ]
+    },
+    {
+      "work_key": "la_green_object_box",
+      "work_name": "Green Object Box",
+      "area": "language",
+      "visual_description": "A small wooden box or basket labeled green, containing real miniature objects whose names involve advanced phonogram patterns (multi-letter sound combinations like 'ea' in 'leaf' or 'igh' in 'light') — more complex than Blue Object Box items. The defining picture is grouped real objects with names built from advanced spelling patterns, no cards involved.",
+      "key_materials": [
+        "Small wooden box (often green-labeled)",
+        "Real miniature objects with advanced phonogram names",
+        "Used with Moveable Alphabet for word building",
+        "No cards — objects only"
+      ],
+      "negative_descriptions": [
+        "NOT Blue Object Box: Green Object Box objects involve advanced phonogram patterns; Blue Object Box objects involve simpler consonant blends/digraphs.",
+        "NOT Green Series (Phonograms): the Green Object Box holds REAL miniature objects; Green Series uses printed WORD CARDS matched to picture cards, no physical objects."
+      ]
+    },
+    {
+      "work_key": "la_green_series",
+      "work_name": "Green Series (Phonograms)",
+      "area": "language",
+      "visual_description": "Printed word cards featuring advanced multi-letter phonogram spelling patterns (light, bread, night, chain) paired with matching picture cards, laid out on a mat in the same style as Pink and Blue Series but with visibly longer and more complex printed words. The defining picture is flat word cards with advanced phonogram spellings next to matching pictures, no real objects.",
+      "key_materials": [
+        "Printed word cards with advanced phonogram spellings",
+        "Matching picture cards",
+        "Mat-based word-to-picture matching layout",
+        "No real objects present"
+      ],
+      "negative_descriptions": [
+        "NOT Blue Series (Blends): Green Series word cards use advanced multi-letter phonogram patterns (light, bread); Blue Series word cards use simpler consonant blends/digraphs (frog, ship).",
+        "NOT Green Object Box: Green Series uses printed WORD CARDS and picture cards; Green Object Box uses REAL miniature objects, no cards.",
+        "NOT Phonogram Introduction: Green Series presents full WORD CARDS applying phonograms in context; Phonogram Introduction presents SINGLE isolated phonogram cards one at a time."
+      ]
+    },
+    {
+      "work_key": "la_puzzle_words",
+      "work_name": "Puzzle Words (Sight Words)",
+      "area": "language",
+      "visual_description": "A set of small word cards showing common irregular high-frequency words (said, the, was, one) that cannot be sounded out phonetically, often kept in a labeled box or on a ring, read and memorized as whole-word 'puzzles.' The defining picture is a stack or ring of short irregular-spelling word cards being read by sight, without matching picture cards or objects.",
+      "key_materials": [
+        "Small printed word cards with irregular spellings",
+        "No matching picture or object cards",
+        "Sometimes bound on a ring or in a labeled box",
+        "Read by whole-word recognition, not sounded out"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "la_reading_analysis",
+      "work_name": "Reading Analysis",
+      "area": "language",
+      "visual_description": "Printed sentence strips or short passages laid out with the child breaking each sentence down into its grammatical function words, sometimes using small grammar symbol cutouts placed above the words to mark parts of speech within a full sentence. The defining picture is a full printed sentence being visually dissected with grammar symbols or underlines, more complex than single-word phonics cards.",
+      "key_materials": [
+        "Sentence strips or short passages",
+        "Grammar symbol markers placed above words",
+        "Analysis of sentence structure and function",
+        "Mat-based sentence layout"
+      ],
+      "negative_descriptions": [
+        "NOT Sentence Analysis: Reading Analysis focuses on decoding and understanding meaning within a sentence during reading; Sentence Analysis (grammar work) diagrams the LOGICAL/grammatical relationships between sentence parts using specific arrows and symbol charts, typically at a later stage."
+      ]
+    },
+    {
+      "work_key": "la_reading_classification",
+      "work_name": "Reading Classification",
+      "area": "language",
+      "visual_description": "A set of word cards or short phrase labels being sorted into labeled category trays, folders, or headed columns on a mat (e.g. animals, plants, tools) based on their meaning, read silently and classified without pictures as a guide. The defining picture is small printed labels being physically sorted into distinct grouped piles or folders by topic.",
+      "key_materials": [
+        "Printed word or phrase cards (no pictures)",
+        "Category folders, trays, or headed columns",
+        "Sorting by meaning after reading",
+        "Mat-based classification layout"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "la_command_cards",
+      "work_name": "Command Cards (Action Reading)",
+      "area": "language",
+      "visual_description": "A stack or box of small folded cards, each printed with a short action instruction ('Hop three times', 'Touch your nose'), which the child reads silently and then physically performs — often stored folded so the action is a surprise until read. The defining picture is a child reading a small card and then performing the described physical action, or a labeled box of folded command cards on a mat.",
+      "key_materials": [
+        "Small folded action-instruction cards",
+        "Box or basket for storing cards",
+        "Child physically performs the read command",
+        "No picture cards — text only"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "la_interpretive_reading",
+      "work_name": "Interpretive Reading",
+      "area": "language",
+      "visual_description": "A child reading a short printed passage or poem aloud with attention to expression, tone, and phrasing — sometimes reading to a small audience of peers or with a script-like card, distinguishable by the performative, expressive delivery rather than silent decoding. The defining picture is a child standing or seated reading expressively from a card or book to others, often with visible engagement/gesture.",
+      "key_materials": [
+        "Printed passage, poem, or short script",
+        "Read aloud with expression and tone",
+        "Sometimes performed to a small audience",
+        "Emphasis on comprehension shown through delivery"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "la_silent_reading",
+      "work_name": "Silent Reading",
+      "area": "language",
+      "visual_description": "A child sitting alone with a book or reading card, eyes on the text, no vocalization, often followed by acting out or drawing what was read as proof of comprehension. The defining picture is a solitary child quietly absorbed in a book or card with no speaking, distinct from the performative reading-aloud of Interpretive Reading.",
+      "key_materials": [
+        "Book, passage, or reading card",
+        "No vocalization — silent, independent reading",
+        "Sometimes followed by an action or drawing to show comprehension",
+        "Solitary work"
+      ],
+      "negative_descriptions": [
+        "NOT Interpretive Reading: Silent Reading is solitary and non-vocal; Interpretive Reading is read ALOUD with expression, often to an audience."
+      ]
+    },
+    {
+      "work_key": "la_noun_intro",
+      "work_name": "Introduction to the Noun",
+      "area": "language",
+      "visual_description": "A set of word or phrase cards labeled with a large BLACK triangle (pyramid) symbol placed directly above each noun, used with real objects or a farm/box exercise where the teacher introduces the noun as 'the name of a person, place, or thing.' The defining picture is a black triangular symbol sitting above a printed word on a card, often the very first grammar symbol introduced.",
+      "key_materials": [
+        "Word/phrase cards with a large BLACK triangle symbol above the noun",
+        "Real objects sometimes used (the 'noun farm' box exercise)",
+        "First grammar symbol introduced in sequence",
+        "Symbol is a solid black triangle/pyramid shape"
+      ],
+      "negative_descriptions": [
+        "NOT Introduction to the Article: the Noun symbol is a solid BLACK triangle; the Article symbol is a small light-blue triangle placed beside the noun triangle, introduced together as a pair but distinguishable by colour.",
+        "NOT Introduction to the Adjective: the Noun symbol is a large solid BLACK triangle; the Adjective symbol is a smaller dark-blue triangle placed just in front of the noun's triangle."
+      ]
+    },
+    {
+      "work_key": "la_article_intro",
+      "work_name": "Introduction to the Article",
+      "area": "language",
+      "visual_description": "Word cards showing a noun preceded by 'a', 'an', or 'the', marked with a small LIGHT BLUE triangle symbol placed just in front of the noun's black triangle — introduced as a companion lesson to the noun, often using the same object-box exercise with articles added. The defining picture is a small pale-blue triangle sitting immediately in front of (to the left of) a black triangle above the words.",
+      "key_materials": [
+        "Word cards with 'a/an/the' plus noun",
+        "Small LIGHT BLUE triangle symbol before the black noun triangle",
+        "Often paired directly with the Noun lesson",
+        "Same object-box format as the Noun introduction"
+      ],
+      "negative_descriptions": [
+        "NOT Introduction to the Noun: the Article symbol is a small LIGHT BLUE triangle placed in front of the noun; the Noun symbol itself is the larger solid BLACK triangle it precedes.",
+        "NOT Introduction to the Adjective: the Article symbol is light blue and sits immediately before the article word (a/an/the); the Adjective symbol is a darker blue and sits before a descriptive word, not before a/an/the."
+      ]
+    },
+    {
+      "work_key": "la_adjective_intro",
+      "work_name": "Introduction to the Adjective",
+      "area": "language",
+      "visual_description": "Word cards or a set of objects varying in one quality (colour, size, texture) labeled with a DARK BLUE small triangle above the descriptive word, taught through games where a describing word changes which object the child selects (e.g. 'bring me the RED ball' vs 'bring me the BLUE ball'). The defining picture is a dark-blue triangular symbol above a descriptive word, often used with an object-selection game involving contrasting qualities.",
+      "key_materials": [
+        "Word cards with a DARK BLUE triangle above the adjective",
+        "Sets of objects varying in one quality (colour, size, etc.)",
+        "Descriptor game — selecting objects by adjective",
+        "Symbol smaller than and distinct in colour from the noun triangle"
+      ],
+      "negative_descriptions": [
+        "NOT Introduction to the Noun: the Adjective symbol is a smaller DARK BLUE triangle; the Noun symbol is the larger solid BLACK triangle.",
+        "NOT Introduction to the Article: the Adjective symbol (dark blue) sits above a descriptive quality word; the Article symbol (light blue) sits above a/an/the.",
+        "NOT Introduction to the Adverb: the Adjective symbol is a dark-blue TRIANGLE; the Adverb symbol is an ORANGE CIRCLE."
+      ]
+    },
+    {
+      "work_key": "la_verb_intro",
+      "work_name": "Introduction to the Verb",
+      "area": "language",
+      "visual_description": "Small folded action-command cards or word cards marked with a large RED CIRCLE (sphere) symbol above the action word, where the child reads the command and physically performs the action (jump, clap, sit) — closely related in materials to Command Cards but explicitly taught as grammar with the red circle symbol attached. The defining picture is a bold red circular symbol above an action word, often with the child performing the described movement.",
+      "key_materials": [
+        "Word/command cards with a RED CIRCLE symbol above the verb",
+        "Child performs the physical action described",
+        "Second core grammar symbol introduced (after Noun)",
+        "Symbol is a solid red circle/sphere shape"
+      ],
+      "negative_descriptions": [
+        "NOT Command Cards (Action Reading): Introduction to the Verb explicitly attaches the RED CIRCLE grammar symbol above the action word as part of grammar work; plain Command Cards are folded action instructions read and performed with no grammar symbol at all.",
+        "NOT Introduction to the Adverb: the Verb symbol is a large solid RED circle; the Adverb symbol is a smaller ORANGE circle placed near the verb to describe HOW the action is done."
+      ]
+    },
+    {
+      "work_key": "la_adverb_intro",
+      "work_name": "Introduction to the Adverb",
+      "area": "language",
+      "visual_description": "Action-command cards where the verb is modified by a manner word ('walk SLOWLY', 'jump QUIETLY'), marked with a small ORANGE CIRCLE symbol placed near the larger red verb circle — the child performs the action in the described manner. The defining picture is a smaller orange circular symbol positioned beside a larger red circle above a two-word action phrase.",
+      "key_materials": [
+        "Command/word cards with an ORANGE CIRCLE symbol near the verb",
+        "Two-word action phrases (verb + manner word)",
+        "Child performs the action in the specified manner",
+        "Symbol is smaller than and different colour from the verb's red circle"
+      ],
+      "negative_descriptions": [
+        "NOT Introduction to the Verb: the Adverb symbol is a smaller ORANGE circle modifying HOW the action is done; the Verb symbol is the larger solid RED circle marking the action word itself.",
+        "NOT Introduction to the Adjective: the Adverb symbol is an ORANGE CIRCLE describing a verb; the Adjective symbol is a DARK BLUE TRIANGLE describing a noun."
+      ]
+    },
+    {
+      "work_key": "la_pronoun_intro",
+      "work_name": "Introduction to the Pronoun",
+      "area": "language",
+      "visual_description": "Word cards where a noun is replaced by a pronoun (he, she, it, they), marked with a large PURPLE/VIOLET triangle symbol (similar shape to the noun triangle but a different colour), often taught by covering or removing a noun card and substituting a pronoun card in a sentence strip. The defining picture is a purple/violet triangular symbol above a pronoun word, frequently shown alongside a sentence with a noun crossed out or covered.",
+      "key_materials": [
+        "Word/sentence cards with a PURPLE (violet) triangle above the pronoun",
+        "Often shown replacing or substituting for a noun in a sentence",
+        "Triangle shape, distinct colour from noun's black triangle",
+        "Sentence-strip format demonstrating substitution"
+      ],
+      "negative_descriptions": [
+        "NOT Introduction to the Noun: the Pronoun symbol is a PURPLE/violet triangle substituting for a noun; the Noun symbol is a solid BLACK triangle marking the original naming word."
+      ]
+    },
+    {
+      "work_key": "la_preposition_intro",
+      "work_name": "Introduction to the Preposition",
+      "area": "language",
+      "visual_description": "A small object (often a box and a smaller item like a pencil or ball) physically moved into different spatial relationships (ON the box, IN the box, UNDER the box) while matching phrase cards are read, marked with a GREEN CRESCENT symbol above the preposition word. The defining picture is a small object being physically positioned in, on, under, or beside a container while a phrase card with a green crescent-shaped symbol is shown.",
+      "key_materials": [
+        "Small box or container plus a small movable object",
+        "Phrase cards with a GREEN CRESCENT symbol above the preposition",
+        "Object physically demonstrates spatial relationship (in/on/under)",
+        "Symbol is crescent/moon-shaped, coloured green"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "la_conjunction_intro",
+      "work_name": "Introduction to the Conjunction",
+      "area": "language",
+      "visual_description": "Two short phrase or sentence cards being joined by a connecting word ('and', 'but', 'or'), marked with a small PINK RECTANGLE (bar) symbol placed above the joining word, physically demonstrated by pushing two separate word/phrase cards together with the conjunction card bridging them. The defining picture is a pink rectangular bar symbol sitting above a short connecting word, positioned between two other phrase cards being joined.",
+      "key_materials": [
+        "Two phrase/sentence cards being physically joined",
+        "Connector card with a PINK RECTANGLE symbol above it",
+        "Symbol is a small flat bar/rectangle shape, pink",
+        "Demonstrates joining two ideas or objects"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "la_interjection_intro",
+      "work_name": "Introduction to the Interjection",
+      "area": "language",
+      "visual_description": "Short exclamation cards (Oh! Wow! Ouch!) marked with a GOLD/YELLOW arching symbol (often described as a checkmark or accent shape) above the word, taught with dramatic vocal expression or a small dramatic scenario to convey sudden emotion. The defining picture is a gold or yellow accent-shaped symbol above a short exclamatory word, often the final and least-used grammar symbol in the sequence.",
+      "key_materials": [
+        "Exclamation word cards with a GOLD/yellow symbol above",
+        "Dramatic, exclamatory vocal delivery",
+        "Least frequently used grammar symbol",
+        "Sometimes taught with a small acted-out scenario"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "la_grammar_boxes",
+      "work_name": "Grammar Boxes",
+      "area": "language",
+      "visual_description": "A wooden box with multiple small compartments, each holding tiny word cards of a single grammatical function (all nouns in one compartment, all adjectives in another), used to build sentences by drawing one card from each relevant compartment and arranging them in order on a strip. The defining picture is a compartmented wooden box with sorted word-type cards, distinct from the single symbol-introduction cards used in the part-of-speech lessons.",
+      "key_materials": [
+        "Wooden box with multiple small compartments",
+        "Word cards sorted by grammatical function within compartments",
+        "Sentence built by drawing one card per compartment",
+        "Advanced/consolidating grammar work, follows individual symbol lessons"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "la_sentence_analysis",
+      "work_name": "Sentence Analysis",
+      "area": "language",
+      "visual_description": "A full sentence printed on a strip, being diagrammed with a chart of coloured geometric grammar symbols and connecting arrows placed above each word to show which words modify or relate to which — a large, elaborate diagram-like layout, more visually complex than any single part-of-speech introduction. The defining picture is a full sentence strip with multiple different-coloured symbols AND arrows drawn between them, showing sentence structure as a whole.",
+      "key_materials": [
+        "Full sentence printed on a long strip",
+        "Multiple coloured grammar symbols placed above words",
+        "Connecting arrows showing grammatical relationships",
+        "Large, chart-like layout — most visually elaborate grammar work"
+      ],
+      "negative_descriptions": [
+        "NOT Reading Analysis: Sentence Analysis diagrams the full LOGICAL/grammatical structure of a sentence with symbols AND connecting arrows; Reading Analysis breaks a sentence down for comprehension/decoding, without the full arrow-diagram system."
+      ]
+    },
+    {
+      "work_key": "la_word_families",
+      "work_name": "Word Families",
+      "area": "language",
+      "visual_description": "A set of word cards sharing the same ending sound pattern (cat, bat, hat, mat) grouped together on a mat or column, often built using the Moveable Alphabet by changing only the first letter while keeping the rest constant. The defining picture is a vertical list or cluster of short words with an identical ending, differing only in their first letter — a phonics-pattern grouping exercise.",
+      "key_materials": [
+        "Word cards sharing a common ending pattern",
+        "Grouped in a column or cluster on a mat",
+        "Often built with the Moveable Alphabet, changing the first letter",
+        "Phonics pattern recognition focus"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "la_spelling_rules",
+      "work_name": "Spelling Rules",
+      "area": "language",
+      "visual_description": "A set of word cards or a chart illustrating a specific spelling pattern or rule (e.g. doubling the final consonant before adding -ing, or 'i before e except after c'), with example word pairs shown side by side (hop/hopping, run/running) to demonstrate the change. The defining picture is paired or grouped word cards showing a base word and its modified form side by side, illustrating a consistent spelling transformation.",
+      "key_materials": [
+        "Word cards showing base word and modified form side by side",
+        "Illustrates a specific, consistent spelling rule",
+        "Sometimes accompanied by a printed rule chart",
+        "Comparative pairing format"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "la_compound_words",
+      "work_name": "Compound Words",
+      "area": "language",
+      "visual_description": "Two small word cards (sun + flower) that combine to form one larger compound word card (sunflower), often physically demonstrated by sliding or overlapping the two smaller cards to reveal or match the single combined word card, sometimes with matching picture cards for each part and the whole. The defining picture is two short word cards being joined edge-to-edge to form a longer combined word, with pictures for each half and the combined whole.",
+      "key_materials": [
+        "Two small word cards representing individual words",
+        "One combined compound-word card",
+        "Cards physically joined or slid together",
+        "Sometimes matching picture cards for each component and the whole"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "la_prefixes_suffixes",
+      "work_name": "Prefixes and Suffixes",
+      "area": "language",
+      "visual_description": "Word cards showing a base/root word with a small prefix or suffix card attached at the beginning or end (un-happy, happi-ness), often colour-differentiated or on a separate smaller card slid next to the root word, demonstrating how meaning changes. The defining picture is a root word card with a smaller distinctly-coloured or separate card attached before or after it, showing the added word-part.",
+      "key_materials": [
+        "Root/base word cards",
+        "Smaller prefix or suffix cards attached before/after",
+        "Sometimes colour-coded to distinguish the added part",
+        "Demonstrates meaning change through affixation"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "la_synonyms_antonyms",
+      "work_name": "Synonyms and Antonyms",
+      "area": "language",
+      "visual_description": "Word cards grouped into pairs with similar meaning (happy/glad) or opposite meaning (hot/cold), sorted onto a mat with two labeled headings or columns (e.g. 'Same' and 'Opposite'), sometimes illustrated with small supporting picture cards. The defining picture is word cards being sorted into two clearly separated groups or columns based on their meaning relationship to a given word.",
+      "key_materials": [
+        "Word cards grouped into meaning-related pairs",
+        "Two labeled sorting columns or headings",
+        "Sometimes small illustrative picture cards",
+        "Focus on same-meaning vs opposite-meaning pairing"
+      ],
+      "negative_descriptions": []
+    },
+    {
+      "work_key": "la_homonyms",
+      "work_name": "Homonyms",
+      "area": "language",
+      "visual_description": "Word cards showing a single spelled or spoken word (bat, bark, bank) paired with two DIFFERENT picture cards illustrating its two distinct meanings, laid out so the one word points to two unrelated images. The defining picture is one word card connected to two clearly different picture cards, illustrating that the same word has two separate meanings — distinct from synonym/antonym pairing which involves two different WORDS.",
+      "key_materials": [
+        "Single word card with two possible meanings",
+        "Two distinct, unrelated picture cards for that one word",
+        "Layout shows one word branching to two images",
+        "Illustrates same spelling/sound, different meaning"
+      ],
+      "negative_descriptions": [
+        "NOT Synonyms and Antonyms: Homonyms show ONE word with TWO different meanings/pictures; Synonyms and Antonyms show TWO different words grouped by their meaning relationship (similar or opposite)."
+      ]
+    }
+  ]
+}
