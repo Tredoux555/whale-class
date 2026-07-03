@@ -9,6 +9,7 @@ import { legacySha256 } from '@/lib/montree/password';
 import { batchTranslateAllLocales } from '@/lib/montree/insert-curriculum-work';
 import { buildLocaleInsertFields } from '@/lib/montree/locales-config';
 import { applyGlobalTranslations } from '@/lib/montree/curriculum/apply-global-translations';
+import { MINIMAL_DEFAULT_MENU } from '@/lib/montree/menu/config';
 
 function generateLoginCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -261,6 +262,9 @@ export async function POST(request: NextRequest) {
               password_hash: legacySha256(loginCode),
               role: 'teacher',
               is_active: true,
+              // Seed the minimal default menu (Wrap Up / Parent Manager /
+              // Notes / Guru / Manage Students) — Jul 3 2026 menu cleanup.
+              settings: { menu: MINIMAL_DEFAULT_MENU },
             })
             .select()
             .single();

@@ -13,7 +13,7 @@ import DeleteAccountSection from '@/components/montree/DeleteAccountSection';
 const SETTINGS_ITEMS = [
   { emoji: '🖼️', key: 'settings.mediaGallery', descKey: 'settings.mediaGalleryDesc', href: '/montree/dashboard/media' },
   { emoji: '📊', key: 'settings.reports', descKey: 'settings.reportsDesc', href: '/montree/dashboard/weekly-wrap' },
-  { emoji: '🎮', key: 'settings.games', descKey: 'settings.gamesDesc', href: '/montree/dashboard/games' },
+  // Games tile REMOVED Jul 3 2026 — feature retired from teacher-facing nav.
 ];
 
 export default function SettingsPage() {

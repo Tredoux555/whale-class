@@ -433,6 +433,8 @@ export async function POST(req: NextRequest) {
           login_code: code.toUpperCase(),
           email: email?.trim() || null,
           role: 'homeschool_parent',
+          // Seed the minimal default menu (Jul 3 2026 menu cleanup).
+          settings: { menu: MINIMAL_DEFAULT_MENU },
         })
         .select()
         .single();
@@ -522,6 +524,9 @@ export async function POST(req: NextRequest) {
           password_hash: codeHash,
           login_code: code.toUpperCase(),
           email: email?.trim() || null,
+          // Seed the minimal default menu in the INSERT itself (Jul 3 2026) —
+          // the fire-and-forget update below stays as a safety net.
+          settings: { menu: MINIMAL_DEFAULT_MENU },
         })
         .select()
         .single();

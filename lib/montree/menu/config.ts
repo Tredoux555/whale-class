@@ -19,7 +19,10 @@ export const MENU_ITEM_IDS = [
   'calendar',
   'meeting_notes',
   'notes',
-  'games',
+  // 'games' REMOVED entirely (Jul 3 2026, Tredoux: "makes the app look
+  // amateur — off the table completely"). Routes stay on disk
+  // (hide-don't-delete); sanitizeMenuConfig silently drops the id from any
+  // previously-saved teacher config.
   'english_corner',
   'focus_list',
   'weekly_plan',
@@ -51,18 +54,17 @@ function isMenuItemId(x: unknown): x is MenuItemId {
   return typeof x === 'string' && (MENU_ITEM_IDS as readonly string[]).includes(x);
 }
 
-// The seeded default for NEW signups (the minimal layout Tredoux prescribed):
-// Guru → Curriculum → Manage Students → Parent Manager → Parent Messages →
-// Photo Audit visible; everything else hidden (Games, English Corner, Calendar,
-// Meeting Notes, Notes, Classroom Overview + all extras). Customizable later
-// via Manage Menu.
+// The seeded default for NEW signups (Tredoux, Jul 3 2026):
+// Wrap Up (photo_audit) → Parent Manager → Notes → Guru → Manage Students
+// visible — THAT'S IT. Everything else hidden (English Corner, Calendar,
+// Meeting Notes, Messages, Curriculum, Classroom Overview + all extras).
+// Teachers can switch hidden items on via Menu Management.
 const CORE_VISIBLE: MenuItemId[] = [
-  'guru',
-  'curriculum',
-  'manage_students',
-  'parent_manager',
-  'parent_messages',
   'photo_audit',
+  'parent_manager',
+  'notes',
+  'guru',
+  'manage_students',
 ];
 
 export const MINIMAL_DEFAULT_MENU: MenuConfig = {
