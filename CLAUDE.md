@@ -55,6 +55,62 @@ Montree coupling + personal data; don't re-introduce it by editing the Montree c
 
 ---
 
+## 🚨 SESSION — Jul 3, 2026 (Cowork, pt 4) — GURU-FIRST MENU + GURU COMPOSER VIEWPORT FIX + CURRICULUM-GAPS DEFAULT-OFF + MENU STRIP TO 5
+
+**Canonical handoff: `docs/handoffs/SESSION_GURU_MENU_SIMPLIFY_JUL3.md`.** 3 commits on main
+(`791474dd` → `8058cb2f` → `4f467ef4`), Railway deployed. **No pending Supabase run — migration
+280's effect was applied directly to prod via the pooler.** Plus 2 prod DB ops (Sarah's Bright
+Stars menu reorder + the feature-definition default flip). Driven by a live iPhone walkthrough of
+the newly-seeded **Bright Stars / Sarah** test account.
+
+- **🩹 Guru composer was off-screen on iPhone (`791474dd`).** `app/montree/dashboard/guru/page.tsx`
+  rendered `h-dvh` (100dvh) but sits BELOW the **sticky** `DashboardHeader` in the shared dashboard
+  layout → total doc height = headerH + 100dvh → the composer fell headerH px below the viewport,
+  reachable only by scrolling ("looked like it wasn't working"). Fix: added `data-dashboard-header`
+  to BOTH header returns in `DashboardHeader.tsx`; the Guru page now measures the header live
+  (`offsetHeight`, re-measured on resize/orientation/ResizeObserver) and sizes the chat to
+  `calc(100dvh - headerHeight)` (main container + both loading states); composer got
+  `env(safe-area-inset-bottom)` so the send button clears the home indicator. Degrades to `100dvh`
+  if the header isn't found. **RULE: any full-height page under `app/montree/dashboard/layout.tsx`
+  MUST subtract the sticky header — measure `[data-dashboard-header]`, never bare `h-dvh`.**
+- **📋 Menu stripped to 5 essentials (`791474dd` reorder → finalized `4f467ef4`).** New teacher
+  default (and Sarah's live account): **Guru → Student Manager → Parent Manager → Notes → Wrap Up.**
+  `CORE_VISIBLE` in `lib/montree/menu/config.ts` is the single seed for all 5 teacher-creation
+  paths; the More menu renders in saved-config order. **🚨 Wrap Up (photo_audit) kept LAST-but-VISIBLE
+  on purpose** — the More menu is the ONLY path to the photo review/confirm loop (capture flow
+  doesn't route to `/photo-audit`; dashboard doesn't link it). User first said strict-4 (dropping
+  Wrap Up), then kept it as #5 when told dropping it strands photo tagging (Menu Management, the
+  reorder tool, is now hidden too). `manage_students` menu label → **"Student Manager"** (labelKey
+  nulled in `registry.tsx`, parallels the hardcoded "Parent Manager"; the Manage Students PAGE title
+  is unchanged).
+- **🙈 Menu Management + Invite Principal removed from the More menu (`4f467ef4`).** The `/menu-setup`
+  page renders a broken washed-out light theme ("albino face") + the menu is now a fixed curated
+  set, so **Menu Management** is hidden (route on disk, NOT retheme'd — parked). **Invite your
+  principal** removed (advise verbally); the modal + `showInvitePrincipal` state + import stay wired
+  (hide-don't-delete, one uncomment away) — dropped the now-unused `UserPlus` import. Collapsed the
+  leftover double-divider above Logout.
+- **📡 Curriculum Gaps panel → default OFF (`8058cb2f`).** The dashboard "Curriculum gaps" panel
+  (`components/montree/CurriculumGapCard.tsx`, gated by `isEnabled('curriculum_gap_radar')`) was
+  default ON (migration 248) → a brand-new empty room got a wall of "N of M works haven't been
+  presented yet." Flipped the feature definition `default_enabled` → **false** (migration 280 +
+  applied to prod). Card + endpoint unchanged; stays in the admin feature toggle
+  (`SchoolFeaturesModal`, category 'dashboard') so a principal/super-admin flips it on per-school
+  (writes a `montree_school_features` override that beats the default). No school holds an override
+  → off everywhere until turned on. **RULE: default noisy new-user dashboard panels OFF at the
+  definition level; keep the card/endpoint + the per-school admin toggle intact.**
+- **🧹 Audit cleanup (`8058cb2f`).** Removed a write-only `measuredRef` (+ its `useRef` import) the
+  first Guru commit left in the header-measure effect.
+- **Prod DB ops (pooler).** Sarah's `montree_teachers` row `2d77545a-…`: `settings.menu.items`
+  reordered to the 5-item visible order (all 21 items preserved, 16 hidden — existing configs are
+  authoritative, so changing the default alone would NOT reorder a live account).
+  `montree_feature_definitions.default_enabled=false` for `curriculum_gap_radar`.
+- **Verify:** local==remote==`4f467ef4`; full lint of the 5 touched files = 0 errors (1 pre-existing
+  `react-hooks/exhaustive-deps` `t` warning on the Guru data-loading effect, confirmed not mine via
+  stashed-HEAD lint). Guru viewport is a device fix — confirm on iPhone after **PWA reopen** (menu
+  config + features are client-cached from load).
+
+---
+
 ## 🚨 SESSION — Jul 3, 2026 (Cowork, pt 3) — CROSS-TENANT SECURITY FIX + PHOTO-QUEUE DEATH-SPIRAL + MENU CLEANUP + PWA APP-MODE LAUNCH
 
 **Canonical handoff: `docs/handoffs/SESSION_CROSS_TENANT_QUEUE_MENU_JUL3.md` — READ FIRST.**
