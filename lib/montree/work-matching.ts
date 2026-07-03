@@ -187,13 +187,58 @@ export const CROSS_AREA_CONFUSION_WORK_NAMES: ReadonlySet<string> = new Set<stri
   // Sensorial ↔ Mathematics — all-red rods vs red+blue alternating rods
   // (visual-id-guide.ts:35 "RED RODS (Sensorial) vs NUMBER RODS (Mathematics)")
   'red rods',
+  'red rods (long rods)',
   'number rods',
   // Language ↔ Sensorial — square frames in a vertical rack (language, writing prep)
   // vs a wide drawer cabinet of flat shape insets (sensorial, shape matching).
   // (visual-id-guide.ts:48 "METAL INSETS (Language — writing preparation) vs GEOMETRIC CABINET (Sensorial — shape matching)")
   'metal insets',
   'geometric cabinet',
+  // Sensorial ↔ Mathematics — solid wooden block with KNOBBED cylinders in
+  // round sockets vs numbered compartment box holding loose spindle bundles.
+  // Registered Jul 3 2026 after the Bright Stars cold-start incident: a
+  // Cylinder Block photo was confidently mismatched to "Spindle Boxes" at
+  // 0.85 on a zero-visual-memory account. Both are natural-wood block/box
+  // materials with repeated round elements — text-only descriptions genuinely
+  // blur them; the image re-examination (Pass 2b) is what disambiguates.
+  'cylinder block 1',
+  'cylinder block 2',
+  'cylinder block 3',
+  'cylinder block 4',
+  'cylinder blocks',
+  'cylinder blocks combined',
+  'spindle box',
+  'spindle boxes',
 ]);
+
+/**
+ * Cross-area counterpart map: for a confusable work name, the OTHER side(s)
+ * of the documented confusion. Consumed by Pass 2b candidate building — when
+ * the matcher lands on one side of a pair, the counterpart works' visual-
+ * memory entries (classroom or global) are injected as explicit candidates so
+ * the image re-examination chooses between the two sides directly. A
+ * same-area candidate fill can never surface the counterpart, because by
+ * definition it lives in a DIFFERENT area.
+ *
+ * Keep keys AND values lowercased. When registering a new pair in the Set
+ * above: add both directions here, and add curated DISTINGUISH FROM negatives
+ * in scripts/seed-global-visual-memory.mjs.
+ */
+export const CROSS_AREA_CONFUSION_COUNTERPARTS: Readonly<Record<string, readonly string[]>> = {
+  'red rods': ['number rods'],
+  'red rods (long rods)': ['number rods'],
+  'number rods': ['red rods (long rods)', 'red rods'],
+  'metal insets': ['geometric cabinet'],
+  'geometric cabinet': ['metal insets'],
+  'spindle box': ['cylinder block 1', 'cylinder block 2', 'cylinder block 3', 'cylinder block 4'],
+  'spindle boxes': ['cylinder block 1', 'cylinder block 2', 'cylinder block 3', 'cylinder block 4'],
+  'cylinder block 1': ['spindle boxes'],
+  'cylinder block 2': ['spindle boxes'],
+  'cylinder block 3': ['spindle boxes'],
+  'cylinder block 4': ['spindle boxes'],
+  'cylinder blocks': ['spindle boxes'],
+  'cylinder blocks combined': ['spindle boxes'],
+};
 
 /** Returns true if either the raw Haiku name OR the matcher's resolved name appears in the cross-area confusion list. */
 export function isCrossAreaConfusable(...names: Array<string | null | undefined>): boolean {
@@ -202,6 +247,23 @@ export function isCrossAreaConfusable(...names: Array<string | null | undefined>
     if (CROSS_AREA_CONFUSION_WORK_NAMES.has(n.toLowerCase().trim())) return true;
   }
   return false;
+}
+
+/**
+ * Returns the lowercased counterpart work names for any confusable name in
+ * the argument list (deduped; never includes the input names themselves).
+ */
+export function getCrossAreaCounterparts(...names: Array<string | null | undefined>): string[] {
+  const inputs = new Set(names.filter((n): n is string => !!n).map(n => n.toLowerCase().trim()));
+  const out = new Set<string>();
+  for (const n of inputs) {
+    const counterparts = CROSS_AREA_CONFUSION_COUNTERPARTS[n];
+    if (!counterparts) continue;
+    for (const c of counterparts) {
+      if (!inputs.has(c)) out.add(c);
+    }
+  }
+  return [...out];
 }
 
 // ================================================================

@@ -249,13 +249,14 @@ export async function generateSonnetDraft(input: SonnetDraftInput): Promise<Sonn
     return { success: false, draft: null, errors: ['Anthropic client not configured'] };
   }
 
-  const langInstruction = (() => {
-    const L: Record<string, string> = {
-      zh: 'Write parent_description and why_it_matters in Simplified Chinese. Keep proposed_name in English.',
-      es: 'Write parent_description and why_it_matters in Spanish. Keep proposed_name in English.',
-    };
-    return L[input.locale || 'en'] || 'Write all text fields in English.';
-  })();
+  // Jul 3, 2026 fix: was a hardcoded zh/es-only map — the other 9 supported
+  // locales silently received English drafts. Now locale-agnostic via
+  // getAILanguageInstruction (the Session 82 canonical pattern).
+  // proposed_name stays English so it fuzzy-matches the canonical curriculum.
+  const aiLang = getAILanguageInstruction(input.locale);
+  const langInstruction = aiLang
+    ? `For parent_description and why_it_matters: ${aiLang} Keep proposed_name, visual_description, and key_materials in English.`
+    : 'Write all text fields in English.';
 
   const haikuLine = input.haikuGuess && input.haikuGuess.workName
     ? `\n\nA fast vision model previously guessed: "${input.haikuGuess.workName}" (confidence ${input.haikuGuess.confidence.toFixed(2)}). You may agree or disagree — make your own assessment based on what you actually see.`
@@ -287,7 +288,7 @@ ${VISUAL_ID_GUIDE}`;
 STANDARD CURRICULUM WORKS (use exact names for closest_existing_match):
 
 ${curriculumHint}
-${input.context.correctionsContext}${input.context.visualMemoryContext}`;
+${input.context.correctionsContext}${input.context.visualMemoryContext}${input.context.globalVisualMemoryContext}`;
 
   const userMessage = `Child: ${input.childName}, age ${input.childAge}
 
@@ -310,8 +311,12 @@ Look at the photo and produce a complete teacher-ready write-up using the draft_
         // every Sonnet draft call platform-wide.
         { type: 'text', text: SONNET_STATIC_INSTRUCTIONS, cache_control: { type: 'ephemeral' } },
         // Dynamic suffix: langInstruction + curriculum hint + per-classroom
-        // corrections/visualMemory. Re-sent in full each call.
-        { type: 'text', text: sonnetSystemDynamic },
+        // corrections/visualMemory + global baseline. SECOND cache breakpoint
+        // (Jul 3, 2026): stable per classroom between corrections, so Sonnet
+        // drafts within a capture burst read the ~5-8K-token suffix from
+        // cache. At Sonnet's $3/MTok input the burst savings dwarf the 1.25x
+        // cache-write premium from the 2nd draft onward.
+        { type: 'text', text: sonnetSystemDynamic, cache_control: { type: 'ephemeral' } },
       ],
       tools: [DRAFT_WORK_WRITEUP_TOOL],
       tool_choice: { type: 'tool', name: 'draft_work_writeup' },

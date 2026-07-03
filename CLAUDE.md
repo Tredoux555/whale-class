@@ -55,6 +55,52 @@ Montree coupling + personal data; don't re-introduce it by editing the Montree c
 
 ---
 
+## 🧠 SESSION — Jul 3, 2026 (Fable) — MASTER BRAIN v1 BUILT + PHOTO-ID COLD-START FIXED
+
+**Canonical handoff: `docs/handoffs/SESSION_MASTER_BRAIN_BUILD_JUL3.md` — READ IT before touching
+the photo pipeline.** Executes BOTH tasks from `SESSION_PHOTO_ID_COLDSTART_AUDIT_JUL3.md` (the
+🔬 QUEUED FOR FABLE block below — now ✅ DONE). 1 commit on main. **Migration 281 already RUN on
+prod via the pooler + global moat already SEEDED (235 rows) — nothing pending in Supabase.**
+
+- **Design verdicts (Task A):** Gate A is correctly strict — the 0.90 Path-2 bar SAVED Bright
+  Stars from auto-filing a WRONG work (Pass 2 said Spindle Boxes at matchScore 1.0/conf 0.85 for
+  a Cylinder Block). Do NOT loosen 0.85/0.90. The real defect: Pass 2b built candidates ONLY from
+  classroom VM text → cold classrooms had <2 candidates → the image-arbitration stage could never
+  run. Second defect: same-area candidate fill can never surface a CROSS-area counterpart.
+- **Master brain v1 = curated READ-ONLY global seed** (`montree_global_visual_memory`, migration
+  281, keyed UNIQUE work_key). 230 scrubbed Whale teacher-validated standard-work entries + 5
+  hand-authored + curated `NOT <counterpart>` negatives on every confusion pair. Seed script
+  (`scripts/seed-global-visual-memory.mjs`, idempotent, --dry-run) is the ONLY writer — no
+  runtime cross-school writes, so the poison/abuse vector doesn't exist in v1.
+- **Wiring:** context-loader loads global as 3rd parallel query → `globalVisualMemoryEntries`
+  (full set → Pass 2b candidates) + `LIBRARY-VERIFIED WORKS` Pass 2 prompt block that fills the
+  LEFTOVER of the shared 20KB budget (live-verified: Bright Stars 26 entries/20.2KB, Whale 0 —
+  natural decay as the classroom moat grows). `buildPass2bCandidates` rewritten with global tiers
+  + cross-area counterpart injection (`CROSS_AREA_CONFUSION_COUNTERPARTS` in work-matching.ts).
+  **Cylinder Blocks ↔ Spindle Boxes registered** as a confusion pair (Set + counterpart map +
+  guide top-block + seeded negatives). GateA log + telemetry carry `has_global_vm_for_match` /
+  `global_vm_injected_count` (new columns via 281).
+- **🚨 Global NEVER satisfies Gate A Path 1 (v1).** `hasVisualMemoryForMatch` stays
+  CLASSROOM-only. A future "global VM + conf ≥0.90" Path 1.5 is a telemetry-driven decision.
+- **Efficiency:** SECOND prompt-cache breakpoint on the per-classroom dynamic block in Pass 2 AND
+  sonnet-draft (capture bursts read the ~5-8K-token suffix at ~10% price from photo 2 on).
+  sonnet-draft locale bug fixed (hardcoded zh/es map → `getAILanguageInstruction`; 9 locales were
+  silently getting English drafts). Dead `PASS2B_NO_VM_THRESHOLD` removed.
+- **Verified:** eslint 0/0 on all touched files; scoped tsc clean (4 flagged errors pre-existing,
+  outside the diff); 15/15 logic-harness assertions incl. the exact Bright Stars scenario (Pass 2b
+  now receives [Spindle Boxes, Cylinder Block 1-4] with the image); LIVE loader run against prod.
+- **⏳ Phone verification still owed:** (1) hard-refresh Bright Stars Wrap Up → the old photo's
+  "Spindle Boxes · 85%" chip should render → ✏️ Wrong → "Cylinder Block 1" (if no chip after hard
+  refresh, chase the `isPhotoInFlight` display bug per the audit doc §1); (2) fresh Cylinder Block
+  capture post-deploy → expect correct ID, grep Railway GateA for `hasGlobalVM:true gvmInjected:26`;
+  (3) Whale regression sniff (`gvmInjected:0`, unchanged behavior).
+- **RULES:** global table is runtime-read-only · standard works only · registering a new confusion
+  pair = Set + counterpart map (both directions) + seed-script negatives + re-run seed · the 20KB
+  Pass 2 budget is SHARED (classroom first, global fills remainder — never additive) · keep both
+  cache breakpoints.
+
+---
+
 ## 🚨 SESSION — Jul 3, 2026 (Cowork, pt 4) — GURU-FIRST MENU + GURU COMPOSER VIEWPORT FIX + CURRICULUM-GAPS DEFAULT-OFF + MENU STRIP TO 5
 
 **Canonical handoff: `docs/handoffs/SESSION_GURU_MENU_SIMPLIFY_JUL3.md`.** 3 commits on main
@@ -111,9 +157,10 @@ the newly-seeded **Bright Stars / Sarah** test account.
 
 ---
 
-## 🔬 QUEUED FOR FABLE (Jul 3, 2026) — PHOTO-ID EFFICIENCY REVIEW + "MASTER BRAIN" (cross-school shared moat)
+## ✅ DONE (was: QUEUED FOR FABLE, Jul 3 2026) — PHOTO-ID REVIEW + MASTER BRAIN — see the Fable session block above
 
-**Handoff: `docs/handoffs/SESSION_PHOTO_ID_COLDSTART_AUDIT_JUL3.md`.** Read-only audit — NO code changed.
+**Both tasks executed by Fable same day — canonical result: `docs/handoffs/SESSION_MASTER_BRAIN_BUILD_JUL3.md`.**
+Original audit (kept for the incident record): `docs/handoffs/SESSION_PHOTO_ID_COLDSTART_AUDIT_JUL3.md`.
 
 - **Finding (cold-start misID).** On the new Bright Stars/Sarah account a standard **Cylinder Block**
   photo showed "Untagged." The pipeline RAN (~5s after capture); Haiku Pass 2 confidently MISmatched it

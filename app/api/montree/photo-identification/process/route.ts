@@ -390,6 +390,8 @@ export async function POST(request: NextRequest) {
               has_visual_memory_for_match: false,
               visual_memory_set_size: identificationContext.visualMemoryWorkNames.size,
               visual_memory_injected_count: identificationContext.visualMemoryInjectedCount,
+              global_vm_injected_count: identificationContext.globalVisualMemoryInjectedCount,
+              has_global_vm_for_match: false,
               pass2b_fired: false,
               pass2b_improved: false,
               haiku_trust_confidence_threshold: HAIKU_TRUST_CONFIDENCE,
@@ -444,6 +446,11 @@ export async function POST(request: NextRequest) {
       haikuConf: ident?.confidence ?? null,
       haikuWork: ident?.workName ?? null,
       hasVM: twoPassResult.hasVisualMemoryForMatch,
+      // Global baseline moat (migration 281) — telemetry only, NOT a Gate A
+      // trust input. Watch these to decide whether a future 'global VM +
+      // conf >= 0.90' Path 1.5 would be safe.
+      hasGlobalVM: twoPassResult.hasGlobalVisualMemoryForMatch,
+      gvmInjected: context.globalVisualMemoryInjectedCount,
       pass2bFired: twoPassResult.pass2bFired,
       pass2bImproved: twoPassResult.pass2bImproved,
       vmSetSize: context.visualMemoryWorkNames.size,
@@ -487,6 +494,9 @@ export async function POST(request: NextRequest) {
             has_visual_memory_for_match: twoPassResult.hasVisualMemoryForMatch,
             visual_memory_set_size: context.visualMemoryWorkNames.size,
             visual_memory_injected_count: context.visualMemoryInjectedCount,
+            // Global baseline moat participation (migration 281 columns).
+            global_vm_injected_count: context.globalVisualMemoryInjectedCount,
+            has_global_vm_for_match: twoPassResult.hasGlobalVisualMemoryForMatch,
             pass2b_fired: twoPassResult.pass2bFired,
             pass2b_improved: twoPassResult.pass2bImproved,
             haiku_trust_confidence_threshold: HAIKU_TRUST_CONFIDENCE,

@@ -27,12 +27,13 @@ import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 
 import type { Locale } from '@/lib/montree/i18n/locales';
 import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
-import { matchToCurriculumV2, isCrossAreaConfusable } from '@/lib/montree/work-matching';
+import { matchToCurriculumV2, isCrossAreaConfusable, getCrossAreaCounterparts } from '@/lib/montree/work-matching';
 import type { CurriculumWork } from '@/lib/montree/curriculum-loader';
 import { VISUAL_ID_GUIDE } from './visual-id-guide';
 import {
   loadIdentificationContext,
   hasVisualMemoryFor,
+  hasGlobalVisualMemoryFor,
   type IdentificationContext,
 } from './context-loader';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -47,7 +48,6 @@ const PASS1_TIMEOUT_MS = 25_000;
 const PASS2_TIMEOUT_MS = 15_000;
 const PASS2B_TIMEOUT_MS = 15_000;
 const PASS2B_CONFIDENCE_THRESHOLD = 0.85;
-const PASS2B_NO_VM_THRESHOLD = 0.75;
 
 // ----- Tool definition for Pass 2 (kept here so the lib is self-contained) -----
 
@@ -235,6 +235,13 @@ export interface TwoPassResult {
    * visual memory for that work and Haiku may be guessing from the guide alone.
    */
   hasVisualMemoryForMatch: boolean;
+  /**
+   * True if the matched work had a GLOBAL baseline entry injected into the
+   * Pass 2 prompt (montree_global_visual_memory). Telemetry / future
+   * trust-tuning signal ONLY — Gate A Path 1 deliberately ignores this in v1
+   * (global entries are not verified by THIS classroom's teacher).
+   */
+  hasGlobalVisualMemoryForMatch: boolean;
   /** True if Pass 2b (image re-examination) ran */
   pass2bFired: boolean;
   /** True if Pass 2b produced a higher-confidence result and was used */
@@ -251,40 +258,108 @@ export interface TwoPassResult {
 
 /**
  * Build candidate list for Pass 2b re-examination.
- * Priority order:
- *   1. Haiku's Pass 2 guess (if it has visual memory)
- *   2. Same-area VM entries (area-aware — most confusions happen within the same area)
- *   3. Other-area VM entries as fillers up to 5 total
+ *
+ * Sources, in priority order (max 5 total):
+ *   1. Haiku's Pass 2 guess — CLASSROOM entry, else GLOBAL entry.
+ *   2. Cross-area counterparts (getCrossAreaCounterparts) — the other side of
+ *      a documented confusion pair (e.g. matched "Spindle Boxes" → inject the
+ *      Cylinder Block entries). These can NEVER surface via same-area fill,
+ *      which is exactly why the pre-Jul-3 builder could not catch cross-area
+ *      misidentifications on cold-start classrooms.
+ *   3. Same-area CLASSROOM entries (most confusions are within-area).
+ *   4. Other-area CLASSROOM entries.
+ *   5. The V2 matcher's topCandidates (GLOBAL entries) — the fuzzy matcher's
+ *      own alternatives, with baseline descriptions.
+ *   6. Same-area GLOBAL entries as final fillers.
+ *
+ * 🚨 COLD-START FIX (Jul 3, 2026): tiers 2/5/6 draw on the GLOBAL baseline
+ * moat (montree_global_visual_memory), so Pass 2b can run with ZERO classroom
+ * visual memory. Before this, the builder parsed only the classroom VM prompt
+ * text — a brand-new classroom always produced < 2 candidates and Pass 2b
+ * never fired (the Bright Stars Cylinder-Block-as-Spindle-Boxes incident).
  *
  * All candidates include LOOKS LIKE + KEY MATERIALS + DISTINGUISH FROM so Haiku
  * can distinguish similar-looking works (e.g. Sandpaper Letters vs Blue Series).
+ *
+ * Exported for test harnesses only — production callers stay inside this module.
  */
-function buildPass2bCandidates(
+export function buildPass2bCandidates(
   pass2Result: {
-    identification: { workName: string; area: string | null } | null;
+    identification: {
+      workName: string;
+      haikuWorkName?: string;
+      area: string | null;
+      topCandidates?: Array<{ workName: string }>;
+    } | null;
   },
   context: IdentificationContext,
 ): Array<{ name: string; area: string | null; looksLike: string }> {
+  const MAX_CANDIDATES = 5;
   const seen = new Set<string>();
-  const targetArea = pass2Result.identification?.area ?? null;
+  const candidates: Array<{ name: string; area: string | null; looksLike: string }> = [];
+  const ident = pass2Result.identification;
+  const targetArea = ident?.area ?? null;
 
-  // Priority 1: Haiku's Pass 2 guess (if it has visual memory)
-  const priority1: Array<{ name: string; area: string | null; looksLike: string }> = [];
-  if (pass2Result.identification && context.visualMemoryWorkNames.has(pass2Result.identification.workName.toLowerCase())) {
-    const vmEntry = extractVisualMemoryEntry(context, pass2Result.identification.workName);
-    if (vmEntry) {
-      priority1.push({
-        name: pass2Result.identification.workName,
-        area: pass2Result.identification.area,
-        looksLike: vmEntry,
-      });
-      seen.add(pass2Result.identification.workName.toLowerCase());
+  // Global entries indexed by lowercased name for targeted retrieval.
+  const globalByName = new Map<string, (typeof context.globalVisualMemoryEntries)[number]>();
+  for (const g of context.globalVisualMemoryEntries) {
+    const key = g.name.toLowerCase();
+    if (!globalByName.has(key)) globalByName.set(key, g);
+  }
+
+  const pushCandidate = (name: string, area: string | null, looksLike: string): boolean => {
+    const key = name.toLowerCase();
+    if (seen.has(key) || candidates.length >= MAX_CANDIDATES || !looksLike) return false;
+    candidates.push({ name, area, looksLike });
+    seen.add(key);
+    return true;
+  };
+
+  const globalToLooksLike = (g: (typeof context.globalVisualMemoryEntries)[number]): string => {
+    const parts = [`LOOKS LIKE: ${g.looksLike}`];
+    if (g.keyMaterials) parts.push(`KEY MATERIALS: ${g.keyMaterials}`);
+    if (g.distinguishFrom) parts.push(`DISTINGUISH FROM: ${g.distinguishFrom}`);
+    return parts.join(' | ');
+  };
+
+  const pushByName = (name: string): boolean => {
+    // Classroom entry wins (teacher-verified for THIS room), global fallback.
+    if (context.visualMemoryWorkNames.has(name.toLowerCase())) {
+      const vmEntry = extractVisualMemoryEntry(context, name);
+      if (vmEntry) {
+        // Area unknown from the prompt-text parse here; the classroom parse
+        // below carries areas — for direct-name pushes the global entry (if
+        // present) supplies the area label, else null.
+        const g = globalByName.get(name.toLowerCase());
+        return pushCandidate(name, g?.area ?? null, vmEntry);
+      }
+    }
+    const g = globalByName.get(name.toLowerCase());
+    if (g) return pushCandidate(g.name, g.area, globalToLooksLike(g));
+    return false;
+  };
+
+  // Priority 1: Haiku's Pass 2 guess (classroom entry, else global).
+  if (ident) {
+    if (context.visualMemoryWorkNames.has(ident.workName.toLowerCase())) {
+      const vmEntry = extractVisualMemoryEntry(context, ident.workName);
+      if (vmEntry) pushCandidate(ident.workName, ident.area, vmEntry);
+    } else {
+      const g = globalByName.get(ident.workName.toLowerCase());
+      if (g) pushCandidate(g.name, g.area, globalToLooksLike(g));
     }
   }
 
-  // Parse all VM entries from context text, collecting full descriptions.
-  // We capture LOOKS LIKE + KEY MATERIALS + DISTINGUISH FROM so Pass 2b has
-  // enough detail to distinguish similar-looking works within the same area.
+  // Priority 2: cross-area counterparts of the matched/raw names.
+  if (ident) {
+    for (const counterpart of getCrossAreaCounterparts(ident.workName, ident.haikuWorkName)) {
+      if (candidates.length >= MAX_CANDIDATES) break;
+      pushByName(counterpart);
+    }
+  }
+
+  // Parse all CLASSROOM VM entries from context text, collecting full
+  // descriptions (LOOKS LIKE + KEY MATERIALS + DISTINGUISH FROM).
   type ParsedEntry = { name: string; area: string | null; looksLike: string; keyMaterials: string; distinguishFrom: string };
   const allParsed: ParsedEntry[] = [];
   const vmLines = context.visualMemoryContext.split('\n');
@@ -318,17 +393,32 @@ function buildPass2bCandidates(
     return { name: e.name, area: e.area, looksLike: parts.join(' | ') };
   };
 
-  // Priority 2: same-area entries (most confusions are within-area)
+  // Priority 3: same-area CLASSROOM entries (most confusions are within-area).
+  // Priority 4: other-area CLASSROOM entries as fillers.
   const sameArea = allParsed.filter(e => !seen.has(e.name.toLowerCase()) && e.area === targetArea);
-  // Priority 3: other-area entries as fillers
   const otherArea = allParsed.filter(e => !seen.has(e.name.toLowerCase()) && e.area !== targetArea);
-
-  const candidates = [...priority1];
   for (const e of [...sameArea, ...otherArea]) {
-    if (candidates.length >= 5) break;
+    if (candidates.length >= MAX_CANDIDATES) break;
     if (seen.has(e.name.toLowerCase())) continue;
-    candidates.push(toCandidate(e));
-    seen.add(e.name.toLowerCase());
+    const c = toCandidate(e);
+    pushCandidate(c.name, c.area, c.looksLike);
+  }
+
+  // Priority 5: the V2 matcher's own top candidates, via global entries.
+  if (ident?.topCandidates) {
+    for (const tc of ident.topCandidates) {
+      if (candidates.length >= MAX_CANDIDATES) break;
+      pushByName(tc.workName);
+    }
+  }
+
+  // Priority 6: same-area GLOBAL entries as final fillers (cold-start path —
+  // gives Pass 2b a within-area comparison set when the classroom has none).
+  for (const g of context.globalVisualMemoryEntries) {
+    if (candidates.length >= MAX_CANDIDATES) break;
+    if (g.area !== targetArea) continue;
+    if (seen.has(g.name.toLowerCase())) continue;
+    pushCandidate(g.name, g.area, globalToLooksLike(g));
   }
 
   return candidates;
@@ -385,6 +475,9 @@ export async function runTwoPassIdentification(input: TwoPassInput): Promise<Two
       visualDescription: '',
       identification: null,
       hasVisualMemoryForMatch: false,
+      hasGlobalVisualMemoryForMatch: false,
+      pass2bFired: false,
+      pass2bImproved: false,
       modelUsed,
       errors: ['Anthropic client not configured (ANTHROPIC_API_KEY missing)'],
       context: input.context ?? {
@@ -393,6 +486,10 @@ export async function runTwoPassIdentification(input: TwoPassInput): Promise<Two
         visualMemoryContext: '',
         visualMemoryWorkNames: new Set(),
         visualMemoryInjectedCount: 0,
+        globalVisualMemoryContext: '',
+        globalVisualMemoryWorkNames: new Set(),
+        globalVisualMemoryInjectedCount: 0,
+        globalVisualMemoryEntries: [],
       },
     };
   }
@@ -492,6 +589,7 @@ Just describe the physical scene in 2-4 sentences. Lead with the PRIMARY work th
       pass1Failed: true,
       identification: null,
       hasVisualMemoryForMatch: false,
+      hasGlobalVisualMemoryForMatch: false,
       pass2bFired: false,
       pass2bImproved: false,
       modelUsed: HAIKU_MODEL,
@@ -557,10 +655,14 @@ CRITICAL RULES (for curriculum work photos):
 
 ${VISUAL_ID_GUIDE}`;
 
-  const pass2SystemDynamic = `${langInstruction}${context.correctionsContext}${context.visualMemoryContext}`;
+  // Dynamic suffix: per-locale + per-classroom (classroom moat + the global
+  // baseline block, which is budget-capped in the context loader). See the
+  // cache_control note below — this block gets its OWN cache breakpoint.
+  const pass2SystemDynamic = `${langInstruction}${context.correctionsContext}${context.visualMemoryContext}${context.globalVisualMemoryContext}`;
 
   let identification: TwoPassResult['identification'] = null;
   let hasVisualMemoryForMatch = false;
+  let hasGlobalVisualMemoryForMatch = false;
 
   {
     const passAbort = new AbortController();
@@ -578,8 +680,17 @@ ${VISUAL_ID_GUIDE}`;
           // breakpoint — everything UP TO AND INCLUDING this block is
           // cached as a single ephemeral prefix.
           { type: 'text', text: PASS2_STATIC_INSTRUCTIONS, cache_control: { type: 'ephemeral' } },
-          // Dynamic suffix: per-locale + per-classroom. Always re-sent in full.
-          { type: 'text', text: pass2SystemDynamic },
+          // Dynamic suffix: per-locale + per-classroom. SECOND cache
+          // breakpoint (Jul 3, 2026): this block only changes when the
+          // classroom's corrections / visual memory change, so during a
+          // capture burst (teacher photographing several children in a few
+          // minutes — the dominant usage pattern) calls 2..N read the whole
+          // ~5K-token suffix from cache at ~10% price instead of re-paying
+          // full input cost per photo. Cache-write premium (1.25x) breaks
+          // even at the 2nd photo of a burst. A teacher correction mid-burst
+          // simply invalidates this breakpoint and re-caches — correctness
+          // is unaffected.
+          { type: 'text', text: pass2SystemDynamic, cache_control: { type: 'ephemeral' } },
         ],
         tools: [TAG_PHOTO_TOOL],
         tool_choice: { type: 'tool', name: 'tag_photo' },
@@ -655,6 +766,7 @@ Match this description to the correct Montessori work. Use the visual identifica
         };
 
         hasVisualMemoryForMatch = hasVisualMemoryFor(context, finalWorkName);
+        hasGlobalVisualMemoryForMatch = hasGlobalVisualMemoryFor(context, finalWorkName);
       } else {
         errors.push('Pass 2 returned no tool_use block');
       }
@@ -722,7 +834,7 @@ ${aiLangInstruction2b || 'Write your reasoning in English.'}
 
 CRITICAL RULES:
 1. Look at the PHOTO carefully. Compare the materials, colors, layout, and the child's hands to each candidate.
-2. The candidates are listed with their classroom-specific visual descriptions.
+2. The candidates are listed with verified visual descriptions (from this classroom or the shared Montree library). Pay special attention to DISTINGUISH FROM notes — they encode known confusions.
 3. Pick the MOST LIKELY candidate based on visual evidence, or suggest "none of these" with a new name and LOW confidence.
 4. Use the tag_photo tool with your final choice.`,
           tools: [TAG_PHOTO_TOOL],
@@ -733,7 +845,7 @@ CRITICAL RULES:
               { type: 'image', source: { type: 'url', url: input.photoUrl } },
               {
                 type: 'text',
-                text: `Look at this photo and compare it to these classroom candidates:
+                text: `Look at this photo and compare it to these verified candidates:
 
 ${candidateBlocks}
 
@@ -806,6 +918,7 @@ Which work is most likely based on the visual evidence? If none match well, you 
             };
 
             hasVisualMemoryForMatch = hasVisualMemoryFor(context, newWorkName);
+            hasGlobalVisualMemoryForMatch = hasGlobalVisualMemoryFor(context, newWorkName);
             pass2bImproved = true;
 
             console.log(`[PhotoIdentification] Pass 2b improved: "${identification.haikuWorkName}" (${identification.confidence.toFixed(2)}) → "${newWorkName}" (${validated.confidence.toFixed(2)})`);
@@ -836,6 +949,7 @@ Which work is most likely based on the visual evidence? If none match well, you 
     visualDescription,
     identification,
     hasVisualMemoryForMatch,
+    hasGlobalVisualMemoryForMatch,
     pass2bFired,
     pass2bImproved,
     modelUsed,
