@@ -55,6 +55,54 @@ Montree coupling + personal data; don't re-introduce it by editing the Montree c
 
 ---
 
+## 🧠 SESSION — Jul 3, 2026 (Fable + Sonnet) — CANONICAL GLOBAL SEED: 270 CURATED WORKS, LIVE
+
+**Canonical handoff: `docs/handoffs/SESSION_CANONICAL_SEED_JUL3.md` — READ IT before touching
+the global visual-memory seed.** Executes `docs/handoffs/PLAN_CANONICAL_GLOBAL_SEED_OPUS.md`
+end-to-end. 1 commit on main (`83e68492`), pushed, Railway deploying. Seed RUN on prod via the
+pooler. **`montree_global_visual_memory` is now 270 rows, 100% `source='curated'`** (was 235 =
+5 curated + 230 whale_seed).
+
+- **What it is:** the global cold-start baseline is no longer seeded from Whale-classroom photos
+  (biased, no discriminators). Every standard Montessori work now has an Opus/Fable-authored,
+  spec-grounded checklist — positives + mutual "NOT <look-alike>:" negatives on every confusion
+  pair. New schools start warm on standard materials.
+- **Precedence FLIPPED** (`scripts/seed-global-visual-memory.mjs`): curated `visual_description`
+  is authoritative and REPLACES Whale text per key; Whale negatives merge in after (60-char
+  dedupe). Per-area confidence 0.95, **Practical Life 0.85**. Seed refuses to run unless the new
+  **validator** (`scripts/validate-curated-visual-memory.mjs`) passes.
+- **Data:** `scripts/data/curated-visual-memory/{sensorial,math,language,cultural,practical-life}.json`
+  (35 · 57 · 45 · 50 · 83 = 270). Validator hard-fails on unknown key / >900-char desc /
+  name-area mismatch / dup keys / roster names / malformed negative; mutual-negative asymmetry
+  is a WARNING (pragmatic at scale — negatives are prompt hints).
+- **New cross-area pair registered** (`lib/montree/work-matching.ts`, 4-step rule): **Sandpaper
+  Letters (language) ↔ Sandpaper Numerals (math)** — both directions + `sandpaper numbers` alias
+  + mutual curated negatives.
+- **Harness = the deliverable** (`scripts/retest-cold-start.mjs` + `_harness/pipeline-entry.ts`):
+  esbuild-bundles the REAL pipeline, runs live Haiku against a synthetic COLD classroom
+  (empty classroom VM + full global VM + `useV2:true`). Use it before/after ANY future seed
+  change. A green validator is NOT a working feature (Jun-14 rule).
+- **Gate = PASS** (live-Haiku, cold context). The real Bright Stars failure photo (`d7af53f8`,
+  Cylinder-Block-as-Spindle-Boxes) resolves to **Cylinder Block 2/3 at full scale** — the
+  Spindle-Boxes misfire is eliminated. Controls unregressed (Number Rods 3/3, Metal Insets 2/2);
+  curated seed IMPROVED Knobless Cylinders 0/3→1/3 (was mis-IDed as Cylinder Blocks). The one
+  "regression" (Pink Tower 3/3→Brown Stair) is a verified Pink Tower **+** Brown Stair COMBINATION
+  photo — ambiguous scene, not a distinctive-work regression. Full before/after table in the handoff.
+- **Build split:** batch-1 (26 confusion works) + validator + harness + seed rewrite = Fable;
+  remaining 244 works = 3 Sonnet subagents (math/language/cultural/PL) against the template,
+  gated by the validator; all integrity checks (validate/seed/harness/measure/push) = Fable.
+- **🚨 OWED — clean-photo verification round (Tredoux offered):** capture clean single-material
+  photos through the Montree app → run `retest-cold-start.mjs --media <id>`. Priority "dodgy"
+  list (confusion pairs shot SEPARATELY + low-confidence works) is in the handoff §4.
+- **RULES:** curated authoritative per key · seed gated by validator · per-area confidence
+  0.95/PL-0.85 · new cross-area pair = Set+counterparts(both dirs)+mutual negatives+re-seed ·
+  global still NEVER satisfies Gate A Path 1 · runtime read-only · Haiku on all passes · 20KB
+  shared budget + both cache breakpoints · no child data in the table (100% generic materials).
+- **Rollback:** `UPDATE montree_global_visual_memory SET is_active=false;` (graceful degrade) or
+  `git checkout 72e59ec1 -- scripts/seed-global-visual-memory.mjs` + re-run (restores Whale-primary).
+
+---
+
 ## 🧠 SESSION — Jul 3, 2026 (Fable) — MASTER BRAIN v1 BUILT + PHOTO-ID COLD-START FIXED
 
 **Canonical handoff: `docs/handoffs/SESSION_MASTER_BRAIN_BUILD_JUL3.md` — READ IT before touching
