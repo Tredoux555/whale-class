@@ -237,7 +237,7 @@
       "work_key": "ma_golden_beads_addition",
       "work_name": "Golden Bead Addition",
       "area": "mathematics",
-      "visual_description": "Two or more separate golden bead quantities (each represented by units, ten-bars, hundred-squares, thousand-cubes and its own stacked numeral-card label) are laid out on a large mat and then physically PUSHED TOGETHER/combined into one final total, which is exchanged where needed and relabelled with a new numeral-card stack. The defining picture is multiple gold bead groupings on one mat converging into a single larger combined pile, with a large green horizontal 'plus' layout and a final combined total shown at the bottom.",
+      "visual_description": "Two or more separate golden bead quantities (each represented by units, ten-bars, hundred-squares, thousand-cubes and its own stacked numeral-card label) are laid out on a large mat and then physically PUSHED TOGETHER/combined into one final total, which is exchanged where needed and relabelled with a new numeral-card stack. The defining picture is multiple gold bead groupings on one mat converging into a single larger combined pile, with a final combined total shown at the bottom.",
       "key_materials": [
         "Two or more separate gold bead quantities with their own numeral-card labels",
         "Large floor mat with distinct starting groups",
@@ -665,7 +665,7 @@
       "work_key": "ma_checkerboard",
       "work_name": "Checkerboard (Multiplication)",
       "area": "mathematics",
-      "visual_description": "A large mat printed with a chequered grid in alternating light and dark green squares, with a printed place-value key running along the bottom and left edges (units, tens, hundreds, thousands). Gold bead bars (or stamp-style tiles) are placed into the appropriate squares according to their place value, multiplied by a single multiplier bead-bar placed at the bottom, with resulting products counted and consolidated diagonally. The defining picture is a large chequered green-and-cream grid mat with gold bead bars arranged across it, used for multi-digit multiplication far beyond the small bead board.",
+      "visual_description": "A large square mat printed with a grid of coloured squares, the columns colour-coded by place value (green for units, blue for tens, red for hundreds, then repeating green/blue/red across the higher places), with a printed place-value key along the bottom edge and the multiplier digits down the right edge. Gold bead bars are placed into the appropriate squares according to place value, and products are counted and slid diagonally to combine. The defining picture is a large multi-coloured (green/blue/red) chequered grid mat with gold bead bars arranged across it, used for multi-digit multiplication far beyond the small bead board.",
       "key_materials": [
         "Large mat printed with a light/dark green chequered grid",
         "Printed place-value key along two edges",
