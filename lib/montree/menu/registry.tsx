@@ -40,7 +40,10 @@ export interface MenuItemDef {
 export const MENU_REGISTRY: Record<MenuItemId, MenuItemDef> = {
   guru: { id: 'guru', labelKey: 'nav.guru', label: 'Guru', route: '/montree/dashboard/guru', icon: Sparkles },
   curriculum: { id: 'curriculum', labelKey: 'nav.curriculum', label: 'Curriculum', route: '/montree/dashboard/curriculum', icon: BookOpen },
-  manage_students: { id: 'manage_students', labelKey: 'students.manageStudents', label: 'Manage Students', route: '/montree/dashboard/students', icon: Users },
+  // Label "Student Manager" (Tredoux, Jul 3 2026) — parallels "Parent Manager",
+  // which is likewise a hardcoded label. labelKey nulled so the menu shows the
+  // new name; the Manage Students page keeps its own title via t('students.*').
+  manage_students: { id: 'manage_students', labelKey: null, label: 'Student Manager', route: '/montree/dashboard/students', icon: Users },
   parent_manager: { id: 'parent_manager', labelKey: null, label: 'Parent Manager', route: '/montree/dashboard/parent-codes', icon: KeyRound },
   parent_messages: { id: 'parent_messages', labelKey: 'nav.messages', label: 'Messages', route: '/montree/dashboard/parent-chats', icon: MessageSquare },
   photo_audit: { id: 'photo_audit', labelKey: 'audit.title', label: 'Photo Audit', route: '/montree/dashboard/photo-audit', icon: Search },

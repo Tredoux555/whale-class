@@ -54,19 +54,19 @@ function isMenuItemId(x: unknown): x is MenuItemId {
   return typeof x === 'string' && (MENU_ITEM_IDS as readonly string[]).includes(x);
 }
 
-// The seeded default for NEW signups (Tredoux, Jul 3 2026):
-// Guru → Wrap Up (photo_audit) → Parent Manager → Notes → Manage Students
-// visible — THAT'S IT. Everything else hidden (English Corner, Calendar,
-// Meeting Notes, Messages, Curriculum, Classroom Overview + all extras).
-// Teachers can switch hidden items on via Menu Management.
-// Guru sits FIRST (Tredoux, Jul 3 2026 — "first on the menu"): it's the
-// everyday entry point, so it leads the list.
+// The seeded default for NEW signups (Tredoux, Jul 3 2026 — "simplicity is king"):
+// Guru → Student Manager (manage_students) → Parent Manager → Notes → Wrap Up
+// (photo_audit) visible — THAT'S IT. Everything else hidden (English Corner,
+// Calendar, Meeting Notes, Messages, Curriculum, Classroom Overview + all extras).
+// Menu Management is hidden, so this order is the fixed teacher experience.
+// Guru leads (the everyday entry point); Wrap Up sits last but stays visible so
+// the photo review/confirm loop is always reachable (it's the ONLY path to it).
 const CORE_VISIBLE: MenuItemId[] = [
   'guru',
-  'photo_audit',
+  'manage_students',
   'parent_manager',
   'notes',
-  'manage_students',
+  'photo_audit',
 ];
 
 export const MINIMAL_DEFAULT_MENU: MenuConfig = {

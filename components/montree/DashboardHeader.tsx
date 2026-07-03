@@ -9,8 +9,10 @@ import {
   Camera, Mic, Square, MoreHorizontal, ChevronDown,
   FileText, Target, Search, Sparkles, BookOpen,
   LayoutGrid, CalendarDays, Images, FolderOpen, TrendingUp,
-  Users, BookMarked, Globe, BarChart2, Settings2, LogOut, UserPlus,
+  Users, BookMarked, Globe, BarChart2, Settings2, LogOut,
   MessageSquare, KeyRound, Calendar,
+  // UserPlus removed Jul 3 2026 — the "Invite your principal" menu row was
+  // hidden. Re-add UserPlus here if that row is ever uncommented.
 } from 'lucide-react';
 import { getSession, clearSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { HOME_THEME } from '@/lib/montree/home-theme';
@@ -853,10 +855,19 @@ function DashboardHeader() {
                   )}
                   <Divider />
 
-                  {/* Always visible — Invite principal + Menu Management + Logout */}
+                  {/* Invite your principal — REMOVED from the menu Jul 3 2026 per
+                      Tredoux ("advise verbally; simplicity is king"). The modal +
+                      InvitePrincipalModal + showInvitePrincipal state stay wired
+                      below (hide-don't-delete rule #56) so the capability is one
+                      uncomment away. To restore:
                   <MenuRow icon={UserPlus} label="Invite your principal" onClick={() => { setShowMoreMenu(false); setShowInvitePrincipal(true); }} />
+                  */}
+                  {/* Menu Management — HIDDEN Jul 3 2026 per Tredoux (the /menu-setup
+                      page renders a broken light theme + the menu is now a fixed,
+                      curated set so per-teacher reordering isn't needed). Route
+                      stays on disk (hide-don't-delete). To restore:
                   <MenuRow icon={Settings2} label="Menu Management" active={activePage === 'menu-setup'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/menu-setup'); }} />
-                  <Divider />
+                  */}
                   <MenuRow icon={LogOut} label={t('auth.logout')} danger onClick={() => { setShowMoreMenu(false); clearSession(); router.push('/montree/login'); }} />
                 </div>
               )}
