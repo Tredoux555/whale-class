@@ -37,6 +37,49 @@ export type SyncEvent = {
 };
 
 // ============================================
+// CURRENT SCHOOL (cross-account isolation)
+// ============================================
+//
+// The photo queue lives in IndexedDB, which is per-BROWSER, not per-account.
+// A device that has logged into multiple schools accumulates entries whose
+// school_id no longer matches the active session. The upload API correctly
+// 403s those ("school_id mismatch"), but uploadEntry treated every 403 as
+// AUTH_EXPIRED and halted the whole sync loop — so foreign entries jammed the
+// queue forever, it grew to MAX_QUEUE_SIZE, and capture bricked with
+// "queue full" (Jul 3 2026 incident). Foreign entries can NEVER upload under
+// this session, so we purge them and sync only the current school's photos.
+
+function getCurrentSchoolId(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem('montree_session');
+    if (!raw) return null;
+    const session = JSON.parse(raw);
+    return session?.school?.id || null;
+  } catch {
+    return null;
+  }
+}
+
+/** Delete queue entries belonging to a DIFFERENT school than the active one. */
+export async function purgeForeignEntries(currentSchoolId: string): Promise<number> {
+  if (!currentSchoolId) return 0;
+  const entries = await getAllEntries();
+  let purged = 0;
+  for (const entry of entries) {
+    if (entry.school_id && entry.school_id !== currentSchoolId) {
+      if (entry._local_url) { try { URL.revokeObjectURL(entry._local_url); } catch { /* non-fatal */ } }
+      await deleteEntry(entry.id);
+      purged++;
+    }
+  }
+  if (purged > 0) {
+    console.warn(`[PHOTO_QUEUE] Purged ${purged} entries from other accounts (school != ${currentSchoolId})`);
+  }
+  return purged;
+}
+
+// ============================================
 // CONTENT HASH (deduplication)
 // ============================================
 
@@ -84,7 +127,9 @@ export async function enqueuePhoto(
 ): Promise<PhotoQueueEntry> {
   // Check queue capacity
   if (await isQueueFull()) {
-    // First try: clean up old uploaded entries
+    // First try: purge entries from OTHER accounts (they can never upload
+    // under this session — the server 403s them) + clean up old uploaded entries
+    await purgeForeignEntries(opts.school_id);
     await cleanupOldEntries();
 
     // CRITICAL-005: If still full, aggressively delete oldest pending entries
@@ -190,7 +235,15 @@ export async function syncQueue(): Promise<SyncResult> {
   notifyListeners({ type: 'sync_start' });
 
   try {
-    const pending = await getPendingEntries();
+    // Cross-account isolation: only sync photos belonging to the ACTIVE school.
+    // Foreign entries would 403 ("school_id mismatch"), which halts the sync
+    // loop via the AUTH_EXPIRED sentinel and starves the current account's
+    // uploads. They get purged by enqueuePhoto's queue-full path.
+    const currentSchool = getCurrentSchoolId();
+    const allPending = await getPendingEntries();
+    const pending = currentSchool
+      ? allPending.filter(e => !e.school_id || e.school_id === currentSchool)
+      : allPending;
 
     if (pending.length === 0) {
       return { uploaded: 0, failed: 0, skipped: true, reason: 'no pending photos' };
@@ -353,6 +406,20 @@ async function uploadEntry(entry: PhotoQueueEntry): Promise<void> {
 
     // HIGH-001: Auth failure — stop entire sync loop immediately
     if (response.status === 401 || response.status === 403) {
+      // EXCEPTION: a school_id mismatch 403 means this entry belongs to a
+      // DIFFERENT account on this device — it can never upload under this
+      // session. Mark it terminal instead of halting the whole sync loop
+      // (halting starved the current account's uploads and jammed the queue).
+      let bodyError = '';
+      try { bodyError = (await response.json())?.error || ''; } catch { /* ignore */ }
+      if (response.status === 403 && /school_id mismatch/i.test(bodyError)) {
+        await updateEntryStatus(entry.id, 'permanent_failure', {
+          error_message: 'Photo belongs to a different account on this device',
+          last_attempt_at: new Date().toISOString(),
+          attempt_count: entry.attempt_count + 1,
+        });
+        throw new Error('SCHOOL_MISMATCH'); // counted as failed, does NOT halt sync
+      }
       await updateEntryStatus(entry.id, 'failed', {
         error_message: 'Session expired — please log in again',
         last_attempt_at: new Date().toISOString(),
@@ -484,7 +551,7 @@ async function checkNetworkReachable(): Promise<boolean> {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 2000); // 2s — fast fail
-    const res = await fetch('/api/montree/health', {
+    await fetch('/api/montree/health', {
       method: 'HEAD',
       signal: controller.signal,
       cache: 'no-store',
