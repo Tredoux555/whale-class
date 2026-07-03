@@ -526,7 +526,26 @@ async function aggressiveCleanup(): Promise<void> {
     await deleteEntry(entry.id);
   }
 
-  console.log(`[PHOTO_QUEUE] Aggressive cleanup: deleted ${uploaded.length} uploaded + ${permFailed.length} failed`);
+  // Priority 3 (LAST RESORT): stale failed/pending entries older than 7 days.
+  // Without this, a queue of 200 stuck pending/failed entries (e.g. from an
+  // old test account whose uploads can never succeed) bricks photo capture
+  // PERMANENTLY — enqueuePhoto throws "queue full" forever. Entries this old
+  // were never going to upload; freeing them keeps capture alive.
+  let staleDeleted = 0;
+  const STALE_CUTOFF = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const stale = entries
+    .filter(e =>
+      (e.status === 'failed' || e.status === 'pending') &&
+      new Date(e.created_at).getTime() < STALE_CUTOFF
+    )
+    .sort((a, b) => a.created_at.localeCompare(b.created_at));
+  for (const entry of stale.slice(0, 50)) {
+    if (entry._local_url) { try { URL.revokeObjectURL(entry._local_url); } catch { /* non-fatal */ } }
+    await deleteEntry(entry.id);
+    staleDeleted++;
+  }
+
+  console.log(`[PHOTO_QUEUE] Aggressive cleanup: deleted ${uploaded.length} uploaded + ${permFailed.length} failed + ${staleDeleted} stale (>7d)`);
 }
 
 // ============================================
