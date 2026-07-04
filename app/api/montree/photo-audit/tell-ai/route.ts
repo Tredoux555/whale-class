@@ -20,7 +20,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase, getPublicUrl } from '@/lib/supabase-client';
 import { checkRateLimit } from '@/lib/rate-limiter';
-import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
+import { anthropic } from '@/lib/ai/anthropic';
+import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 
 
 // Railway/Next.js default serverless timeout is 15s. AI calls can
@@ -81,6 +82,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'AI not configured' }, { status: 503 });
     }
 
+    // TIER-GATE (Jul 4 2026): run "Tell AI" on the school's tier model —
+    // Haiku on the Haiku tier, Sonnet on Premium. Free is blocked (no AI).
+    // This keeps the Haiku tier 100% Haiku while the feature still works.
+    const aiTier = await resolveReportModel(supabase, auth.schoolId);
+    if (aiTier.tier === 'free' || !aiTier.model) {
+      return NextResponse.json({
+        success: false,
+        error: 'This feature requires an active AI tier.',
+        requires_upgrade: true,
+        upgrade_url: '/montree/admin/billing',
+        feature: 'tell_ai',
+      }, { status: 402 });
+    }
+
     const photoUrl = getPublicUrl('montree-media', mediaRow.storage_path as string);
 
     const systemPrompt = `You are a Montessori curriculum expert helping a teacher document a new custom work. The teacher is telling you what a photo actually shows because our automatic identification got it wrong or it's a novel activity. Trust the teacher's context completely — they know their classroom. Your job is to look at the photo THROUGH the lens of their context and produce a clean curriculum entry.`;
@@ -101,7 +116,7 @@ Examine the photo with this context in mind. Produce a curriculum entry for this
 }`;
 
     const response = await anthropic.messages.create({
-      model: AI_MODEL,
+      model: aiTier.model,
       max_tokens: 1500,
       system: systemPrompt,
       messages: [

@@ -2780,6 +2780,7 @@ export default function PhotoAuditPage() {
               onSetStatus={(status) => handleSetStatus(photo, status)}
               unifiedTagger={isEnabled('unified_photo_tagger')}
               discussionEnabled={isEnabled('wrap_discussion')}
+              sonnetTierEnabled={isEnabled('ai_tier_sonnet')}
               nowTs={nowTs}
               t={t}
             />
@@ -3215,7 +3216,7 @@ const iconTooltipStyle: CSSProperties = {
 // cascade re-renders into every card. Critical when 200-500 photos are
 // loaded on one page. The custom comparator on memo skips re-render unless
 // the photo data, selection state, processing flag, or workStatus changed.
-function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onMarkAsPaperwork, onToggleDiscussion, rerunResult, onAcceptResult, onAcceptDraft, onConfirmDraft, onConfirmCandidate, onTellAI, onReidentify, onPhotoTap, onSaveNote, processing, workStatus, onSetStatus, unifiedTagger, discussionEnabled, nowTs, t }: {
+function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onMarkAsPaperwork, onToggleDiscussion, rerunResult, onAcceptResult, onAcceptDraft, onConfirmDraft, onConfirmCandidate, onTellAI, onReidentify, onPhotoTap, onSaveNote, processing, workStatus, onSetStatus, unifiedTagger, discussionEnabled, sonnetTierEnabled, nowTs, t }: {
   photo: AuditPhoto;
   selected: boolean;
   onToggle: () => void;
@@ -3242,6 +3243,7 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
   onSetStatus: (status: 'presented' | 'practicing' | 'mastered') => void;
   unifiedTagger: boolean;
   discussionEnabled: boolean;
+  sonnetTierEnabled: boolean;
   /** Clock value (ms) refreshed in the parent on an interval — used for recency
    *  checks so the card never reads Date.now() during render (purity rule). */
   nowTs: number;
@@ -3464,7 +3466,7 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
           {photo.sonnet_draft?.suggested_area && (
             <p style={{ fontSize: 9, color: 'rgba(94,234,212,0.65)', textTransform: 'capitalize', margin: 0 }}>{photo.sonnet_draft.suggested_area.replace(/_/g, ' ')}</p>
           )}
-          <p style={{ fontSize: 9, color: 'rgba(94,234,212,0.65)', marginTop: 4, fontStyle: 'italic' }}>Haiku identified this, but has low confidence — ask Sonnet for deeper analysis.</p>
+          <p style={{ fontSize: 9, color: 'rgba(94,234,212,0.65)', marginTop: 4, fontStyle: 'italic' }}>{sonnetTierEnabled ? 'Haiku identified this, but has low confidence — ask Sonnet for deeper analysis.' : 'Haiku identified this, but has low confidence — confirm it, pick a suggestion, or tag it.'}</p>
           {photo.sonnet_draft?.visual_description && (
             <p style={{ fontSize: 9, color: 'rgba(204,251,241,0.72)', lineHeight: 1.4, marginTop: 5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>👁 {photo.sonnet_draft.visual_description}</p>
           )}
@@ -3507,6 +3509,9 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
               ✏️ Wrong
             </button>
           </div>
+          {/* "Ask Sonnet" is a Premium-tier-only escalation. On Haiku/Free the
+              teacher confirms/tags with Haiku's draft above — no Sonnet button. */}
+          {sonnetTierEnabled && (
           <button
             onClick={() => {
               // Call Ask Sonnet endpoint — teacher-triggered enrichment
@@ -3538,6 +3543,7 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
           >
             🧠 Ask Sonnet
           </button>
+          )}
         </div>
       )}
 
@@ -3892,6 +3898,7 @@ const AuditPhotoCard = memo(AuditPhotoCardInner, (prev, next) => {
     prev.workStatus === next.workStatus &&
     prev.rerunResult === next.rerunResult &&
     prev.unifiedTagger === next.unifiedTagger &&
-    prev.discussionEnabled === next.discussionEnabled
+    prev.discussionEnabled === next.discussionEnabled &&
+    prev.sonnetTierEnabled === next.sonnetTierEnabled
   );
 });

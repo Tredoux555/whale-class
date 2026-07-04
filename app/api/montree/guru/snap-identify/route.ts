@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
-import { anthropic, AI_ENABLED, AI_MODEL } from '@/lib/ai/anthropic';
+import { anthropic, AI_ENABLED } from '@/lib/ai/anthropic';
 import { AREA_LABELS_EN } from '@/lib/montree/i18n/area-labels';
 import { isValidLocale } from '@/lib/montree/i18n/locales';
 import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
@@ -638,7 +638,7 @@ RULES:
         question: `snap_identify:${mediaRecord.id}`,
         question_type: 'snap_identify',
         response_insight: result.next_steps?.reason || result.observation?.detailed_notes || '',
-        model_used: AI_MODEL,
+        model_used: aiTier.model,
         context_snapshot: {
           child_name: childName,
           media_id: mediaRecord.id,

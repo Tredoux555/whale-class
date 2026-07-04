@@ -17,6 +17,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, getPublicUrl } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
 import {
   generateSonnetDraft,
@@ -62,6 +63,20 @@ export async function POST(request: NextRequest) {
   }
   if (media.school_id !== auth.schoolId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  // 🚨 TIER-GATE (Jul 4 2026): "Ask Sonnet" is a Premium (ai_tier_sonnet)
+  // feature — Haiku/Free schools stay pure Haiku. The button is already hidden
+  // client-side on those tiers; this is defense-in-depth so a stale client
+  // can't spend a Sonnet call on a Haiku-tier school.
+  if (!(await isFeatureEnabled(supabase, auth.schoolId, 'ai_tier_sonnet'))) {
+    return NextResponse.json({
+      success: false,
+      error: 'Ask Sonnet is a Premium-tier feature.',
+      requires_upgrade: true,
+      upgrade_url: '/montree/admin/billing',
+      feature: 'sonnet_review',
+    }, { status: 402 });
   }
 
   // Load child for context (name + age)
