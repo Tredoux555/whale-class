@@ -55,6 +55,59 @@ Montree coupling + personal data; don't re-introduce it by editing the Montree c
 
 ---
 
+## 🩹 SESSION — Jul 4, 2026 (Cowork, late) — LIVE IPHONE BUG SWEEP + 3-TIER AI CONTROL + WRAP UP TAB GATING
+
+**Canonical handoff: `docs/handoffs/SESSION_UI_FIXES_AND_3TIER_JUL4.md`. 6 commits on main
+(`4ab0754d`→`d25e01b0`→`457b308f`→`ded705b3`→`bd27bf00`→`744a600a`→`a8de31bf`), all pushed + Railway
+deployed. Migration 283 RUN (confirmed). ESLint clean per file; i18n 12/12.** Driven by a live iPhone
+walkthrough of the brand-new **Sunshine Montessori / Miss Chen** cold-start school.
+
+- **🩹 Voice-onboarding crash on "That's right" (`d25e01b0`).** `voice-onboarding/page.tsx` imported
+  only `getAreaLabel` (line 24) but the **Shelf Editor** stage (reached exactly on "That's right")
+  calls `getAreaPrefix(areaKey, locale)` → `ReferenceError` → dashboard error boundary
+  ("Something went wrong 😵"). Hit EVERY teacher reaching that stage, not Marina-specific. One-line
+  import fix. Slipped past because `typescript.ignoreBuildErrors:true` + ESLint `no-undef` off.
+  **RULE: any component rendering an area dot MUST import `getAreaPrefix` — a missing import for a
+  render-path helper is a runtime crash, not a build error. Grep-verify.**
+- **✨ Child gallery "Identifying…" state (`457b308f`).** The processing hourglass + "Identifying…"
+  existed only on the **Wrap Up / Photo Audit** page, never the **child gallery** (two different
+  files). Ported `isPhotoInFlight()` + `ProcessingHourglass` VERBATIM from photo-audit (single source
+  of truth) + `nowTs` clock (starts 0 → SSR-safe) + a **silent 6s poll** (`fetchPhotos({silent:true})`,
+  bounded 12 tries) so the card flips on its own. `silent` skips `setLoading` so the full-screen
+  spinner never flickers. Label hardcoded English (`gallery.identifying` doesn't exist; `t()||fb`
+  renders the raw key). Keyed on RESULT, never `identification_attempted_at`.
+- **🔄 Camera landscape labels (`ded705b3`).** Right-rail labels read "dyslexic" in landscape — all 6
+  (Retake/Use Photo/PHOTO/VIDEO/Cancel/album) flipped `rotate-90`→`-rotate-90`. Back-chevron left as
+  `rotate-90` (directional icon, not text). Two `replace_all`s (` rotate-90"`, ` rotate-90 ${`)
+  matched the rail + excluded the chevron (`'rotate-90'`). Positions unchanged.
+- **🎛 Three-tier AI control restored (`bd27bf00`).** Session-57 built Free/Core/Premium; it had been
+  collapsed to a binary Free⇄Pro toggle in super-admin. **Engine was always three-tier**
+  (`resolveReportModel()` → free/haiku/sonnet). Restored: GET derives `sonnet>haiku>free` from the two
+  flags; PATCH `VALID_AI_TIERS=['free','haiku','sonnet']` (free=both off/$0; haiku=`ai_tier_haiku`
+  only/$50 soft; sonnet=BOTH on/$9999 warn — strict superset, so old "Pro" schools read back as
+  Sonnet, no regression); `SchoolsTab` shows **Free/Haiku/Sonnet** pills. **🚨 Trial-floor caveat
+  (NOT changed):** trialing/active schools get Haiku even when set Free (Jun-9 floor so trials aren't
+  402'd), so **true zero-AI Free is only testable on a non-trial school** — Haiku vs Sonnet is clean
+  now. Cost readback confirmed: 4 photos + 1 Sonnet parent report = **$0.0039**.
+- **🎚 Wrap Up optional tabs gated + rename (`744a600a`, migration 283 RUN).** Weekly Admin /
+  Discussion / Get Advice are now per-school flags, **default OFF**, toggleable in super-admin ⚙️
+  Features. **Weekly Admin** reuses the pre-existing `weekly_admin_docs` flag (default OFF, already in
+  the modal + already on for Whale) — the tab BUTTON just wasn't hidden; now it is (no migration).
+  **Discussion + Get Advice** = NEW flags `wrap_discussion`+`wrap_get_advice` (migration 283, default
+  OFF, enabled for Whale), added to `FeatureKey` union + gated in `ZONE_TABS`. Also **hid the per-card
+  💬 discussion flag icon** when Discussion is off (passed `discussionEnabled` through the memoized
+  `AuditPhotoCard` + added to its comparator) — else flagging strands a photo (pulled from Confirm,
+  no tab to hold it). **Weekly Wrap tab → "Parent Reports"** (value-only en+zh; key/zone unchanged).
+  A new school opens Wrap Up to just **Confirm + Parent Reports**. **RULE: new toggleable feature =
+  def row (migration) + `FeatureKey` key + `isEnabled()` gate on the ENTRY POINT (tab/icon), not just
+  the destination.**
+- **📇 Parent Manager Print→Parent Chats (`a8de31bf`).** Removed the top-bar Print button
+  (`window.print()`) + replaced with the **Parent Chats** `<Link>` in prominent emerald (next to the
+  language toggle); dropped the duplicate Parent Chats from the heading + the unused `Printer` import.
+  Print CSS/classes intact (Cmd+P still works, just no button).
+
+---
+
 ## 🎯 SESSION — Jul 4, 2026 (Cowork/Opus) — PHOTO-ID VISUAL-SIMILARITY RETRIEVAL: the cold-start miss CLASS closed, LIVE
 
 **Canonical build handoff: `docs/handoffs/SESSION_PHOTO_ID_VISUAL_RETRIEVAL_BUILD_JUL4.md` (read it
@@ -10049,6 +10102,9 @@ All migrations through 169 have been run. Key ones: 147 (smart learning columns)
 
 **Session 128 (May 25, 2026) — Universal Calendar foundations. ✅ Migration RUN (verified Session 129):**
 - ✅ `233_school_terms_and_timezone.sql` — `timezone TEXT` column on `montree_schools` + `montree_school_terms` table (id, school_id, name, start_date, end_date, created_at, updated_at + CHECK end_date >= start_date + 2 indexes (school_id, school+window) + `montree_school_terms_touch_updated_at()` trigger). Idempotent. **Verified live via Web-Claude end-to-end Term creation test in Session 129** — POST `/api/montree/school/terms` returned 200, term row inserted, violet dot rendered on calendar grid. Either ran successfully at some point or the underlying table existed before this migration was needed.
+
+**Session Jul 4, 2026 (Cowork, late) — Wrap Up optional tabs. ✅ Migration RUN (confirmed by Tredoux):**
+- ✅ `283_wrap_up_optional_tabs.sql` — inserts two `montree_feature_definitions` rows: `wrap_discussion` (Discussion Tab, category `management`, default_enabled FALSE) + `wrap_get_advice` (Get Advice Tab, category `ai_tools`, default_enabled FALSE), then enables BOTH for Whale Class (`montree_school_features`, school via classroom `51e7adb6-cd18-4e03-b707-eceb0a1d2e69`). Idempotent (`ON CONFLICT DO UPDATE`). Gates the Discussion + Get Advice tabs on the Wrap Up / photo-audit surface (Weekly Admin already gated by the pre-existing `weekly_admin_docs` flag from migration 149). Fail-closed: both tabs vanish everywhere (incl. Whale) until this runs, which is why it re-enables Whale. **RUN + confirmed Jul 4, 2026.**
 
 **Session 136 (May 30, 2026) — Marketing site portrait rebuild + English-area materials LOOP. NO new migrations.**
 - **Splash + Explainer rebuilt portrait / mobile-first.** Splash hero (`app/montree/page.tsx`) = split layout (portrait 9:16 video LEFT, text RIGHT with a gold eyebrow anchor; collapses to centred stack ≤880px). EN hero is now the **MAIN EXPLAINER** film (`splash/montree-splash-video-v4.mp4`); 中文 = Astra (`…-zh-v3.mp4`). New **`/montree/explainer`** page (`app/montree/explainer/page.tsx`): hero (main explainer) + gallery of **11 feature films** — 10 live, `reading-tracker` still "coming soon"; **video 5 (child-profiles) removed**. "Explainer" nav link + teaser on splash.
