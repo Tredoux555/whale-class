@@ -634,13 +634,13 @@ export default function CameraCapture({
             <div className="flex flex-col-reverse items-center justify-between flex-1 py-8">
               <button
                 onClick={retake}
-                className="text-white font-medium text-base active:opacity-70 transition-opacity rotate-90"
+                className="text-white font-medium text-base active:opacity-70 transition-opacity -rotate-90"
               >
                 {t('camera.retake')}
               </button>
               <button
                 onClick={confirmCapture}
-                className="text-yellow-400 font-semibold text-base active:opacity-70 transition-opacity rotate-90"
+                className="text-yellow-400 font-semibold text-base active:opacity-70 transition-opacity -rotate-90"
               >
                 {t('camera.use')} {captureMode === 'photo' ? t('camera.photo') : t('camera.video')}
               </button>
@@ -669,7 +669,7 @@ export default function CameraCapture({
               <div className="flex flex-col gap-4 items-center">
                 <button
                   onClick={() => handleModeChange('photo')}
-                  className={`text-sm font-semibold transition-colors rotate-90 ${
+                  className={`text-sm font-semibold transition-colors -rotate-90 ${
                     captureMode === 'photo' ? 'text-yellow-400' : 'text-white/50'
                   }`}
                 >
@@ -677,7 +677,7 @@ export default function CameraCapture({
                 </button>
                 <button
                   onClick={() => handleModeChange('video')}
-                  className={`text-sm font-semibold transition-colors rotate-90 ${
+                  className={`text-sm font-semibold transition-colors -rotate-90 ${
                     captureMode === 'video' ? 'text-yellow-400' : 'text-white/50'
                   }`}
                 >
@@ -694,7 +694,7 @@ export default function CameraCapture({
               {!isRecording && captureMode === 'photo' && (
                 <button
                   onClick={handleNativeAlbumPick}
-                  className="w-9 h-9 flex items-center justify-center rounded-full text-white/70 active:text-white transition-colors rotate-90"
+                  className="w-9 h-9 flex items-center justify-center rounded-full text-white/70 active:text-white transition-colors -rotate-90"
                   title={t('camera.album')}
                 >
                   {albumIcon}
@@ -703,7 +703,7 @@ export default function CameraCapture({
               <button
                 onClick={onCancel}
                 disabled={isRecording}
-                className="text-white text-[15px] font-medium disabled:opacity-30 active:opacity-70 transition-opacity rotate-90"
+                className="text-white text-[15px] font-medium disabled:opacity-30 active:opacity-70 transition-opacity -rotate-90"
               >
                 {t('common.cancel') || 'Cancel'}
               </button>
