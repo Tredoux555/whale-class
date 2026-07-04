@@ -3974,7 +3974,7 @@ export const zh = {
   'photoAudit.discussionFlagRemoved': '💬 已取消讨论标记',
   'photoAudit.confirmTab': '确认',
   'photoAudit.discussionTab': '💬 讨论',
-  'photoAudit.weeklyWrapTab': '周总结',
+  'photoAudit.weeklyWrapTab': '家长报告',
   'photoAudit.weeklyAdminTab': '周报文档',
   'photoAudit.wrapUpHeader': '收尾整理',
   'photoAudit.syncButtonTitle': '同步离线照片到云端',

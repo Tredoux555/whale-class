@@ -2588,7 +2588,15 @@ export default function PhotoAuditPage() {
     { key: 'weekly_wrap', label: t('photoAudit.weeklyWrapTab'), color: 'bg-violet-100 text-violet-800', count: null },
     { key: 'weekly_admin', label: t('photoAudit.weeklyAdminTab'), color: 'bg-indigo-100 text-indigo-800', count: null },
     { key: 'get_advice', label: '✦ Get Advice', color: 'bg-emerald-100 text-emerald-800', count: null },
-  ];
+  ].filter(tab => {
+    // Optional tabs gated per-school via super-admin ⚙️ Features. All default OFF —
+    // a real Montessori school starts with just Confirm + Parent Reports. Whale
+    // Class (the operator's personal class) has all three enabled by migration.
+    if (tab.key === 'weekly_admin') return isEnabled('weekly_admin_docs');
+    if (tab.key === 'discussion') return isEnabled('wrap_discussion');
+    if (tab.key === 'get_advice') return isEnabled('wrap_get_advice');
+    return true;
+  });
 
   // ─── JSX ───
   return (
@@ -2771,6 +2779,7 @@ export default function PhotoAuditPage() {
               workStatus={workStatuses[`${photo.child_id}:${photo.work_name}`] || null}
               onSetStatus={(status) => handleSetStatus(photo, status)}
               unifiedTagger={isEnabled('unified_photo_tagger')}
+              discussionEnabled={isEnabled('wrap_discussion')}
               nowTs={nowTs}
               t={t}
             />
@@ -3206,7 +3215,7 @@ const iconTooltipStyle: CSSProperties = {
 // cascade re-renders into every card. Critical when 200-500 photos are
 // loaded on one page. The custom comparator on memo skips re-render unless
 // the photo data, selection state, processing flag, or workStatus changed.
-function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onMarkAsPaperwork, onToggleDiscussion, rerunResult, onAcceptResult, onAcceptDraft, onConfirmDraft, onConfirmCandidate, onTellAI, onReidentify, onPhotoTap, onSaveNote, processing, workStatus, onSetStatus, unifiedTagger, nowTs, t }: {
+function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onMarkAsPaperwork, onToggleDiscussion, rerunResult, onAcceptResult, onAcceptDraft, onConfirmDraft, onConfirmCandidate, onTellAI, onReidentify, onPhotoTap, onSaveNote, processing, workStatus, onSetStatus, unifiedTagger, discussionEnabled, nowTs, t }: {
   photo: AuditPhoto;
   selected: boolean;
   onToggle: () => void;
@@ -3232,6 +3241,7 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
   workStatus: string | null;
   onSetStatus: (status: 'presented' | 'practicing' | 'mastered') => void;
   unifiedTagger: boolean;
+  discussionEnabled: boolean;
   /** Clock value (ms) refreshed in the parent on an interval — used for recency
    *  checks so the card never reads Date.now() during render (purity rule). */
   nowTs: number;
@@ -3758,7 +3768,11 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
         {/* Utility actions — Confirm and Teach hidden (auto-handled on resolve/fix).
             Kept in code for reinstatement. Only delete remains visible. */}
         <div style={{ display: 'flex', gap: 4, marginTop: 8, justifyContent: 'flex-end' }}>
-          {/* 💬 Discussion flag toggle — instant tooltip via React state. */}
+          {/* 💬 Discussion flag toggle — instant tooltip via React state. Hidden
+              when the Discussion tab is off for this school: flagging a photo
+              pulls it out of the Confirm queue, so with no Discussion tab to hold
+              it the photo would be stranded. */}
+          {discussionEnabled && (
           <span
             style={{ position: 'relative', display: 'inline-block' }}
             onMouseEnter={() => setHoveredIcon('discussion')}
@@ -3778,6 +3792,7 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
               </span>
             )}
           </span>
+          )}
 
           {/* 📋 Mark as paperwork. */}
           <span
@@ -3876,6 +3891,7 @@ const AuditPhotoCard = memo(AuditPhotoCardInner, (prev, next) => {
     prev.processing === next.processing &&
     prev.workStatus === next.workStatus &&
     prev.rerunResult === next.rerunResult &&
-    prev.unifiedTagger === next.unifiedTagger
+    prev.unifiedTagger === next.unifiedTagger &&
+    prev.discussionEnabled === next.discussionEnabled
   );
 });
