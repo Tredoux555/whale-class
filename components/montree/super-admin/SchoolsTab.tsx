@@ -94,7 +94,7 @@ export default function SchoolsTab({
   const [overrideSchool, setOverrideSchool] = useState<{ id: string; name: string; current: number | string | null | undefined; note: string | null | undefined } | null>(null);
   const [paymentConfigSchool, setPaymentConfigSchool] = useState<{ id: string; name: string } | null>(null);
   const [togglingAi, setTogglingAi] = useState<Set<string>>(new Set());
-  const [tierOverrides, setTierOverrides] = useState<Record<string, 'free' | 'premium'>>({});
+  const [tierOverrides, setTierOverrides] = useState<Record<string, 'free' | 'haiku' | 'sonnet'>>({});
   // Local override updates for optimistic display after the modal saves. Keyed
   // by schoolId. `null` here means "cleared". Mirrors the pattern used for AI
   // tier (tierOverrides above) — avoids a full schools refetch.
@@ -122,8 +122,8 @@ export default function SchoolsTab({
     return typeof raw === 'string' ? Number(raw) : raw;
   };
 
-  // AI tier change handler (free / premium)
-  const handleTierChange = useCallback(async (school: School, newTier: 'free' | 'premium') => {
+  // AI tier change handler (free / haiku / sonnet)
+  const handleTierChange = useCallback(async (school: School, newTier: 'free' | 'haiku' | 'sonnet') => {
     if (!sessionToken) return;
     const currentTier = tierOverrides[school.id] ?? school.ai_tier ?? 'free';
     if (newTier === currentTier) return;
@@ -685,9 +685,10 @@ export default function SchoolsTab({
                           const spent = school.api_spent_this_month || 0;
                           const calls = school.api_calls_this_month || 0;
                           const toggling = togglingAi.has(school.id);
-                          const tiers: Array<{ key: 'free' | 'premium'; label: string; color: string; activeColor: string }> = [
+                          const tiers: Array<{ key: 'free' | 'haiku' | 'sonnet'; label: string; color: string; activeColor: string }> = [
                             { key: 'free', label: 'Free', color: 'text-slate-500', activeColor: 'bg-slate-600 text-white' },
-                            { key: 'premium', label: 'Pro', color: 'text-violet-400', activeColor: 'bg-violet-600 text-white' },
+                            { key: 'haiku', label: 'Haiku', color: 'text-teal-400', activeColor: 'bg-teal-600 text-white' },
+                            { key: 'sonnet', label: 'Sonnet', color: 'text-violet-400', activeColor: 'bg-violet-600 text-white' },
                           ];
                           return (
                             <div className="flex flex-col items-center gap-1">
