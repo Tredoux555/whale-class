@@ -316,6 +316,9 @@ export async function POST(request: NextRequest) {
       curriculum,
       locale,
       context,
+      // Enables visual-similarity retrieval (migration 282 RPC). Fail-open when
+      // the column/RPC isn't there yet.
+      supabase,
     });
 
     console.log(`[PhotoIdentification] media=${mediaId} pass1="${twoPassResult.visualDescription.slice(0, 80)}" pass2.success=${twoPassResult.success} confidence=${twoPassResult.identification?.confidence ?? 'n/a'} hasVM=${twoPassResult.hasVisualMemoryForMatch} pass2b.fired=${twoPassResult.pass2bFired} pass2b.improved=${twoPassResult.pass2bImproved} pass1Failed=${twoPassResult.pass1Failed ?? false}`);

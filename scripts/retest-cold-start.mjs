@@ -146,6 +146,9 @@ async function main() {
         curriculum,
         locale: 'en',
         context,
+        // Activates visual-similarity retrieval (migration 282) when
+        // OPENAI_API_KEY is present in this env. Fail-open otherwise.
+        supabase,
       });
       const id = res.identification;
       const line = {
