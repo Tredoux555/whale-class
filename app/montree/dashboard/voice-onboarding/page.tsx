@@ -21,7 +21,7 @@ import { montreeApi } from '@/lib/montree/api';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import MontreeLogo from '@/components/montree/MonteeLogo';
 import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
-import { getAreaLabel } from '@/lib/montree/i18n/area-labels';
+import { getAreaLabel, getAreaPrefix } from '@/lib/montree/i18n/area-labels';
 
 type Stage =
   | 'loading'
