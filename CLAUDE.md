@@ -55,6 +55,75 @@ Montree coupling + personal data; don't re-introduce it by editing the Montree c
 
 ---
 
+## 🎨 SESSION — Jul 4, 2026 (Cowork, night) — PRESENT FLAG + PWA LAUNCH + AI TIER LOCKDOWN + MENU REORDER + GALLERY/PARENTS SPLIT + PREVIEW BODY FIX
+
+**Canonical handoff: `docs/handoffs/SESSION_TIER_MENU_GALLERY_PARENTS_JUL4.md`. 10 commits on main
+(`cdc0d4ff`→`b817547f`→`0658d2a2`→`852c195d`→`edaba8cc`→`ab14e75b`→`8caf5672`→`0f7387be`→`a7fc2689`→`f2e45e04`),
+all pushed (HEAD == origin/main). SW bumped v11→v12.** Driven by a live iPhone walkthrough of the fresh
+**Sunshine Montessori / Miss Chen** cold-start school. This is a DISTINCT, later Jul-4 Cowork session from the
+"iPhone bug sweep" block below (different commits, `457b308f`→`a8de31bf` there).
+
+- **🚨 PENDING USER ACTIONS (blocking verification):** (1) run `migrations/284_parent_night_present.sql`
+  (Present feature def, default OFF, enabled for Whale); (2) run the **menu-reorder SQL** (code re-seeds NEW
+  schools only — existing `settings.menu` is authoritative; SQL in the handoff sets photo_audit/parent_manager/
+  manage_students/guru/notes for every non-Whale teacher); (3) **reopen the PWA** (SW v12 purges the stale shell).
+- **🎛 AI tier — DEFINITIVE CONTRACT LOCKED (`0658d2a2`,`852c195d`). Do not re-litigate.** **Haiku tier =
+  PURE Haiku, NO Sonnet ever, no Sonnet buttons** — weekly teacher + parent reports now WRITE with Haiku
+  (`aiTier.model`; they used to refuse). **Premium (Sonnet) = Haiku first, Sonnet only when Haiku can't crack
+  it** (capture no longer silently escalates everything). **Free = no AI reports (402), photo ID still runs.**
+  Wiring: `weekly-wrap` skip flags now key on `tier==='free'` (not non-Sonnet); `photo-identification/process`
+  gained `sonnetTierEnabled` (5th Promise.all = `isFeatureEnabled(…,'ai_tier_sonnet')`) gating all 3
+  `generateSonnetDraft` sites + auto-Sonnet threshold + telemetry; photo-audit **"🧠 Ask Sonnet" button hidden**
+  unless Premium (prop threaded through `AuditPhotoCard` + memo comparator); `sonnet-review` 402-gated;
+  `tell-ai`/`snap-identify`/`photo-insight` swapped hardcoded `AI_MODEL`→`resolveReportModel().model` (photo-insight
+  forces Haiku-only path for non-Premium). **RULE: `resolveReportModel(supabase,schoolId)`→`{tier,model}` is the
+  single dial; every AI surface resolves it, never hardcodes AI_MODEL.**
+- **📋 Menu reorder + rename (`edaba8cc`).** `CORE_VISIBLE = ['photo_audit','parent_manager','manage_students',
+  'guru','notes']` → new-school default **Wrap Up · Parents · Students · Guru · Notes**. `registry.tsx` labels
+  `manage_students`→"Students", `parent_manager`→"Parents". Existing teachers need the menu SQL.
+- **🖼 Gallery / Parents split.** **Goal A (`ab14e75b`):** parent report preview/publish/last-report extracted to
+  `components/montree/reports/ChildReportPreviewModal.tsx` + a per-child report row on the Parents page; API returns
+  `last_report_sent_at` (batched, non-fatal). **Goal B (`8caf5672`):** child Gallery is **DISPLAY-ONLY** — removed
+  ~1,182 lines (all identification confirm/correct + report workspace + ThisIsSheet tagging), 2513→1331 lines, work
+  labels read-only, unconfirmed AI guess shows **"Review in Wrap Up →"** link to `/photo-audit`, Lesson Notes stay.
+  **🚨 Wrap Up (photo-audit) is now the SOLE identification-confirm + moat-seeding surface.** **Parents tab →
+  Codes/Reports/Chats (`f2e45e04`):** three pill tabs (each a batch workflow across all children) — Codes (access
+  cards), Reports (per-child Preview + Last via the modal), **Chats (per-child "Message parent" deep-linking to
+  `/parent-chats/[parent_id]`, "Parent hasn't joined yet" fallback)**. API returns `parent_id` per child via batched
+  `montree_parent_children` (first-linked wins, non-fatal). 5 `parentCodes.*` keys × 12 locales (parity held).
+- **✍️ Report preview body fix (`a7fc2689`).** Photo-tagged report items skipped `findBestDescription()` in the
+  PREVIEW (the SEND route runs it), so the sent report showed the rich parent body but the preview showed none.
+  Preview now runs the same matcher for photo items (fallback `workInfo.description`→null). **RULE: Preview must
+  mirror the Send path per item source.**
+- **📱 Present flag + PWA launch (`cdc0d4ff`).** `parent_night_present` FeatureKey gates the dashboard "Present"
+  Link (off for new schools; migration 284). PWA "top half missing" on home-screen launch = `<main>` was bare
+  `100dvh` → `calc(100dvh - 56px - env(safe-area-inset-top))` (the intermittency was the state-dependent tell).
+  Also removed the redundant child-page student-selector "No Options" dropdown (`b817547f`).
+- **🔍 Self-audit (all correct, 2 minor unfixed):** (1) Reports tab shows for `homeschool_parent` but
+  `canManageReports` is false → name-only empty cards (1-line fix: hide the tab when `!canManageReports`); (2)
+  Goal-B deletion orphaned ~7 gallery symbols (4 unused interfaces + viewMode/isSavingCrop/isEnabled) → **14 eslint
+  WARNINGS, 0 errors** — dead code, 5-min tidy.
+- **🎨 QUEUED — dark-forest theme sweep (inventory done, build NOT started).** iPhone flagged Students / Add-Student
+  modal / Label Generator as white. Scan categorized: **~24 core teacher screens on white** (students+modal+
+  `StudentFormGuide`, labels, settings, tools, progress-overview, albums, media, print, snap, voice-observation,
+  language-tracker, classroom-builder, weekly-wrap, reports viewer, the per-child summary/profile/observations/
+  weekly-review/language-presentation/progress-detail, guru, curriculum/browse, vocabulary-flashcards); **~20 games**
+  (colorful ON PURPOSE — **Tredoux to decide** retheme vs leave); **library/print tools** (dark chrome, **print
+  previews stay white** — paper). Tokens = the `T` object (`#0a1a0f`/emerald `#34d399`/glass/Lora). Phase 1 = the 3
+  shown + Settings/Tools; Phase 2 = rest; fold in the 2 audit findings.
+- **🚀 QUEUED — Founding 100 waitlist (requested, NOT built; verdict: fully buildable in-house).** Homepage section:
+  live "X of 100 remaining" counter (DB-backed) + no-login form (school/contact/email/country/approx students) →
+  writes DB, decrements, emails Tredoux; verbatim copy + "Join the Waitlist" CTA; mobile-first, dark-forest. Plan:
+  `montree_founding_waitlist` table (email UNIQUE) + optional `montree_founding_config` (cap/wave) + `GET /founding/
+  count` + `POST /founding/join` (IP rate-limited like demo-request, Resend notify fire-and-forget) + `<FoundingHundred/>`
+  homepage component + super-admin admit/wave surface. **Open Qs to feed back BEFORE building:** (1) notify email +
+  verified Resend sender (montree.xyz Resend verification is a standing open item); (2) "our list price" = confirm
+  $7/student; (3) counter = raw signups or manual admits? (wave language ⇒ manual gating — counter reflects *admits*,
+  form keeps collecting); (4) hard-close form at 100 or keep a waitlist; (5) super-admin admit UI? Tredoux's rule:
+  "feed me the logic before you ship." Build behind confirmation.
+
+---
+
 ## 🩹 SESSION — Jul 4, 2026 (Cowork, late) — LIVE IPHONE BUG SWEEP + 3-TIER AI CONTROL + WRAP UP TAB GATING
 
 **Canonical handoff: `docs/handoffs/SESSION_UI_FIXES_AND_3TIER_JUL4.md`. 6 commits on main
