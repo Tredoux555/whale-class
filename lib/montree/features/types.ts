@@ -45,6 +45,11 @@ export type FeatureKey =
   | 'teacher_tools'
   | 'shelf_autopilot'
   | 'paperwork_tracker'
+  // Parent-night slideshow ("Present" button on the dashboard student grid).
+  // Full-bleed photo slideshow at /montree/dashboard/present. Migration 284.
+  // Default OFF — a brand-new school shouldn't see it; schools opt in via
+  // super-admin → ⚙️ Features.
+  | 'parent_night_present'
   // Capture page tools
   | 'daily_language_6'
   // Onboarding

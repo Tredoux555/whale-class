@@ -655,7 +655,12 @@ export default function DashboardPage() {
           TEACHER DASHBOARD — Search → Students → Pulse → Tools
           ═══════════════════════════════════════════════════ */}
       {!isParent && (
-        <main className="max-w-6xl mx-auto px-4 pt-3 pb-2 flex flex-col" style={{ height: 'calc(100dvh - 56px)' }}>
+        /* Header is ~56px content + env(safe-area-inset-top) (the sticky
+           header carries paddingTop: env(safe-area-inset-top) for the
+           black-translucent status bar). Subtract BOTH so <main> fits the
+           visible viewport on notched iPhones instead of overhanging the
+           bottom by the inset amount. env() = 0 on non-notched devices. */
+        <main className="max-w-6xl mx-auto px-4 pt-3 pb-2 flex flex-col" style={{ height: 'calc(100dvh - 56px - env(safe-area-inset-top))' }}>
 
           {children.length === 0 ? (
             /* Empty state — classroom has no students yet (dark forest) */
@@ -763,27 +768,29 @@ export default function DashboardPage() {
                       : `${children.length} ${t('common.students')}`
                     }
                   </p>
-                  <Link
-                    href="/montree/dashboard/present"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      minHeight: 32,
-                      padding: '6px 12px',
-                      borderRadius: 999,
-                      background: 'rgba(52,211,153,0.10)',
-                      border: '1px solid rgba(52,211,153,0.35)',
-                      color: 'rgba(255,255,255,0.92)',
-                      fontSize: 12,
-                      fontFamily: 'Inter, system-ui, sans-serif',
-                      textDecoration: 'none',
-                      letterSpacing: 0.2,
-                    }}
-                  >
-                    <span style={{ fontSize: 13 }}>🎞</span>
-                    Present
-                  </Link>
+                  {isEnabled('parent_night_present') && (
+                    <Link
+                      href="/montree/dashboard/present"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        minHeight: 32,
+                        padding: '6px 12px',
+                        borderRadius: 999,
+                        background: 'rgba(52,211,153,0.10)',
+                        border: '1px solid rgba(52,211,153,0.35)',
+                        color: 'rgba(255,255,255,0.92)',
+                        fontSize: 12,
+                        fontFamily: 'Inter, system-ui, sans-serif',
+                        textDecoration: 'none',
+                        letterSpacing: 0.2,
+                      }}
+                    >
+                      <span style={{ fontSize: 13 }}>🎞</span>
+                      Present
+                    </Link>
+                  )}
                 </div>
               </div>
 
