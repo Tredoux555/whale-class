@@ -41,6 +41,20 @@ export default function DashboardError({
             Back to Dashboard
           </a>
         </div>
+
+        {/* Technical details — collapsed by default. Normal users never open
+            it; it lets us (and the teacher) screenshot the exact error when
+            diagnosing a crash, since iOS Safari has no dev console. */}
+        <details className="mt-6 text-left">
+          <summary className="text-xs text-gray-400 cursor-pointer select-none">
+            Details
+          </summary>
+          <pre className="mt-2 whitespace-pre-wrap break-words text-[11px] leading-snug text-gray-500 bg-gray-100 rounded-lg p-3 max-h-64 overflow-auto">
+            {error?.message || 'Unknown error'}
+            {error?.digest ? `\n\ndigest: ${error.digest}` : ''}
+            {error?.stack ? `\n\n${error.stack}` : ''}
+          </pre>
+        </details>
       </div>
     </div>
   );
