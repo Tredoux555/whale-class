@@ -42,7 +42,10 @@
 // sprout across every icon (/montree-icons/*, favicon, apple-touch). The SW
 // serves /montree-icons/ cache-first, so without this bump existing installs
 // keep the old sprout forever. v11 purges the icon cache on next app open.
-const CACHE_NAME = 'montree-v11';
+// v12 (Jul 4 2026) — force installed PWAs to purge the stale precached shell
+// after the Gallery/Parents split + menu reorder + tier changes, so the new
+// code actually reaches home-screen installs on next open.
+const CACHE_NAME = 'montree-v12';
 const OFFLINE_URL = '/montree/offline';
 
 // Only cache immutable assets — static files that change with build hashes.
