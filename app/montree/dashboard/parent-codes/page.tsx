@@ -12,7 +12,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Copy, RefreshCw, Sparkles, Heart, Printer, Check, Zap, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Copy, RefreshCw, Sparkles, Heart, Check, Zap, MessageCircle } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
@@ -404,25 +404,31 @@ export default function TeacherParentCodesPage() {
                 </button>
               );
             })()}
-            <button
-              onClick={() => window.print()}
+            {/* Parent Chats — promoted to the top bar (replaced the Print button,
+                which nobody uses on this page) so it's easy to find. One tap → the
+                WeChat-style per-parent chat overview. */}
+            <Link
+              href="/montree/dashboard/parent-chats"
+              aria-label="Open parent chats"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 6,
                 padding: '8px 12px',
                 borderRadius: 10,
-                background: T.card,
-                border: T.cardBorder,
-                color: T.textSecondary,
+                background: T.emeraldSoft,
+                border: `1px solid ${T.emeraldStrong}`,
+                color: T.emerald,
                 fontSize: 12,
-                fontWeight: 500,
+                fontWeight: 600,
+                textDecoration: 'none',
+                whiteSpace: 'nowrap',
                 cursor: 'pointer',
               }}
             >
-              <Printer size={14} strokeWidth={1.75} />
-              {t('parentCodes.print')}
-            </button>
+              <MessageCircle size={14} strokeWidth={1.75} />
+              Parent Chats
+            </Link>
             <LanguageToggle />
           </div>
         </div>
@@ -446,32 +452,7 @@ export default function TeacherParentCodesPage() {
           >
             <Sparkles size={22} color={T.emerald} strokeWidth={1.75} />
             {t('parentCodes.title')}
-            {/* Session 119: chat icon → WeChat-style parent chats surface.
-                One tap takes the teacher to the per-parent chat overview. */}
-            <Link
-              href="/montree/dashboard/parent-chats"
-              aria-label="Open parent chats"
-              style={{
-                marginLeft: 'auto',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-                padding: '7px 12px',
-                borderRadius: 10,
-                background: T.emeraldSoft,
-                border: `1px solid ${T.emeraldStrong}`,
-                color: T.emerald,
-                fontFamily: T.sans,
-                fontSize: 13,
-                fontWeight: 600,
-                textDecoration: 'none',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <MessageCircle size={15} strokeWidth={1.75} />
-              Parent Chats
-            </Link>
+            {/* Parent Chats moved to the top bar (replaced Print) — see header. */}
           </h1>
           <p style={{ fontSize: 14, color: T.textMuted, margin: '8px 0 0', lineHeight: 1.5 }}>
             {t('parentCodes.subtitle')}
