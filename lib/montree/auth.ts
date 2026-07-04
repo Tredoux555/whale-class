@@ -3,6 +3,7 @@
 // Single source of truth for session management
 
 import { clearToken } from '@/lib/montree/api';
+import { clearLaunchSurface } from '@/lib/montree/launch-surface';
 
 export const SESSION_KEY = 'montree_session';
 
@@ -62,6 +63,7 @@ export function setSession(session: MontreeSession): void {
 export function clearSession(): void {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(SESSION_KEY);
+  clearLaunchSurface();
   clearToken();
 }
 

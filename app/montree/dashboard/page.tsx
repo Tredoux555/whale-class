@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getSession, recoverSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
+import { rememberLaunchSurface } from '@/lib/montree/launch-surface';
 import { HOME_THEME } from '@/lib/montree/home-theme';
 import { useI18n } from '@/lib/montree/i18n';
 import { toast, Toaster } from 'sonner';
@@ -336,6 +337,13 @@ export default function DashboardPage() {
       setShowWelcome(true);
     }
   }, [router, session]);
+
+  // Remember this dashboard as the launch surface so the next PWA home-screen
+  // launch opens straight here with no marketing-splash flash. Covers teachers
+  // AND homeschool parents (both live on /montree/dashboard).
+  useEffect(() => {
+    if (session?.school?.id) rememberLaunchSurface('/montree/dashboard');
+  }, [session]);
 
   // ── Principal-without-classroom guard (Session 140 — fixes infinite-skeleton dead-end) ──
   // The principal JWT carries no classroomId — a pure principal is not bound to

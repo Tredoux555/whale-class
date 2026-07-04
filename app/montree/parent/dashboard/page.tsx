@@ -7,6 +7,7 @@ import { toast, Toaster } from 'sonner';
 import { LogOut, ChevronDown, MessageSquare, Calendar } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
+import { rememberLaunchSurface, clearLaunchSurface } from '@/lib/montree/launch-surface';
 import MontreeLogo from '@/components/montree/MonteeLogo';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 import PendingAppointmentsBanner from '@/components/montree/appointments/PendingAppointmentsBanner';
@@ -215,6 +216,10 @@ export default function ParentDashboardPage() {
           return;
         }
 
+        // Authenticated parent — remember this surface so the next PWA
+        // home-screen launch jumps straight here with no splash flash.
+        rememberLaunchSurface('/montree/parent/dashboard');
+
         // Get the full authorized child list from server. Single-child
         // invite sessions return one element; multi-child full-account
         // parents return all linked children.
@@ -422,6 +427,7 @@ export default function ParentDashboardPage() {
   const handleLogout = () => {
     localStorage.removeItem('montree_parent_session');
     localStorage.removeItem('montree_selected_child');
+    clearLaunchSurface();
     router.push('/montree/parent');
   };
 
