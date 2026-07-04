@@ -58,9 +58,18 @@ export default function MontreeLanding() {
 
     let cancelled = false;
 
+    // Remember-the-surface marker: every redirect below persists where the
+    // user landed so the pre-paint inline script (rendered above) can jump
+    // straight there next launch — zero flash — for ANY role, parents
+    // included. See rememberLaunchSurface() in lib/montree/launch-surface.
+    const remember = (path: string) => {
+      try { localStorage.setItem('montree_launch_surface', path); } catch {}
+    };
+
     // 1. Teacher / homeschool session in localStorage — instant, no network.
     const sess = getSession();
     if (sess?.school?.id) {
+      remember('/montree/dashboard');
       router.replace('/montree/dashboard');
       return;
     }
@@ -68,6 +77,7 @@ export default function MontreeLanding() {
     // 2. Principal session (cockpit stores its own localStorage keys).
     try {
       if (localStorage.getItem('montree_principal')) {
+        remember('/montree/admin');
         router.replace('/montree/admin');
         return;
       }
@@ -82,7 +92,9 @@ export default function MontreeLanding() {
         if (r.ok) {
           const d = await r.json();
           if (!cancelled && d?.authenticated) {
-            router.replace(d.role === 'principal' ? '/montree/admin' : '/montree/dashboard');
+            const surface = d.role === 'principal' ? '/montree/admin' : '/montree/dashboard';
+            remember(surface);
+            router.replace(surface);
             return;
           }
         }
@@ -92,6 +104,7 @@ export default function MontreeLanding() {
         if (p.ok) {
           const d = await p.json();
           if (!cancelled && (d?.authenticated || d?.valid)) {
+            remember('/montree/parent/dashboard');
             router.replace('/montree/parent/dashboard');
           }
         }
@@ -184,16 +197,25 @@ export default function MontreeLanding() {
     <>
       {/* ── PWA no-flash launch gate (blocking, pre-paint) ──
           When Montree is opened from the home-screen icon (standalone
-          display mode) by a signed-in teacher/principal, we must NOT paint
-          the marketing splash first. This inline <script> runs synchronously
-          as the HTML is parsed — BEFORE the marketing content below renders —
-          and hard-redirects to the app surface, so there's no visible flash.
-          The useEffect above is the fallback (parent cookie-only sessions +
-          any case this fast path misses). CSP allows 'unsafe-inline' scripts
-          (next.config.ts). Logged-out launches fall through untouched. */}
+          display mode) by a signed-in user, we must NOT paint the marketing
+          splash first. This inline <script> runs synchronously as the HTML is
+          parsed — BEFORE the marketing content below renders — and hard-
+          redirects to the app surface, so there's no visible flash.
+          Three-tier, covers every role from launch one where possible:
+            1. Teacher / homeschool  → montree_session (localStorage)
+            2. Principal             → montree_principal (localStorage)
+            3. ANYONE incl. parents  → montree_launch_surface, the last app
+               surface they landed on (written on redirect + on each dashboard
+               mount below). Parents auth by cookie with no synchronous signal,
+               so this remembered-surface marker is how they get a flash-free
+               launch too.
+          The useEffect above is the network fallback (first launch before the
+          marker exists / localStorage wiped by iOS). CSP allows 'unsafe-inline'
+          scripts (next.config.ts). Logged-out launches fall through untouched;
+          a stale marker just lands on a surface that bounces to login. */}
       <script
         dangerouslySetInnerHTML={{
-          __html: `(function(){try{var s=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true;if(!s)return;var t=localStorage.getItem('montree_session');if(t){var o=JSON.parse(t);if(o&&o.school&&o.school.id){location.replace('/montree/dashboard');return;}}if(localStorage.getItem('montree_principal')){location.replace('/montree/admin');return;}}catch(e){}})();`,
+          __html: `(function(){try{var s=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true;if(!s)return;var t=localStorage.getItem('montree_session');if(t){var o=JSON.parse(t);if(o&&o.school&&o.school.id){location.replace('/montree/dashboard');return;}}if(localStorage.getItem('montree_principal')){location.replace('/montree/admin');return;}var g=localStorage.getItem('montree_launch_surface');if(g&&g.indexOf('/montree/')===0){location.replace(g);return;}}catch(e){}})();`,
         }}
       />
       {/* Plain <style> (NOT styled-jsx) — App Router has no styled-jsx

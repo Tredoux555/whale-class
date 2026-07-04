@@ -9,6 +9,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
+import { rememberLaunchSurface, clearLaunchSurface } from '@/lib/montree/launch-surface';
 import {
   Home,
   GraduationCap,
@@ -340,6 +341,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         // the generic "School" sidebar).
         if (data.school?.name) setSchoolName(data.school.name);
         if (data.teacher?.id) setPrincipalId(data.teacher.id);
+        // Remember the cockpit as this principal's launch surface so the next
+        // PWA home-screen launch opens straight here (no splash flash).
+        if (data.role === 'principal') rememberLaunchSurface('/montree/admin');
         try {
           if (data.school) localStorage.setItem('montree_school', JSON.stringify(data.school));
           if (data.teacher) {
@@ -471,6 +475,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       localStorage.removeItem('montree_school');
       localStorage.removeItem('montree_principal');
       localStorage.removeItem('montree_session');
+      clearLaunchSurface();
     } catch { /* ignore */ }
     // Hard navigation guarantees a clean slate — no stale React state, no
     // lingering cookie/localStorage race that a soft router.replace can hit.
