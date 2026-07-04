@@ -111,10 +111,15 @@ export async function POST(request: NextRequest) {
     console.log(`[WeeklyWrap] School ${classroom.school_id} — tier=${aiTier.tier} model=${aiTier.model}`);
 
     // ── Tier-driven feature gates ──────────────────────────────────
-    // core  (haiku)  → replan only (shelf + game plan). No reports.
-    // premium (sonnet) → replan + teacher report + parent narrative.
-    const skipTeacherReports = aiTier.tier !== 'sonnet';   // TIER-GATE — only premium generates teacher reports
-    const skipParentReports  = aiTier.tier !== 'sonnet';   // TIER-GATE — only premium generates parent narratives
+    // free   → 402'd above (no AI at all).
+    // haiku  → replan + teacher report + parent narrative, all written with
+    //          Haiku (aiTier.model === HAIKU_MODEL).
+    // sonnet → same, written with Sonnet (aiTier.model === AI_MODEL).
+    // Both paid tiers write reports; the ONLY difference is which model the
+    // generators receive via aiTier.model. Free never reaches here. (Jul 4
+    // 2026 — was `tier !== 'sonnet'`, which skipped reports entirely on Haiku.)
+    const skipTeacherReports = aiTier.tier === 'free';   // TIER-GATE — only free skips (and free is 402'd above)
+    const skipParentReports  = aiTier.tier === 'free';   // TIER-GATE — only free skips (and free is 402'd above)
 
     // Budget enforcement — block if hard_limit exceeded
     const budget = await checkAiBudget(classroom.school_id);
@@ -757,13 +762,15 @@ export async function POST(request: NextRequest) {
 
       const reportsWritten = results.filter(r => r.success && !r.skipped && hasReport(r)).length;
       const replanOnly = results.filter(r => r.success && !r.skipped && !hasReport(r)).length;
-      const tierSkipsReports = aiTier.tier !== 'sonnet';
+      // Both paid tiers write reports now (Haiku or Sonnet); free is 402'd
+      // upstream, so no paid tier "skips reports" any more. (Jul 4 2026.)
+      const tierSkipsReports = false;
 
-      // Honest, human message for the UI. When the tier writes no reports, say so.
+      // Honest, human message for the UI.
       let message: string;
-      if (tierSkipsReports && reportsWritten === 0 && replanOnly > 0) {
+      if (reportsWritten === 0 && replanOnly > 0) {
         message = `Plans refreshed for ${replanOnly} ${replanOnly === 1 ? 'child' : 'children'}. ` +
-          `Parent & teacher reports need the Premium (Sonnet) AI tier — this school is on the ${aiTier.tier} tier, so no reports were written.`;
+          `No reports were written — no new confirmed activity to report on this week.`;
       } else if (reportsWritten > 0) {
         message = `${reportsWritten} report${reportsWritten === 1 ? '' : 's'} generated.`;
       } else {
