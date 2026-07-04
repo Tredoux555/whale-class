@@ -551,6 +551,49 @@ export default function GalleryPage() {
     }
   };
 
+  // Route a gallery confirm through the corrections endpoint so the tap SEEDS
+  // the classroom visual-memory moat (reinforces the confirmed work via
+  // increment_visual_memory_correct + records a teacher-confirmed confidence
+  // row + sets teacher_confirmed) — parity with the Photo Audit / Wrap Up
+  // confirm path. Before Jul 4 2026 gallery confirms only wrote work_id, so a
+  // cold classroom's gallery taps never warmed its moat. Fire-and-forget: the
+  // UI has already updated optimistically. Mirrors the photo-audit confirm call.
+  const seedMoatConfirm = (
+    photo: GalleryItem,
+    workName: string,
+    workId: string | null,
+    area: string | undefined,
+    confidence?: number | null,
+  ) => {
+    if (!workName || !childId) return;
+    void fetch('/api/montree/guru/corrections', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        media_id: photo.id,
+        child_id: childId,
+        original_work_name: workName,
+        original_work_id: workId || '',
+        original_area: area || '',
+        original_confidence: confidence ?? 0,
+        action: 'confirm',
+      }),
+    }).catch((err) => console.error('[Gallery] moat-seed confirm failed (non-fatal):', err));
+  };
+
+  // One-tap confirm of a Gate-A auto-filed (haiku_matched) photo. work_id is
+  // ALREADY set, so this only records the confirmation (seeds the moat + flips
+  // teacher_confirmed) and marks the photo confirmed locally so its "AI-tagged"
+  // treatment (✨ + ✓) clears. Falls back to the picker if there's no work name.
+  const confirmAiTag = (photo: GalleryItem) => {
+    const workName = photo.work_name?.trim();
+    if (!workName) { openWorkPicker(photo); return; }
+    setPhotos((prev) => prev.map((p) => (p.id === photo.id ? { ...p, identification_status: 'confirmed' } : p)));
+    seedMoatConfirm(photo, workName, photo.work_id, photo.area, photo.sonnet_draft?.confidence ?? null);
+    toast.success(t('gallery.workUpdated'));
+  };
+
   // One-tap confirm of the AI's suggestion. Resolves sonnet_draft.proposed_name
   // to a curriculum work and attaches it (same effect as picking it in the
   // picker). Falls back to the picker if the name can't be resolved. This is
@@ -583,11 +626,14 @@ export default function GalleryPage() {
       setPhotos((prev) =>
         prev.map((p) =>
           p.id === photo.id
-            ? { ...p, work_id: match.id, work_name: match.name, area: match.areaKey }
+            ? { ...p, work_id: match.id, work_name: match.name, area: match.areaKey, identification_status: 'confirmed' }
             : p,
         ),
       );
       updateEntryAfterCorrection(photo.id, childId, match.name, match.areaKey);
+      // Seed the classroom moat — a gallery confirm now participates in visual
+      // memory exactly like a Photo Audit confirm (Jul 4 2026).
+      seedMoatConfirm(photo, match.name, match.id, match.areaKey, photo.sonnet_draft?.confidence ?? null);
       toast.success(t('gallery.workUpdated'));
     } catch {
       toast.error(t('gallery.workUpdateError'));
@@ -1187,6 +1233,13 @@ export default function GalleryPage() {
               // never a blank "Untagged" when the AI actually identified it.
               const isSuggestion = !photo.work_id && !isOther && !!proposed
                 && (!photo.identification_status || DRAFT_STATUSES.includes(photo.identification_status));
+              // Gate-A auto-filed but NOT yet teacher-confirmed: work_id is SET
+              // but identification_status is still 'haiku_matched'. Give it the
+              // same ✨ AI-tagged treatment + one-tap ✓ so it reads DISTINCTLY
+              // from a teacher-confirmed photo — the teacher can confirm (which
+              // seeds the moat) or tap the name to correct. Jul 4 2026.
+              const isAiTagged = !!photo.work_id && !isOther && photo.identification_status === 'haiku_matched';
+              const isAiConfirmable = isSuggestion || isAiTagged;
               const label = isOther
                 ? (t('gallery.savedAsOther') || 'Saved as Other')
                 : (photo.work_name || (isSuggestion ? proposed : t('gallery.untagged')));
@@ -1200,17 +1253,17 @@ export default function GalleryPage() {
                     onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
                   >
                     {isOther && <span style={{ fontSize: 13 }}>📌</span>}
-                    {isSuggestion && <span style={{ fontSize: 13 }}>✨</span>}
-                    <span className="text-sm truncate flex-1" style={{ fontFamily: '"Inter", sans-serif', fontWeight: 500, color: isOther ? 'rgba(203,213,225,0.85)' : isSuggestion ? 'rgba(233,213,255,0.92)' : 'rgba(255,255,255,0.90)', fontStyle: isOther ? 'italic' : 'normal' }}>
+                    {isAiConfirmable && <span style={{ fontSize: 13 }}>✨</span>}
+                    <span className="text-sm truncate flex-1" style={{ fontFamily: '"Inter", sans-serif', fontWeight: 500, color: isOther ? 'rgba(203,213,225,0.85)' : isAiConfirmable ? 'rgba(233,213,255,0.92)' : 'rgba(255,255,255,0.90)', fontStyle: isOther ? 'italic' : 'normal' }}>
                       {label}
                     </span>
                     <span className="text-xs opacity-0 group-hover/tag:opacity-100 transition-opacity" style={{ color: 'rgba(255,255,255,0.35)' }}>
                       {t('gallery.tapToChange')}
                     </span>
                   </button>
-                  {isSuggestion && (
+                  {isAiConfirmable && (
                     <button
-                      onClick={(e) => { e.stopPropagation(); confirmSuggestion(photo); }}
+                      onClick={(e) => { e.stopPropagation(); if (isSuggestion) { confirmSuggestion(photo); } else { confirmAiTag(photo); } }}
                       title={t('common.confirm')}
                       aria-label={t('common.confirm')}
                       className="shrink-0 rounded-lg transition-transform active:scale-95"
