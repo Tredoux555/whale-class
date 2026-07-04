@@ -13,7 +13,7 @@ import { useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Copy, RefreshCw, Sparkles, Heart, Check, Zap, MessageCircle, Eye, FileText } from 'lucide-react';
+import { ArrowLeft, Copy, RefreshCw, Sparkles, Heart, Check, Zap, MessageCircle, Eye, FileText, KeyRound } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useI18n } from '@/lib/montree/i18n';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
@@ -59,7 +59,10 @@ interface CodeRow {
   expires_at: string | null;
   used: boolean;
   last_report_sent_at: string | null;
+  parent_id: string | null;
 }
+
+type ParentsTab = 'codes' | 'reports' | 'chats';
 
 export default function TeacherParentCodesPage() {
   const router = useRouter();
@@ -90,6 +93,9 @@ export default function TeacherParentCodesPage() {
   const [reportTarget, setReportTarget] = useState<{ childId: string; childName: string } | null>(null);
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [reportMode, setReportMode] = useState<'preview' | 'last'>('preview');
+  // Which "branch" is showing. The three parent features (access codes, weekly
+  // reports, chats) are separate batch workflows, so each is its own tab.
+  const [activeTab, setActiveTab] = useState<ParentsTab>('codes');
 
   const openReportModal = useCallback((row: CodeRow, mode: 'preview' | 'last') => {
     setReportTarget({ childId: row.child_id, childName: row.child_name });
@@ -487,6 +493,40 @@ export default function TeacherParentCodesPage() {
           </p>
         </div>
 
+        {/* Three branches: Codes · Reports · Chats — each opens to that feature
+            across all children (they're separate batch workflows). */}
+        <div className="print:hidden" style={{ display: 'flex', gap: 6, marginBottom: 18, flexWrap: 'wrap' }}>
+          {([
+            { key: 'codes' as ParentsTab, label: t('parentCodes.tabCodes'), Icon: KeyRound },
+            { key: 'reports' as ParentsTab, label: t('parentCodes.tabReports'), Icon: FileText },
+            { key: 'chats' as ParentsTab, label: t('parentCodes.tabChats'), Icon: MessageCircle },
+          ]).map(({ key, label, Icon }) => {
+            const active = activeTab === key;
+            return (
+              <button
+                key={key}
+                onClick={() => setActiveTab(key)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '9px 16px',
+                  borderRadius: 999,
+                  background: active ? T.emeraldStrong : T.card,
+                  border: active ? T.cardBorderStrong : T.cardBorder,
+                  color: active ? T.emerald : T.textMuted,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                <Icon size={15} strokeWidth={1.75} />
+                {label}
+              </button>
+            );
+          })}
+        </div>
+
         {codes.length === 0 ? (
           <div
             style={{
@@ -546,8 +586,8 @@ export default function TeacherParentCodesPage() {
                     )}
                   </div>
 
-                  {/* Code or "Create code" */}
-                  {row.code ? (
+                  {/* Code or "Create code" — Codes tab (the invite branch) */}
+                  {activeTab === 'codes' && (row.code ? (
                     <>
                       <div
                         style={{
@@ -692,15 +732,13 @@ export default function TeacherParentCodesPage() {
                     >
                       {busy ? t('parentCodes.creating') : t('parentCodes.createCode')}
                     </button>
-                  )}
+                  ))}
 
-                  {/* Weekly report — moved here from the child gallery (Jul 4 2026).
-                      Teacher-only: preview + publish this week's parent report, or
-                      reopen the last sent one. */}
-                  {canManageReports && (
+                  {/* Weekly report — this child's report actions (Reports tab). */}
+                  {activeTab === 'reports' && canManageReports && (
                     <div
                       className="print:hidden"
-                      style={{ borderTop: '1px solid rgba(52,211,153,0.14)', paddingTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}
+                      style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
                     >
                       <p
                         style={{
@@ -764,6 +802,51 @@ export default function TeacherParentCodesPage() {
                         )}
                       </div>
                     </div>
+                  )}
+
+                  {/* Chat — message this child's parent (Chats tab). Deep-links
+                      to their conversation once the parent has joined. */}
+                  {activeTab === 'chats' && (
+                    row.parent_id ? (
+                      <Link
+                        href={`/montree/dashboard/parent-chats/${row.parent_id}`}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 8,
+                          padding: '10px 12px',
+                          borderRadius: 10,
+                          background: T.emeraldStrong,
+                          border: T.cardBorderStrong,
+                          color: T.emerald,
+                          fontSize: 13,
+                          fontWeight: 600,
+                          textDecoration: 'none',
+                        }}
+                      >
+                        <MessageCircle size={15} strokeWidth={1.75} />
+                        {t('parentCodes.messageParent')}
+                      </Link>
+                    ) : (
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 6,
+                          padding: '10px 12px',
+                          borderRadius: 10,
+                          background: T.card,
+                          border: T.cardBorder,
+                          color: T.textMuted,
+                          fontSize: 12,
+                          fontStyle: 'italic',
+                        }}
+                      >
+                        {t('parentCodes.parentNotJoined')}
+                      </div>
+                    )
                   )}
                 </div>
               );
