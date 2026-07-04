@@ -55,6 +55,72 @@ Montree coupling + personal data; don't re-introduce it by editing the Montree c
 
 ---
 
+## 🎯 SESSION — Jul 4, 2026 (Cowork/Opus) — PHOTO-ID VISUAL-SIMILARITY RETRIEVAL: the cold-start miss CLASS closed, LIVE
+
+**Executes `docs/handoffs/SESSION_PHOTO_ID_VISUAL_RETRIEVAL_PLAN.md` (Steps 0→1→2) end-to-end. 4
+commits on main (`90114868` Step 0 · `a0e9c641` Step 1 · `b75f3036` Step 2 · `34f62f82` gallery),
+all pushed + Railway deployed. Migration 282 RUN + backfill DONE (270/270 embedded) → retrieval is
+LIVE in production.** Trigger: Sunshine Montessori's brand-new school took 2 first capture-photos and
+one came back wrong — a **Number Rods photo drafted as "Brown Stair"** (a Math work filed as
+Sensorial). 50% wrong on first contact = adoption killer for a pre-validation product.
+
+- **Root cause (given):** candidate recall was LEXICAL + AREA-LOCKED on the name Haiku Pass 2 guessed.
+  Visual evidence never reached the shortlist, so when Pass 2 said the wrong name, the correct work
+  (different name, different area) scored ~0 and was structurally unreachable. Every safety net was
+  keyed on the confusion being PRE-REGISTERED.
+- **Step 0 — insurance patch (`90114868`):** new `CONFUSION_CLUSTERS` primitive in
+  `lib/montree/work-matching.ts` — `CROSS_AREA_CONFUSION_WORK_NAMES` + `CROSS_AREA_CONFUSION_COUNTERPARTS`
+  are now DERIVED from it (existing pairs migrated in unchanged). Registered the graduated-staircase
+  family (Pink Tower · Brown Stair · Red Rods · **Number Rods** + variants) — Number Rods is the
+  cross-area member that legitimises the cluster. Added mutual Brown Stair↔Number Rods `NOT` negatives
+  (curated sensorial.json + math.json) + re-seeded prod global VM (270 rows). Rewrote the visual-id-guide
+  staircase line to teach **COLOUR-FIRST** (red/blue banding ⇒ Number Rods, beats silhouette). Verified:
+  Photo A → Number Rods 3/3 (was Brown Stair); Photo B (Brown Stair) 3/3; Number Rods/Metal Insets/
+  Knobless/Pink Tower controls hold.
+- **Step 1 — THE CLASS FIX (`a0e9c641`):** candidate recall now driven by what the photo LOOKS LIKE.
+  **Migration 282 (RUN):** `embedding vector(1536)` on `montree_global_visual_memory` + cosine RPC
+  `montree_global_vm_search(query, limit)` (mirrors `tracy_corpus_search`; no ANN index — 270 rows,
+  seq scan instant). **Backfill = super-admin route** `app/api/montree/super-admin/embed-global-vm`
+  (embeds each row's visual_description+key_materials via OpenAI text-embedding-3-small ON Railway, so
+  the key never leaves; super-admin OR x-cron-secret; `?force=1`; **RE-RUN after ANY re-seed** — a
+  re-seed rewrites text but leaves the stale embedding). **Runtime** (`lib/montree/photo-identification/
+  visual-retrieval.ts` + `two-pass.ts`): after Pass 1, embed the Pass-1 description → top-8 nearest
+  global works ACROSS ALL AREAS → (a) injected into the Pass 2 **USER message** (`MOST VISUALLY SIMILAR
+  LIBRARY WORKS` — NOT the cached system prefix, both Jul-3 cache breakpoints survive), (b) fed to
+  `buildPass2bCandidates` as a new priority tier (`MAX_CANDIDATES` 5→7), (c) a NEW Pass 2b force
+  trigger when Pass 2's chosen work is NOT among the top-3 neighbours ("visual evidence disagrees").
+  Matcher now sees the RICH Pass-1 description (materials boost), not the one-line observation.
+- **Step 2 — real eval harness (`b75f3036`):** `scripts/eval-photo-id.mjs` replays teacher-confirmed
+  photos (with work_id) through the REAL pipeline in COLD mode; reports top-1 / top-3-chip / Gate A
+  auto-file precision (+ wrong auto-files) / per-area confusion matrix; stratified `--per-work`,
+  reusable `--sample` file for fair before/after, retrieval auto-detected via OPENAI_API_KEY. Photo A
+  (Number Rods) + Photo B (Brown Stair) pinned as permanent regression cases.
+- **Gallery (`34f62f82`):** gallery confirms now route through the corrections endpoint (`action=confirm`)
+  so a one-tap gallery confirm SEEDS the classroom moat (parity with Photo Audit / Wrap Up — closes the
+  Jul-4 open item). Gate-A auto-filed-but-unconfirmed photos (`identification_status='haiku_matched'`)
+  get a distinct ✨ AI-tagged treatment + one-tap ✓ instead of looking already-done.
+- **🚨 FAIL-OPEN is load-bearing:** no OPENAI_API_KEY / migration-not-run / no supabase → retrieval
+  returns `[]` → pipeline byte-for-byte the Step-0 behaviour. Verified via a dormant retest before the
+  migration (Photo A → Number Rods, Photo B → Brown Stair, unchanged).
+- **Retrieval-quality VERIFIED on prod (each work's own embedding as the query):** Number Rods → **Red
+  Rods 0.849 (cross-area!)**; Red Rods → Number Rods 0.849; Cylinder Block 1 → Blocks 2/3/4 @0.997 +
+  Knobless 0.732; Sandpaper Letters → Sandpaper Numerals 0.723 (cross-area) + Moveable Alphabet. Every
+  work pulls its visual family AND its cross-area look-alikes into the candidate set.
+- **RULES:** global VM is runtime-READ-ONLY (only the seed script + the backfill route write it; the
+  backfill only writes the `embedding` column). Retrieval injects into the Pass 2 USER message, never
+  the cached system prefix. New confusion family = a cluster line + mutual curated negatives + re-seed
+  + re-run the embed backfill + a harness case — NOT code. Don't lower `HAIKU_TRUST_CONFIDENCE` (0.85)
+  or the 0.90 first-sight bar. Global VM still NEVER satisfies Gate A Path 1. `montree_media.work_id`
+  is TEXT vs curriculum `id` UUID — cast (`w.id::text = m.work_id`) in raw SQL.
+- **⏳ Open/next (all OPTIONAL — production is live + validated):** the full OFFLINE before/after eval
+  WITH retrieval needs OPENAI_API_KEY locally (deliberately kept on Railway only) — run
+  `OPENAI_API_KEY=… node scripts/eval-photo-id.mjs --sample /tmp/evalset.json --label after`; else
+  trust the prod GateA telemetry (`gvmInjected` + the retrieval neighbours) on the next cold capture.
+  Consider tuning the Pass 2b `+0.05` override margin for disagreement-triggered runs FROM EVAL DATA
+  (not vibes). Deferred plan item: the override-margin decision.
+
+---
+
 ## 🩹 SESSION — Jul 4, 2026 (Fable) — "PHOTO RECOGNITION IS BROKEN" WAS A READ-SIDE DISPLAY SCARE — pipeline healthy, 2 client-only gallery fixes
 
 **Canonical handoff: `docs/handoffs/SESSION_GALLERY_DISPLAY_FIX_JUL4.md`.** The user reported the
