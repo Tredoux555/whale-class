@@ -134,6 +134,37 @@ function isPhotoInFlight(
   return now - new Date(photo.captured_at).getTime() < IN_FLIGHT_WINDOW_MS;
 }
 
+// Animated hourglass for the "AI is identifying" state — the recognisable
+// old-school sand timer so a processing photo clearly reads as WORKING, not
+// broken/untagged. Self-contained SMIL animation (no global keyframes needed);
+// iOS-Safari safe. Gold sand drains + the glass flips 180° like the real thing.
+function ProcessingHourglass({ size = 30 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" style={{ display: 'block' }}>
+      <g>
+        {/* top + bottom caps */}
+        <rect x="5.5" y="2.2" width="13" height="1.9" rx="0.95" fill="#5eead4" />
+        <rect x="5.5" y="19.9" width="13" height="1.9" rx="0.95" fill="#5eead4" />
+        {/* upper sand (draining) */}
+        <path d="M7.4 4.1 H16.6 L12 12 Z" fill="#f5c96a" />
+        {/* lower sand (filling) */}
+        <path d="M12 12 L16.6 19.9 H7.4 Z" fill="rgba(245,201,106,0.4)" />
+        {/* glass outline */}
+        <path d="M7.4 4.1 H16.6 L12 12 L16.6 19.9 H7.4 L12 12 Z" fill="none" stroke="#99f6e4" strokeWidth="1.1" strokeLinejoin="round" />
+        {/* falling sand stream */}
+        <line x1="12" y1="11.4" x2="12" y2="16.6" stroke="#f5c96a" strokeWidth="1" strokeLinecap="round">
+          <animate attributeName="opacity" values="0.15;1;0.15" dur="0.85s" repeatCount="indefinite" />
+        </line>
+        {/* flip like a real hourglass — rotate 180° with a hold at each end */}
+        <animateTransform attributeName="transform" attributeType="XML" type="rotate"
+          values="0 12 12; 0 12 12; 180 12 12; 180 12 12"
+          keyTimes="0; 0.45; 0.55; 1" dur="2.2s" repeatCount="indefinite"
+          calcMode="spline" keySplines="0 0 1 1; .4 0 .1 1; 0 0 1 1" />
+      </g>
+    </svg>
+  );
+}
+
 // Area picker with cross-area work search + inline add custom work form
 function AreaPickerWithSearch({
   areas, curriculum, onSelectArea, onSelectWork, onClose, onWorkAdded, classroomId, t
@@ -3652,8 +3683,9 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
           if (isPhotoInFlight(photo, nowTs)) {
             return (
               <div style={{ marginTop: 8 }}>
-                <div className="animate-pulse" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, fontSize: 12, padding: '12px 0', borderRadius: 8, background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.28)', color: 'rgba(94,234,212,0.95)', fontWeight: 600 }}>
-                  <span>⏳ Identifying…</span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, padding: '14px 0', borderRadius: 8, background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.28)', color: 'rgba(94,234,212,0.95)', fontWeight: 600 }}>
+                  <ProcessingHourglass size={30} />
+                  <span>Identifying…</span>
                   <span style={{ fontSize: 9.5, fontWeight: 500, color: 'rgba(94,234,212,0.7)' }}>Reading the photo — usually a few seconds</span>
                 </div>
                 <button
