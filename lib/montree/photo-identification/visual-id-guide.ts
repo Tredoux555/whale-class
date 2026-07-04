@@ -36,7 +36,7 @@ SENSORIAL — the #1 confusion zone:
 - CYLINDER BLOCKS vs KNOBLESS CYLINDERS. DISCRIMINATOR: cylinders with knobs in a wooden block → Cylinder Blocks. Cylinders without knobs, free-standing in colored boxes → Knobless Cylinders.
 - CYLINDER BLOCKS (Sensorial) vs SPINDLE BOXES (Mathematics). DISCRIMINATOR: a SOLID wooden block/board with round recessed sockets where each socket holds ONE cylinder with a small KNOB → Cylinder Blocks. An OPEN box with compartments labeled with printed NUMERALS 0-9, holding BUNDLES of many thin identical sticks → Spindle Boxes. Knobbed cylinders in sockets → ALWAYS Cylinder Blocks. Printed numerals + loose stick bundles → ALWAYS Spindle Boxes. The area follows the work (Sensorial vs Mathematics).
 - BINOMIAL CUBE vs TRINOMIAL CUBE. DISCRIMINATOR: 8 pieces → Binomial. 27 pieces → Trinomial.
-- PINK TOWER vs BROWN STAIR vs RED RODS. DISCRIMINATOR: cubes → Pink Tower. Prisms/rectangular blocks → Brown Stair. Long thin rods → Red Rods.
+- PINK TOWER vs BROWN STAIR vs RED RODS vs NUMBER RODS. These all look like "a set of graded wooden pieces" — CHECK COLOUR FIRST, it beats silhouette: uniform PINK cubes stacked in a tower → Pink Tower; uniform BROWN prisms of equal length laid flat as a stair → Brown Stair; uniform RED rods that vary only in length → Red Rods (Sensorial); rods banded in alternating RED AND BLUE 10cm segments → Number Rods (MATHEMATICS). Any red/blue alternating banding means Number Rods, never Brown Stair or Red Rods — colour, not shape, decides here.
 - SOUND BOXES vs SMELLING BOTTLES. DISCRIMINATOR: shaking cylinders → Sound Boxes. Sniffing bottles → Smelling Bottles.
 - TOUCH BOARDS vs TOUCH TABLETS. DISCRIMINATOR: flat boards → Touch Boards. Small paired tablets in a box → Touch Tablets.
 

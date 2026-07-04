@@ -156,106 +156,145 @@ export const mergeWorksWithCurriculum = (
 };
 
 // ================================================================
-// CROSS-AREA CONFUSION PAIRS — names that look similar but live in different areas
+// CONFUSION CLUSTERS — the SINGLE source of truth for which standard works
+// look alike, and therefore need Pass 2b image re-examination + explicit
+// cross-candidate injection.
 // ================================================================
 //
 // Session 113 V2 photo AI quality audit Q-11: the `area_constrained_first`
 // matching strategy in matchToCurriculumV2 is silent on the exact case the
 // visual ID guide warns about. When Haiku Pass 2 returns one of these names,
 // the area filter happily resolves it within the picked area at high
-// confidence — even though the photo may show the OTHER (cross-area) work.
+// confidence — even though the photo may show a DIFFERENT (often cross-area)
+// work.
 //
 // Example: photo of NUMBER RODS (Mathematics, red+blue alternating). Pass 1
-// describes "graduated rods, colors alternating." Pass 2 sees colors weakly,
-// says area='sensorial', work_name='Red Rods', confidence 0.86. Gate A fires.
-// Wrong match auto-recorded.
+// describes "graduated rods." Pass 2 sees colour weakly, says area='sensorial',
+// work_name='Brown Stair', confidence 0.75. Gate A path 2 doesn't fire (score
+// < 1.0) but the wrong name is drafted — a Math work drafted as a Sensorial one.
 //
-// Fix: any name in this Set means the matcher MAY be hiding a cross-area
-// failure. The two-pass orchestrator uses this signal to FORCE Pass 2b
-// discrimination (image re-examination), which has the visual evidence
-// needed to choose correctly across areas.
+// Each inner array below is a CLUSTER: a family of lowercased work names
+// (canonical names, parenthetical variants, and Haiku-common aliases) that
+// repeatedly get confused for one another. The two exported structures are
+// DERIVED from the clusters (see buildConfusionSets):
+//   - CROSS_AREA_CONFUSION_WORK_NAMES = every member of every cluster. Any name
+//     in this set forces Pass 2b (the two-pass orchestrator re-examines the
+//     IMAGE), which has the visual evidence needed to choose correctly.
+//   - CROSS_AREA_CONFUSION_COUNTERPARTS[x] = the rest of x's cluster(s). Fed to
+//     Pass 2b candidate building so the re-look is handed every sibling as an
+//     explicit A/B/C candidate — INCLUDING cross-area siblings a same-area
+//     candidate fill could never surface.
 //
-// Add to this list when the visual ID guide documents a new "AREA vs AREA"
-// confusion. Keep entries lowercased to match the case-insensitive lookup.
-// Scope rule: ONLY include names where the visual ID guide documents the two
-// works as living in DIFFERENT areas. Same-area confusions (Color Box 1 vs 2
-// vs 3, Golden Beads vs Short Bead Stair) belong to the per-area pool and are
-// covered by Pass 2b's existing low-confidence trigger — NOT here. Putting a
-// same-area pair here just forces Pass 2b on every photo of that work, which
-// is a cost regression with no quality win.
-export const CROSS_AREA_CONFUSION_WORK_NAMES: ReadonlySet<string> = new Set<string>([
+// 🚨 SCOPE (updated Jul 4 2026): historically this list held ONLY strict
+// cross-area pairs, because forcing Pass 2b on a same-area work with no
+// cross-area partner is a cost regression with no quality win. The graduated-
+// staircase cluster is the deliberate exception — it mixes same-area Sensorial
+// works (Pink Tower, Brown Stair, Red Rods) with the cross-area MATHEMATICS
+// member Number Rods, because the whole silhouette family ("a set of graded
+// wooden pieces") is mutually confusable and the Number Rods miss is the one
+// that files a Math work as Sensorial (the Jul-4 Sunshine Montessori incident:
+// a Number Rods photo drafted as "Brown Stair"). Registering the family forces
+// the image re-look for every staircase photo and makes every sibling reachable
+// as a candidate. Same-area confusions with NO cross-area member (Color Box 1
+// vs 2 vs 3, Golden Beads vs Short Bead Stair) still belong to the per-area pool
+// + Pass 2b's existing low-confidence trigger — NOT here.
+//
+// To register a new confusion family: add ONE cluster line here + mutual
+// 'NOT <Work>:' negatives in scripts/data/curated-visual-memory/*.json (then
+// re-seed) + a harness case. No other code changes.
+const CONFUSION_CLUSTERS: ReadonlyArray<readonly string[]> = [
+  // Graduated-dimension silhouette family. All read as "graded wooden pieces";
+  // COLOUR + which dimension varies are the discriminators (visual-id-guide.ts).
+  // Number Rods (Mathematics — red+blue banded) is the cross-area member that
+  // made this cluster urgent. Includes the combined Pink Tower + Brown Stair
+  // presentation, a common Haiku guess for any staircase silhouette.
+  [
+    'pink tower',
+    'brown stair (broad stair)', 'brown stair', 'broad stair',
+    'red rods (long rods)', 'red rods',
+    'number rods', 'number rods with numerals',
+    'pink tower and brown stair',
+  ],
   // Sensorial ↔ Mathematics — all-red rods vs red+blue alternating rods
-  // (visual-id-guide.ts:35 "RED RODS (Sensorial) vs NUMBER RODS (Mathematics)")
-  'red rods',
-  'red rods (long rods)',
-  'number rods',
-  // Language ↔ Sensorial — square frames in a vertical rack (language, writing prep)
-  // vs a wide drawer cabinet of flat shape insets (sensorial, shape matching).
-  // (visual-id-guide.ts:48 "METAL INSETS (Language — writing preparation) vs GEOMETRIC CABINET (Sensorial — shape matching)")
-  'metal insets',
-  'geometric cabinet',
+  // (visual-id-guide.ts "RED RODS (Sensorial) vs NUMBER RODS (Mathematics)").
+  ['red rods', 'red rods (long rods)', 'number rods'],
+  // Language ↔ Sensorial — square frames in a vertical rack (language, writing
+  // prep) vs a wide drawer cabinet of flat shape insets (sensorial, shape
+  // matching). (visual-id-guide.ts "METAL INSETS vs GEOMETRIC CABINET").
+  ['metal insets', 'geometric cabinet'],
   // Sensorial ↔ Mathematics — solid wooden block with KNOBBED cylinders in
   // round sockets vs numbered compartment box holding loose spindle bundles.
   // Registered Jul 3 2026 after the Bright Stars cold-start incident: a
-  // Cylinder Block photo was confidently mismatched to "Spindle Boxes" at
-  // 0.85 on a zero-visual-memory account. Both are natural-wood block/box
-  // materials with repeated round elements — text-only descriptions genuinely
-  // blur them; the image re-examination (Pass 2b) is what disambiguates.
-  'cylinder block 1',
-  'cylinder block 2',
-  'cylinder block 3',
-  'cylinder block 4',
-  'cylinder blocks',
-  'cylinder blocks combined',
-  'spindle box',
-  'spindle boxes',
+  // Cylinder Block photo was confidently mismatched to "Spindle Boxes" at 0.85
+  // on a zero-visual-memory account. Text-only descriptions blur them; the
+  // image re-examination (Pass 2b) is what disambiguates.
+  [
+    'cylinder block 1', 'cylinder block 2', 'cylinder block 3', 'cylinder block 4',
+    'cylinder blocks', 'cylinder blocks combined',
+    'spindle box', 'spindle boxes',
+  ],
   // Language ↔ Mathematics — single textured characters mounted one-per-board.
-  // Sandpaper Letters (pink/blue boards, alphabet) vs Sandpaper Numerals
-  // (green boards, digits 0-9). Registered with the Canonical Seed (Jul 3 2026):
-  // both are "rough character on a coloured board, finger-traced" and text
-  // descriptions converge; only the board colour + character type (letter vs
-  // digit) disambiguates, so Pass 2b image re-examination is forced.
+  // Sandpaper Letters (pink/blue boards, alphabet) vs Sandpaper Numerals (green
+  // boards, digits 0-9). Registered with the Canonical Seed (Jul 3 2026): both
+  // are "rough character on a coloured board, finger-traced" and text
+  // descriptions converge; only board colour + character type disambiguates.
   // ('sandpaper numbers' is a common Haiku alias for 'Sandpaper Numerals'.)
-  'sandpaper letters',
-  'sandpaper numerals',
-  'sandpaper numbers',
-]);
+  ['sandpaper letters', 'sandpaper numerals', 'sandpaper numbers'],
+];
 
 /**
- * Cross-area counterpart map: for a confusable work name, the OTHER side(s)
- * of the documented confusion. Consumed by Pass 2b candidate building — when
- * the matcher lands on one side of a pair, the counterpart works' visual-
- * memory entries (classroom or global) are injected as explicit candidates so
- * the image re-examination chooses between the two sides directly. A
- * same-area candidate fill can never surface the counterpart, because by
- * definition it lives in a DIFFERENT area.
- *
- * Keep keys AND values lowercased. When registering a new pair in the Set
- * above: add both directions here, and add curated DISTINGUISH FROM negatives
- * in scripts/seed-global-visual-memory.mjs.
+ * Derive the flat name Set + the counterpart map from CONFUSION_CLUSTERS.
+ * A name that appears in multiple clusters (e.g. 'red rods') accumulates the
+ * UNION of all its clusters' siblings — a superset of the old hand-maintained
+ * pairs, deduped. Counterpart VALUES stay lowercased; consumers resolve them
+ * against a global/classroom visual-memory entry and skip any that don't
+ * resolve (aliases like 'brown stair', 'sandpaper numbers'), so non-canonical
+ * cluster members are harmless as counterparts and load-bearing only for the
+ * force-Pass-2b membership set.
  */
-export const CROSS_AREA_CONFUSION_COUNTERPARTS: Readonly<Record<string, readonly string[]>> = {
-  'red rods': ['number rods'],
-  'red rods (long rods)': ['number rods'],
-  'number rods': ['red rods (long rods)', 'red rods'],
-  'metal insets': ['geometric cabinet'],
-  'geometric cabinet': ['metal insets'],
-  'spindle box': ['cylinder block 1', 'cylinder block 2', 'cylinder block 3', 'cylinder block 4'],
-  'spindle boxes': ['cylinder block 1', 'cylinder block 2', 'cylinder block 3', 'cylinder block 4'],
-  'cylinder block 1': ['spindle boxes'],
-  'cylinder block 2': ['spindle boxes'],
-  'cylinder block 3': ['spindle boxes'],
-  'cylinder block 4': ['spindle boxes'],
-  'cylinder blocks': ['spindle boxes'],
-  'cylinder blocks combined': ['spindle boxes'],
-  // Sandpaper Letters (language) ↔ Sandpaper Numerals (mathematics). Counterpart
-  // VALUES must match a global work_name exactly ('Sandpaper Numerals' /
-  // 'Sandpaper Letters' lowercased); the 'sandpaper numbers' KEY is a Haiku alias
-  // that points at the canonical 'sandpaper letters' counterpart.
-  'sandpaper letters': ['sandpaper numerals'],
-  'sandpaper numerals': ['sandpaper letters'],
-  'sandpaper numbers': ['sandpaper letters'],
-};
+function buildConfusionSets(clusters: ReadonlyArray<readonly string[]>): {
+  names: Set<string>;
+  counterparts: Record<string, string[]>;
+} {
+  const names = new Set<string>();
+  const counterpartSets = new Map<string, Set<string>>();
+  for (const cluster of clusters) {
+    const members = cluster.map((n) => n.toLowerCase().trim()).filter(Boolean);
+    for (const m of members) {
+      names.add(m);
+      if (!counterpartSets.has(m)) counterpartSets.set(m, new Set());
+      const set = counterpartSets.get(m)!;
+      for (const other of members) {
+        if (other !== m) set.add(other);
+      }
+    }
+  }
+  const counterparts: Record<string, string[]> = {};
+  for (const [k, v] of counterpartSets) counterparts[k] = [...v];
+  return { names, counterparts };
+}
+
+const _confusion = buildConfusionSets(CONFUSION_CLUSTERS);
+
+/**
+ * Every work name that belongs to a confusion cluster. Membership FORCES Pass 2b
+ * (image re-examination) when the matcher lands on it. Derived from
+ * CONFUSION_CLUSTERS — do not hand-edit; add a cluster above instead.
+ */
+export const CROSS_AREA_CONFUSION_WORK_NAMES: ReadonlySet<string> = _confusion.names;
+
+/**
+ * Cross-cluster counterpart map: for a confusable work name, the OTHER members
+ * of its cluster(s). Consumed by Pass 2b candidate building — when the matcher
+ * lands on one side, the counterpart works' visual-memory entries (classroom or
+ * global) are injected as explicit candidates so the image re-examination
+ * chooses between them directly. A same-area candidate fill can never surface a
+ * cross-area counterpart, which is the whole point.
+ *
+ * Derived from CONFUSION_CLUSTERS — do not hand-edit; add a cluster above.
+ */
+export const CROSS_AREA_CONFUSION_COUNTERPARTS: Readonly<Record<string, readonly string[]>> =
+  _confusion.counterparts;
 
 /** Returns true if either the raw Haiku name OR the matcher's resolved name appears in the cross-area confusion list. */
 export function isCrossAreaConfusable(...names: Array<string | null | undefined>): boolean {
