@@ -214,13 +214,19 @@ export async function GET(request: NextRequest) {
       .select('school_id, feature_key, enabled')
       .in('feature_key', ['ai_tier_haiku', 'ai_tier_sonnet']);
 
-    const aiTierMap: Record<string, 'free' | 'premium'> = {};
+    // Three-tier derivation (mirrors resolveReportModel precedence): sonnet flag
+    // wins → 'sonnet'; else haiku flag → 'haiku'; else 'free'. A premium school
+    // has BOTH flags on, so the sonnet-wins check surfaces it as 'sonnet'.
+    const haikuOn = new Set<string>();
+    const sonnetOn = new Set<string>();
     for (const row of (tierFlagsRaw || []) as Array<{ school_id: string; feature_key: string; enabled: boolean }>) {
       if (!row.enabled) continue;
-      // Both haiku-only and sonnet schools map to 'premium' in the two-tier UI
-      if (row.feature_key === 'ai_tier_sonnet' || row.feature_key === 'ai_tier_haiku') {
-        aiTierMap[row.school_id] = 'premium';
-      }
+      if (row.feature_key === 'ai_tier_sonnet') sonnetOn.add(row.school_id);
+      else if (row.feature_key === 'ai_tier_haiku') haikuOn.add(row.school_id);
+    }
+    const aiTierMap: Record<string, 'free' | 'haiku' | 'sonnet'> = {};
+    for (const id of new Set<string>([...haikuOn, ...sonnetOn])) {
+      aiTierMap[id] = sonnetOn.has(id) ? 'sonnet' : 'haiku';
     }
 
     // 3b. Fetch actual API usage from montree_api_usage (this month).
@@ -401,14 +407,18 @@ export async function PATCH(request: NextRequest) {
 
     // ── AI tier change: toggle feature flags + set budget ──────────
     if (ai_tier !== undefined) {
-      const VALID_AI_TIERS = ['free', 'premium'];
+      const VALID_AI_TIERS = ['free', 'haiku', 'sonnet'];
       if (!VALID_AI_TIERS.includes(ai_tier)) {
-        return NextResponse.json({ error: 'ai_tier must be free or premium' }, { status: 400 });
+        return NextResponse.json({ error: 'ai_tier must be free, haiku, or sonnet' }, { status: 400 });
       }
 
-      // Premium enables both haiku and sonnet; free disables both
-      const haikuEnabled = ai_tier === 'premium';
-      const sonnetEnabled = ai_tier === 'premium';
+      // Three tiers, mapped to the two feature flags resolveReportModel reads:
+      //   free   → both off (no AI; template fallback)
+      //   haiku  → ai_tier_haiku only  (cheap Haiku for reports + narratives)
+      //   sonnet → BOTH on (sonnet wins in the resolver; haiku=true keeps sonnet
+      //            a strict superset so any independent 'requires-haiku' gate passes)
+      const haikuEnabled = ai_tier === 'haiku' || ai_tier === 'sonnet';
+      const sonnetEnabled = ai_tier === 'sonnet';
 
       // Upsert both feature flags atomically
       for (const [key, enabled] of [['ai_tier_haiku', haikuEnabled], ['ai_tier_sonnet', sonnetEnabled]] as const) {
@@ -424,9 +434,9 @@ export async function PATCH(request: NextRequest) {
         }
       }
 
-      // Also set budget: free=$0/hard_limit, premium=$9999/warn
-      const tierBudget = ai_tier === 'free' ? 0 : 9999;
-      const tierAction = ai_tier === 'free' ? 'hard_limit' : 'warn';
+      // Budget per tier: free=$0/hard_limit, haiku=$50/soft_limit, sonnet=$9999/warn
+      const tierBudget = ai_tier === 'free' ? 0 : ai_tier === 'haiku' ? 50 : 9999;
+      const tierAction = ai_tier === 'free' ? 'hard_limit' : ai_tier === 'haiku' ? 'soft_limit' : 'warn';
       const { error: budgetErr } = await supabase
         .from('montree_schools')
         .update({ monthly_ai_budget_usd: tierBudget, ai_budget_action: tierAction })
