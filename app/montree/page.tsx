@@ -39,6 +39,13 @@ const SPLASH_VIDEOS = {
 } as const;
 type SplashVideoLocale = keyof typeof SPLASH_VIDEOS;
 
+// Hero explainer video — hidden on the splash FOR NOW (Tredoux, Jul 2026).
+// Flip to true to bring the corner video (+ EN/中文 toggle + tap-for-sound)
+// back. Typed boolean so the video JSX/state/effect stay wired and lint-clean
+// while hidden. The nav "Explainer" link + /montree/explainer page are
+// untouched — this only removes the video from the splash hero.
+const SHOW_HERO_VIDEO: boolean = false;
+
 export default function MontreeLanding() {
   const { t } = useI18n();
   const router = useRouter();
@@ -152,6 +159,7 @@ export default function MontreeLanding() {
   // (force-cache doesn't dedupe an in-flight Range-semantics media
   // request), so the EN video was downloaded twice (5.7MB × 2).
   useEffect(() => {
+    if (!SHOW_HERO_VIDEO) return; // hero video hidden — nothing to sync
     (['en', 'zh'] as const).forEach((loc) => {
       const el = videoRefs.current[loc];
       if (!el) return;
@@ -913,10 +921,11 @@ export default function MontreeLanding() {
           centered text but is the first thing the eye picks up.
       */}
       <section className="m-hero">
-        {/* Corner video. NOT wrapped with ref={addReveal} — the reveal
-            pattern's JS-set opacity racing the <video>'s first paint
-            caused the 2ms flash users reported earlier. Visible from
-            first paint instead. */}
+        {/* Hero explainer video — hidden for now (SHOW_HERO_VIDEO flag at
+            top of file). Flip to true to restore. NOT wrapped with
+            ref={addReveal} — the reveal pattern's JS-set opacity racing the
+            <video>'s first paint caused the 2ms flash users reported. */}
+        {SHOW_HERO_VIDEO && (
         <div className="m-hero-corner-video">
           <div className="m-hero-corner-video-frame">
             {/* Dual-video pattern (Session 131, slimmed in the Jun 13 perf
@@ -1032,6 +1041,7 @@ export default function MontreeLanding() {
             </div>
           </div>
         </div>
+        )}
 
         <div ref={addReveal} className="m-hero-stack">
           <span className="m-hero-eyebrow">{t('landing.hero.label')}</span>
