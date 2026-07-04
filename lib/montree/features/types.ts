@@ -9,6 +9,10 @@ export type FeatureKey =
   | 'parent_portal'
   | 'games'
   | 'weekly_admin_docs'
+  // Optional Wrap Up tabs — Discussion (flag photos for team review) + Get Advice
+  // (Guru next-steps per child). Migration 283. Both default OFF; schools opt in.
+  | 'wrap_discussion'
+  | 'wrap_get_advice'
   // Teacher-only Teaching Notes view on the Weekly Admin tab — the week's
   // planned works, each with what-it-is + how-to-teach. Migration 227. Default OFF.
   | 'weekly_teaching_notes'

@@ -4014,7 +4014,7 @@ export const en = {
   'photoAudit.discussionFlagRemoved': '💬 Discussion flag removed',
   'photoAudit.confirmTab': 'Confirm',
   'photoAudit.discussionTab': '💬 Discussion',
-  'photoAudit.weeklyWrapTab': 'Weekly Wrap',
+  'photoAudit.weeklyWrapTab': 'Parent Reports',
   'photoAudit.weeklyAdminTab': 'Weekly Admin',
   'photoAudit.wrapUpHeader': 'Wrap Up',
   'photoAudit.syncButtonTitle': 'Sync offline photos to cloud',
