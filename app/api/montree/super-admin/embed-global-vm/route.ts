@@ -156,17 +156,10 @@ export async function POST(request: NextRequest) {
         .update({ embedding: res.vector as unknown as string })
         .eq('id', res.row.id);
       if (updErr) {
-        if (isSchemaMissing(updErr)) {
-          return NextResponse.json(
-            {
-              error: 'embedding column missing — run migration 282 first',
-              detail: updErr.message,
-              migration: '282_global_vm_embedding.sql',
-              embedded_before_failure: embedded,
-            },
-            { status: 400 },
-          );
-        }
+        // The upfront SELECT already proved the embedding column exists (it
+        // selects `embedding`), so a genuine schema-missing error can't reach
+        // here — treat every write error as a per-row failure and keep going so
+        // one bad row never abandons the rest of the backfill.
         failed++;
         if (errorSamples.length < 5) errorSamples.push(`${res.row.work_key}: ${updErr.message}`);
         continue;
