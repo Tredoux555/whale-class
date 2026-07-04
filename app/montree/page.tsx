@@ -182,6 +182,20 @@ export default function MontreeLanding() {
 
   return (
     <>
+      {/* ── PWA no-flash launch gate (blocking, pre-paint) ──
+          When Montree is opened from the home-screen icon (standalone
+          display mode) by a signed-in teacher/principal, we must NOT paint
+          the marketing splash first. This inline <script> runs synchronously
+          as the HTML is parsed — BEFORE the marketing content below renders —
+          and hard-redirects to the app surface, so there's no visible flash.
+          The useEffect above is the fallback (parent cookie-only sessions +
+          any case this fast path misses). CSP allows 'unsafe-inline' scripts
+          (next.config.ts). Logged-out launches fall through untouched. */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `(function(){try{var s=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true;if(!s)return;var t=localStorage.getItem('montree_session');if(t){var o=JSON.parse(t);if(o&&o.school&&o.school.id){location.replace('/montree/dashboard');return;}}if(localStorage.getItem('montree_principal')){location.replace('/montree/admin');return;}}catch(e){}})();`,
+        }}
+      />
       {/* Plain <style> (NOT styled-jsx) — App Router has no styled-jsx
           StyleRegistry, so <style jsx global> renders NOTHING into the SSR
           HTML and the CSS only attached after hydration. Result: the first
