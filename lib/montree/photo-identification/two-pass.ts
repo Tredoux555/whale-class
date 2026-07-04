@@ -36,6 +36,7 @@ import {
   hasGlobalVisualMemoryFor,
   type IdentificationContext,
 } from './context-loader';
+import { retrieveVisualNeighbors, type VisualNeighbor } from './visual-retrieval';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 // ----- Constants -----
@@ -155,7 +156,13 @@ export interface TwoPassInput {
   locale: Locale;
   /** Pre-loaded identification context (corrections + visual memory). If omitted, will be loaded. */
   context?: IdentificationContext;
-  /** Supabase client (only required if `context` is not provided) */
+  /**
+   * Supabase client. Required to load context when `context` is not provided,
+   * AND to run visual-similarity retrieval (the montree_global_vm_search RPC,
+   * migration 282). When absent, retrieval is skipped (fail-open) and the
+   * pipeline behaves exactly as before. The process route + cold-start harness
+   * both pass this even though they pre-load `context`.
+   */
   supabase?: SupabaseClient;
   /** Optional abort signal for cancellation (e.g. parent route timeout) */
   abortSignal?: AbortSignal;
@@ -293,8 +300,11 @@ export function buildPass2bCandidates(
     } | null;
   },
   context: IdentificationContext,
+  visualNeighbors: VisualNeighbor[] = [],
 ): Array<{ name: string; area: string | null; looksLike: string }> {
-  const MAX_CANDIDATES = 5;
+  // Bumped 5 → 7 (Jul 4 2026) so the visual-similarity neighbour tier can be
+  // added without squeezing out the counterpart + classroom tiers.
+  const MAX_CANDIDATES = 7;
   const seen = new Set<string>();
   const candidates: Array<{ name: string; area: string | null; looksLike: string }> = [];
   const ident = pass2Result.identification;
@@ -356,6 +366,18 @@ export function buildPass2bCandidates(
       if (candidates.length >= MAX_CANDIDATES) break;
       pushByName(counterpart);
     }
+  }
+
+  // Priority 2.5 (Jul 4 2026): visual-similarity neighbours — the curated works
+  // whose appearance most resembles THIS photo (embedding retrieval over the
+  // Pass-1 description, across ALL areas). The strongest cross-area recall
+  // signal: it surfaces the correct work even when Haiku's guess and its
+  // registered counterparts all point elsewhere. Placed AFTER the guess +
+  // registered counterparts but BEFORE same-area fillers so the visually-
+  // nearest works are always in the A/B/C set the image re-look chooses from.
+  for (const n of visualNeighbors) {
+    if (candidates.length >= MAX_CANDIDATES) break;
+    pushCandidate(n.name, n.area, n.looksLike);
   }
 
   // Parse all CLASSROOM VM entries from context text, collecting full
@@ -598,6 +620,30 @@ Just describe the physical scene in 2-4 sentences. Lead with the PRIMARY work th
     };
   }
 
+  // ----- VISUAL-SIMILARITY RETRIEVAL (Jul 4 2026 — the class fix) -----
+  // Embed the Pass-1 visual description and pull the curated global works whose
+  // appearance is nearest, ACROSS ALL AREAS. Two consumers below:
+  //   (a) the Pass 2 USER message ("MOST VISUALLY SIMILAR LIBRARY WORKS") so
+  //       Pass 2 sees the visually-nearest options up front and can be right the
+  //       FIRST time — even when the name would otherwise be area-locked wrong.
+  //   (b) Pass 2b candidate building + the Pass-2-vs-visual disagreement trigger.
+  // FAIL-OPEN: needs input.supabase for the RPC (process route + harness pass
+  // it). No supabase / no OPENAI_API_KEY / migration 282 not run → [] → the
+  // pipeline behaves exactly as before.
+  let visualNeighbors: VisualNeighbor[] = [];
+  if (input.supabase && context.globalVisualMemoryEntries.length > 0) {
+    try {
+      visualNeighbors = await retrieveVisualNeighbors(
+        input.supabase,
+        visualDescription,
+        context.globalVisualMemoryEntries,
+        8,
+      );
+    } catch (err) {
+      errors.push(`Visual retrieval failed (non-fatal): ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
   // ----- PASS 2: MATCH -----
   const aiLangInstruction = getAILanguageInstruction(input.locale);
   const langInstruction = aiLangInstruction
@@ -660,6 +706,16 @@ ${VISUAL_ID_GUIDE}`;
   // cache_control note below — this block gets its OWN cache breakpoint.
   const pass2SystemDynamic = `${langInstruction}${context.correctionsContext}${context.visualMemoryContext}${context.globalVisualMemoryContext}`;
 
+  // Visual-similarity neighbours go into the Pass 2 USER message (NOT the cached
+  // system prefix) so both Jul-3 prompt-cache breakpoints survive. Ranked most-
+  // to-least similar; Pass 2 is told to weigh these first, across all areas.
+  const visualNeighborBlock = visualNeighbors.length > 0
+    ? `MOST VISUALLY SIMILAR LIBRARY WORKS (ranked by how closely each work's known appearance matches the photo description — weigh these FIRST, across ALL areas; colour + material beat silhouette):
+${visualNeighbors.map((n, i) => `${i + 1}. "${n.name}" (${n.area || 'unknown'}) — ${n.looksLike}`).join('\n')}
+
+`
+    : '';
+
   let identification: TwoPassResult['identification'] = null;
   let hasVisualMemoryForMatch = false;
   let hasGlobalVisualMemoryForMatch = false;
@@ -701,7 +757,7 @@ ${VISUAL_ID_GUIDE}`;
 
 Child: ${input.childName}, age ${input.childAge}
 
-Match this description to the correct Montessori work. Use the visual identification guide in your instructions. Identify based ONLY on the physical materials described — do not guess based on the child's age or any other context.`,
+${visualNeighborBlock}Match this description to the correct Montessori work. Use the visual identification guide in your instructions${visualNeighborBlock ? ' AND the MOST VISUALLY SIMILAR LIBRARY WORKS listed above' : ''}. Identify based ONLY on the physical materials described — do not guess based on the child's age or any other context.`,
         }],
       }, { signal: passAbort.signal });
 
@@ -713,7 +769,10 @@ Match this description to the correct Montessori work. Use the visual identifica
           validated.area !== 'unknown' ? validated.area : null,
           input.curriculum,
           context.correctionsMap,
-          validated.observation,
+          // Feed the matcher the RICH Pass-1 visual description (materials boost),
+          // not the warm one-line observation — the description is where the
+          // decisive material cues ("red and blue segments") live.
+          visualDescription,
         );
 
         const finalWorkName = matchResult.bestMatch?.name || validated.work_name;
@@ -741,7 +800,7 @@ Match this description to the correct Montessori work. Use the visual identifica
             null,
             input.curriculum,
             context.correctionsMap,
-            validated.observation,
+            visualDescription,
           );
           topCandidates = (fb.candidates || []).slice(0, 3).map((c) => ({
             workName: c.work.name,
@@ -794,15 +853,30 @@ Match this description to the correct Montessori work. Use the visual identifica
     identification.haikuWorkName,
   );
 
+  // 🚨 Jul 4 2026 — the "visual evidence disagrees" trigger (the class fix). If
+  // Pass 2's chosen work is NOT among the top-3 visually-nearest library works,
+  // the name Haiku picked disagrees with what the photo actually LOOKS like —
+  // the exact signal that was missing when a Number Rods photo was drafted
+  // "Brown Stair". Force the image re-look so Pass 2b can choose from the
+  // visually-nearest candidates (which buildPass2bCandidates now injects).
+  const topNeighborNames = new Set(
+    visualNeighbors.slice(0, 3).map((n) => n.name.toLowerCase()),
+  );
+  const forcePass2bVisualDisagreement =
+    !!identification &&
+    visualNeighbors.length >= 2 &&
+    !topNeighborNames.has(identification.workName.toLowerCase());
+
   if (
     identification &&
     (
       forcePass2bCrossArea ||
+      forcePass2bVisualDisagreement ||
       identification.confidence < PASS2B_CONFIDENCE_THRESHOLD ||
       !hasVisualMemoryForMatch
     )
   ) {
-    const pass2bCandidates = buildPass2bCandidates({ identification }, context);
+    const pass2bCandidates = buildPass2bCandidates({ identification }, context, visualNeighbors);
 
     if (pass2bCandidates.length >= 2) {
       const passAbort = new AbortController();
@@ -863,7 +937,7 @@ Which work is most likely based on the visual evidence? If none match well, you 
             validated.area !== 'unknown' ? validated.area : null,
             input.curriculum,
             context.correctionsMap,
-            validated.observation,
+            visualDescription,
           );
 
           // Use Pass 2b result only if it's meaningfully MORE confident than Pass 2
