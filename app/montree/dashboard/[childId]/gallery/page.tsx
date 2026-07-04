@@ -30,14 +30,18 @@ const VoiceDictate = dynamic(() => import('@/components/montree/voice/VoiceDicta
 interface GalleryItem extends MontreeMedia {
   area?: string;
   work_name?: string;
-  // sonnet_draft is the photo-pipeline JSONB carrier. For the gallery we only
-  // care about the Other-bucket discriminator from Session 113 V2 (Save as
-  // Other feature). The full schema is documented in the photo-pipeline
-  // audit doc.
+  // The AI two-pass pipeline writes its identification into sonnet_draft.
+  // work_id stays NULL until the teacher (or Gate A) CONFIRMS — so on a
+  // brand-new / cold classroom every photo is DRAFTED-BUT-UNCONFIRMED. We
+  // surface sonnet_draft.proposed_name as a one-tap "AI suggestion" instead
+  // of rendering a blank "Untagged" (which is what made the feed look broken).
+  identification_status?: string | null;
   sonnet_draft?: {
     is_other?: boolean;
     other_note?: string | null;
     other_classified_at?: string | null;
+    proposed_name?: string | null;
+    confidence?: number | null;
   } | null;
 }
 
@@ -525,6 +529,49 @@ export default function GalleryPage() {
       ));
       // Update popup store so the toast dismisses / shows corrected work
       updateEntryAfterCorrection(pickerPhotoId, childId, work.name, pickerArea);
+      toast.success(t('gallery.workUpdated'));
+    } catch {
+      toast.error(t('gallery.workUpdateError'));
+    }
+  };
+
+  // One-tap confirm of the AI's suggestion. Resolves sonnet_draft.proposed_name
+  // to a curriculum work and attaches it (same effect as picking it in the
+  // picker). Falls back to the picker if the name can't be resolved. This is
+  // what restores the "first-time flash" — the AI's guess becomes the tag with
+  // a single tap, no picker walk.
+  const confirmSuggestion = async (photo: GalleryItem) => {
+    const name = photo.sonnet_draft?.proposed_name?.trim();
+    if (!name) return;
+    await loadCurriculum();
+    const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const allWorks = Object.entries(curriculum).flatMap(([areaKey, ws]) =>
+      ws.map((w) => ({ ...w, areaKey })),
+    );
+    const match =
+      allWorks.find((w) => w.name.toLowerCase() === name.toLowerCase()) ||
+      allWorks.find((w) => norm(w.name) === norm(name));
+    if (!match) {
+      // Name doesn't map cleanly to a curriculum work — let the teacher pick.
+      openWorkPicker(photo);
+      return;
+    }
+    try {
+      const res = await fetch('/api/montree/media', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ id: photo.id, work_id: match.id }),
+      });
+      if (!res.ok) throw new Error('Failed to update');
+      setPhotos((prev) =>
+        prev.map((p) =>
+          p.id === photo.id
+            ? { ...p, work_id: match.id, work_name: match.name, area: match.areaKey }
+            : p,
+        ),
+      );
+      updateEntryAfterCorrection(photo.id, childId, match.name, match.areaKey);
       toast.success(t('gallery.workUpdated'));
     } catch {
       toast.error(t('gallery.workUpdateError'));
@@ -1117,24 +1164,46 @@ export default function GalleryPage() {
                 in case the teacher wants to move it to a real work. */}
             {(() => {
               const isOther = photo.sonnet_draft?.is_other === true;
+              const DRAFT_STATUSES = ['haiku_drafted', 'haiku_matched', 'sonnet_drafted'];
+              const proposed = photo.sonnet_draft?.proposed_name?.trim() || '';
+              // Drafted-but-unconfirmed: the AI has a guess (proposed_name) but
+              // work_id is still NULL. Show that guess as a one-tap suggestion —
+              // never a blank "Untagged" when the AI actually identified it.
+              const isSuggestion = !photo.work_id && !isOther && !!proposed
+                && (!photo.identification_status || DRAFT_STATUSES.includes(photo.identification_status));
+              const label = isOther
+                ? (t('gallery.savedAsOther') || 'Saved as Other')
+                : (photo.work_name || (isSuggestion ? proposed : t('gallery.untagged')));
               return (
-                <button
-                  onClick={() => openWorkPicker(photo)}
-                  className="flex items-center gap-2 flex-1 min-w-0 rounded-lg transition-colors text-left group/tag"
-                  style={{ padding: '6px 8px' }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = isOther ? 'rgba(148,163,184,0.10)' : 'rgba(52,211,153,0.08)'; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
-                >
-                  {isOther && <span style={{ fontSize: 13 }}>📌</span>}
-                  <span className="text-sm truncate flex-1" style={{ fontFamily: '"Inter", sans-serif', fontWeight: 500, color: isOther ? 'rgba(203,213,225,0.85)' : 'rgba(255,255,255,0.90)', fontStyle: isOther ? 'italic' : 'normal' }}>
-                    {isOther
-                      ? (t('gallery.savedAsOther') || 'Saved as Other')
-                      : (photo.work_name || t('gallery.untagged'))}
-                  </span>
-                  <span className="text-xs opacity-0 group-hover/tag:opacity-100 transition-opacity" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                    {t('gallery.tapToChange')}
-                  </span>
-                </button>
+                <div className="flex items-center gap-1 flex-1 min-w-0">
+                  <button
+                    onClick={() => openWorkPicker(photo)}
+                    className="flex items-center gap-2 flex-1 min-w-0 rounded-lg transition-colors text-left group/tag"
+                    style={{ padding: '6px 8px' }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = isOther ? 'rgba(148,163,184,0.10)' : 'rgba(52,211,153,0.08)'; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+                  >
+                    {isOther && <span style={{ fontSize: 13 }}>📌</span>}
+                    {isSuggestion && <span style={{ fontSize: 13 }}>✨</span>}
+                    <span className="text-sm truncate flex-1" style={{ fontFamily: '"Inter", sans-serif', fontWeight: 500, color: isOther ? 'rgba(203,213,225,0.85)' : isSuggestion ? 'rgba(233,213,255,0.92)' : 'rgba(255,255,255,0.90)', fontStyle: isOther ? 'italic' : 'normal' }}>
+                      {label}
+                    </span>
+                    <span className="text-xs opacity-0 group-hover/tag:opacity-100 transition-opacity" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                      {t('gallery.tapToChange')}
+                    </span>
+                  </button>
+                  {isSuggestion && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); confirmSuggestion(photo); }}
+                      title={t('common.confirm')}
+                      aria-label={t('common.confirm')}
+                      className="shrink-0 rounded-lg transition-transform active:scale-95"
+                      style={{ padding: '6px 11px', fontSize: 14, fontWeight: 700, color: '#0a1a0f', background: 'linear-gradient(135deg, #34d399, #1D6B48)' }}
+                    >
+                      ✓
+                    </button>
+                  )}
+                </div>
               );
             })()}
           </div>
