@@ -212,12 +212,16 @@ the Jul-3 curated 270-work seed is working: higher cold-start confidence → mor
   fresh create-school→add-student flow. (2) Guru chat shelf-fill stopping at 2/5 areas (both "Presented",
   contradicting "start with zero") — `lib/montree/guru/tool-executor.ts` UNCHANGED since May 16 →
   runtime/model tool-loop early-stop, **OPEN to investigate**, not a code regression.
-- **RULES:** (1) the child gallery MUST surface `sonnet_draft.proposed_name` as a ✨ one-tap suggestion
-  when `work_id` is NULL — never a blank "Untagged" when the AI has a guess. (2) the child-media gallery
-  fetch is `cache:'no-store'` + refetch-on-visibility (fix at the fetch site; do NOT strip the media API
-  cache header — other callers use it). (3) **gallery ✓/picker confirm does NOT seed the visual-memory
-  moat** (only Wrap Up / photo-audit confirms do) — so cold accounts still need a few Wrap-Up confirms
-  before Gate A auto-tags from classroom history; candidate follow-up = route gallery confirms through
+- **RULES:** (1) 🚨 SUPERSEDED Jul 4 2026 — the child gallery is now DISPLAY-ONLY. It surfaces
+  `sonnet_draft.proposed_name` as a READ-ONLY ✨ label (never a blank "Untagged" when the AI has a guess),
+  and an unconfirmed AI guess shows a "Review in Wrap Up →" link INSTEAD of a one-tap confirm. All
+  confirm/correct/(re)tagging happens in Wrap Up (`/montree/dashboard/photo-audit`) only. The gallery's
+  own report card + confirm/picker machinery were removed; the per-child Parent Report preview/publish
+  flow moved to the Parents tab (`parent-codes` page) via `components/montree/reports/ChildReportPreviewModal.tsx`.
+  (2) the child-media gallery fetch is `cache:'no-store'` + refetch-on-visibility (fix at the fetch site;
+  do NOT strip the media API cache header — other callers use it). (3) **Wrap Up / photo-audit confirms are
+  the SOLE visual-memory-moat seeding path** (the gallery no longer confirms at all, so "route gallery
+  confirms through the corrections endpoint" is OBSOLETE) — cold accounts warm the moat via Wrap-Up confirms
   the corrections endpoint.
 - **Prod data:** the Jul-3 Bright Stars gate photo `d7af53f8` was reset to `identification_status='pending'`
   (draft cleared) so the audit sweep re-runs it live. No other prod data changed.
