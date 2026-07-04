@@ -75,6 +75,27 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // 3. Latest SENT weekly report per child (Jul 4 2026 — the per-child report
+    // preview/publish flow lives on this Parents tab now). ONE batched query
+    // mirroring the latest-per-child invite pattern above — never per-child
+    // fetches. Non-fatal: a failure here must not take down the codes list.
+    const lastReportPerChild = new Map<string, string>();
+    const { data: sentReports, error: reportErr } = await supabase
+      .from('montree_weekly_reports')
+      .select('child_id, sent_at, published_at, created_at')
+      .in('child_id', childIds)
+      .eq('status', 'sent')
+      .order('created_at', { ascending: false });
+    if (reportErr) {
+      console.error('[dashboard parent-codes] sent-reports query failed (non-fatal):', reportErr);
+    } else {
+      for (const rep of sentReports || []) {
+        if (!lastReportPerChild.has(rep.child_id)) {
+          lastReportPerChild.set(rep.child_id, rep.sent_at || rep.published_at || rep.created_at);
+        }
+      }
+    }
+
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://montree.xyz';
     // Session 140: QR codes were hot-linked from api.qrserver.com (503s + not in
     // the CSP img-src allowlist). Generate locally as data: URLs with the
@@ -102,6 +123,7 @@ export async function GET(request: NextRequest) {
           qr_url,
           expires_at: inv?.expires_at || null,
           used: !!inv?.used_at,
+          last_report_sent_at: lastReportPerChild.get(child.id) || null,
         };
       })
     );

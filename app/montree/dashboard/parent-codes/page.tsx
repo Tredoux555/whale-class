@@ -10,13 +10,22 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Copy, RefreshCw, Sparkles, Heart, Check, Zap, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Copy, RefreshCw, Sparkles, Heart, Check, Zap, MessageCircle, Eye, FileText } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useI18n } from '@/lib/montree/i18n';
+import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import { toast, Toaster } from 'sonner';
+
+// Per-child parent report preview/publish flow — extracted from the child
+// gallery (Jul 4 2026). Code-split: only loads when a report button is tapped.
+const ChildReportPreviewModal = dynamic(
+  () => import('@/components/montree/reports/ChildReportPreviewModal'),
+  { ssr: false }
+);
 
 const T = {
   bg: '#0a1a0f',
@@ -49,11 +58,16 @@ interface CodeRow {
   qr_url: string | null;
   expires_at: string | null;
   used: boolean;
+  last_report_sent_at: string | null;
 }
 
 export default function TeacherParentCodesPage() {
   const router = useRouter();
   const { t } = useI18n();
+  const session = getSession();
+  // Weekly-report actions are teacher-only (homeschool parents don't send
+  // themselves reports) — same gate the gallery's report card used.
+  const canManageReports = !!session && !isHomeschoolParent(session);
 
   const [codes, setCodes] = useState<CodeRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,6 +82,20 @@ export default function TeacherParentCodesPage() {
   // network request never leaves montree.xyz — avoids the strict CSP
   // img-src directive that blocks api.qrserver.com.
   const [qrDataUrls, setQrDataUrls] = useState<Record<string, string>>({});
+  // Per-child report modal. `reportTarget` is KEPT after close (only the open
+  // flag flips) so the modal instance — keyed by child_id — stays mounted and
+  // the teacher's exclude-work choices persist across reopens for the same
+  // child (original gallery behaviour). Opening a DIFFERENT child swaps the
+  // key → fresh state for that child.
+  const [reportTarget, setReportTarget] = useState<{ childId: string; childName: string } | null>(null);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportMode, setReportMode] = useState<'preview' | 'last'>('preview');
+
+  const openReportModal = useCallback((row: CodeRow, mode: 'preview' | 'last') => {
+    setReportTarget({ childId: row.child_id, childName: row.child_name });
+    setReportMode(mode);
+    setReportModalOpen(true);
+  }, []);
 
   const fetchCodes = useCallback(async () => {
     try {
@@ -451,11 +479,11 @@ export default function TeacherParentCodesPage() {
             }}
           >
             <Sparkles size={22} color={T.emerald} strokeWidth={1.75} />
-            {t('parentCodes.title')}
+            {t('parentCodes.pageTitle')}
             {/* Parent Chats moved to the top bar (replaced Print) — see header. */}
           </h1>
           <p style={{ fontSize: 14, color: T.textMuted, margin: '8px 0 0', lineHeight: 1.5 }}>
-            {t('parentCodes.subtitle')}
+            {t('parentCodes.pageSubtitle')}
           </p>
         </div>
 
@@ -665,12 +693,108 @@ export default function TeacherParentCodesPage() {
                       {busy ? t('parentCodes.creating') : t('parentCodes.createCode')}
                     </button>
                   )}
+
+                  {/* Weekly report — moved here from the child gallery (Jul 4 2026).
+                      Teacher-only: preview + publish this week's parent report, or
+                      reopen the last sent one. */}
+                  {canManageReports && (
+                    <div
+                      className="print:hidden"
+                      style={{ borderTop: '1px solid rgba(52,211,153,0.14)', paddingTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}
+                    >
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: 11,
+                          fontWeight: 600,
+                          color: row.last_report_sent_at ? T.textMuted : T.amber,
+                        }}
+                      >
+                        {t('parentCodes.weeklyReport')}
+                        {' · '}
+                        {row.last_report_sent_at
+                          ? `${t('reports.lastSent')}: ${new Date(row.last_report_sent_at).toLocaleDateString()}`
+                          : t('reports.noReportsSentYet')}
+                      </p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        <button
+                          onClick={() => openReportModal(row, 'preview')}
+                          style={{
+                            flex: 1,
+                            minWidth: 120,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 6,
+                            padding: '8px 10px',
+                            borderRadius: 10,
+                            background: T.emeraldStrong,
+                            border: T.cardBorderStrong,
+                            color: T.emerald,
+                            fontSize: 12,
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <Eye size={14} strokeWidth={1.75} />
+                          {t('reports.previewReport')}
+                        </button>
+                        {row.last_report_sent_at && (
+                          <button
+                            onClick={() => openReportModal(row, 'last')}
+                            style={{
+                              flex: '0 0 auto',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: 6,
+                              padding: '8px 10px',
+                              borderRadius: 10,
+                              background: T.card,
+                              border: T.cardBorder,
+                              color: T.textSecondary,
+                              fontSize: 12,
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            <FileText size={14} strokeWidth={1.75} />
+                            {t('reports.lastReport')}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
         )}
       </main>
+
+      {/* Per-child report preview / last-report modal. key={childId} isolates
+          per-child state; onSent updates that row's "Last sent" line locally
+          (no refetch needed — the API recomputes on next load anyway). */}
+      {canManageReports && reportTarget && (
+        <ChildReportPreviewModal
+          key={reportTarget.childId}
+          childId={reportTarget.childId}
+          childName={reportTarget.childName}
+          isOpen={reportModalOpen}
+          mode={reportMode}
+          onClose={() => setReportModalOpen(false)}
+          onSent={() => {
+            const sentChildId = reportTarget.childId;
+            setCodes((prev) =>
+              prev.map((c) =>
+                c.child_id === sentChildId
+                  ? { ...c, last_report_sent_at: new Date().toISOString() }
+                  : c
+              )
+            );
+          }}
+        />
+      )}
 
       <style jsx global>{`
         @media print {
