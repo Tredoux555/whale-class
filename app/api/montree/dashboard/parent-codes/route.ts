@@ -96,6 +96,24 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // 4. Linked parent per child (Jul 4 2026 — the Parents-tab "Chats" branch
+    // deep-links each child to their parent conversation, which is keyed by
+    // parent_id). ONE batched query; first linked parent wins. Non-fatal.
+    const parentByChild = new Map<string, string>();
+    const { data: parentLinks, error: linkErr } = await supabase
+      .from('montree_parent_children')
+      .select('parent_id, child_id')
+      .in('child_id', childIds);
+    if (linkErr) {
+      console.error('[dashboard parent-codes] parent-children query failed (non-fatal):', linkErr);
+    } else {
+      for (const link of (parentLinks || []) as Array<{ parent_id: string | null; child_id: string | null }>) {
+        if (link.child_id && link.parent_id && !parentByChild.has(link.child_id)) {
+          parentByChild.set(link.child_id, link.parent_id);
+        }
+      }
+    }
+
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://montree.xyz';
     // Session 140: QR codes were hot-linked from api.qrserver.com (503s + not in
     // the CSP img-src allowlist). Generate locally as data: URLs with the
@@ -124,6 +142,7 @@ export async function GET(request: NextRequest) {
           expires_at: inv?.expires_at || null,
           used: !!inv?.used_at,
           last_report_sent_at: lastReportPerChild.get(child.id) || null,
+          parent_id: parentByChild.get(child.id) || null,
         };
       })
     );
