@@ -55,6 +55,46 @@ Montree coupling + personal data; don't re-introduce it by editing the Montree c
 
 ---
 
+## 🚀 SESSION — Jul 5, 2026 (Cowork/Opus) — FOUNDING 100 WAITLIST + super-admin control panel + Core/Premium pricing copy
+
+**Canonical handoff: `docs/handoffs/SESSION_FOUNDING_100_JUL5.md`. 1 commit on main (`260e24fa`, 10 files,
++815/−9), pushed via Desktop Commander (HEAD == origin/main). Migration 285 RUN + confirmed clean. ESLint
+0/0, i18n strict 12/12. LIVE on montree.xyz.** Closes the "🚀 QUEUED — Founding 100 waitlist" item below.
+Built in Cowork (Opus); it's a Montree *schools* feature so it lives in whale-class, NOT lyfcoach-web.
+
+- **🚨 THE LOAD-BEARING RULE — the counter shows ADMITTED schools, not raw signups.** `remaining = cap −
+  admitted`. Form submissions write a waitlist row and NEVER move the counter; Tredoux admits manually in
+  waves from super-admin. Spam / tyre-kickers can't burn the permanent offer; the form collects a waitlist
+  forever. Do NOT "simplify" to auto-decrement-on-signup — that is the footgun this design exists to avoid.
+- **🚨 $3 is copy + config only — NOT wired to Stripe.** Admitting a school is the *promise* of $3. To
+  actually charge an admitted founder $3, set that school's `billing_override_usd` (migration 202) in the
+  Schools tab. Stripe deliberately untouched (Tredoux: change it before first promotion).
+- **Migration 285 (RUN):** `montree_founding_waitlist` (email UNIQUE; status waitlisted/admitted/declined;
+  admitted_at) + `montree_founding_config` singleton row (cap=100, wave=1, is_closed=false; `CHECK id=1`).
+  RLS deny-all, server uses service role.
+- **Public routes:** `GET /api/montree/founding/count` (`{cap,wave,admitted,remaining,is_closed}`, fails
+  soft to 100) + `POST /api/montree/founding/join` (reuses the `/demo-request` abuse posture — `checkRateLimit`
+  5/15min + input caps + hidden `website` honeypot + 23505 soft-dedupe + fire-and-forget notify email to
+  tredoux555@gmail.com, which delivers because he is the Resend account owner). No confirmation-to-school
+  email (by design — would need Resend domain verification).
+- **Super-admin route + tab:** `app/api/montree/super-admin/founding/route.ts` (`verifySuperAdminAuth`; GET
+  list+config+counts, PATCH `set_status` | `update_config`) + `components/montree/super-admin/FoundingTab.tsx`
+  wired into super-admin as the 🚀 Founding 100 tab. **Full manual control, no SQL:** see every signup,
+  Admit/Decline/Reset per row, edit cap+wave, Close/Re-open toggle. `components/montree/FoundingHundred.tsx`
+  mounted directly below the hero in `app/montree/page.tsx` (hardcoded-English copy → zero i18n parity churn).
+- **Pricing copy (surgical, NOT a redesign):** `app/pricing/page.tsx` hero + FAQ now state Core $3 / Premium
+  $7 / founder $3 and drop the "only one plan" story; `en.ts` 2 value swaps (`landing.hero.fineprint`,
+  `landing.closing.body`) drop "one plan / no tiers". The $7 pricing CARD is untouched (= Premium, correct).
+  **Full two-tier card redesign + re-translating the 2 keys across 11 locales = deferred to Tredoux's
+  pre-promotion pass.**
+- **Audit catch (ESLint can't see it):** two success strings used `&apos;` inside plain JS string literals
+  (would render literally) → rewritten apostrophe-free. Contracts grep-verified; `gen_random_uuid` +
+  `React.CSSProperties`-global proven against existing repo usage.
+- **Open/next:** full pricing-page two-tier card redesign; re-translate the 2 pricing keys; auto-apply
+  `billing_override_usd=3` on admit (currently manual); decide whether to seed the counter below 100.
+
+---
+
 ## 🎨 SESSION — Jul 4, 2026 (Cowork, night) — PRESENT FLAG + PWA LAUNCH + AI TIER LOCKDOWN + MENU REORDER + GALLERY/PARENTS SPLIT + PREVIEW BODY FIX
 
 **Canonical handoff: `docs/handoffs/SESSION_TIER_MENU_GALLERY_PARENTS_JUL4.md`. 10 commits on main
@@ -111,7 +151,7 @@ all pushed (HEAD == origin/main). SW bumped v11→v12.** Driven by a live iPhone
   (colorful ON PURPOSE — **Tredoux to decide** retheme vs leave); **library/print tools** (dark chrome, **print
   previews stay white** — paper). Tokens = the `T` object (`#0a1a0f`/emerald `#34d399`/glass/Lora). Phase 1 = the 3
   shown + Settings/Tools; Phase 2 = rest; fold in the 2 audit findings.
-- **🚀 QUEUED — Founding 100 waitlist (requested, NOT built; verdict: fully buildable in-house).** Homepage section:
+- **✅ SHIPPED Jul 5, 2026 — Founding 100 waitlist. Built + live (commit `260e24fa`, migration 285 RUN); see the Jul-5 session block at top + `docs/handoffs/SESSION_FOUNDING_100_JUL5.md`. Original plan kept for record:** Homepage section:
   live "X of 100 remaining" counter (DB-backed) + no-login form (school/contact/email/country/approx students) →
   writes DB, decrements, emails Tredoux; verbatim copy + "Join the Waitlist" CTA; mobile-first, dark-forest. Plan:
   `montree_founding_waitlist` table (email UNIQUE) + optional `montree_founding_config` (cap/wave) + `GET /founding/
