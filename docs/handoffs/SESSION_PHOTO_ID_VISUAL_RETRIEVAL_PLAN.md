@@ -194,9 +194,10 @@ Both prior "to-dos" are handled without him moving secrets or granting desktop a
 1. **`OPENAI_API_KEY`** — NO ACTION. It's already in Railway (Whisper uses it). Runtime embeddings +
    the backfill both run ON Railway (backfill is a super-admin route now — see Step 1.2), so the key
    never leaves. `.env.local` does NOT need it.
-2. **Embedding-column migration** — Claude runs it via the pooler (using `DATABASE_URL` from
-   `.env.local`, same connection used to diagnose the incident). Present the exact one-line SQL to
-   Tredoux for a quick yes, then run it. No Supabase SQL Editor step required.
+2. **Embedding-column migration** — Tredoux runs SQL himself. PASTE the exact SQL directly in the
+   chat (per the standing "everything runs from the chat" rule) and he runs it in the Supabase SQL
+   Editor. Do NOT run schema changes via the pooler. (The pooler connection is fine for read-only
+   diagnostics only.)
 3. That's it. Everything else (code, backfill route, eval, re-seed, validation, pushes) is Claude's.
    Surface real decision points (e.g. the override-margin tuning) with eval numbers in hand.
 
