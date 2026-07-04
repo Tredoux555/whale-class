@@ -1,16 +1,26 @@
 // /montree/dashboard/[childId]/gallery/page.tsx
-// Gallery — Photo gallery with Smart Capture AI review, area grouping, timeline view
+// Gallery — DISPLAY-ONLY photo gallery (timeline grouping + area filters).
+//
+// Jul 4 2026: all identification confirm/correct affordances (✓ confirm, work
+// picker, area picker, Special Events tagging) were REMOVED — corrections and
+// confirms now happen in Wrap Up (/montree/dashboard/photo-audit), which owns
+// the moat-seeding corrections flow. The per-child Parent Report preview/publish
+// flow moved to the Parents tab (/montree/dashboard/parent-codes) via
+// components/montree/reports/ChildReportPreviewModal.tsx. The gallery keeps:
+// photos, filters, lightbox, download, crop, delete, child-tagging, captions +
+// Lesson Notes. Work labels are read-only; an unconfirmed AI guess links to
+// Wrap Up.
 'use client';
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { useParams, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { AREA_CONFIG, AREA_ORDER } from '@/lib/montree/types';
 import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
-import { updateEntryAfterCorrection } from '@/lib/montree/photo-insight-store';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import PhotoQueueBanner from '@/components/montree/media/PhotoQueueBanner';
 import { useFeaturesContext } from '@/lib/montree/features';
@@ -18,12 +28,9 @@ import type { MontreeMedia } from '@/lib/montree/media/types';
 import { getProxyUrl, getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
 
 // Tier 6 perf: code-split modal components (~2.9k lines deferred).
-const WorkWheelPicker = dynamic(() => import('@/components/montree/WorkWheelPicker'), { ssr: false });
 const DeleteConfirmDialog = dynamic(() => import('@/components/montree/media/DeleteConfirmDialog'), { ssr: false });
 const PhotoLightbox = dynamic(() => import('@/components/montree/media/PhotoLightbox'), { ssr: false });
 const PhotoCropModal = dynamic(() => import('@/components/montree/media/PhotoCropModal'), { ssr: false });
-const PhotoSelectionModal = dynamic(() => import('@/components/montree/PhotoSelectionModal'), { ssr: false });
-const InviteParentModal = dynamic(() => import('@/components/montree/InviteParentModal'), { ssr: false });
 const EventAttendanceModal = dynamic(() => import('@/components/montree/events/EventAttendanceModal'), { ssr: false });
 const VoiceDictate = dynamic(() => import('@/components/montree/voice/VoiceDictate'), { ssr: false });
 
@@ -171,11 +178,9 @@ function ProcessingHourglass({ size = 22 }: { size?: number }) {
 
 export default function GalleryPage() {
   const params = useParams();
-  const searchParams = useSearchParams();
   const childId = params.childId as string;
   const { t, locale } = useI18n();
   const session = getSession();
-  const tagPhotoParam = searchParams.get('tagPhoto');
   const { isEnabled } = useFeaturesContext();
 
   // Core state
@@ -200,23 +205,6 @@ export default function GalleryPage() {
   const [captionDraft, setCaptionDraft] = useState('');
   const [savingCaption, setSavingCaption] = useState(false);
 
-  // Work picker state
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [pickerArea, setPickerArea] = useState('');
-  const [pickerPhotoId, setPickerPhotoId] = useState<string | null>(null);
-  const [pickerCurrentWork, setPickerCurrentWork] = useState<string | undefined>(undefined);
-  const [curriculum, setCurriculum] = useState<Record<string, CurriculumWork[]>>({});
-  const [allProgress, setAllProgress] = useState<Array<{ work_name: string; status: string }>>([]);
-
-  // Area picker state
-  const [showAreaPicker, setShowAreaPicker] = useState(false);
-  const [areaPickerPhotoId, setAreaPickerPhotoId] = useState<string | null>(null);
-  const [showSpecialEventsPicker, setShowSpecialEventsPicker] = useState(false);
-  const [specialEventsPhotoId, setSpecialEventsPhotoId] = useState<string | null>(null);
-  const [creatingEvent, setCreatingEvent] = useState(false);
-  const [customEventName, setCustomEventName] = useState('');
-  const [existingSpecialEvents, setExistingSpecialEvents] = useState<Array<{ id: string; name: string }>>([]);
-  const [loadingSpecialEvents, setLoadingSpecialEvents] = useState(false);
 
   // Delete state
   const [photoToDelete, setPhotoToDelete] = useState<GalleryItem | null>(null);
@@ -239,30 +227,6 @@ export default function GalleryPage() {
   const [notesDraft, setNotesDraft] = useState<Record<string, string>>({});
   const [savingNote, setSavingNote] = useState<string | null>(null);
 
-  // ── Report State ──
-  const [reportItems, setReportItems] = useState<ReportItem[]>([]);
-  const [reportStats, setReportStats] = useState<ReportStats | null>(null);
-  const [reportChildName, setReportChildName] = useState('');
-  const [reportUnassigned, setReportUnassigned] = useState<UnassignedPhoto[]>([]);
-  const [lastReportDate, setLastReportDate] = useState<string | null>(null);
-  const [showReportPreview, setShowReportPreview] = useState(false);
-  const [reportLoading, setReportLoading] = useState(false);
-  const [sending, setSending] = useState(false);
-  const [previewSelectedArea, setPreviewSelectedArea] = useState<string | null>(null);
-  const [previewExpandedCard, setPreviewExpandedCard] = useState<string | null>(null);
-  const [excludedWorks, setExcludedWorks] = useState<Set<string>>(new Set());
-  const [reportLightboxSrc, setReportLightboxSrc] = useState('');
-  const [reportLightboxOpen, setReportLightboxOpen] = useState(false);
-  // Photo selection modal
-  const [showPhotoModal, setShowPhotoModal] = useState(false);
-  const [currentReportPhotos, setCurrentReportPhotos] = useState<ReportPhoto[]>([]);
-  const [allReportPhotos, setAllReportPhotos] = useState<ReportPhoto[]>([]);
-  // Past reports
-  const [showLastReport, setShowLastReport] = useState(false);
-  const [lastReport, setLastReport] = useState<SentReport | null>(null);
-  const [loadingLastReport, setLoadingLastReport] = useState(false);
-  // Invite parent
-  const [inviteModalOpen, setInviteModalOpen] = useState(false);
   // Event attendance
   const [eventAttendanceOpen, setEventAttendanceOpen] = useState(false);
 
@@ -294,7 +258,6 @@ export default function GalleryPage() {
     if (prevChildIdRef.current !== childId) {
       prevChildIdRef.current = childId;
       setCropUrlOverrides({});
-      curriculumLoadedRef.current = false;
     }
   }, [childId]);
 
@@ -372,57 +335,6 @@ export default function GalleryPage() {
     return () => clearTimeout(id);
   }, [photos, fetchPhotos]);
 
-  // Fetch curriculum for wheel picker (pre-load on mount for instant picker)
-  const curriculumLoadedRef = useRef(false);
-  const curriculumLoadingRef = useRef(false);
-  const loadCurriculum = useCallback(async () => {
-    if (curriculumLoadedRef.current || curriculumLoadingRef.current) return;
-    curriculumLoadingRef.current = true;
-    try {
-      const classroomId = session?.classroom?.id;
-      const url = classroomId
-        ? `/api/montree/works/search?classroom_id=${classroomId}`
-        : '/api/montree/works/search';
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('Failed to load curriculum');
-      const data = await res.json();
-      const byArea: Record<string, CurriculumWork[]> = {};
-      for (const w of data.works || []) {
-        const areaKey = w.area?.area_key || 'unknown';
-        if (!byArea[areaKey]) byArea[areaKey] = [];
-        byArea[areaKey].push({
-          id: w.id,
-          name: w.name,
-          name_chinese: w.name_chinese,
-          sequence: w.sequence,
-          dbSequence: w.sequence,
-        });
-      }
-      setCurriculum(byArea);
-      curriculumLoadedRef.current = true;
-    } catch (err) {
-      console.error('Failed to load curriculum:', err);
-    } finally {
-      curriculumLoadingRef.current = false;
-    }
-  }, []);
-
-  // Pre-load curriculum on mount (background, non-blocking)
-  useEffect(() => {
-    loadCurriculum();
-  }, [loadCurriculum]);
-
-  // Deep-link: if tagPhoto param is set (e.g. from capture page "Pick work" button),
-  // auto-open the area picker for that photo once curriculum is ready
-  const tagPhotoHandledRef = useRef(false);
-  useEffect(() => {
-    if (!tagPhotoParam || tagPhotoHandledRef.current) return;
-    tagPhotoHandledRef.current = true;
-    loadCurriculum().then(() => {
-      setAreaPickerPhotoId(tagPhotoParam);
-      setShowAreaPicker(true);
-    });
-  }, [tagPhotoParam, loadCurriculum]);
 
   // Batch URL fetch eliminated — URLs computed inline via getProxyUrl (Health Check #5)
 
@@ -482,247 +394,6 @@ export default function GalleryPage() {
     });
   };
 
-  const openWorkPicker = async (photo: GalleryItem) => {
-    await loadCurriculum();
-    if (!photo.area) {
-      setAreaPickerPhotoId(photo.id);
-      setShowAreaPicker(true);
-      return;
-    }
-    setPickerArea(photo.area);
-    setPickerPhotoId(photo.id);
-    setPickerCurrentWork(photo.work_name || undefined);
-    setPickerOpen(true);
-  };
-
-  const handleAreaSelected = (area: string) => {
-    setShowAreaPicker(false);
-    if (area === 'special_events') {
-      // Special Events — show custom event picker (existing events + create new)
-      setShowSpecialEventsPicker(true);
-      setSpecialEventsPhotoId(areaPickerPhotoId);
-      setAreaPickerPhotoId(null);
-      return;
-    }
-    setPickerArea(area);
-    setPickerPhotoId(areaPickerPhotoId);
-    setPickerCurrentWork(undefined);
-    setPickerOpen(true);
-    setAreaPickerPhotoId(null);
-  };
-
-  // Fetch existing special_events curriculum works when picker opens
-  useEffect(() => {
-    if (!showSpecialEventsPicker) return;
-    const classroomId = session?.classroom?.id;
-    if (!classroomId) return;
-    setLoadingSpecialEvents(true);
-    setCustomEventName('');
-    const abortController = new AbortController();
-    fetch(`/api/montree/curriculum?classroom_id=${classroomId}`, { credentials: 'include', signal: abortController.signal })
-      .then(res => res.ok ? res.json() : null)
-      .then(data => {
-        if (abortController.signal.aborted) return;
-        if (data?.byArea?.special_events) {
-          setExistingSpecialEvents(
-            data.byArea.special_events.map((w: { id: string; name: string }) => ({ id: w.id, name: w.name }))
-          );
-        } else {
-          setExistingSpecialEvents([]);
-        }
-      })
-      .catch(err => {
-        if (err.name === 'AbortError') return;
-        setExistingSpecialEvents([]);
-      })
-      .finally(() => {
-        if (!abortController.signal.aborted) setLoadingSpecialEvents(false);
-      });
-    return () => abortController.abort();
-  }, [showSpecialEventsPicker, session?.classroom?.id]);
-
-  const handleSpecialEventTag = async (eventName: string) => {
-    if (!specialEventsPhotoId || creatingEvent) return;
-    const classroomId = session?.classroom?.id;
-    if (!classroomId) {
-      toast.error(t('gallery.noClassroomFound'));
-      return;
-    }
-    setCreatingEvent(true);
-    try {
-      // 1. Create or find this event as a custom work in the classroom curriculum
-      const createRes = await fetch('/api/montree/curriculum', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          classroom_id: classroomId,
-          name: eventName,
-          area_key: 'special_events',
-          is_custom: true,
-        }),
-      });
-
-      let workId: string | null = null;
-      if (createRes.ok) {
-        const createData = await createRes.json();
-        workId = createData.id || createData.work?.id || null;
-      } else if (createRes.status === 409 || createRes.status === 500) {
-        // Already exists or insert failed — look it up from curriculum
-        const existRes = await fetch(`/api/montree/curriculum?classroom_id=${classroomId}`, { credentials: 'include' });
-        if (existRes.ok) {
-          const existData = await existRes.json();
-          // GET response shape: { curriculum: [...], byArea: { special_events: [...], ... }, total: N }
-          const specialWorks = existData.byArea?.special_events || existData.curriculum || [];
-          const match = specialWorks.find((w: { name: string; id: string }) =>
-            w.name.toLowerCase() === eventName.toLowerCase()
-          );
-          if (match) workId = match.id;
-        }
-      }
-
-      if (!workId) {
-        toast.error(t('gallery.couldNotCreateEvent'));
-        return;
-      }
-
-      // 2. Tag the photo with this work
-      const tagRes = await fetch('/api/montree/media', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ id: specialEventsPhotoId, work_id: workId }),
-      });
-      if (!tagRes.ok) throw new Error('Failed to tag');
-
-      // 3. Update local state
-      setPhotos(prev => prev.map(p =>
-        p.id === specialEventsPhotoId ? { ...p, work_id: workId!, work_name: eventName, area: 'special_events' } : p
-      ));
-      // Update popup store so the toast dismisses / shows tagged event
-      if (specialEventsPhotoId) {
-        updateEntryAfterCorrection(specialEventsPhotoId, childId, eventName, 'special_events');
-      }
-      toast.success(t('gallery.workUpdated'));
-      setShowSpecialEventsPicker(false);
-      setSpecialEventsPhotoId(null);
-      setCustomEventName('');
-    } catch {
-      toast.error(t('gallery.workUpdateError'));
-    } finally {
-      setCreatingEvent(false);
-    }
-  };
-
-  const handleWorkSelected = async (work: CurriculumWork) => {
-    if (!pickerPhotoId) return;
-    setPickerOpen(false);
-    try {
-      const res = await fetch('/api/montree/media', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: pickerPhotoId, work_id: work.id }),
-      });
-      if (!res.ok) throw new Error('Failed to update');
-      setPhotos(prev => prev.map(p =>
-        p.id === pickerPhotoId ? { ...p, work_id: work.id, work_name: work.name, area: pickerArea } : p
-      ));
-      // Update popup store so the toast dismisses / shows corrected work
-      updateEntryAfterCorrection(pickerPhotoId, childId, work.name, pickerArea);
-      toast.success(t('gallery.workUpdated'));
-    } catch {
-      toast.error(t('gallery.workUpdateError'));
-    }
-  };
-
-  // Route a gallery confirm through the corrections endpoint so the tap SEEDS
-  // the classroom visual-memory moat (reinforces the confirmed work via
-  // increment_visual_memory_correct + records a teacher-confirmed confidence
-  // row + sets teacher_confirmed) — parity with the Photo Audit / Wrap Up
-  // confirm path. Before Jul 4 2026 gallery confirms only wrote work_id, so a
-  // cold classroom's gallery taps never warmed its moat. Fire-and-forget: the
-  // UI has already updated optimistically. Mirrors the photo-audit confirm call.
-  const seedMoatConfirm = (
-    photo: GalleryItem,
-    workName: string,
-    workId: string | null,
-    area: string | undefined,
-    confidence?: number | null,
-  ) => {
-    if (!workName || !childId) return;
-    void fetch('/api/montree/guru/corrections', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({
-        media_id: photo.id,
-        child_id: childId,
-        original_work_name: workName,
-        original_work_id: workId || '',
-        original_area: area || '',
-        original_confidence: confidence ?? 0,
-        action: 'confirm',
-      }),
-    }).catch((err) => console.error('[Gallery] moat-seed confirm failed (non-fatal):', err));
-  };
-
-  // One-tap confirm of a Gate-A auto-filed (haiku_matched) photo. work_id is
-  // ALREADY set, so this only records the confirmation (seeds the moat + flips
-  // teacher_confirmed) and marks the photo confirmed locally so its "AI-tagged"
-  // treatment (✨ + ✓) clears. Falls back to the picker if there's no work name.
-  const confirmAiTag = (photo: GalleryItem) => {
-    const workName = photo.work_name?.trim();
-    if (!workName) { openWorkPicker(photo); return; }
-    setPhotos((prev) => prev.map((p) => (p.id === photo.id ? { ...p, identification_status: 'confirmed' } : p)));
-    seedMoatConfirm(photo, workName, photo.work_id, photo.area, photo.sonnet_draft?.confidence ?? null);
-    toast.success(t('gallery.workUpdated'));
-  };
-
-  // One-tap confirm of the AI's suggestion. Resolves sonnet_draft.proposed_name
-  // to a curriculum work and attaches it (same effect as picking it in the
-  // picker). Falls back to the picker if the name can't be resolved. This is
-  // what restores the "first-time flash" — the AI's guess becomes the tag with
-  // a single tap, no picker walk.
-  const confirmSuggestion = async (photo: GalleryItem) => {
-    const name = photo.sonnet_draft?.proposed_name?.trim();
-    if (!name) return;
-    await loadCurriculum();
-    const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const allWorks = Object.entries(curriculum).flatMap(([areaKey, ws]) =>
-      ws.map((w) => ({ ...w, areaKey })),
-    );
-    const match =
-      allWorks.find((w) => w.name.toLowerCase() === name.toLowerCase()) ||
-      allWorks.find((w) => norm(w.name) === norm(name));
-    if (!match) {
-      // Name doesn't map cleanly to a curriculum work — let the teacher pick.
-      openWorkPicker(photo);
-      return;
-    }
-    try {
-      const res = await fetch('/api/montree/media', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ id: photo.id, work_id: match.id }),
-      });
-      if (!res.ok) throw new Error('Failed to update');
-      setPhotos((prev) =>
-        prev.map((p) =>
-          p.id === photo.id
-            ? { ...p, work_id: match.id, work_name: match.name, area: match.areaKey, identification_status: 'confirmed' }
-            : p,
-        ),
-      );
-      updateEntryAfterCorrection(photo.id, childId, match.name, match.areaKey);
-      // Seed the classroom moat — a gallery confirm now participates in visual
-      // memory exactly like a Photo Audit confirm (Jul 4 2026).
-      seedMoatConfirm(photo, match.name, match.id, match.areaKey, photo.sonnet_draft?.confidence ?? null);
-      toast.success(t('gallery.workUpdated'));
-    } catch {
-      toast.error(t('gallery.workUpdateError'));
-    }
-  };
 
   const saveCaption = async (photoId: string) => {
     setSavingCaption(true);
@@ -754,8 +425,6 @@ export default function GalleryPage() {
       setPhotos(prev => prev.filter(p => p.id !== photoToDelete.id));
       // Clean up crop URL override for deleted photo
       setCropUrlOverrides(prev => { const next = { ...prev }; delete next[photoToDelete.id]; return next; });
-      // Remove from report preview if open (prevent stale reference)
-      setReportItems(prev => prev.filter(i => i.photo_id !== photoToDelete.id));
       // Reset lightbox index to prevent out-of-bounds
       setLightboxIndex(0);
       toast.success(t('gallery.photoDeletedSuccessfully'));
@@ -863,8 +532,6 @@ export default function GalleryPage() {
       setPhotos(prev => prev.filter(p => !selectedIds.has(p.id)));
       // Clean up crop URL overrides for deleted photos
       setCropUrlOverrides(prev => { const next = { ...prev }; selectedIds.forEach(id => delete next[id]); return next; });
-      // Remove from report preview if open (prevent stale reference)
-      setReportItems(prev => prev.filter(i => !i.photo_id || !selectedIds.has(i.photo_id)));
       // Reset lightbox index to prevent out-of-bounds
       setLightboxIndex(0);
       toast.success(t('gallery.photosDeletedSuccessfully').replace('{count}', selectedIds.size.toString()));
@@ -953,137 +620,6 @@ export default function GalleryPage() {
     }
   }, [childId, t]);
 
-  const getAreaConfig = (area: string) =>
-    AREA_CONFIG[normalizeArea(area)] || { name: area, icon: '?', color: '#888' };
-
-  const getPickerWorks = (): CurriculumWork[] => {
-    const works = curriculum[pickerArea] || [];
-    return works.map(w => ({
-      ...w,
-      status: allProgress.find(p => p.work_name === w.name)?.status || 'not_started',
-    }));
-  };
-
-  // ── Report Handlers ──
-
-  const fetchReportPreview = useCallback(async () => {
-    setReportLoading(true);
-    try {
-      const controller = new AbortController();
-      const [previewRes, photosRes] = await Promise.all([
-        fetch(`/api/montree/reports/preview?child_id=${childId}&locale=${locale}`, { signal: controller.signal }),
-        fetch(`/api/montree/reports/available-photos?child_id=${childId}&locale=${locale}`, { signal: controller.signal }),
-      ]);
-      if (!previewRes.ok || !photosRes.ok) throw new Error('Fetch failed');
-      const previewData = await previewRes.json();
-      const photosData = await photosRes.json();
-
-      if (previewData.success && photosData.success) {
-        setReportChildName(previewData.child_name || 'Student');
-        setReportItems(previewData.items || []);
-        setReportStats(previewData.stats || null);
-        setLastReportDate(previewData.last_report_date);
-        setReportUnassigned(previewData.unassigned_photos || []);
-
-        const allAvailablePhotos = photosData.photos || [];
-        const reportedWorkNames = new Set(
-          (previewData.items || []).filter((item: ReportItem) => item.photo_url).map((item: ReportItem) => item.work_name)
-        );
-        const reportedPhotos = allAvailablePhotos.filter((p: ReportPhoto) => p.work_name && reportedWorkNames.has(p.work_name));
-        setCurrentReportPhotos(reportedPhotos);
-        setAllReportPhotos(allAvailablePhotos);
-      }
-    } catch (err) {
-      if (err instanceof DOMException && err.name === 'AbortError') return;
-      console.error('Failed to fetch report preview:', err);
-      toast.error(t('reports.loadError'));
-    }
-    setReportLoading(false);
-  }, [childId, locale, t]);
-
-  const handleOpenReportPreview = useCallback(async () => {
-    setPreviewSelectedArea(null);
-    setPreviewExpandedCard(null);
-    // Don't reset exclusions — teacher's delete choices should persist across reopens
-    await fetchReportPreview();
-    setShowReportPreview(true);
-  }, [fetchReportPreview]);
-
-  const sendReport = async () => {
-    setSending(true);
-    try {
-      const res = await fetch(`/api/montree/reports/send?locale=${locale}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          child_id: childId,
-          excluded_works: excludedWorks.size > 0 ? Array.from(excludedWorks) : undefined,
-        }),
-      });
-      if (!res.ok) throw new Error(`Send failed: ${res.status}`);
-      const data = await res.json();
-      if (data.success) {
-        toast.success(t('reports.published'));
-        setReportItems([]);
-        setReportStats(null);
-        setExcludedWorks(new Set());
-        setLastReportDate(new Date().toISOString());
-        setShowReportPreview(false);
-      } else {
-        toast.error(data.error || t('common.failedToSend'));
-      }
-    } catch {
-      toast.error(t('common.failedToSend'));
-    }
-    setSending(false);
-  };
-
-  const handlePhotoSelectionSave = async (selectedMediaIds: string[]) => {
-    try {
-      const res = await fetch('/api/montree/reports/photos', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ child_id: childId, selected_media_ids: selectedMediaIds }),
-      });
-      if (!res.ok) throw new Error(`Photo update failed: ${res.status}`);
-      const data = await res.json();
-      if (data.success) {
-        await fetchReportPreview();
-      } else {
-        throw new Error(data.error || 'Failed');
-      }
-    } catch (err) {
-      console.error('Failed to update photos:', err);
-      toast.error(t('reports.photoUpdateFailed'));
-      throw err;
-    }
-  };
-
-  const fetchLastReport = async () => {
-    if (!lastReportDate) return;
-    setLoadingLastReport(true);
-    try {
-      const res = await fetch(`/api/montree/reports?child_id=${childId}&status=sent&limit=1&locale=${locale}`);
-      if (!res.ok) throw new Error(`Report fetch failed: ${res.status}`);
-      const data = await res.json();
-      if (data.success && data.reports && data.reports.length > 0) {
-        setLastReport(data.reports[0]);
-        setShowLastReport(true);
-      } else {
-        toast.error(t('reports.noReportsFound'));
-      }
-    } catch (err) {
-      console.error('Failed to fetch last report:', err);
-      toast.error(t('reports.loadLastReportError'));
-    }
-    setLoadingLastReport(false);
-  };
-
-  // Memoize available photos for photo selection modal
-  const availableForSelection = useMemo(() => {
-    const ids = new Set(currentReportPhotos.map(cp => cp.id));
-    return allReportPhotos.filter(p => !ids.has(p.id));
-  }, [currentReportPhotos, allReportPhotos]);
 
   // ── Child Tag Editing ──
   const openChildTagEditor = useCallback(async (photoId: string) => {
@@ -1283,19 +819,10 @@ export default function GalleryPage() {
 
         {/* Work tag + AI Review */}
         <div className="p-3 space-y-2">
-          {/* Work tag — area badge is tappable to change area, work name opens work picker */}
+          {/* Work tag — read-only area badge + work label. Corrections happen in Wrap Up. */}
           <div className="flex items-center gap-2">
-            {/* Tappable area badge — opens area picker to change area */}
-            <button
-              onClick={async (e) => {
-                e.stopPropagation();
-                await loadCurriculum();
-                setAreaPickerPhotoId(photo.id);
-                setShowAreaPicker(true);
-              }}
-              className="flex-shrink-0 hover:scale-110 transition-transform"
-              aria-label={t('gallery.changeArea')}
-            >
+            {/* Read-only area badge — corrections happen in Wrap Up */}
+            <div className="flex-shrink-0">
               {photo.area ? (
                 <AreaBadge area={photo.area} size="sm" />
               ) : isPhotoInFlight(photo, nowTs) ? (
@@ -1303,13 +830,11 @@ export default function GalleryPage() {
               ) : (
                 <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs" style={{ background: 'rgba(255,255,255,0.20)', color: 'rgba(255,255,255,0.60)' }}>?</div>
               )}
-            </button>
-            {/* Tappable work name — opens work picker within current area.
-                Session 113 V2: photos saved as Other (sonnet_draft.is_other=true)
-                show a distinct 📌 chip in muted slate rather than the standard
-                emerald-on-hover treatment, so teachers can tell at a glance
-                which photos are non-curriculum. Tap still opens the picker
-                in case the teacher wants to move it to a real work. */}
+            </div>
+            {/* Read-only work label. Photos saved as Other
+                (sonnet_draft.is_other=true) show a distinct 📌 chip in muted
+                slate; an unconfirmed AI guess shows ✨ + a "Review in Wrap Up"
+                link. All (re)tagging happens in Wrap Up. */}
             {(() => {
               // Still being identified by the AI — show a working "Identifying…"
               // label (with the animated hourglass in the avatar slot above)
@@ -1347,32 +872,29 @@ export default function GalleryPage() {
                 : (photo.work_name || (isSuggestion ? proposed : t('gallery.untagged')));
               return (
                 <div className="flex items-center gap-1 flex-1 min-w-0">
-                  <button
-                    onClick={() => openWorkPicker(photo)}
-                    className="flex items-center gap-2 flex-1 min-w-0 rounded-lg transition-colors text-left group/tag"
+                  {/* Read-only work label — the AI's guess or the confirmed
+                      work. Corrections + confirms happen in Wrap Up now. */}
+                  <div
+                    className="flex items-center gap-2 flex-1 min-w-0 rounded-lg text-left"
                     style={{ padding: '6px 8px' }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = isOther ? 'rgba(148,163,184,0.10)' : 'rgba(52,211,153,0.08)'; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
                   >
                     {isOther && <span style={{ fontSize: 13 }}>📌</span>}
                     {isAiConfirmable && <span style={{ fontSize: 13 }}>✨</span>}
                     <span className="text-sm truncate flex-1" style={{ fontFamily: '"Inter", sans-serif', fontWeight: 500, color: isOther ? 'rgba(203,213,225,0.85)' : isAiConfirmable ? 'rgba(233,213,255,0.92)' : 'rgba(255,255,255,0.90)', fontStyle: isOther ? 'italic' : 'normal' }}>
                       {label}
                     </span>
-                    <span className="text-xs opacity-0 group-hover/tag:opacity-100 transition-opacity" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                      {t('gallery.tapToChange')}
-                    </span>
-                  </button>
+                  </div>
+                  {/* Unconfirmed AI guess — link to Wrap Up (the home of
+                      confirm/correct) instead of a one-tap confirm here. */}
                   {isAiConfirmable && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); if (isSuggestion) { confirmSuggestion(photo); } else { confirmAiTag(photo); } }}
-                      title={t('common.confirm')}
-                      aria-label={t('common.confirm')}
-                      className="shrink-0 rounded-lg transition-transform active:scale-95"
-                      style={{ padding: '6px 11px', fontSize: 14, fontWeight: 700, color: '#0a1a0f', background: 'linear-gradient(135deg, #34d399, #1D6B48)' }}
+                    <Link
+                      href="/montree/dashboard/photo-audit"
+                      onClick={(e) => e.stopPropagation()}
+                      className="shrink-0 rounded-lg transition-transform active:scale-95 whitespace-nowrap"
+                      style={{ padding: '5px 10px', fontSize: 11, fontWeight: 600, color: 'rgba(233,213,255,0.92)', background: 'rgba(139,92,246,0.14)', border: '1px solid rgba(139,92,246,0.30)', textDecoration: 'none' }}
                     >
-                      ✓
-                    </button>
+                      {t('gallery.reviewInWrapUp')}
+                    </Link>
                   )}
                 </div>
               );
@@ -1518,51 +1040,6 @@ export default function GalleryPage() {
         <GuruContextBubble pageKey="gallery" role="parent" />
       )}
 
-      {/* ══════════════════════════════════════════════
-          REPORT ACTION BAR — Preview this week's parent report
-          Restored Apr 14: teacher wants to preview what parents
-          will see before the Weekly Wrap send.
-          ══════════════════════════════════════════════ */}
-      {session && !isHomeschoolParent(session) && (
-        <div style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 18, padding: 16, backdropFilter: 'blur(18px) saturate(140%)', WebkitBackdropFilter: 'blur(18px) saturate(140%)' }}>
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.90)', margin: '0 0 2px' }}>📤 {t('reports.parentReport')}</h3>
-              <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.40)', margin: 0 }}>
-                {lastReportDate
-                  ? `${t('reports.lastSent')}: ${new Date(lastReportDate).toLocaleDateString()}`
-                  : (t('reports.noReportsSentYet'))}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              {lastReportDate && (
-                <button
-                  onClick={fetchLastReport}
-                  disabled={loadingLastReport}
-                  className="active:scale-95 transition-all disabled:opacity-50"
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '7px 12px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, color: 'rgba(255,255,255,0.70)', fontFamily: '"Inter", sans-serif', fontSize: 12, fontWeight: 500, cursor: 'pointer' }}
-                >
-                  {loadingLastReport ? '⏳' : '📄'} {t('reports.lastReport')}
-                </button>
-              )}
-              <button
-                onClick={handleOpenReportPreview}
-                disabled={reportLoading}
-                className="active:scale-95 transition-all disabled:opacity-50"
-                style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '7px 12px', background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', borderRadius: 12, color: '#06281a', fontFamily: '"Inter", sans-serif', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
-              >
-                {reportLoading ? '⏳' : '👁️'} {t('reports.previewReport')}
-              </button>
-            </div>
-          </div>
-          <button
-            onClick={() => setInviteModalOpen(true)}
-            style={{ marginTop: 8, width: '100%', textAlign: 'center', fontSize: 11, color: 'rgba(147,197,253,0.80)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: '"Inter", sans-serif' }}
-          >
-            ✉️ {t('reports.inviteParent')}
-          </button>
-        </div>
-      )}
 
       {/* ══════════════════════════════════════════════
           VIEW CONTROLS + AREA FILTER + SELECTION
@@ -1704,145 +1181,6 @@ export default function GalleryPage() {
           MODALS + OVERLAYS
           ══════════════════════════════════════════════ */}
 
-      {/* Area Picker (for untagged photos) */}
-      {showAreaPicker && (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center"
-          style={{ background: 'rgba(0,0,0,0.70)' }}
-          onClick={() => { setShowAreaPicker(false); setAreaPickerPhotoId(null); }}
-        >
-          <div
-            className="w-full max-w-lg"
-            style={{ background: 'rgba(7,18,12,0.97)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: '18px 18px 0 0', backdropFilter: 'blur(24px) saturate(140%)', WebkitBackdropFilter: 'blur(24px) saturate(140%)', paddingTop: 16, paddingLeft: 16, paddingRight: 16, paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 style={{ fontFamily: 'var(--font-lora), serif', fontWeight: 500, fontSize: 18, color: 'rgba(255,255,255,0.95)' }}>{t('gallery.chooseArea')}</h3>
-              <button
-                onClick={() => { setShowAreaPicker(false); setAreaPickerPhotoId(null); }}
-                style={{ padding: 8, color: 'rgba(255,255,255,0.45)', fontSize: 16 }}
-              >
-                ✕
-              </button>
-            </div>
-            <div className="grid grid-cols-1 gap-2">
-              {AREA_ORDER.map(area => {
-                const config = getAreaConfig(area);
-                return (
-                  <button
-                    key={area}
-                    onClick={() => handleAreaSelected(area)}
-                    className="flex items-center gap-3 rounded-xl transition-colors text-left"
-                    style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(52,211,153,0.08)'; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.04)'; }}
-                  >
-                    <AreaBadge area={area} size="md" />
-                    <span style={{ fontFamily: '"Inter", sans-serif', fontWeight: 500, color: 'rgba(255,255,255,0.90)', fontSize: 14 }}>{config.name}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Special Events — Custom Event Picker */}
-      {showSpecialEventsPicker && (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center"
-          style={{ background: 'rgba(0,0,0,0.70)' }}
-          onClick={() => { setShowSpecialEventsPicker(false); setSpecialEventsPhotoId(null); setCustomEventName(''); }}
-        >
-          <div
-            className="w-full max-w-lg flex flex-col"
-            style={{ background: 'rgba(7,18,12,0.97)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: '18px 18px 0 0', backdropFilter: 'blur(24px) saturate(140%)', WebkitBackdropFilter: 'blur(24px) saturate(140%)', paddingTop: 16, paddingLeft: 16, paddingRight: 16, paddingBottom: 'max(1rem, env(safe-area-inset-bottom))', maxHeight: '70vh' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <h3 style={{ fontFamily: 'var(--font-lora), serif', fontWeight: 500, fontSize: 18, color: 'rgba(255,255,255,0.95)' }}>🎉 {t('gallery.tagSpecialEvent')}</h3>
-              <button
-                onClick={() => { setShowSpecialEventsPicker(false); setSpecialEventsPhotoId(null); setCustomEventName(''); }}
-                style={{ padding: 8, color: 'rgba(255,255,255,0.45)', fontSize: 16 }}
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Create new event */}
-            <div className="flex gap-2 mb-3">
-              <input
-                type="text"
-                value={customEventName}
-                onChange={(e) => setCustomEventName(e.target.value)}
-                placeholder={t('gallery.eventNamePlaceholder')}
-                className="flex-1 rounded-lg text-sm focus:outline-none"
-                style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.90)', fontFamily: '"Inter", sans-serif' }}
-                maxLength={200}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && customEventName.trim()) {
-                    e.preventDefault();
-                    handleSpecialEventTag(customEventName.trim());
-                  }
-                }}
-              />
-              <button
-                disabled={!customEventName.trim() || creatingEvent}
-                onClick={() => handleSpecialEventTag(customEventName.trim())}
-                className="rounded-lg text-sm font-medium disabled:opacity-50 whitespace-nowrap"
-                style={{ padding: '8px 16px', background: 'linear-gradient(180deg, #34d399, #10b981)', color: '#06281a', fontFamily: '"Inter", sans-serif', fontWeight: 600 }}
-              >
-                {creatingEvent ? '...' : t('gallery.createAndTag')}
-              </button>
-            </div>
-
-            {/* Existing special events from this classroom */}
-            <div className="overflow-y-auto flex-1 -mx-1">
-              {loadingSpecialEvents ? (
-                <div className="text-center py-4 text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>{t('common.loading')}</div>
-              ) : existingSpecialEvents.length > 0 ? (
-                <div className="space-y-1 px-1">
-                  {existingSpecialEvents.map(event => (
-                    <button
-                      key={event.id}
-                      disabled={creatingEvent}
-                      onClick={() => handleSpecialEventTag(event.name)}
-                      className="w-full flex items-center gap-3 rounded-xl transition-colors text-left disabled:opacity-50"
-                      style={{ padding: '10px 12px', background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.15)' }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(245,158,11,0.13)'; }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(245,158,11,0.07)'; }}
-                    >
-                      <span className="text-lg">🎉</span>
-                      <span className="text-sm" style={{ fontFamily: '"Inter", sans-serif', fontWeight: 500, color: 'rgba(255,255,255,0.90)' }}>{event.name}</span>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-4 text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>{t('gallery.noEventsYet')}</div>
-              )}
-            </div>
-
-            {creatingEvent && (
-              <div className="text-center py-2 mt-2 text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>{t('gallery.taggingPhoto')}</div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Work Wheel Picker */}
-      <WorkWheelPicker
-        isOpen={pickerOpen}
-        onClose={() => setPickerOpen(false)}
-        area={pickerArea}
-        works={getPickerWorks()}
-        currentWorkName={pickerCurrentWork}
-        onSelectWork={(work, _status) => handleWorkSelected(work as CurriculumWork)}
-        onWorkAdded={() => {
-          curriculumLoadedRef.current = false;
-          setCurriculum({});
-          loadCurriculum();
-        }}
-      />
 
       {/* Delete Confirmation */}
       <DeleteConfirmDialog
@@ -1883,515 +1221,7 @@ export default function GalleryPage() {
         );
       })()}
 
-      {/* ══════════════════════════════════════════════
-          REPORT PREVIEW MODAL
-          ══════════════════════════════════════════════ */}
-      {showReportPreview && (() => {
-        const PREVIEW_AREA_CONFIG: Record<string, { emoji: string; labelKey: string; color: string }> = {
-          practical_life: { emoji: '🧹', labelKey: 'gallery.previewAreaPracticalLife', color: '#ec4899' },
-          sensorial: { emoji: '👁️', labelKey: 'gallery.previewAreaSensorial', color: '#8b5cf6' },
-          mathematics: { emoji: '🔢', labelKey: 'gallery.previewAreaMathematics', color: '#3b82f6' },
-          math: { emoji: '🔢', labelKey: 'gallery.previewAreaMathematics', color: '#3b82f6' },
-          language: { emoji: '📚', labelKey: 'gallery.previewAreaLanguage', color: '#f59e0b' },
-          cultural: { emoji: '🌍', labelKey: 'gallery.previewAreaCultural', color: '#22c55e' },
-          special_events: { emoji: '🎉', labelKey: 'gallery.previewAreaSpecialEvents', color: '#e11d48' },
-        };
-        const PREVIEW_AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural', 'special_events'];
-        const normalizePreviewArea = (area: string) => area === 'math' ? 'mathematics' : area;
-        const getPreviewAreaConf = (area: string) => PREVIEW_AREA_CONFIG[normalizePreviewArea(area)] || PREVIEW_AREA_CONFIG['cultural'];
-        const getPreviewAreaLabel = (area: string) => t(getPreviewAreaConf(area).labelKey);
 
-        // Separate included vs excluded items for accurate counts
-        const includedItems = reportItems.filter(i => !excludedWorks.has(i.work_name));
-
-        const previewWorksByArea: Record<string, ReportItem[]> = {};
-        for (const area of PREVIEW_AREA_ORDER) previewWorksByArea[area] = [];
-        for (const item of includedItems) {
-          const area = normalizePreviewArea(item.area || 'other');
-          if (!previewWorksByArea[area]) previewWorksByArea[area] = [];
-          previewWorksByArea[area].push(item);
-        }
-
-        const previewMastered = includedItems.filter(i => i.status === 'mastered' || i.status === 'completed').length;
-        const previewPracticing = includedItems.filter(i => i.status === 'practicing').length;
-        const previewPresented = includedItems.filter(i => i.status === 'presented').length;
-
-        // Filter for display still uses ALL items (so excluded cards show with opacity)
-        const previewFiltered = previewSelectedArea
-          ? reportItems.filter(i => normalizePreviewArea(i.area) === previewSelectedArea)
-          : reportItems;
-
-        const toggleExcludeWork = (workName: string) => {
-          setExcludedWorks(prev => {
-            const next = new Set(prev);
-            if (next.has(workName)) {
-              next.delete(workName);
-              toast.success(t('gallery.restoredToReport'));
-            } else {
-              next.add(workName);
-              toast.success(t('gallery.excludedFromReport'));
-            }
-            return next;
-          });
-        };
-
-        const renderPreviewCard = (item: ReportItem, i: number) => {
-          const displayName = locale === 'zh' && item.chineseName ? item.chineseName : item.work_name;
-          const areaConf = getPreviewAreaConf(item.area);
-          const cardKey = `${item.work_name}-${i}`;
-          const isExpanded = previewExpandedCard === cardKey;
-          const isExcluded = excludedWorks.has(item.work_name);
-
-          return (
-            <div key={cardKey} className={`bg-white rounded-xl shadow-sm border overflow-hidden relative ${isExcluded ? 'border-red-200 opacity-50' : 'border-gray-100'}`}>
-              {/* Exclude/Restore button */}
-              <button
-                onClick={() => toggleExcludeWork(item.work_name)}
-                className={`absolute top-2 right-2 z-10 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-md transition-colors ${
-                  isExcluded
-                    ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-                    : 'bg-red-500/80 text-white hover:bg-red-600'
-                }`}
-                title={isExcluded ? t('gallery.restore') : t('gallery.removeFromReport')}
-              >
-                {isExcluded ? '↩' : '✕'}
-              </button>
-              {isExcluded && (
-                <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
-                  <div className="bg-red-500/80 text-white px-3 py-1 rounded-lg text-xs font-bold">
-                    {t('gallery.removed')}
-                  </div>
-                </div>
-              )}
-              {item.photo_url ? (
-                <div className="relative group">
-                  <button onClick={() => { setReportLightboxSrc(item.photo_url!); setReportLightboxOpen(true); }} className="w-full">
-                    <img src={item.photo_url} alt={displayName} loading="lazy" decoding="async" className="w-full aspect-[4/3] object-cover" />
-                  </button>
-                  {item.photo_caption && (
-                    <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 rounded-lg text-white text-xs font-medium backdrop-blur-sm max-w-[70%] truncate">
-                      {item.photo_caption}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="w-full aspect-[4/3] flex items-center justify-center" style={{ backgroundColor: `${areaConf.color}10` }}>
-                  <div className="text-center">
-                    <span className="text-4xl">{areaConf.emoji}</span>
-                    <p className="text-xs mt-1 font-medium" style={{ color: areaConf.color }}>{getPreviewAreaLabel(item.area)}</p>
-                  </div>
-                </div>
-              )}
-              <div className="p-3 space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0" style={{ backgroundColor: areaConf.color }}>
-                    {areaConf.emoji.length <= 2 ? areaConf.emoji : t(areaConf.labelKey).charAt(0)}
-                  </div>
-                  <span className="text-sm truncate flex-1" style={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, color: 'rgba(255,255,255,0.90)' }}>{displayName}</span>
-                  <ReportStatusBadge status={item.status} t={t} />
-                </div>
-                {item.parent_description && <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.70)', fontFamily: '"Inter", sans-serif' }}>{item.parent_description}</p>}
-                {item.why_it_matters && (
-                  <button onClick={() => setPreviewExpandedCard(isExpanded ? null : cardKey)} className="w-full text-left">
-                    <div className={`bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2.5 transition-all ${isExpanded ? '' : 'cursor-pointer hover:bg-emerald-100/50'}`}>
-                      <p className="text-[11px] font-semibold text-emerald-700 mb-0.5 flex items-center gap-1">
-                        💡 {t('gallery.whyThisMatters')}
-                        {!isExpanded && <span className="text-emerald-400 text-[10px]">▼</span>}
-                      </p>
-                      {isExpanded && <p className="text-xs text-emerald-800 leading-relaxed mt-1">{item.why_it_matters}</p>}
-                    </div>
-                  </button>
-                )}
-                {!item.parent_description && !item.why_it_matters && (
-                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: '"Inter", sans-serif' }}>
-                    {t('gallery.fallbackDescription', { area: getPreviewAreaLabel(item.area).toLowerCase() })}
-                  </p>
-                )}
-              </div>
-            </div>
-          );
-        };
-
-        return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }}>
-          <div className="w-full max-w-2xl max-h-[90vh] rounded-2xl overflow-hidden flex flex-col" style={{ background: 'rgba(7,18,12,0.97)', border: '1px solid rgba(52,211,153,0.20)', backdropFilter: 'blur(24px) saturate(140%)', WebkitBackdropFilter: 'blur(24px) saturate(140%)' }}>
-            {/* Modal Header */}
-            <div className="p-4" style={{ borderBottom: '1px solid rgba(52,211,153,0.15)', background: 'linear-gradient(180deg, rgba(39,129,90,0.35) 0%, rgba(10,26,15,0.00) 100%)' }}>
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <h3 style={{ fontFamily: 'var(--font-lora), serif', fontWeight: 500, fontSize: 18, color: 'rgba(255,255,255,0.95)', margin: 0 }}>📋 {t('reports.reportPreview')}</h3>
-                  <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(52,211,153,0.70)', margin: '2px 0 0' }}>{t('reports.thisIsWhatParentsSee')}</p>
-                </div>
-                <button onClick={() => setShowReportPreview(false)} style={{ color: 'rgba(255,255,255,0.45)', fontSize: 22, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>×</button>
-              </div>
-              <button
-                onClick={() => setShowPhotoModal(true)}
-                className="w-full flex items-center justify-center gap-2 rounded-lg active:scale-95 transition-all"
-                style={{ padding: '8px 12px', background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.30)', color: '#34d399', fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
-              >
-                ✏️ {t('reports.editPhotos')}
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="flex-1 overflow-y-auto" style={{ background: 'transparent' }}>
-              <div className="p-4 space-y-4">
-
-              {/* Report Header */}
-              <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 18, overflow: 'hidden' }}>
-                <div style={{ background: 'linear-gradient(135deg, rgba(16,73,45,0.80), rgba(7,18,12,0.60))', padding: '20px' }}>
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold">
-                      {reportChildName.charAt(0)}
-                    </div>
-                    <div className="flex-1">
-                      <h2 style={{ fontFamily: 'var(--font-lora), serif', fontWeight: 500, fontSize: 20, color: 'rgba(255,255,255,0.95)', margin: '0 0 4px' }}>
-                        {t('gallery.learningReport', { name: reportChildName })}
-                      </h2>
-                      <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(52,211,153,0.75)', margin: 0 }}>
-                        {reportItems.length - excludedWorks.size} {t('reports.activitiesToShare')}
-                        {excludedWorks.size > 0 && (
-                          <span className="text-red-200 ml-1">({t('gallery.removedCount', { count: String(excludedWorks.size) })})</span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                  {reportItems.length > 0 && (
-                    <div className="flex gap-3 mt-4">
-                      {previewMastered > 0 && (
-                        <div className="bg-white/15 rounded-lg px-3 py-1.5 text-center">
-                          <p className="text-lg font-bold">⭐ {previewMastered}</p>
-                          <p className="text-[10px] text-emerald-100">{t('gallery.mastered')}</p>
-                        </div>
-                      )}
-                      {previewPracticing > 0 && (
-                        <div className="bg-white/15 rounded-lg px-3 py-1.5 text-center">
-                          <p className="text-lg font-bold">🔄 {previewPracticing}</p>
-                          <p className="text-[10px] text-emerald-100">{t('gallery.practicing')}</p>
-                        </div>
-                      )}
-                      {previewPresented > 0 && (
-                        <div className="bg-white/15 rounded-lg px-3 py-1.5 text-center">
-                          <p className="text-lg font-bold">🌱 {previewPresented}</p>
-                          <p className="text-[10px] text-emerald-100">{t('gallery.introduced')}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Inspiring progress summary */}
-                <div style={{ margin: '12px 16px 8px', paddingLeft: 12, borderLeft: '3px solid rgba(52,211,153,0.50)', background: 'rgba(52,211,153,0.06)', borderRadius: '0 12px 12px 0', padding: '12px 12px 12px 16px' }}>
-                  <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 15, color: 'rgba(255,255,255,0.80)', lineHeight: 1.6, margin: 0 }}>
-                    {(() => {
-                      const areasCount = Object.values(previewWorksByArea).filter(a => a.length > 0).length;
-                      const parts = [t('gallery.progressSummary', { name: reportChildName, count: String(includedItems.length) })];
-                      if (areasCount >= 3) parts.push(t('gallery.progressAreas', { count: String(areasCount) }));
-                      if (previewPracticing > 0) parts.push(t('gallery.progressPracticing'));
-                      return parts.join('');
-                    })()}
-                  </p>
-                </div>
-
-                {/* Mastered highlights */}
-                {(() => {
-                  const masteredItems = includedItems.filter(i => i.status === 'mastered' || i.status === 'completed');
-                  if (masteredItems.length === 0) return null;
-                  return (
-                    <div className="px-5 py-3 pb-4">
-                      {masteredItems.slice(0, 3).map((item, i) => (
-                        <p key={i} className="text-sm leading-relaxed mb-1" style={{ color: 'rgba(255,255,255,0.70)', fontFamily: '"Inter", sans-serif' }}>
-                          ⭐ {locale === 'zh' && item.chineseName ? item.chineseName : item.work_name} ({t('gallery.mastered')})
-                        </p>
-                      ))}
-                    </div>
-                  );
-                })()}
-              </div>
-
-              {/* Area filter chips */}
-              {reportItems.length > 0 && (
-                <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-                  <button
-                    onClick={() => setPreviewSelectedArea(null)}
-                    className="whitespace-nowrap flex-shrink-0"
-                    style={{ padding: '6px 12px', borderRadius: 999, fontFamily: '"Inter", sans-serif', fontSize: 12, fontWeight: 600, cursor: 'pointer', background: !previewSelectedArea ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.06)', border: `1px solid ${!previewSelectedArea ? 'rgba(52,211,153,0.50)' : 'rgba(52,211,153,0.12)'}`, color: !previewSelectedArea ? '#34d399' : 'rgba(255,255,255,0.55)' }}
-                  >
-                    {t('common.all')}
-                  </button>
-                  {PREVIEW_AREA_ORDER.map(area => {
-                    const config = PREVIEW_AREA_CONFIG[area];
-                    const count = previewWorksByArea[area]?.length || 0;
-                    if (count === 0) return null;
-                    const isActive = previewSelectedArea === area;
-                    return (
-                      <button
-                        key={area}
-                        onClick={() => setPreviewSelectedArea(isActive ? null : area)}
-                        className="whitespace-nowrap flex-shrink-0 flex items-center gap-1.5"
-                        style={{ padding: '6px 12px', borderRadius: 999, fontFamily: '"Inter", sans-serif', fontSize: 12, fontWeight: 600, cursor: 'pointer', background: isActive ? 'rgba(52,211,153,0.10)' : 'rgba(255,255,255,0.06)', border: `1px solid ${isActive ? 'rgba(52,211,153,0.45)' : 'rgba(52,211,153,0.12)'}`, color: isActive ? '#34d399' : 'rgba(255,255,255,0.55)' }}
-                      >
-                        <div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px]" style={{ backgroundColor: config.color }}>{config.emoji}</div>
-                        <span>{t(config.labelKey)}</span>
-                        <span className="text-xs opacity-60">({count})</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Work Cards */}
-              {previewFiltered.length === 0 ? (
-                <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(52,211,153,0.12)', borderRadius: 18, padding: '32px 24px', textAlign: 'center' }}>
-                  <div className="text-4xl mb-3">📋</div>
-                  <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>
-                    {previewSelectedArea
-                      ? t('gallery.noActivitiesInArea')
-                      : t('gallery.noActivitiesThisWeek')}
-                  </p>
-                </div>
-              ) : previewSelectedArea ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {previewFiltered.map((item, i) => renderPreviewCard(item, i))}
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {PREVIEW_AREA_ORDER.map(area => {
-                    const areaWorks = previewWorksByArea[area] || [];
-                    if (areaWorks.length === 0) return null;
-                    const config = PREVIEW_AREA_CONFIG[area];
-                    return (
-                      <div key={area}>
-                        <div className="flex items-center gap-2 mb-3 px-1">
-                          <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: config.color }}>{config.emoji}</div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm" style={{ fontFamily: '"Inter", sans-serif', fontWeight: 700, color: 'rgba(255,255,255,0.90)', margin: 0 }}>{t(config.labelKey)}</p>
-                            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.40)', margin: 0 }}>{areaWorks.length === 1 ? t('gallery.activity', { count: '1' }) : t('gallery.activities', { count: String(areaWorks.length) })}</p>
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {areaWorks.map((item, i) => renderPreviewCard(item, i))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Extra Photos */}
-              {!previewSelectedArea && reportUnassigned.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 mb-3 px-1">
-                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: 'rgba(255,255,255,0.15)' }}>📸</div>
-                    <div>
-                      <p className="text-sm" style={{ fontFamily: '"Inter", sans-serif', fontWeight: 700, color: 'rgba(255,255,255,0.90)', margin: 0 }}>{t('gallery.moreMoments')}</p>
-                      <p className="text-xs" style={{ color: 'rgba(255,255,255,0.40)', margin: 0 }}>{reportUnassigned.length} {t('gallery.photos')}</p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {reportUnassigned.map((photo) => (
-                      <button
-                        key={photo.id}
-                        onClick={() => { setReportLightboxSrc(photo.url); setReportLightboxOpen(true); }}
-                        className="aspect-[4/3] rounded-xl overflow-hidden shadow-sm cursor-zoom-in relative group"
-                      >
-                        <img src={photo.url} alt={photo.caption || t('reports.learningMoment')} loading="lazy" decoding="async" className="w-full h-full object-cover" />
-                        <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 rounded-lg text-white text-[10px] font-medium backdrop-blur-sm">
-                          {new Date(photo.created_at).toLocaleDateString(getIntlLocale(locale), { weekday: 'short', month: 'short', day: 'numeric' })}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Recommendations */}
-              {includedItems.filter(i => i.status === 'mastered' || i.status === 'practicing').length > 0 && (
-                <div style={{ background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.22)', borderRadius: 18, padding: 20 }}>
-                  <h4 style={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, fontSize: 13, color: '#f59e0b', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    💡 {t('gallery.tryThisAtHome')}
-                  </h4>
-                  <div className="space-y-2">
-                    {includedItems.filter(i => i.status === 'mastered' || i.status === 'practicing').slice(0, 3).map((item, i) => (
-                      <p key={i} className="text-sm leading-relaxed flex items-start gap-2" style={{ color: 'rgba(255,255,255,0.75)', fontFamily: '"Inter", sans-serif' }}>
-                        <span className="mt-0.5 flex-shrink-0" style={{ color: '#f59e0b' }}>•</span>
-                        <span>
-                          {t('gallery.homeRecommendation', { name: reportChildName, work: (locale === 'zh' && item.chineseName) ? item.chineseName : item.work_name })}
-                        </span>
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Closing */}
-              <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(52,211,153,0.12)', borderRadius: 18, padding: 20, textAlign: 'center' }}>
-                <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 14, color: 'rgba(255,255,255,0.65)', lineHeight: 1.6, margin: 0 }}>
-                  {t('gallery.closingMessage', { name: reportChildName })}
-                  {' '}🌿
-                </p>
-              </div>
-
-              <div className="text-center py-2" style={{ fontFamily: '"Inter", sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.30)' }}>
-                {new Date().toLocaleDateString(getIntlLocale(locale), { month: 'long', day: 'numeric', year: 'numeric' })}
-                {' · Montree'}
-              </div>
-
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="flex gap-3" style={{ padding: 16, borderTop: '1px solid rgba(52,211,153,0.12)', background: 'rgba(7,18,12,0.60)' }}>
-              <button
-                onClick={() => setShowReportPreview(false)}
-                className="flex-1 rounded-xl"
-                style={{ padding: '12px 0', fontFamily: '"Inter", sans-serif', fontWeight: 600, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.60)', cursor: 'pointer' }}
-              >
-                {t('common.close')}
-              </button>
-              <button
-                onClick={sendReport}
-                disabled={sending || includedItems.length === 0}
-                className="flex-1 rounded-xl disabled:opacity-50"
-                style={{ padding: '12px 0', fontFamily: '"Inter", sans-serif', fontWeight: 700, background: 'linear-gradient(180deg, #34d399, #10b981)', color: '#06281a', border: 'none', cursor: 'pointer' }}
-              >
-                {sending ? `⏳ ${t('reports.publishing')}` : includedItems.length === 0 ? t('gallery.noActivitiesToSend') : `✅ ${t('reports.publishReport')}`}
-              </button>
-            </div>
-          </div>
-        </div>
-        );
-      })()}
-
-      {/* Photo Selection Modal */}
-      <PhotoSelectionModal
-        isOpen={showPhotoModal}
-        onClose={() => setShowPhotoModal(false)}
-        onSave={handlePhotoSelectionSave}
-        currentPhotos={currentReportPhotos}
-        availablePhotos={availableForSelection}
-        childId={childId}
-      />
-
-      {/* Last Sent Report Modal */}
-      {showLastReport && lastReport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }}>
-          <div className="w-full max-w-2xl max-h-[90vh] rounded-2xl overflow-hidden flex flex-col" style={{ background: 'rgba(7,18,12,0.97)', border: '1px solid rgba(52,211,153,0.20)', backdropFilter: 'blur(24px) saturate(140%)', WebkitBackdropFilter: 'blur(24px) saturate(140%)' }}>
-            <div className="p-4" style={{ borderBottom: '1px solid rgba(52,211,153,0.15)', background: 'linear-gradient(180deg, rgba(39,129,90,0.30) 0%, transparent 100%)' }}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 style={{ fontFamily: 'var(--font-lora), serif', fontWeight: 500, fontSize: 18, color: 'rgba(255,255,255,0.95)', margin: 0 }}>📄 {t('reports.lastSentReport')}</h3>
-                  <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(52,211,153,0.70)', margin: '2px 0 0' }}>
-                    {t('reports.sentOn')} {new Date(lastReport.sent_at || lastReport.published_at || lastReport.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-                <button onClick={() => setShowLastReport(false)} style={{ color: 'rgba(255,255,255,0.45)', fontSize: 22, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>×</button>
-              </div>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {lastReport.content ? (
-                <>
-                  <div className="text-center pb-4" style={{ borderBottom: '1px solid rgba(52,211,153,0.12)' }}>
-                    <div className="w-16 h-16 rounded-full mx-auto mb-2 flex items-center justify-center text-2xl font-bold" style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399', border: '1px solid rgba(52,211,153,0.30)' }}>
-                      {lastReport.content.child?.name?.charAt(0) || reportChildName.charAt(0) || '?'}
-                    </div>
-                    <h2 style={{ fontFamily: 'var(--font-lora), serif', fontWeight: 500, fontSize: 20, color: 'rgba(255,255,255,0.95)', margin: '0 0 4px' }}>
-                      {lastReport.content.child?.name || reportChildName}&apos;s {t('reports.progress')}
-                    </h2>
-                    <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.45)', margin: 0 }}>
-                      {t('reports.weekOf')} {new Date(lastReport.week_start).toLocaleDateString()}
-                    </p>
-                  </div>
-                  {lastReport.content.summary && (
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }}>
-                        <span className="text-lg">📚</span>
-                        <p className="text-xl font-bold" style={{ color: 'rgba(255,255,255,0.90)' }}>{lastReport.content.summary.works_this_week || 0}</p>
-                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.40)' }}>{t('reports.works')}</p>
-                      </div>
-                      <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.15)' }}>
-                        <span className="text-lg">📸</span>
-                        <p className="text-xl font-bold" style={{ color: 'rgba(147,197,253,0.90)' }}>{lastReport.content.summary.photos_this_week || 0}</p>
-                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.40)' }}>{t('reports.photos')}</p>
-                      </div>
-                      <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.18)' }}>
-                        <span className="text-lg">⭐</span>
-                        <p className="text-xl font-bold" style={{ color: '#34d399' }}>{lastReport.content.summary.overall_progress?.mastered || 0}</p>
-                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.40)' }}>{t('reports.mastered')}</p>
-                      </div>
-                    </div>
-                  )}
-                  {lastReport.content.works && lastReport.content.works.length > 0 && (
-                    <div className="space-y-4">
-                      {lastReport.content.works.map((work, i) => (
-                        <div key={`work-${work.name || i}`} className="rounded-xl p-4 space-y-3" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                          <div className="flex items-center gap-2">
-                            <ReportStatusBadge status={work.status} t={t} />
-                            <h4 style={{ fontFamily: '"Inter", sans-serif', fontWeight: 700, color: 'rgba(255,255,255,0.90)', margin: 0 }}>{locale === 'zh' && work.chineseName ? work.chineseName : work.name}</h4>
-                          </div>
-                          {work.photo_url && (
-                            <div className="relative -mx-4 my-3">
-                              <button
-                                onClick={() => { setReportLightboxSrc(work.photo_url!); setReportLightboxOpen(true); }}
-                                className="aspect-[4/3] w-full overflow-hidden rounded-lg block cursor-zoom-in"
-                              >
-                                <img src={work.photo_url} alt={work.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
-                              </button>
-                              {work.photo_caption && (
-                                <p className="mt-2 px-4 text-sm italic text-center" style={{ color: 'rgba(255,255,255,0.55)' }}>{work.photo_caption}</p>
-                              )}
-                            </div>
-                          )}
-                          {work.parent_description ? (
-                            <div className="space-y-2">
-                              <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>{work.parent_description}</p>
-                              {work.why_it_matters && (
-                                <div className="rounded-lg p-3" style={{ background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.18)' }}>
-                                  <p className="text-xs font-semibold mb-1" style={{ color: '#34d399' }}>💡 {t('reports.whyItMatters')}</p>
-                                  <p className="text-sm" style={{ color: 'rgba(255,255,255,0.70)' }}>{work.why_it_matters}</p>
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <p className="text-sm italic" style={{ color: 'rgba(255,255,255,0.35)' }}>{t('reports.noDescriptionAvailable')}</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="text-center py-8" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                  <p>{t('reports.contentNotAvailable')}</p>
-                </div>
-              )}
-            </div>
-            <div className="p-4" style={{ borderTop: '1px solid rgba(52,211,153,0.12)', background: 'rgba(7,18,12,0.60)' }}>
-              <button onClick={() => setShowLastReport(false)} className="w-full rounded-xl" style={{ padding: '12px 0', fontFamily: '"Inter", sans-serif', fontWeight: 600, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.60)', cursor: 'pointer' }}>
-                {t('common.close')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Report Lightbox */}
-      <PhotoLightbox
-        isOpen={reportLightboxOpen}
-        onClose={() => setReportLightboxOpen(false)}
-        src={reportLightboxSrc}
-      />
-
-      {/* Invite Parent Modal */}
-      {session && !isHomeschoolParent(session) && (
-        <InviteParentModal
-          childId={childId}
-          childName={reportChildName || 'Child'}
-          teacherId={session?.teacher?.id}
-          isOpen={inviteModalOpen}
-          onClose={() => setInviteModalOpen(false)}
-        />
-      )}
 
       {/* Event Attendance Modal */}
       {session?.classroom?.id && session?.school?.id && (
@@ -2499,15 +1329,3 @@ export default function GalleryPage() {
   );
 }
 
-// ── Report Status Badge ──
-function ReportStatusBadge({ status, t }: { status: string; t: (key: string) => string }) {
-  const styles: Record<string, { bg: string; text: string; labelKey: string }> = {
-    presented: { bg: 'bg-amber-100', text: 'text-amber-700', labelKey: 'gallery.statusPresented' },
-    practicing: { bg: 'bg-blue-100', text: 'text-blue-700', labelKey: 'gallery.statusPracticing' },
-    mastered: { bg: 'bg-emerald-100', text: 'text-emerald-700', labelKey: 'gallery.statusMastered' },
-    completed: { bg: 'bg-emerald-100', text: 'text-emerald-700', labelKey: 'gallery.statusMastered' },
-    documented: { bg: 'bg-purple-100', text: 'text-purple-700', labelKey: 'gallery.statusDocumented' },
-  };
-  const style = styles[status] || { bg: 'bg-gray-100', text: 'text-gray-600', labelKey: 'gallery.statusStarted' };
-  return <span className={`text-xs px-2 py-1 rounded-full ${style.bg} ${style.text}`}>{t(style.labelKey)}</span>;
-}
