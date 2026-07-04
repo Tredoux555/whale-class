@@ -30,6 +30,7 @@ const AgentApplicationAlert = dynamic(() => import('@/components/montree/super-a
 const AgentInboxTab = dynamic(() => import('@/components/montree/super-admin/AgentInboxTab'), { ssr: false });
 const CampaignTab = dynamic(() => import('@/components/montree/super-admin/CampaignTab'), { ssr: false });
 const PlaybookTab = dynamic(() => import('@/components/montree/super-admin/PlaybookTab'), { ssr: false });
+const FoundingTab = dynamic(() => import('@/components/montree/super-admin/FoundingTab'), { ssr: false });
 
 
 interface DmMessage {
@@ -40,7 +41,7 @@ interface DmMessage {
   created_at: string;
 }
 
-type TabType = 'schools' | 'feedback' | 'leads' | 'visitors' | 'agents' | 'agent-inbox' | 'money' | 'campaign' | 'playbook' | 'health' | 'dlq' | 'errors' | 'outreach';
+type TabType = 'schools' | 'feedback' | 'leads' | 'visitors' | 'agents' | 'agent-inbox' | 'money' | 'campaign' | 'playbook' | 'health' | 'dlq' | 'errors' | 'outreach' | 'founding';
 
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -347,7 +348,7 @@ export default function SuperAdminPage() {
     if (typeof window === 'undefined') return;
     const sp = new URLSearchParams(window.location.search);
     const tab = sp.get('tab');
-    const valid: TabType[] = ['schools', 'feedback', 'leads', 'visitors', 'agents', 'agent-inbox', 'money', 'campaign', 'playbook', 'health', 'dlq', 'errors', 'outreach'];
+    const valid: TabType[] = ['schools', 'feedback', 'leads', 'visitors', 'agents', 'agent-inbox', 'money', 'campaign', 'playbook', 'health', 'dlq', 'errors', 'outreach', 'founding'];
     if (tab && (valid as string[]).includes(tab)) {
       setActiveTab(tab as TabType);
     }
@@ -765,6 +766,7 @@ export default function SuperAdminPage() {
           <SuperAdminTab active={activeTab === 'health'} onClick={() => setActiveTab('health')} icon="🩺" label="Health" />
           <SuperAdminTab active={activeTab === 'dlq'} onClick={() => setActiveTab('dlq')} icon="⚠️" label="DLQ" />
           <SuperAdminTab active={activeTab === 'errors'} onClick={() => setActiveTab('errors')} icon="🐛" label="Errors" />
+          <SuperAdminTab active={activeTab === 'founding'} onClick={() => setActiveTab('founding')} icon="🚀" label="Founding 100" />
         </div>
 
         {/* Tab Content */}
@@ -861,6 +863,10 @@ export default function SuperAdminPage() {
 
         {activeTab === 'errors' && (
           <ServerErrorsTab sessionToken={saToken} />
+        )}
+
+        {activeTab === 'founding' && (
+          <FoundingTab sessionToken={saToken} />
         )}
 
       </div>

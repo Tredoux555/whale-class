@@ -6,6 +6,7 @@ import { getSession } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import MontreeLogo from '@/components/montree/MonteeLogo';
+import FoundingHundred from '@/components/montree/FoundingHundred';
 
 // /montree/page.tsx — Montree landing page (v2 — deep forest palette)
 
@@ -1062,6 +1063,9 @@ export default function MontreeLanding() {
           <span className="m-hero-kicker m-hero-kicker-below">{t('landing.hero.kicker')}</span>
         </div>
       </section>
+
+      {/* ── FOUNDING 100 WAITLIST (directly below the hero) ── */}
+      <FoundingHundred />
 
       {/* ── THREE STATEMENTS ── */}
       <section className="m-editorial" aria-label="What Montree does">
