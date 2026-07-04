@@ -102,11 +102,11 @@ export default function PricingPage() {
               <span style={{ fontSize: 12, fontWeight: 600, color: '#059669', letterSpacing: 1.5, textTransform: 'uppercase' }}>Simple pricing</span>
             </div>
             <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(2.2rem, 6vw, 3.4rem)', fontWeight: 700, color: '#064e3b', lineHeight: 1.1, letterSpacing: '-1.5px', marginBottom: 20 }}>
-              One plan.<br />
-              <em style={{ color: '#10b981', fontStyle: 'italic' }}>Your first month is on us.</em>
+              Simple pricing.<br />
+              <em style={{ color: '#10b981', fontStyle: 'italic' }}>Founder pricing for early schools.</em>
             </h1>
             <p style={{ fontSize: '1.05rem', color: '#78716c', fontWeight: 300, lineHeight: 1.7, maxWidth: 480, margin: '0 auto' }}>
-              The full experience — AI photo identification, parent letters, teacher reports, Smart Shelf — from day one. Card on file at signup. No charge for the first month while you set up.
+              Core is $3 per student a month. Premium — full Sonnet reports — is $7. The first 100 schools lock Premium at the $3 Core price, for life. Your first month is free while you set up.
             </p>
           </div>
         </section>
@@ -333,8 +333,12 @@ export default function PricingPage() {
                   a: 'Your subscription covers your whole school — every classroom, every student in those classrooms. The pricing is per active student across the school. If you start with one classroom, you pay only for those students; add a second classroom and your bill grows by exactly those new students.',
                 },
                 {
-                  q: 'Why is there only one plan?',
-                  a: 'Because the AI is the product. A watered-down free tier that strips out the AI does not give you a real impression of what Montree does — it just gives you a slightly prettier spreadsheet. We would rather you experience the full thing for a month and decide honestly. No decision fatigue, no tier-comparison headaches.',
+                  q: 'What is the difference between Core and Premium?',
+                  a: 'Core ($3 per student / month) is the full Montree workflow — AI photo identification, Smart Shelf, progress tracking, parent portal — with reports written by a fast model. Premium ($7 per student / month) upgrades the teacher reports and parent letters to Claude Sonnet, our most capable model, for the richest, most personal writing. Both are the real product; Premium simply writes with more depth.',
+                },
+                {
+                  q: 'What is the Founding 100?',
+                  a: 'The first 100 schools to join lock in full Premium reports at the Core price — $3 per student, for life — and get their first six months free. It is our thank-you to the schools who back us early. Once 100 schools are in, the offer closes permanently.',
                 },
                 {
                   q: 'What is Claude Sonnet?',
