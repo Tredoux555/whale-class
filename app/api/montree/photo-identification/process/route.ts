@@ -225,7 +225,7 @@ export async function POST(request: NextRequest) {
   // loadIdentificationContext below (Fixes B + D). Net latency cost: <50ms
   // since the flag fetch is small and finishes before the loader's own
   // parallel queries complete.
-  const [childRes, _attemptedRes, classroomWorksRes, photoPipelineV2] = await Promise.all([
+  const [childRes, _attemptedRes, classroomWorksRes, photoPipelineV2, sonnetTierEnabled] = await Promise.all([
     // (1) Load child for context (name + age). Skip when no child_id.
     media.child_id
       ? supabase
@@ -254,6 +254,13 @@ export async function POST(request: NextRequest) {
     // (4) Photo pipeline v2 flag — gates Fixes A+B+C+D. Default true via
     // migration 224; per-school override via montree_school_features.
     isFeatureEnabled(supabase, auth.schoolId, PHOTO_PIPELINE_V2_KEY),
+    // (4b) Sonnet AI tier — gates whether the pipeline may escalate an
+    // uncertain (conf < 0.70) or failed photo to Sonnet. Only Premium
+    // (ai_tier_sonnet) schools pay for Sonnet on photos; Haiku/Free schools
+    // stay 100% Haiku and fall through to the honest haiku_drafted / failed
+    // states below. (Jul 4 2026 — before this, the Sonnet escalation fired on
+    // EVERY tier, which is what spiked capture cost.)
+    isFeatureEnabled(supabase, auth.schoolId, 'ai_tier_sonnet'),
   ]);
   void _attemptedRes; // Result intentionally unused — fire-and-resolve write.
 
@@ -337,7 +344,10 @@ export async function POST(request: NextRequest) {
       // failed — and even then we persist an honest note so the card is never a
       // blank "Untagged".
       let p1Outcome: 'pass1_failed' | 'sonnet_rescued' = 'pass1_failed';
-      try {
+      // TIER-GATE (Jul 4 2026): only escalate to Sonnet on Premium
+      // (ai_tier_sonnet) tier. Haiku/Free fall straight through to the honest
+      // 'failed' write below — never a Sonnet charge.
+      if (sonnetTierEnabled) try {
         const rescue = await generateSonnetDraft({
           photoUrl, childName, childAge, curriculum,
           pass1Description: '', haikuGuess: null, context, locale,
@@ -503,7 +513,7 @@ export async function POST(request: NextRequest) {
             pass2b_fired: twoPassResult.pass2bFired,
             pass2b_improved: twoPassResult.pass2bImproved,
             haiku_trust_confidence_threshold: HAIKU_TRUST_CONFIDENCE,
-            auto_sonnet_queued: !haikuTrusted && twoPassResult.success && ident !== null && ident.confidence < AUTO_SONNET_CONFIDENCE_THRESHOLD,
+            auto_sonnet_queued: !haikuTrusted && twoPassResult.success && ident !== null && ident.confidence < AUTO_SONNET_CONFIDENCE_THRESHOLD && sonnetTierEnabled,
             errors: twoPassResult.errors.length > 0 ? twoPassResult.errors : null,
           });
         if (telemErr) {
@@ -708,7 +718,11 @@ export async function POST(request: NextRequest) {
       //   (2) Conditional UPDATE filtered on identification_status='haiku_drafted'
       //       AND teacher_confirmed=false, so even if a race wins between our
       //       read and write, the UPDATE simply matches zero rows.
-      if (ident.confidence < AUTO_SONNET_CONFIDENCE_THRESHOLD) {
+      // TIER-GATE (Jul 4 2026): auto-Sonnet enrichment only on Premium
+      // (ai_tier_sonnet). On Haiku/Free the photo simply stays haiku_drafted
+      // (already written above, with the Pass-2 top_candidates chips) for the
+      // teacher to confirm in Wrap Up — no Sonnet charge on capture.
+      if (ident.confidence < AUTO_SONNET_CONFIDENCE_THRESHOLD && sonnetTierEnabled) {
         const sonnetContext = twoPassResult.context;
         generateSonnetDraft({
           photoUrl,
@@ -788,7 +802,7 @@ export async function POST(request: NextRequest) {
         work_name: ident.workName,
         confidence: ident.confidence,
         visual_description: twoPassResult.visualDescription,
-        auto_sonnet_queued: ident.confidence < AUTO_SONNET_CONFIDENCE_THRESHOLD,
+        auto_sonnet_queued: ident.confidence < AUTO_SONNET_CONFIDENCE_THRESHOLD && sonnetTierEnabled,
       });
     }
 
@@ -798,7 +812,10 @@ export async function POST(request: NextRequest) {
     // also fails, persist the description + an honest note so the card shows
     // "here's what I see" and a tag path — never a blank "Untagged".
     let p2Outcome: 'pass2_failed' | 'sonnet_rescued' = 'pass2_failed';
-    try {
+    // TIER-GATE (Jul 4 2026): only rescue via Sonnet on Premium
+    // (ai_tier_sonnet). Haiku/Free fall straight through to the honest
+    // 'failed' write below (with the Pass-1 description + a tag path).
+    if (sonnetTierEnabled) try {
       const rescue = await generateSonnetDraft({
         photoUrl, childName, childAge, curriculum,
         pass1Description: twoPassResult.visualDescription,
