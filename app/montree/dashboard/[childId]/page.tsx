@@ -789,34 +789,10 @@ export default function WeekPage() {
         <GuruContextBubble pageKey="weekView" role="parent" />
       )}
 
-      {/* Student selector + Find Work search row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        {/* Student selector */}
-        <div style={{ flexShrink: 0 }}>
-          <select
-            value={childId}
-            onChange={(e) => router.push(`/montree/dashboard/${e.target.value}`)}
-            style={{
-              padding: '7px 12px', borderRadius: 10,
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(52,211,153,0.15)',
-              color: 'rgba(255,255,255,0.85)', fontSize: 13,
-              fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
-              cursor: 'pointer', outline: 'none',
-            }}
-          >
-            {session?.classroom?.children?.map((child: Child) => (
-              <option key={child.id} value={child.id} style={{ background: '#0a1a0f' }}>
-                {child.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        {/* Find Work search bar removed: outdated architecture. New works
-            now flow through the photo-capture pipeline (camera → identify →
-            confirm), so the dedicated search-and-add input is redundant.
-            The legacy light-theme WorkPickerModal it opened is also gone. */}
-      </div>
+      {/* Student selector removed (Jul 4 2026): the header already carries a
+          "Jump to student…" search + a back arrow to the class grid, so the
+          per-page <select> was redundant — and in a single-student classroom
+          its empty option list surfaced as a stray "No Options" dropdown. */}
 
       {/* Action bar — Camera, Mic, Gallery (teacher only) */}
       {!isHomeschoolParent(session) && (
