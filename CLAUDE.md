@@ -57,10 +57,15 @@ Montree coupling + personal data; don't re-introduce it by editing the Montree c
 
 ## 🎯 SESSION — Jul 4, 2026 (Cowork/Opus) — PHOTO-ID VISUAL-SIMILARITY RETRIEVAL: the cold-start miss CLASS closed, LIVE
 
-**Executes `docs/handoffs/SESSION_PHOTO_ID_VISUAL_RETRIEVAL_PLAN.md` (Steps 0→1→2) end-to-end. 4
-commits on main (`90114868` Step 0 · `a0e9c641` Step 1 · `b75f3036` Step 2 · `34f62f82` gallery),
-all pushed + Railway deployed. Migration 282 RUN + backfill DONE (270/270 embedded) → retrieval is
-LIVE in production.** Trigger: Sunshine Montessori's brand-new school took 2 first capture-photos and
+**Canonical build handoff: `docs/handoffs/SESSION_PHOTO_ID_VISUAL_RETRIEVAL_BUILD_JUL4.md` (read it
+first). Executes `docs/handoffs/SESSION_PHOTO_ID_VISUAL_RETRIEVAL_PLAN.md` (Steps 0→1→2) end-to-end. 6
+commits on main (`90114868` Step 0 · `a0e9c641` Step 1 · `b75f3036` Step 2 · `34f62f82` gallery ·
+`31966f08` brain · `a401d938` audit hardening), all pushed + Railway deployed. Migration 282 RUN +
+backfill DONE (270/270 embedded) → retrieval is LIVE in production. Two independent fresh-eyes audits +
+own runtime checks: NO CRITICAL/HIGH bugs.** Also produced the pricing/GTM strategy that this work
+de-risks: `docs/strategy/PRICING_FOUNDING_100_STRATEGY.md` (two-tier $3 Core / $7 Premium + a
+"Founding 100" cohort — free 6mo → $2-for-life — the land-grab play; photo-ID had to be reliable
+first or a wrong first-photo tag kills a new account). Trigger: Sunshine Montessori's brand-new school took 2 first capture-photos and
 one came back wrong — a **Number Rods photo drafted as "Brown Stair"** (a Math work filed as
 Sensorial). 50% wrong on first contact = adoption killer for a pre-validation product.
 
