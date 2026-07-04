@@ -113,6 +113,62 @@ interface SentReport {
   };
 }
 
+// ── "Identifying…" in-flight state ──────────────────────────────────────────
+// SINGLE source of truth for "is this photo still being processed by the AI",
+// ported verbatim from app/montree/dashboard/photo-audit/page.tsx so the child
+// gallery and the Wrap Up / Photo Audit surface can NEVER drift apart. Keying on
+// the RESULT (no work_id + no draft + non-terminal status + captured recently),
+// NOT on identification_attempted_at — the pipeline stamps attempted_at the
+// moment it STARTS, so keying on it hid the whole 10-30s processing window
+// behind a bare "Untagged" card that read like a failure. The 10-min recency cap
+// lets a never-processed photo fall through instead of spinning forever.
+const TERMINAL_IDENT_STATUSES = new Set([
+  'haiku_drafted', 'haiku_matched', 'sonnet_drafted', 'confirmed', 'failed', 'pending_review',
+]);
+const IN_FLIGHT_WINDOW_MS = 10 * 60 * 1000;
+function isPhotoInFlight(
+  photo: {
+    identification_status?: string | null;
+    work_id?: string | null;
+    teacher_confirmed?: boolean;
+    sonnet_draft?: unknown;
+    captured_at?: string | null;
+  },
+  now: number,
+): boolean {
+  if (!now) return false; // clock not ready yet (nowTs starts at 0 on first paint)
+  if (photo.work_id) return false;
+  if (photo.teacher_confirmed) return false;
+  if (photo.sonnet_draft) return false;
+  if (photo.identification_status && TERMINAL_IDENT_STATUSES.has(photo.identification_status)) return false;
+  if (!photo.captured_at) return false;
+  return now - new Date(photo.captured_at).getTime() < IN_FLIGHT_WINDOW_MS;
+}
+
+// Animated hourglass for the "AI is identifying" state — recognisable old-school
+// sand timer so a processing photo clearly reads as WORKING, not broken/untagged.
+// Self-contained SMIL animation (no global keyframes needed); iOS-Safari safe.
+function ProcessingHourglass({ size = 22 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" style={{ display: 'block' }}>
+      <g>
+        <rect x="5.5" y="2.2" width="13" height="1.9" rx="0.95" fill="#5eead4" />
+        <rect x="5.5" y="19.9" width="13" height="1.9" rx="0.95" fill="#5eead4" />
+        <path d="M7.4 4.1 H16.6 L12 12 Z" fill="#f5c96a" />
+        <path d="M12 12 L16.6 19.9 H7.4 Z" fill="rgba(245,201,106,0.4)" />
+        <path d="M7.4 4.1 H16.6 L12 12 L16.6 19.9 H7.4 L12 12 Z" fill="none" stroke="#99f6e4" strokeWidth="1.1" strokeLinejoin="round" />
+        <line x1="12" y1="11.4" x2="12" y2="16.6" stroke="#f5c96a" strokeWidth="1" strokeLinecap="round">
+          <animate attributeName="opacity" values="0.15;1;0.15" dur="0.85s" repeatCount="indefinite" />
+        </line>
+        <animateTransform attributeName="transform" attributeType="XML" type="rotate"
+          values="0 12 12; 0 12 12; 180 12 12; 180 12 12"
+          keyTimes="0; 0.45; 0.55; 1" dur="2.2s" repeatCount="indefinite"
+          calcMode="spline" keySplines="0 0 1 1; .4 0 .1 1; 0 0 1 1" />
+      </g>
+    </svg>
+  );
+}
+
 export default function GalleryPage() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -222,6 +278,17 @@ export default function GalleryPage() {
   const [cropUrlOverrides, setCropUrlOverrides] = useState<Record<string, string>>({});
   const prevChildIdRef = useRef(childId);
 
+  // Live clock for the "Identifying…" in-flight state — ticks every 15s so the
+  // recency window re-evaluates and a processing card re-renders. Starts at 0
+  // (isPhotoInFlight returns false until the clock is set) to avoid an SSR/first
+  // -paint flash of "Identifying…" before hydration.
+  const [nowTs, setNowTs] = useState(0);
+  useEffect(() => {
+    setNowTs(Date.now());
+    const i = setInterval(() => setNowTs(Date.now()), 15000);
+    return () => clearInterval(i);
+  }, []);
+
   // Reset overrides when childId changes
   useEffect(() => {
     if (prevChildIdRef.current !== childId) {
@@ -238,13 +305,16 @@ export default function GalleryPage() {
 
   // Fetch photos
   const fetchPhotosControllerRef = useRef<AbortController | null>(null);
-  const fetchPhotos = useCallback(() => {
+  const fetchPhotos = useCallback((opts?: { silent?: boolean }) => {
     if (!childId) return;
     // Abort any in-flight fetch
     fetchPhotosControllerRef.current?.abort();
     const controller = new AbortController();
     fetchPhotosControllerRef.current = controller;
-    setLoading(true);
+    // silent: background poll for the "Identifying…" state — must NOT flip the
+    // full-screen loading spinner (line ~1458), which would flicker the whole
+    // gallery every few seconds.
+    if (!opts?.silent) setLoading(true);
     // no-store: the media API sends `max-age=60, stale-while-revalidate=120`, so
     // without this the browser can serve a pre-capture "0 photos" snapshot for
     // up to ~3 min after new photos are taken. Always hit the server fresh.
@@ -265,9 +335,9 @@ export default function GalleryPage() {
         setPhotos(sorted);
       })
       .catch((err) => {
-        if (err?.name !== 'AbortError') toast.error(t('gallery.loadPhotosError'));
+        if (err?.name !== 'AbortError' && !opts?.silent) toast.error(t('gallery.loadPhotosError'));
       })
-      .finally(() => setLoading(false));
+      .finally(() => { if (!opts?.silent) setLoading(false); });
   }, [childId, t]);
 
   useEffect(() => {
@@ -287,6 +357,20 @@ export default function GalleryPage() {
       window.removeEventListener('focus', refresh);
     };
   }, [fetchPhotos]);
+
+  // While any freshly-captured photo is still being identified, SILENTLY poll the
+  // media endpoint every 6s so the "Identifying…" card flips to its tagged /
+  // suggestion state on its own — no need for the teacher to background + refocus.
+  // Self-terminating: bounded to 12 tries (~72s, well inside the 10-min in-flight
+  // window) so a genuinely stuck photo stops polling instead of hammering the API.
+  const pollTriesRef = useRef(0);
+  useEffect(() => {
+    const anyInFlight = photos.some(p => isPhotoInFlight(p, Date.now()));
+    if (!anyInFlight) { pollTriesRef.current = 0; return; }
+    if (pollTriesRef.current >= 12) return;
+    const id = setTimeout(() => { pollTriesRef.current += 1; fetchPhotos({ silent: true }); }, 6000);
+    return () => clearTimeout(id);
+  }, [photos, fetchPhotos]);
 
   // Fetch curriculum for wheel picker (pre-load on mount for instant picker)
   const curriculumLoadedRef = useRef(false);
@@ -1214,6 +1298,8 @@ export default function GalleryPage() {
             >
               {photo.area ? (
                 <AreaBadge area={photo.area} size="sm" />
+              ) : isPhotoInFlight(photo, nowTs) ? (
+                <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: 'rgba(94,234,212,0.12)', border: '1px solid rgba(94,234,212,0.30)' }}><ProcessingHourglass size={15} /></div>
               ) : (
                 <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs" style={{ background: 'rgba(255,255,255,0.20)', color: 'rgba(255,255,255,0.60)' }}>?</div>
               )}
@@ -1225,6 +1311,22 @@ export default function GalleryPage() {
                 which photos are non-curriculum. Tap still opens the picker
                 in case the teacher wants to move it to a real work. */}
             {(() => {
+              // Still being identified by the AI — show a working "Identifying…"
+              // label (with the animated hourglass in the avatar slot above)
+              // instead of a bare "Untagged" that reads like a failure. The 6s
+              // silent poll flips this to the suggestion/tag state on its own.
+              if (isPhotoInFlight(photo, nowTs)) {
+                return (
+                  <div className="flex flex-col flex-1 min-w-0" style={{ padding: '6px 8px' }}>
+                    <span className="text-sm" style={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, color: 'rgba(94,234,212,0.95)' }}>
+                      Identifying…
+                    </span>
+                    <span className="text-xs" style={{ color: 'rgba(94,234,212,0.65)' }}>
+                      Reading the photo — usually a few seconds
+                    </span>
+                  </div>
+                );
+              }
               const isOther = photo.sonnet_draft?.is_other === true;
               const DRAFT_STATUSES = ['haiku_drafted', 'haiku_matched', 'sonnet_drafted'];
               const proposed = photo.sonnet_draft?.proposed_name?.trim() || '';
