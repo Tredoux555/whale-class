@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { getSession } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
@@ -48,7 +47,6 @@ const SHOW_HERO_VIDEO: boolean = false;
 
 export default function MontreeLanding() {
   const { t } = useI18n();
-  const router = useRouter();
   const revealRefs = useRef<HTMLElement[]>([]);
 
   // ── PWA app-mode launch (Jul 3 2026, Tredoux) ──
@@ -57,6 +55,17 @@ export default function MontreeLanding() {
   // never the marketing splash. The manifest start_url is /montree and iOS
   // bakes it in at install time, so this redirect is the fix that also works
   // for already-installed icons. Regular browser visits are unaffected.
+  //
+  // 🚨 Jul 4 2026 — use a HARD navigation (window.location.replace), NOT a
+  // soft router.replace. On iOS standalone the localStorage session is
+  // sometimes wiped between launches (see tier-3 note below), so the pre-paint
+  // hard redirect script doesn't fire and THIS effect becomes the redirect
+  // path. A soft router.replace transitions within the marketing splash's
+  // document — inheriting its tall scroll layout / half-settled cold-launch
+  // viewport — which rendered the app with the top half blank (self-healed on
+  // a reopen once localStorage repopulated and the pre-paint path took over).
+  // A hard navigation forces a fresh document + fresh viewport, matching the
+  // clean pre-paint path.
   useEffect(() => {
     const standalone =
       window.matchMedia?.('(display-mode: standalone)').matches ||
@@ -77,7 +86,7 @@ export default function MontreeLanding() {
     const sess = getSession();
     if (sess?.school?.id) {
       remember('/montree/dashboard');
-      router.replace('/montree/dashboard');
+      window.location.replace('/montree/dashboard');
       return;
     }
 
@@ -85,7 +94,7 @@ export default function MontreeLanding() {
     try {
       if (localStorage.getItem('montree_principal')) {
         remember('/montree/admin');
-        router.replace('/montree/admin');
+        window.location.replace('/montree/admin');
         return;
       }
     } catch { /* storage unavailable — fall through */ }
@@ -101,7 +110,7 @@ export default function MontreeLanding() {
           if (!cancelled && d?.authenticated) {
             const surface = d.role === 'principal' ? '/montree/admin' : '/montree/dashboard';
             remember(surface);
-            router.replace(surface);
+            window.location.replace(surface);
             return;
           }
         }
@@ -112,14 +121,14 @@ export default function MontreeLanding() {
           const d = await p.json();
           if (!cancelled && (d?.authenticated || d?.valid)) {
             remember('/montree/parent/dashboard');
-            router.replace('/montree/parent/dashboard');
+            window.location.replace('/montree/parent/dashboard');
           }
         }
       } catch { /* stay on splash */ }
     })();
 
     return () => { cancelled = true; };
-  }, [router]);
+  }, []);
 
   // Video-only locale state. Defaults to EN on every fresh page load.
   // Not persisted — keep it simple; toggle is a stateless visual switch.
