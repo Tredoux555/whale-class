@@ -126,14 +126,17 @@ export async function executeTool(
         .maybeSingle();
 
       if (!existingProgress) {
+        // Setting a focus work means "this is next" — NOT "already presented".
+        // Seed as not_started so the shelf honours "start with zero". The teacher
+        // marks presented/practicing/mastered via update_progress as it actually
+        // happens. (Was 'presented' + presented_at, which contradicted cold-start.)
         await supabase
           .from('montree_child_progress')
           .insert({
             child_id: effectiveChildId,
             work_name,
             area,
-            status: 'presented',
-            presented_at: new Date().toISOString(),
+            status: 'not_started',
             updated_at: new Date().toISOString(),
           });
       }

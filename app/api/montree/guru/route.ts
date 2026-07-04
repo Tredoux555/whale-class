@@ -779,36 +779,13 @@ export async function POST(request: NextRequest) {
 
           const toolResults: ToolResultBlockParam[] = await Promise.all(toolPromises);
 
-          // Fast path: when tool_choice was forced AND all tools succeeded,
-          // skip the expensive second API call (~15-30s) and return tool results directly.
-          // This makes shelf updates respond in ~5-10s instead of 30-60s.
-          const allToolsSucceeded = actionsTaken.every(a => a.success);
-          if (forceToolUse && allToolsSucceeded && actionsTaken.length > 0) {
-            clearTimeout(masterTimeout);
-            const summaryText = actionsTaken.map(a => a.message).filter(Boolean).join('\n\n');
-            const finalText = summaryText || 'Done!';
-            console.log(`[Guru Stream] Fast-path: forced tool use, ${actionsTaken.length} tools succeeded, skipping second API call. Elapsed: ${Date.now() - requestStart}ms`);
-
-            const encoder = new TextEncoder();
-            const responseStream = new ReadableStream({
-              start(controller) {
-                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', text: finalText })}\n\n`));
-                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`));
-                controller.close();
-
-                saveInteractionAndLearn(supabase, {
-                  child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
-                  question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
-                  guruTier, estCost: 0, responseText: finalText, hybridRouted: useHaikuForQuestion,
-                  knowledge, guruModel, startTime, isTeacher, isGreetingTrigger, isParentRole, locale,
-                });
-              }
-            });
-
-            return new Response(responseStream, {
-              headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' },
-            });
-          }
+          // NOTE: the old "fast path" (return bare tool-result checkmarks and
+          // skip the second API call on forced tool use) was REMOVED. It capped
+          // the shelf at whatever the model batched in round one and produced a
+          // list of "✅ area: work" with no coaching — the exact behaviour the
+          // teacher flagged. Forced-tool turns now always proceed to the
+          // follow-up call so Guru can finish the shelf AND compose a real
+          // mentor response. Slightly slower, but coaching is the whole point.
 
           currentMessages = [
             ...currentMessages,
@@ -1108,23 +1085,10 @@ export async function POST(request: NextRequest) {
 
         const toolResults: ToolResultBlockParam[] = await Promise.all(toolPromises);
 
-        // Fast path (non-streaming): skip second API call when forced tool use succeeded
-        const allToolsSucceeded = actionsTaken.every(a => a.success);
-        if (forceToolUse && allToolsSucceeded && actionsTaken.length > 0) {
-          clearTimeout(masterTimeout);
-          const summaryText = actionsTaken.map(a => a.message).filter(Boolean).join('\n\n');
-          const responseText = summaryText || 'Done!';
-          console.log(`[Guru] Fast-path (non-stream): forced tool use, ${actionsTaken.length} tools succeeded. Elapsed: ${Date.now() - requestStart}ms`);
-
-          saveInteractionAndLearn(supabase, {
-            child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
-            question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
-            guruTier, estCost: 0, responseText, hybridRouted: useHaikuForQuestion,
-            knowledge, guruModel, startTime, isTeacher, isGreetingTrigger, isParentRole, locale,
-          });
-
-          return NextResponse.json({ success: true, insight: responseText, conversational: true });
-        }
+        // NOTE: the old non-streaming "fast path" (return bare checkmarks and
+        // skip the second API call on forced tool use) was REMOVED for the same
+        // reason as the streaming path above — it capped the shelf and skipped
+        // coaching. Forced-tool turns now compose a real mentor response.
 
         currentMessages = [
           ...currentMessages,

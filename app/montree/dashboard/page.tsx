@@ -811,14 +811,19 @@ export default function DashboardPage() {
               {(() => {
                 const items = filteredChildren.length;
                 const cols = items <= 16 ? 4 : items <= 25 ? 5 : 6;
-                const rows = Math.ceil(items / cols);
                 return (
                   <div
                     data-tutorial="student-grid"
                     className="flex-1 grid overflow-y-auto"
                     style={{
                       gridTemplateColumns: `repeat(${cols}, 1fr)`,
-                      gridTemplateRows: `repeat(${rows}, minmax(110px, 1fr))`,
+                      // Fixed-height rows pinned to the TOP of the grid area so
+                      // students always start in the top-left corner instead of
+                      // stretching to fill / centering vertically (which left a
+                      // lone student floating low on screen). Short viewports
+                      // scroll via overflow-y-auto — no name clipping.
+                      gridAutoRows: '110px',
+                      alignContent: 'start',
                       rowGap: 28, columnGap: 8,
                       paddingBottom: 16,
                     }}
