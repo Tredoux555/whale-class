@@ -129,10 +129,14 @@ Protects the KNOWN failure for the next real user while Step 1 is built. Follows
    fine (Fable). Optionally a `montree_global_vm_search(query_embedding, match_limit)` SECURITY
    DEFINER RPC mirroring `tracy_corpus_search` — OR skip the RPC and do in-process cosine over the
    cached 270 vectors (simpler; recommended for 270 rows).
-2. **Backfill script** `scripts/embed-global-visual-memory.mjs`: for each active global-VM row, embed
+2. **Backfill** — DECISION (Tredoux, Jul 4): run it as a **one-shot super-admin API route on
+   Railway**, NOT a local script, so `OPENAI_API_KEY` never has to leave Railway (it's already there
+   for Whisper) and `.env.local` doesn't need it. Build `app/api/montree/super-admin/embed-global-vm/route.ts`
+   (super-admin-token gated + `x-cron-secret` accepted): for each active global-VM row, embed
    `visual_description` (+ `key_materials`) via `lib/montree/tracy/corpus/embeddings.ts`
-   `embedTextBatch()` (OpenAI `text-embedding-3-small`, 1536-dim). Write to `embedding`. Idempotent;
-   RE-RUN after any seed change. **Needs `OPENAI_API_KEY`** (see Section 6 — not in .env.local yet).
+   `embedTextBatch()` (OpenAI `text-embedding-3-small`, 1536-dim), write to `embedding`. Idempotent
+   (`?force=1` to re-embed all; default only fills NULL `embedding` rows). RE-RUN after any seed change.
+   Trigger it once from the super-admin Health/cron-triggers panel (or a curl with the cron secret).
 3. **Runtime wiring** (the core change):
    - After Pass 1, embed the Pass-1 **visual description** (the real one, not the observation);
      retrieve **top-8 nearest global-VM works across ALL areas**.
@@ -185,16 +189,16 @@ Protects the KNOWN failure for the next real user while Step 1 is built. Follows
 
 ---
 
-## 6. WHAT TREDOUX NEEDS TO DO (minimal)
-1. **`OPENAI_API_KEY`** — confirm it's set in **Railway** (needed for runtime embeddings; it's already
-   used for Whisper so it very likely is) AND make it available for the local backfill. It is currently
-   **NOT in `.env.local`**. Easiest: paste it into `.env.local` so the backfill script can run from the
-   workspace. (Alternatively I can build the backfill as a one-shot super-admin API route that runs on
-   Railway where the key already lives — tell me your preference.)
-2. **Approve/run the embedding-column migration** — I can run the `ALTER TABLE ... ADD COLUMN embedding
-   vector(1536)` via the pooler myself, or you run it in the Supabase SQL Editor. I'll present the exact SQL.
-3. That's it. Everything else (code, backfill, eval, re-seed, validation) is mine. I'll surface any real
-   decision points (e.g. the override-margin tuning) with the eval numbers in hand.
+## 6. WHAT TREDOUX NEEDS TO DO (almost nothing — DECIDED Jul 4)
+Both prior "to-dos" are handled without him moving secrets or granting desktop access:
+1. **`OPENAI_API_KEY`** — NO ACTION. It's already in Railway (Whisper uses it). Runtime embeddings +
+   the backfill both run ON Railway (backfill is a super-admin route now — see Step 1.2), so the key
+   never leaves. `.env.local` does NOT need it.
+2. **Embedding-column migration** — Claude runs it via the pooler (using `DATABASE_URL` from
+   `.env.local`, same connection used to diagnose the incident). Present the exact one-line SQL to
+   Tredoux for a quick yes, then run it. No Supabase SQL Editor step required.
+3. That's it. Everything else (code, backfill route, eval, re-seed, validation, pushes) is Claude's.
+   Surface real decision points (e.g. the override-margin tuning) with eval numbers in hand.
 
 ---
 
