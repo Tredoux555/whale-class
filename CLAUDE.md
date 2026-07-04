@@ -55,6 +55,58 @@ Montree coupling + personal data; don't re-introduce it by editing the Montree c
 
 ---
 
+## 🩹 SESSION — Jul 4, 2026 (Fable) — "PHOTO RECOGNITION IS BROKEN" WAS A READ-SIDE DISPLAY SCARE — pipeline healthy, 2 client-only gallery fixes
+
+**Canonical handoff: `docs/handoffs/SESSION_GALLERY_DISPLAY_FIX_JUL4.md`.** The user reported the
+Smart-Capture system "failing FLAT — worse than when we built it" (every photo "Untagged"), then on
+a brand-new school "took 4 photos, 0 showed up." **Both were READ-SIDE display gaps on the child
+gallery — the capture+identify pipeline was never broken.** 2 commits on main, BOTH
+`app/montree/dashboard/[childId]/gallery/page.tsx` only, client-only:
+- `5f219a03` — gallery shows the AI draft (`sonnet_draft.proposed_name`) as a one-tap **✨ suggestion
+  + green ✓** instead of a blank "Untagged" when `work_id` is NULL (cold accounts rarely auto-confirm
+  → `work_id` stays NULL → the feed, which only rendered the confirmed `work_id`, showed "Untagged"
+  even though the AI had the right answer). ✓ resolves `proposed_name` → curriculum work (exact/normalized
+  name match) and PATCHes `work_id`; falls back to the picker. No new i18n keys.
+- `8c658754` — `cache:'no-store'` on the child-media fetch + refetch on `visibilitychange`/`focus`.
+  The media API sends `Cache-Control: max-age=60, stale-while-revalidate=120`, so after capture the
+  browser served a **pre-capture "0 photos" snapshot** for up to ~3 min. Photos were in the DB the
+  whole time. Now the gallery always fetches fresh + auto-refetches when you return from the camera.
+
+**Pipeline verified HEALTHY on live prod data (Bright Stars + the new Sunshine/Marina school):** trigger
+`capture→attempt = 1s`, fully processed `9–22s`, IDs correct, and Gate A **AUTO-CONFIRMED** the
+high-confidence ones on the fresh cold account (Cylinder Block 1 + Number Rods got real `work_id`s) —
+the Jul-3 curated 270-work seed is working: higher cold-start confidence → more auto-tags.
+
+- **🚨 NOT the cause (ruled out, don't re-chase):** the curated seed / photo pipeline (unchanged,
+  healthy); cross-tenant/stale-session (photos saved to the correct school with the user's session →
+  session IS the new school); the media API (`app/api/montree/media/route.ts` unchanged since May 16 —
+  its cache header is old, not new); my gallery edits causing "0 photos" (the render change runs only
+  when `photos.length > 0`).
+- **🚨 Also NOT regressions (git-verified):** (1) the "tell me about your students" onboarding takeover —
+  `TellGuruCard.tsx` (Apr 24) + `voice-onboarding/page.tsx` (Jun 22) UNCHANGED; it fires **only in-session
+  right after create/import** (commit `e13ae634`, Jul 3, deliberate) — it correctly flashed up in the
+  fresh create-school→add-student flow. (2) Guru chat shelf-fill stopping at 2/5 areas (both "Presented",
+  contradicting "start with zero") — `lib/montree/guru/tool-executor.ts` UNCHANGED since May 16 →
+  runtime/model tool-loop early-stop, **OPEN to investigate**, not a code regression.
+- **RULES:** (1) the child gallery MUST surface `sonnet_draft.proposed_name` as a ✨ one-tap suggestion
+  when `work_id` is NULL — never a blank "Untagged" when the AI has a guess. (2) the child-media gallery
+  fetch is `cache:'no-store'` + refetch-on-visibility (fix at the fetch site; do NOT strip the media API
+  cache header — other callers use it). (3) **gallery ✓/picker confirm does NOT seed the visual-memory
+  moat** (only Wrap Up / photo-audit confirms do) — so cold accounts still need a few Wrap-Up confirms
+  before Gate A auto-tags from classroom history; candidate follow-up = route gallery confirms through
+  the corrections endpoint.
+- **Prod data:** the Jul-3 Bright Stars gate photo `d7af53f8` was reset to `identification_status='pending'`
+  (draft cleared) so the audit sweep re-runs it live. No other prod data changed.
+- **Verified:** ESLint 0 errors on the gallery page (15 pre-existing warnings, none new); Marina's 3
+  photos present in DB (correct school, 2 auto-confirmed), gallery filter returns 3, all 4 tested proposed
+  names resolve EXACT to the 329 classroom curriculum works. Both commits pushed via Desktop Commander
+  (HEAD `8c658754`).
+- **⏳ Open/next:** Guru shelf-fill early-stop (2/5); fire the onboarding takeover on individual add too
+  (import-only today); route gallery confirms through the moat; owed clean-photo verification round from
+  the Jul-3 canonical seed.
+
+---
+
 ## 🧠 SESSION — Jul 3, 2026 (Fable + Sonnet) — CANONICAL GLOBAL SEED: 270 CURATED WORKS, LIVE
 
 **Canonical handoff: `docs/handoffs/SESSION_CANONICAL_SEED_JUL3.md` — READ IT before touching
