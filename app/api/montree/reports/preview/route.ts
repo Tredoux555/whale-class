@@ -553,6 +553,15 @@ export async function GET(request: NextRequest) {
 
       claimedPhotoIds.add(photo.id);
 
+      // Resolve the rich parent-facing description via the SAME fuzzy matcher
+      // used for progress items above (and by reports/send). Jul 4 2026 fix:
+      // photo-sourced items previously used only workInfo.description (the
+      // work_id→info map), so a photo-tagged work like "Brown Stair" showed no
+      // body text in the PREVIEW even though the actual sent report — which
+      // does run findBestDescription for photo items — rendered it. The preview
+      // must mirror what the parent will actually receive.
+      const photoDesc = findBestDescription(workInfo.name, dbDescriptions, workInfo.area || 'practical_life', locale);
+
       reportItems.push({
         work_id: photo.work_id,
         work_name: workInfo.name,
@@ -562,9 +571,9 @@ export async function GET(request: NextRequest) {
         photo_url: photo.url,
         photo_id: photo.id,
         photo_caption: photo.caption,
-        parent_description: workInfo.description || null,
-        why_it_matters: workInfo.why_it_matters || null,
-        has_description: !!workInfo.description,
+        parent_description: photoDesc?.description || workInfo.description || null,
+        why_it_matters: photoDesc?.why_it_matters || workInfo.why_it_matters || null,
+        has_description: !!(photoDesc || workInfo.description),
         source: 'photo',
       });
 
