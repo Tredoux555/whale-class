@@ -245,7 +245,10 @@ export default function GalleryPage() {
     const controller = new AbortController();
     fetchPhotosControllerRef.current = controller;
     setLoading(true);
-    fetch(`/api/montree/media?child_id=${childId}&limit=50`, { signal: controller.signal })
+    // no-store: the media API sends `max-age=60, stale-while-revalidate=120`, so
+    // without this the browser can serve a pre-capture "0 photos" snapshot for
+    // up to ~3 min after new photos are taken. Always hit the server fresh.
+    fetch(`/api/montree/media?child_id=${childId}&limit=50`, { signal: controller.signal, cache: 'no-store' })
       .then(r => {
         if (!r.ok) throw new Error('Failed to fetch');
         return r.json();
@@ -270,6 +273,19 @@ export default function GalleryPage() {
   useEffect(() => {
     fetchPhotos();
     return () => { fetchPhotosControllerRef.current?.abort(); };
+  }, [fetchPhotos]);
+
+  // Refetch when the page becomes visible / regains focus — e.g. returning from
+  // the capture screen. Guarantees freshly-captured photos appear without a
+  // manual pull-to-refresh, even if the component stayed mounted.
+  useEffect(() => {
+    const refresh = () => { if (document.visibilityState === 'visible') fetchPhotos(); };
+    document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('focus', refresh);
+    return () => {
+      document.removeEventListener('visibilitychange', refresh);
+      window.removeEventListener('focus', refresh);
+    };
   }, [fetchPhotos]);
 
   // Fetch curriculum for wheel picker (pre-load on mount for instant picker)
