@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
+import { advanceShelfAfterMastery } from '@/lib/montree/progress/advance-shelf-after-mastery';
 
 // Escape special SQL wildcard characters for safe ILIKE usage
 function escapeIlike(str: string): string {
@@ -114,6 +115,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Only set mastered_at on FIRST transition to mastered (preserve original date)
+    let isFirstMastery = false;
     if (statusStr === 'mastered') {
       // Check if already mastered — don't overwrite existing mastered_at
       const { data: existing } = await supabase
@@ -125,6 +127,7 @@ export async function POST(request: NextRequest) {
 
       if (!existing?.mastered_at) {
         record.mastered_at = now;
+        isFirstMastery = true;
       }
       // If already has mastered_at, keep the original date
     }
@@ -215,6 +218,21 @@ export async function POST(request: NextRequest) {
     // - Extras upsert: only fires when is_extra=true.
     // - Focus mirror to legacy montree_child_focus_works: derived from this
     //   anyway by progress GET routes; the mirror is just for legacy consumers.
+
+    // Real-time shelf loop: when a work is NEWLY mastered, drop the next
+    // curriculum work for that area onto the shelf as 'not_started' — instead of
+    // waiting for the weekly replan. Fire-and-forget; the response is already out.
+    if (isFirstMastery && classroomId && area) {
+      void advanceShelfAfterMastery({
+        supabase,
+        childId: child_id,
+        classroomId,
+        area: area || null,
+        masteredWorkName: workNameToSave,
+      }).catch((err) =>
+        console.error('[progress/update] mastery shelf-advance failed (non-fatal):', err),
+      );
+    }
 
     if (classroomId && workNameToSave && area) {
       // Curriculum auto-sync (1-4 queries depending on whether work exists).
