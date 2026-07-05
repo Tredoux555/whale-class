@@ -417,9 +417,9 @@ export default function TeacherParentCodesPage() {
             across all children (they're separate batch workflows). */}
         <div className="print:hidden" style={{ display: 'flex', gap: 6, marginBottom: 18, flexWrap: 'wrap' }}>
           {([
-            { key: 'codes' as ParentsTab, label: t('parentCodes.tabCodes'), Icon: KeyRound },
             { key: 'reports' as ParentsTab, label: t('parentCodes.tabReports'), Icon: FileText },
             { key: 'chats' as ParentsTab, label: t('parentCodes.tabChats'), Icon: MessageCircle },
+            { key: 'codes' as ParentsTab, label: t('parentCodes.tabCodes'), Icon: KeyRound },
           ]).map(({ key, label, Icon }) => {
             const active = activeTab === key;
             return (
