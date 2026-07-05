@@ -543,6 +543,48 @@ export default function CameraCapture({
     </svg>
   );
 
+  const cameraIcon = (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+      <circle cx="12" cy="13" r="3" />
+    </svg>
+  );
+  const videoIcon = (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m22 8-6 4 6 4V8Z" />
+      <rect width="14" height="12" x="2" y="6" rx="2" ry="2" />
+    </svg>
+  );
+
+  // PHOTO / VIDEO mode toggle — an emerald (on-brand) segmented icon pill. Icons
+  // instead of text so it never overlaps when the rail rotates in landscape (a
+  // rotated text label keeps its unrotated layout box, so two stacked rotated
+  // words collide — the "VIDEPHOTO" bug). Squares don't. Row in portrait,
+  // column in landscape; active = emerald fill, inactive = dim white.
+  const modeToggle = (
+    <div
+      className={`flex ${isLandscape ? 'flex-col' : 'flex-row'} gap-1 p-1 my-1 rounded-full`}
+      style={{ background: 'rgba(255,255,255,0.10)' }}
+    >
+      <button
+        onClick={() => handleModeChange('photo')}
+        aria-label={t('camera.photo')}
+        className="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+        style={captureMode === 'photo' ? { background: '#34d399', color: '#04150c' } : { color: 'rgba(255,255,255,0.55)' }}
+      >
+        {cameraIcon}
+      </button>
+      <button
+        onClick={() => handleModeChange('video')}
+        aria-label={t('camera.video')}
+        className="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+        style={captureMode === 'video' ? { background: '#34d399', color: '#04150c' } : { color: 'rgba(255,255,255,0.55)' }}
+      >
+        {videoIcon}
+      </button>
+    </div>
+  );
+
   return (
     <div className={`fixed inset-0 bg-black z-50 flex ${isLandscape ? 'flex-row' : 'flex-col'}`}>
       {/* Hidden canvas for capture */}
@@ -680,27 +722,8 @@ export default function CameraCapture({
         ) : isLandscape ? (
           /* ── Live controls (landscape) — vertical rail ── */
           <div className="flex flex-col items-center justify-between flex-1 py-6">
-            {/* Mode toggle — top of rail */}
-            {allowVideo && !isRecording ? (
-              <div className="flex flex-col gap-4 items-center">
-                <button
-                  onClick={() => handleModeChange('photo')}
-                  className={`text-sm font-semibold transition-colors -rotate-90 ${
-                    captureMode === 'photo' ? 'text-yellow-400' : 'text-white/50'
-                  }`}
-                >
-                  {t('camera.photo').toUpperCase()}
-                </button>
-                <button
-                  onClick={() => handleModeChange('video')}
-                  className={`text-sm font-semibold transition-colors -rotate-90 ${
-                    captureMode === 'video' ? 'text-yellow-400' : 'text-white/50'
-                  }`}
-                >
-                  {t('camera.video').toUpperCase()}
-                </button>
-              </div>
-            ) : <div />}
+            {/* Mode toggle — top of rail (emerald icon pill, no rotated text) */}
+            {allowVideo && !isRecording ? modeToggle : <div />}
 
             {/* Shutter — center of rail */}
             {shutterButton}
@@ -728,27 +751,8 @@ export default function CameraCapture({
         ) : (
           /* ── Live controls (portrait) — bottom bar ── */
           <div className="flex flex-col items-center">
-            {/* Mode toggle — above capture button */}
-            {allowVideo && !isRecording && (
-              <div className="flex gap-6 py-2">
-                <button
-                  onClick={() => handleModeChange('photo')}
-                  className={`text-sm font-semibold transition-colors ${
-                    captureMode === 'photo' ? 'text-yellow-400' : 'text-white/50'
-                  }`}
-                >
-                  {t('camera.photo').toUpperCase()}
-                </button>
-                <button
-                  onClick={() => handleModeChange('video')}
-                  className={`text-sm font-semibold transition-colors ${
-                    captureMode === 'video' ? 'text-yellow-400' : 'text-white/50'
-                  }`}
-                >
-                  {t('camera.video').toUpperCase()}
-                </button>
-              </div>
-            )}
+            {/* Mode toggle — above capture button (emerald icon pill) */}
+            {allowVideo && !isRecording && modeToggle}
 
             {/* Main row: Cancel / Album — [Capture] — spacer */}
             <div className="flex items-center w-full px-6 py-3">
