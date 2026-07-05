@@ -55,6 +55,81 @@ Montree coupling + personal data; don't re-introduce it by editing the Montree c
 
 ---
 
+## 🩹 SESSION — Jul 5, 2026 (Cowork, later) — PARENTS REPORT MOVE + APPLE LANDSCAPE CAMERA + PHOTO-ID DETERMINISM + SHELF STATUS LADDER + PERMANENT SESSION + PWA NO-FLASH
+
+**Canonical handoff: `docs/handoffs/SESSION_PARENTS_CAMERA_SHELF_JUL5.md`. 14 commits on main
+(`da4cfac5` → `c42ccbba`), all pushed via Desktop Commander (HEAD == origin/main, tree clean). No
+migrations, no env vars.** Every item built one-at-a-time (sacred rule: audit thinking → build → audit
+build → ship), then a full top-to-bottom re-audit against the actual code before the handoff.
+
+- **📋 Parents / Wrap Up split (`da4cfac5`).** Report generate+send MOVED out of Wrap Up (photo-audit)
+  into the **Parents** tab. `parent-codes/page.tsx` = ONE header (`Parents` + LanguageToggle) + 3 pills
+  **Codes / Reports / Chats**; Reports hosts `<WeeklyWrapTab classroomId={codes[0]?.classroom_id||''}/>`
+  (dynamic, gated `canManageReports`). photo-audit's `weekly_wrap` ZONE_TAB is commented out + deep-link
+  remap sends it to `all`. **🚨 Audit-confirmed UNREACHABLE:** no `setZone('weekly_wrap')` anywhere, no
+  URL param maps to it — residual zone-type/render lines (102/1009/2551/2723) are dead code. **RULE:
+  Wrap Up = daily photo-confirm ONLY; report gen lives in Parents. Don't re-add a report tab to photo-audit.**
+- **📷 Apple-style landscape camera (`93ca347d` final; `a5457413`/`855834c9`/`48505047` superseded).**
+  Three earlier attempts this session were wrong (bottom bar / full-bleed / distinct-preview-still-bottom).
+  User wants **controls following the device's PHYSICAL edge** (Apple). Restored the device-validated
+  layout from `ded705b3`: `isLandscape` state + orientation listener; root `flex-row` in landscape;
+  portrait = bar below preview; **landscape = 140px vertical rail on the RIGHT edge, labels `-rotate-90`
+  to read upright, preview fills the rest.** **🚨 PHOTO/VIDEO overlap fix (`c42ccbba`):** the rotated
+  text labels collided ("VIDEPHOTO") because a `-rotate-90` text element keeps its UNROTATED layout box
+  → replaced with a shared **emerald segmented icon pill** (`modeToggle`: camera+video inline SVGs,
+  active `#34d399` fill / `#04150c` icon, inactive dim white; row in portrait, column in landscape,
+  icons NOT rotated = square = no overlap). **RULES:** don't collapse landscape to a bottom bar again
+  (rejected 3×); never `-rotate-90` a wide/multi-word text element in a stacked rail — use a square icon.
+  **Known caveat (documented, not a bug):** rail is on the right, correct for the common CCW hold; if
+  labels read upside-down on the opposite hold it's a one-line mirror, not a rebuild.
+- **🎯 Photo-ID determinism (`6183c9cd`).** Root cause of the "right once, wrong on reruns, learns
+  nothing" whack-a-mole = the Anthropic Messages API default `temperature` is **1.0**, never pinned.
+  Pinned `temperature:0` on ALL 4 identification calls: `two-pass.ts` Pass 1/2/2b + `sonnet-draft.ts`.
+  **RULE: every photo-ID model call is deterministic (`temperature:0`); never add one without it.** A
+  fresh school now reads Brown Stair 3/3 (user-confirmed); the old whack-a-mole was temp 1.0 + a moat
+  polluted during a temp-1.0 correction session.
+- **🔧 Visual-memory "welder" tier-gate (`f7fe3f5f`).** `corrections/route.ts` `enrichVisualMemoryFromCorrection`
+  now takes `tier` → `authorModel = tier==='sonnet' ? AI_MODEL : HAIKU_MODEL` + `temperature:0`. Premium
+  = Sonnet fingerprints; Core = Haiku (the model that READS them back); Free = correction saves,
+  enrichment skipped.
+- **🪜 Shelf status ladder — the user's exact model, cemented.** `recommend → not_started → (photo)
+  presented → (photo) practicing → (stays) → (teacher) mastered → next work → not_started`.
+  - **Fix 1 (`14b72628`)** `lib/montree/progress/advance-on-confirm.ts` (NEW) = THE single shared ladder
+    every confirm routes through (no row→presented; not_started→presented; presented→practicing;
+    practicing stays; mastered untouched; never downgrades). Wired in `corrections/route.ts` (1 call,
+    L532) + `photo-audit/resolve/route.ts` (new_custom branch only, 1 call, L393). **🚨 Audit-confirmed
+    no double-advance:** client fires exactly ONE of `/corrections` OR `/resolve` per action → one rung.
+  - **Fix 2a (`7cc24470`)** `lib/montree/progress/seed-recommended-work.ts` (NEW): recommend inserts
+    `not_started` ONLY if no existing row (never downgrades — killed the replan footgun that reset
+    practicing→presented). Wired into `replan-child.ts` (main+gap-fill), `fill-shelf/route.ts`
+    (main+gap-fill), `shelf/route.ts`. `FocusWorksSection` badge = `t('status.notStarted')` @0.45.
+  - **Fix 2b (`233c7d3b`)** `lib/montree/progress/advance-shelf-after-mastery.ts` (NEW): on FIRST mastery
+    (`isFirstMastery`, no prior `mastered_at`), drop the next area work (by `sequence`, skipping touched)
+    onto the shelf at `not_started` in real time. Fired fire-and-forget from `progress/update/route.ts`
+    (~L225), guarded `isFirstMastery && classroomId && area`. **Caveat (by design):** fires on ANY
+    first-mastery carrying `area` (incl. an older non-shelf work) → swaps that area's shelf slot; a
+    surface that marks mastery without `area` won't fire it (weekly replan backfills). Both ladder fns
+    match by `(child_id, work_name)` (the UNIQUE key), never `work_id`.
+- **🔐 Permanent session (`25ec4850`).** `server-auth.ts` `MONTREE_JWT_TTL_DAYS` default 30 → **3650**
+  (≈10y), cookie maxAge matches. A teacher on their own device never gets silently logged out;
+  `recoverSession()` rebuilds from the cookie after iOS wipes localStorage on PWA relaunch. Override via
+  `MONTREE_JWT_TTL_DAYS` env.
+- **📱 PWA no-flash + top-clip (`78c1deff` + `c0d6f102`).** `setMontreeAuthCookie` also sets a
+  NON-httpOnly `montree_surface` cookie (principal→/admin, agent→/agent/dashboard, else /dashboard),
+  cleared on logout; `app/montree/page.tsx` pre-paint script reads it from `document.cookie` (after the
+  localStorage checks) so a home-screen launch jumps into the app before the marketing splash paints —
+  **cookies survive the iOS standalone-launch localStorage wipe; localStorage doesn't.** SW cache
+  v12→**v13** purges the stale shell that was serving the old bare-`100dvh` dashboard (top-clip); code
+  height calc was already correct.
+- **✅ Verify on device:** reopen the PWA once (SW v13 → new JS + top-clip fix); log out+in once (10y
+  token + surface cookie → no flash, permanent login); landscape camera = right rail + emerald icon
+  toggle; shelf ladder walks not_started→presented→practicing→mastered→next; photo-ID stable on reruns.
+- **⏳ Owed:** prod DB forensics (Miss Chen moat inspection) — Supabase pooler was unreachable all
+  session (China network/VPN); a fresh school starts clean off global canonicals, so this only matters
+  for existing polluted classrooms. Landscape rail side-mirror only if the opposite hold reads upside-down.
+
+---
+
 ## 🚀 SESSION — Jul 5, 2026 (Cowork/Opus) — FOUNDING 100 WAITLIST + super-admin control panel + Core/Premium pricing copy
 
 **Canonical handoff: `docs/handoffs/SESSION_FOUNDING_100_JUL5.md`. 1 commit on main (`260e24fa`, 10 files,
