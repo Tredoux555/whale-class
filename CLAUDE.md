@@ -55,6 +55,72 @@ Montree coupling + personal data; don't re-introduce it by editing the Montree c
 
 ---
 
+## 🚨 SESSION — Jul 5, 2026 (Cowork, evening) — REPORTS SURFACE SPLIT + CURRENT-WEEK GUARD RAIL + **REPLAN SHELF INTEGRITY (the big one)** + SYSTEMWIDE HEALTH CHECK
+
+**Canonical handoff: `docs/handoffs/SESSION_REPORTS_SHELF_GUARDRAIL_HEALTHCHECK_JUL5.md`. 5 commits on main
+(`0919cf24` → `5e96f48c` → `a63f4eb2` → `d61ea911` → `819c297f`), all pushed via Desktop Commander
+(HEAD == origin/main, tree clean apart from the 2 pre-existing unrelated files). No migrations, no env vars.**
+The replan rewrite got an independent fresh-eyes subagent audit before shipping (real classroom data). Session
+closed with a full systemwide health check (3 parallel deep-audits + mechanical gates) → **🟢 healthy**.
+
+- **📋 Reports surface split (`0919cf24`) — AMENDS the Jul-5 "don't re-add a report tab to photo-audit" rule.**
+  Teacher Review was wrongly showing inside the **Parents** tab. Now: **Wrap Up (photo-audit)** has a **Teacher
+  Review** tab right after Confirm (re-activated the dormant `weekly_wrap` ZONE_TAB, renders `<WeeklyWrapTab
+  view="teacher">` — teacher-only review, NO parent send; reuses the `weeklyWrap.teacherReview` key, no i18n
+  churn); **Parents › Reports** renders `<WeeklyWrapTab view="parents">` (parent preview + SEND only, sub-toggle
+  gone). **🚨 RULE (refines Jul-5): the `view` prop is load-bearing — Teacher Review VIEW lives in Wrap Up
+  (`view="teacher"`), parent-report generate+SEND stays in Parents (`view="parents"`). Don't collapse them back
+  into one toggled tab.** Same commit: **classroomId self-heal** — `WeeklyWrapTab` fetch/generate/send used the
+  raw `classroomId` prop, which Parents passes as `codes[0]?.classroom_id || ''` (empty before codes load) →
+  silent no-op. Now `effectiveClassroomId = classroomId || getSession()?.classroom?.id || ''` everywhere +
+  diagnosable error instead of silent return (the "self-heals" comment was a lie; now true).
+- **🔀 Parents tab reorder (`5e96f48c`).** Pills = **Reports · Chats · Codes** (was Codes · Reports · Chats).
+  Default landing stays `'codes'` on purpose (opening on Reports would show `homeschool_parent` logins — who have
+  `canManageReports=false` — a broken empty grid). One-liner to flip if wanted.
+- **🗓 Current-week guard rail (`a63f4eb2`) — the "report shows last week / today's photos missing" scare was a
+  TIMEZONE BUG, not a data bug.** `getCurrentMonday()` serializes local-Monday-midnight via `toISOString()`
+  (**UTC**); for UTC+8 (China — the whole outreach market) local Monday 00:00 = the previous day in UTC, so the
+  week key shifts back a day and on Sundays *today* is pushed out of "this week" (`captured_at <= week_end` drops
+  today's photos). Guard rail (client-only): when `weekEnd < local-today` a dismissible gold banner
+  (`weeklyWrap.laterWeekBanner`) offers **Go to this week →** (`weeklyWrap.goToCurrentWeek`), jumping in the app's
+  OWN week serialization to the week containing today. 2 new i18n keys ×12 (en+zh real, English fallback for 10).
+  **🚨 DEFERRED — the real cure:** guard rail is the safety net, NOT the fix. The deep fix is a coordinated
+  timezone-correct week calc across all **8 `getCurrentMonday` sites** (route through `lib/montree/school-time.ts`,
+  rule #228) — shares DB week keys, must be done all-at-once + tested. Owed.
+- **🪜🚨 REPLAN SHELF INTEGRITY (`d61ea911`) — THE BIG ONE. `lib/montree/reports/replan-child.ts` fully rewritten
+  (−215 net lines).** A brand-new child's hand-set starter shelf jumped to random advanced works on Weekly Wrap
+  and re-rolled to a DIFFERENT advanced set every regenerate with nothing logged ("jack in the box"). Root cause:
+  the Stage-0 replan ran for EVERY child on EVERY wrap and (1) **wiped the whole shelf** (`delete`), (2) refilled
+  from a **temperature-1.0 LLM** prompted "forward progression is mandatory… DO NOT repeat previous works", (3)
+  used **`Math.random()`** gap-fill — advancement driven by calendar + dice, the opposite of Montessori. Fix:
+  **NEVER wipes, NEVER lets an LLM pick works — fully deterministic + mastery-driven.** Per area: KEEP a
+  non-mastered work untouched; only a `mastered` slot advances to the next un-touched work in curriculum
+  `sequence`; empty areas seed the first un-touched work by sequence (mirrors `advance-shelf-after-mastery.ts` +
+  `seed-recommended-work.ts`). LLM is used ONLY for the warm nudge text, `temperature:0`, AFTER the shelf is
+  written (LLM failure can't disturb the shelf). Audit fixes: `statusByWork` keyed by `area::work` (a miss fails
+  safe to KEEP, no cross-area false-advance); stable name tiebreak on null/duplicate sequence.
+  **🚨🚨 THE MONTESSORI INVARIANT (do NOT weaken, ever): a work leaves a child's focus shelf ONLY when
+  teacher-confirmed `mastered`. Nothing about a week rolling over or a report (re)generating may move/swap/re-roll
+  a work the child is still working on. Never wipe the shelf. Never let an LLM choose shelf works.** Caveat:
+  already-scrambled test shelves (Jill) won't auto-restore — re-onboard a fresh student to verify.
+- **🩺 Systemwide health check + `819c297f`.** 🟢 healthy, no critical blockers. Fixed during the check: the two
+  SIBLING non-determinism bugs to the replan fix — **game-plan/refresh** (`refresh/route.ts:199`) + **onboard**
+  (`onboard/route.ts:933`, seeds the starter shelf) both wrote durable per-child game plans at temp 1.0 → both
+  pinned `temperature:0`. **🚨 RULE: every LLM call that writes durable per-child shelf/plan state MUST be
+  `temperature:0`** (replan nudge, game-plan/refresh, onboard — all pinned). Confirmed clean (verified): cross-
+  tenant isolation (Session-113 work held), tier-gating (every AI report route gates + 402s free — old "6 Sonnet-
+  hardcoded routes" note RESOLVED), `maxDuration` comprehensive (the 3 finance flags were false positives).
+  **⏳ Open (owed, none blocking):** (1) OPS — confirm `SUPER_ADMIN_JWT_SECRET` set in Railway; (2)
+  `dashboard/class-progress/route.ts:197` class-wide `.in()` needs 1000-row pagination (group-photo attribution
+  truncates in busy classrooms); (3) 2 legacy `.ilike()` escapes (`weekly-planning/add-work:17`,
+  `whale/daily-activity:152`); (4) cosmetic: dead `reports/ai-generator.ts` stale model + `admin/guru/chat` /
+  `super-admin/guru` dated Sonnet pins (drift, not tier bypass); (5) the deferred timezone week-calc deep fix.
+- **✅ Verify (reopen PWA):** Wrap Up → Teacher Review next to Confirm; Parents → Reports only + Reports·Chats·Codes
+  order; UTC+8 Sunday → guard-rail banner + jump works; **onboard a FRESH student → shelf sits rock-still across
+  wraps; mark a work mastered → only that slot advances.**
+
+---
+
 ## 🩹 SESSION — Jul 5, 2026 (Cowork, later) — PARENTS REPORT MOVE + APPLE LANDSCAPE CAMERA + PHOTO-ID DETERMINISM + SHELF STATUS LADDER + PERMANENT SESSION + PWA NO-FLASH
 
 **Canonical handoff: `docs/handoffs/SESSION_PARENTS_CAMERA_SHELF_JUL5.md`. 14 commits on main
