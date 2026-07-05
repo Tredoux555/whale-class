@@ -45,7 +45,11 @@
 // v12 (Jul 4 2026) — force installed PWAs to purge the stale precached shell
 // after the Gallery/Parents split + menu reorder + tier changes, so the new
 // code actually reaches home-screen installs on next open.
-const CACHE_NAME = 'montree-v12';
+// v13 (Jul 5 2026) — purge again so home-screen installs pick up the current
+// code: the dashboard main-height fix (was showing the old bare-100dvh shell
+// that clipped the header row on launch), the temp:0 photo-ID + shelf-status
+// fixes, and the permanent session. Stale shells were serving pre-fix JS.
+const CACHE_NAME = 'montree-v13';
 const OFFLINE_URL = '/montree/offline';
 
 // Only cache immutable assets — static files that change with build hashes.
