@@ -3,6 +3,7 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getSupabase } from '@/lib/supabase-client';
 import { anthropic, HAIKU_MODEL, AI_MODEL } from '@/lib/ai/anthropic';
+import { advanceProgressOnConfirm } from '@/lib/montree/progress/advance-on-confirm';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { invalidateClassroomEmbeddings } from '@/lib/montree/classifier';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
@@ -526,39 +527,9 @@ async function upsertProgressObservation({
   workName: string | null;
   area: string | null;
 }) {
-  if (!childId || !workName?.trim()) return;
-  const name = workName.trim();
-
-  const { data: existing } = await supabase
-    .from('montree_child_progress')
-    .select('id, status')
-    .eq('child_id', childId)
-    .eq('work_name', name)
-    .maybeSingle();
-
-  if (existing) {
-    // Only touch 'presented' rows — refresh updated_at to show it was seen again today
-    // 'practicing' and 'mastered' are teacher decisions and must not be overwritten
-    if (existing.status === 'presented') {
-      await supabase
-        .from('montree_child_progress')
-        .update({ updated_at: new Date().toISOString() })
-        .eq('id', existing.id);
-    }
-    return;
-  }
-
-  // No row yet — insert as 'presented' (a photo is evidence of at least a presentation)
-  await supabase
-    .from('montree_child_progress')
-    .insert({
-      child_id: childId,
-      work_name: name,
-      area: area || null,
-      status: 'presented',
-    });
-
-  console.log(`[Progress] Real-time observation: child=${childId} work="${name}" → presenting`);
+  // Delegates to the SINGLE shared advance function so a confirmed photo advances
+  // the shelf status identically for every work (see advance-on-confirm.ts).
+  await advanceProgressOnConfirm({ supabase, childId, workName, area });
 }
 
 // ========================================================

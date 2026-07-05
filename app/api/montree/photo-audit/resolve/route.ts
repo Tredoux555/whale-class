@@ -34,11 +34,13 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import { randomUUID } from 'crypto';
 import { enrichCustomWorkInBackground } from '@/lib/montree/photo-identification/enrich-custom-work';
 import { POST as correctionsPost } from '@/app/api/montree/guru/corrections/route';
+import { advanceProgressOnConfirm } from '@/lib/montree/progress/advance-on-confirm';
 
 const VALID_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
 
-// Upsert a progress observation for a confirmed photo — same logic as in corrections/route.ts.
-// Rules: no row → insert 'presented'; existing 'presented' → refresh updated_at; practicing/mastered → untouched.
+// Confirmed-photo progress write — delegates to the SINGLE shared advance
+// function so custom-work confirms advance the shelf status the same way as
+// every other confirm path (see advance-on-confirm.ts).
 async function upsertProgressObservation({
   childId, classroomId: _classroomId, workName, area,
 }: {
@@ -47,28 +49,7 @@ async function upsertProgressObservation({
   workName: string | null;
   area: string | null;
 }) {
-  if (!childId || !workName?.trim()) return;
-  const supabase = getSupabase();
-  const name = workName.trim();
-  const { data: existing } = await supabase
-    .from('montree_child_progress')
-    .select('id, status')
-    .eq('child_id', childId)
-    .eq('work_name', name)
-    .maybeSingle();
-  if (existing) {
-    if (existing.status === 'presented') {
-      await supabase
-        .from('montree_child_progress')
-        .update({ updated_at: new Date().toISOString() })
-        .eq('id', existing.id);
-    }
-    return;
-  }
-  await supabase
-    .from('montree_child_progress')
-    .insert({ child_id: childId, work_name: name, area: area || null, status: 'presented' });
-  console.log(`[Progress] Real-time observation (new_custom): child=${childId} work="${name}" → presented`);
+  await advanceProgressOnConfirm({ supabase: getSupabase(), childId, workName, area });
 }
 
 type Resolution =
