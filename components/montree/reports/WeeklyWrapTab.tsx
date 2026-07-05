@@ -379,6 +379,14 @@ interface WeeklyWrapTabProps {
 export default function WeeklyWrapTab({ classroomId, view: externalView }: WeeklyWrapTabProps) {
   const { t, locale } = useI18n();
 
+  // Resolve the classroom id. The prop is the primary source, but callers that
+  // don't have it handy fall back to the teacher's session. The Parents tab in
+  // particular passes `codes[0]?.classroom_id`, which is '' before any child/
+  // code has loaded — without this fallback, generate/fetch/send would silently
+  // no-op on an empty prop and leave the teacher on a blank "No reports" screen
+  // with no way to diagnose why. (The picker helpers already resolve this way.)
+  const effectiveClassroomId = classroomId || getSession()?.classroom?.id || '';
+
   // Week
   const [weekStart, setWeekStart] = useState(() => getCurrentMonday());
   const weekEnd = useMemo(() => getWeekEnd(weekStart), [weekStart]);
@@ -584,12 +592,14 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
   // ─── Fetch ────────────────────────────────────────────────
 
   const fetchReports = useCallback(async (signal?: AbortSignal) => {
-    if (!classroomId || !weekStart) return;
+    // Resolve empty prop → don't sit on an infinite spinner; drop to the empty
+    // state (the generate button will surface the real error if truly stuck).
+    if (!effectiveClassroomId || !weekStart) { setLoading(false); return; }
     setLoading(true);
     setError('');
     try {
       const res = await montreeApi(
-        `/api/montree/reports/weekly-wrap/review?classroom_id=${classroomId}&week_start=${weekStart}`,
+        `/api/montree/reports/weekly-wrap/review?classroom_id=${effectiveClassroomId}&week_start=${weekStart}`,
         { signal }
       );
       if (!res.ok) throw new Error('Failed to load');
@@ -601,7 +611,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
     } finally {
       if (!signal?.aborted) setLoading(false);
     }
-  }, [classroomId, weekStart, locale]);
+  }, [effectiveClassroomId, weekStart, locale]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -612,7 +622,13 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
   // ─── Generate ─────────────────────────────────────────────
 
   const handleGenerate = async (childIds?: string[]) => {
-    if (!classroomId || generating) return;
+    if (generating) return;
+    // Diagnosable failure instead of a silent return: if we can't resolve the
+    // classroom, tell the teacher rather than doing nothing on tap.
+    if (!effectiveClassroomId) {
+      setError('Could not determine your classroom — please reload the page and try again.');
+      return;
+    }
     setGenerating(true);
     setGenProgress(t('weeklyWrap.preparing'));
     setGenDone(0);
@@ -623,7 +639,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
 
     try {
       const payload: Record<string, unknown> = {
-        classroom_id: classroomId,
+        classroom_id: effectiveClassroomId,
         week_start: weekStart,
         week_end: weekEnd,
         locale,
@@ -717,7 +733,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
       const res = await montreeApi('/api/montree/reports/weekly-wrap/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ classroom_id: classroomId, week_start: weekStart, locale }),
+        body: JSON.stringify({ classroom_id: effectiveClassroomId, week_start: weekStart, locale }),
       });
       if (!res.ok) throw new Error('Send failed');
       setSent(true);

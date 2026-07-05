@@ -2585,13 +2585,14 @@ export default function PhotoAuditPage() {
       const confirmCount = nonGreenCount - discussionCount;
       return confirmCount > 0 ? confirmCount : null;
     })() },
+    // Teacher Review — the teacher's weekly review of what the class did, right
+    // next to Confirm (the daily→weekly teacher flow). Reuses the `weekly_wrap`
+    // zone but renders <WeeklyWrapTab view="teacher"> below, so it shows ONLY the
+    // teacher review (no parent-report preview/send — that stays in the Parents
+    // tab, which renders view="parents"). Reuses the existing
+    // `weeklyWrap.teacherReview` i18n key (no new keys → i18n parity untouched).
+    { key: 'weekly_wrap', label: t('weeklyWrap.teacherReview'), color: 'bg-violet-100 text-violet-800', count: null },
     { key: 'discussion', label: t('photoAudit.discussionTab'), color: 'bg-blue-100 text-blue-800', count: photos.filter(p => p.discussion_flag).length || null },
-    // 🚨 Parent Reports (weekly_wrap) MOVED to the Parents tab (parent-codes
-    // page → Reports). Report generation + sending is a parent-management
-    // function; Wrap Up is the daily photo-confirm loop only. The <WeeklyWrapTab>
-    // mount below + this Zone value stay on disk (hide-don't-delete) but are no
-    // longer reachable from here. To restore, un-comment the line below.
-    // { key: 'weekly_wrap', label: t('photoAudit.weeklyWrapTab'), color: 'bg-violet-100 text-violet-800', count: null },
     { key: 'weekly_admin', label: t('photoAudit.weeklyAdminTab'), color: 'bg-indigo-100 text-indigo-800', count: null },
     { key: 'get_advice', label: '✦ Get Advice', color: 'bg-emerald-100 text-emerald-800', count: null },
   ].filter(tab => {
@@ -2719,10 +2720,13 @@ export default function PhotoAuditPage() {
         )}
       </div>
 
-      {/* ─── Weekly Wrap (unified — Teacher + Parent sub-views toggled inside the tab) ─── */}
+      {/* ─── Teacher Review (weekly_wrap zone, view="teacher") — teacher-only
+          review surface next to Confirm. Parent-report preview/send stays in
+          the Parents tab (which renders <WeeklyWrapTab view="parents">). ─── */}
       {zone === 'weekly_wrap' && classroomIdState && (
         <WeeklyWrapTab
           classroomId={classroomIdState}
+          view="teacher"
         />
       )}
 
