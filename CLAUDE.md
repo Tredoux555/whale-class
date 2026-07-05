@@ -55,6 +55,36 @@ Montree coupling + personal data; don't re-introduce it by editing the Montree c
 
 ---
 
+## 🩹 SESSION — Jul 5, 2026 (Cowork, night) — PARENT-PORTAL SAFE-AREA + BROWN STAIR REVERT (owed) + CLOSING-SCREEN VIDEO
+
+**Short continuation after the evening session below. Handoff: `docs/handoffs/SESSION_PARENT_SAFEAREA_CLOSING_SCREEN_JUL5.md`.
+One commit on main (`07ba2f01`), pushed via Desktop Commander (HEAD == origin/main). No migrations, no env vars.**
+
+- **✅ Parent portal safe-area (`07ba2f01`).** iPhone screenshot showed the parent sticky headers rendering
+  flush to y=0 → "Montree" wordmark collided with the iOS status-bar clock/notch. Added
+  `paddingTop: env(safe-area-inset-top)` (composed with existing padding) to the top bar on **7 parent pages**:
+  `parent/dashboard`, `parent/report/[reportId]`, `parent/appointments`, `parent/messages`,
+  `parent/messages/[threadId]`, `parent/milestones`, `parent/photos`. Pure CSS. **🚨 RULE: every NEW
+  fixed/sticky top bar in the parent portal MUST carry `env(safe-area-inset-top)` — now the posture across
+  all three surfaces (teacher/principal/parent already had it).**
+- **⏳ OWED — Brown Stair photo revert (DATA ONLY, no code).** One Brown Stair photo in the newest school was
+  misID'd as Cylinder Blocks at capture, teacher-corrected → now `teacher_confirmed=true` and gone from Wrap
+  Up. Tredoux wants it back in the **Confirm** queue as an *AI-diagnosed Brown Stair* to screen-record
+  confirm → parent-report. **Blocked: Supabase unreachable all session (GFW — sandbox + Mac pooler both time
+  out); web SQL Editor works.** Full copy-paste SQL (verify + revert) is in the handoff §2 — the revert sets
+  `work_id=NULL` + `identification_status='haiku_drafted'` + rewrites `sonnet_draft.proposed_name='Brown Stair'`
+  so it lands in Confirm regardless of the stale confidence cache. Tredoux runs it in the Supabase dashboard.
+- **🎬 Closing-screen loop video (marketing, not code).** Built the hook-video outro off a "claude design" PNG.
+  Final: gold **rim-glow that only breathes (opacity, box-shadow hugging the tile edge — NOT a scaling blob)**,
+  QR dropped for mystique, `montree.xyz` as a quiet italic-serif gold footer above the dot. Rendered a **6s
+  seamless-loop 1080×1920 24fps H.264 MP4** (glow on a cosine so t=0==t=6, no loop seam). **Saved to
+  `montree/_video_assets/closing-screen/`** (mp4 + preview png + editable html + the design png it renders over;
+  `.mp4` is gitignored so it lives local only). Hook line chosen: **"Do you know what you just saw?"** (2nd
+  person beats "Who knows…" for a scroll-stopper). Re-render = edit the html + headless-Chrome/ffmpeg recipe
+  in the handoff.
+
+---
+
 ## 🚨 SESSION — Jul 5, 2026 (Cowork, evening) — REPORTS SURFACE SPLIT + CURRENT-WEEK GUARD RAIL + **REPLAN SHELF INTEGRITY (the big one)** + SYSTEMWIDE HEALTH CHECK
 
 **Canonical handoff: `docs/handoffs/SESSION_REPORTS_SHELF_GUARDRAIL_HEALTHCHECK_JUL5.md`. 5 commits on main
