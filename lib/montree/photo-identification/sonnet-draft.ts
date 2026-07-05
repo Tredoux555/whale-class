@@ -305,6 +305,9 @@ Look at the photo and produce a complete teacher-ready write-up using the draft_
   try {
     const msg = await anthropic.messages.create({
       model: AI_MODEL,
+      // Deterministic. Same reason as the Haiku passes in two-pass.ts — a photo
+      // must not identify as a different work on a rerun. Default temp is 1.0.
+      temperature: 0,
       max_tokens: 2048,
       system: [
         // Cached prefix: boilerplate rules + VISUAL_ID_GUIDE. Identical across
