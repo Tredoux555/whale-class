@@ -199,6 +199,7 @@ What should the teacher focus on NEXT? Pick 3-5 works that build on what's been 
     const response = await anthropic.messages.create({
       model: HAIKU_MODEL,
       max_tokens: 500,
+      temperature: 0, // durable per-child game_plan write → deterministic (mirrors replan-child.ts)
       tools: [GAME_PLAN_TOOL],
       tool_choice: { type: 'tool', name: 'create_game_plan' },
       messages: [{ role: 'user', content: prompt }],
