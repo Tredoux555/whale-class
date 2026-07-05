@@ -13,17 +13,20 @@ import { useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Copy, RefreshCw, Sparkles, Heart, Check, Zap, MessageCircle, Eye, FileText, KeyRound } from 'lucide-react';
+import { ArrowLeft, Copy, RefreshCw, Sparkles, Heart, Check, Zap, MessageCircle, FileText, KeyRound } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useI18n } from '@/lib/montree/i18n';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import { toast, Toaster } from 'sonner';
 
-// Per-child parent report preview/publish flow — extracted from the child
-// gallery (Jul 4 2026). Code-split: only loads when a report button is tapped.
-const ChildReportPreviewModal = dynamic(
-  () => import('@/components/montree/reports/ChildReportPreviewModal'),
+// Full weekly parent-report workflow (generate → review → send in one session).
+// The Reports tab hosts this — report generation + sending is a parent-management
+// function, NOT a daily Wrap-Up function. Wrap Up (photo-audit) is Confirm-only.
+// Code-split: only loads when the Reports tab is opened.
+// (The per-child ChildReportPreviewModal it replaced stays on disk — hide-don't-delete.)
+const WeeklyWrapTab = dynamic(
+  () => import('@/components/montree/reports/WeeklyWrapTab'),
   { ssr: false }
 );
 
@@ -85,23 +88,10 @@ export default function TeacherParentCodesPage() {
   // network request never leaves montree.xyz — avoids the strict CSP
   // img-src directive that blocks api.qrserver.com.
   const [qrDataUrls, setQrDataUrls] = useState<Record<string, string>>({});
-  // Per-child report modal. `reportTarget` is KEPT after close (only the open
-  // flag flips) so the modal instance — keyed by child_id — stays mounted and
-  // the teacher's exclude-work choices persist across reopens for the same
-  // child (original gallery behaviour). Opening a DIFFERENT child swaps the
-  // key → fresh state for that child.
-  const [reportTarget, setReportTarget] = useState<{ childId: string; childName: string } | null>(null);
-  const [reportModalOpen, setReportModalOpen] = useState(false);
-  const [reportMode, setReportMode] = useState<'preview' | 'last'>('preview');
   // Which "branch" is showing. The three parent features (access codes, weekly
   // reports, chats) are separate batch workflows, so each is its own tab.
+  // The Reports tab hosts the full WeeklyWrapTab workflow (generate + send).
   const [activeTab, setActiveTab] = useState<ParentsTab>('codes');
-
-  const openReportModal = useCallback((row: CodeRow, mode: 'preview' | 'last') => {
-    setReportTarget({ childId: row.child_id, childName: row.child_name });
-    setReportMode(mode);
-    setReportModalOpen(true);
-  }, []);
 
   const fetchCodes = useCallback(async () => {
     try {
@@ -359,7 +349,10 @@ export default function TeacherParentCodesPage() {
     >
       <Toaster position="top-center" />
 
-      {/* Header */}
+      {/* Header — the ONE header. "Parents" title top-left (back arrow →
+          dashboard), language toggle top-right. The Codes/Reports/Chats pills
+          sit directly under it. Bulk-generate lives inside the Codes tab; the
+          Chats pill IS the chats surface (no redundant top-bar button). */}
       <header
         style={{
           position: 'sticky',
@@ -382,117 +375,44 @@ export default function TeacherParentCodesPage() {
             gap: 12,
           }}
         >
-          <Link
-            href="/montree/dashboard"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              fontSize: 13,
-              fontWeight: 500,
-              color: T.textSecondary,
-              textDecoration: 'none',
-            }}
-          >
-            <ArrowLeft size={16} strokeWidth={1.75} />
-            {t('common.back')}
-          </Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {/* Bulk-generate — always visible per user request: "If the
-                parents need their codes they need their codes. They lose
-                them." When 0 missing, button still shows but disabled with
-                a clear "All codes ready" label. When N missing, primary
-                emerald CTA with the count. */}
-            {codes.length > 0 && (() => {
-              const missingCount = codes.filter((c) => !c.code).length;
-              const allReady = missingCount === 0;
-              return (
-                <button
-                  onClick={allReady ? undefined : handleGenerateAll}
-                  disabled={bulkGenerating || allReady}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    padding: '8px 14px',
-                    borderRadius: 10,
-                    background: allReady ? T.card : T.emerald,
-                    border: allReady ? T.cardBorder : 'none',
-                    color: allReady ? T.textSecondary : '#0a1a0f',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    cursor: bulkGenerating || allReady ? 'default' : 'pointer',
-                    opacity: bulkGenerating ? 0.6 : 1,
-                  }}
-                >
-                  {allReady ? (
-                    <Check size={14} strokeWidth={2} />
-                  ) : (
-                    <Zap size={14} strokeWidth={2} />
-                  )}
-                  {bulkGenerating
-                    ? `Generating ${missingCount}…`
-                    : allReady
-                    ? `All ${codes.length} codes ready`
-                    : `Generate codes (${missingCount})`}
-                </button>
-              );
-            })()}
-            {/* Parent Chats — promoted to the top bar (replaced the Print button,
-                which nobody uses on this page) so it's easy to find. One tap → the
-                WeChat-style per-parent chat overview. */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
             <Link
-              href="/montree/dashboard/parent-chats"
-              aria-label="Open parent chats"
+              href="/montree/dashboard"
+              aria-label={t('common.back')}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: 6,
-                padding: '8px 12px',
-                borderRadius: 10,
-                background: T.emeraldSoft,
-                border: `1px solid ${T.emeraldStrong}`,
-                color: T.emerald,
-                fontSize: 12,
-                fontWeight: 600,
+                justifyContent: 'center',
+                color: T.textSecondary,
                 textDecoration: 'none',
-                whiteSpace: 'nowrap',
-                cursor: 'pointer',
               }}
             >
-              <MessageCircle size={14} strokeWidth={1.75} />
-              Parent Chats
+              <ArrowLeft size={18} strokeWidth={1.75} />
             </Link>
-            <LanguageToggle />
+            <h1
+              style={{
+                margin: 0,
+                fontSize: 20,
+                fontWeight: 700,
+                fontFamily: T.serif,
+                color: T.textPrimary,
+                letterSpacing: -0.3,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <Sparkles size={18} color={T.emerald} strokeWidth={1.75} />
+              {t('parentCodes.pageTitle')}
+            </h1>
           </div>
+          <LanguageToggle />
         </div>
       </header>
 
       {/* Main */}
       <main style={{ maxWidth: 920, margin: '0 auto', padding: '24px 20px 80px' }}>
-        <div style={{ marginBottom: 20 }}>
-          <h1
-            style={{
-              margin: 0,
-              fontSize: 28,
-              fontWeight: 700,
-              fontFamily: T.serif,
-              color: T.textPrimary,
-              letterSpacing: -0.4,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-            }}
-          >
-            <Sparkles size={22} color={T.emerald} strokeWidth={1.75} />
-            {t('parentCodes.pageTitle')}
-            {/* Parent Chats moved to the top bar (replaced Print) — see header. */}
-          </h1>
-          <p style={{ fontSize: 14, color: T.textMuted, margin: '8px 0 0', lineHeight: 1.5 }}>
-            {t('parentCodes.pageSubtitle')}
-          </p>
-        </div>
-
         {/* Three branches: Codes · Reports · Chats — each opens to that feature
             across all children (they're separate batch workflows). */}
         <div className="print:hidden" style={{ display: 'flex', gap: 6, marginBottom: 18, flexWrap: 'wrap' }}>
@@ -527,7 +447,50 @@ export default function TeacherParentCodesPage() {
           })}
         </div>
 
-        {codes.length === 0 ? (
+        {/* Bulk-generate now lives inside the Codes tab (was a top-bar button).
+            Always visible on Codes — parents lose their codes and need them
+            re-issued fast. POST is idempotent, so re-running is safe. */}
+        {activeTab === 'codes' && codes.length > 0 && (() => {
+          const missingCount = codes.filter((c) => !c.code).length;
+          const allReady = missingCount === 0;
+          return (
+            <div style={{ marginBottom: 14 }}>
+              <button
+                onClick={allReady ? undefined : handleGenerateAll}
+                disabled={bulkGenerating || allReady}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '9px 16px',
+                  borderRadius: 10,
+                  background: allReady ? T.card : T.emerald,
+                  border: allReady ? T.cardBorder : 'none',
+                  color: allReady ? T.textSecondary : '#0a1a0f',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: bulkGenerating || allReady ? 'default' : 'pointer',
+                  opacity: bulkGenerating ? 0.6 : 1,
+                }}
+              >
+                {allReady ? <Check size={15} strokeWidth={2} /> : <Zap size={15} strokeWidth={2} />}
+                {bulkGenerating
+                  ? `Generating ${missingCount}…`
+                  : allReady
+                  ? `All ${codes.length} codes ready`
+                  : `Generate codes (${missingCount})`}
+              </button>
+            </div>
+          );
+        })()}
+
+        {activeTab === 'reports' && canManageReports ? (
+          /* Reports tab = the full generate → review → send workflow, hosted
+             here in parent management. The daily photo-confirm loop stays in
+             Wrap Up (photo-audit). WeeklyWrapTab self-heals classroomId from
+             the session, so codes[0] being absent is fine. */
+          <WeeklyWrapTab classroomId={codes[0]?.classroom_id || ''} />
+        ) : codes.length === 0 ? (
           <div
             style={{
               background: T.card,
@@ -734,75 +697,9 @@ export default function TeacherParentCodesPage() {
                     </button>
                   ))}
 
-                  {/* Weekly report — this child's report actions (Reports tab). */}
-                  {activeTab === 'reports' && canManageReports && (
-                    <div
-                      className="print:hidden"
-                      style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
-                    >
-                      <p
-                        style={{
-                          margin: 0,
-                          fontSize: 11,
-                          fontWeight: 600,
-                          color: row.last_report_sent_at ? T.textMuted : T.amber,
-                        }}
-                      >
-                        {t('parentCodes.weeklyReport')}
-                        {' · '}
-                        {row.last_report_sent_at
-                          ? `${t('reports.lastSent')}: ${new Date(row.last_report_sent_at).toLocaleDateString()}`
-                          : t('reports.noReportsSentYet')}
-                      </p>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                        <button
-                          onClick={() => openReportModal(row, 'preview')}
-                          style={{
-                            flex: 1,
-                            minWidth: 120,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 6,
-                            padding: '8px 10px',
-                            borderRadius: 10,
-                            background: T.emeraldStrong,
-                            border: T.cardBorderStrong,
-                            color: T.emerald,
-                            fontSize: 12,
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <Eye size={14} strokeWidth={1.75} />
-                          {t('reports.previewReport')}
-                        </button>
-                        {row.last_report_sent_at && (
-                          <button
-                            onClick={() => openReportModal(row, 'last')}
-                            style={{
-                              flex: '0 0 auto',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: 6,
-                              padding: '8px 10px',
-                              borderRadius: 10,
-                              background: T.card,
-                              border: T.cardBorder,
-                              color: T.textSecondary,
-                              fontSize: 12,
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                            }}
-                          >
-                            <FileText size={14} strokeWidth={1.75} />
-                            {t('reports.lastReport')}
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  )}
+                  {/* Reports tab no longer renders per-card here — it now hosts
+                      the full WeeklyWrapTab (generate → review → send) above,
+                      full-width, so the grid only shows for Codes + Chats. */}
 
                   {/* Chat — message this child's parent (Chats tab). Deep-links
                       to their conversation once the parent has joined. */}
@@ -855,29 +752,9 @@ export default function TeacherParentCodesPage() {
         )}
       </main>
 
-      {/* Per-child report preview / last-report modal. key={childId} isolates
-          per-child state; onSent updates that row's "Last sent" line locally
-          (no refetch needed — the API recomputes on next load anyway). */}
-      {canManageReports && reportTarget && (
-        <ChildReportPreviewModal
-          key={reportTarget.childId}
-          childId={reportTarget.childId}
-          childName={reportTarget.childName}
-          isOpen={reportModalOpen}
-          mode={reportMode}
-          onClose={() => setReportModalOpen(false)}
-          onSent={() => {
-            const sentChildId = reportTarget.childId;
-            setCodes((prev) =>
-              prev.map((c) =>
-                c.child_id === sentChildId
-                  ? { ...c, last_report_sent_at: new Date().toISOString() }
-                  : c
-              )
-            );
-          }}
-        />
-      )}
+      {/* The per-child ChildReportPreviewModal was retired here — the Reports
+          tab hosts the full WeeklyWrapTab (generate → review → send) instead.
+          The modal component stays on disk (hide-don't-delete). */}
 
       <style jsx global>{`
         @media print {

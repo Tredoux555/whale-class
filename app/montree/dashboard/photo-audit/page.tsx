@@ -747,7 +747,8 @@ export default function PhotoAuditPage() {
     if (didInitZoneRef.current) return;
     const zoneAny = zone as unknown as string;
     if (zoneAny === 'works_review' || zoneAny === 'parent_reports') {
-      setZone('weekly_wrap');
+      // Parent Reports moved to the Parents tab — land old bookmarks on Confirm.
+      setZone('all');
       didInitZoneRef.current = true;
       return;
     }
@@ -2585,13 +2586,18 @@ export default function PhotoAuditPage() {
       return confirmCount > 0 ? confirmCount : null;
     })() },
     { key: 'discussion', label: t('photoAudit.discussionTab'), color: 'bg-blue-100 text-blue-800', count: photos.filter(p => p.discussion_flag).length || null },
-    { key: 'weekly_wrap', label: t('photoAudit.weeklyWrapTab'), color: 'bg-violet-100 text-violet-800', count: null },
+    // 🚨 Parent Reports (weekly_wrap) MOVED to the Parents tab (parent-codes
+    // page → Reports). Report generation + sending is a parent-management
+    // function; Wrap Up is the daily photo-confirm loop only. The <WeeklyWrapTab>
+    // mount below + this Zone value stay on disk (hide-don't-delete) but are no
+    // longer reachable from here. To restore, un-comment the line below.
+    // { key: 'weekly_wrap', label: t('photoAudit.weeklyWrapTab'), color: 'bg-violet-100 text-violet-800', count: null },
     { key: 'weekly_admin', label: t('photoAudit.weeklyAdminTab'), color: 'bg-indigo-100 text-indigo-800', count: null },
     { key: 'get_advice', label: '✦ Get Advice', color: 'bg-emerald-100 text-emerald-800', count: null },
   ].filter(tab => {
     // Optional tabs gated per-school via super-admin ⚙️ Features. All default OFF —
-    // a real Montessori school starts with just Confirm + Parent Reports. Whale
-    // Class (the operator's personal class) has all three enabled by migration.
+    // a real Montessori school starts with just Confirm. Whale Class (the
+    // operator's personal class) has the extras enabled by migration.
     if (tab.key === 'weekly_admin') return isEnabled('weekly_admin_docs');
     if (tab.key === 'discussion') return isEnabled('wrap_discussion');
     if (tab.key === 'get_advice') return isEnabled('wrap_get_advice');
