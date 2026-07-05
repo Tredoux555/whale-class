@@ -53,20 +53,12 @@ export default function CameraCapture({
   const [currentFacing, setCurrentFacing] = useState(facingMode);
   const [recordingTime, setRecordingTime] = useState(0);
   const albumInputRef = useRef<HTMLInputElement>(null);
-  const [isLandscape, setIsLandscape] = useState(false);
 
-  // Track orientation
-  useEffect(() => {
-    const check = () => setIsLandscape(window.innerWidth > window.innerHeight);
-    check();
-    const handleOrientation = () => setTimeout(check, 150);
-    window.addEventListener('resize', check);
-    window.addEventListener('orientationchange', handleOrientation);
-    return () => {
-      window.removeEventListener('resize', check);
-      window.removeEventListener('orientationchange', handleOrientation);
-    };
-  }, []);
+  // 🚨 Controls are ALWAYS the upright portrait bottom bar — in landscape the
+  // live preview still fills the screen (object-cover reflows on its own), but
+  // the UI chrome (shutter / PHOTO·VIDEO / Cancel / album / flip) stays exactly
+  // as it looks in portrait. The old landscape right-rail (rotated labels,
+  // w-[140px] column) was removed per user request — it doesn't have to change.
 
   // ============================================
   // NATIVE CAMERA (Capacitor — iOS/Android)
@@ -540,7 +532,7 @@ export default function CameraCapture({
   );
 
   return (
-    <div className={`fixed inset-0 bg-black z-50 flex ${isLandscape ? 'flex-row' : 'flex-col'}`}>
+    <div className="fixed inset-0 bg-black z-50 flex flex-col">
       {/* Hidden canvas for capture */}
       <canvas ref={canvasRef} className="hidden" />
       {/* Hidden file input for album selection */}
@@ -600,7 +592,7 @@ export default function CameraCapture({
             className="absolute z-30 w-11 h-11 flex items-center justify-center bg-black/30 backdrop-blur-sm rounded-full text-white active:scale-90 transition-transform"
             style={{ top: 'max(16px, env(safe-area-inset-top, 16px))', right: 16 }}
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={isLandscape ? 'rotate-90' : ''}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5" />
               <path d="M13 5h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5" />
               <circle cx="12" cy="12" r="3" />
@@ -620,97 +612,29 @@ export default function CameraCapture({
         )}
       </div>
 
-      {/* ═══ Controls — bottom bar (portrait) or right rail (landscape) ═══ */}
+      {/* ═══ Controls — bottom bar, upright in every orientation ═══ */}
       <div
-        className={`bg-black ${isLandscape ? 'flex flex-col w-[140px]' : ''}`}
-        style={isLandscape
-          ? { paddingRight: 'max(8px, env(safe-area-inset-right, 8px))' }
-          : { paddingBottom: 'max(8px, env(safe-area-inset-bottom, 8px))' }
-        }
+        className="bg-black"
+        style={{ paddingBottom: 'max(8px, env(safe-area-inset-bottom, 8px))' }}
       >
         {isCaptured ? (
-          /* ── Post-capture: Retake / Use Photo ── */
-          isLandscape ? (
-            <div className="flex flex-col-reverse items-center justify-between flex-1 py-8">
-              <button
-                onClick={retake}
-                className="text-white font-medium text-base active:opacity-70 transition-opacity -rotate-90"
-              >
-                {t('camera.retake')}
-              </button>
-              <button
-                onClick={confirmCapture}
-                className="text-yellow-400 font-semibold text-base active:opacity-70 transition-opacity -rotate-90"
-              >
-                {t('camera.use')} {captureMode === 'photo' ? t('camera.photo') : t('camera.video')}
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between px-6 py-4">
-              <button
-                onClick={retake}
-                className="text-white font-medium text-base active:opacity-70 transition-opacity"
-              >
-                {t('camera.retake')}
-              </button>
-              <button
-                onClick={confirmCapture}
-                className="text-yellow-400 font-semibold text-base active:opacity-70 transition-opacity"
-              >
-                {t('camera.use')} {captureMode === 'photo' ? t('camera.photo') : t('camera.video')}
-              </button>
-            </div>
-          )
-        ) : isLandscape ? (
-          /* ── Landscape live controls — vertical rail ── */
-          <div className="flex flex-col items-center justify-between flex-1 py-6">
-            {/* Mode toggle — top of rail */}
-            {allowVideo && !isRecording ? (
-              <div className="flex flex-col gap-4 items-center">
-                <button
-                  onClick={() => handleModeChange('photo')}
-                  className={`text-sm font-semibold transition-colors -rotate-90 ${
-                    captureMode === 'photo' ? 'text-yellow-400' : 'text-white/50'
-                  }`}
-                >
-                  {t('camera.photo').toUpperCase()}
-                </button>
-                <button
-                  onClick={() => handleModeChange('video')}
-                  className={`text-sm font-semibold transition-colors -rotate-90 ${
-                    captureMode === 'video' ? 'text-yellow-400' : 'text-white/50'
-                  }`}
-                >
-                  {t('camera.video').toUpperCase()}
-                </button>
-              </div>
-            ) : <div />}
-
-            {/* Shutter — center of rail */}
-            {shutterButton}
-
-            {/* Cancel + Album — bottom of rail */}
-            <div className="flex flex-col items-center gap-3">
-              {!isRecording && captureMode === 'photo' && (
-                <button
-                  onClick={handleNativeAlbumPick}
-                  className="w-9 h-9 flex items-center justify-center rounded-full text-white/70 active:text-white transition-colors -rotate-90"
-                  title={t('camera.album')}
-                >
-                  {albumIcon}
-                </button>
-              )}
-              <button
-                onClick={onCancel}
-                disabled={isRecording}
-                className="text-white text-[15px] font-medium disabled:opacity-30 active:opacity-70 transition-opacity -rotate-90"
-              >
-                {t('common.cancel') || 'Cancel'}
-              </button>
-            </div>
+          /* ── Post-capture: Retake / Use Photo — bottom bar, every orientation ── */
+          <div className="flex items-center justify-between px-6 py-4">
+            <button
+              onClick={retake}
+              className="text-white font-medium text-base active:opacity-70 transition-opacity"
+            >
+              {t('camera.retake')}
+            </button>
+            <button
+              onClick={confirmCapture}
+              className="text-yellow-400 font-semibold text-base active:opacity-70 transition-opacity"
+            >
+              {t('camera.use')} {captureMode === 'photo' ? t('camera.photo') : t('camera.video')}
+            </button>
           </div>
         ) : (
-          /* ── Portrait live controls — bottom bar ── */
+          /* ── Live controls — bottom bar, upright in every orientation ── */
           <div className="flex flex-col items-center">
             {/* Mode toggle — above capture button */}
             {allowVideo && !isRecording && (
