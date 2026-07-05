@@ -24,13 +24,16 @@ function getSecretKey(): Uint8Array {
 export const MONTREE_AUTH_COOKIE = 'montree-auth';
 
 // Session lifetime (days) for teacher/principal/parent-homeschool JWTs + cookie.
-// Was a 365-day "effectively non-expiring" token — a leaked token meant a YEAR
-// of access. Reduced 2026-06-06 to 30 days (a stolen token now dies in a month).
-// Override via MONTREE_JWT_TTL_DAYS env without a code change. Sliding refresh
-// can be layered on later; until then active users re-auth every TTL window.
+// 🚨 Deliberately effectively-permanent (Tredoux, Jul 5 2026). A teacher on their
+// OWN classroom device must never get silently logged out — most won't have saved
+// their login code, and a lockout mid-class is devastating. 10 years ≈ permanent.
+// It's the teacher's own device (low theft risk); never-locked-out beats the
+// marginal token-theft window. recoverSession() rebuilds the client session from
+// this cookie whenever iOS wipes localStorage on a PWA relaunch, so the login
+// survives relaunches too. Override via MONTREE_JWT_TTL_DAYS env if ever needed.
 export const MONTREE_JWT_TTL_DAYS = Math.max(
   1,
-  Number(process.env.MONTREE_JWT_TTL_DAYS) || 30
+  Number(process.env.MONTREE_JWT_TTL_DAYS) || 3650
 );
 
 // Token payload shape — stored in httpOnly cookie.
