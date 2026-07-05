@@ -933,6 +933,7 @@ Write ONE warm sentence a tired teacher reads in 2 seconds and knows where to st
   const response = await anthropic.messages.create({
     model: HAIKU_MODEL,
     max_tokens: 500,
+    temperature: 0, // seeds the starter shelf → deterministic (mirrors replan-child.ts)
     tools: [GAME_PLAN_TOOL],
     tool_choice: { type: 'tool', name: 'create_game_plan' },
     messages: [{ role: 'user', content: prompt }],
