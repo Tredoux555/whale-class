@@ -485,11 +485,13 @@ export default function TeacherParentCodesPage() {
         })()}
 
         {activeTab === 'reports' && canManageReports ? (
-          /* Reports tab = the full generate → review → send workflow, hosted
-             here in parent management. The daily photo-confirm loop stays in
-             Wrap Up (photo-audit). WeeklyWrapTab self-heals classroomId from
-             the session, so codes[0] being absent is fine. */
-          <WeeklyWrapTab classroomId={codes[0]?.classroom_id || ''} />
+          /* Reports tab = Parent Reports only (preview → send). The Teacher
+             Review sub-view now lives in Wrap Up (photo-audit) next to Confirm,
+             so we pass view="parents" to hide the internal Teacher/Parents
+             toggle and show only the parent-facing report workflow here.
+             WeeklyWrapTab falls back to getSession().classroom.id when this prop
+             is empty (e.g. codes[0] not loaded yet), so an absent code is fine. */
+          <WeeklyWrapTab classroomId={codes[0]?.classroom_id || ''} view="parents" />
         ) : codes.length === 0 ? (
           <div
             style={{
