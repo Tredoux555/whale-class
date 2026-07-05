@@ -364,6 +364,12 @@ export async function POST(request: NextRequest) {
           originalWorkId: original_work_id || null,
           originalArea: original_area || null,
           photoUrl,
+          // 🚨 The "welder" tier gate. On Premium (sonnet) a correction is
+          // authored by Sonnet — a high-quality local fingerprint that makes
+          // the fix stick hard. On Core (haiku) it's authored by Haiku — cheap,
+          // Sonnet-free, still records the fingerprint + negative example, just
+          // at Haiku quality. Paying schools get the welder; Core stays lean.
+          tier: aiTier.tier,
         }).catch((err) => {
           console.error('[Corrections] Visual memory enrichment failed (non-fatal):', err);
         })
@@ -666,6 +672,7 @@ async function enrichVisualMemoryFromCorrection({
   originalWorkId,
   originalArea,
   photoUrl,
+  tier,
 }: {
   supabase: ReturnType<typeof getSupabase>;
   classroomId: string;
@@ -677,6 +684,7 @@ async function enrichVisualMemoryFromCorrection({
   originalWorkId: string | null;
   originalArea: string | null;
   photoUrl: string;
+  tier: 'haiku' | 'sonnet';
 }) {
   if (!photoUrl.startsWith('http://') && !photoUrl.startsWith('https://')) {
     console.warn('[VisualMemory] Invalid photoUrl, skipping enrichment:', photoUrl);
@@ -711,12 +719,17 @@ async function enrichVisualMemoryFromCorrection({
     }
   }
 
-  // 2. Sonnet correction analysis — rich visual description + mistake reasoning.
-  //    When a teacher corrects Haiku's guess, Sonnet looks at the ACTUAL photo and produces:
+  // 2. Correction analysis — rich visual description + mistake reasoning.
+  //    When a teacher corrects a guess, the model looks at the ACTUAL photo and produces:
   //    (a) A detailed visual fingerprint of the CORRECT work
   //    (b) Key materials visible in the photo
   //    (c) A specific negative example explaining WHY the AI confused it with the wrong work
   //    This is the crown jewel of the self-learning loop: every Fix makes Haiku smarter.
+  //    🚨 The author model is TIER-GATED: Sonnet welds the fix on Premium (a
+  //    laser-sharp fingerprint that makes it stick), Haiku authors it on Core
+  //    (cheaper, Sonnet-free — still records the fingerprint + negative, at Haiku
+  //    quality). Both run at temperature 0 so the stored fingerprint is stable.
+  const authorModel = tier === 'sonnet' ? AI_MODEL : HAIKU_MODEL;
   const hasCachedDescription = !!visualDescription;
   const isRealCorrection = originalWorkName && originalWorkName.trim() &&
     originalWorkName.toLowerCase() !== correctedWorkName.toLowerCase();
@@ -728,7 +741,8 @@ async function enrichVisualMemoryFromCorrection({
     const apiTimeout = setTimeout(() => apiAbortController.abort(), 45000);
     try {
       const message = await anthropic.messages.create({
-        model: AI_MODEL,
+        model: authorModel,
+        temperature: 0, // stable fingerprint — same photo → same description
         max_tokens: 1024,
         system: `You are a Montessori classroom AI that learns from teacher corrections. A teacher just corrected the AI's identification of a Montessori work in a photo. Your job is to analyze the photo carefully and produce structured data that will help the AI get it right next time.
 
