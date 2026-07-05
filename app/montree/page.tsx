@@ -233,7 +233,7 @@ export default function MontreeLanding() {
           a stale marker just lands on a surface that bounces to login. */}
       <script
         dangerouslySetInnerHTML={{
-          __html: `(function(){try{var s=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true;if(!s)return;var t=localStorage.getItem('montree_session');if(t){var o=JSON.parse(t);if(o&&o.school&&o.school.id){location.replace('/montree/dashboard');return;}}if(localStorage.getItem('montree_principal')){location.replace('/montree/admin');return;}var g=localStorage.getItem('montree_launch_surface');if(g&&g.indexOf('/montree/')===0){location.replace(g);return;}}catch(e){}})();`,
+          __html: `(function(){try{var s=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true;if(!s)return;var t=localStorage.getItem('montree_session');if(t){var o=JSON.parse(t);if(o&&o.school&&o.school.id){location.replace('/montree/dashboard');return;}}if(localStorage.getItem('montree_principal')){location.replace('/montree/admin');return;}var g=localStorage.getItem('montree_launch_surface');if(g&&g.indexOf('/montree/')===0){location.replace(g);return;}var c=document.cookie.match(/(?:^|; )montree_surface=([^;]+)/);if(c){var cp=decodeURIComponent(c[1]);if(cp.indexOf('/montree/')===0){location.replace(cp);return;}}}catch(e){}})();`,
         }}
       />
       {/* Plain <style> (NOT styled-jsx) — App Router has no styled-jsx
