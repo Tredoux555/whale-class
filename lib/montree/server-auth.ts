@@ -166,16 +166,32 @@ export async function verifyParentToken(token: string): Promise<ParentTokenPaylo
 export function setMontreeAuthCookie(
   response: NextResponse,
   token: string,
-  // Kept for API compat (callers pass it as self-documentation) but the
-  // cookie shape is identical across roles, so the cookie write doesn't
-  // actually branch on it. Role lives inside the JWT payload.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _role?: 'teacher' | 'principal' | 'homeschool_parent' | 'agent'
+  role?: 'teacher' | 'principal' | 'homeschool_parent' | 'agent'
 ): void {
   const maxAge = MONTREE_JWT_TTL_DAYS * 24 * 60 * 60;  // matches JWT TTL
+  const secure = process.env.NODE_ENV === 'production';
   response.cookies.set(MONTREE_AUTH_COOKIE, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure,
+    sameSite: 'lax',
+    path: '/',
+    maxAge,
+  });
+
+  // 🚨 Readable launch hint for the PWA no-flash gate. iOS wipes localStorage
+  // between standalone launches, so the pre-paint redirect on /montree can't
+  // rely on it — but COOKIES survive. This NON-httpOnly cookie lets that inline
+  // script read the user's home surface synchronously (before any paint) and
+  // jump straight into the app, so a home-screen launch never flashes the
+  // marketing splash. It's only a UX hint — the real auth is the httpOnly
+  // cookie above; a stale value just lands on a surface that bounces to login.
+  const surface =
+    role === 'principal' ? '/montree/admin'
+    : role === 'agent' ? '/montree/agent/dashboard'
+    : '/montree/dashboard';
+  response.cookies.set('montree_surface', surface, {
+    httpOnly: false,
+    secure,
     sameSite: 'lax',
     path: '/',
     maxAge,
@@ -188,6 +204,15 @@ export function setMontreeAuthCookie(
 export function clearMontreeAuthCookie(response: NextResponse): void {
   response.cookies.set(MONTREE_AUTH_COOKIE, '', {
     httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0,
+  });
+  // Also clear the readable launch hint so a logged-out home-screen launch
+  // doesn't bounce off a stale surface into login every time.
+  response.cookies.set('montree_surface', '', {
+    httpOnly: false,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
