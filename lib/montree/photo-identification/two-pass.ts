@@ -536,6 +536,12 @@ export async function runTwoPassIdentification(input: TwoPassInput): Promise<Two
     try {
       const msg = await anthropic.messages.create({
         model: HAIKU_MODEL,
+        // 🚨 Deterministic. The Messages API default temperature is 1.0 (max
+        // randomness) — that is what made the same photo return a different work
+        // on every rerun ("whack-a-mole") and stopped the classroom moat from
+        // ever sticking. Identification is classification, not creative writing:
+        // pin it to 0 so the same photo → the same answer, every time.
+        temperature: 0,
         max_tokens: 300,
         system: `You are observing a Montessori classroom photo. Describe ONLY what you physically see.
 
@@ -729,6 +735,7 @@ ${visualNeighbors.map((n, i) => `${i + 1}. "${n.name}" (${n.area || 'unknown'}) 
     try {
       const msg = await anthropic.messages.create({
         model: HAIKU_MODEL,
+        temperature: 0, // deterministic match — see Pass 1 note
         max_tokens: 500,
         system: [
           // Cached prefix: boilerplate + VISUAL_ID_GUIDE. Identical across
@@ -901,6 +908,7 @@ ${visualNeighborBlock}Match this description to the correct Montessori work. Use
         const aiLangInstruction2b = getAILanguageInstruction(input.locale);
         const pass2bMsg = await anthropic.messages.create({
           model: HAIKU_MODEL,
+          temperature: 0, // deterministic re-look — see Pass 1 note
           max_tokens: 500,
           system: `You are observing a classroom photo. A preliminary analysis was made, but you now have a chance to re-examine the IMAGE alongside the top candidates.
 
