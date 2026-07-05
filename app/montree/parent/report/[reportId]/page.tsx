@@ -322,7 +322,7 @@ export default function ParentReportPage() {
     <div style={{ minHeight: "100dvh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
 
       {/* ═══ Sticky Header — Montree home anchor + Back + LanguageToggle ═══ */}
-      <header style={{ background: T.card, backdropFilter: T.blur, position: "sticky", top: 0, zIndex: 10 }}>
+      <header style={{ background: T.card, backdropFilter: T.blur, position: "sticky", top: 0, zIndex: 10, paddingTop: "env(safe-area-inset-top)" }}>
         <div style={{ maxWidth: "32rem", marginLeft: "auto", marginRight: "auto", paddingLeft: "1rem", paddingRight: "1rem", paddingTop: "0.625rem", paddingBottom: "0.625rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           {/* Montree home anchor — universal across the parent surface. */}
           <Link
