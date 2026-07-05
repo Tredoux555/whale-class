@@ -3154,6 +3154,8 @@ export const pt: Record<string, string> = {
   'weeklyWrap.regenerateAll': '🔄 Regenerar Tudo',
   'weeklyWrap.generateAll': '✨ Gerar Tudo',
   'weeklyWrap.teacherReview': 'Revisão do Professor',
+  'weeklyWrap.laterWeekBanner': 'This week ended before today — any photos taken today are in a later week.',
+  'weeklyWrap.goToCurrentWeek': 'Go to this week →',
   'weeklyWrap.parentReports': 'Relatórios dos Responsáveis',
   'weeklyWrap.selectedCount': '{count} selecionados',
   'weeklyWrap.selectPrompt': 'Selecione crianças para gerar individualmente',

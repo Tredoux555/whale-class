@@ -3154,6 +3154,8 @@ export const ja: Record<string, string> = {
   'weeklyWrap.regenerateAll': '🔄 すべて再生成',
   'weeklyWrap.generateAll': '✨ すべて生成',
   'weeklyWrap.teacherReview': '講師による確認',
+  'weeklyWrap.laterWeekBanner': 'This week ended before today — any photos taken today are in a later week.',
+  'weeklyWrap.goToCurrentWeek': 'Go to this week →',
   'weeklyWrap.parentReports': '保護者レポート',
   'weeklyWrap.selectedCount': '{count}件選択',
   'weeklyWrap.selectPrompt': '個別に生成するお子さまを選択してください',

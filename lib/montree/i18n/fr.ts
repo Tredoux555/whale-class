@@ -3154,6 +3154,8 @@ export const fr: Record<string, string> = {
   'weeklyWrap.regenerateAll': '🔄 Régénérer tout',
   'weeklyWrap.generateAll': '✨ Générer tout',
   'weeklyWrap.teacherReview': 'Examen par l\'enseignant',
+  'weeklyWrap.laterWeekBanner': 'This week ended before today — any photos taken today are in a later week.',
+  'weeklyWrap.goToCurrentWeek': 'Go to this week →',
   'weeklyWrap.parentReports': 'Rapports destinés aux parents',
   'weeklyWrap.selectedCount': '{count} sélectionnés',
   'weeklyWrap.selectPrompt': 'Sélectionnez les enfants pour générer individuellement',
