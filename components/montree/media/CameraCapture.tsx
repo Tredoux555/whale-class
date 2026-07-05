@@ -532,7 +532,7 @@ export default function CameraCapture({
   );
 
   return (
-    <div className="fixed inset-0 bg-black z-50 flex flex-col">
+    <div className="fixed inset-0 bg-black z-50">
       {/* Hidden canvas for capture */}
       <canvas ref={canvasRef} className="hidden" />
       {/* Hidden file input for album selection */}
@@ -544,8 +544,9 @@ export default function CameraCapture({
         className="hidden"
       />
 
-      {/* ═══ Camera View — full screen, no overlay ═══ */}
-      <div className="flex-1 relative overflow-hidden bg-black">
+      {/* ═══ Camera View — FULL-BLEED behind the fixed controls. This is the only
+           thing that reorients with the device; the controls below never move. ═══ */}
+      <div className="absolute inset-0 overflow-hidden bg-black">
         {cameraState === 'error' ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-white">
             <div className="text-6xl mb-4">📷</div>
@@ -612,10 +613,18 @@ export default function CameraCapture({
         )}
       </div>
 
-      {/* ═══ Controls — bottom bar, upright in every orientation ═══ */}
+      {/* ═══ Controls — FIXED overlay pinned to the bottom edge. The preview is
+           full-bleed behind and reorients with the device; these controls never
+           move — same position, same size, portrait or landscape (like the native
+           camera). A gradient scrim keeps them legible over the live preview. ═══ */}
       <div
-        className="bg-black"
-        style={{ paddingBottom: 'max(8px, env(safe-area-inset-bottom, 8px))' }}
+        className="absolute bottom-0 inset-x-0 z-40"
+        style={{
+          paddingTop: 20,
+          paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))',
+          background:
+            'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0) 100%)',
+        }}
       >
         {isCaptured ? (
           /* ── Post-capture: Retake / Use Photo — bottom bar, every orientation ── */
