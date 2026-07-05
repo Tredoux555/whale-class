@@ -532,7 +532,7 @@ export default function CameraCapture({
   );
 
   return (
-    <div className="fixed inset-0 bg-black z-50">
+    <div className="fixed inset-0 bg-black z-50 flex flex-col">
       {/* Hidden canvas for capture */}
       <canvas ref={canvasRef} className="hidden" />
       {/* Hidden file input for album selection */}
@@ -544,9 +544,11 @@ export default function CameraCapture({
         className="hidden"
       />
 
-      {/* ═══ Camera View — FULL-BLEED behind the fixed controls. This is the only
-           thing that reorients with the device; the controls below never move. ═══ */}
-      <div className="absolute inset-0 overflow-hidden bg-black">
+      {/* ═══ Camera View — a DISTINCT region. What the preview shows is EXACTLY
+           what gets captured (object-cover fills this box = the capture frame);
+           the controls never overlay it. The preview reorients with the device;
+           the controls below never move. ═══ */}
+      <div className="flex-1 relative overflow-hidden bg-black">
         {cameraState === 'error' ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-white">
             <div className="text-6xl mb-4">📷</div>
@@ -613,18 +615,15 @@ export default function CameraCapture({
         )}
       </div>
 
-      {/* ═══ Controls — FIXED overlay pinned to the bottom edge. The preview is
-           full-bleed behind and reorients with the device; these controls never
-           move — same position, same size, portrait or landscape (like the native
-           camera). A gradient scrim keeps them legible over the live preview. ═══ */}
+      {/* ═══ Controls — a solid bar BELOW the preview. It never overlays the
+           preview, so the preview always shows exactly what's captured. Same
+           position + size in every orientation — the preview region resizes, the
+           button does not. Min 20px bottom clearance so the button never hugs the
+           bottom edge / browser chrome (env safe-area reports 0 in a plain browser
+           tab, which is what dropped the button to the bottom in portrait). ═══ */}
       <div
-        className="absolute bottom-0 inset-x-0 z-40"
-        style={{
-          paddingTop: 20,
-          paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))',
-          background:
-            'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0) 100%)',
-        }}
+        className="bg-black"
+        style={{ paddingBottom: 'max(20px, env(safe-area-inset-bottom, 20px))' }}
       >
         {isCaptured ? (
           /* ── Post-capture: Retake / Use Photo — bottom bar, every orientation ── */
