@@ -55,7 +55,7 @@ export interface FocusWorksSectionProps {
 // Status config with translated labels — dark forest inline styles
 function getStatusConfig(t: (key: string) => string): Record<string, { label: string; style: CSSProperties }> {
   return {
-    not_started: { label: '○', style: { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.12)' } },
+    not_started: { label: t('status.notStarted'), style: { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.12)' } },
     presented:   { label: t('status.presented'), style: { background: 'rgba(245,158,11,0.18)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.28)' } },
     practicing:  { label: t('status.practicing'), style: { background: 'rgba(52,211,153,0.15)', color: '#34d399', border: '1px solid rgba(52,211,153,0.28)' } },
     mastered:    { label: t('status.mastered'), style: { background: 'rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.82)', border: '1px solid rgba(255,255,255,0.20)' } },

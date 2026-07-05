@@ -20,6 +20,7 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import type { Locale } from '@/lib/montree/i18n/locales';
 import { logApiUsage } from '@/lib/montree/api-usage';
+import { seedRecommendedWork } from '@/lib/montree/progress/seed-recommended-work';
 import { AREA_LABELS_EN, AREA_LABELS_ZH, AREA_LABELS_ES } from '@/lib/montree/i18n/area-labels';
 
 // ── Bilingual Game Plan Tool ─────────────────────────────────────────
@@ -535,19 +536,10 @@ What's the teacher's next move?`;
         // Don't bail — try to fill remaining areas, surface error at end.
       }
 
-      const { error: progressUpsertErr } = await supabase.from('montree_child_progress').upsert(
-        {
-          child_id: childId,
-          work_name: canonicalName,
-          area,
-          status: 'presented',
-          updated_at: now,
-        },
-        { onConflict: 'child_id,work_name' },
-      );
-      if (progressUpsertErr) {
-        console.error(`${tag} FAIL stage=progress_upsert area=${area} work="${canonicalName}" msg=${progressUpsertErr.message}`);
-      }
+      // Recommendation seeds the starting rung ('not_started') only — it NEVER
+      // resets a work the child has already advanced (seedRecommendedWork guards
+      // against downgrade). Fixes the old blind upsert that reset practicing→presented.
+      await seedRecommendedWork({ supabase, childId, workName: canonicalName, area });
 
       filled.push({ work_name: canonicalName, area });
       filledAreas.add(area);
@@ -599,19 +591,7 @@ What's the teacher's next move?`;
           console.error(`${tag} FAIL stage=gap_shelf_upsert area=${missingArea} work="${pick.name}" msg=${gapShelfErr.message}`);
         }
 
-        const { error: gapProgressErr } = await supabase.from('montree_child_progress').upsert(
-          {
-            child_id: childId,
-            work_name: pick.name,
-            area: missingArea,
-            status: 'presented',
-            updated_at: now,
-          },
-          { onConflict: 'child_id,work_name' },
-        );
-        if (gapProgressErr) {
-          console.error(`${tag} FAIL stage=gap_progress_upsert area=${missingArea} work="${pick.name}" msg=${gapProgressErr.message}`);
-        }
+        await seedRecommendedWork({ supabase, childId, workName: pick.name, area: missingArea });
 
         filled.push({ work_name: pick.name, area: missingArea });
         filledAreas.add(missingArea);
