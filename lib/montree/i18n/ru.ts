@@ -3154,6 +3154,8 @@ export const ru: Record<string, string> = {
   'weeklyWrap.regenerateAll': '🔄 Пересоздать всё',
   'weeklyWrap.generateAll': '✨ Создать всё',
   'weeklyWrap.teacherReview': 'Проверка учителя',
+  'weeklyWrap.laterWeekBanner': 'This week ended before today — any photos taken today are in a later week.',
+  'weeklyWrap.goToCurrentWeek': 'Go to this week →',
   'weeklyWrap.parentReports': 'Отчёты для родителей',
   'weeklyWrap.selectedCount': 'Выбрано: {count}',
   'weeklyWrap.selectPrompt': 'Выберите детей для отдельного создания отчётов',

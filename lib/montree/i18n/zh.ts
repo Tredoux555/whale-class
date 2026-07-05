@@ -3596,6 +3596,8 @@ export const zh = {
   'weeklyWrap.regenerateAll': '🔄 重新生成',
   'weeklyWrap.generateAll': '✨ 生成全部',
   'weeklyWrap.teacherReview': '教师审核',
+  'weeklyWrap.laterWeekBanner': '这一周在今天之前就已结束——今天拍摄的照片属于之后的周次。',
+  'weeklyWrap.goToCurrentWeek': '前往本周 →',
   'weeklyWrap.parentReports': '家长报告',
   'weeklyWrap.selectedCount': '已选 {count} 名',
   'weeklyWrap.selectPrompt': '选择要单独生成的孩子',

@@ -3635,6 +3635,8 @@ export const en = {
   'weeklyWrap.regenerateAll': '🔄 Regenerate All',
   'weeklyWrap.generateAll': '✨ Generate All',
   'weeklyWrap.teacherReview': 'Teacher Review',
+  'weeklyWrap.laterWeekBanner': 'This week ended before today — any photos taken today are in a later week.',
+  'weeklyWrap.goToCurrentWeek': 'Go to this week →',
   'weeklyWrap.parentReports': 'Parent Reports',
   'weeklyWrap.selectedCount': '{count} selected',
   'weeklyWrap.selectPrompt': 'Select children to generate individually',

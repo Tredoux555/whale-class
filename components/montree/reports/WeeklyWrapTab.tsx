@@ -396,6 +396,33 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
     return `${fmt(new Date(weekStart))} – ${fmt(new Date(weekEnd))}`;
   }, [weekStart, weekEnd, locale]);
 
+  // ── Current-week guard rail ──────────────────────────────────
+  // Timezone footgun: the week key serializes local-Monday-midnight to UTC, so
+  // for users east of UTC (China/Asia) the shown week can end a day early — on
+  // some days (e.g. Sunday for UTC+8) "this week" ends BEFORE today, and photos
+  // taken today fall outside the window and silently vanish from the report.
+  // We can't safely re-key the whole date system here, so we surface it: if the
+  // shown week ended before today's LOCAL date, nudge the teacher to jump to the
+  // week that actually contains today.
+  const todayLocalStr = useMemo(() => {
+    const n = new Date();
+    return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+  }, []);
+  const weekEndsBeforeToday = weekEnd < todayLocalStr;
+  const [weekWarningDismissed, setWeekWarningDismissed] = useState(false);
+  // Reset the dismissal whenever the viewed week changes.
+  useEffect(() => { setWeekWarningDismissed(false); }, [weekStart]);
+
+  const jumpToCurrentWeek = useCallback(() => {
+    // Walk (in the app's own week serialization) to the week containing today,
+    // so the target key stays consistent with how reports are stored/queried.
+    let ws = getCurrentMonday();
+    let guard = 0;
+    while (getWeekEnd(ws) < todayLocalStr && guard < 60) { ws = shiftWeek(ws, 1); guard++; }
+    while (ws > todayLocalStr && guard < 120) { ws = shiftWeek(ws, -1); guard++; }
+    setWeekStart(ws);
+  }, [todayLocalStr]);
+
   // Data
   const [reports, setReports] = useState<ReportResult[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1021,6 +1048,56 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
               ? t('weeklyWrap.deselectAll')
               : t('weeklyWrap.selectAll')}
           </button>
+        </div>
+      )}
+
+      {/* Current-week guard rail — the shown week ended before today's local
+          date, so today's photos won't be in this report. Nudge + one-tap jump. */}
+      {weekEndsBeforeToday && !weekWarningDismissed && (
+        <div style={{
+          margin: '12px 16px 0',
+          padding: '10px 14px',
+          background: 'rgba(232,201,106,0.10)',
+          border: '1px solid rgba(232,201,106,0.32)',
+          borderRadius: 12,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          flexWrap: 'wrap',
+        }}>
+          <span style={{ flex: 1, minWidth: 180, color: '#E8C96A', fontSize: 13, lineHeight: 1.5, fontFamily: T.sans }}>
+            {t('weeklyWrap.laterWeekBanner')}
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button
+              onClick={jumpToCurrentWeek}
+              style={{
+                padding: '6px 12px',
+                borderRadius: 8,
+                background: 'rgba(232,201,106,0.18)',
+                border: '1px solid rgba(232,201,106,0.45)',
+                color: '#E8C96A',
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontFamily: T.sans,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {t('weeklyWrap.goToCurrentWeek')}
+            </button>
+            <button
+              onClick={() => setWeekWarningDismissed(true)}
+              aria-label="Dismiss"
+              style={{
+                width: 24, height: 24, borderRadius: '50%',
+                background: 'transparent', border: 'none',
+                color: 'rgba(232,201,106,0.7)', cursor: 'pointer', fontSize: 14, lineHeight: 1,
+              }}
+            >
+              ✕
+            </button>
+          </div>
         </div>
       )}
 

@@ -3154,6 +3154,8 @@ export const nl: Record<string, string> = {
   'weeklyWrap.regenerateAll': '🔄 Alles opnieuw genereren',
   'weeklyWrap.generateAll': '✨ Alles Genereren',
   'weeklyWrap.teacherReview': 'Leerkracht Review',
+  'weeklyWrap.laterWeekBanner': 'This week ended before today — any photos taken today are in a later week.',
+  'weeklyWrap.goToCurrentWeek': 'Go to this week →',
   'weeklyWrap.parentReports': 'Ouderrapporten',
   'weeklyWrap.selectedCount': '{count} geselecteerd',
   'weeklyWrap.selectPrompt': 'Selecteer kinderen om individueel te genereren',

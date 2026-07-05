@@ -3154,6 +3154,8 @@ export const ko: Record<string, string> = {
   'weeklyWrap.regenerateAll': '🔄 모두 다시 생성',
   'weeklyWrap.generateAll': '✨ 모두 생성',
   'weeklyWrap.teacherReview': '교사 검토',
+  'weeklyWrap.laterWeekBanner': 'This week ended before today — any photos taken today are in a later week.',
+  'weeklyWrap.goToCurrentWeek': 'Go to this week →',
   'weeklyWrap.parentReports': '학부모 보고서',
   'weeklyWrap.selectedCount': '{count}개 선택됨',
   'weeklyWrap.selectPrompt': '개별 생성을 위해 자녀분을 선택해 주세요',
