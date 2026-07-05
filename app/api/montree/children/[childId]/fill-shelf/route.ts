@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { seedRecommendedWork } from '@/lib/montree/progress/seed-recommended-work';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
@@ -155,16 +156,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
           updated_at: now,
         }, { onConflict: 'child_id,area' });
 
-      // Also ensure progress row exists
-      await supabase
-        .from('montree_child_progress')
-        .upsert({
-          child_id: childId,
-          work_name: canonicalName,
-          area,
-          status: 'presented',
-          updated_at: now,
-        }, { onConflict: 'child_id,work_name' });
+      // Seed the starting rung ('not_started'), never resetting existing progress.
+      await seedRecommendedWork({ supabase, childId, workName: canonicalName, area });
 
       filled.push({ work_name: canonicalName, area });
       filledAreas.add(area);
@@ -197,15 +190,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             updated_at: now,
           }, { onConflict: 'child_id,area' });
 
-        await supabase
-          .from('montree_child_progress')
-          .upsert({
-            child_id: childId,
-            work_name: pick.name,
-            area: missingArea,
-            status: 'presented',
-            updated_at: now,
-          }, { onConflict: 'child_id,work_name' });
+        await seedRecommendedWork({ supabase, childId, workName: pick.name, area: missingArea });
 
         filled.push({ work_name: pick.name, area: missingArea });
         filledAreas.add(missingArea);

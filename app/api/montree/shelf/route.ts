@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { seedRecommendedWork } from '@/lib/montree/progress/seed-recommended-work';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
@@ -203,26 +204,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Also ensure work exists in progress table (so teacher week view can see it)
-    const { data: existingProgress } = await supabase
-      .from('montree_child_progress')
-      .select('id')
-      .eq('child_id', child_id)
-      .eq('work_name', work_name)
-      .maybeSingle();
-
-    if (!existingProgress) {
-      await supabase
-        .from('montree_child_progress')
-        .insert({
-          child_id,
-          work_name,
-          area,
-          status: 'presented',
-          presented_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
-    }
+    // Seed the starting rung ('not_started') if this work isn't tracked yet —
+    // never resets a work the child has already advanced. (see seed-recommended-work.ts)
+    await seedRecommendedWork({ supabase, childId: child_id, workName: work_name, area });
 
     return NextResponse.json({ success: true });
 
