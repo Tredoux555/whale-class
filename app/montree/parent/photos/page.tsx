@@ -185,6 +185,7 @@ function ParentPhotosContent() {
         position: 'sticky',
         top: 0,
         zIndex: 10,
+        paddingTop: 'env(safe-area-inset-top)', // clear the iOS status bar
       }}>
         <div style={{
           maxWidth: 880,

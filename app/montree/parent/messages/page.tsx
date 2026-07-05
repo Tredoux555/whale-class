@@ -193,6 +193,7 @@ export default function ParentMessagesPage() {
         background: T.card,
         backdropFilter: T.blur,
         borderBottom: '1px solid rgba(255,255,255,0.05)',
+        paddingTop: 'env(safe-area-inset-top)', // clear the iOS status bar
       }}>
         <div style={{
           maxWidth: 512,
