@@ -110,6 +110,44 @@ would 402 every school). 🚨 Env needed: `STRIPE_PRICE_STARTER` ($3 Stripe pric
   founding link (generate → signup → override + 30d verified in DB); trial school gets Sonnet (photo fallback
   fires); expired-trial school 402s with upgrade card; Starter checkout (needs STRIPE_PRICE_STARTER env).
 
+**AFTERNOON (same day) — MIGRATION 286 RUN ✅ + DEPLOYED + RUNTIME-VERIFIED LIVE + SOCIAL LAUNCH EXECUTED + FOUNDING MINT TOOL:**
+- **Migration 286 RUN in Supabase (verified: locked_at + founding_member columns present) → pushed
+  `7d6a9682` → runtime audit LIVE:** landing (gold M hero, pricing section, founding email CTA, ambassador
+  gone), /pricing full rebuild, /montree/locked renders, become-an-agent 302→/montree. First fetches may
+  serve stale edge cache — cache-bust to verify.
+- **🚀 SOCIAL LAUNCH DONE (Claude-in-Chrome drove, Tredoux pressed Post):** Facebook Reel LIVE on the
+  Montree page (facebook.com/montreexyz — FB converts uploads to Reels; caption got TRUNCATED at the top
+  during conversion, caught + re-pasted before publish 🚨 lesson: always scroll caption to top before
+  publishing a converted Reel). Instagram Reel LIVE (@montreexyz). X post LIVE (@Tredoux555, personal —
+  no brand X account, founder-voice by design). LinkedIn post LIVE (personal profile, full founder story;
+  🚨 lesson: LinkedIn removes media buttons while a LINK PREVIEW CARD is attached — kill the card (✕) and
+  the buttons return; post carries EITHER link card OR video, never both). 🚨 lesson: Escape key in IG's
+  composer = "Discard post?" dialog (FB's composer uses Escape to close hashtag dropdowns — do NOT carry
+  the habit over). Hook 11 (60s) = launch film everywhere; Short Hook (8s teaser) = day-2/3 follow-up beat.
+  Hashtag set: #Montessori #MontessoriTeacher #EarlyChildhoodEducation #EdTech (≤4 on FB per playbook).
+- **Profile rebrand:** Montree FB page avatar → gold M (montree-avatar-1024.png from Desktop Social Media
+  Pack — pack is already gold-M, rebranded Jul 3). IG avatar → gold M + new bio ("The AI Montessori
+  classroom 🌱 / One photo → observation → parent report / Built by a Montessori teacher · montree.xyz").
+  Tredoux personal FB: Work = Founder at Montree, Beijing (⚠️ saved TWICE — duplicate Founder entry needs
+  one delete; extension disconnected mid-save). ⏳ Still owed: personal FB photo+bio, LinkedIn avatar (old
+  teal M), IG website link (phone app only), FB cover (gold design at `_video_assets/fb-cover.html`,
+  render via headless Chrome), FB group shares (2-3/day from PERSONAL profile — pages can't post to
+  groups; vary text; don't blast — spam filter), 0-view FB library rows are GROUP CROSSPOSTS + expired
+  stories, NOT failures — do not delete (deleting pulls the video from those groups).
+- **Founding mint tool (commit `1e470109`):** super-admin founding route gained PATCH `create_admitted` —
+  school name + email → admitted row + FND- code in ONE shot (idempotent on admitted-email duplicates,
+  409 on other duplicates, retries code collisions). FoundingTab: gold "Mint a founding link" card at TOP
+  (primary launch workflow — schools apply by EMAIL, no waitlist row exists to admit). Super-admin tab
+  strip reordered: 🚀 Founding 100 FIRST, daily drivers next, diagnostics last. **First founding code
+  minted via DB: `FND-E7QSCX`** (placeholder row "Founding School #1", founding-001@montree.xyz — reassign
+  when used). Link: montree.xyz/montree/try?founding=FND-E7QSCX.
+- **🇿🇦 NEXT PORT OF CALL — SA FOUNDING OUTREACH. Canonical brief:
+  `docs/handoffs/HANDOFF_SA_FOUNDING_OUTREACH_JUL6.md`.** 147 SA Montessori schools (ALL with emails,
+  SAMA membership tiers) secured at `docs/outreach/south-africa/`. Batch 1 = ~32 Full/Conditional-Full
+  members. Email = homecoming founder story + YouTube link (🚨 Hook 11 NOT on YouTube yet — upload first)
+  + reply-to-claim founding place → mint per-school links on reply. Gmail drafts 50/day, MANDATORY
+  per-recipient `to:DOMAIN in:sent` dedup, Tredoux sends manually — NEVER auto-send.
+
 ---
 
 ## 🩹 SESSION — Jul 5, 2026 (Cowork, night) — PARENT-PORTAL SAFE-AREA + BROWN STAIR REVERT (owed) + CLOSING-SCREEN VIDEO
