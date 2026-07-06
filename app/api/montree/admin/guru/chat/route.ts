@@ -19,13 +19,19 @@ import {
 } from '@/lib/montree/admin/guru-tools';
 import { executePrincipalTool } from '@/lib/montree/admin/guru-executor';
 import { getSupabase } from '@/lib/supabase-client';
+import { AI_MODEL, HAIKU_MODEL } from '@/lib/ai/anthropic';
+import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 
 // Session 103 Tier 0.1: AI routes need extended runtime budget. Railway's
 // default 15s timeout kills Sonnet calls mid-flight, producing 503s.
 export const maxDuration = 120;
 
 const client = new Anthropic();
-const MODEL = 'claude-sonnet-4-20250514';
+// 🚨 Launch pricing (Jul 6 2026 — plan amendment A5): the model is resolved
+// per-request from the school's plan (Premium/trial → Sonnet, Starter → Haiku,
+// free → 402). The stale hardcoded `MODEL = 'claude-sonnet-4-20250514'` const
+// was removed — every client.messages.create site now uses the resolved
+// `model` local instead. AI_MODEL is the current Sonnet alias.
 const MAX_TOOL_ROUNDS = 4;
 const TOTAL_TIMEOUT_MS = 90_000;
 const API_TIMEOUT_MS = 45_000;
@@ -56,6 +62,23 @@ export async function POST(req: NextRequest) {
   }
 
   const schoolId = auth.schoolId;
+
+  // 🚨 Launch pricing (Jul 6 2026 — A5). Resolve the Admin Guru model from the
+  // school's plan: Premium/trial → Sonnet, Starter → Haiku. Free → 402 with the
+  // UpgradeCard payload.
+  const schoolTier = await resolveReportModel(getSupabase(), schoolId);
+  if (schoolTier.tier === 'free') {
+    return NextResponse.json(
+      {
+        error: 'The Admin Guru requires an active AI plan.',
+        requires_upgrade: true,
+        upgrade_url: '/montree/admin/billing',
+        feature: 'admin_guru',
+      },
+      { status: 402 }
+    );
+  }
+  const model = schoolTier.tier === 'sonnet' ? AI_MODEL : HAIKU_MODEL;
 
   let body: { messages?: MessageParam[] };
   try {
@@ -141,7 +164,7 @@ export async function POST(req: NextRequest) {
 
             const response = await client.messages.create(
               {
-                model: MODEL,
+                model,
                 max_tokens: 4096,
                 system: systemPrompt,
                 tools: PRINCIPAL_GURU_TOOLS,
@@ -293,7 +316,7 @@ export async function POST(req: NextRequest) {
 
             const synthesisResponse = await client.messages.create(
               {
-                model: MODEL,
+                model,
                 max_tokens: 4096,
                 system: systemPrompt,
                 // No tools — forces a text-only answer

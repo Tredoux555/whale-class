@@ -1,11 +1,21 @@
 // app/api/montree/guru/stream/route.ts
-// Streaming version of Montessori Guru API
+//
+// 🚨 LEGACY / DEAD ROUTE (verified Jul 6 2026): no live client calls
+// /api/montree/guru/stream — every teacher/parent Guru surface goes through
+// the main /api/montree/guru route (GuruChatThread, PortalChat, photo-audit,
+// child summary). This file is kept for now but should be considered inert.
+// It still carries the launch-pricing tier gate below (cheap defense-in-depth)
+// so that if anything ever does call it, a free-tier school 402s rather than
+// getting Sonnet for free, and Starter runs on Haiku.
+//
+// Streaming version of Montessori Guru API.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
-import { anthropic, AI_ENABLED, AI_MODEL } from '@/lib/ai/anthropic';
+import { anthropic, AI_ENABLED, AI_MODEL, HAIKU_MODEL } from '@/lib/ai/anthropic';
+import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 import { buildChildContext } from '@/lib/montree/guru/context-builder';
 import { retrieveKnowledge } from '@/lib/montree/guru/knowledge-retriever';
 import { buildGuruPrompt } from '@/lib/montree/guru/prompt-builder';
@@ -62,6 +72,23 @@ export async function POST(request: NextRequest) {
 
     const supabase = getSupabase();
 
+    // 🚨 Launch pricing (Jul 6 2026) — school-tier gate. free → 402 with the
+    // UpgradeCard payload; otherwise pick the tier's model (Starter → Haiku,
+    // Premium/trial → Sonnet). See the legacy note at the top of this file.
+    const schoolTier = await resolveReportModel(supabase, auth.schoolId);
+    if (schoolTier.tier === 'free') {
+      return new Response(
+        JSON.stringify({
+          error: 'Guru requires an active AI plan.',
+          requires_upgrade: true,
+          upgrade_url: '/montree/admin/billing',
+          feature: 'guru',
+        }),
+        { status: 402, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+    const guruModel = schoolTier.tier === 'sonnet' ? AI_MODEL : HAIKU_MODEL;
+
     // Build context
     const childContext = await buildChildContext(supabase, child_id);
     if (!childContext) {
@@ -86,7 +113,7 @@ export async function POST(request: NextRequest) {
         try {
           // Create streaming message
           const messageStream = ai.messages.stream({
-            model: AI_MODEL,
+            model: guruModel,
             max_tokens: 2048,
             system: systemPrompt,
             messages: [{ role: 'user', content: userPrompt }],
@@ -124,7 +151,7 @@ export async function POST(request: NextRequest) {
             response_insight: fullResponse.slice(0, 5000),
             sources_used: knowledge.sources_used,
             processing_time_ms: processingTime,
-            model_used: AI_MODEL,
+            model_used: guruModel,
           });
 
           // Send completion signal

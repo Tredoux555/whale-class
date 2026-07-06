@@ -15,6 +15,41 @@ function escapeIlike(str: string): string {
   return str.replace(/[%_\\]/g, '\\$&');
 }
 
+// ---- Abuse lock gate ----
+// A super-admin can LOCK a school (migration 286: montree_schools.locked_at).
+// A locked school's users must not get a session for ANY role — the locked
+// screen at /montree/locked is their only surface (they can message Tredoux
+// from there). We check AFTER a credential match so we never leak which codes
+// exist; a wrong code still 401s "Invalid code". A right code for a locked
+// school gets a distinct 403 with the redirect the client honors.
+//
+// Fails OPEN on a lookup error (locked_at column missing pre-migration, or a
+// transient DB blip) — refusing to log a legitimate school in because the lock
+// check itself failed would be worse than the (rare) missed lock enforcement,
+// and resolve-model already kills AI spend for locked schools independently.
+async function blockIfLocked(
+  supabase: ReturnType<typeof getSupabase>,
+  schoolId: string | null | undefined
+): Promise<NextResponse | null> {
+  if (!schoolId) return null;
+  const { data, error } = await supabase
+    .from('montree_schools')
+    .select('id, name, locked_at')
+    .eq('id', schoolId)
+    .maybeSingle();
+  if (error || !data) return null; // fail open — see note above
+  if (!data.locked_at) return null;
+  return NextResponse.json(
+    {
+      error: 'This account has been locked.',
+      locked: true,
+      school_name: data.name || null,
+      redirectTo: `/montree/locked?school=${encodeURIComponent(String(data.id))}`,
+    },
+    { status: 403 }
+  );
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
@@ -73,6 +108,10 @@ export async function POST(request: NextRequest) {
     if (principalResult) {
       const { principal, school, needsSetup } = principalResult;
 
+      // Abuse lock — refuse any role of a locked school (see blockIfLocked).
+      const lockedResp = await blockIfLocked(supabase, school.id);
+      if (lockedResp) return lockedResp;
+
       const token = await createMontreeToken({
         sub: principal.id,
         schoolId: school.id,
@@ -118,6 +157,10 @@ export async function POST(request: NextRequest) {
     if (teacherResult) {
       const { teacher, classroom, school, onboarded } = teacherResult;
       const teacherRole = (teacher.role === 'homeschool_parent' ? 'homeschool_parent' : 'teacher') as 'teacher' | 'homeschool_parent';
+
+      // Abuse lock — refuse any role of a locked school (see blockIfLocked).
+      const lockedResp = await blockIfLocked(supabase, school?.id || teacher.school_id);
+      if (lockedResp) return lockedResp;
 
       const token = await createMontreeToken({
         sub: teacher.id,
@@ -172,6 +215,11 @@ export async function POST(request: NextRequest) {
     const agentResult = await tryAgentLogin(supabase, normalizedCode);
     if (agentResult) {
       const { agent } = agentResult;
+
+      // Abuse lock — refuse any role of a locked school (plan: agent login also
+      // refuses). agent.school_id is the agent's own teacher-row school.
+      const lockedResp = await blockIfLocked(supabase, agent.school_id);
+      if (lockedResp) return lockedResp;
 
       const token = await createMontreeToken({
         sub: agent.id,
@@ -235,6 +283,11 @@ export async function POST(request: NextRequest) {
     const parentResult = await tryParentLogin(supabase, normalizedCode);
     if (parentResult) {
       const { invite, child } = parentResult;
+
+      // Abuse lock — parents of a locked school shouldn't see reports either.
+      // Refuse BEFORE any provisioning writes (see blockIfLocked).
+      const lockedResp = await blockIfLocked(supabase, child.school_id);
+      if (lockedResp) return lockedResp;
 
       // Update usage tracking
       await supabase.from('montree_parent_invites').update({

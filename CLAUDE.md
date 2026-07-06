@@ -55,6 +55,63 @@ Montree coupling + personal data; don't re-introduce it by editing the Montree c
 
 ---
 
+## 🚀 SESSION — Jul 6, 2026 (Cowork/Fable orchestrating Opus builders) — LAUNCH PRICING RESTRUCTURE: 7-day Premium trial + Starter $3 / Premium $7 + abuse lock + Founding 100 codes + landing/pricing rebuild
+
+**Canonical plan (read FIRST before touching tiers/pricing): `docs/handoffs/PLAN_LAUNCH_PRICING_JUL6.md` — contains
+the LOCKED business-model table + 11 post-audit amendments. Built via sacred rule (review thinking → build →
+review build): Fable planned, 1 Opus plan-auditor (3 CRIT catches pre-build), 3 parallel Opus builders, 3 Opus
+fresh-eyes reviewers (2 real bugs caught+fixed), Fable personal polish pass on the public pages.
+🚨 Migration 286 MUST run in Supabase BEFORE this deploys (resolve-model selects `locked_at`; fail-closed catch
+would 402 every school). 🚨 Env needed: `STRIPE_PRICE_STARTER` ($3 Stripe price ID) in Railway.**
+
+- **🎛 THE LOCKED MODEL (do NOT re-litigate):** Trial = **7 days of full Premium (Sonnet)**, no card → then they
+  CHOOSE (they've tasted Premium). **Starter $3**/student/mo = Haiku ALL the way through (reports, photo ID —
+  NEVER falls back to Sonnet, Guru, Astra). **Premium $7** = Sonnet reports + Sonnet photo fallback + Sonnet
+  Guru/Astra (base photo pipeline stays Haiku by design). **Founding 100** = apply BY EMAIL (mailto on homepage +
+  /pricing) → Tredoux admits in super-admin → generates FND-XXXXXX signup link → school gets 1 month Premium
+  free + `founding_member=true` + `billing_override_usd=3` → **Premium at $3 for life**.
+- **resolve-model.ts rewrite:** locked_at→free FIRST, then sonnet flag, haiku flag, then trialing 3-way
+  (trial_ends_at future→**sonnet**, past→**free** (the decision point — all AI routes 402 with UpgradeCard),
+  NULL→haiku legacy floor), active→haiku floor, else free. **Trial expiry is now ENFORCED** (was: trialing =
+  AI forever). Existing schools with expired trials will start 402-ing — intended.
+- **Guru/Astra tier wiring:** guru route now forces guruTier from school tier for `auth.role` teacher/principal
+  (homeschool_parent freemium block byte-identical — NEVER key tier decisions on the body `role`); structured
+  (non-conversational) path model fixed too; GuruChatThread renders UpgradeCard on 402. Astra + admin/guru/chat
+  = Sonnet only on sonnet tier, else Haiku (stale dated model pins removed). Photo process/sonnet-review/
+  photo-insight gates derive from `resolveReportModel().tier==='sonnet'` (raw flag reads removed) so Premium
+  TRIALS get the Sonnet fallback.
+- **Billing:** `STARTER_PRICE_USD=3` constants; `setSchoolAiTier` gained `'haiku'` target ($50/soft_limit);
+  checkout accepts `plan: starter|premium` (founding forced premium) + stamps `subscription_data.metadata.
+  montree_plan`; webhook reads metadata FIRST, then trialing→premium, then legacy-300¢-not-founding→haiku;
+  billing page = two-card plan chooser + trial countdown + founding card. Alipay/manual Starter = override $3.
+- **🚫 Abuse lock (migration 286):** `montree_schools.locked_at/locked_reason`. Super-admin SchoolsTab 🚫/🔓 +
+  PATCH (audit-logged). Locked school: login 403s (ALL roles incl. parents) → `/montree/locked` (public, dark
+  forest) → appeal form → `feedback_type='appeal'` (🚫 red in FeedbackTab). auth/me returns `locked` → admin
+  layout + dashboard bounce. resolve-model kills AI. Cookie-holders keep non-AI reads until expiry (documented).
+- **Signup hardening:** try/instant rate limit 5/hour/IP (fail-open) + honeypot `website` field.
+- **Founding codes:** super-admin founding PATCH `generate_code` (admitted only, idempotent — never rotates,
+  concurrency-safe via `.select()` check), FoundingTab 🔗 Generate link → `montree.xyz/montree/try?founding=FND-…`,
+  try/instant validates BEFORE writes, atomic redeem, **valid founding code IGNORES referral code entirely**,
+  30-day trial stamped. Waitlist columns: signup_code UNIQUE, code_generated_at, redeemed_by_school_id/at.
+- **Public pages (Fable's hands):** landing nav = Library/Explainer/Pricing (+About/Login; ambassador link GONE,
+  become-an-agent + for-teachers now redirect to /montree — **no more ambassadors/commission, ever**); hero =
+  large gold M (`/brand/m-mark-480.webp`, 56KB, true 480/394 aspect) in a breathing halo (::before glow layer
+  only — the M itself NEVER dims; prefers-reduced-motion honored); pricing section id="pricing" (Starter/Premium
+  cards, Premium gold-featured, hover lift, 18 new `landing.pricing.*` keys × 12 locales, customer-language
+  bullets — "Unlimited photo recognition", never "escalates"); FoundingHundred = counter + gold apply-by-email
+  CTA (mailto tredoux555@gmail.com w/ template), no more form/6-months copy; footer link row. /pricing FULL
+  dark-forest rebuild: gold M hero, gold trial line, two cards + live 5–60 slider (both totals), founding strip,
+  7-item FAQ, hardcoded English. i18n 12/12 (5129 keys), 0 lint errors (25 pre-existing warnings).
+- **⏳ Excluded from commit (pre-existing dirt, NOT ours):** `docs/MONTREE_SOCIAL_PLAYBOOK.md` (+50 punchlines,
+  uncommitted Jul-1 work), `migrations/269_lyf_coach_billing.sql` (gutted in working tree — investigate),
+  untracked strays (.diag.mjs, coach_uploads.patch, social/, docs/photo-id/, lyf-coach-*.md, tsc-docs.tmp.json).
+- **✅ Verify after deploy:** montree.xyz hero M + pricing section + founding email CTA; /pricing renders;
+  locked flow end-to-end (lock a test school → login → /montree/locked → appeal lands in Feedback tab);
+  founding link (generate → signup → override + 30d verified in DB); trial school gets Sonnet (photo fallback
+  fires); expired-trial school 402s with upgrade card; Starter checkout (needs STRIPE_PRICE_STARTER env).
+
+---
+
 ## 🩹 SESSION — Jul 5, 2026 (Cowork, night) — PARENT-PORTAL SAFE-AREA + BROWN STAIR REVERT (owed) + CLOSING-SCREEN VIDEO
 
 **Short continuation after the evening session below. Handoff: `docs/handoffs/SESSION_PARENT_SAFEAREA_CLOSING_SCREEN_JUL5.md`.

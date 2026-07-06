@@ -15,6 +15,7 @@ const getFeedbackEmoji = (type: string) => {
     case 'idea': return '💡';
     case 'help': return '❓';
     case 'praise': return '👍';
+    case 'appeal': return '🚫'; // locked-account appeal (migration 286)
     default: return '💬';
   }
 };
@@ -60,13 +61,22 @@ export default function FeedbackTab({
             <div
               key={item.id}
               className={`p-4 hover:bg-slate-800/50 transition-colors ${
-                !item.is_read ? 'bg-emerald-500/5 border-l-4 border-emerald-500' : ''
+                item.feedback_type === 'appeal'
+                  ? 'bg-red-500/5 border-l-4 border-red-500'
+                  : !item.is_read
+                    ? 'bg-emerald-500/5 border-l-4 border-emerald-500'
+                    : ''
               }`}
             >
               <div className="flex items-start gap-4">
                 <span className="text-2xl">{getFeedbackEmoji(item.feedback_type)}</span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-2">
+                    {item.feedback_type === 'appeal' && (
+                      <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-500/20 text-red-400">
+                        🚫 Locked-account appeal
+                      </span>
+                    )}
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getUserTypeColor(item.user_type)}`}>
                       {item.user_type}
                     </span>

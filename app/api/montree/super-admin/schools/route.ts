@@ -385,6 +385,11 @@ export async function PATCH(request: NextRequest) {
       //   which carries the active-Stripe safety guard (rule #80 + #70 mirror).
       billing_cadence,
       payment_method,
+      // Migration 286 — abuse lock. locked=true sets locked_at=NOW() (login
+      // refused for all roles + resolve-model kills AI spend). locked=false
+      // clears locked_at + locked_reason. locked_reason is an optional note.
+      locked,
+      locked_reason,
     } = body;
 
     if (!schoolId) {
@@ -525,6 +530,34 @@ export async function PATCH(request: NextRequest) {
       updateData.billing_cadence = billing_cadence;
     }
 
+    // ── Abuse lock (migration 286) ─────────────────────────────────────
+    // locked=true  → locked_at = NOW(), locked_reason = <note or null>.
+    // locked=false → locked_at = null, locked_reason = null (unlock).
+    // Audit-logged after the update lands (see below). resolve-model reads
+    // locked_at to kill AI spend; auth/unified refuses login for locked schools.
+    let lockAction: 'lock' | 'unlock' | null = null;
+    if (locked !== undefined) {
+      if (typeof locked !== 'boolean') {
+        return NextResponse.json({ error: 'locked must be a boolean' }, { status: 400 });
+      }
+      if (locked_reason !== undefined && locked_reason !== null && typeof locked_reason !== 'string') {
+        return NextResponse.json({ error: 'locked_reason must be a string' }, { status: 400 });
+      }
+      if (typeof locked_reason === 'string' && locked_reason.length > 500) {
+        return NextResponse.json({ error: 'locked_reason max length 500' }, { status: 400 });
+      }
+      if (locked) {
+        updateData.locked_at = new Date().toISOString();
+        updateData.locked_reason =
+          typeof locked_reason === 'string' && locked_reason.trim() ? locked_reason.trim() : null;
+        lockAction = 'lock';
+      } else {
+        updateData.locked_at = null;
+        updateData.locked_reason = null;
+        lockAction = 'unlock';
+      }
+    }
+
     if (Object.keys(updateData).length === 0) {
       return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
     }
@@ -543,6 +576,23 @@ export async function PATCH(request: NextRequest) {
 
     if (!data) {
       return NextResponse.json({ error: 'School not found' }, { status: 404 });
+    }
+
+    // Audit-log a lock/unlock (migration 286). Fire-and-forget — never blocks.
+    if (lockAction) {
+      logAudit(supabase, {
+        adminIdentifier: 'super_admin',
+        action: lockAction === 'lock' ? 'school_lock' : 'school_unlock',
+        resourceType: 'school',
+        resourceId: schoolId,
+        resourceDetails: {
+          endpoint: '/api/montree/super-admin/schools',
+          reason: lockAction === 'lock' ? (updateData.locked_reason ?? null) : null,
+        },
+        ipAddress: getClientIP(request.headers),
+        userAgent: getUserAgent(request.headers),
+        isSensitive: true,
+      });
     }
 
     // Clear budget cache if budget fields changed

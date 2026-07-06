@@ -17,7 +17,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, getPublicUrl } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
+import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
 import {
   generateSonnetDraft,
@@ -65,11 +65,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  // 🚨 TIER-GATE (Jul 4 2026): "Ask Sonnet" is a Premium (ai_tier_sonnet)
-  // feature — Haiku/Free schools stay pure Haiku. The button is already hidden
-  // client-side on those tiers; this is defense-in-depth so a stale client
-  // can't spend a Sonnet call on a Haiku-tier school.
-  if (!(await isFeatureEnabled(supabase, auth.schoolId, 'ai_tier_sonnet'))) {
+  // 🚨 TIER-GATE (Jul 6 2026 launch pricing — plan amendment 1.7): "Ask Sonnet"
+  // is a Premium feature — Haiku/Free schools stay pure Haiku. DERIVED from the
+  // resolved tier (not the raw ai_tier_sonnet flag) so Premium TRIALS get it
+  // too. The button is already hidden client-side on non-Premium tiers; this is
+  // defense-in-depth so a stale client can't spend a Sonnet call.
+  const sonnetTier = await resolveReportModel(supabase, auth.schoolId);
+  if (sonnetTier.tier !== 'sonnet') {
     return NextResponse.json({
       success: false,
       error: 'Ask Sonnet is a Premium-tier feature.',

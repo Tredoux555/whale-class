@@ -19,6 +19,7 @@ import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage';
 import { executeTool, ToolResult } from '@/lib/montree/guru/tool-executor';
 import { learnFromConversation, getRelevantPatterns } from '@/lib/montree/guru/pattern-learner';
 import { classifyQuestion, type QuestionCategory } from '@/lib/montree/guru/question-classifier';
+import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 import { getRelevantBrainWisdom, recordLearning } from '@/lib/montree/guru/brain';
 import { processTeacherConversation } from '@/lib/montree/guru/post-conversation-processor';
 import type { MessageParam, ToolResultBlockParam, ContentBlockParam } from '@anthropic-ai/sdk/resources/messages';
@@ -417,6 +418,36 @@ export async function POST(request: NextRequest) {
         }
         // When freemiumEnabled=false, skip gate entirely — unlimited access
       }
+    }
+
+    // 🚨 Launch pricing (Jul 6 2026 — plan amendments A2/A3). SCHOOL-ROLE Guru
+    // tier is driven by the school's plan, NOT the per-teacher guru_tier column.
+    //   Premium (sonnet) → guruTier='sonnet' (hybrid smart-routing still applies:
+    //     easy curriculum/general questions run on Haiku — cost saver)
+    //   Starter (haiku)  → guruTier='haiku' (force — Guru runs 100% Haiku)
+    //   free             → 402 with the UpgradeCard payload (GuruChatThread's
+    //     !res.ok branch renders the warm upgrade card, not an error bubble)
+    //
+    // 🚨 Gates ONLY on auth.role (the verified JWT role), NEVER the body `role`.
+    // The homeschool_parent freemium block above stays byte-identical — their
+    // personal guru_tier / Stripe freemium system is untouched.
+    const isSchoolRole = auth.role === 'teacher' || auth.role === 'principal';
+    if (isSchoolRole) {
+      const schoolTier = await resolveReportModel(supabase, auth.schoolId);
+      if (schoolTier.tier === 'free') {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Guru requires an active AI plan.',
+            requires_upgrade: true,
+            upgrade_url: '/montree/admin/billing',
+            feature: 'guru',
+          },
+          { status: 402 }
+        );
+      }
+      // Force the tier from the school plan (overrides per-teacher guru_tier).
+      guruTier = schoolTier.tier === 'sonnet' ? 'sonnet' : 'haiku';
     }
 
     // Check AI budget
@@ -1191,9 +1222,15 @@ export async function POST(request: NextRequest) {
     // =============================================
     // userPrompt already pushed to conversationMessages above (line 227)
 
+    // 🚨 Launch pricing (Jul 6 2026) — structured teacher insights honour the
+    // resolved tier just like the conversational path. Starter (haiku)
+    // teachers run structured insights on Haiku; Premium on Sonnet. The
+    // school-role gate above already forced guruTier from the school plan.
+    const structuredModel = getModelForTier(guruTier) || AI_MODEL;
+
     const message = await withTimeout(
       anthropic.messages.create({
-        model: AI_MODEL,
+        model: structuredModel,
         max_tokens: MAX_TOKENS,
         // 🚨 Prompt caching (Session 137 health check) — caches the large
         // Guru persona+context prefix. Hits across tool-loop rounds and a
@@ -1211,7 +1248,7 @@ export async function POST(request: NextRequest) {
         schoolId: auth.schoolId,
         classroomId: classroom_id || childContext?.classroom_id,
         endpoint: '/api/montree/guru/structured',
-        model: AI_MODEL,
+        model: structuredModel,
         inputTokens: message.usage.input_tokens,
         outputTokens: message.usage.output_tokens,
       });
@@ -1254,7 +1291,7 @@ export async function POST(request: NextRequest) {
         response_parent_talking_point: parsed.parent_talking_point,
         sources_used: knowledge.sources_used,
         processing_time_ms: processingTime,
-        model_used: AI_MODEL,
+        model_used: structuredModel,
         locale: locale || 'en',
       })
       .select('id')

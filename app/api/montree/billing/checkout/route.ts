@@ -72,16 +72,53 @@ export async function POST(request: NextRequest) {
 
   const supabase = getSupabase();
 
+  // 🚨 Launch pricing (Jul 6 2026) — read the chosen plan from the body.
+  // Two plans: 'starter' ($3 Haiku) and 'premium' ($7 Sonnet). Defaults to
+  // 'premium'. Anything else is coerced to 'premium' (never trust the client).
+  let requestedPlan: 'starter' | 'premium' = 'premium';
+  try {
+    const body = (await request.json().catch(() => ({}))) as { plan?: string };
+    if (body?.plan === 'starter') requestedPlan = 'starter';
+  } catch {
+    // No/invalid body → default premium. Not an error.
+  }
+
   // Defence-in-depth: confirm the principal's JWT schoolId still maps to a
-  // real school + this principal still owns it.
-  const { data: school } = await supabase
+  // real school + this principal still owns it. founding_member (migration
+  // 286) forces the plan to premium — Founding 100 schools get Premium locked
+  // at $3 via their billing_override, never Starter.
+  //
+  // 🚨 Resilient founding_member read: select it, but if the column doesn't
+  // exist yet (migration 286 lagging → 42703) fall back to a select without it
+  // rather than 404-ing this critical checkout path. Treated as false when
+  // absent (safe — a lagging migration just means no founding schools exist).
+  let school:
+    | { id: string; name: string | null; subscription_status: string | null; stripe_customer_id: string | null; founding_member?: boolean | null }
+    | null = null;
+  const withFounding = await supabase
     .from('montree_schools')
-    .select('id, name, subscription_status, stripe_customer_id')
+    .select('id, name, subscription_status, stripe_customer_id, founding_member')
     .eq('id', auth.schoolId)
     .maybeSingle();
+  if (withFounding.error) {
+    console.warn('[billing/checkout] founding_member select failed (non-fatal — run migration 286):', withFounding.error.message);
+    const fallback = await supabase
+      .from('montree_schools')
+      .select('id, name, subscription_status, stripe_customer_id')
+      .eq('id', auth.schoolId)
+      .maybeSingle();
+    school = (fallback.data as typeof school) || null;
+  } else {
+    school = (withFounding.data as typeof school) || null;
+  }
   if (!school) {
     return NextResponse.json({ error: 'School not found' }, { status: 404 });
   }
+
+  // Founding schools are always Premium (their $3 override flows through the
+  // premium price path). Ignore any 'starter' selection they somehow sent.
+  const effectivePlan: 'starter' | 'premium' =
+    school.founding_member === true ? 'premium' : requestedPlan;
 
   // If already actively subscribed via Stripe, point them at the customer portal.
   // 🚨 CRITICAL: subscription_status='trialing' alone does NOT mean Stripe is
@@ -102,7 +139,9 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  const result = await createSchoolCheckoutSession(supabase, auth.schoolId, {});
+  const result = await createSchoolCheckoutSession(supabase, auth.schoolId, {
+    plan: effectivePlan,
+  });
   if (!result.ok || !result.data) {
     return NextResponse.json(
       {

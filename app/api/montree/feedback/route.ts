@@ -30,8 +30,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate feedback_type
-    const validTypes = ['bug', 'idea', 'help', 'praise', 'other'];
+    // Validate feedback_type. 'appeal' (migration 286) is the locked-account
+    // message sent from /montree/locked — surfaced in the super-admin Feedback
+    // tab with a 🚫 red pill. Appeals are UNAUTHENTICATED by design: a locked
+    // user cannot log in, so the only way for them to reach us is this open
+    // POST. That's why we UUID-validate school_id below rather than trust it.
+    const validTypes = ['bug', 'idea', 'help', 'praise', 'appeal', 'other'];
     if (!validTypes.includes(feedback_type)) {
       return NextResponse.json(
         { error: 'Invalid feedback_type' },
@@ -59,11 +63,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'URL too long' }, { status: 400 });
     }
 
+    // UUID-validate school_id (A7). The appeal path is unauthenticated, so
+    // client-supplied school_id is untrusted — a non-UUID string would either
+    // error the insert on the uuid column or poison the row. Coerce anything
+    // that isn't a proper UUID to null.
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const safeSchoolId =
+      typeof school_id === 'string' && UUID_RE.test(school_id) ? school_id : null;
+
     // Insert feedback
     const { data, error } = await supabase
       .from('montree_feedback')
       .insert({
-        school_id: school_id || null,
+        school_id: safeSchoolId,
         user_type: user_type || 'teacher',
         user_id: user_id || null,
         user_name: user_name || null,

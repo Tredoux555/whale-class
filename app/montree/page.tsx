@@ -634,6 +634,233 @@ export default function MontreeLanding() {
           letter-spacing: 0.02em;
         }
 
+        /* ── Hero gold M brandmark ── (amendment A10)
+           The hero explainer video is hidden (SHOW_HERO_VIDEO=false). In its
+           place we render the transparent gold M inside a soft gold radial
+           glow so the hero has a brand anchor on the LEFT column of the split
+           layout. This element lives OUTSIDE the video conditional so it always
+           shows regardless of the video flag. The "breathing" is opacity +
+           box-shadow ONLY — never a scaling blob — and is disabled under
+           prefers-reduced-motion. The <img> carries explicit width/height to
+           reserve layout (CLS). On ≤880px the split hero collapses and the mark
+           centres above the title (media queries below). */
+        .m-hero-brandmark {
+          flex: 0 0 auto;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 340px;
+          max-width: 40vw;
+          margin: 0;
+          z-index: 2;
+        }
+        /* The halo is a ::before layer BEHIND the mark and it alone breathes
+           (opacity + box-shadow keyframes). The M itself never dims — a brand
+           mark that pulses in visibility reads as a glitch; a halo that
+           breathes reads as light. A whisper-thin gold ring sits at the halo's
+           edge for craft. */
+        .m-hero-brandmark-glow {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 58px;
+        }
+        .m-hero-brandmark-glow::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(232,201,106,0.17) 0%, rgba(232,201,106,0.055) 44%, rgba(232,201,106,0) 71%);
+          border: 1px solid rgba(232,201,106,0.09);
+          box-shadow:
+            0 0 60px -14px rgba(232,201,106,0.35),
+            inset 0 0 44px -18px rgba(232,201,106,0.18);
+          animation: m-hero-brandmark-breathe 5600ms ease-in-out infinite;
+          pointer-events: none;
+        }
+        .m-hero-brandmark-img {
+          position: relative;
+          display: block;
+          /* True aspect of the mark (480x394) — no square letterbox. */
+          width: 208px;
+          height: auto;
+          aspect-ratio: 480 / 394;
+          object-fit: contain;
+          filter:
+            drop-shadow(0 10px 26px rgba(6,20,14,0.72))
+            drop-shadow(0 2px 14px rgba(232,201,106,0.22));
+          user-select: none;
+        }
+        @keyframes m-hero-brandmark-breathe {
+          0%, 100% {
+            opacity: 0.82;
+            box-shadow:
+              0 0 52px -16px rgba(232,201,106,0.3),
+              inset 0 0 40px -18px rgba(232,201,106,0.14);
+          }
+          50% {
+            opacity: 1;
+            box-shadow:
+              0 0 78px -10px rgba(232,201,106,0.52),
+              inset 0 0 50px -16px rgba(232,201,106,0.22);
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .m-hero-brandmark-glow::before { animation: none; }
+        }
+
+        /* ── Pricing section ── (id="pricing")
+           Sits between the three editorial statements and the explainer teaser.
+           A compact, honest two-card summary — the full story lives on /pricing.
+           Premium is visually featured (gold border + badge). Cards stack on
+           mobile. */
+        .m-pricing {
+          padding: 96px 32px 96px;
+          border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .m-pricing-inner {
+          max-width: 860px;
+          margin: 0 auto;
+          text-align: center;
+        }
+        .m-pricing .m-label { display: block; margin-bottom: 16px; }
+        .m-pricing h2 {
+          font-family: var(--font-lora), Georgia, serif;
+          font-weight: 400;
+          font-size: clamp(1.875rem, 4vw, 2.5rem);
+          line-height: 1.15;
+          letter-spacing: -0.02em;
+          color: #ffffff;
+          margin-bottom: 14px;
+        }
+        .m-pricing-tagline {
+          color: rgba(255,255,255,0.55);
+          font-size: 1.0625rem;
+          line-height: 1.6;
+          max-width: 42ch;
+          margin: 0 auto 44px;
+        }
+        .m-pricing-cards {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+          text-align: left;
+          margin-bottom: 40px;
+        }
+        .m-price-card {
+          background: rgba(8,20,12,0.55);
+          border: 1px solid rgba(130,217,174,0.14);
+          border-radius: 18px;
+          padding: 32px 28px;
+          display: flex;
+          flex-direction: column;
+          transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+        }
+        /* Gentle lift on pointer devices only — touch scrolling shouldn't
+           trigger sticky hover states. */
+        @media (hover: hover) {
+          .m-price-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(130,217,174,0.3);
+            box-shadow: 0 18px 44px -22px rgba(6,20,14,0.9);
+          }
+          .m-price-card-featured:hover {
+            border-color: rgba(232,201,106,0.68);
+            box-shadow: 0 0 0 1px rgba(232,201,106,0.2), 0 22px 52px -20px rgba(232,201,106,0.3);
+          }
+        }
+        .m-price-card-featured {
+          border-color: rgba(232,201,106,0.5);
+          box-shadow: 0 0 0 1px rgba(232,201,106,0.14), 0 18px 44px -20px rgba(232,201,106,0.22);
+          position: relative;
+        }
+        .m-price-card-badge {
+          position: absolute;
+          top: 18px;
+          right: 22px;
+          font-size: 10px;
+          font-weight: 600;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #1a1208;
+          background: rgba(232,201,106,0.92);
+          padding: 4px 11px;
+          border-radius: 999px;
+        }
+        .m-price-card-name {
+          font-size: 0.78rem;
+          font-weight: 500;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.5);
+          margin-bottom: 14px;
+        }
+        .m-price-card-featured .m-price-card-name { color: #E8C96A; }
+        .m-price-card-price {
+          display: flex;
+          align-items: baseline;
+          gap: 8px;
+          margin-bottom: 22px;
+        }
+        .m-price-card-amount {
+          font-family: var(--font-lora), Georgia, serif;
+          font-weight: 400;
+          font-size: 2.75rem;
+          line-height: 1;
+          letter-spacing: -0.02em;
+          color: #ffffff;
+        }
+        .m-price-card-unit {
+          font-size: 0.875rem;
+          color: rgba(255,255,255,0.45);
+        }
+        .m-price-card-bullets {
+          list-style: none;
+          margin: 0;
+          padding: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .m-price-card-bullets li {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          font-size: 0.9375rem;
+          line-height: 1.5;
+          color: rgba(255,255,255,0.72);
+        }
+        .m-price-card-check {
+          flex-shrink: 0;
+          margin-top: 3px;
+          color: #47AB7E;
+        }
+        .m-price-card-featured .m-price-card-check { color: #E8C96A; }
+        .m-pricing-cta-row {
+          display: inline-flex;
+          gap: 14px;
+          align-items: center;
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+        .m-pricing-cta-secondary {
+          font-size: 0.9375rem;
+          font-weight: 500;
+          color: rgba(255,255,255,0.6);
+          text-decoration: none;
+          letter-spacing: 0.01em;
+          padding: 14px 24px;
+          border-radius: 999px;
+          border: 1px solid rgba(255,255,255,0.16);
+          transition: color 200ms ease, border-color 200ms ease, background 200ms ease;
+        }
+        .m-pricing-cta-secondary:hover {
+          color: rgba(255,255,255,0.9);
+          border-color: rgba(255,255,255,0.3);
+          background: rgba(255,255,255,0.04);
+        }
+
         /* ── Editorial ── */
         .m-editorial {
           padding: 60px 32px 140px;
@@ -752,6 +979,24 @@ export default function MontreeLanding() {
           align-items: center;
           gap: 8px;
         }
+        /* Quiet nav row above the mark line — the reader who scrolled the whole
+           page shouldn't have to travel back to the top bar. Reuses the nav
+           i18n keys; wraps gracefully on narrow phones. */
+        .m-footer-links {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 8px 22px;
+          margin-bottom: 22px;
+        }
+        .m-footer-links a {
+          color: rgba(255,255,255,0.42);
+          text-decoration: none;
+          font-size: 0.8125rem;
+          letter-spacing: 0.02em;
+          transition: color 200ms ease;
+        }
+        .m-footer-links a:hover { color: rgba(255,255,255,0.75); }
         .m-footer-mark {
           width: 16px;
           height: 16px;
@@ -780,6 +1025,14 @@ export default function MontreeLanding() {
             max-width: 340px;
             margin: 0 auto 36px;
           }
+          /* Split hero collapses — the gold M centres above the title. */
+          .m-hero-brandmark {
+            width: 100%;
+            max-width: 260px;
+            margin: 0 auto 20px;
+          }
+          .m-hero-brandmark-glow { padding: 42px; }
+          .m-hero-brandmark-img { width: 156px; }
           .m-hero-stack {
             align-items: center;
             max-width: 100%;
@@ -787,14 +1040,27 @@ export default function MontreeLanding() {
         }
 
         @media (max-width: 640px) {
-          /* Hide secondary nav links on mobile (Become an ambassador,
-             About) but keep Library (m-nav-link-library) visible on the
-             left and Log in on the right — per user directive these are
-             the always-reachable links. */
+          /* Hide secondary nav links on mobile (About + Explainer) but keep
+             Library (m-nav-link-library), Pricing (m-nav-link-pricing), and
+             Log in (m-nav-link-login) visible — these are the always-reachable
+             links. Pricing is the #2 question after "what is it" so it stays.
+             Explainer is hidden on mobile: five text links + logo + language
+             toggle overflow a ~360-390px row (no flex-wrap on .m-nav-inner), and
+             the explainer video gallery is the least-critical link — Library,
+             Pricing and Log in take priority. The /montree/explainer route stays
+             reachable from the on-page Explainer teaser strip further down. */
           .m-nav-link-secondary { display: none; }
+          .m-nav-link-explainer { display: none; }
           .m-nav-link-library { font-size: 0.875rem; }
+          .m-nav-link-pricing { font-size: 0.875rem; }
           .m-nav-link-login { font-size: 0.875rem; }
-          .m-nav-inner { padding: 14px 20px; }
+          /* Tighten inter-link gaps + horizontal padding so Library, Pricing,
+             Log in + the language toggle all fit on a narrow phone. The two
+             clusters are the direct flex children of .m-nav-inner and carry
+             inline gaps (20px left / 16px right) — override them here so the
+             Pricing link doesn't overflow on small screens. */
+          .m-nav-inner { padding: 14px 16px; gap: 8px; }
+          .m-nav-inner > div { gap: 12px !important; }
           /* Mobile: hero stacks vertically with the corner video flowing in
              above the centered text (static position) instead of overlapping. */
           .m-hero { padding: 32px 24px 80px; }
@@ -816,8 +1082,22 @@ export default function MontreeLanding() {
             padding: 6px 12px;
             bottom: 56px; /* clear of native controls on iOS */
           }
+          .m-hero-brandmark {
+            width: 68%;
+            max-width: 220px;
+            margin: 0 auto 18px;
+          }
+          .m-hero-brandmark-glow { padding: 36px; }
+          .m-hero-brandmark-img { width: 138px; }
           .m-editorial { padding: 40px 24px 100px; }
           .m-block { padding: 40px 0; }
+          .m-pricing { padding: 64px 24px 64px; }
+          .m-pricing-cards {
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 32px;
+          }
+          .m-price-card { padding: 28px 22px; }
           .m-explainer-teaser { padding: 64px 24px 64px; }
           .m-closing { padding: 110px 24px 110px; }
           .m-bottom-quote { padding: 56px 24px 72px; }
@@ -872,7 +1152,7 @@ export default function MontreeLanding() {
               {t('landing.nav.library')}
             </Link>
             <Link
-              className="m-nav-link m-nav-link-library"
+              className="m-nav-link m-nav-link-explainer"
               href="/montree/explainer"
               style={{
                 fontSize: '0.875rem',
@@ -886,13 +1166,27 @@ export default function MontreeLanding() {
             >
               {t('landing.nav.explainer')}
             </Link>
+            {/* Pricing — pricing is the #2 question after "what is it", so it
+                stays visible on mobile (NOT .m-nav-link-secondary). */}
+            <Link
+              className="m-nav-link m-nav-link-pricing"
+              href="/pricing"
+              style={{
+                fontSize: '0.875rem',
+                color: 'rgba(255,255,255,0.55)',
+                textDecoration: 'none',
+                letterSpacing: '0.01em',
+                transition: 'color 200ms ease',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}
+            >
+              {t('landing.nav.pricing')}
+            </Link>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <Link className="m-nav-link m-nav-link-secondary" href="/montree/become-an-agent" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>
-              {t('landing.nav.forTeachers')}
-            </Link>
+            {/* Ambassador nav link removed (Jul 2026) — no more public agent
+                recruitment. /montree/become-an-agent now redirects to home. */}
             <Link className="m-nav-link m-nav-link-secondary" href="/montree/about" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
               onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>
@@ -1053,6 +1347,30 @@ export default function MontreeLanding() {
         </div>
         )}
 
+        {/* ── Hero gold M brandmark ── (amendment A10)
+            Rendered OUTSIDE the SHOW_HERO_VIDEO conditional so the hero always
+            has a brand anchor on the LEFT column of the split layout while the
+            explainer video is hidden. The transparent gold M sits inside a soft
+            gold radial glow that "breathes" via opacity + box-shadow only (no
+            scaling blob; disabled under prefers-reduced-motion — see CSS).
+            <img> carries explicit width/height to reserve layout (CLS). */}
+        <div className="m-hero-brandmark" aria-hidden="true">
+          <span className="m-hero-brandmark-glow">
+            {/* 480px WebP (56KB vs the 235KB master PNG) — the hero never
+                renders the mark above ~208 CSS px, so 480w covers 2x DPR.
+                width/height reflect the TRUE 480x394 aspect (no letterbox). */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              className="m-hero-brandmark-img"
+              src="/brand/m-mark-480.webp"
+              alt=""
+              width={480}
+              height={394}
+              draggable={false}
+            />
+          </span>
+        </div>
+
         <div ref={addReveal} className="m-hero-stack">
           <span className="m-hero-eyebrow">{t('landing.hero.label')}</span>
           <h1>{t('landing.hero.title')}</h1>
@@ -1061,6 +1379,8 @@ export default function MontreeLanding() {
             {t('landing.hero.cta')}
           </Link>
           <span className="m-hero-kicker m-hero-kicker-below">{t('landing.hero.kicker')}</span>
+          {/* Fineprint trust signal under the CTA — cheap, honest pricing line. */}
+          <span className="m-hero-fineprint">{t('landing.hero.fineprint')}</span>
         </div>
       </section>
 
@@ -1089,6 +1409,57 @@ export default function MontreeLanding() {
             <p>{t('landing.principal.body')}</p>
           </article>
 
+        </div>
+      </section>
+
+      {/* ── PRICING ── (id="pricing")
+          Compact two-card summary. Starter $3 vs Premium $7 (featured). Full
+          story + slider + FAQ live on /pricing. Cards stack on mobile. */}
+      <section className="m-pricing" id="pricing" aria-label="Pricing" ref={addReveal}>
+        <div className="m-pricing-inner">
+          <span className="m-label">{t('landing.pricing.label')}</span>
+          <h2>{t('landing.pricing.title')}</h2>
+          <p className="m-pricing-tagline">{t('landing.pricing.trialLine')}</p>
+
+          <div className="m-pricing-cards">
+            {/* Starter — $3 */}
+            <div className="m-price-card">
+              <div className="m-price-card-name">{t('landing.pricing.starterName')}</div>
+              <div className="m-price-card-price">
+                <span className="m-price-card-amount">{t('landing.pricing.starterPrice')}</span>
+                <span className="m-price-card-unit">{t('landing.pricing.perStudent')}</span>
+              </div>
+              <ul className="m-price-card-bullets">
+                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.starterB1')}</li>
+                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.starterB2')}</li>
+                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.starterB3')}</li>
+              </ul>
+            </div>
+
+            {/* Premium — $7, featured */}
+            <div className="m-price-card m-price-card-featured">
+              <span className="m-price-card-badge">{t('landing.pricing.premiumBadge')}</span>
+              <div className="m-price-card-name">{t('landing.pricing.premiumName')}</div>
+              <div className="m-price-card-price">
+                <span className="m-price-card-amount">{t('landing.pricing.premiumPrice')}</span>
+                <span className="m-price-card-unit">{t('landing.pricing.perStudent')}</span>
+              </div>
+              <ul className="m-price-card-bullets">
+                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.premiumB1')}</li>
+                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.premiumB2')}</li>
+                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.premiumB3')}</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="m-pricing-cta-row">
+            <Link className="m-pill m-pill-lg" href="/montree/login-select?signup=true">
+              {t('landing.pricing.cta')}
+            </Link>
+            <Link className="m-pricing-cta-secondary" href="/pricing">
+              {t('landing.pricing.seeFull')}
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -1124,6 +1495,13 @@ export default function MontreeLanding() {
 
       {/* ── FOOTER ── */}
       <footer className="m-footer">
+        <div className="m-footer-links">
+          <Link href="/pricing">{t('landing.nav.pricing')}</Link>
+          <Link href="/montree/library">{t('landing.nav.library')}</Link>
+          <Link href="/montree/explainer">{t('landing.nav.explainer')}</Link>
+          <Link href="/montree/about">About</Link>
+          <Link href="/montree/login-select">{t('landing.nav.login')}</Link>
+        </div>
         <div className="m-footer-inner">
           <MontreeLogo size={14} />
           <span>Montree · montree.xyz</span>
@@ -1131,5 +1509,25 @@ export default function MontreeLanding() {
       </footer>
       </div>
     </>
+  );
+}
+
+// Small check glyph for the pricing-card bullet rows. Colour comes from the
+// className (.m-price-card-check — emerald on Starter, gold on Premium).
+function PriceCheck({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="15"
+      height="15"
+      viewBox="0 0 20 20"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+        fill="currentColor"
+      />
+    </svg>
   );
 }

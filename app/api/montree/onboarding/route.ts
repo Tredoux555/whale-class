@@ -5,6 +5,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { legacySha256 } from '@/lib/montree/password';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { getLocationFromRequest } from '@/lib/ip-geolocation';
+import { DEFAULTS } from '@/lib/montree/constants';
 
 // Generate URL-friendly slug
 function generateSlug(name: string): string {
@@ -79,6 +80,12 @@ export async function POST(request: NextRequest) {
       country: null, countryCode: null, city: null, region: null, timezone: null, ip: null,
     }));
 
+    // 🚨 Launch pricing (Jul 6 2026 — plan amendment A1): stamp trial_ends_at
+    // on every 'trialing' school so the tier resolver's trial branch reads a
+    // real end date (future → Sonnet Premium trial) instead of falling to the
+    // Haiku NULL-legacy floor. DEFAULTS.TRIAL_DAYS (= 7) is the single source.
+    const trialEndsAt = new Date(Date.now() + DEFAULTS.TRIAL_DAYS * 24 * 60 * 60 * 1000);
+
     // 1. Create school
     const { data: school, error: schoolError } = await supabase
       .from('montree_schools')
@@ -88,6 +95,7 @@ export async function POST(request: NextRequest) {
         owner_email: ownerEmail.trim(),
         owner_name: ownerName?.trim() || null,
         subscription_status: 'trialing',
+        trial_ends_at: trialEndsAt.toISOString(),
         plan_type: 'school',
         subscription_tier: 'free',
         is_active: true,

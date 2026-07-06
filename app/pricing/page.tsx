@@ -1,9 +1,66 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import MontreeLogo from '@/components/montree/MonteeLogo';
 
-// /app/pricing/page.tsx — Montree public pricing page
-// One plan. Subscription from day 1. First month on us.
+// /app/pricing/page.tsx — Montree public pricing page (dark-forest rebrand,
+// Jul 2026 launch-pricing restructure).
+//
+// Two tiers: Starter $3 (our fast model all the way through — photo recognition
+// never escalates) and Premium $7 (Claude Sonnet reports + Sonnet photo
+// fallback + Sonnet Guru + Astra). Every school starts with 7 days of Premium,
+// free — no card. After the week they pick a plan.
+//
+// Uses the same .m-* dark-forest tokens as the landing page, a plain <style>
+// tag (NOT styled-jsx — App Router has no styled-jsx StyleRegistry, so nested
+// <style jsx> renders nothing into SSR HTML), and --font-lora for headings.
+// Hardcoded English by design (as the previous pricing page was).
+
+// Founding 100 apply-by-email (same mailto as the homepage FoundingHundred).
+const APPLY_TO = 'tredoux555@gmail.com';
+const APPLY_SUBJECT = 'Founding 100 Application — [Your school]';
+const APPLY_BODY = [
+  'School name:',
+  'Country:',
+  'Number of students:',
+  'Why you want in:',
+].join('\n');
+const APPLY_MAILTO =
+  `mailto:${APPLY_TO}` +
+  `?subject=${encodeURIComponent(APPLY_SUBJECT)}` +
+  `&body=${encodeURIComponent(APPLY_BODY)}`;
+
+const FAQ: { q: string; a: string }[] = [
+  {
+    q: 'How does the free trial work?',
+    a: 'Every school starts with 7 days of Premium — the full experience, Claude Sonnet and all — completely free. No card required to start. When the week is up, you pick your plan: Starter or Premium. Nothing is charged automatically until you choose.',
+  },
+  {
+    q: 'What happens after the trial?',
+    a: 'You choose. Because you have spent the week on Premium, you already know exactly what the top tier feels like. Pick Starter if you want the full Montree workflow on our fast model, or Premium if you want the richest Sonnet reports and photo fallback. You add a card at that point — not before.',
+  },
+  {
+    q: 'What is the difference between Starter and Premium?',
+    a: 'Starter ($3 per active student / month) is the full Montree system running on our fast model, all the way through — AI photo identification, Smart Shelf, progress tracking, the parent portal, and Guru. On Starter, photo recognition never escalates to Sonnet; the fast model handles every photo. Premium ($7 per active student / month) upgrades the teacher reports and parent letters to Claude Sonnet, adds a Sonnet fallback when a photo is genuinely hard to identify, and runs Guru and Astra on Sonnet too. Both are the real product; Premium simply writes and reasons with more depth.',
+  },
+  {
+    q: 'What is Claude Sonnet?',
+    a: 'Claude Sonnet is Anthropic\'s most capable model — the reasoning behind the parent letters, teacher reports, and developmental analysis that teachers describe as "magic." It reasons deeply, writes with genuine warmth, and understands Montessori philosophy in a way that shows in every output. Premium runs on Sonnet; Starter runs on our fast model.',
+  },
+  {
+    q: 'What is the Founding 100?',
+    a: 'The first hundred schools we hand-pick to build Montree with. Founding schools get one month of Premium free, then Premium locked at the $3 Starter price — for life. In exchange, they help us validate Montree with their feedback and a testimonial. Applications are read personally and schools are enrolled in small batches of 10–15. Once the hundred are in, the offer closes.',
+  },
+  {
+    q: 'Is pricing per classroom or per school?',
+    a: 'Per active student, across your whole school. If you have 40 students across two classrooms, you pay for 40 students — not per classroom. Add or close classrooms freely; the bill follows your actual student count.',
+  },
+  {
+    q: 'Can I cancel at any time?',
+    a: 'Yes. No annual contracts. You are billed monthly and can cancel whenever you like. Your classroom data is never deleted.',
+  },
+];
 
 export default function PricingPage() {
   const revealRefs = useRef<HTMLElement[]>([]);
@@ -35,401 +92,539 @@ export default function PricingPage() {
     }
   };
 
-  const bloomMonthly = students * 7;
+  const starterMonthly = students * 3;
+  const premiumMonthly = students * 7;
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{__html: `
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
+      {/* Plain <style> (NOT styled-jsx) — see file header. */}
+      <style dangerouslySetInnerHTML={{ __html: `
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
-        .cta-btn { transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease; }
-        .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important; }
-        .faq-item summary { cursor: pointer; list-style: none; }
-        .faq-item summary::-webkit-details-marker { display: none; }
-        .check-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 11px; }
+        html, body { min-height: 100%; }
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+          color: rgba(255,255,255,0.85);
+          background: #06140e;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+          line-height: 1.5;
+          overflow-x: hidden;
+        }
+
+        .pr-bg {
+          position: fixed; inset: 0; z-index: 0; pointer-events: none;
+          background:
+            radial-gradient(ellipse 1000px 800px at 78% 8%, rgba(39,129,90,0.5), rgba(39,129,90,0) 55%),
+            radial-gradient(ellipse 600px 500px at 72% 14%, rgba(130,217,174,0.24), rgba(130,217,174,0) 60%),
+            linear-gradient(155deg, #0c2419 0%, #0a1f16 38%, #081a12 70%, #06140e 100%);
+        }
+
+        .pr-shell { position: relative; z-index: 1; }
+
+        /* ── Nav ── */
+        .pr-nav {
+          position: sticky; top: 0; z-index: 50;
+          background: rgba(8,26,18,0.72);
+          backdrop-filter: saturate(180%) blur(14px);
+          -webkit-backdrop-filter: saturate(180%) blur(14px);
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+          padding-top: env(safe-area-inset-top);
+        }
+        .pr-nav-inner {
+          max-width: 960px; margin: 0 auto;
+          padding: 16px 24px;
+          display: flex; align-items: center; justify-content: space-between;
+        }
+        .pr-logo {
+          display: inline-flex; align-items: center; gap: 10px; text-decoration: none;
+        }
+        .pr-logo-word {
+          font-family: var(--font-lora), Georgia, serif;
+          font-weight: 500; font-size: 1.125rem; letter-spacing: -0.01em;
+          background: linear-gradient(90deg, #62C396 0%, #47AB7E 100%);
+          -webkit-background-clip: text; background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        .pr-nav-links { display: flex; align-items: center; gap: 20px; }
+        .pr-nav-link {
+          font-size: 0.875rem; font-weight: 500;
+          color: rgba(255,255,255,0.55); text-decoration: none; letter-spacing: 0.01em;
+          transition: color 200ms ease;
+        }
+        .pr-nav-link:hover { color: rgba(255,255,255,0.9); }
+
+        /* ── Pills ── */
+        .pr-pill {
+          display: inline-flex; align-items: center; justify-content: center;
+          padding: 14px 28px; border-radius: 999px;
+          background: linear-gradient(180deg, #27815a 0%, #1D6B48 100%);
+          color: #ffffff; text-decoration: none;
+          font-size: 0.9375rem; font-weight: 500; letter-spacing: 0.005em;
+          border: 1px solid rgba(130,217,174,0.18);
+          cursor: pointer; white-space: nowrap; font-family: inherit;
+          box-shadow: 0 1px 0 rgba(130,217,174,0.22) inset, 0 10px 28px -12px rgba(6,20,14,0.85);
+          transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease;
+        }
+        .pr-pill:hover { transform: translateY(-1px); filter: brightness(1.06); }
+        .pr-pill-lg { padding: 18px 34px; font-size: 1rem; }
+        .pr-pill-ghost {
+          background: transparent; box-shadow: none;
+          border: 1px solid rgba(255,255,255,0.18); color: rgba(255,255,255,0.8);
+        }
+        .pr-pill-ghost:hover { background: rgba(255,255,255,0.04); }
+        .pr-pill-gold {
+          background: linear-gradient(135deg, #E8C96A 0%, #cfa93f 100%);
+          color: #1a1208; border-color: rgba(232,201,106,0.4);
+          box-shadow: 0 10px 28px -12px rgba(232,201,106,0.5);
+        }
+
+        /* ── Hero ── */
+        .pr-hero {
+          max-width: 640px; margin: 0 auto; text-align: center;
+          padding: 76px 24px 48px;
+        }
+        /* Small gold M above the hero — ties the pricing page to the brand
+           plaque on the landing hero. Static (no breathing here — the pricing
+           page should feel calm and factual). */
+        .pr-hero-mark {
+          display: inline-block;
+          width: 76px; height: auto;
+          aspect-ratio: 480 / 394;
+          margin-bottom: 26px;
+          filter:
+            drop-shadow(0 6px 16px rgba(6,20,14,0.7))
+            drop-shadow(0 1px 10px rgba(232,201,106,0.2));
+          user-select: none;
+        }
+        .pr-eyebrow {
+          display: inline-block;
+          font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+          color: #E8C96A; margin-bottom: 22px;
+        }
+        .pr-hero h1 {
+          font-family: var(--font-lora), Georgia, serif;
+          font-weight: 400; font-size: clamp(2.2rem, 6vw, 3.4rem);
+          line-height: 1.08; letter-spacing: -0.025em; color: #ffffff;
+          margin-bottom: 20px;
+        }
+        .pr-hero-sub {
+          font-size: 1.0625rem; color: rgba(255,255,255,0.6);
+          line-height: 1.7; max-width: 30rem; margin: 0 auto;
+        }
+        .pr-gold { color: #E8C96A; }
+
+        /* ── Pricing cards ── */
+        .pr-cards-wrap { padding: 8px 24px 64px; }
+        .pr-cards {
+          max-width: 820px; margin: 0 auto;
+          display: grid; grid-template-columns: 1fr 1fr; gap: 22px;
+          align-items: stretch;
+        }
+        .pr-card {
+          background: rgba(8,20,12,0.6);
+          border: 1px solid rgba(130,217,174,0.16);
+          border-radius: 20px; padding: 36px 30px;
+          display: flex; flex-direction: column; position: relative; overflow: hidden;
+          transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+        }
+        @media (hover: hover) {
+          .pr-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(130,217,174,0.32);
+            box-shadow: 0 20px 48px -22px rgba(6,20,14,0.9);
+          }
+          .pr-card-featured:hover {
+            border-color: rgba(232,201,106,0.68);
+            box-shadow: 0 0 0 1px rgba(232,201,106,0.2), 0 28px 64px -24px rgba(232,201,106,0.34);
+          }
+        }
+        .pr-card-featured {
+          border-color: rgba(232,201,106,0.5);
+          box-shadow: 0 0 0 1px rgba(232,201,106,0.14), 0 24px 60px -26px rgba(232,201,106,0.28);
+        }
+        .pr-card-badge {
+          position: absolute; top: 20px; right: 24px;
+          font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+          color: #1a1208; background: rgba(232,201,106,0.92);
+          padding: 4px 12px; border-radius: 999px;
+        }
+        .pr-card-name {
+          font-size: 0.78rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+          color: rgba(255,255,255,0.5); margin-bottom: 16px;
+        }
+        .pr-card-featured .pr-card-name { color: #E8C96A; }
+        .pr-card-price { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+        .pr-card-amount {
+          font-family: var(--font-lora), Georgia, serif;
+          font-weight: 400; font-size: 3rem; line-height: 1; letter-spacing: -0.02em; color: #ffffff;
+        }
+        .pr-card-unit { font-size: 0.9375rem; color: rgba(255,255,255,0.45); }
+        .pr-card-total {
+          font-size: 0.875rem; color: rgba(255,255,255,0.4); margin-bottom: 24px;
+        }
+        .pr-card-total strong { color: #82d9ae; font-weight: 600; }
+        .pr-card-featured .pr-card-total strong { color: #E8C96A; }
+        .pr-card-bullets {
+          list-style: none; margin: 0 0 28px; padding: 0;
+          display: flex; flex-direction: column; gap: 13px; flex: 1;
+        }
+        .pr-card-bullets li {
+          display: flex; align-items: flex-start; gap: 11px;
+          font-size: 0.9375rem; line-height: 1.5; color: rgba(255,255,255,0.75);
+        }
+        .pr-card-check { flex-shrink: 0; margin-top: 3px; color: #47AB7E; }
+        .pr-card-featured .pr-card-check { color: #E8C96A; }
+        .pr-card-cta {
+          display: block; text-align: center; text-decoration: none;
+          padding: 15px 24px; border-radius: 12px;
+          font-weight: 600; font-size: 0.9375rem; letter-spacing: 0.01em;
+          background: rgba(255,255,255,0.06); color: #ffffff;
+          border: 1px solid rgba(130,217,174,0.22);
+          transition: background 180ms ease, border-color 180ms ease;
+        }
+        .pr-card-cta:hover { background: rgba(255,255,255,0.1); border-color: rgba(130,217,174,0.4); }
+        .pr-card-featured .pr-card-cta {
+          background: linear-gradient(135deg, #E8C96A 0%, #cfa93f 100%);
+          color: #1a1208; border-color: rgba(232,201,106,0.4);
+        }
+        .pr-card-featured .pr-card-cta:hover { filter: brightness(1.05); }
+
+        /* ── Slider ── */
+        .pr-slider-wrap { padding: 0 24px 72px; }
+        .pr-slider-card {
+          max-width: 620px; margin: 0 auto;
+          background: rgba(8,20,12,0.55);
+          border: 1px solid rgba(130,217,174,0.14);
+          border-radius: 18px; padding: 32px 30px; text-align: center;
+        }
+        .pr-slider-label {
+          font-size: 0.78rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+          color: rgba(255,255,255,0.45); margin-bottom: 18px;
+        }
+        .pr-slider-count {
+          font-family: var(--font-lora), Georgia, serif;
+          font-size: 1.5rem; color: #ffffff; margin-bottom: 22px;
+        }
+        .pr-slider-totals {
+          display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px;
+        }
+        .pr-slider-total {
+          background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.06);
+          border-radius: 12px; padding: 16px 14px;
+        }
+        .pr-slider-total-featured { border-color: rgba(232,201,106,0.28); }
+        .pr-slider-total-name {
+          font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
+          color: rgba(255,255,255,0.45); margin-bottom: 6px;
+        }
+        .pr-slider-total-featured .pr-slider-total-name { color: #E8C96A; }
+        .pr-slider-total-value {
+          font-family: var(--font-lora), Georgia, serif; font-size: 1.75rem; color: #ffffff;
+        }
+        .pr-slider-total-sub { font-size: 0.75rem; color: rgba(255,255,255,0.35); margin-top: 2px; }
         input[type=range] {
-          -webkit-appearance: none;
-          width: 100%;
-          height: 4px;
-          border-radius: 4px;
-          background: linear-gradient(to right, #10b981 0%, #10b981 var(--pct,50%), rgba(255,255,255,0.2) var(--pct,50%), rgba(255,255,255,0.2) 100%);
-          outline: none;
-          cursor: pointer;
+          -webkit-appearance: none; appearance: none;
+          width: 100%; height: 4px; border-radius: 4px;
+          background: linear-gradient(to right, #34d399 0%, #34d399 var(--pct,50%), rgba(255,255,255,0.15) var(--pct,50%), rgba(255,255,255,0.15) 100%);
+          outline: none; cursor: pointer;
         }
         input[type=range]::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          width: 22px;
-          height: 22px;
-          border-radius: 50%;
-          background: white;
-          border: 2px solid #10b981;
-          box-shadow: 0 2px 8px rgba(16,185,129,0.3);
-          cursor: pointer;
+          -webkit-appearance: none; appearance: none;
+          width: 22px; height: 22px; border-radius: 50%;
+          background: #ffffff; border: 2px solid #34d399;
+          box-shadow: 0 2px 8px rgba(52,211,153,0.35); cursor: pointer;
           transition: transform 0.15s;
         }
         input[type=range]::-webkit-slider-thumb:active { transform: scale(1.2); }
-      `}} />
+        input[type=range]::-moz-range-thumb {
+          width: 22px; height: 22px; border-radius: 50%;
+          background: #ffffff; border: 2px solid #34d399; cursor: pointer;
+        }
+        .pr-slider-ends { display: flex; justify-content: space-between; margin-top: 8px; }
+        .pr-slider-ends span { font-size: 11px; color: rgba(255,255,255,0.3); }
 
-      <div style={{ fontFamily: "'Inter', sans-serif", background: '#fefdfb', color: '#44403c', minHeight: '100vh' }}>
+        /* ── Founding 100 strip ── */
+        .pr-founding-wrap { padding: 0 24px 72px; }
+        .pr-founding {
+          max-width: 680px; margin: 0 auto;
+          background: rgba(10, 26, 15, 0.72);
+          border: 1px solid rgba(52,211,153,0.22);
+          border-radius: 22px; padding: 40px 34px; text-align: center;
+          position: relative; overflow: hidden;
+          box-shadow: 0 24px 70px rgba(0,0,0,0.4);
+        }
+        .pr-founding-glow {
+          position: absolute; top: -100px; right: -80px; width: 300px; height: 300px;
+          background: radial-gradient(circle, rgba(52,211,153,0.16) 0%, transparent 70%);
+          pointer-events: none;
+        }
+        .pr-founding-eyebrow {
+          display: inline-block; position: relative;
+          font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+          color: #E8C96A; border: 1px solid rgba(232,201,106,0.3);
+          border-radius: 999px; padding: 5px 14px; margin-bottom: 18px;
+        }
+        .pr-founding h2 {
+          font-family: var(--font-lora), Georgia, serif; position: relative;
+          font-weight: 400; font-size: clamp(1.4rem, 3.6vw, 1.9rem);
+          line-height: 1.25; letter-spacing: -0.01em; color: #f4f7f5; margin-bottom: 14px;
+        }
+        .pr-founding p {
+          position: relative; font-size: 0.9375rem; line-height: 1.7;
+          color: rgba(244,247,245,0.65); max-width: 40ch; margin: 0 auto 26px;
+        }
 
+        /* ── FAQ ── */
+        .pr-faq-wrap { padding: 0 24px 80px; }
+        .pr-faq {
+          max-width: 640px; margin: 0 auto;
+        }
+        .pr-faq h2 {
+          font-family: var(--font-lora), Georgia, serif;
+          font-weight: 400; font-size: clamp(1.6rem, 4vw, 2.2rem);
+          color: #ffffff; text-align: center; letter-spacing: -0.02em; margin-bottom: 40px;
+        }
+        .pr-faq-item {
+          border-top: 1px solid rgba(255,255,255,0.07);
+          padding: 20px 0;
+        }
+        .pr-faq-item summary {
+          cursor: pointer; list-style: none;
+          display: flex; justify-content: space-between; align-items: center; gap: 16px;
+        }
+        .pr-faq-item summary::-webkit-details-marker { display: none; }
+        .pr-faq-q {
+          font-size: 0.9375rem; font-weight: 600; color: rgba(255,255,255,0.9); line-height: 1.4;
+        }
+        .pr-faq-plus { font-size: 20px; color: #34d399; flex-shrink: 0; user-select: none; line-height: 1; }
+        .pr-faq-item[open] .pr-faq-plus { transform: rotate(45deg); }
+        .pr-faq-a {
+          font-size: 0.9375rem; color: rgba(255,255,255,0.5); line-height: 1.75;
+          margin-top: 14px; padding-right: 28px;
+        }
+
+        /* ── Closing ── */
+        .pr-closing {
+          text-align: center; padding: 64px 24px 96px;
+          border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .pr-closing h2 {
+          font-family: var(--font-lora), Georgia, serif;
+          font-weight: 400; font-size: clamp(1.9rem, 4.6vw, 2.8rem);
+          color: #ffffff; letter-spacing: -0.022em; margin-bottom: 16px;
+        }
+        .pr-closing-sub {
+          font-size: 1.0625rem; color: rgba(255,255,255,0.55);
+          line-height: 1.7; max-width: 32rem; margin: 0 auto 34px;
+        }
+        .pr-closing-row {
+          display: inline-flex; gap: 14px; align-items: center; flex-wrap: wrap; justify-content: center;
+        }
+
+        /* ── Footer ── */
+        .pr-footer {
+          padding: 48px 24px 64px; text-align: center;
+          color: rgba(255,255,255,0.28); font-size: 0.8125rem;
+          border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .pr-footer a { color: rgba(130,217,174,0.7); text-decoration: none; }
+
+        @media (max-width: 720px) {
+          .pr-cards { grid-template-columns: 1fr; gap: 18px; }
+          .pr-hero { padding: 72px 22px 40px; }
+          .pr-card { padding: 32px 24px; }
+          .pr-slider-totals { gap: 10px; }
+          .pr-nav-links { gap: 14px; }
+        }
+      ` }} />
+
+      <div className="pr-bg" aria-hidden="true" />
+
+      <div className="pr-shell">
         {/* ── NAV ── */}
-        <nav style={{
-          position: 'fixed', top: 0, width: '100%', zIndex: 50,
-          background: 'rgba(254,253,251,0.92)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(0,0,0,0.04)',
-        }}>
-          <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <a href="/montree" style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.45rem', fontWeight: 700, color: '#064e3b', textDecoration: 'none', letterSpacing: '-0.5px' }}>
-              Mon<span style={{ color: '#10b981' }}>tree</span>
-            </a>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-              <a href="/montree" style={{ fontSize: 13, fontWeight: 500, color: '#78716c', textDecoration: 'none' }}>Home</a>
-              <a href="/montree/login-select" style={{ fontSize: 13, fontWeight: 500, color: '#78716c', textDecoration: 'none' }}>Log in</a>
-              <a href="/montree/login-select" style={{ fontSize: 13, fontWeight: 600, padding: '9px 20px', borderRadius: 10, background: '#064e3b', color: 'white', textDecoration: 'none', letterSpacing: '0.2px' }}>
-                Get started
-              </a>
+        <nav className="pr-nav" aria-label="Primary">
+          <div className="pr-nav-inner">
+            <Link className="pr-logo" href="/montree" aria-label="Montree home">
+              <MontreeLogo size={26} />
+              <span className="pr-logo-word">Montree</span>
+            </Link>
+            <div className="pr-nav-links">
+              <Link className="pr-nav-link" href="/montree">Home</Link>
+              <Link className="pr-nav-link" href="/montree/login-select">Log in</Link>
             </div>
           </div>
         </nav>
 
         {/* ── HERO ── */}
-        <section style={{ paddingTop: 120, paddingBottom: 56, textAlign: 'center', padding: '120px 24px 56px' }}>
-          <div style={{ maxWidth: 600, margin: '0 auto' }}>
-            <div style={{ display: 'inline-block', padding: '5px 16px', borderRadius: 20, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', marginBottom: 24 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#059669', letterSpacing: 1.5, textTransform: 'uppercase' }}>Simple pricing</span>
+        <section className="pr-hero">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            className="pr-hero-mark"
+            src="/brand/m-mark-480.webp"
+            alt=""
+            width={480}
+            height={394}
+            draggable={false}
+            aria-hidden="true"
+          />
+          <div>
+            <span className="pr-eyebrow">Pricing</span>
+          </div>
+          <h1>Simple, honest pricing.</h1>
+          <p className="pr-hero-sub">
+            Every school starts with <span className="pr-gold">7 days of Premium, free</span> — no
+            card. After the week, pick your plan.
+          </p>
+        </section>
+
+        {/* ── PRICING CARDS ── */}
+        <section className="pr-cards-wrap">
+          <div className="pr-cards">
+            {/* Starter — $3 */}
+            <div className="pr-card" ref={addReveal}>
+              <div className="pr-card-name">Starter</div>
+              <div className="pr-card-price">
+                <span className="pr-card-amount">$3</span>
+                <span className="pr-card-unit">/ active student / month</span>
+              </div>
+              <div className="pr-card-total">
+                {students} students = <strong>${starterMonthly}/mo</strong>
+              </div>
+              <ul className="pr-card-bullets">
+                <li><Check className="pr-card-check" />The complete Montree system</li>
+                <li><Check className="pr-card-check" />AI reports on our fast model</li>
+                <li><Check className="pr-card-check" />Unlimited photo recognition</li>
+                <li><Check className="pr-card-check" />Guru teacher advisor included</li>
+              </ul>
+              <Link className="pr-card-cta" href="/montree/login-select?signup=true">
+                Start your free week
+              </Link>
             </div>
-            <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(2.2rem, 6vw, 3.4rem)', fontWeight: 700, color: '#064e3b', lineHeight: 1.1, letterSpacing: '-1.5px', marginBottom: 20 }}>
-              Simple pricing.<br />
-              <em style={{ color: '#10b981', fontStyle: 'italic' }}>Founder pricing for early schools.</em>
-            </h1>
-            <p style={{ fontSize: '1.05rem', color: '#78716c', fontWeight: 300, lineHeight: 1.7, maxWidth: 480, margin: '0 auto' }}>
-              Core is $3 per student a month. Premium — full Sonnet reports — is $7. The first 100 schools lock Premium at the $3 Core price, for life. Your first month is free while you set up.
+
+            {/* Premium — $7, featured */}
+            <div className="pr-card pr-card-featured" ref={addReveal}>
+              <span className="pr-card-badge">Most popular</span>
+              <div className="pr-card-name">Premium</div>
+              <div className="pr-card-price">
+                <span className="pr-card-amount">$7</span>
+                <span className="pr-card-unit">/ active student / month</span>
+              </div>
+              <div className="pr-card-total">
+                {students} students = <strong>${premiumMonthly}/mo</strong>
+              </div>
+              <ul className="pr-card-bullets">
+                <li><Check className="pr-card-check" />Claude Sonnet reports parents keep</li>
+                <li><Check className="pr-card-check" />A second, deeper look at tricky photos</li>
+                <li><Check className="pr-card-check" />Guru + Astra on Claude Sonnet</li>
+                <li><Check className="pr-card-check" />Everything in Starter</li>
+              </ul>
+              <Link className="pr-card-cta" href="/montree/login-select?signup=true">
+                Start your free week
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ── SLIDER ── */}
+        <section className="pr-slider-wrap" ref={addReveal}>
+          <div className="pr-slider-card">
+            <div className="pr-slider-label">What will it cost my school?</div>
+            <div className="pr-slider-count">{students} active students</div>
+            <div className="pr-slider-totals">
+              <div className="pr-slider-total">
+                <div className="pr-slider-total-name">Starter</div>
+                <div className="pr-slider-total-value">${starterMonthly}</div>
+                <div className="pr-slider-total-sub">per month</div>
+              </div>
+              <div className="pr-slider-total pr-slider-total-featured">
+                <div className="pr-slider-total-name">Premium</div>
+                <div className="pr-slider-total-value">${premiumMonthly}</div>
+                <div className="pr-slider-total-sub">per month</div>
+              </div>
+            </div>
+            <input
+              type="range" min={5} max={60} step={1} value={students}
+              aria-label="Number of active students"
+              style={{ '--pct': `${((students - 5) / 55) * 100}%` } as React.CSSProperties}
+              onChange={(e) => setStudents(Number(e.target.value))}
+            />
+            <div className="pr-slider-ends">
+              <span>5 students</span>
+              <span>60 students</span>
+            </div>
+          </div>
+        </section>
+
+        {/* ── FOUNDING 100 STRIP ── */}
+        <section className="pr-founding-wrap" ref={addReveal}>
+          <div className="pr-founding">
+            <div className="pr-founding-glow" />
+            <span className="pr-founding-eyebrow">Founding 100</span>
+            <h2>One month of Premium free — then Premium at $3 for life.</h2>
+            <p>
+              The first hundred schools we hand-pick to build Montree with lock Premium at the Starter
+              price, forever. Applications are read personally. Once the hundred are in, the offer closes.
             </p>
-          </div>
-        </section>
-
-        {/* ── PRICING CARD ── */}
-        <section style={{ padding: '0 24px 72px' }}>
-          <div style={{ maxWidth: 520, margin: '0 auto' }}>
-            <div ref={addReveal} style={{
-              background: 'linear-gradient(160deg, #064e3b 0%, #065f46 60%, #047857 100%)',
-              borderRadius: 24, padding: '44px 40px',
-              boxShadow: '0 20px 60px rgba(6,78,59,0.3)',
-              position: 'relative', overflow: 'hidden',
-            }}>
-              {/* Decorative glows */}
-              <div style={{ position: 'absolute', top: -80, right: -80, width: 280, height: 280, background: 'radial-gradient(circle, rgba(16,185,129,0.18) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
-              <div style={{ position: 'absolute', bottom: -60, left: -40, width: 200, height: 200, background: 'radial-gradient(circle, rgba(110,231,183,0.07) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
-
-              {/* First-month-included badge */}
-              <div style={{
-                position: 'absolute', top: 24, right: 28,
-                background: 'rgba(110,231,183,0.15)', border: '1px solid rgba(110,231,183,0.3)',
-                borderRadius: 20, padding: '4px 12px',
-                fontSize: 11, fontWeight: 700, color: '#6ee7b7',
-                letterSpacing: 1, textTransform: 'uppercase',
-              }}>
-                First month included
-              </div>
-
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#6ee7b7', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 20, position: 'relative' }}>Bloom</div>
-
-              {/* Price + Slider */}
-              <div style={{ position: 'relative', marginBottom: 24 }}>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
-                  <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '3.2rem', fontWeight: 700, color: 'white', letterSpacing: '-2px' }}>$7</span>
-                  <span style={{ fontSize: 15, color: 'rgba(255,255,255,0.5)' }}>/student/mo</span>
-                </div>
-                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 18 }}>
-                  <span style={{ color: 'rgba(255,255,255,0.6)' }}>{students} students</span>
-                  {' = '}
-                  <strong style={{ color: '#6ee7b7', fontSize: 15 }}>${bloomMonthly}/mo</strong>
-                </div>
-                <input
-                  type="range" min={5} max={60} step={1} value={students}
-                  style={{ '--pct': `${((students - 5) / 55) * 100}%` } as React.CSSProperties}
-                  onChange={(e) => setStudents(Number(e.target.value))}
-                />
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
-                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>5 students</span>
-                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>60 students</span>
-                </div>
-              </div>
-
-              {/* How it works — clear and honest */}
-              <div style={{ padding: '14px 18px', borderRadius: 12, background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', marginBottom: 24, position: 'relative' }}>
-                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: 500, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 }}>How it works</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ color: '#6ee7b7', fontSize: 14 }}>✓</span>
-                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>Card on file at signup</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ color: '#6ee7b7', fontSize: 14 }}>✓</span>
-                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>First month on us — no charge while you set up</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ color: '#6ee7b7', fontSize: 14 }}>✓</span>
-                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>$7 per active student / month, billed monthly</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ color: '#6ee7b7', fontSize: 14 }}>✓</span>
-                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>Cancel anytime — no contracts</span>
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(110,231,183,0.1)', border: '1px solid rgba(110,231,183,0.2)', marginBottom: 24, position: 'relative' }}>
-                <span style={{ fontSize: 12, color: '#6ee7b7', fontWeight: 500 }}>✦ Powered by Claude Sonnet — Anthropic&apos;s most capable model</span>
-              </div>
-
-              <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 20, marginBottom: 28, position: 'relative' }}>
-                <CheckItem text="AI photo identification (Haiku + Sonnet)" light />
-                <CheckItem text="Smart Shelf — weekly work plan per child" light />
-                <CheckItem text="Game plans & developmental nudges" light />
-                <CheckItem text="Full teacher reports — Sonnet analysis" light />
-                <CheckItem text="Parent narrative letters — rich & personal" light />
-                <CheckItem text="Developmental flags & sensitive periods" light />
-                <CheckItem text="Auto-filled weekly admin docs" light />
-                <CheckItem text="AI Guru advisor (Sonnet)" light />
-                <CheckItem text="Intelligence panels & daily brief" light />
-                <CheckItem text="Parent portal" light />
-                <CheckItem text="Semester progress reports (PPTX)" light />
-                <CheckItem text="Self-learning visual memory" light />
-                <CheckItem text="Progress tracking (5 areas)" light />
-                <CheckItem text="Photo gallery & library" light />
-                <CheckItem text="Teacher notes & curriculum browser" light />
-              </div>
-
-              <a href="/montree/login-select" className="cta-btn" style={{
-                display: 'block', textAlign: 'center', padding: '16px 24px',
-                borderRadius: 12, background: 'white', color: '#065f46',
-                fontWeight: 700, fontSize: 15, textDecoration: 'none', letterSpacing: '0.2px',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-                position: 'relative',
-              }}>
-                Get started
-              </a>
-              <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 12, position: 'relative' }}>
-                One subscription · Card on file · First month included
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* ── WHAT BLOOM ACTUALLY DOES ── */}
-        <section style={{ padding: '0 24px 72px', background: '#faf9f7' }}>
-          <div style={{ maxWidth: 840, margin: '0 auto', paddingTop: 64 }}>
-            <div ref={addReveal} style={{ textAlign: 'center', marginBottom: 48 }}>
-              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(1.6rem, 4vw, 2.2rem)', color: '#064e3b', letterSpacing: '-0.5px', marginBottom: 14 }}>
-                What Bloom <em>actually does</em>
-              </h2>
-              <p style={{ fontSize: '0.95rem', color: '#78716c', maxWidth: 520, margin: '0 auto', lineHeight: 1.7 }}>
-                This isn&apos;t software that helps you do your job. It&apos;s software that does your job — so you can give the children everything you were trained to give them.
-              </p>
-            </div>
-
-            <div ref={addReveal} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 20 }}>
-              {[
-                {
-                  icon: '📸',
-                  title: 'A photo becomes a record',
-                  body: 'The teacher takes a picture of a child working. The system identifies the work, records the observation, tracks progress, and determines what comes next. No typing. No admin.',
-                },
-                {
-                  icon: '💌',
-                  title: 'Personal letters to every parent',
-                  body: 'Not templates. Sonnet writes a genuine, detailed account of what their child is learning and why it matters — in a voice that sounds like their teacher, not a software company.',
-                },
-                {
-                  icon: '📄',
-                  title: 'Teacher reports that think',
-                  body: 'Full analytical reports per child: developmental stage, normalisation arc, sensitive period context, and specific guidance per curriculum area. Ready every Friday.',
-                },
-                {
-                  icon: '🧠',
-                  title: 'A Montessori expert in the room',
-                  body: 'Ask anything. The Guru knows every child, every work, every observation. Backed by Sonnet — it gives nuanced answers to complex developmental questions in seconds.',
-                },
-              ].map((item, i) => (
-                <div key={i} style={{ background: 'white', borderRadius: 16, padding: '26px 24px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 2px 12px rgba(0,0,0,0.03)' }}>
-                  <div style={{ fontSize: 26, marginBottom: 12 }}>{item.icon}</div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#064e3b', marginBottom: 10, lineHeight: 1.3 }}>{item.title}</div>
-                  <div style={{ fontSize: 13, color: '#78716c', lineHeight: 1.65 }}>{item.body}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── FIRST-MONTH CLARITY BANNER ── */}
-        <section ref={addReveal} style={{ padding: '0 24px 72px' }}>
-          <div style={{
-            maxWidth: 680, margin: '0 auto',
-            background: '#064e3b',
-            borderRadius: 24, padding: '48px 40px',
-            textAlign: 'center',
-            position: 'relative', overflow: 'hidden',
-            boxShadow: '0 16px 48px rgba(6,78,59,0.22)',
-          }}>
-            <div style={{ position: 'absolute', top: -80, right: -80, width: 280, height: 280, background: 'radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', bottom: -60, left: -60, width: 220, height: 220, background: 'radial-gradient(circle, rgba(110,231,183,0.08) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
-            <div style={{ position: 'relative' }}>
-              <div style={{ display: 'inline-block', padding: '5px 16px', borderRadius: 20, background: 'rgba(110,231,183,0.12)', border: '1px solid rgba(110,231,183,0.25)', marginBottom: 20 }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#6ee7b7', letterSpacing: 1.5, textTransform: 'uppercase' }}>First month included</span>
-              </div>
-              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(1.5rem, 3.5vw, 2.2rem)', color: 'white', marginBottom: 16, letterSpacing: '-0.5px' }}>
-                Feel the magic from day one.
-              </h2>
-              <p style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.75, maxWidth: 460, margin: '0 auto 12px' }}>
-                Card on file at signup. No charge for your first month while you set up. The full Montree experience — every report, every parent letter, every AI feature — from the first day.
-              </p>
-              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.35)', lineHeight: 1.6, maxWidth: 400, margin: '0 auto 28px' }}>
-                $7 per active student per month. Cancel anytime before day 30 and never get charged. Your classroom data is never deleted.
-              </p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
-                <a href="/montree/login-select" className="cta-btn" style={{
-                  padding: '14px 32px', borderRadius: 12, background: 'white',
-                  color: '#064e3b', fontWeight: 700, fontSize: 14,
-                  textDecoration: 'none', letterSpacing: '0.2px',
-                }}>
-                  Get started
-                </a>
-                <a href="/montree" className="cta-btn" style={{
-                  padding: '14px 32px', borderRadius: 12,
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  color: 'rgba(255,255,255,0.8)', fontWeight: 600, fontSize: 14,
-                  textDecoration: 'none', letterSpacing: '0.2px',
-                }}>
-                  See how it works
-                </a>
-              </div>
-              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)', marginTop: 18 }}>One subscription · Card on file · First month on us · No contracts.</p>
-            </div>
+            <a className="pr-pill pr-pill-lg pr-pill-gold" href={APPLY_MAILTO}>Apply by email</a>
           </div>
         </section>
 
         {/* ── FAQ ── */}
-        <section style={{ padding: '0 24px 72px', background: '#faf9f7' }}>
-          <div style={{ maxWidth: 640, margin: '0 auto', paddingTop: 64 }}>
-            <h2 ref={addReveal} style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(1.5rem, 3.5vw, 2rem)', color: '#064e3b', textAlign: 'center', marginBottom: 40, letterSpacing: '-0.5px' }}>
-              Questions
-            </h2>
-            <div ref={addReveal} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-              {[
-                {
-                  q: 'How does the first month work?',
-                  a: 'You sign up with a card on file. We do not charge that card for the first 30 days. Use everything — AI photo identification, parent letters, teacher reports, the Guru, Smart Shelf — to set up your classroom and feel the magic. On day 31, the first month\'s subscription begins at $7 per active student. Cancel anytime before then and you are never charged.',
-                },
-                {
-                  q: 'Why do you ask for a card upfront?',
-                  a: 'Two reasons. Honest: we are a real subscription service, not a freemium product, and we want the relationship to start as one. Practical: it removes a friction at month-end so the work you set up keeps running without anyone having to remember to add a card. If you decide Montree is not for you, cancel from your dashboard before day 30 and the card is never charged.',
-                },
-                {
-                  q: 'What does "one classroom" mean?',
-                  a: 'Your subscription covers your whole school — every classroom, every student in those classrooms. The pricing is per active student across the school. If you start with one classroom, you pay only for those students; add a second classroom and your bill grows by exactly those new students.',
-                },
-                {
-                  q: 'What is the difference between Core and Premium?',
-                  a: 'Core ($3 per student / month) is the full Montree workflow — AI photo identification, Smart Shelf, progress tracking, parent portal — with reports written by a fast model. Premium ($7 per student / month) upgrades the teacher reports and parent letters to Claude Sonnet, our most capable model, for the richest, most personal writing. Both are the real product; Premium simply writes with more depth.',
-                },
-                {
-                  q: 'What is the Founding 100?',
-                  a: 'The first 100 schools to join lock in full Premium reports at the Core price — $3 per student, for life — and get their first six months free. It is our thank-you to the schools who back us early. Once 100 schools are in, the offer closes permanently.',
-                },
-                {
-                  q: 'What is Claude Sonnet?',
-                  a: 'Claude Sonnet is Anthropic\'s most capable AI model — the same company that published the constitutional AI safety research. Sonnet is what writes the parent letters, the teacher reports, and the developmental analysis that teachers describe as "magic." It reasons deeply, writes with genuine warmth, and understands Montessori philosophy in a way that shows in every output.',
-                },
-                {
-                  q: 'How does the self-learning visual memory work?',
-                  a: 'Every time a teacher corrects a photo identification ("That\'s not Cutting — that\'s Sewing"), Montree updates the classroom\'s visual memory. Over time, the system gets measurably more accurate for your specific classroom and the exact works you have on your shelves. This moat is per-classroom — it grows with you, and it can\'t be copied.',
-                },
-                {
-                  q: 'Is pricing per classroom or per school?',
-                  a: 'Per active student across your whole school. If you have 40 students across two classrooms, you pay for 40 students — not per classroom. Add or close classrooms freely; the bill follows your actual student count.',
-                },
-                {
-                  q: 'Can I cancel at any time?',
-                  a: 'Yes. No annual contracts. You\'re billed monthly and can cancel at any time. Your classroom data is never deleted.',
-                },
-              ].map((item, i) => (
-                <details key={i} className="faq-item" style={{ borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: 20, paddingBottom: 20 }}>
-                  <summary style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 14, fontWeight: 600, color: '#1c1917', lineHeight: 1.4, paddingRight: 20 }}>{item.q}</span>
-                    <span style={{ fontSize: 18, color: '#10b981', flexShrink: 0, userSelect: 'none' }}>+</span>
+        <section className="pr-faq-wrap">
+          <div className="pr-faq">
+            <h2 ref={addReveal}>Questions</h2>
+            <div ref={addReveal}>
+              {FAQ.map((item, i) => (
+                <details key={i} className="pr-faq-item">
+                  <summary>
+                    <span className="pr-faq-q">{item.q}</span>
+                    <span className="pr-faq-plus">+</span>
                   </summary>
-                  <p style={{ fontSize: 14, color: '#78716c', lineHeight: 1.7, marginTop: 14, paddingRight: 32 }}>{item.a}</p>
+                  <p className="pr-faq-a">{item.a}</p>
                 </details>
               ))}
             </div>
           </div>
         </section>
 
-        {/* ── BOTTOM CTA ── */}
-        <section style={{ padding: '64px 24px 80px', textAlign: 'center' }}>
-          <div style={{ maxWidth: 480, margin: '0 auto' }}>
-            <h2 ref={addReveal} style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(1.7rem, 4vw, 2.4rem)', color: '#064e3b', letterSpacing: '-0.5px', marginBottom: 14 }}>
-              See what one photo can do
-            </h2>
-            <p ref={addReveal} style={{ fontSize: '0.95rem', color: '#78716c', lineHeight: 1.7, marginBottom: 28 }}>
-              15 minutes. No installation. No training required.
-            </p>
-            <div ref={addReveal} style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
-              <a href="/montree/login-select" className="cta-btn" style={{
-                padding: '14px 32px', borderRadius: 12, background: '#064e3b',
-                color: 'white', fontWeight: 600, fontSize: 14,
-                textDecoration: 'none', letterSpacing: '0.3px',
-                boxShadow: '0 8px 24px rgba(6,78,59,0.15)',
-              }}>
-                Get started
-              </a>
-              <a href="/montree" className="cta-btn" style={{
-                padding: '14px 32px', borderRadius: 12,
-                background: 'rgba(16,185,129,0.07)', border: '1px solid rgba(16,185,129,0.2)',
-                color: '#059669', fontWeight: 600, fontSize: 14,
-                textDecoration: 'none', letterSpacing: '0.3px',
-              }}>
-                Back to home
-              </a>
-            </div>
+        {/* ── CLOSING CTA ── */}
+        <section className="pr-closing" ref={addReveal}>
+          <h2>See what one photo can do.</h2>
+          <p className="pr-closing-sub">
+            7 days of Premium, free. No card. No installation. No training required.
+          </p>
+          <div className="pr-closing-row">
+            <Link className="pr-pill pr-pill-lg" href="/montree/login-select?signup=true">
+              Start your free week
+            </Link>
+            <Link className="pr-pill pr-pill-lg pr-pill-ghost" href="/montree">
+              Back to home
+            </Link>
           </div>
         </section>
 
         {/* ── FOOTER ── */}
-        <footer style={{ textAlign: 'center', padding: '24px', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
-          <p style={{ fontSize: 13, color: '#a8a29e' }}>
-            <a href="https://montree.xyz" style={{ color: '#10b981', textDecoration: 'none' }}>montree.xyz</a>
-            {' · '}
-            <a href="/montree" style={{ color: '#a8a29e', textDecoration: 'none' }}>Home</a>
-            {' · '}
-            <a href="/montree/login-select" style={{ color: '#a8a29e', textDecoration: 'none' }}>Log in</a>
-          </p>
+        <footer className="pr-footer">
+          <a href="https://montree.xyz">montree.xyz</a>
+          {' · '}
+          <Link href="/montree" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}>Home</Link>
+          {' · '}
+          <Link href="/montree/login-select" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}>Log in</Link>
         </footer>
-
       </div>
     </>
   );
 }
 
-function CheckItem({ text, bold, light }: { text: string; bold?: boolean; light?: boolean }) {
+// Emerald/gold check glyph for the pricing-card bullets. Colour via className.
+function Check({ className }: { className?: string }) {
   return (
-    <div className="check-row">
-      <svg width="16" height="16" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0, marginTop: 2 }}>
-        <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-          fill={light ? '#6ee7b7' : '#9ca3af'} />
-      </svg>
-      <span style={{
-        fontSize: 13,
-        color: light ? 'rgba(255,255,255,0.75)' : '#374151',
-        fontWeight: bold ? 600 : 400,
-        lineHeight: 1.4,
-      }}>
-        {text}
-      </span>
-    </div>
+    <svg className={className} width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path
+        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+        fill="currentColor"
+      />
+    </svg>
   );
 }

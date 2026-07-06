@@ -35,7 +35,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, getPublicUrl } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
+import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, AI_ENABLED, AI_MODEL, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curriculum-loader';
@@ -483,12 +483,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { child_id, media_id } = body;
     const force_onboarding = body.force_onboarding === true;
-    // 🚨 TIER-GATE (Jul 4 2026): Haiku/Free schools stay pure Haiku. Forcing
-    // haiku_only ON for non-Premium reuses the already-tested Haiku-only path,
-    // which skips EVERY Sonnet sub-path in this legacy engine (the onboarding
-    // Sonnet direct path, the Pass-3 discriminator, and the Pass-2 Sonnet
-    // fallback). Only Premium (ai_tier_sonnet) schools may spend Sonnet here.
-    const sonnetTierEnabled = await isFeatureEnabled(supabase, auth.schoolId, 'ai_tier_sonnet');
+    // 🚨 TIER-GATE (Jul 6 2026 launch pricing — plan amendment A4): Haiku/Free
+    // schools stay pure Haiku. Forcing haiku_only ON for non-Premium reuses the
+    // already-tested Haiku-only path, which skips EVERY Sonnet sub-path in this
+    // legacy engine (the onboarding Sonnet direct path, the Pass-3
+    // discriminator, and the Pass-2 Sonnet fallback). DERIVED from the resolved
+    // tier (not the raw ai_tier_sonnet flag) so Premium TRIALS may spend Sonnet
+    // here too. Variable name kept.
+    const sonnetTierEnabled = (await resolveReportModel(supabase, auth.schoolId)).tier === 'sonnet';
     const haiku_only = body.haiku_only === true || !sonnetTierEnabled; // Diagnostic mode OR non-Premium tier: skip Sonnet fallback
     // Validate locale against allowed values
     const locale = ['en', 'zh'].includes(body.locale) ? body.locale : 'en';

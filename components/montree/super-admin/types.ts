@@ -72,6 +72,11 @@ export interface School {
   billing_cadence?: 'monthly' | 'annual';
   next_invoice_due_at?: string | null;
   manual_invoice_details?: Record<string, unknown> | null;
+  // Migration 286 — abuse lock. locked_at set = login refused for all roles +
+  // resolve-model kills AI spend. founding_member = redeemed a Founding 100 code.
+  locked_at?: string | null;
+  locked_reason?: string | null;
+  founding_member?: boolean;
 }
 
 export interface Feedback {
