@@ -44,7 +44,8 @@
    (start 30-40/day cold), the sacred Montree pitch email, per-recipient `to:DOMAIN in:sent` Gmail dedup check
    MANDATORY at draft time, **NEVER auto-send** — Tredoux reviews and sends every email.
 3. **Suggested wave order (email-coverage × founding-100 fit):** SA follow-through (per
-   `HANDOFF_SA_FOUNDING_OUTREACH_JUL6.md` — Hook 11 YouTube upload still owed first) → Germany (489✉️) →
+   `HANDOFF_SA_FOUNDING_OUTREACH_JUL6.md` — **Hook 11 YouTube upload: Tredoux does it Jul 7, GATE for the SA
+   wave; verify it's up before drafting SA**) → Germany (489✉️) →
    Netherlands (214✉️) → Italy (289✉️) → AU/NZ (449✉️) → UK/Ireland/Canada → USA in state batches (2,340✉️ —
    the big block; CA/TX/FL/NY first) → France (206 clean) → Spain/India (heavy PRIOR_CONTACT — check flags).
    Non-EN locales: pitch is English (i18n product is 12-locale — mention it).
