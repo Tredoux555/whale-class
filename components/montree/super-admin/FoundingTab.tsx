@@ -125,6 +125,46 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
     }
   };
 
+  // One-shot mint (Jul 6 launch): school name + email → admitted row + FND-
+  // code + shareable link, in a single click. This is the primary founding
+  // workflow — schools apply BY EMAIL, so there's rarely a waitlist row to
+  // admit first. Duplicate email that's already admitted+coded returns the
+  // existing code (idempotent); other duplicates get a clear 409 message.
+  const [mintSchool, setMintSchool] = useState('');
+  const [mintEmail, setMintEmail] = useState('');
+  const [minting, setMinting] = useState(false);
+  const [minted, setMinted] = useState<{ code: string; already: boolean } | null>(null);
+
+  const mintLink = async () => {
+    if (!mintSchool.trim() || !mintEmail.trim()) {
+      setError('School name and email are both needed to mint a link.');
+      return;
+    }
+    setMinting(true);
+    setMinted(null);
+    try {
+      const res = await fetch('/api/montree/super-admin/founding', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-super-admin-token': sessionToken },
+        body: JSON.stringify({ action: 'create_admitted', school_name: mintSchool.trim(), email: mintEmail.trim() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data?.error || 'Could not mint a founding link. Try again.');
+        return;
+      }
+      setMinted({ code: data.signup_code, already: !!data.already_existed });
+      setMintSchool('');
+      setMintEmail('');
+      setError(null);
+      await load();
+    } catch {
+      setError('Could not mint a founding link. Try again.');
+    } finally {
+      setMinting(false);
+    }
+  };
+
   const saveConfig = async (override?: Partial<Config>) => {
     setSavingConfig(true);
     try {
@@ -177,6 +217,51 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
           {error}
         </div>
       )}
+
+      {/* ── Mint a founding link (one shot) ──
+          The headline action: type the school + email from their application
+          email, click Mint → admitted row + FND- code + shareable link. */}
+      <div style={{ ...card, borderColor: 'rgba(232,201,106,0.4)', marginBottom: 16 }}>
+        <div style={{ ...label, color: '#E8C96A', marginBottom: 10 }}>🚀 Mint a founding link</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+          <input
+            style={{ ...input, width: 220 }}
+            placeholder="School name"
+            value={mintSchool}
+            onChange={(e) => setMintSchool(e.target.value)}
+          />
+          <input
+            style={{ ...input, width: 240 }}
+            placeholder="Their email"
+            type="email"
+            value={mintEmail}
+            onChange={(e) => setMintEmail(e.target.value)}
+          />
+          <button
+            style={btn('#E8C96A', '#1a1208')}
+            disabled={minting}
+            onClick={mintLink}
+          >
+            {minting ? 'Minting…' : 'Mint link'}
+          </button>
+        </div>
+        {minted && (
+          <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+            <code style={{ background: 'rgba(232,201,106,0.12)', color: '#E8C96A', padding: '8px 12px', borderRadius: 8, fontSize: 13 }}>
+              https://montree.xyz/montree/try?founding={minted.code}
+            </code>
+            <button style={btn('#334155', '#e2e8f0')} onClick={() => copyLink(minted.code)}>
+              {copiedCode === minted.code ? '✓ Copied' : 'Copy link'}
+            </button>
+            {minted.already && (
+              <span style={{ fontSize: 12, color: '#94a3b8' }}>Email already admitted — this is their existing link.</span>
+            )}
+          </div>
+        )}
+        <p style={{ fontSize: 12, color: '#64748b', margin: '10px 0 0' }}>
+          The link gives the school 1 month of Premium free, then Premium locked at $3/student for life. Single use.
+        </p>
+      </div>
 
       {/* ── Config + stats ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 16 }}>
