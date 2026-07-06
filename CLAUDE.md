@@ -55,6 +55,36 @@ Montree coupling + personal data; don't re-introduce it by editing the Montree c
 
 ---
 
+## 🏁 SESSION — Jul 6, 2026 (Cowork/Fable, night) — GLOBAL OUTREACH SESSION 3 OF 3: USA 3,198 + AFRICA + CONSOLIDATION + 🌍 SUPER-ADMIN TAB — PROGRAM COMPLETE
+
+**Canonical: `docs/handoffs/HANDOFF_GLOBAL_OUTREACH_SCRAPE.md` §Session 3 (incl. the CAMPAIGN MANAGER — READY
+TO DRAFT runbook) + `docs/outreach/OUTREACH_MASTER_TRACKER.md` (final status table). Tab build plan:
+`docs/handoffs/PLAN_GLOBAL_OUTREACH_TAB_JUL6.md`.**
+
+- **🏁 FINAL NUMBERS: 7,366 schools · 67 countries · 4,446 unique emails · 4,223 draft-ready · 80 disadvantaged.**
+  Master: `docs/outreach/Montree_Global_Master_Jul2026.xlsx` (4 sheets, formulas recalc'd clean) + single-file
+  `.csv` twin (the 🌍-tab import file). Old Montree_Master_Outreach.xlsx untouched (history only).
+- **USA 3,198 / 2,340✉️ (73%):** montessoricensus.org ships its ENTIRE census inline in the homepage map JS
+  (3,198 markers). Zero-token sandbox pipeline: all 3,198 detail pages (63% leader-email hit) + 754 school-site
+  crawls (+327). **AMS directory carries NO emails structurally** — deprioritized (sample kept).
+- **Africa 196 / ~97✉️ (~20 countries, 3 Sonnet agents)** + **disadvantaged 68→80** (Eswatini + Ukraine retries
+  hit; EsF pages turned out directly fetchable). MX: 1,549 new domains, 4 dead. +105 PRIOR_CONTACT (209 total).
+- **🌍 Global Outreach super-admin tab BUILT + reviewed** (sacred rule; Opus audit caught the page.tsx `valid[]`
+  5th wiring point + the duplicate-182-migration trap; fresh-eyes fixed the 'Unknown'-country dead-end filter).
+  New: migration 287 (adds `disadvantaged_school` to contact_type CHECK), `global-outreach/route.ts` (GET
+  by_country/contacts/export, default scope `batch_tag='global-scrape-jul2026'`), `GlobalOutreachTab.tsx`
+  (client-side CSV import → EXISTING outreach `bulk_import`; status flow → EXISTING campaign-manager PATCH).
+  **🚨 Standalone Docker build does NOT ship `docs/` → repo CSVs are unreadable at runtime; import is client
+  upload by design — don't "fix" it into a server disk read.** ESLint 0/0, tsc clean.
+- **🚨 PENDING TREDOUX:** (1) run migration 287 in Supabase (SQL in the handoff §Session 3 + in chat) BEFORE
+  importing disadvantaged rows; (2) after deploy: 🌍 tab → upload `Montree_Global_Master_Jul2026.csv` → expect
+  ~6,955 imported / 411 dup-skipped; (3) then Campaign Manager drafting begins (wave order in handoff §📮 —
+  50/day drafts, Gmail `to:DOMAIN in:sent` dedup, NEVER auto-send).
+- **Repo hygiene:** stray root tsconfig temp files (tsconfig.scope*.json, tsconfig.reviewtmp*.json — sandbox
+  can't unlink) are gitignored; delete via Desktop Commander when convenient.
+
+---
+
 ## 🌍 SESSION — Jul 6, 2026 (Cowork/Fable, evening) — GLOBAL OUTREACH SCRAPE sessions 1+2 of 3 + CLAUDE.MD ARCHIVED (1MB→147KB)
 
 **Canonical: `docs/outreach/OUTREACH_MASTER_TRACKER.md` (status + session-3 queue + source intel) + `docs/handoffs/HANDOFF_GLOBAL_OUTREACH_SCRAPE.md`. No code, no migrations — data + docs only.**

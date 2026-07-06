@@ -31,6 +31,7 @@ const AgentInboxTab = dynamic(() => import('@/components/montree/super-admin/Age
 const CampaignTab = dynamic(() => import('@/components/montree/super-admin/CampaignTab'), { ssr: false });
 const PlaybookTab = dynamic(() => import('@/components/montree/super-admin/PlaybookTab'), { ssr: false });
 const FoundingTab = dynamic(() => import('@/components/montree/super-admin/FoundingTab'), { ssr: false });
+const GlobalOutreachTab = dynamic(() => import('@/components/montree/super-admin/GlobalOutreachTab'), { ssr: false });
 
 
 interface DmMessage {
@@ -41,7 +42,7 @@ interface DmMessage {
   created_at: string;
 }
 
-type TabType = 'schools' | 'feedback' | 'leads' | 'visitors' | 'agents' | 'agent-inbox' | 'money' | 'campaign' | 'playbook' | 'health' | 'dlq' | 'errors' | 'outreach' | 'founding';
+type TabType = 'schools' | 'feedback' | 'leads' | 'visitors' | 'agents' | 'agent-inbox' | 'money' | 'campaign' | 'playbook' | 'health' | 'dlq' | 'errors' | 'outreach' | 'founding' | 'global-outreach';
 
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -348,7 +349,7 @@ export default function SuperAdminPage() {
     if (typeof window === 'undefined') return;
     const sp = new URLSearchParams(window.location.search);
     const tab = sp.get('tab');
-    const valid: TabType[] = ['schools', 'feedback', 'leads', 'visitors', 'agents', 'agent-inbox', 'money', 'campaign', 'playbook', 'health', 'dlq', 'errors', 'outreach', 'founding'];
+    const valid: TabType[] = ['schools', 'feedback', 'leads', 'visitors', 'agents', 'agent-inbox', 'money', 'campaign', 'playbook', 'health', 'dlq', 'errors', 'outreach', 'founding', 'global-outreach'];
     if (tab && (valid as string[]).includes(tab)) {
       setActiveTab(tab as TabType);
     }
@@ -740,6 +741,7 @@ export default function SuperAdminPage() {
               the rest by frequency. Plumbing/diagnostics (Health, DLQ,
               Errors) sit at the end. */}
           <SuperAdminTab active={activeTab === 'founding'} onClick={() => setActiveTab('founding')} icon="🚀" label="Founding 100" />
+          <SuperAdminTab active={activeTab === 'global-outreach'} onClick={() => setActiveTab('global-outreach')} icon="🌍" label="Global Outreach" />
           <SuperAdminTab active={activeTab === 'schools'} onClick={() => setActiveTab('schools')} icon="🏫" label="Schools" />
           <SuperAdminTab
             active={activeTab === 'leads'}
@@ -872,6 +874,10 @@ export default function SuperAdminPage() {
 
         {activeTab === 'founding' && (
           <FoundingTab sessionToken={saToken} />
+        )}
+
+        {activeTab === 'global-outreach' && (
+          <GlobalOutreachTab sessionToken={saToken} />
         )}
 
       </div>
