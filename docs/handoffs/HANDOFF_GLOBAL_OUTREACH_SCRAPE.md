@@ -24,5 +24,16 @@ Sub-agents get the session-start snapshot of CLAUDE.md injected (~460K tokens ba
 ## Session 2 (NEXT) — run this
 Fresh session → CLAUDE.md is slim → **spawn Sonnet agents in parallel** per the tracker's session-2 queue: France (source intel in tracker — AMF is login-walled), Spain, Japan, Korea, India (cap ~150 quality), Mexico/Argentina/LatAm, Ireland+UAE top-ups, disadvantaged wave 2 (MGGF grantees + EsF country pages). Agent prompt template = tracker "Playbook" section + the tricks above. After each wave: MX-check new domains, update tracker, flag prior-contact overlaps.
 
-## Session 3 — USA + Africa + consolidation
-USA state-by-state (AMS members first: CA/TX/FL/NY; montessoricensus.org may have bulk data). Africa sweep (per-country assocs; big disadvantaged-list growth expected). Then: final dedup by email across all files, merge into master xlsx, and READY-TO-DRAFT handoff to the Campaign Manager protocol (50 Gmail drafts/day, Tredoux sends manually).
+## Session 3 — USA + Africa + consolidation + 🌍 SUPER-ADMIN TAB (Tredoux-requested)
+USA state-by-state (AMS members first: CA/TX/FL/NY; montessoricensus.org may have bulk data). Africa sweep (per-country assocs; big disadvantaged-list growth expected). Then: final dedup by email across all files, merge into master xlsx, and READY-TO-DRAFT handoff to the Campaign Manager protocol.
+
+**🌍 Super-admin "Global Outreach" tab (BUILD in session 3, after final dedup — Tredoux, Jul 6):**
+placed NEXT TO the 🚀 Founding 100 tab in super-admin. Spec:
+- Import all `docs/outreach/*/*.csv` into `montree_outreach_contacts` (existing table + Campaign Manager integration — extend with `country`, `source`, `mx_ok` columns via migration if missing; `status='new'`, `contact_type='individual_school'`). Disadvantaged side-list rows tagged distinctly (e.g. `contact_type='disadvantaged_school'`).
+- Tab UI: per-country counts (total / emailed / replied / converted), country filter, search, per-row status flow `new → drafted → sent → replied / bounced → converted / dead` (reuse Campaign Manager PATCH), CSV re-export.
+- Follow the sacred build rule (plan → audit → build → fresh-eyes review). DB via Supabase pooler or paste-SQL-in-chat if GFW blocks.
+
+**Daily send volume (guidance for Tredoux):** standing protocol = 50 Gmail drafts/day, manual send. For cold outreach deliverability from one Gmail account start at **30–40/day** and ramp to 50 if bounce/spam signals stay clean — at ~1,730+ emails that's a 6–8 week campaign; revisit a dedicated sending domain if scaling past that.
+
+## 📋 RESUME PROMPT — SESSION 2 (paste verbatim in a fresh chat)
+> Continue the global outreach program — session 2 of 3. Read `docs/outreach/OUTREACH_MASTER_TRACKER.md` and `docs/handoffs/HANDOFF_GLOBAL_OUTREACH_SCRAPE.md` first. Then run the session-2 queue with PARALLEL SONNET sub-agents (model:"sonnet" — never Fable workers): France, Spain, Japan, South Korea, India (cap ~150 quality rows), Mexico/Argentina/LatAm, Ireland + UAE top-ups, and disadvantaged-list wave 2 (MGGF grantees + EsF country pages). Use the proven hidden-endpoint tricks in the handoff. Rules: emails only when actually SEEN — never constructed; MX-check all new domains via dig (zero AI) at the end; flag prior-contact overlaps; NEVER auto-send anything. Finish by updating the tracker, writing the session-2 handoff block, updating CLAUDE.md, and committing + pushing via Desktop Commander.
