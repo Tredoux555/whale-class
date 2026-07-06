@@ -182,6 +182,77 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ success: true, signup_code: signupCode });
     }
 
+    // One-shot mint (Jul 6 launch): create an ALREADY-ADMITTED row + FND- code
+    // in a single action. This matches the real workflow — founding schools
+    // apply BY EMAIL, so there is usually no waitlist row to admit first.
+    // Tredoux types school name + email → gets a shareable signup link.
+    // Duplicate email: if the existing row is admitted + coded, return its code
+    // (idempotent); otherwise 409 so we never silently clobber a real applicant.
+    if (action === 'create_admitted') {
+      const schoolName = String(body.school_name || '').trim().slice(0, 200);
+      const email = String(body.email || '').trim().toLowerCase().slice(0, 320);
+      const contactName = String(body.contact_name || '').trim().slice(0, 200) || null;
+      const country = String(body.country || '').trim().slice(0, 100) || null;
+      if (!schoolName || !email || !email.includes('@')) {
+        return NextResponse.json({ error: 'School name and a valid email are required.' }, { status: 400 });
+      }
+
+      const now = new Date().toISOString();
+      // Retry the INSERT on the (astronomically rare) signup_code UNIQUE
+      // collision. An email collision (same UNIQUE code 23505) is detected by
+      // re-reading the row for that email instead.
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const candidate = generateFoundingCode();
+        const { data: inserted, error: insErr } = await supabase
+          .from('montree_founding_waitlist')
+          .insert({
+            school_name: schoolName,
+            contact_name: contactName,
+            email,
+            country,
+            status: 'admitted',
+            admitted_at: now,
+            signup_code: candidate,
+            code_generated_at: now,
+            source: 'super_admin_manual',
+          } as never)
+          .select('id, signup_code')
+          .maybeSingle();
+
+        if (!insErr && inserted) {
+          return NextResponse.json({ success: true, id: inserted.id, signup_code: inserted.signup_code });
+        }
+        if (insErr?.code === '23505') {
+          // Which UNIQUE tripped? If a row already exists for this email,
+          // surface it (with its code if admitted+coded). Otherwise it was a
+          // signup_code collision — loop and mint a fresh candidate.
+          const { data: existing } = await supabase
+            .from('montree_founding_waitlist')
+            .select('id, status, signup_code, redeemed_at')
+            .eq('email', email)
+            .maybeSingle();
+          if (existing) {
+            if (existing.status === 'admitted' && existing.signup_code) {
+              return NextResponse.json({
+                success: true,
+                id: existing.id,
+                signup_code: existing.signup_code,
+                already_existed: true,
+                redeemed_at: existing.redeemed_at ?? null,
+              });
+            }
+            return NextResponse.json(
+              { error: `That email already has a ${existing.status} application. Admit it from the list below instead.` },
+              { status: 409 }
+            );
+          }
+          continue; // signup_code collision — retry with a new code
+        }
+        if (insErr) throw insErr;
+      }
+      return NextResponse.json({ error: 'Could not mint a code. Try again.' }, { status: 500 });
+    }
+
     return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
   } catch (err) {
     console.error('[super-admin/founding PATCH] failed:', err);

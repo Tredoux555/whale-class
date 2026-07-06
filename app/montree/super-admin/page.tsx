@@ -734,6 +734,12 @@ export default function SuperAdminPage() {
           className="flex gap-1 mb-6 overflow-x-auto pb-1"
           style={{ borderBottom: '1px solid rgba(52,211,153,0.18)' }}
         >
+          {/* Launch reorder (Jul 6 2026): 🚀 Founding 100 leads the strip —
+              minting founding links is the #1 admin action during launch.
+              Then the daily drivers (Schools, Leads, Feedback, Money), then
+              the rest by frequency. Plumbing/diagnostics (Health, DLQ,
+              Errors) sit at the end. */}
+          <SuperAdminTab active={activeTab === 'founding'} onClick={() => setActiveTab('founding')} icon="🚀" label="Founding 100" />
           <SuperAdminTab active={activeTab === 'schools'} onClick={() => setActiveTab('schools')} icon="🏫" label="Schools" />
           <SuperAdminTab
             active={activeTab === 'leads'}
@@ -756,17 +762,16 @@ export default function SuperAdminPage() {
             label="Feedback"
             badge={adminData.unreadCount > 0 ? { text: String(adminData.unreadCount), color: 'red' } : null}
           />
+          <SuperAdminTab active={activeTab === 'money'} onClick={() => setActiveTab('money')} icon="💰" label="Money" />
           <SuperAdminTab active={activeTab === 'visitors'} onClick={() => setActiveTab('visitors')} icon="📍" label="Visitors" />
           <SuperAdminTab active={activeTab === 'agents'} onClick={() => setActiveTab('agents')} icon="🤝" label="Agents" />
           <SuperAdminTab active={activeTab === 'agent-inbox'} onClick={() => setActiveTab('agent-inbox')} icon="📬" label="Agent Inbox" />
-          <SuperAdminTab active={activeTab === 'money'} onClick={() => setActiveTab('money')} icon="💰" label="Money" />
           <SuperAdminTab active={activeTab === 'campaign'} onClick={() => setActiveTab('campaign')} icon="📣" label="Campaign" />
           <SuperAdminTab active={activeTab === 'outreach'} onClick={() => setActiveTab('outreach')} icon="🎯" label="Outreach" />
           <SuperAdminTab active={activeTab === 'playbook'} onClick={() => setActiveTab('playbook')} icon="🎬" label="Playbook" />
           <SuperAdminTab active={activeTab === 'health'} onClick={() => setActiveTab('health')} icon="🩺" label="Health" />
           <SuperAdminTab active={activeTab === 'dlq'} onClick={() => setActiveTab('dlq')} icon="⚠️" label="DLQ" />
           <SuperAdminTab active={activeTab === 'errors'} onClick={() => setActiveTab('errors')} icon="🐛" label="Errors" />
-          <SuperAdminTab active={activeTab === 'founding'} onClick={() => setActiveTab('founding')} icon="🚀" label="Founding 100" />
         </div>
 
         {/* Tab Content */}
