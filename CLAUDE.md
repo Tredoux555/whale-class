@@ -76,10 +76,16 @@ TO DRAFT runbook) + `docs/outreach/OUTREACH_MASTER_TRACKER.md` (final status tab
   (client-side CSV import → EXISTING outreach `bulk_import`; status flow → EXISTING campaign-manager PATCH).
   **🚨 Standalone Docker build does NOT ship `docs/` → repo CSVs are unreadable at runtime; import is client
   upload by design — don't "fix" it into a server disk read.** ESLint 0/0, tsc clean.
-- **🚨 PENDING TREDOUX:** (1) run migration 287 in Supabase (SQL in the handoff §Session 3 + in chat) BEFORE
-  importing disadvantaged rows; (2) after deploy: 🌍 tab → upload `Montree_Global_Master_Jul2026.csv` → expect
-  ~6,955 imported / 411 dup-skipped; (3) then Campaign Manager drafting begins (wave order in handoff §📮 —
-  50/day drafts, Gmail `to:DOMAIN in:sent` dedup, NEVER auto-send).
+- **✅ CLOSED SAME NIGHT (Jul 7 00:30):** migration 287 RUN + master CSV IMPORTED live — 6,852 inserted /
+  103 DB-dups / 0 errors (exact match to prediction), tab shows 6,852 · 4,343✉️ · 67 countries · 75
+  disadvantaged. **NEW DEFAULT COLD EMAIL APPROVED** (Tredoux) — full text in handoff §✅ STATE AS OF JUL 7:
+  photo-hook opener → teacher-founder para → the driving-force line as the CLOSER (not opener) → Founding-100
+  offer line. Supersedes the sacred email as default (sacred kept below for reference). **Volume: 20/day from
+  tredoux555@gmail.com; ramp to 50 only after the cousin sending domain (Tredoux, this week — NEVER cold-send
+  from montree.xyz, it carries parent-report reputation) + bounces <3%.** SA wave = its own homecoming email,
+  gated on Hook 11 YouTube upload (Tredoux, Jul 7). Statuses per session: pooler → Chrome-extension-drive the
+  🌍 tab → manual flip list. Next session: "campaign day 1" → verify Hook 11 up → draft the ~32 SA founding
+  batch.
 - **Repo hygiene:** stray root tsconfig temp files (tsconfig.scope*.json, tsconfig.reviewtmp*.json — sandbox
   can't unlink) are gitignored; delete via Desktop Commander when convenient.
 

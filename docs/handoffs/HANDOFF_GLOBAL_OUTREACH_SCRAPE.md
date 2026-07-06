@@ -35,6 +35,46 @@
   **🚨 Migration 287 must be pasted in Supabase BEFORE importing the 80 disadvantaged rows** (until then they
   fail per-row with a CHECK violation, surfaced verbatim; all other rows import fine).
 
+### ✅ STATE AS OF JUL 7 00:30 — IMPORT DONE, TEMPLATE APPROVED, CAMPAIGN READY
+- **Import VERIFIED LIVE:** Tredoux ran migration 287 + uploaded the master CSV → **6,852 inserted, 103
+  DB-level duplicates, 0 errors** (6,955 attempted — exact match to prediction; 411 DUP_EMAIL skipped
+  client-side before that). Tab shows 6,852 contacts · 4,343 with email · 67 countries · 75 disadvantaged.
+- **✉️ TEMPLATE APPROVED (Tredoux, Jul 7) — supersedes the sacred email as the DEFAULT cold pitch** (sacred
+  email kept in CLAUDE.md for reference). Subject `Montree`. Body (personalize greeting + one hook line):
+
+  > Dear [Principal / School Name],
+  >
+  > A teacher takes one photo of a child working. Montree identifies the material, records the observation,
+  > tracks the child's progress, and writes the parents a genuine, personal report — not a template.
+  >
+  > I built it because I'm an AMS-certified Montessori teacher (3–6), and the administrative weight was
+  > keeping me from the children. Montree lifts it. Your teachers return to the classroom and the craft;
+  > you get a complete view of every classroom and every child, with a built-in Montessori expert on hand
+  > to answer any parent's question instantly.
+  >
+  > My passion for education started when I was about 14, when I realised how many people lack opportunity —
+  > and that's not right. That's been my driving force ever since. Montree is how I act on it.
+  >
+  > I'm currently onboarding my first 100 founding partner schools — first month free, pricing locked for
+  > life. If that's interesting, ten minutes is enough to see it.
+  >
+  > Kind regards,
+  > Tredoux
+  > Montessori teacher & founder — montree.xyz
+
+- **Volume:** START 20/day from tredoux555@gmail.com. Ramp to 50/day ONLY after the cousin sending domain
+  (Tredoux sorting this week — e.g. getmontree.com; NEVER cold-send from montree.xyz itself, it carries the
+  app's parent-report email reputation) is live + warmed 2-3 weeks AND bounces stay <3%.
+- **SA wave exception:** uses the HOMECOMING email from `HANDOFF_SA_FOUNDING_OUTREACH_JUL6.md`, NOT the
+  template above. Gate: Hook 11 on YouTube (Tredoux, Jul 7) — verify before drafting SA.
+- **Status updates each session:** try Supabase pooler first (GFW-flaky) → else drive the logged-in 🌍 tab
+  via the Chrome extension → else hand Tredoux a flip list. The 🌍 tab is the scoreboard.
+- **Email viability (recorded honestly):** every address SEEN (never constructed) + every domain MX-checked;
+  individual mailboxes NOT SMTP-probed (impossible at scale without spam-flagging) → expect 3-8% real-world
+  bounce; bounces get flagged in the tab and never retried.
+- The full plan also lives as a Gmail draft in Tredoux's account: "Montree Global Campaign — the complete
+  plan (Jul 6, 2026)".
+
 ### 📮 CAMPAIGN MANAGER — READY TO DRAFT (the next session's job)
 1. **Deploy** (push done this session) → **run migration 287** in Supabase SQL editor (SQL also in CLAUDE.md
    session block) → open super-admin → 🌍 Global Outreach → **upload `docs/outreach/Montree_Global_Master_Jul2026.csv`**
