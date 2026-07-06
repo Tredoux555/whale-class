@@ -105,3 +105,12 @@ scripts/_harness/find_ctrl.mjs
 scripts/_harness/find_photos.mjs
 scripts/_harness/verify_seed.mjs
 scripts/_revert_seed.mjs
+
+# temp scoped tsconfig from Jul-6 global-outreach build verification (delete via Desktop Commander)
+tsconfig.scope.json
+
+tsconfig.scope2.json
+
+# temp scoped tsconfig from Jul-6 global-outreach fresh-eyes review (sandbox rm blocked — delete via Desktop Commander)
+tsconfig.reviewtmp.json
+tsconfig.reviewtmp.tsbuildinfo

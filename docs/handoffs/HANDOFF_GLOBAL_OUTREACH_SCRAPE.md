@@ -1,4 +1,57 @@
-# HANDOFF — Global Montessori Outreach Scrape (Sessions 1+2 done Jul 6, 2026)
+# HANDOFF — Global Montessori Outreach Scrape (ALL 3 SESSIONS DONE Jul 6, 2026)
+
+## 🏁 Session 3 result (Jul 6, night — Fable orchestrating, FINAL)
+**Program COMPLETE: 7,366 rows · 67 countries · 4,446 unique emails · 4,223 draft-ready · 80 disadvantaged.**
+
+- **USA 3,198 schools / 2,340 emails (73%)** — montessoricensus.org carries its ENTIRE census inline in the
+  homepage map script (3,198 markers: name/city/state/website). All 3,198 detail pages crawled via zero-token
+  sandbox pipeline (leader/contact emails, 63% hit), then 754 school websites crawled for the gap (+327,
+  incl. Cloudflare-decode). File: `docs/outreach/usa/USA_Montessori_Schools.csv`. **AMS directory = structurally
+  email-free** (amshq.org/schools/, plain WP pagination, no bulk endpoint, email deliberately withheld —
+  40-row sample kept at `usa/AMS_Member_Schools.csv`, full crawl deprioritized: zero email yield).
+- **Africa 196 rows / ~97 emails across ~20 countries** (3 Sonnet agents, WebSearch/web_fetch only — sandbox
+  was busy with the USA crawl). Files: `africa/Africa_{East_South,West_North,Topup}_Montessori_Schools.csv`.
+  Notable: Kisumu (KE) + Jinja (UG) are GENUINE Montessori-brand gaps (checked against full local directories);
+  mbischools.org (Bamako) is hijacked/spam — flagged; 13 DISADVANTAGED flags.
+- **Disadvantaged wave 3: 68 → 80 rows (~38 countries).** Eswatini + Ukraine GlobalGiving retries SUCCEEDED
+  (Odessa Way Home fund@wayhome.org.ua verified). EsF project pages turned out DIRECTLY fetchable (not
+  JS-walled) — East Pokot + Corner of Hope pulled in full.
+- **MX pass: 1,549 new domains dig-checked → only 4 dead** (ami-tanzania.ac.tz, arrismontessori.com,
+  bambiniinemergenza.org, rosehillmontessori.org) flagged `MX_DEAD`. **+105 PRIOR_CONTACT flags** (209 total).
+  All 5 new/changed CSVs width-validated (1 malformed row found + fixed in Africa west/north).
+- **Consolidation:** `docs/outreach/Montree_Global_Master_Jul2026.xlsx` — 4 sheets (Summary w/ per-country
+  formulas recalc'd 0 errors · All Schools 7,366 · Draft Queue 4,223 · Disadvantaged 80) + single-file
+  `Montree_Global_Master_Jul2026.csv` (11 cols, the import file for the 🌍 tab). Dedup rule: first occurrence
+  keeps the email, later same-email rows flagged `DUP_EMAIL` (411 flags). The old `Montree_Master_Outreach.xlsx`
+  is untouched (history); the Jul2026 master is THE drafting source now.
+- **🌍 Super-admin Global Outreach tab BUILT** (sacred rule: plan → Opus plan-audit [2 CRIT catches: the
+  5th page.tsx wiring point (`valid[]` deep-link array) + duplicate-182-migration trap] → Opus build → Opus
+  fresh-eyes review [1 IMPORTANT fixed: 'Unknown' country bucket was a dead-end filter in All-contacts mode]).
+  Plan doc: `docs/handoffs/PLAN_GLOBAL_OUTREACH_TAB_JUL6.md`. Files: `migrations/287_disadvantaged_contact_type.sql`,
+  `app/api/montree/super-admin/global-outreach/route.ts` (GET by_country/contacts/export, batch-scoped default
+  `batch_tag='global-scrape-jul2026'` + All-contacts toggle), `components/montree/super-admin/GlobalOutreachTab.tsx`
+  (client CSV import → existing outreach `bulk_import`; status flow → existing campaign-manager PATCH; CSV
+  re-export w/ injection guard), page.tsx 5-point wiring (🌍 right after 🚀 Founding 100). ESLint 0/0, tsc clean.
+  **🚨 Migration 287 must be pasted in Supabase BEFORE importing the 80 disadvantaged rows** (until then they
+  fail per-row with a CHECK violation, surfaced verbatim; all other rows import fine).
+
+### 📮 CAMPAIGN MANAGER — READY TO DRAFT (the next session's job)
+1. **Deploy** (push done this session) → **run migration 287** in Supabase SQL editor (SQL also in CLAUDE.md
+   session block) → open super-admin → 🌍 Global Outreach → **upload `docs/outreach/Montree_Global_Master_Jul2026.csv`**
+   → expect ~6,955 imported (411 DUP_EMAIL skipped client-side, ~2,509 email-less rows imported for the record,
+   80 disadvantaged tagged `disadvantaged_school`).
+2. **Draft protocol unchanged (CLAUDE.md Campaign Manager section is the law):** 50 Gmail drafts/day target
+   (start 30-40/day cold), the sacred Montree pitch email, per-recipient `to:DOMAIN in:sent` Gmail dedup check
+   MANDATORY at draft time, **NEVER auto-send** — Tredoux reviews and sends every email.
+3. **Suggested wave order (email-coverage × founding-100 fit):** SA follow-through (per
+   `HANDOFF_SA_FOUNDING_OUTREACH_JUL6.md` — Hook 11 YouTube upload still owed first) → Germany (489✉️) →
+   Netherlands (214✉️) → Italy (289✉️) → AU/NZ (449✉️) → UK/Ireland/Canada → USA in state batches (2,340✉️ —
+   the big block; CA/TX/FL/NY first) → France (206 clean) → Spain/India (heavy PRIOR_CONTACT — check flags).
+   Non-EN locales: pitch is English (i18n product is 12-locale — mention it).
+4. **Disadvantaged track (80 rows):** separate warm/charity message (free-tier/founding-gift angle), NOT the
+   sales pitch. Draft only after the main-wave rhythm is established.
+5. **Status flow lives in the 🌍 tab** (new → drafted → sent → replied/bounced → converted/dead) — same
+   contract as the 📣 Campaign tab; both read `montree_outreach_contacts`.
 
 ## ✅ Session 2 result (Jul 6, evening — 8 parallel Sonnet agents)
 **+1,841 rows, +466 verified emails → running total ~3,740 schools / ~2,200 emails.**
