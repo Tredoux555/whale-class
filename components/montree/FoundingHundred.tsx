@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from 'react';
 
-// Founding 100 waitlist section for the Montree homepage (mounted directly
-// below the hero). Counter reflects ADMITTED schools (cap - admitted), fetched
-// from /api/montree/founding/count. Signups POST to /api/montree/founding/join.
-// Dark-forest tokens, mobile-first. Copy is verbatim + English-only by design.
+// Founding 100 section for the Montree homepage (mounted directly below the
+// hero). Counter reflects ADMITTED schools (cap - admitted), fetched from
+// /api/montree/founding/count. Applications now come in BY EMAIL (mailto CTA) —
+// Tredoux reads each personally and admits from super-admin. The old self-serve
+// waitlist form (POST /api/montree/founding/join) is retired; the route stays
+// on disk, uncalled. Dark-forest tokens, mobile-first. Copy is English-only by
+// design (a deliberate, personal, non-i18n voice for the founder offer).
 
 interface CountData {
   remaining: number;
@@ -14,17 +17,24 @@ interface CountData {
   is_closed: boolean;
 }
 
+// Pre-filled application email. Body is a light template the applicant fills
+// in. encodeURIComponent on each part so newlines (%0A) and the em-dash in the
+// subject survive across mail clients.
+const APPLY_TO = 'tredoux555@gmail.com';
+const APPLY_SUBJECT = 'Founding 100 Application — [Your school]';
+const APPLY_BODY = [
+  'School name:',
+  'Country:',
+  'Number of students:',
+  'Why you want in:',
+].join('\n');
+const APPLY_MAILTO =
+  `mailto:${APPLY_TO}` +
+  `?subject=${encodeURIComponent(APPLY_SUBJECT)}` +
+  `&body=${encodeURIComponent(APPLY_BODY)}`;
+
 export default function FoundingHundred() {
   const [count, setCount] = useState<CountData | null>(null);
-  const [school, setSchool] = useState('');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [country, setCountry] = useState('');
-  const [students, setStudents] = useState('');
-  const [website, setWebsite] = useState(''); // honeypot
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/montree/founding/count', { cache: 'no-store' })
@@ -35,38 +45,8 @@ export default function FoundingHundred() {
 
   const isFull = !!count && (count.is_closed || count.remaining <= 0);
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (submitting) return;
-    setError(null);
-    if (!email.includes('@')) { setError('Please enter a valid email.'); return; }
-    if (!isFull && !school.trim()) { setError('Please enter your school name.'); return; }
-    setSubmitting(true);
-    try {
-      const res = await fetch('/api/montree/founding/join', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          school_name: isFull ? '' : school,
-          contact_name: name,
-          email,
-          country,
-          student_count: students,
-          website, // honeypot
-        }),
-      });
-      if (res.status === 429) { setError('Too many attempts. Please try again in a few minutes.'); return; }
-      if (!res.ok) { setError('Something went wrong. Please try again.'); return; }
-      setSubmitted(true);
-    } catch {
-      setError('Something went wrong. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   return (
-    <section className="fh" aria-label="Founding 100 waitlist">
+    <section className="fh" aria-label="Founding 100">
       <style dangerouslySetInnerHTML={{ __html: `
         .fh {
           padding: 72px 24px 96px;
@@ -89,7 +69,7 @@ export default function FoundingHundred() {
         .fh-glow {
           position: absolute; top: -120px; right: -100px;
           width: 320px; height: 320px;
-          background: radial-gradient(circle, rgba(52,211,153,0.16) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(232,201,106,0.11) 0%, transparent 70%);
           pointer-events: none;
         }
         .fh-eyebrow {
@@ -101,138 +81,110 @@ export default function FoundingHundred() {
           position: relative;
         }
         .fh-h2 {
-          font-family: 'Lora', Georgia, serif;
-          font-size: clamp(1.7rem, 5vw, 2.3rem);
-          font-weight: 700; color: #f4f7f5; line-height: 1.15;
-          letter-spacing: -0.5px; margin: 0 0 18px; position: relative;
+          font-family: var(--font-lora), 'Lora', Georgia, serif;
+          font-size: clamp(1.55rem, 4.6vw, 2.1rem);
+          font-weight: 500; color: #f4f7f5; line-height: 1.22;
+          letter-spacing: -0.4px; margin: 0 0 18px; position: relative;
         }
         .fh-counter {
           display: flex; align-items: baseline; gap: 10px;
-          margin-bottom: 20px; position: relative;
+          margin-bottom: 22px; position: relative;
         }
         .fh-counter-num {
-          font-family: 'Lora', Georgia, serif;
-          font-size: 3rem; font-weight: 700; color: #E8C96A; letter-spacing: -1px; line-height: 1;
+          font-family: var(--font-lora), 'Lora', Georgia, serif;
+          font-size: 3rem; font-weight: 400; color: #E8C96A; letter-spacing: -1px; line-height: 1;
+          text-shadow: 0 0 28px rgba(232,201,106,0.25);
         }
         .fh-counter-label { font-size: 15px; color: rgba(244,247,245,0.55); }
         .fh-body {
           font-size: 15px; line-height: 1.7; color: rgba(244,247,245,0.72);
-          margin: 0 0 28px; position: relative;
+          margin: 0 0 16px; position: relative;
         }
-        .fh-form { display: flex; flex-direction: column; gap: 12px; position: relative; }
-        .fh-row { display: flex; gap: 12px; }
-        .fh-input {
-          width: 100%;
-          background: rgba(255,255,255,0.05);
-          border: 1px solid rgba(255,255,255,0.14);
-          border-radius: 12px; padding: 14px 16px;
-          font-size: 16px; color: #f4f7f5;
-          font-family: inherit; outline: none;
-          transition: border-color 0.2s;
+        .fh-list {
+          list-style: none; margin: 0 0 28px; padding: 0; position: relative;
+          display: flex; flex-direction: column; gap: 9px;
         }
-        .fh-input::placeholder { color: rgba(244,247,245,0.4); }
-        .fh-input:focus { border-color: rgba(52,211,153,0.6); box-shadow: 0 0 0 3px rgba(52,211,153,0.12); }
-        .fh-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+        .fh-list li {
+          display: flex; align-items: flex-start; gap: 10px;
+          font-size: 14px; line-height: 1.55; color: rgba(244,247,245,0.68);
+        }
+        .fh-list-dot {
+          flex-shrink: 0; margin-top: 8px;
+          width: 5px; height: 5px; border-radius: 999px; background: #E8C96A;
+          box-shadow: 0 0 8px rgba(232,201,106,0.5);
+        }
+        /* Gold pill — the founder offer wears the founder colour, and the
+           999-radius matches every other CTA on the site. */
         .fh-cta {
-          margin-top: 6px;
-          background: linear-gradient(135deg, #34d399 0%, #1D6B48 100%);
-          color: #06251c; font-weight: 700; font-size: 16px;
-          border: none; border-radius: 12px; padding: 16px 24px;
-          cursor: pointer; letter-spacing: 0.2px;
-          box-shadow: 0 8px 24px rgba(52,211,153,0.28);
-          transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+          display: inline-flex; align-items: center; justify-content: center;
+          margin-top: 4px; position: relative;
+          background: linear-gradient(135deg, #E8C96A 0%, #cfa93f 100%);
+          color: #1a1208; font-weight: 600; font-size: 16px;
+          border: 1px solid rgba(232,201,106,0.4);
+          border-radius: 999px; padding: 16px 30px;
+          cursor: pointer; letter-spacing: 0.2px; text-decoration: none;
+          box-shadow: 0 10px 28px -8px rgba(232,201,106,0.45);
+          transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
           min-height: 52px;
         }
-        .fh-cta:hover { transform: translateY(-1px); box-shadow: 0 12px 30px rgba(52,211,153,0.34); }
-        .fh-cta:disabled { opacity: 0.6; cursor: default; transform: none; }
-        .fh-error { font-size: 13px; color: #fca5a5; margin: 4px 0 0; }
-        .fh-success {
-          text-align: center; padding: 12px 0; position: relative;
+        .fh-cta:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 14px 34px -8px rgba(232,201,106,0.55);
+          filter: brightness(1.04);
         }
-        .fh-success-icon { font-size: 32px; }
-        .fh-success-h { font-family: 'Lora', Georgia, serif; font-size: 1.4rem; color: #34d399; margin: 12px 0 6px; }
-        .fh-success-p { font-size: 15px; color: rgba(244,247,245,0.7); line-height: 1.6; }
+        .fh-hint {
+          font-size: 12.5px; color: rgba(244,247,245,0.4); margin: 14px 0 0;
+          position: relative; line-height: 1.5;
+        }
         @media (max-width: 480px) {
           .fh { padding: 48px 18px 72px; }
           .fh-card { padding: 32px 22px; }
-          .fh-row { flex-direction: column; gap: 12px; }
+          .fh-cta { width: 100%; }
         }
       ` }} />
 
       <div className="fh-card">
         <div className="fh-glow" />
 
-        {submitted ? (
-          <div className="fh-success">
-            <div className="fh-success-icon">🌱</div>
-            <div className="fh-success-h">You&apos;re on the list.</div>
-            <p className="fh-success-p">
-              {isFull
-                ? 'Thank you — we will be in touch as spots open up.'
-                : 'Thank you. We will be in touch as we open each wave of the Founding 100.'}
+        <span className="fh-eyebrow">Founding 100</span>
+
+        {isFull ? (
+          <>
+            <h2 className="fh-h2">The Founding 100 is full</h2>
+            <p className="fh-body">
+              Every founding place has been claimed. If you&apos;d still like to work with us, email us
+              and we&apos;ll add you to the general list — we&apos;ll reach out if a place opens up.
             </p>
-          </div>
+            <a className="fh-cta" href={APPLY_MAILTO}>Email us</a>
+          </>
         ) : (
           <>
-            <span className="fh-eyebrow">Founding 100</span>
+            <h2 className="fh-h2">
+              One month of Premium, free.<br />Then Premium locked at $3 per student — for life.
+            </h2>
 
-            {isFull ? (
-              <>
-                <h2 className="fh-h2">The Founding 100 is full</h2>
-                <p className="fh-body">
-                  Every founding spot has been claimed. Join the general waitlist and we&apos;ll reach out
-                  if a place opens up.
-                </p>
-                <form className="fh-form" onSubmit={submit}>
-                  <input className="fh-hp" tabIndex={-1} autoComplete="off" aria-hidden="true"
-                    placeholder="Leave this empty" value={website} onChange={(e) => setWebsite(e.target.value)} />
-                  <input className="fh-input" type="email" placeholder="Your email" required
-                    value={email} onChange={(e) => setEmail(e.target.value)} />
-                  {error && <p className="fh-error">{error}</p>}
-                  <button className="fh-cta" type="submit" disabled={submitting}>
-                    {submitting ? 'Joining…' : 'Join the general waitlist'}
-                  </button>
-                </form>
-              </>
-            ) : (
-              <>
-                <h2 className="fh-h2">Founding 100 Schools</h2>
+            <div className="fh-counter">
+              <span className="fh-counter-num">{count ? count.remaining : '—'}</span>
+              <span className="fh-counter-label">
+                of {count ? count.cap : 100} founding places remaining
+              </span>
+            </div>
 
-                <div className="fh-counter">
-                  <span className="fh-counter-num">{count ? count.remaining : '—'}</span>
-                  <span className="fh-counter-label">of {count ? count.cap : 100} spots remaining</span>
-                </div>
+            <p className="fh-body">
+              We&apos;re hand-picking the first hundred schools to build Montree with. Applications are
+              reviewed personally and schools are enrolled in small batches of 10–15.
+            </p>
 
-                <p className="fh-body">
-                  Free for 6 months, then $3/student locked for life. Full Premium reports, founder price,
-                  forever. Wave 1 opens now. Wave 2 opens when Wave 1 is delighted. Once we&apos;re full,
-                  this offer closes permanently.
-                </p>
+            <ul className="fh-list">
+              <li><span className="fh-list-dot" />One month of Premium free, then Premium at $3/student — locked for life.</li>
+              <li><span className="fh-list-dot" />Every application read personally. No forms, no bots.</li>
+              <li><span className="fh-list-dot" />In exchange: help us validate Montree — your feedback and a testimonial.</li>
+            </ul>
 
-                <form className="fh-form" onSubmit={submit}>
-                  <input className="fh-hp" tabIndex={-1} autoComplete="off" aria-hidden="true"
-                    placeholder="Leave this empty" value={website} onChange={(e) => setWebsite(e.target.value)} />
-                  <input className="fh-input" placeholder="School name" required
-                    value={school} onChange={(e) => setSchool(e.target.value)} />
-                  <div className="fh-row">
-                    <input className="fh-input" placeholder="Your name"
-                      value={name} onChange={(e) => setName(e.target.value)} />
-                    <input className="fh-input" type="email" placeholder="Email" required
-                      value={email} onChange={(e) => setEmail(e.target.value)} />
-                  </div>
-                  <div className="fh-row">
-                    <input className="fh-input" placeholder="Country"
-                      value={country} onChange={(e) => setCountry(e.target.value)} />
-                    <input className="fh-input" type="number" min={0} placeholder="Approx. students"
-                      value={students} onChange={(e) => setStudents(e.target.value)} />
-                  </div>
-                  {error && <p className="fh-error">{error}</p>}
-                  <button className="fh-cta" type="submit" disabled={submitting}>
-                    {submitting ? 'Joining…' : 'Join the Waitlist'}
-                  </button>
-                </form>
-              </>
-            )}
+            <a className="fh-cta" href={APPLY_MAILTO}>Apply by email</a>
+            <p className="fh-hint">
+              Opens your email with a short template — school name, country, student count, and why you want in.
+            </p>
           </>
         )}
       </div>

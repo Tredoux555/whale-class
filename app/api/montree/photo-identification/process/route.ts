@@ -65,6 +65,7 @@ import {
 import type { Locale } from '@/lib/montree/i18n/locales';
 import { isValidLocale } from '@/lib/montree/i18n/locales';
 import { isFeatureEnabled } from '@/lib/montree/features/server';
+import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 
 // Photo pipeline v2 (Session 117+) — see migration 224. When true:
 //   A. is_curriculum_work=false routing gated behind confidence >= 0.80
@@ -255,12 +256,17 @@ export async function POST(request: NextRequest) {
     // migration 224; per-school override via montree_school_features.
     isFeatureEnabled(supabase, auth.schoolId, PHOTO_PIPELINE_V2_KEY),
     // (4b) Sonnet AI tier — gates whether the pipeline may escalate an
-    // uncertain (conf < 0.70) or failed photo to Sonnet. Only Premium
-    // (ai_tier_sonnet) schools pay for Sonnet on photos; Haiku/Free schools
-    // stay 100% Haiku and fall through to the honest haiku_drafted / failed
-    // states below. (Jul 4 2026 — before this, the Sonnet escalation fired on
-    // EVERY tier, which is what spiked capture cost.)
-    isFeatureEnabled(supabase, auth.schoolId, 'ai_tier_sonnet'),
+    // uncertain (conf < 0.70) or failed photo to Sonnet. Only Premium schools
+    // pay for Sonnet on photos; Haiku/Free schools stay 100% Haiku and fall
+    // through to the honest haiku_drafted / failed states below. (Jul 4 2026 —
+    // before this, the Sonnet escalation fired on EVERY tier, spiking cost.)
+    //
+    // 🚨 Launch pricing (Jul 6 2026 — plan amendment A4/1.7): DERIVE from the
+    // resolved tier, not the raw ai_tier_sonnet flag. This gives Premium TRIALS
+    // (subscription_status='trialing', trial_ends_at in the future → tier
+    // 'sonnet') the Sonnet fallback too — they must taste Premium. Locked
+    // schools resolve 'free' (no Sonnet). Variable name kept.
+    resolveReportModel(supabase, auth.schoolId).then((r) => r.tier === 'sonnet'),
   ]);
   void _attemptedRes; // Result intentionally unused — fire-and-resolve write.
 

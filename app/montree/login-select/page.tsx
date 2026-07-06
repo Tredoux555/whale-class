@@ -81,6 +81,14 @@ function UnifiedLoginContent() {
         return;
       }
 
+      // Abuse lock — the code was valid but the school is locked. Bounce to the
+      // locked screen where they can message Tredoux. Same pattern as the 409
+      // pending-referral redirect above (server-supplied redirectTo).
+      if (res.status === 403 && data?.locked && data?.redirectTo) {
+        router.replace(data.redirectTo);
+        return;
+      }
+
       if (!res.ok || !data.success) {
         setError(data.error || t('auth.invalidCode'));
         setLoading(false);

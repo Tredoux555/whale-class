@@ -49,7 +49,7 @@ import type {
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
-import { anthropic, AI_MODEL, OPUS_MODEL } from '@/lib/ai/anthropic';
+import { anthropic, AI_MODEL, OPUS_MODEL, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import {
   buildTracySystemPrompt,
   TRACY_TOOLS,
@@ -256,13 +256,26 @@ export async function POST(request: NextRequest) {
   // to Opus is a single-line change — swap AI_MODEL → OPUS_MODEL here AND
   // update COST_MODEL + the pricing constants above. OPUS_MODEL is still
   // imported so the swap is one identifier away.
-  const model = AI_MODEL;
-  // Catch the "Anthropic changed the default and we forgot" failure mode:
-  // if AI_MODEL drifts to anything other than COST_MODEL, the cost we log
-  // becomes silently wrong. We log loudly so super-admin's cost view doesn't
-  // mislead Tredoux for weeks.
-  assertSupportedCostModel(model);
+  //
+  // 🚨 Launch pricing (Jul 6 2026 — plan amendment A5). Astra's model now
+  // follows the school's plan: Premium/trial (sonnet) → Sonnet; Starter
+  // (haiku) → Haiku. Free is already 402'd above.
+  const model = aiTier.tier === 'sonnet' ? AI_MODEL : HAIKU_MODEL;
+  // Cost constants (below) are Sonnet-priced. On the Sonnet path, assert the
+  // model matches COST_MODEL so a silent Anthropic default-change is caught.
+  // On the Haiku path, DON'T assert (it would falsely warn every Starter turn);
+  // instead compute cost with Haiku rates via costRates below.
+  if (model === COST_MODEL) {
+    assertSupportedCostModel(model);
+  }
   void OPUS_MODEL; // intentionally kept imported as the documented reversion path
+
+  // Per-token rates for the chosen model (used for the cost_usd log).
+  // Sonnet $3/$15 per MTok; Haiku $0.80/$4.00 per MTok.
+  const costRates =
+    model === HAIKU_MODEL
+      ? { input: 0.8, output: 4 }
+      : { input: SONNET_INPUT_USD_PER_MTOK, output: SONNET_OUTPUT_USD_PER_MTOK };
 
   // 🚨 SESSION 136 HANG FIX (May 29, 2026)
   // Every pre-flight await BEFORE the ReadableStream is created blocks the
@@ -954,10 +967,10 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // Compute cost
+        // Compute cost (per-model rates — see costRates above).
         const costUsd =
-          (totalInputTokens / 1_000_000) * SONNET_INPUT_USD_PER_MTOK +
-          (totalOutputTokens / 1_000_000) * SONNET_OUTPUT_USD_PER_MTOK;
+          (totalInputTokens / 1_000_000) * costRates.input +
+          (totalOutputTokens / 1_000_000) * costRates.output;
 
         const totalDuration = Date.now() - startTime;
 
@@ -1013,8 +1026,8 @@ export async function POST(request: NextRequest) {
             output_tokens: totalOutputTokens,
             cost_usd: Number(
               (
-                (totalInputTokens / 1_000_000) * SONNET_INPUT_USD_PER_MTOK +
-                (totalOutputTokens / 1_000_000) * SONNET_OUTPUT_USD_PER_MTOK
+                (totalInputTokens / 1_000_000) * costRates.input +
+                (totalOutputTokens / 1_000_000) * costRates.output
               ).toFixed(6)
             ),
             duration_ms: Date.now() - startTime,

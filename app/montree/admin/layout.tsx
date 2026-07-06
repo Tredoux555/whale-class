@@ -336,6 +336,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           router.replace('/montree/login-select');
           return;
         }
+        // Abuse lock (migration 286) — a session established before the school
+        // was locked keeps working until re-checked here. Bounce to the locked
+        // screen where the principal can message Tredoux.
+        if (data.locked) {
+          setAuthState('unauthed');
+          const sid = data.lockedSchoolId || data.school?.id || '';
+          window.location.href = `/montree/locked?school=${encodeURIComponent(sid)}`;
+          return;
+        }
         // Self-heal: repopulate the school name + principal id + localStorage
         // from the live session (fixes a stale or partial local session, e.g.
         // the generic "School" sidebar).

@@ -60,9 +60,14 @@ export default function TryMontreePage() {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [foundingCode, setFoundingCode] = useState<string | null>(null);
+  // Honeypot — a hidden field real users never fill. Bots that auto-fill every
+  // input trip it; the server fakes success and writes nothing.
+  const [website, setWebsite] = useState('');
 
-  // Read ?ref=CODE from URL on mount. Using window.location keeps us out of
-  // Suspense-boundary territory (useSearchParams in Next 13+ requires Suspense).
+  // Read ?ref=CODE and ?founding=CODE from URL on mount. Using window.location
+  // keeps us out of Suspense-boundary territory (useSearchParams in Next 13+
+  // requires Suspense).
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
@@ -72,6 +77,13 @@ export default function TryMontreePage() {
         const cleaned = ref.trim().toUpperCase();
         if (cleaned.length >= 4 && cleaned.length <= 32) {
           setReferralCode(cleaned);
+        }
+      }
+      const founding = params.get('founding');
+      if (founding) {
+        const cleaned = founding.trim().toUpperCase();
+        if (cleaned.length >= 4 && cleaned.length <= 32) {
+          setFoundingCode(cleaned);
         }
       }
     } catch {
@@ -109,6 +121,8 @@ export default function TryMontreePage() {
           email: userEmail.trim(),
           locale, // Capture the user's UI locale → school.primary_locale at signup
           referral_code: referralCode, // Optional — set if user arrived via ?ref=CODE
+          founding_code: foundingCode, // Optional — set if user arrived via ?founding=CODE
+          website, // Honeypot — empty for real users
         })
       });
 
@@ -211,8 +225,27 @@ export default function TryMontreePage() {
           <span>←</span> {t('common.back')}
         </a>
 
-        {/* Referral code banner — shown on every step if a ?ref= code was detected */}
-        {referralCode && step !== 'code' && (
+        {/* Founding 100 banner — shown on every step if a ?founding= code was
+            detected. Takes precedence over the referral banner (a valid founding
+            code makes referral irrelevant server-side — amendment A6). */}
+        {foundingCode && step !== 'code' && (
+          <div className="mb-6 px-4 py-3 rounded-xl flex items-center gap-3" style={{
+            background: 'rgba(232,201,106,0.12)',
+            border: '1px solid rgba(232,201,106,0.4)',
+          }}>
+            <span style={{ color: 'rgba(232,201,106,0.9)', fontSize: '1.2rem' }}>🚀</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-white text-sm font-medium">Founding 100</p>
+              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem' }}>
+                One month of Premium free, then Premium locked at $3/student for life.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Referral code banner — shown on every step if a ?ref= code was
+            detected AND no founding code is present (founding wins). */}
+        {referralCode && !foundingCode && step !== 'code' && (
           <div className="mb-6 px-4 py-3 rounded-xl flex items-center gap-3" style={{
             background: 'rgba(232,201,106,0.10)',
             border: '1px solid rgba(232,201,106,0.32)',
@@ -377,6 +410,20 @@ export default function TryMontreePage() {
                 />
                 <p className="text-xs text-slate-400 mt-1">So we can help you get started and recover your code</p>
               </div>
+
+              {/* Honeypot — hidden from real users, a spam trap for bots that
+                  auto-fill every field. Kept out of the tab order + hidden from
+                  assistive tech. If filled, the server fakes success. */}
+              <input
+                type="text"
+                name="website"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
+              />
 
               {error && (
                 <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-xl text-red-300 text-sm text-center">

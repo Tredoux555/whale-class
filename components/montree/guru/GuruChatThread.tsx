@@ -13,6 +13,7 @@ import ChatBubble from './ChatBubble';
 import ConcernPills from './ConcernPills';
 import GuruOnboardingPicker from './GuruOnboardingPicker';
 import VoiceNoteButton from './VoiceNoteButton';
+import UpgradeCard from '@/components/montree/UpgradeCard';
 
 interface ChatMessage {
   id: string;
@@ -68,6 +69,10 @@ export default function GuruChatThread({
   const [thinkingPhase, setThinkingPhase] = useState(0);
   const thinkingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [pendingImage, setPendingImage] = useState<{ url: string; uploading: boolean } | null>(null);
+  // 🚨 Launch pricing (Jul 6 2026 — plan amendment A3). When the Guru route
+  // 402s a free-tier school (requires_upgrade), render the warm UpgradeCard
+  // above the composer instead of an error bubble.
+  const [upgrade, setUpgrade] = useState<{ feature: string; url: string } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -236,6 +241,7 @@ export default function GuruChatThread({
     setMessages(prev => [...prev, userMsg]);
     setInputText('');
     setPendingImage(null);
+    setUpgrade(null); // clear any stale upgrade card on a fresh attempt
     setSending(true);
     setThinkingPhase(0);
     if (thinkingTimerRef.current) clearTimeout(thinkingTimerRef.current);
@@ -287,6 +293,17 @@ export default function GuruChatThread({
         let errorContent = '';
         try {
           const data = await res.json();
+          // 🚨 Launch pricing (Jul 6 2026 — A3): free-tier school 402 → warm
+          // UpgradeCard, not an error bubble. Render it once above the
+          // composer and stop (no error message).
+          if (res.status === 402 && data?.requires_upgrade === true) {
+            setUpgrade({
+              feature: typeof data.feature === 'string' && data.feature.trim() ? data.feature.trim() : 'guru',
+              url: typeof data.upgrade_url === 'string' && data.upgrade_url.trim() ? data.upgrade_url.trim() : '/montree/admin/billing',
+            });
+            setSending(false);
+            return;
+          }
           if (data.error === 'guru_daily_limit_reached' || data.error === 'guru_trial_expired') {
             onGuruLimitReached?.();
             errorContent = t('guru.limitReachedUpgrade');
@@ -769,6 +786,14 @@ export default function GuruChatThread({
           </div>
         )}
       </div>
+
+      {/* Launch pricing (Jul 6 2026 — A3): free-tier upgrade prompt. Replaces
+          the error bubble when the Guru route 402s a free-tier school. */}
+      {upgrade && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <UpgradeCard feature={upgrade.feature} upgradeUrl={upgrade.url} />
+        </div>
+      )}
 
       {/* Composer */}
       <div style={{

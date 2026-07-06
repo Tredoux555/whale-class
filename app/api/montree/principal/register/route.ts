@@ -8,6 +8,7 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import { getClientIP } from '@/lib/montree/audit-logger';
 import { createMontreeToken, setMontreeAuthCookie } from '@/lib/montree/server-auth';
 import { redeemOutreachCode } from '@/lib/montree/outreach/redeem';
+import { DEFAULTS } from '@/lib/montree/constants';
 
 function generateSlug(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').substring(0, 50);
@@ -76,6 +77,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'A school with this name already exists' }, { status: 400 });
     }
 
+    // 🚨 Launch pricing (Jul 6 2026 — plan amendment A1): every 'trialing'
+    // school MUST carry a trial_ends_at. The tier resolver's three-way trial
+    // branch reads it: future → Sonnet (Premium trial), past → free (choose a
+    // plan), NULL → Haiku legacy floor. Writing it here keeps this path off the
+    // NULL floor so a fresh principal signup gets the real Premium trial.
+    // DEFAULTS.TRIAL_DAYS (= 7) is the single source of truth for trial length.
+    const trialEndsAt = new Date(Date.now() + DEFAULTS.TRIAL_DAYS * 24 * 60 * 60 * 1000);
+
     // 1. Create school
     const { data: school, error: schoolError } = await supabase
       .from('montree_schools')
@@ -85,6 +94,7 @@ export async function POST(request: NextRequest) {
         owner_email: email.trim().toLowerCase(),
         owner_name: principalName.trim(),
         subscription_status: 'trialing',
+        trial_ends_at: trialEndsAt.toISOString(),
         plan_type: 'school',
         subscription_tier: 'free',
         is_active: true,

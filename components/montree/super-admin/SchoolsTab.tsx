@@ -112,6 +112,54 @@ export default function SchoolsTab({
   // opened from manual_invoice schools (separate state from paymentConfigSchool
   // so opening the wire-record modal doesn't conflict with editing the rail).
   const [recordWireSchool, setRecordWireSchool] = useState<{ id: string; name: string } | null>(null);
+  // Migration 286 — abuse lock. Optimistic per-school override so the LOCKED
+  // chip + button state flip immediately after the PATCH (same pattern as
+  // tierOverrides / billingOverrideUpdates). `locked_at` string = locked, null
+  // = unlocked. Next page load pulls canonical values from the API.
+  const [lockUpdates, setLockUpdates] = useState<Record<string, string | null>>({});
+  const [lockingId, setLockingId] = useState<string | null>(null);
+
+  const getEffectiveLocked = (school: School): boolean => {
+    if (school.id in lockUpdates) return lockUpdates[school.id] !== null;
+    return Boolean(school.locked_at);
+  };
+
+  // Lock / unlock a school. Locking prompts for an optional reason and a
+  // confirm; unlocking just confirms. Optimistic + reverts on failure.
+  const handleToggleLock = useCallback(async (school: School) => {
+    if (!sessionToken) return;
+    const currentlyLocked = school.id in lockUpdates ? lockUpdates[school.id] !== null : Boolean(school.locked_at);
+
+    let reason: string | null = null;
+    if (currentlyLocked) {
+      if (!window.confirm(`Unlock "${school.name}"? Its users will be able to log in again and AI will resume.`)) return;
+    } else {
+      const entered = window.prompt(`Lock "${school.name}"? Login will be refused for every role and all AI is killed.\n\nOptional reason (visible only to you):`, '');
+      if (entered === null) return; // cancelled the prompt
+      reason = entered.trim() ? entered.trim() : null;
+    }
+
+    const nextLocked = !currentlyLocked;
+    // Optimistic
+    setLockUpdates(prev => ({ ...prev, [school.id]: nextLocked ? new Date().toISOString() : null }));
+    setLockingId(school.id);
+    try {
+      const res = await fetch('/api/montree/super-admin/schools', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-super-admin-token': sessionToken },
+        body: JSON.stringify({ schoolId: school.id, locked: nextLocked, locked_reason: reason }),
+      });
+      if (!res.ok) {
+        // Revert
+        setLockUpdates(prev => { const next = { ...prev }; delete next[school.id]; return next; });
+        throw new Error('Failed');
+      }
+    } catch (err) {
+      console.error('School lock toggle failed:', err);
+    } finally {
+      setLockingId(null);
+    }
+  }, [sessionToken, lockUpdates]);
 
   const getEffectiveOverride = (school: School): number | null => {
     if (school.id in billingOverrideUpdates) {
@@ -479,7 +527,14 @@ export default function SchoolsTab({
                              school.subscription_tier === 'paid' ? '⭐' : '🎓'}
                           </span>
                           <div className="space-y-0.5">
-                            <p className="font-medium text-white text-sm">{school.name}</p>
+                            <p className="font-medium text-white text-sm flex items-center gap-2">
+                              <span>{school.name}</span>
+                              {getEffectiveLocked(school) && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-red-500/20 text-red-400 border border-red-500/40">
+                                  🚫 Locked
+                                </span>
+                              )}
+                            </p>
                             {school.owner_name && (
                               <p className="text-slate-300 text-xs flex items-center gap-1.5">
                                 <span aria-hidden>👤</span>
@@ -822,6 +877,26 @@ export default function SchoolsTab({
                           >
                             Login →
                           </button>
+                          {/* Migration 286 — abuse lock. 🚫 locks (login refused +
+                              AI killed), 🔓 unlocks. */}
+                          {(() => {
+                            const isLocked = getEffectiveLocked(school);
+                            const busy = lockingId === school.id;
+                            return (
+                              <button
+                                onClick={() => handleToggleLock(school)}
+                                disabled={busy}
+                                className={`px-2 py-1 rounded text-xs font-medium disabled:opacity-50 ${
+                                  isLocked
+                                    ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
+                                    : 'bg-red-500/15 text-red-300 hover:bg-red-500/25'
+                                }`}
+                                title={isLocked ? 'Unlock this school' : 'Lock this school (login refused + AI killed)'}
+                              >
+                                {isLocked ? '🔓' : '🚫'}
+                              </button>
+                            );
+                          })()}
                           <button
                             onClick={() => onDeleteSchool(school)}
                             className="px-2 py-1 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded text-xs"

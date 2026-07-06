@@ -17,6 +17,11 @@ interface Row {
   admitted_at: string | null;
   created_at: string;
   source: string | null;
+  // Migration 286 — founding signup code + redemption.
+  signup_code: string | null;
+  code_generated_at: string | null;
+  redeemed_by_school_id: string | null;
+  redeemed_at: string | null;
 }
 
 interface Config {
@@ -42,6 +47,7 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
   const [savingConfig, setSavingConfig] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'waitlisted' | 'admitted' | 'declined'>('all');
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   // Local editable copies of cap/wave so typing doesn't fight the fetch.
   const [capInput, setCapInput] = useState('100');
@@ -90,6 +96,32 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
       setError('Could not update that school. Try again.');
     } finally {
       setBusyId(null);
+    }
+  };
+
+  // Mint (or reveal the existing) FND- signup code for an admitted row, then
+  // reload so the copyable link shows. Idempotent server-side — safe to click
+  // again (it returns the same code, never rotates).
+  const generateCode = async (id: string) => {
+    setBusyId(id);
+    try {
+      await patch({ action: 'generate_code', id });
+      await load();
+    } catch {
+      setError('Could not generate a signup code. Try again.');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const copyLink = async (code: string) => {
+    const link = `https://montree.xyz/montree/try?founding=${code}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopiedCode(code);
+      setTimeout(() => setCopiedCode((c) => (c === code ? null : c)), 2000);
+    } catch {
+      setError('Could not copy the link. You can select it manually.');
     }
   };
 
@@ -215,39 +247,79 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
         )}
         {visible.map((r, i) => {
           const s = STATUS_STYLE[r.status];
+          const link = r.signup_code ? `https://montree.xyz/montree/try?founding=${r.signup_code}` : '';
           return (
             <div key={r.id} style={{
-              display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between',
               padding: '14px 18px', borderTop: i === 0 ? 'none' : '1px solid rgba(148,163,184,0.1)',
             }}>
-              <div style={{ minWidth: 220, flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 600 }}>{r.school_name}</div>
-                <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
-                  {r.contact_name ? `${r.contact_name} · ` : ''}{r.email}
-                  {r.country ? ` · ${r.country}` : ''}
-                  {r.student_count != null ? ` · ~${r.student_count} students` : ''}
+              <div style={{
+                display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between',
+              }}>
+                <div style={{ minWidth: 220, flex: 1 }}>
+                  <div style={{ fontSize: 15, fontWeight: 600 }}>{r.school_name}</div>
+                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
+                    {r.contact_name ? `${r.contact_name} · ` : ''}{r.email}
+                    {r.country ? ` · ${r.country}` : ''}
+                    {r.student_count != null ? ` · ~${r.student_count} students` : ''}
+                  </div>
+                </div>
+                <span style={{ background: s.bg, color: s.fg, borderRadius: 999, padding: '4px 12px', fontSize: 12, fontWeight: 700 }}>
+                  {s.label}
+                </span>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {r.status !== 'admitted' && (
+                    <button style={btn('rgba(52,211,153,0.15)', '#34d399')} disabled={busyId === r.id} onClick={() => setStatus(r.id, 'admitted')}>
+                      {busyId === r.id ? '…' : '✓ Admit'}
+                    </button>
+                  )}
+                  {r.status !== 'declined' && (
+                    <button style={btn('rgba(248,113,113,0.12)', '#f87171')} disabled={busyId === r.id} onClick={() => setStatus(r.id, 'declined')}>
+                      Decline
+                    </button>
+                  )}
+                  {r.status !== 'waitlisted' && (
+                    <button style={btn('transparent', '#64748b')} disabled={busyId === r.id} onClick={() => setStatus(r.id, 'waitlisted')}>
+                      Reset
+                    </button>
+                  )}
                 </div>
               </div>
-              <span style={{ background: s.bg, color: s.fg, borderRadius: 999, padding: '4px 12px', fontSize: 12, fontWeight: 700 }}>
-                {s.label}
-              </span>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {r.status !== 'admitted' && (
-                  <button style={btn('rgba(52,211,153,0.15)', '#34d399')} disabled={busyId === r.id} onClick={() => setStatus(r.id, 'admitted')}>
-                    {busyId === r.id ? '…' : '✓ Admit'}
-                  </button>
-                )}
-                {r.status !== 'declined' && (
-                  <button style={btn('rgba(248,113,113,0.12)', '#f87171')} disabled={busyId === r.id} onClick={() => setStatus(r.id, 'declined')}>
-                    Decline
-                  </button>
-                )}
-                {r.status !== 'waitlisted' && (
-                  <button style={btn('transparent', '#64748b')} disabled={busyId === r.id} onClick={() => setStatus(r.id, 'waitlisted')}>
-                    Reset
-                  </button>
-                )}
-              </div>
+
+              {/* Founding signup code (admitted rows only). Generate a one-time
+                  FND- link, copy it, share it. Redeemed rows show ✓ redeemed. */}
+              {r.status === 'admitted' && (
+                <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+                  {r.redeemed_at ? (
+                    <span style={{
+                      background: 'rgba(52,211,153,0.12)', color: '#34d399',
+                      borderRadius: 8, padding: '6px 12px', fontSize: 12, fontWeight: 600,
+                    }}>
+                      ✓ Redeemed{r.redeemed_by_school_id ? ` · school ${r.redeemed_by_school_id}` : ''}
+                      {r.redeemed_at ? ` · ${new Date(r.redeemed_at).toLocaleDateString()}` : ''}
+                    </span>
+                  ) : r.signup_code ? (
+                    <>
+                      <code style={{
+                        background: '#0b1220', border: '1px solid rgba(148,163,184,0.18)',
+                        color: '#e2e8f0', borderRadius: 8, padding: '6px 10px',
+                        fontSize: 12, fontFamily: 'ui-monospace, SFMono-Regular, monospace',
+                        maxWidth: 420, overflowX: 'auto', whiteSpace: 'nowrap',
+                      }}>{link}</code>
+                      <button style={btn('#334155', '#e2e8f0')} onClick={() => copyLink(r.signup_code!)}>
+                        {copiedCode === r.signup_code ? '✓ Copied' : '📋 Copy link'}
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      style={btn('rgba(232,201,106,0.15)', '#E8C96A')}
+                      disabled={busyId === r.id}
+                      onClick={() => generateCode(r.id)}
+                    >
+                      {busyId === r.id ? '…' : '🔗 Generate link'}
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}

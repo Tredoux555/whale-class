@@ -53,6 +53,8 @@ interface BillingStatus {
     /** monthly | annual. */
     billing_cadence?: 'monthly' | 'annual' | string;
     next_invoice_due_at?: string | null;
+    /** Launch pricing (Jul 6 2026) — Founding 100 school (migration 286). */
+    founding_member?: boolean;
   };
   pricing: {
     price_per_student_usd: number;
@@ -110,11 +112,18 @@ function BillingPageContent() {
 
   useEffect(() => { load(); }, [load]);
 
-  const startCheckout = async () => {
+  // Launch pricing (Jul 6 2026) — startCheckout accepts a plan. 'premium' is
+  // the default (backward-compatible with the old no-arg call sites); 'starter'
+  // POSTs the $3 Haiku plan. The server forces premium for founding schools.
+  const startCheckout = async (plan: 'starter' | 'premium' = 'premium') => {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch('/api/montree/billing/checkout', { method: 'POST' });
+      const res = await fetch('/api/montree/billing/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan }),
+      });
       const d = await res.json();
       if (!res.ok) {
         if (d.already_subscribed) {
@@ -178,7 +187,8 @@ function BillingPageContent() {
   const hasStripeCustomer = !!data.school.stripe_customer_id;
   const isActive = (status === 'active' || status === 'trialing') && hasStripeCustomer;
   const isPastDue = status === 'past_due';
-  const isCanceled = status === 'canceled';
+  // (canceled schools fall into showPlanChooser below — !isActive — so a
+  // dedicated isCanceled flag is no longer needed for the resubscribe CTA.)
   // Phase B/C rail awareness. Default to stripe_subscription.
   const paymentMethod = (data.school.payment_method || 'stripe_subscription') as
     | 'stripe_subscription'
@@ -189,6 +199,17 @@ function BillingPageContent() {
   const isManualRail = paymentMethod === 'manual_invoice';
   const isStripeRail = paymentMethod === 'stripe_subscription';
   const latestOpenInvoice = data.history.find((h) => h.status === 'open') || null;
+
+  // Launch pricing (Jul 6 2026) — plan chooser gating.
+  //   isFounding      → single "Founding 100 — Premium at $3 for life" card.
+  //   showPlanChooser → the two-card Starter/Premium chooser, shown to any
+  //                     Stripe-rail school that isn't already actively
+  //                     subscribed (trialing without a Stripe sub / expired /
+  //                     canceled). Founding schools skip the chooser (they get
+  //                     the founding card instead).
+  const isFounding = data.school.founding_member === true;
+  const showPlanChooser = isStripeRail && !isActive && !isFounding;
+  const trialDaysRemaining = data.school.trial_days_remaining;
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
@@ -263,17 +284,95 @@ function BillingPageContent() {
                 </p>
               )}
 
-            {/* Action — rail-aware */}
-            <div className="mt-5 flex flex-wrap gap-2">
-              {isStripeRail && !isActive && !isCanceled && (
+            {/*
+              🚨 Launch pricing (Jul 6 2026) — plan chooser + founding card.
+              Copy here is hardcoded English by design (matches the rest of
+              this page's mix of i18n keys + hardcoded strings; new keys are
+              owned by a separate i18n pass). Shown when the school still needs
+              to pick a plan.
+            */}
+            {showPlanChooser && (
+              <div className="mt-6">
+                {/* Trial countdown line */}
+                {typeof trialDaysRemaining === 'number' && trialDaysRemaining > 0 && (
+                  <p className="text-amber-200 text-sm mb-3">
+                    Your Premium trial ends in {trialDaysRemaining} day{trialDaysRemaining === 1 ? '' : 's'} — choose your plan.
+                  </p>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Starter — $3 Haiku */}
+                  <div className="rounded-xl border border-white/12 bg-white/5 p-5 flex flex-col">
+                    <div className="flex items-baseline justify-between">
+                      <h3 className="text-white text-lg font-light">Starter</h3>
+                      <span className="text-emerald-200 text-sm tabular-nums">$3<span className="text-white/40 text-xs">/student/mo</span></span>
+                    </div>
+                    <ul className="mt-3 space-y-1.5 text-white/70 text-xs leading-relaxed flex-1">
+                      <li>The full Montree system</li>
+                      <li>AI reports on our fast model</li>
+                      <li>Photo recognition — never escalates to Sonnet</li>
+                      <li>Guru on the fast model</li>
+                    </ul>
+                    <button
+                      onClick={() => startCheckout('starter')}
+                      disabled={busy}
+                      className="mt-4 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-medium rounded-lg text-sm disabled:opacity-50 transition-colors"
+                    >
+                      {busy ? t('billing.starting') : 'Choose Starter'}
+                    </button>
+                  </div>
+                  {/* Premium — $7 Sonnet (featured) */}
+                  <div className="rounded-xl border-2 p-5 flex flex-col" style={{ borderColor: '#E8C96A', background: 'rgba(232,201,106,0.06)' }}>
+                    <div className="flex items-baseline justify-between">
+                      <h3 className="text-lg font-light" style={{ color: '#E8C96A' }}>Premium</h3>
+                      <span className="text-sm tabular-nums" style={{ color: '#E8C96A' }}>$7<span className="text-white/40 text-xs">/student/mo</span></span>
+                    </div>
+                    <ul className="mt-3 space-y-1.5 text-white/80 text-xs leading-relaxed flex-1">
+                      <li>Sonnet reports parents keep</li>
+                      <li>Sonnet photo fallback when a photo is hard</li>
+                      <li>Sonnet Guru + Astra</li>
+                      <li>Everything in Starter</li>
+                    </ul>
+                    <button
+                      onClick={() => startCheckout('premium')}
+                      disabled={busy}
+                      className="mt-4 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-sm disabled:opacity-50 transition-colors"
+                    >
+                      {busy ? t('billing.starting') : 'Choose Premium'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Founding 100 — Premium locked at $3 for life */}
+            {isFounding && !isActive && (
+              <div className="mt-6 rounded-xl border-2 p-5" style={{ borderColor: '#E8C96A', background: 'rgba(232,201,106,0.08)' }}>
+                <div className="flex items-baseline justify-between gap-3 flex-wrap">
+                  <h3 className="text-lg font-light" style={{ color: '#E8C96A' }}>Founding 100</h3>
+                  <span className="text-sm tabular-nums" style={{ color: '#E8C96A' }}>$3<span className="text-white/40 text-xs">/student/mo · for life</span></span>
+                </div>
+                <p className="mt-2 text-white/80 text-sm leading-relaxed">
+                  Premium locked at $3 per student — for life. Full Sonnet reports, Sonnet photo fallback, Sonnet Guru + Astra.
+                </p>
+                {typeof trialDaysRemaining === 'number' && trialDaysRemaining > 0 && (
+                  <p className="mt-2 text-amber-200 text-xs">
+                    Your free month of Premium ends in {trialDaysRemaining} day{trialDaysRemaining === 1 ? '' : 's'}.
+                  </p>
+                )}
                 <button
-                  onClick={startCheckout}
+                  onClick={() => startCheckout('premium')}
                   disabled={busy}
-                  className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-sm disabled:opacity-50 transition-colors"
+                  className="mt-4 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-sm disabled:opacity-50 transition-colors"
                 >
-                  {busy ? t('billing.starting') : t('billing.setUpBilling')}
+                  {busy ? t('billing.starting') : 'Set up billing'}
                 </button>
-              )}
+              </div>
+            )}
+
+            {/* Action — rail-aware. Stripe rail: portal for active, update-payment
+                for past-due. The set-up-billing + resubscribe CTAs are now the
+                plan-chooser / founding cards above (both cover !isActive). */}
+            <div className="mt-5 flex flex-wrap gap-2">
               {isStripeRail && isActive && (
                 <button
                   onClick={openPortal}
@@ -290,15 +389,6 @@ function BillingPageContent() {
                   className="px-5 py-2.5 bg-red-500 hover:bg-red-400 text-white font-medium rounded-lg text-sm disabled:opacity-50 transition-colors"
                 >
                   {busy ? t('billing.opening') : t('billing.updatePayment')}
-                </button>
-              )}
-              {isStripeRail && isCanceled && (
-                <button
-                  onClick={startCheckout}
-                  disabled={busy}
-                  className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-sm disabled:opacity-50 transition-colors"
-                >
-                  {busy ? t('billing.starting') : t('billing.resubscribe')}
                 </button>
               )}
               {isAlipayRail && latestOpenInvoice?.invoice_pdf_url && (

@@ -40,6 +40,28 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'School not found' }, { status: 404 });
   }
 
+  // 🚨 Launch pricing (Jul 6 2026) — founding_member drives the billing page's
+  // "Founding 100 — Premium at $3 for life" card. Fetched in an ISOLATED,
+  // non-fatal query so a lagging migration 286 can't take down the whole
+  // billing status surface (loadSchoolBilling deliberately does NOT select
+  // this column). If the column doesn't exist yet (42703), treat as false.
+  let foundingMember = false;
+  try {
+    const { data: foundingRow, error: foundingErr } = await supabase
+      .from('montree_schools')
+      .select('founding_member')
+      .eq('id', auth.schoolId)
+      .maybeSingle();
+    if (foundingErr) {
+      // 42703 = column does not exist → migration 286 not yet run. Non-fatal.
+      console.warn('[billing/status] founding_member lookup error (non-fatal — run migration 286):', foundingErr.message);
+    } else {
+      foundingMember = (foundingRow as { founding_member?: boolean | null } | null)?.founding_member === true;
+    }
+  } catch (err) {
+    console.warn('[billing/status] founding_member lookup threw (non-fatal — run migration 286):', err);
+  }
+
   const liveStudentCount = await countActiveStudents(supabase, auth.schoolId);
   // Effective price honours any per-school billing_override_usd. Estimates
   // shown to the principal must use this, not the platform default.
@@ -112,6 +134,8 @@ export async function GET(request: NextRequest) {
       payment_method: school.payment_method || 'stripe_subscription',
       billing_cadence: school.billing_cadence || 'monthly',
       next_invoice_due_at: school.next_invoice_due_at,
+      // Launch pricing (Jul 6 2026) — Founding 100 flag (migration 286).
+      founding_member: foundingMember,
     },
     pricing: {
       // The principal's actual rate. Equals platform default unless a

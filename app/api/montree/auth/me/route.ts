@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     const [teacherRes, adminRes, schoolRes, classroomRes] = await Promise.all([
       supabase.from('montree_teachers').select('id, name, email, role').eq('id', userId).maybeSingle(),
       supabase.from('montree_school_admins').select('id, name, email, role').eq('id', userId).eq('school_id', schoolId).maybeSingle(),
-      supabase.from('montree_schools').select('id, name, slug, plan_type').eq('id', schoolId).maybeSingle(),
+      supabase.from('montree_schools').select('id, name, slug, plan_type, locked_at').eq('id', schoolId).maybeSingle(),
       classroomId
         ? supabase.from('montree_classrooms').select('id, name, age_group, school_id').eq('id', classroomId).maybeSingle()
         : Promise.resolve({ data: null }),
@@ -82,6 +82,12 @@ export async function GET(request: NextRequest) {
       // Top-level session role — the authoritative "what am I logged in as"
       // signal. Principal surfaces (e.g. /admin/conversations) gate on this.
       role: effectiveRole,
+      // Abuse lock (migration 286). Belt-and-suspenders for already-authenticated
+      // sessions: auth/unified refuses login for locked schools, but a session
+      // established BEFORE the lock keeps working until its consumers re-check.
+      // The admin layout + teacher dashboard bounce to /montree/locked when true.
+      locked: Boolean(schoolRes.data.locked_at),
+      lockedSchoolId: schoolRes.data.locked_at ? schoolRes.data.id : undefined,
       teacher: identity,
       school: schoolRes.data,
       classroom,

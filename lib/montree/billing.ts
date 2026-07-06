@@ -85,13 +85,23 @@ function getStripeClient(): Stripe {
   return new Stripe(secret, { apiVersion: '2024-12-18.acacia' });
 }
 
-// Pricing constant. $7/student/month = 700 cents.
-// This is the PLATFORM DEFAULT. Schools can carry a per-school override
+// Pricing constant. $7/student/month = 700 cents. This is Premium — the
+// PLATFORM DEFAULT. Schools can carry a per-school override
 // (montree_schools.billing_override_usd, migration 202). Always resolve the
 // effective price via effectivePricePerStudentUsd() / Cents() — never read
 // these constants directly when computing a charge.
 export const PRICE_PER_STUDENT_USD = 7;
 export const PRICE_PER_STUDENT_CENTS = 700;
+
+// 🚨 Launch pricing (Jul 6 2026). Starter is the $3/student/month Haiku plan.
+// It is billed through a SEPARATE Stripe Price (STRIPE_PRICE_STARTER env) at
+// checkout — the effective per-student default stays $7 (Premium). For
+// Alipay/manual Starter schools there is no Starter Stripe Price to resolve
+// against, so those bill via the existing per-school billing_override_usd=3
+// machinery (super-admin sets it). These constants exist for estimate copy +
+// the legacy-price detection in handleSubscriptionUpsert (300 cents = Starter).
+export const STARTER_PRICE_USD = 3;
+export const STARTER_PRICE_CENTS = 300;
 
 /**
  * Resolve the effective per-student price (USD) for a school, honouring any
@@ -376,18 +386,31 @@ export async function getOrCreateStripeCustomer(
 }
 
 /**
- * Create a Stripe Checkout session for a school subscribing to the per-student plan.
- * Returns the URL for the principal to land on.
+ * Create a Stripe Checkout session for a school subscribing to the per-student
+ * plan. Returns the URL for the principal to land on.
+ *
+ * 🚨 Launch pricing (Jul 6 2026): `options.plan` selects the tier.
+ *   - 'premium' (default) → the existing $7 resolution (Premium Price OR a
+ *     per-school billing_override Price). Founding 100 schools are always
+ *     'premium' with a $3 billing_override — the CALLER forces plan='premium'
+ *     for them; the override Price ($3) flows through resolvePriceIdForSchool.
+ *   - 'starter'  → the dedicated $3 Starter Stripe Price (STRIPE_PRICE_STARTER
+ *     env). Returns 503-shaped {ok:false} if that env is unset. Starter never
+ *     uses the override machinery — it's a flat $3 Price for everyone.
+ *
+ * The chosen plan is stamped onto subscription_data.metadata.montree_plan so
+ * the webhook (handleSubscriptionUpsert) flips the school to the right AI tier.
  */
 export async function createSchoolCheckoutSession(
   supabase: SupabaseClient,
   schoolId: string,
-  options: { successPath?: string; cancelPath?: string } = {}
+  options: { successPath?: string; cancelPath?: string; plan?: 'starter' | 'premium' } = {}
 ): Promise<BillingResult<{ checkout_url: string; session_id: string }>> {
   const cfg = getBillingConfig();
   if (!cfg.configured) {
     return { ok: false, configured: false, reason: cfg.reason };
   }
+  const plan: 'starter' | 'premium' = options.plan === 'starter' ? 'starter' : 'premium';
 
   // Ensure customer exists.
   const customerResult = await getOrCreateStripeCustomer(supabase, schoolId);
@@ -409,21 +432,43 @@ export async function createSchoolCheckoutSession(
   if (!schoolForPrice) {
     return { ok: false, configured: true, reason: 'School not found' };
   }
-  const priceResult = await resolvePriceIdForSchool(stripe, schoolForPrice);
-  if (!priceResult.priceId) {
-    return {
-      ok: false,
-      configured: true,
-      reason: priceResult.reason || 'Failed to resolve Price for checkout',
-    };
-  }
-  const priceId = priceResult.priceId;
-  if (priceResult.isOverride) {
-    console.log(
-      '[billing] checkout for school', schoolId,
-      'using override Price', priceId,
-      'at', effectivePricePerStudentCents(schoolForPrice), 'cents'
-    );
+
+  // 🚨 Launch pricing (Jul 6 2026) — Price resolution by plan.
+  //   starter → the flat $3 Starter Price (STRIPE_PRICE_STARTER env). 503 if
+  //             unset. Never uses the per-school override machinery.
+  //   premium → the existing resolution: Premium $7 Price OR a per-school
+  //             billing_override Price (Founding 100 = $3 override, forced to
+  //             plan='premium' by the caller).
+  let priceId: string;
+  if (plan === 'starter') {
+    const starterPriceId = process.env.STRIPE_PRICE_STARTER;
+    if (!starterPriceId) {
+      return {
+        ok: false,
+        configured: false,
+        reason:
+          'Starter plan not configured — STRIPE_PRICE_STARTER env is unset. Set the $3 Starter Price ID in Railway.',
+      };
+    }
+    priceId = starterPriceId;
+    console.log('[billing] checkout for school', schoolId, 'using Starter Price', priceId);
+  } else {
+    const priceResult = await resolvePriceIdForSchool(stripe, schoolForPrice);
+    if (!priceResult.priceId) {
+      return {
+        ok: false,
+        configured: true,
+        reason: priceResult.reason || 'Failed to resolve Price for checkout',
+      };
+    }
+    priceId = priceResult.priceId;
+    if (priceResult.isOverride) {
+      console.log(
+        '[billing] checkout for school', schoolId,
+        'using override Price', priceId,
+        'at', effectivePricePerStudentCents(schoolForPrice), 'cents'
+      );
+    }
   }
 
   const successPath = options.successPath || '/montree/admin/billing?status=success';
@@ -468,7 +513,10 @@ export async function createSchoolCheckoutSession(
       customer: customerId,
       line_items: [{ price: priceId, quantity }],
       subscription_data: {
-        metadata: { school_id: schoolId, source: 'montree_phase4' },
+        // montree_plan is the canonical tier signal the webhook reads
+        // (handleSubscriptionUpsert, amendment A9). Stripe copies
+        // subscription_data.metadata onto the created subscription.
+        metadata: { school_id: schoolId, source: 'montree_phase4', montree_plan: plan },
         ...(trialPeriodDays ? { trial_period_days: trialPeriodDays } : {}),
       },
       success_url: `${cfg.app_url}${successPath}`,
@@ -946,7 +994,11 @@ export async function handleInvoicePaymentFailed(
 // Super-admin manual tier override remains. enabled_by='stripe_webhook'
 // distinguishes auto-flips from manual overrides in the audit log.
 
-export type AiTierTarget = 'free' | 'premium';
+// 🚨 Launch pricing (Jul 6 2026) — 'haiku' is the Starter ($3) target.
+//   premium → ai_tier_sonnet=true  (Sonnet reports + photo fallback + Guru)
+//   haiku   → ai_tier_haiku=true    (Haiku everything; NEVER escalates to Sonnet)
+//   free    → both off              (no AI; every AI route 402s)
+export type AiTierTarget = 'free' | 'haiku' | 'premium';
 
 /**
  * Map a Stripe subscription status to a tier action.
@@ -988,14 +1040,25 @@ export async function setSchoolAiTier(
   tier: AiTierTarget,
   enabledBy: string = 'stripe_webhook'
 ): Promise<void> {
-  const enable = tier === 'premium';
+  // 🚨 Launch pricing (Jul 6 2026) — three-way flag matrix:
+  //   premium → sonnet flag ON  (+ haiku ON too; the resolver reads sonnet
+  //             first, so "both ON" still resolves Sonnet — matches the
+  //             existing super-admin premium behaviour, no change there)
+  //   haiku   → ai_tier_haiku ON, ai_tier_sonnet OFF  (Starter — Haiku only)
+  //   free    → both OFF
+  const haikuEnabled = tier === 'premium' || tier === 'haiku';
+  const sonnetEnabled = tier === 'premium';
+  const flagValues: Record<'ai_tier_haiku' | 'ai_tier_sonnet', boolean> = {
+    ai_tier_haiku: haikuEnabled,
+    ai_tier_sonnet: sonnetEnabled,
+  };
 
   // Upsert both feature flags atomically (matching super admin route logic).
   for (const key of ['ai_tier_haiku', 'ai_tier_sonnet'] as const) {
     const { error } = await supabase
       .from('montree_school_features')
       .upsert(
-        { school_id: schoolId, feature_key: key, enabled: enable, enabled_by: enabledBy },
+        { school_id: schoolId, feature_key: key, enabled: flagValues[key], enabled_by: enabledBy },
         { onConflict: 'school_id,feature_key' }
       );
     if (error) {
@@ -1004,9 +1067,10 @@ export async function setSchoolAiTier(
     }
   }
 
-  // Match super-admin pattern: free → $0/hard_limit, premium → $9999/warn.
-  const budget = tier === 'premium' ? 9999 : 0;
-  const action = tier === 'premium' ? 'warn' : 'hard_limit';
+  // Budget: free → $0/hard_limit, haiku (Starter) → $50/soft_limit,
+  // premium → $9999/warn. Matches the super-admin tier-change pattern.
+  const budget = tier === 'premium' ? 9999 : tier === 'haiku' ? 50 : 0;
+  const action = tier === 'free' ? 'hard_limit' : tier === 'haiku' ? 'soft_limit' : 'warn';
   const { error: budgetErr } = await supabase
     .from('montree_schools')
     .update({ monthly_ai_budget_usd: budget, ai_budget_action: action })
@@ -1026,10 +1090,12 @@ export async function handleSubscriptionUpsert(
 ): Promise<void> {
   const customerId = subscription.customer as string;
   // Read prior status BEFORE update so we can detect the trialing→active
-  // transition for the conversion email.
+  // transition for the conversion email. founding_member (migration 286) is
+  // read so the legacy $3-price heuristic below never mis-classifies a
+  // Founding 100 school (which pays $3 but must stay Premium) as Starter.
   const { data: school } = await supabase
     .from('montree_schools')
-    .select('id, name, subscription_status, owner_email, owner_name')
+    .select('id, name, subscription_status, owner_email, owner_name, founding_member')
     .eq('stripe_customer_id', customerId)
     .maybeSingle();
   if (!school) {
@@ -1037,6 +1103,8 @@ export async function handleSubscriptionUpsert(
     return;
   }
   const priorStatus = (school as { subscription_status: string | null }).subscription_status;
+  const isFoundingMember =
+    (school as { founding_member?: boolean | null }).founding_member === true;
 
   const item = subscription.items.data[0];
   const status = subscription.status;
@@ -1071,12 +1139,45 @@ export async function handleSubscriptionUpsert(
     })
     .eq('id', school.id);
 
-  // Auto-flip AI tier based on subscription status.
-  //   active / trialing → premium  (Astra + Sonnet reports unlocked)
-  //   canceled / unpaid / incomplete_expired → free  (AI gates close)
-  //   past_due / incomplete → leave unchanged (grace period; Stripe is
-  //   retrying payment automatically)
-  const tierTarget = tierForSubscriptionStatus(status);
+  // 🚨 Launch pricing (Jul 6 2026 — plan amendment A9). Auto-flip AI tier.
+  // Decision order:
+  //   1. subscription_data.metadata.montree_plan (set at checkout — Stripe
+  //      copies it onto the subscription): 'starter' → haiku, 'premium' →
+  //      premium. This is the canonical signal for schools created after this
+  //      deploy.
+  //   2. trialing status → ALWAYS premium (the trial IS the Premium
+  //      experience; no metadata check needed to grant it).
+  //   3. Legacy (no metadata): if the item's unit_amount is exactly the
+  //      Starter price (300¢) AND the school is NOT a founding_member → haiku.
+  //      Founding schools pay $3 but must stay Premium, so they skip this.
+  //   4. Otherwise fall back to tierForSubscriptionStatus (trialing/active →
+  //      premium, canceled/unpaid/incomplete_expired → free, grace states →
+  //      null = leave unchanged). Preserves pre-launch behaviour for every
+  //      existing $7 subscription.
+  const planFromMetadata =
+    typeof subscription.metadata?.montree_plan === 'string'
+      ? subscription.metadata.montree_plan.toLowerCase()
+      : null;
+
+  let tierTarget: AiTierTarget | null;
+  if (planFromMetadata === 'starter') {
+    tierTarget = 'haiku';
+  } else if (planFromMetadata === 'premium') {
+    tierTarget = 'premium';
+  } else if (status === 'trialing') {
+    // Trial is the Premium experience regardless of price/metadata.
+    tierTarget = 'premium';
+  } else if (
+    !planFromMetadata &&
+    itemUnitAmount === STARTER_PRICE_CENTS &&
+    !isFoundingMember
+  ) {
+    // Legacy Starter detection by price — never applies to founding schools.
+    tierTarget = 'haiku';
+  } else {
+    tierTarget = tierForSubscriptionStatus(status);
+  }
+
   if (tierTarget) {
     await setSchoolAiTier(supabase, school.id, tierTarget, 'stripe_webhook');
   } else {

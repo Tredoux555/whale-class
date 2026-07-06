@@ -338,6 +338,27 @@ export default function DashboardPage() {
     }
   }, [router, session]);
 
+  // ── Abuse lock check (migration 286 — light touch) ──
+  // recoverSession() returns a valid session for a locked school (the cookie
+  // is still live), so it won't bounce a teacher whose school got locked after
+  // they logged in. auth/unified refuses NEW logins for locked schools; this
+  // one-shot direct check on mount catches an EXISTING session and sends them
+  // to the locked screen where they can message Tredoux. Non-blocking: on any
+  // fetch/parse failure it silently no-ops (the school just isn't treated as
+  // locked), matching the fail-open posture of the server-side lock gate.
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/montree/auth/me', { credentials: 'include' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled || !data?.locked) return;
+        const sid = data.lockedSchoolId || data.school?.id || '';
+        window.location.href = `/montree/locked?school=${encodeURIComponent(sid)}`;
+      })
+      .catch(() => { /* fail open — no lock enforcement on a blip */ });
+    return () => { cancelled = true; };
+  }, []);
+
   // Remember this dashboard as the launch surface so the next PWA home-screen
   // launch opens straight here with no marketing-splash flash. Covers teachers
   // AND homeschool parents (both live on /montree/dashboard).

@@ -11,6 +11,8 @@ import { applyGlobalTranslations } from '@/lib/montree/curriculum/apply-global-t
 import { isValidLocale, DEFAULT_LOCALE, type Locale } from '@/lib/montree/i18n/locales';
 import { DEFAULTS } from '@/lib/montree/constants';
 import { MINIMAL_DEFAULT_MENU } from '@/lib/montree/menu/config';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { getClientIP } from '@/lib/montree/audit-logger';
 
 /**
  * Resolve the primary locale for a new school at signup.
@@ -189,6 +191,124 @@ async function redeemReferralCode(
 }
 
 /**
+ * Redeem a founding code AND stamp the new school's founding membership,
+ * race-guarded against a double-redemption of the same code.
+ *
+ * Order (mirrors redeemReferralCode's atomic pattern):
+ *   1. Stamp the school first: founding_member=true, billing_override_usd=3,
+ *      note, trial_ends_at = now + 30 days (the Premium month).
+ *   2. AWAIT a conditional UPDATE on the waitlist row with `.is('redeemed_at',
+ *      null)` — Postgres-level atomicity. Only the first signup wins; a second
+ *      concurrent signup's UPDATE matches zero rows.
+ *   3. If the redeem race is lost, the school stays founding-stamped (it still
+ *      exists as a real trial), but we log loudly. This is a benign edge —
+ *      each admitted code is meant for one school and Tredoux controls issuance.
+ *
+ * Returns true if the redeem landed (this signup won the code), false on a
+ * race-loss or redeem error. The school stamp already succeeded either way.
+ */
+async function redeemFoundingCode(
+  supabase: ReturnType<typeof getSupabase>,
+  founding: FoundingContext,
+  schoolId: string,
+  foundingTrialEndsAtIso: string
+): Promise<boolean> {
+  // Step 1: stamp the school's founding membership + $3-for-life override + the
+  // 30-day Premium month (overrides the 7-day default written at insert).
+  const { error: schoolErr } = await supabase
+    .from('montree_schools')
+    .update({
+      founding_member: true,
+      billing_override_usd: 3,
+      billing_override_note: 'Founding 100 — Premium at $3 for life',
+      trial_ends_at: foundingTrialEndsAtIso,
+    })
+    .eq('id', schoolId);
+
+  if (schoolErr) {
+    console.error('[Trial] founding school stamp failed:', schoolErr.message);
+    return false;
+  }
+
+  // Step 2: atomic conditional redeem of the waitlist row. `.is('redeemed_at',
+  // null)` guards a concurrent double-redeem — only the first wins.
+  const { data: redeemed, error: redeemErr } = await supabase
+    .from('montree_founding_waitlist')
+    .update({
+      redeemed_by_school_id: schoolId,
+      redeemed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', founding.waitlistId)
+    .is('redeemed_at', null)
+    .select('id');
+
+  if (redeemErr) {
+    console.error('[Trial] founding code redeem failed:', redeemErr.message);
+    return false;
+  }
+  if (!redeemed || redeemed.length === 0) {
+    console.warn(
+      `[Trial] founding code RACE LOST — ${founding.code} was redeemed by another concurrent signup. School ${schoolId} is still founding-stamped.`
+    );
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Founding 100 signup code (migration 286).
+ *
+ * Tredoux admits a waitlist school in super-admin and generates a one-time
+ * FND-XXXXXX code. Redeeming it at signup gives the new school a founding
+ * membership: Premium locked at $3/student for life (via billing_override_usd)
+ * + a 30-day Premium month.
+ *
+ * Validation mirrors resolveReferralCode: verify the row is admitted + not yet
+ * redeemed BEFORE any writes. Returns the waitlist row id + code on success,
+ * null for no code (clean direct signup), or throws a user-safe Error for an
+ * invalid/already-redeemed code.
+ *
+ * 🚨 Amendment A6: a valid founding code makes any referral code IGNORED —
+ * founding schools are never agent-attributed. An INVALID founding code is a
+ * hard 400 (thrown here), never a silent fall-through to referral.
+ */
+interface FoundingContext {
+  waitlistId: string;
+  code: string;
+}
+async function resolveFoundingCode(
+  supabase: ReturnType<typeof getSupabase>,
+  rawCode: unknown
+): Promise<FoundingContext | null> {
+  if (!rawCode || typeof rawCode !== 'string') return null;
+  const code = rawCode.trim().toUpperCase();
+  if (!code) return null;
+
+  const { data, error } = await supabase
+    .from('montree_founding_waitlist')
+    .select('id, signup_code, status, redeemed_at')
+    .eq('signup_code', code)
+    .maybeSingle();
+
+  if (error) {
+    console.error('[Trial] founding code lookup failed:', error.message);
+    throw new Error('Could not validate your founding code. Try again.');
+  }
+  if (!data) {
+    throw new Error(`Founding code "${code}" was not found.`);
+  }
+  if (data.status !== 'admitted') {
+    throw new Error(`Founding code "${code}" is not active.`);
+  }
+  if (data.redeemed_at) {
+    throw new Error(`Founding code "${code}" has already been used.`);
+  }
+
+  return { waitlistId: data.id as string, code: data.signup_code as string };
+}
+
+/**
  * Seed full Montessori curriculum for a new classroom
  * Non-blocking: failures here don't prevent trial creation
  */
@@ -290,8 +410,43 @@ export async function POST(req: NextRequest) {
   try {
     steps.push('1-init');
     const supabase = getSupabase();
+
+    // ── Signup abuse backstop (Workstream 2.3) ──
+    // 5 school creations per hour per IP. Fail-OPEN: a rate-limiter outage
+    // (table unreachable) must NOT brick legitimate signups — the abuse
+    // backstop of last resort is the super-admin lock flag, not this limiter.
+    // (checkRateLimit's default failMode is 'open', matching that intent.)
+    const ip = getClientIP(req.headers);
+    const { allowed, retryAfterSeconds } = await checkRateLimit(
+      supabase, ip, '/api/montree/try/instant', 5, 60
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many signups from this connection. Please try again in a little while.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+      );
+    }
+
     const body = await req.json();
-    const { role, name, schoolName, email, locale: bodyLocale, referral_code: rawReferralCode } = body;
+    const {
+      role,
+      name,
+      schoolName,
+      email,
+      locale: bodyLocale,
+      referral_code: rawReferralCode,
+      founding_code: rawFoundingCode,
+      website, // honeypot — real users never fill this hidden field
+    } = body;
+
+    // Honeypot — a filled `website` field means a bot. Pretend success, write
+    // nothing (mirror of /founding/join). Fake a plausible response shape so a
+    // bot can't distinguish this from a real signup by the payload.
+    if (website) {
+      steps.push('1-honeypot');
+      return NextResponse.json({ success: true, code: generateCode(), role: role === 'principal' ? 'principal' : 'teacher', userId: 'honeypot' });
+    }
+
     const primaryLocale = resolvePrimaryLocale(req, bodyLocale);
     steps.push(`1-locale:${primaryLocale}`);
 
@@ -299,16 +454,39 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
     }
 
-    // ── Step 1a: Validate referral code (if provided) BEFORE creating any rows ──
-    let referral: ReferralContext | null = null;
+    // ── Step 1a-founding: Validate a Founding 100 code BEFORE any writes ──
+    // 🚨 Amendment A6: a VALID founding code wins — referral is ignored entirely
+    // (founding schools are never agent-attributed). An INVALID founding code is
+    // a hard 400 here; it must NOT silently fall through to referral resolution.
+    let founding: FoundingContext | null = null;
     try {
-      referral = await resolveReferralCode(supabase, rawReferralCode);
-      if (referral) steps.push(`1a-referral-ok:${referral.code}`);
+      founding = await resolveFoundingCode(supabase, rawFoundingCode);
+      if (founding) steps.push(`1a-founding-ok:${founding.code}`);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Invalid referral code';
-      steps.push(`1a-referral-fail:${msg}`);
+      const msg = err instanceof Error ? err.message : 'Invalid founding code';
+      steps.push(`1a-founding-fail:${msg}`);
       return NextResponse.json({ error: msg }, { status: 400 });
     }
+
+    // ── Step 1a: Validate referral code (if provided) BEFORE creating any rows ──
+    // Skipped entirely when a valid founding code is present (A6).
+    let referral: ReferralContext | null = null;
+    if (!founding) {
+      try {
+        referral = await resolveReferralCode(supabase, rawReferralCode);
+        if (referral) steps.push(`1a-referral-ok:${referral.code}`);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'Invalid referral code';
+        steps.push(`1a-referral-fail:${msg}`);
+        return NextResponse.json({ error: msg }, { status: 400 });
+      }
+    }
+
+    // Founding schools get a 30-day Premium month (overrides the 7-day default).
+    // redeemFoundingCode applies this after the school row exists.
+    const foundingTrialEndsAtIso = founding
+      ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      : null;
 
     // Use provided names or fall back to defaults
     const userName = (name && name.trim()) || (role === 'principal' ? 'Principal' : role === 'homeschool_parent' ? 'Parent' : 'Teacher');
@@ -448,11 +626,19 @@ export async function POST(req: NextRequest) {
       }
       steps.push('4-homeschool-parent-ok:' + teacher.id);
 
-      // ── Stamp the school's referral linkage (homeschool branch) ──
-      // 🚨 Session 113 V2 audit CRITICAL fix: race-guarded redemption.
-      // Awaited so we know the outcome before responding. See
-      // redeemReferralCode() for the race contract.
-      if (referral) {
+      // ── Stamp the school's founding OR referral linkage (homeschool branch) ──
+      // A6: founding and referral are mutually exclusive (referral is null when
+      // a valid founding code was used). Founding stamps $3-for-life + a 30-day
+      // Premium month + redeems the waitlist row.
+      if (founding && foundingTrialEndsAtIso) {
+        const redeemed = await redeemFoundingCode(supabase, founding, school.id, foundingTrialEndsAtIso);
+        steps.push(redeemed
+          ? `4a-founding-redeemed:${founding.code}`
+          : `4a-founding-race-lost:${founding.code}`);
+      } else if (referral) {
+        // 🚨 Session 113 V2 audit CRITICAL fix: race-guarded redemption.
+        // Awaited so we know the outcome before responding. See
+        // redeemReferralCode() for the race contract.
         const redeemed = await redeemReferralCode(supabase, referral, school.id, 'homeschool');
         steps.push(redeemed
           ? `4a-referral-redeemed:${referral.code}`
@@ -555,13 +741,29 @@ export async function POST(req: NextRequest) {
           if (error) console.warn('[Trial] menu seed skipped:', error.message);
         });
 
-      // ── Stamp the school's referral / founding-agent linkage ──
-      // If the user signed up with a referral code, the LINKED AGENT (not the
-      // new teacher) becomes the school's founding_teacher_id, the agent's
-      // negotiated % is locked in, and the code is marked redeemed.
-      // Without a code, the new teacher becomes the founding teacher (legacy
-      // self-serve flow from Session 72).
-      if (referral) {
+      // ── Stamp the school's founding / referral / self-serve linkage ──
+      // A6: founding and referral are mutually exclusive. Priority:
+      //   1. Founding 100 code → $3-for-life + 30-day Premium month + redeem
+      //      the waitlist row. It's a DIRECT signup (no agent), so the new
+      //      teacher is still the self-serve founding_teacher_id below.
+      //   2. Referral code → the LINKED AGENT becomes founding_teacher_id, the
+      //      agent's % is locked in, and the referral code is marked redeemed.
+      //   3. Neither → the new teacher becomes the founding teacher (legacy
+      //      self-serve flow from Session 72).
+      if (founding && foundingTrialEndsAtIso) {
+        const redeemed = await redeemFoundingCode(supabase, founding, school.id, foundingTrialEndsAtIso);
+        steps.push(redeemed
+          ? `4a-founding-redeemed:${founding.code}`
+          : `4a-founding-race-lost:${founding.code}`);
+        // Founding schools have no agent — the teacher is the self-serve founder.
+        supabase
+          .from('montree_schools')
+          .update({ founding_teacher_id: teacher.id, revenue_share_active: false })
+          .eq('id', school.id)
+          .then(({ error }) => {
+            if (error) console.error('[Trial] founding_teacher_id update failed:', error.message);
+          });
+      } else if (referral) {
         // 🚨 Session 113 V2 audit CRITICAL fix: race-guarded redemption.
         const redeemed = await redeemReferralCode(supabase, referral, school.id, 'teacher');
         steps.push(redeemed
@@ -670,12 +872,20 @@ export async function POST(req: NextRequest) {
       }
       steps.push('4-principal-ok:' + principal.id);
 
-      // ── Stamp the school's referral linkage (principal branch) ──
-      // Principals have no auto-set founding agent. If a referral code was
-      // used, the agent becomes founding_teacher_id and the school is locked
-      // to that revenue share %.
-      if (referral) {
+      // ── Stamp the school's founding / referral linkage (principal branch) ──
+      // A6: founding and referral are mutually exclusive. A founding school is a
+      // direct signup (no agent) — its principal login stays the auto-generated
+      // 6-char code (principalLoginCode = code, since referral is null).
+      if (founding && foundingTrialEndsAtIso) {
+        const redeemed = await redeemFoundingCode(supabase, founding, school.id, foundingTrialEndsAtIso);
+        steps.push(redeemed
+          ? `4a-founding-redeemed:${founding.code}`
+          : `4a-founding-race-lost:${founding.code}`);
+      } else if (referral) {
         // 🚨 Session 113 V2 audit CRITICAL fix: race-guarded redemption.
+        // Principals have no auto-set founding agent. If a referral code was
+        // used, the agent becomes founding_teacher_id and the school is locked
+        // to that revenue share %.
         const redeemed = await redeemReferralCode(supabase, referral, school.id, 'principal');
         steps.push(redeemed
           ? `4a-referral-redeemed:${referral.code}`
@@ -726,7 +936,11 @@ export async function POST(req: NextRequest) {
           slug: school.slug,
           subscription_status: school.subscription_status || 'trialing',
           plan_type: school.plan_type || 'school',
-          trial_ends_at: school.trial_ends_at || trialEndsAt.toISOString(),
+          // 🚨 REVIEW FIX (Jul 6): `school` was captured from the INSERT (7-day
+          // trial), but redeemFoundingCode UPDATEd the DB to 30 days for founding
+          // schools without re-reading the row. Echo the founding 30-day date so
+          // the response never contradicts the DB. Non-founding: 7-day default.
+          trial_ends_at: foundingTrialEndsAtIso || school.trial_ends_at || trialEndsAt.toISOString(),
         },
         userId: principal.id,
       });
