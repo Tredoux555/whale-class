@@ -55,6 +55,45 @@ Montree coupling + personal data; don't re-introduce it by editing the Montree c
 
 ---
 
+## 🌱 SESSION — Jul 7, 2026 (Cowork/Fable orchestrating) — CAMPAIGN DAY 1: DISADVANTAGED FOUNDING WAVE (20 drafts) + AD-GEO ATTRIBUTION + 🗺 GEO MATCH
+
+**Canonical: `docs/handoffs/SESSION_DISADVANTAGED_WAVE_ADGEO_JUL7.md` (incl. resume prompt) +
+`docs/outreach/campaign-log/2026-07-07.md` (batch table). Commits `fc0ab19b` → `1b8ebc31` → `952c0e91`, pushed.**
+
+- **🎯 STRATEGY PIVOT (Tredoux): disadvantaged wave FIRST** — supersedes SA as day 1 (SA still gated on
+  Hook 11). Offer: **Premium free for LIFE**, cohort **cap 15 admits**, onboarding window **→ 19 July**,
+  **+10% monthly commission** per school a partner signs up. **🚨 Commission ruling (Tredoux, explicit):
+  deliberately overrides the Jul-6 "no commission ever" rule for THIS person-to-person track ONLY** —
+  private offer to chosen partners, public site stays commission-free; agent infra hidden-not-deleted;
+  commission runs MANUALLY via super-admin until a partner actually signs someone.
+- **🚨 Canonical disadvantaged template = Tredoux's own father-story email** (father's 30km school →
+  government drained the funds — the corruption line STAYS, his call twice: it's a bonding moment with
+  this audience) + 10% commission line + full personal contact block (WhatsApp first). Umbrella orgs get
+  "Your **schools** get". This track does NOT use the global default email. Full text = the Gmail drafts.
+- **📮 20 drafts created** (19 schools: 4×SA, KE, TZ, SZ, HT, GT, DO, MX, UA, AU, PR, 5×US + 1 EsF
+  partnership letter → info@montessori-esf.org, covers the 3 Kenya EsF programs sharing it; EsF touches
+  20/80 rows = the AMI top-cover play). Pipeline: Sonnet prepped → **Fable ran Gmail dedup itself**
+  (sub-agents can't see Gmail tools) → Opus batch review (fixes applied) → drafts. **🚨 Dedup rule
+  learned: gmail/webmail/yahoo recipients need `to:FULL-ADDRESS in:sent`, never to:DOMAIN.** Excluded:
+  FAMM (live thread — owes tailored follow-up), MMI (dup Apr 10+19), Bambini (MX_DEAD). Day-2 queue ~10.
+- **Pool numbers:** ~91 unique disadvantaged (80 list + ~11 Africa-CSV extras), **34 emailable**,
+  **~57 no-email → Sonnet enrichment pass is the next lever**. 🌍 tab shows 75 (import dedup).
+- **🛠 Ad-geo attribution (`fc0ab19b`, sacred flow):** UTM capture + first-touch `montree_attrib` cookie
+  (90d) + attribution stamp on schools at BOTH signup routes (fire-and-forget, 42703-safe) + cf-ipcountry
+  preferred + 🎯 Funnel view (country × source → visits/signups/trials). **⏳ MIGRATION 288 PENDING
+  Tredoux run** (additive; site safe pre-run). **RULE: every FB ad URL carries utm_source — else ad
+  traffic is indistinguishable from the 4,223 cold-email clicks.**
+- **🛠 🗺 Geo Match (`1b8ebc31`, sacred flow):** Visitors tab → 🗺 pill — visitor towns ranked by visits,
+  laid against the outreach list per country, 🔥 warm (visit after sent_date) + 📍 town-hot badges.
+  **Rulings: country-level join only (ip-api city = ISP city → city is a soft badge, never a filter);
+  country_code→label map ~25 countries; contacts paginated (fresh-eyes caught USA 3,198 rows silently
+  truncating at the 1000 default — the sacred flow's catch of the day).** No migration.
+- **⏳ Owed:** migration 288 · Tredoux sends the 20 · status flips to `drafted` (pooler GFW-blocked —
+  Chrome-drive the 🌍 tab) · day-2 drafts · 57-row enrichment · FAMM follow-up · follow-ups due ~Jul 12/17
+  (before the Jul 19 window) · verify 🎯/🗺 live.
+
+---
+
 ## 🏁 SESSION — Jul 6, 2026 (Cowork/Fable, night) — GLOBAL OUTREACH SESSION 3 OF 3: USA 3,198 + AFRICA + CONSOLIDATION + 🌍 SUPER-ADMIN TAB — PROGRAM COMPLETE
 
 **Canonical: `docs/handoffs/HANDOFF_GLOBAL_OUTREACH_SCRAPE.md` §Session 3 (incl. the CAMPAIGN MANAGER — READY
