@@ -1,0 +1,10 @@
+school_name,country,facebook_url,fb_activity,instagram_url,linkedin_url,x_url,email_found_incidentally,confidence,notes
+Mt. Sopris Montessori School,United States,https://www.facebook.com/p/Mount-Sopris-Montessori-School-100071147511580/,,,,,,,"VERIFY-FIX: was https://www.facebook.com/mtsopris/ (slug not found; numeric-ID page verified as correct match)"
+Montessori Learning House,United States,,,,,,,,"VERIFY-FAIL: given URL is a different unrelated school (The Montessori Learning House Bilingual School, Little Elm TX); no location info to confirm correct match"
+Montessori Children's House of Denver – Stapleton,United States,https://www.facebook.com/143821119319907,,,,,,,"VERIFY-FIX: was https://www.facebook.com/mchddragonfly/ (shared org page); dedicated Montessori Children's House of Stapleton page found"
+Heartwood Montessori School,United States,https://www.facebook.com/heartwoodmontessori/,,,,,,,"VERIFY-FIX: was https://www.facebook.com/heartwoodmontessorischool/ (dead/login-walled slug); active page found at heartwoodmontessori (Minneapolis MN)"
+Gethsemane Lutheran School,United States,,,,,,,,"VERIFY-FAIL: gethsemanePTP is a Parent-Teacher-Partnership group page in Northglenn CO, not the school's own page; doesn't match any known Gethsemane Lutheran location"
+Garden Montessori School LLC,United States,,,,,,,,"VERIFY-FAIL: name too generic, multiple distinct Garden Montessori Schools exist (FL/TN/OH/NC); given slug does not clearly match any confirmed location"
+Far Horizons Montessori School,United States,,,,,,,,"VERIFY-FAIL: ambiguous — given page matches a Eugene OR location but a separate distinct Far Horizons Montessori exists in Albany GA; cannot confirm which without city info"
+Campbell Montessori School,United States,,,,,,,,"VERIFY-FAIL: no school by this exact name found; only Montessori Academy of Campbell, Edison Montessori School, and Aloha Montessori exist in Campbell CA — unverifiable match"
+ABC Montessori,United States,,,,,,,,"VERIFY-FAIL: name too generic; given slug abc.montessori not found in search results at all, no location info to confirm any specific match"

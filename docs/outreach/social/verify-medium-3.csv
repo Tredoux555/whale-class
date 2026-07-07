@@ -1,0 +1,3 @@
+school_name,country,facebook_url,fb_activity,instagram_url,linkedin_url,x_url,email_found_incidentally,confidence,notes
+Campus de Educação Integrada,Brazil,,,,,,,low,"VERIFY-FAIL: no Facebook page found matching this exact org name in Brazil; search returned only unrelated Centro/Faculdades Integrada(s) orgs in different cities"
+Chesterfield Day School,United States,https://www.facebook.com/ChesterfieldDaySchool,,,,,,medium,"VERIFY-FIX: was https://www.facebook.com/ChesterfieldDaySchoolAlumni/ (an alumni fan page, only 92 likes) — the official school page facebook.com/ChesterfieldDaySchool is the correct target for outreach"
