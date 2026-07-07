@@ -201,6 +201,57 @@ function mapRows(fileName: string, rows: string[][], defaultCountry: string): Ma
   return { fileName, contacts, skipped_dup, skipped_no_name, error: null };
 }
 
+// ── Facebook-discovery CSV detection + parse ─────────────────────────────────
+// Discovery header: school_name,country,facebook_url,fb_activity,instagram_url,
+// linkedin_url,x_url,email_found_incidentally,confidence,notes. These rows
+// describe schools that ALREADY EXIST as contacts (imported yesterday), so they
+// route to `social_enrich` (match + update) rather than bulk_import.
+type EnrichRow = {
+  school_name: string; country: string;
+  facebook_url: string; instagram_url: string; linkedin_url: string; x_url: string;
+  social_notes: string; email: string;
+};
+
+function isDiscoveryHeader(rows: string[][]): boolean {
+  if (rows.length === 0) return false;
+  const h = rows[0].map(c => c.trim().toLowerCase());
+  return h.includes('school_name') && h.includes('facebook_url');
+}
+
+// Map discovery rows → social_enrich payloads. Placeholder-guarded; a row with
+// no school_name is skipped.
+function mapDiscoveryRows(rows: string[][], defaultCountry: string): EnrichRow[] {
+  if (rows.length < 2) return [];
+  const h = rows[0].map(c => c.trim().toLowerCase());
+  const idx = (n: string) => h.indexOf(n);
+  const iSchool = idx('school_name');
+  const iCountry = idx('country');
+  const iFb = idx('facebook_url'), iIg = idx('instagram_url');
+  const iLi = idx('linkedin_url'), iX = idx('x_url');
+  const iEmail = idx('email_found_incidentally') !== -1 ? idx('email_found_incidentally') : idx('email');
+  const iNotes = idx('notes');
+  const cell = (r: string[], i: number) => (i >= 0 && i < r.length ? r[i].trim() : '');
+  const clean = (v: string) => (isPlaceholder(v) ? '' : v);
+  const out: EnrichRow[] = [];
+  for (let ri = 1; ri < rows.length; ri++) {
+    const r = rows[ri];
+    const school = cell(r, iSchool);
+    if (!school) continue;
+    const rawEmail = clean(cell(r, iEmail));
+    out.push({
+      school_name: school,
+      country: cell(r, iCountry) || defaultCountry.trim(),
+      facebook_url: clean(cell(r, iFb)),
+      instagram_url: clean(cell(r, iIg)),
+      linkedin_url: clean(cell(r, iLi)),
+      x_url: clean(cell(r, iX)),
+      social_notes: clean(cell(r, iNotes)),
+      email: rawEmail.includes('@') ? rawEmail : '',
+    });
+  }
+  return out;
+}
+
 export default function GlobalOutreachTab({ sessionToken }: { sessionToken: string }) {
   const [countries, setCountries] = useState<CountryRow[]>([]);
   const [grand, setGrand] = useState<Grand | null>(null);
@@ -400,6 +451,48 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
           continue;
         }
         const parsed = parseCsv(text);
+
+        // Facebook-discovery CSV → enrich existing rows (never bulk_import).
+        if (isDiscoveryHeader(parsed)) {
+          const enrichRows = mapDiscoveryRows(parsed, defaultCountry);
+          if (enrichRows.length === 0) {
+            log(`• ${file.name}: 0 discovery rows with a school_name`);
+            continue;
+          }
+          log(`🔎 ${file.name}: ${enrichRows.length} discovery rows → enriching existing contacts`);
+          let matched = 0, updated = 0, ambiguous = 0;
+          const unmatched: string[] = [];
+          const eChunks = Math.ceil(enrichRows.length / CHUNK);
+          for (let ci = 0; ci < eChunks; ci++) {
+            const slice = enrichRows.slice(ci * CHUNK, ci * CHUNK + CHUNK);
+            try {
+              const res = await fetch('/api/montree/super-admin/global-outreach', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', ...authHeaders },
+                body: JSON.stringify({ action: 'social_enrich', rows: slice, batch_tag: BATCH_TAG }),
+              });
+              if (!res.ok) {
+                const d = await res.json().catch(() => ({}));
+                throw new Error(d.error || `HTTP ${res.status}`);
+              }
+              const data = await res.json();
+              matched += data.matched || 0;
+              updated += data.updated || 0;
+              ambiguous += data.ambiguous || 0;
+              for (const u of (data.unmatched || [])) unmatched.push(u);
+              log(`   chunk ${ci + 1}/${eChunks} → ${data.matched || 0} matched, ${data.updated || 0} updated, ${(data.unmatched || []).length} unmatched, ${data.ambiguous || 0} ambiguous`);
+            } catch (e) {
+              log(`   chunk ${ci + 1}/${eChunks} FAILED: ${e instanceof Error ? e.message : 'unknown'}`);
+            }
+          }
+          log(`✔ ${file.name}: ${matched} matched, ${updated} updated, ${unmatched.length} unmatched, ${ambiguous} ambiguous`);
+          if (unmatched.length) {
+            log(`   — unmatched (${unmatched.length}) —`);
+            unmatched.forEach(u => log(`     ✗ ${u}`));
+          }
+          continue;
+        }
+
         const mapped = mapRows(file.name, parsed, defaultCountry);
         if (mapped.error) {
           log(`✗ ${file.name}: ${mapped.error}`);
@@ -497,6 +590,8 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
         <div style={{ fontSize: 12, color: T.textSecondary, marginBottom: 10 }}>
           Master format (with a Country column) or per-country format (no Country — set a default below).
           Rows flagged DUP_EMAIL are skipped client-side; MX_DEAD rows import as email_status=invalid.
+          <br />🔎 Facebook-discovery CSVs (a <code>school_name</code> + <code>facebook_url</code> header) are auto-detected
+          and ENRICH existing rows (match by name+country) instead of importing.
           <br />🚨 Run migration 287 before importing disadvantaged rows.
         </div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
