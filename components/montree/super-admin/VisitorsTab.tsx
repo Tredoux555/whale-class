@@ -6,7 +6,7 @@
  * Designed for monitoring outreach email campaign effectiveness.
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { Fragment, useState, useEffect, useCallback, useRef } from 'react';
 
 interface Visitor {
   id: string;
@@ -63,6 +63,56 @@ interface FunnelData {
   days: number;
 }
 
+interface GeoMatchSchool {
+  id: string;
+  org_name: string;
+  has_email: boolean;
+  status: string;
+  town_hot: boolean;
+  warm: boolean;
+}
+
+interface GeoMatchLocation {
+  city: string | null;
+  region: string | null;
+  country: string | null;
+  country_code: string | null;
+  visits: number;
+  unique_visitors: number;
+  last_seen: string;
+  matched_country_label: string | null;
+  schools_in_reach: number;
+  schools: GeoMatchSchool[];
+  warm: boolean;
+  town_hot: boolean;
+}
+
+interface GeoMatchData {
+  days: number;
+  locations: GeoMatchLocation[];
+  country_summary: Array<{
+    country: string; total: number; emailable: number;
+    new: number; drafted: number; sent: number; replied: number;
+    bounced: number; converted: number; dead: number;
+  }>;
+  country_options: string[];
+  total_visits: number;
+  location_count: number;
+}
+
+function statusChipClass(status: string): string {
+  switch (status) {
+    case 'sent': return 'bg-blue-600/30 text-blue-300';
+    case 'replied': return 'bg-emerald-600/30 text-emerald-300';
+    case 'converted': return 'bg-green-600/40 text-green-200';
+    case 'meeting_booked': return 'bg-purple-600/30 text-purple-300';
+    case 'drafted': return 'bg-amber-600/30 text-amber-300';
+    case 'bounced': return 'bg-red-600/30 text-red-300';
+    case 'dead': return 'bg-slate-600/40 text-slate-400';
+    default: return 'bg-slate-700/60 text-slate-300'; // new / unknown
+  }
+}
+
 interface VisitorsTabProps {
   saToken: string;
 }
@@ -113,13 +163,22 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
   const [loading, setLoading] = useState(true);
   const [days, setDays] = useState(7);
   const [countryFilter, setCountryFilter] = useState<string | null>(null);
-  const [view, setView] = useState<'live' | 'countries' | 'pages' | 'cities' | 'funnel'>('live');
+  const [view, setView] = useState<'live' | 'countries' | 'pages' | 'cities' | 'funnel' | 'geo'>('live');
   const [error, setError] = useState<string | null>(null);
   const [funnel, setFunnel] = useState<FunnelData | null>(null);
   const [funnelLoading, setFunnelLoading] = useState(false);
   const [funnelError, setFunnelError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const funnelAbortRef = useRef<AbortController | null>(null);
+
+  // 🗺 Geo Match view state.
+  const [geo, setGeo] = useState<GeoMatchData | null>(null);
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
+  const [geoCountry, setGeoCountry] = useState<string>('');
+  const [geoOnlyWithSchools, setGeoOnlyWithSchools] = useState(false);
+  const [geoExpanded, setGeoExpanded] = useState<Set<string>>(new Set());
+  const geoAbortRef = useRef<AbortController | null>(null);
 
   const fetchVisitors = useCallback(async () => {
     if (!saToken) {
@@ -204,6 +263,49 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
     return () => funnelAbortRef.current?.abort();
   }, [view, fetchFunnel]);
 
+  // 🗺 Geo Match — visitor locations cross-referenced with the outreach school list.
+  const fetchGeo = useCallback(async () => {
+    if (!saToken) return;
+    geoAbortRef.current?.abort();
+    const ac = new AbortController();
+    geoAbortRef.current = ac;
+    setGeoLoading(true);
+    setGeoError(null);
+    try {
+      const params = new URLSearchParams({ days: String(days), min_visits: '1' });
+      if (geoCountry) params.set('country', geoCountry);
+      const res = await fetch(`/api/montree/super-admin/geo-match?${params}`, {
+        headers: { 'x-super-admin-token': saToken },
+        signal: ac.signal,
+      });
+      if (!res.ok) {
+        // JSON-before-OK: surface the real server error when present.
+        let detail = `(${res.status})`;
+        try {
+          const body = await res.json();
+          if (body?.error) detail = `${body.error} (${res.status})`;
+        } catch { /* non-JSON body */ }
+        setGeoError(`Failed to load geo match ${detail}`);
+        return;
+      }
+      const data = await res.json();
+      setGeo(data);
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      console.error('[VisitorsTab] Geo error:', err);
+      setGeoError('Failed to load geo match');
+    } finally {
+      setGeoLoading(false);
+    }
+  }, [saToken, days, geoCountry]);
+
+  // Load geo match lazily — only when the geo view is open (or days/country change while open).
+  useEffect(() => {
+    if (view !== 'geo') return;
+    fetchGeo();
+    return () => geoAbortRef.current?.abort();
+  }, [view, fetchGeo]);
+
   // Auto-refresh every 60s (skip when tab is hidden)
   useEffect(() => {
     const interval = setInterval(() => {
@@ -265,7 +367,7 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
 
         {/* View toggle */}
         <div className="flex gap-1 ml-auto">
-          {(['live', 'countries', 'cities', 'pages', 'funnel'] as const).map(v => (
+          {(['live', 'countries', 'cities', 'pages', 'funnel', 'geo'] as const).map(v => (
             <button
               key={v}
               onClick={() => setView(v)}
@@ -275,7 +377,7 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
                   : 'bg-slate-800 text-slate-400 hover:text-white'
               }`}
             >
-              {v === 'live' ? '\u{1F4E1} Live' : v === 'countries' ? '\u{1F30D} Countries' : v === 'cities' ? '\u{1F3D9} Cities' : v === 'pages' ? '\u{1F4C4} Pages' : '\u{1F3AF} Funnel'}
+              {v === 'live' ? '\u{1F4E1} Live' : v === 'countries' ? '\u{1F30D} Countries' : v === 'cities' ? '\u{1F3D9} Cities' : v === 'pages' ? '\u{1F4C4} Pages' : v === 'funnel' ? '\u{1F3AF} Funnel' : '\u{1F5FA}\u{FE0F} Geo Match'}
             </button>
           ))}
         </div>
@@ -553,6 +655,184 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
                   </table>
                 </div>
               )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* 🗺 Geo Match View — visitor locations cross-referenced with the outreach school list */}
+      {view === 'geo' && (
+        <div className="space-y-3">
+          <div className="text-xs text-slate-500">
+            Visitor towns/regions over the last {days} day{days !== 1 ? 's' : ''}, matched to Montessori
+            schools on the outreach list. Matching is at the <span className="text-slate-400">country</span> level
+            (visitor city geolocation is imprecise); the town is shown as a hint only. 🔥 = a school we already
+            emailed, visited afterwards. Aggregates only — no IP addresses.
+          </div>
+
+          {/* Geo filters */}
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={geoCountry}
+              onChange={e => setGeoCountry(e.target.value)}
+              className="px-3 py-1.5 rounded text-sm bg-slate-800 text-slate-200 border border-slate-700"
+            >
+              <option value="">All countries</option>
+              {(geo?.country_options || []).map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+            <label className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={geoOnlyWithSchools}
+                onChange={e => setGeoOnlyWithSchools(e.target.checked)}
+                className="accent-emerald-500"
+              />
+              Only locations with schools
+            </label>
+            <button
+              onClick={fetchGeo}
+              disabled={geoLoading}
+              className="px-3 py-1.5 rounded text-sm font-medium bg-slate-800 text-slate-400 hover:text-white transition-colors disabled:opacity-50"
+            >
+              {geoLoading ? '\u{23F3}' : '\u{1F504}'} Refresh
+            </button>
+          </div>
+
+          {geoError && (
+            <div className="bg-red-900/30 border border-red-700/50 rounded-lg px-4 py-3 text-red-300 text-sm flex items-center justify-between">
+              <span>{geoError}</span>
+              <button
+                onClick={fetchGeo}
+                className="ml-3 px-3 py-1 rounded text-xs font-medium bg-red-700/40 hover:bg-red-700/60 transition-colors"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
+          {geoLoading && !geo && (
+            <div className="text-center py-12 text-slate-500">Loading geo match...</div>
+          )}
+
+          {geo && (
+            <>
+              {/* Country summary strip */}
+              {geo.country_summary.length > 0 && (
+                <div className="bg-slate-800/40 rounded-lg p-3">
+                  <div className="text-xs text-slate-400 mb-2">Schools on the outreach list for visitor countries</div>
+                  <div className="flex flex-wrap gap-2">
+                    {geo.country_summary.map(s => (
+                      <div key={s.country} className="bg-slate-800 rounded px-3 py-1.5 text-xs">
+                        <span className="text-white font-medium">{s.country}</span>
+                        <span className="text-slate-400 ml-2">{s.total} schools</span>
+                        <span className="text-emerald-400 ml-2">{s.emailable} ✉️</span>
+                        {s.sent > 0 && <span className="text-blue-300 ml-2">{s.sent} sent</span>}
+                        {s.replied > 0 && <span className="text-emerald-300 ml-2">{s.replied} replied</span>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(() => {
+                const rows = geoOnlyWithSchools
+                  ? geo.locations.filter(l => l.schools_in_reach > 0)
+                  : geo.locations;
+                if (rows.length === 0) {
+                  return (
+                    <div className="text-center py-8 text-slate-500">
+                      No {geoOnlyWithSchools ? 'locations with schools' : 'visitor locations'} in the last {days} days
+                    </div>
+                  );
+                }
+                return (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-slate-400 text-xs border-b border-slate-700/60">
+                          <th className="text-left font-medium py-2 px-2">Town / Region / Country</th>
+                          <th className="text-right font-medium py-2 px-2">Visits</th>
+                          <th className="text-right font-medium py-2 px-2">Uniq</th>
+                          <th className="text-right font-medium py-2 px-2">Last seen</th>
+                          <th className="text-right font-medium py-2 px-2">Schools</th>
+                          <th className="text-left font-medium py-2 px-2"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rows.map((loc, i) => {
+                          const key = `${loc.country_code || ''}|${loc.country || ''}|${loc.city || ''}|${loc.region || ''}|${i}`;
+                          const isOpen = geoExpanded.has(key);
+                          const toggle = () => {
+                            setGeoExpanded(prev => {
+                              const next = new Set(prev);
+                              if (next.has(key)) next.delete(key); else next.add(key);
+                              return next;
+                            });
+                          };
+                          return (
+                            <Fragment key={key}>
+                              <tr
+                                className="border-b border-slate-800/60 hover:bg-slate-800/40 cursor-pointer"
+                                onClick={loc.schools_in_reach > 0 ? toggle : undefined}
+                              >
+                                <td className="py-2 px-2 text-white">
+                                  <span className="mr-1.5">{getCountryFlag(loc.country_code)}</span>
+                                  <span className="font-medium">{loc.city || loc.region || loc.country || 'Unknown'}</span>
+                                  {loc.region && loc.city && (
+                                    <span className="text-slate-500 text-xs ml-2">{loc.region}</span>
+                                  )}
+                                  {loc.country && (loc.city || loc.region) && (
+                                    <span className="text-slate-600 text-xs ml-2">{loc.country}</span>
+                                  )}
+                                  {loc.warm && (
+                                    <span className="ml-2 px-1.5 py-0.5 rounded bg-orange-600/30 text-orange-300 text-xs" title="A school we emailed, then visited">🔥 warm</span>
+                                  )}
+                                  {loc.town_hot && (
+                                    <span className="ml-2 px-1.5 py-0.5 rounded bg-amber-600/20 text-amber-300 text-xs" title="Visitor town appears in a matched school's region">📍 town</span>
+                                  )}
+                                </td>
+                                <td className="py-2 px-2 text-right text-blue-300">{loc.visits}</td>
+                                <td className="py-2 px-2 text-right text-slate-400">{loc.unique_visitors}</td>
+                                <td className="py-2 px-2 text-right text-slate-500 text-xs">{formatTimeAgo(loc.last_seen)}</td>
+                                <td className="py-2 px-2 text-right text-emerald-300 font-medium">{loc.schools_in_reach}</td>
+                                <td className="py-2 px-2 text-left text-slate-500 text-xs">
+                                  {loc.schools_in_reach > 0 ? (isOpen ? '▲ hide' : '▼ show') : '—'}
+                                </td>
+                              </tr>
+                              {isOpen && loc.schools.length > 0 && (
+                                <tr className="border-b border-slate-800/60 bg-slate-900/40">
+                                  <td colSpan={6} className="py-2 px-2">
+                                    <div className="space-y-1">
+                                      {loc.schools.map(sch => (
+                                        <div key={sch.id} className="flex items-center gap-2 flex-wrap text-xs">
+                                          <span className="text-slate-200">{sch.org_name}</span>
+                                          <span className={`px-1.5 py-0.5 rounded ${statusChipClass(sch.status)}`}>{sch.status}</span>
+                                          {sch.has_email
+                                            ? <span className="text-emerald-400" title="Has email">✉️</span>
+                                            : <span className="text-slate-600" title="No email on file">no email</span>}
+                                          {sch.warm && <span className="text-orange-300" title="Emailed, then this location visited">🔥</span>}
+                                          {sch.town_hot && <span className="text-amber-300" title="Town matches visitor city">📍</span>}
+                                        </div>
+                                      ))}
+                                      {loc.schools_in_reach > loc.schools.length && (
+                                        <div className="text-slate-600 text-xs pt-1">
+                                          +{loc.schools_in_reach - loc.schools.length} more (capped at {loc.schools.length})
+                                        </div>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                            </Fragment>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })()}
             </>
           )}
         </div>
