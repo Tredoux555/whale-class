@@ -69,6 +69,7 @@ export async function GET(request: NextRequest) {
   const all = url.searchParams.get('all') === '1';
   const country = url.searchParams.get('country') || '';
   const status = url.searchParams.get('status') || '';
+  const disadvantaged = url.searchParams.get('disadvantaged') === '1';
 
   try {
     // ── by_country ────────────────────────────────────────────────────────
@@ -142,6 +143,7 @@ export async function GET(request: NextRequest) {
           .range(from, from + PAGE_SIZE - 1);
         q = scoped(q, all);
         q = filterCountry(q, country);
+        if (disadvantaged) q = q.eq('contact_type', 'disadvantaged_school');
         const { data, error } = await q;
         if (error) {
           if ((error as { code?: string }).code === UNDEFINED_COLUMN) {
@@ -183,6 +185,7 @@ export async function GET(request: NextRequest) {
         query = scoped(query, all);
         query = filterCountry(query, country);
         if (status) query = query.eq('status', status);
+        if (disadvantaged) query = query.eq('contact_type', 'disadvantaged_school');
         if (applySocial) {
           if (socialStatus && SOCIAL_STATUS_SET.has(socialStatus)) {
             query = query.eq('social_status', socialStatus);

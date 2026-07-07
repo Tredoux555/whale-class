@@ -271,6 +271,9 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
   const [page, setPage] = useState(0);
   const PER = 50;
 
+  // 🤲 Disadvantaged filter — independent boolean, works in either view.
+  const [disadvantagedOnly, setDisadvantagedOnly] = useState(false);
+
   // 📘 Social view
   const [socialView, setSocialView] = useState(false);
   const [socialStatusFilter, setSocialStatusFilter] = useState('');
@@ -321,6 +324,7 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
       if (showAll) params.set('all', '1');
       if (country) params.set('country', country);
       if (debouncedQ.trim()) params.set('q', debouncedQ.trim());
+      if (disadvantagedOnly) params.set('disadvantaged', '1');
       if (socialView) {
         params.set('social', '1');
         if (socialStatusFilter) params.set('social_status', socialStatusFilter);
@@ -344,7 +348,7 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
     } finally {
       setLoadingContacts(false);
     }
-  }, [authHeaders, page, country, statusFilter, debouncedQ, showAll, socialView, socialStatusFilter]);
+  }, [authHeaders, page, country, statusFilter, debouncedQ, showAll, socialView, socialStatusFilter, disadvantagedOnly]);
 
   useEffect(() => { loadContacts(); }, [loadContacts]);
 
@@ -355,6 +359,7 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
       const params = new URLSearchParams({ view: 'social_counts' });
       if (showAll) params.set('all', '1');
       if (country) params.set('country', country);
+      if (disadvantagedOnly) params.set('disadvantaged', '1');
       const res = await fetch(`/api/montree/super-admin/global-outreach?${params.toString()}`, {
         headers: authHeaders, cache: 'no-store',
       });
@@ -365,12 +370,12 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
     } catch {
       // non-fatal — counter strip just stays blank
     }
-  }, [authHeaders, socialView, showAll, country]);
+  }, [authHeaders, socialView, showAll, country, disadvantagedOnly]);
 
   useEffect(() => { loadSocialCounts(); }, [loadSocialCounts]);
 
   // reset to page 0 when filters change
-  useEffect(() => { setPage(0); }, [country, statusFilter, debouncedQ, showAll, socialView, socialStatusFilter]);
+  useEffect(() => { setPage(0); }, [country, statusFilter, debouncedQ, showAll, socialView, socialStatusFilter, disadvantagedOnly]);
 
   const changeStatus = async (id: string, newStatus: string) => {
     const prev = contacts;
@@ -682,6 +687,18 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
               {v.label}
             </button>
           ))}
+          <button
+            onClick={() => setDisadvantagedOnly(v => !v)}
+            style={{
+              ...inputStyle, cursor: 'pointer',
+              background: disadvantagedOnly ? T.emeraldSoft : T.inputBg,
+              color: disadvantagedOnly ? T.emerald : T.textSecondary,
+              borderColor: disadvantagedOnly ? T.emeraldDim : 'rgba(52,211,153,0.2)',
+              fontWeight: disadvantagedOnly ? 600 : 400,
+            }}
+          >
+            🤲 Disadvantaged
+          </button>
           {country && (
             <button
               onClick={() => setCountry('')}
