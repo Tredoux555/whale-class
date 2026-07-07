@@ -1,0 +1,3 @@
+school_name,country,facebook_url,fb_activity,instagram_url,linkedin_url,x_url,email_found_incidentally,confidence,notes
+都城聖ドミニコ学園幼稚園,Japan,,,,,,,,"VERIFY-FAIL: URL slug 聖ドミニコ学園幼稚園 (ID 632994063402552) is the Setagaya, Tokyo campus (dominic.ed.jp), not the Miyakonojo/Miyazaki school (m-caritas.jp/dominico) — different institution, wrong location; no FB page found for actual school, only social presence is Instagram @dominico_youchien"
+Divine Mercy Montessori School,Uganda,,,,,,,,"VERIFY-FAIL: given URL DivineMercyPrimarySchool is an unrelated Divine Mercy Primary School (Buwampa, Uganda, not confirmed Montessori); only verified Divine Mercy Montessori School FB page found is in San Diego, USA, not Uganda"
