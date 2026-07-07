@@ -104,3 +104,73 @@ real error text.
 ## Out of scope
 - No Stripe/billing/AI touch. No changes to existing outreach/campaign-manager routes. No auto-send anything.
 - Migration 287 SQL gets PASTED IN CHAT for Tredoux (standing rule) — never assume it ran.
+
+---
+
+## 📘 SOCIAL LAYER (added Jul 7, 2026 — Opus) — track Facebook/social invites parallel to email
+
+A SECOND, independent outreach channel on the SAME `montree_outreach_contacts` rows. A school can carry an
+email pipeline `status` AND a `social_status` at once — they never collide (email flow untouched). This lets
+Tredoux track which schools we've invited via Facebook (the no-email disadvantaged pool + eventually the whole
+7k global list) exactly the way the email column tracks sends.
+
+### Migration `289_social_outreach_tracking.sql` (STAGED — Tredoux runs in Supabase)
+Additive columns on `montree_outreach_contacts` (all `ADD COLUMN IF NOT EXISTS`, idempotent, guarded CHECK,
+no RLS change — service-role app):
+- `facebook_url`, `instagram_url`, `linkedin_url`, `x_url` TEXT
+- `social_status` TEXT DEFAULT `'none'` CHECK IN (`none`, `found`, `invited`, `messaged`, `replied`,
+  `connected`, `dead`)
+- `social_invited_at`, `social_replied_at` TIMESTAMPTZ; `social_notes` TEXT
+- Partial indexes: `(social_status) WHERE social_status <> 'none'`; `(facebook_url) WHERE facebook_url IS NOT NULL`
+
+**Social pipeline (parallel to email new→drafted→sent→replied):**
+`none` → `found` (profile discovered) → `invited` (page-like / friend / follow) → `messaged` (DM sent) →
+`replied` → `connected`; `dead` = dead end. `social_invited_at` stamped on first `invited`/`messaged`;
+`social_replied_at` on first `replied`/`connected`.
+
+**🚨 42703-safe:** every new API path degrades gracefully if 289 hasn't run — the Social view shows a "run
+migration 289" banner and renders empty; it never 500s the tab. The `bulk_import` whitelist accepts the social
+columns unconditionally: pre-289, a row carrying them fails per-row (lands in `error_samples`) while every other
+row imports normally.
+
+### API — `global-outreach/route.ts`
+- `GET ?view=contacts` unchanged (`select('*')` already returns the social fields once they exist). New optional
+  params: `social=1` (restrict to rows with a `facebook_url` OR `social_status <> 'none'`) and
+  `social_status=<state>`. On 42703 it retries without the social clause and returns `{migration_pending:true}`.
+- `GET ?view=social_counts[&all=1][&country=]` — NEW. Paged, 42703-safe counter strip:
+  `{counts:{found,invited,messaged,replied,connected,dead,tracked}}`.
+- `PATCH {action:'set_social', id, social_status?, facebook_url?, instagram_url?, linkedin_url?, x_url?, social_notes?}`
+  — NEW. Super-admin auth. Validates `social_status` against the allowed set, stamps the `*_at` timestamps on the
+  FIRST transition only (reads current row via `.maybeSingle()`), sets the URL/notes fields when supplied
+  (empty string clears). Returns `{migration_pending:true}` + 409 if the columns are absent. Email `status` stays
+  on the existing campaign-manager PATCH — this is a separate axis.
+
+### `bulk_import` whitelist (`outreach/route.ts`)
+`ALLOWED_CONTACT_COLUMNS` extended with the 8 social columns so imported CSVs can seed them.
+
+### Tab — `GlobalOutreachTab.tsx`
+- **View toggle** in the contacts card: `👥 Contacts` / `📘 Social`.
+- **Social view** = counter strip (Found / Invited / Messaged / Replied / Connected) + a filtered table:
+  School | Country | Links (clickable FB/IG/in/X ↗, `target=_blank rel=noopener`) | Social status
+  (tap-to-advance button walking `found→invited→messaged→replied→connected`, plus a red ✕ to mark `dead`) |
+  Updated. Same dark-forest `T` tokens, same pagination (server-paged, 1000-row-trap-safe), same optimistic
+  update-and-revert as the email status dropdown. Search + country filter shared with the email view.
+
+### CSV import mapping (client-side, `mapRows`)
+Backward compatible with the master CSV (no social columns → behaviour unchanged). Recognises BOTH header
+shapes. **The Facebook-discovery agents write** `docs/outreach/social/disadvantaged-facebook-{A,B}.csv` with header:
+
+```
+school_name,country,facebook_url,fb_activity,instagram_url,linkedin_url,x_url,email_found_incidentally,confidence,notes
+```
+
+Mapping: `school_name`→`org_name` (falls back to the master `school` column); `email_found_incidentally`→`email`
+(falls back to master `email`); `facebook_url`/`instagram_url`/`linkedin_url`/`x_url` picked up when present
+(placeholder `not_found`/empty → ''); `notes`→notes. A row with any social URL enters at `social_status='found'`
+(and specifically a `facebook_url` with no email is the canonical Facebook-discovery row). `country` uses the
+Country column or the tab's Default-country input. `fb_activity`/`confidence` are not columns on the table — fold
+them into the `notes` column upstream if you want them retained, or add columns in a future migration.
+
+**Not built (deliberate):** no per-social-status export button (email export unchanged); no separate social
+pipeline stats on the by_country table (kept lean — the Social counter strip covers it); `fb_activity` +
+`confidence` from the discovery CSV are dropped unless merged into `notes` upstream.

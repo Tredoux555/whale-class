@@ -59,7 +59,31 @@ interface Contact {
   id: string; org_name: string; email: string | null;
   country: string | null; region: string | null;
   status: string | null; updated_at: string | null;
+  // Social channel (migration 289). Absent (undefined) until 289 runs.
+  facebook_url?: string | null; instagram_url?: string | null;
+  linkedin_url?: string | null; x_url?: string | null;
+  social_status?: string | null; social_notes?: string | null;
 }
+
+// Social pipeline states + the tap-to-advance ladder.
+const SOCIAL_STATUSES = ['none', 'found', 'invited', 'messaged', 'replied', 'connected', 'dead'] as const;
+type SocialStatus = (typeof SOCIAL_STATUSES)[number];
+// Advancing tap order (dead sits outside the ladder — reached via the ✕ chip).
+const SOCIAL_LADDER: SocialStatus[] = ['found', 'invited', 'messaged', 'replied', 'connected'];
+const SOCIAL_COLOR: Record<string, string> = {
+  none: 'rgba(255,255,255,0.30)',
+  found: '#93c5fd',
+  invited: '#60a5fa',
+  messaged: '#c084fc',
+  replied: T.emerald,
+  connected: T.gold,
+  dead: 'rgba(255,255,255,0.30)',
+};
+const nextSocial = (cur: string): SocialStatus => {
+  const i = SOCIAL_LADDER.indexOf(cur as SocialStatus);
+  if (i === -1) return 'invited'; // from 'none'/'dead' → start inviting
+  return SOCIAL_LADDER[Math.min(i + 1, SOCIAL_LADDER.length - 1)];
+};
 
 // ── quote-aware CSV parser (no deps) ─────────────────────────────────────────
 // Returns an array of string[] rows. Handles "" escapes + commas/newlines
@@ -105,12 +129,18 @@ function mapRows(fileName: string, rows: string[][], defaultCountry: string): Ma
   if (rows.length < 2) return { fileName, contacts: [], skipped_dup: 0, skipped_no_name: 0, error: 'Empty or header-only file' };
   const header = rows[0].map(h => h.trim().toLowerCase());
   const idx = (name: string) => header.indexOf(name);
-  const iCountry = idx('country'), iSchool = idx('school'), iEmail = idx('email');
+  // The Facebook-discovery CSVs use `school_name`; the master CSV uses `school`.
+  const iCountry = idx('country');
+  const iSchool = idx('school') !== -1 ? idx('school') : idx('school_name');
+  const iEmail = idx('email') !== -1 ? idx('email') : idx('email_found_incidentally');
   const iRegion = idx('region'), iCity = idx('city'), iPhone = idx('phone');
   const iWebsite = idx('website'), iSource = idx('source'), iType = idx('type');
   const iFlags = idx('flags'), iNotes = idx('notes');
+  // Social columns (both master + discovery CSVs; all optional).
+  const iFacebook = idx('facebook_url'), iInstagram = idx('instagram_url');
+  const iLinkedin = idx('linkedin_url'), iX = idx('x_url');
 
-  if (iSchool === -1) return { fileName, contacts: [], skipped_dup: 0, skipped_no_name: 0, error: 'No "School" column found in header' };
+  if (iSchool === -1) return { fileName, contacts: [], skipped_dup: 0, skipped_no_name: 0, error: 'No "School" / "school_name" column found in header' };
   if (iCountry === -1 && !defaultCountry.trim()) {
     return { fileName, contacts: [], skipped_dup: 0, skipped_no_name: 0, error: 'No "Country" column — set a Default country and retry' };
   }
@@ -137,6 +167,18 @@ function mapRows(fileName: string, rows: string[][], defaultCountry: string): Ma
     const city = cell(r, iCity);
     const mxDead = combined.includes('MX_DEAD');
 
+    // Social URLs — placeholder-guarded (not_found/empty → '').
+    const clean = (v: string) => (isPlaceholder(v) ? '' : v);
+    const facebook_url = clean(cell(r, iFacebook));
+    const instagram_url = clean(cell(r, iInstagram));
+    const linkedin_url = clean(cell(r, iLinkedin));
+    const x_url = clean(cell(r, iX));
+    const hasSocial = !!(facebook_url || instagram_url || linkedin_url || x_url);
+    // A row discovered on Facebook (no email) enters the social pipeline at
+    // 'found'; everything else stays 'none' (backward compatible with the
+    // master CSV, which has no social columns → hasSocial=false).
+    const social_status = facebook_url && !email ? 'found' : hasSocial ? 'found' : 'none';
+
     contacts.push({
       org_name: school,
       email,
@@ -151,6 +193,9 @@ function mapRows(fileName: string, rows: string[][], defaultCountry: string): Ma
       email_status: mxDead ? 'invalid' : 'unknown',
       mx_verified: !!email && !mxDead,
       batch_tag: BATCH_TAG,
+      // Social fields (migration 289). Only included when the CSV carried any;
+      // absent → these keys are omitted so master-CSV imports are unchanged.
+      ...(hasSocial ? { facebook_url, instagram_url, linkedin_url, x_url, social_status } : {}),
     });
   }
   return { fileName, contacts, skipped_dup, skipped_no_name, error: null };
@@ -174,6 +219,12 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
   const [debouncedQ, setDebouncedQ] = useState('');
   const [page, setPage] = useState(0);
   const PER = 50;
+
+  // 📘 Social view
+  const [socialView, setSocialView] = useState(false);
+  const [socialStatusFilter, setSocialStatusFilter] = useState('');
+  const [socialMigrationPending, setSocialMigrationPending] = useState(false);
+  const [socialCounts, setSocialCounts] = useState<Record<string, number> | null>(null);
 
   // import
   const fileRef = useRef<HTMLInputElement>(null);
@@ -218,8 +269,13 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
       const params = new URLSearchParams({ view: 'contacts', limit: String(PER), offset: String(page * PER) });
       if (showAll) params.set('all', '1');
       if (country) params.set('country', country);
-      if (statusFilter) params.set('status', statusFilter);
       if (debouncedQ.trim()) params.set('q', debouncedQ.trim());
+      if (socialView) {
+        params.set('social', '1');
+        if (socialStatusFilter) params.set('social_status', socialStatusFilter);
+      } else if (statusFilter) {
+        params.set('status', statusFilter);
+      }
       const res = await fetch(`/api/montree/super-admin/global-outreach?${params.toString()}`, {
         headers: authHeaders, cache: 'no-store',
       });
@@ -230,18 +286,40 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
       const data = await res.json();
       setContacts(data.contacts || []);
       setTotal(data.total || 0);
+      setSocialMigrationPending(!!data.migration_pending);
       setContactsError(null);
     } catch (e) {
       setContactsError(e instanceof Error ? e.message : 'Failed to load contacts');
     } finally {
       setLoadingContacts(false);
     }
-  }, [authHeaders, page, country, statusFilter, debouncedQ, showAll]);
+  }, [authHeaders, page, country, statusFilter, debouncedQ, showAll, socialView, socialStatusFilter]);
 
   useEffect(() => { loadContacts(); }, [loadContacts]);
 
+  // 📘 Social counter strip — refetched when scope / country / social view changes.
+  const loadSocialCounts = useCallback(async () => {
+    if (!socialView) return;
+    try {
+      const params = new URLSearchParams({ view: 'social_counts' });
+      if (showAll) params.set('all', '1');
+      if (country) params.set('country', country);
+      const res = await fetch(`/api/montree/super-admin/global-outreach?${params.toString()}`, {
+        headers: authHeaders, cache: 'no-store',
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      setSocialCounts(data.counts || null);
+      if (data.migration_pending) setSocialMigrationPending(true);
+    } catch {
+      // non-fatal — counter strip just stays blank
+    }
+  }, [authHeaders, socialView, showAll, country]);
+
+  useEffect(() => { loadSocialCounts(); }, [loadSocialCounts]);
+
   // reset to page 0 when filters change
-  useEffect(() => { setPage(0); }, [country, statusFilter, debouncedQ, showAll]);
+  useEffect(() => { setPage(0); }, [country, statusFilter, debouncedQ, showAll, socialView, socialStatusFilter]);
 
   const changeStatus = async (id: string, newStatus: string) => {
     const prev = contacts;
@@ -256,6 +334,27 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
       loadAgg();
     } catch {
       setContacts(prev); // revert
+    }
+  };
+
+  // Advance / set a contact's SOCIAL status (separate from the email `status`).
+  const changeSocial = async (id: string, newStatus: string) => {
+    const prev = contacts;
+    setContacts(cs => cs.map(c => (c.id === id ? { ...c, social_status: newStatus } : c)));
+    try {
+      const res = await fetch('/api/montree/super-admin/global-outreach', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
+        body: JSON.stringify({ action: 'set_social', id, social_status: newStatus }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error || `HTTP ${res.status}`);
+      }
+      loadSocialCounts();
+    } catch (e) {
+      setContacts(prev); // revert
+      setContactsError(e instanceof Error ? e.message : 'Failed to update social status');
     }
   };
 
@@ -468,19 +567,26 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
 
       {/* (d) Contacts browser */}
       <div style={cardStyle}>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 }}>
-          <div style={{ fontSize: 14, fontWeight: 600 }}>👥 Contacts</div>
-          <input
-            type="text"
-            placeholder="Search name or email…"
-            value={q}
-            onChange={e => setQ(e.target.value)}
-            style={{ ...inputStyle, minWidth: 220 }}
-          />
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={inputStyle}>
-            <option value="">All statuses</option>
-            {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
+        {/* view toggle: 👥 Email contacts / 📘 Social */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+          {[
+            { key: false, label: '👥 Contacts' },
+            { key: true, label: '📘 Social' },
+          ].map(v => (
+            <button
+              key={String(v.key)}
+              onClick={() => setSocialView(v.key)}
+              style={{
+                ...inputStyle, cursor: 'pointer',
+                background: socialView === v.key ? T.emeraldSoft : T.inputBg,
+                color: socialView === v.key ? T.emerald : T.textSecondary,
+                borderColor: socialView === v.key ? T.emeraldDim : 'rgba(52,211,153,0.2)',
+                fontWeight: socialView === v.key ? 600 : 400,
+              }}
+            >
+              {v.label}
+            </button>
+          ))}
           {country && (
             <button
               onClick={() => setCountry('')}
@@ -489,56 +595,181 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
               {country} ✕
             </button>
           )}
-          <button
-            onClick={doExport}
-            style={{ ...inputStyle, cursor: 'pointer', color: T.gold, borderColor: 'rgba(232,201,106,0.4)', marginLeft: 'auto' }}
-          >
-            ⬇ Export CSV
-          </button>
+          {!socialView && (
+            <button
+              onClick={doExport}
+              style={{ ...inputStyle, cursor: 'pointer', color: T.gold, borderColor: 'rgba(232,201,106,0.4)', marginLeft: 'auto' }}
+            >
+              ⬇ Export CSV
+            </button>
+          )}
         </div>
+
+        {/* 📘 Social counter strip */}
+        {socialView && socialCounts && (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+            {([
+              { key: 'found', label: 'Found' },
+              { key: 'invited', label: 'Invited' },
+              { key: 'messaged', label: 'Messaged' },
+              { key: 'replied', label: 'Replied' },
+              { key: 'connected', label: 'Connected' },
+            ] as const).map(s => (
+              <div key={s.key} style={{
+                background: T.inputBg, border: '1px solid rgba(52,211,153,0.18)', borderRadius: 10,
+                padding: '6px 12px', minWidth: 76,
+              }}>
+                <div style={{ fontSize: 18, fontWeight: 600, color: SOCIAL_COLOR[s.key], fontFamily: T.serif }}>
+                  {(socialCounts[s.key] || 0).toLocaleString()}
+                </div>
+                <div style={{ fontSize: 10, color: T.textSecondary }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* search + filter row */}
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 }}>
+          <input
+            type="text"
+            placeholder="Search name or email…"
+            value={q}
+            onChange={e => setQ(e.target.value)}
+            style={{ ...inputStyle, minWidth: 220 }}
+          />
+          {socialView ? (
+            <select value={socialStatusFilter} onChange={e => setSocialStatusFilter(e.target.value)} style={inputStyle}>
+              <option value="">Any social state</option>
+              {SOCIAL_STATUSES.filter(s => s !== 'none').map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          ) : (
+            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={inputStyle}>
+              <option value="">All statuses</option>
+              {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          )}
+        </div>
+
+        {socialView && socialMigrationPending && (
+          <div style={{ ...cardStyle, borderColor: 'rgba(232,201,106,0.4)', color: T.gold, marginBottom: 10, fontSize: 12 }}>
+            🚨 Social columns not present yet — run <code>migrations/289_social_outreach_tracking.sql</code> in Supabase, then re-import the Facebook-discovery CSVs.
+          </div>
+        )}
 
         {contactsError && <div style={{ color: T.red, fontSize: 12, marginBottom: 10 }}>⚠ {contactsError}</div>}
 
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-            <thead>
-              <tr style={{ color: T.textMuted, textAlign: 'left' }}>
-                <th style={{ padding: '6px 8px' }}>School</th>
-                <th style={{ padding: '6px 8px' }}>Email</th>
-                <th style={{ padding: '6px 8px' }}>Country</th>
-                <th style={{ padding: '6px 8px' }}>Region</th>
-                <th style={{ padding: '6px 8px' }}>Status</th>
-                <th style={{ padding: '6px 8px' }}>Updated</th>
-              </tr>
-            </thead>
-            <tbody>
-              {contacts.map(c => (
-                <tr key={c.id} style={{ borderTop: '1px solid rgba(52,211,153,0.08)' }}>
-                  <td style={{ padding: '6px 8px', color: T.textPrimary }}>{c.org_name}</td>
-                  <td style={{ padding: '6px 8px', color: T.textSecondary }}>{c.email || <span style={{ color: T.textMuted }}>—</span>}</td>
-                  <td style={{ padding: '6px 8px' }}>{c.country || '—'}</td>
-                  <td style={{ padding: '6px 8px', color: T.textSecondary }}>{c.region || '—'}</td>
-                  <td style={{ padding: '6px 8px' }}>
-                    <select
-                      value={c.status || 'new'}
-                      onChange={e => changeStatus(c.id, e.target.value)}
-                      style={{
-                        ...inputStyle, padding: '3px 6px', fontSize: 11,
-                        color: STATUS_COLOR[c.status || 'new'] || T.textPrimary,
-                        borderColor: 'rgba(52,211,153,0.2)',
-                      }}
-                    >
-                      {STATUS_OPTIONS.map(s => <option key={s} value={s} style={{ color: '#000' }}>{s}</option>)}
-                    </select>
-                  </td>
-                  <td style={{ padding: '6px 8px', color: T.textMuted }}>{c.updated_at ? new Date(c.updated_at).toLocaleDateString() : '—'}</td>
+          {socialView ? (
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+              <thead>
+                <tr style={{ color: T.textMuted, textAlign: 'left' }}>
+                  <th style={{ padding: '6px 8px' }}>School</th>
+                  <th style={{ padding: '6px 8px' }}>Country</th>
+                  <th style={{ padding: '6px 8px' }}>Links</th>
+                  <th style={{ padding: '6px 8px' }}>Social status</th>
+                  <th style={{ padding: '6px 8px' }}>Updated</th>
                 </tr>
-              ))}
-              {!loadingContacts && contacts.length === 0 && (
-                <tr><td colSpan={6} style={{ padding: 12, color: T.textMuted }}>No contacts match.</td></tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {contacts.map(c => {
+                  const ss = c.social_status || 'none';
+                  const links: Array<[string, string | null | undefined]> = [
+                    ['FB', c.facebook_url], ['IG', c.instagram_url],
+                    ['in', c.linkedin_url], ['X', c.x_url],
+                  ];
+                  return (
+                    <tr key={c.id} style={{ borderTop: '1px solid rgba(52,211,153,0.08)' }}>
+                      <td style={{ padding: '6px 8px', color: T.textPrimary }}>{c.org_name}</td>
+                      <td style={{ padding: '6px 8px' }}>{c.country || '—'}</td>
+                      <td style={{ padding: '6px 8px' }}>
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                          {links.filter(([, u]) => !!u).map(([label, u]) => (
+                            <a
+                              key={label} href={u as string} target="_blank" rel="noopener noreferrer"
+                              style={{ color: T.emerald, textDecoration: 'none', fontSize: 11, borderBottom: `1px solid ${T.emeraldSoft}` }}
+                            >
+                              {label} ↗
+                            </a>
+                          ))}
+                          {links.every(([, u]) => !u) && <span style={{ color: T.textMuted }}>—</span>}
+                        </div>
+                      </td>
+                      <td style={{ padding: '6px 8px' }}>
+                        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                          <button
+                            onClick={() => changeSocial(c.id, nextSocial(ss))}
+                            title="Advance social status"
+                            style={{
+                              ...inputStyle, padding: '3px 10px', fontSize: 11, cursor: 'pointer',
+                              color: SOCIAL_COLOR[ss] || T.textPrimary,
+                              borderColor: 'rgba(52,211,153,0.25)', background: T.inputBg,
+                            }}
+                          >
+                            {ss} →
+                          </button>
+                          {ss !== 'dead' && (
+                            <button
+                              onClick={() => changeSocial(c.id, 'dead')}
+                              title="Mark dead"
+                              style={{ ...inputStyle, padding: '3px 8px', fontSize: 11, cursor: 'pointer', color: T.red, borderColor: 'rgba(239,68,68,0.3)' }}
+                            >
+                              ✕
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                      <td style={{ padding: '6px 8px', color: T.textMuted }}>{c.updated_at ? new Date(c.updated_at).toLocaleDateString() : '—'}</td>
+                    </tr>
+                  );
+                })}
+                {!loadingContacts && contacts.length === 0 && (
+                  <tr><td colSpan={5} style={{ padding: 12, color: T.textMuted }}>
+                    {socialMigrationPending ? 'Run migration 289 to enable social tracking.' : 'No schools with a social profile yet. Import the Facebook-discovery CSVs above.'}
+                  </td></tr>
+                )}
+              </tbody>
+            </table>
+          ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+              <thead>
+                <tr style={{ color: T.textMuted, textAlign: 'left' }}>
+                  <th style={{ padding: '6px 8px' }}>School</th>
+                  <th style={{ padding: '6px 8px' }}>Email</th>
+                  <th style={{ padding: '6px 8px' }}>Country</th>
+                  <th style={{ padding: '6px 8px' }}>Region</th>
+                  <th style={{ padding: '6px 8px' }}>Status</th>
+                  <th style={{ padding: '6px 8px' }}>Updated</th>
+                </tr>
+              </thead>
+              <tbody>
+                {contacts.map(c => (
+                  <tr key={c.id} style={{ borderTop: '1px solid rgba(52,211,153,0.08)' }}>
+                    <td style={{ padding: '6px 8px', color: T.textPrimary }}>{c.org_name}</td>
+                    <td style={{ padding: '6px 8px', color: T.textSecondary }}>{c.email || <span style={{ color: T.textMuted }}>—</span>}</td>
+                    <td style={{ padding: '6px 8px' }}>{c.country || '—'}</td>
+                    <td style={{ padding: '6px 8px', color: T.textSecondary }}>{c.region || '—'}</td>
+                    <td style={{ padding: '6px 8px' }}>
+                      <select
+                        value={c.status || 'new'}
+                        onChange={e => changeStatus(c.id, e.target.value)}
+                        style={{
+                          ...inputStyle, padding: '3px 6px', fontSize: 11,
+                          color: STATUS_COLOR[c.status || 'new'] || T.textPrimary,
+                          borderColor: 'rgba(52,211,153,0.2)',
+                        }}
+                      >
+                        {STATUS_OPTIONS.map(s => <option key={s} value={s} style={{ color: '#000' }}>{s}</option>)}
+                      </select>
+                    </td>
+                    <td style={{ padding: '6px 8px', color: T.textMuted }}>{c.updated_at ? new Date(c.updated_at).toLocaleDateString() : '—'}</td>
+                  </tr>
+                ))}
+                {!loadingContacts && contacts.length === 0 && (
+                  <tr><td colSpan={6} style={{ padding: 12, color: T.textMuted }}>No contacts match.</td></tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
 
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 12, fontSize: 12, color: T.textSecondary }}>

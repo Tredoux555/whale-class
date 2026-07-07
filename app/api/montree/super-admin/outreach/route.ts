@@ -45,6 +45,18 @@ const ALLOWED_CONTACT_COLUMNS = new Set<string>([
   'reply_summary',
   'source',
   'batch_tag',
+  // Social outreach channel (migration 289). Parallel to the email `status`
+  // flow. Safe to whitelist even before 289 runs: if the columns don't exist,
+  // an insert carrying them 42703s and the row lands in error_samples — every
+  // non-social row imports normally.
+  'facebook_url',
+  'instagram_url',
+  'linkedin_url',
+  'x_url',
+  'social_status',
+  'social_invited_at',
+  'social_replied_at',
+  'social_notes',
   'created_at',
   'updated_at',
 ]);
