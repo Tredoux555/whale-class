@@ -279,6 +279,16 @@ export async function PATCH(request: NextRequest) {
   }
 
   const action = body.action;
+
+  // ── social_enrich ─────────────────────────────────────────────────────────
+  // Enrich EXISTING contact rows (imported yesterday from the master list) with
+  // discovered social URLs. bulk_import can't do this — it upserts-or-skips on
+  // unique conflict and never touches existing rows. Here we MATCH by
+  // (org_name, country) within a batch and UPDATE only the social columns.
+  if (action === 'social_enrich') {
+    return socialEnrich(body);
+  }
+
   if (action !== 'set_social') {
     return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
   }
@@ -355,6 +365,155 @@ export async function PATCH(request: NextRequest) {
   } catch (e) {
     const message = e instanceof Error ? e.message : 'unknown error';
     console.error('[global-outreach] PATCH error:', e);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+// ── social_enrich implementation ───────────────────────────────────────────
+// Body: { rows: [{school_name, country, facebook_url, instagram_url,
+//   linkedin_url, x_url, social_notes, email}], batch_tag? }.
+// Matches each row to existing contact(s) by exact org_name = school_name AND
+// country; if none, retries a case-insensitive ilike (escaped). Updates ONLY
+// the social URL columns (non-empty values only — never blanks an existing
+// URL), appends social_notes, promotes social_status none/NULL → 'found', and
+// fills email when the row carries one and the contact has none. Multiple exact
+// matches on the same org_name+country are treated as campus dup rows and ALL
+// updated; anything else is counted ambiguous.
+type EnrichRow = {
+  school_name?: unknown; country?: unknown;
+  facebook_url?: unknown; instagram_url?: unknown;
+  linkedin_url?: unknown; x_url?: unknown;
+  social_notes?: unknown; email?: unknown;
+};
+type ExistingContact = {
+  id: string; org_name: string; country: string | null; email: string | null;
+  social_status: string | null; social_notes: string | null;
+  facebook_url: string | null; instagram_url: string | null;
+  linkedin_url: string | null; x_url: string | null;
+};
+
+const SELECT_COLS =
+  'id, org_name, country, email, social_status, social_notes, facebook_url, instagram_url, linkedin_url, x_url';
+// Escape ilike wildcards so a school name with %/_/\ can't act as a pattern.
+const escLike = (s: string) => s.replace(/[%_\\]/g, '\\$&');
+const str = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
+
+async function socialEnrich(body: Record<string, unknown>) {
+  const rows = Array.isArray(body.rows) ? (body.rows as EnrichRow[]) : null;
+  if (!rows) return NextResponse.json({ error: 'rows[] required' }, { status: 400 });
+  if (rows.length > 500) {
+    return NextResponse.json({ error: 'too many rows — max 500 per call' }, { status: 413 });
+  }
+  const batchTag = str(body.batch_tag) || BATCH_TAG;
+  const supabase = getSupabase();
+
+  let matched = 0, updated = 0, ambiguous = 0;
+  const unmatched: string[] = [];
+
+  try {
+    for (const raw of rows) {
+      const school = str(raw.school_name);
+      const cc = str(raw.country);
+      if (!school) { ambiguous++; continue; }
+      const keyLabel = `${school}${cc ? ` (${cc})` : ''}`;
+
+      // 1) exact match on org_name + country within the batch.
+      let base = supabase
+        .from('montree_outreach_contacts')
+        .select(SELECT_COLS)
+        .eq('org_name', school)
+        .eq('batch_tag', batchTag);
+      base = cc ? base.eq('country', cc) : base.or('country.is.null,country.eq.');
+      const exact = await base.limit(50);
+      let data = exact.data;
+      const error = exact.error;
+      if (error) {
+        if ((error as { code?: string }).code === UNDEFINED_COLUMN) {
+          return NextResponse.json(
+            { error: 'social columns not present — run migration 289 first', migration_pending: true },
+            { status: 409 },
+          );
+        }
+        throw error;
+      }
+
+      // 2) fallback: case-insensitive name match (escaped) within the batch.
+      if (!data || data.length === 0) {
+        let q2 = supabase
+          .from('montree_outreach_contacts')
+          .select(SELECT_COLS)
+          .ilike('org_name', escLike(school))
+          .eq('batch_tag', batchTag);
+        q2 = cc ? q2.eq('country', cc) : q2.or('country.is.null,country.eq.');
+        const r2 = await q2.limit(50);
+        if (r2.error) throw r2.error;
+        data = r2.data;
+      }
+
+      const hits = (data || []) as unknown as ExistingContact[];
+      if (hits.length === 0) { unmatched.push(keyLabel); continue; }
+
+      // Only update multiple hits when they share the SAME org_name+country
+      // exactly (campus dup rows). Otherwise it's ambiguous — leave them.
+      if (hits.length > 1) {
+        const sameKey = hits.every(h =>
+          h.org_name === hits[0].org_name && (h.country || '') === (hits[0].country || ''),
+        );
+        if (!sameKey) { ambiguous++; continue; }
+      }
+      matched++;
+
+      const fb = str(raw.facebook_url), ig = str(raw.instagram_url);
+      const li = str(raw.linkedin_url), x = str(raw.x_url);
+      const notes = str(raw.social_notes);
+      const email = str(raw.email);
+
+      for (const h of hits) {
+        const patch: Record<string, unknown> = {};
+        // Social URLs — set only when incoming is non-empty (never blank one).
+        if (fb) patch.facebook_url = fb.slice(0, 2000);
+        if (ig) patch.instagram_url = ig.slice(0, 2000);
+        if (li) patch.linkedin_url = li.slice(0, 2000);
+        if (x) patch.x_url = x.slice(0, 2000);
+        // Append notes (don't overwrite).
+        if (notes) {
+          patch.social_notes = (h.social_notes ? `${h.social_notes}; ` : '') + notes;
+          if (String(patch.social_notes).length > 2000) {
+            patch.social_notes = String(patch.social_notes).slice(0, 2000);
+          }
+        }
+        // Promote status only from none/NULL → found.
+        if (!h.social_status || h.social_status === 'none') patch.social_status = 'found';
+        // Fill email only when the contact has none and the row carries one.
+        if (email && email.includes('@') && !h.email) patch.email = email.slice(0, 200);
+
+        if (Object.keys(patch).length === 0) continue;
+        patch.updated_at = new Date().toISOString();
+
+        const { error: upErr } = await supabase
+          .from('montree_outreach_contacts')
+          .update(patch)
+          .eq('id', h.id);
+        if (upErr) {
+          if ((upErr as { code?: string }).code === UNDEFINED_COLUMN) {
+            return NextResponse.json(
+              { error: 'social columns not present — run migration 289 first', migration_pending: true },
+              { status: 409 },
+            );
+          }
+          throw upErr;
+        }
+        updated++;
+      }
+    }
+
+    return NextResponse.json(
+      { matched, updated, unmatched, ambiguous },
+      { headers: { 'Cache-Control': 'no-store' } },
+    );
+  } catch (e) {
+    const message = e instanceof Error ? e.message : 'unknown error';
+    console.error('[global-outreach] social_enrich error:', e);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
