@@ -55,6 +55,17 @@ Montree coupling + personal data; don't re-introduce it by editing the Montree c
 
 ---
 
+## 🏁 SESSION — Jul 7, 2026 (evening, Cowork/Fable orchestrating Sonnet/Opus) — FB SWEEP COMPLETE (3,035 verified pages) + CAMPAIGN DAY 2 + 🛠 outreach-status.py CLI (browser status-flipping is DEAD)
+
+**Canonical: `docs/handoffs/SESSION_FB_SWEEP2_CAMPAIGN_DAY2_JUL7.md`. Commits `778731a3` (CLI tool) + `797c2770` (sweep data + handoff), pushed. Migration 288 RUN (Tredoux confirmed). No other migrations.**
+
+- **📘 FB SWEEP DONE:** 430 leftovers swept (8 Sonnet batches, 325 found, 77%) + ALL 346 medium-confidence URLs verified (7 Sonnet batches: 313 ok / 8 fixed / 21 failed) → `global-social-merged.csv` = **3,263 rows, 3,035 verified facebook_urls**, re-imported to the 🌍 tab. `social-merge.py` now globs `global-leftover-*.csv` + applies `verify-medium-*.csv` as a FINAL OVERRIDE layer (FIX replaces url, FAIL blanks it — don't "simplify" that away). Only remaining sweep work (optional, low priority): FB for schools that already have emails.
+- **🛠 `scripts/outreach-status.py` (Opus-built) — outreach status updates are now CLI-over-HTTPS, NEVER Chrome-driven.** find / set-status / set-social / counts, single or bulk CSV, runs on the Mac (cwd=repo, SUPER_ADMIN_PASSWORD from .env.local), works when the pooler is GFW/VPN-blocked (montree.xyz API). Gotchas: super-admin login rate-limit 5/15min fail-closed (token cached /tmp — don't hammer), Cloudflare 403s default urllib UA (script sends browser UA), **campaign-manager PATCH 500s AFTER a successful write** (outreach_log insert bug — script verifies by re-read; the UI shares the bug, fix owed), `counts` caps at 1,000 rows (pagination fix owed). Sonnet operates it from any session.
+- **📮 Campaign day 2:** 29 drafts (9 day-2 disadvantaged father-story + 16 multiplier bounce-recovery re-sends + 4 mangled-link warm drafts recreated clean; Ireland as thread follow-up — only dedup hit of 25). Statuses flipped via the CLI (17 day-1→sent, Zama→bounced, 20→drafted). **⚠️ Tredoux sent ~50 on Jul 7 (over the 20/day cap — the whole draft queue went same-day). Recovery: Jul 8 zero cold sends, Jul 9 back to 15-20. 🚨 RULE: never queue more Gmail drafts than the daily send cap.** Discard owed in Gmail: 4 old mangled drafts (Remuera, I Cube, Norge, Meraki) + **Montessori Ed Ireland + FEMCO Colombia (DB says dead/declined — drafted before the check)**. FAMM: Tredoux sent it himself, dealt with. Not in DB at all: Sustainable Coffee Bay, AMITOMO JP, montessoricolombia.org. Gmail Jul 7: no real replies; **Otari's Clifford STILL on sabbatical** (Susan West acting — the morning session's "back from sabbatical" intel was wrong); auto-acks Lumin + Lions Gate = delivery healthy; bounces only the 2 dead addresses (zamamont@, info@lovetrust — erik@ re-send delivered).
+- **Deliverability truth (told to Tredoux): inbox-vs-spam is unobservable.** Proxies: auto-replies = delivered; watch DELAYED soft-bounces 24h after a big send; mail-tester.com for content scoring; personal Gmail has no Postmaster Tools; the cousin sending domain stays the real scale fix.
+
+---
+
 ## 📘 SESSION — Jul 7, 2026 (afternoon, Cowork/Fable) — FACEBOOK PIVOT: GLOBAL FB SWEEP (2,719 pages in ONE session) + SOCIAL TRACKER LIVE + 12 WARM/FAMM DRAFTS + BOUNCE RECOVERY
 
 **Canonical: `docs/handoffs/SESSION_FB_SWEEP_WARMLEADS_JUL7.md` (incl. session-2 resume prompt + bounce
