@@ -258,6 +258,7 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
   const [loadingAgg, setLoadingAgg] = useState(true);
   const [aggError, setAggError] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
+  const [countryTableOpen, setCountryTableOpen] = useState(false);
 
   // contacts browser
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -627,9 +628,18 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
         )}
       </div>
 
-      {/* (c) Country table */}
+      {/* (c) Country table — collapsible, default collapsed */}
       <div style={{ ...cardStyle, marginBottom: 16, overflowX: 'auto' }}>
-        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10 }}>🌍 By country {loadingAgg && <span style={{ color: T.textMuted, fontWeight: 400 }}>· loading…</span>}</div>
+        <div
+          onClick={() => setCountryTableOpen(o => !o)}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer', marginBottom: countryTableOpen ? 10 : 0 }}
+        >
+          <span style={{ color: T.emerald }}>{countryTableOpen ? '▾' : '▸'}</span>
+          <span>🌍 By country</span>
+          <span style={{ color: T.textMuted, fontWeight: 400 }}>· {countries.length} {countries.length === 1 ? 'country' : 'countries'}</span>
+          {loadingAgg && <span style={{ color: T.textMuted, fontWeight: 400 }}>· loading…</span>}
+        </div>
+        {countryTableOpen && (
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
           <thead>
             <tr style={{ color: T.textMuted, textAlign: 'left' }}>
@@ -663,6 +673,7 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
             )}
           </tbody>
         </table>
+        )}
       </div>
 
       {/* (d) Contacts browser */}

@@ -55,6 +55,47 @@ Montree coupling + personal data; don't re-introduce it by editing the Montree c
 
 ---
 
+## 📘 SESSION — Jul 7, 2026 (afternoon, Cowork/Fable) — FACEBOOK PIVOT: GLOBAL FB SWEEP (2,719 pages in ONE session) + SOCIAL TRACKER LIVE + 12 WARM/FAMM DRAFTS + BOUNCE RECOVERY
+
+**Canonical: `docs/handoffs/SESSION_FB_SWEEP_WARMLEADS_JUL7.md` (incl. session-2 resume prompt + bounce
+tables + pipeline rules). Commits `294fac99` → `39743daf` → `a028edd3` → `a83c4711` (+ by-country collapse),
+pushed. Migration 289 RUN by Tredoux (confirmed).**
+
+- **🎯 STRATEGY PIVOT (Tredoux): FACEBOOK is now the PRIMARY outreach channel** — one platform for
+  communication + social boost; email runs in parallel; video promos deprioritized. Disadvantaged schools
+  FIRST (build the base), then up the list. **FB pacing rule: 20–30 invites/day from the Montree page,
+  varied text, no links in message 1.**
+- **📘 FB harvest (one session): 2,719 schools with facebook_url** (2,926 with any social) =
+  38 disadvantaged (2 Sonnet agents) + ~958 no-email/no-website rows fully swept (31 Sonnet batches, 53%)
+  + 1,906 from the **zero-AI script pass** (`scripts/social-script-pass.py` crawled all 4,564 websited rows
+  on the Mac). Merged import file: `docs/outreach/social/global-social-merged.csv`
+  (`scripts/social-merge.py` regenerates). **Pipeline RULES: Sonnet batches of 55, launch groups of 4 (8 at
+  once = server burst-limit killed 7), judge from search snippets (never fetch facebook.com), agents reply
+  counts-only.**
+- **🛠 Social tracker LIVE (migration 289 RUN):** social URL columns + `social_status` ladder
+  (found→invited→messaged→replied→connected/dead) on `montree_outreach_contacts`; `set_social` PATCH +
+  `social_counts` view; **`social_enrich`** import path (UPDATES existing rows by org_name+country — the
+  🌍 CSV import auto-detects the discovery header; bulk_import can NOT enrich, it upserts on id);
+  📘 Social view + 🤲 Disadvantaged filter + 🌏 by-country collapsed by default in `GlobalOutreachTab`.
+  **Email status and social status are independent axes — never merge them.**
+- **📧 12 Fable-written Gmail drafts** (warm-lead revival + FAMM): FAMM founding-cohort offer (⚠️ Apr-19
+  email promised FAMM **20% for life**; new track pays 10% — **Tredoux must decide before FAMM signs
+  anyone**; draft kept it vague), Love Trust re-send to bounce-recovered **erik@lovetrust.co.za** (CEO),
+  Cambridge MG, Paint Pots, Copenhagen, Lions Gate (**Canada** not USA), Otari (Clifford back from
+  sabbatical), Norge, I Cube, Meraki, Remuera, Prerana. Montessori CH = DEAD (declined May 10). Zama =
+  phone-only 083 403 8203. **⚠️ The morning-batch drafts may carry a mangled google-redirect montree.xyz
+  link (found in the Love Trust copy) — check before sending.** 20/day cap: cold 20 + FAMM + Love Trust
+  day 1, the 10 thread-replies day 2.
+- **📮 Bounce recovery (Opus, MX-verified, seen-on-page):** 16/21 multiplier orgs + ~55 schools recovered —
+  full tables in handoff §4 (DMG, MSCA, AME Spain, AMCHI Chile, both AMI Korea bodies, FEMCO, AMITOMO JP,
+  IEMMP PT, IMA PL, Brussels, MMI UK→mariamontessori.org…). Rose House UK = CLOSED, QAIS = DEFUNCT.
+- **⏳ Session 2 (resume prompt in handoff §6):** ~440 agent-searchable FB leftovers + medium-confidence
+  verification pass + re-merge/import · Gmail reply/bounce sweep + day-2 disadvantaged drafts + multiplier
+  re-sends · migration 288 check · FAMM commission decision · verify enrich-import completed + invite
+  tracking started.
+
+---
+
 ## 🌱 SESSION — Jul 7, 2026 (Cowork/Fable orchestrating) — CAMPAIGN DAY 1: DISADVANTAGED FOUNDING WAVE (20 drafts) + AD-GEO ATTRIBUTION + 🗺 GEO MATCH
 
 **Canonical: `docs/handoffs/SESSION_DISADVANTAGED_WAVE_ADGEO_JUL7.md` (incl. resume prompt) +
