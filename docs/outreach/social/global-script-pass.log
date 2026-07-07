@@ -42,3 +42,6 @@ progress 4000/4564 fb_hits=1619
 progress 4100/4564 fb_hits=1660
 progress 4200/4564 fb_hits=1700
 progress 4300/4564 fb_hits=1755
+progress 4400/4564 fb_hits=1814
+progress 4500/4564 fb_hits=1863
+DONE processed=4564 fb_hits=1906
