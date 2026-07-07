@@ -114,3 +114,4 @@ tsconfig.scope2.json
 # temp scoped tsconfig from Jul-6 global-outreach fresh-eyes review (sandbox rm blocked — delete via Desktop Commander)
 tsconfig.reviewtmp.json
 tsconfig.reviewtmp.tsbuildinfo
+tsconfig.adgeo.tmp.json
