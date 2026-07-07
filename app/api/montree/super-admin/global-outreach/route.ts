@@ -24,6 +24,14 @@ const BATCH_TAG = 'global-scrape-jul2026';
 const PAGE_SIZE = 1000;
 const MAX_PAGES = 300; // amendment I4 — high cap; warn-and-stop if ever hit.
 
+// Social pipeline states (migration 289). Shared by the contacts GET (social
+// view filter) and the set_social PATCH (validation).
+const SOCIAL_STATUS_SET = new Set([
+  'none', 'found', 'invited', 'messaged', 'replied', 'connected', 'dead',
+]);
+// Postgres "undefined column" — thrown when migration 289 hasn't run yet.
+const UNDEFINED_COLUMN = '42703';
+
 type Row = {
   country: string | null;
   status: string | null;
@@ -118,28 +126,92 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ countries, grand }, { headers: { 'Cache-Control': 'no-store' } });
     }
 
+    // ── social_counts ─────────────────────────────────────────────────────
+    // Counter strip for the 📘 Social view: how many rows sit in each social
+    // pipeline state (found / invited / messaged / replied / connected / dead)
+    // within the current scope + country filter. Paged; 42703-safe.
+    if (view === 'social_counts') {
+      const counts: Record<string, number> = {
+        found: 0, invited: 0, messaged: 0, replied: 0, connected: 0, dead: 0, tracked: 0,
+      };
+      for (let page = 0; page < MAX_PAGES; page++) {
+        const from = page * PAGE_SIZE;
+        let q = supabase
+          .from('montree_outreach_contacts')
+          .select('social_status,facebook_url')
+          .range(from, from + PAGE_SIZE - 1);
+        q = scoped(q, all);
+        q = filterCountry(q, country);
+        const { data, error } = await q;
+        if (error) {
+          if ((error as { code?: string }).code === UNDEFINED_COLUMN) {
+            return NextResponse.json({ counts, migration_pending: true }, { headers: { 'Cache-Control': 'no-store' } });
+          }
+          throw error;
+        }
+        const rows = (data || []) as Array<{ social_status: string | null; facebook_url: string | null }>;
+        for (const r of rows) {
+          const s = r.social_status || 'none';
+          const tracked = (s !== 'none') || !!r.facebook_url;
+          if (tracked) counts.tracked++;
+          if (s in counts) counts[s]++;
+        }
+        if (rows.length < PAGE_SIZE) break;
+        if (page === MAX_PAGES - 1) {
+          console.warn('[global-outreach] social_counts hit MAX_PAGES cap — results may be truncated.');
+        }
+      }
+      return NextResponse.json({ counts }, { headers: { 'Cache-Control': 'no-store' } });
+    }
+
     // ── contacts ──────────────────────────────────────────────────────────
     if (view === 'contacts') {
       const limit = Math.min(200, Math.max(1, parseInt(url.searchParams.get('limit') || '50', 10) || 50));
       const offset = Math.max(0, parseInt(url.searchParams.get('offset') || '0', 10) || 0);
       const q = url.searchParams.get('q') || '';
+      // Social view: restrict to rows with any social presence (a facebook_url
+      // OR a social_status other than 'none'). Only applied when requested.
+      const socialOnly = url.searchParams.get('social') === '1';
+      const socialStatus = url.searchParams.get('social_status') || '';
 
-      let query = supabase
-        .from('montree_outreach_contacts')
-        .select('*', { count: 'exact' })
-        .order('updated_at', { ascending: false })
-        .range(offset, offset + limit - 1);
-      query = scoped(query, all);
-      query = filterCountry(query, country);
-      if (status) query = query.eq('status', status);
-      if (q.trim()) {
-        // amendment I2 — sanitize before the two-branch .or(): cap length,
-        // escape ilike wildcards, strip chars that break .or() parsing.
-        const safe = q.slice(0, 60).replace(/[%_\\]/g, '\\$&').replace(/[(),]/g, '');
-        if (safe) query = query.or(`org_name.ilike.%${safe}%,email.ilike.%${safe}%`);
+      const runQuery = (applySocial: boolean) => {
+        let query = supabase
+          .from('montree_outreach_contacts')
+          .select('*', { count: 'exact' })
+          .order('updated_at', { ascending: false })
+          .range(offset, offset + limit - 1);
+        query = scoped(query, all);
+        query = filterCountry(query, country);
+        if (status) query = query.eq('status', status);
+        if (applySocial) {
+          if (socialStatus && SOCIAL_STATUS_SET.has(socialStatus)) {
+            query = query.eq('social_status', socialStatus);
+          } else {
+            query = query.or('facebook_url.not.is.null,social_status.neq.none');
+          }
+        }
+        if (q.trim()) {
+          // amendment I2 — sanitize before the two-branch .or(): cap length,
+          // escape ilike wildcards, strip chars that break .or() parsing.
+          const safe = q.slice(0, 60).replace(/[%_\\]/g, '\\$&').replace(/[(),]/g, '');
+          if (safe) query = query.or(`org_name.ilike.%${safe}%,email.ilike.%${safe}%`);
+        }
+        return query;
+      };
+
+      let { data, error, count } = await runQuery(socialOnly);
+      // 42703-safe: if the social columns don't exist yet (migration 289 not
+      // run), the social filter references a missing column. Retry without the
+      // social clause so the tab renders empty instead of 500-ing.
+      if (error && (error as { code?: string }).code === '42703' && socialOnly) {
+        ({ data, error, count } = await runQuery(false));
+        if (!error) {
+          return NextResponse.json(
+            { contacts: [], total: 0, migration_pending: true },
+            { headers: { 'Cache-Control': 'no-store' } },
+          );
+        }
       }
-
-      const { data, error, count } = await query;
       if (error) throw error;
       return NextResponse.json({ contacts: data || [], total: count || 0 }, { headers: { 'Cache-Control': 'no-store' } });
     }
@@ -185,6 +257,104 @@ export async function GET(request: NextRequest) {
   } catch (e) {
     const message = e instanceof Error ? e.message : 'unknown error';
     console.error('[global-outreach] GET error:', e);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+// ── PATCH: set_social ─────────────────────────────────────────────────────
+// Update the social-outreach channel for one contact (migration 289). This is
+// a SEPARATE axis from the email `status` flow (that stays on campaign-manager
+// PATCH). Advances social_status, stamps social_invited_at / social_replied_at
+// on the appropriate transitions (first time only), and sets the 4 URL fields
+// + social_notes when supplied.
+export async function PATCH(request: NextRequest) {
+  const { valid } = await verifySuperAdminAuth(request.headers);
+  if (!valid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+
+  const action = body.action;
+  if (action !== 'set_social') {
+    return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
+  }
+
+  const id = typeof body.id === 'string' ? body.id : '';
+  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+
+  const supabase = getSupabase();
+
+  try {
+    // Read the current row so we only stamp the *_at timestamps on the FIRST
+    // transition into a state (don't re-stamp on re-saves).
+    const { data: current, error: readErr } = await supabase
+      .from('montree_outreach_contacts')
+      .select('social_status, social_invited_at, social_replied_at')
+      .eq('id', id)
+      .maybeSingle();
+    if (readErr) {
+      const code = (readErr as { code?: string }).code;
+      if (code === UNDEFINED_COLUMN) {
+        return NextResponse.json(
+          { error: 'social columns not present — run migration 289 first', migration_pending: true },
+          { status: 409 },
+        );
+      }
+      throw readErr;
+    }
+    if (!current) return NextResponse.json({ error: 'contact not found' }, { status: 404 });
+
+    const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
+
+    if (body.social_status !== undefined) {
+      const next = String(body.social_status);
+      if (!SOCIAL_STATUS_SET.has(next)) {
+        return NextResponse.json({ error: `invalid social_status: ${next}` }, { status: 400 });
+      }
+      update.social_status = next;
+      const cur = current as { social_invited_at?: string | null; social_replied_at?: string | null };
+      const nowIso = new Date().toISOString();
+      if ((next === 'invited' || next === 'messaged') && !cur.social_invited_at) {
+        update.social_invited_at = nowIso;
+      }
+      if ((next === 'replied' || next === 'connected') && !cur.social_replied_at) {
+        update.social_replied_at = nowIso;
+      }
+    }
+
+    // URL + notes fields: set when the key is present (empty string clears).
+    for (const field of ['facebook_url', 'instagram_url', 'linkedin_url', 'x_url', 'social_notes']) {
+      if (body[field] !== undefined) {
+        const v = body[field];
+        update[field] = v == null ? null : String(v).slice(0, 2000);
+      }
+    }
+
+    const { data, error } = await supabase
+      .from('montree_outreach_contacts')
+      .update(update)
+      .eq('id', id)
+      .select('id, org_name, social_status, social_invited_at, social_replied_at, facebook_url, instagram_url, linkedin_url, x_url, social_notes')
+      .maybeSingle();
+    if (error) {
+      const code = (error as { code?: string }).code;
+      if (code === UNDEFINED_COLUMN) {
+        return NextResponse.json(
+          { error: 'social columns not present — run migration 289 first', migration_pending: true },
+          { status: 409 },
+        );
+      }
+      throw error;
+    }
+
+    return NextResponse.json({ contact: data }, { headers: { 'Cache-Control': 'no-store' } });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : 'unknown error';
+    console.error('[global-outreach] PATCH error:', e);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
