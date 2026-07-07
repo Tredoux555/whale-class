@@ -7,6 +7,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
 import { createMontreeToken, setMontreeAuthCookie } from '@/lib/montree/server-auth';
 import { getLocationFromRequest } from '@/lib/ip-geolocation';
+import { stampSchoolAttribution } from '@/lib/montree/outreach/stamp-attribution';
 import { applyGlobalTranslations } from '@/lib/montree/curriculum/apply-global-translations';
 import { isValidLocale, DEFAULT_LOCALE, type Locale } from '@/lib/montree/i18n/locales';
 import { DEFAULTS } from '@/lib/montree/constants';
@@ -552,6 +553,11 @@ export async function POST(req: NextRequest) {
       const message = locErr instanceof Error ? locErr.message : String(locErr);
       steps.push('2b-location-fail:' + message);
     }
+
+    // ── Step 1c: Ad-geo attribution stamp (Jul 7 2026, non-blocking) ──
+    // First-touch acquisition source from the montree_attrib cookie. Awaited but
+    // wrapped — a failure never fails signup (helper swallows all errors).
+    await stampSchoolAttribution(supabase, req, school.id);
 
     // ── Step 2: Create classroom (teachers + homeschool only — principals create their own) ──
     let classroom: Record<string, unknown> | null = null;

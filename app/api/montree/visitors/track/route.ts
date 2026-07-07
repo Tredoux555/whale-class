@@ -10,6 +10,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { getClientIP, getLocationFromIP } from '@/lib/ip-geolocation';
+import { sanitizeUtm } from '@/lib/montree/attribution';
 import { createHash } from 'crypto';
 
 // In-memory rate limit: max 1 track per fingerprint per 30 seconds
@@ -47,7 +48,14 @@ export async function POST(request: NextRequest) {
     const ip = getClientIP(request);
 
     // Parse body
-    let body: { page_url?: string; referrer?: string };
+    let body: {
+      page_url?: string;
+      referrer?: string;
+      utm_source?: string;
+      utm_medium?: string;
+      utm_campaign?: string;
+      utm_content?: string;
+    };
     try {
       body = await request.json();
     } catch {
@@ -81,28 +89,60 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    // Geolocation lookup (non-blocking — has 5s timeout built in)
+    // Geolocation lookup (non-blocking — has 5s timeout built in).
+    // Cloudflare fronts the app, so cf-ipcountry is authoritative + free — prefer
+    // it for country/code; ip-api still supplies city/region/timezone detail.
     const location = await getLocationFromIP(ip);
+    const cfCountryCode = request.headers.get('cf-ipcountry')?.trim().toUpperCase() || null;
+    const validCf = cfCountryCode && /^[A-Z]{2}$/.test(cfCountryCode) ? cfCountryCode : null;
+    const countryCode = validCf || location.countryCode;
+    // If cf gave us a code ip-api didn't, still surface a country label from cf.
+    const country = location.country || (validCf ? validCf : null);
 
-    // Insert into DB
-    // NOTE: actual table has `isp` column (not `ip`) and no `page_url` column.
-    // Store IP in `isp` field and page_url in `referrer` fallback if no referrer.
+    // UTM capture (Jul 7 2026 — ad-geo attribution).
+    const utmSource = sanitizeUtm(body.utm_source) ?? null;
+    const utmMedium = sanitizeUtm(body.utm_medium) ?? null;
+    const utmCampaign = sanitizeUtm(body.utm_campaign) ?? null;
+    const utmContent = sanitizeUtm(body.utm_content) ?? null;
+
+    // Insert into DB.
+    // NOTE: actual table has `isp` column (not `ip`) and no `page_url` column
+    // (schema drift, migrations 156/163). Store IP in `isp` and page_url in the
+    // `referrer` fallback if no referrer. utm_* columns come from migration 288;
+    // if that migration hasn't run yet the first insert fails on the unknown
+    // columns and we retry WITHOUT them so tracking never breaks.
     const supabase = getSupabase();
-    const { error } = await supabase.from('montree_visitors').insert({
+    const baseRow = {
       isp: ip?.slice(0, 45) || null,
-      country: location.country,
-      country_code: location.countryCode,
+      country,
+      country_code: countryCode,
       city: location.city,
       region: location.region,
       timezone: location.timezone,
       referrer: sanitizedReferrer || sanitizedPageUrl,
       user_agent: userAgent,
       fingerprint,
+    };
+
+    const { error } = await supabase.from('montree_visitors').insert({
+      ...baseRow,
+      utm_source: utmSource,
+      utm_medium: utmMedium,
+      utm_campaign: utmCampaign,
+      utm_content: utmContent,
     });
 
     if (error) {
-      console.error('[VISITOR-TRACK] DB insert error:', error.code);
-      // Don't expose error to client
+      // 42703 = undefined_column → migration 288 not run yet. Retry drift-safe.
+      if (error.code === '42703') {
+        const { error: retryErr } = await supabase.from('montree_visitors').insert(baseRow);
+        if (retryErr) {
+          console.error('[VISITOR-TRACK] DB insert error (no-utm retry):', retryErr.code);
+        }
+      } else {
+        console.error('[VISITOR-TRACK] DB insert error:', error.code);
+        // Don't expose error to client
+      }
     }
 
     return NextResponse.json({ ok: true });

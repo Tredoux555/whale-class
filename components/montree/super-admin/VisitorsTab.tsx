@@ -49,6 +49,20 @@ interface VisitorStats {
   days: number;
 }
 
+interface FunnelRow {
+  country: string; // 2-letter code or 'ZZ'
+  source: string;
+  visits: number;
+  signups: number;
+  trials: number;
+}
+
+interface FunnelData {
+  rows: FunnelRow[];
+  totals: { visits: number; signups: number; trials: number };
+  days: number;
+}
+
 interface VisitorsTabProps {
   saToken: string;
 }
@@ -99,9 +113,13 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
   const [loading, setLoading] = useState(true);
   const [days, setDays] = useState(7);
   const [countryFilter, setCountryFilter] = useState<string | null>(null);
-  const [view, setView] = useState<'live' | 'countries' | 'pages' | 'cities'>('live');
+  const [view, setView] = useState<'live' | 'countries' | 'pages' | 'cities' | 'funnel'>('live');
   const [error, setError] = useState<string | null>(null);
+  const [funnel, setFunnel] = useState<FunnelData | null>(null);
+  const [funnelLoading, setFunnelLoading] = useState(false);
+  const [funnelError, setFunnelError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const funnelAbortRef = useRef<AbortController | null>(null);
 
   const fetchVisitors = useCallback(async () => {
     if (!saToken) {
@@ -151,6 +169,40 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
     fetchVisitors();
     return () => abortRef.current?.abort();
   }, [fetchVisitors]);
+
+  // Ad-geo attribution funnel (country × source → visits / signups / trials).
+  const fetchFunnel = useCallback(async () => {
+    if (!saToken) return;
+    funnelAbortRef.current?.abort();
+    const ac = new AbortController();
+    funnelAbortRef.current = ac;
+    setFunnelLoading(true);
+    setFunnelError(null);
+    try {
+      const res = await fetch(`/api/montree/super-admin/traffic-funnel?days=${days}`, {
+        headers: { 'x-super-admin-token': saToken },
+        signal: ac.signal,
+      });
+      if (!res.ok) {
+        setFunnelError(`Failed to load funnel (${res.status})`);
+        return;
+      }
+      const data = await res.json();
+      setFunnel(data);
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      setFunnelError('Failed to load funnel');
+    } finally {
+      setFunnelLoading(false);
+    }
+  }, [saToken, days]);
+
+  // Load the funnel lazily — only when the funnel view is open (or days change while open).
+  useEffect(() => {
+    if (view !== 'funnel') return;
+    fetchFunnel();
+    return () => funnelAbortRef.current?.abort();
+  }, [view, fetchFunnel]);
 
   // Auto-refresh every 60s (skip when tab is hidden)
   useEffect(() => {
@@ -213,7 +265,7 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
 
         {/* View toggle */}
         <div className="flex gap-1 ml-auto">
-          {(['live', 'countries', 'cities', 'pages'] as const).map(v => (
+          {(['live', 'countries', 'cities', 'pages', 'funnel'] as const).map(v => (
             <button
               key={v}
               onClick={() => setView(v)}
@@ -223,7 +275,7 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
                   : 'bg-slate-800 text-slate-400 hover:text-white'
               }`}
             >
-              {v === 'live' ? '\u{1F4E1} Live' : v === 'countries' ? '\u{1F30D} Countries' : v === 'cities' ? '\u{1F3D9} Cities' : '\u{1F4C4} Pages'}
+              {v === 'live' ? '\u{1F4E1} Live' : v === 'countries' ? '\u{1F30D} Countries' : v === 'cities' ? '\u{1F3D9} Cities' : v === 'pages' ? '\u{1F4C4} Pages' : '\u{1F3AF} Funnel'}
             </button>
           ))}
         </div>
@@ -406,6 +458,103 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
               <span className="text-purple-400 font-bold">{p.count}</span>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Funnel View — ad-geo attribution: country × source → visits / signups / trials */}
+      {view === 'funnel' && (
+        <div className="space-y-3">
+          <div className="text-xs text-slate-500">
+            First-touch attribution over the last {days} day{days !== 1 ? 's' : ''}. Source = utm_source /
+            referrer class for visits, and the school&apos;s stamped acquisition source for signups.
+            Aggregates only — no personal data.
+          </div>
+
+          {funnelError && (
+            <div className="bg-red-900/30 border border-red-700/50 rounded-lg px-4 py-3 text-red-300 text-sm flex items-center justify-between">
+              <span>{funnelError}</span>
+              <button
+                onClick={fetchFunnel}
+                className="ml-3 px-3 py-1 rounded text-xs font-medium bg-red-700/40 hover:bg-red-700/60 transition-colors"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
+          {funnelLoading && !funnel && (
+            <div className="text-center py-12 text-slate-500">Loading funnel...</div>
+          )}
+
+          {funnel && (
+            <>
+              {/* Totals */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-slate-800 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-blue-400">{funnel.totals.visits}</div>
+                  <div className="text-xs text-slate-400 mt-1">Visits</div>
+                </div>
+                <div className="bg-slate-800 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-emerald-400">{funnel.totals.signups}</div>
+                  <div className="text-xs text-slate-400 mt-1">Signups</div>
+                </div>
+                <div className="bg-slate-800 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-amber-400">{funnel.totals.trials}</div>
+                  <div className="text-xs text-slate-400 mt-1">Trial schools</div>
+                </div>
+              </div>
+
+              {funnel.rows.length === 0 ? (
+                <div className="text-center py-8 text-slate-500">
+                  No attribution data in the last {days} days
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-slate-400 text-xs border-b border-slate-700/60">
+                        <th className="text-left font-medium py-2 px-2">Country</th>
+                        <th className="text-left font-medium py-2 px-2">Source</th>
+                        <th className="text-right font-medium py-2 px-2">Visits</th>
+                        <th className="text-right font-medium py-2 px-2">Signups</th>
+                        <th className="text-right font-medium py-2 px-2">Trials</th>
+                        <th className="text-right font-medium py-2 px-2">Conv %</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {funnel.rows.map((r, i) => {
+                        const conv = r.visits > 0 ? (r.signups / r.visits) * 100 : null;
+                        return (
+                          <tr
+                            key={`${r.country}-${r.source}-${i}`}
+                            className="border-b border-slate-800/60 hover:bg-slate-800/40"
+                          >
+                            <td className="py-2 px-2 text-white">
+                              <span className="mr-1.5">
+                                {getCountryFlag(r.country === 'ZZ' ? null : r.country)}
+                              </span>
+                              {r.country}
+                            </td>
+                            <td className="py-2 px-2">
+                              <span className="px-2 py-0.5 rounded bg-slate-700/60 text-slate-200 text-xs">
+                                {r.source}
+                              </span>
+                            </td>
+                            <td className="py-2 px-2 text-right text-blue-300">{r.visits}</td>
+                            <td className="py-2 px-2 text-right text-emerald-300 font-medium">{r.signups}</td>
+                            <td className="py-2 px-2 text-right text-amber-300">{r.trials}</td>
+                            <td className="py-2 px-2 text-right text-slate-400">
+                              {conv === null ? '—' : `${conv.toFixed(1)}%`}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          )}
         </div>
       )}
     </div>

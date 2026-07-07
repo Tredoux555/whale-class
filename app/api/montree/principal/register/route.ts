@@ -8,6 +8,8 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import { getClientIP } from '@/lib/montree/audit-logger';
 import { createMontreeToken, setMontreeAuthCookie } from '@/lib/montree/server-auth';
 import { redeemOutreachCode } from '@/lib/montree/outreach/redeem';
+import { stampSchoolAttribution } from '@/lib/montree/outreach/stamp-attribution';
+import { getLocationFromRequest } from '@/lib/ip-geolocation';
 import { DEFAULTS } from '@/lib/montree/constants';
 
 function generateSlug(name: string): string {
@@ -139,6 +141,36 @@ export async function POST(request: NextRequest) {
         console.error('[register] outreach redeem failed:', err)
       );
     }
+
+    // Ad-geo attribution (Jul 7 2026): stamp the school with its first-touch
+    // acquisition source from the montree_attrib cookie. Fire-and-forget — NEVER
+    // blocks registration. Parity with try/instant's stamp.
+    void stampSchoolAttribution(supabase, request, school.id).catch((err) =>
+      console.error('[register] attrib stamp failed:', err)
+    );
+
+    // signup_country parity: try/instant records signup geolocation; register
+    // never did. Fire-and-forget analytics — must not block or fail signup.
+    void (async () => {
+      try {
+        const location = await getLocationFromRequest(request);
+        if (location.country) {
+          await supabase
+            .from('montree_schools')
+            .update({
+              signup_country: location.country,
+              signup_country_code: location.countryCode,
+              signup_city: location.city,
+              signup_region: location.region,
+              signup_ip: location.ip,
+              signup_timezone: location.timezone,
+            })
+            .eq('id', school.id);
+        }
+      } catch (err) {
+        console.error('[register] signup geo failed:', err);
+      }
+    })();
 
     // Log the principal in immediately by minting a session token + cookie.
     // The follow-on /principal/setup call requires this session (it scopes
