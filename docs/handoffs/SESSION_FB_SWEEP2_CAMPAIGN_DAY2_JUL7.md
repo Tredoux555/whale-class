@@ -43,3 +43,13 @@ Continues `SESSION_FB_SWEEP_WARMLEADS_JUL7.md` (read that for pipeline rules). N
 ## 4. PIPELINE RULES CONFIRMED THIS SESSION
 
 Groups of 4 Sonnet agents, 50-55 rows each, snippets-only, counts-only replies — zero rate-limit kills across 15 agents. Verification is cheap (~1 search/row). Sub-agents still can't see Gmail tools (Fable does Gmail directly). Grouped OR dedup queries (`in:sent {to:a to:b …}`) work and attribute via toRecipients.
+
+## 5. FINAL STATE (end of session)
+
+- **Tredoux confirmed he SENT ALL queued drafts on Jul 7 (~50 total for the day).** The 4 old mangled-link drafts (Remuera, I Cube, Norge, Meraki) likely went out alongside their clean replacements — harmless: the google-redirect links still resolve to montree.xyz, and a duplicate copy on the same thread just reads as an in-thread nudge. The Montessori Education Ireland + FEMCO Colombia drafts (DB status dead/declined) were also sent — their "discard owed" items are now MOOT/OVERTAKEN. If either replies, treat it as a revived lead, not an error.
+- **NEW STANDING ORDERS locked in (Tredoux, Jul 7 — committed to CLAUDE.md's Campaign Manager section, commit `6de09a4c`):** 50 drafts/day (supersedes the 20/day ramp cap), weekly follow-up cycle on unanswered emails with a HARD VALVE at 3 unanswered follow-ups → "keep or kill" list for Tredoux, comb Gmail every day, status flips ALWAYS via `scripts/outreach-status.py` (never browser-drive the 🌍 tab).
+- **Automation LIVE:** Cowork scheduled task `daily-campaign-sweep`, runs 07:07 daily (file: `~/Documents/Claude/Scheduled/daily-campaign-sweep/SKILL.md`). Does the Gmail sweep (replies vs auto-acks; hard vs soft bounces with cluster warning), reply drafts, 7-day follow-up drafts, new cold drafts to fill the 50/day, CLI status flips, and a morning report. Only runs while the Cowork app is open — Tredoux should click "Run now" once to pre-approve tools.
+- **Jul 8 = zero cold sends (recovery day, replies only); Jul 9 = back to normal under the new 50/day order** — `daily-campaign-sweep` will handle drafting starting Jul 8 morning.
+- **Commits pushed this session:** `778731a3` (CLI tool) · `797c2770` (sweep data + handoff) · `6b593ce8` (handoff addendum + brain) · `6de09a4c` (standing orders).
+
+**NEXT SESSION:** rely on `daily-campaign-sweep` for the routine sweep/draft/flip cycle. Owed fixes (non-urgent): campaign-manager PATCH 500-after-write bug, `counts` 1,000-row pagination cap, verify the DMG row name in the DB. Optional: FB sweep session 3 (schools that already have emails but are missing a Facebook URL).
