@@ -222,7 +222,10 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
   const [pMinting, setPMinting] = useState(false);
   const [partnerResult, setPartnerResult] = useState<PartnerResult | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
-  const [qrStatus, setQrStatus] = useState<'idle' | 'working' | 'done' | 'error'>('idle');
+  // Keyed QR status so multiple "Generate QR code" buttons (the partner-mint
+  // result panel + every admitted waitlist row) can each track their own
+  // working/done/error state independently. Absent key = idle.
+  const [qrStatusMap, setQrStatusMap] = useState<Record<string, 'working' | 'done' | 'error'>>({});
 
   const copyText = async (text: string, field: string) => {
     try {
@@ -277,15 +280,16 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
     }
   };
 
-  // ── Branded referral QR card ──
-  // Stamps the referral QR onto a designer-made 1080×1920 template
+  // ── Branded QR card (generalized) ──
+  // Stamps a QR onto a designer-made 1080×1920 template
   // (public/brand/referral-card-template.png — background, glowing M tile,
   // "Welcome to Montree" headline, empty cream QR card + footer are all baked
   // in) and downloads the PNG. Entirely client-side; no network, no backend.
-  const generateReferralQr = async () => {
-    if (!partnerResult) return;
-    const { referral_link, referral_code } = partnerResult;
-    setQrStatus('working');
+  // Used for BOTH the partner-mint referral link and every founding-waitlist
+  // signup link — `link` is what the QR encodes, `code` is the caption +
+  // filename, `key` identifies which button's status to track in qrStatusMap.
+  const generateQrCard = async (link: string, code: string, key: string) => {
+    setQrStatusMap((m) => ({ ...m, [key]: 'working' }));
     try {
       // Dynamic import keeps qrcode off the initial bundle.
       const QRCode = (await import('qrcode')).default;
@@ -302,7 +306,7 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
       ctx.drawImage(template, 0, 0, W, H);
 
       // 2 — QR, stamped into the template's empty cream card.
-      const qrDataUrl = await QRCode.toDataURL(referral_link, {
+      const qrDataUrl = await QRCode.toDataURL(link, {
         width: 456,
         margin: 1,
         errorCorrectionLevel: 'H',
@@ -311,9 +315,9 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
       const qrImg = await loadImage(qrDataUrl);
       ctx.drawImage(qrImg, 312, 912, 456, 456);
 
-      // 3 — referral code caption (letter-spaced gold). This is the only text
-      //     we draw — the headline + footer are part of the template now, so we
-      //     only need Lora ready for the caption.
+      // 3 — code caption (letter-spaced gold). This is the only text we draw
+      //     — the headline + footer are part of the template now, so we only
+      //     need Lora ready for the caption.
       try {
         await document.fonts.load('30px Lora');
         await document.fonts.ready;
@@ -324,7 +328,7 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
       ctx.font = '30px Lora, Georgia, serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'alphabetic';
-      drawSpacedText(ctx, referral_code, 540, 1495, 8);
+      drawSpacedText(ctx, code, 540, 1495, 8);
 
       // Download via blob → object URL → synthetic <a> (same pattern as
       // app/admin/qr-generator/page.tsx).
@@ -335,19 +339,34 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
         );
       });
       const url = URL.createObjectURL(blob);
+      const safeCode = code.replace(/[^A-Za-z0-9_-]/g, '_');
       const a = document.createElement('a');
       a.href = url;
-      a.download = `montree-referral-${referral_code}.png`;
+      a.download = `montree-referral-${safeCode}.png`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-      setQrStatus('done');
-      setTimeout(() => setQrStatus((s) => (s === 'done' ? 'idle' : s)), 2000);
+      setQrStatusMap((m) => ({ ...m, [key]: 'done' }));
+      setTimeout(() => {
+        setQrStatusMap((m) => {
+          if (m[key] !== 'done') return m;
+          const next = { ...m };
+          delete next[key];
+          return next;
+        });
+      }, 2000);
     } catch {
-      setQrStatus('error');
-      setTimeout(() => setQrStatus((s) => (s === 'error' ? 'idle' : s)), 2500);
+      setQrStatusMap((m) => ({ ...m, [key]: 'error' }));
+      setTimeout(() => {
+        setQrStatusMap((m) => {
+          if (m[key] !== 'error') return m;
+          const next = { ...m };
+          delete next[key];
+          return next;
+        });
+      }, 2500);
     }
   };
 
@@ -523,15 +542,15 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
                   {copiedField === 'p-ref' ? '✓ Copied' : 'Copy'}
                 </button>
                 <button
-                  style={{ ...btn('rgba(232,201,106,0.15)', '#E8C96A'), opacity: qrStatus === 'working' ? 0.7 : 1 }}
-                  onClick={generateReferralQr}
-                  disabled={qrStatus === 'working'}
+                  style={{ ...btn('rgba(232,201,106,0.15)', '#E8C96A'), opacity: qrStatusMap['mint-result'] === 'working' ? 0.7 : 1 }}
+                  onClick={() => generateQrCard(partnerResult.referral_link, partnerResult.referral_code, 'mint-result')}
+                  disabled={qrStatusMap['mint-result'] === 'working'}
                 >
-                  {qrStatus === 'working'
+                  {qrStatusMap['mint-result'] === 'working'
                     ? 'Generating…'
-                    : qrStatus === 'done'
+                    : qrStatusMap['mint-result'] === 'done'
                     ? '✓ Downloaded'
-                    : qrStatus === 'error'
+                    : qrStatusMap['mint-result'] === 'error'
                     ? 'Failed — retry'
                     : 'Generate QR code'}
                 </button>
@@ -703,6 +722,19 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
                       }}>{link}</code>
                       <button style={btn('#334155', '#e2e8f0')} onClick={() => copyLink(r.signup_code!)}>
                         {copiedCode === r.signup_code ? '✓ Copied' : '📋 Copy link'}
+                      </button>
+                      <button
+                        style={{ ...btn('rgba(232,201,106,0.15)', '#E8C96A'), opacity: qrStatusMap[r.id] === 'working' ? 0.7 : 1 }}
+                        onClick={() => generateQrCard(link, r.signup_code!, r.id)}
+                        disabled={qrStatusMap[r.id] === 'working'}
+                      >
+                        {qrStatusMap[r.id] === 'working'
+                          ? 'Generating…'
+                          : qrStatusMap[r.id] === 'done'
+                          ? '✓ Downloaded'
+                          : qrStatusMap[r.id] === 'error'
+                          ? 'Failed — retry'
+                          : 'Generate QR code'}
                       </button>
                     </>
                   ) : (
