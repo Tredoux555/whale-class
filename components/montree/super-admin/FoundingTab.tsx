@@ -39,6 +39,36 @@ const STATUS_STYLE: Record<Row['status'], { bg: string; fg: string; label: strin
   declined: { bg: 'rgba(248,113,113,0.12)', fg: '#f87171', label: 'Declined' },
 };
 
+// ── Referral QR card helpers (client-only canvas compositing) ──
+// Load an <img> as a promise so we can await it before drawing to canvas.
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`Could not load image: ${src}`));
+    img.src = src;
+  });
+}
+
+// Draw centered text with manual letter-spacing (robust across browsers that
+// lack ctx.letterSpacing, and avoids the un-typed property).
+function drawSpacedText(
+  ctx: CanvasRenderingContext2D,
+  text: string, cx: number, y: number, spacing: number,
+) {
+  const chars = Array.from(text);
+  const widths = chars.map((ch) => ctx.measureText(ch).width);
+  const total = widths.reduce((a, b) => a + b, 0) + spacing * Math.max(0, chars.length - 1);
+  const prevAlign = ctx.textAlign;
+  ctx.textAlign = 'left';
+  let x = cx - total / 2;
+  for (let i = 0; i < chars.length; i++) {
+    ctx.fillText(chars[i], x, y);
+    x += widths[i] + spacing;
+  }
+  ctx.textAlign = prevAlign;
+}
+
 export default function FoundingTab({ sessionToken }: { sessionToken: string }) {
   const [rows, setRows] = useState<Row[]>([]);
   const [config, setConfig] = useState<Config>({ cap: 100, wave: 1, is_closed: false });
@@ -192,6 +222,7 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
   const [pMinting, setPMinting] = useState(false);
   const [partnerResult, setPartnerResult] = useState<PartnerResult | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [qrStatus, setQrStatus] = useState<'idle' | 'working' | 'done' | 'error'>('idle');
 
   const copyText = async (text: string, field: string) => {
     try {
@@ -243,6 +274,80 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
       setError('Could not mint the partner package. Try again.');
     } finally {
       setPMinting(false);
+    }
+  };
+
+  // ── Branded referral QR card ──
+  // Stamps the referral QR onto a designer-made 1080×1920 template
+  // (public/brand/referral-card-template.png — background, glowing M tile,
+  // "Welcome to Montree" headline, empty cream QR card + footer are all baked
+  // in) and downloads the PNG. Entirely client-side; no network, no backend.
+  const generateReferralQr = async () => {
+    if (!partnerResult) return;
+    const { referral_link, referral_code } = partnerResult;
+    setQrStatus('working');
+    try {
+      // Dynamic import keeps qrcode off the initial bundle.
+      const QRCode = (await import('qrcode')).default;
+
+      const W = 1080, H = 1920;
+      const canvas = document.createElement('canvas');
+      canvas.width = W;
+      canvas.height = H;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Canvas 2D context unavailable');
+
+      // 1 — full-bleed designer template.
+      const template = await loadImage('/brand/referral-card-template.png');
+      ctx.drawImage(template, 0, 0, W, H);
+
+      // 2 — QR, stamped into the template's empty cream card.
+      const qrDataUrl = await QRCode.toDataURL(referral_link, {
+        width: 456,
+        margin: 1,
+        errorCorrectionLevel: 'H',
+        color: { dark: '#0A1A0F', light: '#F5EDD8' },
+      });
+      const qrImg = await loadImage(qrDataUrl);
+      ctx.drawImage(qrImg, 312, 912, 456, 456);
+
+      // 3 — referral code caption (letter-spaced gold). This is the only text
+      //     we draw — the headline + footer are part of the template now, so we
+      //     only need Lora ready for the caption.
+      try {
+        await document.fonts.load('30px Lora');
+        await document.fonts.ready;
+      } catch {
+        /* Georgia/serif fallback is fine if font loading is unavailable. */
+      }
+      ctx.fillStyle = 'rgba(232,201,106,0.85)';
+      ctx.font = '30px Lora, Georgia, serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
+      drawSpacedText(ctx, referral_code, 540, 1495, 8);
+
+      // Download via blob → object URL → synthetic <a> (same pattern as
+      // app/admin/qr-generator/page.tsx).
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          (b) => (b ? resolve(b) : reject(new Error('Canvas toBlob returned null'))),
+          'image/png',
+        );
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `montree-referral-${referral_code}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+      setQrStatus('done');
+      setTimeout(() => setQrStatus((s) => (s === 'done' ? 'idle' : s)), 2000);
+    } catch {
+      setQrStatus('error');
+      setTimeout(() => setQrStatus((s) => (s === 'error' ? 'idle' : s)), 2500);
     }
   };
 
@@ -416,6 +521,19 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
                 </code>
                 <button style={btn('#334155', '#e2e8f0')} onClick={() => copyText(partnerResult.referral_link, 'p-ref')}>
                   {copiedField === 'p-ref' ? '✓ Copied' : 'Copy'}
+                </button>
+                <button
+                  style={{ ...btn('rgba(232,201,106,0.15)', '#E8C96A'), opacity: qrStatus === 'working' ? 0.7 : 1 }}
+                  onClick={generateReferralQr}
+                  disabled={qrStatus === 'working'}
+                >
+                  {qrStatus === 'working'
+                    ? 'Generating…'
+                    : qrStatus === 'done'
+                    ? '✓ Downloaded'
+                    : qrStatus === 'error'
+                    ? 'Failed — retry'
+                    : 'Generate QR code'}
                 </button>
               </div>
             </div>
