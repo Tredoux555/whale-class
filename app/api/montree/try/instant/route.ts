@@ -213,7 +213,10 @@ async function redeemFoundingCode(
   supabase: ReturnType<typeof getSupabase>,
   founding: FoundingContext,
   schoolId: string,
-  foundingTrialEndsAtIso: string
+  foundingTrialEndsAtIso: string,
+  // The new school's name + signup email — used only by the universal branch to
+  // stamp the fresh admitted waitlist row that makes the cap self-increment.
+  signupContext: { schoolName: string; email: string }
 ): Promise<boolean> {
   const isPartner = founding.grantType === 'partner_free_life';
 
@@ -254,8 +257,47 @@ async function redeemFoundingCode(
     }
   }
 
-  // Step 2: atomic conditional redeem of the waitlist row. `.is('redeemed_at',
-  // null)` guards a concurrent double-redeem — only the first wins.
+  // Step 2 — record the redemption.
+  //
+  // Universal link (migration 291): there is no pre-existing row to update —
+  // INSERT a fresh admitted waitlist row so the admitted count self-increments
+  // and the cap burns down automatically. Each redemption also appears as its
+  // own row in the Founding tab list. A duplicate-email 23505 (or ANY insert
+  // error) must NEVER fail the signup — the $3-for-life grant is already applied
+  // above; we simply skip the row (the count just won't tick up for this one).
+  if (founding.kind === 'universal') {
+    const nowIso = new Date().toISOString();
+    const { error: insErr } = await supabase
+      .from('montree_founding_waitlist')
+      .insert({
+        school_name: signupContext.schoolName,
+        email: signupContext.email,
+        status: 'admitted',
+        admitted_at: nowIso,
+        source: 'universal_link',
+        grant_type: 'founding_3_life',
+        redeemed_by_school_id: schoolId,
+        redeemed_at: nowIso,
+        signup_code: null,
+        notes: 'via universal link',
+      } as never);
+    if (insErr) {
+      if (insErr.code === '23505') {
+        console.warn(
+          `[Trial] universal founding row skipped — duplicate email ${signupContext.email} (grant still applied to school ${schoolId}).`
+        );
+      } else {
+        console.error('[Trial] universal founding row insert failed (non-fatal):', insErr.message);
+      }
+    }
+    // 🚨 Race note: the cap check in resolveFoundingCode and this INSERT are not
+    // transactional, so a burst of concurrent universal signups could overshoot
+    // the cap by a few. Accepted by design — worst case a couple extra founders.
+    return true;
+  }
+
+  // Single-use FND- code: atomic conditional redeem of the pre-existing row.
+  // `.is('redeemed_at', null)` guards a concurrent double-redeem — first wins.
   const { data: redeemed, error: redeemErr } = await supabase
     .from('montree_founding_waitlist')
     .update({
@@ -298,7 +340,14 @@ async function redeemFoundingCode(
  * hard 400 (thrown here), never a silent fall-through to referral.
  */
 type FoundingGrantType = 'founding_3_life' | 'partner_free_life';
-interface FoundingContext {
+// A founding code is one of two shapes:
+//   'single'    — a one-time FND- waitlist code (Founding 100 or Partner). Its
+//                 redemption UPDATEs the pre-existing admitted waitlist row.
+//   'universal' — the ONE public multi-use link (migration 291, config-stored).
+//                 Its redemption INSERTs a fresh admitted row so the cap
+//                 self-increments. Always the $3-for-life Founding 100 grant.
+interface FoundingSingleContext {
+  kind: 'single';
   waitlistId: string;
   code: string;
   // migration 290 — which grant this code confers. 'founding_3_life' = the
@@ -307,13 +356,71 @@ interface FoundingContext {
   // behaves exactly as before: everything is 'founding_3_life').
   grantType: FoundingGrantType;
 }
+interface FoundingUniversalContext {
+  kind: 'universal';
+  code: string;
+  grantType: 'founding_3_life';
+}
+type FoundingContext = FoundingSingleContext | FoundingUniversalContext;
+
+// resolveFoundingCode result. `universalFull` is set true ONLY when the input
+// matched the universal link but the cap is reached / offer closed — the caller
+// falls through to a normal trial AND surfaces `founding_full: true` so the UI
+// can tell the user the founding spots filled. A plain missing/invalid code
+// leaves `universalFull` false (and an INVALID single-use code still throws).
+interface ResolveFoundingResult {
+  context: FoundingContext | null;
+  universalFull: boolean;
+}
 async function resolveFoundingCode(
   supabase: ReturnType<typeof getSupabase>,
   rawCode: unknown
-): Promise<FoundingContext | null> {
-  if (!rawCode || typeof rawCode !== 'string') return null;
+): Promise<ResolveFoundingResult> {
+  if (!rawCode || typeof rawCode !== 'string') return { context: null, universalFull: false };
   const code = rawCode.trim().toUpperCase();
-  if (!code) return null;
+  if (!code) return { context: null, universalFull: false };
+
+  // ── Universal Founding 100 link (migration 291) ──
+  // Check the config singleton's universal_signup_code FIRST. 42703-safe: if
+  // the column doesn't exist yet (migration 291 lags), skip the universal
+  // branch entirely so pre-migration deploys behave byte-identically to today.
+  try {
+    const cfg = await supabase
+      .from('montree_founding_config')
+      .select('universal_signup_code, cap, is_closed')
+      .eq('id', 1)
+      .maybeSingle();
+    if (cfg.error) {
+      const isMissingColumn =
+        cfg.error.code === '42703' || (cfg.error.message || '').includes('universal_signup_code');
+      if (!isMissingColumn) {
+        // A non-missing-column config error must not block a real FND- code —
+        // log and fall through to the single-use lookup below.
+        console.error('[Trial] universal founding config lookup failed:', cfg.error.message);
+      }
+      // missing column → skip the universal branch entirely (pre-291 behaviour)
+    } else if (
+      cfg.data?.universal_signup_code &&
+      String(cfg.data.universal_signup_code).trim().toUpperCase() === code
+    ) {
+      // This input IS the universal link. Check the cap + closed state live.
+      const cap = typeof cfg.data.cap === 'number' ? cfg.data.cap : 100;
+      const { count } = await supabase
+        .from('montree_founding_waitlist')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'admitted');
+      const admitted = count ?? 0;
+      if (cfg.data.is_closed === true || admitted >= cap) {
+        // Cap reached / offer closed → fall through to a normal 7-day trial.
+        // Signal `founding_full` so the caller can inform the user.
+        return { context: null, universalFull: true };
+      }
+      return { context: { kind: 'universal', code, grantType: 'founding_3_life' }, universalFull: false };
+    }
+  } catch (e) {
+    console.error('[Trial] universal founding branch threw (non-fatal):', e);
+    // fall through to the single-use lookup
+  }
 
   // grant_type only exists after migration 290. Try WITH it; on ANY error
   // (including 42703 undefined-column when the migration lags) fall back to a
@@ -368,7 +475,10 @@ async function resolveFoundingCode(
   const grantType: FoundingGrantType =
     data.grant_type === 'partner_free_life' ? 'partner_free_life' : 'founding_3_life';
 
-  return { waitlistId: data.id as string, code: data.signup_code as string, grantType };
+  return {
+    context: { kind: 'single', waitlistId: data.id as string, code: data.signup_code as string, grantType },
+    universalFull: false,
+  };
 }
 
 /**
@@ -522,9 +632,16 @@ export async function POST(req: NextRequest) {
     // (founding schools are never agent-attributed). An INVALID founding code is
     // a hard 400 here; it must NOT silently fall through to referral resolution.
     let founding: FoundingContext | null = null;
+    // Set true when the input matched the universal Founding 100 link but the
+    // cap is full / offer closed — signup proceeds as a normal trial and the
+    // success response carries `founding_full: true` so the client can say so.
+    let foundingFull = false;
     try {
-      founding = await resolveFoundingCode(supabase, rawFoundingCode);
+      const foundingResult = await resolveFoundingCode(supabase, rawFoundingCode);
+      founding = foundingResult.context;
+      foundingFull = foundingResult.universalFull;
       if (founding) steps.push(`1a-founding-ok:${founding.code}`);
+      else if (foundingFull) steps.push('1a-founding-full');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Invalid founding code';
       steps.push(`1a-founding-fail:${msg}`);
@@ -559,6 +676,15 @@ export async function POST(req: NextRequest) {
     const codeHash = legacySha256(code.toUpperCase());
     // CR-1: trial length comes from the single DEFAULTS.TRIAL_DAYS constant.
     const trialEndsAt = new Date(Date.now() + DEFAULTS.TRIAL_DAYS * 24 * 60 * 60 * 1000);
+
+    // Universal founding redemption stamps a fresh admitted waitlist row keyed
+    // on the new school's name + signup email. Email falls back to the same
+    // synthetic address used for owner_email so the UNIQUE row still inserts
+    // even when the signup left email blank.
+    const foundingSignupContext = {
+      schoolName: userSchoolName,
+      email: email?.trim() || `trial-${code.toLowerCase()}@montree.app`,
+    };
 
     // ── Step 1: Create trial school ──
     steps.push('2-school');
@@ -699,7 +825,7 @@ export async function POST(req: NextRequest) {
       // a valid founding code was used). Founding stamps $3-for-life + a 30-day
       // Premium month + redeems the waitlist row.
       if (founding && foundingTrialEndsAtIso) {
-        const redeemed = await redeemFoundingCode(supabase, founding, school.id, foundingTrialEndsAtIso);
+        const redeemed = await redeemFoundingCode(supabase, founding, school.id, foundingTrialEndsAtIso, foundingSignupContext);
         steps.push(redeemed
           ? `4a-founding-redeemed:${founding.code}`
           : `4a-founding-race-lost:${founding.code}`);
@@ -763,6 +889,9 @@ export async function POST(req: NextRequest) {
         },
         onboarded: false, // needs to add children first, same as teacher
         userId: teacher.id as string,
+        // Universal founding link matched but the cap was full / offer closed —
+        // this signed up on the normal 7-day trial. Present only in that case.
+        ...(foundingFull ? { founding_full: true } : {}),
       });
       setMontreeAuthCookie(response, token, 'homeschool_parent');
       return response;
@@ -819,7 +948,7 @@ export async function POST(req: NextRequest) {
       //   3. Neither → the new teacher becomes the founding teacher (legacy
       //      self-serve flow from Session 72).
       if (founding && foundingTrialEndsAtIso) {
-        const redeemed = await redeemFoundingCode(supabase, founding, school.id, foundingTrialEndsAtIso);
+        const redeemed = await redeemFoundingCode(supabase, founding, school.id, foundingTrialEndsAtIso, foundingSignupContext);
         steps.push(redeemed
           ? `4a-founding-redeemed:${founding.code}`
           : `4a-founding-race-lost:${founding.code}`);
@@ -896,6 +1025,9 @@ export async function POST(req: NextRequest) {
         },
         onboarded: false,
         userId: teacher.id,
+        // Universal founding link matched but the cap was full / offer closed —
+        // this signed up on the normal 7-day trial. Present only in that case.
+        ...(foundingFull ? { founding_full: true } : {}),
       });
       setMontreeAuthCookie(response, token);
       return response;
@@ -945,7 +1077,7 @@ export async function POST(req: NextRequest) {
       // direct signup (no agent) — its principal login stays the auto-generated
       // 6-char code (principalLoginCode = code, since referral is null).
       if (founding && foundingTrialEndsAtIso) {
-        const redeemed = await redeemFoundingCode(supabase, founding, school.id, foundingTrialEndsAtIso);
+        const redeemed = await redeemFoundingCode(supabase, founding, school.id, foundingTrialEndsAtIso, foundingSignupContext);
         steps.push(redeemed
           ? `4a-founding-redeemed:${founding.code}`
           : `4a-founding-race-lost:${founding.code}`);
@@ -1011,6 +1143,9 @@ export async function POST(req: NextRequest) {
           trial_ends_at: foundingTrialEndsAtIso || school.trial_ends_at || trialEndsAt.toISOString(),
         },
         userId: principal.id,
+        // Universal founding link matched but the cap was full / offer closed —
+        // this signed up on the normal 7-day trial. Present only in that case.
+        ...(foundingFull ? { founding_full: true } : {}),
       });
       setMontreeAuthCookie(response, token);
       return response;
