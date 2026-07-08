@@ -29,23 +29,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
-import { legacySha256 } from '@/lib/montree/password';
 import { logAgentAudit } from '@/lib/montree/referral/agent-audit';
 import { getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
+import { issueAgentLogin } from '@/lib/montree/referral/issue-agent-login';
 
 export const dynamic = 'force-dynamic';
-
-// 6-char code, alphabet excludes I/O/0/1 (matches principal codes per Section 84
-// architectural rules and AGENT_DASHBOARD_PLAN Section 3.3).
-const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-
-function generateAgentLoginCode(): string {
-  let code = '';
-  for (let i = 0; i < 6; i += 1) {
-    code += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)];
-  }
-  return code;
-}
 
 interface AgentRow {
   id: string;
@@ -59,20 +47,13 @@ interface AgentRow {
 
 const AGENT_FIELDS = 'id, name, email, is_agent, agent_password_hash, agent_default_share_pct, agent_suspended_at';
 
-// 🚨 Session 119 — default revenue share % for brand-new agents.
-// Phase 7a originally left this NULL until Tredoux explicitly set it via
-// PATCH, which caused every new agent to hit "Self-service code generation
-// disabled" until he remembered. 20% is the canonical handshake share — same
-// number the agent referral programme docs promise to multiplier partners.
-// Operators can still override via body.default_share_pct on POST or PATCH
-// the value later. We ONLY apply this default when the agent currently has
-// NULL — never downgrades an already-set value.
-const DEFAULT_AGENT_SHARE_PCT = 20;
-
 // ─── POST ─────────────────────────────────────────────────────────────────
 // Issue or reset the agent's login code. Optional default_share_pct in body
 // locks the agent's default % at the same time so a single round-trip handles
 // the common case of "Sarah signs on at 50%, here's her login."
+//
+// The heavy lifting lives in the shared issueAgentLogin() lib so the Partner
+// Program mint action can reuse the exact same issuance path.
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const auth = await verifySuperAdminAuth(req.headers);
@@ -93,130 +74,31 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  let nextDefaultPct: number | null | undefined = undefined; // undefined = don't change
-  if (Object.prototype.hasOwnProperty.call(body, 'default_share_pct')) {
-    if (body.default_share_pct === null) {
-      nextDefaultPct = null;
-    } else {
-      const n = Number(body.default_share_pct);
-      if (Number.isNaN(n) || n < 0 || n > 100) {
-        return NextResponse.json(
-          { error: 'default_share_pct must be null or a number between 0 and 100' },
-          { status: 400 }
-        );
-      }
-      nextDefaultPct = n;
-    }
-  }
-
   const supabase = getSupabase();
 
-  // Fetch the agent row. We need to know if it's already an agent (this is
-  // a reset) and to enrich the audit row with display name + email.
-  const { data: agentRaw, error: lookupErr } = await supabase
-    .from('montree_teachers')
-    .select(AGENT_FIELDS)
-    .eq('id', agentId)
-    .maybeSingle();
-
-  if (lookupErr) {
-    console.error('[agents/[id]/login POST] lookup failed:', lookupErr.message);
-    return NextResponse.json({ error: 'Database lookup failed', detail: lookupErr.message }, { status: 500 });
-  }
-  if (!agentRaw) {
-    return NextResponse.json({ error: 'Agent not found' }, { status: 404 });
-  }
-  const agent = agentRaw as AgentRow;
-
-  const isReset = Boolean(agent.is_agent && agent.agent_password_hash);
-
-  // Generate fresh code with collision check. Six attempts is plenty —
-  // 32^6 = ~1.07B values, near-impossible collision.
-  let plaintext = '';
-  let codeHash = '';
-  for (let attempt = 0; attempt < 6; attempt += 1) {
-    plaintext = generateAgentLoginCode();
-    codeHash = legacySha256(plaintext);
-    const { data: existing } = await supabase
-      .from('montree_teachers')
-      .select('id')
-      .eq('agent_password_hash', codeHash)
-      .neq('id', agentId)  // self-collision (if they had this hash before) is fine
-      .maybeSingle();
-    if (!existing) break;
-    if (attempt === 5) {
-      console.error('[agents/[id]/login POST] could not find unique code after 6 attempts');
-      return NextResponse.json({ error: 'Could not generate unique code' }, { status: 500 });
-    }
-  }
-
-  const updatePayload: Record<string, unknown> = {
-    is_agent: true,
-    agent_password_hash: codeHash,
-    agent_login_set_at: new Date().toISOString(),
-    // Issuing a fresh code clears any prior suspension — Tredoux is explicitly
-    // re-activating by giving them a new code. To suspend instead, use PATCH.
-    agent_suspended_at: null,
-  };
-  if (nextDefaultPct !== undefined) {
-    // Operator explicitly set (or cleared) the % — that wins.
-    updatePayload.agent_default_share_pct = nextDefaultPct;
-  } else if (agent.agent_default_share_pct === null || agent.agent_default_share_pct === undefined) {
-    // Session 119 unblock: agent has no % set yet. Seed with canonical 20%
-    // so self-service code generation works on first login. If the operator
-    // wants a different %, they can pass default_share_pct in the body or
-    // PATCH it later. We never downgrade an already-set value here.
-    updatePayload.agent_default_share_pct = DEFAULT_AGENT_SHARE_PCT;
-  }
-
-  const { data: updated, error: updateErr } = await supabase
-    .from('montree_teachers')
-    .update(updatePayload)
-    .eq('id', agentId)
-    .select(AGENT_FIELDS)
-    .maybeSingle();
-
-  if (updateErr || !updated) {
-    console.error('[agents/[id]/login POST] update failed:', updateErr?.message);
-    return NextResponse.json({
-      error: 'Could not issue agent login',
-      detail: updateErr?.message || 'no rows updated',
-    }, { status: 500 });
-  }
-
-  // Audit. Fire-and-forget — we never want to fail issuance because logging
-  // failed. The plaintext code is NEVER logged.
-  void logAgentAudit(supabase, {
-    agent_id: agentId,
-    agent_display_name: agent.name,
-    agent_email: agent.email,
-    event_type: 'agent_login_issued',
-    actor_role: 'super_admin',
-    details: {
-      reset: isReset,
-      default_share_pct_set: nextDefaultPct !== undefined,
-      default_share_pct: nextDefaultPct === undefined
-        ? (agent.agent_default_share_pct === null ? null : Number(agent.agent_default_share_pct))
-        : nextDefaultPct,
-    },
-    ip_address: getClientIP(req.headers),
-    user_agent: getUserAgent(req.headers),
+  const result = await issueAgentLogin(supabase, agentId, {
+    // Only pass defaultSharePct when the caller actually supplied the field —
+    // omitting it lets issueAgentLogin seed 20% if NULL (never downgrade).
+    ...(Object.prototype.hasOwnProperty.call(body, 'default_share_pct')
+      ? { defaultSharePct: body.default_share_pct }
+      : {}),
+    ipAddress: getClientIP(req.headers),
+    userAgent: getUserAgent(req.headers),
+    auditSource: 'agent_login_route',
   });
+
+  if (!result.ok) {
+    return NextResponse.json(
+      { error: result.error, detail: result.detail ?? undefined },
+      { status: result.status }
+    );
+  }
 
   return NextResponse.json({
     ok: true,
-    reset: isReset,
-    code: plaintext,                    // shown ONCE
-    agent: {
-      id: updated.id,
-      name: updated.name,
-      email: updated.email,
-      is_agent: true,
-      agent_default_share_pct: updated.agent_default_share_pct === null
-        ? null
-        : Number(updated.agent_default_share_pct),
-      agent_suspended_at: null,
-    },
+    reset: result.reset,
+    code: result.code,      // shown ONCE
+    agent: result.agent,
   });
 }
 

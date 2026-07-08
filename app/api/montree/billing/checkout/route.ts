@@ -92,27 +92,46 @@ export async function POST(request: NextRequest) {
   // exist yet (migration 286 lagging → 42703) fall back to a select without it
   // rather than 404-ing this critical checkout path. Treated as false when
   // absent (safe — a lagging migration just means no founding schools exist).
-  let school:
-    | { id: string; name: string | null; subscription_status: string | null; stripe_customer_id: string | null; founding_member?: boolean | null }
-    | null = null;
+  interface CheckoutSchoolRow {
+    id: string;
+    name: string | null;
+    subscription_status: string | null;
+    stripe_customer_id: string | null;
+    billing_override_usd?: number | string | null;
+    founding_member?: boolean | null;
+  }
+  let school: CheckoutSchoolRow | null = null;
   const withFounding = await supabase
     .from('montree_schools')
-    .select('id, name, subscription_status, stripe_customer_id, founding_member')
+    .select('id, name, subscription_status, stripe_customer_id, billing_override_usd, founding_member')
     .eq('id', auth.schoolId)
     .maybeSingle();
   if (withFounding.error) {
     console.warn('[billing/checkout] founding_member select failed (non-fatal — run migration 286):', withFounding.error.message);
     const fallback = await supabase
       .from('montree_schools')
-      .select('id, name, subscription_status, stripe_customer_id')
+      .select('id, name, subscription_status, stripe_customer_id, billing_override_usd')
       .eq('id', auth.schoolId)
       .maybeSingle();
-    school = (fallback.data as typeof school) || null;
+    school = (fallback.data as CheckoutSchoolRow | null) || null;
   } else {
-    school = (withFounding.data as typeof school) || null;
+    school = (withFounding.data as CheckoutSchoolRow | null) || null;
   }
   if (!school) {
     return NextResponse.json({ error: 'School not found' }, { status: 404 });
+  }
+
+  // 🚨 Free-for-life guard (Partner Program). A school on a $0 per-student
+  // billing override (partner Premium-free-for-life) has no charge to collect —
+  // getOrCreateOverridePriceId returns null for unitAmount<=0, which would make
+  // createSchoolCheckoutSession 500. Short-circuit with a clean 400 BEFORE any
+  // price resolution. (Founding 100 schools carry a $3 override, not $0, so
+  // they're unaffected.)
+  if (school.billing_override_usd !== null && school.billing_override_usd !== undefined && Number(school.billing_override_usd) === 0) {
+    return NextResponse.json(
+      { error: 'This school is on a $0 plan — no checkout needed.' },
+      { status: 400 }
+    );
   }
 
   // Founding schools are always Premium (their $3 override flows through the
