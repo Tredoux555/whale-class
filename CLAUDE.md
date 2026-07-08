@@ -55,6 +55,18 @@ Montree coupling + personal data; don't re-introduce it by editing the Montree c
 
 ---
 
+## 🤝 SESSION — Jul 8, 2026 (Cowork/Fable orchestrating Opus+Sonnet) — PARTNER PROGRAM MINT TOOL SHIPPED + FIRST PARTNER MINTED (Tatenda)
+
+**Commit `337033ec` (12 files), pushed + deployed. Migration 290 RUN (Tredoux confirmed). First partner minted live.**
+
+- **🤝 Partner Program mint tool (super-admin → Founding 100 tab → "Mint a partner package" card).** One form (partner name, email, school name, share % default 20) → ONE `PATCH /api/montree/super-admin/founding {action:'create_partner'}` returns: FND signup link with `grant_type='partner_free_life'` + `<NAME>-XXXX` referral link + agent dashboard login (shown ONCE). Redemption auto-grants **Premium free for LIFE**: `billing_override_usd=0` + permanent `ai_tier_sonnet` via shared `lib/montree/billing/apply-ai-tier.ts` (same grant as schools PATCH `ai_tier:'sonnet'` — the two can never drift; tier-grant failure never fails signup). This is THE standing tool for all underprivileged-school partners — never hand-stitch the 3 calls again. Tredoux ruling: partner share = **20%** (supersedes the Jul-7 10% for this track).
+- **Shared libs extracted (both old routes delegate, byte-equivalent):** `lib/montree/referral/create-agent-code.ts` (referral-codes POST), `lib/montree/referral/issue-agent-login.ts` (agents/[id]/login POST), `apply-ai-tier.ts` (schools PATCH). $0 checkout guard: `billing_override_usd===0` → clean 400 before Stripe price resolution (which 500s at ≤0 cents — NEVER remove the guard). Founding-ignores-referral preserved. `grant_type` reads are 42703-safe (pre-migration deploys degrade to founding_3_life).
+- **Re-mint semantics (fresh-eyes catches, fixed):** re-running create_partner on an existing email is CORRECTIVE (updates pending referral pct + waitlist names; already-redeemed schools keep locked-in pct by design). If the email's code was ALREADY REDEEMED, the grant is applied DIRECTLY to the existing school and `signup_link:null` + note is returned — never a dead link as success.
+- **🥇 FIRST PARTNER MINTED (live, verified):** Tatenda / tatenda@montessorionwheels.org / "Montessori on Wheels". signup `FND-9HXQH9`, referral `TATENDA-8VA6` @20%, agent_id `fef4ed1c-5ab6-41bf-9205-493d5ebf069e`, login code `8EWWUJ` (delivered to Tredoux; if lost, reissue via Referrals tab 🔑). Not yet redeemed. Commission auto-tracking only populates from Stripe `invoice.paid` → `montree_finance_transactions`; off-platform billing needs manual tracking.
+- **🚨 Migration 269 working-tree corruption RESOLVED:** the gutted `269_lyf_coach_billing.sql` (Jul-6 open item) had been overwritten with env content incl. real-looking `STORY_JWT_SECRET` + `STORY_DIARY_KEY` — restored via `git checkout --`, never committed. **⏳ Tredoux owes: rotate those two Story secrets.**
+
+---
+
 ## 🏁 SESSION — Jul 7, 2026 (evening, Cowork/Fable orchestrating Sonnet/Opus) — FB SWEEP COMPLETE (3,035 verified pages) + CAMPAIGN DAY 2 + 🛠 outreach-status.py CLI (browser status-flipping is DEAD)
 
 **Canonical: `docs/handoffs/SESSION_FB_SWEEP2_CAMPAIGN_DAY2_JUL7.md`. Commits `778731a3` (CLI tool) + `797c2770` (sweep data + handoff), pushed. Migration 288 RUN (Tredoux confirmed). No other migrations.**
