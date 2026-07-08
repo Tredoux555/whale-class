@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     const [teacherRes, adminRes, schoolRes, classroomRes] = await Promise.all([
       supabase.from('montree_teachers').select('id, name, email, role').eq('id', userId).maybeSingle(),
       supabase.from('montree_school_admins').select('id, name, email, role').eq('id', userId).eq('school_id', schoolId).maybeSingle(),
-      supabase.from('montree_schools').select('id, name, slug, plan_type, locked_at').eq('id', schoolId).maybeSingle(),
+      supabase.from('montree_schools').select('id, name, slug, plan_type, locked_at, founding_member').eq('id', schoolId).maybeSingle(),
       classroomId
         ? supabase.from('montree_classrooms').select('id, name, age_group, school_id').eq('id', classroomId).maybeSingle()
         : Promise.resolve({ data: null }),

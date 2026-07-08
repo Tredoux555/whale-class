@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import FoundingInbox from './FoundingInbox';
 
 // Super-admin "Founding 100" control panel.
 // Full manual control, no SQL: see every signup, admit/decline with a button,
@@ -31,6 +32,9 @@ interface Config {
   cap: number;
   wave: number;
   is_closed: boolean;
+  // Migration 291 — the ONE public multi-use universal Founding 100 code.
+  // null until minted via the get_or_create_universal_code action.
+  universal_signup_code?: string | null;
 }
 
 const STATUS_STYLE: Record<Row['status'], { bg: string; fg: string; label: string }> = {
@@ -195,6 +199,33 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
       setError('Could not mint a founding link. Try again.');
     } finally {
       setMinting(false);
+    }
+  };
+
+  // ── Universal Founding 100 link (migration 291) ──
+  // Get-or-create the ONE public multi-use code. Idempotent server-side, so the
+  // link persists across reloads (it's read from config on every load()).
+  const [universalMinting, setUniversalMinting] = useState(false);
+
+  const createUniversalLink = async () => {
+    setUniversalMinting(true);
+    try {
+      const res = await fetch('/api/montree/super-admin/founding', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-super-admin-token': sessionToken },
+        body: JSON.stringify({ action: 'get_or_create_universal_code' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data?.error || 'Could not create the universal link. Try again.');
+        return;
+      }
+      setError(null);
+      await load();
+    } catch {
+      setError('Could not create the universal link. Try again.');
+    } finally {
+      setUniversalMinting(false);
     }
   };
 
@@ -389,6 +420,11 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
 
   const visible = filter === 'all' ? rows : rows.filter((r) => r.status === filter);
 
+  // Universal Founding 100 link (migration 291), derived from config so no
+  // non-null assertions are needed in the JSX below.
+  const universalCode = config.universal_signup_code || null;
+  const universalLink = universalCode ? `https://montree.xyz/montree/try?founding=${universalCode}` : null;
+
   const card: React.CSSProperties = {
     background: '#0f172a', border: '1px solid rgba(148,163,184,0.14)',
     borderRadius: 14, padding: 20,
@@ -422,6 +458,52 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
           {error}
         </div>
       )}
+
+      {/* ── Founder messages (migration 292) ──
+          Direct line from Founding-member principals. Collapsible list of
+          principal_super_admin threads with inline reply. */}
+      <FoundingInbox saToken={sessionToken} />
+
+      {/* ── Universal Founding 100 link (migration 291) ──
+          ONE public multi-use link for Facebook groups + email. Every signup
+          through it auto-joins the Founding 100 at $3/life until the 100 fill,
+          then the SAME link falls back to a normal trial (never a dead link). */}
+      <div style={{ ...card, borderColor: 'rgba(52,211,153,0.4)', marginBottom: 16 }}>
+        <div style={{ ...label, color: '#34d399', marginBottom: 4 }}>🌍 Universal Founding 100 link</div>
+        <p style={{ fontSize: 12, color: '#64748b', margin: '0 0 12px' }}>
+          One link to post in Facebook groups + email. Every signup through it auto-joins the Founding 100 at{' '}
+          <strong style={{ color: '#34d399' }}>$3/student for life</strong> (1 month of Premium free first). It stops
+          granting automatically once the 100 spots fill — after that the same link still works, falling back to a
+          normal trial. It never expires and never becomes a dead link.
+        </p>
+        {universalCode && universalLink ? (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+            <code style={{ background: 'rgba(52,211,153,0.12)', color: '#34d399', padding: '8px 12px', borderRadius: 8, fontSize: 13, maxWidth: 460, overflowX: 'auto', whiteSpace: 'nowrap' }}>
+              {universalLink}
+            </code>
+            <button style={btn('#334155', '#e2e8f0')} onClick={() => copyLink(universalCode)}>
+              {copiedCode === universalCode ? '✓ Copied' : 'Copy link'}
+            </button>
+            <button
+              style={btn('#34d399', '#04150c')}
+              disabled={qrStatusMap.universal === 'working'}
+              onClick={() => generateQrCard(universalLink, universalCode, 'universal')}
+            >
+              {qrStatusMap.universal === 'working'
+                ? 'Generating…'
+                : qrStatusMap.universal === 'done'
+                ? '✓ Downloaded'
+                : qrStatusMap.universal === 'error'
+                ? 'Failed — retry'
+                : 'Generate QR code'}
+            </button>
+          </div>
+        ) : (
+          <button style={btn('#34d399', '#04150c')} disabled={universalMinting} onClick={createUniversalLink}>
+            {universalMinting ? 'Creating…' : 'Create universal link'}
+          </button>
+        )}
+      </div>
 
       {/* ── Mint a founding link (one shot) ──
           The headline action: type the school + email from their application

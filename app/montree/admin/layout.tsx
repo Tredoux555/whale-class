@@ -22,6 +22,7 @@ import {
   Calendar,
   CalendarDays,
   Users,
+  Sparkles,
 } from 'lucide-react';
 // 🚨 Perf Tier 2.4 (PERF_HEALTH_CHECK.md) — Astra panel is 1,200 lines and
 // mounted on every /montree/admin/* page. Loading it eagerly added ~30-50 KB
@@ -289,6 +290,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [schoolName, setSchoolName] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [principalId, setPrincipalId] = useState<string | null>(null);
+  // Migration 292 — Founding-member schools get the "Message Tredoux" nav link.
+  const [foundingMember, setFoundingMember] = useState(false);
   const [authState, setAuthState] = useState<AuthState>('checking');
 
   useEffect(() => {
@@ -350,6 +353,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         // the generic "School" sidebar).
         if (data.school?.name) setSchoolName(data.school.name);
         if (data.teacher?.id) setPrincipalId(data.teacher.id);
+        // Migration 292 — surface the "Message Tredoux" nav only for Founding schools.
+        setFoundingMember(Boolean(data.school?.founding_member));
         // Remember the cockpit as this principal's launch surface so the next
         // PWA home-screen launch opens straight here (no splash flash).
         if (data.role === 'principal') rememberLaunchSurface('/montree/admin');
@@ -461,6 +466,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           icon: Lock,
           match: (p) => p.startsWith('/montree/admin/conversations'),
         },
+        // Migration 292 — Founding-member perk: a direct line to Tredoux.
+        // Hardcoded English label (renders via t()'s key-fallback) so no
+        // i18n parity churn. Only present when the school is a Founding member.
+        ...(foundingMember
+          ? [
+              {
+                href: '/montree/admin/messages-tredoux',
+                label: 'Message Tredoux',
+                icon: Sparkles,
+                match: (p: string) => p.startsWith('/montree/admin/messages-tredoux'),
+              },
+            ]
+          : []),
       ]
     : NAV;
 

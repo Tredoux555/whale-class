@@ -24,6 +24,16 @@ function generateFoundingCode(): string {
   return code;
 }
 
+// The ONE public multi-use universal Founding 100 code (migration 291). The
+// FND-F100- prefix makes it visually distinct from single-use FND- codes.
+function generateUniversalCode(): string {
+  let suffix = '';
+  for (let i = 0; i < 4; i++) {
+    suffix += FND_CHARS[Math.floor(Math.random() * FND_CHARS.length)];
+  }
+  return `FND-F100-${suffix}`;
+}
+
 export async function GET(req: NextRequest) {
   const { valid } = await verifySuperAdminAuth(req.headers);
   if (!valid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -31,11 +41,35 @@ export async function GET(req: NextRequest) {
   try {
     const supabase = getSupabase();
 
-    const { data: config } = await supabase
+    // Read config WITH universal_signup_code (migration 291). 42703-safe: if the
+    // column is missing the migration lags → fall back to the pre-291 select so
+    // GET never 500s. A missing column reads back as universal_signup_code: null.
+    interface FoundingConfigRow {
+      cap?: number | null;
+      wave?: number | null;
+      is_closed?: boolean | null;
+      universal_signup_code?: string | null;
+    }
+    let config: FoundingConfigRow | null = null;
+    const cfgWith = await supabase
       .from('montree_founding_config')
-      .select('cap, wave, is_closed')
+      .select('cap, wave, is_closed, universal_signup_code')
       .eq('id', 1)
       .maybeSingle();
+    if (cfgWith.error) {
+      const isMissingColumn =
+        cfgWith.error.code === '42703' || (cfgWith.error.message || '').includes('universal_signup_code');
+      if (!isMissingColumn) throw cfgWith.error;
+      const cfgFallback = await supabase
+        .from('montree_founding_config')
+        .select('cap, wave, is_closed')
+        .eq('id', 1)
+        .maybeSingle();
+      if (cfgFallback.error) throw cfgFallback.error;
+      config = (cfgFallback.data as FoundingConfigRow | null) ?? null;
+    } else {
+      config = (cfgWith.data as FoundingConfigRow | null) ?? null;
+    }
 
     // grant_type only exists after migration 290. Select WITH it; if the column
     // is missing (42703) fall back to the pre-290 select so GET never 500s on a
@@ -70,7 +104,12 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(
       {
-        config: { cap, wave: config?.wave ?? 1, is_closed: config?.is_closed ?? false },
+        config: {
+          cap,
+          wave: config?.wave ?? 1,
+          is_closed: config?.is_closed ?? false,
+          universal_signup_code: config?.universal_signup_code ?? null,
+        },
         admitted,
         remaining: Math.max(0, cap - admitted),
         total: (rows || []).length,
@@ -121,6 +160,101 @@ export async function PATCH(req: NextRequest) {
         .eq('id', 1);
       if (error) throw error;
       return NextResponse.json({ success: true });
+    }
+
+    // Get-or-create the ONE public universal Founding 100 code (migration 291).
+    // Idempotent: if the config already has a universal_signup_code, return it;
+    // otherwise mint a fresh FND-F100-XXXX (verified not to collide with any
+    // single-use waitlist signup_code), store it on the config row, and return
+    // it alongside the live cap/admitted/is_closed so the UI can show state.
+    if (action === 'get_or_create_universal_code') {
+      const MIGRATION_291_MSG =
+        'The universal link needs migration 291 — run it in Supabase first (adds universal_signup_code to montree_founding_config).';
+
+      const { data: cfg, error: cfgErr } = await supabase
+        .from('montree_founding_config')
+        .select('cap, is_closed, universal_signup_code')
+        .eq('id', 1)
+        .maybeSingle();
+      if (cfgErr) {
+        if (cfgErr.code === '42703' || (cfgErr.message || '').includes('universal_signup_code')) {
+          return NextResponse.json({ error: MIGRATION_291_MSG }, { status: 500 });
+        }
+        throw cfgErr;
+      }
+
+      const cap = cfg?.cap ?? 100;
+      const isClosed = cfg?.is_closed ?? false;
+      const { count } = await supabase
+        .from('montree_founding_waitlist')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'admitted');
+      const admitted = count ?? 0;
+
+      // Idempotent — already minted, return as-is.
+      if (cfg?.universal_signup_code) {
+        return NextResponse.json({
+          success: true,
+          universal_signup_code: cfg.universal_signup_code,
+          cap,
+          admitted,
+          is_closed: isClosed,
+        });
+      }
+
+      // Mint. Verify no single-use signup_code collision, then stamp the config
+      // row guarding on `.is('universal_signup_code', null)` so a concurrent
+      // create can't clobber an already-minted code (we re-read to surface the
+      // winner). Retry on the rare candidate collision.
+      let universalCode = '';
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const candidate = generateUniversalCode();
+        const { data: clash } = await supabase
+          .from('montree_founding_waitlist')
+          .select('id')
+          .eq('signup_code', candidate)
+          .maybeSingle();
+        if (clash) continue; // collides with a single-use code — try a new one
+
+        const { error: updErr } = await supabase
+          .from('montree_founding_config')
+          .update({
+            universal_signup_code: candidate,
+            universal_code_created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          } as never)
+          .eq('id', 1)
+          .is('universal_signup_code', null);
+        if (updErr) {
+          if (updErr.code === '42703' || (updErr.message || '').includes('universal_signup_code')) {
+            return NextResponse.json({ error: MIGRATION_291_MSG }, { status: 500 });
+          }
+          throw updErr;
+        }
+
+        // Re-read whatever code actually landed (covers a concurrent create that
+        // won the .is(null) guard). If none landed, loop and retry.
+        const { data: after } = await supabase
+          .from('montree_founding_config')
+          .select('universal_signup_code')
+          .eq('id', 1)
+          .maybeSingle();
+        if (after?.universal_signup_code) {
+          universalCode = after.universal_signup_code as string;
+          break;
+        }
+      }
+
+      if (!universalCode) {
+        return NextResponse.json({ error: 'Could not create the universal link. Try again.' }, { status: 500 });
+      }
+      return NextResponse.json({
+        success: true,
+        universal_signup_code: universalCode,
+        cap,
+        admitted,
+        is_closed: isClosed,
+      });
     }
 
     // Mint (or return the existing) FND- signup code for an admitted row.

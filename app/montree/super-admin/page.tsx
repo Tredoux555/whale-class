@@ -363,6 +363,9 @@ export default function SuperAdminPage() {
   const [dmMessages, setDmMessages] = useState<DmMessage[]>([]);
   const [dmNewMsg, setDmNewMsg] = useState('');
   const [dmSending, setDmSending] = useState(false);
+  // Migration 292 — unread founder messages (principal_super_admin threads),
+  // surfaced as a badge on the 🚀 Founding 100 tab.
+  const [foundingUnread, setFoundingUnread] = useState(0);
 
   // Simple audit logging
   const logAction = useCallback(async (action: string, details?: Record<string, unknown>) => {
@@ -442,6 +445,14 @@ export default function SuperAdminPage() {
     adminData.fetchSchools();
     adminData.fetchFeedback();
     adminData.fetchLeads();
+    // Migration 292 — lightweight founder-message unread count for the tab badge.
+    fetch('/api/montree/super-admin/founding-messages/threads', {
+      headers: { 'x-super-admin-token': saToken },
+      cache: 'no-store',
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d) setFoundingUnread(d.unread || 0); })
+      .catch((err) => console.error('[super-admin] founding unread fetch:', err));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authenticated]);
 
@@ -740,7 +751,13 @@ export default function SuperAdminPage() {
               Then the daily drivers (Schools, Leads, Feedback, Money), then
               the rest by frequency. Plumbing/diagnostics (Health, DLQ,
               Errors) sit at the end. */}
-          <SuperAdminTab active={activeTab === 'founding'} onClick={() => setActiveTab('founding')} icon="🚀" label="Founding 100" />
+          <SuperAdminTab
+            active={activeTab === 'founding'}
+            onClick={() => setActiveTab('founding')}
+            icon="🚀"
+            label="Founding 100"
+            badge={foundingUnread > 0 ? { text: `✉ ${foundingUnread}`, color: 'red' } : null}
+          />
           <SuperAdminTab active={activeTab === 'global-outreach'} onClick={() => setActiveTab('global-outreach')} icon="🌍" label="Global Outreach" />
           <SuperAdminTab active={activeTab === 'schools'} onClick={() => setActiveTab('schools')} icon="🏫" label="Schools" />
           <SuperAdminTab
