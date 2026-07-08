@@ -22,6 +22,9 @@ interface Row {
   code_generated_at: string | null;
   redeemed_by_school_id: string | null;
   redeemed_at: string | null;
+  // Migration 290 — grant type. 'partner_free_life' = Partner Program (Premium
+  // FREE for life); anything else / absent = Founding 100 ($3 for life).
+  grant_type?: string | null;
 }
 
 interface Config {
@@ -165,6 +168,84 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
     }
   };
 
+  // ── Partner Program mint (one shot) ──
+  // Partner name + email + school + share % → signup link (Premium FREE for
+  // life) + referral code/link (revenue share) + agent dashboard login, all in
+  // one submission. Idempotent on email server-side. The agent login code is
+  // shown ONCE and cannot be recovered.
+  interface PartnerResult {
+    signup_code: string;
+    signup_link: string;
+    referral_code: string;
+    referral_link: string;
+    agent_id: string | null;
+    agent_login_code: string | null;
+    login_url: string;
+    revenue_share_pct: number;
+    already_existed?: boolean;
+    note?: string | null;
+  }
+  const [pName, setPName] = useState('');
+  const [pEmail, setPEmail] = useState('');
+  const [pSchool, setPSchool] = useState('');
+  const [pShare, setPShare] = useState('20');
+  const [pMinting, setPMinting] = useState(false);
+  const [partnerResult, setPartnerResult] = useState<PartnerResult | null>(null);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const copyText = async (text: string, field: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField((c) => (c === field ? null : c)), 2000);
+    } catch {
+      setError('Could not copy. Select the text manually.');
+    }
+  };
+
+  const mintPartner = async () => {
+    if (!pName.trim() || !pEmail.trim() || !pSchool.trim()) {
+      setError('Partner name, email, and school name are all needed to mint a partner package.');
+      return;
+    }
+    const share = Number(pShare);
+    if (Number.isNaN(share) || share < 0 || share > 100) {
+      setError('Revenue share % must be between 0 and 100.');
+      return;
+    }
+    setPMinting(true);
+    setPartnerResult(null);
+    try {
+      const res = await fetch('/api/montree/super-admin/founding', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-super-admin-token': sessionToken },
+        body: JSON.stringify({
+          action: 'create_partner',
+          partner_name: pName.trim(),
+          email: pEmail.trim(),
+          school_name: pSchool.trim(),
+          revenue_share_pct: share,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data?.error || 'Could not mint the partner package. Try again.');
+        return;
+      }
+      setPartnerResult(data as PartnerResult);
+      setPName('');
+      setPEmail('');
+      setPSchool('');
+      setPShare('20');
+      setError(null);
+      await load();
+    } catch {
+      setError('Could not mint the partner package. Try again.');
+    } finally {
+      setPMinting(false);
+    }
+  };
+
   const saveConfig = async (override?: Partial<Config>) => {
     setSavingConfig(true);
     try {
@@ -263,6 +344,113 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
         </p>
       </div>
 
+      {/* ── Mint a PARTNER package (one shot) ──
+          Underprivileged-school partner: Premium FREE for life + a referral
+          code (revenue share) + an agent dashboard login, all in one click. */}
+      <div style={{ ...card, borderColor: 'rgba(129,140,248,0.4)', marginBottom: 16 }}>
+        <div style={{ ...label, color: '#a5b4fc', marginBottom: 4 }}>🤝 Mint a partner package</div>
+        <p style={{ fontSize: 12, color: '#64748b', margin: '0 0 10px' }}>
+          One submission → a signup link (Premium <strong style={{ color: '#a5b4fc' }}>free for life</strong>), a referral code + promo link (revenue share), and an agent dashboard login.
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+          <input
+            style={{ ...input, width: 200 }}
+            placeholder="Partner name"
+            value={pName}
+            onChange={(e) => setPName(e.target.value)}
+          />
+          <input
+            style={{ ...input, width: 240 }}
+            placeholder="Their email"
+            type="email"
+            value={pEmail}
+            onChange={(e) => setPEmail(e.target.value)}
+          />
+          <input
+            style={{ ...input, width: 220 }}
+            placeholder="School name"
+            value={pSchool}
+            onChange={(e) => setPSchool(e.target.value)}
+          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <input
+              style={{ ...input, width: 70 }}
+              type="number"
+              min={0}
+              max={100}
+              value={pShare}
+              onChange={(e) => setPShare(e.target.value)}
+            />
+            <span style={{ fontSize: 13, color: '#64748b' }}>% share</span>
+          </div>
+          <button
+            style={btn('#818cf8', '#0b1020')}
+            disabled={pMinting}
+            onClick={mintPartner}
+          >
+            {pMinting ? 'Minting…' : 'Mint package'}
+          </button>
+        </div>
+
+        {partnerResult && (
+          <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {/* Signup link — Premium free for life */}
+            <div>
+              <div style={{ ...label, marginBottom: 4 }}>Signup link · Premium free for life</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                <code style={{ background: 'rgba(129,140,248,0.12)', color: '#a5b4fc', padding: '8px 12px', borderRadius: 8, fontSize: 12, maxWidth: 460, overflowX: 'auto', whiteSpace: 'nowrap' }}>
+                  {partnerResult.signup_link}
+                </code>
+                <button style={btn('#334155', '#e2e8f0')} onClick={() => copyText(partnerResult.signup_link, 'p-signup')}>
+                  {copiedField === 'p-signup' ? '✓ Copied' : 'Copy'}
+                </button>
+              </div>
+            </div>
+
+            {/* Referral link — revenue share */}
+            <div>
+              <div style={{ ...label, marginBottom: 4 }}>Referral link · {partnerResult.referral_code} · {partnerResult.revenue_share_pct}% share</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                <code style={{ background: 'rgba(52,211,153,0.10)', color: '#34d399', padding: '8px 12px', borderRadius: 8, fontSize: 12, maxWidth: 460, overflowX: 'auto', whiteSpace: 'nowrap' }}>
+                  {partnerResult.referral_link}
+                </code>
+                <button style={btn('#334155', '#e2e8f0')} onClick={() => copyText(partnerResult.referral_link, 'p-ref')}>
+                  {copiedField === 'p-ref' ? '✓ Copied' : 'Copy'}
+                </button>
+              </div>
+            </div>
+
+            {/* Agent login */}
+            <div>
+              <div style={{ ...label, marginBottom: 4 }}>Agent dashboard login</div>
+              {partnerResult.agent_login_code ? (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                  <code style={{ background: 'rgba(232,201,106,0.12)', color: '#E8C96A', padding: '8px 12px', borderRadius: 8, fontSize: 14, fontWeight: 700, letterSpacing: 1 }}>
+                    {partnerResult.agent_login_code}
+                  </code>
+                  <button style={btn('#334155', '#e2e8f0')} onClick={() => copyText(partnerResult.agent_login_code!, 'p-code')}>
+                    {copiedField === 'p-code' ? '✓ Copied' : 'Copy code'}
+                  </button>
+                  <code style={{ background: '#0b1220', border: '1px solid rgba(148,163,184,0.18)', color: '#94a3b8', padding: '8px 10px', borderRadius: 8, fontSize: 11, maxWidth: 380, overflowX: 'auto', whiteSpace: 'nowrap' }}>
+                    {partnerResult.login_url}
+                  </code>
+                  <button style={btn('#334155', '#e2e8f0')} onClick={() => copyText(partnerResult.login_url, 'p-loginurl')}>
+                    {copiedField === 'p-loginurl' ? '✓ Copied' : 'Copy URL'}
+                  </button>
+                </div>
+              ) : (
+                <div style={{ fontSize: 12, color: '#94a3b8' }}>No new login code issued.</div>
+              )}
+              <div style={{ marginTop: 8, fontSize: 12, color: '#fbbf24', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 8, padding: '8px 12px' }}>
+                ⚠️ The agent login code is shown ONCE and cannot be recovered — copy it now.
+                {partnerResult.already_existed ? ' This partner already existed; the signup + referral links are their existing ones.' : ''}
+                {partnerResult.note ? ` ${partnerResult.note}` : ''}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* ── Config + stats ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 16 }}>
         <div style={card}>
@@ -351,6 +539,11 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
                 <span style={{ background: s.bg, color: s.fg, borderRadius: 999, padding: '4px 12px', fontSize: 12, fontWeight: 700 }}>
                   {s.label}
                 </span>
+                {r.grant_type === 'partner_free_life' && (
+                  <span style={{ background: 'rgba(129,140,248,0.15)', color: '#a5b4fc', borderRadius: 999, padding: '4px 10px', fontSize: 11, fontWeight: 700 }}>
+                    🤝 FREE FOR LIFE
+                  </span>
+                )}
                 <div style={{ display: 'flex', gap: 8 }}>
                   {r.status !== 'admitted' && (
                     <button style={btn('rgba(52,211,153,0.15)', '#34d399')} disabled={busyId === r.id} onClick={() => setStatus(r.id, 'admitted')}>

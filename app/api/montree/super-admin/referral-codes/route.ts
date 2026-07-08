@@ -12,7 +12,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
-import { generateUniqueReferralCode } from '@/lib/montree/referral/code-gen';
+import { createAgentReferralCode } from '@/lib/montree/referral/create-agent-code';
 
 export const dynamic = 'force-dynamic';
 
@@ -152,130 +152,33 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const displayName = (body.agent_display_name || '').trim();
-  const email = (body.agent_email || '').trim().toLowerCase();
-  const pct = Number(body.revenue_share_pct);
-
-  if (!displayName) return NextResponse.json({ error: 'agent_display_name is required' }, { status: 400 });
-  if (!email || !email.includes('@')) return NextResponse.json({ error: 'Valid agent_email is required' }, { status: 400 });
-  if (Number.isNaN(pct) || pct < 0 || pct > 100) {
-    return NextResponse.json({ error: 'revenue_share_pct must be between 0 and 100' }, { status: 400 });
-  }
-
   const supabase = getSupabase();
 
-  // Resolve agent_id. If caller supplied one, use it as-is.
-  // Otherwise look for an existing teacher row with this email; reuse if present.
-  // Otherwise create a shell record.
-  let agentId: string | null = body.agent_id || null;
+  // Shared core (create-agent-code.ts): resolves/creates the agent payee row,
+  // mints a unique code, inserts the referral row. Identical logic is reused by
+  // the Partner Program mint action so the two can never drift.
+  const result = await createAgentReferralCode(supabase, {
+    displayName: body.agent_display_name || '',
+    email: body.agent_email || '',
+    revenueSharePct: Number(body.revenue_share_pct),
+    agentId: body.agent_id || null,
+    pitchLabel: body.agent_pitch_label ?? null,
+    expiresAt: body.expires_at ?? null,
+    notes: body.notes ?? null,
+    createdByLabel: 'super_admin',
+  });
 
-  if (!agentId) {
-    // Use limit(1) + take-first instead of maybeSingle() so the lookup
-    // tolerates duplicate teacher rows for the same email (test data, etc.).
-    // maybeSingle() ERRORS on multi-row results and the error was silently
-    // dropped, falling through to a shell-creation attempt that then failed
-    // on NOT NULL constraints. limit(1) just takes the most recent.
-    const { data: existing } = await supabase
-      .from('montree_teachers')
-      .select('id')
-      .eq('email', email)
-      .order('created_at', { ascending: false })
-      .limit(1);
-    if (existing && existing.length > 0 && existing[0].id) {
-      agentId = existing[0].id as string;
-    } else {
-      // Shell agent record for non-teaching agents. montree_teachers.school_id
-      // is NOT NULL in the canonical schema, so we need a placeholder school.
-      // Use the OLDEST school in the system (almost certainly Whale Class /
-      // Tredoux's primary school) — the shell row never logs in (is_active=false)
-      // and is purely an identity holder for the agent. Phase 2+ will move
-      // these into a dedicated montree_agents table.
-      const { data: anySchool, error: schoolErr } = await supabase
-        .from('montree_schools')
-        .select('id, name')
-        .order('created_at', { ascending: true })
-        .limit(1);
-      if (schoolErr || !anySchool || anySchool.length === 0) {
-        console.error('[referral-codes POST] no school available for shell agent:', schoolErr?.message);
-        return NextResponse.json({
-          error: 'No schools exist in the system; cannot create agent record',
-          detail: schoolErr?.message || 'no rows returned',
-        }, { status: 500 });
-      }
-      const placeholderSchoolId = anySchool[0].id as string;
-
-      const { data: shell, error: shellErr } = await supabase
-        .from('montree_teachers')
-        .insert({
-          name: displayName,
-          email,
-          school_id: placeholderSchoolId,
-          is_active: false,
-          password_hash: 'SHELL_AGENT_NO_LOGIN',
-        })
-        .select()
-        .single();
-      if (shellErr || !shell) {
-        console.error('[referral-codes POST] shell agent creation failed:', shellErr?.message, shellErr?.details);
-        return NextResponse.json({
-          error: 'Could not create agent record',
-          // Surface the DB error so the UI can show what specifically failed
-          // (e.g. "null value in column \"login_code\" violates not-null constraint").
-          detail: shellErr?.message || 'unknown error',
-          hint: shellErr?.details || shellErr?.hint || null,
-        }, { status: 500 });
-      }
-      agentId = shell.id as string;
-    }
-  }
-
-  // Generate a unique code derived from the display name.
-  let code: string;
-  try {
-    code = await generateUniqueReferralCode(displayName);
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error('[referral-codes POST] code generation failed:', msg);
-    return NextResponse.json({ error: 'Could not generate unique code' }, { status: 500 });
-  }
-
-  // Insert the code row.
-  const { data: row, error: insertErr } = await supabase
-    .from('montree_referral_codes')
-    .insert({
-      code,
-      agent_id: agentId,
-      agent_display_name: displayName,
-      agent_email: email,
-      agent_pitch_label: body.agent_pitch_label?.trim() || null,
-      revenue_share_pct: pct,
-      status: 'pending',
-      expires_at: body.expires_at || null,
-      created_by_label: 'super_admin',
-      notes: body.notes?.trim() || null,
-    })
-    .select()
-    .single();
-
-  if (insertErr || !row) {
-    console.error('[referral-codes POST] insert failed:', insertErr?.message, insertErr?.details);
-    return NextResponse.json({ error: 'Could not create referral code' }, { status: 500 });
+  if (!result.ok) {
+    return NextResponse.json(
+      { error: result.error, detail: result.detail ?? undefined, hint: result.hint ?? undefined },
+      { status: result.status }
+    );
   }
 
   return NextResponse.json({
     ok: true,
-    code: row.code,
-    referral: {
-      id: row.id,
-      code: row.code,
-      agent_id: row.agent_id,
-      agent_display_name: row.agent_display_name,
-      agent_email: row.agent_email,
-      agent_pitch_label: row.agent_pitch_label,
-      revenue_share_pct: Number(row.revenue_share_pct),
-      status: row.status,
-      created_at: row.created_at,
-    },
+    code: result.code,
+    referral: result.referral,
   });
 }
 

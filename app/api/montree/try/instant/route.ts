@@ -14,6 +14,7 @@ import { DEFAULTS } from '@/lib/montree/constants';
 import { MINIMAL_DEFAULT_MENU } from '@/lib/montree/menu/config';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { getClientIP } from '@/lib/montree/audit-logger';
+import { applyAiTier } from '@/lib/montree/billing/apply-ai-tier';
 
 /**
  * Resolve the primary locale for a new school at signup.
@@ -214,14 +215,20 @@ async function redeemFoundingCode(
   schoolId: string,
   foundingTrialEndsAtIso: string
 ): Promise<boolean> {
-  // Step 1: stamp the school's founding membership + $3-for-life override + the
+  const isPartner = founding.grantType === 'partner_free_life';
+
+  // Step 1: stamp the school's founding membership + billing override + the
   // 30-day Premium month (overrides the 7-day default written at insert).
+  //   founding_3_life   → $3-for-life  (Founding 100)
+  //   partner_free_life → $0 free-for-life (Partner Program)
   const { error: schoolErr } = await supabase
     .from('montree_schools')
     .update({
       founding_member: true,
-      billing_override_usd: 3,
-      billing_override_note: 'Founding 100 — Premium at $3 for life',
+      billing_override_usd: isPartner ? 0 : 3,
+      billing_override_note: isPartner
+        ? 'Partner — Premium free for life'
+        : 'Founding 100 — Premium at $3 for life',
       trial_ends_at: foundingTrialEndsAtIso,
     })
     .eq('id', schoolId);
@@ -229,6 +236,22 @@ async function redeemFoundingCode(
   if (schoolErr) {
     console.error('[Trial] founding school stamp failed:', schoolErr.message);
     return false;
+  }
+
+  // Partner schools get PERMANENT Premium (Sonnet) via the same feature-flag
+  // grant the super-admin schools PATCH applies — so it's real Premium with no
+  // Stripe subscription ever (resolve-model's sonnet flag outranks trial state).
+  // 🚨 Failure here must NOT fail the signup — log loudly; the school can be
+  // fixed via the super-admin schools PATCH (ai_tier: 'sonnet').
+  if (isPartner) {
+    try {
+      const tierResult = await applyAiTier(supabase, schoolId, 'sonnet', 'partner_free_life_redemption');
+      if (!tierResult.ok) {
+        console.error('[Trial] partner AI-tier grant FAILED (non-fatal) for school', schoolId, ':', tierResult.error);
+      }
+    } catch (tierErr) {
+      console.error('[Trial] partner AI-tier grant THREW (non-fatal) for school', schoolId, ':', tierErr);
+    }
   }
 
   // Step 2: atomic conditional redeem of the waitlist row. `.is('redeemed_at',
@@ -274,9 +297,15 @@ async function redeemFoundingCode(
  * founding schools are never agent-attributed. An INVALID founding code is a
  * hard 400 (thrown here), never a silent fall-through to referral.
  */
+type FoundingGrantType = 'founding_3_life' | 'partner_free_life';
 interface FoundingContext {
   waitlistId: string;
   code: string;
+  // migration 290 — which grant this code confers. 'founding_3_life' = the
+  // Founding 100 $3-for-life deal (default); 'partner_free_life' = a Partner
+  // Program school (Premium FREE for life). Reads 42703-safe (a missing column
+  // behaves exactly as before: everything is 'founding_3_life').
+  grantType: FoundingGrantType;
 }
 async function resolveFoundingCode(
   supabase: ReturnType<typeof getSupabase>,
@@ -286,16 +315,46 @@ async function resolveFoundingCode(
   const code = rawCode.trim().toUpperCase();
   if (!code) return null;
 
-  const { data, error } = await supabase
+  // grant_type only exists after migration 290. Try WITH it; on ANY error
+  // (including 42703 undefined-column when the migration lags) fall back to a
+  // select without it and treat the code as legacy founding_3_life.
+  interface WaitlistLookup {
+    id: string;
+    signup_code: string;
+    status: string;
+    redeemed_at: string | null;
+    grant_type?: string | null;
+  }
+  let data: WaitlistLookup | null = null;
+  const withGrant = await supabase
     .from('montree_founding_waitlist')
-    .select('id, signup_code, status, redeemed_at')
+    .select('id, signup_code, status, redeemed_at, grant_type')
     .eq('signup_code', code)
     .maybeSingle();
-
-  if (error) {
-    console.error('[Trial] founding code lookup failed:', error.message);
-    throw new Error('Could not validate your founding code. Try again.');
+  if (withGrant.error) {
+    // Only fall back for the missing-column case (42703 / grant_type) when
+    // migration 290 lags. Any OTHER error propagates as before (thrown → the
+    // caller returns a hard 400) rather than being masked by a fallback read.
+    const isMissingColumn =
+      withGrant.error.code === '42703' || (withGrant.error.message || '').includes('grant_type');
+    if (!isMissingColumn) {
+      console.error('[Trial] founding code lookup failed:', withGrant.error.message);
+      throw new Error('Could not validate your founding code. Try again.');
+    }
+    const fallback = await supabase
+      .from('montree_founding_waitlist')
+      .select('id, signup_code, status, redeemed_at')
+      .eq('signup_code', code)
+      .maybeSingle();
+    if (fallback.error) {
+      console.error('[Trial] founding code lookup failed:', fallback.error.message);
+      throw new Error('Could not validate your founding code. Try again.');
+    }
+    data = (fallback.data as WaitlistLookup | null) ?? null;
+  } else {
+    data = (withGrant.data as WaitlistLookup | null) ?? null;
   }
+
   if (!data) {
     throw new Error(`Founding code "${code}" was not found.`);
   }
@@ -306,7 +365,10 @@ async function resolveFoundingCode(
     throw new Error(`Founding code "${code}" has already been used.`);
   }
 
-  return { waitlistId: data.id as string, code: data.signup_code as string };
+  const grantType: FoundingGrantType =
+    data.grant_type === 'partner_free_life' ? 'partner_free_life' : 'founding_3_life';
+
+  return { waitlistId: data.id as string, code: data.signup_code as string, grantType };
 }
 
 /**

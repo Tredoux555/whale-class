@@ -6,6 +6,7 @@ import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger'
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { clearBudgetCache } from '@/lib/montree/api-usage';
+import { applyAiTier } from '@/lib/montree/billing/apply-ai-tier';
 
 // Cost model constants (per interaction, approximate)
 const COST_PER_INTERACTION: Record<string, number> = {
@@ -417,40 +418,15 @@ export async function PATCH(request: NextRequest) {
         return NextResponse.json({ error: 'ai_tier must be free, haiku, or sonnet' }, { status: 400 });
       }
 
-      // Three tiers, mapped to the two feature flags resolveReportModel reads:
-      //   free   → both off (no AI; template fallback)
-      //   haiku  → ai_tier_haiku only  (cheap Haiku for reports + narratives)
-      //   sonnet → BOTH on (sonnet wins in the resolver; haiku=true keeps sonnet
-      //            a strict superset so any independent 'requires-haiku' gate passes)
-      const haikuEnabled = ai_tier === 'haiku' || ai_tier === 'sonnet';
-      const sonnetEnabled = ai_tier === 'sonnet';
-
-      // Upsert both feature flags atomically
-      for (const [key, enabled] of [['ai_tier_haiku', haikuEnabled], ['ai_tier_sonnet', sonnetEnabled]] as const) {
-        const { error: flagErr } = await supabase
-          .from('montree_school_features')
-          .upsert(
-            { school_id: schoolId, feature_key: key, enabled, enabled_by: 'super_admin_tier_change' },
-            { onConflict: 'school_id,feature_key' }
-          );
-        if (flagErr) {
-          console.error(`Failed to set ${key} for ${schoolId}:`, flagErr);
-          return NextResponse.json({ error: `Failed to set feature flag ${key}` }, { status: 500 });
-        }
+      // Shared grant (apply-ai-tier.ts): upserts the two feature flags
+      // resolveReportModel reads (free→both off, haiku→haiku only, sonnet→both
+      // on) + the per-tier budget fields + clears the budget cache. The Partner
+      // Program free-for-life redemption applies the SAME grant, so the two can
+      // never drift.
+      const tierResult = await applyAiTier(supabase, schoolId, ai_tier, 'super_admin_tier_change');
+      if (!tierResult.ok) {
+        return NextResponse.json({ error: tierResult.error || 'Failed to set AI tier' }, { status: 500 });
       }
-
-      // Budget per tier: free=$0/hard_limit, haiku=$50/soft_limit, sonnet=$9999/warn
-      const tierBudget = ai_tier === 'free' ? 0 : ai_tier === 'haiku' ? 50 : 9999;
-      const tierAction = ai_tier === 'free' ? 'hard_limit' : ai_tier === 'haiku' ? 'soft_limit' : 'warn';
-      const { error: budgetErr } = await supabase
-        .from('montree_schools')
-        .update({ monthly_ai_budget_usd: tierBudget, ai_budget_action: tierAction })
-        .eq('id', schoolId);
-      if (budgetErr) {
-        console.error(`Failed to set budget for ${schoolId}:`, budgetErr);
-      }
-
-      clearBudgetCache(schoolId);
 
       // If only ai_tier was sent, return early with the updated tier
       if (!subscription_tier && !subscription_status && monthly_ai_budget_usd === undefined && ai_budget_action === undefined) {

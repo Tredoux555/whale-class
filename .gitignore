@@ -116,5 +116,11 @@ tsconfig.reviewtmp.json
 tsconfig.reviewtmp.tsbuildinfo
 tsconfig.adgeo.tmp.json
 
+# temp scoped tsconfig from Jul-8 Partner Program build verification (sandbox rm blocked — delete via Desktop Commander)
+tsconfig.scope-partner.json
+
 # temp scoped tsconfig from Jul-7 geo-match build verification (sandbox rm blocked — delete via Desktop Commander)
 tsconfig.geomatchtmp.json
+
+# temp scoped tsconfig from Jul-8 Partner Program review-fix verification (sandbox rm blocked — delete via Desktop Commander)
+tsconfig.scopecheck.json
