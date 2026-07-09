@@ -45,6 +45,81 @@ export interface ResolvedReportModel {
   model: string | null;
 }
 
+export interface TierInputs {
+  lockedAt?: string | null;
+  sonnetFlag: boolean;
+  haikuFlag: boolean;
+  subscriptionStatus?: string | null;
+  trialEndsAt?: string | null;
+}
+
+/**
+ * 🚨 THE SINGLE SOURCE OF TRUTH for the free/haiku/sonnet precedence.
+ *
+ * Jul 9 2026: extracted out of resolveReportModel so every display/reporting
+ * surface (super-admin schools list, Mira's school_health tool, anywhere else
+ * that needs "what tier is this school really on") can derive the SAME answer
+ * from data it already has in hand, instead of re-implementing (and drifting
+ * from) the precedence by hand. Two call sites (app/api/montree/super-admin/
+ * schools/route.ts, lib/montree/mira/tool-executor.ts) were independently
+ * reading the raw ai_tier_* flags and skipping the trialing/trial_ends_at
+ * branch entirely — so a school on an active Sonnet trial with no explicit
+ * flag written yet showed up as "free" in those two places even though every
+ * real AI-serving route (via resolveReportModel) correctly served it Sonnet.
+ * Pure + synchronous by design: no DB access, so it can't drift from its
+ * inputs and callers control their own query shape/cost.
+ */
+export function deriveTier(input: TierInputs): ReportTier {
+  // 1. Locked schools resolve free — no AI spend possible while locked.
+  if (input.lockedAt) {
+    return 'free';
+  }
+
+  // 2. Sonnet wins if enabled.
+  if (input.sonnetFlag) {
+    return 'sonnet';
+  }
+
+  // 3. Haiku flag.
+  if (input.haikuFlag) {
+    return 'haiku';
+  }
+
+  // 4. Trialing — three-way on trial_ends_at (plan amendment A1).
+  if (input.subscriptionStatus === 'trialing') {
+    if (input.trialEndsAt) {
+      const trialEndMs = new Date(input.trialEndsAt).getTime();
+      if (!Number.isNaN(trialEndMs) && trialEndMs > Date.now()) {
+        // Premium trial still running → Sonnet ("taste Premium").
+        return 'sonnet';
+      }
+      // Trial ended (or an unparseable date treated as ended) → free.
+      // This is the decision moment: every AI route 402s with the
+      // UpgradeCard, prompting the school to pick Starter or Premium.
+      return 'free';
+    }
+    // trialing with NO trial_ends_at → legacy floor. Never free-Sonnet-
+    // forever, never brick a legit school. The signup paths are patched
+    // (A1) to always write trial_ends_at; this catches pre-fix rows.
+    return 'haiku';
+  }
+
+  // 5. Active safety floor — a paying school with no explicit flag still
+  // gets Haiku rather than a 402 (webhook normally sets flags; this covers
+  // the race window).
+  if (input.subscriptionStatus === 'active') {
+    return 'haiku';
+  }
+
+  return 'free';
+}
+
+function tierToModel(tier: ReportTier): string | null {
+  if (tier === 'sonnet') return AI_MODEL;
+  if (tier === 'haiku') return HAIKU_MODEL;
+  return null;
+}
+
 /**
  * Resolve which Anthropic model (if any) to use for this school's AI surfaces.
  * Sonnet takes precedence over Haiku if both flags are somehow enabled.
@@ -63,53 +138,20 @@ export async function resolveReportModel(
       .eq('id', schoolId)
       .maybeSingle();
 
-    // 1. Locked schools resolve free — no AI spend possible while locked.
-    if (school?.locked_at) {
-      return { tier: 'free', model: null };
-    }
+    const [sonnet, haiku] = await Promise.all([
+      isFeatureEnabled(supabase, schoolId, 'ai_tier_sonnet'),
+      isFeatureEnabled(supabase, schoolId, 'ai_tier_haiku'),
+    ]);
 
-    // 2. Sonnet wins if enabled.
-    const sonnet = await isFeatureEnabled(supabase, schoolId, 'ai_tier_sonnet');
-    if (sonnet) {
-      return { tier: 'sonnet', model: AI_MODEL };
-    }
+    const tier = deriveTier({
+      lockedAt: school?.locked_at ?? null,
+      sonnetFlag: sonnet,
+      haikuFlag: haiku,
+      subscriptionStatus: school?.subscription_status ?? null,
+      trialEndsAt: school?.trial_ends_at ?? null,
+    });
 
-    // 3. Haiku flag.
-    const haiku = await isFeatureEnabled(supabase, schoolId, 'ai_tier_haiku');
-    if (haiku) {
-      return { tier: 'haiku', model: HAIKU_MODEL };
-    }
-
-    const status = school?.subscription_status;
-
-    // 4. Trialing — three-way on trial_ends_at (plan amendment A1).
-    if (status === 'trialing') {
-      const trialEndsAt = school?.trial_ends_at as string | null | undefined;
-      if (trialEndsAt) {
-        const trialEndMs = new Date(trialEndsAt).getTime();
-        if (!Number.isNaN(trialEndMs) && trialEndMs > Date.now()) {
-          // Premium trial still running → Sonnet ("taste Premium").
-          return { tier: 'sonnet', model: AI_MODEL };
-        }
-        // Trial ended (or an unparseable date treated as ended) → free.
-        // This is the decision moment: every AI route 402s with the
-        // UpgradeCard, prompting the school to pick Starter or Premium.
-        return { tier: 'free', model: null };
-      }
-      // trialing with NO trial_ends_at → legacy floor. Never free-Sonnet-
-      // forever, never brick a legit school. The signup paths are patched
-      // (A1) to always write trial_ends_at; this catches pre-fix rows.
-      return { tier: 'haiku', model: HAIKU_MODEL };
-    }
-
-    // 5. Active safety floor — a paying school with no explicit flag still
-    // gets Haiku rather than a 402 (webhook normally sets flags; this covers
-    // the race window).
-    if (status === 'active') {
-      return { tier: 'haiku', model: HAIKU_MODEL };
-    }
-
-    return { tier: 'free', model: null };
+    return { tier, model: tierToModel(tier) };
   } catch (err) {
     console.error('[resolveReportModel] error:', err);
     return { tier: 'free', model: null };
