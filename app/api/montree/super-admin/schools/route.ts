@@ -7,6 +7,7 @@ import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { clearBudgetCache } from '@/lib/montree/api-usage';
 import { applyAiTier } from '@/lib/montree/billing/apply-ai-tier';
+import { deriveTier } from '@/lib/montree/reports/resolve-model';
 
 // Cost model constants (per interaction, approximate)
 const COST_PER_INTERACTION: Record<string, number> = {
@@ -215,19 +216,20 @@ export async function GET(request: NextRequest) {
       .select('school_id, feature_key, enabled')
       .in('feature_key', ['ai_tier_haiku', 'ai_tier_sonnet']);
 
-    // Three-tier derivation (mirrors resolveReportModel precedence): sonnet flag
-    // wins → 'sonnet'; else haiku flag → 'haiku'; else 'free'. A premium school
-    // has BOTH flags on, so the sonnet-wins check surfaces it as 'sonnet'.
+    // Flag sets only — the ACTUAL tier (incl. the trialing/trial_ends_at
+    // three-way) is derived per-school below via deriveTier(), the same pure
+    // function resolveReportModel() uses. Jul 9 2026: this used to stop at
+    // "sonnet flag on → sonnet, else haiku flag → haiku, else free" and never
+    // considered subscription_status/trial_ends_at at all — so a school on an
+    // active Sonnet trial with no explicit flag yet showed as "free" here even
+    // though the real AI routes correctly served it Sonnet. Never re-derive
+    // this by hand again; always route through deriveTier().
     const haikuOn = new Set<string>();
     const sonnetOn = new Set<string>();
     for (const row of (tierFlagsRaw || []) as Array<{ school_id: string; feature_key: string; enabled: boolean }>) {
       if (!row.enabled) continue;
       if (row.feature_key === 'ai_tier_sonnet') sonnetOn.add(row.school_id);
       else if (row.feature_key === 'ai_tier_haiku') haikuOn.add(row.school_id);
-    }
-    const aiTierMap: Record<string, 'free' | 'haiku' | 'sonnet'> = {};
-    for (const id of new Set<string>([...haikuOn, ...sonnetOn])) {
-      aiTierMap[id] = sonnetOn.has(id) ? 'sonnet' : 'haiku';
     }
 
     // 3b. Fetch actual API usage from montree_api_usage (this month).
@@ -328,7 +330,13 @@ export async function GET(request: NextRequest) {
         ai_budget_action: school.ai_budget_action ?? 'hard_limit',
         api_spent_this_month: Math.round((apiSpentMap[school.id] || 0) * 10000) / 10000,
         api_calls_this_month: apiCallsMap[school.id] || 0,
-        ai_tier: aiTierMap[school.id] || 'free',
+        ai_tier: deriveTier({
+          lockedAt: school.locked_at ?? null,
+          sonnetFlag: sonnetOn.has(school.id),
+          haikuFlag: haikuOn.has(school.id),
+          subscriptionStatus: school.subscription_status ?? null,
+          trialEndsAt: school.trial_ends_at ?? null,
+        }),
         login_codes: loginCodeMap[school.id] || [],
         login_codes_labelled: codesBySchool[school.id] || [],
         // Agent attribution: who referred this school. NULL when school

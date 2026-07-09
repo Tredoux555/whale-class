@@ -17,6 +17,7 @@ import type Anthropic from '@anthropic-ai/sdk';
 import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { randomBytes } from 'crypto';
 import { HAIKU_MODEL } from '@/lib/ai/anthropic';
+import { deriveTier } from '@/lib/montree/reports/resolve-model';
 import { getLanguageName, getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 import {
   SUPER_ADMIN_SENTINEL_UUID,
@@ -276,7 +277,7 @@ export async function executeMiraTool(
         // Cross-pollination check: school must belong to this agent.
         const { data: school } = await supabase
           .from('montree_schools')
-          .select('id, name, founding_teacher_id, revenue_share_pct, revenue_share_active')
+          .select('id, name, founding_teacher_id, revenue_share_pct, revenue_share_active, subscription_status, trial_ends_at, locked_at')
           .eq('id', schoolId)
           .maybeSingle();
         if (!school || school.founding_teacher_id !== agentId) {
@@ -286,7 +287,13 @@ export async function executeMiraTool(
           };
         }
 
-        // Resolve AI tier
+        // Resolve AI tier — routes through the same deriveTier() pure function
+        // resolveReportModel() uses, so this never drifts from what the
+        // school's real AI-serving routes actually grant. Jul 9 2026: this
+        // used to stop at the raw ai_tier_haiku/ai_tier_sonnet flags and
+        // ignored subscription_status/trial_ends_at entirely, so a school on
+        // an active Sonnet trial with no explicit flag yet was misreported as
+        // 'free' here even though the real AI routes correctly served Sonnet.
         let aiTier: 'free' | 'haiku' | 'sonnet' = 'free';
         try {
           const { data: features } = await supabase
@@ -294,11 +301,19 @@ export async function executeMiraTool(
             .select('feature_key, enabled')
             .eq('school_id', schoolId)
             .in('feature_key', ['ai_tier_haiku', 'ai_tier_sonnet']);
+          let sonnetFlag = false;
+          let haikuFlag = false;
           for (const f of features || []) {
-            if (f.feature_key === 'ai_tier_sonnet' && f.enabled) aiTier = 'sonnet';
-            else if (f.feature_key === 'ai_tier_haiku' && f.enabled && aiTier !== 'sonnet')
-              aiTier = 'haiku';
+            if (f.feature_key === 'ai_tier_sonnet' && f.enabled) sonnetFlag = true;
+            else if (f.feature_key === 'ai_tier_haiku' && f.enabled) haikuFlag = true;
           }
+          aiTier = deriveTier({
+            lockedAt: school.locked_at ?? null,
+            sonnetFlag,
+            haikuFlag,
+            subscriptionStatus: school.subscription_status ?? null,
+            trialEndsAt: school.trial_ends_at ?? null,
+          });
         } catch {
           // best-effort
         }

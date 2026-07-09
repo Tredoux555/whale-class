@@ -21,6 +21,30 @@ const STORE_BLOBS = 'blobs';
 let dbPromise: Promise<IDBDatabase> | null = null;
 
 // ============================================
+// ERROR NORMALIZATION
+// ============================================
+//
+// On WebKit/iOS Safari, an aborted IndexedDB transaction/request can leave
+// `tx.error` / `request.error` as the literal value `null` instead of a
+// DOMException (storage pressure, private-browsing-like restrictions, quota).
+// Rejecting the bare `null` produced the useless "Photo could not be saved: null"
+// toast. Always reject a real Error with a traceable context string instead.
+function normalizeIDBError(err: unknown, context: string): Error {
+  if (err instanceof Error) return err;
+  if (err && typeof err === 'object' && 'message' in err && (err as { message?: unknown }).message) {
+    const e = new Error(String((err as { message: unknown }).message));
+    if ('name' in err && (err as { name?: unknown }).name) {
+      e.name = String((err as { name: unknown }).name);
+    }
+    return e;
+  }
+  return new Error(
+    `IndexedDB operation failed (${context}) — no error detail from browser ` +
+      `(possible storage quota, private browsing, or WebKit transaction-abort quirk)`
+  );
+}
+
+// ============================================
 // DATABASE INIT
 // ============================================
 
@@ -49,7 +73,7 @@ function openDB(): Promise<IDBDatabase> {
     request.onerror = () => {
       console.error('[PHOTO_QUEUE] IndexedDB open failed:', request.error);
       dbPromise = null;
-      reject(request.error);
+      reject(normalizeIDBError(request.error, 'openDB'));
     };
 
     request.onsuccess = () => {
@@ -89,7 +113,7 @@ export async function saveEntry(entry: PhotoQueueEntry): Promise<void> {
     const tx = db.transaction(STORE_ENTRIES, 'readwrite');
     const store = tx.objectStore(STORE_ENTRIES);
     const request = store.put(entry);
-    request.onerror = () => reject(request.error);
+    request.onerror = () => reject(normalizeIDBError(request.error, 'saveEntry'));
     request.onsuccess = () => resolve();
   });
 }
@@ -99,7 +123,7 @@ export async function getEntry(id: string): Promise<PhotoQueueEntry | null> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_ENTRIES, 'readonly');
     const request = tx.objectStore(STORE_ENTRIES).get(id);
-    request.onerror = () => reject(request.error);
+    request.onerror = () => reject(normalizeIDBError(request.error, 'getEntry'));
     request.onsuccess = () => resolve(request.result ?? null);
   });
 }
@@ -111,7 +135,7 @@ export async function deleteEntry(id: string): Promise<void> {
     tx.objectStore(STORE_ENTRIES).delete(id);
     tx.objectStore(STORE_BLOBS).delete(id);
     tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
+    tx.onerror = () => reject(normalizeIDBError(tx.error, 'deleteEntry'));
   });
 }
 
@@ -131,7 +155,7 @@ export async function updateEntryStatus(
     const tx = db.transaction(STORE_ENTRIES, 'readwrite');
     const store = tx.objectStore(STORE_ENTRIES);
     const getReq = store.get(id);
-    getReq.onerror = () => reject(getReq.error);
+    getReq.onerror = () => reject(normalizeIDBError(getReq.error, 'updateEntryStatus:get'));
     getReq.onsuccess = () => {
       const entry = getReq.result as PhotoQueueEntry | undefined;
       if (!entry) {
@@ -144,7 +168,7 @@ export async function updateEntryStatus(
         status,
       };
       const putReq = store.put(updated);
-      putReq.onerror = () => reject(putReq.error);
+      putReq.onerror = () => reject(normalizeIDBError(putReq.error, 'updateEntryStatus:put'));
       putReq.onsuccess = () => resolve();
     };
   });
@@ -160,7 +184,7 @@ export async function getPendingEntries(): Promise<PhotoQueueEntry[]> {
     const tx = db.transaction(STORE_ENTRIES, 'readonly');
     const store = tx.objectStore(STORE_ENTRIES);
     const request = store.getAll();
-    request.onerror = () => reject(request.error);
+    request.onerror = () => reject(normalizeIDBError(request.error, 'getPendingEntries'));
     request.onsuccess = () => {
       const all = (request.result || []) as PhotoQueueEntry[];
       // Return entries that should be retried, ordered by creation time
@@ -178,7 +202,7 @@ export async function getEntriesForChild(childId: string): Promise<PhotoQueueEnt
     const tx = db.transaction(STORE_ENTRIES, 'readonly');
     const index = tx.objectStore(STORE_ENTRIES).index('child_id');
     const request = index.getAll(IDBKeyRange.only(childId));
-    request.onerror = () => reject(request.error);
+    request.onerror = () => reject(normalizeIDBError(request.error, 'getEntriesForChild'));
     request.onsuccess = () => {
       const entries = (request.result || []) as PhotoQueueEntry[];
       resolve(entries.sort((a, b) => b.created_at.localeCompare(a.created_at)));
@@ -191,7 +215,7 @@ export async function getAllEntries(): Promise<PhotoQueueEntry[]> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_ENTRIES, 'readonly');
     const request = tx.objectStore(STORE_ENTRIES).getAll();
-    request.onerror = () => reject(request.error);
+    request.onerror = () => reject(normalizeIDBError(request.error, 'getAllEntries'));
     request.onsuccess = () => resolve((request.result || []) as PhotoQueueEntry[]);
   });
 }
@@ -205,7 +229,7 @@ export async function findByContentHash(
     const tx = db.transaction(STORE_ENTRIES, 'readonly');
     const index = tx.objectStore(STORE_ENTRIES).index('content_hash');
     const request = index.getAll(IDBKeyRange.only(contentHash));
-    request.onerror = () => reject(request.error);
+    request.onerror = () => reject(normalizeIDBError(request.error, 'findByContentHash'));
     request.onsuccess = () => {
       const matches = (request.result || []) as PhotoQueueEntry[];
       const match = matches.find(e => e.child_id === childId);
@@ -255,7 +279,7 @@ export async function saveEntryAndBlob(entry: PhotoQueueEntry, blob: Blob): Prom
   const db = await openDB();
   return new Promise((resolve, reject) => {
     const tx = db.transaction([STORE_ENTRIES, STORE_BLOBS], 'readwrite');
-    tx.onerror = () => reject(tx.error);
+    tx.onerror = () => reject(normalizeIDBError(tx.error, 'saveEntryAndBlob'));
     tx.oncomplete = () => resolve();
 
     // Both writes in same transaction — atomic
@@ -273,7 +297,7 @@ export async function saveBlob(id: string, blob: Blob): Promise<void> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_BLOBS, 'readwrite');
     const request = tx.objectStore(STORE_BLOBS).put({ id, blob });
-    request.onerror = () => reject(request.error);
+    request.onerror = () => reject(normalizeIDBError(request.error, 'saveBlob'));
     request.onsuccess = () => resolve();
   });
 }
@@ -283,7 +307,7 @@ export async function getBlob(id: string): Promise<Blob | null> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_BLOBS, 'readonly');
     const request = tx.objectStore(STORE_BLOBS).get(id);
-    request.onerror = () => reject(request.error);
+    request.onerror = () => reject(normalizeIDBError(request.error, 'getBlob'));
     request.onsuccess = () => {
       resolve(request.result?.blob ?? null);
     };
@@ -295,7 +319,7 @@ export async function deleteBlob(id: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_BLOBS, 'readwrite');
     const request = tx.objectStore(STORE_BLOBS).delete(id);
-    request.onerror = () => reject(request.error);
+    request.onerror = () => reject(normalizeIDBError(request.error, 'deleteBlob'));
     request.onsuccess = () => resolve();
   });
 }

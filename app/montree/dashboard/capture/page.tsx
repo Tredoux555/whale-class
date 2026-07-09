@@ -330,7 +330,14 @@ function CaptureContent() {
       // This catch used to blanket-label EVERY enqueue failure (IndexedDB
       // unavailable, storage quota, private browsing...) as "Photo queue full",
       // which sent debugging in the wrong direction. Surface the real error.
-      const msg = err instanceof Error ? err.message : String(err);
+      // Guard against a bare null/undefined/object err rendering as the literal
+      // string "null"/"undefined"/"[object Object]" in the toast. queue-store.ts
+      // now always rejects a real Error with a useful message, so this fallback
+      // should rarely fire — but it must never surface raw "null" again.
+      const rawMsg = err instanceof Error ? err.message : (err == null ? '' : String(err));
+      const msg = rawMsg && rawMsg !== 'null' && rawMsg !== 'undefined' && rawMsg !== '[object Object]'
+        ? rawMsg
+        : 'Unknown error — please try again or check device storage';
       if (/queue is full/i.test(msg)) {
         toast.error(t('offline.queueFull') || 'Photo queue full', { duration: 5000 });
       } else {
