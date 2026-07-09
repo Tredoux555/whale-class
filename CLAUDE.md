@@ -1,5 +1,30 @@
 # Whale-Class / Montree - Developer Brain
 
+## 🩹 SESSION — Jul 9, 2026 (Evening) — PHOTO QUEUE ERROR HANDLING + AI-TIER DISPLAY CONSISTENCY
+
+**Canonical handoff: `docs/handoffs/SESSION_PHOTO_QUEUE_AND_AI_TIER_JUL9.md`.**
+
+- **🩹 iOS Safari photo capture crash (`af035fd9`).** Teachers on iPad/iPhone saw "Photo could not be saved: null" toast — WebKit quirk where IndexedDB errors can be bare `null` instead of `DOMException`. Extracted `normalizeIDBError()` helper in `lib/montree/offline/queue-store.ts`, replaced ~14 rejection sites, hardened capture-page catch. Error now surfaces real diagnostic message. No retry logic or queue-full handling changed.
+- **🎛 AI tier display drift resolved (`af035fd9`).** Super-admin schools list + Mira's health tool were hand-rolling tier derivation and skipping the trial_ends_at branch, showing "Free"/"Haiku" for schools actually getting Sonnet. Extracted `deriveTier()` pure function in `resolve-model.ts`, both surfaces now use it — single source of truth for all AI-tier display + diagnostics across the app.
+- **🚨 Data action: all 12 existing schools (as of Jul 9) received permanent Sonnet override** via `montree_school_features` upsert (`ai_tier_sonnet=true`, `ai_tier_haiku=true`, `monthly_ai_budget_usd=9999`). **CRITICAL:** this does NOT change pricing for NEW schools going forward — fresh signups still get 7-day trial → auto-revert to free on expiry, per locked Jul-6 design. Only these 12 test/review accounts got the flag. Commit live-verified on Railway; both issues resolved.
+
+---
+
+## SESSION — Jul 9, 2026 (Evening) — FOUNDING 100 BATCH 1: 25 EMAILS SENT + GLOBAL OUTREACH FRAMEWORK LOCKED
+
+**Canonical handoff: `docs/handoffs/SESSION_FOUNDING_100_BATCH1_JUL9.md` + `docs/outreach/GLOBAL_OUTREACH_STATUS_JUL9.md` + `docs/outreach/GLOBAL_OUTREACH_CONTEXT_REFERENCE.md`.**
+
+- **25 emails sent** to schools across 8 countries (AU 4, CA 1, FR 3, DE 1, IN 2, IE 1, IT 2, US 6)
+- **Campaign:** Founding 100 lifetime discount (7USD/student → 3USD/student for life)
+- **Subject:** "Montree - Montessori" (typos fixed: "to to" → "to", "most lightly" → "most likely")
+- **Responses:** 0 real replies, 3 auto-OOO (Antioch until Jul 20, Towles until Jul 12, Azalea summer slower)
+- **Deliverability:** 100% clean, zero bounces
+- **Global pool remaining:** 3,045 schools eligible for Batch 2+ (zero cross-pollination with Facebook social outreach)
+- **Framework locked:** Master data (7,366 schools), social data (3,263), selection algorithm, standing rules documented
+- **Next:** Follow-ups Jul 13/16/20 per out-of-office dates + 7-day rule; Batch 2 ready to generate on approval
+
+---
+
 ## Project Overview
 Next.js 16.1.1 app with two systems:
 - **Whale Class** (`/admin/*`) - Admin tools (card generators, description review, etc.)
