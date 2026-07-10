@@ -1,0 +1,516 @@
+{
+  "week": 18,
+  "level": 1,
+  "sound": "l",
+  "letterDisplay": "Ll",
+  "soundType": "consonant",
+  "anchorWord": "bug",
+  "newWords": [
+    "leg",
+    "log",
+    "lap",
+    "lip"
+  ],
+  "reviewBank": [
+    "at",
+    "am",
+    "mat",
+    "cat",
+    "sat",
+    "Sam",
+    "an",
+    "ant",
+    "can",
+    "man",
+    "tan",
+    "pat",
+    "nap",
+    "map",
+    "cap",
+    "pan",
+    "it",
+    "in",
+    "sit",
+    "pin",
+    "tip",
+    "hat",
+    "hit",
+    "ham",
+    "him",
+    "dad",
+    "sad",
+    "did",
+    "mad",
+    "not",
+    "top",
+    "pot",
+    "hot",
+    "mop",
+    "hop",
+    "cot",
+    "dot",
+    "dog",
+    "got",
+    "dig",
+    "pig",
+    "gas",
+    "tag",
+    "gap",
+    "hog",
+    "big",
+    "bat",
+    "bag",
+    "bad",
+    "bit",
+    "bib",
+    "tab",
+    "cab",
+    "ban",
+    "pet",
+    "ten",
+    "hen",
+    "bed",
+    "net",
+    "get",
+    "men",
+    "set",
+    "peg",
+    "den",
+    "pen",
+    "rat",
+    "red",
+    "rip",
+    "ram",
+    "rag",
+    "rot",
+    "rim",
+    "ran",
+    "rid",
+    "up",
+    "sun",
+    "run",
+    "cup",
+    "but",
+    "mud",
+    "hut",
+    "nut",
+    "gum",
+    "bus",
+    "tub",
+    "pup",
+    "cut",
+    "fun",
+    "fan",
+    "fat",
+    "fin",
+    "fed",
+    "fog",
+    "fit",
+    "fig"
+  ],
+  "glue": {
+    "new": [],
+    "known": [
+      "the",
+      "is",
+      "on",
+      "I",
+      "and"
+    ]
+  },
+  "oralWords": [
+    "what",
+    "where"
+  ],
+  "sentenceFrame": "The bug is on the log.",
+  "soundBasket": [
+    "lion",
+    "leaf",
+    "lamp",
+    "ladder",
+    "lemon",
+    "lizard",
+    "lock",
+    "lollipop"
+  ],
+  "cast": {
+    "introduces": "Bug",
+    "present": [
+      "Segina",
+      "Sam",
+      "Cat",
+      "Ant",
+      "Dog",
+      "Rat",
+      "Pup"
+    ]
+  },
+  "celebration": "BUG JOINS — b-u-g is now fully decodable, so the class can READ their newest cast member's name",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "L-L-Log!",
+      "lyrics": "[Intro]\nL! L! L-l-l!\n(lll… lll… lll…)\n\n[Hook]\nL! L! L-l-l!\nWhat begins with L?\nL-l-lion! L-l-lion!\nIt's a lion! (a lion!)\n\n[Verse 2]\nL! L! L-l-l!\nWhat begins with L?\nL-l-leaf! L-l-leaf!\nIt's a leaf! (a leaf!)\n\n[Verse 3]\nL! L! L-l-l!\nWhat begins with L?\nL-l-lamp! L-l-lamp!\nIt's a lamp! (a lamp!)\n\n[Verse 4]\nL! L! L-l-l!\nWhat begins with L?\nL-l-lemon! L-l-lemon!\nIt's a lemon! (a lemon!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not L!\n(lll… lll… lll…)\n\n[Outro]\nL-l-log! On the log!\nL-l-log! (The bug is on the log!)\nL! L! L-l-l!",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "The L sound is a light /l/ — tongue TIP lightly touching the ridge just behind the top teeth, voice on. NEVER 'el' (letter name), NEVER 'luh' (schwa), and NEVER let it collapse into /w/ or /r/ (a common swap for these children — keep the tongue tip up and forward). The '(lll…)' drone is a clear held light-l. Answer 'It's a ___!' reuses the Week 1 frame; the outro hands off to the bug on the log."
+    },
+    {
+      "role": "word",
+      "title": "The Bug on the Log",
+      "lyrics": "[Intro]\n(on the log… on the log…)\n\n[Hook]\nThe bug is on the log!\nThe bug is on the log!\nWho is on the log?\nThe bug is on the log!\n\n[Verse 2]\nThe cat is on the log!\nThe cat is on the log!\nWho is on the log?\nThe cat is on the log!\n\n[Verse 3]\nThe dog is on the log!\nThe pup is on the log!\nThe rat is on the log!\nA lot on the log!\n\n[Verse 4 — the flip]\nThe bug is on the log…\nThe LOG is on the bug?!\n(oh no! the log!)\nGet up, bug! Get up!\n\n[Outro]\nOn the log… a potato!\n(PO-TA-TO!)\nThe bug is on the log!",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "ONE frame: 'The ___ is on the log!' — this is the sibling of Week 4's 'The cat is on the mat', so it decodes clean and the class reads it cold. The whole cast piles onto the log, then verse 4 does the mat-on-cat flip (the log rolls onto the bug). Bug just joined and the class can now READ b-u-g. Potato once, loud."
+    }
+  ],
+  "book": {
+    "title": "The Bug on the Log",
+    "readAloud": false,
+    "spreads": [
+      {
+        "n": 1,
+        "text": "A log.",
+        "image": "log",
+        "artNote": "A single mossy log lying alone under the spotlight — the new stage, echoing the Week 4 mat."
+      },
+      {
+        "n": 2,
+        "text": "A bug!",
+        "image": "bug",
+        "artNote": "A round friendly beetle-bug, big eyes, waving a little leg. Bug joins the cast — and the class can READ his name, b-u-g. Celebrate it."
+      },
+      {
+        "n": 3,
+        "text": "The bug is on the log.",
+        "image": "bug-on-log",
+        "artNote": "The bug perched proudly dead-center on the log. The clean, triumphant sentence — sibling to 'the cat is on the mat'."
+      },
+      {
+        "n": 4,
+        "text": "The bug sat on the log.",
+        "image": "bug-sitting-log",
+        "artNote": "The bug settled comfortably, tiny legs crossed, content. Repetition with a new pose."
+      },
+      {
+        "n": 5,
+        "text": "The bug ran on the log!",
+        "image": "bug-running-log",
+        "artNote": "The bug scampering along the length of the log, motion lines, gleeful."
+      },
+      {
+        "n": 6,
+        "text": "The cat is on the log!",
+        "image": "cat-on-log",
+        "artNote": "The Cat has climbed onto the log beside the tiny bug. The pile-on begins. Cast callback."
+      },
+      {
+        "n": 7,
+        "text": "The dog is on the log! The pup is on the log!",
+        "image": "dog-pup-on-log",
+        "artNote": "The Dog and the Pup clambering on too, the log getting crowded, the bug wedged among them, wide-eyed."
+      },
+      {
+        "n": 8,
+        "text": "On the log! On the log!",
+        "image": "crowded-log",
+        "artNote": "THE PARTY: the whole cast — bug, cat, dog, pup, rat, ant — balanced precariously on the one log, tipping. Chaos and joy."
+      },
+      {
+        "n": 9,
+        "text": "The log is on the bug! Get up, bug!",
+        "image": "log-on-bug",
+        "artNote": "THE FLIP (echoing mat-on-cat): the log has rolled and now sits ON the little bug, six tiny legs sticking out underneath, wiggling. The class reads the flip themselves."
+      },
+      {
+        "n": 10,
+        "text": "The bug got up! …On the log…?!",
+        "image": "potato-on-log",
+        "artNote": "The potato sits calmly on the log with its round glasses, the freed bug perched on top of the potato. No noun printed — the class SHOUTS it. The bug stands triumphant beside the log it just lifted — and the potato is sitting on the log."
+      }
+    ],
+    "backCoverWords": [
+      "bug",
+      "log",
+      "leg",
+      "lip",
+      "lap",
+      "cat",
+      "dog",
+      "pup"
+    ]
+  },
+  "materials": {
+    "threePartCards": [
+      "lion",
+      "leaf",
+      "lamp",
+      "ladder",
+      "lemon",
+      "lizard",
+      "lock",
+      "lollipop"
+    ],
+    "sentences": [
+      "The bug is on the log.",
+      "The bug sat on the log.",
+      "The cat is on the log.",
+      "The log is on the bug!"
+    ],
+    "matching": [
+      "bug",
+      "lion",
+      "leaf",
+      "lamp",
+      "lemon",
+      "log"
+    ],
+    "bingoPool": [
+      "bug",
+      "log",
+      "leg",
+      "lion",
+      "leaf",
+      "lamp",
+      "lemon",
+      "lizard",
+      "lip",
+      "lap",
+      "dog",
+      "potato"
+    ],
+    "tracing": {
+      "letter": "l",
+      "words": [
+        "log",
+        "leg",
+        "lip"
+      ]
+    },
+    "coloring": [
+      "bug",
+      "lion",
+      "leaf"
+    ],
+    "dictionary": [
+      "leg",
+      "log",
+      "lap",
+      "lip",
+      "bug",
+      "lid"
+    ],
+    "extras": [
+      "🎉 Read the bug's name: b-u-g is now fully decodable — the class READS their newest cast member into the story (all his sounds are taught). Welcome-the-Bug circle",
+      "Moveable alphabet: build l-o-g, l-e-g, l-a-p, l-i-p, and b-u-g — then flip 'The bug is on the log' from 'The log is on the bug'",
+      "Sandpaper letter l: tongue TIP up to the ridge, light and clear — guard against the /w/ and /r/ swap; contrast lip/rip, log/dog, lap/rap",
+      "Callback build: set out 'The bug is on the log' beside Week 4's 'The cat is on the mat' — the class sees the same machine with new words"
+    ]
+  },
+  "assets": [
+    {
+      "file": "log.png",
+      "usedBy": [
+        "book:1",
+        "bingo"
+      ],
+      "mjPrompt": "a single mossy fallen log lying alone, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "bug.png",
+      "usedBy": [
+        "book:2",
+        "cards",
+        "bingo",
+        "matching",
+        "coloring"
+      ],
+      "mjPrompt": "a round friendly beetle bug with big eyes waving a little leg, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "bug-on-log.png",
+      "usedBy": [
+        "book:3"
+      ],
+      "mjPrompt": "a round friendly bug perched proudly in the center of a mossy log, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "bug-sitting-log.png",
+      "usedBy": [
+        "book:4"
+      ],
+      "mjPrompt": "a round friendly bug settled comfortably on a mossy log with tiny legs crossed, content, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "bug-running-log.png",
+      "usedBy": [
+        "book:5"
+      ],
+      "mjPrompt": "a round friendly bug scampering along the length of a mossy log with motion lines, gleeful, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "cat-on-log.png",
+      "usedBy": [
+        "book:6"
+      ],
+      "mjPrompt": "a tabby cat climbing onto a mossy log beside a tiny bug, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "dog-pup-on-log.png",
+      "usedBy": [
+        "book:7"
+      ],
+      "mjPrompt": "a scruffy dog and a small puppy clambering onto a crowded mossy log with a wide-eyed bug wedged between them, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "crowded-log.png",
+      "usedBy": [
+        "book:8"
+      ],
+      "mjPrompt": "a bug, a cat, a dog, a puppy, a red rat and an ant all balanced precariously on one tipping mossy log, joyful chaos, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "log-on-bug.png",
+      "usedBy": [
+        "book:9"
+      ],
+      "mjPrompt": "a mossy log rolled over and resting on top of a small bug, six tiny legs sticking out underneath and wiggling, comic, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "potato-on-log.png",
+      "usedBy": [
+        "book:10"
+      ],
+      "mjPrompt": "a single raw potato wearing tiny round glasses sitting calmly on a mossy log with a small freed bug perched on top of the potato, spotlit, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "lion.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching",
+        "coloring"
+      ],
+      "mjPrompt": "a small friendly lion with a fluffy mane sitting, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "leaf.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching",
+        "coloring"
+      ],
+      "mjPrompt": "a single green leaf, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "lamp.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching"
+      ],
+      "mjPrompt": "a small table lamp with a shade, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "ladder.png",
+      "usedBy": [
+        "cards",
+        "basket"
+      ],
+      "mjPrompt": "a small wooden step ladder, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "lemon.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching"
+      ],
+      "mjPrompt": "a single bright yellow lemon, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "lizard.png",
+      "usedBy": [
+        "cards",
+        "bingo"
+      ],
+      "mjPrompt": "a small green lizard, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "lock.png",
+      "usedBy": [
+        "cards",
+        "basket"
+      ],
+      "mjPrompt": "a brass padlock, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "lollipop.png",
+      "usedBy": [
+        "cards",
+        "basket"
+      ],
+      "mjPrompt": "a round swirled lollipop on a stick, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "leg.png",
+      "usedBy": [
+        "bingo"
+      ],
+      "mjPrompt": "a single boot on a leg to illustrate the word leg, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "lip.png",
+      "usedBy": [
+        "bingo"
+      ],
+      "mjPrompt": "a close-up of a smiling pair of lips to illustrate the word lip, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "lap.png",
+      "usedBy": [
+        "bingo"
+      ],
+      "mjPrompt": "a seated child's lap with hands resting on it to illustrate the word lap, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "dog.png",
+      "usedBy": [
+        "bingo"
+      ],
+      "mjPrompt": "a scruffy friendly small dog sitting and looking forward, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "potato.png",
+      "usedBy": [
+        "bingo"
+      ],
+      "mjPrompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "bug-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a round happy bug on a log, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "lion-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a friendly lion with a big mane, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "leaf-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a single leaf with veins, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    }
+  ],
+  "teacherFocus": "Teach the light /l/ — tongue TIP up to the ridge behind the top teeth, clear and forward — and guard hard against the /w/ and /r/ swaps these children reach for (contrast lip/rip, log/dog, lap/rap). Then celebrate: b-u-g is now fully decodable, so the class READS their newest cast member into the story. The book is the deliberate sibling of Week 4's 'The cat is on the mat' — same machine, new words, the whole cast piling onto the log and the log flipping onto the bug. Set the two sentences side by side so the children feel how far they have come.",
+  "lessonMapEquivalents": [
+    24
+  ]
+}

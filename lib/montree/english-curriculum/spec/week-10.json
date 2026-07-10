@@ -1,0 +1,88 @@
+{
+  "week": 10,
+  "level": 1,
+  "sound": "d",
+  "letterDisplay": "Dd",
+  "soundType": "consonant",
+  "anchorWord": "dad",
+  "newWords": ["dad", "and", "sad", "did"],
+  "reviewBank": ["a", "at", "am", "mat", "cat", "sat", "Sam", "an", "ant", "can", "man", "pat", "nap", "map", "tap", "cap", "pan", "it", "in", "sit", "pin", "tin", "hat", "hit", "ham", "him", "mad", "dip", "dim", "pad", "dam"],
+  "glue": { "new": [], "known": ["the", "is", "on", "I"] },
+  "oralWords": ["what", "where"],
+  "sentenceFrame": "Dad and the ___.",
+  "soundBasket": ["dinosaur", "doll", "drum", "door", "desk", "donut", "dolphin", "deer"],
+  "cast": { "introduces": "Dad", "present": ["Segina", "Sam", "Cat", "Ant"] },
+  "celebration": "'AND' IS NOW DECODABLE — a-n-d. The connector word that joins two things together — read it yourself, no longer just heard.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "D-D-Dad",
+      "lyrics": "[Intro — whispered]\nD! D! D-d-dad!\n(d… d… d…)\n\n[Hook]\nD! D! D-d-d!\nWhat begins with D?\nD-d-doll! D-d-doll!\nIt's a doll! (a doll!)\n\n[Verse 2]\nD! D! D-d-d!\nWhat begins with D?\nD-d-dinosaur! D-d-dinosaur!\nIt's a dinosaur! (a dinosaur!)\n\n[Verse 3]\nD! D! D-d-d!\nWhat begins with D?\nD-d-drum! D-d-drum!\nIt's a drum! (a drum!)\n\n[Verse 4]\nD! D! D-d-d!\nWhat begins with D?\nD-d-door! D-d-door!\nIt's a door! (a door!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not D!\n(d… d… d…)\n\n[Outro]\nD-d-doll! D-d-doll!\nIt's a doll! (a doll!)\nD! D! D-d-dad!",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "The D sound is a voiced tongue-tap /d/ behind the top teeth — quick and voiced, NEVER 'dee' (letter name) and NEVER 'duh' (schwa). The 'D-d-dad!' chant is a short bounced tap on the beat. Answer line 'It's a ___!' reuses the Week 1 frame."
+    },
+    {
+      "role": "word",
+      "title": "Dad and the Ant",
+      "lyrics": "[Intro — whispered]\n(dad… and… dad and…)\n\n[Hook]\nDad and Sam! Dad and Sam!\nDad AND Sam!\nDad and the cat! (and the cat!)\nDad and the ant!\n\n[Verse 2]\nSam and the ant! Sam and the ant!\nSam AND the ant!\nThe cat and the ant! (and the ant!)\nAll on the mat!\n\n[Bridge]\nDad is sad. (why is Dad sad?)\nDad can not find the ant!\nSam did it! Sam did it!\nThe ant is on Dad's hat!\n\n[Outro]\nDad and Sam and the cat and the ant.\n(AND, AND, AND — you can read it!)\nDad and a POTATO?!\n(PO-TA-TO!)",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "🎉 The whole song CELEBRATES the newly-decodable 'and' — the word that joins two things. One frame: '___ and the ___.' The chant piles up 'and, and, and' so the class feels the connector working. Meet Dad (the tall peg-doll man). Kids choir answers the echoes; whisper the outro, then the potato hits loud."
+    }
+  ],
+  "book": {
+    "title": "Dad and the Ant",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "Dad.", "image": "dad", "artNote": "Dad's entrance — a tall wooden peg-doll man with a painted brown beard and a green cap, warm and kindly, spotlit. The biggest member of the cast meets the smallest." },
+      { "n": 2, "text": "Dad and Sam.", "image": "dad-and-sam", "artNote": "Dad standing beside Sam the peg-doll boy, a hand on his shoulder — the new word 'and' joins two people. Read it aloud: and." },
+      { "n": 3, "text": "Dad and the cat.", "image": "dad-and-cat", "artNote": "Dad crouching to greet the tabby cat, both looking at each other. 'and' joins again." },
+      { "n": 4, "text": "Dad and the ant!", "image": "dad-and-ant", "artNote": "Dad, enormous, squinting down through his fingers at the tiny ant on his fingertip — scale gag. He can barely see it." },
+      { "n": 5, "text": "Sam and the ant sat.", "image": "sam-and-ant", "artNote": "Sam sits with the tiny ant on his knee, the two smallest becoming friends while Dad looks on." },
+      { "n": 6, "text": "Dad is sad.", "image": "dad-sad", "artNote": "Dad looking down glumly at his empty hand — the ant has gone missing. Gentle worry, not scary." },
+      { "n": 7, "text": "Sam did it! The ant is on Dad!", "image": "dad-sam-find", "artNote": "Sam points up triumphantly — the ant is sitting calmly on the brim of Dad's cap the whole time. Relief and giggles. 'did' anchored." },
+      { "n": 8, "text": "Dad and Sam and the cat and the ant.", "image": "all-and-mat", "artNote": "The whole cast together on the mat — Dad, Sam, Segina, the cat, the ant — a family portrait. 'and, and, and' strung across the page in gold." },
+      { "n": 9, "text": "Dad and a...?!", "image": "potato-dad", "artNote": "The potato has joined the family line-up beside Dad, deadpan, wearing a tiny green cap to match. The gag noun is left blank — the class SHOUTS 'POTATO' from the picture." }
+    ],
+    "backCoverWords": ["dad", "and", "sad", "did", "Sam", "the", "cat", "ant"]
+  },
+  "materials": {
+    "threePartCards": ["dinosaur", "doll", "drum", "door", "desk", "donut", "dolphin", "deer"],
+    "sentences": ["Dad and Sam sat on the mat.", "Dad and the ant.", "Dad is sad. Sam did it!", "The cat and the ant sat."],
+    "matching": ["dinosaur", "doll", "drum", "door", "desk", "donut"],
+    "bingoPool": ["dinosaur", "doll", "drum", "door", "desk", "donut", "dolphin", "deer", "dad", "cat", "ant", "hat", "pig", "potato"],
+    "tracing": { "letter": "d", "words": ["dad", "and", "sad", "did"] },
+    "coloring": ["dinosaur", "doll", "drum"],
+    "dictionary": ["dad", "and", "sad", "did"],
+    "extras": ["🎉 'AND' celebration card: a-n-d built in the moveable alphabet, then used to join two picture cards ('cat AND ant') — the connector the class can now READ", "Moveable alphabet: build d-a-d, a-n-d, s-a-d, d-i-d, m-a-d, d-i-p", "Sandpaper letter 'd' + sand tray — voiced tongue-tap /d/ (watch b/d comes later)", "/d/ sound basket + 8 sound cards", "Dad wooden peg-doll man added to the cast basket"]
+  },
+  "assets": [
+    { "file": "dad.png", "usedBy": ["book:1"], "mjPrompt": "a tall wooden peg doll man with a painted brown beard and a green cap, warm and kindly, standing, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "dad-and-sam.png", "usedBy": ["book:2"], "mjPrompt": "a tall wooden peg doll man with a brown beard and green cap standing beside a small wooden peg doll boy in blue dungarees, a hand on his shoulder, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "dad-and-cat.png", "usedBy": ["book:3"], "mjPrompt": "a tall wooden peg doll man with a brown beard and green cap crouching to greet a tabby cat, both facing each other, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "dad-and-ant.png", "usedBy": ["book:4"], "mjPrompt": "a tall wooden peg doll man squinting down through his fingers at a tiny shiny black ant balanced on his fingertip, dramatic scale contrast, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sam-and-ant.png", "usedBy": ["book:5"], "mjPrompt": "a small wooden peg doll boy in blue dungarees sitting with a tiny shiny black ant on his knee, becoming friends, a peg doll man watching kindly behind, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "dad-sad.png", "usedBy": ["book:6"], "mjPrompt": "a tall wooden peg doll man with a brown beard and green cap looking down glumly at his empty open hand, gentle worry, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "dad-sam-find.png", "usedBy": ["book:7"], "mjPrompt": "a small wooden peg doll boy in blue dungarees pointing up triumphantly at a tiny black ant sitting calmly on the brim of a peg doll man's green cap, relief and giggles, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "all-and-mat.png", "usedBy": ["book:8"], "mjPrompt": "a family portrait on a woven mat of a tall peg doll man in a green cap, a peg doll boy in blue dungarees, a peg doll girl in a red dress, a tabby cat and a tiny black ant all together, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-dad.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato wearing a tiny green cap standing in a family line-up beside a tall peg doll man with a green cap, deadpan, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "dinosaur.png", "usedBy": ["cards", "bingo", "matching", "basket"], "mjPrompt": "a friendly green toy dinosaur standing, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "doll.png", "usedBy": ["cards", "bingo", "matching", "basket"], "mjPrompt": "a simple rag doll, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "drum.png", "usedBy": ["cards", "bingo", "matching", "basket"], "mjPrompt": "a small toy drum with drumsticks, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "door.png", "usedBy": ["cards", "bingo", "matching", "basket"], "mjPrompt": "a small wooden door with a round handle, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "desk.png", "usedBy": ["cards", "bingo", "matching", "basket"], "mjPrompt": "a small wooden school desk, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "donut.png", "usedBy": ["cards", "bingo", "matching", "basket"], "mjPrompt": "a pink-frosted donut with sprinkles, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "dolphin.png", "usedBy": ["cards", "bingo", "basket"], "mjPrompt": "a leaping grey dolphin, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "deer.png", "usedBy": ["cards", "bingo", "basket"], "mjPrompt": "a gentle young deer standing, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cat.png", "usedBy": ["bingo"], "mjPrompt": "REUSED FROM WEEK 4 — a curious tabby cat sitting and looking forward, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "ant.png", "usedBy": ["bingo"], "mjPrompt": "REUSED FROM WEEK 6 — a small shiny black ant standing upright with a proud posture, macro photograph, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "hat.png", "usedBy": ["bingo"], "mjPrompt": "REUSED FROM WEEK 9 — a single handsome little felt hat alone, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "pig.png", "usedBy": ["bingo"], "mjPrompt": "REUSED FROM WEEK 7 — a small pink pig standing, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato.png", "usedBy": ["bingo"], "mjPrompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "dinosaur-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a friendly cartoon dinosaur, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "doll-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a simple rag doll, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "drum-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a toy drum with drumsticks, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "🎉 The connector unlocks: 'and' becomes decodable this week (a-n-d) — the little word that joins two things. Celebrate it: build it in the moveable alphabet, then use it to link two picture cards ('cat AND ant') and let the class READ the join, not just hear it. Teach the voiced tongue-tap /d/, never 'duh'. Blend d-a-d, s-a-d, d-i-d and meet Dad — the tall peg-doll man, the biggest of the cast, whose gentle story with the tiniest ant strings 'and, and, and' across every page.",
+  "lessonMapEquivalents": [12]
+}

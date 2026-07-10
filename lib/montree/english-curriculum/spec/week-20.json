@@ -1,0 +1,395 @@
+{
+  "week": 20,
+  "level": 1,
+  "sound": "j",
+  "letterDisplay": "Jj",
+  "soundType": "consonant",
+  "anchorWord": "jam",
+  "newWords": [
+    "jam",
+    "jet",
+    "jug",
+    "jog"
+  ],
+  "reviewBank": [
+    "jab",
+    "jig",
+    "job",
+    "jot",
+    "cat",
+    "dog",
+    "rat",
+    "bug",
+    "web",
+    "wig",
+    "sun",
+    "cup",
+    "nut",
+    "fig",
+    "log",
+    "leg",
+    "big",
+    "run",
+    "mat",
+    "hot",
+    "mud",
+    "wet"
+  ],
+  "glue": {
+    "new": [],
+    "known": [
+      "the",
+      "is",
+      "I",
+      "and",
+      "on"
+    ]
+  },
+  "oralWords": [
+    "what",
+    "where",
+    "your"
+  ],
+  "sentenceFrame": "Jam on the ___!",
+  "soundBasket": [
+    "jam",
+    "jug",
+    "jet",
+    "jar",
+    "jeep",
+    "juice",
+    "jacket",
+    "jellyfish"
+  ],
+  "cast": {
+    "introduces": null,
+    "present": [
+      "Segina",
+      "Sam",
+      "Cat",
+      "Ant",
+      "Dog",
+      "Rat",
+      "Bug"
+    ]
+  },
+  "celebration": null,
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "J-J-Jam",
+      "lyrics": "[Intro — whispered]\nj… j… j…\n(soft, quick — not 'juh')\n\n[Hook 1 — kids chant]\nJ! J! J-j-j!\nWhat begins with J?\nJ-j-jam! J-j-jam!\nIt's jam! (it's jam!)\n\n[Hook 2 — kids chant]\nJ! J! J-j-j!\nWhat begins with J?\nJ-j-jug! J-j-jug!\nIt's a jug! (a jug!)\n\n[Hook 3 — kids chant]\nJ! J! J-j-j!\nWhat begins with J?\nJ-j-jet! J-j-jet!\nIt's a jet! (a jet!)\n\n[Breakdown — whispered, bass drops out]\nj… j… j…\nj-j-jar… j-j-jeep… j-j-juice…\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not J!\n(j… j… j…)\n\n[Final Hook — big]\nJ! J! J-j-j!\nJ-j-jacket! J-j-jacket!\nIt's a jacket, jacket, jacket!",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "The J sound is a soft quick affricate /j/ as in 'jam' — a light 'dzh' snapped short, NEVER 'jay' (letter name) and NEVER 'juh' (dragged schwa). The '(j… j… j…)' clicks are crisp and brief on the hat. Answer line 'It's a ___!' reuses the Week 1 frame."
+    },
+    {
+      "role": "word",
+      "title": "Jam in the Jug",
+      "lyrics": "[Intro]\n(sticky… sticky…)\n\n[Hook]\nJam in the jug! Jam in the jug!\nWhere is the jam? (where? where?)\nJam on the cat!\n\n[Verse 2]\nJam in the jug! Jam in the jug!\nWhere is the jam? (where? where?)\nJam on the dog!\n\n[Verse 3]\nJam in the jug! Jam in the jug!\nWhere is the jam? (where? where?)\nJam on the rat!\n\n[Verse 4]\nJam in the jug! Jam in the jug!\nWhere is the jam? (where? where?)\nJam on Sam!\n\n[Outro]\nJam on the potato!\n(PO-TA-TO!)\nJam in the jug…\n(sticky… shhh…)",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "One frame: 'Jam on the ___!' — the target swaps per verse (cat → dog → rat → Sam → potato). The 'Jam in the jug' hook is the anchor line, constant. Kids choir answers the (where? where?) echoes. Sticky, slow, playful."
+    }
+  ],
+  "book": {
+    "title": "Jam in the Jug",
+    "readAloud": false,
+    "spreads": [
+      {
+        "n": 1,
+        "text": "A jug.",
+        "image": "jug",
+        "artNote": "A round ceramic jug alone under the spotlight, lid off, waiting. Something is about to go wrong."
+      },
+      {
+        "n": 2,
+        "text": "Jam in the jug!",
+        "image": "jam-in-jug",
+        "artNote": "Thick red jam oozing up and over the rim of the jug, spilling down the sides. Glorious mess incoming."
+      },
+      {
+        "n": 3,
+        "text": "Jam on the cat!",
+        "image": "jam-on-cat",
+        "artNote": "The Cat (tabby) with a splat of red jam across its face, licking one paw, offended and delighted at once."
+      },
+      {
+        "n": 4,
+        "text": "Jam on the dog!",
+        "image": "jam-on-dog",
+        "artNote": "The Dog (brown) with jam all over its snout and ears, tail wagging, thrilled."
+      },
+      {
+        "n": 5,
+        "text": "Jam on the rat!",
+        "image": "jam-on-rat",
+        "artNote": "The Rat (grey) sitting IN a puddle of jam, whiskers dripping, tiny and outraged."
+      },
+      {
+        "n": 6,
+        "text": "Jam on Sam!",
+        "image": "jam-on-sam",
+        "artNote": "Sam the peg-doll boy with a handprint of jam on his red shirt, holding the sticky spoon, guilty grin."
+      },
+      {
+        "n": 7,
+        "text": "A jet! In the jam?!",
+        "image": "jet-in-jam",
+        "artNote": "A little toy jet plane nose-down and stuck in a pool of jam, wings sticking up. Absurd."
+      },
+      {
+        "n": 8,
+        "text": "Jog, Sam, jog!",
+        "image": "sam-jog",
+        "artNote": "Sam mid-run, jam footprints trailing behind him across the floor, fleeing the sticky scene."
+      },
+      {
+        "n": 9,
+        "text": "On the jam?!",
+        "image": "potato-in-jam",
+        "artNote": "The potato, spotlit, sitting proudly in the middle of a big red pool of jam. No noun printed — the class SHOUTS the word from the picture."
+      }
+    ],
+    "backCoverWords": [
+      "jam",
+      "jet",
+      "jug",
+      "jog",
+      "on",
+      "the",
+      "in",
+      "is"
+    ]
+  },
+  "materials": {
+    "threePartCards": [
+      "jam",
+      "jug",
+      "jet",
+      "jar",
+      "jeep",
+      "jacket",
+      "juice",
+      "jellyfish"
+    ],
+    "sentences": [
+      "Jam is in the jug.",
+      "Jam on the cat!",
+      "The jet is in the jam.",
+      "Jog, Sam, jog!"
+    ],
+    "matching": [
+      "jam",
+      "jug",
+      "jet",
+      "jar",
+      "jeep",
+      "jacket"
+    ],
+    "bingoPool": [
+      "jam",
+      "jug",
+      "jet",
+      "jar",
+      "jeep",
+      "jacket",
+      "juice",
+      "jellyfish",
+      "cat",
+      "dog",
+      "rat",
+      "web",
+      "potato"
+    ],
+    "tracing": {
+      "letter": "j",
+      "words": [
+        "jam",
+        "jet",
+        "jug"
+      ]
+    },
+    "coloring": [
+      "jam",
+      "jug",
+      "jet"
+    ],
+    "dictionary": [
+      "jam",
+      "jet",
+      "jug",
+      "jog"
+    ],
+    "extras": [
+      "Moveable alphabet: build j-a-m, j-e-t, j-u-g, j-o-g — note the tail of j drops below the line",
+      "Real jam tasting: a spoon of jam on toast while sounding out 'jam' — the anchor word you can eat",
+      "Sticky sort: J objects (jam, jug, jet, jar) into the sticky basket, everything else stays out"
+    ]
+  },
+  "assets": [
+    {
+      "file": "jug.png",
+      "usedBy": [
+        "book:1",
+        "cards",
+        "bingo",
+        "matching",
+        "coloring"
+      ],
+      "mjPrompt": "a round ceramic jug with the lid off, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "jam-in-jug.png",
+      "usedBy": [
+        "book:2"
+      ],
+      "mjPrompt": "thick red jam oozing over the rim of a ceramic jug and dripping down the sides, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "jam-on-cat.png",
+      "usedBy": [
+        "book:3"
+      ],
+      "mjPrompt": "a tabby cat with a splat of red jam across its face licking one paw, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "jam-on-dog.png",
+      "usedBy": [
+        "book:4"
+      ],
+      "mjPrompt": "a happy brown dog with red jam smeared over its snout and ears, tail wagging, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "jam-on-rat.png",
+      "usedBy": [
+        "book:5"
+      ],
+      "mjPrompt": "a small grey rat sitting in a puddle of red jam, whiskers dripping, indignant, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "jam-on-sam.png",
+      "usedBy": [
+        "book:6"
+      ],
+      "mjPrompt": "a small wooden peg doll boy in a red shirt with a jam handprint on his front holding a sticky spoon, guilty grin, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "jet-in-jam.png",
+      "usedBy": [
+        "book:7"
+      ],
+      "mjPrompt": "a little toy jet plane nose-down and stuck in a pool of red jam with wings sticking up, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "sam-jog.png",
+      "usedBy": [
+        "book:8"
+      ],
+      "mjPrompt": "a small wooden peg doll boy in a red shirt mid-run leaving a trail of red jam footprints across the floor, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "potato-in-jam.png",
+      "usedBy": [
+        "book:9"
+      ],
+      "mjPrompt": "a single raw potato sitting proudly in the middle of a big red pool of jam, dramatic spotlight, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "jam.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching",
+        "coloring"
+      ],
+      "mjPrompt": "an open jar of thick red jam with a spoon, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "jet.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching",
+        "coloring"
+      ],
+      "mjPrompt": "a sleek little toy jet plane, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "jar.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching"
+      ],
+      "mjPrompt": "a clear glass jar with a lid, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "jeep.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching"
+      ],
+      "mjPrompt": "a small green toy jeep, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "jacket.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching"
+      ],
+      "mjPrompt": "a child's blue jacket on a hanger, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "juice.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "basket"
+      ],
+      "mjPrompt": "a glass of orange juice with a straw, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "jellyfish.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "basket"
+      ],
+      "mjPrompt": "a translucent blue jellyfish floating, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "jam-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a jar of jam with a spoon and a big drip, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "jug-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a round jug with a handle, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "jet-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a friendly little jet plane, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "potato.png",
+      "usedBy": [
+        "bingo"
+      ],
+      "mjPrompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    }
+  ],
+  "teacherFocus": "Introduce /j/ as a soft quick sound (jam), never dragged into 'juh'. Blend j-a-m, j-e-t, j-u-g, j-o-g and notice the tail of j hanging below the line — the first descender letter after g. Taste real jam while sounding the anchor word. The sticky-mess book is pure joy; let them predict who gets jam next.",
+  "lessonMapEquivalents": [
+    25
+  ]
+}

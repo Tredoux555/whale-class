@@ -124,3 +124,12 @@ tsconfig.geomatchtmp.json
 
 # temp scoped tsconfig from Jul-8 Partner Program review-fix verification (sandbox rm blocked — delete via Desktop Commander)
 tsconfig.scopecheck.json
+
+# mvgen (Jul-10): python bytecode from in-sandbox testing (sandbox rm blocked — delete via Desktop Commander)
+scripts/mvgen/__pycache__/
+tsconfig.scope-mvgen.json
+
+# Curriculum Studio (Jul-10): temp scoped tsconfig + esbuild bundle cache (sandbox rm blocked — delete via Desktop Commander)
+tsconfig.scope-curriculum.tmp.json
+tsconfig.scoped.tmp.json
+node_modules/.cache/curriculum-studio/

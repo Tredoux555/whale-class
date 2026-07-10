@@ -1,0 +1,89 @@
+{
+  "week": 15,
+  "level": 1,
+  "sound": "r",
+  "letterDisplay": "Rr",
+  "soundType": "consonant",
+  "anchorWord": "rat",
+  "newWords": ["rat", "red", "rip", "ram"],
+  "reviewBank": ["at", "am", "mat", "cat", "sat", "Sam", "an", "ant", "can", "man", "tan", "pat", "nap", "map", "cap", "pan", "it", "in", "sit", "pin", "tip", "hat", "hit", "ham", "him", "dad", "sad", "did", "mad", "not", "top", "pot", "hot", "mop", "hop", "cot", "dot", "dog", "got", "dig", "pig", "gas", "tag", "gap", "hog", "big", "bat", "bag", "bad", "bit", "bib", "tab", "cab", "ban", "pet", "ten", "hen", "bed", "net", "get", "men", "set", "peg", "den", "pen"],
+  "glue": { "new": [], "known": ["the", "is", "on", "I", "and"] },
+  "oralWords": ["what", "where"],
+  "sentenceFrame": "The red rat.",
+  "soundBasket": ["rabbit", "rocket", "ring", "robot", "rose", "radio", "rope", "ruler"],
+  "cast": { "introduces": "Rat", "present": ["Segina", "Sam", "Cat", "Ant", "Dog"] },
+  "celebration": null,
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "R-R-Rat!",
+      "lyrics": "[Intro]\nR! R! R-r-r!\n(rrr… rrr… rrr…)\n\n[Hook]\nR! R! R-r-r!\nWhat begins with R?\nR-r-rabbit! R-r-rabbit!\nIt's a rabbit! (a rabbit!)\n\n[Verse 2]\nR! R! R-r-r!\nWhat begins with R?\nR-r-rocket! R-r-rocket!\nIt's a rocket! (a rocket!)\n\n[Verse 3]\nR! R! R-r-r!\nWhat begins with R?\nR-r-ring! R-r-ring!\nIt's a ring! (a ring!)\n\n[Verse 4]\nR! R! R-r-r!\nWhat begins with R?\nR-r-robot! R-r-robot!\nIt's a robot! (a robot!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not R!\n(rrr… rrr… rrr…)\n\n[Outro]\nR-r-rat! The red rat!\nR-r-rat! (rip, rip, rip!)\nR! R! R-r-r!",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "🚨 /r/ is the HARDEST sound for Mandarin-L1 children — there is no English /r/ in Mandarin and they reach for /l/ or /w/. Sing it as a long curled American 'rrr' with the tongue tip pulled back and NOT touching anything (never a trilled or tapped r, never 'ar' the letter name, never 'wuh' or 'luh'). The '(rrr… rrr…)' drone is a held growl — the class holds it with the singer. This song is a pronunciation drill disguised as a hook; hold every initial r an extra beat."
+    },
+    {
+      "role": "word",
+      "title": "The Red Rat",
+      "lyrics": "[Intro]\n(rrr… rat… rat…)\n\n[Hook]\nThe red rat! The red rat!\nWhat can the red rat do?\nThe red rat ran! (it ran!)\nThe red rat ran, ran, ran!\n\n[Verse 2]\nThe red rat! The red rat!\nWhat can the red rat do?\nThe red rat sat! (it sat!)\nThe red rat sat, sat, sat!\n\n[Verse 3]\nThe red rat! The red rat!\nWhat can the red rat do?\nThe red rat hid! (it hid!)\nThe red rat hid, hid, hid!\n\n[Verse 4]\nThe cat ran at the rat!\nThe dog ran at the cat!\nRun, rat, run! (run, run, run!)\nThe red rat ran, ran, ran!\n\n[Outro]\nThe red rat got a bag…\nIn the bag… a potato!\n(PO-TA-TO!)\nThe red rat ran, ran, ran!",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "ONE frame: 'The red rat ___!' with a decodable verb swapping (ran, sat, hid). Rat has just joined the cast — this is his debut. The chase in verse 4 stacks the whole cast (cat, dog). 'Run' has the new short u only from Week 16, so it is used only orally here as a shouted chant, never on the printed page. Land the potato once."
+    }
+  ],
+  "book": {
+    "title": "The Red Rat",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "A rat.", "image": "rat", "artNote": "A sleek little rat, bright-eyed, mid-scurry. Rat joins the cast — introduce him as the quick, clever one." },
+      { "n": 2, "text": "A red rat!", "image": "red-rat", "artNote": "The same rat, now in a tiny red coat / red-tinted, striking. The reveal of his colour." },
+      { "n": 3, "text": "The red rat ran.", "image": "rat-running", "artNote": "The red rat streaking across the frame, motion lines, gleeful." },
+      { "n": 4, "text": "The red rat got a bag.", "image": "rat-with-bag", "artNote": "The rat dragging a brown paper bag almost bigger than himself, determined." },
+      { "n": 5, "text": "Rip! Rip! Rip!", "image": "rat-ripping-bag", "artNote": "The rat tearing into the bag, paper shreds flying, delighted." },
+      { "n": 6, "text": "The cat ran at the rat!", "image": "cat-chasing-rat", "artNote": "The Cat bursting into frame after the rat, both mid-run. Cast callback, tension." },
+      { "n": 7, "text": "The red rat hid in the bag.", "image": "rat-in-bag", "artNote": "The rat diving into the bag to hide, only his red tail sticking out." },
+      { "n": 8, "text": "The cat sat on the bag!", "image": "cat-on-bag", "artNote": "The Cat sitting smugly on the lumpy bag, sure it has won. The rat's outline visible inside." },
+      { "n": 9, "text": "In the bag…?!", "image": "potato-and-rat-in-bag", "artNote": "The Cat lifts the bag — out rolls the POTATO (with its glasses) AND the red rat, both blinking. No noun printed — the class SHOUTS it. Rat grins." }
+    ],
+    "backCoverWords": ["rat", "red", "ran", "rip", "bag", "cat", "hid", "got"]
+  },
+  "materials": {
+    "threePartCards": ["rabbit", "rocket", "ring", "robot", "rose", "radio", "rope", "ruler"],
+    "sentences": ["The red rat.", "The red rat ran.", "The rat got a bag.", "The cat ran at the rat."],
+    "matching": ["rat", "rabbit", "rocket", "ring", "rose", "robot"],
+    "bingoPool": ["rat", "red", "rabbit", "rocket", "ring", "robot", "rose", "bag", "cat", "dog", "ran", "potato"],
+    "tracing": { "letter": "r", "words": ["rat", "red", "ran"] },
+    "coloring": ["rat", "rabbit", "rocket"],
+    "dictionary": ["rat", "red", "rip", "ram", "ran", "bag"],
+    "extras": ["🚨 /r/ pronunciation clinic (Mandarin-L1 focus): mirror work — tongue tip curled back and floating, never touching; contrast r/l with rat/lat (nonsense), ray/lay, red/led, rip/lip; hold the initial r a full beat before the vowel", "Moveable alphabet: build r-a-t, r-e-d, r-i-p, r-a-m — then swap the first sound (rat → cat → bat → hat) to feel r take its place in the family", "Rat joins the cast — welcome-the-Rat circle; the quick clever one, add his figure beside the Dog", "Red hunt: sort classroom objects that are red; label the red ones with r-e-d word cards"]
+  },
+  "assets": [
+    { "file": "rat.png", "usedBy": ["book:1", "cards", "bingo", "matching", "coloring"], "mjPrompt": "a sleek bright-eyed little grey rat mid-scurry, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "red-rat.png", "usedBy": ["book:2"], "mjPrompt": "a small rat in a tiny red coat, striking and bright, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "rat-running.png", "usedBy": ["book:3"], "mjPrompt": "a small red rat streaking across the frame with motion blur lines, gleeful, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "rat-with-bag.png", "usedBy": ["book:4"], "mjPrompt": "a small red rat dragging a brown paper bag almost bigger than himself, determined, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "rat-ripping-bag.png", "usedBy": ["book:5"], "mjPrompt": "a small red rat tearing into a paper bag with shreds of paper flying, delighted, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cat-chasing-rat.png", "usedBy": ["book:6"], "mjPrompt": "a tabby cat bursting into frame chasing a small red rat, both mid-run, motion, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "rat-in-bag.png", "usedBy": ["book:7"], "mjPrompt": "a small red rat diving into a paper bag with only his red tail sticking out, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cat-on-bag.png", "usedBy": ["book:8"], "mjPrompt": "a smug tabby cat sitting on a lumpy paper bag, the faint outline of a rat visible inside, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-and-rat-in-bag.png", "usedBy": ["book:9"], "mjPrompt": "a paper bag tipping over as a raw potato wearing tiny round glasses and a grinning red rat roll out together, a tabby cat looking startled, spotlit, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "red.png", "usedBy": ["bingo"], "mjPrompt": "a bright solid red apple to illustrate the colour red, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "rabbit.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a fluffy white rabbit sitting up, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "rocket.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a small red toy rocket, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "ring.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a single gold ring, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "robot.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a small friendly tin toy robot, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "rose.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a single red rose, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "radio.png", "usedBy": ["cards", "basket"], "mjPrompt": "a small vintage portable radio, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "rope.png", "usedBy": ["cards", "basket"], "mjPrompt": "a coiled length of thick rope, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "ruler.png", "usedBy": ["cards", "basket"], "mjPrompt": "a wooden ruler, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bag.png", "usedBy": ["bingo"], "mjPrompt": "a small brown paper bag standing upright, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cat.png", "usedBy": ["bingo"], "mjPrompt": "a curious tabby cat sitting and looking forward, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "dog.png", "usedBy": ["bingo"], "mjPrompt": "a scruffy friendly small dog sitting and looking forward, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "ran.png", "usedBy": ["bingo"], "mjPrompt": "a small red rat running with motion lines to illustrate the word ran, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato.png", "usedBy": ["bingo"], "mjPrompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "rat-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a cheeky little rat holding a bag, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "rabbit-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a fluffy rabbit sitting up, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "rocket-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a zooming rocket with flames, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "Welcome the Rat — the quick, clever one — AND run the year's hardest pronunciation clinic: /r/ does not exist in Mandarin, so the class will reach for /l/ or /w/. Mirror work: tongue tip curled back and FLOATING, never touching, never trilled, never the letter name 'ar'. Drill r/l minimal pairs (red/led, rip/lip, rat/lat) and hold every initial r an extra beat. Blend r-a-t, r-e-d, r-i-p. The red-rat-and-the-bag chase gives the whole cast a run-around and a big potato payoff.",
+  "lessonMapEquivalents": [20]
+}

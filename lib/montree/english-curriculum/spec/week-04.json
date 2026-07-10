@@ -1,0 +1,82 @@
+{
+  "week": 4,
+  "level": 1,
+  "sound": "c",
+  "letterDisplay": "Cc",
+  "soundType": "consonant",
+  "anchorWord": "cat",
+  "newWords": ["cat"],
+  "reviewBank": ["a", "at", "am", "mat", "tam"],
+  "glue": { "new": ["the", "is", "on"], "known": [] },
+  "oralWords": ["what", "where"],
+  "sentenceFrame": "The cat is on the mat.",
+  "soundBasket": ["cat", "cup", "car", "cow", "corn", "candle", "comb", "cap"],
+  "cast": { "introduces": "Cat", "present": ["Segina"] },
+  "celebration": "FIRST DECODABLE BOOK — the whole class reads",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "C-C-Cat!",
+      "lyrics": "[Intro]\nC! C! C-c-c!\n(c… c… c…)\n\n[Hook]\nC! C! C-c-c!\nWhat begins with C?\nC-c-cat! C-c-cat!\nIt's a cat! (a cat!)\n\n[Verse 2]\nC! C! C-c-c!\nWhat begins with C?\nC-c-cup! C-c-cup!\nIt's a cup! (a cup!)\n\n[Verse 3]\nC! C! C-c-c!\nWhat begins with C?\nC-c-car! C-c-car!\nIt's a car! (a car!)\n\n[Verse 4]\nC! C! C-c-c!\nWhat begins with C?\nC-c-cow! C-c-cow!\nIt's a cow! (a cow!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not C!\n(c… c… c…)\n\n[Outro]\nC-c-cat! C-c-cat!\nIt's a cat! (a cat!)\nC! C! C-c-c!",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "The C sound is a crisp unvoiced /k/ click — NEVER 'see' (letter name) and NEVER 'kuh' (schwa). The '(c… c… c…)' lines are dry percussive /k/ clicks riding the hi-hats. Answer line 'It's a ___!' reuses the Week 1 frame."
+    },
+    {
+      "role": "word",
+      "title": "The Cat Is on the Mat",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nThe cat is on the mat!\nThe cat is on the mat!\nWhere is the cat? (where? where?)\nThe cat is on the mat!\n\n[Verse 2]\nThe mat is on the cat?!\nThe mat is on the cat?!\nWhere is the cat? (where? where?)\nThe mat is on the cat!\n\n[Verse 3]\nThe cat is… on the mat?\n(No! Look! Up! Up!)\nWhere is the cat? (where? where?)\nThe cat is UP! (Come down, cat!)\n\n[Outro]\nThe cat is on the mat.\n(shhh… the cat is asleep)\nA potato is on the mat!\n(PO-TA-TO!)",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "This is THE anthem — the first sentence the class can read by themselves. One frame: 'The cat is on the mat.' Verse 2 flips it, verse 3 is the levitating-cat gag from the book. Whisper the outro, then the potato hits loud."
+    }
+  ],
+  "book": {
+    "title": "The Cat Is on the Mat",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "A mat.", "image": "mat", "artNote": "The familiar mat from Week 3, alone under the spotlight. The children already know this stage." },
+      { "n": 2, "text": "A cat.", "image": "cat", "artNote": "The Cat's grand entrance — a real cat regarding the mat with intense interest. Cast member #1 joins." },
+      { "n": 3, "text": "The cat is on the mat.", "image": "cat-on-mat", "artNote": "The cat sits perfectly, proudly centered on the mat. Triumphant." },
+      { "n": 4, "text": "The cat is on the mat.", "image": "cat-on-mat-silly", "artNote": "Same sentence, new pose: the cat upside-down / sprawled ridiculously. Repetition with visual comedy." },
+      { "n": 5, "text": "The cat is… on the mat?", "image": "cat-levitating", "artNote": "THE LEVITATING CAT. The cat floats serenely a foot above the mat. Text stays in frame; the picture carries the joke." },
+      { "n": 6, "text": "The cat is on the mat!", "image": "cat-landing", "artNote": "The cat lands back on the mat, fur slightly ruffled, dignity intact." },
+      { "n": 7, "text": "The mat is on the cat!", "image": "mat-on-cat", "artNote": "The flip: mat draped over the cat like a blanket, tail sticking out. The children READ the flip themselves — first decoding punchline in history." },
+      { "n": 8, "text": "The cat is on the mat.", "image": "cat-asleep", "artNote": "Quiet spread. The cat curled asleep on the mat. Whisper-read this page." },
+      { "n": 9, "text": "On the mat?!", "image": "potato-beside-cat", "artNote": "The potato has appeared on the mat beside the sleeping cat. No noun printed — the class SHOUTS the word from the picture. One cat eye open." }
+    ],
+    "backCoverWords": ["cat", "mat", "at", "am", "the", "is", "on"]
+  },
+  "materials": {
+    "threePartCards": ["cat", "cup", "car", "cow", "cap", "corn", "comb", "candle"],
+    "sentences": ["The cat is on the mat.", "The mat is on the cat.", "A cat is on the mat.", "The cat is at the mat."],
+    "matching": ["cat", "cup", "car", "cow", "mat", "cap"],
+    "bingoPool": ["cat", "cup", "car", "cow", "cap", "corn", "mat", "moon", "mouse", "apple", "ant", "turtle", "tomato", "mask"],
+    "tracing": { "letter": "c", "words": ["cat", "at"] },
+    "coloring": ["cat", "cup", "car"],
+    "dictionary": ["cat", "mat", "at", "am"],
+    "extras": ["Heart-word cards: the, is (taught as sight words; note the th sound orally — never blended)", "Moveable alphabet: build c-a-t, m-a-t, a-t, a-m", "First-book certificate: every child reads the book aloud to Segina"]
+  },
+  "assets": [
+    { "file": "cat.png", "usedBy": ["book:2", "cards", "bingo", "matching"], "mjPrompt": "a curious tabby cat sitting and looking forward, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "mat.png", "usedBy": ["book:1", "bingo", "matching"], "mjPrompt": "a small woven floor mat alone on the floor, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cup.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a simple ceramic cup, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "car.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a small vintage toy car, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cow.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a gentle dairy cow standing, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cap.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a child's baseball cap, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "corn.png", "usedBy": ["cards", "bingo"], "mjPrompt": "one ear of corn with husk partly peeled, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "comb.png", "usedBy": ["cards", "basket"], "mjPrompt": "a simple wooden comb, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "candle.png", "usedBy": ["cards", "basket"], "mjPrompt": "a lit candle in a small holder, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cat-on-mat.png", "usedBy": ["book:3"], "mjPrompt": "a tabby cat sitting perfectly proud and centered on a small woven floor mat, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cat-on-mat-silly.png", "usedBy": ["book:4"], "mjPrompt": "a tabby cat sprawled upside-down on a small woven floor mat, belly up, utterly ridiculous, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cat-levitating.png", "usedBy": ["book:5"], "mjPrompt": "a serene tabby cat floating impossibly in mid-air one foot above a small woven floor mat, eyes closed, zen, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cat-landing.png", "usedBy": ["book:6"], "mjPrompt": "a tabby cat just landed back on a small woven floor mat, fur slightly ruffled, dignified expression, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "mat-on-cat.png", "usedBy": ["book:7"], "mjPrompt": "a small woven floor mat draped over a cat like a blanket, only the tail and one paw sticking out, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cat-asleep.png", "usedBy": ["book:8"], "mjPrompt": "a tabby cat curled up deeply asleep on a small woven floor mat, peaceful, dim gentle spotlight, ultra-realistic photograph, single subject centered, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-beside-cat.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato sitting on a small woven floor mat beside a sleeping tabby cat with one eye just opening, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cat-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a happy cat sitting on a small mat, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "cup-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a simple cup with steam swirls, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "car-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a friendly little car, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "THE WEEK. Teach 'the' and 'is' as heart words (say the th sound orally, never blend it). Blend c-a-t. Then hand them the book and step back — every child reads 'The cat is on the mat.' aloud. Celebrate loudly. This is the moment the year is built around.",
+  "lessonMapEquivalents": [15]
+}
