@@ -80,14 +80,14 @@
       "role": "sound",
       "title": "J-J-Jam",
       "lyrics": "[Intro — whispered]\nj… j… j…\n(soft, quick — not 'juh')\n\n[Hook 1 — kids chant]\nJ! J! J-j-j!\nWhat begins with J?\nJ-j-jam! J-j-jam!\nIt's jam! (it's jam!)\n\n[Hook 2 — kids chant]\nJ! J! J-j-j!\nWhat begins with J?\nJ-j-jug! J-j-jug!\nIt's a jug! (a jug!)\n\n[Hook 3 — kids chant]\nJ! J! J-j-j!\nWhat begins with J?\nJ-j-jet! J-j-jet!\nIt's a jet! (a jet!)\n\n[Breakdown — whispered, bass drops out]\nj… j… j…\nj-j-jar… j-j-jeep… j-j-juice…\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not J!\n(j… j… j…)\n\n[Final Hook — big]\nJ! J! J-j-j!\nJ-j-jacket! J-j-jacket!\nIt's a jacket, jacket, jacket!",
-      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
       "sunoNotes": "The J sound is a soft quick affricate /j/ as in 'jam' — a light 'dzh' snapped short, NEVER 'jay' (letter name) and NEVER 'juh' (dragged schwa). The '(j… j… j…)' clicks are crisp and brief on the hat. Answer line 'It's a ___!' reuses the Week 1 frame."
     },
     {
       "role": "word",
       "title": "Jam in the Jug",
-      "lyrics": "[Intro]\n(sticky… sticky…)\n\n[Hook]\nJam in the jug! Jam in the jug!\nWhere is the jam? (where? where?)\nJam on the cat!\n\n[Verse 2]\nJam in the jug! Jam in the jug!\nWhere is the jam? (where? where?)\nJam on the dog!\n\n[Verse 3]\nJam in the jug! Jam in the jug!\nWhere is the jam? (where? where?)\nJam on the rat!\n\n[Verse 4]\nJam in the jug! Jam in the jug!\nWhere is the jam? (where? where?)\nJam on Sam!\n\n[Outro]\nJam on the potato!\n(PO-TA-TO!)\nJam in the jug…\n(sticky… shhh…)",
-      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "lyrics": "[Intro]\n(sticky… sticky…)\n\n[Hook]\nJam in the jug! Jam in the jug!\nWhere is the jam? (where? where?)\nJam on the cat!\n\n[Verse 2]\nJam in the jug! Jam in the jug!\nWhere is the jam? (where? where?)\nJam on the dog!\n\n[Verse 3]\nJam in the jug! Jam in the jug!\nWhere is the jam? (where? where?)\nJam on the rat!\n\n[Verse 4]\nJam in the jug! Jam in the jug!\nWhere is the jam? (where? where?)\nJam on Sam!\n\n[Outro]\nJam on the potato!\n(POTATO!)\nJam in the jug…\n(sticky… shhh…)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
       "sunoNotes": "One frame: 'Jam on the ___!' — the target swaps per verse (cat → dog → rat → Sam → potato). The 'Jam in the jug' hook is the anchor line, constant. Kids choir answers the (where? where?) echoes. Sticky, slow, playful."
     }
   ],
