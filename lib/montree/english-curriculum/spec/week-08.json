@@ -76,14 +76,14 @@
       "role": "sound",
       "title": "I-I-In",
       "lyrics": "[Intro — whispered]\nIh! Ih! Ih-ih-in!\n(ih… ih… ih…)\n\n[Hook]\nIh! Ih! Ih-ih-ih!\nWhat begins with ih?\nIh-ih-insect! Ih-ih-insect!\nIt's an insect! (an insect!)\n\n[Verse 2]\nIh! Ih! Ih-ih-ih!\nWhat begins with ih?\nIh-ih-igloo! Ih-ih-igloo!\nIt's an igloo! (an igloo!)\n\n[Verse 3]\nIh! Ih! Ih-ih-ih!\nWhat begins with ih?\nIh-ih-iguana! Ih-ih-iguana!\nIt's an iguana! (an iguana!)\n\n[Verse 4]\nIh! Ih! Ih-ih-ih!\nWhat begins with ih?\nIh-ih-inchworm! Ih-ih-inchworm!\nIt's an inchworm! (an inchworm!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not ih!\n(ih… ih… ih…)\n\n[Outro]\nIh-ih-in! Ih-ih-in!\nWe are IN! (we're in!)\nIh! Ih! Ih-ih-in!",
-      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
       "sunoNotes": "SHORT vowel /ĭ/ as in 'in'/'sit' — the lyrics spell it 'ih' so Suno never sings the letter name 'eye'. Never 'ee'. Crisp, short, front vowel. The printed classroom letter stays 'i' — 'ih' is Suno-only respelling."
     },
     {
       "role": "word",
       "title": "Sit, Cat, Sit!",
-      "lyrics": "[Intro — whispered]\n(sit… sit… sit, cat, sit…)\n\n[Hook]\nSit, cat, sit!\nSit, cat, sit!\nWill the cat sit? (will it? will it?)\nSit, cat, SIT!\n\n[Verse 2]\nSit, cat, sit!\nSit, cat, sit!\nThe cat sat in a tin! (a tin?!)\nThat is not the mat!\n\n[Verse 3]\nSit, cat, sit!\nSit, cat, sit!\nThe cat sat in a cap! (a cap?!)\nThat is not the mat!\n\n[Bridge]\nThe cat can sit!\nThe cat can sit!\nIt sat on the mat! (at last!)\n\n[Outro]\nSit, cat, sit.\n(good cat…)\nA potato sat on the mat!\n(PO-TA-TO!)",
-      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "lyrics": "[Intro — whispered]\n(sit… sit… sit, cat, sit…)\n\n[Hook]\nSit, cat, sit!\nSit, cat, sit!\nWill the cat sit? (will it? will it?)\nSit, cat, SIT!\n\n[Verse 2]\nSit, cat, sit!\nSit, cat, sit!\nThe cat sat in a tin! (a tin?!)\nThat is not the mat!\n\n[Verse 3]\nSit, cat, sit!\nSit, cat, sit!\nThe cat sat in a cap! (a cap?!)\nThat is not the mat!\n\n[Bridge]\nThe cat can sit!\nThe cat can sit!\nIt sat on the mat! (at last!)\n\n[Outro]\nSit, cat, sit.\n(good cat…)\nA potato sat on the mat!\n(POTATO!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
       "sunoNotes": "One frame: the command 'Sit, cat, sit!' plus 'The cat sat in a ___.' — a single decodable word swaps (tin, cap, pit). The joke: the cat sits everywhere except where you point, then finally on the mat. Kids choir answers the (…?!) echoes; whisper the outro, then the potato hits loud."
     }
   ],
