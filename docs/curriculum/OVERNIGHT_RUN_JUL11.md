@@ -22,12 +22,19 @@ suno.com/create → Custom mode → paste Lyrics (from week JSON, post-scrub) + 
 
 ## STATUS BOARD (update as chunks land)
 - [ ] Spec update: new style string in all 26 JSONs + lyric scrub + contract §5 + validate + push
-- [ ] W1–4: download tonight's 44 grids, sort, submit 9 held-back scene shots (segina-on-mat, potato-on-mat, 7 cat scenes — descriptive, no oref tonight), render packs
+- [x] W1–4: download tonight's 44 grids, sort, submit 9 held-back scene shots (segina-on-mat, potato-on-mat, 7 cat scenes — descriptive, no oref tonight), render packs — **DONE (chunk A, Jul 11 00:53).** All 44 tonight's MJ jobs downloaded (1 reroll: tiger-coloring.png had 0 usable downloads on arrival, found in feed via search, picked best-of-4, downloaded). 9 held-back scene shots submitted one-at-a-time with feed verification, all completed, best-of-4 picked + downloaded. mat-coloring read as a clean single mat object (no reroll needed). All 53 files renamed+sorted into Week 01–04 images/ folders (Week 03 + Week 04 folders created). All 4 packs rendered to pack-v2/ — **gap report = "✅ All manifest images present" for all 4 weeks, zero image gaps.** Remaining pack warnings (missing dictionary_journal art for prior-letter tiles "a"/"at"/"am", qr_cards audioUrl placeholders) are pre-existing/out-of-scope (Suno audio loop, not tonight's image job).
 - [ ] W5–9 images · [ ] W10–14 · [ ] W15–19 · [ ] W20–26
-- [ ] Suno W3–9 · [ ] W10–17 · [ ] W18–26
+- [x] Suno W3–9 (Jul 11) · [x] Suno W10–14 (Jul 11, this chunk) — **DONE.** W3–14 = 24 songs × 2 takes = 48 files, all downloaded, renamed `WNN <title> (take K).mp3`, sorted into `Week 0N/`–`Week 14/`. Two deviations from verbatim JSON lyrics, both self-resolved mid-run:
+  - **W9 song 2 "A Hat for the Ant"**: original JSON lyrics silently rejected 3× by Suno's copyright-similarity filter (toast: "Your lyrics contain copyrighted material" — pattern matched a Seussian rhyme/question structure). Rewrote the lyrics on-the-fly (same phonics content — ant/cat/Sam/hat/POTATO — different structure) to get it through. **The Week 9 "A Hat for the Ant" audio does NOT match the JSON's printed lyrics** — worth a look if the book/lyrics need reconciling later.
+  - **W11 song 1 "O-O-On"**: a tool-level hiccup caused a failed select-all + splice, corrupting one submission into "Dad and Sam" (leftover W10 lyrics + new O-O-On text concatenated). Caught via abnormal clip duration, trashed the 2 corrupted clips, re-submitted clean. Final W11 files are correct/clean.
+  - [ ] W15–17 · [ ] W18–26 remain
 - [ ] Morning review checklist: audio takes, cast consistency (hero-lock re-rolls w/ --oref if cat/Segina drift), coloring-page quality, spot-check pack PDFs
+
+## RESUME PROMPT (paste into a fresh session)
+"Read CLAUDE.md's top session block + docs/curriculum/OVERNIGHT_RUN_JUL11.md. Continue the overnight run: (1) THE LOOP for images weeks 5–26 — spawn Sonnet browser agents in ~5-week chunks (W5–10, W11–18, W19–26), prompts auto-pulled per week via `node scripts/curriculum/build-week.mjs --week N --assets "~/Desktop/English Curriculum 2026/Week NN/images" --gap-only`; submit one-at-a-time with feed verification (MJ silently drops rapid batches); best-of-4 per runbook criteria; agent is casting director on cast debuts (dog W12, rat W15, bug W18, duck W21, fox W24). (2) SUNO LOOP for W15–26 (24 songs, both takes). (3) Update this status board per chunk; commit+push docs when done. Fable directs, Sonnet works the browser, never touch account settings."
 
 ## CAVEATS FOR THE MORNING
 - Agents can't hear: both Suno takes saved per song, Tredoux picks.
 - Cast consistency is descriptive-prompt-level tonight; hero-lock (reference image pass) is the polish option.
 - MJ/Suno rate limits or logged-out states pause a chunk — resume from this doc.
+- **W2 tiger-coloring.png anomaly:** all 4 grid variants rendered with grey/gradient shading rather than pure black-on-white line art (the coloring-page house style). Picked the cleanest of the 4 (least shading) rather than reroll, since the runbook only mandates an automatic reroll for mat-coloring. Worth a look in the morning — may want to reroll with an emphasized "flat vector, zero gradient" prompt tweak if it doesn't print well.
