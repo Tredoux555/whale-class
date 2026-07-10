@@ -1,0 +1,87 @@
+{
+  "week": 22,
+  "level": 1,
+  "sound": "v",
+  "letterDisplay": "Vv",
+  "soundType": "consonant",
+  "anchorWord": "vet",
+  "newWords": ["vet", "van"],
+  "reviewBank": ["vat", "cat", "dog", "rat", "bug", "duck", "web", "jam", "sock", "sun", "cup", "nut", "fig", "leg", "big", "run", "mat", "on", "wet", "fan", "fin", "fun"],
+  "glue": { "new": [], "known": ["the", "is", "I", "and", "on"] },
+  "oralWords": ["what", "where", "your", "are"],
+  "sentenceFrame": "The ___ is at the vet.",
+  "soundBasket": ["van", "violin", "vase", "volcano", "vest", "vine", "vacuum", "vet"],
+  "cast": { "introduces": null, "present": ["Segina", "Sam", "Cat", "Ant", "Dog", "Rat", "Bug", "Duck"] },
+  "celebration": "CAST REUNION — the whole class meets at the vet",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "V-V-Vet",
+      "lyrics": "[Intro — whispered]\nvvv… vvv… vvv…\n(teeth on lip, a buzzing motor)\n\n[Hook 1 — kids chant]\nV! V! V-v-v!\nWhat begins with V?\nV-v-van! V-v-van!\nIt's a van! (a van!)\n\n[Hook 2 — kids chant]\nV! V! V-v-v!\nWhat begins with V?\nV-v-violin! V-v-violin!\nIt's a violin! (a violin!)\n\n[Hook 3 — kids chant]\nV! V! V-v-v!\nWhat begins with V?\nV-v-vase! V-v-vase!\nIt's a vase! (a vase!)\n\n[Breakdown — whispered, bass drops out]\nvvv… vvv… (the motor is ON)\nfff… (off) … vvv… (on)\nfan… van… fan… van…\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not V!\n(vvv… vvv…)\n\n[Final Hook — big]\nV! V! V-v-v!\nV-v-volcano! V-v-volcano!\nIt's a volcano, volcano, volcano!",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "The V sound is a VOICED buzz /v/ — top teeth on bottom lip with the motor running, NEVER 'vee' (letter name) and NEVER 'vuh' (schwa). The breakdown is the crucial contrast: /f/ is the SAME mouth with the motor OFF, /v/ with it ON (fan vs van). Hold both against the 808 hum. Answer line 'It's a ___!' reuses the Week 1 frame."
+    },
+    {
+      "role": "word",
+      "title": "The Vet",
+      "lyrics": "[Intro — warm]\n(the whole class is here…)\n\n[Hook]\nThe cat is at the vet!\nThe dog is at the vet!\nWho is at the vet? (all of us! all of us!)\nWe are at the vet!\n\n[Verse 2]\nThe rat is at the vet!\nThe bug is at the vet!\nWho is at the vet? (all of us! all of us!)\nThe duck is at the vet!\n\n[Verse 3]\nThe ant is at the vet!\nA van is at the vet!\nSam is at the vet!\nSegina is at the vet!\n\n[Outro]\nAnd the vet is… a potato!\n(PO-TA-TO!)\nWe are all at the vet…\n(together… shhh…)",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "The reunion anthem — warm, not spooky. One frame: 'The ___ is at the vet.' cycling the WHOLE cast (cat, dog, rat, bug, duck, ant, Sam, Segina). This is the year's family gathering; let the choir swell on 'all of us!'. The 'we are' line is sung, not printed (it's oral — the printed materials stay strictly decodable)."
+    }
+  ],
+  "book": {
+    "title": "The Vet",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "The vet.", "image": "vet", "artNote": "A warm little vet's clinic under a gentle spotlight — a kindly vet in a white coat with a stethoscope, waiting room chairs, a green cross. The whole family is about to arrive." },
+      { "n": 2, "text": "The cat is at the vet.", "image": "cat-vet", "artNote": "The Cat (tabby) sitting on the vet's table, one paw bandaged, dignified. Cast reunion begins." },
+      { "n": 3, "text": "The dog is at the vet.", "image": "dog-vet", "artNote": "The Dog (brown) with a cone collar, big sad eyes, tail giving one hopeful wag." },
+      { "n": 4, "text": "The rat is at the vet.", "image": "rat-vet", "artNote": "The Rat (grey) tiny on the huge table, tail wrapped in a miniature bandage, trying to look brave." },
+      { "n": 5, "text": "The bug is at the vet!", "image": "bug-vet", "artNote": "The Bug (red-shelled) upside-down on a tiny cushion, legs in the air, the vet peering through a magnifying glass." },
+      { "n": 6, "text": "The duck is at the vet.", "image": "duck-vet", "artNote": "The Duck (white) with a sock still in its bill and a thermometer, refusing to sit still. Cheeky as ever." },
+      { "n": 7, "text": "The ant is at the vet!", "image": "ant-vet", "artNote": "The Ant (black) so small the vet needs a microscope; a comically enormous scene for a comically tiny patient." },
+      { "n": 8, "text": "A van is at the vet.", "image": "van-vet", "artNote": "A little van parked outside the clinic window — this is how the whole family arrived together. Warm reveal." },
+      { "n": 9, "text": "Sam is at the vet. Segina is at the vet.", "image": "sam-segina-vet", "artNote": "Sam and Segina the peg dolls sitting side by side in the waiting-room chairs, holding the pet carriers, proud caretakers." },
+      { "n": 10, "text": "The vet is...?!", "image": "vet-potato", "artNote": "The kindly vet turns around — it is the POTATO in a tiny white coat and round glasses, stethoscope on. No noun printed — the class SHOUTS the word from the picture." },
+      { "n": 11, "text": "The bug is on the cat. The cat is on the dog. On the mat!", "image": "reunion-pile", "artNote": "The warm closing pile-up: the whole cast heaped happily together on the familiar mat back home — bug on cat on dog, duck and rat tucked in, Sam and Segina laughing. Everyone is fine. Home." }
+    ],
+    "backCoverWords": ["vet", "van", "cat", "dog", "rat", "bug", "duck", "the"]
+  },
+  "materials": {
+    "threePartCards": ["van", "violin", "vase", "volcano", "vest", "vine", "vacuum", "vet"],
+    "sentences": ["The cat is at the vet.", "The dog is at the vet.", "A van is at the vet.", "The bug is on the cat."],
+    "matching": ["van", "violin", "vase", "vest", "vine", "vacuum"],
+    "bingoPool": ["van", "violin", "vase", "volcano", "vest", "vine", "vacuum", "cat", "dog", "rat", "duck", "bug", "potato"],
+    "tracing": { "letter": "v", "words": ["vet", "van", "vat"] },
+    "coloring": ["van", "vet", "violin"],
+    "dictionary": ["vet", "van", "vat"],
+    "extras": ["Motor on / motor off: hand on the throat, feel /v/ buzz (motor on) vs /f/ (motor off) — fan/van, fin/vin, fat/vat", "The reunion tray: gather all eight cast figures (Segina, Sam, Cat, Ant, Dog, Rat, Bug, Duck) and drive them to the toy vet in the van", "Moveable alphabet: build v-e-t, v-a-n, v-a-t and read them off the vet's chart"]
+  },
+  "assets": [
+    { "file": "vet.png", "usedBy": ["book:1", "cards", "bingo", "coloring"], "mjPrompt": "a kindly veterinarian in a white coat with a stethoscope standing in a warm little animal clinic with a green cross sign, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cat-vet.png", "usedBy": ["book:2"], "mjPrompt": "a dignified tabby cat sitting on a vet examination table with one paw bandaged, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "dog-vet.png", "usedBy": ["book:3"], "mjPrompt": "a brown dog wearing a plastic cone collar with big sad hopeful eyes on a vet table, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "rat-vet.png", "usedBy": ["book:4"], "mjPrompt": "a small grey rat on a large vet table with its tail wrapped in a tiny bandage, trying to look brave, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bug-vet.png", "usedBy": ["book:5"], "mjPrompt": "a round red-shelled beetle upside-down on a tiny cushion with its legs in the air while a magnifying glass hovers over it, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "duck-vet.png", "usedBy": ["book:6"], "mjPrompt": "a white duck with a stripey sock in its bill and a thermometer, refusing to sit still on a vet table, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "ant-vet.png", "usedBy": ["book:7"], "mjPrompt": "a single tiny black ant on a huge vet table beneath an enormous microscope, comically small patient, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "van-vet.png", "usedBy": ["book:8"], "mjPrompt": "a small friendly van parked outside a little animal clinic window, warm evening light, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sam-segina-vet.png", "usedBy": ["book:9"], "mjPrompt": "a wooden peg doll boy in a red shirt and a wooden peg doll girl with black pigtails and a red dress sitting side by side in vet waiting-room chairs holding pet carriers, proud, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "vet-potato.png", "usedBy": ["book:10"], "mjPrompt": "a single raw potato wearing a tiny white vet coat, round glasses and a stethoscope, standing as the veterinarian, dramatic spotlight, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "reunion-pile.png", "usedBy": ["book:11"], "mjPrompt": "a warm happy pile of animals heaped together on a small woven floor mat at home — a red-shelled beetle on a tabby cat on a brown dog with a white duck and a grey rat tucked in, a peg doll boy and peg doll girl laughing beside them, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "van.png", "usedBy": ["cards", "bingo", "matching", "coloring"], "mjPrompt": "a small friendly delivery van, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "violin.png", "usedBy": ["cards", "bingo", "matching", "coloring"], "mjPrompt": "a wooden violin with a bow, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "vase.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a simple ceramic vase with one flower, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "volcano.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a small model volcano with a puff of smoke, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "vest.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a small child's knitted vest, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "vine.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a leafy green climbing vine, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "vacuum.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a small upright vacuum cleaner, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "van-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a friendly little van with round headlights, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "vet-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a smiling vet in a coat with a stethoscope, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "violin-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a violin and bow, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "potato.png", "usedBy": ["bingo"], "mjPrompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+  ],
+  "teacherFocus": "Teach /v/ as the VOICED twin of /f/ — same mouth, motor on. Hand on the throat: feel van buzz, feel fan go quiet. This is the reunion week: gather every one of the eight cast figures and bring them to the vet in the van. The book is the year's warm family gathering — read the pile-up ending slowly and let them name every friend who is home safe.",
+  "lessonMapEquivalents": [26]
+}

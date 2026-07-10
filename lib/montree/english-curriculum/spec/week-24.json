@@ -1,0 +1,393 @@
+{
+  "week": 24,
+  "level": 1,
+  "sound": "x",
+  "letterDisplay": "Xx",
+  "soundType": "consonant",
+  "anchorWord": "fox",
+  "newWords": [
+    "fox",
+    "box",
+    "six",
+    "mix"
+  ],
+  "reviewBank": [
+    "fix",
+    "wax",
+    "ox",
+    "tax",
+    "cat",
+    "dog",
+    "rat",
+    "bug",
+    "duck",
+    "web",
+    "jam",
+    "sock",
+    "van",
+    "yam",
+    "nut",
+    "big",
+    "run",
+    "on",
+    "in",
+    "wet"
+  ],
+  "glue": {
+    "new": [],
+    "known": [
+      "the",
+      "is",
+      "I",
+      "and",
+      "on"
+    ]
+  },
+  "oralWords": [
+    "what",
+    "where",
+    "your"
+  ],
+  "sentenceFrame": "The ___ is in the box.",
+  "soundBasket": [
+    "box",
+    "fox",
+    "six",
+    "ox",
+    "wax",
+    "axe",
+    "taxi",
+    "socks"
+  ],
+  "cast": {
+    "introduces": "Fox",
+    "present": [
+      "Segina",
+      "Sam",
+      "Cat",
+      "Ant",
+      "Dog",
+      "Rat",
+      "Bug",
+      "Duck"
+    ]
+  },
+  "celebration": "The Fox joins the cast",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "X-X-Box",
+      "lyrics": "[Intro — whispered]\n…ks …ks …ks\n(the sound hides at the END)\n\n[Hook 1 — kids chant]\nX! X! …ks …ks!\nWhat ENDS with X?\nA box! b-o-x!\nIt's a box! (a box!)\n\n[Hook 2 — kids chant]\nX! X! …ks …ks!\nWhat ENDS with X?\nA fox! f-o-x!\nIt's a fox! (a fox!)\n\n[Hook 3 — kids chant]\nX! X! …ks …ks!\nWhat ENDS with X?\nSix! s-i-x!\nIt is six! (it's six!)\n\n[Breakdown — whispered, bass drops out]\n…ks is two sounds… /k/ and /s/…\no-x… wa-x… ta-xi…\nX never starts — X hides at the end!\n\n[Bridge]\nA potato?! (does it end in X? NO!)\nP-p-potato! Not X!\n(…ks …ks)\n\n[Final Hook — big]\nMix! m-i-x!\nMix it up, mix it up!\n…ks …ks …ks!",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "🚨 X IS THE ODD ONE OUT — it is the one letter whose sound lives at the END of the word, and it is TWO sounds glued: /k/ + /s/ = 'ks'. So the frame FLIPS: not 'what BEGINS with X' but 'what ENDS with X?' — box, fox, six, ox. Say the two-sound blend crisply ('bo-ks', 'fo-ks'), never 'ex' (letter name). The whole song is the twist that X breaks the pattern."
+    },
+    {
+      "role": "word",
+      "title": "A Fox in a Box",
+      "lyrics": "[Intro]\n(peek… peek…)\n\n[Hook]\nA fox in a box! A fox in a box!\nWho is in the box? (the fox! the fox!)\nThe fox is in the box!\n\n[Verse 2]\nSix in a box! Six in a box!\nWho is in the box? (six! six!)\nSix are in the box!\n\n[Verse 3]\nThe cat is in the box!\nThe duck is in the box!\nWho is in the box? (mix! a big mix!)\nMix it up in the box!\n\n[Verse 4]\nThe ox is in the box?!\nThe ox is in the box?!\n(too big! too big!)\nThe ox is STUCK in the box!\n\n[Outro]\nWhat is in the box?\n(PO-TA-TO!)\nA fox in a box…\n(peek… shhh…)",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "One frame: 'The ___ is in the box.' cycling fox → six → cat → duck → ox → potato. Every -x word (fox, box, six, ox, mix) ends on the /ks/ blend. The Fox is the new cast member — sly, a hider, always peeking out of the box. Kids choir answers (the fox! the fox!)."
+    }
+  ],
+  "book": {
+    "title": "A Fox in a Box",
+    "readAloud": false,
+    "spreads": [
+      {
+        "n": 1,
+        "text": "A box.",
+        "image": "box",
+        "artNote": "A plain cardboard box alone under the spotlight, lid ajar, something bright watching from the dark slit inside."
+      },
+      {
+        "n": 2,
+        "text": "A fox! In the box!",
+        "image": "fox-in-box",
+        "artNote": "The Fox's grand entrance — a red fox popping its head up out of the box, ears perked, sly grin. Cast member joins."
+      },
+      {
+        "n": 3,
+        "text": "The fox is in the box.",
+        "image": "fox-box-peek",
+        "artNote": "Just two bright eyes and pointed ears peeking over the box rim, the rest of the fox hidden. Playful suspense."
+      },
+      {
+        "n": 4,
+        "text": "Six! Six in the box!",
+        "image": "six-in-box",
+        "artNote": "Six little things crammed in the box beside the fox — six acorns, or the number 6 painted huge on the box side. Counting joke."
+      },
+      {
+        "n": 5,
+        "text": "The cat is in the box.",
+        "image": "cat-in-box",
+        "artNote": "The Cat (tabby) has squeezed in too, wedged shoulder to shoulder with the Fox, both looking out."
+      },
+      {
+        "n": 6,
+        "text": "The duck is in the box!",
+        "image": "duck-in-box",
+        "artNote": "The Duck (white) belly-flopping into the already-full box, sock still in bill, total chaos."
+      },
+      {
+        "n": 7,
+        "text": "Mix! A big mix in the box!",
+        "image": "mix-in-box",
+        "artNote": "The box overflowing — fox, cat, duck, tails and paws and wings all tangled in a big mix, box bulging."
+      },
+      {
+        "n": 8,
+        "text": "The ox is in the box?!",
+        "image": "ox-in-box",
+        "artNote": "An enormous ox trying to fit into the tiny box, only its rump in, box splitting at the seams. Absurd scale gag."
+      },
+      {
+        "n": 9,
+        "text": "In the box...?!",
+        "image": "potato-in-box",
+        "artNote": "The empty box, everyone tumbled out — and the potato sits alone inside, spotlit. No noun printed — the class SHOUTS the word from the picture. The Fox peeks in from the edge."
+      }
+    ],
+    "backCoverWords": [
+      "fox",
+      "box",
+      "six",
+      "mix",
+      "ox",
+      "in",
+      "the",
+      "is"
+    ]
+  },
+  "materials": {
+    "threePartCards": [
+      "box",
+      "fox",
+      "six",
+      "ox",
+      "axe",
+      "taxi",
+      "socks",
+      "wax"
+    ],
+    "sentences": [
+      "A fox is in the box.",
+      "Six are in the box.",
+      "The cat is in the box.",
+      "The ox is in the box."
+    ],
+    "matching": [
+      "box",
+      "fox",
+      "six",
+      "ox",
+      "axe",
+      "taxi"
+    ],
+    "bingoPool": [
+      "box",
+      "fox",
+      "six",
+      "ox",
+      "axe",
+      "taxi",
+      "socks",
+      "wax",
+      "cat",
+      "duck",
+      "rat",
+      "potato"
+    ],
+    "tracing": {
+      "letter": "x",
+      "words": [
+        "fox",
+        "box",
+        "six"
+      ]
+    },
+    "coloring": [
+      "fox",
+      "box",
+      "six"
+    ],
+    "dictionary": [
+      "fox",
+      "box",
+      "six",
+      "mix"
+    ],
+    "extras": [
+      "The end-sound hunt: X hides at the END — clap the two sounds /k/+/s/ at the tail of box, fox, six, ox (no word this level STARTS with x)",
+      "Counting box: put SIX objects in the box and read 's-i-x', then mix them up and count again",
+      "Fox puppet joins the cast basket — count the friends: eight now, and the fox is the sly one who is always hiding"
+    ]
+  },
+  "assets": [
+    {
+      "file": "box.png",
+      "usedBy": [
+        "book:1",
+        "cards",
+        "bingo",
+        "matching",
+        "coloring"
+      ],
+      "mjPrompt": "a plain cardboard box with the lid ajar and something bright watching from the dark slit inside, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "fox-in-box.png",
+      "usedBy": [
+        "book:2"
+      ],
+      "mjPrompt": "a red fox popping its head up out of a cardboard box with ears perked and a sly grin, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "fox-box-peek.png",
+      "usedBy": [
+        "book:3"
+      ],
+      "mjPrompt": "two bright eyes and pointed ears of a red fox peeking over the rim of a cardboard box, the rest hidden, playful suspense, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "six-in-box.png",
+      "usedBy": [
+        "book:4"
+      ],
+      "mjPrompt": "a cardboard box with a huge painted number 6 on its side and six acorns crammed inside beside a red fox, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "cat-in-box.png",
+      "usedBy": [
+        "book:5"
+      ],
+      "mjPrompt": "a tabby cat squeezed shoulder to shoulder with a red fox inside a cardboard box, both peering out, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "duck-in-box.png",
+      "usedBy": [
+        "book:6"
+      ],
+      "mjPrompt": "a white duck belly-flopping into an already-full cardboard box with a stripey sock in its bill, chaos, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "mix-in-box.png",
+      "usedBy": [
+        "book:7"
+      ],
+      "mjPrompt": "a cardboard box overflowing with a tangled mix of a red fox, a tabby cat and a white duck, tails and paws and wings everywhere, box bulging, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "ox-in-box.png",
+      "usedBy": [
+        "book:8"
+      ],
+      "mjPrompt": "an enormous ox trying to fit into a tiny cardboard box with only its rump inside, the box splitting at the seams, absurd scale, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "potato-in-box.png",
+      "usedBy": [
+        "book:9"
+      ],
+      "mjPrompt": "a single raw potato sitting alone inside an empty cardboard box under a spotlight, a red fox peeking in from the edge of frame, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "fox.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching",
+        "coloring"
+      ],
+      "mjPrompt": "a red fox sitting and looking forward with a sly expression, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "six.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching",
+        "coloring"
+      ],
+      "mjPrompt": "a large wooden number six, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "ox.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching"
+      ],
+      "mjPrompt": "a sturdy brown ox standing, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "axe.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching"
+      ],
+      "mjPrompt": "a small wood axe with a wooden handle, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "taxi.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching"
+      ],
+      "mjPrompt": "a yellow toy taxi cab, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "socks.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "basket"
+      ],
+      "mjPrompt": "a pair of stripey socks side by side, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "wax.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "basket"
+      ],
+      "mjPrompt": "a chunk of yellow beeswax with a honeycomb texture, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "fox-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a sly sitting fox with a bushy tail, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "box-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "an open cardboard box, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "six-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a big bubbly number six, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "potato.png",
+      "usedBy": [
+        "bingo"
+      ],
+      "mjPrompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    }
+  ],
+  "teacherFocus": "X is the odd letter out — its sound is TWO sounds glued (/k/+/s/) and it hides at the END of the word, not the start. Flip the game: 'what ENDS with x?' — box, fox, six, ox. Clap the two-sound tail. Put SIX objects in a box and read s-i-x. The Fox joins the cast as the sly hider — eight friends now.",
+  "lessonMapEquivalents": [
+    28
+  ]
+}

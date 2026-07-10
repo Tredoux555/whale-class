@@ -1,0 +1,92 @@
+{
+  "week": 16,
+  "level": 1,
+  "sound": "u",
+  "letterDisplay": "Uu",
+  "soundType": "vowel",
+  "anchorWord": "pup",
+  "newWords": ["up", "sun", "run", "cup"],
+  "reviewBank": ["at", "am", "mat", "cat", "sat", "Sam", "an", "ant", "can", "man", "tan", "pat", "nap", "map", "cap", "pan", "it", "in", "sit", "pin", "tip", "hat", "hit", "ham", "him", "dad", "sad", "did", "mad", "not", "top", "pot", "hot", "mop", "hop", "cot", "dot", "dog", "got", "dig", "pig", "gas", "tag", "gap", "hog", "big", "bat", "bag", "bad", "bit", "bib", "tab", "cab", "ban", "pet", "ten", "hen", "bed", "net", "get", "men", "set", "peg", "den", "pen", "rat", "red", "rip", "ram", "rag", "rot", "rim", "ran", "rid"],
+  "glue": { "new": [], "known": ["the", "is", "on", "I", "and"] },
+  "oralWords": ["what", "where", "down"],
+  "sentenceFrame": "Run up, pup!",
+  "soundBasket": ["umbrella", "umpire", "up", "under", "uncle", "udder", "ugly", "upset"],
+  "cast": { "introduces": "Pup", "present": ["Segina", "Sam", "Cat", "Ant", "Dog", "Rat"] },
+  "celebration": "VOWEL WALL COMPLETE — the mid-year festival. A · E · I · O · U all lit.",
+  "vowelLights": "u",
+  "songs": [
+    {
+      "role": "sound",
+      "title": "U-U-Up!",
+      "lyrics": "[Intro]\nU! U! U-u-u!\n(uh… uh… uh…)\n\n[Hook]\nU! U! U-u-u!\nWhat begins with U?\nU-u-up! U-u-up!\nIt's up! (it's up!)\n\n[Verse 2]\nU! U! U-u-u!\nWhat begins with U?\nU-u-umbrella! U-u-umbrella!\nIt's an umbrella! (umbrella!)\n\n[Verse 3]\nU! U! U-u-u!\nWhat begins with U?\nU-u-under! U-u-under!\nIt's under! (down under!)\n\n[Verse 4]\nU! U! U-u-u!\nWhat begins with U?\nU-u-uncle! U-u-uncle!\nIt's my uncle! (an uncle!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not U!\n(uh… uh… uh…)\n\n[Outro — the vowels are complete]\nA! E! I! O! U!\nThe wall is full! (A-E-I-O-U!)\nU-u-up! Run up, pup!\nU! U! U-u-u!",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, kids choir chant hook, festival energy, celebratory horns stab on the vowel roll-call, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "The U sound is the SHORT vowel /u/ as in 'up' and 'cup' — a low open 'uh', NEVER the letter name 'you' and NEVER the long u of 'unicorn'. THIS IS THE MID-YEAR SUMMIT: the outro is the five-vowel roll-call — A E I O U shouted in order, the whole wall lit — so let the beat swell and add a bright horn stab under 'The wall is full!'. Every short vowel the class owns lives in that line. Answer frames reuse Week 1."
+    },
+    {
+      "role": "word",
+      "title": "Run Up, Pup!",
+      "lyrics": "[Intro]\n(run… run… run…)\n\n[Hook]\nRun up, pup! Run up, pup!\nWhere did the pup run up?\nUp the hut! (up the hut!)\nRun up, up, up!\n\n[Verse 2]\nRun up, pup! Run up, pup!\nWhere did the pup run up?\nUp the bus! (up the bus!)\nRun up, up, up!\n\n[Verse 3]\nRun up, pup! Run up, pup!\nWhere did the pup run up?\nUp in the sun! (in the sun!)\nRun up, up, up!\n\n[Verse 4 — the whole cast]\nMud on the pup! Mud on the cat!\nMud on the dog! Mud on the rat!\nRun up, pup! (run, run, run!)\nRun up, up, up!\n\n[Outro — the festival]\nA! E! I! O! U!\nUp on top… a potato!\n(PO-TA-TO!)\nRun up, pup! Run up, up, up!",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, kids choir chant hook, festival energy, celebratory horns, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "ONE frame: 'Run up the ___!' with the place swapping (hut, bus, sun). Pup joins the cast this week — his debut is the mid-year party. Verse 4 stacks the ENTIRE cast in the mud; the outro reprises the vowel roll-call from the sound song so the two songs lock together into one festival. Potato at the summit, once, loud. 'down' is oral only."
+    }
+  ],
+  "book": {
+    "title": "Run Up, Pup!",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "A pup!", "image": "pup", "artNote": "A tiny bouncing puppy, ears flapping, pure joy. Pup joins the cast — the little one, the baby of the crew. The vowel wall glows A·E·I·O·U in the background, all five lit gold." },
+      { "n": 2, "text": "Run, pup, run!", "image": "pup-running", "artNote": "The pup tearing forward, tongue out, the Dog cheering him on behind. A festival banner strung overhead." },
+      { "n": 3, "text": "Up! Up! Up!", "image": "pup-running-uphill", "artNote": "The pup scrambling up a grassy hill, determined, the sun rising above." },
+      { "n": 4, "text": "The pup ran up the hut.", "image": "pup-on-hut", "artNote": "The pup somehow on top of a little hut, delighted, wobbling. Absurd escalation." },
+      { "n": 5, "text": "The pup ran up the bus!", "image": "pup-on-bus", "artNote": "The pup on the roof of a toy bus, ears streaming, the cast waving from below." },
+      { "n": 6, "text": "Up in the sun!", "image": "pup-in-sun", "artNote": "The pup leaping toward a huge golden sun, silhouette, triumphant. The five glowing vowels arc across the sky like bunting." },
+      { "n": 7, "text": "The pup got in the mud.", "image": "pup-in-mud", "artNote": "Splat — the pup landed in a mud puddle, only eyes and a grin visible. The turn." },
+      { "n": 8, "text": "Mud on the pup! Mud on the cat! Mud on the dog!", "image": "muddy-cast", "artNote": "THE PARTY: the whole cast — pup, cat, dog, rat, ant, Segina, Sam — splattered with mud, laughing, a full-cast festival panel." },
+      { "n": 9, "text": "Run up, pup!", "image": "cast-summit-party", "artNote": "The cast at the hilltop under the five glowing vowels A·E·I·O·U, confetti, the mid-year celebration in full. The pup at the front, tiny and triumphant." },
+      { "n": 10, "text": "Up on top…?!", "image": "potato-on-summit", "artNote": "At the very top of the hill sits the POTATO, wearing a tiny party hat and its round glasses, presiding over the festival. No noun printed — the whole class SHOUTS it." }
+    ],
+    "backCoverWords": ["pup", "run", "up", "sun", "mud", "cup", "cat", "dog"]
+  },
+  "materials": {
+    "threePartCards": ["umbrella", "umpire", "up", "under", "uncle", "udder", "ugly", "upset"],
+    "sentences": ["Run up, pup!", "The pup ran up.", "The pup is in the mud.", "The sun is up."],
+    "matching": ["pup", "umbrella", "umpire", "sun", "cup", "uncle"],
+    "bingoPool": ["pup", "sun", "run", "cup", "umbrella", "umpire", "uncle", "mud", "up", "cat", "dog", "potato"],
+    "tracing": { "letter": "u", "words": ["up", "sun", "cup"] },
+    "coloring": ["pup", "umbrella", "sun"],
+    "dictionary": ["up", "sun", "run", "cup", "pup", "mud"],
+    "extras": ["🎉🎉 VOWEL WALL COMPLETE — the MID-YEAR FESTIVAL. Light the final U (blue letter, gold star). All five vowels now lit: A·E·I·O·U. Whole-class vowel roll-call, the festival song, confetti — this is the biggest celebration of the year so far", "Short-vowel sort with ALL FIVE vowels: cat/pet/pit/pot/cup — one word per vowel, the class hears the whole set they now own", "Moveable alphabet: build p-u-p, s-u-n, c-u-p, r-u-n — then run a word through every vowel: pat/pet/pit/pot/put to hear U take its seat", "Pup joins the cast — welcome-the-Pup circle, the little one; the mid-year cast is complete: Segina, Sam, Cat, Ant, Dog, Rat, Pup", "Half-year reading check: every child reads a book from Weeks 4–16 aloud to the cast — a keepsake certificate for the mid-year milestone"]
+  },
+  "assets": [
+    { "file": "pup.png", "usedBy": ["book:1", "cards", "bingo", "matching", "coloring"], "mjPrompt": "a tiny bouncing puppy with floppy ears, pure joy, a glowing row of five vowel letters A E I O U on the wall behind, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "pup-running.png", "usedBy": ["book:2"], "mjPrompt": "a tiny puppy tearing forward with tongue out, a scruffy dog cheering behind, a small festival banner overhead, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "pup-running-uphill.png", "usedBy": ["book:3"], "mjPrompt": "a small puppy scrambling determinedly up a grassy hill with the sun rising above, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "pup-on-hut.png", "usedBy": ["book:4"], "mjPrompt": "a small puppy standing wobbling on the roof of a little hut, delighted, absurd, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "pup-on-bus.png", "usedBy": ["book:5"], "mjPrompt": "a small puppy on the roof of a toy bus with ears streaming, animal friends waving from below, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "pup-in-sun.png", "usedBy": ["book:6"], "mjPrompt": "a small puppy leaping in silhouette toward a huge golden sun, five glowing vowel letters arcing across the sky like bunting, triumphant, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "pup-in-mud.png", "usedBy": ["book:7"], "mjPrompt": "a small puppy sitting in a mud puddle with only bright eyes and a grin visible, splattered, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "muddy-cast.png", "usedBy": ["book:8"], "mjPrompt": "a joyful group of characters — a puppy, a tabby cat, a scruffy dog, a red rat, an ant, and two wooden peg dolls (a girl in a red dress and a boy) — all splattered with mud and laughing together, festival panel, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cast-summit-party.png", "usedBy": ["book:9"], "mjPrompt": "the whole animal cast celebrating on a hilltop under five giant glowing vowel letters A E I O U with confetti falling, a tiny puppy triumphant at the front, mid-year festival, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-on-summit.png", "usedBy": ["book:10"], "mjPrompt": "a single raw potato wearing a tiny party hat and round glasses sitting at the very top of a hill presiding over a festival, spotlit, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sun.png", "usedBy": ["bingo", "matching", "coloring"], "mjPrompt": "a bright golden cartoon-round sun, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "run.png", "usedBy": ["bingo"], "mjPrompt": "a small puppy running with motion lines to illustrate the word run, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cup.png", "usedBy": ["bingo", "matching"], "mjPrompt": "a simple ceramic cup, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "umbrella.png", "usedBy": ["cards", "bingo", "matching", "coloring"], "mjPrompt": "a small open umbrella, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "umpire.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a toy baseball umpire figure in cap and chest pad, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "up.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a bright upward-pointing arrow to illustrate the word up, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "under.png", "usedBy": ["cards", "basket"], "mjPrompt": "a small ball resting under a low wooden table to illustrate under, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "uncle.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a friendly toy figure of a grown man to represent an uncle, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "udder.png", "usedBy": ["cards", "basket"], "mjPrompt": "a close view of a dairy cow's udder in a barn, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "ugly.png", "usedBy": ["cards", "basket"], "mjPrompt": "a funny ugly little monster toy, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "upset.png", "usedBy": ["cards", "basket"], "mjPrompt": "a toy figure with an upset frowning face, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "mud.png", "usedBy": ["bingo"], "mjPrompt": "a small puddle of brown mud with a splash, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cat.png", "usedBy": ["bingo"], "mjPrompt": "a curious tabby cat sitting and looking forward, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "dog.png", "usedBy": ["bingo"], "mjPrompt": "a scruffy friendly small dog sitting and looking forward, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato.png", "usedBy": ["bingo"], "mjPrompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "pup-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a bouncing happy puppy with a party hat, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "umbrella-coloring.png", "usedBy": ["coloring"], "mjPrompt": "an open umbrella with a curved handle, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "sun-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a smiling sun with rays, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "THE MID-YEAR SUMMIT. U is the last vowel — when it lights, the whole wall glows A·E·I·O·U and the class owns every short vowel in English. Make this a FESTIVAL: the vowel roll-call, the festival song (the sound and word songs lock into one), confetti, a half-year reading check where every child reads a Weeks 4–16 book aloud to the cast. Teach the short /u/ of 'up' and 'cup' (low 'uh', never 'you'), blend p-u-p, s-u-n, r-u-n, c-u-p, and run a word through all five vowels: pat/pet/pit/pot/put. Pup joins — the little one — and the mid-year cast is complete.",
+  "lessonMapEquivalents": [19]
+}

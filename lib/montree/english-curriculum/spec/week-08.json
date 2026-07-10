@@ -1,0 +1,440 @@
+{
+  "week": 8,
+  "level": 1,
+  "sound": "i",
+  "letterDisplay": "Ii",
+  "soundType": "vowel",
+  "anchorWord": "it",
+  "newWords": [
+    "it",
+    "in",
+    "sit",
+    "pin"
+  ],
+  "reviewBank": [
+    "a",
+    "at",
+    "am",
+    "mat",
+    "cat",
+    "sat",
+    "Sam",
+    "an",
+    "ant",
+    "can",
+    "man",
+    "pat",
+    "nap",
+    "map",
+    "tap",
+    "cap",
+    "pan",
+    "tip",
+    "nip",
+    "pit",
+    "tin",
+    "sip",
+    "pip"
+  ],
+  "glue": {
+    "new": [],
+    "known": [
+      "the",
+      "is",
+      "on",
+      "I"
+    ]
+  },
+  "oralWords": [
+    "what",
+    "where"
+  ],
+  "sentenceFrame": "The cat sat in the ___.",
+  "soundBasket": [
+    "igloo",
+    "insect",
+    "iguana",
+    "inchworm",
+    "inchworm",
+    "infant",
+    "injection",
+    "instrument"
+  ],
+  "cast": {
+    "introduces": null,
+    "present": [
+      "Segina",
+      "Sam",
+      "Cat",
+      "Ant"
+    ]
+  },
+  "celebration": "VOWEL I LIGHTS UP — the second vowel joins the wall (A · I · o · u · e). Halfway to a lit vowel wall.",
+  "vowelLights": "i",
+  "songs": [
+    {
+      "role": "sound",
+      "title": "I-I-In",
+      "lyrics": "[Intro — whispered]\nIh! Ih! Ih-ih-in!\n(ih… ih… ih…)\n\n[Hook]\nIh! Ih! Ih-ih-ih!\nWhat begins with ih?\nIh-ih-insect! Ih-ih-insect!\nIt's an insect! (an insect!)\n\n[Verse 2]\nIh! Ih! Ih-ih-ih!\nWhat begins with ih?\nIh-ih-igloo! Ih-ih-igloo!\nIt's an igloo! (an igloo!)\n\n[Verse 3]\nIh! Ih! Ih-ih-ih!\nWhat begins with ih?\nIh-ih-iguana! Ih-ih-iguana!\nIt's an iguana! (an iguana!)\n\n[Verse 4]\nIh! Ih! Ih-ih-ih!\nWhat begins with ih?\nIh-ih-inchworm! Ih-ih-inchworm!\nIt's an inchworm! (an inchworm!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not ih!\n(ih… ih… ih…)\n\n[Outro]\nIh-ih-in! Ih-ih-in!\nWe are IN! (we're in!)\nIh! Ih! Ih-ih-in!",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "SHORT vowel /ĭ/ as in 'in'/'sit' — the lyrics spell it 'ih' so Suno never sings the letter name 'eye'. Never 'ee'. Crisp, short, front vowel. The printed classroom letter stays 'i' — 'ih' is Suno-only respelling."
+    },
+    {
+      "role": "word",
+      "title": "Sit, Cat, Sit!",
+      "lyrics": "[Intro — whispered]\n(sit… sit… sit, cat, sit…)\n\n[Hook]\nSit, cat, sit!\nSit, cat, sit!\nWill the cat sit? (will it? will it?)\nSit, cat, SIT!\n\n[Verse 2]\nSit, cat, sit!\nSit, cat, sit!\nThe cat sat in a tin! (a tin?!)\nThat is not the mat!\n\n[Verse 3]\nSit, cat, sit!\nSit, cat, sit!\nThe cat sat in a cap! (a cap?!)\nThat is not the mat!\n\n[Bridge]\nThe cat can sit!\nThe cat can sit!\nIt sat on the mat! (at last!)\n\n[Outro]\nSit, cat, sit.\n(good cat…)\nA potato sat on the mat!\n(PO-TA-TO!)",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "One frame: the command 'Sit, cat, sit!' plus 'The cat sat in a ___.' — a single decodable word swaps (tin, cap, pit). The joke: the cat sits everywhere except where you point, then finally on the mat. Kids choir answers the (…?!) echoes; whisper the outro, then the potato hits loud."
+    }
+  ],
+  "book": {
+    "title": "Sit, Cat, Sit!",
+    "readAloud": false,
+    "spreads": [
+      {
+        "n": 1,
+        "text": "Sit, cat, sit!",
+        "image": "cat-command",
+        "artNote": "A child's hand pointing firmly at the mat, the tabby cat looking away, unimpressed. The classic battle: telling a cat to sit."
+      },
+      {
+        "n": 2,
+        "text": "The cat sat in a tin!",
+        "image": "cat-in-tin",
+        "artNote": "The cat has instead climbed into an empty tin, sitting proudly — NOT the mat. Contrary cat."
+      },
+      {
+        "n": 3,
+        "text": "Sit, cat, sit!",
+        "image": "cat-command2",
+        "artNote": "Hand pointing again, more insistent; the cat's tail flicks. Repetition builds the joke."
+      },
+      {
+        "n": 4,
+        "text": "The cat sat in a cap!",
+        "image": "cat-in-cap",
+        "artNote": "The cat now wedged into a baseball cap, smug — still not the mat."
+      },
+      {
+        "n": 5,
+        "text": "Sit, cat, sit!",
+        "image": "cat-command3",
+        "artNote": "Hand pointing a third time, exasperated; Sam and the ant watching, holding their breath."
+      },
+      {
+        "n": 6,
+        "text": "The cat sat in a pit!",
+        "image": "cat-in-pit",
+        "artNote": "The cat sitting at the bottom of a little sandpit, looking up innocently — anywhere but the mat."
+      },
+      {
+        "n": 7,
+        "text": "The cat can sit!",
+        "image": "cat-sits-mat",
+        "artNote": "AT LAST — the cat sits perfectly on the mat, prim and proud, as if it had meant to all along."
+      },
+      {
+        "n": 8,
+        "text": "It is a cat. It can sit.",
+        "image": "cat-proud-mat",
+        "artNote": "Calm victory spread — the cat on the mat, Sam, Segina and the ant applauding. New words 'it' and 'in' anchored."
+      },
+      {
+        "n": 9,
+        "text": "It is a...?!",
+        "image": "potato-cat-sit",
+        "artNote": "The potato has taken the mat and is 'sitting' where the cat should be — the class expects a cat but the gag noun is blank: they SHOUT 'POTATO' from the picture. The cat stares, betrayed."
+      }
+    ],
+    "backCoverWords": [
+      "it",
+      "in",
+      "sit",
+      "pin",
+      "cat",
+      "tin",
+      "the",
+      "is"
+    ]
+  },
+  "materials": {
+    "threePartCards": [
+      "igloo",
+      "insect",
+      "iguana",
+      "inchworm",
+      "inchworm",
+      "infant",
+      "injection",
+      "instrument"
+    ],
+    "sentences": [
+      "The cat can sit.",
+      "The cat sat in a tin.",
+      "It is a cat. It can sit.",
+      "The pin is in the cap."
+    ],
+    "matching": [
+      "igloo",
+      "insect",
+      "iguana",
+      "inchworm",
+      "inchworm",
+      "infant"
+    ],
+    "bingoPool": [
+      "igloo",
+      "insect",
+      "iguana",
+      "inchworm",
+      "inchworm",
+      "infant",
+      "injection",
+      "instrument",
+      "cat",
+      "pin",
+      "pig",
+      "ant",
+      "sun",
+      "potato"
+    ],
+    "tracing": {
+      "letter": "i",
+      "words": [
+        "it",
+        "in",
+        "sit",
+        "pin"
+      ]
+    },
+    "coloring": [
+      "igloo",
+      "insect",
+      "iguana"
+    ],
+    "dictionary": [
+      "it",
+      "in",
+      "sit",
+      "pin"
+    ],
+    "extras": [
+      "🎉 Vowel wall: the I poster LIGHTS UP — gold star added beside A (the second lit vowel)",
+      "Bingo Vowel Song ritual at the wall: 'A-E-I-O-U' with A and I now glowing",
+      "Moveable alphabet: build i-t, i-n, s-i-t, p-i-n, t-i-n, t-i-p",
+      "Sandpaper letter 'i' + sand tray — short /ĭ/, dot the i",
+      "/ĭ/ sound basket + 8 sound cards",
+      "'Sit, cat, sit!' command game — hide the cat card in a tin / cap / pit, class reads where it sat"
+    ]
+  },
+  "assets": [
+    {
+      "file": "cat-command.png",
+      "usedBy": [
+        "book:1"
+      ],
+      "mjPrompt": "a child's hand pointing firmly at a small woven floor mat while a tabby cat looks away unimpressed, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "cat-in-tin.png",
+      "usedBy": [
+        "book:2"
+      ],
+      "mjPrompt": "a tabby cat sitting proudly inside an empty metal tin, contrary and pleased with itself, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "cat-command2.png",
+      "usedBy": [
+        "book:3"
+      ],
+      "mjPrompt": "a child's hand pointing insistently at a woven mat, a tabby cat with tail flicking and ears back, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "cat-in-cap.png",
+      "usedBy": [
+        "book:4"
+      ],
+      "mjPrompt": "a tabby cat wedged smugly into a baseball cap, sitting, not the mat, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "cat-command3.png",
+      "usedBy": [
+        "book:5"
+      ],
+      "mjPrompt": "a child's hand pointing a third time exasperated at a woven mat, a small wooden peg doll boy in blue dungarees and a tiny black ant watching nervously, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "cat-in-pit.png",
+      "usedBy": [
+        "book:6"
+      ],
+      "mjPrompt": "a tabby cat sitting innocently at the bottom of a small round sandpit looking up, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "cat-sits-mat.png",
+      "usedBy": [
+        "book:7"
+      ],
+      "mjPrompt": "a tabby cat sitting perfectly prim and proud in the center of a small woven floor mat at last, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "cat-proud-mat.png",
+      "usedBy": [
+        "book:8"
+      ],
+      "mjPrompt": "a tabby cat sitting proudly on a woven mat while a small wooden peg doll boy in blue dungarees, a peg doll girl in a red dress and a tiny black ant applaud, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "potato-cat-sit.png",
+      "usedBy": [
+        "book:9"
+      ],
+      "mjPrompt": "a single raw potato sitting dramatically in the center of a woven mat where the cat should be, a tabby cat staring at it looking betrayed, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "igloo.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching",
+        "basket"
+      ],
+      "mjPrompt": "a small white snow igloo with an arched doorway, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "insect.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching",
+        "basket"
+      ],
+      "mjPrompt": "a colorful ladybird beetle insect, macro photograph, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "iguana.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching",
+        "basket"
+      ],
+      "mjPrompt": "a green iguana lizard side view, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "inchworm.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching",
+        "basket"
+      ],
+      "mjPrompt": "a small green inchworm arching on a twig, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "inchworm.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching",
+        "basket"
+      ],
+      "mjPrompt": "a small green inchworm arched on a leaf, macro photograph, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "infant.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching",
+        "basket"
+      ],
+      "mjPrompt": "a swaddled baby doll infant, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "injection.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "basket"
+      ],
+      "mjPrompt": "a toy doctor's syringe injection, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "instrument.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "basket"
+      ],
+      "mjPrompt": "a small brass trumpet musical instrument, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "pin.png",
+      "usedBy": [
+        "bingo"
+      ],
+      "mjPrompt": "a single safety pin, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "cat.png",
+      "usedBy": [
+        "bingo"
+      ],
+      "mjPrompt": "REUSED FROM WEEK 4 — a curious tabby cat sitting and looking forward, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "pig.png",
+      "usedBy": [
+        "bingo"
+      ],
+      "mjPrompt": "REUSED FROM WEEK 7 — a small pink pig standing, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "ant.png",
+      "usedBy": [
+        "bingo"
+      ],
+      "mjPrompt": "REUSED FROM WEEK 6 — a small shiny black ant standing upright with a proud posture, macro photograph, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "sun.png",
+      "usedBy": [
+        "bingo"
+      ],
+      "mjPrompt": "REUSED FROM WEEK 5 — a bright golden sun with soft rays, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "potato.png",
+      "usedBy": [
+        "bingo"
+      ],
+      "mjPrompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "igloo-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a snow igloo with an arched doorway, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "insect-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a smiling ladybird beetle, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "iguana-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a friendly iguana lizard, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    }
+  ],
+  "teacherFocus": "The second vowel arrives — light up the I on the vowel wall beside A and celebrate (two of five glowing, halfway to a complete wall). Teach the SHORT /ĭ/ as in 'in' and 'igloo' — dot the i, keep it quick, never 'eye'. Blend i-t, i-n, s-i-t, p-i-n so the class can suddenly read a whole new family of words. The book is one running joke — a cat that sits everywhere except where you point — so once they read line one they roar through the rest, then anchor 'it' and 'in' in the calm victory spread.",
+  "lessonMapEquivalents": [
+    9
+  ]
+}

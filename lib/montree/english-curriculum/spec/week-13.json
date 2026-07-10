@@ -1,0 +1,88 @@
+{
+  "week": 13,
+  "level": 1,
+  "sound": "b",
+  "letterDisplay": "Bb",
+  "soundType": "consonant",
+  "anchorWord": "big",
+  "newWords": ["big", "bat", "bag", "bad"],
+  "reviewBank": ["at", "am", "mat", "cat", "sat", "Sam", "an", "ant", "can", "man", "tan", "pat", "nap", "map", "cap", "pan", "it", "in", "sit", "pin", "tip", "hat", "hit", "ham", "him", "dad", "sad", "did", "mad", "not", "top", "pot", "hot", "mop", "hop", "cot", "dot", "dog", "got", "dig", "pig", "gas", "tag", "gap", "hog"],
+  "glue": { "new": [], "known": ["the", "is", "on", "I", "and"] },
+  "oralWords": ["what", "where"],
+  "sentenceFrame": "The big ___.",
+  "soundBasket": ["ball", "bear", "boat", "bird", "bell", "bee", "banana", "box"],
+  "cast": { "introduces": null, "present": ["Segina", "Sam", "Cat", "Ant", "Dog"] },
+  "celebration": null,
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "B-B-Big!",
+      "lyrics": "[Intro]\nB! B! B-b-b!\n(b… b… b…)\n\n[Hook]\nB! B! B-b-b!\nWhat begins with B?\nB-b-ball! B-b-ball!\nIt's a ball! (a ball!)\n\n[Verse 2]\nB! B! B-b-b!\nWhat begins with B?\nB-b-bear! B-b-bear!\nIt's a bear! (a bear!)\n\n[Verse 3]\nB! B! B-b-b!\nWhat begins with B?\nB-b-boat! B-b-boat!\nIt's a boat! (a boat!)\n\n[Verse 4]\nB! B! B-b-b!\nWhat begins with B?\nB-b-bird! B-b-bird!\nIt's a bird! (a bird!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not B!\n(b… b… b…)\n\n[Outro]\nB-b-big! The dog is BIG!\nB-b-big! (big, big, big!)\nB! B! B-b-b!",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "The B sound is a voiced bilabial stop /b/ — lips pop apart with the voice on. NEVER 'bee' (letter name) and NEVER 'buh' (schwa). Watch-week note: b is being learned three weeks after d, so the '(b… b… b…)' drone is deliberately voiced and rounded to CONTRAST the flatter d. All basket words are hard clean /b/. Answer line reuses the Week 1 frame."
+    },
+    {
+      "role": "word",
+      "title": "The Big Dog",
+      "lyrics": "[Intro]\n(big… big… big…)\n\n[Hook]\nThe big dog! The big dog!\nHow big is the dog?\nAs big as a pig! (a pig!)\nThe dog is big, big, big!\n\n[Verse 2]\nThe big dog! The big dog!\nHow big is the dog?\nAs big as a cat! (a cat!)\nThe dog is big, big, big!\n\n[Verse 3]\nThe big dog! The big dog!\nHow big is the dog?\nAs big as a bus! (a bus!)\nThe dog is big, big, big!\n\n[Verse 4]\nA cat! A little cat!\nThe cat is mad! (hiss!)\nThe big dog hid! (he hid?!)\nThe big dog hid, hid, hid!\n\n[Outro]\nThe big dog and the potato…\n(PO-TA-TO!)\nThe big dog hid! (shhh…)",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "ONE frame: 'The dog is big, big, big!' with 'as big as a ___' swapping. The gag lands in verse 4 and the outro — the enormous dog is scared of the tiny cat (and the potato). Whisper the outro. Great b/d listening drill: 'big' and 'dog' sit side by side all song."
+    }
+  ],
+  "book": {
+    "title": "The Big Dog",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "A big dog.", "image": "big-dog", "artNote": "The Dog, but MASSIVE — filling the frame, gentle eyes, comically oversized. Set the joke: he is very, very big." },
+      { "n": 2, "text": "The dog is big!", "image": "big-dog-towering", "artNote": "The big dog towering over a tiny classroom, a child-sized chair between his paws for scale." },
+      { "n": 3, "text": "A pig.", "image": "pig", "artNote": "A normal, ordinary pig standing alone — small and calm." },
+      { "n": 4, "text": "The dog is big. The pig is not.", "image": "big-dog-and-pig", "artNote": "The huge dog beside the little pig for size comedy. 'The pig is not' = the pig is not big." },
+      { "n": 5, "text": "A cat.", "image": "cat", "artNote": "A small tabby cat, tail flicking, eyeing the dog. Cast callback." },
+      { "n": 6, "text": "The big dog and the cat…", "image": "big-dog-meets-cat", "artNote": "The enormous dog leaning down nervously toward the tiny, bold cat. Tension building." },
+      { "n": 7, "text": "The cat is mad!", "image": "cat-hissing", "artNote": "The little cat arched, hissing, fierce. Tiny but terrifying." },
+      { "n": 8, "text": "The big dog hid!", "image": "big-dog-hiding", "artNote": "THE JOKE: the giant dog cowering behind a tiny plant / under a small mat, paws over his eyes, hiding from the little cat. Page-turn payoff." },
+      { "n": 9, "text": "The dog is big. It is not.", "image": "potato-and-big-dog", "artNote": "The potato sits calmly in the foreground; the huge dog peeks around the corner behind it, still hiding. No potato-word printed — 'It is not' (not big) points at the tiny potato while the class SHOUTS the name. One eye of the dog visible." }
+    ],
+    "backCoverWords": ["big", "dog", "pig", "cat", "mad", "hid", "bat", "bag", "bad"]
+  },
+  "materials": {
+    "threePartCards": ["ball", "bear", "boat", "bird", "bell", "bee", "banana", "box"],
+    "sentences": ["The dog is big.", "The pig is big.", "A big dog and a big pig.", "The cat is not big."],
+    "matching": ["dog", "ball", "bear", "bird", "box", "bag"],
+    "bingoPool": ["big", "dog", "pig", "ball", "bear", "boat", "bird", "bell", "cat", "bag", "bat", "potato"],
+    "tracing": { "letter": "b", "words": ["big", "bat", "bag"] },
+    "coloring": ["dog", "ball", "bear"],
+    "dictionary": ["big", "bat", "bag", "bad", "dog", "pig"],
+    "extras": ["🚨 b/d WATCH-WEEK sort (the whole point of the week): word cards laid side by side — bad/dad, big/dig, bag/dig, bat/dad — with the b and d printed in contrasting colours; child reads and sorts by the starting sound. b = 'bat and ball first, then the ball' (line down, ball on the right); d = 'drumstick first, then the drum' (line down, belly on the left)", "Moveable alphabet: build b-i-g, b-a-g, b-a-t, b-a-d — then swap the b for d and hear it change (bad → dad, big → dig)", "Sandpaper letters b AND d traced in the SAME session, back to back, saying the sound each time — the confusion is met head-on, not avoided", "Bingo caller deliberately mixes bag/dog and big/pig to sharpen the ear"]
+  },
+  "assets": [
+    { "file": "big-dog.png", "usedBy": ["book:1"], "mjPrompt": "an enormous friendly scruffy dog filling the whole frame with gentle eyes, comically oversized, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "big-dog-towering.png", "usedBy": ["book:2"], "mjPrompt": "a giant dog towering over a tiny child-sized wooden chair placed between his paws for scale, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "pig.png", "usedBy": ["book:3", "bingo"], "mjPrompt": "a cheerful pink pig standing, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "big-dog-and-pig.png", "usedBy": ["book:4"], "mjPrompt": "a huge dog standing beside a tiny ordinary pig for exaggerated size comparison, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cat.png", "usedBy": ["book:5", "bingo"], "mjPrompt": "a small tabby cat sitting with tail flicking, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "big-dog-meets-cat.png", "usedBy": ["book:6"], "mjPrompt": "an enormous dog leaning down nervously toward a tiny bold tabby cat, tension, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cat-hissing.png", "usedBy": ["book:7"], "mjPrompt": "a small tabby cat arched and hissing, fierce and fluffed up, tiny but terrifying, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "big-dog-hiding.png", "usedBy": ["book:8"], "mjPrompt": "a giant dog cowering behind a tiny potted plant with paws over his eyes, hiding, only half concealed, comic, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-and-big-dog.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato wearing tiny round glasses sitting calmly and spotlit in the foreground while a huge dog peeks around a corner behind it, one eye visible, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "big.png", "usedBy": ["bingo"], "mjPrompt": "a giant friendly dog looming large to illustrate the word big, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "dog.png", "usedBy": ["bingo", "matching", "coloring"], "mjPrompt": "a scruffy friendly small dog sitting and looking forward, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "ball.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a bright red rubber ball, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bear.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a brown bear cub sitting, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "boat.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a small wooden rowing boat, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bird.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a small round robin bird perched, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bell.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a small brass hand bell, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bee.png", "usedBy": ["cards", "basket"], "mjPrompt": "a fuzzy striped bumblebee, macro, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "banana.png", "usedBy": ["cards", "basket"], "mjPrompt": "a single ripe yellow banana, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "box.png", "usedBy": ["cards", "basket", "matching"], "mjPrompt": "a plain small cardboard box, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bag.png", "usedBy": ["bingo", "matching"], "mjPrompt": "a small brown paper bag standing upright, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bat.png", "usedBy": ["bingo"], "mjPrompt": "a wooden baseball bat, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato.png", "usedBy": ["bingo"], "mjPrompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "dog-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a huge happy dog to colour, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "ball-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a big beach ball with stripes, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "bear-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a cuddly bear cub sitting, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "THE B/D WATCH-WEEK — b arrives three weeks after d, so this week's whole job is discrimination, not avoidance. Teach the voiced /b/ (lips pop, never 'buh'), then put b and d nose to nose: trace both sandpaper letters back to back, sort bad/dad and big/dig, and let the book do quiet work by parking 'big' and 'dog' side by side on every page. Use the formation stories the class already knows ('bat-and-ball' for b, 'drum-and-drumstick' for d). The giant-dog-scared-of-the-tiny-cat joke keeps the mood light while the ears do serious work.",
+  "lessonMapEquivalents": [22]
+}

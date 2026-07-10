@@ -1,0 +1,89 @@
+{
+  "week": 7,
+  "level": 1,
+  "sound": "p",
+  "letterDisplay": "Pp",
+  "soundType": "consonant",
+  "anchorWord": "pat",
+  "newWords": ["pat", "nap", "map", "tap"],
+  "reviewBank": ["a", "at", "am", "mat", "cat", "sat", "Sam", "an", "ant", "can", "man", "cats", "mats", "tan", "cap", "pan", "sap"],
+  "glue": { "new": [], "known": ["the", "is", "on", "I"] },
+  "oralWords": ["what", "where"],
+  "sentenceFrame": "The cat naps on the ___.",
+  "soundBasket": ["pig", "pen", "panda", "penguin", "pizza", "pumpkin", "parrot", "paint"],
+  "cast": { "introduces": null, "present": ["Segina", "Sam", "Cat", "Ant"] },
+  "celebration": null,
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "P-P-Pop",
+      "lyrics": "[Intro — whispered]\nP! P! P-p-pop!\n(p… p… p…)\n\n[Hook]\nP! P! P-p-p!\nWhat begins with P?\nP-p-pig! P-p-pig!\nIt's a pig! (a pig!)\n\n[Verse 2]\nP! P! P-p-p!\nWhat begins with P?\nP-p-pen! P-p-pen!\nIt's a pen! (a pen!)\n\n[Verse 3]\nP! P! P-p-p!\nWhat begins with P?\nP-p-panda! P-p-panda!\nIt's a panda! (a panda!)\n\n[Verse 4]\nP! P! P-p-p!\nWhat begins with P?\nP-p-penguin! P-p-penguin!\nIt's a penguin! (a penguin!)\n\n[Bridge]\nA potato?! (YES?!)\nP-p-potato! That IS P!\n(but the potato is NOT the answer!)\n(p… p… p…)\n\n[Outro]\nP-p-pig! P-p-pig!\nIt's a pig! (a pig!)\nP! P! P-p-pop!",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "The P sound is a quiet lip-pop /p/ — a puff of air with no voice, NEVER 'pee' (letter name) and NEVER 'puh' (schwa). The 'P-p-pop!' chant is crisp air-puffs on the beat. RUNNING-GAG TWIST: potato really DOES start with P this week, so the class shouts 'YES?!' — but it's still not the answer, so the joke flips into a giggle. Answer line 'It's a ___!' reuses the Week 1 frame."
+    },
+    {
+      "role": "word",
+      "title": "The Cat Naps",
+      "lyrics": "[Intro — whispered]\n(nap… nap… the cat naps…)\n\n[Hook]\nThe cat naps! The cat naps!\nWhere does the cat nap?\nThe cat naps on the mat! (the mat!)\nThe cat naps on the mat!\n\n[Verse 2]\nThe cat naps! The cat naps!\nWhere does the cat nap?\nThe cat naps on the map! (a map?!)\nThe cat naps on the map!\n\n[Verse 3]\nThe cat naps! The cat naps!\nWhere does the cat nap?\nThe cat naps on the cap! (a cap?!)\nThe cat naps on the cap!\n\n[Bridge]\nPat the cat. (pat, pat!)\nTap, tap, tap!\nThe cat can nap!\n\n[Outro]\nThe cat naps on the pan.\n(shhh… the cat is asleep…)\nThe cat naps on a POTATO!\n(PO-TA-TO!)",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "One frame: 'The cat naps on the ___.' — the nap-anywhere cat. A single decodable word swaps per verse (mat, map, cap, pan). The bridge introduces 'pat' and 'tap' as the wake-up actions. Whisper the outro, then the potato hits loud."
+    }
+  ],
+  "book": {
+    "title": "The Cat Naps",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "The cat naps.", "image": "cat-naps", "artNote": "The tabby cat fast asleep, curled in a warm spotlight — the sleepiest cat in the world. Sets up the running joke: this cat naps EVERYWHERE." },
+      { "n": 2, "text": "The cat naps on the mat.", "image": "cat-nap-mat", "artNote": "Cat asleep, sprawled across the familiar woven mat, utterly relaxed." },
+      { "n": 3, "text": "The cat naps on the map!", "image": "cat-nap-map", "artNote": "Cat asleep on top of an open paper map, one paw over a whole continent. Absurd." },
+      { "n": 4, "text": "The cat naps on the cap!", "image": "cat-nap-cap", "artNote": "Cat curled snugly on top of a baseball cap like it's a little bed, only ears and tail showing." },
+      { "n": 5, "text": "The cat naps on the pan!", "image": "cat-nap-pan", "artNote": "Cat asleep coiled over a frying pan on the counter — peak ridiculous napping." },
+      { "n": 6, "text": "Pat the cat.", "image": "pat-cat", "artNote": "A gentle child's hand patting the sleeping cat's head — soft, tender. Teaching 'pat'." },
+      { "n": 7, "text": "Tap, tap, tap.", "image": "tap-cat", "artNote": "A finger tapping near the cat, tiny sound lines — trying politely to wake it. The cat does not stir." },
+      { "n": 8, "text": "The cat can nap!", "image": "cat-naps-through", "artNote": "The cat sleeps blissfully through everything, Sam, Segina and the ant tiptoeing around it, giving up. The cat wins." },
+      { "n": 9, "text": "The cat naps on a...?!", "image": "cat-nap-potato", "artNote": "The cat asleep, using the potato as a pillow. The gag noun is left blank — the class SHOUTS 'POTATO' from the picture and howls. Deadpan potato pillow." }
+    ],
+    "backCoverWords": ["pat", "nap", "map", "tap", "cat", "cap", "pan", "the"]
+  },
+  "materials": {
+    "threePartCards": ["pig", "pen", "panda", "penguin", "pizza", "pumpkin", "parrot", "paint"],
+    "sentences": ["The cat naps on the mat.", "The cat naps on the map.", "The cat naps on the cap.", "Pat the cat. Tap, tap, tap."],
+    "matching": ["pig", "pen", "panda", "penguin", "pizza", "pumpkin"],
+    "bingoPool": ["pig", "pen", "panda", "penguin", "pizza", "pumpkin", "parrot", "paint", "cat", "ant", "nut", "sun", "map", "potato"],
+    "tracing": { "letter": "p", "words": ["pat", "nap", "map", "tap"] },
+    "coloring": ["pig", "pen", "panda"],
+    "dictionary": ["pat", "nap", "map", "tap"],
+    "extras": ["Moveable alphabet: build p-a-t, n-a-p, m-a-p, t-a-p, c-a-p, p-a-n", "Sandpaper letter 'p' + sand tray — the quiet lip-pop /p/", "/p/ sound basket + 8 sound cards", "'Pat the cat' gentleness ritual — practise a soft pat on a plush cat", "Nap-anywhere hide game: hide the sleeping-cat card in silly places, class reads 'The cat naps on the ___.'"]
+  },
+  "assets": [
+    { "file": "cat-naps.png", "usedBy": ["book:1"], "mjPrompt": "a tabby cat fast asleep curled up in a warm spotlight, deeply peaceful, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cat-nap-mat.png", "usedBy": ["book:2"], "mjPrompt": "a tabby cat fast asleep sprawled across a small woven floor mat, utterly relaxed, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cat-nap-map.png", "usedBy": ["book:3"], "mjPrompt": "a tabby cat asleep on top of an open folded paper map, one paw draped over it, absurd, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cat-nap-cap.png", "usedBy": ["book:4"], "mjPrompt": "a tabby cat curled up snugly asleep inside a baseball cap like a little bed, only ears and tail showing, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cat-nap-pan.png", "usedBy": ["book:5"], "mjPrompt": "a tabby cat coiled asleep inside a frying pan on a counter, ridiculous, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "pat-cat.png", "usedBy": ["book:6"], "mjPrompt": "a gentle child's hand softly patting the head of a sleeping tabby cat, tender, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "tap-cat.png", "usedBy": ["book:7"], "mjPrompt": "a single finger tapping the ground near a sleeping tabby cat with tiny motion lines, the cat unmoving, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cat-naps-through.png", "usedBy": ["book:8"], "mjPrompt": "a tabby cat sleeping blissfully while a small wooden peg doll boy in blue dungarees, a peg doll girl in a red dress and a tiny black ant tiptoe around it giving up, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cat-nap-potato.png", "usedBy": ["book:9"], "mjPrompt": "a tabby cat asleep using a single raw potato as a pillow, deadpan, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "pig.png", "usedBy": ["cards", "bingo", "matching", "basket"], "mjPrompt": "a small pink pig standing, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "pen.png", "usedBy": ["cards", "bingo", "matching", "basket"], "mjPrompt": "a single blue ballpoint pen, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "panda.png", "usedBy": ["cards", "bingo", "matching", "basket"], "mjPrompt": "a cute giant panda cub sitting, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "penguin.png", "usedBy": ["cards", "bingo", "matching", "basket"], "mjPrompt": "a small penguin standing upright, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "pizza.png", "usedBy": ["cards", "bingo", "matching", "basket"], "mjPrompt": "one slice of cheese pizza, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "pumpkin.png", "usedBy": ["cards", "bingo", "matching", "basket"], "mjPrompt": "a round orange pumpkin with a stem, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "parrot.png", "usedBy": ["cards", "bingo", "basket"], "mjPrompt": "a colorful parrot perched, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "paint.png", "usedBy": ["cards", "bingo", "basket"], "mjPrompt": "an open tin of colorful paint with a brush, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cat.png", "usedBy": ["bingo"], "mjPrompt": "REUSED FROM WEEK 4 — a curious tabby cat sitting and looking forward, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "ant.png", "usedBy": ["bingo"], "mjPrompt": "REUSED FROM WEEK 6 — a small shiny black ant standing upright with a proud posture, macro photograph, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "nut.png", "usedBy": ["bingo"], "mjPrompt": "REUSED FROM WEEK 6 — a single walnut in its shell, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sun.png", "usedBy": ["bingo"], "mjPrompt": "REUSED FROM WEEK 5 — a bright golden sun with soft rays, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "map.png", "usedBy": ["bingo"], "mjPrompt": "REUSED FROM WEEK 3 — an old folded paper map partly open, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato.png", "usedBy": ["bingo"], "mjPrompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "pig-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a happy round pig, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "pen-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a ballpoint pen, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "panda-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a cute sitting panda, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "Teach the quiet lip-pop /p/ — a puff of air, never 'puh'. This is the week the potato finally starts with the target sound, so the sound song's running gag flips (the class shouts 'YES?!') — lean into the giggle, it is initial-sound discrimination disguised as comedy. Blend p-a-t, n-a-p, m-a-p, t-a-p and live the nap-anywhere cat all week: hide the sleeping-cat card in silly places and read 'The cat naps on the ___.' Practise a gentle 'pat' on a plush cat as a real gentleness lesson.",
+  "lessonMapEquivalents": [8]
+}

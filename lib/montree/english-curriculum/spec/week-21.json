@@ -1,0 +1,84 @@
+{
+  "week": 21,
+  "level": 1,
+  "sound": "k, ck",
+  "letterDisplay": "Kk / ck",
+  "soundType": "consonant",
+  "anchorWord": "duck",
+  "newWords": ["kid", "kit", "duck", "kick"],
+  "reviewBank": ["sock", "rock", "back", "neck", "pick", "lick", "sack", "tick", "cat", "dog", "rat", "bug", "jam", "web", "sun", "cup", "nut", "big", "run", "got"],
+  "glue": { "new": [], "known": ["the", "is", "I", "and", "on"] },
+  "oralWords": ["what", "where", "your"],
+  "sentenceFrame": "The duck got the ___.",
+  "soundBasket": ["kite", "king", "key", "kangaroo", "koala", "kettle", "kid", "kit"],
+  "cast": { "introduces": "Duck", "present": ["Segina", "Sam", "Cat", "Ant", "Dog", "Rat", "Bug"] },
+  "celebration": "The Duck joins the cast · ck = one sound, two letters",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "K-K-Kick",
+      "lyrics": "[Intro — whispered]\nk… k… k…\n(dry clicks, like a clock)\n\n[Hook 1 — kids chant]\nK! K! K-k-k!\nWhat begins with K?\nK-k-kite! K-k-kite!\nIt's a kite! (a kite!)\n\n[Hook 2 — kids chant]\nK! K! K-k-k!\nWhat begins with K?\nK-k-king! K-k-king!\nIt's a king! (a king!)\n\n[Hook 3 — kids chant]\nK! K! K-k-k!\nWhat begins with K?\nK-k-key! K-k-key!\nIt's a key! (a key!)\n\n[Breakdown — whispered, bass drops out]\nk… k… k…\nk and c… the same click… k… c… k…\nd-u-ck… so-ck… ro-ck…\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not K!\n(k… k… k…)\n\n[Final Hook — big]\nK! K! K-k-k!\nK-k-kangaroo! K-k-kangaroo!\nIt's a kangaroo, kangaroo, kangaroo!",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "The K sound is a crisp unvoiced /k/ click — identical to Week 4's C. NEVER 'kay' (letter name) and NEVER 'kuh' (schwa). The breakdown teaches the year's biggest spelling secret: k and c make the SAME click, and at the END of a short word we write it 'ck' (du-ck, so-ck, ro-ck). Those '-ck' words are said as ONE click, never two. Answer line 'It's a ___!' reuses the Week 1 frame."
+    },
+    {
+      "role": "word",
+      "title": "The Duck Got the Sock",
+      "lyrics": "[Intro]\n(quack… quack…)\n\n[Hook]\nThe duck got the sock!\nThe duck got the sock!\nWhat got the sock? (the duck! the duck!)\nThe duck got the sock!\n\n[Verse 2]\nThe duck got the rock!\nThe duck got the rock!\nWhat got the rock? (the duck! the duck!)\nThe duck got the rock!\n\n[Verse 3]\nThe duck got the kit!\nThe duck got the kit!\nKick! The duck can kick!\n(get it back! get it back!)\n\n[Verse 4]\nThe kid got the duck!\nThe kid got the duck!\nBack! Get back, duck!\n(quack! quack!)\n\n[Outro]\nThe duck got the potato!\n(PO-TA-TO!)\nThe duck got the sock…\n(quack… shhh…)",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "One frame: 'The duck got the ___!' — the target swaps per verse (sock → rock → kit → potato). Every '-ck' word (duck, sock, rock, kick, back) is said as ONE click. The duck is the new cast member — cheeky, quick, a thief. Kids choir answers (the duck! the duck!)."
+    }
+  ],
+  "book": {
+    "title": "The Duck Got the Sock",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "A duck.", "image": "duck", "artNote": "The Duck's grand entrance — a plump white duck mid-waddle, one bright eye on the reader, plotting something. Cast member joins." },
+      { "n": 2, "text": "The duck got the sock!", "image": "duck-sock", "artNote": "The Duck triumphantly holding a stripey sock in its bill, head high." },
+      { "n": 3, "text": "The duck got the rock!", "image": "duck-rock", "artNote": "The Duck straining to lift a rock nearly its own size, tail up, determined." },
+      { "n": 4, "text": "The duck got the kit!", "image": "duck-kit", "artNote": "The Duck sitting on a little first-aid kit / pencil kit it has stolen, guarding it." },
+      { "n": 5, "text": "Kick! The duck can kick!", "image": "duck-kick", "artNote": "The Duck mid-kick, one webbed foot flung out, sending the sock flying. Action pose." },
+      { "n": 6, "text": "The cat ran. The duck ran!", "image": "duck-chase-cat", "artNote": "The Cat (tabby) fleeing with the sock; the Duck in hot pursuit right behind, both mid-stride. Chaos." },
+      { "n": 7, "text": "The kid got the duck!", "image": "kid-duck", "artNote": "A small child (a 'kid') scooping up the wriggling Duck in both arms, both surprised. Sock still in the Duck's bill." },
+      { "n": 8, "text": "Back! Get back, duck!", "image": "duck-back", "artNote": "The Duck waddling backward toward the reader, wings up, refusing to give the sock back. Comedy standoff." },
+      { "n": 9, "text": "The duck got the...?!", "image": "duck-potato", "artNote": "The Duck sitting on the potato like an egg, spotlit. No noun printed — the class SHOUTS the word from the picture. The Duck looks smug." }
+    ],
+    "backCoverWords": ["duck", "kid", "kit", "kick", "sock", "rock", "back", "the"]
+  },
+  "materials": {
+    "threePartCards": ["kite", "king", "key", "kangaroo", "koala", "kettle", "sock", "duck"],
+    "sentences": ["The duck got the sock.", "The kid can kick.", "The duck got the kit.", "Get back, duck!"],
+    "matching": ["kite", "king", "key", "kangaroo", "sock", "duck"],
+    "bingoPool": ["kite", "king", "key", "kangaroo", "koala", "kettle", "sock", "rock", "duck", "cat", "dog", "potato"],
+    "tracing": { "letter": "k", "words": ["kid", "kit", "kick"] },
+    "coloring": ["duck", "kite", "sock"],
+    "dictionary": ["kid", "kit", "duck", "kick"],
+    "extras": ["The ck secret: sandpaper c + sandpaper k pinned together as ONE tile — build du-ck, so-ck, ro-ck, ki-ck and read each -ck as a single click", "K vs C sort: k-words (kite, king, key) beside c-words (cat, cup, car) — same sound, note which start with which", "Duck puppet joins the cast basket beside Segina, Sam, Cat, Ant, Dog, Rat and Bug — count them: seven friends now"]
+  },
+  "assets": [
+    { "file": "duck.png", "usedBy": ["book:1", "cards", "bingo", "matching", "coloring"], "mjPrompt": "a plump white duck mid-waddle, one bright eye toward the viewer, looking mischievous, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "duck-sock.png", "usedBy": ["book:2"], "mjPrompt": "a white duck holding a stripey sock in its bill, head held high and triumphant, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "duck-rock.png", "usedBy": ["book:3"], "mjPrompt": "a white duck straining to lift a grey rock nearly its own size, tail up, determined, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "duck-kit.png", "usedBy": ["book:4"], "mjPrompt": "a white duck sitting on top of a small stolen kit box guarding it, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "duck-kick.png", "usedBy": ["book:5"], "mjPrompt": "a white duck mid-kick with one webbed foot flung out sending a sock flying, dynamic action, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "duck-chase-cat.png", "usedBy": ["book:6"], "mjPrompt": "a tabby cat running away with a sock while a white duck chases right behind it, both mid-stride, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "kid-duck.png", "usedBy": ["book:7"], "mjPrompt": "a small young child scooping up a wriggling white duck in both arms, both surprised, a sock in the duck's bill, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "duck-back.png", "usedBy": ["book:8"], "mjPrompt": "a white duck waddling backward toward the viewer with wings raised, refusing to give up a sock, comedic standoff, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "duck-potato.png", "usedBy": ["book:9"], "mjPrompt": "a smug white duck sitting on a single raw potato like an egg, dramatic spotlight, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "kite.png", "usedBy": ["cards", "bingo", "matching", "coloring"], "mjPrompt": "a colorful diamond kite with a tail, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "king.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a friendly toy king figure with a gold crown, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "key.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "an old brass key, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "kangaroo.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a kangaroo standing tall, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "koala.png", "usedBy": ["cards", "bingo", "basket"], "mjPrompt": "a koala clinging to a small branch, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "kettle.png", "usedBy": ["cards", "bingo", "basket"], "mjPrompt": "a shiny metal kettle, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sock.png", "usedBy": ["cards", "bingo", "matching", "coloring"], "mjPrompt": "a single stripey sock, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "rock.png", "usedBy": ["bingo"], "mjPrompt": "a smooth grey rock, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "duck-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a happy waddling duck, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "kite-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a diamond kite with a bow tail, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "sock-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a stripey sock, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "potato.png", "usedBy": ["bingo"], "mjPrompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+  ],
+  "teacherFocus": "Two lessons in one week. First: K makes the exact same click as C — sort k-words and c-words, same sound, different letter. Second, THE ck SECRET: at the end of a short word the /k/ click is spelled 'ck' (duck, sock, rock, kick) and read as ONE sound, never two. Pin sandpaper c+k together as a single tile. The Duck joins the cast as the cheeky thief — seven friends now.",
+  "lessonMapEquivalents": [16, 17]
+}

@@ -1,0 +1,89 @@
+{
+  "week": 26,
+  "level": 1,
+  "sound": "z",
+  "letterDisplay": "Zz",
+  "soundType": "consonant",
+  "anchorWord": "buzz",
+  "newWords": ["zip", "zap", "buzz", "zigzag"],
+  "reviewBank": ["zig", "zag", "fizz", "zed", "cat", "dog", "rat", "bug", "duck", "fox", "web", "jam", "sock", "van", "yam", "box", "six", "nap", "dig", "run", "mix", "tag", "quack", "on", "mat", "the", "and"],
+  "glue": { "new": [], "known": ["the", "is", "I", "and", "on", "says"] },
+  "oralWords": ["what", "where", "your", "we", "read"],
+  "sentenceFrame": "The ___ can ___!",
+  "soundBasket": ["zebra", "zipper", "zero", "zigzag", "zucchini", "zip", "zap", "zoo"],
+  "cast": { "introduces": null, "present": ["Segina", "Sam", "Cat", "Ant", "Dog", "Rat", "Bug", "Duck", "Fox"] },
+  "celebration": "GRADUATION — the whole cast graduates and the album completes",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Z-Z-Zip",
+      "lyrics": "[Intro — whispered]\nzzz… zzz… zzz…\n(a buzzing bee, motor on)\n\n[Hook 1 — kids chant]\nZ! Z! Zzz-zzz-zzz!\nWhat begins with Z?\nZ-z-zebra! Z-z-zebra!\nIt's a zebra! (a zebra!)\n\n[Hook 2 — kids chant]\nZ! Z! Zzz-zzz-zzz!\nWhat begins with Z?\nZ-z-zip! Z-z-zip!\nIt's a zip! (a zip!)\n\n[Hook 3 — kids chant]\nZ! Z! Zzz-zzz-zzz!\nWhat begins with Z?\nZ-z-zero! Z-z-zero!\nIt's a zero! (a zero!)\n\n[Breakdown — whispered, bass drops out]\nzzz… (motor on) … sss… (off)\nzip… sip… zap… sap…\nbu-zz… fi-zz… (double z, big buzz)\n\n[Bridge]\nA potato?! (last time now… NO!)\nP-p-potato! Not Z!\n(zzz… zzz… zzz…)\n\n[Final Hook — big]\nZ! Z! Zzz-zzz-zzz!\nZig-zag! Zig-zag! BUZZ!\nThe bug can buzz, buzz, buzz!",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "The last sound of the year. Z is a VOICED buzz /z/ like a bee — motor ON, contrast with /s/ motor OFF (zip vs sip). NEVER 'zed/zee' (letter name) and NEVER 'zuh' (schwa). Double-z (buzz, fizz) is one long buzz. Land the final hook on 'the bug can buzz' — the graduation book's title."
+    },
+    {
+      "role": "word",
+      "title": "The Bug Can Buzz",
+      "lyrics": "[Intro — the whole year comes back]\n(It's a… where is… on the mat…)\n\n[Hook]\nThe bug can buzz! The bug can buzz!\nWhat can the bug do? (buzz! buzz!)\nThe bug can buzz!\n\n[Verse 2 — the cast graduates]\nThe cat can nap. The dog can dig.\nThe rat can run. The duck can quack.\nThe fox can mix. The ant can tag.\nWe can read! (we can read!)\n\n[Verse 3 — the year's frames]\nIt's a potato! (It's a ___!)\nWhere is Segina? (on the mat!)\nZip! Zap! Zigzag!\nThe bug can BUZZ!\n\n[Bridge]\nSam can. Segina can.\nThe cat is on the mat.\nWe can read it — every one!\n(we did it! we did it!)\n\n[Outro — the album completes]\nAnd the potato can…?!\n(PO-TA-TO!)\nThe bug can buzz…\nThe end. (the end!)\n(buzz… shhh…)",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "🎓 THE GRADUATION ANTHEM — the finale of the whole album. Core frame 'The ___ can ___!' but this one runs a little longer (~20 unique words) because it quotes back the YEAR: 'It's a ___' (W1), 'Where is Segina?' (W2), 'on the mat' (W4), each cast member's verb. Let the choir swell on 'we can read!'. End on the potato, then a soft 'the end'. The 'we can read' line is sung, not printed — the printed book stays strictly decodable."
+    }
+  ],
+  "book": {
+    "title": "The Bug Can Buzz",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "The bug.", "image": "bug", "artNote": "The Bug (red-shelled cast beetle) center stage in a tiny graduation cap, wings just starting to lift. The whole year has led here." },
+      { "n": 2, "text": "The bug can buzz!", "image": "bug-buzz", "artNote": "The Bug airborne, wings a golden blur, a visible 'BUZZ' shimmer around it, joyful flight." },
+      { "n": 3, "text": "Zip! The bug can zip!", "image": "bug-zip", "artNote": "The Bug zipping across the spread in a streak of motion lines, leaving a zigzag trail. Speed." },
+      { "n": 4, "text": "The cat can nap.", "image": "cat-nap", "artNote": "The Cat (tabby) curled asleep on the familiar mat — a Week 4 callback, the very first sentence, honored." },
+      { "n": 5, "text": "The dog can dig.", "image": "dog-dig", "artNote": "The Dog (brown) mid-dig, dirt flying, tail up, doing what a Week 12 dog does best." },
+      { "n": 6, "text": "The rat can run.", "image": "rat-run", "artNote": "The Rat (grey) sprinting joyfully, little legs a blur — the Week 16 verb, the Week 15 friend." },
+      { "n": 7, "text": "The duck can quack.", "image": "duck-quack2", "artNote": "The Duck (white) quacking proudly in a graduation cap, sock finally set down — a Week 25 callback." },
+      { "n": 8, "text": "The fox can mix.", "image": "fox-mix", "artNote": "The Fox (red) stirring a big bowl, tail wrapped round a spoon — the Week 24 verb, the sly one being useful for once." },
+      { "n": 9, "text": "The ant can tag.", "image": "ant-tag", "artNote": "The Ant (black) tagging the Bug in a game, both tiny and delighted — the Week 6 friend, first cast member back." },
+      { "n": 10, "text": "Zap! Zigzag! Buzz!", "image": "zigzag-buzz", "artNote": "A big celebratory Z-spread — lightning zaps, zigzag streamers, the Bug buzzing loops overhead. The letter's grand finale." },
+      { "n": 11, "text": "Sam can. Segina can. The bug can buzz!", "image": "graduation-cast", "artNote": "GRADUATION: the whole cast in tiny caps on the mat — Cat, Ant, Dog, Rat, Bug, Duck, Fox, and Sam and Segina beaming, an open book in the middle they can all read. The family, complete." },
+      { "n": 12, "text": "It can...?!", "image": "potato-graduation", "artNote": "THE FINALE: the potato in a graduation cap and round glasses at the little whiteboard, pointer up, taking one last bow. No noun printed — the class SHOUTS the word from the picture. The album completes. Curtain." }
+    ],
+    "backCoverWords": ["zip", "zap", "buzz", "zigzag", "can", "the", "and", "on"]
+  },
+  "materials": {
+    "threePartCards": ["zebra", "zipper", "zero", "zigzag", "zucchini", "zoo", "bug", "fox"],
+    "sentences": ["The bug can buzz.", "The cat can nap.", "The dog can dig.", "Zip! Zap! Zigzag!"],
+    "matching": ["zebra", "zipper", "zero", "zigzag", "zoo", "bug"],
+    "bingoPool": ["zebra", "zipper", "zero", "zigzag", "zucchini", "zoo", "bug", "cat", "dog", "rat", "duck", "fox", "ant", "potato"],
+    "tracing": { "letter": "z", "words": ["zip", "zap", "buzz"] },
+    "coloring": ["zebra", "zipper", "zigzag"],
+    "dictionary": ["zip", "zap", "buzz", "zigzag"],
+    "extras": ["Motor on / motor off: /z/ buzz (zip) vs /s/ hiss (sip) — hand on the throat, feel the bee wake up", "Double-z: buzz and fizz end in TWO z's said as one long buzz — the FLSZ doubling rule they meet next level", "🎓 GRADUATION CEREMONY: every child reads a decodable book aloud to the whole cast, gets a paper cap, and takes home the completed album — 26 weeks, 26 sounds, the whole alphabet decoded", "The completed album: play all 51 songs end to end while the caps go on"]
+  },
+  "assets": [
+    { "file": "bug.png", "usedBy": ["book:1", "cards", "bingo", "matching"], "mjPrompt": "a round red-shelled beetle wearing a tiny graduation cap with its wings just starting to lift, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bug-buzz.png", "usedBy": ["book:2"], "mjPrompt": "a red-shelled beetle airborne with its wings a golden blur and a shimmering buzz haze around it, joyful flight, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bug-zip.png", "usedBy": ["book:3"], "mjPrompt": "a red-shelled beetle zipping across the frame in a streak of motion lines leaving a zigzag trail, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cat-nap.png", "usedBy": ["book:4"], "mjPrompt": "a tabby cat curled up asleep on a small woven floor mat, peaceful, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "dog-dig.png", "usedBy": ["book:5"], "mjPrompt": "a brown dog mid-dig with dirt flying and its tail up, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "rat-run.png", "usedBy": ["book:6"], "mjPrompt": "a grey rat sprinting joyfully with its little legs a blur, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "duck-quack2.png", "usedBy": ["book:7"], "mjPrompt": "a white duck quacking proudly in a tiny graduation cap with a sock set down beside it, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "fox-mix.png", "usedBy": ["book:8"], "mjPrompt": "a red fox stirring a big mixing bowl with its tail wrapped around the spoon, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "ant-tag.png", "usedBy": ["book:9"], "mjPrompt": "a tiny black ant tagging a red-shelled beetle in a game of tag, both delighted, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "zigzag-buzz.png", "usedBy": ["book:10"], "mjPrompt": "a celebratory scene of lightning zaps and zigzag streamers with a red-shelled beetle buzzing loops overhead, festive, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "graduation-cast.png", "usedBy": ["book:11"], "mjPrompt": "a graduation group on a small woven floor mat — a tabby cat, black ant, brown dog, grey rat, red-shelled beetle, white duck and red fox all in tiny graduation caps with a peg doll boy in a red shirt and a peg doll girl with black pigtails and a red dress beaming beside them, an open book in the middle, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-graduation.png", "usedBy": ["book:12"], "mjPrompt": "a single raw potato wearing a graduation cap and round glasses standing at a miniature whiteboard with a pointer raised, taking a bow, dramatic spotlight, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "zebra.png", "usedBy": ["cards", "bingo", "matching", "coloring"], "mjPrompt": "a black and white striped zebra standing, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "zipper.png", "usedBy": ["cards", "bingo", "matching", "coloring"], "mjPrompt": "a metal zipper half open on a piece of fabric, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "zero.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a large wooden number zero, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "zigzag.png", "usedBy": ["cards", "bingo", "matching", "coloring"], "mjPrompt": "a bold zigzag lightning shape, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "zucchini.png", "usedBy": ["cards", "bingo", "basket"], "mjPrompt": "a fresh green zucchini, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "zoo.png", "usedBy": ["cards", "bingo", "basket"], "mjPrompt": "a little zoo entrance archway with a sign and animal silhouettes, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "fox.png", "usedBy": ["cards", "bingo"], "mjPrompt": "REUSED FROM WEEK 24 — a red fox sitting and looking forward with a sly expression, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "zebra-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a striped zebra, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "zipper-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a big zipper half open, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "zigzag-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a bold zigzag pattern to color, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "potato.png", "usedBy": ["bingo"], "mjPrompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+  ],
+  "teacherFocus": "The last sound of the year. Z is the voiced twin of /s/ — motor on (zip vs sip), hand on the throat feels the bee wake up. Double-z (buzz, fizz) is one long buzz. Then GRADUATE: every child reads a decodable book aloud to the whole cast, earns a paper cap, and takes home the completed 26-week album. The book quotes the whole year back — read the graduation spread slowly and name every friend and every sound they conquered.",
+  "lessonMapEquivalents": [30]
+}

@@ -1,0 +1,488 @@
+{
+  "week": 17,
+  "level": 1,
+  "sound": "f",
+  "letterDisplay": "Ff",
+  "soundType": "consonant",
+  "anchorWord": "fig",
+  "newWords": [
+    "fun",
+    "fan",
+    "fat",
+    "fin"
+  ],
+  "reviewBank": [
+    "at",
+    "am",
+    "mat",
+    "cat",
+    "sat",
+    "Sam",
+    "an",
+    "ant",
+    "can",
+    "man",
+    "tan",
+    "pat",
+    "nap",
+    "map",
+    "cap",
+    "pan",
+    "it",
+    "in",
+    "sit",
+    "pin",
+    "tip",
+    "hat",
+    "hit",
+    "ham",
+    "him",
+    "dad",
+    "sad",
+    "did",
+    "mad",
+    "not",
+    "top",
+    "pot",
+    "hot",
+    "mop",
+    "hop",
+    "cot",
+    "dot",
+    "dog",
+    "got",
+    "dig",
+    "pig",
+    "gas",
+    "tag",
+    "gap",
+    "hog",
+    "big",
+    "bat",
+    "bag",
+    "bad",
+    "bit",
+    "bib",
+    "tab",
+    "cab",
+    "ban",
+    "pet",
+    "ten",
+    "hen",
+    "bed",
+    "net",
+    "get",
+    "men",
+    "set",
+    "peg",
+    "den",
+    "pen",
+    "rat",
+    "red",
+    "rip",
+    "ram",
+    "rag",
+    "rot",
+    "rim",
+    "ran",
+    "rid",
+    "up",
+    "sun",
+    "run",
+    "cup",
+    "but",
+    "mud",
+    "hut",
+    "nut",
+    "gum",
+    "bus",
+    "tub",
+    "pup",
+    "cut"
+  ],
+  "glue": {
+    "new": [],
+    "known": [
+      "the",
+      "is",
+      "on",
+      "I",
+      "and"
+    ]
+  },
+  "oralWords": [
+    "what",
+    "where",
+    "fast"
+  ],
+  "sentenceFrame": "The fat fig.",
+  "soundBasket": [
+    "fish",
+    "fan",
+    "fox",
+    "fire",
+    "feather",
+    "fork",
+    "frog",
+    "flag"
+  ],
+  "cast": {
+    "introduces": null,
+    "present": [
+      "Segina",
+      "Sam",
+      "Cat",
+      "Ant",
+      "Dog",
+      "Rat",
+      "Pup"
+    ]
+  },
+  "celebration": null,
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "F-F-Fun!",
+      "lyrics": "[Intro]\nF! F! F-f-f!\n(fff… fff… fff…)\n\n[Hook]\nF! F! F-f-f!\nWhat begins with F?\nF-f-fish! F-f-fish!\nIt's a fish! (a fish!)\n\n[Verse 2]\nF! F! F-f-f!\nWhat begins with F?\nF-f-fox! F-f-fox!\nIt's a fox! (a fox!)\n\n[Verse 3]\nF! F! F-f-f!\nWhat begins with F?\nF-f-fire! F-f-fire!\nIt's a fire! (a fire!)\n\n[Verse 4]\nF! F! F-f-f!\nWhat begins with F?\nF-f-frog! F-f-frog!\nIt's a frog! (a frog!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not F!\n(fff… fff… fff…)\n\n[Outro]\nF-f-fun! A fun run!\nF-f-fig! The fat fig!\nF! F! F-f-f!",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "The F sound is a soft CONTINUOUS /f/ — top teeth resting on the lower lip, air hissing out; you can hold it and hum it. NEVER 'ef' (letter name) and NEVER 'fuh' (schwa). The '(fff…)' drone is a long soft airy hiss riding under the 808. Because /f/ can be held, let the class sustain every initial f. Answer 'It's a ___!' reuses the Week 1 frame."
+    },
+    {
+      "role": "word",
+      "title": "The Fat Fig",
+      "lyrics": "[Intro]\n(fun… fun… a fun run…)\n\n[Hook]\nThe fat fig! The fat fig!\nCan the fat fig run?\nThe fat fig ran! (it ran!)\nRun, fat fig, run!\n\n[Verse 2]\nThe fat fig! The fat fig!\nThe dog ran. The pup ran.\nThe rat ran! The cat ran!\nRun, fat fig, run!\n\n[Verse 3]\nThe fat fig! The fat fig!\nThe fat fig is fit!\nThe fat fig got a cup! (a cup!)\nRun, fat fig, run!\n\n[Verse 4]\nFun! Fun! A fun run!\nFun in the sun, sun, sun!\nThe fat fig ran and ran!\nRun, fat fig, run!\n\n[Outro]\nAt the top… a potato ran?!\n(PO-TA-TO!)\nRun, fat fig, run, run, run!",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "ONE frame anchor: 'Run, fat fig, run!' repeats as the hook tail every verse. It's a fun-run song — the fat fig races the whole cast and wins a cup (a trophy). Keep 'fun', 'run', 'sun' rhyming hard on the short u the class just learned. 'fast' is oral only. Potato gate-crashes the finish line, once, loud."
+    }
+  ],
+  "book": {
+    "title": "The Fat Fig",
+    "readAloud": false,
+    "spreads": [
+      {
+        "n": 1,
+        "text": "A fig.",
+        "image": "fig",
+        "artNote": "A single plump purple fig, spotlit, ordinary and dignified."
+      },
+      {
+        "n": 2,
+        "text": "A fat fig!",
+        "image": "fat-fig",
+        "artNote": "The fig, now comically ROUND and fat, grinning, with two tiny legs appearing at the bottom. The joke wakes up."
+      },
+      {
+        "n": 3,
+        "text": "Fun! A fun run!",
+        "image": "fun-run-start",
+        "artNote": "A starting line with a flag; the fat fig on tiny legs at the line beside the cast, all poised to race. Festival banners."
+      },
+      {
+        "n": 4,
+        "text": "The fat fig can run!",
+        "image": "fig-running",
+        "artNote": "The fat fig sprinting on its little legs, motion lines, absurdly fast, tongue-of-a-fig out."
+      },
+      {
+        "n": 5,
+        "text": "The dog ran. The pup ran.",
+        "image": "cast-running",
+        "artNote": "The Dog and the Pup pounding after the fig; the Rat and Cat just behind. Whole-cast race panel."
+      },
+      {
+        "n": 6,
+        "text": "The fat fig is fit!",
+        "image": "fig-flexing",
+        "artNote": "The fat fig pausing to flex a tiny fig-arm, showing off, sweatband on. Comedy beat."
+      },
+      {
+        "n": 7,
+        "text": "The fat fig ran and ran.",
+        "image": "fig-running-tired",
+        "artNote": "The fig still running but wobbling, little legs a blur, everyone else flagging behind."
+      },
+      {
+        "n": 8,
+        "text": "The fat fig got a cup!",
+        "image": "fig-with-cup",
+        "artNote": "The fat fig at the finish holding up a shiny trophy cup, the cast cheering. Victory."
+      },
+      {
+        "n": 9,
+        "text": "It ran…?!",
+        "image": "potato-running",
+        "artNote": "The POTATO, tiny legs pumping, wearing a runner's number and its round glasses, zooming past the finish line last but proud. No noun printed — the class SHOUTS it."
+      }
+    ],
+    "backCoverWords": [
+      "fig",
+      "fat",
+      "fun",
+      "run",
+      "fit",
+      "cup",
+      "dog",
+      "rat"
+    ]
+  },
+  "materials": {
+    "threePartCards": [
+      "fish",
+      "fan",
+      "fox",
+      "fire",
+      "feather",
+      "fork",
+      "frog",
+      "flag"
+    ],
+    "sentences": [
+      "A fat fig.",
+      "The fig can run.",
+      "Fun in the sun!",
+      "The fig is fit."
+    ],
+    "matching": [
+      "fig",
+      "fish",
+      "fox",
+      "fan",
+      "frog",
+      "fork"
+    ],
+    "bingoPool": [
+      "fig",
+      "fan",
+      "fox",
+      "fish",
+      "fire",
+      "fork",
+      "frog",
+      "flag",
+      "fun",
+      "fit",
+      "cat",
+      "potato"
+    ],
+    "tracing": {
+      "letter": "f",
+      "words": [
+        "fun",
+        "fan",
+        "fig"
+      ]
+    },
+    "coloring": [
+      "fig",
+      "fish",
+      "fox"
+    ],
+    "dictionary": [
+      "fun",
+      "fan",
+      "fat",
+      "fin",
+      "fig",
+      "fit"
+    ],
+    "extras": [
+      "Moveable alphabet: build f-u-n, f-a-n, f-a-t, f-i-g — hold the /f/ long before the vowel, then swap the first sound (fan → man → can → pan)",
+      "Sandpaper letter f: top teeth on lower lip, feel the air on your hand — /f/ is a sound you can HOLD, unlike the stops",
+      "Fun-run relay: a real classroom relay where children carry a fig counter to the finish and read the fig words along the track",
+      "/f/ vs /p/ listening: fat/pat, fig/pig, fan/pan, fin/pin — teeth-on-lip (f) vs lips-pop (p)"
+    ]
+  },
+  "assets": [
+    {
+      "file": "fig.png",
+      "usedBy": [
+        "book:1",
+        "cards",
+        "bingo",
+        "matching",
+        "coloring"
+      ],
+      "mjPrompt": "a single plump purple fig, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "fat-fig.png",
+      "usedBy": [
+        "book:2"
+      ],
+      "mjPrompt": "a comically round fat purple fig grinning with two tiny legs appearing at the bottom, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "fun-run-start.png",
+      "usedBy": [
+        "book:3"
+      ],
+      "mjPrompt": "a race starting line with a flag, a fat purple fig on tiny legs poised beside a puppy, dog, cat and rat, festival banners, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "fig-running.png",
+      "usedBy": [
+        "book:4"
+      ],
+      "mjPrompt": "a fat purple fig sprinting on tiny legs with motion blur lines, absurdly fast, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "cast-running.png",
+      "usedBy": [
+        "book:5"
+      ],
+      "mjPrompt": "a scruffy dog and a puppy pounding forward in a race with a red rat and tabby cat just behind, whole-cast race panel, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "fig-flexing.png",
+      "usedBy": [
+        "book:6"
+      ],
+      "mjPrompt": "a fat purple fig with a tiny arm flexing a muscle, wearing a sweatband, showing off, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "fig-running-tired.png",
+      "usedBy": [
+        "book:7"
+      ],
+      "mjPrompt": "a fat purple fig still running but wobbling on blurred little legs, everyone else flagging behind, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "fig-with-cup.png",
+      "usedBy": [
+        "book:8"
+      ],
+      "mjPrompt": "a fat purple fig at a finish line holding up a shiny gold trophy cup, animal cast cheering, victory, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "potato-running.png",
+      "usedBy": [
+        "book:9"
+      ],
+      "mjPrompt": "a single raw potato with tiny pumping legs wearing a runner's number bib and round glasses zooming past a finish line, proud, spotlit, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "fish.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching",
+        "coloring"
+      ],
+      "mjPrompt": "a single orange goldfish, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "fan.png",
+      "usedBy": [
+        "cards",
+        "bingo"
+      ],
+      "mjPrompt": "a small folding paper hand fan, open, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "fox.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching",
+        "coloring"
+      ],
+      "mjPrompt": "a small red fox sitting, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "fire.png",
+      "usedBy": [
+        "cards",
+        "bingo"
+      ],
+      "mjPrompt": "a small campfire with orange flames, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "feather.png",
+      "usedBy": [
+        "cards",
+        "basket"
+      ],
+      "mjPrompt": "a single soft white feather, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "fork.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching"
+      ],
+      "mjPrompt": "a simple metal fork, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "frog.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching"
+      ],
+      "mjPrompt": "a small green frog sitting, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "flag.png",
+      "usedBy": [
+        "cards",
+        "bingo"
+      ],
+      "mjPrompt": "a small red triangular flag on a pole, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "fun.png",
+      "usedBy": [
+        "bingo"
+      ],
+      "mjPrompt": "a joyful puppy and fig celebrating together to illustrate the word fun, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "fit.png",
+      "usedBy": [
+        "bingo"
+      ],
+      "mjPrompt": "a fat fig flexing a tiny muscle to illustrate the word fit, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "cat.png",
+      "usedBy": [
+        "bingo"
+      ],
+      "mjPrompt": "a curious tabby cat sitting and looking forward, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "potato.png",
+      "usedBy": [
+        "bingo"
+      ],
+      "mjPrompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "fig-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a happy round fig with little legs running, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "fish-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a friendly fish with bubbles, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "fox-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a cute sitting fox with a bushy tail, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    }
+  ],
+  "teacherFocus": "Teach the soft CONTINUOUS /f/ — top teeth on the lower lip, air hissing, a sound you can HOLD (unlike the stops the class has been drilling). Contrast it with /p/ (fat/pat, fig/pig, fin/pin): teeth-on-lip versus lips-pop. Blend f-u-n, f-a-n, f-a-t, f-i-g. The fat fig runs a fun run against the whole cast and wins a cup — a joyful decodable romp that recycles the short-u run/fun/sun the class just earned, with the potato crashing the finish.",
+  "lessonMapEquivalents": [
+    23
+  ]
+}

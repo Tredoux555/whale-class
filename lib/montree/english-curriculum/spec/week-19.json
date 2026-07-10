@@ -1,0 +1,84 @@
+{
+  "week": 19,
+  "level": 1,
+  "sound": "w",
+  "letterDisplay": "Ww",
+  "soundType": "consonant",
+  "anchorWord": "web",
+  "newWords": ["wet", "win", "wig", "web"],
+  "reviewBank": ["wag", "wit", "wed", "bug", "cat", "dog", "rat", "sun", "cup", "nut", "fig", "log", "leg", "fan", "hat", "sad", "mad", "big", "run", "mat", "pot"],
+  "glue": { "new": [], "known": ["the", "is", "I", "and", "on"] },
+  "oralWords": ["what", "where", "your"],
+  "sentenceFrame": "The ___ is wet.",
+  "soundBasket": ["web", "watch", "wagon", "worm", "wolf", "well", "wing", "water"],
+  "cast": { "introduces": null, "present": ["Segina", "Sam", "Cat", "Ant", "Dog", "Rat", "Bug"] },
+  "celebration": null,
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "W-W-Web",
+      "lyrics": "[Intro — whispered]\nw… w… w…\n(rounded lips, a low woo)\n\n[Hook 1 — kids chant]\nW! W! W-w-w!\nWhat begins with W?\nW-w-web! W-w-web!\nIt's a web! (a web!)\n\n[Hook 2 — kids chant]\nW! W! W-w-w!\nWhat begins with W?\nW-w-watch! W-w-watch!\nIt's a watch! (a watch!)\n\n[Hook 3 — kids chant]\nW! W! W-w-w!\nWhat begins with W?\nW-w-wagon! W-w-wagon!\nIt's a wagon! (a wagon!)\n\n[Breakdown — whispered, bass drops out]\nw… w… w…\nw-w-worm… w-w-wolf… w-w-well…\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not W!\n(w… w… w…)\n\n[Final Hook — big]\nW! W! W-w-w!\nW-w-wing! W-w-wing!\nIt's a wing, wing, wing!",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "The W sound is a rounded gliding /w/ — lips pucker then release into a low 'woo', NEVER 'double-you' (letter name) and NEVER 'wuh' (schwa). The '(w… w… w…)' lines are a rounded breathy glide riding under the 808. Answer line 'It's a ___!' reuses the Week 1 frame."
+    },
+    {
+      "role": "word",
+      "title": "The Wet Web",
+      "lyrics": "[Intro]\n(drip… drip… drip…)\n\n[Hook]\nThe web is wet! The web is wet!\nWhat is wet? (wet? wet?)\nThe web is wet!\n\n[Verse 2]\nThe wig is wet! The wig is wet!\nWhat is wet? (wet? wet?)\nThe wig is wet!\n\n[Verse 3]\nThe bug is wet! The bug is wet!\nWhat is wet? (a bug?!)\nThe bug is wet!\n\n[Verse 4]\nSam is wet! Sam is wet!\nWhat is wet? (Sam?!)\nSam is wet!\n\n[Outro]\nThe potato is wet!\n(PO-TA-TO!)\nThe web is wet…\n(drip… drip… shhh…)",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "One frame only: 'The ___ is wet.' — a single word swaps per verse (web → wig → bug → Sam → potato). The rain drips are the percussion bed. Kids choir answers the (wet? wet?) echoes. Everything printed uses the child's real spelling; 'Sam' is a name they read by heart."
+    }
+  ],
+  "book": {
+    "title": "The Wet Web",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "A web.", "image": "web", "artNote": "A single dewy spider web strung across the dark, lit from behind so every strand glows. Empty stage — the children already know this move." },
+      { "n": 2, "text": "The web is wet.", "image": "wet-web", "artNote": "Rain falling on the web, droplets clinging to every thread, glittering. Cold and beautiful." },
+      { "n": 3, "text": "A wig is on the web!", "image": "wig-on-web", "artNote": "A ridiculous curly wig snagged and dangling from the wet web. First laugh — how did THAT get there?" },
+      { "n": 4, "text": "The bug is on the web.", "image": "bug-on-web", "artNote": "The Bug (red-shelled cast beetle) clinging to the wet web, damp and thoroughly unimpressed. Cast callback." },
+      { "n": 5, "text": "The cat is wet!", "image": "wet-cat", "artNote": "The Cat (tabby) soaked to the skin, ears flat, glaring at the reader. Peak feline outrage." },
+      { "n": 6, "text": "The dog is wet and sad.", "image": "wet-dog", "artNote": "The Dog (brown) drenched and droopy, one paw up, the picture of a sad wet dog." },
+      { "n": 7, "text": "Sam is wet!", "image": "wet-sam", "artNote": "Sam the peg-doll boy standing under the drip, hair flat, arms out, delighted despite it all." },
+      { "n": 8, "text": "The web is BIG and wet.", "image": "big-wet-web", "artNote": "Pull back: the web is now enormous, spanning the whole spread, everything stuck to it — wig, bug, a sock, a leaf. Gloriously wet." },
+      { "n": 9, "text": "On the web?!", "image": "potato-on-web", "artNote": "The potato, spotlit, impossibly stuck dead-center in the giant wet web. No noun printed — the class SHOUTS the word from the picture. The Bug peeks in from the edge." }
+    ],
+    "backCoverWords": ["wet", "web", "wig", "win", "on", "the", "is", "and"]
+  },
+  "materials": {
+    "threePartCards": ["web", "wig", "watch", "wagon", "worm", "well", "wing", "wolf"],
+    "sentences": ["The web is wet.", "The wig is wet.", "The bug is on the web.", "Sam is wet."],
+    "matching": ["web", "wig", "watch", "wagon", "worm", "well"],
+    "bingoPool": ["web", "wig", "watch", "wagon", "worm", "well", "wing", "wolf", "bug", "dog", "cat", "rat", "fig", "potato"],
+    "tracing": { "letter": "w", "words": ["wet", "web", "wig"] },
+    "coloring": ["web", "wig", "wagon"],
+    "dictionary": ["wet", "web", "wig", "win"],
+    "extras": ["Moveable alphabet: build w-e-t, w-e-b, w-i-g, w-i-n and read them back", "Real wet-web science corner: spray a real string web with a mister and watch the drops — say 'the web is wet'", "Sound sort: /w/ initial pictures vs the /v/ and /f/ tricksters coming next (wolf vs fan vs van, said aloud)"]
+  },
+  "assets": [
+    { "file": "web.png", "usedBy": ["book:1", "cards", "bingo", "matching"], "mjPrompt": "a single dewy spider web strung in the dark, lit from behind, every strand glowing, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "wet-web.png", "usedBy": ["book:2"], "mjPrompt": "a spider web covered in glistening rain droplets, water clinging to every thread, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "wig-on-web.png", "usedBy": ["book:3"], "mjPrompt": "a ridiculous curly wig snagged and dangling from a wet spider web, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bug-on-web.png", "usedBy": ["book:4"], "mjPrompt": "a small round red-shelled beetle clinging to a wet spider web, damp and unimpressed, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "wet-cat.png", "usedBy": ["book:5"], "mjPrompt": "a soaking wet tabby cat, fur flat, ears back, glaring at the viewer, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "wet-dog.png", "usedBy": ["book:6"], "mjPrompt": "a drenched droopy brown dog, one paw raised, looking sad, water dripping, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "wet-sam.png", "usedBy": ["book:7"], "mjPrompt": "a small wooden peg doll boy with flat wet painted hair standing under dripping water, arms out, delighted, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "big-wet-web.png", "usedBy": ["book:8"], "mjPrompt": "an enormous wet spider web filling the frame with a curly wig, a red beetle, a sock and a leaf all stuck to it, dripping, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-on-web.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato impossibly stuck dead-center in a giant wet spider web, dramatic spotlight, a small red beetle peeking in from the edge of frame, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "wig.png", "usedBy": ["cards", "bingo", "matching", "coloring"], "mjPrompt": "a curly costume wig on a stand, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "watch.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a round wristwatch with a leather strap, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "wagon.png", "usedBy": ["cards", "bingo", "matching", "coloring"], "mjPrompt": "a little red toy wagon with wooden sides, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "worm.png", "usedBy": ["cards", "bingo", "matching", "basket"], "mjPrompt": "a friendly pink earthworm curled on soil, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "well.png", "usedBy": ["cards", "bingo", "matching", "basket"], "mjPrompt": "a small stone wishing well with a little roof and bucket, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "wing.png", "usedBy": ["cards", "bingo", "basket"], "mjPrompt": "a single white feathered wing, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "wolf.png", "usedBy": ["cards", "bingo", "basket"], "mjPrompt": "a grey wolf sitting and looking forward, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "water.png", "usedBy": ["basket"], "mjPrompt": "a clear glass of water, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "web-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a spider web with a smiling spider, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "wig-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a big curly wig, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "wagon-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a little wagon with four wheels and a handle, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "potato.png", "usedBy": ["bingo"], "mjPrompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+  ],
+  "teacherFocus": "Introduce /w/ as a rounded gliding sound (lips pucker — 'woo'), never 'wuh'. Blend w-e-t, w-e-b, w-i-g. The wet-web science corner makes the anchor word real — mist a string web and read 'the web is wet' off the drops. Sneak-preview the /w/–/v/–/f/ lip trio orally; it pays off in Weeks 17 and 22.",
+  "lessonMapEquivalents": [27]
+}

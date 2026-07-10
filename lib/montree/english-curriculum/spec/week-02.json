@@ -1,0 +1,87 @@
+{
+  "week": 2,
+  "level": 1,
+  "sound": "t",
+  "letterDisplay": "Tt",
+  "soundType": "consonant",
+  "anchorWord": "at",
+  "newWords": ["at"],
+  "reviewBank": ["a"],
+  "glue": { "new": [], "known": [] },
+  "oralWords": ["where"],
+  "sentenceFrame": "She's at the ___.",
+  "soundBasket": ["turtle", "tiger", "tomato", "taxi", "teddy", "towel", "toothbrush", "table"],
+  "cast": { "introduces": "Segina", "present": [] },
+  "celebration": null,
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "T-T-Turtle",
+      "lyrics": "[Intro — whispered]\nt… t… t… t…\n(tick, tick, tick)\n\n[Hook 1 — kids chant]\nT! T! T-t-t!\nWhat begins with T?\nT-t-turtle! T-t-turtle!\nIt's a turtle! (a turtle!)\n\n[Hook 2 — kids chant]\nT! T! T-t-t!\nWhat begins with T?\nT-t-tiger! T-t-tiger!\nIt's a tiger! (a tiger!)\n\n[Hook 3 — kids chant]\nT! T! T-t-t!\nWhat begins with T?\nT-t-tomato! T-t-tomato!\nIt's a tomato! (a tomato!)\n\n[Breakdown — whispered, bass drops out]\nt… t… t…\nt-t-taxi… t-t-teddy… t-t-towel…\n\n[Final Hook — big]\nT! T! T-t-t!\nWhat begins with T?\nA potato?! (NO!)\nP-p-potato! Not T!\nT-t-table! T-t-table!\nIt's a table, table, table!",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap call, kids choir response, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "ONE pattern: \"T-t-X! It's a X!\" — the stutter is the sound isolation, and the answer line REUSES Week 1's frame (It's a ___) so the songs stack like the letters do. The potato tries to sneak in and the class shouts NO — that's initial-sound discrimination disguised as a joke, and it mirrors the mixed-basket I Spy game mid-week. Ends on \"table\" — a real /t/ thing they can slap on the beat. Stop consonants NEVER sung with schwa."
+    },
+    {
+      "role": "word",
+      "title": "Where Is Segina?",
+      "lyrics": "[Intro — whispered]\nt… t… t…\nWhere is Sejeena?\n\n[Hook 1 — call and response]\nWhere is Sejeena? (where? where?)\nWhere is Sejeena? (where? where?)\nShe's at the park! At the park!\nShe's at the park, park, park!\n\n[Hook 2 — call and response]\nWhere is Sejeena? (where? where?)\nWhere is Sejeena? (where? where?)\nShe's at school! At school!\nShe's at school, school, school!\n\n[Breakdown — whispered, bass drops out]\nt… t… t…\nat… at… at…\nwhere is Sejeena…?\n\n[Hook 3 — call and response]\nWhere is Sejeena? (where? where?)\nWhere is Sejeena? (where? where?)\nShe's at the mall! At the mall!\nShe's at the mall, mall, mall!\n\n[Final Hook — quiet, then big]\nWhere is Sejeena? (where? where?)\nWhere is Sejeena? (shhh…)\nShe's at home. She's in bed.\nSejeena is asleep…\nWAKE UP, SEJEENA!",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap call, kids choir response, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "🚨 Name spelling: lyrics use 'Sejeena' (phonetic, so Suno pronounces it /se-JEE-na/). Everything PRINTED — book, cards, dictionary, map — uses 'Segina' (her real spelling). ONE pattern: \"Where is Segina? She's at the ___.\" Place swapped per hook. Ends on the book's twist (home, asleep) and a full-class shout. In circle, swap Segina for real children's names and real places — the song is a machine, the class feeds it. Unplugged circle version: same words to Frère Jacques (\"Where is Segina? Where is Segina? At the park! At the park!\") — the daily map-game soundtrack, no speaker needed."
+    }
+  ],
+  "book": {
+    "title": "Where Is Segina?",
+    "readAloud": true,
+    "spreads": [
+      { "n": 1, "text": "Where is Segina?\nShe's at the park.", "image": "park", "artNote": "Segina (small wooden peg doll girl, painted black pigtails, little red dress) on a miniature playground with a swing and slide — miniature diorama style" },
+      { "n": 2, "text": "Where is Segina?\nShe's at school.", "image": "school", "artNote": "Segina in front of a miniature school building with a little flag" },
+      { "n": 3, "text": "Where is Segina?\nShe's at the mall.", "image": "mall", "artNote": "Segina holding tiny shopping bags in front of a miniature shopping mall" },
+      { "n": 4, "text": "Where is Segina?\nShe's at the police station.", "image": "police", "artNote": "Segina next to a miniature police station with a tiny police car" },
+      { "n": 5, "text": "Where is Segina?\nShe's at the zoo.", "image": "zoo", "artNote": "Segina at miniature zoo gates with a tiny giraffe looking over the fence" },
+      { "n": 6, "text": "Where is Segina?\nShe's at the bus stop.", "image": "bus stop", "artNote": "Segina waiting at a miniature bus stop sign with a tiny bus approaching" },
+      { "n": 7, "text": "Where is Segina?\nShe's at the supermarket.", "image": "supermarket", "artNote": "Segina pushing a tiny shopping cart in front of a miniature supermarket" },
+      { "n": 8, "text": "Where… is… Segina…?", "image": "", "artNote": "dark suspense page, text only, no image — whispered by the whole class" },
+      { "n": 9, "text": "She's at home. Shhh. Segina is asleep.", "image": "home", "artNote": "Segina asleep in a tiny wooden bed, moonlight through a small window. Someone always yells \"WAKE UP SEGINA\" here — let them, it's the song link." }
+    ],
+    "backCoverWords": ["at", "park", "school", "mall", "police station", "zoo", "bus stop", "supermarket", "home"]
+  },
+  "materials": {
+    "threePartCards": ["park", "school", "mall", "police", "zoo", "bus stop", "supermarket", "home"],
+    "sentences": ["She's at the park.", "She's at school.", "She's at the mall.", "She's at the police station.", "She's at the zoo.", "She's at the bus stop.", "She's at the supermarket.", "She's at home."],
+    "matching": ["park", "school", "mall", "police", "zoo", "bus stop", "supermarket", "home"],
+    "bingoPool": ["park", "school", "mall", "police", "zoo", "bus stop", "supermarket", "home", "turtle", "tiger", "tomato", "taxi", "teddy", "towel", "toothbrush", "potato"],
+    "tracing": { "letter": "t", "words": ["t", "at", "turtle", "tiger"] },
+    "coloring": ["turtle", "tiger", "tomato", "taxi", "teddy", "home", "toothbrush"],
+    "dictionary": ["at", "park", "school", "mall", "zoo", "home", "taxi", "tiger", "turtle"],
+    "extras": ["Big Map A3 (illustrated town: park, school, mall, police station, zoo, bus stop, supermarket, houses, roads — laminated)", "Segina wooden peg doll + 3-4 figures basket", "song QR cards (sound + word)"]
+  },
+  "assets": [
+    { "file": "park.png", "usedBy": ["book:1", "map-game"], "mjPrompt": "a small wooden peg doll girl with painted black pigtails and a little red dress on a miniature playground with a swing and slide, miniature diorama, dramatic spotlight, deep forest-green tones, cinematic, whimsical --ar 3:2 --style raw" },
+    { "file": "school.png", "usedBy": ["book:2", "map-game"], "mjPrompt": "a small wooden peg doll girl with painted black pigtails and a little red dress in front of a miniature school building with a little flag, miniature diorama, dramatic spotlight, deep forest-green tones, cinematic, whimsical --ar 3:2 --style raw" },
+    { "file": "mall.png", "usedBy": ["book:3", "map-game"], "mjPrompt": "a small wooden peg doll girl with painted black pigtails and a little red dress holding tiny shopping bags in front of a miniature shopping mall, miniature diorama, dramatic spotlight, deep forest-green tones, cinematic, whimsical --ar 3:2 --style raw" },
+    { "file": "police.png", "usedBy": ["book:4", "map-game", "cards", "bingo", "matching"], "mjPrompt": "a small wooden peg doll girl with painted black pigtails and a little red dress next to a miniature police station with a tiny police car, miniature diorama, dramatic spotlight, deep forest-green tones, cinematic, whimsical --ar 3:2 --style raw" },
+    { "file": "zoo.png", "usedBy": ["book:5", "map-game"], "mjPrompt": "a small wooden peg doll girl with painted black pigtails and a little red dress at miniature zoo gates with a tiny giraffe looking over the fence, miniature diorama, dramatic spotlight, deep forest-green tones, cinematic, whimsical --ar 3:2 --style raw" },
+    { "file": "bus stop.png", "usedBy": ["book:6", "map-game"], "mjPrompt": "a small wooden peg doll girl with painted black pigtails and a little red dress waiting at a miniature bus stop sign with a tiny bus approaching, miniature diorama, dramatic spotlight, deep forest-green tones, cinematic, whimsical --ar 3:2 --style raw" },
+    { "file": "supermarket.png", "usedBy": ["book:7", "map-game"], "mjPrompt": "a small wooden peg doll girl with painted black pigtails and a little red dress pushing a tiny shopping cart in front of a miniature supermarket, miniature diorama, dramatic spotlight, deep forest-green tones, cinematic, whimsical --ar 3:2 --style raw" },
+    { "file": "home.png", "usedBy": ["book:9", "map-game"], "mjPrompt": "a small wooden peg doll girl with painted black pigtails and a little red dress asleep in a tiny wooden bed, moonlight through a small window, miniature diorama, dramatic spotlight, deep forest-green tones, cinematic, whimsical --ar 3:2 --style raw" },
+    { "file": "map.png", "usedBy": ["map-game", "extras"], "mjPrompt": "illustrated children's town map viewed from above, a park, a school, a shopping mall, a police station, a zoo, a bus stop, a supermarket and small houses connected by simple roads, soft colors, clean and friendly, no text labels --ar 3:2" },
+    { "file": "turtle.png", "usedBy": ["basket", "cards", "bingo", "coloring", "dictionary"], "mjPrompt": "a small green turtle, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "tiger.png", "usedBy": ["basket", "cards", "bingo", "coloring", "dictionary"], "mjPrompt": "a tiger cub sitting, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "tomato.png", "usedBy": ["basket", "cards", "bingo", "coloring"], "mjPrompt": "a ripe red tomato with a green stem, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "taxi.png", "usedBy": ["basket", "cards", "bingo", "coloring", "dictionary"], "mjPrompt": "a yellow toy taxi, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "teddy.png", "usedBy": ["basket", "cards", "bingo", "coloring"], "mjPrompt": "a brown teddy bear sitting, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "towel.png", "usedBy": ["basket", "cards", "bingo"], "mjPrompt": "a folded fluffy white towel, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "toothbrush.png", "usedBy": ["basket", "cards", "bingo", "coloring"], "mjPrompt": "a child's toothbrush standing in a small cup, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato.png", "usedBy": ["bingo"], "mjPrompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "turtle-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a friendly turtle with a patterned shell, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "tiger-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a happy tiger cub sitting, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "tomato-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a round tomato with a leafy stem, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "taxi-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a cute little taxi cab, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "teddy-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a cuddly teddy bear sitting, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "home-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a cosy little house with a door and two windows, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "toothbrush-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a toothbrush standing in a cup, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "Land the week's crown moment — sandpaper 'a' + sandpaper 't' slid together into \"at\", the first word built from taught sounds — then live it all week on the Big Map (\"Where is Segina? She's at the ___.\") with daily hide-and-seek.",
+  "lessonMapEquivalents": [7]
+}

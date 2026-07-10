@@ -1,0 +1,393 @@
+{
+  "week": 23,
+  "level": 1,
+  "sound": "y",
+  "letterDisplay": "Yy",
+  "soundType": "consonant",
+  "anchorWord": "yam",
+  "newWords": [
+    "yes",
+    "yum",
+    "yam",
+    "yet"
+  ],
+  "reviewBank": [
+    "yap",
+    "yip",
+    "cat",
+    "dog",
+    "rat",
+    "bug",
+    "duck",
+    "web",
+    "jam",
+    "sock",
+    "van",
+    "nut",
+    "fig",
+    "cup",
+    "sun",
+    "big",
+    "not",
+    "hot",
+    "run",
+    "on",
+    "wet"
+  ],
+  "glue": {
+    "new": [],
+    "known": [
+      "the",
+      "is",
+      "I",
+      "and",
+      "on"
+    ]
+  },
+  "oralWords": [
+    "what",
+    "where",
+    "your"
+  ],
+  "sentenceFrame": "Yum! A ___!",
+  "soundBasket": [
+    "yam",
+    "yak",
+    "yoyo",
+    "yarn",
+    "yacht",
+    "yogurt",
+    "yolk",
+    "yeti"
+  ],
+  "cast": {
+    "introduces": null,
+    "present": [
+      "Segina",
+      "Sam",
+      "Cat",
+      "Ant",
+      "Dog",
+      "Rat",
+      "Bug",
+      "Duck"
+    ]
+  },
+  "celebration": null,
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Y-Y-Yes",
+      "lyrics": "[Intro — whispered]\ny… y… y…\n(a quick smiling glide)\n\n[Hook 1 — kids chant]\nY! Y! Y-y-y!\nWhat begins with Y?\nY-y-yam! Y-y-yam!\nIt's a yam! (a yam!)\n\n[Hook 2 — kids chant]\nY! Y! Y-y-y!\nWhat begins with Y?\nY-y-yak! Y-y-yak!\nIt's a yak! (a yak!)\n\n[Hook 3 — kids chant]\nY! Y! Y-y-y!\nWhat begins with Y?\nY-y-yoyo! Y-y-yoyo!\nIt's a yoyo! (a yoyo!)\n\n[Breakdown — whispered, bass drops out]\ny… y… y…\ny-y-yarn… y-y-yacht… y-y-yogurt…\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not Y!\n(y… y… y…)\n\n[Final Hook — big]\nY! Y! Y-y-y!\nY-y-yeti! Y-y-yeti!\nIt's a yeti, yeti, yeti!",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "The Y sound is a quick smiling glide /y/ that slides straight into the vowel (y-am, y-es), NEVER 'why' (letter name) and NEVER 'yuh' (schwa). Keep it short and springy on the beat. Answer line 'It's a ___!' reuses the Week 1 frame."
+    },
+    {
+      "role": "word",
+      "title": "Yum! A Yam!",
+      "lyrics": "[Intro]\n(nom… nom… nom…)\n\n[Hook]\nYum! A yam! Yum! A yam!\nIs it yum? (yes! yes!)\nYum, yum, a yam!\n\n[Verse 2]\nYum! A nut! Yum! A nut!\nIs it yum? (yes! yes!)\nYum, yum, a nut!\n\n[Verse 3]\nYum! A fig! Yum! A fig!\nIs it yum? (yes! yes!)\nYum, yum, a fig!\n\n[Verse 4]\nA sock?! A sock?!\nIs it yum? (NO! NOT yum!)\nNot yum, not yum, a sock!\n\n[Outro]\nA potato?! Is it yum?\n(PO-TA-TO! YUM!)\nYum… a yam…\n(nom… shhh…)",
+      "sunoStyle": "dark trap, 65-72 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "One frame: 'Yum! A ___!' — the food swaps per verse (yam → nut → fig → sock(!) → potato). Verse 4 is the 'NOT yum' joke (a sock is not food) — that yes/no discrimination is the point, disguised as comedy. Kids choir shouts the (yes! yes!) / (NO! NOT yum!) verdicts."
+    }
+  ],
+  "book": {
+    "title": "Yum! A Yam!",
+    "readAloud": false,
+    "spreads": [
+      {
+        "n": 1,
+        "text": "A yam.",
+        "image": "yam",
+        "artNote": "A single roasted orange yam under the spotlight, steam curling up, looking delicious. The anchor word, glowing."
+      },
+      {
+        "n": 2,
+        "text": "Yes! A yam! Yum!",
+        "image": "yum-yam",
+        "artNote": "Sam the peg-doll boy taking an enormous happy bite of the yam, cheeks full, eyes shut in bliss."
+      },
+      {
+        "n": 3,
+        "text": "A mop? Not yum!",
+        "image": "mop-taste",
+        "artNote": "Someone hopefully offers a mop on a plate. Absolute refusal. The mop looks offended."
+      },
+      {
+        "n": 4,
+        "text": "A nut. Yum!",
+        "image": "nut-yum",
+        "artNote": "The Rat (grey) cracking a nut with both paws, delighted, one cheek already stuffed."
+      },
+      {
+        "n": 5,
+        "text": "A fig. Yum!",
+        "image": "fig-yum",
+        "artNote": "The Duck (white) gulping down a whole purple fig, neck bulging comically, thrilled."
+      },
+      {
+        "n": 6,
+        "text": "Jam! Yum, yum!",
+        "image": "jam-yum",
+        "artNote": "The Dog (brown) licking a spoon of red jam, tail a blur, the happiest dog alive. Week 20 callback."
+      },
+      {
+        "n": 7,
+        "text": "A sock?! NOT yum!",
+        "image": "sock-taste",
+        "artNote": "The Duck with the stripey sock in its bill again, this time confused — is this food? Everyone shakes their heads. Big NO."
+      },
+      {
+        "n": 8,
+        "text": "The yam is big. Yum!",
+        "image": "big-yam",
+        "artNote": "An absurdly enormous yam on the mat, the whole cast gathered around it with forks, ready to feast together."
+      },
+      {
+        "n": 9,
+        "text": "Yum...?!",
+        "image": "potato-taste",
+        "artNote": "The potato sits on a plate under the spotlight, a fork poised beside it. No noun printed — the class SHOUTS the word from the picture. The potato looks nervous."
+      }
+    ],
+    "backCoverWords": [
+      "yes",
+      "yum",
+      "yam",
+      "yet",
+      "not",
+      "the",
+      "is",
+      "a"
+    ]
+  },
+  "materials": {
+    "threePartCards": [
+      "yam",
+      "yak",
+      "yoyo",
+      "yarn",
+      "yacht",
+      "yogurt",
+      "yolk",
+      "yeti"
+    ],
+    "sentences": [
+      "Yum! A yam!",
+      "A nut. Yum!",
+      "A sock? Not yum!",
+      "The yam is big."
+    ],
+    "matching": [
+      "yam",
+      "yak",
+      "yoyo",
+      "yarn",
+      "yacht",
+      "yogurt"
+    ],
+    "bingoPool": [
+      "yam",
+      "yak",
+      "yoyo",
+      "yarn",
+      "yacht",
+      "yogurt",
+      "yolk",
+      "yeti",
+      "jam",
+      "nut",
+      "fig",
+      "potato"
+    ],
+    "tracing": {
+      "letter": "y",
+      "words": [
+        "yes",
+        "yum",
+        "yam"
+      ]
+    },
+    "coloring": [
+      "yam",
+      "yak",
+      "yoyo"
+    ],
+    "dictionary": [
+      "yes",
+      "yum",
+      "yam",
+      "yet"
+    ],
+    "extras": [
+      "Yum / Not-yum sort: put the food pictures (yam, nut, fig, jam) on the YUM plate and the tricksters (sock, wig, rock) on the NOT-YUM plate",
+      "Real yam tasting: roast a yam, sound out y-a-m, then vote 'yum? yes!' as a class — the anchor word you can eat",
+      "Moveable alphabet: build y-e-s, y-u-m, y-a-m, y-e-t — note y starts words here but will become a sneaky vowel in Level 2"
+    ]
+  },
+  "assets": [
+    {
+      "file": "yam.png",
+      "usedBy": [
+        "book:1",
+        "cards",
+        "bingo",
+        "matching",
+        "coloring"
+      ],
+      "mjPrompt": "a single roasted orange yam with steam curling up, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "yum-yam.png",
+      "usedBy": [
+        "book:2"
+      ],
+      "mjPrompt": "a wooden peg doll boy in a red shirt taking an enormous happy bite of a roasted yam, cheeks full, eyes shut in bliss, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "mop-taste.png",
+      "usedBy": [
+        "book:3"
+      ],
+      "mjPrompt": "a cotton string mop presented on a fancy dinner plate, absurd fine-dining presentation, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "nut-yum.png",
+      "usedBy": [
+        "book:4"
+      ],
+      "mjPrompt": "a grey rat cracking a nut with both paws, one cheek stuffed, delighted, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "fig-yum.png",
+      "usedBy": [
+        "book:5"
+      ],
+      "mjPrompt": "a white duck gulping down a whole purple fig with its neck bulging comically, thrilled, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "jam-yum.png",
+      "usedBy": [
+        "book:6"
+      ],
+      "mjPrompt": "a happy brown dog licking a spoon of red jam, tail a blur, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "sock-taste.png",
+      "usedBy": [
+        "book:7"
+      ],
+      "mjPrompt": "a white duck with a stripey sock in its bill looking confused as if wondering whether it is food, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "big-yam.png",
+      "usedBy": [
+        "book:8"
+      ],
+      "mjPrompt": "an absurdly enormous roasted yam on a woven floor mat with a tabby cat, brown dog, grey rat, white duck and two peg dolls gathered around it holding forks, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "potato-taste.png",
+      "usedBy": [
+        "book:9"
+      ],
+      "mjPrompt": "a single raw potato sitting on a dinner plate under a spotlight with a fork poised beside it, the potato looking nervous, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "yak.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching",
+        "coloring"
+      ],
+      "mjPrompt": "a shaggy brown yak standing, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "yoyo.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching",
+        "coloring"
+      ],
+      "mjPrompt": "a red yoyo on its string mid-spin, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "yarn.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching"
+      ],
+      "mjPrompt": "a ball of soft red yarn with knitting needles, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "yacht.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching"
+      ],
+      "mjPrompt": "a small white sailing yacht, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "yogurt.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching"
+      ],
+      "mjPrompt": "a cup of yogurt with a spoon and a berry on top, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "yolk.png",
+      "usedBy": [
+        "cards",
+        "bingo"
+      ],
+      "mjPrompt": "a bright golden egg yolk in a white bowl, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "yeti.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "basket"
+      ],
+      "mjPrompt": "a friendly fluffy white yeti, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "yam-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a roasted yam with steam swirls, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "yak-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a shaggy yak with big horns, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "yoyo-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a yoyo on a string, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "potato.png",
+      "usedBy": [
+        "bingo"
+      ],
+      "mjPrompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    }
+  ],
+  "teacherFocus": "Teach /y/ as a quick smiling glide that slides into the vowel (y-am, y-es), never 'yuh'. Roast a real yam, sound it out, and vote 'yum? yes!'. Run the yum / not-yum sort — foods on one plate, tricksters (sock, wig, rock) on the other; the yes/no judgement IS the phonics game. Whisper that y will grow up into a sneaky vowel next level.",
+  "lessonMapEquivalents": [
+    29
+  ]
+}
