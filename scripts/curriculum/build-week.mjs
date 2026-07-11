@@ -24,7 +24,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
-import { execFileSync } from 'child_process';
+import { spawnSync } from 'child_process';
 import { build } from 'esbuild';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -114,14 +114,34 @@ function findChrome() {
 }
 
 function htmlToPdf(chrome, htmlPath, pdfPath) {
-  execFileSync(chrome, [
+  // Clear any stale/zero-byte artefact first so a failed render can't be mistaken
+  // for a prior success.
+  try { fs.rmSync(pdfPath, { force: true }); } catch { /* ignore */ }
+
+  const r = spawnSync(chrome, [
     '--headless=new',
     '--disable-gpu',
     '--no-sandbox',
     '--no-pdf-header-footer',
     `--print-to-pdf=${pdfPath}`,
     pathToFileURL(htmlPath).href,
-  ], { stdio: 'ignore', timeout: 60000 });
+  ], { stdio: ['ignore', 'ignore', 'pipe'], timeout: 60000, encoding: 'utf8' });
+
+  // spawn failure / timeout.
+  if (r.error) throw r.error;
+
+  // 🚨 Chrome can exit 0 yet write NOTHING (e.g. disk full → FILE_ERROR_NO_SPACE,
+  // renderer crash). A 0-byte PDF was previously logged as a false "✓". Treat a
+  // missing/empty output as a hard failure and surface Chrome's own reason.
+  const size = fs.existsSync(pdfPath) ? fs.statSync(pdfPath).size : 0;
+  if (size === 0) {
+    const reason = String(r.stderr || '')
+      .split('\n')
+      .filter((l) => /ERROR|space|Failed|allocat|crash/i.test(l))
+      .slice(-2).join(' | ')
+      .trim() || `chrome exited ${r.status} with no output`;
+    throw new Error(`0-byte PDF — ${reason}`);
+  }
 }
 
 async function main() {
