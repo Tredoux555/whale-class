@@ -1,0 +1,80 @@
+{
+  "week": 37,
+  "level": 2,
+  "sound": "final blends II",
+  "letterDisplay": "final blends",
+  "soundType": "blend",
+  "patternDisplay": "-nk -ft -lt -lp -lk",
+  "anchorWord": "pink",
+  "newWords": ["pink", "soft", "belt", "help"],
+  "reviewBank": ["hand", "went", "jump", "nest", "frog", "crab", "flag", "stop", "king", "bell", "this", "that", "chick", "snake", "ship", "fish", "duck", "milk"],
+  "glue": { "new": [], "known": ["the", "is", "I", "on", "says", "what", "where", "why"] },
+  "oralWords": ["skunk", "silk"],
+  "sentenceFrame": "Help the skunk!",
+  "soundBasket": ["pink", "belt", "milk", "silk", "skunk", "gift", "help", "tank"],
+  "cast": { "introduces": null, "present": ["Sheep", "Chick", "Snake"] },
+  "celebration": "Leaf #11 — final blends II (-nk, -ft, -lt, -lp, -lk) COMPLETES the blend branch. Home of the final-/l/ trap — the single most-missed English sound in the EAL room — met head-on with dedicated drill.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Pink-Pink-Pink!",
+      "lyrics": "[Intro]\nPink! Pink! Pink-pink-pink!\n(nk… nk… nk…)\n\n[Hook]\nTwo sounds at the END — stuck together!\n/n/ and /k/ — nk! nk!\nPink-pink-pink! Pink-pink-pink!\nPINK! (think pink!) PINK!\n\n[Verse 2]\nSoft-soft-soft! /f/ and /t/ — ft!\nFeel the end — ft! ft!\nSoft-soft-soft! SOFT!\nSo SOFT! (shh, soft!) SOFT!\n\n[Verse 3]\nBelt-belt-belt! /l/ and /t/ — lt!\nThe /l/ at the end — hear it! (lllt!)\nBelt-belt-belt! BELT!\nMilk! Silk! (LLL — feel your tongue!)\n\n[Verse 4]\nHelp-help-help! /l/ and /p/ — lp!\nThe /l/ at the end — hear it! (lllp!)\nHelp-help-help! HELP!\nGulp! Yelp! (LLL — tongue goes up!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! No end blend!\n(nk… nk… nk…)\n\n[Outro]\nPink! Soft! Belt! Help!\nThe /l/ at the end is REAL!\nMilk — not 'miuw'! (lllk!)\nPink-pink-pink!",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "The home of the ~97% error trap: the final /l/. Mandarin-L1 children vocalise a syllable-final /l/ into a /w/ or /o/ ('miuw' for milk, 'bew' for bell), so verses 3 and 4 isolate the tongue-tip /l/ before the -t/-p/-k and DRILL it ('lllt', 'lllp', 'lllk' — tongue tip up behind the top teeth). The whole-word stutter forces the full ending as in Week 36. No schwa; the cluster lands crisp. Never sing letter names."
+    },
+    {
+      "role": "word",
+      "title": "Help the Skunk!",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nHelp the skunk!\nHelp the skunk!\nThe skunk is stuck! (help! help!)\nHelp the skunk!\n\n[Verse 2]\nChick can help! (help! help!)\nSnake can help the skunk!\nHelp and help and help!\nHelp the skunk!\n\n[Verse 3]\nSheep can lift the skunk!\nUp! Up! Help the skunk!\nHelp! Help! (lift! lift!)\nHelp the skunk!\n\n[Outro]\nThe skunk… is up! (hush…)\nA potato?! (POTATO!)\nHelp a potato?! (help! help!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'Help the skunk!' — a rescue chant. Every core word (help; pink/soft/belt land in the book and cards) plus 'lift' and 'stuck'. Punch the final /p/ on 'help' every time — the whole point of the week. Whisper the outro, potato hits loud, and of course it needs rescuing too."
+    }
+  ],
+  "book": {
+    "title": "Help the Skunk!",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "A skunk.", "image": "skunk", "artNote": "A small round black-and-white skunk in the spotlight, big worried eyes, fluffy striped tail curled anxiously. Endearing, not smelly-scary." },
+      { "n": 2, "text": "The skunk is stuck!", "image": "skunk-stuck", "artNote": "The skunk wedged into the hollow of a log, only its striped tail and worried face poking out, tiny arms flailing. The predicament." },
+      { "n": 3, "text": "Help the skunk!", "image": "cast-rush", "artNote": "Chick, Sheep and Snake all rushing into frame from three directions toward the stuck skunk, urgency lines, a shared 'to the rescue' energy." },
+      { "n": 4, "text": "Chick can help.", "image": "chick-helps-skunk", "artNote": "Chick tugging at the skunk's tail with both wings, feet braced, beak gritted with effort. Barely budging it." },
+      { "n": 5, "text": "Snake can help.", "image": "snake-helps", "artNote": "Snake looping around the log for extra grip, adding its pull to Chick's, amber eyes squeezed with effort. Teamwork building." },
+      { "n": 6, "text": "Sheep can help. Lift! Lift!", "image": "sheep-lift", "artNote": "Sheep getting under the log and heaving it up on its woolly back, the whole thing tilting, the skunk starting to slide free. The big lift." },
+      { "n": 7, "text": "The skunk is soft.", "image": "skunk-free-soft", "artNote": "The freed skunk pops out and everyone tumbles into a soft, grateful heap; the skunk's fur revealed as wonderfully soft and fluffy, being gently patted. Relief." },
+      { "n": 8, "text": "A pink belt!", "image": "skunk-belt", "artNote": "As a thank-you the skunk is given a bright pink belt, which it wears proudly around its middle, striking a little pose. The cast applauds." },
+      { "n": 9, "text": "Help it?!", "image": "potato-stuck", "artNote": "Now a single potato is wedged into the very same log hollow, tail-less and helpless, exactly where the skunk was. The whole exhausted cast stares. No noun printed — the class SHOUTS it." }
+    ],
+    "backCoverWords": ["pink", "soft", "belt", "help", "milk", "skunk", "lift", "gift", "the", "is"]
+  },
+  "materials": {
+    "threePartCards": ["pink", "belt", "milk", "silk", "skunk", "gift", "help", "tank"],
+    "sentences": ["Help the skunk!", "The skunk is stuck.", "The skunk is soft.", "A pink belt!"],
+    "matching": ["pink", "belt", "milk", "silk", "skunk", "gift"],
+    "bingoPool": ["pink", "belt", "milk", "silk", "skunk", "gift", "help", "tank", "hand", "nest", "frog", "snake", "chick", "potato"],
+    "tracing": { "letter": "nk", "words": ["pink", "tank"] },
+    "coloring": ["skunk", "belt", "milk"],
+    "dictionary": ["pink", "soft", "belt", "help"],
+    "extras": ["PATTERN TREE: leaf #11 — completes the blend branch (s-, l-, r-, final I, final II). Read pink/soft/belt/help aloud and hang it.", "🚨 THE FINAL-/l/ TRAP (the ~97% error): a syllable-final /l/ becomes a /w/ or /o/ for Mandarin-L1 children — 'miuw' for milk, 'bew' for bell, 'hewp' for help. Dedicated minimal-pair cards this week: bell/bew, milk/'miuw', belt/'bewt', help/'hewp'. The fix is physical — tongue tip UP behind the top teeth for a real /l/. Drill 'lll' alone, then 'lll-t', 'lll-p', 'lll-k'.", "-lp and -lk are the newly authored endings (help, gulp, yelp, milk, silk, sulk); pair them with -nk, -ft, -lt.", "WHOLE-WORD echo, double repetition, as in Week 36 — the ending must fully land. Moveable alphabet: snap the ending cluster on last (pi + nk, he + lp)."]
+  },
+  "assets": [
+    { "file": "skunk.png", "usedBy": ["book:1", "cards", "bingo", "matching"], "mjPrompt": "a small round black-and-white skunk with big worried eyes and a fluffy striped tail curled anxiously, endearing, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "skunk-stuck.png", "usedBy": ["book:2"], "mjPrompt": "a small striped skunk wedged into the hollow of a log with only its tail and worried face poking out and tiny arms flailing, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cast-rush.png", "usedBy": ["book:3"], "mjPrompt": "a tiny yellow chick, a fluffy white sheep and an emerald-green snake all rushing in from three directions toward a stuck skunk with urgency motion lines, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "chick-helps-skunk.png", "usedBy": ["book:4"], "mjPrompt": "a tiny fluffy yellow chick tugging at a stuck skunk's striped tail with both wings, feet braced, beak gritted with effort, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "snake-helps.png", "usedBy": ["book:5"], "mjPrompt": "an emerald-green garden snake looping around a log for grip and adding its pull beside a yellow chick, amber eyes squeezed with effort, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sheep-lift.png", "usedBy": ["book:6"], "mjPrompt": "a fluffy round white sheep heaving a log up on its woolly back with a skunk starting to slide free, the whole scene tilting, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "skunk-free-soft.png", "usedBy": ["book:7"], "mjPrompt": "a freed fluffy skunk being gently patted while a yellow chick green snake and white sheep tumble into a grateful heap, the skunk's fur wonderfully soft, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "skunk-belt.png", "usedBy": ["book:8"], "mjPrompt": "a happy skunk wearing a bright pink belt around its middle striking a proud little pose while a yellow chick green snake and white sheep applaud, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-stuck.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato wedged helplessly into a log hollow exactly where a skunk was stuck, an exhausted yellow chick green snake and white sheep staring, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "pink.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a bright pink ball of soft yarn, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "belt.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a leather belt with a shiny buckle, coiled, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "milk.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a full glass of milk, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "gift.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a small wrapped gift box with a ribbon bow, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "skunk-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a cute skunk with a big fluffy striped tail, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "belt-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a belt with a big buckle, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "milk-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a tall glass of milk with a straw, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "The second hard EAL week and the last of the blends. -nk, -ft, -lt, -lp, -lk stack two consonants at the end — the same coda-cluster challenge as Week 36 — but the star problem here is the FINAL /l/, the single most-missed sound in the English-as-additional-language classroom (~97% error). Mandarin-L1 children turn a syllable-final /l/ into a /w/ or /o/: 'miuw' for milk, 'bew' for bell, 'hewp' for help. Meet it with dedicated minimal-pair cards and a physical fix — tongue tip UP behind the top teeth for a true /l/; drill 'lll' alone, then 'lll-t', 'lll-p', 'lll-k'. Keep the whole-word echo double-length. Hang leaf #11 and celebrate: the entire blend branch of the Pattern Tree is now in leaf, and next week the magic begins.",
+  "lessonMapEquivalents": [47, 48]
+}

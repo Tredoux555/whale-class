@@ -1,0 +1,83 @@
+{
+  "week": 27,
+  "level": 2,
+  "sound": "sh",
+  "letterDisplay": "sh",
+  "soundType": "digraph",
+  "patternDisplay": "sh",
+  "anchorWord": "ship",
+  "newWords": ["ship", "shop", "fish", "wish"],
+  "reviewBank": ["cat", "dog", "sun", "run", "big", "top", "hat", "map", "pig", "ten", "cup", "box", "six", "duck", "kick", "zip"],
+  "glue": { "new": [], "known": ["the", "is", "I", "on", "says"] },
+  "oralWords": ["sheep"],
+  "sentenceFrame": "The fish is on the ship.",
+  "soundBasket": ["ship", "shop", "shell", "shark", "sheep", "shirt", "shoe", "shadow"],
+  "cast": { "introduces": "Sheep", "present": [] },
+  "celebration": "FIRST PATTERN — the Pattern Tree is unveiled and the sh leaf goes up (leaf #1 of 32). Sheep joins the cast.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Sh-Sh-Ship!",
+      "lyrics": "[Intro]\nSh! Sh! Sh-sh-sh!\n(sh… sh… sh…)\n\n[Hook]\nSh! Sh! Sh-sh-sh!\nTwo letters, ONE sound!\nSh-sh-ship! Sh-sh-ship!\nIt's a ship! (a ship!)\n\n[Verse 2]\nSh! Sh! Sh-sh-sh!\nWhat begins with SH?\nSh-sh-shop! Sh-sh-shop!\nIt's a shop! (a shop!)\n\n[Verse 3]\nSh! Sh! Sh-sh-sh!\nWhat begins with SH?\nSh-sh-shell! Sh-sh-shell!\nIt's a shell! (a shell!)\n\n[Verse 4]\nSh! Sh! Sh-sh-sh!\nWhat begins with SH?\nSh-sh-sheep! Sh-sh-sheep!\nIt's a sheep! (hello, Sheep!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not SH!\n(sh… sh… sh…)\n\n[Outro]\nSh-sh-ship! Sh-sh-ship!\nIt's a ship! (a ship!)\nSh! Sh! Sh-sh-sh!\n(shhh… quiet now…)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "sh is the unvoiced hush /ʃ/ — the classroom 'quiet' sound — NEVER the letter names 'ess-aitch'. The '(sh… sh… sh…)' lines ride the hi-hats like steam. 'Two letters, ONE sound' is the week's whole lesson in one line. Verse 4 welcomes cast member Sheep. Outro dissolves into a real 'shhh' — the first sound song that ends in silence."
+    },
+    {
+      "role": "word",
+      "title": "The Fish on the Ship",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nThe fish is on the ship!\nThe fish is on the ship!\nWhere is the fish? (where? where?)\nThe fish is on the ship!\n\n[Verse 2]\nSheep is on the ship!\nSheep is on the ship!\nWish, fish, wish! (wish! wish!)\nThe fish can wish!\n\n[Verse 3]\nThe wish is big! (big! big!)\nThe fish is in! (splash!)\nWhere is the fish? (where? where?)\nThe fish is in! (swim, fish, swim!)\n\n[Outro]\nThe ship… the fish… (shhh…)\nA potato is on the ship!\n(POTATO!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'The fish is on the ship.' — the first sentence built on a PATTERN. Verse 2 brings Sheep aboard and sets up the wish; verse 3 pays it off with the splash. Whisper the outro, then the potato hits loud. Prior-week frame reuse: the 'Where is the ___?' call-and-response carries over from Level 1."
+    }
+  ],
+  "book": {
+    "title": "The Fish on the Ship",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "A ship.", "image": "ship", "artNote": "A little wooden ship on a dark glassy sea, spotlight from above. New stage, same theatre — the children know this lighting from 26 weeks of books." },
+      { "n": 2, "text": "A fish.", "image": "fish", "artNote": "One bright fish mid-leap, caught in the spotlight. Full of intention." },
+      { "n": 3, "text": "The fish is on the ship!", "image": "fish-on-ship", "artNote": "The fish has landed flapping on the deck, wide-eyed. Comedy of errors begins — a fish OUT of water, on a ship ON the water." },
+      { "n": 4, "text": "Sheep is on the ship.", "image": "sheep-sailor", "artNote": "CAST DEBUT: Sheep — a fluffy round white sheep with kind dark eyes — wearing a small blue sailor cap, calmly at the wheel. The children are taught the name by heart; 'Sheep' is not yet decodable (that day comes in Week 44)." },
+      { "n": 5, "text": "The fish can wish.", "image": "fish-wishing", "artNote": "The fish, eyes squeezed shut on the deck, wishing hard. One star out over the dark sea." },
+      { "n": 6, "text": "Wish, fish, wish!", "image": "sheep-cheering-fish", "artNote": "Sheep leaning in, cheering the fish on. The star brighter now." },
+      { "n": 7, "text": "The wish is big.", "image": "big-wish", "artNote": "The whole sky glows. The fish trembles with hope. Quiet spread — read it slow." },
+      { "n": 8, "text": "The fish is in!", "image": "fish-in-water", "artNote": "SPLASH — the fish back in the sea, joyous arc of water, Sheep waving from the rail. The wish came true." },
+      { "n": 9, "text": "On the ship?!", "image": "potato-on-ship", "artNote": "The potato sits alone on the empty deck wearing a tiny paper sailor hat. No noun printed — the class SHOUTS it. Sheep stares at it. The fish peeks from the water." }
+    ],
+    "backCoverWords": ["ship", "shop", "fish", "wish", "big", "in", "the", "is", "on"]
+  },
+  "materials": {
+    "threePartCards": ["ship", "shop", "shell", "shark", "sheep", "shirt", "shoe", "fish"],
+    "sentences": ["The fish is on the ship.", "Sheep is on the ship.", "The fish can wish.", "The fish is in!"],
+    "matching": ["ship", "shop", "fish", "dish", "shed", "shell"],
+    "bingoPool": ["ship", "shop", "shell", "shark", "sheep", "shirt", "fish", "dish", "cat", "dog", "sun", "cup", "duck", "potato"],
+    "tracing": { "letter": "sh", "words": ["ship", "fish"] },
+    "coloring": ["ship", "fish", "sheep"],
+    "dictionary": ["ship", "shop", "fish", "wish"],
+    "extras": ["PATTERN TREE UNVEILING: the tree goes up on the wall — Level 1's letters are its roots and trunk. The class reads ship/shop/fish/wish aloud and the sh leaf (leaf #1) is hung. One leaf per week from now to graduation.", "Sandpaper digraph sh: trace the two letters as ONE gesture, one sound — 'two letters holding hands'.", "EAL minimal-pair sort: sh vs s — ship/sip, shell/sell, shack/sack (oral), sheep/seep (oral). Mandarin L1 children need explicit contrast here.", "Moveable alphabet: build sh welded, then s-h-i-p, f-i-sh, w-i-sh, sh-o-p."]
+  },
+  "assets": [
+    { "file": "ship.png", "usedBy": ["book:1", "cards", "bingo", "matching"], "mjPrompt": "a small wooden sailing ship on dark glassy water, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "fish.png", "usedBy": ["book:2", "cards", "bingo", "matching"], "mjPrompt": "one bright orange fish leaping mid-air, droplets frozen in the light, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "fish-on-ship.png", "usedBy": ["book:3"], "mjPrompt": "a bright orange fish flapping wide-eyed on the wooden deck of a small ship, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sheep-sailor.png", "usedBy": ["book:4", "cards", "bingo"], "mjPrompt": "a fluffy round white sheep with kind dark eyes wearing a small blue sailor cap, standing at a ship's wheel, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "fish-wishing.png", "usedBy": ["book:5"], "mjPrompt": "a bright orange fish on a wooden ship deck with eyes squeezed shut wishing hard, one bright star in the dark sky above the sea, ultra-realistic photograph, dramatic spotlight, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sheep-cheering-fish.png", "usedBy": ["book:6"], "mjPrompt": "a fluffy round white sheep with kind dark eyes in a small blue sailor cap leaning in to encourage a bright orange fish on a ship deck, a star glowing brighter above, ultra-realistic photograph, dramatic spotlight, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "big-wish.png", "usedBy": ["book:7"], "mjPrompt": "a bright orange fish on a ship deck under a whole sky glowing with starlight over a dark sea, hushed and hopeful, ultra-realistic photograph, dim gentle spotlight, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "fish-in-water.png", "usedBy": ["book:8"], "mjPrompt": "a bright orange fish diving joyfully back into dark water with a frozen arc of splash, a fluffy white sheep in a blue sailor cap waving from the ship rail behind, ultra-realistic photograph, dramatic spotlight, deep forest-green backdrop, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-on-ship.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato wearing a tiny folded paper sailor hat sitting alone on the wooden deck of a small ship, dramatic spotlight on the potato, a fluffy white sheep staring at it from the wheel, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "shop.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a tiny charming toy shop storefront with a striped awning, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "shell.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a spiral seashell, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "shark.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a small friendly-looking shark mid-swim, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "shirt.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a small child's button-up shirt on a wooden hanger, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "shoe.png", "usedBy": ["cards", "basket"], "mjPrompt": "one small canvas child's shoe, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "dish.png", "usedBy": ["bingo", "matching"], "mjPrompt": "a simple ceramic dish, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "shed.png", "usedBy": ["matching"], "mjPrompt": "a small wooden garden shed, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "ship-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a little sailing ship on gentle waves, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "fish-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a happy leaping fish with big scales, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "sheep-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a fluffy round sheep wearing a little sailor cap, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "THE FIRST PATTERN WEEK. sh is a brand-new sound made by two letters — different from ck (Week 21), which was two letters for a sound they already knew. Teach the sandpaper digraph as one gesture: 'two letters holding hands, one sound.' Unveil the Pattern Tree and hang leaf #1 with ceremony — this wall fills for the next 32 weeks. EAL priority: sh-vs-s minimal pairs (ship/sip) — Mandarin-L1 children merge these without explicit contrast. Welcome Sheep by name; the class will learn to SPELL that name in Week 44, and you may tell them so — it is a promise.",
+  "lessonMapEquivalents": [42]
+}

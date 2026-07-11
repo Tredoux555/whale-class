@@ -1,0 +1,81 @@
+{
+  "week": 29,
+  "level": 2,
+  "sound": "th",
+  "letterDisplay": "th",
+  "soundType": "digraph",
+  "patternDisplay": "th",
+  "anchorWord": "that",
+  "newWords": ["this", "that", "then", "with"],
+  "reviewBank": ["chick", "chin", "chop", "chat", "ship", "fish", "cat", "dog", "hat", "top", "sun", "cup", "big", "pig", "ten", "duck", "map", "run"],
+  "glue": { "new": [], "known": ["the", "is", "I", "on", "says"] },
+  "oralWords": ["thumb", "three"],
+  "sentenceFrame": "The moth is in the bath.",
+  "soundBasket": ["moth", "bath", "thin", "thumb", "three", "this", "that", "math"],
+  "cast": { "introduces": null, "present": ["Sheep", "Chick"] },
+  "celebration": "th leaf #3 goes up. 🎉 SENTENCE GLUE EXPLODES — this, that, then, them and with become decodable in one week, and for the first time the class can build a REAL joined-up sentence. The single most important EAL sound of Level 2.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Th-Th-That!",
+      "lyrics": "[Intro]\nTh! Th! Th-th-th!\n(th… th… th…)\n\n[Hook]\nTh! Th! Th-th-th!\nTwo sounds, ONE team!\nTh-th-that! Th-th-that!\nIt's THAT! (that one! that!)\n\n[Verse 2]\nTh! Th! Th-th-th!\nThe soft one buzzes — feel it!\nTh-th-this! Th-th-then!\nThis and then! (buzz… buzz…)\n\n[Verse 3]\nTh! Th! Th-th-th!\nThe quiet one hushes — feel it!\nTh-th-thin! Th-th-moth!\nThin as a moth! (hush… hush…)\n\n[Verse 4]\nTh! Th! Th-th-th!\nIn the bath, on the path!\nTh-th-bath! Th-th-path!\nSplish in the bath! (splash!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not TH!\n(th… th… th…)\n\n[Outro]\nTh-th-that! Th-th-this!\nThat and this! (this and that!)\nTh! Th! Th-th-th!\n(with… with… with…)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "th makes TWO sounds and this song teaches BOTH — the VOICED /ð/ (this, that, then) buzzes on the tongue (verse 2: hand on the throat, feel it hum), and the VOICELESS /θ/ (thin, moth, bath, path) is a quiet air-hush (verse 3). The tongue peeks between the teeth for both. NEVER the letter names 'tee-aitch', and NEVER a /d/ or /s/ or /f/ substitute — that substitution IS the EAL error this whole week fights. Verses 2 and 3 deliberately contrast buzz versus hush."
+    },
+    {
+      "role": "word",
+      "title": "The Moth in the Bath",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nThe moth is in the bath!\nThe moth is in the bath!\nWhere is the moth? (where? where?)\nThe moth is in the bath!\n\n[Verse 2]\nThis moth! That moth!\nThin moth in the bath!\nSplish and splash! (splash! splash!)\nThe moth is in the bath!\n\n[Verse 3]\nThen… up! Up! (flap! flap!)\nThe moth is on the path!\nWhere is the moth? (where? where?)\nThe moth is with Chick!\n\n[Outro]\nThe moth… the bath… (drip… drip…)\nA potato?! (POTATO!)\nIn the bath?! (splash!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'The moth is in the bath.' — the first frame stacked with th words. Verse 2 fires the new glue (this/that/thin), verse 3 lands 'then' and 'with' — every th word the week teaches appears in the story. Whisper the dripping outro, potato hits loud, splash closes it."
+    }
+  ],
+  "book": {
+    "title": "The Moth in the Bath",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "A bath.", "image": "bath", "artNote": "An old claw-foot bath brimming with water, lit from above, steam curling off. Still and inviting." },
+      { "n": 2, "text": "A moth!", "image": "moth", "artNote": "A soft grey moth flutters into the spotlight, dusty wings catching the light. Gentle, not scary." },
+      { "n": 3, "text": "The moth is in the bath.", "image": "moth-in-bath", "artNote": "The moth has landed on the water's surface, wings held delicately up out of the wet. Tiny ripples spread around it." },
+      { "n": 4, "text": "This moth is thin.", "image": "thin-moth", "artNote": "Close-up of the moth, wings thin and papery, translucent in the light. The word 'thin' made visible." },
+      { "n": 5, "text": "Splash! Splash!", "image": "moth-splash", "artNote": "The moth beats its wings, flinging tiny droplets everywhere — a joyful little storm inside the bath. Comedy of a very small splash." },
+      { "n": 6, "text": "Chick sat with the moth.", "image": "chick-with-moth", "artNote": "Chick perched on the rim of the bath beside the moth, watching kindly, tiny wing extended in company. Two small friends." },
+      { "n": 7, "text": "Then the moth is on the path.", "image": "moth-on-path", "artNote": "The moth lifts off and settles on a garden path of stepping-stones beyond the bath, wings dry now, glowing softly." },
+      { "n": 8, "text": "The moth is with Sheep.", "image": "moth-with-sheep", "artNote": "The moth rides gently on the nose of a fluffy round white sheep with kind dark eyes, both looking pleased. Chick trots alongside." },
+      { "n": 9, "text": "In the bath?!", "image": "potato-in-bath", "artNote": "A single potato bobs in the middle of the bath now, water rings around it, a tiny rubber-duck expression of surprise on Chick at the rim. No noun printed — the class SHOUTS it." }
+    ],
+    "backCoverWords": ["this", "that", "then", "with", "moth", "bath", "path", "thin", "the", "is"]
+  },
+  "materials": {
+    "threePartCards": ["moth", "bath", "path", "thin", "math", "this", "that", "then"],
+    "sentences": ["The moth is in the bath.", "This moth is thin.", "Then the moth is on the path.", "The moth is with Chick."],
+    "matching": ["moth", "bath", "path", "thin", "this", "that"],
+    "bingoPool": ["moth", "bath", "path", "thin", "math", "this", "that", "then", "chick", "ship", "fish", "cat", "duck", "potato"],
+    "tracing": { "letter": "th", "words": ["moth", "bath"] },
+    "coloring": ["moth", "bath", "thumb"],
+    "dictionary": ["this", "that", "then", "with"],
+    "extras": ["PATTERN TREE: leaf #3. Read this/that/then/with aloud and the th leaf joins sh and ch.", "TWO SOUNDS, ONE LEAF: sort the words into buzz (voiced /ð/: this, that, then, them, with) and hush (voiceless /θ/: thin, moth, bath, path, math). A hand on the throat is the test.", "SENTENCE GLUE: with these five words the class writes its first joined sentence — 'This moth is thin and that moth is on the path.' Build it in the pocket chart.", "EAL minimal-pair drill (THE keystone): th vs t and th vs s — thin/tin, thin/sin, that/sat, thick/sick, path/pat, math/mass (oral), bath/bat. Mandarin-L1 children have NEITHER th sound; use a mirror so the child watches the tongue peek out. Do this every day this week.", "Moveable alphabet: build th welded, then this, that, then, with, moth, bath."]
+  },
+  "assets": [
+    { "file": "bath.png", "usedBy": ["book:1", "cards", "bingo"], "mjPrompt": "an old claw-foot bathtub brimming with water and curling steam, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "moth.png", "usedBy": ["book:2", "cards", "bingo", "matching"], "mjPrompt": "a soft grey moth with dusty patterned wings resting, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "moth-in-bath.png", "usedBy": ["book:3"], "mjPrompt": "a soft grey moth resting on the surface of bath water with wings held up out of the wet, tiny ripples spreading around it, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "thin-moth.png", "usedBy": ["book:4"], "mjPrompt": "an extreme close-up of a grey moth with thin papery translucent wings glowing in a spotlight, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "moth-splash.png", "usedBy": ["book:5"], "mjPrompt": "a grey moth beating its wings on bath water flinging a burst of tiny frozen droplets everywhere, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "chick-with-moth.png", "usedBy": ["book:6"], "mjPrompt": "a tiny fluffy yellow chick with a stubby orange beak perched on the rim of a bathtub beside a grey moth, watching kindly with one wing extended, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "moth-on-path.png", "usedBy": ["book:7"], "mjPrompt": "a grey moth resting on a stepping-stone garden path, wings dry and glowing softly, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "moth-with-sheep.png", "usedBy": ["book:8"], "mjPrompt": "a grey moth riding gently on the nose of a fluffy round white sheep with kind dark eyes, a tiny yellow chick trotting alongside, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-in-bath.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato bobbing in the middle of a bathtub with water rings around it, a tiny yellow chick at the rim looking surprised, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "path.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a winding garden path of round stepping stones, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "math.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a small chalk slate with simple sums and a stub of chalk, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "thin.png", "usedBy": ["cards", "matching"], "mjPrompt": "one very thin bare twig standing upright, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "thumb.png", "usedBy": ["basket"], "mjPrompt": "a child's hand giving a thumbs-up, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "three.png", "usedBy": ["basket"], "mjPrompt": "three round red apples grouped together, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "moth-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a friendly moth with big patterned wings, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "bath-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a bubbly claw-foot bathtub with a rubber duck, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "thumb-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a cartoon hand giving a big thumbs-up, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "THE MOST IMPORTANT EAL WEEK OF LEVEL 2. th makes two sounds — the voiced buzz /ð/ (this, that, then, them, with) and the voiceless hush /θ/ (thin, moth, bath, path, math). Teach both from one sandpaper digraph; a hand on the throat sorts them. Mandarin has NEITHER sound, so children default to /s/, /d/, /f/ or /t/ — 'sink' for 'think', 'dat' for 'that'. Run the minimal-pair drill EVERY day (thin/tin, thin/sin, that/sat, path/pat) with a mirror so the child watches the tongue tip peek between the teeth. The reward is huge: this/that/then/them/with are the connective tissue of English, so this is the week sentences stop being lists and start joining up — celebrate the first real joined-up sentence.",
+  "lessonMapEquivalents": [44, 46]
+}

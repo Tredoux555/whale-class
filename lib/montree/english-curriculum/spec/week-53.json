@@ -1,0 +1,83 @@
+{
+  "week": 53,
+  "level": 3,
+  "sound": "oi",
+  "letterDisplay": "oi oy",
+  "soundType": "diphthong",
+  "patternDisplay": "oi / oy",
+  "anchorWord": "coin",
+  "newWords": ["coin", "oil", "boy", "toy"],
+  "reviewBank": ["owl", "cow", "out", "house", "moon", "book", "her", "bird", "star", "corn", "rain", "tree", "boat", "night", "boil", "soil", "join", "point", "joy", "enjoy", "school", "the", "and"],
+  "glue": { "new": [], "known": ["the", "is", "I", "on", "says", "what", "where", "why", "school"] },
+  "oralWords": ["royal", "loyal"],
+  "sentenceFrame": "The boy has a coin.",
+  "soundBasket": ["coin", "boy", "toy", "oil", "soil", "foil", "point", "joy", "coil", "boil"],
+  "cast": { "introduces": null, "present": ["Sam", "Segina"] },
+  "celebration": "🎉🎉 WORD NUMBER 1,000 lands this week — a thousand decodable words since the very first 'a'. A gold thousand-word ribbon is tied across the Pattern Tree, and the oi/oy leaf goes up beside it.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Oy-Oy-Boy!",
+      "lyrics": "[Intro]\n(oy… oy… oy…)\nThe happy sound!\n\n[Hook]\nOy! Oy! Oy-oy-oy!\noi or oy — ONE sound!\nOy-oy-boy! Oy-oy-boy!\nIt's a boy! (a boy!)\n\n[Verse 2]\nOy! Oy! Oy-oy-oy!\nA coin! A toy!\nOil in the soil!\nSo much joy! (joy! joy!)\n\n[Verse 3]\nOy! Oy! Oy-oy-oy!\nBoil! Coil! Point!\nEnjoy the toy!\n(oy! oy! oy!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not oy!\n(oy… oy… oy…)\n\n[Outro]\noi — coin… oy — boy… (oy… oy…)\nJoy! (a boy!)\n(oy… shhh…)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "oi/oy is the 'ahoy!' diphthong /ɔɪ/ — glides from 'aw' to 'ee', a bright bouncy sound. The whole family is small and cheerful; keep it playful. Placement hunch (verse hint): oy at the end (boy, toy, joy), oi in the middle (coin, oil, point). 'oy' sung as the diphthong, never letter names. Potato bridge intact."
+    },
+    {
+      "role": "word",
+      "title": "The Boy and the Coin",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nThe boy and the coin!\nThe boy and the coin!\nWhere is the coin? (where? where?)\nDown in the soil!\n\n[Verse 2]\nThe boy is Sam.\nSam sees a coin.\nSam digs in the soil! (dig! dig!)\nSam has the coin!\n\n[Verse 3]\nThe coin is for a toy!\nSam has so much joy!\nBoil? Coil? Point? (no! no!)\nA coin! A coin!\n\n[Outro]\nThe soil… the coin… (shhh…)\nWhat is in the soil?!\n(POTATO!)\nThe boy and the coin. (that's a thousand words!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'The boy and the coin.' — Sam (the peg-doll boy) digs a lost coin out of the soil for a toy. 🎉 This week the class crosses ONE THOUSAND decodable words; the outro names it ('that's a thousand words!'). Let the choir cheer. Whisper before the potato; the coin was buried by the potato all along."
+    }
+  ],
+  "book": {
+    "title": "The Boy and the Coin",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "The boy is Sam.", "image": "sam-boy", "artNote": "Sam — the peg-doll boy in a red shirt — standing in the spotlight, hands on hips, ready. Our oldest friend, back in the lead." },
+      { "n": 2, "text": "Sam sees a coin in the soil.", "image": "coin-in-soil", "artNote": "A glint of gold half-buried in dark soil; Sam crouched, pointing, eyes wide." },
+      { "n": 3, "text": "Sam picks up the coin!", "image": "sam-picks-coin", "artNote": "Sam holding the little gold coin up to the light, triumphant, soil on his hands." },
+      { "n": 4, "text": "The coin is for a toy!", "image": "coin-toy", "artNote": "Sam imagining — the coin above, a bright toy glowing beyond it, a thought-bubble of desire." },
+      { "n": 5, "text": "Sam has so much joy!", "image": "sam-joy", "artNote": "Sam mid-leap, coin clutched, pure delight. Segina claps at the edge of frame." },
+      { "n": 6, "text": "Boil? Coil? Point? No — a coin!", "image": "coin-closeup", "artNote": "The oi drill made visible: little icons of a boil-pot, a coiled rope, a pencil point, all crossed out — and the coin, circled bright. The word-hunt joke." },
+      { "n": 7, "text": "Sam enjoys the toy.", "image": "sam-toy", "artNote": "Sam sitting happily with a spinning top toy, the coin traded away, contentment." },
+      { "n": 8, "text": "The coin is the best toy!", "image": "coin-best", "artNote": "But look — Sam has kept the coin after all, holding it beside the toy, deciding the coin was the treasure. A quiet twist." },
+      { "n": 9, "text": "In the soil?!", "image": "potato-soil", "artNote": "Back at the hole in the soil where the coin was: a single potato sits in it now, wearing a tiny miner's helmet. No noun printed — the class SHOUTS it. Sam peeks over the edge." }
+    ],
+    "backCoverWords": ["coin", "oil", "boy", "toy", "soil", "joy", "enjoy", "the", "is", "for"]
+  },
+  "materials": {
+    "threePartCards": ["coin", "boy", "toy", "oil", "soil", "foil", "point", "joy"],
+    "sentences": ["Sam sees a coin.", "The coin is in the soil.", "Sam enjoys the toy.", "The coin is the best toy."],
+    "matching": ["coin", "boy", "toy", "oil", "soil", "point"],
+    "bingoPool": ["coin", "boy", "toy", "oil", "soil", "foil", "point", "joy", "coil", "potato"],
+    "tracing": { "letter": "oi / oy", "words": ["coin", "boy"] },
+    "coloring": ["coin", "boy", "toy"],
+    "dictionary": ["coin", "oil", "boy", "toy"],
+    "extras": ["🎉🎉 THE THOUSAND-WORD RIBBON: this week the cumulative decodable inventory crosses 1,000 words. Count it, name it, celebrate it — tie a gold ribbon across the whole Pattern Tree that reads 1,000. From one letter 'a' fifty-three weeks ago to a thousand words a child can read alone.", "ONE SOUND, TWO SPELLINGS: oi vs oy — the last of the true vowel teams and the tidiest rule of all. oy lives at the END (boy, toy, joy, enjoy); oi lives in the MIDDLE (coin, oil, soil, point). Nearly no exceptions — let them feel the reliability as a reward after oo and ow.", "Pattern Tree: the class reads coin/oil/boy/toy aloud and hangs the oi/oy leaf, right beside the thousand-word ribbon.", "Moveable alphabet: build c-oi-n, b-oy, t-oy, s-oi-l, p-oi-n-t — testing the end/middle placement rule and finding it holds."]
+  },
+  "assets": [
+    { "file": "sam-boy.png", "usedBy": ["book:1"], "mjPrompt": "a wooden peg doll boy in a red shirt standing with hands on hips ready, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "coin-in-soil.png", "usedBy": ["book:2"], "mjPrompt": "a glint of a small gold coin half-buried in dark soil with a peg doll boy crouched pointing at it wide-eyed, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sam-picks-coin.png", "usedBy": ["book:3"], "mjPrompt": "a wooden peg doll boy in a red shirt holding a little gold coin up to the light triumphant with soil on his hands, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "coin-toy.png", "usedBy": ["book:4"], "mjPrompt": "a small gold coin glowing in the foreground with a bright spinning-top toy glowing beyond it in a thought bubble, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sam-joy.png", "usedBy": ["book:5"], "mjPrompt": "a wooden peg doll boy in a red shirt mid-leap with a coin clutched in pure delight, a peg doll girl clapping at the edge of frame, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "coin-closeup.png", "usedBy": ["book:6"], "mjPrompt": "small icons of a boiling pot, a coiled rope and a pencil point all crossed out with a bright gold coin circled in the center, a playful word-hunt composition, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sam-toy.png", "usedBy": ["book:7"], "mjPrompt": "a wooden peg doll boy in a red shirt sitting happily beside a spinning-top toy, content, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "coin-best.png", "usedBy": ["book:8"], "mjPrompt": "a wooden peg doll boy in a red shirt holding a gold coin up beside a spinning-top toy, deciding the coin is the real treasure, a quiet warm moment, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-soil.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato sitting in a small hole in dark soil wearing a tiny miner's helmet with a headlamp, a peg doll boy peeking over the edge, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "coin.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a single shiny gold coin, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "boy.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a wooden peg doll boy in a red shirt smiling, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "toy.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a bright wooden spinning-top toy, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "oil.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a small glass bottle of golden oil, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "soil.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a small mound of dark rich garden soil, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "foil.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a crumpled sheet of shiny silver foil, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "point.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a sharpened pencil showing its point, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "coin-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a big shiny coin with a star on it, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "boy-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a happy peg doll boy, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "toy-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a spinning-top toy with swirls, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "oi/oy is the 'ahoy!' diphthong /ɔɪ/ — bright and bouncy, the smallest team and the friendliest. Best of all, its spelling rule actually holds: oy at the end (boy, toy, joy), oi in the middle (coin, oil, point). After the two-sound wobble of oo and ow, let this clean rule feel like a reward. 🎉🎉 And mark the milestone: this week the class crosses ONE THOUSAND decodable words. Count back to the first 'a', tie the gold thousand-word ribbon across the Pattern Tree, and let them feel the size of what they've built.",
+  "lessonMapEquivalents": [93, 94]
+}

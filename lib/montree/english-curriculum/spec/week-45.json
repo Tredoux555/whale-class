@@ -1,0 +1,82 @@
+{
+  "week": 45,
+  "level": 3,
+  "sound": "oa",
+  "letterDisplay": "oa ow",
+  "soundType": "vowel-team",
+  "patternDisplay": "oa / ow",
+  "anchorWord": "boat",
+  "newWords": ["boat", "goat", "snow", "grow"],
+  "reviewBank": ["see", "tree", "eat", "sea", "bee", "rain", "train", "day", "play", "ice", "bridge", "cube", "bike", "cake", "snake", "ship", "fish", "king"],
+  "glue": { "new": [], "known": ["the", "is", "I", "on", "says", "what", "where", "why"] },
+  "oralWords": ["snow", "float"],
+  "sentenceFrame": "The goat is in the snow.",
+  "soundBasket": ["boat", "goat", "coat", "road", "snow", "row", "show", "toad"],
+  "cast": { "introduces": null, "present": ["Sheep", "Bee", "Snake"] },
+  "celebration": "Two spellings for long o — oa (boat, goat) and ow (snow, grow). ow leads a quiet double life: here it says /oʊ/, but at the owl in Week 52 the same two letters will say /aʊ/. Acknowledge it, don't dwell. Right-branch leaf #3.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Oh-Oh-Snow!",
+      "lyrics": "[Intro]\n(oh… oh… oh…)\nOh! Oh! Snow!\n\n[Hook]\nO-A in the middle! (boat! goat!)\nO-W at the end! (snow! grow!)\nOh-oh-snow! Oh-oh-snow!\nTwo letters, one sound! (oh!)\n\n[Verse 2]\nB-O-A-T — boat! (on the boat!)\nS-N-O-W — snow! (in the snow!)\nOh-oh-snow! Oh-oh-snow!\nThe O says its name! (oh!)\n\n[Verse 3]\nRow the boat! (row! row!)\nThe snow can grow! (grow! grow!)\nOh-oh-snow! Oh-oh-snow!\nThe goat is in the snow!\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! In the snow!\n(oh… oh… oh…)\n\n[Outro]\nBoat… goat… snow… (shhh…)\nOh! Oh! Snow!",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "oa and ow both sing long-o /oʊ/ (phonetic respelling: sung 'oh', printed oa/ow). Positional lesson: 'O-A in the middle, O-W at the end.' Spell-outs uppercase. Potato in the snow gag. Do NOT sing the /aʊ/ 'ow' here — that's Week 52; keep every ow long and round."
+    },
+    {
+      "role": "word",
+      "title": "The Goat in the Snow",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nThe goat is in the snow!\nThe goat is in the snow!\nSnow, snow! (so much snow!)\nThe goat is in the snow!\n\n[Verse 2]\nThe goat is on the boat!\nRow, goat, row! (row! row!)\nSnow, snow! (so much snow!)\nThe snow can grow!\n\n[Verse 3]\nSheep is in the snow!\nBee is cold — brr! (so cold!)\nSnow, snow! (so much snow!)\nThe goat can row the boat!\n\n[Outro]\nThe goat… the snow… (shhh…)\nIn the snow?! (a potato!)\n(POTATO!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'The goat is in the snow.' — goat is a story friend (lowercase, fully decodable), not a named cast member. Sheep and Bee brave the cold. Whisper the outro, potato hits loud as a tiny snowman."
+    }
+  ],
+  "book": {
+    "title": "The Goat in the Snow",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "Snow!", "image": "snow", "artNote": "Fat soft snowflakes drifting through the spotlight, a white blanket beginning to gather. Winter arrives." },
+      { "n": 2, "text": "A goat.", "image": "goat", "artNote": "A sturdy little goat with a shaggy coat standing in the spotlight, breath steaming. A story friend — 'goat' is fully decodable now." },
+      { "n": 3, "text": "The goat is in the snow.", "image": "goat-snow", "artNote": "The goat trotting happily through deep snow, hoofprints behind it, snow on its nose." },
+      { "n": 4, "text": "A boat!", "image": "boat", "artNote": "A little rowboat pulled up at the edge of a frozen lake, oars ready." },
+      { "n": 5, "text": "The goat is on the boat.", "image": "goat-boat", "artNote": "The goat balancing bravely in the rowboat, hooves on the oars, ready to go." },
+      { "n": 6, "text": "Row, goat, row!", "image": "goat-rowing", "artNote": "The goat heaving on the oars, the boat gliding across dark water past drifting snow. Effort and joy." },
+      { "n": 7, "text": "The snow can grow.", "image": "snow-growing", "artNote": "A snowdrift piling higher and higher beside the goat, up to its shoulders now. The snow keeps growing." },
+      { "n": 8, "text": "Sheep is in the snow!", "image": "sheep-snow", "artNote": "Sheep — fluffy round white sheep with kind dark eyes — nearly camouflaged in the snow, only its dark eyes and pink nose showing. Bee shivers on its back." },
+      { "n": 9, "text": "In the snow?!", "image": "potato-snow", "artNote": "A little snowman built around a single potato, with a carrot nose and stick arms. No noun printed — the class SHOUTS it. The goat peers over the drift." }
+    ],
+    "backCoverWords": ["boat", "goat", "snow", "grow", "row", "cold", "on", "in", "the", "is"]
+  },
+  "materials": {
+    "threePartCards": ["boat", "goat", "coat", "road", "snow", "toad", "soap", "crow"],
+    "sentences": ["The goat is in the snow.", "The goat is on the boat.", "Row, goat, row!", "The snow can grow."],
+    "matching": ["boat", "goat", "coat", "road", "snow", "toad"],
+    "bingoPool": ["boat", "goat", "coat", "road", "snow", "toad", "soap", "crow", "tree", "bee", "rain", "cake", "potato"],
+    "tracing": { "letter": "oa/ow", "words": ["boat", "snow"] },
+    "coloring": ["goat", "boat", "snow"],
+    "dictionary": ["boat", "goat", "snow", "grow"],
+    "extras": ["TWO SPELLINGS FOR LONG O: oa lives in the MIDDLE (boat, goat, coat, road); ow often lives at the END (snow, grow, show, row). Both say /oʊ/. Sort picture cards into two baskets — middle vs end.", "THE ow WARNING (say it plainly): ow has TWO jobs. This week it says long o (snow). At Week 52 (owl, cow) the same letters will say /aʊ/. Tell the children now so it isn't a shock later — 'ow is a two-faced team.'", "DO NOT introduce 'know' — its silent k waits for Week 56. If a child writes it, praise the try and park the word.", "Right-branch leaf #3 goes up: read boat/goat/snow/grow aloud, hang the oa/ow leaf.", "Moveable alphabet: build b-oa-t, g-oa-t, s-n-ow, g-r-ow — weld each vowel team."]
+  },
+  "assets": [
+    { "file": "snow.png", "usedBy": ["book:1", "cards", "bingo", "matching"], "mjPrompt": "fat soft snowflakes drifting down onto a gathering white blanket, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "goat.png", "usedBy": ["book:2", "cards", "bingo", "matching"], "mjPrompt": "a sturdy little goat with a shaggy coat standing with steaming breath, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "goat-snow.png", "usedBy": ["book:3"], "mjPrompt": "a shaggy little goat trotting happily through deep snow, hoofprints behind it, snow on its nose, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "boat.png", "usedBy": ["book:4", "cards", "bingo", "matching"], "mjPrompt": "a little wooden rowboat pulled up at the edge of a frozen lake with oars ready, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "goat-boat.png", "usedBy": ["book:5"], "mjPrompt": "a shaggy little goat balancing bravely in a rowboat with its hooves on the oars, ready to go, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "goat-rowing.png", "usedBy": ["book:6"], "mjPrompt": "a shaggy little goat heaving on the oars of a rowboat gliding across dark water past drifting snow, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "snow-growing.png", "usedBy": ["book:7"], "mjPrompt": "a snowdrift piled high up to a little goat's shoulders, snow still falling, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sheep-snow.png", "usedBy": ["book:8"], "mjPrompt": "a fluffy round white sheep nearly camouflaged in deep snow, only its dark eyes and pink nose showing, a shivering honeybee on its back, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-snow.png", "usedBy": ["book:9"], "mjPrompt": "a little snowman built around a single raw potato with a carrot nose and stick arms, dramatic spotlight on the potato snowman, a shaggy goat peering over a snowdrift, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "coat.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a warm winter coat on a hook, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "road.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a winding country road, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "toad.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a plump brown toad sitting, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "soap.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a bar of soap with bubbles, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "crow.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a glossy black crow perched, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "grow.png", "usedBy": ["cards"], "mjPrompt": "a small green seedling sprouting from soil, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "goat-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a happy shaggy goat in the snow, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "boat-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a little rowboat with two oars, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "snow-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a smiling snowman with a scarf and snowflakes, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "LONG O, TWO SPELLINGS. oa in the middle (boat, goat, coat, road); ow often at the end (snow, grow, show, row). Both say /oʊ/. Sort by position. Say the ow warning out loud: ow is a two-faced team — long o this week, but /aʊ/ at Week 52 (owl, cow). Naming it now prevents confusion later. Do NOT introduce 'know' — its silent k belongs to Week 56. Hang right-branch leaf #3.",
+  "lessonMapEquivalents": [88, 89]
+}

@@ -1,0 +1,81 @@
+{
+  "week": 46,
+  "level": 3,
+  "sound": "igh",
+  "letterDisplay": "igh ie",
+  "soundType": "vowel-team",
+  "patternDisplay": "igh / ie",
+  "anchorWord": "night",
+  "newWords": ["night", "light", "high", "pie"],
+  "reviewBank": ["boat", "goat", "snow", "grow", "see", "tree", "eat", "sea", "bee", "rain", "train", "day", "play", "ice", "bike", "cake", "snake", "fish"],
+  "glue": { "new": [], "known": ["the", "is", "I", "on", "says", "what", "where", "why"] },
+  "oralWords": ["night", "shine"],
+  "sentenceFrame": "The light is high in the night.",
+  "soundBasket": ["night", "light", "high", "pie", "tie", "right", "bright", "flight"],
+  "cast": { "introduces": null, "present": ["Sheep", "Bee", "Snake"] },
+  "celebration": "Two spellings for long i — igh (night, light, high) and ie (pie, tie). igh is three letters holding one long-i sound, silent g and h. ie is a tiny family — pie, tie, die, lie — and the class meets all of it in one week. Right-branch leaf #4.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "igh-igh-Night!",
+      "lyrics": "[Intro]\n(eye… eye… eye…)\nEye! Eye! Night!\n\n[Hook]\nI-G-H — three letters! (one sound!)\nSilent G, silent H! (shhh!)\nigh-igh-night! igh-igh-night!\nThe I says its name! (eye!)\n\n[Verse 2]\nN-I-G-H-T — night! (in the night!)\nL-I-G-H-T — light! (a little light!)\nigh-igh-night! igh-igh-night!\nUp so high! (way up high!)\n\n[Verse 3]\nP-I-E — pie! (a big pie!)\nT-I-E — tie! (a bow tie!)\nigh-igh-night! igh-igh-night!\nThe light is high in the night!\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! No igh!\n(eye… eye… eye…)\n\n[Outro]\nNight… light… high… (shhh…)\nEye! Eye! Night!",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "igh and ie both sing long-i /aɪ/ (phonetic respelling: sung 'eye', printed igh/ie). The lesson: igh is THREE letters, one sound, with a silent g and h ('shhh'). ie is the small end-of-word family (pie, tie). Spell-outs uppercase. A night song — keep it hushed and glowing, the whisper-rap verses suit it. Potato has no igh."
+    },
+    {
+      "role": "word",
+      "title": "The Light at Night",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nThe light is high in the night!\nThe light is high in the night!\nHigh, high! (way up high!)\nThe light is high in the night!\n\n[Verse 2]\nSheep can see the light!\nBee can see the light!\nHigh, high! (way up high!)\nA light in the night!\n\n[Verse 3]\nA pie! A pie! (up so high!)\nThe pie is on the light?! (way up there!)\nHigh, high! (way up high!)\nBee can see the pie!\n\n[Outro]\nThe light… the night… (shhh…)\nIn the night?! (a potato!)\n(POTATO!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'The light is high in the night.' — a gentle nighttime song, glowing and calm. 'see' carries the ee/ea team from last week. Whisper the outro; potato hits loud, glowing like a nightlight."
+    }
+  ],
+  "book": {
+    "title": "The Light at Night",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "Night.", "image": "night", "artNote": "A deep blue-black night sky scattered with stars, the dark forest hushed below. A new mood for Level 3." },
+      { "n": 2, "text": "A light!", "image": "light", "artNote": "A single warm lantern glowing in the dark, the first light in the night." },
+      { "n": 3, "text": "The light is high.", "image": "light-high", "artNote": "The lantern lifted high on a pole, its glow spreading over the trees. Reaching upward." },
+      { "n": 4, "text": "The light is in the night.", "image": "light-night", "artNote": "The whole dark scene warmed by the one high light — stars above, a soft golden pool below. Peaceful." },
+      { "n": 5, "text": "Sheep can see the light.", "image": "sheep-light", "artNote": "Sheep — fluffy round white sheep with kind dark eyes — gazing up at the light, wool tinged gold, calm and safe." },
+      { "n": 6, "text": "A pie!", "image": "pie", "artNote": "A golden pie with a lattice crust glowing in the lantern light — someone left a pie out at night." },
+      { "n": 7, "text": "The pie is high!", "image": "pie-high", "artNote": "The pie perched improbably on a very high shelf, just out of reach. Comic longing." },
+      { "n": 8, "text": "Bee can see the pie.", "image": "bee-pie", "artNote": "Bee — plump gold-and-black honeybee with round shiny wings — hovering right up at the high pie, delighted, having flown to it easily. Bee wins." },
+      { "n": 9, "text": "In the night?!", "image": "potato-night", "artNote": "On the high shelf beside where the pie was, a single potato glows softly like a little nightlight. No noun printed — the class SHOUTS it. Sheep and Bee stare up in wonder." }
+    ],
+    "backCoverWords": ["night", "light", "high", "pie", "tie", "see", "in", "the", "is", "can"]
+  },
+  "materials": {
+    "threePartCards": ["night", "light", "pie", "tie", "right", "bright", "flight", "high"],
+    "sentences": ["The light is high in the night.", "Sheep can see the light.", "The pie is high.", "Bee can see the pie."],
+    "matching": ["night", "light", "pie", "tie", "right", "high"],
+    "bingoPool": ["night", "light", "high", "pie", "tie", "right", "bright", "tree", "bee", "boat", "snow", "cake", "potato"],
+    "tracing": { "letter": "igh/ie", "words": ["night", "pie"] },
+    "coloring": ["pie", "light", "night"],
+    "dictionary": ["night", "light", "high", "pie"],
+    "extras": ["igh — THREE LETTERS, ONE SOUND: the i says its name /aɪ/ and the g and h are silent partners holding hands (night, light, high, right, bright). Trace all three letters as one gesture, whisper nothing at gh.", "ie — THE SMALL FAMILY: ie says long i at the end of a short word. There are only four: pie, tie, die, lie. Meet all of them at once and be done.", "DO NOT introduce 'knight' — its silent k arrives at Week 56. If it comes up, park it warmly.", "Right-branch leaf #4 goes up: read night/light/high/pie aloud, hang the igh/ie leaf.", "Moveable alphabet: build n-igh-t, l-igh-t, h-igh, p-ie, t-ie — weld igh as one three-letter piece."]
+  },
+  "assets": [
+    { "file": "night.png", "usedBy": ["book:1", "cards", "bingo", "matching"], "mjPrompt": "a deep blue-black night sky scattered with stars over a hushed dark forest, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "light.png", "usedBy": ["book:2", "cards", "bingo", "matching"], "mjPrompt": "a single warm glowing lantern in the dark, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "light-high.png", "usedBy": ["book:3"], "mjPrompt": "a glowing lantern lifted high on a tall pole, its light spreading over dark treetops, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "light-night.png", "usedBy": ["book:4"], "mjPrompt": "a dark forest scene warmed by one high glowing light, stars above and a soft golden pool of light below, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sheep-light.png", "usedBy": ["book:5"], "mjPrompt": "a fluffy round white sheep with kind dark eyes gazing up at a glowing lantern at night, its wool tinged gold, calm and safe, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "pie.png", "usedBy": ["book:6", "cards", "bingo", "matching"], "mjPrompt": "a golden pie with a lattice crust glowing warmly, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "pie-high.png", "usedBy": ["book:7"], "mjPrompt": "a golden lattice pie perched on a very high shelf just out of reach in a dim room, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bee-pie.png", "usedBy": ["book:8"], "mjPrompt": "a plump gold-and-black honeybee with round shiny wings hovering right up at a golden pie on a high shelf, delighted, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-night.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato glowing softly like a little nightlight on a high shelf, dramatic spotlight on the glowing potato, a fluffy white sheep and a honeybee staring up in wonder, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "tie.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a striped bow tie, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "right.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a hand pointing to the right, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bright.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a very bright glowing light bulb, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "flight.png", "usedBy": ["cards"], "mjPrompt": "a small paper airplane in flight, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "high.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a tall ladder reaching up high, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "pie-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a round pie with a lattice crust and steam curls, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "light-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a glowing lantern with a handle and rays of light, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "night-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a crescent moon and stars in a night sky, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "LONG I, TWO SPELLINGS. igh is three letters holding one long-i sound — the i says its name, the g and h are silent (night, light, high, right, bright). Trace all three as one gesture. ie is the small end-of-word family — only four words: pie, tie, die, lie — meet them all and move on. Do NOT introduce 'knight'; its silent k belongs to Week 56. Hang right-branch leaf #4.",
+  "lessonMapEquivalents": [90]
+}

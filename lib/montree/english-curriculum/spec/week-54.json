@@ -1,0 +1,83 @@
+{
+  "week": 54,
+  "level": 3,
+  "sound": "ew",
+  "letterDisplay": "ew ue au aw",
+  "soundType": "diphthong",
+  "patternDisplay": "ew / ue / au / aw",
+  "anchorWord": "glue",
+  "newWords": ["new", "blue", "saw", "draw"],
+  "reviewBank": ["coin", "boy", "toy", "owl", "cow", "moon", "book", "her", "bird", "star", "rain", "tree", "few", "chew", "grew", "clue", "true", "paw", "claw", "straw", "school", "the", "and"],
+  "glue": { "new": ["because"], "known": ["the", "is", "I", "on", "says", "what", "where", "why", "school"] },
+  "oralWords": ["rescue", "astronaut"],
+  "sentenceFrame": "Chick has the new blue glue.",
+  "soundBasket": ["glue", "claw", "paw", "straw", "hawk", "saw", "screw", "yawn", "new", "blue"],
+  "cast": { "introduces": null, "present": ["Chick", "Snake"] },
+  "celebration": "A LIGHT BUNDLE of four small teams — ew, ue, au, aw — the last odd cousins, gathered onto one leaf. The heart word BECAUSE joins the wall: the word that finally lets a child say WHY.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "New-Blue-True!",
+      "lyrics": "[Intro]\n(oo… aw… oo… aw…)\nFour little teams!\n\n[Hook]\nNew! Blue! True!\new and ue — say OO!\nNew-blue-glue! New-blue-glue!\nIt's new! (brand new!)\n\n[Verse 2]\nChew! Grew! Flew! Drew!\nA clue! A clue!\nSay it long — oo, oo, oo!\n(new! blue! true!)\n\n[Verse 3]\nSaw! Paw! Claw! Draw!\nau and aw — say AW!\nA hawk on the straw!\n(saw! saw! saw!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not new!\n(oo… aw… oo… aw…)\n\n[Outro]\new — new… aw — saw… (oo… aw…)\nBrand new! (a clue!)\n(oo… shhh…)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "TWO sounds bundled: ew/ue say long-oo /uː/ (new, blue, chew, true) — hook 1+2; au/aw say /ɔː/ (saw, paw, claw, draw) — verse 3. Keep them cleanly separated so children hear which pair does what. Sung as pure vowels, never letter names. A light week — keep it brisk and playful. Potato bridge intact."
+    },
+    {
+      "role": "word",
+      "title": "The New Blue Glue",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nThe new blue glue!\nThe new blue glue!\nWhere is the glue? (where? where?)\nOn the claw!\n\n[Verse 2]\nChick has the new blue glue.\nChick can draw!\nChick drew a paw. (a paw!)\nChick saw the glue…\n\n[Verse 3]\nThe glue is on the claw!\nChick is stuck — because the glue is new!\n(stuck! stuck! stuck!)\nChick blew on the glue.\n\n[Outro]\nThe glue… the claw… (shhh…)\nWhat is in the glue?!\n(POTATO!)\nThe new blue glue. (all stuck up!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'The new blue glue.' — Chick tries to draw and gets gloriously stuck. Introduces the heart word BECAUSE (sung whole) — the word that lets a child give a reason for the first time. Keep it silly and sticky; the 'stuck!' chant is the fun. Whisper the outro; the potato is glued in too."
+    }
+  ],
+  "book": {
+    "title": "The New Blue Glue",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "New blue glue!", "image": "glue", "artNote": "A bottle of bright blue glue in the spotlight, a fresh drip forming at the nozzle. Shiny and new." },
+      { "n": 2, "text": "Chick has the new blue glue.", "image": "chick-glue", "artNote": "Chick — the tiny fluffy yellow chick with a stubby orange beak — cradling the big blue glue bottle, thrilled." },
+      { "n": 3, "text": "Chick can draw.", "image": "chick-draw", "artNote": "Chick with a crayon in its beak, mid-scribble on a big sheet, tongue-out concentration." },
+      { "n": 4, "text": "Chick drew a paw.", "image": "chick-drew-paw", "artNote": "Chick proudly beside a crayon drawing of a big animal paw. 'Drew' — the past of draw, ew again." },
+      { "n": 5, "text": "Chick saw the glue!", "image": "chick-saw-glue", "artNote": "Chick's eyes going wide as the blue glue tips over, a slow blue river creeping toward the drawing." },
+      { "n": 6, "text": "The glue is on the claw!", "image": "glue-on-claw", "artNote": "The drawn paw's claw now smeared with real blue glue; Chick's own foot stuck in the puddle. Oh no." },
+      { "n": 7, "text": "Chick is stuck because the glue is new!", "image": "chick-stuck", "artNote": "Chick comically fixed to the spot, one foot glued down, tugging. The heart word BECAUSE printed — a reason given. Snake peeks in, amused." },
+      { "n": 8, "text": "Chick blew on the glue.", "image": "chick-blew", "artNote": "Chick blowing hard on the glue to dry it, cheeks puffed, feathers ruffling. 'Blew' — ew once more." },
+      { "n": 9, "text": "In the glue?!", "image": "potato-glue", "artNote": "Set into the drying blue glue like a footprint in wet cement: a single potato, half-sunk. No noun printed — the class SHOUTS it. Chick and Snake stare at it, stuck." }
+    ],
+    "backCoverWords": ["new", "blue", "saw", "draw", "glue", "drew", "claw", "because", "the", "is"]
+  },
+  "materials": {
+    "threePartCards": ["glue", "claw", "paw", "straw", "hawk", "saw", "screw", "yawn"],
+    "sentences": ["Chick has the new blue glue.", "Chick can draw.", "Chick drew a paw.", "Chick is stuck because the glue is new."],
+    "matching": ["glue", "claw", "paw", "straw", "hawk", "saw"],
+    "bingoPool": ["glue", "claw", "paw", "straw", "hawk", "saw", "screw", "yawn", "new", "blue", "potato"],
+    "tracing": { "letter": "ew ue au aw", "words": ["new", "saw"] },
+    "coloring": ["glue", "claw", "saw"],
+    "dictionary": ["new", "blue", "saw", "draw"],
+    "extras": ["TWO-FAMILY SORT: this leaf holds four small teams doing two jobs. ew + ue say long-oo (new, blue, chew, true, clue). au + aw say /ɔː/ (saw, paw, cause, straw). Two hoops, sort by sound — the tidy end of the vowel teams before the y-vowel and the ghost letters.", "HEART WORD because: it holds the au team but says its own way — too useful to wait. The moment because joins the wall is the moment a child can answer 'why?' with a reason. Pair it with the why-question game (why did the chick get stuck? BECAUSE…).", "Pattern Tree: the class reads new/blue/saw/draw aloud and hangs the ew/ue/au/aw leaf — one leaf, four small cousins.", "Moveable alphabet: build n-ew, bl-ue, gl-ue, s-aw, dr-aw, cl-aw, str-aw."]
+  },
+  "assets": [
+    { "file": "glue.png", "usedBy": ["book:1", "cards", "bingo", "matching"], "mjPrompt": "a bottle of bright blue glue with a fresh drip forming at the nozzle, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "chick-glue.png", "usedBy": ["book:2"], "mjPrompt": "a tiny fluffy yellow chick with a stubby orange beak cradling a big bottle of blue glue, thrilled, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "chick-draw.png", "usedBy": ["book:3"], "mjPrompt": "a tiny fluffy yellow chick holding a crayon in its beak mid-scribble on a big sheet of paper, tongue-out concentration, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "chick-drew-paw.png", "usedBy": ["book:4"], "mjPrompt": "a tiny fluffy yellow chick standing proudly beside a crayon drawing of a big animal paw, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "chick-saw-glue.png", "usedBy": ["book:5"], "mjPrompt": "a tiny fluffy yellow chick with eyes going wide as a bottle of blue glue tips over into a slow creeping blue river toward a drawing, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "glue-on-claw.png", "usedBy": ["book:6"], "mjPrompt": "a crayon-drawn paw with its claw smeared with real blue glue and a tiny yellow chick's foot stuck in the blue puddle, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "chick-stuck.png", "usedBy": ["book:7"], "mjPrompt": "a tiny fluffy yellow chick comically fixed to the spot with one foot glued down and tugging, a friendly emerald-green snake peeking in amused, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "chick-blew.png", "usedBy": ["book:8"], "mjPrompt": "a tiny fluffy yellow chick blowing hard on spilled blue glue with cheeks puffed and feathers ruffling, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-glue.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato half-sunk into drying blue glue like a footprint in wet cement, a tiny yellow chick and an emerald-green snake staring at it stuck, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "claw.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a single curved animal claw, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "paw.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a soft animal paw print pad, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "straw.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a single bent drinking straw, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "hawk.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a small fierce hawk perched, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "saw.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a small hand saw with a wooden handle, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "screw.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a single metal screw, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "yawn.png", "usedBy": ["cards", "basket"], "mjPrompt": "a sleepy kitten mid-yawn with mouth wide, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "glue-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a friendly glue bottle with a big drip, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "claw-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a big curved claw, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "saw-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a hand saw with a wooden handle, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "A light bundle to close the vowel teams — four small cousins on one leaf. Keep the two jobs clear: ew and ue say long-oo (new, blue, chew, clue); au and aw say /ɔː/ (saw, paw, straw, cause). Two hoops, sort by sound, don't over-drill — this is a breath before the y-vowel. The real gift of the week is the heart word BECAUSE: the first time a child can attach a reason to a thought. Play the why→because game (why did Chick get stuck? Because the glue was new!) — it lands right before why itself earns its letters next week.",
+  "lessonMapEquivalents": [97, 98, 99]
+}

@@ -1,0 +1,83 @@
+{
+  "week": 56,
+  "level": 3,
+  "sound": "kn",
+  "letterDisplay": "kn wr mb",
+  "soundType": "silent-letters",
+  "patternDisplay": "kn / wr / mb",
+  "anchorWord": "lamb",
+  "newWords": ["knee", "write", "lamb", "thumb"],
+  "reviewBank": ["my", "fly", "why", "happy", "new", "blue", "coin", "boy", "owl", "moon", "her", "bird", "star", "knot", "knife", "know", "comb", "climb", "wren", "wrist", "school", "because"],
+  "glue": { "new": [], "known": ["the", "is", "I", "on", "says", "what", "where", "school", "because"] },
+  "oralWords": ["knight", "wrinkle"],
+  "sentenceFrame": "The lamb can climb.",
+  "soundBasket": ["knee", "lamb", "thumb", "knot", "knife", "comb", "wren", "wrist"],
+  "cast": { "introduces": null, "present": ["Sheep", "Snake"] },
+  "celebration": "THE GHOST LETTERS — kn, wr, mb — letters that are written but never heard. A narrative gift right before graduation: the class learns that some letters keep silent, and the long-promised 'know' (held since Week 45) finally lands: k-n-ow.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "The Ghost Letters",
+      "lyrics": "[Intro]\n(shh… shh… shh…)\nSome letters are… silent.\n\n[Hook]\nk is a ghost! (shh — silent k!)\nknee… knot… know!\nThe k is there… but you can't hear it!\n(knee! knot! know!)\n\n[Verse 2]\nw is a ghost! (shh — silent w!)\nwrite… wren… wrist!\nThe w is there… but you can't hear it!\n(write! wren! wrist!)\n\n[Verse 3]\nb is a ghost! (shh — silent b!)\nlamb… thumb… comb… climb!\nThe b is there… but you can't hear it!\n(lamb! thumb! climb!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! No ghost letters!\n(shh… shh… shh…)\n\n[Outro]\nsilent k… silent w… silent b…\nwritten… but never heard. (shh…)\nknow! (we know it now!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "The spookiest, most fun week for the dark-trap style — silent letters ARE ghosts. Say the WORDS normally (knee = /niː/, lamb = /læm/) and whisper the ghost letter with an 'shh' — never sound the k, w, or b. The gag is that the letter is written but haunts silently. The long-held 'know' lands here (k-n-ow). Potato bridge intact."
+    },
+    {
+      "role": "word",
+      "title": "The Lamb Can Climb",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nThe lamb can climb!\nThe lamb can climb!\nWhere is the lamb? (where? where?)\nUp on the rocks!\n\n[Verse 2]\nThe lamb sees a wren.\nThe wren can not climb.\nThe lamb has a knot! (a knot!)\nThe lamb kneels down.\n\n[Verse 3]\nNow the lamb can climb!\nUp, up, to the top!\nThe lamb and the wren know the way!\n(climb! climb! climb!)\n\n[Outro]\nThe lamb… the top… (shhh…)\nWhat is on the lamb?!\n(POTATO!)\nThe lamb can climb. (all the way up!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'The lamb can climb.' — a little lamb (Sheep's own kin) climbing rocks, helped by a silent wren. Every silent letter word sung normally — climb ends in a silent b, wren begins with a silent w, knot with a silent k, know too. The choir whispers the ghost letters. Whisper the outro; the potato rode up on the lamb's back."
+    }
+  ],
+  "book": {
+    "title": "The Lamb Can Climb",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "A lamb.", "image": "lamb", "artNote": "A small white lamb — Sheep's little kin — in the spotlight, looking up at something tall. 'Lamb' ends in a silent b." },
+      { "n": 2, "text": "The lamb can climb.", "image": "lamb-climb", "artNote": "The lamb picking its way up a dark rocky slope, careful and determined. 'Climb' — silent b again." },
+      { "n": 3, "text": "The lamb sees a wren.", "image": "lamb-sees-wren", "artNote": "A tiny brown wren perched on a rock above the lamb, tilting its head. 'Wren' — silent w at the start." },
+      { "n": 4, "text": "The wren can not climb.", "image": "wren-cant-climb", "artNote": "The wren hopping helplessly at a sheer bit of rock, one wing folded — it cannot get up the smooth face." },
+      { "n": 5, "text": "The lamb has a knot!", "image": "lamb-knot", "artNote": "A rope with a big knot caught around the lamb's leg, snagged on the rock. 'Knot' — silent k. Trouble." },
+      { "n": 6, "text": "The lamb kneels down.", "image": "lamb-kneels", "artNote": "The lamb folding its front legs to kneel and work the knot loose with its teeth. 'Kneels' — silent k. Patience." },
+      { "n": 7, "text": "Now the lamb can climb!", "image": "lamb-climbs-free", "artNote": "Free of the knot, the lamb springing up the rocks with new energy, the wren riding on its back." },
+      { "n": 8, "text": "The lamb and the wren know the way.", "image": "lamb-wren-top", "artNote": "Lamb and wren together at the summit rock, gazing out. 'Know' — the word held since Week 45, silent k, landed at last. Sheep watches proudly from below." },
+      { "n": 9, "text": "On the lamb?!", "image": "potato-lamb", "artNote": "Riding on the lamb's woolly back all the way to the top, wearing a tiny climbing harness: a single potato. No noun printed — the class SHOUTS it. The wren peers at it." }
+    ],
+    "backCoverWords": ["knee", "write", "lamb", "thumb", "knot", "climb", "wren", "know", "the", "can"]
+  },
+  "materials": {
+    "threePartCards": ["knee", "lamb", "thumb", "knot", "knife", "comb", "wren", "wrist"],
+    "sentences": ["The lamb can climb.", "The lamb has a knot.", "The lamb kneels down.", "The lamb and the wren know the way."],
+    "matching": ["knee", "lamb", "thumb", "knot", "comb", "wren"],
+    "bingoPool": ["knee", "lamb", "thumb", "knot", "knife", "comb", "wren", "wrist", "climb", "potato"],
+    "tracing": { "letter": "kn / wr / mb", "words": ["knee", "lamb"], "mode": "pattern" },
+    "coloring": ["lamb", "knee", "comb"],
+    "dictionary": ["knee", "write", "lamb", "thumb"],
+    "extras": ["THE GHOST-LETTER STORY: frame the whole week as a mystery — some letters are written but stay silent, like ghosts. Three families: silent k before n (knee, knot, know, knife), silent w before r (write, wren, wrist, wrong), silent b after m (lamb, thumb, comb, climb). Say each word normally, then hunt the ghost — the child circles the letter you cannot hear.", "🎉 'know' LANDS: back in Week 45 the class met 'snow' and 'grow' and was told 'know' would have to wait for a silent letter. Today it arrives — k-n-ow. Point back to the promise.", "Pattern-card tracing (pattern mode): trace kn, wr, mb with the SILENT letter greyed and haloed — the child traces it and says nothing, the same delicious silent-e joke from magic-e, now for ghost letters.", "Moveable alphabet: build kn-ee, wr-i-te, l-a-mb, th-u-mb, then hide the ghost letter behind a finger and read the word — proof it was silent all along."]
+  },
+  "assets": [
+    { "file": "lamb.png", "usedBy": ["book:1", "cards", "bingo", "matching"], "mjPrompt": "a small fluffy white lamb looking up, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "lamb-climb.png", "usedBy": ["book:2"], "mjPrompt": "a small white lamb picking its way carefully up a dark rocky slope, determined, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "lamb-sees-wren.png", "usedBy": ["book:3"], "mjPrompt": "a tiny brown wren perched on a rock above a small white lamb, tilting its head, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "wren-cant-climb.png", "usedBy": ["book:4"], "mjPrompt": "a tiny brown wren hopping helplessly at the foot of a smooth sheer rock face with one wing folded, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "lamb-knot.png", "usedBy": ["book:5"], "mjPrompt": "a rope with a big knot caught around a white lamb's leg snagged on a rock, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "lamb-kneels.png", "usedBy": ["book:6"], "mjPrompt": "a small white lamb kneeling on folded front legs working a rope knot loose with its teeth, patient, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "lamb-climbs-free.png", "usedBy": ["book:7"], "mjPrompt": "a small white lamb springing up dark rocks with new energy, a tiny brown wren riding on its back, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "lamb-wren-top.png", "usedBy": ["book:8"], "mjPrompt": "a small white lamb and a brown wren together on a summit rock gazing out, a fluffy white sheep watching proudly from below, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-lamb.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato riding on a white lamb's woolly back wearing a tiny climbing harness at a rocky summit, a brown wren peering at it, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "knee.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a close-up of a bent child's knee, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "thumb.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a thumbs-up hand, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "knot.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a rope tied in a big knot, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "knife.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a small blunt table knife, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "comb.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a simple wooden comb, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "wren.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a tiny brown wren with its tail cocked up, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "wrist.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a child's wrist with a little woven bracelet, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "lamb-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a fluffy little lamb, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "knee-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a bent knee with a little bandage, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "comb-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a wide-tooth comb, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "The ghost-letter week — the most fun the dark-trap theatre will ever have. Some letters are written but never sounded, and children LOVE a rule that says 'don't say it.' Three families: silent k before n (knee, knot, know), silent w before r (write, wren, wrist), silent b after m (lamb, thumb, climb). Always say the word normally, then hunt the letter you couldn't hear. Pattern-card tracing greys the silent letter with a halo — trace it, say nothing. 🎉 Point back to Week 45: 'know' was promised the day the class met 'snow'; today it lands (k-n-ow). One week from graduation.",
+  "lessonMapEquivalents": [104, 105, 106]
+}
