@@ -42,10 +42,10 @@
       { "n": 5, "text": "A tail!", "image": "train-tail", "artNote": "The bright red caboose at the train's tail end, a lantern swinging from it." },
       { "n": 6, "text": "Snake has a long tail.", "image": "snake-tail", "artNote": "Snake — emerald-green, amber-eyed — proudly showing off its very long tail curled across the platform, matching the train's." },
       { "n": 7, "text": "Play, play, play!", "image": "cast-playing", "artNote": "Sheep, Snake and Chick splashing together in the rain beside the train, pure delight." },
-      { "n": 8, "text": "Play in the rain all day!", "image": "play-allday", "artNote": "A wide happy scene: the train, the puddles, the cast dancing in the rain under a grey-gold sky." },
+      { "n": 8, "text": "Play in the rain, play!", "image": "play-allday", "artNote": "A wide happy scene: the train, the puddles, the cast dancing in the rain under a grey-gold sky. (Text note: 'all' is untaught /ɔːl/-family — kept out of print; the song may sing 'all day' but the book never prints it.)" },
       { "n": 9, "text": "In the rain?!", "image": "potato-rain", "artNote": "A single potato stands in a puddle under a tiny umbrella, perfectly dry and pleased. No noun printed — the class SHOUTS it. Sheep peers around the caboose." }
     ],
-    "backCoverWords": ["rain", "train", "tail", "day", "play", "long", "all", "the", "is", "in"]
+    "backCoverWords": ["rain", "train", "tail", "day", "play", "long", "the", "is", "in"]
   },
   "materials": {
     "threePartCards": ["rain", "train", "tail", "snail", "day", "play", "hay", "tray"],

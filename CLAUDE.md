@@ -2,6 +2,39 @@
 
 **⚠️ STANDING RULE (Tredoux, Jul 10 2026 — PERMANENT): MODEL DELEGATION.** Fable is the DIRECTOR and second brain — it plans, decides, writes the critical copy, and reviews. It does NOT do grunt work. **Sonnet** (preferred over Haiku — more reliable) does all fetching, sweeping, scouting, data-gathering, and auditing via sub-agents. **Opus** builds where appropriate. Never let Fable burn half its context on mechanical work another model can do — spawn agents instead.
 
+## 🌳 SESSION — Jul 12, 2026 (overnight, Cowork/Fable directing) — LEVELS 2–3 FULLY SPECIFIED: SPINE LOCKED + ENGINE GENERALIZED + ALL 32 WEEKSPECS AUTHORED + DIRECTOR-READ
+
+**Canonical: `docs/handoffs/SESSION_CURRICULUM_LEVELS_2_3_JUL12.md` (the full record) — executes
+`PLAN_CURRICULUM_LEVELS_2_3_JUL11.md` Phases A–C end-to-end in one overnight run. Commits `106bc694`
+(checkpoint) + the final fixes commit, both pushed. The 58-week program is now COMPLETELY SPECIFIED —
+every week from "a" (W1) to the potato's coronation (W58) has a validator-green WeekSpec.**
+
+- **§0 rulings CONFIRMED by Tredoux (no vetoes):** 16+16 · cast carries+grows · stop at W58 · "Level 2/3"
+  naming. **Phase A:** `MASTER_SPINE.md` rewritten — full W27–58 grids, per-week word banks (mined
+  phonics-data.ts + Fable-authored missing banks), cumulative math **94 → 603 (W42) → 1,192 (W58)**, word
+  #1,000 lands W53, heart-word ledger (9 faith words; *on* + *why* earn their letters), cast debuts (Sheep
+  W27 · Chick W28 · Snake W33 · Bee W44 · Star W47 · Owl W52; name-days Snake W38, Sheep W44), **Pattern
+  Tree** (32 leaves + Mirror Leaf W50 + potato crown W58).
+- **Phase B (sacred flow, SHIP):** contract `PLAN_ENGINE_GENERALIZATION_JUL12.md` → Opus build → Sonnet
+  audit (0 CRIT, 1 WARN fixed). soundType +7 · pattern-card tracing mode · Pattern Tree wall · level-aware
+  kicker · **pattern-aware validator** (registry, split-vce, suffixes, y-final, forbidden-before, cast-name
+  exemption, potato-W58 decree, 27 fixtures) · weekToLessonMap + WEEK_LOADERS W27–58. **Level 1
+  byte-identical (HTML-diffed W4/W19/W26).**
+- **Phase C:** Fable exemplars **W27 (sh)** + **W38 (a_e, Snake's name-day)**; 3 parallel Opus drafters did
+  W28–37/W39–48/W49–58. **Fable read all 32 weeks' lyrics + book texts → 9 fixes** (W30/W31/W58
+  syllable-split songs — WHOLE-WORDS rule; W40 fake wand base; W42 schwa + untaught "come"; W43 "all";
+  W49 "She put"; W33/W52 idiom/clarity). **Final gate: validator exit 0 on all 58 weeks.**
+- **🚨 RULES:** Opus drafters slip on the WHOLE-WORDS rule most — director read before production is
+  non-negotiable. Validator false-passes exist (come/she/all letter-sum but are untaught) — STRICT review
+  checks PRONUNCIATION. W11's produced book prints "potato" (grandfathered in validator — Tredoux's call).
+  Multi-pattern weeks: machine token in `sound`, human label in `patternDisplay`; W50 = sound "review".
+- **⏳ Owed:** **Phase D production** (~640 MJ + 128 Suno, runbook = OVERNIGHT_RUN_JUL11.md) — **GATED on
+  disk cleanup (10+ GB; Mac was at 1.7 GiB)**. L1 morning-review items still open. Phase E Montree wiring
+  queued. Eyeball Pattern Tree + pattern tracing on a real W38 pack. DC deletes: `tsconfig.scope-l23.tmp.json`
+  + 3× `_tmp_*.mjs` at repo root.
+
+---
+
 ## 🗺 SESSION — Jul 11, 2026 (day, Cowork/Fable directing) — LEVEL 1 PRODUCTION 100% COMPLETE + LEVELS 2–3 ROADMAP APPROVED
 
 **Two things happened. (1) The overnight production run FINISHED: the full 26-week Level 1 curriculum is
