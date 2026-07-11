@@ -19,16 +19,16 @@
     {
       "role": "sound",
       "title": "Ice-Ice-Bridge!",
-      "lyrics": "[Intro]\n(sss… sss… sss…)\nIce! Ice! Bridge!\n\n[Hook]\nSoft C says /s/! (sss!)\nI-C-E — ice! (on the ice!)\nSoft G says /j/! (juh!)\nC-A-G-E — cage!\n\n[Verse 2]\n-tch! -tch! Catch! (catch it!)\nC-A-T-C-H — catch!\n-dge! -dge! Bridge! (cross it!)\nB-R-I-D-G-E — bridge!\n\n[Verse 3]\nCross the bridge! (cross it!)\nOn the ice — nice and slow!\nLevel Two is DONE! (done! done!)\nThe tree is full! (leaf by leaf!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! On the bridge!\n(sss… sss… sss…)\n\n[Outro]\nIce… bridge… (shhh…)\nWe cross to READ! (Level Three!)\nIce! Ice! Bridge!",
+      "lyrics": "[Intro]\n(sss… sss… sss…)\nIce! Ice! Bridge!\n\n[Hook]\nSoft C says /s/! (sss!)\nI-C-E — ice! (on the ice!)\nSoft G says /j/! (like gem!)\nC-A-G-E — cage!\n\n[Verse 2]\n-tch! -tch! Catch! (catch it!)\nC-A-T-C-H — catch!\n-dge! -dge! Bridge! (cross it!)\nB-R-I-D-G-E — bridge!\n\n[Verse 3]\nCross the bridge! (cross it!)\nOn the ice — nice and slow!\nLevel Two is DONE! (done! done!)\nThe tree is full! (leaf by leaf!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! On the bridge!\n(sss… sss… sss…)\n\n[Outro]\nIce… bridge… (shhh…)\nWe cross to READ! (Level Three!)\nIce! Ice! Bridge!",
       "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
       "sunoNotes": "Not a magic-e song — this is the Level 2 finale anthem. Soft C sings /s/ (a long hiss on the '(sss…)' lines), soft G sings /j/; the -tch and -dge stutters bite the ending of the word. Spell-outs uppercase (I-C-E, B-R-I-D-G-E). Verse 3 is celebration energy — 'Level Two is DONE, the tree is full.' Potato waits ON the bridge; the outro reframes the whole moment: 'We cross to READ.' Build to a triumphant hook."
     },
     {
       "role": "word",
       "title": "The Bridge to the Ice",
-      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nA bridge to the ice!\nA bridge to the ice!\nCross the bridge! (cross it!)\nA bridge to the ice!\n\n[Verse 2]\nCome, Snake! Come, Chick! (come on!)\nSheep is on the bridge!\nThe bridge is huge! (so huge!)\nThe ice is nice! (nice and slow!)\n\n[Verse 3]\nCatch, Dog! Catch! (got it!)\nOn the ice, on the ice!\nCross the bridge! (cross it!)\nWe cross to Level Three!\n\n[Outro]\nThe bridge… the ice… (shhh…)\nOn the bridge?! (a potato!)\n(POTATO!)",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nA bridge to the ice!\nA bridge to the ice!\nCross the bridge! (cross it!)\nA bridge to the ice!\n\n[Verse 2]\nCross, Snake! Cross, Chick! (cross it!)\nSheep is on the bridge!\nThe bridge is huge! (so huge!)\nThe ice is nice! (nice and slow!)\n\n[Verse 3]\nCatch, Dog! Catch! (got it!)\nOn the ice, on the ice!\nCross the bridge! (cross it!)\nWe cross to Level Three!\n\n[Outro]\nThe bridge… the ice… (shhh…)\nOn the bridge?! (a potato!)\n(POTATO!)",
       "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
-      "sunoNotes": "Frame: 'A bridge to the ice.' — the whole Level-2 cast (Sheep, Snake, Chick, Dog) crosses together. This is a goodbye-to-Level-2 anthem: warm, a little proud. The 'Come, ___!' and 'Catch, ___!' command-frames carry the Level-1 pattern forward one last time. Potato waits on the bridge; whisper the outro, potato hits loud."
+      "sunoNotes": "Frame: 'A bridge to the ice.' — the whole Level-2 cast (Sheep, Snake, Chick, Dog) crosses together. This is a goodbye-to-Level-2 anthem: warm, a little proud. The 'Cross, ___!' and 'Catch, ___!' command-frames carry the Level-1 pattern forward one last time ('come' is untaught — never print or sing it as a frame here). Potato waits on the bridge; whisper the outro, potato hits loud."
     }
   ],
   "book": {
@@ -38,14 +38,14 @@
       { "n": 1, "text": "A bridge.", "image": "bridge", "artNote": "A great arched bridge glowing in the spotlight, glittering ice far below. The grandest stage yet — this is the doorway out of Level 2." },
       { "n": 2, "text": "A bridge to the ice.", "image": "bridge-to-ice", "artNote": "The bridge stretching across a sheet of glittering ice toward a warm glow on the far side. Somewhere to go." },
       { "n": 3, "text": "Sheep is on the bridge.", "image": "sheep-bridge", "artNote": "Sheep — fluffy round white sheep with kind dark eyes — first onto the bridge, turning to wave the others on." },
-      { "n": 4, "text": "Come, Snake! Come, Chick!", "image": "cast-gathering", "artNote": "Snake (emerald-green, amber-eyed) and Chick (tiny fluffy yellow chick, stubby orange beak) hurry up onto the bridge behind Sheep. The band reunites." },
+      { "n": 4, "text": "Cross, Snake! Cross, Chick!", "image": "cast-gathering", "artNote": "Snake (emerald-green, amber-eyed) and Chick (tiny fluffy yellow chick, stubby orange beak) hurry up onto the bridge behind Sheep. The band reunites." },
       { "n": 5, "text": "The bridge is huge.", "image": "huge-bridge", "artNote": "A wide view: the little cast tiny against the vast arch, the far glow ahead. Awe — a big crossing." },
       { "n": 6, "text": "A cage!", "image": "cage", "artNote": "A golden lantern-cage hangs from the bridge post, a warm light glowing inside it, lighting the way across." },
       { "n": 7, "text": "The ice is nice.", "image": "ice-below", "artNote": "Below the bridge the ice glitters, smooth and blue and lovely. Not scary — beautiful." },
       { "n": 8, "text": "Catch, Dog! Catch!", "image": "dog-catch", "artNote": "Dog bounds onto the bridge to catch up with the others, mid-leap, joyful. The whole cast is across." },
       { "n": 9, "text": "On the bridge?!", "image": "potato-bridge", "artNote": "At the far end of the bridge, in the warm glow of Level 3, a single potato waits like a tiny gatekeeper wearing a little crown of light. No noun printed — the class SHOUTS it. The whole cast stares, then grins." }
     ],
-    "backCoverWords": ["ice", "bridge", "cage", "catch", "nice", "huge", "come", "on", "the", "is"]
+    "backCoverWords": ["ice", "bridge", "cage", "catch", "nice", "huge", "cross", "on", "the", "is"]
   },
   "materials": {
     "threePartCards": ["ice", "mice", "face", "cage", "page", "catch", "match", "bridge"],
