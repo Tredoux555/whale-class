@@ -2,6 +2,33 @@
 
 **⚠️ STANDING RULE (Tredoux, Jul 10 2026 — PERMANENT): MODEL DELEGATION.** Fable is the DIRECTOR and second brain — it plans, decides, writes the critical copy, and reviews. It does NOT do grunt work. **Sonnet** (preferred over Haiku — more reliable) does all fetching, sweeping, scouting, data-gathering, and auditing via sub-agents. **Opus** builds where appropriate. Never let Fable burn half its context on mechanical work another model can do — spawn agents instead.
 
+## 🗺 SESSION — Jul 11, 2026 (day, Cowork/Fable directing) — LEVEL 1 PRODUCTION 100% COMPLETE + LEVELS 2–3 ROADMAP APPROVED
+
+**Two things happened. (1) The overnight production run FINISHED: the full 26-week Level 1 curriculum is
+produced end-to-end** — all images (~520, cast complete through fox W24 + graduation W26), all 26 packs
+(260 PDFs verified valid), all songs (W15–26's 48 Suno mp3s landed, zero lyric rewrites, 1,590 credits left).
+Status board closed out in `docs/curriculum/OVERNIGHT_RUN_JUL11.md`; commit `4b28562e` (runbook + the new
+0-byte-PDF hard-fail guard in `build-week.mjs` — root cause of W19's silent bingo failure was a 100%-FULL
+DISK, not the builder). 🚨 Disk ended at 1.7 GiB free — real cleanup owed before the next production run.
+Morning-review items (Suno take picks, W9 lyric reconciliation, 5 coloring rerolls, hero-word coloring gaps)
+listed in the runbook's checklist. **(2) LEVELS 2–3 ROADMAP RESEARCHED + APPROVED — canonical binding
+contract: `docs/handoffs/PLAN_CURRICULUM_LEVELS_2_3_JUL11.md`. READ IT FIRST; its §6 resume prompt is the
+entry point.** Shape: Level 2 = W27–42 (sh→ch→th→ck/FLSZ→ng→wh → blends ×5 incl. EAL-heavy final blends →
+magic-e ×4 → soft c/g+tch/dge celebration), Level 3 = W43–58 (vowel teams → r-controlled → EAL minimal-pair
+review week → diphthongs → y-vowel → kn/wr/mb → -ing/-ed/-s → -tion GRAND GRADUATION). 58 weeks total.
+Proposed rulings (§0, Tredoux vetoes at next session start else they stand): keep 16+16, cast carries+grows,
+stop at W58, "Level 2/3" naming (never "Blue/Green" in product — lesson-map phase boundaries don't match;
+lesson-map stays frozen, interop via weekToLessonMap). Engine generalization gap list (§3, verified paths):
+soundType enum, pattern-card tracing mode, vowel wall→Pattern Wall, book kicker text, pattern-aware
+decodability validator, WEEK_LOADERS+weekToLessonMap W27–58. End-of-L1 baseline: **94 decodable words**
+(list in the plan §1; `reviewBank[]` is NOT cumulative — use newWords union). Research payload §4 (UFLI/L&S/
+Jolly consensus, Mandarin-L1 EAL findings: final blends hardest, final-l 97% error trap, th/tense-lax
+minimal pairs, ng not free). Execution = 5 phases (§5): A spine lock → B engine (sacred flow) → C authoring
+(Fable exemplars W27+W38, Opus drafts, Fable reads all 32) → D production (proven loops, needs 10+ GB disk)
+→ E Montree wiring (all 3 levels together).
+
+---
+
 ## 🎼 SESSION — Jul 10, 2026 (late night, Cowork/Fable directing) — CURRICULUM STUDIO + FULL 26-WEEK LEVEL 1 ENGLISH CURRICULUM SHIPPED (the big curriculum revamp)
 
 **Canonical: `docs/handoffs/SESSION_CURRICULUM_STUDIO_JUL10.md` + binding contract `docs/handoffs/PLAN_CURRICULUM_STUDIO_JUL10.md` (§8b amendments included) + `docs/curriculum/spec/MASTER_SPINE.md`. 🚨 NOT COMMITTED — `lib/montree/english-curriculum/` is fully UNTRACKED; commit+push via Desktop Commander is owed item #1 (an audit agent destroyed week-04.json mid-session; only Fable's in-context copy saved it — git is the safety net).**
