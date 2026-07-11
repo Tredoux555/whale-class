@@ -1,0 +1,83 @@
+{
+  "week": 52,
+  "level": 3,
+  "sound": "ou",
+  "letterDisplay": "ou ow",
+  "soundType": "diphthong",
+  "patternDisplay": "ou / ow",
+  "anchorWord": "owl",
+  "newWords": ["out", "house", "cow", "owl"],
+  "reviewBank": ["moon", "book", "look", "zoo", "her", "bird", "star", "corn", "rain", "tree", "boat", "night", "loud", "cloud", "found", "round", "town", "down", "brown", "school", "the", "and"],
+  "glue": { "new": [], "known": ["the", "is", "I", "on", "says", "what", "where", "why", "school"] },
+  "oralWords": ["flower", "mountain"],
+  "sentenceFrame": "The owl is in the town.",
+  "soundBasket": ["owl", "cow", "house", "cloud", "mouse", "crown", "clown", "flower", "mouth", "town"],
+  "cast": { "introduces": "Owl", "present": ["Star", "Sheep"] },
+  "celebration": "OWL DEBUTS — decodable at debut (ow + l), the first cast member the class can read the very day they meet. The ou/ow diphthong leaf goes up: the 'ouch!' sound, two spellings.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Ow-Ow-Owl!",
+      "lyrics": "[Intro]\n(ow… ow… ow…)\nThe 'ouch!' sound!\n\n[Hook]\nOw! Ow! Ow-ow-ow!\nou or ow — ONE sound!\nOw-ow-owl! Ow-ow-owl!\nIt's an owl! (hello, Owl!)\n\n[Verse 2]\nOw! Ow! Ow-ow-ow!\nA cow! A cloud!\nOut of the house!\nDown in the town! (the town!)\n\n[Verse 3]\nOw! Ow! Ow-ow-ow!\nLoud! Round! Proud!\nA mouse in the house!\n(ow! ow! ow!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not ow!\n(ow… ow… ow…)\n\n[Outro]\nou — house… ow — owl… (ow… ow…)\nOuch! (an owl!)\n(ow… shhh…)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "ou/ow here is the DIPHTHONG /aʊ/ — the 'ouch!' sound (NOT the long-o ow of Week 45 snow). It glides from 'ah' to 'oo' in one breath — ride it down like a slide. 'ow' sung as the diphthong, never letter names. Verse 4 welcomes cast member Owl (ow-l, decodable at debut). Potato bridge intact."
+    },
+    {
+      "role": "word",
+      "title": "The Owl in Town",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nThe owl is in the town!\nThe owl is in the town!\nWhere is the owl? (where? where?)\nOut and about!\n\n[Verse 2]\nThe owl looks down.\nA loud, loud sound!\nA cow! A cow! (moo! moo!)\nOut of the house!\n\n[Verse 3]\nThe owl and the cow shout!\nDown in the town, so proud!\nWhere is the owl? (where? where?)\nUp! Up! It can fly!\n\n[Outro]\nThe town… the owl… (shhh…)\nWhat is in the town?!\n(POTATO!)\nThe owl in town. (goodnight, town.)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'The owl is in the town.' — Owl's debut adventure, a night in town with a loud cow. Every content word rides the /aʊ/ glide (owl, town, down, out, loud, sound, cow, shout, proud). Let the choir hoot the owl and moo the cow. Whisper the outro; the potato is in town too."
+    }
+  ],
+  "book": {
+    "title": "The Owl in Town",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "An owl.", "image": "owl", "artNote": "CAST DEBUT: Owl — a small round tawny owl with huge amber eyes — blinking in the spotlight. And the class can READ its name the day it arrives: ow-l." },
+      { "n": 2, "text": "The owl is in the town.", "image": "owl-town", "artNote": "Owl perched on a lamppost over a little sleeping town, big eyes glowing." },
+      { "n": 3, "text": "The owl looks down.", "image": "owl-looks-down", "artNote": "Owl peering straight down from the lamppost, huge eyes fixed on something below in the street." },
+      { "n": 4, "text": "A loud sound!", "image": "loud-sound", "artNote": "Owl startled, feathers up — a big cartoon 'sound' burst rising from a barn at the edge of town." },
+      { "n": 5, "text": "The owl sees a cow.", "image": "owl-sees-cow", "artNote": "The source: a cow standing in the street, looking up sheepishly. Owl stares. Comedy of the odd pair." },
+      { "n": 6, "text": "The cow is out! The cow is in the house!", "image": "cow-in-house", "artNote": "The cow has wandered right into a little house, filling the doorway, a lamp knocked askew. Chaos, gentle." },
+      { "n": 7, "text": "The owl and the cow shout.", "image": "owl-cow-shout", "artNote": "Owl hooting, cow mooing, both wide-mouthed under the moon — a duet of loud." },
+      { "n": 8, "text": "Down in the town, the owl is proud.", "image": "owl-proud", "artNote": "Owl back on the lamppost, chest puffed, having herded the cow home. Star twinkles above, Sheep waves from a window." },
+      { "n": 9, "text": "In the town?!", "image": "potato-town", "artNote": "In the middle of the town square sits a single potato under a tiny streetlamp. No noun printed — the class SHOUTS it. Owl swivels its head all the way round to look." }
+    ],
+    "backCoverWords": ["out", "house", "cow", "owl", "town", "down", "loud", "sound", "the", "is"]
+  },
+  "materials": {
+    "threePartCards": ["owl", "cow", "house", "cloud", "mouse", "crown", "clown", "flower"],
+    "sentences": ["The owl is in the town.", "The owl looks down.", "A loud sound!", "The owl and the cow shout."],
+    "matching": ["owl", "cow", "house", "cloud", "mouse", "crown"],
+    "bingoPool": ["owl", "cow", "house", "cloud", "mouse", "crown", "clown", "town", "down", "potato"],
+    "tracing": { "letter": "ou / ow", "words": ["out", "owl"] },
+    "coloring": ["owl", "cow", "house"],
+    "dictionary": ["out", "house", "cow", "owl"],
+    "extras": ["ONE SOUND, TWO SPELLINGS (again): ou vs ow. The gentle pattern the children discover — ow tends to live at the END of a word or syllable (cow, owl, down, town), ou tends to live in the MIDDLE (out, house, loud, round). Not a hard rule, a helpful hunch. Sort a stack and let them find it.", "🚨 The ow TRAP: ow already appeared in Week 45 as long-o (snow, grow). Today it is the /aʊ/ diphthong (cow, owl). Same two letters, two totally different sounds — hold up snow and cow together and let the collision be the lesson.", "Pattern Tree: the class reads out/house/cow/owl aloud and hangs the ou/ow diphthong leaf. Owl's name goes up beside it — a friend read on debut day.", "Moveable alphabet: build ou-t, h-ou-se, c-ow, ow-l, t-ow-n, cl-ou-d."]
+  },
+  "assets": [
+    { "file": "owl.png", "usedBy": ["book:1", "cards", "bingo", "matching"], "mjPrompt": "a small round tawny owl with huge amber eyes blinking, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "owl-town.png", "usedBy": ["book:2"], "mjPrompt": "a small round tawny owl with huge amber eyes perched on a lamppost above a little sleeping town at night, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "owl-looks-down.png", "usedBy": ["book:3"], "mjPrompt": "a tawny owl with huge amber eyes peering straight down from a lamppost, eyes fixed on the street below, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "loud-sound.png", "usedBy": ["book:4"], "mjPrompt": "a startled tawny owl with feathers raised and a big cartoon burst of sound rising from a barn at the edge of a night town, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "owl-sees-cow.png", "usedBy": ["book:5"], "mjPrompt": "a tawny owl on a lamppost staring down at a dairy cow standing sheepishly in a night street, an odd comedic pair, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cow-in-house.png", "usedBy": ["book:6"], "mjPrompt": "a dairy cow wandered into a little house filling the doorway with a lamp knocked askew, gentle chaos, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "owl-cow-shout.png", "usedBy": ["book:7"], "mjPrompt": "a tawny owl hooting and a dairy cow mooing side by side under a full moon, both wide-mouthed, a duet of loud, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "owl-proud.png", "usedBy": ["book:8"], "mjPrompt": "a tawny owl back on a lamppost with chest puffed proud, a golden star twinkling above and a fluffy white sheep waving from a lit window, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-town.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato sitting in the middle of a little town square under a tiny streetlamp at night, a tawny owl swiveling its head all the way round to look, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cow.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a gentle dairy cow standing, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "house.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a small cozy cottage house, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cloud.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a single fluffy white cloud, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "mouse.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a tiny grey mouse with big ears, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "crown.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a small golden crown with jewels, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "clown.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a friendly little clown figure with a red nose, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "flower.png", "usedBy": ["cards", "basket"], "mjPrompt": "a single bright flower with a tall stem, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "owl-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a round happy owl with huge eyes on a branch, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "cow-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a friendly cow with big spots, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "house-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a cozy little house with a door and windows, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "ou/ow is the 'ouch!' diphthong /aʊ/ — a glide, not a held vowel. Slide it: 'ah' rolling into 'oo' in one breath. Teach the gentle placement hunch (ow at word/syllable ends — cow, owl, down; ou in the middle — out, house, loud) as a helper, never a hard rule. 🚨 And name the ow TRAP head-on: ow was long-o in Week 45 (snow) and is /aʊ/ now (cow) — hold snow and cow up together so the two-sounds-one-spelling collision is a discovery, not a stumble. Owl debuts and is readable on arrival — the class meets a friend and spells its name the same minute.",
+  "lessonMapEquivalents": [91, 92]
+}

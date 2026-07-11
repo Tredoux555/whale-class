@@ -1,0 +1,81 @@
+{
+  "week": 36,
+  "level": 2,
+  "sound": "final blends I",
+  "letterDisplay": "final blends",
+  "soundType": "blend",
+  "patternDisplay": "-nd -nt -mp -st",
+  "anchorWord": "hand",
+  "newWords": ["hand", "went", "jump", "nest"],
+  "reviewBank": ["frog", "crab", "drum", "grin", "flag", "clap", "stop", "spin", "king", "bell", "this", "that", "chick", "snake", "ship", "fish", "duck", "and"],
+  "glue": { "new": [], "known": ["the", "is", "I", "on", "says", "what", "where", "why"] },
+  "oralWords": ["stamp", "tent"],
+  "sentenceFrame": "The best nest.",
+  "soundBasket": ["hand", "nest", "jump", "lamp", "tent", "band", "stamp", "mask"],
+  "cast": { "introduces": null, "present": ["Sheep", "Chick", "Snake"] },
+  "celebration": "Leaf #10 — final blends I (-nd, -nt, -mp, -st). The HARDEST leaf for the EAL room, and a big one (+62 words). Two sounds stuck together at the END of a word — the class learns to land the ending, not drop it.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Hand-Hand-Hand!",
+      "lyrics": "[Intro]\nHand! Hand! Hand-hand-hand!\n(nd… nd… nd…)\n\n[Hook]\nTwo sounds at the END — stuck together!\n/n/ and /d/ — nd! nd!\nHand-hand-hand! Hand-hand-hand!\nHAND! (clap your HAND!) HAND!\n\n[Verse 2]\nWent-went-went! /n/ and /t/ — nt!\nFeel the end — nt! nt!\nWent-went-went! WENT!\nOff it WENT! (whoosh!) WENT!\n\n[Verse 3]\nJump-jump-jump! /m/ and /p/ — mp!\nFeel the end — mp! mp!\nJump-jump-jump! JUMP!\nUP you JUMP! (boing!) JUMP!\n\n[Verse 4]\nNest-nest-nest! /s/ and /t/ — st!\nFeel the end — st! st!\nNest-nest-nest! NEST!\nIn the NEST! (tweet!) NEST!\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! No end blend!\n(nd… nd… nd…)\n\n[Outro]\nHand! Went! Jump! Nest!\nTwo sounds at the end! (blend! blend!)\nSay the WHOLE thing — no 'uh'!\nHand-hand-hand!",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "🚨 THE HARDEST CATEGORY for the EAL room — Mandarin has ZERO coda consonant clusters, so children drop the final sound ('han' for hand, 'jum' for jump). This song deliberately stutters the WHOLE word (not just an onset) to force the ending back in, and doubles the repetition. Absolutely no schwa — it's 'nd' as one crisp end, never 'nuh-duh', but the ending MUST land (han-D). The '(nd… nd… nd…)' drills the naked cluster. Bridge from the known words 'and' and 'ant' — the class already lands those endings. Never sing letter names."
+    },
+    {
+      "role": "word",
+      "title": "The Best Nest",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nThe best nest!\nThe best nest!\nJump in the best nest! (jump! jump!)\nThe best nest!\n\n[Verse 2]\nChick went up! (up! up!)\nChick went in the nest!\nJump and jump and jump! (boing!)\nThe best nest!\n\n[Verse 3]\nSnake can rest in the nest!\nSheep can jump and land!\nLand in the nest! (land! land!)\nThe best nest!\n\n[Outro]\nThe nest… so soft… (hush…)\nA potato?! (POTATO!)\nIn the nest?! (a potato nest!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'The best nest.' Lands every core word — hand shows in the cards, went, jump, nest — plus 'best', 'rest', 'land'. Punch the final cluster on every one; that ending is the whole point. Whisper the outro, potato hits loud."
+    }
+  ],
+  "book": {
+    "title": "The Best Nest",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "A nest.", "image": "nest", "artNote": "A cosy round twig nest sitting in the spotlight, lined with soft fluff, empty and inviting. High on a branch stub." },
+      { "n": 2, "text": "The best nest!", "image": "best-nest", "artNote": "Chick standing proudly at the rim of the nest, wings spread wide in a 'ta-da', presenting it. A little banner reading nothing but pride." },
+      { "n": 3, "text": "Chick went up.", "image": "chick-went-up", "artNote": "Chick scrambling up the branch toward the nest, determined, tiny claws gripping, tail feathers straining. The climb." },
+      { "n": 4, "text": "Chick went in the nest.", "image": "chick-in-nest", "artNote": "Chick settling into the nest with a blissful sigh, only her head and beak visible over the fluffy rim. Perfect fit." },
+      { "n": 5, "text": "Jump in the nest!", "image": "chick-jump-nest", "artNote": "Chick bouncing up and down inside the nest like a trampoline, fluff flying, pure joy. An invitation to the others." },
+      { "n": 6, "text": "Snake can rest in the nest.", "image": "snake-rest-nest", "artNote": "Snake coiled up neatly beside Chick in the nest, amber eyes half-closed, resting contentedly. Two in the nest now." },
+      { "n": 7, "text": "Sheep went in the nest!", "image": "sheep-in-nest", "artNote": "Sheep attempting to squeeze into the already-full nest, wool bulging over every edge, comic overload, Chick and Snake squished but laughing." },
+      { "n": 8, "text": "The nest is the best!", "image": "cast-in-nest", "artNote": "The whole gang crammed impossibly into one small nest, faces beaming out in a happy heap, the nest stretched round like a hammock. Togetherness." },
+      { "n": 9, "text": "In the nest?!", "image": "potato-nest", "artNote": "The cast peer over the rim to find a single potato has taken the best spot right in the middle of the nest, snug as can be. No noun printed — the class SHOUTS it." }
+    ],
+    "backCoverWords": ["hand", "went", "jump", "nest", "best", "rest", "land", "and", "the", "in"]
+  },
+  "materials": {
+    "threePartCards": ["hand", "nest", "jump", "lamp", "tent", "band", "stamp", "mask"],
+    "sentences": ["The best nest.", "Chick went up.", "Jump in the nest!", "Snake can rest in the nest."],
+    "matching": ["hand", "nest", "jump", "lamp", "tent", "band"],
+    "bingoPool": ["hand", "nest", "jump", "lamp", "tent", "band", "stamp", "mask", "frog", "snake", "king", "bell", "chick", "potato"],
+    "tracing": { "letter": "nd", "words": ["hand", "band"] },
+    "coloring": ["hand", "nest", "jump"],
+    "dictionary": ["hand", "went", "jump", "nest"],
+    "extras": ["PATTERN TREE: leaf #10 — the hardest leaf. Read hand/went/jump/nest aloud, landing the ending hard, and hang it.", "🚨 EAL KEYSTONE (Weeks 36–37): Mandarin has NO consonant clusters at the end of a syllable, so children drop the last sound — 'han' for hand, 'jum' for jump, 'nes' for nest. Do the WHOLE-WORD echo drill twice as long as usual; make the final cluster physical (clap the -nd, stamp the -mp, hiss the -st).", "BRIDGE FROM THE KNOWN: 'and' and 'ant' already end in these clusters and the class says them easily — build from there ('and → hand → band → land').", "NO-SCHWA but FULL-ENDING: 'hand' is not 'han-duh' and not 'han' — the d must arrive, crisply, glued to the n. Moveable alphabet: build the base, then snap the ending pair on last (ha + nd)."]
+  },
+  "assets": [
+    { "file": "nest.png", "usedBy": ["book:1", "cards", "bingo", "matching"], "mjPrompt": "a cosy round twig nest lined with soft fluff sitting empty on a branch stub, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "best-nest.png", "usedBy": ["book:2"], "mjPrompt": "a tiny fluffy yellow chick standing proudly at the rim of a twig nest with wings spread wide in a ta-da presenting gesture, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "chick-went-up.png", "usedBy": ["book:3"], "mjPrompt": "a tiny fluffy yellow chick scrambling up a branch toward a nest with tiny claws gripping and tail feathers straining, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "chick-in-nest.png", "usedBy": ["book:4"], "mjPrompt": "a tiny fluffy yellow chick settling blissfully into a fluffy twig nest with only her head and beak visible over the rim, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "chick-jump-nest.png", "usedBy": ["book:5"], "mjPrompt": "a tiny fluffy yellow chick bouncing up and down inside a twig nest like a trampoline with fluff flying, pure joy, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "snake-rest-nest.png", "usedBy": ["book:6"], "mjPrompt": "an emerald-green garden snake with large gentle amber eyes coiled neatly beside a yellow chick in a twig nest, eyes half-closed resting, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sheep-in-nest.png", "usedBy": ["book:7"], "mjPrompt": "a fluffy round white sheep squeezing into an already-full twig nest with wool bulging over every edge, a yellow chick and green snake squished but laughing, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cast-in-nest.png", "usedBy": ["book:8"], "mjPrompt": "a yellow chick, an emerald-green snake and a fluffy white sheep crammed impossibly into one small twig nest stretched round like a hammock, faces beaming in a happy heap, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-nest.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato snug in the middle of a fluffy twig nest with a yellow chick green snake and white sheep peering over the rim, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "hand.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a child's open hand palm forward with fingers spread, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "lamp.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a small glowing bedside lamp with a round shade, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "tent.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a small triangular camping tent, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "band.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a stretchy rubber band, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "jump.png", "usedBy": ["cards"], "mjPrompt": "a child mid-jump with both feet off the ground and arms up, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "hand-coloring.png", "usedBy": ["coloring"], "mjPrompt": "an open hand with spread fingers, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "nest-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a round twig nest with soft lining on a branch, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "jump-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a happy child jumping with arms raised, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "🚨 THE HARDEST WEEK FOR YOUR EAL ROOM. Final blends (-nd, -nt, -mp, -st) put two consonants at the END of a word, and Mandarin allows no such clusters — so the instinct is to drop the last sound: 'han' for hand, 'jum' for jump, 'nes' for nest. Fight it structurally: double the whole-word echo drills, and make every ending PHYSICAL — clap the -nd, stamp the -mp, hiss the -st. Bridge from words the class already lands easily: 'and' and 'ant' end in these clusters, so grow 'and → hand → band → land'. No schwa, but the ending must fully arrive — 'hand' is neither 'han-duh' nor 'han'. Build words on the moveable alphabet by snapping the ending pair on LAST. Go slow, repeat twice as much, and hang leaf #10 as a hard-won victory.",
+  "lessonMapEquivalents": [47]
+}

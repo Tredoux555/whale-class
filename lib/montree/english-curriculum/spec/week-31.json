@@ -1,0 +1,80 @@
+{
+  "week": 31,
+  "level": 2,
+  "sound": "ng",
+  "letterDisplay": "ng",
+  "soundType": "digraph",
+  "patternDisplay": "ng",
+  "anchorWord": "king",
+  "newWords": ["sing", "ring", "king", "long"],
+  "reviewBank": ["bell", "hill", "miss", "off", "puff", "this", "that", "with", "chick", "moth", "ship", "fish", "sock", "duck", "cat", "dog", "sun", "cup"],
+  "glue": { "new": [], "known": ["the", "is", "I", "on", "says"] },
+  "oralWords": ["swing", "spring"],
+  "sentenceFrame": "The king can sing.",
+  "soundBasket": ["king", "ring", "sing", "song", "wing", "gong", "hang", "long"],
+  "cast": { "introduces": null, "present": ["Sheep", "Chick"] },
+  "celebration": "Leaf #5 — the ng hum. Two letters that make one nasal hum at the back of the mouth. Half the Pattern Tree's first branch is now in leaf.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Ng-Ng-King!",
+      "lyrics": "[Intro]\nNg! Ng! Ng-ng-ng!\n(nnng… nnng… nnng…)\n\n[Hook]\nNg at the END — hummm!\nTwo letters, ONE hum!\nKi-ng! KING! Si-ng! SING!\nFeel it in your nose! (nnng!)\n\n[Verse 2]\nNg! Ng! Ng-ng-ng!\nIt hides at the end of the word!\nRi-ng! RING! Lo-ng! LONG!\nHum it at the back! (nnng!)\n\n[Verse 3]\nNg! Ng! Ng-ng-ng!\nThe king can sing a song!\nSo-ng! SONG! Wi-ng! WING!\nHum it long and strong! (nnng!)\n\n[Verse 4]\nNg! Ng! Ng-ng-ng!\nBang the gong — ba-ng, GONG!\nHa-ng! HUNG! Ba-ng! BANG!\nFeel it in your nose! (nnng!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! No hum! Not NG!\n(nnng… nnng… nnng…)\n\n[Outro]\nKi-ng! KING! Si-ng! SING!\nThe king can sing! (nnng!)\nNg! Ng! Ng-ng-ng!\n(hummm… quiet now…)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "ng is a single nasal /ŋ/ — a HUM held at the back of the mouth, felt in the nose — never the letter names 'en-gee' and never split into /n/ + /g/. It only ever ENDS words or syllables, never starts one; the song puts it at the end every time. EAL note: Mandarin HAS a final -ng but reduces or drops it, so children clip 'sing' to 'sin' — the sustained '(nnng…)' hum with a hand on the nose IS the corrective drill. Never sing letter names."
+    },
+    {
+      "role": "word",
+      "title": "The King Can Sing",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nThe king can sing!\nThe king can sing!\nSing it long and strong!\nThe king can sing!\n\n[Verse 2]\nA long, long song!\nThe king can sing it long!\nBang the gong! (bang! bang!)\nThe king can sing!\n\n[Verse 3]\nChick can sing along!\nSheep can hum the song!\nSing it! Sing it! (nnng!)\nThe king can sing!\n\n[Outro]\nThe song… so long… (hush…)\nA potato?! (POTATO!)\nThe king can sing at a potato?! (sing, king, sing!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'The king can sing.' Verse 2 lands 'long', 'song' and 'gong'; verse 3 brings Chick and Sheep in on the chorus. Hold the sung /ŋ/ hum on every ng word. Whisper the outro, potato hits loud."
+    }
+  ],
+  "book": {
+    "title": "The King Can Sing",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "A king.", "image": "king", "artNote": "A small round friendly king in a golden crown, chest puffed, mouth just opening. Warm and comic, not grand or scary." },
+      { "n": 2, "text": "The king can sing!", "image": "king-sing", "artNote": "The king mid-note, one hand on his chest, a single music curl rising. Delight." },
+      { "n": 3, "text": "Sing, king, sing!", "image": "king-singing-big", "artNote": "The king belting it out, crown tipping, a big swirl of music notes filling the spotlight. Full volume." },
+      { "n": 4, "text": "A long, long song.", "image": "long-song", "artNote": "A ribbon of music notes stretching right off both edges of the spread — the visual joke of a very long song. The king sings on, eyes closed." },
+      { "n": 5, "text": "Chick can sing!", "image": "chick-sing", "artNote": "Chick beside the king, beak wide, tiny music note above her. Joining in with total commitment." },
+      { "n": 6, "text": "Sheep can sing!", "image": "sheep-sing", "artNote": "Sheep humming along, eyes closed, a low woolly note curling up. The trio in harmony." },
+      { "n": 7, "text": "Bang the gong!", "image": "gong-bang", "artNote": "A big brass gong on a stand, Chick swinging a mallet, a burst of ripple-rings and BANG lines. The song gets a beat." },
+      { "n": 8, "text": "The king sang a song.", "image": "king-sang-cast", "artNote": "Curtain-call pose: king, Chick and Sheep together mid-bow, notes settling around them. A triumphant little concert." },
+      { "n": 9, "text": "Sing at it?!", "image": "king-sings-potato", "artNote": "A single potato sits on a velvet cushion in the spotlight and the king, arms wide, is serenading it earnestly. Chick and Sheep exchange a look. No noun printed — the class SHOUTS it." }
+    ],
+    "backCoverWords": ["sing", "ring", "king", "long", "song", "wing", "gong", "bang", "the", "can"]
+  },
+  "materials": {
+    "threePartCards": ["king", "ring", "sing", "song", "wing", "gong", "hang", "long"],
+    "sentences": ["The king can sing.", "A long, long song.", "Bang the gong!", "The king sang a song."],
+    "matching": ["king", "ring", "sing", "song", "wing", "gong"],
+    "bingoPool": ["king", "ring", "sing", "song", "wing", "gong", "hang", "long", "bell", "chick", "moth", "sock", "duck", "potato"],
+    "tracing": { "letter": "ng", "words": ["king", "sing"] },
+    "coloring": ["king", "ring", "gong"],
+    "dictionary": ["sing", "ring", "king", "long"],
+    "extras": ["PATTERN TREE: leaf #5. Read sing/ring/king/long aloud and hang the ng leaf.", "THE HUM: ng is a single sound made at the back of the mouth — put a hand on the nose and feel it buzz. It only ever ENDS a word or syllable; it never starts one. Contrast with a quick /n/ then a quick /g/ to prove it is neither.", "EAL EXPLICIT DRILL (this week's whole point): Mandarin drops or clips the final -ng, so 'sing' becomes 'sin', 'king' becomes 'kin'. Minimal-pair the class: sing/sin, ring/rin, king/kin, thing/thin, song/son. Hold the hum long on the -ng member every time.", "Moveable alphabet: build ng welded onto the end — si-ng, ri-ng, ki-ng, lo-ng."]
+  },
+  "assets": [
+    { "file": "king.png", "usedBy": ["book:1", "cards", "bingo", "matching"], "mjPrompt": "a small round friendly cartoon king in a golden crown with his chest puffed and mouth just opening to sing, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "king-sing.png", "usedBy": ["book:2"], "mjPrompt": "a small round friendly king in a golden crown mid-song with a hand on his chest and a single music note curling up, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "king-singing-big.png", "usedBy": ["book:3"], "mjPrompt": "a round friendly king belting out a song with his crown tipping and a big swirl of music notes filling the spotlight, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "long-song.png", "usedBy": ["book:4"], "mjPrompt": "a round friendly king singing with eyes closed as a ribbon of music notes stretches right off both edges of the frame, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "chick-sing.png", "usedBy": ["book:5"], "mjPrompt": "a tiny fluffy yellow chick with a stubby orange beak wide open singing beside a king, a tiny music note above her, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sheep-sing.png", "usedBy": ["book:6"], "mjPrompt": "a fluffy round white sheep with kind dark eyes humming a song with eyes closed and a low curling music note, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "gong-bang.png", "usedBy": ["book:7"], "mjPrompt": "a big brass gong on a wooden stand with a tiny yellow chick swinging a mallet and a burst of ripple rings, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "king-sang-cast.png", "usedBy": ["book:8"], "mjPrompt": "a round friendly king, a tiny yellow chick and a fluffy white sheep taking a curtain-call bow together with music notes settling around them, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "king-sings-potato.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato on a small velvet cushion in a spotlight while a round friendly king with arms wide serenades it earnestly, a yellow chick and a white sheep exchanging a look, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "ring.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a gold ring with a small gem, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "wing.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a single feathered bird wing spread open, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "gong.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a large round brass gong hanging in a wooden frame, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "song.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a swirl of golden music notes rising from an open songbook, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "king-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a jolly king in a crown singing with music notes around him, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "ring-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a ring with a big sparkling gem, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "gong-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a round gong in a frame with a mallet, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "ng is a single nasal hum /ŋ/ made at the back of the mouth — put a hand on the nose to feel it. Teach two facts: it makes ONE sound (not /n/+/g/), and it only ever ENDS a word or syllable, never begins one. This is an explicit EAL week: Mandarin has a final -ng but reduces it, so children clip 'sing' to 'sin' and 'king' to 'kin'. Drill the minimal pairs hard — sing/sin, ring/rin, king/kin, thing/thin — holding the sung hum long on the -ng member. Hang leaf #5; the first branch of the Pattern Tree is now half in leaf.",
+  "lessonMapEquivalents": [48]
+}

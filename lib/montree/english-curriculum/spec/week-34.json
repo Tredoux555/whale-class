@@ -1,0 +1,80 @@
+{
+  "week": 34,
+  "level": 2,
+  "sound": "l-blends",
+  "letterDisplay": "l-blends",
+  "soundType": "blend",
+  "patternDisplay": "bl cl fl gl pl sl",
+  "anchorWord": "flag",
+  "newWords": ["flag", "clap", "plum", "sled"],
+  "reviewBank": ["stop", "spin", "snap", "swim", "when", "which", "king", "bell", "this", "that", "chick", "moth", "snake", "ship", "fish", "duck", "cat", "sun"],
+  "glue": { "new": [], "known": ["the", "is", "I", "on", "says", "what", "where", "why"] },
+  "oralWords": ["clown", "glue"],
+  "sentenceFrame": "The flag is on the sled.",
+  "soundBasket": ["flag", "clap", "plum", "sled", "clock", "black", "glad", "slug"],
+  "cast": { "introduces": null, "present": ["Sheep", "Chick", "Snake"] },
+  "celebration": "Leaf #8 — l-blends. Consonant plus /l/ run together (bl · cl · fl · gl · pl · sl). Another fluency leaf on the blend branch.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Fl-Fl-Flag!",
+      "lyrics": "[Intro]\nFl! Fl! Fl-fl-fl!\n(fl… fl… fl…)\n\n[Hook]\nFl! Fl! Two sounds, TOGETHER!\n/f/ and /l/ — fl! fl!\nFl-fl-flag! Fl-fl-flag!\nFLAG! (wave it!) FLAG!\n\n[Verse 2]\nCl! Cl! /c/ and /l/!\nBlend them quick — cl! cl!\nCl-cl-clap! Cl-cl-clap!\nCLAP! (clap! clap!) CLAP!\n\n[Verse 3]\nPl! Pl! /p/ and /l/!\nBlend them quick — pl! pl!\nPl-pl-plum! Pl-pl-plum!\nPLUM! (yum!) PLUM!\n\n[Verse 4]\nSl! Sl! /s/ and /l/!\nBlend them quick — sl! sl!\nSl-sl-sled! Sl-sl-sled!\nSLED! (zoom!) SLED!\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! No blend!\n(fl… fl… fl…)\n\n[Outro]\nFl-fl-flag! Cl-cl-clap!\nPl-pl-plum! Sl-sl-sled!\nTwo sounds together! (blend! blend!)\nFl! Fl! Fl-fl-fl!",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "l-blends — a consonant plus /l/ said as one quick move, no vowel squeezed between ('fuh-lag' is the error). Each verse takes one blend: fl, cl, pl, sl (bl and gl live in the picture cards). The /l/ is a light tongue-tip tap behind the teeth; keep it crisp. Never sing letter names."
+    },
+    {
+      "role": "word",
+      "title": "The Flag on the Sled",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nThe flag is on the sled!\nThe flag is on the sled!\nWhere is the flag? (where? where?)\nThe flag is on the sled!\n\n[Verse 2]\nClap for the flag! (clap! clap!)\nThe sled can zip and slip!\nSlip and slap and clap! (whee!)\nThe flag is on the sled!\n\n[Verse 3]\nSnake can sit on the sled!\nChick can clap and clap!\nSlip, sled, slip! (zoom!)\nThe flag is on the sled!\n\n[Outro]\nThe flag… the sled… (hush…)\nA potato?! (POTATO!)\nOn the sled?! (zoom, potato, zoom!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'The flag is on the sled.' Every core word (flag/clap/plum shows in the cards; sled) plus slip/slap. Verse 3 puts Snake aboard the sled with the whole cast. Whisper the outro, potato hits loud, then the sled zooms off with the potato riding it."
+    }
+  ],
+  "book": {
+    "title": "The Flag on the Sled",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "A sled.", "image": "sled", "artNote": "A little red wooden sled alone at the top of a snowy slope in the spotlight, rope curled, ready. Winter hush." },
+      { "n": 2, "text": "A flag on the sled.", "image": "flag-on-sled", "artNote": "A small triangular flag on a stick planted proudly at the front of the sled, snapping in a breeze. Expedition begins." },
+      { "n": 3, "text": "Snake is on the sled.", "image": "snake-on-sled", "artNote": "Snake — a friendly emerald-green garden snake with large gentle amber eyes — coiled at the helm of the sled gripping the rope, thrilled, the flag over its head." },
+      { "n": 4, "text": "Chick can clap!", "image": "chick-clap", "artNote": "Chick at the top of the slope clapping her wings together in excitement, cheering the sled off. Snow puffs at her feet." },
+      { "n": 5, "text": "Slip! The sled can slip!", "image": "sled-slip", "artNote": "The sled slides off down the slope, Snake's amber eyes streaming with speed, a spray of snow behind, the flag flattened by the wind." },
+      { "n": 6, "text": "Flip! Flop! Flap!", "image": "flag-flapping", "artNote": "Close on the little flag whipping and flapping wildly in the rushing air as the sled bombs downhill — three flap-poses in one frame." },
+      { "n": 7, "text": "Sheep can slip on the sled.", "image": "sheep-on-sled", "artNote": "Sheep piling on behind Snake mid-run, wool streaming back, delighted and slightly terrified. The sled now overloaded and faster." },
+      { "n": 8, "text": "Clap, clap, clap!", "image": "cast-clapping", "artNote": "The sled skids to a triumphant stop at the bottom in a fan of snow, Chick, Sheep and Snake all clapping and cheering, flag still flying. Victory." },
+      { "n": 9, "text": "On the sled?!", "image": "potato-on-sled", "artNote": "The empty sled sits at the bottom now with a single potato perched where a rider should be, wearing the little flag like a cape, about to slide off again. The cast gapes. No noun printed — the class SHOUTS it." }
+    ],
+    "backCoverWords": ["flag", "clap", "plum", "sled", "slip", "flip", "flop", "glad", "the", "on"]
+  },
+  "materials": {
+    "threePartCards": ["flag", "clap", "plum", "sled", "clock", "black", "glad", "slug"],
+    "sentences": ["The flag is on the sled.", "Chick can clap.", "The sled can slip.", "Snake is on the sled."],
+    "matching": ["flag", "clap", "plum", "sled", "clock", "slug"],
+    "bingoPool": ["flag", "clap", "plum", "sled", "clock", "black", "glad", "slug", "snake", "chick", "king", "bell", "sock", "potato"],
+    "tracing": { "letter": "fl", "words": ["flag", "flap"] },
+    "coloring": ["flag", "plum", "sled"],
+    "dictionary": ["flag", "clap", "plum", "sled"],
+    "extras": ["PATTERN TREE: leaf #8 — l-blends. Read flag/clap/plum/sled aloud and hang it on the blend branch.", "NO-SCHWA MODELING: fl/cl/pl/sl/bl/gl are single quick moves — 'fl-ag', not 'fuh-lag'. The /l/ is a light tongue-tap behind the teeth.", "BLEND LADDER card sort: match each blend to a picture (bl→black, cl→clock, fl→flag, gl→glad, pl→plum, sl→sled). Speed game — recognise, don't sound out letter by letter.", "Moveable alphabet: build the blend first as a pair, then add the rest — fl+ag, cl+ap, pl+um, sl+ed."]
+  },
+  "assets": [
+    { "file": "sled.png", "usedBy": ["book:1", "cards", "bingo", "matching"], "mjPrompt": "a little red wooden sled with a curled rope at the top of a snowy slope, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "flag-on-sled.png", "usedBy": ["book:2"], "mjPrompt": "a small triangular flag on a stick planted at the front of a little red sled snapping in a breeze, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "snake-on-sled.png", "usedBy": ["book:3"], "mjPrompt": "a friendly emerald-green garden snake with large gentle amber eyes coiled at the helm of a little red sled gripping the rope with a small flag overhead, thrilled, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "chick-clap.png", "usedBy": ["book:4"], "mjPrompt": "a tiny fluffy yellow chick clapping her wings together in excitement at the top of a snowy slope with snow puffs at her feet, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sled-slip.png", "usedBy": ["book:5"], "mjPrompt": "a little red sled sliding fast down a snowy slope with an emerald-green snake at the helm eyes streaming, a spray of snow behind and the flag flattened by wind, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "flag-flapping.png", "usedBy": ["book:6"], "mjPrompt": "close-up of a small triangular flag whipping and flapping wildly in rushing air, shown in three overlapping flap poses, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sheep-on-sled.png", "usedBy": ["book:7"], "mjPrompt": "a fluffy round white sheep with kind dark eyes piling onto the back of a speeding red sled behind an emerald-green snake, wool streaming, delighted and terrified, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cast-clapping.png", "usedBy": ["book:8"], "mjPrompt": "a red sled skidded to a stop at the bottom of a slope in a fan of snow with a tiny yellow chick, a white sheep and an emerald-green snake all clapping and cheering, a flag flying, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-on-sled.png", "usedBy": ["book:9"], "mjPrompt": "an empty red sled with a single potato perched where a rider should sit wearing a small flag like a cape about to slide off, a yellow chick white sheep and green snake gaping, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "flag.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a small triangular flag on a wooden stick, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "plum.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a single ripe purple plum with a leaf, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "clock.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a round wind-up alarm clock with two bells, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "slug.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a small friendly garden slug with gentle eye stalks, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "flag-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a triangular flag on a pole waving, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "plum-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a round plum with a leaf and a shine mark, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "sled-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a wooden sled with a rope and a little flag, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "Second blend week — l-blends (bl, cl, fl, gl, pl, sl). Same rule as last week: no schwa. 'fl' is one quick move, not 'fuh-luh'. The /l/ is a light tongue-tap behind the teeth; some children over-round it, so keep it crisp and short. Lean on the picture cards and a speed-sort game (match each blend to its picture) — the goal is instant recognition, not laborious letter-by-letter sounding. Snake, Sheep and Chick are all aboard the story sled this week. Hang leaf #8.",
+  "lessonMapEquivalents": [50]
+}

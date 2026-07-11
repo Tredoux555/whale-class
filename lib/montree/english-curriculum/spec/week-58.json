@@ -1,0 +1,82 @@
+{
+  "week": 58,
+  "level": 3,
+  "sound": "tion",
+  "letterDisplay": "-tion",
+  "soundType": "morphology",
+  "patternDisplay": "-tion",
+  "anchorWord": "celebration",
+  "newWords": ["action", "celebration", "station"],
+  "reviewBank": ["running", "jumping", "played", "knee", "lamb", "my", "fly", "why", "happy", "moon", "owl", "coin", "her", "bird", "star", "nation", "motion", "station", "fraction", "vacation", "school", "because", "question"],
+  "glue": { "new": ["question"], "known": ["the", "is", "I", "on", "says", "what", "where", "school", "because"] },
+  "oralWords": ["graduation", "education"],
+  "sentenceFrame": "It is the celebration!",
+  "soundBasket": ["station", "celebration", "nation", "motion", "action", "fraction", "vacation", "potato"],
+  "cast": { "introduces": null, "present": ["Segina", "Sam", "Cat", "Ant", "Dad", "Dog", "Rat", "Pup", "Bug", "Duck", "Fox", "Sheep", "Chick", "Snake", "Bee", "Star", "Owl"] },
+  "celebration": "🎉🎉🎉 GRAND GRADUATION. The Pattern Tree stands in full leaf — 32 leaves and 5 vowel lights earned across 58 weeks. The -tion suffix crowns the reading year (and 'celebration' is itself a -tion word). The heart word QUESTION joins the wall. And the POTATO — shouted from pictures since Week 1, never once printed in 58 weeks — is PRINTED at last and crowned at the top of the Tree. The whole cast graduates.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Celebration!",
+      "lyrics": "[Intro]\n(shun… shun… shun…)\nThe LAST sound of all!\n\n[Hook]\nt-i-o-n says SHUN!\nAc-tion! Sta-tion! Na-tion!\nCel-e-bra-tion! (shun! shun!)\nThe LAST leaf on the Tree!\n\n[Verse 2]\nMo-tion! Sec-tion! Frac-tion!\nt-i-o-n — always SHUN!\nA vacation! A celebration!\n(shun! shun! shun!)\n\n[Verse 3]\nFifty-eight weeks! (we did it!)\nEvery leaf! Every light!\nWe can read! (we can read!)\nThe whole Tree is GREEN!\n\n[Bridge — the crown]\nA potato?! (YES!)\nAt LAST — potato! (say it! spell it!)\nP-O-T-A-T-O!\nThe king of the Tree! (crown it! crown it!)\n\n[Outro]\ncelebration… graduation… (shun… shun…)\nWe can read it all! (all of it!)\nPotato! (the crown!)\n(the end… we can read!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "🎓 THE GRADUATION ANTHEM — the finale of the whole 58-week album. -tion says /ʃən/ ('shun') — every word lands on it. 🚨 THE POTATO PAYOFF: for 57 songs the potato bridge was 'NO! not this sound!' — this time it FLIPS to 'YES!'. The potato is finally welcomed, spelled aloud (P-O-T-A-T-O, uppercase letter names), and crowned. Let the choir ROAR the crown. Biggest, warmest, proudest mix of the year — but still 68 bpm dark trap, still clean."
+    },
+    {
+      "role": "word",
+      "title": "The Celebration",
+      "lyrics": "[Intro — the whole journey comes back]\n(It's a… where is Segina… the cat is on the mat… ship or sheep… why, fly, why…)\n\n[Hook]\nIt is the celebration!\nIt is the celebration!\nWho is here? (who? who?)\nEVERYBODY — the whole cast!\n\n[Verse 2 — the cast, all here]\nCat and Dog are here.\nSheep and Snake are here.\nStar and Owl are here! (here! here!)\nSegina and Sam are here!\n\n[Verse 3 — in motion]\nThe class is jumping and singing!\nBee is reading. Duck is swimming.\nWhat is on the Tree? (look up! look up!)\nThat is the question…\n\n[Bridge — the crown]\nAt the top of the Tree…\nIt is… a POTATO!\nPotato is the king! (crown it! crown it!)\nP-O-T-A-T-O!\n\n[Outro — the album completes]\nFifty-eight weeks… a thousand words… (we can read…)\nIt is the best celebration!\nThe whole cast can read!\nThe end. (the end! we did it!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "🎓 The closing story of the album — the whole cast at the graduation, the potato crowned atop the Pattern Tree. Like Level 1's finale it quotes the WHOLE journey in the intro (W1 'it's a…', W2 'where is Segina', W4 'cat on the mat', W50 'ship or sheep', W55 'why, fly, why'). Runs a little longer to name every friend. The potato is spelled and crowned. End on 'the end — we did it', album complete. Let it be huge and tender at once."
+    }
+  ],
+  "book": {
+    "title": "The Celebration",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "It is the celebration!", "image": "celebration-scene", "artNote": "The classroom transformed: the Pattern Tree lit up in full leaf, streamers, tiny lanterns, the whole cast gathering. 'Celebration' — a -tion word — printed at the top of the graduation book. The theatre at its warmest." },
+      { "n": 2, "text": "Cat and Dog are here.", "image": "cast-cat-dog", "artNote": "The Cat (tabby, Week 4) and the Dog (brown, Week 12) side by side in tiny graduation caps, beaming. The first two animal friends, back at the start of the line." },
+      { "n": 3, "text": "Sheep, Snake, and Bee are here.", "image": "cast-sheep-snake-bee", "artNote": "Sheep (fluffy white), Snake (emerald-green), and Bee (gold-and-black) together in caps — the Level 2 and Level 3 friends, each once un-spellable, all now readable." },
+      { "n": 4, "text": "Star and Owl are here.", "image": "cast-star-owl", "artNote": "Star (golden, sleepy-faced) and Owl (tawny, huge amber eyes) perched together, glowing. The last friends to join the story." },
+      { "n": 5, "text": "The class is jumping and singing!", "image": "class-jumping", "artNote": "The whole cast mid-celebration — jumping, singing, dancing — the -ing verbs from last week alive on the page. Motion everywhere, joy everywhere." },
+      { "n": 6, "text": "Look up! What is on the Tree? That is the question!", "image": "tree-question", "artNote": "Everyone turning to look up at the very top of the Pattern Tree, where something round is silhouetted against the light. The heart word QUESTION printed — the last word taken on faith. Suspense before the crown." },
+      { "n": 7, "text": "It is... a potato!", "image": "potato-reveal", "artNote": "🥔 THE APOTHEOSIS. The word POTATO is printed for the FIRST TIME in fifty-eight weeks — at the top of the Tree sits the potato in tiny round glasses, radiant, a spotlight blazing on it. The gag the class has shouted since Week 1 is finally a word they can READ. Every cast member gasps with delight." },
+      { "n": 8, "text": "Potato is the king!", "image": "potato-king", "artNote": "The potato crowned with a little gold crown at the very crown of the Tree, arms (drawn on) raised in triumph, the whole cast cheering below. Fifty-eight weeks of running gag, finally enthroned." },
+      { "n": 9, "text": "It is the best celebration! The end.", "image": "graduation-cast-full", "artNote": "THE FINALE: the ENTIRE cast — Segina, Sam, Cat, Ant, Dad, Dog, Rat, Pup, Bug, Duck, Fox, Sheep, Chick, Snake, Bee, Star, Owl — in graduation caps around the fully-leafed Pattern Tree, the crowned potato at its top, an open book in the middle they can all read. Fifty-eight weeks, 1,192 words, one family. Curtain. 'The end.'" }
+    ],
+    "backCoverWords": ["action", "celebration", "station", "potato", "question", "the", "is", "king", "best", "end"]
+  },
+  "materials": {
+    "threePartCards": ["station", "celebration", "potato", "nation", "motion"],
+    "sentences": ["It is the celebration!", "The class is jumping and singing!", "Potato is the king!", "That is the question!"],
+    "matching": ["station", "celebration", "potato", "nation", "motion"],
+    "bingoPool": ["action", "station", "nation", "motion", "section", "caption", "fraction", "vacation", "celebration", "potato"],
+    "tracing": { "letter": "-tion", "words": ["action", "station"], "mode": "pattern" },
+    "coloring": ["potato", "station", "celebration"],
+    "dictionary": ["action", "celebration", "station", "potato"],
+    "extras": ["🎉🎉🎉 GRADUATION CEREMONY: every child reads a decodable book aloud to the whole cast, earns a paper cap, and takes home the completed 58-week album (2 levels of songs, 32 books). The Pattern Tree comes down off the wall rolled like a diploma — 5 vowel lights, 32 leaves, one crown.", "👑 THE POTATO CORONATION: this is the moment 58 weeks were built toward. The word POTATO — never printed once, shouted from every book's last page — is finally written, read, and crowned atop the Pattern Tree. Do it with full ceremony: spell it together (P-O-T-A-T-O), then place the crown. Tell the children the truth: they didn't learn to read it today, they've KNOWN it by heart since they were four — today they simply proved they can read the friend they already loved.", "-tion, the last leaf: t-i-o-n says /ʃən/ ('shun'). It always says shun, every time — a rare English kindness. action, station, nation, motion — and celebration, the word for this very day. Heart word QUESTION joins the wall (its -tion says /tʃən/ — the one that breaks the rule, fittingly the last word taken on faith).", "Pattern-card tracing (pattern mode): the base word in black, -tion in red. The final tracing card of the whole program.", "The completed album: play all 115 songs (Level 1's 51 + Levels 2–3's 64) end to end while the caps go on and the Tree rolls up."]
+  },
+  "assets": [
+    { "file": "celebration-scene.png", "usedBy": ["book:1", "cards"], "mjPrompt": "a warm classroom transformed for a celebration with a glowing wall-mounted pattern tree in full leaf, streamers and tiny lanterns, a whole cast of storybook animal characters gathering, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cast-cat-dog.png", "usedBy": ["book:2"], "mjPrompt": "a tabby cat and a brown dog side by side wearing tiny graduation caps beaming, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cast-sheep-snake-bee.png", "usedBy": ["book:3"], "mjPrompt": "a fluffy white sheep, an emerald-green garden snake with amber eyes, and a plump gold-and-black honeybee together in tiny graduation caps, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cast-star-owl.png", "usedBy": ["book:4"], "mjPrompt": "a warm golden five-point star with a serene face and a small tawny owl with huge amber eyes perched together glowing, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "class-jumping.png", "usedBy": ["book:5"], "mjPrompt": "a whole cast of storybook animal characters mid-celebration jumping and singing and dancing with motion everywhere and joy everywhere, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "tree-question.png", "usedBy": ["book:6"], "mjPrompt": "a whole cast of animal characters turning to look up at the top of a glowing pattern tree where something round is silhouetted against bright light, suspenseful, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-reveal.png", "usedBy": ["book:7"], "mjPrompt": "a single raw potato wearing tiny round glasses radiant at the very top of a glowing pattern tree with a blazing spotlight on it, storybook animal characters gasping with delight below, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-king.png", "usedBy": ["book:8"], "mjPrompt": "a single raw potato wearing a little gold crown enthroned at the crown of a fully-leafed glowing pattern tree with arms raised in triumph, a whole cast of animal characters cheering below, ultra-realistic photograph, dramatic spotlight on the potato, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "graduation-cast-full.png", "usedBy": ["book:9"], "mjPrompt": "a grand graduation group around a fully-leafed glowing pattern tree — a peg doll girl with black pigtails, a peg doll boy in a red shirt, a tabby cat, a black ant, a brown dad figure, a brown dog, a grey rat, a small pup, a red beetle, a white duck, a red fox, a fluffy white sheep, a yellow chick, an emerald-green snake, a gold-and-black bee, a golden star and a tawny owl, all in graduation caps, a crowned potato at the tree's top, an open book in the middle, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "station.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a little toy train station with a platform and a sign, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "nation.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a single small waving flag on a pole, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "motion.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a spinning top in motion with speed lines around it, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "fraction.png", "usedBy": ["bingo"], "mjPrompt": "a round pie cut into equal slices showing a fraction, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "vacation.png", "usedBy": ["bingo"], "mjPrompt": "a small beach scene with a sun umbrella and a bucket, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a proud potato wearing a little crown and round glasses, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "station-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a little train station with a platform and sign, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "celebration-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a pattern tree in full leaf with streamers and a crowned potato at the top, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "🎓 GRADUATION. The last new pattern is a gentle one: -tion always says /ʃən/ ('shun') — action, station, nation, celebration, the word for today. The heart word QUESTION joins the wall (its -tion breaks the rule and says /tʃən/ — fittingly the last word taken on faith in the whole program). Then the ceremony: 👑 THE POTATO CORONATION. For 58 weeks the potato was shouted from every book's final picture and NEVER once printed. Today it is written, read, spelled (P-O-T-A-T-O), and crowned atop the Pattern Tree. Tell the children the truth of it — they didn't learn to read it today; they've owned it by heart since they were small. Today they simply proved they can read the friend they always loved. Every child reads a book aloud, earns a cap, takes home the album. Fifty-eight weeks. The whole cast can read.",
+  "lessonMapEquivalents": [109]
+}

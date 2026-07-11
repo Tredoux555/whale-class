@@ -1,0 +1,84 @@
+{
+  "week": 51,
+  "level": 3,
+  "sound": "oo",
+  "letterDisplay": "oo",
+  "soundType": "vowel-team",
+  "patternDisplay": "oo",
+  "anchorWord": "moon",
+  "newWords": ["moon", "zoo", "book", "look"],
+  "reviewBank": ["her", "bird", "fur", "turn", "star", "car", "corn", "more", "rain", "day", "tree", "eat", "boat", "night", "roof", "food", "cool", "spoon", "broom", "cook", "the", "and"],
+  "glue": { "new": ["school"], "known": ["the", "is", "I", "on", "says", "what", "where", "why"] },
+  "oralWords": ["cuckoo", "kangaroo"],
+  "sentenceFrame": "Look at the moon.",
+  "soundBasket": ["moon", "book", "zoo", "roof", "spoon", "broom", "tooth", "boot", "foot", "hook"],
+  "cast": { "introduces": null, "present": ["Star", "Sheep"] },
+  "celebration": "Two sounds, one team — the oo leaf goes up. The class learns that oo can hum long (moon, zoo) or clip short (book, look), and the heart word SCHOOL joins them: too important to wait for.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Oo-Oo-Moon!",
+      "lyrics": "[Intro]\n(oo… oo… oo…)\nTwo little o's!\n\n[Hook]\nOo! Oo! Oo-oo-oo!\nTwo o's, ONE team!\nOo-oo-moon! Oo-oo-moon!\nLook at the moon! (the moon!)\n\n[Verse 2]\nOo! Oo! Oo-oo-oo!\nLong oo — zoo!\nLong oo — spoon!\nUp on the roof! (the roof!)\n\n[Verse 3]\nOo! Oo! Oo-oo-oo!\nShort oo — book!\nShort oo — look!\nOne team, two sounds! (oo! oo!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not oo!\n(oo… oo… oo…)\n\n[Outro]\nLong moon… short book… (oo… oo…)\nLook! (the moon!)\n(oo… shhh…)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "oo has TWO sounds — the long moon /uː/ (a low owl-hoot) and the short book /ʊ/ (a quick pull). Sing them contrasted: verse 2 holds the long, verse 3 clips the short. 'oo' sung as the pure vowel, never letter names 'oh-oh'. The whole lesson: one team, two jobs. Potato bridge intact."
+    },
+    {
+      "role": "word",
+      "title": "Look at the Moon",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nLook at the moon!\nLook at the moon!\nWhere is the moon? (where? where?)\nUp on the roof!\n\n[Verse 2]\nStar is on the roof.\nStar can see the moon.\nCool is the moon! (cool! cool!)\nLook, Star, look!\n\n[Verse 3]\nSheep is on the roof too!\nThe moon is at the school.\nLook at the moon and the school!\n(soon… soon…)\n\n[Outro]\nThe roof… the moon… (shhh…)\nWhat is on the roof?!\n(POTATO!)\nLook at the moon. (goodnight, moon.)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'Look at the moon.' — a quiet rooftop night, Star and Sheep moon-gazing. Introduces the heart word SCHOOL (sung whole, taught by heart — sch is irregular). Keep it hushed and lullaby-slow under the trap; end on 'goodnight, moon' after the potato gag."
+    }
+  ],
+  "book": {
+    "title": "Look at the Moon",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "Look at the moon.", "image": "moon", "artNote": "A huge pale moon low over a dark rooftop, spotlight-bright. The whole book glows silver." },
+      { "n": 2, "text": "The moon is cool.", "image": "moon-cool", "artNote": "The cool blue-white moon filling the sky, its craters just visible. Serene." },
+      { "n": 3, "text": "Star is on the roof.", "image": "star-roof", "artNote": "Star — the warm golden five-point star with a serene sleepy face — perched on the ridge of a rooftop, looking up." },
+      { "n": 4, "text": "Look at the moon, Star!", "image": "star-looking", "artNote": "Star gazing up in wonder at the enormous moon, its gold glow answering the moon's silver." },
+      { "n": 5, "text": "Sheep is on the roof too.", "image": "sheep-roof", "artNote": "Sheep clambering up beside Star on the rooftop, both moon-gazing. 'Too' — the long oo again." },
+      { "n": 6, "text": "The moon is big and cool.", "image": "big-moon", "artNote": "Wide shot: Star and Sheep small on the rooftop, the moon vast above them. Quiet spread — read it slow." },
+      { "n": 7, "text": "Look! The moon is at the school.", "image": "moon-school", "artNote": "The moon now hangs right over a little schoolhouse down the lane. The heart word SCHOOL, printed and pointed to." },
+      { "n": 8, "text": "Star and Sheep look at the moon.", "image": "star-sheep-moon", "artNote": "Star and Sheep side by side on the ridge, silhouetted, gazing at the school and the moon together. Peace." },
+      { "n": 9, "text": "On the roof?!", "image": "potato-roof", "artNote": "A single potato has appeared on the rooftop between Star and Sheep, wearing tiny round moon-gazing glasses. No noun printed — the class SHOUTS it. Star's sleepy eyes open a little wider." }
+    ],
+    "backCoverWords": ["moon", "zoo", "book", "look", "roof", "cool", "too", "school", "the", "is"]
+  },
+  "materials": {
+    "threePartCards": ["moon", "book", "zoo", "roof", "spoon", "broom", "tooth", "boot"],
+    "sentences": ["Look at the moon.", "The moon is cool.", "Star is on the roof.", "Look at the school."],
+    "matching": ["moon", "book", "zoo", "roof", "spoon", "boot"],
+    "bingoPool": ["moon", "book", "zoo", "roof", "spoon", "broom", "tooth", "boot", "food", "potato"],
+    "tracing": { "letter": "oo", "words": ["moon", "book"] },
+    "coloring": ["moon", "book", "spoon"],
+    "dictionary": ["moon", "zoo", "book", "look"],
+    "extras": ["TWO-SOUND SORT: two hoops — long oo (moon, zoo, spoon, broom, food, tooth) and short oo (book, look, cook, foot, wood, good). The child sorts by EAR. The lesson is that a spelling can hold two sounds — the first real 'reader's choice' of decoding, and a gentle bridge to the ambiguity of English.", "HEART WORD school: sch is not decodable by rule (it says /sk/), so school joins the heart-word wall today. Too central to a child's life to hold back — they read it, they don't sound it out.", "Pattern Tree: the class reads moon/zoo/book/look aloud and hangs the oo leaf.", "Moveable alphabet: build m-oo-n, z-oo, b-oo-k, l-oo-k, r-oo-f, sp-oo-n — noticing the same oo hums differently in moon and book."]
+  },
+  "assets": [
+    { "file": "moon.png", "usedBy": ["book:1", "cards", "bingo", "matching"], "mjPrompt": "a huge pale full moon low in a dark sky with faint craters, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "moon-cool.png", "usedBy": ["book:2"], "mjPrompt": "a cool blue-white full moon filling the frame with visible craters, serene, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "star-roof.png", "usedBy": ["book:3"], "mjPrompt": "a warm golden five-point star with a serene sleepy face perched on the ridge of a dark rooftop looking up, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "star-looking.png", "usedBy": ["book:4"], "mjPrompt": "a warm golden five-point star with a serene face gazing up in wonder at an enormous pale moon, its gold glow answering the moon's silver, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sheep-roof.png", "usedBy": ["book:5"], "mjPrompt": "a fluffy white sheep clambering up onto a dark rooftop beside a glowing golden star, both looking at the moon, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "big-moon.png", "usedBy": ["book:6"], "mjPrompt": "a wide shot of a small golden star and a fluffy white sheep on a dark rooftop beneath a vast pale moon, quiet and hushed, ultra-realistic photograph, dim gentle spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "moon-school.png", "usedBy": ["book:7"], "mjPrompt": "a pale full moon hanging directly over a small country schoolhouse down a dark lane, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "star-sheep-moon.png", "usedBy": ["book:8"], "mjPrompt": "a glowing golden star and a fluffy white sheep silhouetted side by side on a rooftop ridge gazing at a schoolhouse and moon, peaceful, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-roof.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato wearing tiny round glasses sitting on a dark rooftop between a golden star and a fluffy white sheep, all moon-gazing, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "book.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "an open picture book, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "zoo.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a little zoo entrance archway with a sign and animal silhouettes, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "roof.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a small pitched house roof with red tiles, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "spoon.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a single metal spoon, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "broom.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a small straw broom, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "tooth.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a single friendly cartoon-round white tooth, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "boot.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a single rubber rain boot, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "food.png", "usedBy": ["bingo", "basket"], "mjPrompt": "a bowl of simple food, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "moon-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a smiling crescent-and-full moon with craters, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "book-coloring.png", "usedBy": ["coloring"], "mjPrompt": "an open picture book, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "spoon-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a big friendly spoon, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "oo is the first team with TWO jobs: the long moon /uː/ and the short book /ʊ/. Don't teach a rule for which — there isn't a reliable one; teach the EAR. Two hoops, sort by sound, and let the child feel the mouth pull long for moon and clip short for book. This is the gentle on-ramp to English's ambiguity, right after the clean single-sound teams. Add the heart word SCHOOL to the wall today — sch says /sk/, no rule covers it, and the word is too central to a child's world to withhold. Hang the oo leaf.",
+  "lessonMapEquivalents": [95, 96]
+}

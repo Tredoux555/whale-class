@@ -70,10 +70,21 @@ body{font-family:${BOOK_FONT};}
     return `<div class="page apage">${bar}${media}</div>`;
   };
 
+  // Cover kicker — level-aware. Level 1 is byte-identical ("THE LETTER a").
+  // Level 2/3 read "THE SOUND {patternDisplay ?? SOUND}"; morphology weeks
+  // (W57–58) read "THE ENDING {patternDisplay}".
+  const level = spec.level ?? 1;
+  const kicker =
+    level === 1
+      ? `WEEK ${spec.week} &middot; THE LETTER ${escapeHtml(spec.sound)}`
+      : spec.soundType === 'morphology'
+        ? `WEEK ${spec.week} &middot; THE ENDING ${escapeHtml(spec.patternDisplay ?? spec.sound)}`
+        : `WEEK ${spec.week} &middot; THE SOUND ${escapeHtml(spec.patternDisplay ?? (spec.sound || '').toUpperCase())}`;
+
   const pages: string[] = [];
   // Cover
   pages.push(
-    `<div class="page cover"><div class="kicker">WEEK ${spec.week} &middot; THE LETTER ${escapeHtml(spec.sound)}</div>` +
+    `<div class="page cover"><div class="kicker">${kicker}</div>` +
     `<div class="title">${escapeHtml(book?.title ?? '')}</div><div class="foot">Book ${spec.week}</div></div>`);
 
   // Spreads: read page (text) → reveal page (image).

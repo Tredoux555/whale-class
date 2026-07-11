@@ -1,0 +1,83 @@
+{
+  "week": 55,
+  "level": 3,
+  "sound": "y",
+  "letterDisplay": "y",
+  "soundType": "vowel",
+  "patternDisplay": "y (as a vowel)",
+  "anchorWord": "fly",
+  "newWords": ["my", "fly", "why", "happy"],
+  "reviewBank": ["new", "blue", "saw", "draw", "coin", "boy", "owl", "cow", "moon", "book", "her", "bird", "star", "sky", "cry", "try", "puppy", "bunny", "candy", "party", "school", "because"],
+  "glue": { "new": [], "known": ["the", "is", "I", "on", "says", "what", "where", "school", "because"] },
+  "oralWords": ["baby", "pony"],
+  "sentenceFrame": "Why, fly, why?",
+  "soundBasket": ["fly", "sky", "cry", "spy", "puppy", "bunny", "candy", "party", "happy", "story"],
+  "cast": { "introduces": null, "present": ["Bug", "Bee"] },
+  "celebration": "🎉 WHY EARNS ITS LETTERS. Since Week 32 'why' has been a heart word, taken on faith. Today the class learns y-as-a-vowel and spells it at last: wh-y. It leaves the heart-word wall and joins the readable words — a promise kept, thirteen weeks later.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Why-My-Fly!",
+      "lyrics": "[Intro]\n(y… y… y…)\ny can be a vowel!\n\n[Hook]\nY! Y! Y-y-y!\nAt the end, y says I!\nWhy-my-fly! Why-my-fly!\nWhy? My! Fly! (up high!)\n\n[Verse 2]\nY! Y! Y-y-y!\nCry! Try! Sky! Shy!\nOne little y — say I!\n(fly! fly! fly!)\n\n[Verse 3]\nY! Y! Y-y-y!\nAt the end of a long word — say EE!\nHappy! Puppy! Silly! Sunny!\n(ee! ee! ee!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not y!\n(y… y… y…)\n\n[Outro]\nlittle word — y says I… long word — y says ee…\nWhy? (up high!)\n(y… shhh…)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "y-as-vowel does TWO jobs: at the end of a SHORT word it says long-I /aɪ/ (my, fly, why, cry) — hook 1+2; at the end of a LONG word it says long-E /iː/ (happy, puppy, silly) — verse 3. Keep the two jobs cleanly split. 🎉 'Why' is spelled aloud this week for the first time (wh-y) — let the choir cheer it. Potato bridge intact."
+    },
+    {
+      "role": "word",
+      "title": "Why, Fly, Why?",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nWhy, fly, why?\nWhy, fly, why?\nWhere is the fly? (where? where?)\nUp in the sky!\n\n[Verse 2]\nThe fly is shy.\nThe fly can not fly!\nTry, fly, try! (try! try!)\nWhy, fly, why?\n\n[Verse 3]\nBug can help the fly.\nBee can help the fly.\nFly, fly, fly! (up high!)\nThe fly is happy!\n\n[Outro]\nThe fly… the sky… (shhh…)\nWhat is up so high?!\n(POTATO!)\nWhy, fly, why? (we can spell it now!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'Why, fly, why?' — a shy fly who can't fly, cheered on by Bug and Bee. The word 'why' is the star: sung and now spellable (wh-y). The outro names the milestone ('we can spell it now!'). Bounce the /aɪ/ words (why, fly, sky, try, shy) high. Whisper before the potato, which is up in the sky somehow."
+    }
+  ],
+  "book": {
+    "title": "Why, Fly, Why?",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "A fly.", "image": "fly", "artNote": "A little cartoon housefly with big friendly eyes in the spotlight, wings folded, looking a bit glum." },
+      { "n": 2, "text": "Why, fly, why?", "image": "fly-sad", "artNote": "The fly slumped on a leaf, wings drooping. 'Why' — the heart word since Week 32 — printed now, decodable at last: wh-y." },
+      { "n": 3, "text": "The fly is shy.", "image": "fly-shy", "artNote": "The fly hiding behind a blade of grass, peeking out shyly. 'Shy' — sh + y." },
+      { "n": 4, "text": "The fly can not fly!", "image": "fly-cant-fly", "artNote": "The fly flapping hard but staying stuck on the ground, a little dust cloud, comic effort." },
+      { "n": 5, "text": "Bug can help.", "image": "bug-helps", "artNote": "Bug — the round red-shelled beetle — trundling up with an encouraging look, a tiny grass ramp under one arm." },
+      { "n": 6, "text": "Bee can help. Try, fly, try!", "image": "bee-helps", "artNote": "Bee — the plump gold-and-black honeybee — hovering, cheering the fly on. 'Try' — tr + y." },
+      { "n": 7, "text": "Fly, fly, fly!", "image": "fly-flies", "artNote": "Lift-off! The fly airborne at last, wings a blur, Bug and Bee cheering below." },
+      { "n": 8, "text": "The fly is happy!", "image": "fly-happy", "artNote": "The fly looping joyfully in the air. 'Happy' — the OTHER y, saying ee. The two jobs of y on one spread." },
+      { "n": 9, "text": "Up so high?!", "image": "potato-sky", "artNote": "High in the night sky, tangled in a tiny paper kite, floats a single potato with the fly buzzing happy circles round it. No noun printed — the class SHOUTS it." }
+    ],
+    "backCoverWords": ["my", "fly", "why", "happy", "sky", "cry", "try", "shy", "the", "is"]
+  },
+  "materials": {
+    "threePartCards": ["fly", "sky", "cry", "spy", "puppy", "bunny", "candy", "party"],
+    "sentences": ["Why, fly, why?", "The fly is shy.", "Bug can help.", "The fly is happy!"],
+    "matching": ["fly", "sky", "cry", "puppy", "bunny", "candy"],
+    "bingoPool": ["fly", "sky", "cry", "spy", "puppy", "bunny", "candy", "party", "happy", "potato"],
+    "tracing": { "letter": "y (as a vowel)", "words": ["fly", "my"] },
+    "coloring": ["fly", "puppy", "bunny"],
+    "dictionary": ["my", "fly", "why", "happy"],
+    "extras": ["🎉 THE PROMISE KEPT: back in Week 32, when what/where/why joined the heart wall, the class was told 'why will earn its letters one day.' Today is that day. Take why down off the heart-word wall with ceremony and hang it among the readable words — the class SPELLS it (wh-y) for the first time. Two heart words in the whole program earn their letters this way: 'on' (Week 11) and 'why' (today).", "THE TWO JOBS OF y: at the end of a SHORT word, y says long-I (my, fly, why, cry, sky). At the end of a LONG word, y says long-E (happy, puppy, silly, candy). One letter, a job that depends on the length of the word — sort a stack and let them discover the pattern.", "Pattern Tree: the class reads my/fly/why/happy aloud and hangs the y-vowel leaf.", "Moveable alphabet: build m-y, fl-y, wh-y, cr-y, then the long words happ-y, pupp-y — feeling the y flip from I to ee."]
+  },
+  "assets": [
+    { "file": "fly.png", "usedBy": ["book:1", "cards", "bingo", "matching"], "mjPrompt": "a little cartoon-round housefly with big friendly eyes and folded wings looking glum, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "fly-sad.png", "usedBy": ["book:2"], "mjPrompt": "a little round housefly slumped on a green leaf with wings drooping, forlorn, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "fly-shy.png", "usedBy": ["book:3"], "mjPrompt": "a little round housefly hiding behind a blade of grass peeking out shyly, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "fly-cant-fly.png", "usedBy": ["book:4"], "mjPrompt": "a little round housefly flapping hard but stuck on the ground with a small comic dust cloud, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bug-helps.png", "usedBy": ["book:5"], "mjPrompt": "a round red-shelled beetle trundling up with an encouraging look carrying a tiny grass ramp, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bee-helps.png", "usedBy": ["book:6"], "mjPrompt": "a plump gold-and-black honeybee with round shiny wings hovering and cheering on a little housefly, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "fly-flies.png", "usedBy": ["book:7"], "mjPrompt": "a little round housefly lifting off airborne with wings a blur, a red beetle and a honeybee cheering below, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "fly-happy.png", "usedBy": ["book:8"], "mjPrompt": "a little round housefly looping joyfully through the air with a big grin, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-sky.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato tangled in a tiny paper kite floating high in a night sky with a little housefly buzzing happy circles around it, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sky.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a bright blue sky with a few small clouds, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cry.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a friendly cartoon face with one big tear, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "spy.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a small magnifying glass held up like a spyglass, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "puppy.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a tiny fluffy puppy sitting, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bunny.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a small soft bunny rabbit with long ears, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "candy.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a wrapped striped candy, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "party.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a small party hat with streamers, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "fly-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a happy cartoon fly with big wings, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "puppy-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a fluffy sitting puppy, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "bunny-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a soft bunny with long ears, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "y is the letter that becomes a vowel at the end of a word, and it does two jobs by word-length: short word → long-I (my, fly, why, cry); long word → long-E (happy, puppy, silly). Sort by that and let them find the pattern themselves. 🎉 The big moment is a promise kept: in Week 32 the class was told why would earn its letters one day — today it does. Take why down off the heart wall with real ceremony and let them SPELL it (wh-y) for the first time in thirteen weeks. Only 'on' (Week 11) and 'why' (today) ever cross from faith to readable — make it feel like the graduation-eve gift it is.",
+  "lessonMapEquivalents": [62, 63, 64]
+}

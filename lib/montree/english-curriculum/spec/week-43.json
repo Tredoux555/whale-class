@@ -1,0 +1,82 @@
+{
+  "week": 43,
+  "level": 3,
+  "sound": "ai",
+  "letterDisplay": "ai ay",
+  "soundType": "vowel-team",
+  "patternDisplay": "ai / ay",
+  "anchorWord": "rain",
+  "newWords": ["rain", "tail", "day", "play"],
+  "reviewBank": ["ice", "cage", "catch", "bridge", "cube", "home", "bone", "bike", "kite", "cake", "snake", "ship", "fish", "that", "king", "sing", "hand", "jump"],
+  "glue": { "new": [], "known": ["the", "is", "I", "on", "says", "what", "where", "why"] },
+  "oralWords": ["rainbow", "train"],
+  "sentenceFrame": "The train is in the rain.",
+  "soundBasket": ["rain", "train", "tail", "snail", "day", "play", "hay", "tray"],
+  "cast": { "introduces": null, "present": ["Sheep", "Snake", "Chick"] },
+  "celebration": "🎉 LEVEL 3 BEGINS — the Reading Year. The first vowel team: ai and ay, two letters for one long-a sound. The Pattern Tree's RIGHT branches open — leaf #17, and the first leaf of the canopy.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Ay-Ay-Play!",
+      "lyrics": "[Intro]\n(ay… ay… ay…)\nAy! Ay! Play!\n\n[Hook]\nA-I in the middle! (rain! tail!)\nA-Y at the end! (day! play!)\nAy-ay-play! Ay-ay-play!\nTwo letters, one sound! (ay!)\n\n[Verse 2]\nR-A-I-N — rain! (in the rain!)\nD-A-Y — day! (all day!)\nAy-ay-play! Ay-ay-play!\nThe A says its name! (ay!)\n\n[Verse 3]\nPlay in the rain! (splash!)\nA train! A tail! (choo-choo!)\nAy-ay-play! Ay-ay-play!\nIt's a rainy day!\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! In the rain!\n(ay… ay… ay…)\n\n[Outro]\nRain… day… play… (shhh…)\nAy! Ay! Play!",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "First Level-3 vowel-team song. ai and ay BOTH sing the long-a /eɪ/ (phonetic respelling: sung 'ay', printed ai/ay) — never letter names. The positional rule is the whole lesson: 'A-I in the middle, A-Y at the end.' Spell-outs uppercase (R-A-I-N). Potato-in-the-rain gag. Cumulative frame reuse: the 'It's a ___!' answer carries from Level 1."
+    },
+    {
+      "role": "word",
+      "title": "The Train in the Rain",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nThe train is in the rain!\nThe train is in the rain!\nRain, rain! (splash! splash!)\nThe train is in the rain!\n\n[Verse 2]\nSheep can play in the rain!\nSnake has a long tail!\nRain, rain! (splash! splash!)\nPlay in the rain all day!\n\n[Verse 3]\nThe train can go! (choo-choo!)\nChick is on the train! (all aboard!)\nRain, rain! (splash! splash!)\nPlay in the rain all day!\n\n[Outro]\nThe train… the rain… (shhh…)\nIn the rain?! (a potato!)\n(POTATO!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'The train is in the rain.' — every content word carries the new ai/ay team or is Level-1 known. Sheep, Snake and Chick play in the storm. Whisper the outro; potato hits loud with a tiny umbrella."
+    }
+  ],
+  "book": {
+    "title": "The Train in the Rain",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "A train.", "image": "train", "artNote": "A cheerful little steam train alone in the spotlight, headlamp glowing. The first stage of Level 3." },
+      { "n": 2, "text": "Rain, rain!", "image": "rain", "artNote": "Fat silver raindrops falling through the spotlight, streaks and splashes. Weather arrives." },
+      { "n": 3, "text": "The train is in the rain.", "image": "train-rain", "artNote": "The little train chugging through the downpour, steam and rain mixing, headlamp bright." },
+      { "n": 4, "text": "Sheep can play in the rain.", "image": "sheep-play-rain", "artNote": "Sheep — fluffy round white sheep with kind dark eyes — jumping in a puddle, wool soaked, overjoyed." },
+      { "n": 5, "text": "A tail!", "image": "train-tail", "artNote": "The bright red caboose at the train's tail end, a lantern swinging from it." },
+      { "n": 6, "text": "Snake has a long tail.", "image": "snake-tail", "artNote": "Snake — emerald-green, amber-eyed — proudly showing off its very long tail curled across the platform, matching the train's." },
+      { "n": 7, "text": "Play, play, play!", "image": "cast-playing", "artNote": "Sheep, Snake and Chick splashing together in the rain beside the train, pure delight." },
+      { "n": 8, "text": "Play in the rain all day!", "image": "play-allday", "artNote": "A wide happy scene: the train, the puddles, the cast dancing in the rain under a grey-gold sky." },
+      { "n": 9, "text": "In the rain?!", "image": "potato-rain", "artNote": "A single potato stands in a puddle under a tiny umbrella, perfectly dry and pleased. No noun printed — the class SHOUTS it. Sheep peers around the caboose." }
+    ],
+    "backCoverWords": ["rain", "train", "tail", "day", "play", "long", "all", "the", "is", "in"]
+  },
+  "materials": {
+    "threePartCards": ["rain", "train", "tail", "snail", "day", "play", "hay", "tray"],
+    "sentences": ["The train is in the rain.", "Sheep can play in the rain.", "Snake has a long tail.", "Play in the rain all day!"],
+    "matching": ["rain", "train", "tail", "snail", "play", "hay"],
+    "bingoPool": ["rain", "train", "tail", "snail", "day", "play", "hay", "tray", "bike", "cake", "bridge", "snake", "potato"],
+    "tracing": { "letter": "ai/ay", "words": ["rain", "play"] },
+    "coloring": ["train", "rain", "snail"],
+    "dictionary": ["rain", "tail", "day", "play"],
+    "extras": ["THE FIRST VOWEL TEAM. Two vowels walk together and make one long sound — 'when two vowels go walking, the first one does the talking' (a says its name /eɪ/). Show ai and ay side by side.", "POSITIONAL RULE: ai lives in the MIDDLE of a word (rain, tail, train); ay lives at the END (day, play, way). Sort a pile of picture cards into two baskets — middle vs end.", "THE PATTERN TREE'S RIGHT BRANCH OPENS: hang the ai/ay leaf as leaf #17 — the first of the Level-3 canopy. The left branch (Level 2) is full; now the tree grows the other way.", "EAL note: ai/ay is the tense long-a — a clean contrast with the short a of 'cat' from Level 1. This tense-vowel sound feeds the Week-50 tense-lax review; name the pair (cat/came, ran/rain) now.", "Moveable alphabet: build r-ai-n, t-r-ai-n, d-ay, p-l-ay — weld the vowel team as one piece."]
+  },
+  "assets": [
+    { "file": "train.png", "usedBy": ["book:1", "cards", "bingo", "matching"], "mjPrompt": "a cheerful little steam train with a glowing headlamp, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "rain.png", "usedBy": ["book:2", "cards", "bingo"], "mjPrompt": "fat silver raindrops falling and splashing in a beam of light, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "train-rain.png", "usedBy": ["book:3"], "mjPrompt": "a little steam train chugging through heavy rain, steam and raindrops mixing, headlamp bright, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sheep-play-rain.png", "usedBy": ["book:4"], "mjPrompt": "a fluffy round white sheep with kind dark eyes jumping in a puddle, wool soaked, overjoyed, rain falling, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "train-tail.png", "usedBy": ["book:5"], "mjPrompt": "a bright red train caboose at the tail end of a train with a swinging lantern, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "snake-tail.png", "usedBy": ["book:6"], "mjPrompt": "a friendly emerald-green garden snake with large gentle amber eyes proudly showing off its very long curled tail across a station platform, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cast-playing.png", "usedBy": ["book:7"], "mjPrompt": "a fluffy white sheep, an emerald-green snake and a tiny yellow chick splashing together in rain puddles beside a train, delighted, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "play-allday.png", "usedBy": ["book:8"], "mjPrompt": "a wide happy scene of a small steam train, big rain puddles, and animal friends dancing in the rain under a grey-gold sky, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-rain.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato standing in a puddle under a tiny umbrella, perfectly dry and pleased, dramatic spotlight on the potato, a fluffy white sheep peering around a red caboose, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "tail.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a curling fluffy animal tail on its own, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "snail.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a little garden snail with a spiral shell, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "day.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a bright golden sun in a clear morning sky, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "play.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a pile of colourful building blocks and a ball, ready to play, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "hay.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a round golden bale of hay, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "tray.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a simple wooden serving tray, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "train-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a friendly steam train with a big smiley headlamp, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "rain-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a cloud with raindrops and a puddle below, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "snail-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a happy snail with a big spiral shell, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "LEVEL 3 OPENS — the Reading Year, and the first vowel team. Two vowels together make one long sound: ai and ay both say long-a /eɪ/. Teach the positional rule hard, because it is reliable: ai in the MIDDLE (rain, tail, train), ay at the END (day, play, way). Weld the team as one piece in the moveable alphabet. Open the Pattern Tree's right branch with leaf #17. EAL: this is a tense long-a — pair it out loud with the short a of Level 1 (ran/rain, cat/came); it is the first deposit toward the Week-50 tense-lax review.",
+  "lessonMapEquivalents": [84, 85]
+}

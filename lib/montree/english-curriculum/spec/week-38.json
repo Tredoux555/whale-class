@@ -1,0 +1,82 @@
+{
+  "week": 38,
+  "level": 2,
+  "sound": "a_e",
+  "letterDisplay": "a_e",
+  "soundType": "magic-e",
+  "patternDisplay": "a_e",
+  "anchorWord": "cake",
+  "newWords": ["cake", "name", "gate", "snake"],
+  "reviewBank": ["ship", "fish", "chin", "that", "this", "king", "sing", "bell", "when", "stop", "flag", "frog", "hand", "jump", "help", "pink", "cap", "tap", "at", "mad", "can", "plan"],
+  "glue": { "new": [], "known": ["the", "is", "I", "on", "says", "what", "where", "why"] },
+  "oralWords": ["magic"],
+  "sentenceFrame": "The snake ate the cake.",
+  "soundBasket": ["cake", "gate", "tape", "wave", "grape", "plane", "whale", "cape"],
+  "cast": { "introduces": null, "present": ["Snake", "Sheep"] },
+  "celebration": "SNAKE'S NAME-DAY — the class spells a friend's name for the first time (S-N-A-K-E). Magic-e is the 2nd-biggest unlock of the whole program. Pattern-card tracing debuts. And the class can NEARLY spell potato now — they know it, and it knows it.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Magic E Makes Cake",
+      "lyrics": "[Intro]\n(ay… ay… ay…)\nMagic E! Magic E!\n\n[Hook]\nCap… CAPE! Tap… TAPE!\nMagic E! Magic E!\nAt… ATE! Can… CANE!\nThe E is magic! (shhh — it's silent!)\n\n[Verse 2]\nMad… MADE! Plan… PLANE!\nMagic E! Magic E!\nThe A says its NAME! (A! A!)\nAnd the E says… (nothing!)\n\n[Verse 3]\nC-A-K-E — cake!\nG-A-T-E — gate!\nS-N-A-K-E — SNAKE!\n(That's your name! That's your name!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! No magic E!\n(ay… ay… ay…)\n\n[Outro]\nThe E is magic.\nThe E is silent. (shhh…)\nCAKE!",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "The transformation pairs ARE the hook — snap or 808 hit exactly on each change (cap→CAPE). The '(ay… ay… ay…)' stutters sing the LONG A sound /eɪ/ (phonetic respelling rule: sung 'ay', printed a_e). Spell-outs are uppercase letter names (C-A-K-E) per the locked whole-words rule. 'The A says its NAME' is the entire lesson in one line. The silent-e whisper gag lands the Montessori point: the e works without making a sound."
+    },
+    {
+      "role": "word",
+      "title": "The Snake and the Cake",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nThe snake ate the cake!\nThe snake ate the cake!\nWhere is the cake? (where? where?)\nThe snake ate the cake!\n\n[Verse 2]\nThe snake is at the gate!\nA name on the gate!\nS-N-A-K-E! (snake! snake!)\nThe gate is… (CLICK!)\n\n[Verse 3]\nIn went the snake!\nThe snake ate the cake! (yum! yum!)\nWhere is the cake? (where? where?)\nThe cake is IN the snake!\n\n[Outro]\nA cake on the plate… (a plate!)\nIt's a potato! (POTATO!)\n(Happy name-day, Snake…)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'The snake ate the cake.' — every content word is magic-e. Verse 2's spell-out S-N-A-K-E is the name-day moment; the CLICK is the gate unlocking (dry percussion hit, no sung word). Verse 3's flip ('the cake is IN the snake') is the decoding punchline. Outro whisper, potato hits loud, then the tender name-day whisper closes it."
+    }
+  ],
+  "book": {
+    "title": "The Snake and the Cake",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "A gate.", "image": "gate", "artNote": "A tall garden gate in the spotlight, latched shut. Something glows warmly beyond it." },
+      { "n": 2, "text": "A cake!", "image": "cake", "artNote": "The cake, seen through the gate bars — golden, glowing, one candle. Desire established." },
+      { "n": 3, "text": "A snake.", "image": "snake-arrives", "artNote": "Snake — the friendly emerald-green garden snake with large gentle amber eyes, cast member since Week 33 — slithers into the light." },
+      { "n": 4, "text": "The snake is at the gate.", "image": "snake-at-gate", "artNote": "Snake pressed hopefully against the gate, cake beyond. The latch has a name-plate, still in shadow." },
+      { "n": 5, "text": "A name on the gate!", "image": "name-on-gate", "artNote": "The name-plate catches the light: SNAKE. The gate was Snake's all along — it opens only to its owner's name." },
+      { "n": 6, "text": "The name is… SNAKE!", "image": "snake-spelling", "artNote": "Snake reads its own name for the first time, tail pointing letter by letter — S, N, A, K, E. THE NAME-DAY MOMENT. The class reads it too: for the first time ever, they can spell a friend's name." },
+      { "n": 7, "text": "In went the snake.", "image": "snake-going-in", "artNote": "CLICK — the gate swings open and Snake pours through joyfully. Sheep peeks around the gatepost with a party hat." },
+      { "n": 8, "text": "The snake ate the cake.", "image": "snake-ate-cake", "artNote": "Crumbs everywhere. One candle, licked clean. Snake round-bellied and blissful. Sheep applauds." },
+      { "n": 9, "text": "A cake?!", "image": "potato-cake", "artNote": "A second 'cake' on a fancy plate — but it is a potato with a birthday candle in it. No noun printed — the class SHOUTS it. Snake and Sheep stare. The potato has never looked prouder: the class can NEARLY spell it now, and it knows." }
+    ],
+    "backCoverWords": ["cake", "name", "gate", "snake", "ate", "at", "in", "went", "the", "is"]
+  },
+  "materials": {
+    "threePartCards": ["cake", "gate", "snake", "plane", "grape", "whale", "tape", "wave"],
+    "sentences": ["The snake is at the gate.", "In went the snake.", "The snake ate the cake.", "The name on the gate is SNAKE."],
+    "matching": ["cake", "gate", "snake", "name", "tape", "wave"],
+    "bingoPool": ["cake", "gate", "snake", "plane", "grape", "whale", "tape", "wave", "ship", "fish", "king", "flag", "frog", "potato"],
+    "tracing": { "letter": "a_e", "words": ["cake", "gate"], "mode": "pattern" },
+    "coloring": ["cake", "snake", "gate"],
+    "dictionary": ["cake", "name", "gate", "snake"],
+    "extras": ["THE MAGIC-E WAND: a red wooden 'e' on a stick. Build cap with the moveable alphabet, then touch the wand to the end — cap→cape, tap→tape, at→ate, mad→made, can→cane, plan→plane. The child SEES the vowel change its voice. This is the week's core presentation.", "NAME-DAY CEREMONY: the class spells S-N-A-K-E aloud together and Snake's name goes up beside the Pattern Tree's a_e leaf. First cast name the class has ever spelled.", "Pattern-card tracing debuts: pattern letters in red, frame word in black, the silent e greyed with a halo — trace the word, whisper nothing at the e.", "Moveable alphabet with the special red e: c-a-k-e, g-a-t-e, n-a-m-e, s-n-a-k-e."]
+  },
+  "assets": [
+    { "file": "gate.png", "usedBy": ["book:1", "cards", "bingo", "matching"], "mjPrompt": "a tall wrought-iron garden gate latched shut with a small brass name-plate, warm glow beyond it, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cake.png", "usedBy": ["book:2", "cards", "bingo", "matching"], "mjPrompt": "a golden frosted cake with one lit candle on a cake stand, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "snake-arrives.png", "usedBy": ["book:3", "cards", "bingo"], "mjPrompt": "a friendly emerald-green garden snake with large gentle amber eyes slithering into a pool of light, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "snake-at-gate.png", "usedBy": ["book:4"], "mjPrompt": "a friendly emerald-green garden snake with large gentle amber eyes pressed hopefully against a tall wrought-iron gate, a glowing cake visible beyond the bars, ultra-realistic photograph, dramatic spotlight, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "name-on-gate.png", "usedBy": ["book:5"], "mjPrompt": "close-up of a brass name-plate on a wrought-iron gate reading SNAKE in embossed capital letters, caught in dramatic light, an emerald-green snake's head at the edge of frame gazing at it, ultra-realistic photograph, deep forest-green backdrop, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "snake-spelling.png", "usedBy": ["book:6"], "mjPrompt": "a friendly emerald-green garden snake with large gentle amber eyes pointing with its tail tip at the brass letters S N A K E on a gate name-plate, delighted expression, ultra-realistic photograph, dramatic spotlight, deep forest-green backdrop, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "snake-going-in.png", "usedBy": ["book:7"], "mjPrompt": "a wrought-iron gate swinging open as a friendly emerald-green snake pours through joyfully, a fluffy round white sheep with kind dark eyes peeking from behind the gatepost wearing a tiny party hat, ultra-realistic photograph, dramatic spotlight, deep forest-green backdrop, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "snake-ate-cake.png", "usedBy": ["book:8"], "mjPrompt": "a round-bellied blissful emerald-green snake coiled beside an empty cake stand scattered with crumbs and one licked-clean candle, a fluffy white sheep in a party hat applauding, ultra-realistic photograph, dramatic spotlight, deep forest-green backdrop, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-cake.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato with a lit birthday candle stuck in it, presented proudly on an ornate cake plate, dramatic spotlight on the potato, an emerald-green snake and a fluffy white sheep staring at it, ultra-realistic photograph, deep forest-green backdrop, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "plane.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a small vintage propeller toy plane, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "grape.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a small bunch of purple grapes, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "whale.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a gentle blue whale mid-breach, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "tape.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a roll of masking tape with a curl of tape lifted, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "wave.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a single curling ocean wave frozen mid-crest, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cape.png", "usedBy": ["basket"], "mjPrompt": "a small red superhero cape on a wooden hanger, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cake-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a birthday cake with one big candle and swirled frosting, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "snake-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a happy friendly snake with big eyes coiled beside a slice of cake, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "gate-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a garden gate with a name-plate and flowers around the posts, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "THE MAGIC-E WEEK — the second-biggest unlock of the whole program. The presentation is the wand: build cap, touch the red e to the end, and the a changes its voice — 'the e is silent, but it makes the a say its NAME.' Do the six wand pairs (cap/cape, tap/tape, at/ate, mad/made, can/cane, plan/plane) before any new words. Then the name-day: Snake has been a friend since Week 33; today the class spells S-N-A-K-E for the first time. Make it a real ceremony. Pattern-card tracing starts this week — the silent e is grey with a halo; children trace it and say nothing, which they find hilarious and exactly right.",
+  "lessonMapEquivalents": [54]
+}

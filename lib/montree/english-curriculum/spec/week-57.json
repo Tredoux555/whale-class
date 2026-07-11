@@ -1,0 +1,82 @@
+{
+  "week": 57,
+  "level": 3,
+  "sound": "ing",
+  "letterDisplay": "-ing -ed -s -es",
+  "soundType": "morphology",
+  "patternDisplay": "-ing / -ed / -s / -es",
+  "anchorWord": "running",
+  "newWords": ["jumping", "played", "wishes", "running"],
+  "reviewBank": ["knee", "lamb", "my", "fly", "why", "happy", "moon", "book", "owl", "cow", "her", "bird", "star", "singing", "reading", "jumped", "looked", "fishes", "boxes", "swimming", "school", "because"],
+  "glue": { "new": [], "known": ["the", "is", "I", "on", "says", "what", "where", "school", "because"] },
+  "oralWords": ["everybody", "suddenly"],
+  "sentenceFrame": "The dog is running.",
+  "soundBasket": ["running", "jumping", "swimming", "singing", "reading", "digging", "played", "jumped", "fishes", "boxes"],
+  "cast": { "introduces": null, "present": ["Sam", "Sheep", "Bee", "Duck"] },
+  "celebration": "THE INFLECTION UNLOCK — for the first time the cast DOES things. Add -ing and the word is happening now (run → running); add -ed and it already happened (play → played); add -s or -es and there are more of them. Every base word in the whole program can suddenly bend — the readable inventory multiplies overnight.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Running, Jumping, Singing!",
+      "lyrics": "[Intro]\n(-ing… -ed… -s…)\nAdd an ending — the word grows!\n\n[Hook]\nRun… RUNNING! (now! now!)\nJump… JUMPING! (now! now!)\nSing… SINGING! (right now!)\nAdd -ing — it's happening NOW!\n\n[Verse 2]\nPlay… PLAYED! (all done!)\nLook… LOOKED! (all done!)\nJump… JUMPED! (all done!)\nAdd -ed — it already happened!\n\n[Verse 3]\nOne cat… two CATS!\nOne dog… two DOGS!\nOne dish… two DISHES!\nAdd -s, add -es — now there's MORE!\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! No ending!\n(-ing… -ed… -s…)\n\n[Outro]\nrunning… played… wishes…\nEvery word can grow! (grow! grow!)\n(-ing… shhh…)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "🎉 THE MULTIPLIER WEEK — the transformation IS the beat: hit the 808 on each ending (run→RUNNING). Say whole words (never syllable-split; the base word snaps to its inflected form). -ed says three ways by ear (played /d/, looked /t/, landed /ɪd/) — model all three, don't drill the rule. Verse 3 is plural -s/-es. Potato bridge intact — potato has no ending."
+    },
+    {
+      "role": "word",
+      "title": "Running!",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nRunning! Running!\nThe cast is running!\nWho is running? (who? who?)\nAll of us — running!\n\n[Verse 2]\nThe dog is running.\nThe cat is jumping.\nThe duck is swimming! (splash! splash!)\nBee is singing.\n\n[Verse 3]\nSam played and played.\nSheep is reading.\nThe fish wishes and wishes! (wish! wish!)\nEverybody is doing something!\n\n[Outro]\nrunning… jumping… reading… (shhh…)\nBut who is resting?!\n(POTATO!)\nRunning! (the whole cast can move!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'Running!' — the whole cast finally in MOTION, each doing a verb. This is the first song of real connected action, not just naming. Let each member's line land on their verb (dog running, cat jumping, duck swimming). Whisper the outro; the one cast member NOT moving is the potato, resting — the class shouts it."
+    }
+  ],
+  "book": {
+    "title": "Running!",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "Running!", "image": "running", "artNote": "A blur of joyful motion — legs and dust and speed lines, the whole cast about to charge in. One word, all energy. The book that finally MOVES." },
+      { "n": 2, "text": "The dog is running.", "image": "dog-running", "artNote": "The Dog — brown, cast member since Week 12 — flat-out sprinting, ears streaming back, tongue out, pure joy. '-ing' = happening now." },
+      { "n": 3, "text": "The cat is jumping.", "image": "cat-jumping", "artNote": "The Cat mid-leap, all four legs off the ground, a small startled bird flushing up ahead." },
+      { "n": 4, "text": "The duck is swimming.", "image": "duck-swimming", "artNote": "The Duck powering across dark water, a bright V-wake behind it, delighted." },
+      { "n": 5, "text": "The bee is singing.", "image": "bee-singing", "artNote": "Bee hovering with musical notes rising from it, eyes shut in song." },
+      { "n": 6, "text": "Sam played and played.", "image": "sam-playing", "artNote": "Sam surrounded by scattered toys, mid-play, grinning — 'played' twice, the past tense, already done and done again." },
+      { "n": 7, "text": "Sheep is reading.", "image": "sheep-reading", "artNote": "Sheep curled with an open book, one hoof on the page, absorbed. The friend who could not read its own name once, now reading." },
+      { "n": 8, "text": "The fish wishes and wishes.", "image": "fish-wishing", "artNote": "The Fish (from Week 27!) back, eyes shut, bubbles rising like wishes — 'wishes', the -es ending. A callback to the very first pattern book." },
+      { "n": 9, "text": "But it is just resting!", "image": "potato-resting", "artNote": "Everyone is in motion — except, propped on a tiny deckchair with sunglasses, a single potato, resting. No noun printed — the class SHOUTS it. The only still thing on a page full of movement." }
+    ],
+    "backCoverWords": ["jumping", "played", "wishes", "running", "singing", "reading", "swimming", "resting", "the", "is"]
+  },
+  "materials": {
+    "threePartCards": ["running", "jumping", "swimming", "singing", "reading", "digging"],
+    "sentences": ["The dog is running.", "The cat is jumping.", "Sam played and played.", "The fish wishes."],
+    "matching": ["running", "jumping", "swimming", "singing", "reading", "digging"],
+    "bingoPool": ["running", "jumping", "swimming", "singing", "reading", "played", "jumped", "looked", "fishes", "boxes", "potato"],
+    "tracing": { "letter": "-ing / -ed / -s / -es", "words": ["jumping", "played"], "mode": "pattern" },
+    "coloring": ["running", "jumping", "singing"],
+    "dictionary": ["jumping", "played", "wishes", "running"],
+    "extras": ["🎉 THE MULTIPLIER: this is the biggest true unlock of the program. It is not four new words — it is a machine that bends every word the class already owns. Take a base word from the 1,100-word wall, add -ing (happening now), -ed (already happened), or -s/-es (more than one) and read the new word. Suddenly the readable inventory is not 1,100 words — it is thousands.", "-ed BY EAR (three sounds, no rule drilled): played says /d/, looked says /t/, landed says /ɪd/. Sort a stack of -ed words into three sound-boxes by listening — the child discovers the three voices of -ed without a single rule written down.", "THE DOUBLING RULE, DRAMATIZED not drilled: run → running (the n doubles to keep the vowel short). Show it with the moveable alphabet — slide a second n in — as a visible event, not a worksheet. hop→hopping, dig→digging.", "Pattern-card tracing (pattern mode): the base word in black, the ending (-ing/-ed/-s/-es) in red — trace the ending on and watch the word change job. This is the last new material of the program before graduation."]
+  },
+  "assets": [
+    { "file": "running.png", "usedBy": ["book:1", "cards", "bingo", "matching"], "mjPrompt": "a joyful blur of motion with legs and dust and speed lines suggesting a whole cast about to charge in, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "dog-running.png", "usedBy": ["book:2"], "mjPrompt": "a brown dog sprinting flat-out with ears streaming back and tongue out in pure joy, motion lines, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cat-jumping.png", "usedBy": ["book:3"], "mjPrompt": "a tabby cat mid-leap with all four legs off the ground and a small startled bird flushing up ahead, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "duck-swimming.png", "usedBy": ["book:4"], "mjPrompt": "a white duck powering across dark water leaving a bright V-shaped wake, delighted, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bee-singing.png", "usedBy": ["book:5"], "mjPrompt": "a plump gold-and-black honeybee hovering with musical notes rising from it and eyes shut in song, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sam-playing.png", "usedBy": ["book:6"], "mjPrompt": "a wooden peg doll boy in a red shirt surrounded by scattered toys mid-play grinning, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sheep-reading.png", "usedBy": ["book:7"], "mjPrompt": "a fluffy white sheep curled up with an open picture book, one hoof on the page, absorbed and content, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "fish-wishing.png", "usedBy": ["book:8"], "mjPrompt": "a bright orange fish with eyes shut and bubbles rising like wishes in dark water, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-resting.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato propped on a tiny striped deckchair wearing little sunglasses resting, the only still thing on a page, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "swimming.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a small figure doing a swimming stroke through blue water, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "singing.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a happy open-mouthed songbird with musical notes rising, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "reading.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "an open picture book with a bookmark, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "digging.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a small shovel in a mound of dirt mid-dig with dirt flying, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "jumped.png", "usedBy": ["bingo"], "mjPrompt": "a small rabbit frozen at the top of a jump, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "boxes.png", "usedBy": ["bingo"], "mjPrompt": "a small stack of cardboard boxes, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "running-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a happy running dog with motion lines, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "jumping-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a cat leaping through the air, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "singing-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a singing bird with big musical notes, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "🎉 THE MULTIPLIER WEEK. Everything before this taught new spellings; this teaches word-BENDING, and it multiplies the whole inventory. Three endings: -ing (happening now: run→running), -ed (already happened: play→played), -s/-es (more than one: cat→cats, dish→dishes). Teach -ed by EAR — played /d/, looked /t/, landed /ɪd/ — sort into three sound-boxes, no rule written. Dramatize the doubling rule with the moveable alphabet (slide a second n into run→running) rather than a worksheet. This is the last new content before graduation: after today, the cast can finally be described DOING, and the class can read real connected stories.",
+  "lessonMapEquivalents": [65, 66, 67]
+}

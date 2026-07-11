@@ -1,0 +1,82 @@
+{
+  "week": 39,
+  "level": 2,
+  "sound": "i_e",
+  "letterDisplay": "i_e",
+  "soundType": "magic-e",
+  "patternDisplay": "i_e",
+  "anchorWord": "bike",
+  "newWords": ["bike", "time", "five", "kite"],
+  "reviewBank": ["cake", "name", "gate", "snake", "ship", "fish", "chin", "that", "this", "when", "king", "sing", "stop", "flag", "frog", "hand", "jump", "help"],
+  "glue": { "new": [], "known": ["the", "is", "I", "on", "says", "what", "where", "why"] },
+  "oralWords": ["magic", "ride"],
+  "sentenceFrame": "Sheep is on the bike.",
+  "soundBasket": ["bike", "kite", "five", "ride", "hive", "vine", "slide", "smile"],
+  "cast": { "introduces": null, "present": ["Snake", "Sheep"] },
+  "celebration": "The magic-e wand returns — this week it lands on the letter i. The class now owns two magic-e vowels (a_e, i_e): touch the red e to bit and it becomes bite, to kit and it becomes kite. The i says its NAME.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Magic E Makes Bike",
+      "lyrics": "[Intro]\n(eye… eye… eye…)\nMagic E! Magic E!\n\n[Hook]\nBit… BITE! Kit… KITE!\nMagic E! Magic E!\nFin… FINE! Pin… PINE!\nThe E is magic! (shhh — it's silent!)\n\n[Verse 2]\nHid… HIDE! Rid… RIDE!\nMagic E! Magic E!\nThe I says its NAME! (I! I!)\nAnd the E says… (nothing!)\n\n[Verse 3]\nB-I-K-E — bike!\nK-I-T-E — kite!\nF-I-V-E — five!\n(Count them! Count them!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! No magic E!\n(eye… eye… eye…)\n\n[Outro]\nThe E is magic.\nThe E is silent. (shhh…)\nBIKE!",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "The transformation pairs ARE the hook — 808 hit exactly on each change (bit→BITE). The '(eye… eye… eye…)' stutters sing the LONG I sound /aɪ/ (phonetic respelling rule: sung 'eye', printed i_e). Spell-outs are uppercase letter names (B-I-K-E) per the whole-words rule. 'The I says its NAME' is the whole lesson in one line; the silent-e whisper gag lands the point — the e works without making a sound. Second week of the Magic E series (cake→bike)."
+    },
+    {
+      "role": "word",
+      "title": "The Bike Ride",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nSheep is on the bike!\nSheep is on the bike!\nRide, Sheep, ride! (ride! ride!)\nSheep is on the bike!\n\n[Verse 2]\nA kite is up! (up! up!)\nSnake has the kite!\nRide, Sheep, ride! (ride! ride!)\nThe kite can ride!\n\n[Verse 3]\nThe bike is quick! (quick! quick!)\nIt is time to ride! (go! go!)\nRide, Sheep, ride! (ride! ride!)\nSheep can ride the bike!\n\n[Outro]\nThe bike… the kite… (shhh…)\nOn the bike?! (a potato!)\n(POTATO!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'Sheep is on the bike.' — every content word is magic-e or Level-1 known. Verse 2 flies the kite behind the bike; verse 3 is the ride climax. The 'Ride, Sheep, ride!' call carries the Level-1 command-frame ('Sit, cat, sit!') forward. Whisper the outro, then the potato hits loud."
+    }
+  ],
+  "book": {
+    "title": "The Bike Ride",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "A bike.", "image": "bike", "artNote": "A gleaming little bike alone in the spotlight, one pedal caught mid-turn. The children know this stage." },
+      { "n": 2, "text": "It is time to ride!", "image": "bike-time", "artNote": "The bike beside a big round clock reading five — it is time to go. Anticipation." },
+      { "n": 3, "text": "Sheep is on the bike.", "image": "sheep-on-bike", "artNote": "Sheep — the fluffy round white sheep with kind dark eyes — perched happily on the saddle, hooves on the pedals." },
+      { "n": 4, "text": "Ride, Sheep, ride!", "image": "sheep-riding", "artNote": "Sheep pedalling fast, wool streaming back, wheels a blur. Pure joy." },
+      { "n": 5, "text": "A kite!", "image": "kite", "artNote": "A bright diamond kite with a long ribbon tail, hovering in the spotlight." },
+      { "n": 6, "text": "Snake has the kite.", "image": "snake-kite", "artNote": "Snake — the friendly emerald-green garden snake with large gentle amber eyes — holding the kite string in its tail, delighted." },
+      { "n": 7, "text": "The kite is up.", "image": "kite-up", "artNote": "The kite climbs high above the dark trees, string taut, tail rippling." },
+      { "n": 8, "text": "The kite can ride!", "image": "kite-and-bike", "artNote": "Snake ties the kite string to the back of Sheep's bike — the kite rides ALONG behind them as they zoom. Teamwork triumph." },
+      { "n": 9, "text": "On the bike?!", "image": "potato-on-bike", "artNote": "The bike is parked — and a single potato sits proudly on the saddle wearing a tiny bike helmet. No noun printed — the class SHOUTS it. Sheep and Snake peek from the edge of frame." }
+    ],
+    "backCoverWords": ["bike", "kite", "time", "five", "ride", "mine", "up", "the", "is", "on"]
+  },
+  "materials": {
+    "threePartCards": ["bike", "kite", "five", "time", "ride", "hive", "vine", "smile"],
+    "sentences": ["It is time to ride the bike.", "Sheep is on the bike.", "Snake has a kite.", "Five ride the bike."],
+    "matching": ["bike", "kite", "five", "time", "ride", "hive"],
+    "bingoPool": ["bike", "kite", "five", "time", "ride", "hive", "vine", "smile", "ship", "fish", "cake", "snake", "frog", "potato"],
+    "tracing": { "letter": "i_e", "words": ["bike", "kite"], "mode": "pattern" },
+    "coloring": ["bike", "kite", "snake"],
+    "dictionary": ["bike", "time", "five", "kite"],
+    "extras": ["THE MAGIC-E WAND, week 2: build bit with the moveable alphabet, then touch the red wooden e to the end — bit→bite, kit→kite, rid→ride, fin→fine, pin→pine, hid→hide. The i changes its voice from /i/ to /aɪ/. Same wand, new vowel — the class already knows the trick from a_e.", "Pattern-card tracing continues: pattern letters in red, frame word in black, the silent e greyed with a halo — trace the word, whisper nothing at the e.", "Minimal-pair sort (short i vs long i): bit/bite, kit/kite, rid/ride, pin/pine, fin/fine, dim/dime — hear the vowel flip.", "Moveable alphabet with the special red e: b-i-k-e, k-i-t-e, t-i-m-e, f-i-v-e."]
+  },
+  "assets": [
+    { "file": "bike.png", "usedBy": ["book:1", "cards", "bingo", "matching"], "mjPrompt": "a gleaming little child's bicycle standing alone, one pedal caught mid-turn, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bike-time.png", "usedBy": ["book:2"], "mjPrompt": "a little bicycle beside a big round clock reading five o'clock, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sheep-on-bike.png", "usedBy": ["book:3"], "mjPrompt": "a fluffy round white sheep with kind dark eyes perched happily on a bicycle saddle with hooves on the pedals, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sheep-riding.png", "usedBy": ["book:4"], "mjPrompt": "a fluffy round white sheep with kind dark eyes riding a bicycle fast, wool streaming back, wheels a motion blur, joyful, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "kite.png", "usedBy": ["book:5", "cards", "bingo", "matching"], "mjPrompt": "a bright diamond kite with a long ribbon tail hovering, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "snake-kite.png", "usedBy": ["book:6"], "mjPrompt": "a friendly emerald-green garden snake with large gentle amber eyes holding a kite string in its tail tip, delighted, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "kite-up.png", "usedBy": ["book:7"], "mjPrompt": "a bright diamond kite climbing high above dark treetops, string taut, ribbon tail rippling, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "kite-and-bike.png", "usedBy": ["book:8"], "mjPrompt": "a fluffy white sheep riding a bicycle with a kite tied to the back of the bike trailing along behind in the air, an emerald-green snake riding on the handlebars, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-on-bike.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato wearing a tiny bicycle helmet sitting proudly on a bicycle saddle, dramatic spotlight on the potato, a fluffy white sheep and an emerald-green snake peeking from the edge of frame, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "five.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a wooden number five standing upright, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "time.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a simple round alarm clock, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "ride.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a child's small scooter ready to ride, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "hive.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a woven straw beehive, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "vine.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a curling green leafy vine, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "smile.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a big cheerful smile drawn on a round wooden token, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bike-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a friendly little bicycle with a basket, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "kite-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a diamond kite with a bow tail flying, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "snake-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a happy friendly snake holding a kite string, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "MAGIC-E, WEEK 2 — the letter i. The wand is the whole presentation: build bit, touch the red e, and the i changes its voice — bit→bite, kit→kite, rid→ride, fin→fine, pin→pine, hid→hide. Do all six pairs before any new words. The children already know the trick from a_e last week, so this is consolidation, not a new mechanic — but the minimal pairs (bit/bite) are the sharpest hearing test yet. Pattern-card tracing continues: the silent e stays grey with a halo. Sheep and Snake return to star.",
+  "lessonMapEquivalents": [55]
+}

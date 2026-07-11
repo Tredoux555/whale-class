@@ -1,0 +1,82 @@
+{
+  "week": 30,
+  "level": 2,
+  "sound": "ck",
+  "letterDisplay": "ck ff ll ss zz",
+  "soundType": "digraph",
+  "patternDisplay": "ck ff ll ss zz",
+  "anchorWord": "bell",
+  "newWords": ["bell", "miss", "off", "puff"],
+  "reviewBank": ["this", "that", "then", "with", "moth", "chick", "chat", "ship", "fish", "cat", "dog", "duck", "kick", "sock", "rock", "sun", "cup", "top"],
+  "glue": { "new": [], "known": ["the", "is", "I", "on", "says"] },
+  "oralWords": ["bull", "pull"],
+  "sentenceFrame": "The bell is on the hill.",
+  "soundBasket": ["bell", "hill", "doll", "shell", "sock", "rock", "kiss", "puff"],
+  "cast": { "introduces": null, "present": ["Sheep", "Chick"] },
+  "celebration": "Leaf #4 — the HARVEST leaf. The biggest single week of Level 2 (+40 words). ck is formalized (known since Week 21) and the FLoSs doubling rule unlocks a whole family of words that end in a doubled f, l, s or z.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Ck! Ck! Bell!",
+      "lyrics": "[Intro]\nCk! Ck! Ck-ck-ck!\n(k… k… k…)\n\n[Hook]\nCk says /k/ at the end!\nSock! Rock! Duck! Kick!\nCk-ck… /k/! /k/!\nTwo letters, ONE sound!\n\n[Verse 2]\nF, L, S, Z — hear the rule!\nA little word? DOUBLE it!\nBe-ll! BELL! Pu-ff! PUFF!\nTwo at the end! (double! double!)\n\n[Verse 3]\nMi-ss! MISS! O-ff! OFF!\nFi-zz! Hi-ss! Ye-ll!\nDouble the L! Double the S!\nTwo at the end! (double! double!)\n\n[Verse 4]\nBell! Bell! On the hill!\nUp the hill — puff, puff, puff!\nCk-ck… /k/! (sock! rock!)\nTwo letters, ONE sound!\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! No double! Not ck!\n(k… k… k…)\n\n[Outro]\nBell! Bell! On the hill!\nCk-ck… /k/! /k/!\n(hush… hush… hush…)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "ck is a single /k/ click at the END of a word — never 'see-kay'. The doubling verses teach the FLoSs rule: a short one-syllable word ending in f, l, s or z DOUBLES that last letter (bell, puff, miss, fizz). Chant each double as a beat-doubled 808 knock ('be-LL' = two hits landing as one word). The whole lesson is that double letters make ONE sound — exactly like ck and the digraphs. Never sing letter names anywhere."
+    },
+    {
+      "role": "word",
+      "title": "The Bell on the Hill",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nThe bell is on the hill!\nThe bell is on the hill!\nWhere is the bell? (where? where?)\nThe bell is on the hill!\n\n[Verse 2]\nChick can hit the bell!\nUp! Up! Up the hill!\nPuff, puff, up the hill! (puff! puff!)\nThe bell is on the hill!\n\n[Verse 3]\nCan Sheep miss the bell?\nNo! Sheep will not miss!\nHit it! Hit it! (bell! bell!)\nThe bell fell off the hill!\n\n[Outro]\nThe bell… the hill… (hush…)\nA potato?! (POTATO!)\nOff the hill?! (roll, potato, roll!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'The bell is on the hill.' Deliberately ng-free — 'ring' and 'ding' arrive next week (Week 31, ng). Verse 2 lands 'puff' and 'off'; verse 3 lands 'miss', 'will' and 'fell'. Every core word appears. Whisper the outro, potato hits loud, then rolls away."
+    }
+  ],
+  "book": {
+    "title": "The Bell on the Hill",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "A hill.", "image": "hill", "artNote": "A single grassy hill rising into the spotlight against the dark, one lonely tree at the top. Room for a climb." },
+      { "n": 2, "text": "A bell on the hill.", "image": "bell-on-hill", "artNote": "A big brass hand-bell sitting at the very top of the hill, gleaming, begging to be rung. The tree leans over it." },
+      { "n": 3, "text": "Chick can not miss it!", "image": "chick-eyes-bell", "artNote": "Chick at the bottom of the hill, eyes locked on the distant bell with total determination, one wing pointing up. The quest begins." },
+      { "n": 4, "text": "Puff, puff, up the hill.", "image": "chick-puff-hill", "artNote": "Chick struggling gamely halfway up the slope, tiny puffs of effort around her beak, legs a blur. Comedy of a very small climber." },
+      { "n": 5, "text": "Chick hit the bell!", "image": "chick-hit-bell", "artNote": "Triumph — Chick at the summit, headbutting the big bell, a burst of shine lines around the impact. Pure joy." },
+      { "n": 6, "text": "The bell fell off!", "image": "bell-fell", "artNote": "Uh-oh — the bell has tipped off its post and is tumbling, Chick's eyes going wide, wings thrown up in alarm." },
+      { "n": 7, "text": "The bell is off the hill.", "image": "bell-rolling", "artNote": "The bell rolling downhill in a blur, Chick chasing after it, a comic dust trail behind them both." },
+      { "n": 8, "text": "Sheep got the bell!", "image": "sheep-got-bell", "artNote": "Sheep — a fluffy round white sheep with kind dark eyes — waiting patiently at the bottom, catching the runaway bell neatly on its back. Rescue complete. Chick cheers." },
+      { "n": 9, "text": "Off the hill?!", "image": "potato-on-hill", "artNote": "Where the bell used to sit at the top of the hill, a single potato now rests in the spotlight. Chick and Sheep stare up at it. No noun printed — the class SHOUTS it." }
+    ],
+    "backCoverWords": ["bell", "miss", "off", "puff", "hill", "fell", "will", "sock", "the", "is"]
+  },
+  "materials": {
+    "threePartCards": ["bell", "hill", "doll", "shell", "sock", "rock", "kiss", "puff"],
+    "sentences": ["The bell is on the hill.", "Chick can not miss it.", "Puff, puff, up the hill.", "The bell fell off."],
+    "matching": ["bell", "hill", "sock", "rock", "kiss", "puff"],
+    "bingoPool": ["bell", "hill", "doll", "shell", "sock", "rock", "kiss", "puff", "miss", "off", "chick", "moth", "duck", "potato"],
+    "tracing": { "letter": "ll", "words": ["bell", "hill"] },
+    "coloring": ["bell", "doll", "sock"],
+    "dictionary": ["bell", "miss", "off", "puff"],
+    "extras": ["PATTERN TREE: leaf #4 — the harvest leaf, the biggest single week of Level 2 (+40 words). Read bell/miss/off/puff aloud and hang it.", "THE FLoSs RULE presentation: a short one-syllable word ending in f, l, s or z DOUBLES that last letter — off, bell, miss, buzz. Build 'be' + 'l' and show it looks unfinished; add the second l and it 'clicks'. The double makes ONE sound.", "ck FORMALIZED: the class has read ck since Week 21 ('same /k/, two letters'); today it joins the doubling family officially — sock, rock, duck, kick.", "EXCEPTION BASKET (oral): bull, full, pull — these end in double-l but the u says /ʊ/, not the short /ʌ/. Taught by ear as friendly exceptions, never sounded out.", "Moveable alphabet with a spare l, s, f, z, and a ck tile — build bell, miss, off, puff, sock."]
+  },
+  "assets": [
+    { "file": "hill.png", "usedBy": ["book:1"], "mjPrompt": "a single rounded grassy hill with one small tree at the top rising into the light, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bell-on-hill.png", "usedBy": ["book:2"], "mjPrompt": "a big gleaming brass hand-bell sitting at the top of a grassy hill under a leaning tree, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "chick-eyes-bell.png", "usedBy": ["book:3"], "mjPrompt": "a tiny fluffy yellow chick with a stubby orange beak at the foot of a hill staring up with fierce determination at a distant brass bell, one wing pointing up, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "chick-puff-hill.png", "usedBy": ["book:4"], "mjPrompt": "a tiny fluffy yellow chick struggling halfway up a grassy slope with little puffs of effort around its beak and legs a blur, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "chick-hit-bell.png", "usedBy": ["book:5"], "mjPrompt": "a tiny fluffy yellow chick at a hilltop headbutting a big brass bell with a burst of shine lines around the impact, joyful, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bell-fell.png", "usedBy": ["book:6"], "mjPrompt": "a big brass bell tipping off its post and tumbling down a hill, a tiny yellow chick beside it with wings thrown up in alarm, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bell-rolling.png", "usedBy": ["book:7"], "mjPrompt": "a brass bell rolling downhill in a motion blur with a tiny yellow chick chasing behind in a comic dust trail, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sheep-got-bell.png", "usedBy": ["book:8"], "mjPrompt": "a fluffy round white sheep with kind dark eyes at the bottom of a hill catching a runaway brass bell neatly on its woolly back, a tiny yellow chick cheering, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-on-hill.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato resting at the top of a grassy hill in a spotlight where a bell once sat, a tiny yellow chick and a fluffy white sheep staring up at it from below, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bell.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a gleaming brass hand-bell with a wooden handle, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "doll.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a small soft rag doll, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "shell.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a spiral seashell, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sock.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a single striped woolly sock, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "rock.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a single smooth grey rock, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "puff.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a soft round white powder puff, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bell-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a big hand-bell with a handle and shine lines, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "doll-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a friendly rag doll with yarn hair, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "sock-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a cosy sock with stripes, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "THE HARVEST WEEK — the biggest of Level 2 (+40 words). Two things: ck (finally formalized — the class has read it since Week 21 as 'same /k/, two letters', so today it just gets its name) and the FLoSs doubling rule (a short one-syllable word ending in f, l, s or z doubles that last letter: off, bell, miss, buzz). Present the doubling with the moveable alphabet: build 'be-l' and let the child feel it looks unfinished, then add the twin l and it 'clicks' — the double makes ONE sound, the same lesson as sh/ch/th/ck. Keep the exception basket (bull, full, pull) oral only — those u's say /ʊ/ and must be learned by ear, never sounded out. Hang the harvest leaf with real ceremony.",
+  "lessonMapEquivalents": [41, 17]
+}

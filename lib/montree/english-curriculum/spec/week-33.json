@@ -1,0 +1,80 @@
+{
+  "week": 33,
+  "level": 2,
+  "sound": "s-blends",
+  "letterDisplay": "s-blends",
+  "soundType": "blend",
+  "patternDisplay": "st sp sn sm sw sc sk",
+  "anchorWord": "stop",
+  "newWords": ["stop", "spin", "snap", "swim"],
+  "reviewBank": ["when", "which", "whip", "king", "sing", "bell", "this", "that", "with", "chick", "moth", "ship", "fish", "sock", "duck", "cat", "dog", "sun"],
+  "glue": { "new": [], "known": ["the", "is", "I", "on", "says", "what", "where", "why"] },
+  "oralWords": ["spider", "snail"],
+  "sentenceFrame": "Stop, Snake, stop!",
+  "soundBasket": ["snake", "spider", "snail", "swan", "spin", "stop", "skip", "swim"],
+  "cast": { "introduces": "Snake", "present": ["Sheep", "Chick"] },
+  "celebration": "Leaf #7 — s-blends, the first BLEND leaf. Blends aren't new letters — they're known sounds run together fast — so this leaf celebrates fluency. SNAKE JOINS (name-exempt for now; the class will spell S-N-A-K-E at Week 38, its name-day).",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "St-St-Stop!",
+      "lyrics": "[Intro]\nSt! St! St-st-st!\n(st… st… st…)\n\n[Hook]\nSt! St! Two sounds, TOGETHER!\n/s/ and /t/ — st! st!\nSt-st-stop! St-st-stop!\nSTOP! (freeze!) STOP!\n\n[Verse 2]\nSp! Sp! /s/ and /p/!\nBlend them quick — sp! sp!\nSp-sp-spin! Sp-sp-spin!\nSPIN! (round and round!) SPIN!\n\n[Verse 3]\nSn! Sn! /s/ and /n/!\nBlend them quick — sn! sn!\nSn-sn-snap! Sn-sn-snap!\nSNAP! (clap!) SNAP!\n(Hello, Snake! sss…)\n\n[Verse 4]\nSw! Sw! /s/ and /w/!\nBlend them quick — sw! sw!\nSw-sw-swim! Sw-sw-swim!\nSWIM! (splash!) SWIM!\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! No blend!\n(st… st… st…)\n\n[Outro]\nSt-st-stop! Sp-sp-spin!\nSn-sn-snap! Sw-sw-swim!\nTwo sounds together! (blend! blend!)\nSt! St! St-st-st!",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "These are BLENDS, not new letters — two sounds the class already knows, said quickly together with NO vowel squeezed between them ('suh-tuh-stop' with a schwa IS the error this fights). The stutter breaks the cluster ('st-st') then slams the two sounds into one. Each verse takes one s-blend: st, sp, sn, sw. Verse 3 greets new cast member Snake with a sustained /sss/. Never sing letter names."
+    },
+    {
+      "role": "word",
+      "title": "Stop, Snake, Stop!",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nStop, Snake, stop!\nStop, Snake, stop!\nSnake can not stop! (stop! stop!)\nStop, Snake, stop!\n\n[Verse 2]\nSnake can spin!\nSnake can skip!\nSnake can swim in a swish! (swish! swish!)\nStop, Snake, stop!\n\n[Verse 3]\nSnap! Snap! (clap! clap!)\nSnake can not stop!\nSpin and skip and swim!\nStop, Snake, stop!\n\n[Outro]\nSnake… stop… (hush…)\nA potato?! (POTATO!)\nSnake can stop at a potato! (stop, Snake, stop!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'Stop, Snake, stop!' — the class begging the whirlwind new cast member to hold still. Every core word (stop/spin/snap/swim) plus skip and swish. Sing 'Snake' warmly (it's a debut). Whisper the outro, potato hits loud — and it's the one thing that finally freezes Snake."
+    }
+  ],
+  "book": {
+    "title": "Stop, Snake, Stop!",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "A Snake!", "image": "snake", "artNote": "CAST DEBUT: Snake — a friendly emerald-green garden snake with large gentle amber eyes — zips into the spotlight already in mid-motion, a happy blur of green. The class meets a friend they cannot yet spell (that day is Week 38)." },
+      { "n": 2, "text": "Snake can spin.", "image": "snake-spin", "artNote": "Snake curled into a spinning coil like a green top, amber eyes wide with glee, tiny motion lines all around." },
+      { "n": 3, "text": "Spin, spin, spin!", "image": "snake-spinning", "artNote": "Snake a full green blur, spinning so fast it's almost a wheel, Chick watching dizzily from the side." },
+      { "n": 4, "text": "Snake can swim.", "image": "snake-swim", "artNote": "Snake gliding through a ribbon of water in a joyful S-curve, swish lines trailing, amber eyes just above the surface." },
+      { "n": 5, "text": "Chick can not stop it!", "image": "chick-chase-snake", "artNote": "Chick sprinting after the streaking Snake, wings pumping, utterly outpaced. Comedy of a small bird chasing a fast friend." },
+      { "n": 6, "text": "Stop, Snake, stop!", "image": "chick-sheep-stop", "artNote": "Chick and Sheep together, arms/wings thrown up in a big 'STOP' gesture, a green blur whizzing right between them." },
+      { "n": 7, "text": "Snap! Snap! Snap!", "image": "snake-snap-twig", "artNote": "Snake playfully snapping little twigs in its coils like castanets, delighted, snap-bursts around each one." },
+      { "n": 8, "text": "Snake can not stop.", "image": "snake-still-going", "artNote": "Chick and Sheep collapsed and panting on the ground while Snake loops on tirelessly overhead, still grinning. Everyone's exhausted but Snake." },
+      { "n": 9, "text": "In the path?!", "image": "potato-stops-snake", "artNote": "A single potato sits squarely in the middle of the path and Snake has screeched to a dead halt an inch from it, amber eyes crossed in astonishment. Chick and Sheep freeze mid-pant. No noun printed — the class SHOUTS it." }
+    ],
+    "backCoverWords": ["stop", "spin", "snap", "swim", "skip", "step", "slip", "snug", "the", "can"]
+  },
+  "materials": {
+    "threePartCards": ["snake", "spider", "snail", "swan", "spin", "stop", "skip", "swim"],
+    "sentences": ["Stop, Snake, stop!", "Snake can spin.", "Snake can swim.", "Snake can not stop."],
+    "matching": ["stop", "spin", "snap", "swim", "skip", "step"],
+    "bingoPool": ["snake", "spider", "snail", "swan", "spin", "stop", "skip", "swim", "snap", "step", "chick", "king", "bell", "potato"],
+    "tracing": { "letter": "st", "words": ["stop", "step"] },
+    "coloring": ["snake", "spider", "swim"],
+    "dictionary": ["stop", "spin", "snap", "swim"],
+    "extras": ["PATTERN TREE: leaf #7 — the first BLEND leaf. Remind the class these are old sounds run together, not new letters; the leaf celebrates reading them FAST.", "NO-SCHWA MODELING: say 'st' as one quick move, never 'suh-tuh'. Use two fingers pinched together to show the sounds arriving as one. Do this for st, sp, sn, sm, sw, sc, sk.", "SNAKE DEBUTS — name-exempt. Tell the class Snake's name is a secret they will learn to spell at Week 38 (a_e). Snake is picture-vocab this week: they see it, they say it, they can't yet write it.", "PICTURE-VOCAB heavy: snake, spider, snail, swan (swan's a is irregular — a picture word, not sounded out). Moveable alphabet: build the s onto stop, spin, snap, swim."]
+  },
+  "assets": [
+    { "file": "snake.png", "usedBy": ["book:1", "cards", "bingo", "matching"], "mjPrompt": "a friendly emerald-green garden snake with large gentle amber eyes zipping forward in mid-motion, a happy green blur, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "snake-spin.png", "usedBy": ["book:2"], "mjPrompt": "a friendly emerald-green garden snake with large gentle amber eyes curled into a spinning coil like a green top with tiny motion lines around it, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "snake-spinning.png", "usedBy": ["book:3"], "mjPrompt": "a friendly emerald-green snake spinning so fast it blurs into a green wheel while a tiny yellow chick watches dizzily, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "snake-swim.png", "usedBy": ["book:4"], "mjPrompt": "a friendly emerald-green snake with large amber eyes gliding through a ribbon of water in a joyful S-curve with swish lines trailing, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "chick-chase-snake.png", "usedBy": ["book:5"], "mjPrompt": "a tiny fluffy yellow chick sprinting with wings pumping after a streaking emerald-green snake, hopelessly outpaced, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "chick-sheep-stop.png", "usedBy": ["book:6"], "mjPrompt": "a tiny yellow chick and a fluffy white sheep with wings and hooves thrown up in a big STOP gesture as a green blur whizzes between them, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "snake-snap-twig.png", "usedBy": ["book:7"], "mjPrompt": "a friendly emerald-green snake playfully snapping little twigs in its coils like castanets with snap bursts around each one, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "snake-still-going.png", "usedBy": ["book:8"], "mjPrompt": "a tiny yellow chick and a fluffy white sheep collapsed panting on the ground while an emerald-green snake loops tirelessly overhead still grinning, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-stops-snake.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato sitting squarely in a garden path with an emerald-green snake screeched to a dead halt an inch from it, amber eyes crossed in astonishment, a yellow chick and white sheep frozen mid-pant, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "spider.png", "usedBy": ["cards", "bingo", "basket"], "mjPrompt": "a small friendly round spider with big eyes on a single silk thread, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "snail.png", "usedBy": ["cards", "bingo", "basket"], "mjPrompt": "a small garden snail with a spiral shell and gentle eye stalks, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "swan.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a graceful white swan gliding on still water, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "skip.png", "usedBy": ["cards", "matching"], "mjPrompt": "a child's wooden skipping rope with red handles mid-loop, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "snake-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a happy friendly snake with big eyes coiled in a spiral, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "spider-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a cheerful round spider on a web thread, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "swim-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a happy figure swimming through wavy water lines, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "BLENDS BEGIN — a lighter, faster unit. A blend is not a new letter and not a new sound: it is two sounds the class already owns, run together quickly. The ONE thing to get right is no schwa — 'st' is a single quick move, never 'suh-tuh'. Pinch two fingers together to show the sounds arriving as one. Cover the s-blends (st, sp, sn, sm, sw, sc, sk) with lots of picture cards — snake, spider, snail, swan — because the joy here is recognition speed, not new decoding. Welcome Snake warmly; like Sheep, its name is picture-vocab for now, and you can promise the class its name-day at Week 38.",
+  "lessonMapEquivalents": [49]
+}

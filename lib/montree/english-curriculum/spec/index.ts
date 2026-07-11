@@ -44,6 +44,45 @@ const WEEK_LOADERS: Record<number, () => Promise<{ default: unknown }>> = {
   24: () => import('./week-24.json'),
   25: () => import('./week-25.json'),
   26: () => import('./week-26.json'),
+
+  // ── Level 2 / 3 (W27–58) — Phase C authoring slots ──────────────────────
+  // 🚨 RULE (do NOT break it): a new week's JSON is INVISIBLE to every generator
+  // until its loader line is uncommented here. Static imports keep the build
+  // honest — importing a file that doesn't exist yet THROWS at bundle time, so
+  // these stay commented until the matching week-NN.json actually lands. As each
+  // spec is authored, delete the `// ` on its line (and only its line).
+  27: () => import('./week-27.json'),
+  28: () => import('./week-28.json'),
+  29: () => import('./week-29.json'),
+  30: () => import('./week-30.json'),
+  31: () => import('./week-31.json'),
+  32: () => import('./week-32.json'),
+  33: () => import('./week-33.json'),
+  34: () => import('./week-34.json'),
+  35: () => import('./week-35.json'),
+  36: () => import('./week-36.json'),
+  37: () => import('./week-37.json'),
+  38: () => import('./week-38.json'),
+  39: () => import('./week-39.json'),
+  40: () => import('./week-40.json'),
+  41: () => import('./week-41.json'),
+  42: () => import('./week-42.json'),
+  43: () => import('./week-43.json'),
+  44: () => import('./week-44.json'),
+  45: () => import('./week-45.json'),
+  46: () => import('./week-46.json'),
+  47: () => import('./week-47.json'),
+  48: () => import('./week-48.json'),
+  49: () => import('./week-49.json'),
+  50: () => import('./week-50.json'),
+  51: () => import('./week-51.json'),
+  52: () => import('./week-52.json'),
+  53: () => import('./week-53.json'),
+  54: () => import('./week-54.json'),
+  55: () => import('./week-55.json'),
+  56: () => import('./week-56.json'),
+  57: () => import('./week-57.json'),
+  58: () => import('./week-58.json'),
 };
 
 /** The authored WeekSpec for week n (1..26), or null if not written yet. */
@@ -126,10 +165,19 @@ export const WEEK_META: WeekMeta[] = SPINE_META.map((m) => ({
 
 // ── Week → lesson-map equivalence (interop; never renumber lesson-map.ts) ─
 export const weekToLessonMap: Record<number, number[]> = {
+  // Level 1 (W1–26) — locked.
   1: [6], 2: [7], 3: [11], 4: [15], 5: [5], 6: [10], 7: [8], 8: [9], 9: [21],
   10: [12], 11: [14], 12: [13], 13: [22], 14: [18], 15: [20], 16: [19], 17: [23],
   18: [24], 19: [27], 20: [25], 21: [16, 17], 22: [26], 23: [29], 24: [28],
   25: [31], 26: [30],
+  // Level 2 (W27–42) — from MASTER_SPINE "Week→lesson-map equivalence W27–58".
+  27: [42], 28: [43], 29: [44, 46], 30: [41, 17], 31: [48], 32: [45],
+  33: [49], 34: [50], 35: [51], 36: [47], 37: [47, 48],
+  38: [54], 39: [55], 40: [56], 41: [57], 42: [58, 59, 60, 61],
+  // Level 3 (W43–58). W50 is the EAL minimal-pair review (no lesson-map lesson).
+  43: [84, 85], 44: [86, 87], 45: [88, 89], 46: [90], 47: [71], 48: [72],
+  49: [73, 74, 75], 50: [], 51: [95, 96], 52: [91, 92], 53: [93, 94],
+  54: [97, 98, 99], 55: [62, 63, 64], 56: [104, 105, 106], 57: [65, 66, 67], 58: [109],
 };
 
 // ── Level 2 / 3 skeletons (design only) ─────────────────────────────────

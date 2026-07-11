@@ -1,0 +1,81 @@
+{
+  "week": 48,
+  "level": 3,
+  "sound": "or",
+  "letterDisplay": "or ore",
+  "soundType": "r-controlled",
+  "patternDisplay": "or / ore",
+  "anchorWord": "corn",
+  "newWords": ["corn", "fork", "more", "store"],
+  "reviewBank": ["star", "car", "park", "farm", "night", "light", "boat", "goat", "see", "tree", "rain", "day", "play", "ice", "bike", "cake", "snake", "fish"],
+  "glue": { "new": [], "known": ["the", "is", "I", "on", "says", "what", "where", "why"] },
+  "oralWords": ["corn", "store"],
+  "sentenceFrame": "The horse can eat corn.",
+  "soundBasket": ["corn", "fork", "horn", "horse", "more", "store", "born", "storm"],
+  "cast": { "introduces": null, "present": ["Sheep", "Star", "Bee"] },
+  "celebration": "or and ore both say /or/ — the second r-controlled sound (corn, fork, more, store). And a word the class has wanted since Level 1 finally arrives: FOR is decodable at last (f + or). Right-branch leaf #6.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Or-Or-Corn!",
+      "lyrics": "[Intro]\n(or… or… or…)\nOr! Or! Corn!\n\n[Hook]\nThe R is BOSSY! (orrr!)\nO plus R says /or/! (orrr!)\nOr-or-corn! Or-or-corn!\nTwo letters, one sound! (or!)\n\n[Verse 2]\nC-O-R-N — corn! (eat the corn!)\nF-O-R-K — fork! (on the fork!)\nOr-or-corn! Or-or-corn!\nThe bossy R says /or/! (or!)\n\n[Verse 3]\nMore! More! (more corn!)\nM-O-R-E — more! (at the store!)\nOr-or-corn! Or-or-corn!\nMore corn for the horse!\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not corn!\n(or… or… or…)\n\n[Outro]\nCorn… fork… more… (shhh…)\nOr! Or! Corn!",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Second r-controlled song — growl the /or/ (phonetic respelling: sung 'or', printed or/ore). The lesson: or in the middle (corn, fork), ore at the end (more, store). Spell-outs uppercase. The bridge quietly celebrates that 'for' is finally readable. Potato is not corn — the class knows the difference by now."
+    },
+    {
+      "role": "word",
+      "title": "More Corn for the Horse",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nMore corn for the horse!\nMore corn for the horse!\nMore! More! (more corn!)\nMore corn for the horse!\n\n[Verse 2]\nThe horse can eat the corn!\nThe corn is on the fork!\nMore! More! (more corn!)\nMore corn for the horse!\n\n[Verse 3]\nThe corn is in the store!\nStar can see the corn!\nMore! More! (more corn!)\nMore corn for the horse!\n\n[Outro]\nThe corn… the horse… (shhh…)\nFor the horse?! (a potato!)\n(POTATO!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'More corn for the horse.' — 'horse' and 'for' are both new-this-week or freshly unlocked. A warm barnyard bop. 'eat' carries the ea team, 'see' the ee team. Whisper the outro; potato hits loud in the feed bucket."
+    }
+  ],
+  "book": {
+    "title": "More Corn for the Horse",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "Corn.", "image": "corn", "artNote": "A golden ear of corn alone in the spotlight, husk half-peeled, kernels gleaming." },
+      { "n": 2, "text": "A horse.", "image": "horse", "artNote": "A gentle brown horse looking hopefully at the corn, ears forward. A story friend — 'horse' is fully decodable now." },
+      { "n": 3, "text": "The horse can eat corn.", "image": "horse-corn", "artNote": "The horse happily munching an ear of corn, kernels flying, eyes half-closed in bliss." },
+      { "n": 4, "text": "More corn!", "image": "more-corn", "artNote": "The horse looking up eagerly, wanting more, a second ear of corn just out of reach on a shelf." },
+      { "n": 5, "text": "A fork!", "image": "fork", "artNote": "A big pitchfork leaning in the spotlight — the tool for lifting more corn." },
+      { "n": 6, "text": "The corn is on the fork.", "image": "corn-fork", "artNote": "An ear of corn balanced on the tines of the pitchfork, lifted up toward the hopeful horse." },
+      { "n": 7, "text": "More corn for the horse!", "image": "horse-more-corn", "artNote": "The horse being served a whole armful of corn, delighted, tail swishing. 'for' finally in print." },
+      { "n": 8, "text": "The corn is in the store.", "image": "corn-store", "artNote": "A little farm store with sacks and shelves — and more corn than any horse could dream of. Star glows in the window." },
+      { "n": 9, "text": "For the horse?!", "image": "potato-corn", "artNote": "In the horse's feed bucket where the corn should be sits a single potato, looking pleased with itself. No noun printed — the class SHOUTS it. The horse gives it a long, doubtful stare." }
+    ],
+    "backCoverWords": ["corn", "fork", "more", "store", "horse", "for", "eat", "on", "the", "is"]
+  },
+  "materials": {
+    "threePartCards": ["corn", "fork", "horn", "horse", "more", "store", "storm", "thorn"],
+    "sentences": ["The horse can eat corn.", "More corn for the horse!", "The corn is on the fork.", "The corn is in the store."],
+    "matching": ["corn", "fork", "horn", "horse", "more", "store"],
+    "bingoPool": ["corn", "fork", "horn", "horse", "more", "store", "storm", "star", "car", "tree", "boat", "cake", "potato"],
+    "tracing": { "letter": "or/ore", "words": ["corn", "store"] },
+    "coloring": ["corn", "fork", "horse"],
+    "dictionary": ["corn", "fork", "more", "store"],
+    "extras": ["THE SECOND R-CONTROLLED VOWEL: o plus r says /or/. or lives in the MIDDLE (corn, fork, horn, storm); ore lives at the END (more, store, core, snore). Both are the bossy R again, this time bending o. Sort by position.", "THE 'for' CELEBRATION: 'for' is a word the children have wanted to write since Level 1 — today it is finally decodable (f + or). Make a small fuss; write it on the wall.", "TEACH ONE BOSSY-R AT A TIME: ar was last week, or is this week — do NOT introduce er/ir/ur (that is next week, and it is the big two-syllable gate).", "Right-branch leaf #6 goes up: read corn/fork/more/store aloud, hang the or/ore leaf.", "Moveable alphabet: build c-or-n, f-or-k, m-or-e, s-t-or-e — weld or as one piece; add the silent e for ore."]
+  },
+  "assets": [
+    { "file": "corn.png", "usedBy": ["book:1", "cards", "bingo", "matching"], "mjPrompt": "a golden ear of corn with the husk half-peeled and kernels gleaming, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "horse.png", "usedBy": ["book:2", "cards", "bingo", "matching"], "mjPrompt": "a gentle brown horse with ears forward looking hopefully forward, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "horse-corn.png", "usedBy": ["book:3"], "mjPrompt": "a gentle brown horse happily munching an ear of corn, kernels flying, eyes half-closed in bliss, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "more-corn.png", "usedBy": ["book:4"], "mjPrompt": "a gentle brown horse looking up eagerly wanting more, a second ear of corn on a shelf just out of reach, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "fork.png", "usedBy": ["book:5", "cards", "bingo", "matching"], "mjPrompt": "a big wooden pitchfork leaning upright, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "corn-fork.png", "usedBy": ["book:6"], "mjPrompt": "an ear of corn balanced on the tines of a pitchfork lifted upward, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "horse-more-corn.png", "usedBy": ["book:7"], "mjPrompt": "a gentle brown horse being served a whole armful of corn, delighted, tail swishing, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "corn-store.png", "usedBy": ["book:8"], "mjPrompt": "a little farm store with sacks and shelves full of corn, a golden star glowing in the window, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-corn.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato sitting pleased with itself in a horse's feed bucket where the corn should be, dramatic spotlight on the potato, a gentle brown horse giving it a long doubtful stare, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "horn.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a shiny brass horn, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "more.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a heaping second helping of food on a plate, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "store.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a small charming shop storefront with an awning, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "storm.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a dark storm cloud with a lightning bolt, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "thorn.png", "usedBy": ["cards"], "mjPrompt": "a single sharp thorn on a stem, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "corn-coloring.png", "usedBy": ["coloring"], "mjPrompt": "an ear of corn with a peeled husk, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "fork-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a big pitchfork with three tines, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "horse-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a friendly horse eating an ear of corn, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "THE SECOND R-CONTROLLED VOWEL. o plus r says /or/: or in the middle (corn, fork, horn, storm), ore at the end (more, store, core, snore). Same bossy R, new vowel. Celebrate 'for' — decodable at last (f + or), a word wanted since Level 1. Keep to one bossy-r sound: ar last week, or this week; er/ir/ur wait for next week's big two-syllable gate. Hang right-branch leaf #6.",
+  "lessonMapEquivalents": [72]
+}

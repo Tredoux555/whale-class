@@ -1,0 +1,80 @@
+{
+  "week": 32,
+  "level": 2,
+  "sound": "wh",
+  "letterDisplay": "wh",
+  "soundType": "digraph",
+  "patternDisplay": "wh",
+  "anchorWord": "when",
+  "newWords": ["whip", "when", "whiz", "which"],
+  "reviewBank": ["king", "sing", "ring", "long", "bell", "this", "that", "with", "then", "chick", "moth", "ship", "fish", "sock", "duck", "cat", "dog", "sun"],
+  "glue": { "new": ["what", "where", "why"], "known": ["the", "is", "I", "on", "says"] },
+  "oralWords": ["wheel", "whale"],
+  "sentenceFrame": "Which is it?",
+  "soundBasket": ["when", "which", "whip", "whiz", "whisk", "whale", "wheel", "white"],
+  "cast": { "introduces": null, "present": ["Sheep", "Chick"] },
+  "celebration": "Leaf #6 — the wh leaf COMPLETES the digraph branch (sh · ch · th · ck/FLSZ · ng · wh). 🎉 QUESTION WEEK: the five question words go up together — when and which fully decodable, and what, where and why arrive as the class's first heart words since Level 1 (why is promised to earn its own letters at Week 55).",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Wh-Wh-When?",
+      "lyrics": "[Intro]\nWh! Wh! Wh-wh-wh!\n(wh… wh… wh…)\n\n[Hook]\nWh! Wh! Wh-wh-wh!\nIt asks a question!\nWh-wh-when? Wh-wh-when?\nWHEN is it? (when? when?)\n\n[Verse 2]\nWh! Wh! Wh-wh-wh!\nRound your lips and blow!\nWh-wh-which? Wh-wh-which?\nWHICH is it? (which? which?)\n\n[Verse 3]\nWh! Wh! Wh-wh-wh!\nWhat? Where? Why?\nThe wh words ask and ask!\nWhat? (what!) Where? (where!) Why? (why!)\n\n[Verse 4]\nWh! Wh! Wh-wh-wh!\nWhip and whiz — so quick!\nWh-wh-whiz! Wh-wh-whip!\nWhiz! (zoom!) Whip! (snap!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not WH!\n(wh… wh… wh…)\n\n[Outro]\nWhen? Which? What? Where? Why?\nThe wh words ask! (ask! ask!)\nWh! Wh! Wh-wh-wh!\n(who… knows…)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "wh makes the /w/ sound in most accents — round the lips and blow a little air — never the letter names 'double-u aitch'. This is the QUESTION week: 'when' and 'which' are fully decodable, and 'what', 'where', 'why' enter as HEART words taken on faith ('why' earns its letters far ahead at Week 55). Verse 3 chants the three heart words as a rising question drum-roll. Sing every wh word as a question that lifts at the end. Never sing letter names."
+    },
+    {
+      "role": "word",
+      "title": "Which Is It?",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nWhich is it? Which is it?\nWhat is it? Where is it?\nWhich is it? (look! look!)\nWhich is it?\n\n[Verse 2]\nWhen can Chick get it?\nWhiz! It went so quick!\nWhich is it? (which? which?)\nWhen? (now! now!)\n\n[Verse 3]\nWhat is it? Where is it?\nWhy is it so quick?\nWhich is it? (which? which?)\nWhen? (now! now!)\n\n[Outro]\nWhich… when… what… where… why…\nA potato?! (POTATO!)\nTHAT is it! (that! that!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'Which is it?' — a guessing game in song form. Verses fire every question word (which/when + heart words what/where/why). Keep the phrasing as real questions rising at the end. The reveal in the outro is the potato — the class shouts it, then lands 'THAT is it!' as the answer."
+    }
+  ],
+  "book": {
+    "title": "Which Is It?",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "Whiz!", "image": "whiz-blur", "artNote": "A bright streak of motion-blur shoots across the dark spotlight — something has zipped past too fast to see. A single 'whiz' line trailing sparks. Mystery established." },
+      { "n": 2, "text": "What is it?", "image": "chick-what", "artNote": "Chick spinning around wide-eyed, wings up, question marks popping over her head. She missed it too." },
+      { "n": 3, "text": "Which is it?", "image": "sheep-which", "artNote": "Sheep squinting thoughtfully at three fuzzy shapes in the shadows, one hoof raised. The guessing game begins." },
+      { "n": 4, "text": "Is it a whip?", "image": "guess-whip", "artNote": "A coiled whip revealed in a pool of light — one candidate. Chick leans in to inspect. 'No?'" },
+      { "n": 5, "text": "Is it a ship?", "image": "guess-ship", "artNote": "The little wooden ship from Week 27 sails into a beam of light — another candidate. Sheep shakes its head. 'No?'" },
+      { "n": 6, "text": "Is it a fish?", "image": "guess-fish", "artNote": "The bright orange fish flips into the light — a third candidate. Chick tilts her head. 'Hmm, no?'" },
+      { "n": 7, "text": "Where is it?", "image": "where-look", "artNote": "Chick and Sheep back to back scanning every corner of the dark stage, tiny flashlight beams crossing. The thing is nowhere to be found." },
+      { "n": 8, "text": "Whiz! Whiz! Whiz!", "image": "whiz-again", "artNote": "Three streaks of blur crisscross the spread at once — the mystery thing zooming in circles around the pair, who spin trying to track it. Peak chaos." },
+      { "n": 9, "text": "What is it?!", "image": "potato-reveal", "artNote": "The whizzing finally stops: a single potato has skidded to a halt centre-stage, tiny skid marks behind it, looking innocent. Chick and Sheep gawk. No noun printed — the class SHOUTS it." }
+    ],
+    "backCoverWords": ["whip", "when", "whiz", "which", "what", "where", "why", "ship", "is", "it"]
+  },
+  "materials": {
+    "threePartCards": ["when", "which", "whip", "whiz", "whisk", "whale", "wheel", "white"],
+    "sentences": ["Which is it?", "What is it?", "Is it a whip?", "Where is it?"],
+    "matching": ["when", "which", "whip", "whiz", "whisk", "whale"],
+    "bingoPool": ["when", "which", "whip", "whiz", "whisk", "whale", "wheel", "ship", "fish", "king", "chick", "duck", "sock", "potato"],
+    "tracing": { "letter": "wh", "words": ["whip", "when"] },
+    "coloring": ["whip", "whale", "wheel"],
+    "dictionary": ["whip", "when", "whiz", "which"],
+    "extras": ["PATTERN TREE: leaf #6 — the wh leaf COMPLETES the digraph branch. The class reads whip/when/whiz/which aloud and the first branch is full.", "QUESTION-WORD CEREMONY: the five question words go up on a special board — when and which on green 'decodable' cards, what/where/why on gold 'heart' cards (taken on faith). Tell the class why (the word!) will earn its own letters at Week 55 — a promise, like Snake's name-day.", "wh makes /w/: round the lips and blow a whisper of air. Contrast with plain w (wet/whet, wig/whig oral) — same sound, and that's fine; the spelling is the new thing.", "QUESTION GAME: hold up an object behind your back — the class asks 'What is it? Which is it? Where is it?' using the new words. Moveable alphabet: build wh onto whip, when, whiz."]
+  },
+  "assets": [
+    { "file": "whiz-blur.png", "usedBy": ["book:1"], "mjPrompt": "a bright horizontal streak of motion blur shooting across a dark stage trailing tiny sparks, something zipping past too fast to see, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "chick-what.png", "usedBy": ["book:2"], "mjPrompt": "a tiny fluffy yellow chick with a stubby orange beak spinning around wide-eyed with wings up and question marks popping over her head, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sheep-which.png", "usedBy": ["book:3"], "mjPrompt": "a fluffy round white sheep with kind dark eyes squinting thoughtfully at three fuzzy shapes in the shadows with one hoof raised, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "guess-whip.png", "usedBy": ["book:4"], "mjPrompt": "a coiled leather whip revealed in a pool of light with a tiny yellow chick leaning in to inspect it, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "guess-ship.png", "usedBy": ["book:5"], "mjPrompt": "a small wooden sailing ship in a beam of light with a fluffy white sheep shaking its head beside it, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "guess-fish.png", "usedBy": ["book:6"], "mjPrompt": "a bright orange fish flipping into a beam of light with a tiny yellow chick tilting its head at it, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "where-look.png", "usedBy": ["book:7"], "mjPrompt": "a tiny yellow chick and a fluffy white sheep standing back to back scanning a dark stage with tiny crossing flashlight beams, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "whiz-again.png", "usedBy": ["book:8"], "mjPrompt": "three crisscrossing streaks of motion blur circling a tiny yellow chick and a fluffy white sheep who spin trying to track them, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-reveal.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato skidded to a halt centre-stage with tiny skid marks behind it looking innocent, a yellow chick and a white sheep gawking at it, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "whip.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a coiled leather whip, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "whisk.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a metal kitchen whisk, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "whale.png", "usedBy": ["cards", "bingo", "basket"], "mjPrompt": "a gentle blue whale mid-breach, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "wheel.png", "usedBy": ["cards", "bingo", "basket"], "mjPrompt": "a single wooden cart wheel, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "whip-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a coiled whip with a looping handle, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "whale-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a smiling whale spouting water, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "wheel-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a spoked cart wheel, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "THE QUESTION WEEK, and the last of the digraphs. wh makes /w/ — round the lips and blow a whisper of air (in most accents it is identical to plain w, which is fine; the spelling is the new thing). Two of the wh question words are decodable (when, which); three are HEART words the class takes on faith (what, where, why) — put them up on gold cards and promise the children that 'why' will earn its own letters at Week 55, exactly like Snake's name-day. Play the question game all week: hide an object and let the class interrogate it — 'What is it? Which is it? Where is it?' Hang leaf #6 and step back: the whole first branch of the Pattern Tree is now full.",
+  "lessonMapEquivalents": [45]
+}

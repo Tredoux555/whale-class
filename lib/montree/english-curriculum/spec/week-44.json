@@ -1,0 +1,83 @@
+{
+  "week": 44,
+  "level": 3,
+  "sound": "ee",
+  "letterDisplay": "ee ea",
+  "soundType": "vowel-team",
+  "patternDisplay": "ee / ea",
+  "anchorWord": "tree",
+  "newWords": ["see", "tree", "eat", "sea"],
+  "reviewBank": ["rain", "train", "tail", "day", "play", "ice", "bridge", "cube", "home", "bike", "cake", "snake", "ship", "fish", "that", "king", "sing", "hand"],
+  "glue": { "new": [], "known": ["the", "is", "I", "on", "says", "what", "where", "why"] },
+  "oralWords": ["read", "queen"],
+  "sentenceFrame": "Sheep can see the bee.",
+  "soundBasket": ["bee", "tree", "see", "feet", "sea", "leaf", "read", "beach"],
+  "cast": { "introduces": "Bee", "present": ["Sheep", "Bee", "Snake"] },
+  "celebration": "🎉🎉 SHEEP'S NAME-DAY — held as a promise since Week 27, the class can spell S-H-E-E-P at last (sh + ee + p). Bee debuts, decodable at its very first appearance (b + ee). ee/ea is the biggest single harvest of the whole program (+75). And the ship/sheep pair is now sayable — the seed of the Week-50 EAL review.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Ee-Ee-Tree!",
+      "lyrics": "[Intro]\n(ee… ee… ee…)\nEe! Ee! Tree!\n\n[Hook]\nDouble E — see! (I can see!)\nE-A — sea! (down by the sea!)\nEe-ee-tree! Ee-ee-tree!\nTwo letters, one sound! (ee!)\n\n[Verse 2]\nS-E-E — see! (see the bee!)\nT-R-E-E — tree! (up the tree!)\nEe-ee-tree! Ee-ee-tree!\nThe E says its name! (ee!)\n\n[Verse 3]\nS-H-E-E-P — Sheep! (that's the name!)\nB-E-E — Bee! (hello, Bee!)\nEe-ee-tree! Ee-ee-tree!\nSheep can READ! (Sheep can read!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! No ee!\n(ee… ee… ee…)\n\n[Outro]\nSee… tree… read… (shhh…)\nEe! Ee! Tree!",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "ee and ea both sing long-e /iː/ (phonetic respelling: sung 'ee', printed ee/ea). Verse 3 is the NAME-DAY: spell S-H-E-E-P out loud as the emotional peak — this is the payoff of a promise made in Week 27 — and welcome Bee (B-E-E). 'Sheep can READ' is the triumph line. Spell-outs uppercase. Potato has no ee. Build verse 3 to a big warm choir hook."
+    },
+    {
+      "role": "word",
+      "title": "Sheep Can Read!",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nSheep can read! Sheep can read!\nS-H-E-E-P — Sheep!\nSheep can read! Sheep can read!\n(That's the name! That's the name!)\n\n[Verse 2]\nThe bee is in the tree!\nSheep can see the bee!\nSheep can read! Sheep can read!\nThe bee can read too — wait… (a bee can read?!)\n\n[Verse 3]\nEat at the tree! (yum! yum!)\nSee the sea! (the deep blue sea!)\nSheep can read! Sheep can read!\nSheep and Bee can read!\n\n[Outro]\nThe tree… the bee… (shhh…)\nAt the sea?! (a potato!)\n(POTATO!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'Sheep can read!' — the whole song is a name-day celebration. The hook spells S-H-E-E-P (uppercase letter names). Bee debuts. Warm, proud, joyful — the biggest hearted moment since Snake's name-day at Week 38. Whisper the outro; potato hits loud at the sea."
+    }
+  ],
+  "book": {
+    "title": "Sheep Can Read!",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "A tree.", "image": "tree", "artNote": "A great friendly tree alone in the spotlight, leaves catching the light. A gathering place." },
+      { "n": 2, "text": "A bee!", "image": "bee", "artNote": "CAST DEBUT: Bee — a plump little honeybee with soft fuzzy gold-and-black stripes and round shiny wings — hovering in the spotlight, decodable at its very first appearance (b + ee)." },
+      { "n": 3, "text": "The bee is in the tree.", "image": "bee-tree", "artNote": "Bee tucked into a blossom high in the friendly tree, wings a blur." },
+      { "n": 4, "text": "Sheep can see the bee.", "image": "sheep-sees-bee", "artNote": "Sheep — fluffy round white sheep with kind dark eyes — gazing up at Bee in the tree, hoof shading its eyes." },
+      { "n": 5, "text": "S-H-E-E-P — Sheep!", "image": "sheep-nameday", "artNote": "THE NAME-DAY MOMENT. Sheep stands beside a big banner spelling S-H-E-E-P in gold letters, reading its OWN name for the first time in 44 weeks. The class reads it aloud. A friend since Week 27, spellable at last." },
+      { "n": 6, "text": "Sheep can read!", "image": "sheep-reading", "artNote": "Sheep sitting with an open book, hoof on the page, eyes wide with wonder — the payoff. Bee peeks over its shoulder." },
+      { "n": 7, "text": "The bee can read!", "image": "bee-reading", "artNote": "Bee perched on the corner of the page, reading along, tiny reading glasses on its nose. Comic delight." },
+      { "n": 8, "text": "Eat, Sheep! Eat, Bee!", "image": "sheep-bee-eat", "artNote": "Sheep and Bee sharing a picnic under the tree — a slice of green-apple, a drop of honey. Friendship." },
+      { "n": 9, "text": "At the sea?!", "image": "potato-sea", "artNote": "The scene opens to the shore: a single potato sits on the sand reading a book by the deep blue sea, tiny sunglasses on. No noun printed — the class SHOUTS it. Sheep and Bee stare from the dunes." }
+    ],
+    "backCoverWords": ["see", "tree", "eat", "sea", "bee", "read", "Sheep", "the", "is", "can"]
+  },
+  "materials": {
+    "threePartCards": ["bee", "tree", "feet", "leaf", "sea", "read", "beach", "queen"],
+    "sentences": ["The bee is in the tree.", "Sheep can see the bee.", "Sheep can read!", "Sheep and Bee eat at the sea."],
+    "matching": ["bee", "tree", "feet", "leaf", "sea", "read"],
+    "bingoPool": ["bee", "tree", "feet", "leaf", "sea", "read", "beach", "queen", "rain", "train", "cake", "snake", "potato"],
+    "tracing": { "letter": "ee/ea", "words": ["tree", "read"] },
+    "coloring": ["tree", "bee", "sheep"],
+    "dictionary": ["see", "tree", "eat", "sea"],
+    "extras": ["THE NAME-DAY CEREMONY: this is the promise the class was made in Week 27 come true. Spell S-H-E-E-P together, out loud, and hang Sheep's name beside the ee/ea leaf on the Pattern Tree — the class can spell a friend who has been with them for 17 weeks. Make it as big as Snake's name-day.", "TWO SPELLINGS, ONE SOUND: ee (see, tree, feet — the reliable one) and ea (sea, eat, read — has exceptions, but says /iː/ here). Sort picture cards into two baskets.", "WELCOME BEE — decodable at debut (b + ee). Bee joins the cast on the very week its name becomes spellable.", "EAL — THE BIG PAIR: sheep vs ship, feet vs fit, seat vs sit. Long-e /iː/ (tense) vs short-i /ɪ/ (lax) — Mandarin-L1 children merge these. Drill the pairs now; they return as the STARS of the Week-50 review (Ship or Sheep?).", "Moveable alphabet: build s-ee, t-r-ee, s-ea, r-ea-d, and finally s-h-ee-p."]
+  },
+  "assets": [
+    { "file": "tree.png", "usedBy": ["book:1", "cards", "bingo", "matching"], "mjPrompt": "a great friendly leafy tree with a broad canopy, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bee.png", "usedBy": ["book:2", "cards", "bingo", "matching"], "mjPrompt": "a plump little honeybee with soft fuzzy gold-and-black stripes and round shiny wings hovering, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bee-tree.png", "usedBy": ["book:3"], "mjPrompt": "a plump little honeybee with fuzzy gold-and-black stripes tucked into a blossom high in a leafy tree, wings a blur, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sheep-sees-bee.png", "usedBy": ["book:4"], "mjPrompt": "a fluffy round white sheep with kind dark eyes gazing up at a honeybee in a tree, a hoof shading its eyes, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sheep-nameday.png", "usedBy": ["book:5"], "mjPrompt": "a fluffy round white sheep with kind dark eyes standing proudly beside a large golden banner spelling S H E E P in capital letters, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sheep-reading.png", "usedBy": ["book:6"], "mjPrompt": "a fluffy round white sheep with kind dark eyes sitting with an open book, a hoof on the page, eyes wide with wonder, a honeybee peeking over its shoulder, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bee-reading.png", "usedBy": ["book:7"], "mjPrompt": "a plump little honeybee with fuzzy gold-and-black stripes perched on the corner of an open book wearing tiny reading glasses, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sheep-bee-eat.png", "usedBy": ["book:8"], "mjPrompt": "a fluffy white sheep and a honeybee sharing a little picnic under a tree, a slice of green apple and a drop of honey, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-sea.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato sitting on the sand reading a book by the deep blue sea, tiny sunglasses on, dramatic spotlight on the potato, a fluffy white sheep and a honeybee staring from the dunes, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "feet.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a pair of bare child's feet, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "leaf.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a single green leaf with clear veins, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "sea.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a calm blue sea meeting the horizon, gentle waves, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "read.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "an open storybook lying flat, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "beach.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a sandy beach with a bucket and spade, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "queen.png", "usedBy": ["cards", "bingo"], "mjPrompt": "a small golden crown for a queen, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "see.png", "usedBy": ["cards"], "mjPrompt": "a small pair of binoculars, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "tree-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a big friendly tree with round leaves and a bee flying near it, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "bee-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a happy chubby bee with stripes and round wings, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "sheep-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a fluffy sheep holding an open book, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "THE NAME-DAY WEEK — and the biggest word-harvest of the whole program (+75). ee and ea both say long-e /iː/: ee is reliable (see, tree, feet), ea says /iː/ here (sea, eat, read) though it has exceptions later. THE CEREMONY: Sheep has been a friend since Week 27; today the class spells S-H-E-E-P for the first time — make it every bit as big as Snake's name-day, it was a promise. Welcome Bee (decodable at debut). EAL PRIORITY: sheep/ship, feet/fit, seat/sit — the tense /iː/ vs lax /ɪ/ pair Mandarin-L1 children merge. Drill it now; it stars in the Week-50 review (Ship or Sheep?).",
+  "lessonMapEquivalents": [86, 87]
+}

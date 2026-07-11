@@ -13,7 +13,18 @@
  * - Every image referenced anywhere MUST appear in assets[].
  */
 
-export type SoundType = 'vowel' | 'consonant' | 'digraph';
+export type SoundType =
+  | 'vowel'
+  | 'consonant'
+  | 'digraph'
+  // Level 2/3 pattern kinds (engine generalization, Jul 12 2026):
+  | 'blend'
+  | 'vowel-team'
+  | 'magic-e'
+  | 'r-controlled'
+  | 'diphthong'
+  | 'morphology'
+  | 'silent-letters';
 
 export interface SongSpec {
   /** 'sound' = stutter-pattern sound isolation; 'word' = sentence-frame song */
@@ -67,8 +78,18 @@ export interface MaterialsSpec {
   matching: string[];
   /** Bingo word pool (≥9; boards sample from it). */
   bingoPool: string[];
-  /** Tracing worksheet: the letter + words to trace. */
-  tracing: { letter: string; words: string[] };
+  /**
+   * Tracing worksheet: the letter/pattern + words to trace.
+   *
+   * `mode` selects the tracing surface:
+   *   - 'letters'  (default, Level 1) — per-glyph stroke-arrow worksheet. Absent
+   *                field = 'letters' = byte-identical Level 1 behaviour.
+   *   - 'pattern'  (Level 2/3) — colour-coded Montessori pattern card. `letter`
+   *                holds the pattern string (may contain '_' as the frame-slot
+   *                marker, e.g. "a_e"); pattern letters print RED, frame letters
+   *                BLACK, silent letters (a_e's e, kn's k, wr's w, mb's b) GREY.
+   */
+  tracing: { letter: string; words: string[]; mode?: 'letters' | 'pattern' };
   /** Coloring page words (each needs a *-coloring.png asset). */
   coloring: string[];
   /** Dictionary journal words (color + trace + write). */
@@ -78,11 +99,18 @@ export interface MaterialsSpec {
 }
 
 export interface WeekSpec {
-  week: number;            // 1..26
-  level: 1;
-  sound: string;           // "a", "t", "qu"
+  week: number;            // 1..58 (Level 1 = 1..26, Level 2 = 27..42, Level 3 = 43..58)
+  level: 1 | 2 | 3;
+  sound: string;           // "a", "t", "qu", "sh", "a_e", "tion"
   letterDisplay: string;   // "Aa", "Qu qu"
   soundType: SoundType;
+  /**
+   * Human display form of the pattern where `sound` alone is ambiguous — used by
+   * the book cover kicker and the Pattern Wall. Set it when `sound` contains an
+   * underscore ("a_e") or is a multi-char pattern; omit for plain letters/digraphs
+   * ("sh"). Level 1 weeks never need it.
+   */
+  patternDisplay?: string;
   /** The story word of the week (drives the book + word song). */
   anchorWord: string;
   /** The ~4 new core vocabulary words introduced this week. */

@@ -1,0 +1,80 @@
+{
+  "week": 35,
+  "level": 2,
+  "sound": "r-blends",
+  "letterDisplay": "r-blends",
+  "soundType": "blend",
+  "patternDisplay": "br cr dr fr gr pr tr",
+  "anchorWord": "frog",
+  "newWords": ["frog", "crab", "drum", "grin"],
+  "reviewBank": ["flag", "clap", "plum", "sled", "stop", "spin", "when", "king", "bell", "this", "that", "chick", "snake", "moth", "ship", "fish", "duck", "cat"],
+  "glue": { "new": [], "known": ["the", "is", "I", "on", "says", "what", "where", "why"] },
+  "oralWords": ["dragon", "tree"],
+  "sentenceFrame": "Frog can grin.",
+  "soundBasket": ["frog", "crab", "drum", "grin", "brick", "truck", "grass", "dress"],
+  "cast": { "introduces": null, "present": ["Sheep", "Chick", "Snake"] },
+  "celebration": "Leaf #9 — r-blends. Consonant plus /r/ run together (br · cr · dr · fr · gr · pr · tr). The high-frequency word 'from' unlocks this week.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Fr-Fr-Frog!",
+      "lyrics": "[Intro]\nFr! Fr! Fr-fr-fr!\n(fr… fr… fr…)\n\n[Hook]\nFr! Fr! Two sounds, TOGETHER!\n/f/ and /r/ — fr! fr!\nFr-fr-frog! Fr-fr-frog!\nFROG! (hop!) FROG!\n\n[Verse 2]\nCr! Cr! /c/ and /r/!\nBlend them quick — cr! cr!\nCr-cr-crab! Cr-cr-crab!\nCRAB! (snip!) CRAB!\n\n[Verse 3]\nDr! Dr! /d/ and /r/!\nBlend them quick — dr! dr!\nDr-dr-drum! Dr-dr-drum!\nDRUM! (bang!) DRUM!\n\n[Verse 4]\nGr! Gr! /g/ and /r/!\nBlend them quick — gr! gr!\nGr-gr-grin! Gr-gr-grin!\nGRIN! (big grin!) GRIN!\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! No blend!\n(fr… fr… fr…)\n\n[Outro]\nFr-fr-frog! Cr-cr-crab!\nDr-dr-drum! Gr-gr-grin!\nTwo sounds together! (blend! blend!)\nFr! Fr! Fr-fr-fr!",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "r-blends — a consonant plus /r/ run together (br, cr, dr, fr, gr, pr, tr), no vowel between ('fuh-rog' is the error). Good news for the EAL room: initial /r/ is NOT hard for Mandarin-L1 children (unlike final -l later), so these move at a normal pace. The /r/ is a soft growl with the tongue pulled back, not a tap. Never sing letter names."
+    },
+    {
+      "role": "word",
+      "title": "Frog Can Grin",
+      "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nFrog can grin!\nFrog can grin!\nA big, big grin! (grin! grin!)\nFrog can grin!\n\n[Verse 2]\nFrog can bang the drum!\nCrab can snap and grin!\nGrin and grab and grin! (grin! grin!)\nFrog can grin!\n\n[Verse 3]\nSnake can grin at Frog!\nChick can grin and clap!\nGrin, Frog, grin! (grin! grin!)\nFrog can grin!\n\n[Outro]\nFrog… the grin… (hush…)\nA potato?! (POTATO!)\nFrog can grin at a potato! (grin, Frog, grin!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "Frame: 'Frog can grin.' Every core word — frog, crab, drum, grin — appears, plus 'grab'. Verse 3 brings Snake and Chick into the grinning. Whisper the outro, potato hits loud, and even it gets a grin."
+    }
+  ],
+  "book": {
+    "title": "Frog Can Grin",
+    "readAloud": false,
+    "spreads": [
+      { "n": 1, "text": "A frog.", "image": "frog", "artNote": "A plump green frog sitting in the spotlight, glossy-eyed, mouth a neutral line — waiting. A pond-lily under one foot." },
+      { "n": 2, "text": "Frog can grin!", "image": "frog-grin", "artNote": "The frog breaks into an enormous grin, mouth stretching wide across the whole face. Instant charm." },
+      { "n": 3, "text": "A big, big grin.", "image": "frog-big-grin", "artNote": "Extreme close-up of the grin — so wide it curls past the edges of the frog's face, every tooth showing, eyes crinkled. Pure comedy of scale." },
+      { "n": 4, "text": "Frog can bang the drum.", "image": "frog-drum", "artNote": "The frog straddling a little drum, both webbed hands mid-bang, drumsticks blurred, still grinning. Beat-burst lines around the drum." },
+      { "n": 5, "text": "A crab! Snip, snip!", "image": "crab", "artNote": "A round red crab scuttles in sideways, claws going snip-snip, a curious tilt to its eyestalks. New friend arrives." },
+      { "n": 6, "text": "Crab can grin from the grass.", "image": "crab-grass", "artNote": "The crab peeking out from a tuft of grass, wearing a grin of its own to match the frog's. Two grinners now." },
+      { "n": 7, "text": "Snake can grin at Frog.", "image": "snake-grin-frog", "artNote": "Snake — emerald-green with large gentle amber eyes — nose to nose with the frog, both grinning enormously at each other. Grin contagion." },
+      { "n": 8, "text": "Grin, Frog, grin!", "image": "cast-grinning", "artNote": "The whole gang — Frog, Crab, Snake, Chick, Sheep — lined up in a row, every single one grinning ear to ear, the drum in front. A wall of joy." },
+      { "n": 9, "text": "In the grass?!", "image": "potato-grass", "artNote": "A single potato sits in the tuft of grass wearing a drawn-on grin exactly like the frog's, out-grinning them all. The cast stares, grins frozen. No noun printed — the class SHOUTS it." }
+    ],
+    "backCoverWords": ["frog", "crab", "drum", "grin", "from", "grass", "trip", "drop", "the", "can"]
+  },
+  "materials": {
+    "threePartCards": ["frog", "crab", "drum", "grin", "brick", "truck", "grass", "dress"],
+    "sentences": ["Frog can grin.", "Frog can bang the drum.", "Crab can grin from the grass.", "Snake can grin at Frog."],
+    "matching": ["frog", "crab", "drum", "grin", "brick", "truck"],
+    "bingoPool": ["frog", "crab", "drum", "grin", "brick", "truck", "grass", "dress", "snake", "flag", "king", "bell", "chick", "potato"],
+    "tracing": { "letter": "fr", "words": ["frog", "from"] },
+    "coloring": ["frog", "crab", "drum"],
+    "dictionary": ["frog", "crab", "drum", "grin"],
+    "extras": ["PATTERN TREE: leaf #9 — r-blends. Read frog/crab/drum/grin aloud and hang it.", "NO-SCHWA MODELING: br/cr/dr/fr/gr/pr/tr are single quick moves. The /r/ is a soft back-of-mouth growl, not a tap.", "EAL note: initial /r/ is easy for Mandarin-L1 children — move at full speed here; save the extra time for the hard final blends coming in Weeks 36–37.", "'FROM' unlocks — a small, hugely common word, now fully decodable (f-r-o-m). Add it to the pocket-chart sentence bank. Moveable alphabet: build the r-blend as a pair first (fr, cr, dr, gr) then finish the word."]
+  },
+  "assets": [
+    { "file": "frog.png", "usedBy": ["book:1", "cards", "bingo", "matching"], "mjPrompt": "a plump glossy green frog sitting with a neutral mouth and a lily pad under one foot, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "frog-grin.png", "usedBy": ["book:2"], "mjPrompt": "a plump green frog breaking into an enormous grin stretching wide across its whole face, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "frog-big-grin.png", "usedBy": ["book:3"], "mjPrompt": "extreme close-up of a green frog's grin so wide it curls past the edges of its face with every tooth showing and eyes crinkled, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "frog-drum.png", "usedBy": ["book:4"], "mjPrompt": "a green frog straddling a little drum with both webbed hands mid-bang and drumsticks blurred, still grinning, beat-burst lines around the drum, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "crab.png", "usedBy": ["book:5", "cards", "bingo", "matching"], "mjPrompt": "a round red crab scuttling sideways with claws mid-snip and curious tilted eyestalks, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "crab-grass.png", "usedBy": ["book:6"], "mjPrompt": "a round red crab peeking out from a tuft of grass wearing a wide grin, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "snake-grin-frog.png", "usedBy": ["book:7"], "mjPrompt": "an emerald-green garden snake with large gentle amber eyes nose to nose with a green frog, both grinning enormously at each other, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "cast-grinning.png", "usedBy": ["book:8"], "mjPrompt": "a green frog, a red crab, an emerald-green snake, a yellow chick and a white sheep lined up in a row all grinning ear to ear with a drum in front, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-grass.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato in a tuft of grass wearing a drawn-on grin out-grinning everyone, a frog crab snake chick and sheep staring with frozen grins, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "drum.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a small round drum with two crossed drumsticks, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "brick.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a single red clay brick, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "truck.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a small toy dump truck, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "grin.png", "usedBy": ["cards", "matching"], "mjPrompt": "a big cheerful toothy grin, a smiling mouth close-up, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "frog-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a happy grinning frog on a lily pad, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "crab-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a cheerful crab with big claws and a grin, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "drum-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a round drum with drumsticks and beat lines, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "Third blend week — r-blends (br, cr, dr, fr, gr, pr, tr). No schwa: 'fr' is one quick move. The /r/ is a soft growl with the tongue pulled back. This is the easy blend for your EAL room — initial /r/ is not a Mandarin-L1 problem, so run these at full speed and bank the saved energy for the genuinely hard final blends in Weeks 36 and 37. Celebrate 'from' unlocking — a tiny word the class meets everywhere, now fully theirs. Hang leaf #9; the blend branch is nearly full.",
+  "lessonMapEquivalents": [51]
+}
