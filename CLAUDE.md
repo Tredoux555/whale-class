@@ -27,6 +27,14 @@
 - **⏳ NEXT: PHASE D PRODUCTION IS UNBLOCKED** (~640 MJ + 128 Suno for W27–58, runbook =
   OVERNIGHT_RUN_JUL11.md) + decide founding-partner outreach to the top of the underprivileged ranking
   (father-story template, Jul-7 track) + apply enrichment flips + L1 morning-review items + Phase E wiring.
+- **🎬 PHASE D LAUNCHED same day (afternoon) — canonical live status: `docs/curriculum/PHASE_D_RUN_JUL12.md`
+  (self-maintaining status board + CURRENT STATE + resume prompt — READ IT FIRST to resume).** At the
+  Jul-12 ~17:00 context refresh: **images W27–33 done + packs; Suno W27–44 done (72 files)**; W34–58
+  images + W45–58 songs remain. Two browsers (MJ + Suno rails, parallel Sonnet agents). Hard-won MJ
+  automation fixes (React-textarea native-setter, img.src verification, search-first) are captured in
+  that doc's IMAGE CHUNK PROGRESS entries — every future MJ agent must use them. 🚨 Lesson: user
+  interrupts kill in-flight agent launches — ground-check file counts before assuming a rail is alive;
+  respawn per chunk; the rails must never idle.
 
 ---
 
