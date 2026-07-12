@@ -18,8 +18,8 @@ from this doc. Disk was cleared to 20 GiB free before start; backup on Extreme S
 ## STATUS BOARD (update as chunks land) — re-chunked Jul 12 evening to match actual runs
 - [x] Images W27–33 (M1 + extension)
 - [x] Images W34–38 (M2 — Jul 12 evening: 71 imgs, 5 packs, all gap-clean)
-- [ ] Images W39–43 (M3 — W41 ✅ 17 imgs+pack · W43 ✅ 18 imgs+pack · W42 in-flight 11+ imgs · **W39 + W40 NOT started**)
-- [ ] Images W44–48 (M4)
+- [x] Images W39–43 (M3 — complete Jul 12 night/Jul 13 early: W41+W43 by the orphaned agent, W42-finish + W39 + W40 by the M3-finisher)
+- [x] Images W44–48 (M4 — complete Jul 13 ~03:00, Bee + Star canonicals established)
 - [ ] Images W49–53 (M5)
 - [ ] Images W54–58 (M6)
 - [x] Suno W27–37 (chunk S1 — 22 songs, 44 files)
@@ -137,12 +137,34 @@ from this doc. Disk was cleared to 20 GiB free before start; backup on Extreme S
   substitute an established cast character instead of iterating. (4) Coloring-page quadrants can
   carry faint gray shading despite the prompt — compare ALL 4 for flattest pure white, not the first
   acceptable one.
-- [ ] **W39–43 (chunk M3, Jul 12 night — IN FLIGHT).** Launch turn was interrupted but the agent
-  SPAWNED ANYWAY and kept working orphaned (its report may never arrive — monitor by folder counts,
-  the sessions-management lesson again). Worked out of order: **W41 ✅ 17 imgs + pack rendered
-  (21:22) · W43 ✅ 18 imgs + pack rendered (20:53) · W42 in-flight (11 imgs by 21:43, cast-crossing
-  bridge scenes landing) · W39 + W40 untouched (0 imgs).** Whoever resumes: ground-check `Week 39/40/
-  42/images/` counts first, finish W42 (gap-only → pack), then W39 → W40, then M4.
+- [x] **W39–43 (chunk M3, Jul 12 night — COMPLETE).** Launch turn was interrupted but the agent
+  SPAWNED ANYWAY and worked orphaned: W41 ✅ 17 imgs + pack · W43 ✅ 18 imgs + pack · W42 got 11 imgs
+  before it died ~21:43 — but it had SUBMITTED nearly everything remaining (all 7 W42 stragglers +
+  all of W39) before dying. The **M3-finisher agent** (fresh spawn, ~21:55–23:00) then harvested those
+  cooked jobs (search-first paid off massively — zero new submissions needed for W42+W39), and did W40
+  fresh. Results: **W42 18/18 + pack (bingo 43.9MB, book 26.8MB) · W39 14/14 + pack (bingo 56.8MB,
+  book 23.0MB) · W40 12/12 + pack (bingo 55.1MB, book 25.9MB).** W40 casting: 5 of 6 pre-cooked Dog
+  images had BREED DRIFT (heeler/mastiff/spaniel/retriever) — all 5 rerolled with the canonical
+  "scruffy brown-and-cream wire-haired terrier mix, fluffy eyebrows" baked into the prompt, matched
+  first try. **NEW CRITICAL DOWNLOAD GOTCHA: `a.click()` from injected JS on the midjourney.com app
+  page is SILENTLY blocked by Chrome (untrusted gesture) — no error, no file. FIX: navigate a tab
+  directly to the image's own cdn.midjourney.com URL and run the canvas-draw download THERE
+  (same-origin, works every time).** Also: Chrome automation can't open file:// URLs — to eyeball a
+  local reference image in-browser, spin up `python3 -m http.server` on the folder and kill it after.
+- [x] **W44–48 (chunk M4, Jul 12 ~23:05 → Jul 13 ~03:10 — COMPLETE, 70 imgs + 5 packs).**
+  W44 14/14 (Sheep name-day + BEE DEBUT, canonical Bee locked) · W45 14/14 · W46 17/17 · W47 12/12
+  (STAR DEBUT — canonical: "plump golden five-pointed plush star, sleepy smiling face with closed
+  crescent eyes, soft glowing fabric texture", established at star-dark.png and held) · W48 13/13
+  (2 rerolls: store.png — agent typo "toy shop" made MJ render literal TOY SHOP signage, resubmitted
+  with correct manifest wording; storm.png — "storm cloud" under the cinematic style suffix produced
+  MUSHROOM-CLOUD imagery in all 4 quadrants, fixed with "fluffy round grey rain cloud, children's
+  book illustration" phrasing). All 10 pack types per week, exit 0, healthy sizes (bingo 57-59MB,
+  book 23-25MB). NEW GOTCHAS: (1) MJ search-icon toggle often needs TWO clicks — screenshot-verify
+  state before typing; (2) re-read the JS-set prompt against the manifest line before submitting
+  (one stray word = hallucinated signage text); (3) dramatic-weather prompts + cinematic suffix can
+  misfire into disturbing imagery — fall back to icon/children's-book phrasing; (4) CDN job-ID
+  extraction via DOM proximity can grab a NEIGHBORING job's images — verify downloaded image content/
+  dimensions before moving the file.
 
 ## SUNO CHUNK PROGRESS (Sonnet Suno agent, Jul 12 resume after mid-W32 death)
 - [x] **W27–31** — inherited complete from prior agent/session (4 mp3s each, sorted).
