@@ -35,6 +35,16 @@
   that doc's IMAGE CHUNK PROGRESS entries — every future MJ agent must use them. 🚨 Lesson: user
   interrupts kill in-flight agent launches — ground-check file counts before assuming a rail is alive;
   respawn per chunk; the rails must never idle.
+- **🎬 PHASE D evening/night push (same day, ~21:50 state — canonical: PHASE_D_RUN_JUL12.md CURRENT
+  STATE):** **Images W27–38 + W41 + W43 done with packs; W42 in-flight via an ORPHANED agent** (user
+  interrupt did NOT kill it — sharpened lesson: check file mtimes before spawning onto a busy browser).
+  **Suno W27–46 done (80 files); W47–58 remain (24 songs, ~1,170 credits).** Images left: W39/W40 +
+  W44–58 (~240 jobs, 18 packs). 🚨 **Browser-binding saga**: closing Chrome windows leaves GHOST
+  extension deviceId connections (logged-out renders, timeouts, tabs reverting to newtab, network fine
+  the whole time) — after any browser restart, verify bindings by loading a real page and reading text
+  back; rebind via switch_browser Connect-click. New MJ gotchas (M2 entry): hallucinated watermarks →
+  corner-check full-res; species/material drift → explicit adjectives in the noun phrase; never iterate
+  isolated-human-anatomy prompts; compare all 4 coloring quadrants for gray shading.
 
 ---
 
