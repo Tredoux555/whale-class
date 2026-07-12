@@ -1,0 +1,33 @@
+TOTAL_UNIQUE_DOMAINS=2860 ALREADY_DEAD=9 TO_CHECK=2851
+PROGRESS 100/2851 newly_dead_so_far=0
+PROGRESS 200/2851 newly_dead_so_far=3
+PROGRESS 300/2851 newly_dead_so_far=4
+PROGRESS 400/2851 newly_dead_so_far=4
+PROGRESS 500/2851 newly_dead_so_far=4
+PROGRESS 600/2851 newly_dead_so_far=4
+PROGRESS 700/2851 newly_dead_so_far=8
+PROGRESS 800/2851 newly_dead_so_far=9
+PROGRESS 900/2851 newly_dead_so_far=10
+PROGRESS 1000/2851 newly_dead_so_far=13
+PROGRESS 1100/2851 newly_dead_so_far=15
+PROGRESS 1200/2851 newly_dead_so_far=19
+PROGRESS 1300/2851 newly_dead_so_far=20
+PROGRESS 1400/2851 newly_dead_so_far=22
+PROGRESS 1500/2851 newly_dead_so_far=23
+PROGRESS 1600/2851 newly_dead_so_far=25
+PROGRESS 1700/2851 newly_dead_so_far=26
+PROGRESS 1800/2851 newly_dead_so_far=27
+PROGRESS 1900/2851 newly_dead_so_far=31
+PROGRESS 2000/2851 newly_dead_so_far=33
+PROGRESS 2100/2851 newly_dead_so_far=34
+PROGRESS 2200/2851 newly_dead_so_far=35
+PROGRESS 2300/2851 newly_dead_so_far=37
+PROGRESS 2400/2851 newly_dead_so_far=38
+PROGRESS 2500/2851 newly_dead_so_far=39
+PROGRESS 2600/2851 newly_dead_so_far=39
+PROGRESS 2700/2851 newly_dead_so_far=42
+PROGRESS 2800/2851 newly_dead_so_far=43
+PROGRESS 2851/2851 newly_dead_so_far=44
+DONE total_checked=2860 newly_dead=44 revived=4
+NEWLY_DEAD_LIST: asquithmontessori.co.uk,barrenjoeymontessori.nsw.edu.au,beescirclemontessorischool.com,birchwood.k12.wi.us,ellingtonmontessori.com,elmclavington.com,emepalaiseau.fr,emma-gosier.fr,greystonesmontessori.ie,grundschule-poessneck.de,icmuzio.gov.it,istruzione.itq,jacarandamontesssori.co.za,keystonedaycare.com,kraniche-naturschule.de,lauwerseneems.nl,les-lettres-dorees.fr,lilchamps.cp.nz,lindfieldmontessori.nsw.edu.au,mchs-dallas.org,mischiefmakersmontessori.ie,misolmontessori.org,montessori-goerlitz.de,montessori-morocco.com,montessori-portorecanati.it,montessoricottage.com,montessorihouse.ac.ke,montessorischoolmurcia.com,montessoristeppingstone.com,montessoritawa.org,msch.nu,msjuana.com,nairobimontessorischool.com,olivebranchschool.com,peartreemontessorinursery.co.uk,rotoruawww.montessori.org.nz,royalkindergarten.co.ke,schulen-lev.de,stoneviewmontessori.com,themontessorischool.org,ubmontessori.com,unvillaggiopercrescere.it,waiukumontessori.co.nz,xenavpur-anghefpuhyr.qr
+REVIVED_LIST: aldananurseries.com,bambiniinemergenza.org,collegelycee-montessori-lyon.org,rosehillmontessori.org

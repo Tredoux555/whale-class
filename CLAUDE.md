@@ -2,6 +2,34 @@
 
 **⚠️ STANDING RULE (Tredoux, Jul 10 2026 — PERMANENT): MODEL DELEGATION.** Fable is the DIRECTOR and second brain — it plans, decides, writes the critical copy, and reviews. It does NOT do grunt work. **Sonnet** (preferred over Haiku — more reliable) does all fetching, sweeping, scouting, data-gathering, and auditing via sub-agents. **Opus** builds where appropriate. Never let Fable burn half its context on mechanical work another model can do — spawn agents instead.
 
+## 💾 SESSION — Jul 12, 2026 (morning, same Cowork session — Sonnet fleet) — BACKUP DONE + DISK CLEARED FOR PHASE D + 222-ORG UNDERPRIVILEGED SCRAPE + OUTREACH ENRICHMENT
+
+**Canonical: `docs/handoffs/SESSION_BACKUP_CLEANUP_UNDERPRIV_JUL12.md` (incl. the Phase-D resume prompt — READ IT to resume).**
+
+- **💾 Backup COMPLETE: 74GB → `/Volumes/Extreme SSD/MontreeBackup_2026-07-12/`** (ACTIVE repos minus
+  node_modules, English Curriculum 2026, Social Media Pack, ~/Documents/Claude). ⚠️ `~/Desktop/Music Videos`
+  didn't exist at backup time — locate mvgen outputs before trusting this backup for them. Watcher:
+  `~/backup-watcher.sh`, log `~/Desktop/backup-log.txt`. Offloads: `/Volumes/Extreme SSD/Offloaded_Jul12/`
+  (Downloads Video 9.4G + Archives + Installers + SupabaseBackups — checksum-verified moves).
+- **🧹 DISK: 3.4 → 16 GiB free — PHASE D GATE CLEARED.** Caches ~5.8G purged + 10.1G offloaded. Logs:
+  `~/Desktop/DISK_INVENTORY_AND_CLEAROUT_JUL12.md` + `CLEANUP_LOG_JUL12.md`. Downloads reorganized (1,060
+  files → typed folders). **⏳ Tredoux manual for ~50GB more: Claude Desktop settings→clear old VM bundles
+  (16GB, NEVER rm), Xcode→Platforms→delete unused simulator runtime (~18GB), `xcrun simctl delete unavailable`.**
+- **🌍 UNDERPRIVILEGED DEEP SCRAPE: 222 orgs (194 new), ranked by social footprint —
+  `docs/outreach/underprivileged/UNDERPRIV_MASTER_RANKED_JUL12.csv`** (+ 3 region files). Top: Watoto
+  Uganda · Cambodian Children's Fund · Pies Descalzos (Shakira) · Integra Chile · Malala Fund · TCF
+  Pakistan · **Fe y Alegría (22-country school network = biggest reach)** · MGGF + NCMPS (natural partners).
+  71 SEEN emails, 138 FB. Rules held (emails only when SEEN, snippet-based footprint, no FB fetches).
+- **📬 ENRICHMENT (`docs/outreach/enrichment/`): 38 of 51 no-email disadvantaged rows now have SEEN emails**
+  (74.5%) · 80 disadvantaged rows footprint-scored 0-10 · **MX sweep of 2,860 domains: 44 newly dead,
+  4 REVIVED** (incl. rosehillmontessori.org). 🚨 NOT yet applied to DB/master — apply via
+  `scripts/outreach-status.py` next session.
+- **⏳ NEXT: PHASE D PRODUCTION IS UNBLOCKED** (~640 MJ + 128 Suno for W27–58, runbook =
+  OVERNIGHT_RUN_JUL11.md) + decide founding-partner outreach to the top of the underprivileged ranking
+  (father-story template, Jul-7 track) + apply enrichment flips + L1 morning-review items + Phase E wiring.
+
+---
+
 ## 🌳 SESSION — Jul 12, 2026 (overnight, Cowork/Fable directing) — LEVELS 2–3 FULLY SPECIFIED: SPINE LOCKED + ENGINE GENERALIZED + ALL 32 WEEKSPECS AUTHORED + DIRECTOR-READ
 
 **Canonical: `docs/handoffs/SESSION_CURRICULUM_LEVELS_2_3_JUL12.md` (the full record) — executes
