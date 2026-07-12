@@ -15,16 +15,16 @@ from this doc. Disk was cleared to 20 GiB free before start; backup on Extreme S
 7. Suno credits: 1,590 at start; 64 songs ≈ ~1,330 credits expected. If credits run low (<100), STOP and log — do not start a song you can't finish.
 8. Week folders: create `~/Desktop/English Curriculum 2026/Week NN/` + `images/` as needed (W27–58 are new).
 
-## STATUS BOARD (update as chunks land)
-- [x] Images W27–31 (chunk M1)
-- [ ] Images W32–36 (M2)
-- [ ] Images W37–41 (M3)
-- [ ] Images W42–46 (M4)
-- [ ] Images W47–51 (M5)
-- [ ] Images W52–58 (M6)
+## STATUS BOARD (update as chunks land) — re-chunked Jul 12 evening to match actual runs
+- [x] Images W27–33 (M1 + extension)
+- [x] Images W34–38 (M2 — Jul 12 evening: 71 imgs, 5 packs, all gap-clean)
+- [ ] Images W39–43 (M3 — W41 ✅ 17 imgs+pack · W43 ✅ 18 imgs+pack · W42 in-flight 11+ imgs · **W39 + W40 NOT started**)
+- [ ] Images W44–48 (M4)
+- [ ] Images W49–53 (M5)
+- [ ] Images W54–58 (M6)
 - [x] Suno W27–37 (chunk S1 — 22 songs, 44 files)
-- [ ] Suno W38–48 (S2 — 22 songs, 44 files)
-- [ ] Suno W49–58 (S3 — 20 songs, 40 files)
+- [x] Suno W38–46 (S2 head — 18 songs, 36 files; **W47–48 remain**)
+- [ ] Suno W47–58 (24 songs, 48 files — NOT started, credits ~1,170)
 - [ ] All 32 packs rendered to pack-v2/ + gap reports clean
 - [ ] Morning review checklist (Tredoux): pick 1 of 2 takes × 64 songs · cast-consistency eyeball (esp. Sheep/Snake/Chick across their arcs; Snake W33 vs W38 name-day; graduation cast W58) · Pattern Tree wall render + W38 pattern-card tracing eyeball (FIRST REAL RENDER of the new builders) · coloring-page shading anomalies · any Suno lyric deviations logged below
 
@@ -120,6 +120,29 @@ from this doc. Disk was cleared to 20 GiB free before start; backup on Extreme S
   dedicated art; bingo 14-pool cycled to fill 16; 2 songs' QR cards show audioUrl placeholder — Suno chunk
   reports W33 songs already complete, 4 takes sorted, so this is a JSON-linking step pending reconciliation,
   not missing audio).
+
+- [x] **W34–38 (chunk M2, Jul 12 evening — fresh-browser run after Tredoux restarted Chrome).**
+  All 71 images freshly submitted (feed held no pre-cooked jobs for these weeks beyond 3 W34 jobs
+  the director spotted at launch): W34 15/15 · W35 13/13 · W36 13/13 · W37 14/14 · W38 16/16.
+  All 5 packs rendered to pack-v2/ exit 0 (bingo 40–54MB/10pg, book 22–25MB/20pg). Rerolls: W35
+  grin ×2 · W36 band ×1 (material drift) · W37 skunk ×1 (color drift back to canonical green) ·
+  W38 snake-spelling ×1 (watermark). **W38 money shots verified: SNAKE name-plate legible, Snake
+  held W33 canonical (emerald + amber eyes) throughout.** NEW GOTCHAS for every future MJ agent:
+  (1) **hallucinated watermarks/fake photographer credits** are frequent in fine-detail product-shot
+  prompts — zoom-check BOTH bottom corners of full-res before download; if all 4 quadrants dirty,
+  resubmit with "no watermark, no signature" appended before --ar. (2) **Material/species drift** —
+  spell out disambiguating adjectives in the noun phrase ("matte rubber texture, no metal, no
+  jewelry"; "emerald-green garden snake with amber eyes"), never bare nouns. (3) **Avoid literal
+  isolated-human-anatomy prompts** (a "big toothy grin" prompt produced disembodied denture horror) —
+  substitute an established cast character instead of iterating. (4) Coloring-page quadrants can
+  carry faint gray shading despite the prompt — compare ALL 4 for flattest pure white, not the first
+  acceptable one.
+- [ ] **W39–43 (chunk M3, Jul 12 night — IN FLIGHT).** Launch turn was interrupted but the agent
+  SPAWNED ANYWAY and kept working orphaned (its report may never arrive — monitor by folder counts,
+  the sessions-management lesson again). Worked out of order: **W41 ✅ 17 imgs + pack rendered
+  (21:22) · W43 ✅ 18 imgs + pack rendered (20:53) · W42 in-flight (11 imgs by 21:43, cast-crossing
+  bridge scenes landing) · W39 + W40 untouched (0 imgs).** Whoever resumes: ground-check `Week 39/40/
+  42/images/` counts first, finish W42 (gap-only → pack), then W39 → W40, then M4.
 
 ## SUNO CHUNK PROGRESS (Sonnet Suno agent, Jul 12 resume after mid-W32 death)
 - [x] **W27–31** — inherited complete from prior agent/session (4 mp3s each, sorted).
@@ -241,7 +264,33 @@ bottom playbar "..." icon (~[196,899]) that needs Download→MP3 Audio via a ful
 wide/desktop width shows a "..." icon next to the play button (~[631,311]) with a hover-flyout submenu.
 Screenshot first each time to see which layout is live rather than assuming coordinates.
 
-## ⏱ CURRENT STATE — Jul 12, ~17:00 (Fable closing entry before context refresh)
+## ⏱ CURRENT STATE — Jul 12, ~21:50 (Fable, evening/night session)
+- **Images: W27–38 + W41 + W43 COMPLETE with packs. W42 IN FLIGHT** (orphaned MJ agent still landing
+  files at 21:43 — ground-check `Week 42/images/` count vs its 11 before doing anything). **W39, W40,
+  W44–58 remain (~17 weeks, ~240 jobs, 18 packs).**
+- **Suno: W27–46 COMPLETE (80 files). W47–58 remain (24 songs, 48 files).** Credits ~1,170 expected
+  (last logged 1,170 after W46) — verify counter on resume. The Suno rail NEVER ran this evening:
+  first two launches died to browser blockers (see below).
+- **🚨 BROWSER-BINDING SAGA (the evening's tax, so nobody repeats it):** Tredoux closed the original
+  two Chrome windows (~17:30) → the extension kept GHOST connections under the old deviceIds. Agents
+  driving ghosts saw: MJ "logged out" renders, suno.com ERR_CONNECTION_TIMED_OUT, navigations
+  reverting to chrome://newtab, tabs vanishing. **Network was fine the whole time (curl 200).**
+  FIX: `switch_browser` confirmation flow → Tredoux clicks Connect in the live window → binding
+  works. **RULE: after ANY browser restart, treat all remembered deviceIds as suspect — verify by
+  actually loading a page and reading text back, not by connection listing.** Live MJ browser at
+  handoff: deviceId 7d422c1a-16c6-440f-8660-bd73adfec31e ("Tredoux"). A second browser for the Suno
+  rail was requested from Tredoux; bind it via a fresh list_connected_browsers / switch_browser when
+  it appears (both his browsers have BOTH sites logged in, so either works for either rail — just
+  never run both rails in ONE browser, the agents fight over the active tab).
+- **Watchdog restarted 21:47** (`nohup ~/phase-d-monitor.sh &`, "mp3s sorted" metric still broken —
+  trust per-week folder counts). **Disk: 21Gi free** (improved — cleanup landed). 
+- **Sessions lesson AGAIN, sharpened: an interrupted parent turn does NOT always kill the sub-agent.**
+  The M3 launch was user-interrupted; the agent spawned anyway, worked orphaned for hours (W41+W43
+  done, W42 mid-flight), and its final report is unreachable. Corollary to the old rule: ground-check
+  folder counts before assuming a rail is dead OR alive — and never spawn a second agent onto a
+  browser that file-mtimes say is still being driven.
+
+## ⏱ PRIOR STATE — Jul 12, ~17:00 (superseded, kept for the record)
 - **Images: W27–33 COMPLETE** (105 imgs + 7 packs rendered, all gap reports "✅ All manifest images
   present"). **W34–58 REMAIN (~25 weeks, ~360 jobs).** The M2 relaunch (W34–38) died twice to
   API/interrupt blips — the MJ rail is DOWN at handoff; nothing was submitted for W34+ (search-first
@@ -267,20 +316,21 @@ Screenshot first each time to see which layout is live rather than assuming coor
 - **Sessions-management lesson: agent launches die when the user interrupts the parent turn — always
   ground-check file counts before assuming an agent is alive or dead; respawn per chunk.**
 
-## RESUME PROMPT (paste into a fresh session)
+## RESUME PROMPT (paste into a fresh session — updated Jul 12 ~21:50)
 "Read CLAUDE.md's top Jul-12 session blocks + docs/curriculum/PHASE_D_RUN_JUL12.md (STATUS BOARD +
-CURRENT STATE + IMAGE CHUNK PROGRESS — the hard-won MJ fixes live there) + docs/curriculum/
-OVERNIGHT_RUN_JUL11.md (technique bible). You are Fable directing Phase D production. FIRST: ground-check
-— per-week counts of Week NN/images/*.png and Week NN/*.mp3 for W27–58 via Desktop Commander, and restart
-the watchdog if dead. THEN run both rails in parallel with Sonnet browser agents (quality over speed —
-Tredoux's hard directive: bad picks force re-production): (1) MJ agent on the Midjourney browser —
-chunks of ~5 weeks starting at the first incomplete week (likely W34), search-first + one-at-a-time
-submits with the React-setter textarea fix + feed verification, best-of-4 per runbook criteria, canvas-draw
-downloads with img.src verification, sort to Week NN/images/, gap-only until clean, full pack render with
-explicit --out, pre-submit the next chunk at tail; (2) Suno agent on the other browser — resume at the
-first week missing mp3s (likely W45), verbatim JSON lyrics + locked style string, both takes, WNN naming,
-30-60s durations are normal, stop if credits <100. Respawn each rail's next chunk agent the moment one
-retires — the rails must never idle. Update the status board + progress entries + deviations log per
-chunk; commit+push this doc as chunks land (Desktop Commander). When all 32 weeks show complete images +
-4 mp3s + rendered packs: final verification sweep (Jul-11 pattern: PDF counts/sizes, mp3 counts, gap
-reports), update CLAUDE.md, write the closing handoff, surface the Tredoux morning-review checklist."
+CURRENT STATE ~21:50 + IMAGE CHUNK PROGRESS — the hard-won MJ fixes AND the browser-binding saga live
+there) + docs/curriculum/OVERNIGHT_RUN_JUL11.md (technique bible). You are Fable directing Phase D.
+FIRST: ground-check per-week counts of Week NN/images/*.png and Week NN/*.mp3 for W39–58 via Desktop
+Commander (an ORPHANED MJ agent may still be working W42 — check file mtimes; never spawn onto a browser
+whose files are still moving), restart the watchdog if dead, and verify browser bindings by LOADING A
+PAGE (deviceIds go stale after browser restarts — use switch_browser Connect-click if in doubt).
+THEN run both rails in parallel with Sonnet browser agents (quality over speed): (1) MJ agent —
+remaining images are W39, W40 (skipped by the out-of-order M3 agent), W42 if unfinished, then W44–58
+in ~5-week chunks; search-first + one-at-a-time submits with the React-setter textarea fix + feed
+verification, watermark corner-check, best-of-4, canvas-draw downloads with img.src verification, sort,
+gap-only until clean, pack render with explicit --out; (2) Suno agent on the OTHER browser — W47–58
+(24 songs), verbatim JSON lyrics + locked style string, both takes, WNN naming, 30-60s normal, wait for
+the 'Preparing your mp3' toast, stop if credits <100. Respawn each rail the moment a chunk agent retires.
+Update this doc per chunk; commit+push via Desktop Commander. When all 32 weeks show complete images +
+4 mp3s + rendered packs: final verification sweep (PDF counts/sizes, mp3 counts, gap reports), update
+CLAUDE.md, write the closing handoff, surface the Tredoux morning-review checklist."
