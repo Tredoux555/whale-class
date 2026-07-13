@@ -2,6 +2,25 @@
 
 **⚠️ STANDING RULE (Tredoux, Jul 10 2026 — PERMANENT): MODEL DELEGATION.** Fable is the DIRECTOR and second brain — it plans, decides, writes the critical copy, and reviews. It does NOT do grunt work. **Sonnet** (preferred over Haiku — more reliable) does all fetching, sweeping, scouting, data-gathering, and auditing via sub-agents. **Opus** builds where appropriate. Never let Fable burn half its context on mechanical work another model can do — spawn agents instead.
 
+## 🚀 SESSION — Jul 13, 2026 (afternoon, same Cowork session) — TAKE PICKS LOCKED + CURRICULUM PUBLISHED TO MONTREE.XYZ (Phase E part 1)
+
+**Canonical: `docs/handoffs/HANDOFF_PHASE_E_CURRICULUM_LIVE_JUL13.md` (incl. resume prompt + the two
+queued theories). Commits `f264589f` → `e6960f05` → `a472320b`, pushed.** Tredoux picked takes for all
+songs (locked in `docs/curriculum/SONG_TAKE_PICKS_JUL13.json`, applied by `apply-take-picks.py` —
+winners clean-named, losers → `_takes_not_picked/`). Review-round fixes: W1 song rewritten with /a/
+vocab (ant/apple/ax/alligator) + regenerated · W2 both songs regenerated (was old Jul-2 era) · W31
+"The King Can Sing" lyrics EXTENDED + regenerated at 70s (was 14s truncated; 🚨 duration-scan rule:
+sweeps check afinfo durations, not just counts). **PUBLISHED: 114 mp3s → `montree-media/
+curriculum-songs/wNN-<role>.mp3`; every spec's `songs[].audioUrl` = absolute montree.xyz proxy URL;
+QR cards re-rendered all 58 weeks (real scannable QRs); Curriculum Studio renders audio players.**
+⏳ Open: W30 sound-song take pick (only placeholder QR site-wide) · archive deletions after sign-off ·
+visual review leftovers · live click-to-play verify. **NEXT (theories in the handoff): A) Montree
+`english_program` 6th-area works-ladder integration (flag + 20000-band seed, zero new tables);
+B) mvgen music videos (assets already filename-matched to the tool — anchor pulse mode + batch
+driver + 3-song pilot).**
+
+---
+
 ## 🏁 SESSION — Jul 13, 2026 (midday, Cowork/Fable directing Sonnet browser agents) — PHASE D 100% COMPLETE: ALL PRODUCTION DONE + SEJEENA FIX — FINAL SWEEP ALL GREEN
 
 **Canonical: `docs/curriculum/PHASE_D_RUN_JUL12.md` (🏁 CLOSED header + CURRENT STATE Jul 13 ~13:45).
