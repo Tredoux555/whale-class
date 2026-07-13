@@ -1,0 +1,63 @@
+{
+  "week": 27,
+  "images": [
+    { "file": "big-wish.png", "depicts": "fish leaping from water in a splash arc, sheep with paws raised cheering on ship in background", "name_matches_content": false, "issue": "spec wants a QUIET spread — 'whole sky glows, fish trembles with hope' — this instead duplicates the splash/cheering action of fish-in-water.png + sheep-cheering-fish.png" },
+    { "file": "dish.png", "depicts": "empty ceramic bowl/dish in spotlight", "name_matches_content": true, "issue": "none" },
+    { "file": "fish-in-water.png", "depicts": "orange fish leaping with splash arc, fluffy sheep in sailor cap waving from ship rail", "name_matches_content": true, "issue": "none — matches book:8 well" },
+    { "file": "fish-on-ship.png", "depicts": "orange fish flapping wide-eyed on ship's bow/rope", "name_matches_content": true, "issue": "none" },
+    { "file": "fish-wishing.png", "depicts": "fish resting eyes-closed on deck under one bright star", "name_matches_content": true, "issue": "reads more like 'sleeping' than 'wishing hard', but acceptable" },
+    { "file": "potato-on-ship.png", "depicts": "a hairy coconut-like sphere with cloth cap, button eyes and stitched mouth — NOT a potato", "name_matches_content": false, "issue": "CRITICAL: this is the recurring potato joke-tile and it does not depict a potato at all; looks like a coconut/plush toy" },
+    { "file": "shark.png", "depicts": "toothy shark swimming underwater, sunbeams", "name_matches_content": true, "issue": "tone is more menacing/dramatic than 'small friendly-looking shark'" },
+    { "file": "shed.png", "depicts": "cozy wooden cabin with lit window, hanging bell/lantern", "name_matches_content": true, "issue": "reads more like a small cottage than a bare garden shed, but acceptable" },
+    { "file": "sheep-cheering-fish.png", "depicts": "fluffy sheep lamb face-to-face with small goldfish, star glowing behind", "name_matches_content": true, "issue": "sheep is not clearly 'leaning in cheering', more a calm gaze" },
+    { "file": "sheep-sailor.png", "depicts": "fluffy sheep in blue sailor cap with paws on ship's wheel", "name_matches_content": true, "issue": "none" },
+    { "file": "shell.png", "depicts": "a live snail with visible body/antennae attached to its shell", "name_matches_content": false, "issue": "spec wants a plain empty seashell for a 3-part/bingo card; this shows a living snail, adds an unintended creature" },
+    { "file": "ship.png", "depicts": "ornate golden decorative model ship on a shiny reflective pool", "name_matches_content": true, "issue": "style is fantasy-gold rather than 'small wooden ship on dark glassy sea' — stylistically off but subject matches" },
+    { "file": "shirt.png", "depicts": "plaid child's shirt on a wooden hanger", "name_matches_content": true, "issue": "none" },
+    { "file": "shoe.png", "depicts": "canvas lace-up child's shoe", "name_matches_content": true, "issue": "none" },
+    { "file": "shop.png", "depicts": "ornate miniature toy shop with lit windows and striped awning", "name_matches_content": true, "issue": "none" }
+  ],
+  "missingFiles": ["fish.png (book:2, cards, bingo, matching — CRITICAL, no file exists)", "fish-coloring.png (coloring, skipped anyway)"],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Sh-Sh-Ship!",
+      "line_map": [
+        { "line": "Sh-sh-ship! It's a ship!", "best_image_by_content": "ship.png", "needs": "ok" },
+        { "line": "Sh-sh-shop! It's a shop!", "best_image_by_content": "shop.png", "needs": "ok" },
+        { "line": "Sh-sh-shell! It's a shell!", "best_image_by_content": "shell.png", "needs": "generate (current image shows a live snail, not a plain shell)" },
+        { "line": "Sh-sh-sheep! It's a sheep! (hello, Sheep!)", "best_image_by_content": "sheep-sailor.png", "needs": "ok" },
+        { "line": "A potato?! P-p-potato! Not SH!", "best_image_by_content": "potato-on-ship.png", "needs": "generate (current image is not a potato at all)" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "shell.png (reroll)", "line": "Sh-sh-shell!", "mj_prompt": "an empty spiral seashell alone on a surface, no creature inside, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": [
+        { "file": "potato-on-ship.png", "issue": "CRITICAL: depicts a coconut/plush toy with a face, not a potato — breaks the recurring potato joke-tile", "fix": "reroll: 'a single raw potato wearing a tiny folded paper sailor hat sitting alone on the wooden deck of a small ship, dramatic spotlight on the potato, a fluffy white sheep staring at it from the wheel, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw'" },
+        { "file": "shell.png", "issue": "shows a live snail, not a plain seashell", "fix": "reroll per generate list above" }
+      ]
+    },
+    {
+      "role": "word",
+      "title": "The Fish on the Ship",
+      "line_map": [
+        { "line": "The fish is on the ship! (hook, repeats)", "best_image_by_content": "fish-on-ship.png", "needs": "ok" },
+        { "line": "Sheep is on the ship!", "best_image_by_content": "sheep-sailor.png", "needs": "ok" },
+        { "line": "Wish, fish, wish! The fish can wish!", "best_image_by_content": "fish-wishing.png", "needs": "ok" },
+        { "line": "The wish is big! (big! big!)", "best_image_by_content": "big-wish.png", "needs": "generate (current image duplicates the splash/cheer scene instead of a quiet glowing-sky moment)" },
+        { "line": "The fish is in! (splash!)", "best_image_by_content": "fish-in-water.png", "needs": "ok" },
+        { "line": "A potato is on the ship! (POTATO!)", "best_image_by_content": "potato-on-ship.png", "needs": "generate (not a potato)" }
+      ],
+      "aliases": { "fish (generic/cards use)": "fish-on-ship.png (until fish.png is generated)" },
+      "generate": [
+        { "proposed_filename": "fish.png", "line": "book:2 'A fish.' / cards, bingo, matching", "mj_prompt": "one bright orange fish leaping mid-air, droplets frozen in the light, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "big-wish.png (reroll)", "line": "The wish is big.", "mj_prompt": "a bright orange fish on a ship deck under a whole sky glowing with starlight over a dark still sea, hushed and hopeful, quiet spread, no splashing, dim gentle spotlight, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical, ultra-realistic photograph --ar 3:2 --style raw" }
+      ],
+      "wrong_art": [
+        { "file": "potato-on-ship.png", "issue": "CRITICAL: not a potato (see sound song entry)", "fix": "reroll, see generate list above" },
+        { "file": "big-wish.png", "issue": "duplicates the splash/cheering action rather than the intended quiet glowing-sky beat", "fix": "reroll per generate list above" }
+      ]
+    }
+  ]
+}

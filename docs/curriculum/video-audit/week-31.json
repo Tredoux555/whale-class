@@ -1,0 +1,59 @@
+{
+  "week": 31,
+  "images": [
+    { "file": "king-sing.png", "depicts": "round peachy creature, gold crown, singing, hand on chest", "name_matches_content": true, "issue": null, "note": "canonical king anchor design used for this ledger" },
+    { "file": "king-singing-big.png", "depicts": "bearded human king mid-holler, note swirl", "name_matches_content": true, "issue": "cast drift — bearded human-style king, inconsistent with king-sing.png's round chibi-creature design" },
+    { "file": "long-song.png", "depicts": "white fluffy king creature, gold ribbon of notes stretching wide", "name_matches_content": true, "issue": "cast drift — king rendered as a white fluffy human-faced creature, a 3rd distinct king design" },
+    { "file": "chick-sing.png", "depicts": "yellow chick beside a second orange feathery bird-creature wearing a SILVER crown, both singing", "name_matches_content": "partial", "issue": "cast drift — the 'king' is drawn as a second bird/chick-like creature with a silver crown (canonical is gold-crowned round creature); confusing dual-bird reading" },
+    { "file": "sheep-sing.png", "depicts": "woolly round wool-blob with snout, eyes closed, single curling note", "name_matches_content": true, "issue": null },
+    { "file": "gong-bang.png", "depicts": "chick swinging mallet at large brass gong, ripple rings", "name_matches_content": true, "issue": null },
+    { "file": "king-sang-cast.png", "depicts": "plush-toy-style trio: peachy gold-crowned king + chick + bunny-eared cartoon sheep, hand-in-hand triumphant pose", "name_matches_content": true, "issue": "style drift to plush-toy/stuffed-animal render vs photoreal house style; sheep design (bunny ears, cartoon face) is a 3rd sheep variant" },
+    { "file": "king-sings-potato.png", "depicts": "white fluffy king serenading a plain potato on a velvet cushion, chick + small bunny-eared sheep reacting", "name_matches_content": true, "issue": "cast drift — king again a distinct (white fluffy) design; sheep here is a 4th variant (small, bunny-eared)" },
+    { "file": "gong.png", "depicts": "brass gong hanging in a wooden stand", "name_matches_content": true, "issue": null },
+    { "file": "song.png", "depicts": "open songbook with a golden treble-clef/music-note swirl rising off the page", "name_matches_content": true, "issue": null }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Ng-Ng-King!",
+      "line_map": [
+        { "line": "Ng at the END — hummm! ... King! King! Sing! Sing!", "best_image_by_content": "king-sing.png", "needs": "ok" },
+        { "line": "Ring! Ring! Long! Long!", "best_image_by_content": null, "needs": "generate" },
+        { "line": "The king can sing a song! Song! Song! Wing! Wing!", "best_image_by_content": "song.png (song only)", "needs": "generate (wing has no image)" },
+        { "line": "Bang the gong — bang, BANG! Hang! Hung! Bang! Gong!", "best_image_by_content": "gong-bang.png / gong.png", "needs": "ok" },
+        { "line": "A potato?! (NO!) P-p-potato! No hum! Not NG!", "best_image_by_content": null, "needs": "acceptable-hold (abstract sound-song bridge, no scene required)" },
+        { "line": "Outro: King! King! Sing! Sing! (hummm… quiet now…)", "best_image_by_content": "king-sing.png", "needs": "ok (repeat)" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "ring.png", "line": "Ring! Ring! Long! Long! / The ring! The ring! The king and the ring!", "mj_prompt": "a gold ring with a small gem, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "wing.png", "line": "Song! Song! Wing! Wing!", "mj_prompt": "a single feathered bird wing spread open, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "The King Can Sing",
+      "line_map": [
+        { "line": "The king can sing! (hook, x2)", "best_image_by_content": "king-sing.png", "needs": "ok" },
+        { "line": "A long, long song! ... Bang the gong! (bang! bang!)", "best_image_by_content": "long-song.png / gong-bang.png", "needs": "ok" },
+        { "line": "Chick can sing along! Sheep can hum the song!", "best_image_by_content": "chick-sing.png + sheep-sing.png", "needs": "alias (chick-sing.png content is right but the 2nd figure reads as a king, not just Chick+neutral scene — see wrong_art)" },
+        { "line": "The ring! The ring! The king and the ring!", "best_image_by_content": null, "needs": "generate" },
+        { "line": "Sing, king, sing! (sing! sing!)", "best_image_by_content": "king-sing.png", "needs": "ok (repeat)" },
+        { "line": "Breakdown: sing… sing… the king can sing… long… long… a long, long song…", "best_image_by_content": "king-sing.png / long-song.png", "needs": "ok (repeat)" },
+        { "line": "Final Hook: The king can sing! Sing it long and strong!", "best_image_by_content": "king-sing.png", "needs": "ok (repeat)" },
+        { "line": "Outro: The song… so long… A potato?! (POTATO!) The king can sing at a potato?!", "best_image_by_content": "king-sings-potato.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "king.png", "line": "book spread 1 'A king.' / base card+bingo+matching asset (CRITICAL — missing from folder entirely)", "mj_prompt": "a small round friendly cartoon king in a golden crown with his chest puffed and mouth just opening to sing, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": [
+        { "file": "king-singing-big.png", "issue": "bearded human-style king, breaks cast consistency", "fix": "reroll — mj_prompt: a round friendly king (peachy, chibi-creature build matching king-sing.png) belting out a song with crown tipping and a big swirl of music notes filling the spotlight, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "file": "chick-sing.png", "issue": "the 'king' is drawn as a second silver-crowned bird creature instead of Chick singing beside the established king design", "fix": "reroll — mj_prompt: a tiny fluffy yellow chick with a stubby orange beak wide open singing beside the round peachy gold-crowned king (matching king-sing.png), a tiny music note above her, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "file": "king-sang-cast.png", "issue": "plush-toy render style drift + 3rd sheep design variant (bunny ears, cartoon face)", "fix": "reroll — mj_prompt: a round peachy friendly king in a golden crown, a tiny yellow chick and a fluffy white wool-blob sheep (matching sheep-sing.png) taking a curtain-call bow together with music notes settling around them, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "file": "king-sings-potato.png", "issue": "king rendered as a 4th distinct (white fluffy human-faced) design", "fix": "reroll — mj_prompt: a single raw potato (plain, no face) on a small velvet cushion in a spotlight while the round peachy gold-crowned king (matching king-sing.png) with arms wide serenades it earnestly, a yellow chick and a white wool-blob sheep exchanging a look, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ]
+    }
+  ]
+}

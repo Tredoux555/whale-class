@@ -1,0 +1,68 @@
+{
+  "week": 41,
+  "images": [
+    { "file": "mule.png", "depicts": "grey mule head, ears up, curious", "name_matches_content": true, "issue": null },
+    { "file": "mule-flute.png", "depicts": "mule holding silver flute to lips with hoof", "name_matches_content": true, "issue": null },
+    { "file": "tune.png", "depicts": "golden musical note rising, shimmering", "name_matches_content": true, "issue": null },
+    { "file": "cube.png", "depicts": "wooden cube with carved bell shape on face", "name_matches_content": true, "issue": null },
+    { "file": "cubes.png", "depicts": "row of colourful wooden cubes fanned out", "name_matches_content": true, "issue": null },
+    { "file": "cubes-cute.png", "depicts": "mule nuzzling small pyramid of coloured cubes", "name_matches_content": true, "issue": null },
+    { "file": "cubes-tune.png", "depicts": "a HUMAN HAND holds/taps the flute near a row of glowing cubes while the mule's nose lowers toward them", "name_matches_content": false, "issue": "Human hand appears instead of the mule tapping the cubes with the flute itself (hoof/mouth) — breaks the animals-only visual consistency of the series." },
+    { "file": "mule-concert.png", "depicts": "a lamb/sheep-like creature plays the flute with eyes closed; the mule only nuzzles in from the side; a second fluffy sheep also visible in background", "name_matches_content": false, "issue": "WRONG CHARACTER: spec requires the MULE mid-performance playing the flute (book:8/verse3 'The flute and the cube! Snake can hop! Sheep can hum!'). Instead a sheep/lamb is shown playing flute and Sheep appears to be duplicated (once playing, once in background)." },
+    { "file": "potato-flute.png", "depicts": "anthropomorphic potato (face, crown-like music cube on head) with flute leaning against it, blurred mule in background", "name_matches_content": true, "issue": "Potato has a full face (eyes/smile) — consistent with W42's potato-bridge.png style, so treated as an established running style, not flagged as an error." },
+    { "file": "flute.png", "depicts": "silver flute lying on green cloth", "name_matches_content": true, "issue": null },
+    { "file": "cute.png", "depicts": "fuzzy round plush toy with big eyes", "name_matches_content": true, "issue": null },
+    { "file": "tube.png", "depicts": "cardboard tube standing upright", "name_matches_content": true, "issue": null },
+    { "file": "prune.png", "depicts": "wrinkled dark purple/red dried prune", "name_matches_content": true, "issue": null },
+    { "file": "dune.png", "depicts": "golden sand dune", "name_matches_content": true, "issue": null }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Magic E Makes Cube",
+      "line_map": [
+        { "line": "Cub… CUBE! Tub… TUBE!", "best_image_by_CONTENT": "cube.png / tube.png", "needs": "ok" },
+        { "line": "Cut… CUTE! Us… USE!", "best_image_by_CONTENT": "cute.png (card only, abstract line)", "needs": "acceptable-hold" },
+        { "line": "The U says its NAME! Every vowel! Magic E is DONE!", "best_image_by_CONTENT": "none (celebration/abstract line, no scene)", "needs": "acceptable-hold" },
+        { "line": "C-U-B-E — cube! M-U-L-E — mule! T-U-N-E — tune!", "best_image_by_CONTENT": "cube.png, mule.png, tune.png", "needs": "ok" },
+        { "line": "A potato?! (NO!) P-p-potato! No magic E!", "best_image_by_CONTENT": "potato-flute.png", "needs": "alias" }
+      ]
+    },
+    {
+      "role": "word",
+      "title": "The Mule and the Flute",
+      "line_map": [
+        { "line": "The mule has a flute!", "best_image_by_CONTENT": "mule-flute.png", "needs": "ok" },
+        { "line": "These cubes! These cubes are cute!", "best_image_by_CONTENT": "cubes-cute.png", "needs": "ok" },
+        { "line": "These cubes make a tune!", "best_image_by_CONTENT": "cubes-tune.png", "needs": "generate", "note": "current image shows a human hand, not the mule, tapping the cubes" },
+        { "line": "The flute and the cube! Snake can hop! Sheep can hum!", "best_image_by_CONTENT": "mule-concert.png", "needs": "generate", "note": "wrong character playing flute; duplicated Sheep" },
+        { "line": "The flute… the tune… (shhh…) A tune?! (a potato!)", "best_image_by_CONTENT": "potato-flute.png", "needs": "ok" }
+      ]
+    }
+  ],
+  "aliases": {},
+  "generate": [
+    {
+      "proposed_filename": "mule-concert-v2.png",
+      "line": "The flute and the cube! Snake can hop! Sheep can hum! (book:8, word-song verse 3)",
+      "mj_prompt": "a gentle grey mule playing a silver flute mid-performance over a row of glowing music cubes, an emerald-green snake swaying beside it and one fluffy white sheep bobbing along in the background, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "proposed_filename": "cubes-tune-v2.png",
+      "line": "The cubes make a tune. (book:7)",
+      "mj_prompt": "a gentle grey mule tapping a row of glowing music cubes with a silver flute held in its mouth, no human hands visible, each cube glowing as it rings a note, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    }
+  ],
+  "wrong_art": [
+    {
+      "file": "mule-concert.png",
+      "issue": "Shows a lamb/sheep-like creature playing the flute with eyes closed instead of the mule; the mule only nuzzles from the side; a second fluffy sheep duplicated in background.",
+      "fix": "Regenerate per mule-concert-v2.png prompt above — mule must be the flute performer."
+    },
+    {
+      "file": "cubes-tune.png",
+      "issue": "A human hand holds/taps the flute near the cubes instead of the mule — breaks animal-only visual consistency for the 'cubes make a tune' scene.",
+      "fix": "Regenerate per cubes-tune-v2.png prompt above."
+    }
+  ]
+}

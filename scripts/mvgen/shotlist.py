@@ -35,15 +35,49 @@ IMAGE_EXTS = (".png", ".jpg", ".jpeg", ".webp", ".bmp")
 
 # Tokens too short or too common to be a meaningful "sung object". A filename
 # like ``a-cat.png`` must index "cat", NOT "a" (else the word "a" — sung on
-# nearly every line — hijacks the whole shot list). We drop tokens shorter than
-# 3 chars AND any of these stopwords (some are 3-4 chars, so length alone is not
-# enough). Applied at BOTH the filename-indexing side and when folding plurals.
+# nearly every line — hijacks the whole shot list).
+#
+# FIX 2 (meaning-bearing short tokens): this is a PREPOSITION-teaching curriculum
+# — in/on/up/at ARE the taught words, and images are named ``ox.png`` / ``up.png``
+# / ``cat-in-cap.png``. The old 3-char minimum silently made ``ox``/``up`` (and
+# the ``in``/``on`` inside ``cat-in-cap``) unmatchable, so the min is now 2 and
+# the stopword set is the sole gate. To keep ubiquitous connectives (is/it/the/a…)
+# from hijacking the shot list, the stopword set is EXPANDED to the common
+# 2-letter function words — EXCEPT a small MEANING whitelist of 2-letter words
+# that ARE sung objects/prepositions this curriculum teaches. Every whitelist
+# word is kept on BOTH sides (filename token AND lyric content word).
+#   * ``_MEANING_TOKENS`` (KEPT as tokens): in on up at ox ax go. This constant
+#     is the DECLARED whitelist; the actual keep-behaviour comes from these words
+#     simply being ABSENT from ``_STOPWORDS``. The two are tied by a runtime
+#     assertion below (``_MEANING_TOKENS`` and ``_STOPWORDS`` must stay disjoint)
+#     so the invariant can never silently drift.
+#   * 'what' is a TAUGHT question word (W8 oralWords) and disambiguates
+#     ``chick-what.png`` from ``chick.png`` — so it is NOT a stopword (it is >2
+#     chars, so it never needed the meaning-whitelist to survive).
+#   * still stopped: the/a/is/and/who + the connectives below (incl. the WARN-2
+#     additions me/us/hi/ok/oh — pronouns/interjections, never a sung OBJECT).
+_MEANING_TOKENS = frozenset({"in", "on", "up", "at", "ox", "ax", "go"})
 _STOPWORDS = frozenset({
-    "a", "an", "and", "as", "at", "be", "by", "do", "he", "i", "if", "in",
-    "is", "it", "its", "my", "no", "of", "on", "or", "so", "the", "to", "up",
-    "we", "what", "who", "you",
+    # articles / conjunctions / ubiquitous connectives (never a sung object)
+    "a", "an", "and", "as", "the", "to", "or", "no", "so", "of",
+    # pronouns / auxiliaries
+    "i", "he", "we", "my", "you", "its", "who",
+    # 2-letter function words that would otherwise hijack the list
+    "is", "it", "be", "by", "do", "if", "am",
+    # WARN-2: more pronouns / interjections the expansion comment claimed but
+    # never actually included — none are sung objects.
+    "me", "us", "hi", "ok", "oh",
+    # NB: NOT stopped -> in on up at ox ax go (meaning) + what (taught word)
 })
-_MIN_TOKEN_LEN = 3
+
+# WARN-2: enforce the whitelist<->stopword invariant. ``_MEANING_TOKENS`` is
+# otherwise documentation-only; this assertion makes it load-bearing — if any
+# taught preposition/object ever leaks into ``_STOPWORDS`` (silently making
+# ``ox``/``up``/``in`` unmatchable again), import fails loudly instead.
+assert not (_MEANING_TOKENS & _STOPWORDS), (
+    "meaning tokens leaked into stopwords: %r" % (_MEANING_TOKENS & _STOPWORDS))
+# 2 so ``ox``/``up``/``in``/``on`` survive; the stopword set does the real work.
+_MIN_TOKEN_LEN = 2
 
 # Pre-roll (seconds) widened for anchors whose trigger word was placed by
 # analyze.py's even-distribution fallback (``approx: true``) — a guessed time is
@@ -172,9 +206,10 @@ def filename_tokens(path):
     Strips a leading numeric prefix + separators + the extension, then splits on
     non-alphanumeric separators. "04-cup.png" -> ['cup']; "14-ambulance.png" ->
     ['ambulance']; "a_red_apple.png" -> ['red', 'apple'] ('a' dropped as a
-    stopword). Pure numeric tokens (a bare "04"), tokens shorter than 3 chars,
-    and stopwords are dropped so ubiquitous words like "a"/"the" can't hijack the
-    shot list (CRIT-1).
+    stopword); "cat-in-cap.png" -> ['cat', 'in', 'cap'] ('in' is a taught
+    preposition, kept — FIX 2). Pure numeric tokens (a bare "04"), tokens shorter
+    than ``_MIN_TOKEN_LEN`` (2) chars, and stopwords are dropped so ubiquitous
+    words like "a"/"the" can't hijack the shot list (CRIT-1).
     """
     base = os.path.splitext(os.path.basename(path))[0]
     # Drop a leading ordering prefix like "04-" / "04_" / "04 ".
@@ -233,6 +268,33 @@ WINDOW_WORDS = 8       # at most this many content words ahead
 WINDOW_SEC = 4.0       # ... or this many seconds, whichever comes first
 LINE_GAP = 0.9         # a silent gap longer than this ends the lyric line
 
+# FIX 6 (cross-line phrase steal): two CONSECUTIVE matched tokens of one image
+# phrase must not be farther apart in time than this. A scene phrase like
+# ``cat-in-cap`` = "the cat sat in a cap" is sung inside ONE line, so its matched
+# tokens (cat … in … cap) are seconds apart at most. On a smeared timeline an
+# early hook 'cat' could otherwise reach ~3.6s forward and greedily pair with the
+# NEXT verse's 'in', stealing it (so ``cat-in-tin`` then loses its own 'in' and
+# never anchors). Capping the per-hop gap makes each verse's scene image anchor
+# from its OWN verse. Set above a musical line's internal span, below a
+# cross-verse reach. (WINDOW_SEC still bounds the window; this bounds the hop.)
+#
+# WARN-1: the hop measure is the summed inter-word SILENCE between the two
+# matched tokens (``_silence_gap``), NOT raw wall-clock. A genuine held note
+# (melisma) sung continuously between two matched words fills that span with
+# audio, so it contributes ~0 silence and the phrase stays together; a real
+# cross-verse reach is separated by actual silence (line gaps / dropped-word
+# holes) and still trips the cap. This is what keeps ``cat-in-cap`` alive across
+# a 3.5s held "sat" (which _MAX_WORD_SPAN=4.5 now lets survive as a real word)
+# while ``cat-in-tin`` vs the next verse's ``in`` still splits correctly.
+MATCH_TOKEN_GAP = 2.5
+
+# FIX 4 (ending): a video must not fade out on an unmatched filler image — the
+# last thing on screen should be a MATCHED (anchored) scene image. If the tail
+# after the last anchor is short (<= this), we simply hold the last anchored
+# image across it; if it is longer, fillers may cycle through the tail but the
+# FINAL shot still holds the last anchored image.
+TAIL_HOLD_MAX = 8.0
+
 
 def _tok_match(lyric_key, file_tok):
     """True if a sung word key matches a filename token (naive plural folding,
@@ -245,9 +307,11 @@ def _tok_match(lyric_key, file_tok):
 
 def _content_words(words):
     """Ordered list of ``(key, word_dict, orig_index)`` for content lyric words
-    (>=3 chars, non-stopword, non-numeric) — the words an image can illustrate.
-    Ubiquitous words like 'the'/'a'/'is'/'up' are dropped here so they can never
-    anchor a shot, exactly as the filename tokenizer drops them."""
+    (>=``_MIN_TOKEN_LEN`` chars, non-stopword, non-numeric) — the words an image
+    can illustrate. Ubiquitous words like 'the'/'a'/'is' are dropped here so they
+    can never anchor a shot, exactly as the filename tokenizer drops them; the
+    taught prepositions 'in'/'on'/'up'/'at' are KEPT (FIX 2) so ``cat-in-cap``
+    can match the sung 'in'."""
     out = []
     for i, w in enumerate(words):
         key = normalize_token(w.get("word", ""))
@@ -289,6 +353,29 @@ def _window_indices(cw, j, consumed=None):
     return idxs
 
 
+def _silence_gap(cw, a, b):
+    """Summed inter-word SILENCE (seconds) between content-word indices ``a`` < ``b``.
+
+    Walks every consecutive content-word pair in ``cw[a..b]`` and adds only the
+    POSITIVE gap ``next.start - prev.end`` (audio-free silence) between them —
+    each word's own DURATION is excluded. So a single note held continuously
+    from ``a`` to ``b`` (a melisma) contributes ~0, while a genuine cross-verse
+    reach (real silence, or a dropped-word hole that reads as a long inter-word
+    gap) accumulates. This is the WARN-1 hop measure: it decouples "how far
+    apart in the lyric" from "how long a word was drawn out". Overlapping or
+    negative gaps clamp to 0. ``a >= b`` yields 0.0."""
+    total = 0.0
+    for m in range(a + 1, b + 1):
+        prev = cw[m - 1][1]
+        cur = cw[m][1]
+        prev_end = float(prev.get("end", prev.get("start", 0.0)) or 0.0)
+        cur_start = float(cur.get("start", 0.0) or 0.0)
+        g = cur_start - prev_end
+        if g > 0.0:
+            total += g
+    return total
+
+
 def _match_image(tokens, cw, win):
     """Match an image's ordered tokens against the window as a subsequence.
 
@@ -306,6 +393,18 @@ def _match_image(tokens, cw, win):
     while ti < len(tokens) and wi < len(win):
         ci = win[wi]
         if _tok_match(cw[ci][0], tokens[ti]):
+            # FIX 6 / WARN-1: reject a hop to a token too far in time from the
+            # previously matched one — that is a cross-line steal, not the same
+            # sung phrase. The distance is the summed inter-word SILENCE between
+            # the two matched tokens (``_silence_gap``), NOT raw wall-clock, so a
+            # long HELD note (melisma) sung continuously in between fills its span
+            # with audio and does not count as reach — only genuine silence /
+            # dropped-word holes do. Words are time-ordered, so once the silence
+            # sum exceeds the cap every later hop only grows: stop extending (the
+            # phrase truncates to what it has matched so far, which then scores
+            # lower and yields to the closer, in-verse candidate).
+            if _silence_gap(cw, matched[-1], ci) > MATCH_TOKEN_GAP:
+                break
             matched.append(ci)
             ti += 1
         wi += 1
@@ -655,7 +754,29 @@ def build_shotlist(words, images, downbeats, duration, onsets=None,
                            c["trigger_word"], c["trigger_time"],
                            c.get("trigger_phrase"), c.get("match_score")))
         cursor = aend
-    _fill_gap(cursor, round(duration, 3))
+
+    # --- FIX 4: never end on an unmatched filler ---
+    dur = round(duration, 3)
+    tail = dur - cursor
+    if tail > 0.05 and boundaries:
+        last_anchor = boundaries[-1]  # the last appended anchor (matched image)
+        if tail <= TAIL_HOLD_MAX:
+            # Short tail: hold the last anchored image across it (extend). No new
+            # filler is introduced, so the last thing on screen is a scene image.
+            boundaries[-1] = (last_anchor[0], dur) + last_anchor[2:]
+        else:
+            # Long tail: fillers may cycle, but reserve a final musical hold of
+            # the last anchored image so the video still ENDS on a matched image.
+            hold_start = _cut_before(dur - min_seg_dur, grid, preroll=0.0)
+            if hold_start <= cursor:
+                hold_start = cursor
+            _fill_gap(cursor, hold_start)
+            boundaries.append((hold_start, dur, last_anchor[2], True,
+                               last_anchor[4], last_anchor[5],
+                               last_anchor[6], last_anchor[7]))
+    elif tail > 0.05:
+        # No anchors at all (defensive — build normally returns None earlier).
+        _fill_gap(cursor, dur)
 
     if not boundaries:
         return None

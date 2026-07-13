@@ -1,0 +1,74 @@
+{
+  "week": 23,
+  "images": [
+    { "file": "yam.png", "depicts": "single roasted orange yam, steam rising", "name_matches_content": true, "issue": "" },
+    { "file": "yum-yam.png", "depicts": "peg-doll boy biting a roasted yam happily", "name_matches_content": true, "issue": "" },
+    { "file": "mop-taste.png", "depicts": "a string mop presented on a fancy gold-rimmed plate", "name_matches_content": true, "issue": "" },
+    { "file": "nut-yum.png", "depicts": "grey rat cracking open a nut, cheek stuffed", "name_matches_content": true, "issue": "" },
+    { "file": "fig-yum.png", "depicts": "white duck holding a whole purple fig in its beak", "name_matches_content": true, "issue": "" },
+    { "file": "jam-yum.png", "depicts": "scruffy grey/tan wire-haired dog licking red jam off a spoon on a plate", "name_matches_content": true, "issue": "Dog's coat reads grey/tan wire-haired terrier, not the established solid-brown 'Dog' cast color used elsewhere in the curriculum (e.g. Week 20 jam callback) — cast-consistency drift, not a content mismatch." },
+    { "file": "sock-taste.png", "depicts": "white duck with a striped sock draped around its neck/held in beak", "name_matches_content": true, "issue": "" },
+    { "file": "big-yam.png", "depicts": "giant roasted yam on a woven mat with cat, dog, rat and duck holding forks around it", "name_matches_content": true, "issue": "artNote/mjPrompt call for 'the whole cast' including two peg dolls (Segina, Sam) gathered around the yam; the delivered image only shows the four animal cast members, no peg-doll children present." },
+    { "file": "yak.png", "depicts": "a Highland cow: long outward-curving horns, shaggy reddish-brown coat, cow-shaped body", "name_matches_content": false, "issue": "This is a Highland cow/cattle, not a yak. Yaks have a stockier oxen-like body, shorter down-curved horns, a dewlap, and very long shaggy coat/skirt reaching near the ground with a bushy tail. Species mismatch — needs regeneration." },
+    { "file": "yoyo.png", "depicts": "red yoyo mid-spin on its string", "name_matches_content": true, "issue": "" },
+    { "file": "yarn.png", "depicts": "ball of red yarn with crossed wooden knitting needles", "name_matches_content": true, "issue": "" },
+    { "file": "yacht.png", "depicts": "a small white toy/model sailboat on a dark teal cloth", "name_matches_content": true, "issue": "Reads as a small toy/ceramic model boat rather than a full-size sailing yacht — acceptable given the prompt explicitly said 'small,' but visually toy-like." },
+    { "file": "yogurt.png", "depicts": "cup of white yogurt with a raspberry on top and a spoon", "name_matches_content": true, "issue": "" },
+    { "file": "yolk.png", "depicts": "bright golden egg yolk in a white bowl", "name_matches_content": true, "issue": "" },
+    { "file": "yeti.png", "depicts": "friendly fluffy white yeti creature sitting", "name_matches_content": true, "issue": "" },
+    { "file": "potato-taste.png", "depicts": "nervous cartoon-faced potato on a plate with a fork poised beside it", "name_matches_content": true, "issue": "" }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Y-Y-Yes",
+      "line_map": [
+        { "line": "[Intro] y… y… y… (a quick smiling glide)", "status": "acceptable-hold", "image": null, "note": "abstract sound-intro, non-visual" },
+        { "line": "[Hook 1] Y-y-yam! Y-y-yam! It's a yam!", "status": "ok", "image": "yam.png" },
+        { "line": "[Hook 2] Y-y-yak! Y-y-yak! It's a yak!", "status": "generate", "image": "yak.png", "note": "existing yak.png depicts a Highland cow, not a yak — needs regeneration" },
+        { "line": "[Hook 3] Y-y-yoyo! Y-y-yoyo! It's a yoyo!", "status": "ok", "image": "yoyo.png" },
+        { "line": "[Breakdown] y-y-yarn…", "status": "ok", "image": "yarn.png" },
+        { "line": "[Breakdown] y-y-yacht…", "status": "ok", "image": "yacht.png" },
+        { "line": "[Breakdown] y-y-yogurt…", "status": "ok", "image": "yogurt.png" },
+        { "line": "[Bridge] A potato?! (NO!) P-p-potato! Not Y!", "status": "generate", "image": "potato.png", "note": "asset manifest calls for potato.png (teacher potato w/ glasses, REUSED FROM WEEK 1) but the file does not exist in this week's images folder; only potato-taste.png (different scene, nervous potato on a plate) is present" },
+        { "line": "[Final Hook] Y-y-yeti! Y-y-yeti! It's a yeti, yeti, yeti!", "status": "ok", "image": "yeti.png" }
+      ],
+      "aliases": {},
+      "generate": [
+        {
+          "proposed_filename": "yak.png",
+          "line": "Y-y-yak! Y-y-yak! It's a yak! (a yak!)",
+          "mj_prompt": "a shaggy Tibetan yak standing, stocky oxen-shaped body, short thick down-curved horns, dewlap, very long dark shaggy coat reaching near the ground, bushy tail, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "proposed_filename": "potato.png",
+          "line": "A potato?! (NO!) P-p-potato! Not Y!",
+          "mj_prompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ],
+      "wrong_art": [
+        {
+          "file": "yak.png",
+          "issue": "Depicts a Highland cow (long outward-curving horns, shaggy reddish coat, cattle body shape), not a yak.",
+          "fix": "Regenerate as a Tibetan yak (stocky oxen body, short down-curved horns, dewlap, long shaggy coat reaching the ground, bushy tail).",
+          "mj_prompt": "a shaggy Tibetan yak standing, stocky oxen-shaped body, short thick down-curved horns, dewlap, very long dark shaggy coat reaching near the ground, bushy tail, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ]
+    },
+    {
+      "role": "word",
+      "title": "Yum! A Yam!",
+      "line_map": [
+        { "line": "[Intro] (nom… nom… nom…)", "status": "acceptable-hold", "image": null, "note": "abstract sound-effect intro, non-visual" },
+        { "line": "[Hook] Yum! A yam! Yum! A yam! Is it yum? (yes! yes!)", "status": "ok", "image": "yum-yam.png" },
+        { "line": "[Verse 2] Yum! A nut! Yum! A nut! Is it yum? (yes! yes!)", "status": "ok", "image": "nut-yum.png" },
+        { "line": "[Verse 3] Yum! A fig! Yum! A fig! Is it yum? (yes! yes!)", "status": "ok", "image": "fig-yum.png" },
+        { "line": "[Verse 4] A sock?! A sock?! Is it yum? (NO! NOT yum!)", "status": "ok", "image": "sock-taste.png" },
+        { "line": "[Outro] A potato?! Is it yum? (POTATO! YUM!) Yum… a yam…", "status": "ok", "image": "potato-taste.png" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": []
+    }
+  ]
+}

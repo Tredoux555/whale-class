@@ -1,0 +1,70 @@
+{
+  "week": 45,
+  "images": [
+    { "file": "snow.png", "depicts": "fat soft snowflakes drifting, snowdrift beginning to gather", "name_matches_content": true, "issue": null },
+    { "file": "goat-snow.png", "depicts": "shaggy little goat trotting happily through deep snow, snow on nose", "name_matches_content": true, "issue": null },
+    { "file": "goat-boat.png", "depicts": "shaggy goat balanced inside a rustic rowboat, hooves on oars", "name_matches_content": true, "issue": null },
+    { "file": "goat-rowing.png", "depicts": "goat actively rowing, one oar gripped, spray/snow around boat", "name_matches_content": true, "issue": null },
+    { "file": "snow-growing.png", "depicts": "close-up of goat head nuzzling/resting in a snow pile", "name_matches_content": false, "issue": "Does not depict a snowdrift piling higher/growing taller as required by book:7 ('The snow can grow' — spec calls for a wide shot of a drift up to the goat's shoulders); this is a static close-up with no sense of growth." },
+    { "file": "sheep-snow.png", "depicts": "toy-style bee perched confidently on top of sheep, sheep nearly camouflaged in snow", "name_matches_content": true, "issue": "Bee appears content/perched rather than 'shivering' per spec artNote — minor, acceptable-hold." },
+    { "file": "potato-snow.png", "depicts": "snowman built from potato with carrot nose and stick arms, goat peering over", "name_matches_content": true, "issue": null },
+    { "file": "coat.png", "depicts": "fur-lined winter coat hanging on a hanger", "name_matches_content": true, "issue": null },
+    { "file": "road.png", "depicts": "winding forest road with sunbeams", "name_matches_content": true, "issue": null },
+    { "file": "toad.png", "depicts": "plump brown toad close-up", "name_matches_content": true, "issue": null },
+    { "file": "crow.png", "depicts": "glossy black crow perched", "name_matches_content": true, "issue": null },
+    { "file": "grow.png", "depicts": "small green seedling sprouting from soil", "name_matches_content": true, "issue": null }
+  ],
+  "missing_files": [
+    { "file": "goat.png", "required_for": "book:2 — 'A goat.' (story-friend intro, fully decodable)", "issue": "File does not exist anywhere in the Week 45 images folder." },
+    { "file": "boat.png", "required_for": "book:4 — 'A boat!' (rowboat at edge of frozen lake)", "issue": "File does not exist anywhere in the Week 45 images folder." }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Oh-Oh-Snow!",
+      "line_map": [
+        { "line": "O-A in the middle! (boat! goat!) O-W at the end! (snow! grow!)", "best_image_by_CONTENT": "boat.png(MISSING) + goat.png(MISSING) + snow.png + grow.png", "needs": "generate" },
+        { "line": "B-O-A-T — boat! (on the boat!) S-N-O-W — snow! (in the snow!)", "best_image_by_CONTENT": "boat.png(MISSING) + snow.png", "needs": "generate" },
+        { "line": "Row the boat! The snow can grow! The goat is in the snow!", "best_image_by_CONTENT": "goat-rowing.png + snow-growing.png + goat-snow.png", "needs": "generate", "note": "snow-growing.png doesn't show growth" },
+        { "line": "A potato?! (NO!) P-p-potato! In the snow!", "best_image_by_CONTENT": "potato-snow.png", "needs": "ok" }
+      ]
+    },
+    {
+      "role": "word",
+      "title": "The Goat in the Snow",
+      "line_map": [
+        { "line": "The goat is in the snow!", "best_image_by_CONTENT": "goat-snow.png", "needs": "ok" },
+        { "line": "The goat is on the boat! Row, goat, row!", "best_image_by_CONTENT": "goat-boat.png + goat-rowing.png", "needs": "ok" },
+        { "line": "The snow can grow!", "best_image_by_CONTENT": "snow-growing.png", "needs": "generate", "note": "current image doesn't show a growing/piling drift" },
+        { "line": "Sheep is in the snow! Bee is cold — brr!", "best_image_by_CONTENT": "sheep-snow.png", "needs": "ok" },
+        { "line": "The goat can row the boat!", "best_image_by_CONTENT": "goat-rowing.png", "needs": "ok" },
+        { "line": "In the snow?! (a potato!)", "best_image_by_CONTENT": "potato-snow.png", "needs": "ok" }
+      ]
+    }
+  ],
+  "aliases": {},
+  "generate": [
+    {
+      "proposed_filename": "goat.png",
+      "line": "A goat. (book:2)",
+      "mj_prompt": "a sturdy little goat with a shaggy coat standing with steaming breath, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "proposed_filename": "boat.png",
+      "line": "A boat! (book:4)",
+      "mj_prompt": "a little wooden rowboat pulled up at the edge of a frozen lake with oars ready, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "proposed_filename": "snow-growing-v2.png",
+      "line": "The snow can grow. (book:7)",
+      "mj_prompt": "a wide view of a snowdrift piled high up to a little shaggy goat's shoulders, snow still falling and visibly deeper than before, showing the growing height of the drift beside the goat, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    }
+  ],
+  "wrong_art": [
+    {
+      "file": "snow-growing.png",
+      "issue": "Static close-up of goat head nuzzling snow; does not depict a piling/growing snowdrift as required by the line 'The snow can grow' and the spec artNote (drift up to the goat's shoulders).",
+      "fix": "Regenerate per snow-growing-v2.png prompt above — wide shot showing drift height/growth."
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "week": 55,
+  "images": [
+    { "file": "fly.png", "depicts": "PLUSH TOY fly - fuzzy felt texture, large glass-look compound eyes, toy aesthetic", "name_matches_content": true, "issue": "style A of 3 - canonical toy/plush style, matches cast convention (Star/Sheep/Chick/Sam are plush/peg-doll)" },
+    { "file": "fly-sad.png", "depicts": "PHOTOREALISTIC real housefly on a dewy leaf", "name_matches_content": true, "issue": "style B - completely different visual style from fly.png (photoreal insect vs plush toy)" },
+    { "file": "fly-shy.png", "depicts": "PHOTOREALISTIC real fly on grass blade", "name_matches_content": true, "issue": "style B again, inconsistent with fly.png" },
+    { "file": "fly-cant-fly.png", "depicts": "PHOTOREALISTIC iridescent green fly with dust cloud", "name_matches_content": true, "issue": "style B, inconsistent" },
+    { "file": "bug-helps.png", "depicts": "bizarre red/black creature with actual rubber TIRE WHEELS instead of hind legs, carrying a grass blade", "name_matches_content": true, "issue": "very odd hybrid toy-car/insect design - may not read clearly as 'Bug' to a child; unique style unto itself" },
+    { "file": "bee-helps.png", "depicts": "PHOTOREALISTIC giant bee close-up + tiny photoreal fly in corner", "name_matches_content": true, "issue": "bee matches real-animal cast convention (fine); fly again photoreal (style B)" },
+    { "file": "fly-flies.png", "depicts": "PHOTOREALISTIC fly airborne + photoreal red beetle + photoreal bee below", "name_matches_content": true, "issue": "style B fly; beetle here looks like a normal ladybug/beetle, NOT matching bug-helps.png's wheeled design - a 4th inconsistency" },
+    { "file": "fly-happy.png", "depicts": "CARTOON/PLUSH fly with big googly BLUE eyes and toothy grin, different from fly.png's design", "name_matches_content": true, "issue": "style C - yet another distinct look, googly blue eyes vs fly.png's brown/amber compound eyes" },
+    { "file": "potato-sky.png", "depicts": "potato tangled in kite, tiny PHOTOREALISTIC fly buzzing nearby", "name_matches_content": true, "issue": "style B fly again" },
+    { "file": "sky.png", "depicts": "blue sky with single cloud over trees", "name_matches_content": true, "issue": null },
+    { "file": "cry.png", "depicts": "plush teardrop-shaped character crying, big eyes", "name_matches_content": true, "issue": null },
+    { "file": "spy.png", "depicts": "ornate gold magnifying glass", "name_matches_content": true, "issue": null },
+    { "file": "puppy.png", "depicts": "fluffy brown puppy", "name_matches_content": true, "issue": null },
+    { "file": "bunny.png", "depicts": "plush-looking soft bunny with long ears", "name_matches_content": true, "issue": null },
+    { "file": "candy.png", "depicts": "wrapped striped candy", "name_matches_content": true, "issue": null },
+    { "file": "party.png", "depicts": "polka-dot party hat with ribbons", "name_matches_content": true, "issue": null }
+  ],
+  "missing_files": [],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Why-My-Fly!",
+      "line_map": [
+        { "line": "Why-my-fly! Why? My! Fly! (up high!)", "best_image_by_content": "fly.png", "needs": "alias (style clash noted)" },
+        { "line": "Cry! Try! Sky! Shy!", "best_image_by_content": "cry.png / sky.png / fly-shy.png", "needs": "ok" },
+        { "line": "Happy! Puppy! Silly! Sunny!", "best_image_by_content": "fly-happy.png / puppy.png", "needs": "ok" },
+        { "line": "A potato?! P-p-potato!", "best_image_by_content": "potato-sky.png", "needs": "ok" }
+      ]
+    },
+    {
+      "role": "word",
+      "title": "Why, Fly, Why?",
+      "line_map": [
+        { "line": "Why, fly, why? Where is the fly? Up in the sky!", "best_image_by_content": "fly.png / fly-sad.png / sky.png", "needs": "style-clash: fly.png (plush) vs fly-sad.png (photoreal) are the SAME character rendered two ways" },
+        { "line": "The fly is shy. The fly can not fly! Try, fly, try!", "best_image_by_content": "fly-shy.png / fly-cant-fly.png", "needs": "style-clash (photoreal, differs from fly.png)" },
+        { "line": "Bug can help the fly.", "best_image_by_content": "bug-helps.png", "needs": "acceptable-hold, but odd wheeled design" },
+        { "line": "Bee can help the fly.", "best_image_by_content": "bee-helps.png", "needs": "ok" },
+        { "line": "Fly, fly, fly! (up high!)", "best_image_by_content": "fly-flies.png", "needs": "style-clash + beetle design mismatch vs bug-helps.png" },
+        { "line": "The fly is happy!", "best_image_by_content": "fly-happy.png", "needs": "style-clash (3rd distinct fly design)" },
+        { "line": "What is up so high?! POTATO! we can spell it now!", "best_image_by_content": "potato-sky.png", "needs": "style-clash (photoreal fly)" }
+      ]
+    }
+  ],
+  "aliases": {},
+  "generate": [],
+  "wrong_art": [
+    { "file": "fly-sad.png", "issue": "SEVERE cast-consistency failure: this is the SAME protagonist character (Fly) as fly.png (book spread 1, the intro portrait) but rendered in a completely different visual style - photorealistic real housefly instead of the plush-toy design established at debut", "fix": "regenerate to match fly.png's plush-toy design (fuzzy felt texture, large amber/brown compound 'glass' eyes)", "mj_prompt": "a plush-toy housefly with fuzzy felt texture and large amber compound glass eyes, slumped on a green leaf with wings drooping, forlorn, matching the canonical plush Fly design, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "fly-shy.png", "issue": "same cast-consistency failure as fly-sad.png - photorealistic fly instead of plush", "fix": "regenerate to match fly.png plush design", "mj_prompt": "a plush-toy housefly with fuzzy felt texture and large amber compound glass eyes, hiding behind a blade of grass peeking out shyly, matching the canonical plush Fly design, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "fly-cant-fly.png", "issue": "same cast-consistency failure - photorealistic instead of plush", "fix": "regenerate to match fly.png plush design", "mj_prompt": "a plush-toy housefly with fuzzy felt texture flapping hard but stuck on the ground with a small comic dust cloud, matching the canonical plush Fly design, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "fly-flies.png", "issue": "same cast-consistency failure - photorealistic fly; also the red beetle here doesn't match bug-helps.png's wheeled design (2 different Bug renderings too)", "fix": "regenerate fly to match plush design; align beetle/Bug appearance with bug-helps.png", "mj_prompt": "a plush-toy housefly lifting off airborne with wings a blur, matching the canonical plush Fly design, a red beetle (matching bug-helps.png canonical) and a photoreal honeybee cheering below, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "fly-happy.png", "issue": "a THIRD distinct fly design - cartoon/plush with googly blue eyes, doesn't match fly.png's amber compound eyes either", "fix": "regenerate to match fly.png plush design exactly (same eye color/texture)", "mj_prompt": "a plush-toy housefly with fuzzy felt texture and large amber compound glass eyes looping joyfully through the air with a big grin, matching the canonical plush Fly design exactly, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-sky.png", "issue": "photorealistic tiny fly instead of plush", "fix": "regenerate fly to plush design", "mj_prompt": "a single raw potato tangled in a tiny paper kite floating high in a night sky with a PLUSH-TOY housefly (matching canonical Fly design) buzzing happy circles around it, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "bug-helps.png", "issue": "Bug rendered as a bizarre hybrid with actual rubber tire-wheels instead of hind legs - unusual design that may not read clearly as an insect character to a child", "fix": "consider regenerating with a clearer insect-beetle design (still can keep personality/charm) so it reads unambiguously as 'Bug'", "mj_prompt": "a round red-shelled beetle character with six insect legs (no wheels), trundling up with an encouraging look, carrying a tiny grass ramp under one arm, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+  ]
+}

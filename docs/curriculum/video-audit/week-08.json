@@ -1,0 +1,58 @@
+{
+  "week": 8,
+  "images": [
+    { "file": "cat-command.png", "depicts": "child's hand pointing at mat, cat looking away unimpressed", "name_matches_content": true, "issue": null },
+    { "file": "cat-command2.png", "depicts": "hand pointing insistently, cat crouched with tail flicking", "name_matches_content": true, "issue": null },
+    { "file": "cat-command3.png", "depicts": "hand pointing a third time; Sam (fuzzy-haired variant) watching; ant tiny at bottom-left; no cat visible in frame", "name_matches_content": true, "issue": "cast drift — this Sam figure (yarn/fuzzy hair, tan outfit) doesn't match the painted-wood peg-doll boy design used elsewhere; cat is absent from the shot" },
+    { "file": "cat-in-cap.png", "depicts": "cat wedged smugly inside a red baseball cap", "name_matches_content": true, "issue": null },
+    { "file": "cat-in-pit.png", "depicts": "cat sitting innocently in a small sandpit", "name_matches_content": true, "issue": null },
+    { "file": "cat-in-tin.png", "depicts": "cat lounging in/on an open metal tin", "name_matches_content": true, "issue": null },
+    { "file": "cat-proud-mat.png", "depicts": "cat with Sam and Segina (round-ball-head variant) and two ants on the mat", "name_matches_content": true, "issue": "two ants visible instead of one; Sam design (round ball head) again differs from other weeks' painted-wood boy" },
+    { "file": "cat-sits-mat.png", "depicts": "cat sitting prim and proud on woven mat, looking up", "name_matches_content": true, "issue": null },
+    { "file": "igloo.png", "depicts": "small snow igloo with archway doorway", "name_matches_content": true, "issue": null },
+    { "file": "iguana.png", "depicts": "green iguana on branch", "name_matches_content": true, "issue": null },
+    { "file": "inchworm.png", "depicts": "green inchworm arched on a vine", "name_matches_content": true, "issue": null },
+    { "file": "infant.png", "depicts": "swaddled sleeping baby doll", "name_matches_content": true, "issue": null },
+    { "file": "injection.png", "depicts": "glass/metal syringe with blue liquid", "name_matches_content": true, "issue": "hallucinated garbled watermark/signature text in bottom-right corner" },
+    { "file": "insect.png", "depicts": "red-and-green jeweled ladybird beetle", "name_matches_content": true, "issue": null },
+    { "file": "instrument.png", "depicts": "gold brass trumpet", "name_matches_content": true, "issue": null },
+    { "file": "pin.png", "depicts": "gold safety pin", "name_matches_content": true, "issue": null },
+    { "file": "potato-cat-sit.png", "depicts": "potato sitting on mat, cat staring at it betrayed", "name_matches_content": true, "issue": null }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "I-I-In",
+      "line_map": [
+        { "line": "Ih-ih-insect! It's an insect!", "best_image_by_CONTENT": "insect.png", "needs": "ok" },
+        { "line": "Ih-ih-igloo! It's an igloo!", "best_image_by_CONTENT": "igloo.png", "needs": "ok" },
+        { "line": "Ih-ih-iguana! It's an iguana!", "best_image_by_CONTENT": "iguana.png", "needs": "ok" },
+        { "line": "Ih-ih-inchworm! It's an inchworm!", "best_image_by_CONTENT": "inchworm.png", "needs": "ok" },
+        { "line": "Ih-ih-in! We are IN! (we're in!)", "best_image_by_CONTENT": "cat-sits-mat.png (thematic — 'in'/'sit' resolution of the week)", "needs": "acceptable-hold" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": [
+        {
+          "file": "injection.png",
+          "issue": "hallucinated garbled watermark text baked into the render",
+          "fix": "reroll — mj_prompt: a toy doctor's syringe injection with clear glass barrel and blue liquid, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical, no text or watermark --ar 3:2 --style raw"
+        }
+      ]
+    },
+    {
+      "role": "word",
+      "title": "Sit, Cat, Sit!",
+      "line_map": [
+        { "line": "Sit, cat, sit! (hook)", "best_image_by_CONTENT": "cat-command.png", "needs": "ok" },
+        { "line": "The cat sat in a tin! (a tin?!)", "best_image_by_CONTENT": "cat-in-tin.png", "needs": "ok" },
+        { "line": "The cat sat in a cap! (a cap?!)", "best_image_by_CONTENT": "cat-in-cap.png", "needs": "ok" },
+        { "line": "The cat can sit! It sat on the mat! (at last!)", "best_image_by_CONTENT": "cat-sits-mat.png", "needs": "ok" },
+        { "line": "A potato sat on the mat! (POTATO!)", "best_image_by_CONTENT": "potato-cat-sit.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": []
+    }
+  ]
+}

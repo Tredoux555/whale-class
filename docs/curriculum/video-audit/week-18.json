@@ -1,0 +1,61 @@
+{
+  "week": 18,
+  "images": [
+    { "file": "log.png", "depicts": "single mossy log, spotlit, empty stage", "name_matches_content": true, "issue": null },
+    { "file": "bug.png", "depicts": "round beetle-bug, big eyes, waving leg", "name_matches_content": true, "issue": "minor: reads spiky rather than spec's 'round friendly' descriptor" },
+    { "file": "bug-on-log.png", "depicts": "bug perched centered on log", "name_matches_content": true, "issue": null },
+    { "file": "bug-sitting-log.png", "depicts": "bug sitting calmly on log", "name_matches_content": true, "issue": null },
+    { "file": "bug-running-log.png", "depicts": "bug scurrying along log", "name_matches_content": true, "issue": null },
+    { "file": "cat-on-log.png", "depicts": "cat perched on log", "name_matches_content": true, "issue": null },
+    { "file": "dog-pup-on-log.png", "depicts": "dog and pup on log together", "name_matches_content": true, "issue": null },
+    { "file": "crowded-log.png", "depicts": "full cast piled onto log", "name_matches_content": true, "issue": null },
+    { "file": "log-on-bug.png", "depicts": "log flipped, bug's face peeking out from under it", "name_matches_content": true, "issue": "minor deviation: artNote implies six legs sticking out, image shows face peeking instead" },
+    { "file": "potato-on-log.png", "depicts": "potato with glasses sitting on log", "name_matches_content": true, "issue": null },
+    { "file": "lion.png", "depicts": "single lion, spotlit card asset", "name_matches_content": true, "issue": null },
+    { "file": "leaf.png", "depicts": "single leaf card asset", "name_matches_content": true, "issue": null },
+    { "file": "lamp.png", "depicts": "single lamp card asset", "name_matches_content": true, "issue": null },
+    { "file": "ladder.png", "depicts": "single ladder card asset", "name_matches_content": true, "issue": null },
+    { "file": "lemon.png", "depicts": "single lemon card asset", "name_matches_content": true, "issue": null },
+    { "file": "lizard.png", "depicts": "single lizard card asset", "name_matches_content": true, "issue": null },
+    { "file": "lock.png", "depicts": "single padlock card asset", "name_matches_content": true, "issue": null },
+    { "file": "lollipop.png", "depicts": "single lollipop card asset", "name_matches_content": true, "issue": null },
+    { "file": "leg.png", "depicts": "leg card asset", "name_matches_content": true, "issue": null },
+    { "file": "lip.png", "depicts": "lip card asset", "name_matches_content": true, "issue": null },
+    { "file": "lap.png", "depicts": "lap card asset", "name_matches_content": true, "issue": null }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "L-L-Log!",
+      "line_map": [
+        { "line": "It's a lion! (a lion!)", "best_image_by_CONTENT": "lion.png", "needs": "ok" },
+        { "line": "It's a leaf! (a leaf!)", "best_image_by_CONTENT": "leaf.png", "needs": "ok" },
+        { "line": "It's a lamp! (a lamp!)", "best_image_by_CONTENT": "lamp.png", "needs": "ok" },
+        { "line": "It's a lemon! (a lemon!)", "best_image_by_CONTENT": "lemon.png", "needs": "ok" },
+        { "line": "A potato?! (NO!) P-p-potato! Not L!", "best_image_by_CONTENT": "potato-on-log.png", "needs": "acceptable-hold" },
+        { "line": "L-l-log! (The bug is on the log!)", "best_image_by_CONTENT": "bug-on-log.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "The Bug on the Log",
+      "line_map": [
+        { "line": "The bug is on the log! Who is on the log?", "best_image_by_CONTENT": "bug-on-log.png", "needs": "ok" },
+        { "line": "The cat is on the log!", "best_image_by_CONTENT": "cat-on-log.png", "needs": "ok" },
+        { "line": "The dog is on the log! The pup is on the log! The rat is on the log! A lot on the log!", "best_image_by_CONTENT": "crowded-log.png", "needs": "ok", "note": "dog-pup-on-log.png also valid as a secondary shot" },
+        { "line": "The bug is on the log… The LOG is on the bug?! (oh no! the log!)", "best_image_by_CONTENT": "log-on-bug.png", "needs": "acceptable-hold" },
+        { "line": "Get up, bug! Get up!", "best_image_by_CONTENT": "bug-running-log.png", "needs": "ok" },
+        { "line": "On the log… a potato! (POTATO!)", "best_image_by_CONTENT": "potato-on-log.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "dog.png", "line": "reused bingoPool/matching asset (not sung as standalone, low priority)", "mj_prompt": "ultra-realistic photograph, a single scruffy brown dog sitting centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "potato.png", "line": "reused bingoPool asset (low priority)", "mj_prompt": "ultra-realistic photograph, a single round potato with tiny round glasses, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": []
+    }
+  ]
+}

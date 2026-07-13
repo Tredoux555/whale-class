@@ -47,6 +47,17 @@ import urllib.request
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(os.path.dirname(HERE))  # scripts/mvgen -> scripts -> repo
 
+# Reuse the renderer's OWN tokenizer/stopword rules so the per-song image filter
+# (FIX 3) agrees exactly with what the shotlist matcher will later anchor on.
+sys.path.insert(0, HERE)
+import shotlist as sl  # noqa: E402
+from align import extract_lyric_words  # noqa: E402
+
+# FIX 3b: optional alias map letting the video pipeline copy curriculum images
+# under sung-word names WITHOUT renaming the source files (packs/specs depend on
+# the originals). Shape: {"NN": {"original.png": "video-name.png", ...}, ...}.
+ALIASES_FILE = os.path.join(HERE, "curriculum-video-aliases.json")
+
 CURRICULUM_ROOT = os.path.expanduser(
     os.environ.get("MVGEN_CURRICULUM_ROOT", "~/Desktop/English Curriculum 2026"))
 MUSIC_ROOT = os.path.expanduser(
@@ -148,6 +159,132 @@ def load_spec(week):
 
 
 # ---------------------------------------------------------------------------
+# FIX 3 / 3b — per-song image selection + alias layer
+# ---------------------------------------------------------------------------
+
+def _is_coloring(name):
+    """True for a ``*-coloring.<ext>`` printable — never wanted in a video."""
+    stem = os.path.splitext(os.path.basename(name))[0].lower()
+    return stem.endswith("-coloring") or stem.endswith("_coloring") \
+        or stem.endswith("coloring")
+
+
+def load_aliases(week):
+    """Return the ``{original_name: video_name}`` alias map for ``week`` (or {}).
+
+    Week keys in the JSON may be zero-padded ("04") or not ("4") — both accepted.
+    A missing/malformed file degrades to no aliases (never fatal)."""
+    if not os.path.isfile(ALIASES_FILE):
+        return {}
+    try:
+        with open(ALIASES_FILE, encoding="utf-8") as fh:
+            data = json.load(fh)
+    except (OSError, ValueError) as e:
+        _log("  WARN could not read %s (%s) — no aliases"
+             % (os.path.basename(ALIASES_FILE), e))
+        return {}
+    for key in ("%02d" % week, "%d" % week, str(week)):
+        m = data.get(key)
+        if isinstance(m, dict):
+            # Keep only string->string entries (ignore the "_comment" doc key).
+            return {str(k): str(v) for k, v in m.items()
+                    if isinstance(v, str) and not k.startswith("_")}
+    return {}
+
+
+def _lyric_cover(lyrics):
+    """Set of content-word keys (+ plural variants) the song actually sings.
+
+    Uses the renderer's own lyric parser (drops [Section] headers) + tokenizer/
+    stopword rules, so an image is judged 'in the lyrics' the SAME way the
+    shotlist matcher would anchor it."""
+    keys = set()
+    for w in extract_lyric_words(lyrics or ""):
+        k = w["key"]
+        if (k and not k.isdigit() and len(k) >= sl._MIN_TOKEN_LEN
+                and k not in sl._STOPWORDS):
+            keys.add(k)
+    cover = set(keys)
+    for k in keys:
+        cover |= sl._plural_variants(k)
+    return keys, cover
+
+
+def _image_sung(effective_name, lyric_keys, lyric_cover):
+    """True if any token of ``effective_name`` is sung (plural-folded, both
+    directions) — mirrors shotlist._tok_match."""
+    for t in sl.filename_tokens(effective_name):
+        if t in lyric_cover:
+            return True
+        if sl._plural_variants(t) & lyric_keys:
+            return True
+    return False
+
+
+def plan_images(images, lyrics, alias_map, mode):
+    """Decide which source images go into the video, and under what name.
+
+    Returns ``(pairs, excluded, note)`` where ``pairs`` = ``[(src_path,
+    dest_name), ...]`` (dest_name is the alias when one applies), ``excluded`` =
+    the basenames dropped, and ``note`` = an optional loud message.
+
+    Rules (FIX 3): *-coloring.* are ALWAYS excluded from video projects. In
+    ``lyrics`` mode only images whose (aliased) name shares a token with the
+    song's sung content words are kept; if that leaves < 4, fall back to ALL
+    non-coloring images (loud note). ``all`` mode keeps every non-coloring image.
+    FIX 3b: the alias name (if any) is what gets copied AND what the lyric filter
+    tokenizes; an alias that would collide with another project filename is
+    skipped (loud warn) and the original name is used.
+    """
+    lyric_keys, lyric_cover = _lyric_cover(lyrics)
+    originals = {os.path.basename(p) for p in images}
+
+    # Resolve effective (alias-or-original) dest names, guarding collisions.
+    claimed = set()
+    eff = []  # (src, dest_name)
+    for src in images:
+        base = os.path.basename(src)
+        dest = base
+        alias = alias_map.get(base)
+        if alias and alias != base:
+            # Collision = the alias name already belongs to another source file,
+            # or was already claimed by an earlier alias in this project.
+            others = originals - {base}
+            if alias in others or alias in claimed:
+                _log("  WARN alias %r -> %r collides with an existing project "
+                     "filename — skipping alias, using %r" % (base, alias, base))
+            else:
+                dest = alias
+        if dest in claimed:
+            # Defensive: two originals with the same basename (shouldn't happen).
+            _log("  WARN duplicate project filename %r — keeping first" % dest)
+            continue
+        claimed.add(dest)
+        eff.append((src, dest))
+
+    # Drop coloring pages unconditionally.
+    non_coloring = [(s, d) for (s, d) in eff if not _is_coloring(d)]
+    coloring_excluded = [os.path.basename(s) for (s, d) in eff if _is_coloring(d)]
+
+    note = None
+    if mode == "all":
+        kept = non_coloring
+    else:  # lyrics
+        kept = [(s, d) for (s, d) in non_coloring
+                if _image_sung(d, lyric_keys, lyric_cover)]
+        if len(kept) < 4:
+            note = ("lyric filter kept only %d image(s) (< 4) — falling back to "
+                    "ALL %d non-coloring images" % (len(kept), len(non_coloring)))
+            kept = non_coloring
+
+    kept_dests = {d for (_s, d) in kept}
+    excluded = sorted(
+        coloring_excluded
+        + [d for (_s, d) in non_coloring if d not in kept_dests])
+    return kept, excluded, note
+
+
+# ---------------------------------------------------------------------------
 # Project folder + job submission
 # ---------------------------------------------------------------------------
 
@@ -164,8 +301,12 @@ def _clear_dir(d):
             pass
 
 
-def build_project(slug, mp3_path, images, lyrics):
+def build_project(slug, mp3_path, image_pairs, lyrics):
     """Create/refresh ``_projects/<slug>/{audio,images,subs}`` + lyrics.txt.
+
+    ``image_pairs`` = ``[(src_path, dest_name), ...]`` — each source image is
+    copied into the project under ``dest_name`` (the FIX 3b alias when one
+    applies, else its original basename).
 
     Returns ``(audio_dest, images_dir)`` — both absolute, under $HOME."""
     pdir = os.path.join(PROJECTS_ROOT, slug)
@@ -181,8 +322,8 @@ def build_project(slug, mp3_path, images, lyrics):
 
     audio_dest = os.path.join(audio_dir, os.path.basename(mp3_path))
     shutil.copy2(mp3_path, audio_dest)
-    for img in images:
-        shutil.copy2(img, os.path.join(images_dir, os.path.basename(img)))
+    for src, dest_name in image_pairs:
+        shutil.copy2(src, os.path.join(images_dir, dest_name))
 
     if lyrics:
         try:
@@ -288,12 +429,14 @@ def report_accuracy_line(out_path):
 # Per-song processing
 # ---------------------------------------------------------------------------
 
-def process_song(week, song, wk_dir, theme, pulse, dry_run, daemon, wait):
+def process_song(week, song, wk_dir, theme, pulse, dry_run, daemon, wait,
+                 alias_map=None, images_filter="lyrics"):
     """Plan + (unless dry-run) submit one song. Returns a result dict."""
     role = (song.get("role") or "song").strip()
     title = song.get("title") or ""
     lyrics = song.get("lyrics") or ""
     n_roles = song.get("_n_roles", 1)
+    alias_map = alias_map or {}
     slug = "w%02d-%s" % (week, role)
     label = "W%02d %s (%s)" % (week, title, role)
 
@@ -316,11 +459,31 @@ def process_song(week, song, wk_dir, theme, pulse, dry_run, daemon, wait):
         return {"label": label, "slug": slug, "status": "skipped",
                 "reason": "; ".join(problems)}
 
+    # FIX 3 / 3b: per-song image selection (lyric filter + coloring drop) under
+    # alias names — so the video only carries images this song actually sings.
+    image_pairs, excluded, note = plan_images(
+        images, lyrics, alias_map, images_filter)
+
     _log("  %s" % label)
     _log("    mp3    : %s" % os.path.basename(mp3))
-    _log("    images : %d in %s" % (len(images), images_dir_src))
+    _log("    images : %d found -> %d kept (%s), %d excluded"
+         % (len(images), len(image_pairs), images_filter, len(excluded)))
+    aliased = [(os.path.basename(s), d) for (s, d) in image_pairs
+               if d != os.path.basename(s)]
+    if aliased:
+        _log("    aliased: %s"
+             % ", ".join("%s->%s" % (o, a) for (o, a) in aliased))
+    if excluded:
+        _log("    excluded: %s" % ", ".join(excluded))
+    if note:
+        _log("    ⚠️  %s" % note)
     _log("    lyrics : %d chars" % len(lyrics))
     _log("    project: %s" % os.path.join(PROJECTS_ROOT, slug))
+
+    if not image_pairs:
+        _log("  SKIP %s — no usable images after filtering" % label)
+        return {"label": label, "slug": slug, "status": "skipped",
+                "reason": "no usable images after filtering"}
 
     if dry_run:
         # Plan-only: show the exact payload without touching the filesystem.
@@ -334,7 +497,7 @@ def process_song(week, song, wk_dir, theme, pulse, dry_run, daemon, wait):
         return {"label": label, "slug": slug, "status": "planned"}
 
     try:
-        audio_dest, images_dest = build_project(slug, mp3, images, lyrics)
+        audio_dest, images_dest = build_project(slug, mp3, image_pairs, lyrics)
     except OSError as e:
         _log("    FAIL building project: %s" % e)
         return {"label": label, "slug": slug, "status": "failed",
@@ -366,7 +529,8 @@ def process_song(week, song, wk_dir, theme, pulse, dry_run, daemon, wait):
     return result
 
 
-def process_week(week, song_filter, theme, pulse, dry_run, daemon, wait):
+def process_week(week, song_filter, theme, pulse, dry_run, daemon, wait,
+                 images_filter="lyrics"):
     spec, err = load_spec(week)
     if spec is None:
         _log("Week %02d: %s" % (week, err))
@@ -380,7 +544,10 @@ def process_week(week, song_filter, theme, pulse, dry_run, daemon, wait):
 
     n_roles = len(songs)
     wk_dir = week_dir(week)
+    alias_map = load_aliases(week)
     _log("Week %02d — %s  (%s)" % (week, spec.get("sound", "?"), wk_dir))
+    if alias_map:
+        _log("  aliases: %d for this week" % len(alias_map))
     if not os.path.isdir(wk_dir):
         _log("  (week folder not found — songs will be skipped)")
 
@@ -391,7 +558,9 @@ def process_week(week, song_filter, theme, pulse, dry_run, daemon, wait):
             continue
         song["_n_roles"] = n_roles
         results.append(process_song(week, song, wk_dir, theme, pulse,
-                                    dry_run, daemon, wait))
+                                    dry_run, daemon, wait,
+                                    alias_map=alias_map,
+                                    images_filter=images_filter))
     if song_filter != "all" and not results:
         _log("  (no '%s' song in week %02d)" % (song_filter, week))
     return results
@@ -415,6 +584,12 @@ def main(argv=None):
     p.add_argument("--pulse", default="anchor",
                    choices=["off", "anchor", "beat", "downbeat"],
                    help="beat-pulse mode (default anchor — key words only)")
+    p.add_argument("--images-filter", default="lyrics",
+                   choices=["lyrics", "all"],
+                   help="'lyrics' (default): only images whose (aliased) name is "
+                        "sung go into the video; falls back to all non-coloring "
+                        "if < 4 survive. 'all': every non-coloring image. "
+                        "*-coloring.* are always excluded (FIX 3).")
     p.add_argument("--dry-run", action="store_true",
                    help="print the plan (assets found, missing flagged, job "
                         "payload) without copying or submitting")
@@ -432,8 +607,9 @@ def main(argv=None):
         lo, hi = LEVEL_WEEKS[args.level]
         weeks = list(range(lo, hi + 1))
 
-    _log("mvgen curriculum-batch — %d week(s), song=%s theme=%s pulse=%s%s"
-         % (len(weeks), args.song, args.theme, args.pulse,
+    _log("mvgen curriculum-batch — %d week(s), song=%s theme=%s pulse=%s "
+         "images=%s%s"
+         % (len(weeks), args.song, args.theme, args.pulse, args.images_filter,
             "  [DRY RUN]" if args.dry_run else ""))
     _log("curriculum root: %s" % CURRICULUM_ROOT)
     _log("projects root  : %s" % PROJECTS_ROOT)
@@ -443,7 +619,8 @@ def main(argv=None):
     all_results = []
     for wk in weeks:
         all_results.extend(process_week(wk, args.song, args.theme, args.pulse,
-                                        args.dry_run, args.daemon, args.wait))
+                                        args.dry_run, args.daemon, args.wait,
+                                        images_filter=args.images_filter))
 
     # summary
     def _count(st):

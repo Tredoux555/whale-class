@@ -1,0 +1,68 @@
+{
+  "week": 11,
+  "images": [
+    { "file": "cat-jump-pot.png", "depicts": "striped tabby cat leaping off a steaming pot lid", "name_matches_content": true, "issue": null },
+    { "file": "cat-on-pot.png", "depicts": "striped tabby cat crouched on a pot lid, steam rising", "name_matches_content": true, "issue": null },
+    { "file": "octagon.png", "depicts": "wooden octagon-shaped block, macro", "name_matches_content": true, "issue": null },
+    { "file": "octopus.png", "depicts": "cute baby octopus close-up, curled tentacles", "name_matches_content": true, "issue": null },
+    { "file": "olive.png", "depicts": "single large green olive on a ridged plate", "name_matches_content": true, "issue": null },
+    { "file": "omelette.png", "depicts": "folded yellow omelette on a dark plate", "name_matches_content": true, "issue": null },
+    { "file": "on-celebrate.png", "depicts": "peg-doll cast + kitten + ant celebrating in front of giant gold ON letters, fireworks", "name_matches_content": true, "issue": null },
+    { "file": "orange.png", "depicts": "orange with attached green leaf", "name_matches_content": true, "issue": null },
+    { "file": "ostrich.png", "depicts": "ostrich standing, side profile", "name_matches_content": true, "issue": null },
+    { "file": "otter.png", "depicts": "otter sitting with paws clasped together", "name_matches_content": true, "issue": null },
+    { "file": "ox.png", "depicts": "ox with large curved horns, front view", "name_matches_content": true, "issue": null },
+    { "file": "pot-cool.png", "depicts": "cat sniffing a black pot that is STILL visibly steaming", "name_matches_content": false, "issue": "filename says 'cool' but the pot is still steaming, undercutting the 'not hot / phew' beat" },
+    { "file": "pot-hot.png", "depicts": "black pot with fire and steam glowing red-hot", "name_matches_content": true, "issue": null },
+    { "file": "pot-on-top.png", "depicts": "peg-doll character (green hat) placing a pot atop a stack of pots", "name_matches_content": true, "issue": null },
+    { "file": "pot.png", "depicts": "plain black pot on a stove burner", "name_matches_content": true, "issue": null },
+    { "file": "potato-pot.png", "depicts": "potato sitting in a pot, cat peering over the rim", "name_matches_content": true, "issue": null },
+    { "file": "sam-pot.png", "depicts": "Sam peg-doll near a steaming clay pot, two giant hands reaching in", "name_matches_content": true, "issue": null }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "O-O-On",
+      "line_map": [
+        { "line": "Ah-ah-octopus! It's an octopus!", "best_image_by_content": "octopus.png", "needs": "ok" },
+        { "line": "Ah-ah-olive! It's an olive!", "best_image_by_content": "olive.png", "needs": "ok" },
+        { "line": "Ah-ah-ox! It's an ox!", "best_image_by_content": "ox.png", "needs": "ok" },
+        { "line": "Ah-ah-otter! It's an otter!", "best_image_by_content": "otter.png", "needs": "ok" },
+        { "line": "A potato?! (NO!) P-p-potato! Not ah!", "best_image_by_content": "potato-pot.png", "needs": "acceptable-hold" },
+        { "line": "Ah-ah-on! ON! You can read it!", "best_image_by_content": "on-celebrate.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "The Pot Is Hot",
+      "line_map": [
+        { "line": "The pot is hot! The pot is hot!", "best_image_by_content": "pot-hot.png", "needs": "ok" },
+        { "line": "The cat is on the pot! (get off!)", "best_image_by_content": "cat-on-pot.png", "needs": "ok" },
+        { "line": "Hop off the pot, cat!", "best_image_by_content": "cat-jump-pot.png", "needs": "ok" },
+        { "line": "ON! You can read it! O-N — on! ...now you READ it!", "best_image_by_content": "on-celebrate.png", "needs": "ok" },
+        { "line": "The pot is on top! (up high!)", "best_image_by_content": "pot-on-top.png", "needs": "ok" },
+        { "line": "It is not hot. (phew…)", "best_image_by_content": "pot-cool.png", "needs": "generate", "note": "pot-cool.png still shows steam - see wrong_art" },
+        { "line": "A potato… in the pot?! (POTATO!)", "best_image_by_content": "potato-pot.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [
+        {
+          "proposed_filename": "pot-cool-v2.png",
+          "line": "It is not hot. (phew…)",
+          "mj_prompt": "dark forest editorial photography, small black ceramic pot on a wooden counter, NO steam or smoke, calm cool morning light, a striped tabby cat sitting relaxed and casual beside it, muted deep-green background, cinematic Montessori dark-trap aesthetic"
+        }
+      ],
+      "wrong_art": [
+        {
+          "file": "pot-cool.png",
+          "issue": "named 'cool' but still shows visible steam rising from the pot, contradicting the 'not hot / phew, all is calm' lyric beat",
+          "fix": "regenerate with no steam and a visibly relaxed cat (see generate entry pot-cool-v2.png)",
+          "mj_prompt": "dark forest editorial photography, small black ceramic pot on a wooden counter, NO steam, calm cool morning light, a striped tabby cat sitting relaxed beside it, muted green background, cinematic Montessori dark-trap aesthetic"
+        }
+      ]
+    }
+  ]
+}

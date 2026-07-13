@@ -1,0 +1,64 @@
+{
+  "week": 36,
+  "images": [
+    { "file": "best-nest.png", "depicts": "chick wings-spread ta-da presenting nest", "name_matches_content": true, "issue": null },
+    { "file": "chick-went-up.png", "depicts": "chick perched on branch near nest", "name_matches_content": true, "issue": "weak climbing action, but acceptable" },
+    { "file": "chick-in-nest.png", "depicts": "chick settled snugly in nest, eyes closed", "name_matches_content": true, "issue": null },
+    { "file": "chick-jump-nest.png", "depicts": "chick mid-jump above nest, feathers flying", "name_matches_content": true, "issue": null },
+    { "file": "snake-rest-nest.png", "depicts": "snake coiled beside chick in nest", "name_matches_content": true, "issue": null },
+    { "file": "sheep-in-nest.png", "depicts": "chick+snake+sheep calmly cuddled together, smiling", "name_matches_content": false, "issue": "spec wants SHEEP squeezing into an already-full nest, wool bulging, comic overload — this shows a calm group snuggle instead, near-duplicate of cast-in-nest.png" },
+    { "file": "cast-in-nest.png", "depicts": "chick+snake+sheep faces close together in nest, happy heap", "name_matches_content": true, "issue": "near-duplicate composition of sheep-in-nest.png" },
+    { "file": "potato-nest.png", "depicts": "potato snug in nest with chick, snake, sheep peering", "name_matches_content": true, "issue": null },
+    { "file": "tent.png", "depicts": "small triangular camping tent, glowing inside", "name_matches_content": true, "issue": null },
+    { "file": "band.png", "depicts": "a solid copper/bronze ring or bracelet", "name_matches_content": false, "issue": "spec asked for 'a stretchy rubber band' — this is a solid metal-look ring, not a rubber band" },
+    { "file": "jump.png", "depicts": "child mid-jump, arms up, feet off ground", "name_matches_content": true, "issue": null },
+    { "file": "nest.png", "depicts": "MISSING", "name_matches_content": false, "issue": "asset never generated (book:1, cards, bingo, matching)" },
+    { "file": "hand.png", "depicts": "MISSING", "name_matches_content": false, "issue": "asset never generated (cards, bingo, matching) — anchor word of the week has no image at all" },
+    { "file": "lamp.png", "depicts": "MISSING", "name_matches_content": false, "issue": "asset never generated (cards, bingo, matching)" },
+    { "file": "hand-coloring.png", "depicts": "MISSING", "name_matches_content": false, "issue": "coloring page never generated" }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Hand-Hand-Hand!",
+      "line_map": [
+        { "line": "Hand! Hand! Hand-hand-hand! (x2 incl. outro)", "best_image_by_content": "none — hand.png missing", "needs": "generate" },
+        { "line": "(nd… nd… nd…) — phonetic drill, repeats", "best_image_by_content": "n/a (abstract sound)", "needs": "acceptable-hold" },
+        { "line": "Two sounds at the END — stuck together! / /n/ and /d/ — nd! nd!", "best_image_by_content": "n/a (conceptual)", "needs": "acceptable-hold" },
+        { "line": "HAND! (clap your HAND!) HAND!", "best_image_by_content": "none — hand.png missing", "needs": "generate" },
+        { "line": "Went-went-went! /n/ and /t/ — nt! ... Off it WENT! WENT!", "best_image_by_content": "n/a — 'went' is a function word, no asset expected", "needs": "acceptable-hold" },
+        { "line": "Jump-jump-jump! JUMP! / UP you JUMP! (boing!) JUMP!", "best_image_by_content": "jump.png", "needs": "ok" },
+        { "line": "Nest-nest-nest! NEST! / In the NEST! (tweet!) NEST!", "best_image_by_content": "chick-in-nest.png (nest.png itself missing)", "needs": "alias" },
+        { "line": "A potato?! (NO!) / P-p-potato! No end blend!", "best_image_by_content": "potato-nest.png", "needs": "alias" },
+        { "line": "Outro: Hand! Went! Jump! Nest!", "best_image_by_content": "jump.png + chick-in-nest.png (hand still uncovered)", "needs": "generate" }
+      ],
+      "aliases": { "nest": "chick-in-nest.png", "potato": "potato-nest.png" },
+      "generate": [
+        { "proposed_filename": "hand.png", "line": "Hand! Hand! Hand-hand-hand! / HAND! (clap your HAND!)", "mj_prompt": "a child's open hand palm forward with fingers spread, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "nest.png", "line": "A nest. (book:1) / Nest-nest-nest!", "mj_prompt": "a cosy round twig nest lined with soft fluff sitting empty on a branch stub, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "lamp.png", "line": "materials card word", "mj_prompt": "a small glowing bedside lamp with a round shade, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "hand-coloring.png", "line": "coloring page", "mj_prompt": "an open hand with spread fingers, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+      ],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "The Best Nest",
+      "line_map": [
+        { "line": "The best nest! (hook, x4)", "best_image_by_content": "best-nest.png", "needs": "ok" },
+        { "line": "Jump in the best nest! (jump! jump!)", "best_image_by_content": "chick-jump-nest.png", "needs": "ok" },
+        { "line": "Chick went up! Chick went in the nest!", "best_image_by_content": "chick-went-up.png / chick-in-nest.png", "needs": "ok" },
+        { "line": "Snake can rest in the nest! Sheep can jump and land!", "best_image_by_content": "snake-rest-nest.png; sheep-in-nest.png does NOT show sheep jumping/landing", "needs": "generate" },
+        { "line": "Land in the nest! (land! land!) / The best nest!", "best_image_by_content": "cast-in-nest.png", "needs": "ok" },
+        { "line": "The nest… so soft… (hush…) A potato?! (POTATO!) In the nest?! (a potato nest!)", "best_image_by_content": "potato-nest.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "sheep-jump-land.png", "line": "Sheep can jump and land! Land in the nest!", "mj_prompt": "a fluffy round white sheep with kind dark eyes mid-jump landing into an overstuffed twig nest, wool bulging comically over the rim, a yellow chick and green snake already squished inside laughing, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": [
+        { "file": "band.png", "issue": "shows a solid metal ring, not a stretchy rubber band", "fix": "regenerate", "mj_prompt": "a stretchy pink rubber band looped and slightly twisted, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ]
+    }
+  ]
+}

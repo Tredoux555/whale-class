@@ -1,0 +1,74 @@
+{
+  "week": 14,
+  "images": [
+    { "file": "bed.png", "depicts": "wooden bed frame with rumpled cream linens", "name_matches_content": true, "issue": null },
+    { "file": "big-egg.png", "depicts": "large plain white egg in a straw nest", "name_matches_content": true, "issue": null },
+    { "file": "eggplant.png", "depicts": "purple eggplant with green calyx", "name_matches_content": true, "issue": null },
+    { "file": "elbow.png", "depicts": "close-up of a bent arm/elbow with clenched fist", "name_matches_content": true, "issue": null },
+    { "file": "elephant.png", "depicts": "baby elephant close-up, trunk curled, walking", "name_matches_content": true, "issue": null },
+    { "file": "elf.png", "depicts": "toy elf figure in knitted green hat and outfit", "name_matches_content": true, "issue": null },
+    { "file": "engine.png", "depicts": "vintage red-and-gold toy train engine, smoke", "name_matches_content": true, "issue": null },
+    { "file": "envelope.png", "depicts": "plain white envelope, sealed", "name_matches_content": true, "issue": null },
+    { "file": "exit.png", "depicts": "green neon EXIT sign", "name_matches_content": true, "issue": null },
+    { "file": "get.png", "depicts": "close-up hand reaching for a small glowing seed/object", "name_matches_content": true, "issue": null },
+    { "file": "hen-on-dog.png", "depicts": "hen perched on top of a shaggy terrier's head", "name_matches_content": false, "issue": "the lyric line this should illustrate is explicitly 'On the cat?! Ten hens on the cat!' - no cat appears in this image, a dog is shown instead" },
+    { "file": "hens-in-pen.png", "depicts": "cluster of hens perched on a rustic wooden pen railing", "name_matches_content": true, "issue": null },
+    { "file": "hens-on-bed.png", "depicts": "hens amid flying feathers on a wooden bed", "name_matches_content": true, "issue": null },
+    { "file": "hens-on-man.png", "depicts": "hens covering a shirtless photorealistic human man, eyes closed", "name_matches_content": true, "issue": "photorealistic human breaks from the peg-doll cast style used elsewhere in the curriculum (e.g. on-celebrate.png, sam-pot.png in Week 11)" },
+    { "file": "man-chasing-hens.png", "depicts": "photorealistic human man lunging to catch scattering hens, feathers flying", "name_matches_content": true, "issue": "same photorealistic-human style break as hens-on-man.png" },
+    { "file": "potato-egg.png", "depicts": "egg-shaped potato wearing round glasses, nested among hens", "name_matches_content": true, "issue": null },
+    { "file": "ten-hens.png", "depicts": "row of ~7 hens with a glowing letter E in the background", "name_matches_content": true, "issue": "only about 7 hens are clearly visible, not a literal 10 (minor)" },
+    { "file": "ten.png", "depicts": "line of hens walking, close focus on the front two", "name_matches_content": true, "issue": null }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "E-E-Egg!",
+      "line_map": [
+        { "line": "E-e-egg! It's an egg!", "best_image_by_content": "big-egg.png", "needs": "ok" },
+        { "line": "E-e-elephant! It's an elephant!", "best_image_by_content": "elephant.png", "needs": "ok" },
+        { "line": "E-e-elbow! It's an elbow!", "best_image_by_content": "elbow.png", "needs": "ok" },
+        { "line": "E-e-engine! It's an engine!", "best_image_by_content": "engine.png", "needs": "ok" },
+        { "line": "E-e-egg! E-e-hen! Ten hens and an egg!", "best_image_by_content": "ten-hens.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "Ten Hens",
+      "line_map": [
+        { "line": "Ten hens! Ten hens! Where are the ten hens?", "best_image_by_content": "ten.png", "needs": "ok" },
+        { "line": "On the bed! On the bed! Ten hens on the bed!", "best_image_by_content": "hens-on-bed.png", "needs": "ok" },
+        { "line": "In the pen! In the pen! Ten hens in the pen!", "best_image_by_content": "hens-in-pen.png", "needs": "ok" },
+        { "line": "On the man! On the man! Ten hens on the man!", "best_image_by_content": "hens-on-man.png", "needs": "acceptable-hold", "note": "content matches but uses a photorealistic human, style break - see wrong_art" },
+        { "line": "Get the hens! Get the hens!", "best_image_by_content": "man-chasing-hens.png", "needs": "acceptable-hold", "note": "same style-break note" },
+        { "line": "On the cat?! (on the CAT?!) Ten hens on the cat!", "best_image_by_content": "hen-on-dog.png", "needs": "generate", "note": "WRONG ANIMAL - see wrong_art" },
+        { "line": "The egg is big… The egg is a… (POTATO!)", "best_image_by_content": "potato-egg.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [
+        {
+          "proposed_filename": "hen-on-cat.png",
+          "line": "On the cat?! (on the CAT?!) Ten hens on the cat!",
+          "mj_prompt": "dark forest editorial photography, a fluffy brown hen perched calmly on top of a wide-eyed striped tabby cat's head, cat looking alarmed and annoyed, muted green background, cinematic Montessori dark-trap aesthetic, matches the visual style of hens-in-pen.png"
+        }
+      ],
+      "wrong_art": [
+        {
+          "file": "hen-on-dog.png",
+          "issue": "filename and image content show a hen on a DOG's head, but the lyric it must illustrate is explicitly 'On the cat?! (on the CAT?!) Ten hens on the cat!' - no dog appears anywhere in this song's lyrics, and no cat appears in this image",
+          "fix": "regenerate as hen-on-cat.png (see generate list); hen-on-dog.png should not be used for this song",
+          "mj_prompt": "see generate list entry hen-on-cat.png"
+        },
+        {
+          "file": "hens-on-man.png / man-chasing-hens.png",
+          "issue": "these use a photorealistic human adult rather than the peg-doll cast style established elsewhere in the curriculum - visual style break, lower priority than the hen-on-dog mismatch",
+          "fix": "OPTIONAL - if strict cast consistency is required, regenerate with a peg-doll 'farmer' character; otherwise acceptable-hold since content itself matches the lyric",
+          "mj_prompt": "dark forest editorial photography, wooden peg-doll farmer character (Sam/Segina cast style) with hens perched on head and shoulders / running from chasing hens, feathers flying, muted green background, cinematic Montessori dark-trap aesthetic"
+        }
+      ]
+    }
+  ]
+}

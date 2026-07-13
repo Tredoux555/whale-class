@@ -1,0 +1,28 @@
+{
+  "_comment": "curriculum-batch.py (FIX 3b) image-name ALIAS map for the mvgen video pipeline ONLY. Keys are week numbers (zero-padded '04' or plain '4' both work). Each value maps an ORIGINAL curriculum image filename to the sung-word VIDEO filename the video should use, so the shotlist matcher can anchor images to the words actually sung WITHOUT renaming the curriculum source files (packs/specs depend on the originals). The aliased name is copied into the project and is what the lyric filter tokenizes. An alias that would collide with another project filename is skipped with a loud warning. Add per-week entries as needed.",
+  "04": {
+    "_comment": "W04 'The Cat Is on the Mat' \u2014 the levitating/landing cat is sung with the prepositions up/down; alias so cat-up-* and cat-down-* anchor on the sung 'up'/'down'.",
+    "cat-levitating.png": "cat-up-levitating.png",
+    "cat-landing.png": "cat-down-landing.png",
+    "potato-beside-cat.png": "mat-potato-beside-cat.png"
+  },
+  "26": {
+    "zipper.png": "zip-zipper.png"
+  },
+  "46": {
+    "sheep-light.png": "bee-sheep-light.png",
+    "pie-high.png": "light-pie-high.png"
+  },
+  "47": {
+    "star-dark.png": "debut-star-dark.png",
+    "car-park.png": "debut-car-park.png"
+  },
+  "48": {
+    "horse-corn.png": "debut-horse-corn.png",
+    "corn-fork.png": "debut-corn-fork.png"
+  },
+  "49": {
+    "bird-under-shirt.png": "line-bird-under-shirt.png",
+    "segina-help.png": "bird-segina-help.png"
+  }
+}

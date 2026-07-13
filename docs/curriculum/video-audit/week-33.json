@@ -1,0 +1,54 @@
+{
+  "week": 33,
+  "images": [
+    { "file": "snake-spin.png", "depicts": "emerald snake coiled into a spinning top, motion lines, amber eyes", "name_matches_content": true, "issue": null },
+    { "file": "snake-spinning.png", "depicts": "snake blurred into a green wheel, chick watching dizzily", "name_matches_content": true, "issue": null },
+    { "file": "snake-swim.png", "depicts": "snake gliding through water in a joyful S-curve, swish lines", "name_matches_content": true, "issue": null },
+    { "file": "chick-chase-snake.png", "depicts": "chick sprinting wings pumping after a streaking green snake", "name_matches_content": true, "issue": null },
+    { "file": "chick-sheep-stop.png", "depicts": "chick + a wool-bodied creature with a CAT FACE (whiskers, feline muzzle) and bird wings, both hands/paws up in a STOP gesture", "name_matches_content": false, "issue": "wrong art — the 'sheep' has a cat face and wings, does not match the established sheep design anywhere else in the curriculum; reroll" },
+    { "file": "snake-snap-twig.png", "depicts": "snake snapping twigs in its coils like castanets, sparks", "name_matches_content": true, "issue": null },
+    { "file": "snake-still-going.png", "depicts": "chick + woolly sheep collapsed panting, snake looping overhead grinning", "name_matches_content": true, "issue": null },
+    { "file": "potato-stops-snake.png", "depicts": "plain potato on path, snake halted amber eyes crossed, chick + sheep frozen mid-pant", "name_matches_content": true, "issue": null },
+    { "file": "spider.png", "depicts": "small round fuzzy spider with big eyes hanging on a silk thread", "name_matches_content": true, "issue": null },
+    { "file": "snail.png", "depicts": "garden snail with spiral shell and eye stalks", "name_matches_content": true, "issue": null },
+    { "file": "swan.png", "depicts": "graceful white swan gliding on water", "name_matches_content": true, "issue": null },
+    { "file": "skip.png", "depicts": "a coiled leather whip with red-wrapped handle (near-identical to W32's whip.png)", "name_matches_content": false, "issue": "wrong content — spec calls for 'a child's wooden skipping rope with red handles mid-loop'; delivered image is a whip, not a skipping rope; reroll" }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "St-St-Stop!",
+      "line_map": [
+        { "line": "St-st-stop! STOP! (freeze!)", "best_image_by_content": "chick-sheep-stop.png", "needs": "reroll (see wrong_art — image itself is broken)" },
+        { "line": "Sp-sp-spin! SPIN! (round and round!)", "best_image_by_content": "snake-spin.png", "needs": "ok" },
+        { "line": "Sn-sn-snap! SNAP! (clap!) (Hello, Snake! sss…)", "best_image_by_content": null, "needs": "generate (no standalone snake.png exists anywhere to anchor the debut greeting)" },
+        { "line": "Sw-sw-swim! SWIM! (splash!)", "best_image_by_content": "snake-swim.png", "needs": "ok" },
+        { "line": "A potato?! (NO!) P-p-potato! No blend!", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "Outro: St-st-stop! Sp-sp-spin! Sn-sn-snap! Sw-sw-swim!", "best_image_by_content": "snake-spin.png / snake-swim.png / snake-snap-twig.png", "needs": "ok (repeat)" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "snake.png", "line": "book:1 'A Snake!' CAST DEBUT + sound-song 'Hello, Snake! sss…' + cards/bingo/matching base asset (CRITICAL — file entirely absent)", "mj_prompt": "a friendly emerald-green garden snake with large gentle amber eyes zipping forward in mid-motion, a happy green blur, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "Stop, Snake, Stop!",
+      "line_map": [
+        { "line": "Stop, Snake, stop! Snake can not stop! (hook, x2)", "best_image_by_content": "chick-sheep-stop.png", "needs": "reroll" },
+        { "line": "Snake can spin! Snake can skip! Snake can swim in a swish!", "best_image_by_content": "snake-spin.png + skip.png(wrong) + snake-swim.png", "needs": "reroll (skip.png)" },
+        { "line": "Snap! Snap! (clap! clap!) Snake can not stop! Spin and skip and swim!", "best_image_by_content": "snake-snap-twig.png", "needs": "ok, but repeats the broken skip.png reference" },
+        { "line": "Outro: Snake… stop… A potato?! (POTATO!) Snake can stop at a potato!", "best_image_by_content": "potato-stops-snake.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "snake-coloring.png", "line": "materials.coloring lists 'snake' but no coloring-page file exists", "mj_prompt": "a happy friendly snake with big eyes coiled in a spiral, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+      ],
+      "wrong_art": [
+        { "file": "chick-sheep-stop.png", "issue": "the STOP-gesture character has a cat face and wings instead of the established sheep", "fix": "reroll — mj_prompt: a tiny yellow chick and a fluffy round white wool sheep with wings and hooves thrown up in a big STOP gesture as a green blur whizzes between them, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "file": "skip.png", "issue": "depicts a whip, not a skipping rope", "fix": "reroll — mj_prompt: a child's wooden skipping rope with red handles mid-loop, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ]
+    }
+  ]
+}

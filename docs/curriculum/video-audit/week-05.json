@@ -1,0 +1,121 @@
+{
+  "week": 5,
+  "images": [
+    { "file": "sam.png", "depicts": "Sam standing cheerful, brown painted-wood hair, blue dungarees", "name_matches_content": true, "issue": null },
+    { "file": "sam-sat.png", "depicts": "Sam sitting down, legs out, happy, brown hair", "name_matches_content": true, "issue": null },
+    { "file": "sam-on-mat.png", "depicts": "Sam sitting neatly centered on the woven mat", "name_matches_content": true, "issue": null },
+    { "file": "sam-on-cat.png", "depicts": "Sam sitting upright BESIDE a reclining cat, not on top of it", "name_matches_content": false, "issue": "subject/object relationship fails: filename and gag require Sam sitting ON TOP of the cat, but the image shows them side by side on a mat/rug — the cat is not underneath Sam at all" },
+    { "file": "cat-on-sam.png", "depicts": "Cat perched on top of Sam's head like a hat", "name_matches_content": true, "issue": "cast drift: Sam's hair renders as pale straw/raffia bristle texture here, not the painted brown wood hair used in sam.png / sam-sat.png / sam-on-mat.png" },
+    { "file": "sam-cat-sat.png", "depicts": "Sam and cat sitting side by side on the mat, sulking truce", "name_matches_content": true, "issue": "cast drift: same pale straw/raffia hair texture as cat-on-sam.png, inconsistent with Sam's painted-wood hair elsewhere" },
+    { "file": "sam-cat-mat.png", "depicts": "Sam viewed from behind (plain bald wooden ball head, no hair), standing beside a sleeping cat on the mat, Segina peeking in", "name_matches_content": true, "issue": "Sam's head shows no hair at all (bald smooth wood ball), inconsistent with every other Sam image which shows carved/painted hair; also Sam is standing, not clearly sharing/sitting on the mat" },
+    { "file": "potato-mat-sam.png", "depicts": "Sam and a cat standing, staring at a potato on the mat", "name_matches_content": true, "issue": "cast drift: the cat here is a small round-faced kitten with different fur texture/eye styling, inconsistent with the mature adult tabby cat used in sam-on-cat.png, cat-on-sam.png, sam-cat-sat.png, and cat-on-mat.png (Week 4 reuse)" },
+    { "file": "snake.png", "depicts": "Green coiled snake, head raised", "name_matches_content": true, "issue": null },
+    { "file": "sun.png", "depicts": "Glowing golden sun with rays and sparkle", "name_matches_content": true, "issue": null },
+    { "file": "sock.png", "depicts": "Single striped sock on a foot", "name_matches_content": true, "issue": null },
+    { "file": "star.png", "depicts": "Single gold five-pointed star ornament", "name_matches_content": true, "issue": null },
+    { "file": "soap.png", "depicts": "Bar of soap with bubbles", "name_matches_content": true, "issue": null },
+    { "file": "seal.png", "depicts": "Grey seal pup close-up", "name_matches_content": true, "issue": null },
+    { "file": "saw.png", "depicts": "Hand saw with carved wooden handle", "name_matches_content": true, "issue": null },
+    { "file": "sandwich.png", "depicts": "Triangle-cut sandwich with lettuce, ham, cheese", "name_matches_content": true, "issue": null }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "S-S-Snake",
+      "line_map": [
+        { "line": "S! S! S-s-snake!", "best_image_by_content": "snake.png", "needs": "ok" },
+        { "line": "(ssssss… ssssss…)", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "S! S! S-s-s!", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "What begins with S?", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "S-s-snake! S-s-snake!", "best_image_by_content": "snake.png", "needs": "ok", "repeat_of": "S! S! S-s-snake!" },
+        { "line": "It's a snake! (a snake!)", "best_image_by_content": "snake.png", "needs": "ok", "repeat_of": "S! S! S-s-snake!" },
+        { "line": "S-s-sun! S-s-sun!", "best_image_by_content": "sun.png", "needs": "ok" },
+        { "line": "It's a sun! (a sun!)", "best_image_by_content": "sun.png", "needs": "ok", "repeat_of": "S-s-sun! S-s-sun!" },
+        { "line": "S-s-sock! S-s-sock!", "best_image_by_content": "sock.png", "needs": "ok" },
+        { "line": "It's a sock! (a sock!)", "best_image_by_content": "sock.png", "needs": "ok", "repeat_of": "S-s-sock! S-s-sock!" },
+        { "line": "S-s-star! S-s-star!", "best_image_by_content": "star.png", "needs": "ok" },
+        { "line": "It's a star! (a star!)", "best_image_by_content": "star.png", "needs": "ok", "repeat_of": "S-s-star! S-s-star!" },
+        { "line": "A potato?! (NO!)", "best_image_by_content": "potato.png (reused from Week 1, not stored in Week 05 folder)", "needs": "ok" },
+        { "line": "P-p-potato! Not S!", "best_image_by_content": "potato.png (reused from Week 1)", "needs": "ok", "repeat_of": "A potato?! (NO!)" },
+        { "line": "(ssssss… ssssss…) [outro]", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "(ssssss… ssssss…)" },
+        { "line": "S-s-snake! S-s-snake! [outro]", "best_image_by_content": "snake.png", "needs": "ok", "repeat_of": "S! S! S-s-snake!" },
+        { "line": "It's a snake! (a snake!) [outro]", "best_image_by_content": "snake.png", "needs": "ok", "repeat_of": "S! S! S-s-snake!" },
+        { "line": "S! S! S-s-s! [outro]", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "S! S! S-s-s!" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "Sam Sat",
+      "line_map": [
+        { "line": "(Sam… Sam… Sam sat…)", "best_image_by_content": "sam-sat.png", "needs": "ok" },
+        { "line": "Sam sat! Sam sat!", "best_image_by_content": "sam-sat.png", "needs": "ok", "repeat_of": "(Sam… Sam… Sam sat…)" },
+        { "line": "Where did Sam sit?", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "Sam sat on the mat! (the mat!)", "best_image_by_content": "sam-on-mat.png", "needs": "ok" },
+        { "line": "Sam sat on the mat! [hook repeat]", "best_image_by_content": "sam-on-mat.png", "needs": "ok", "repeat_of": "Sam sat on the mat! (the mat!)" },
+        { "line": "Sam sat! Sam sat! [verse 2]", "best_image_by_content": "sam-sat.png", "needs": "ok", "repeat_of": "(Sam… Sam… Sam sat…)" },
+        { "line": "Where did Sam sit? [verse 2]", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "Where did Sam sit?" },
+        { "line": "Sam sat on the sock! (a sock?!)", "best_image_by_content": null, "needs": "generate" },
+        { "line": "Sam sat on the sock! [repeat]", "best_image_by_content": null, "needs": "generate", "repeat_of": "Sam sat on the sock! (a sock?!)" },
+        { "line": "Sam sat! Sam sat! [verse 3]", "best_image_by_content": "sam-sat.png", "needs": "ok", "repeat_of": "(Sam… Sam… Sam sat…)" },
+        { "line": "Where did Sam sit? [verse 3]", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "Where did Sam sit?" },
+        { "line": "Sam sat on the… CAT! (the cat?!)", "best_image_by_content": null, "needs": "generate", "note": "sam-on-cat.png exists but is WRONG content (see wrong_art) — does not show Sam sitting on the cat; needs a correct reroll of that filename" },
+        { "line": "Sam sat on the cat! (oh no!)", "best_image_by_content": null, "needs": "generate", "repeat_of": "Sam sat on the… CAT! (the cat?!)" },
+        { "line": "The cat sat on Sam! (on Sam!)", "best_image_by_content": "cat-on-sam.png", "needs": "ok" },
+        { "line": "The cat sat on Sam! [repeat]", "best_image_by_content": "cat-on-sam.png", "needs": "ok", "repeat_of": "The cat sat on Sam! (on Sam!)" },
+        { "line": "Sam sat on the mat. [outro]", "best_image_by_content": "sam-on-mat.png", "needs": "ok", "repeat_of": "Sam sat on the mat! (the mat!)" },
+        { "line": "The cat sat on the mat.", "best_image_by_content": "cat-on-mat.png (reused from Week 4, not stored in Week 05 folder)", "needs": "ok" },
+        { "line": "(shhh…)", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "Sam sat on a POTATO!", "best_image_by_content": null, "needs": "generate", "note": "potato-mat-sam.png shows Sam and cat STANDING and staring at the potato, not Sam sitting on it — closest existing asset but does not satisfy this line" },
+        { "line": "(POTATO!)", "best_image_by_content": null, "needs": "generate", "repeat_of": "Sam sat on a POTATO!" }
+      ],
+      "aliases": {},
+      "generate": [
+        {
+          "proposed_filename": "sam-sat-on-sock.png",
+          "line": "Sam sat on the sock! (a sock?!)",
+          "mj_prompt": "a small wooden peg doll boy with painted brown hair and blue dungarees sitting obliviously right on top of a single striped cotton sock, surprised comedic expression, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "proposed_filename": "sam-sat-on-potato.png",
+          "line": "Sam sat on a POTATO! (POTATO!)",
+          "mj_prompt": "a small wooden peg doll boy with painted brown hair and blue dungarees sitting right on top of a single raw potato on a woven floor mat, comedic startled expression, a tabby cat watching deadpan beside the mat, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ],
+      "wrong_art": [
+        {
+          "file": "sam-on-cat.png",
+          "issue": "Sam is shown sitting upright BESIDE a reclining cat, not on top of it — the core gag (Sam obliviously sits down on the cat) is not depicted at all",
+          "fix": "reroll",
+          "mj_prompt": "a small wooden peg doll boy with painted brown hair and blue dungarees sitting obliviously right on top of a startled tabby cat curled on a woven mat, cat's eyes bulging wide, one paw sticking out from under the boy, comedic, ultra-realistic photograph, single subject grouping centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "file": "cat-on-sam.png",
+          "issue": "cast drift: Sam's hair is rendered as pale straw/raffia bristle texture instead of the painted brown wood hair used in sam.png, sam-sat.png, sam-on-mat.png",
+          "fix": "reroll",
+          "mj_prompt": "a smug tabby cat perched on top of the head of a small wooden peg doll boy with painted brown wood hair (short, carved, glossy brown finish, matching sam.png) and blue dungarees, cat sitting like a living hat, on a woven mat, comedic, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "file": "sam-cat-sat.png",
+          "issue": "cast drift: Sam's hair is rendered as pale straw/raffia bristle texture instead of the painted brown wood hair used elsewhere",
+          "fix": "reroll",
+          "mj_prompt": "a small wooden peg doll boy with painted brown wood hair (short, carved, glossy brown finish, matching sam.png) in blue dungarees and a tabby cat sitting side by side on a woven mat, both sulking with a truce, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "file": "sam-cat-mat.png",
+          "issue": "Sam's head shows no hair at all (plain bald smooth wooden ball, viewed from behind), inconsistent with every other Sam image which shows carved/painted brown hair",
+          "fix": "reroll",
+          "mj_prompt": "a small wooden peg doll boy with painted brown wood hair (short, carved, glossy brown finish, matching sam.png) in blue dungarees and a tabby cat sharing a small woven floor mat peacefully, both facing forward, a wooden peg doll girl with black pigtails and red dress peeking in from the edge, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "file": "potato-mat-sam.png",
+          "issue": "cast drift: the cat depicted is a small round-faced kitten with different fur texture and eye styling, inconsistent with the mature adult tabby cat used in sam-on-cat.png, cat-on-sam.png, sam-cat-sat.png, and cat-on-mat.png",
+          "fix": "reroll",
+          "mj_prompt": "a single raw potato dramatically spotlit on a small woven floor mat, a wooden peg doll boy in blue dungarees with painted brown wood hair (matching sam.png) and the same mature tabby cat used elsewhere this week (adult proportions, heavy jowl markings, amber eyes) staring at the potato deadpan from beside the mat, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ]
+    }
+  ]
+}

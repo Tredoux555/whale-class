@@ -1,0 +1,79 @@
+{
+  "week": 26,
+  "images": [
+    { "file": "ant-tag.png", "depicts": "black ant nose-to-nose with red beetle, macro photo", "name_matches_content": true, "issue": "real macro-nature style, not stylized; both tiny, no clear 'delighted' expression" },
+    { "file": "bug-buzz.png", "depicts": "red beetle airborne, golden wing blur, shimmer haze", "name_matches_content": true, "issue": "none" },
+    { "file": "bug-zip.png", "depicts": "red beetle with motion-blur streaks, low angle", "name_matches_content": true, "issue": "no visible zigzag trail, just generic motion blur" },
+    { "file": "cat-nap.png", "depicts": "tabby cat asleep on woven mat", "name_matches_content": true, "issue": "none" },
+    { "file": "dog-dig.png", "depicts": "terrier running through mud/dust, not digging a hole", "name_matches_content": false, "issue": "shows running/mud-splashing, not the act of digging with paws" },
+    { "file": "duck-quack2.png", "depicts": "white duck in graduation cap, beak open, knit sock beside it", "name_matches_content": true, "issue": "none" },
+    { "file": "fox-mix.png", "depicts": "fox with head in a bowl containing a spoon", "name_matches_content": true, "issue": "looks like eating from bowl rather than actively stirring with tail" },
+    { "file": "graduation-cast.png", "depicts": "cat, terrier dog, rat, ant, round red apple-like object, white duck, orange-furred peg-doll, black-haired peg-doll girl on a mat with open book", "name_matches_content": false, "issue": "CRITICAL: Bug (beetle) is replaced by a plain red apple shape; Fox is replaced by an ambiguous orange-furred peg-doll instead of an actual fox; most animals lack graduation caps" },
+    { "file": "potato-graduation.png", "depicts": "potato in grad cap and round glasses at whiteboard with pointer, bowing", "name_matches_content": true, "issue": "none" },
+    { "file": "rat-run.png", "depicts": "grey rat sprinting toward camera", "name_matches_content": true, "issue": "none" },
+    { "file": "zebra.png", "depicts": "zebra standing, side profile", "name_matches_content": true, "issue": "none" },
+    { "file": "zero.png", "depicts": "large wooden number 0", "name_matches_content": true, "issue": "none" },
+    { "file": "zigzag.png", "depicts": "single glowing lightning-bolt shape on green background", "name_matches_content": true, "issue": "only 2 bends, weak 'zigzag' read but acceptable" },
+    { "file": "zigzag-buzz.png", "depicts": "illustrated/painterly beetle amid lightning bolts and gold ribbon swirls", "name_matches_content": true, "issue": "STYLE BREAK: painterly illustration, not the photographic style used everywhere else in the pack" },
+    { "file": "zucchini.png", "depicts": "green zucchini on dark green velvet", "name_matches_content": true, "issue": "none" },
+    { "file": "zipper.png", "depicts": "metal zipper half-open on green fabric", "name_matches_content": true, "issue": "none" },
+    { "file": "zebra-coloring.png", "depicts": "SKIPPED (coloring page)", "name_matches_content": true, "issue": "skipped per instructions" },
+    { "file": "zipper-coloring.png", "depicts": "SKIPPED (coloring page)", "name_matches_content": true, "issue": "skipped per instructions" },
+    { "file": "zigzag-coloring.png", "depicts": "SKIPPED (coloring page)", "name_matches_content": true, "issue": "skipped per instructions" }
+  ],
+  "missingFiles": ["bug.png (book:1, CRITICAL — no file exists)", "zoo.png (materials, no file exists)", "fox.png (reused-from-W24 asset, no file exists)", "potato.png (reused-from-W1 asset, no file exists)"],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Z-Z-Zip",
+      "line_map": [
+        { "line": "Z-z-zebra! It's a zebra!", "best_image_by_content": "zebra.png", "needs": "ok" },
+        { "line": "Z-z-zip! It's a zip!", "best_image_by_content": "zipper.png", "needs": "alias" },
+        { "line": "Z-z-zero! It's a zero!", "best_image_by_content": "zero.png", "needs": "ok" },
+        { "line": "zip… sip… zap… sap…", "best_image_by_content": "zipper.png", "needs": "alias (repeat concept)" },
+        { "line": "buzz… fizz… (double z, big buzz)", "best_image_by_content": "bug-buzz.png", "needs": "acceptable-hold (no dedicated 'fizz' image exists in manifest)" },
+        { "line": "A potato?! P-p-potato! Not Z!", "best_image_by_content": "potato-graduation.png", "needs": "acceptable-hold" },
+        { "line": "Zigzag! Zigzag! BUZZ! The bug can buzz!", "best_image_by_content": "zigzag.png + bug-buzz.png", "needs": "ok" }
+      ],
+      "aliases": { "zip": "zipper.png", "sip/zap/sap (repeat)": "zipper.png" },
+      "generate": [],
+      "wrong_art": [
+        { "file": "zigzag-buzz.png", "issue": "painterly/illustrated style breaks the photographic pack style", "fix": "regenerate photographically: 'a celebratory scene of lightning zaps and zigzag streamers with a red-shelled beetle buzzing loops overhead, festive, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw'" }
+      ]
+    },
+    {
+      "role": "word",
+      "title": "The Bug Can Buzz",
+      "line_map": [
+        { "line": "The bug can buzz! (hook, repeats)", "best_image_by_content": "bug-buzz.png", "needs": "ok" },
+        { "line": "The cat can nap.", "best_image_by_content": "cat-nap.png", "needs": "ok" },
+        { "line": "The dog can dig.", "best_image_by_content": "dog-dig.png", "needs": "generate (current image shows running through mud, not digging)" },
+        { "line": "The rat can run.", "best_image_by_content": "rat-run.png", "needs": "ok" },
+        { "line": "The duck can quack.", "best_image_by_content": "duck-quack2.png", "needs": "ok" },
+        { "line": "The fox can mix.", "best_image_by_content": "fox-mix.png", "needs": "ok" },
+        { "line": "We can read!", "best_image_by_content": "graduation-cast.png (open book visible)", "needs": "acceptable-hold" },
+        { "line": "It's a potato! (It's a ___!)", "best_image_by_content": "potato-graduation.png", "needs": "acceptable-hold" },
+        { "line": "Where is Sejeena? (on the mat!)", "best_image_by_content": "graduation-cast.png", "needs": "acceptable-hold" },
+        { "line": "Zip! Zap! Zigzag!", "best_image_by_content": "zigzag.png", "needs": "ok" },
+        { "line": "The bug can BUZZ!", "best_image_by_content": "bug-buzz.png", "needs": "ok" },
+        { "line": "Sam can. Sejeena can.", "best_image_by_content": "graduation-cast.png", "needs": "generate (Sam/Segina depicted but Bug and Fox cast members are wrong in this shot)" },
+        { "line": "The cat is on the mat.", "best_image_by_content": "cat-nap.png", "needs": "ok (repeat/callback to W4)" },
+        { "line": "And the potato can…?! (POTATO!)", "best_image_by_content": "potato-graduation.png", "needs": "ok" },
+        { "line": "The bug can buzz… The end.", "best_image_by_content": "bug-buzz.png", "needs": "ok (repeat)" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "bug.png", "line": "book:1 'The bug.' / establishing cast shot", "mj_prompt": "a round red-shelled beetle wearing a tiny graduation cap with its wings just starting to lift, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "dog-dig.png (reroll)", "line": "The dog can dig.", "mj_prompt": "a brown dog mid-dig, front paws thrown into a dirt hole, dirt flying up behind it, tail up, clearly excavating a hole in the ground, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "graduation-cast.png (reroll)", "line": "Sam can. Sejeena can. The bug can buzz!", "mj_prompt": "a graduation group on a small woven floor mat — a tabby cat, black ant, brown terrier dog, grey rat, a ROUND RED-SHELLED BEETLE (not an apple), a white duck, and an actual RED FOX (not a peg-doll), all in tiny graduation caps, with a peg doll boy in a red shirt and a peg doll girl with black pigtails and a red dress beaming beside them, an open book in the middle, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "zoo.png", "line": "materials basket only (no book line)", "mj_prompt": "a little zoo entrance archway with a sign and animal silhouettes, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "fox.png", "line": "materials cards/bingo only (reused from Week 24 — alias from Week 24 folder instead of regenerating if available)", "mj_prompt": "REUSED FROM WEEK 24 — a red fox sitting and looking forward with a sly expression, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "potato.png", "line": "materials bingo only (reused from Week 1 — alias from Week 1 folder instead of regenerating if available)", "mj_prompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": [
+        { "file": "graduation-cast.png", "issue": "CRITICAL: Bug shown as a red apple, Fox shown as an orange-furred peg-doll instead of an animal; most cast members missing graduation caps", "fix": "reroll with explicit species call-outs, see generate list above" },
+        { "file": "dog-dig.png", "issue": "shows the dog running/splashing through mud, not digging a hole", "fix": "reroll, see generate list above" }
+      ]
+    }
+  ]
+}

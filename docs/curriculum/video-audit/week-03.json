@@ -1,0 +1,106 @@
+{
+  "week": 3,
+  "images": [
+    { "file": "moon.png", "depicts": "glowing full moon over rocky/starry ground, no mat", "name_matches_content": true, "issue": null },
+    { "file": "mouse.png", "depicts": "small grey mouse sitting up on textured teal ground", "name_matches_content": true, "issue": null },
+    { "file": "monkey.png", "depicts": "close-up baby monkey face, hands clasped, no mat", "name_matches_content": true, "issue": null },
+    { "file": "mop.png", "depicts": "cotton string mop standing upright on floor", "name_matches_content": true, "issue": null },
+    { "file": "mango.png", "depicts": "ripe golden mango with dew, resting on leaves", "name_matches_content": true, "issue": null },
+    { "file": "mask.png", "depicts": "smooth swirled teal/gold/red abstract festival mask, oval eyeholes, no fringe", "name_matches_content": true, "issue": null },
+    { "file": "milk.png", "depicts": "small glass bottle of milk with gold cap", "name_matches_content": true, "issue": null },
+    { "file": "map.png", "depicts": "old folded paper map, partly open", "name_matches_content": true, "issue": null },
+    { "file": "moon-on-mat.png", "depicts": "glowing moon resting directly on a woven mat", "name_matches_content": true, "issue": null },
+    { "file": "mouse-on-mat.png", "depicts": "mouse sitting directly on a woven mat, paws touching it", "name_matches_content": true, "issue": null },
+    { "file": "monkey-on-mat.png", "depicts": "monkey airborne several inches above a woven mat, no contact", "name_matches_content": false, "issue": "wrong preposition: monkey is floating/mid-air above the mat, not touching it — reads as 'above the mat' not 'on the mat'" },
+    { "file": "mop-on-mat.png", "depicts": "mop lying flat, resting directly on a woven mat", "name_matches_content": true, "issue": null },
+    { "file": "mango-on-mat.png", "depicts": "mango resting directly on a woven mat", "name_matches_content": true, "issue": null },
+    { "file": "mask-on-mat.png", "depicts": "a fringed, feathered, beaded tribal-style mask lying on a woven mat", "name_matches_content": true, "issue": "cast/prop drift: this mask is a totally different design (fringed/tribal, teeth showing) than the plain mask.png card (smooth swirled abstract, no fringe) — same object should look consistent across card and book" },
+    { "file": "segina-on-mat.png", "depicts": "peg-doll girl, black pigtails, red dress, sitting cross-legged on a woven mat", "name_matches_content": true, "issue": null },
+    { "file": "potato-on-mat.png", "depicts": "raw potato on a woven mat, peg-doll girl peeking in from edge", "name_matches_content": true, "issue": "cast drift: Segina's doll here has shinier/textured hair, more detailed face, and a sleeveless lace-textured dress — differs from her simpler matte-hair, dot-eyed, long-sleeved look in segina-on-mat.png" }
+  ],
+  "missing_assets": [
+    { "file": "mat.png", "specUsedBy": ["book:1", "cards", "bingo", "matching"], "issue": "listed in spec assets[] and required for the week's own anchor word 'mat', but the file does not exist anywhere in the images folder" },
+    { "file": "mat-coloring.png", "specUsedBy": ["coloring"], "issue": "listed in spec assets[] but does not exist in the images folder" }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "M-M-Moon!",
+      "line_map": [
+        { "line": "M! M! M-m-m!", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "(mmm… mmm…)", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "What begins with M?", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "M-m-moon! M-m-moon! It's a moon! (a moon!)", "best_image_by_content": "moon.png", "needs": "ok" },
+        { "line": "M! M! M-m-m!", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "M! M! M-m-m!" },
+        { "line": "What begins with M?", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "What begins with M?" },
+        { "line": "M-m-mouse! M-m-mouse! It's a mouse! (a mouse!)", "best_image_by_content": "mouse.png", "needs": "ok" },
+        { "line": "M! M! M-m-m!", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "M! M! M-m-m!" },
+        { "line": "What begins with M?", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "What begins with M?" },
+        { "line": "M-m-monkey! M-m-monkey! It's a monkey! (a monkey!)", "best_image_by_content": "monkey.png", "needs": "ok" },
+        { "line": "M! M! M-m-m!", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "M! M! M-m-m!" },
+        { "line": "What begins with M?", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "What begins with M?" },
+        { "line": "M-m-mop! M-m-mop! It's a mop! (a mop!)", "best_image_by_content": "mop.png", "needs": "ok" },
+        { "line": "A potato?! (NO!)", "best_image_by_content": null, "needs": "generate" },
+        { "line": "P-p-potato! Not M!", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "A potato?! (NO!)" },
+        { "line": "(mmm… mmm…)", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "(mmm… mmm…)" },
+        { "line": "M-m-mat! M-m-mat! It's a mat! (a mat!)", "best_image_by_content": null, "needs": "generate" },
+        { "line": "M! M! M-m-m!", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "M! M! M-m-m!" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "potato.png", "line": "A potato?! (NO!) / P-p-potato! Not M!", "mj_prompt": "a single raw potato, not on any mat, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "mat.png", "line": "M-m-mat! M-m-mat! It's a mat! (a mat!)", "mj_prompt": "a small woven floor mat alone on the floor, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "On the Mat",
+      "line_map": [
+        { "line": "On the mat! On the mat!", "best_image_by_content": null, "needs": "generate" },
+        { "line": "What is on the mat?", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "The moon is on the mat! (the moon?!)", "best_image_by_content": "moon-on-mat.png", "needs": "ok" },
+        { "line": "The moon is on the mat!", "best_image_by_content": "moon-on-mat.png", "needs": "acceptable-hold", "repeat_of": "The moon is on the mat! (the moon?!)" },
+        { "line": "On the mat! On the mat!", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "On the mat! On the mat!" },
+        { "line": "What is on the mat?", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "What is on the mat?" },
+        { "line": "The mouse is on the mat! (a mouse?!)", "best_image_by_content": "mouse-on-mat.png", "needs": "ok" },
+        { "line": "The mouse is on the mat!", "best_image_by_content": "mouse-on-mat.png", "needs": "acceptable-hold", "repeat_of": "The mouse is on the mat! (a mouse?!)" },
+        { "line": "On the mat! On the mat!", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "On the mat! On the mat!" },
+        { "line": "What is on the mat?", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "What is on the mat?" },
+        { "line": "The monkey is on the mat! (a monkey?!)", "best_image_by_content": "monkey-on-mat.png", "needs": "alias", "note": "existing image shows the monkey airborne above the mat, not contacting it — flagged in wrong_art; treat as needing a reroll before this line can be 'ok'" },
+        { "line": "The monkey is on the mat!", "best_image_by_content": "monkey-on-mat.png", "needs": "acceptable-hold", "repeat_of": "The monkey is on the mat! (a monkey?!)" },
+        { "line": "On the mat! On the mat!", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "On the mat! On the mat!" },
+        { "line": "What is on the mat?", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "What is on the mat?" },
+        { "line": "Sejeena is on the mat! (Sejeena!)", "best_image_by_content": "segina-on-mat.png", "needs": "ok" },
+        { "line": "Sejeena is on the mat!", "best_image_by_content": "segina-on-mat.png", "needs": "acceptable-hold", "repeat_of": "Sejeena is on the mat! (Sejeena!)" },
+        { "line": "A potato is on the mat! (POTATO!)", "best_image_by_content": "potato-on-mat.png", "needs": "ok" },
+        { "line": "On the mat! On the mat!", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "On the mat! On the mat!" },
+        { "line": "(shhh…)", "best_image_by_content": null, "needs": "acceptable-hold" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "mat.png", "line": "On the mat! On the mat! What is on the mat?", "mj_prompt": "a small woven floor mat alone on the floor, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": [
+        {
+          "file": "monkey-on-mat.png",
+          "issue": "monkey is airborne above the mat with no contact — wrong preposition for 'on the mat'",
+          "fix": "reroll",
+          "mj_prompt": "a playful young monkey mid-landing with at least one paw and its tail pressed firmly onto a small woven floor mat, clearly in contact with the mat's surface, other limbs still in bouncing motion, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "file": "mask-on-mat.png",
+          "issue": "shows a fringed/feathered tribal-style mask with visible teeth — a completely different mask design than the plain mask.png card (smooth swirled abstract mask, no fringe) used for cards/bingo/matching",
+          "fix": "reroll",
+          "mj_prompt": "a colorful swirled festival mask with teal, gold and deep red patterns and smooth oval eyeholes (same design as the mask trading card, no feathers or fringe), propped upright on a small woven floor mat facing the viewer, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "file": "potato-on-mat.png",
+          "issue": "Segina peg-doll's hair texture, face detail, and dress style differ from her appearance in segina-on-mat.png (cast consistency drift)",
+          "fix": "reroll",
+          "mj_prompt": "a single raw potato dramatically spotlit in the center of a small woven floor mat, a wooden peg doll girl with matte black pigtails, simple painted dot-eyes and a smile-line mouth, long-sleeved textured red dress (matching her exact appearance in segina-on-mat.png), peeking in from the edge of frame, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ]
+    }
+  ]
+}

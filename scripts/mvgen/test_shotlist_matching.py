@@ -226,6 +226,209 @@ def test_adjacent_phrase_no_self_reanchor():
           str(cm))
 
 
+# --- FIX 2: meaning-bearing short tokens -----------------------------------
+
+def test_fix2_short_tokens():
+    print("FIX 2: 2-letter meaning tokens (in/on/up/at/ox) survive")
+    # ox.png / up.png must be indexable (were dropped by the old 3-char min).
+    check("ox.png -> ['ox']", sl.filename_tokens("ox.png") == ["ox"])
+    check("up.png -> ['up']", sl.filename_tokens("up.png") == ["up"])
+    check("cat-in-cap.png keeps 'in'",
+          sl.filename_tokens("cat-in-cap.png") == ["cat", "in", "cap"])
+    # ubiquitous 2-letter function words still stopped.
+    check("is/it/the still stopped",
+          sl.filename_tokens("it-is-the-cat.png") == ["cat"])
+    # 'what' is a TAUGHT question word — kept — so chick-what disambiguates.
+    check("chick-what.png keeps 'what'",
+          sl.filename_tokens("chick-what.png") == ["chick", "what"])
+
+    # cat-in-can vs cat-on-can flip via the prepositions.
+    imgs = ["cat-in-can.png", "cat-on-can.png"]
+    ci = sl.find_matches(words_from("the cat in a can"), imgs)
+    co = sl.find_matches(words_from("the cat on a can"), imgs)
+    check("'cat in a can' -> cat-in-can",
+          ci and os.path.basename(imgs[ci[0]["image"]]) == "cat-in-can.png",
+          str([os.path.basename(imgs[c["image"]]) for c in ci]))
+    check("'cat on a can' -> cat-on-can",
+          co and os.path.basename(imgs[co[0]["image"]]) == "cat-on-can.png",
+          str([os.path.basename(imgs[c["image"]]) for c in co]))
+
+    # ox in box vs bare box.
+    imgs2 = ["ox.png", "box.png", "ox-in-box.png"]
+    c2 = sl.find_matches(words_from("the ox in a box"), imgs2)
+    n2 = [os.path.basename(imgs2[c["image"]]) for c in c2]
+    check("'ox in a box' -> ox-in-box (3-tok beats box)",
+          "ox-in-box.png" in n2, str(n2))
+
+    # kite-up on "the kite is up" (up is sung, 'is' dropped).
+    imgs3 = ["kite.png", "kite-up.png"]
+    c3 = sl.find_matches(words_from("the kite is up"), imgs3)
+    n3 = [os.path.basename(imgs3[c["image"]]) for c in c3]
+    check("'the kite is up' -> kite-up", "kite-up.png" in n3, str(n3))
+
+    # bare 'cat' still prefers cat.png over a preposition phrase image.
+    imgs4 = ["cat.png", "cat-on-mat.png"]
+    c4 = sl.find_matches(words_from("look the cat"), imgs4)
+    check("bare 'cat' -> cat.png",
+          c4 and os.path.basename(imgs4[c4[0]["image"]]) == "cat.png",
+          str([os.path.basename(imgs4[c["image"]]) for c in c4]))
+
+
+# --- FIX 6: each verse's scene image anchors in its OWN verse ---------------
+
+def test_fix6_verse_isolation():
+    print("FIX 6: each verse's scene image anchors in its OWN verse")
+    # (1) Real-world outcome on a CLEAN timeline (what FIX 5 produces + FIX 2's
+    #     'in' token): cat-in-tin anchors verse 2, cat-in-cap verse 3, each a
+    #     full 3-token in-verse phrase.
+    images = ["cat-command.png", "cat-in-tin.png", "cat-in-cap.png",
+              "cat-sits-mat.png", "cat.png"]
+    lyric = ("Sit cat sit "
+             "The cat sat in a tin "
+             "Sit cat sit "
+             "The cat sat in a cap "
+             "The cat can sit")
+    # separate sung lines so the window respects verse boundaries.
+    words = words_from(lyric, line_gap_after={2, 8, 11, 17})
+    by = {os.path.basename(images[c["image"]]): c
+          for c in sl.find_matches(words, images)}
+    print("    anchors:", sorted(by))
+    check("cat-in-tin anchors (verse 2)", "cat-in-tin.png" in by, str(sorted(by)))
+    check("cat-in-cap anchors (verse 3)", "cat-in-cap.png" in by, str(sorted(by)))
+    if "cat-in-tin.png" in by:
+        check("cat-in-tin is a full cat+in+tin phrase",
+              by["cat-in-tin.png"]["match_score"] == 3, str(by["cat-in-tin.png"]))
+    if "cat-in-cap.png" in by:
+        check("cat-in-cap is a full cat+in+cap phrase",
+              by["cat-in-cap.png"]["match_score"] == 3, str(by["cat-in-cap.png"]))
+    # tin anchors before cap (own verses, in order).
+    if "cat-in-tin.png" in by and "cat-in-cap.png" in by:
+        check("tin verse precedes cap verse",
+              by["cat-in-tin.png"]["trigger_time"]
+              < by["cat-in-cap.png"]["trigger_time"])
+
+    # (2) Load-bearing unit check of the MATCH_TOKEN_GAP cap: a phrase whose
+    #     next token is farther than the cap (a cross-line steal on a smeared
+    #     timeline) is TRUNCATED, so it scores lower and yields to the closer,
+    #     in-verse candidate.
+    def cw(pairs):
+        return [(k, {"word": k, "start": s, "end": s + 0.2}, i)
+                for i, (k, s) in enumerate(pairs)]
+    near = cw([("cat", 0.0), ("sat", 0.3), ("in", 0.6), ("cap", 0.9)])
+    far = cw([("cat", 0.0), ("sat", 0.3),
+              ("in", 0.6 + sl.MATCH_TOKEN_GAP + 1.0),
+              ("cap", 0.9 + sl.MATCH_TOKEN_GAP + 1.0)])
+    m_near = sl._match_image(["cat", "in", "cap"], near, [0, 1, 2, 3])
+    m_far = sl._match_image(["cat", "in", "cap"], far, [0, 1, 2, 3])
+    check("close 'in' -> full 3-token match", len(m_near) == 3, str(m_near))
+    check("far 'in' (> gap cap) -> phrase truncated to [cat]",
+          m_far == [0], str(m_far))
+
+
+# --- FIX 4: never end on an unmatched filler -------------------------------
+
+def test_fix4_ending():
+    print("FIX 4: video never ends on an unmatched filler")
+    images = ["cat.png", "apple.png", "ball.png", "drum.png"]  # only cat sung
+    words = words_from("look the cat")  # single anchor early
+    downbeats = [round(x * 0.5, 3) for x in range(1, 60)]
+
+    # Short tail (<= 8s): the last anchored image is HELD to the end.
+    short = sl.build_shotlist(words, images, downbeats, duration=6.0)
+    assert short is not None
+    ss, _i, _c, s_shots = short
+    check("short-tail last shot is the matched image (cat.png)",
+          s_shots[-1]["image_name"] == "cat.png", s_shots[-1]["image_name"])
+    check("short-tail last shot reaches the end",
+          abs(s_shots[-1]["end"] - 6.0) < 1e-6, str(s_shots[-1]["end"]))
+
+    # Long tail (> 8s): fillers may cycle, but the FINAL shot is still matched.
+    long = sl.build_shotlist(words, images, downbeats, duration=20.0)
+    assert long is not None
+    ls, _i2, _c2, l_shots = long
+    names = [s["image_name"] for s in l_shots]
+    check("long-tail runs fillers in the tail",
+          any(n in ("apple.png", "ball.png", "drum.png") for n in names[1:]),
+          str(names))
+    check("long-tail final shot is the matched image (cat.png)",
+          l_shots[-1]["image_name"] == "cat.png", str(names[-3:]))
+    check("long-tail final shot reaches the end",
+          abs(l_shots[-1]["end"] - 20.0) < 1e-6, str(l_shots[-1]["end"]))
+    # contiguity preserved.
+    for a, b in zip(ls, ls[1:]):
+        assert abs(a[1] - b[0]) < 1e-6, "long-tail shots must tile"
+    check("long-tail shots tile contiguously", True)
+
+
+# --- WARN-1: a held note (melisma) mid-phrase must not break the phrase ------
+
+def test_warn1_held_note_phrase():
+    print("WARN-1: 3.5s held note mid-phrase -> cat-in-cap still wins")
+    # The traced regression: "the cat sat[3.5s] in the cap". The held "sat"
+    # (a genuine melisma) now SURVIVES as a timed word (analyze._MAX_WORD_SPAN
+    # raised to 4.5, side a); side b makes the hop measure summed inter-word
+    # SILENCE, so the note's 3.5s DURATION does not inflate the cat->in gap past
+    # MATCH_TOKEN_GAP. Before both fixes the phrase truncated to a bare [cat] and
+    # cat.png (score 100) beat cat-in-cap (score 96), losing the scene image.
+    images = ["cat.png", "cat-in-cap.png"]
+    words = [
+        {"word": "The", "start": 0.6, "end": 0.9},
+        {"word": "cat", "start": 1.0, "end": 1.3},
+        {"word": "sat", "start": 1.3, "end": 4.8},   # melisma: 3.5s, held
+        {"word": "in",  "start": 4.8, "end": 5.1},
+        {"word": "the", "start": 5.1, "end": 5.4},
+        {"word": "cap", "start": 5.4, "end": 5.7},
+    ]
+    clusters = sl.find_matches(words, images)
+    got = anchors(clusters, images)
+    print("    anchors:", got)
+    check("cat-in-cap wins despite the 3.5s held 'sat'",
+          got and got[0][0] == "cat-in-cap.png", str(got))
+    # It anchors as a real multi-token phrase (cat + in), not a bare cat hook.
+    if clusters:
+        check("cat-in-cap anchored as a >=2-token phrase (cat...in)",
+              clusters[0]["match_score"] >= 2, str(clusters[0]))
+
+    # Direct unit check of the silence metric: a continuously-held note between
+    # two matched tokens contributes ~0 silence (kept), whereas the same tokens
+    # separated by real silence exceed the cap (split).
+    cw_held = sl._content_words(words)  # cat(0), sat(1), in(2), cap(3)
+    check("silence(cat..in) across held note is ~0",
+          sl._silence_gap(cw_held, 0, 2) < 0.05,
+          str(sl._silence_gap(cw_held, 0, 2)))
+    silent = [
+        {"word": "cat", "start": 0.0, "end": 0.3},
+        {"word": "in",  "start": 0.3 + sl.MATCH_TOKEN_GAP + 1.0,
+         "end": 0.6 + sl.MATCH_TOKEN_GAP + 1.0},
+    ]
+    cw_silent = sl._content_words(silent)
+    check("silence(cat..in) across real silence exceeds the cap",
+          sl._silence_gap(cw_silent, 0, 1) > sl.MATCH_TOKEN_GAP,
+          str(sl._silence_gap(cw_silent, 0, 1)))
+
+
+# --- WARN-2: stopword / meaning-token invariant -----------------------------
+
+def test_warn2_stopwords():
+    print("WARN-2: me/us/hi/ok/oh stopped; meaning tokens still tokenize")
+    # The five newly-added stopwords must now be dropped as filename tokens.
+    for w in ("me", "us", "hi", "ok", "oh"):
+        check("'%s' is now a stopword" % w,
+              sl.filename_tokens("%s.png" % w) == []
+              and w in sl._STOPWORDS, w)
+    # Every taught meaning token + 'what' must STILL tokenize (never dropped).
+    for w in ("in", "on", "up", "at", "ox", "ax", "go", "what"):
+        check("'%s' still tokenizes" % w,
+              sl.filename_tokens("%s.png" % w) == [w], w)
+    # The whitelist<->stopword invariant the assertion enforces.
+    check("_MEANING_TOKENS disjoint from _STOPWORDS",
+          not (sl._MEANING_TOKENS & sl._STOPWORDS),
+          str(sl._MEANING_TOKENS & sl._STOPWORDS))
+    # A stopword in a compound is still dropped, the object kept.
+    check("'oh-cat.png' -> ['cat'] ('oh' dropped)",
+          sl.filename_tokens("oh-cat.png") == ["cat"])
+
+
 # --- no lyrics / zero match fallback ---------------------------------------
 
 def test_fallback():
@@ -246,7 +449,9 @@ def test_fallback():
 def main():
     for t in (test_w04_flip, test_w04_bare_cat_and_levitating, test_w22_vet,
               test_coloring_penalty, test_intervening_word_anchors,
-              test_adjacent_phrase_no_self_reanchor, test_fallback):
+              test_adjacent_phrase_no_self_reanchor, test_fix2_short_tokens,
+              test_fix6_verse_isolation, test_fix4_ending,
+              test_warn1_held_note_phrase, test_warn2_stopwords, test_fallback):
         t()
         print()
     print("=" * 60)

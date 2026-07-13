@@ -1,0 +1,68 @@
+{
+  "week": 13,
+  "images": [
+    { "file": "bag.png", "depicts": "brown paper lunch bag, folded top", "name_matches_content": true, "issue": null },
+    { "file": "ball.png", "depicts": "single red ball, glossy", "name_matches_content": true, "issue": null },
+    { "file": "banana.png", "depicts": "two ripe bananas, water droplets", "name_matches_content": true, "issue": null },
+    { "file": "bat.png", "depicts": "two crossed wooden baseball bats", "name_matches_content": true, "issue": null },
+    { "file": "bear.png", "depicts": "brown bear cub sitting, paws crossed", "name_matches_content": true, "issue": null },
+    { "file": "bee.png", "depicts": "honeybee in flight, macro close-up", "name_matches_content": true, "issue": null },
+    { "file": "bell.png", "depicts": "ornate gold bell on a chain", "name_matches_content": true, "issue": null },
+    { "file": "big-dog-and-pig.png", "depicts": "large wrinkly mastiff-type dog looming over two piglets", "name_matches_content": true, "issue": "dog breed differs from big-dog.png/big.png" },
+    { "file": "big-dog-hiding.png", "depicts": "hound-type dog covering its face with both paws, beside a potted plant", "name_matches_content": true, "issue": "yet another dog breed, differs from the rest of the week" },
+    { "file": "big-dog-meets-cat.png", "depicts": "large dog's snout close to a tiny curious kitten", "name_matches_content": true, "issue": "dog breed (grey/Great-Dane-like) differs from big-dog-and-pig.png's mastiff" },
+    { "file": "big-dog-towering.png", "depicts": "Great Dane looming over a tiny wooden chair, paws forward", "name_matches_content": true, "issue": null },
+    { "file": "big-dog.png", "depicts": "shaggy grey dog, extreme close-up of face", "name_matches_content": true, "issue": null },
+    { "file": "big.png", "depicts": "Great Dane, low dramatic angle, forest backdrop", "name_matches_content": true, "issue": null },
+    { "file": "bird.png", "depicts": "European robin perched on mossy branch", "name_matches_content": true, "issue": null },
+    { "file": "boat.png", "depicts": "small wooden rowboat with an oar, roped to a post", "name_matches_content": true, "issue": null },
+    { "file": "box.png", "depicts": "small plain cardboard box", "name_matches_content": true, "issue": null },
+    { "file": "cat-hissing.png", "depicts": "tabby cat hissing, mouth open, fangs bared, claw extended", "name_matches_content": true, "issue": null },
+    { "file": "potato-and-big-dog.png", "depicts": "potato with round glasses beside a scruffy terrier's eye/muzzle", "name_matches_content": true, "issue": "yet another dog breed (scruffy terrier), differs from the rest of the week's 'big dog'" }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "B-B-Big!",
+      "line_map": [
+        { "line": "B-b-ball! It's a ball!", "best_image_by_content": "ball.png", "needs": "ok" },
+        { "line": "B-b-bear! It's a bear!", "best_image_by_content": "bear.png", "needs": "ok" },
+        { "line": "B-b-boat! It's a boat!", "best_image_by_content": "boat.png", "needs": "ok" },
+        { "line": "B-b-bird! It's a bird!", "best_image_by_content": "bird.png", "needs": "ok" },
+        { "line": "B-b-big! The dog is BIG!", "best_image_by_content": "big.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "The Big Dog",
+      "line_map": [
+        { "line": "The big dog! The big dog! How big is the dog?", "best_image_by_content": "big-dog.png", "needs": "ok" },
+        { "line": "As big as a pig! (a pig!)", "best_image_by_content": "big-dog-and-pig.png", "needs": "acceptable-hold", "note": "content matches but dog breed drifts - see wrong_art" },
+        { "line": "As big as a cat! (a cat!)", "best_image_by_content": "big-dog-meets-cat.png", "needs": "acceptable-hold", "note": "content matches but dog breed drifts - see wrong_art" },
+        { "line": "As big as a bus! (a bus!)", "best_image_by_content": null, "needs": "generate" },
+        { "line": "A cat! A little cat! The cat is mad! (hiss!)", "best_image_by_content": "cat-hissing.png", "needs": "ok" },
+        { "line": "The big dog hid! (he hid?!)", "best_image_by_content": "big-dog-hiding.png", "needs": "acceptable-hold", "note": "content matches but dog breed drifts - see wrong_art" },
+        { "line": "The big dog and the potato…", "best_image_by_content": "potato-and-big-dog.png", "needs": "acceptable-hold", "note": "content matches but dog breed drifts - see wrong_art" }
+      ],
+      "aliases": {},
+      "generate": [
+        {
+          "proposed_filename": "big-dog-and-bus.png",
+          "line": "As big as a bus! (a bus!)",
+          "mj_prompt": "dark forest editorial photography, a huge shaggy grey Great Dane-type dog (matching big-dog-towering.png / big.png) standing beside a small vintage toy double-decker bus for scale comparison, dramatic low angle, muted green background, cinematic Montessori dark-trap aesthetic"
+        }
+      ],
+      "wrong_art": [
+        {
+          "file": "big-dog-and-pig.png / big-dog-meets-cat.png / big-dog-hiding.png / potato-and-big-dog.png",
+          "issue": "this single week's 'big dog' character appears as at least 4 different breeds across the story beats (wrinkly mastiff, Great-Dane-like grey dog, hound-type, scruffy terrier) - no consistent 'big dog' identity carries through the song",
+          "fix": "pick ONE big-dog design (recommend the grey Great Dane from big-dog-towering.png/big.png, the most visually 'big') and regenerate the pig/cat/hiding/potato scenes to match it",
+          "mj_prompt": "dark forest editorial photography, the same large grey brindle Great Dane-type dog (floppy ears, wrinkled jowls) from the towering/big shots, [scene-specific pairing with pig/kitten/hiding/potato], muted green background, cinematic Montessori dark-trap aesthetic"
+        }
+      ]
+    }
+  ]
+}

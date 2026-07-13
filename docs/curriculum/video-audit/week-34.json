@@ -1,0 +1,54 @@
+{
+  "week": 34,
+  "images": [
+    { "file": "sled.png", "depicts": "little red wooden sled, rope tangled loosely, on a snowy slope", "name_matches_content": true, "issue": null },
+    { "file": "flag-on-sled.png", "depicts": "candy-stripe red/cream triangular flag planted on the sled", "name_matches_content": true, "issue": null },
+    { "file": "snake-on-sled.png", "depicts": "snake coiled at helm of sled gripping rope, flag overhead", "name_matches_content": true, "issue": null },
+    { "file": "chick-clap.png", "depicts": "chick mid-jump on snow, wings spread wide to the sides", "name_matches_content": "partial", "issue": "wings are spread outward, not clearly brought together in a 'clap' pose; weak match to 'Chick can clap!'" },
+    { "file": "sled-slip.png", "depicts": "sled sliding fast downhill, snake streaming, snow spray, flag flattened", "name_matches_content": true, "issue": null },
+    { "file": "flag-flapping.png", "depicts": "three candy-stripe flags shown mid-flap in close-up", "name_matches_content": true, "issue": null },
+    { "file": "sheep-on-sled.png", "depicts": "a creature with a bear/koala-like face (round ears, button eyes, tongue out) riding the sled behind the snake", "name_matches_content": false, "issue": "wrong art — the 'sheep' has a bear/koala face, not the established woolly sheep; reroll" },
+    { "file": "cast-clapping.png", "depicts": "plush-toy-style: chick holding the flag on the sled, a properly woolly sheep clapping behind, snake head at right, snow around them", "name_matches_content": true, "issue": "style drift to plush-toy render vs photoreal house style; chick appears to be holding the flag rather than clapping" },
+    { "file": "potato-on-sled.png", "depicts": "potato character with a DRAWN-ON cartoon face (eyes, eyebrows) and a red ribbon scarf, sitting on the empty sled; chick, sheep, snake reacting", "name_matches_content": true, "issue": "potato has a drawn-on cartoon face + scarf, breaking the plain/realistic potato design used in W31-33; style drift" },
+    { "file": "plum.png", "depicts": "ripe purple plum with a leaf, dew drops", "name_matches_content": true, "issue": null },
+    { "file": "clock.png", "depicts": "gold wind-up alarm clock with two bells", "name_matches_content": true, "issue": null },
+    { "file": "slug.png", "depicts": "small garden slug with eye stalks", "name_matches_content": true, "issue": null }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Fl-Fl-Flag!",
+      "line_map": [
+        { "line": "Fl-fl-flag! FLAG! (wave it!)", "best_image_by_content": "flag-on-sled.png", "needs": "ok" },
+        { "line": "Cl-cl-clap! CLAP! (clap! clap!)", "best_image_by_content": "chick-clap.png", "needs": "alias (weak — see wrong_art)" },
+        { "line": "Pl-pl-plum! PLUM! (yum!)", "best_image_by_content": "plum.png", "needs": "ok" },
+        { "line": "Sl-sl-sled! SLED! (zoom!)", "best_image_by_content": "sled.png / sled-slip.png", "needs": "ok" },
+        { "line": "A potato?! (NO!) P-p-potato! No blend!", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "Outro: Fl-fl-flag! Cl-cl-clap! Pl-pl-plum! Sl-sl-sled!", "best_image_by_content": "flag-on-sled.png / chick-clap.png / plum.png / sled.png", "needs": "ok (repeat)" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "The Flag on the Sled",
+      "line_map": [
+        { "line": "The flag is on the sled! (hook, x2) Where is the flag?", "best_image_by_content": "flag-on-sled.png", "needs": "ok" },
+        { "line": "Clap for the flag! The sled can zip and slip! Slip and slap and clap!", "best_image_by_content": "chick-clap.png + sled-slip.png", "needs": "alias (chick-clap weak)" },
+        { "line": "Snake can sit on the sled! Chick can clap and clap! Slip, sled, slip!", "best_image_by_content": "snake-on-sled.png + chick-clap.png (repeat) + sled-slip.png (repeat)", "needs": "ok" },
+        { "line": "Outro: The flag… the sled… A potato?! (POTATO!) On the sled?! (zoom, potato, zoom!)", "best_image_by_content": "potato-on-sled.png", "needs": "ok (style flagged)" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "flag.png", "line": "cards/bingo/matching base asset (spec lists it; file entirely absent from folder)", "mj_prompt": "a small triangular flag on a wooden stick, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": [
+        { "file": "sheep-on-sled.png", "issue": "sheep has a bear/koala face instead of the established woolly design", "fix": "reroll — mj_prompt: a fluffy round white sheep with kind dark eyes piling onto the back of a speeding red sled behind an emerald-green snake, wool streaming, delighted and terrified, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "file": "potato-on-sled.png", "issue": "drawn-on cartoon face + ribbon scarf breaks the plain-potato series canon", "fix": "reroll — mj_prompt: an empty red sled with a single plain potato (no face) perched where a rider should sit, wearing a small flag like a cape, about to slide off, a yellow chick white sheep and green snake gaping, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "file": "cast-clapping.png", "issue": "plush-toy render style drift vs photoreal house style", "fix": "reroll to photoreal — mj_prompt: a red sled skidded to a stop at the bottom of a slope in a fan of snow with a tiny yellow chick, a white woolly sheep and an emerald-green snake all clapping and cheering, a flag flying, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "file": "chick-clap.png", "issue": "wings spread outward, not brought together — reads as jumping, not clapping", "fix": "reroll — mj_prompt: a tiny fluffy yellow chick clapping her two wings TOGETHER in front of her body in excitement at the top of a snowy slope, snow puffs at her feet, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ]
+    }
+  ]
+}

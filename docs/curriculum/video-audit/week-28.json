@@ -1,0 +1,55 @@
+{
+  "week": 28,
+  "images": [
+    { "file": "cheese.png", "depicts": "wedge of yellow cheese with holes", "name_matches_content": true, "issue": "none" },
+    { "file": "cherry.png", "depicts": "pair of red cherries on a stem", "name_matches_content": true, "issue": "none" },
+    { "file": "chick-a-lot.png", "depicts": "chick pacing with a curling ribbon-like dust/molt trail behind it", "name_matches_content": true, "issue": "trail reads more like feather/dust than 'speech puffs', acceptable" },
+    { "file": "chick-at-sheep.png", "depicts": "chick and sheep face to face at ground level", "name_matches_content": true, "issue": "not clearly 'perched on the edge of a mat', but concept (chick chatting at sheep) holds" },
+    { "file": "chick-chat.png", "depicts": "chick with wings spread, small round puffs visible near it", "name_matches_content": true, "issue": "none" },
+    { "file": "chick-chatter.png", "depicts": "chick with beak wide open, TWO speech-bubble shapes above it", "name_matches_content": true, "issue": "spec calls for three stacked speech bubbles; only two are visible" },
+    { "file": "chick-much-chat.png", "depicts": "chick leaping amid a huge white fluffy cloud, sheep peeking out from the cloud", "name_matches_content": true, "issue": "cloud reads as literal fluff/cotton rather than speech-puffs, but consistent with chick-a-lot's style" },
+    { "file": "chick.png", "depicts": "single fluffy yellow chick, beak open mid-chirp", "name_matches_content": true, "issue": "none" },
+    { "file": "chin.png", "depicts": "close-up smiling child's face with a finger touching the lower cheek/chin area", "name_matches_content": true, "issue": "finger placement is closer to cheek than the point of the chin — borderline" },
+    { "file": "chip.png", "depicts": "single golden ridged potato-chip crisp", "name_matches_content": true, "issue": "none" },
+    { "file": "chop.png", "depicts": "knife mid-chop through a carrot on a board, sparks of light", "name_matches_content": true, "issue": "none" },
+    { "file": "potato-hush-chick.png", "depicts": "chick and lumpy brown potato-shaped object, sheep wide-eyed behind", "name_matches_content": true, "issue": "none — correct potato depiction, unlike Week 27's failure" },
+    { "file": "sheep-nap-chick-chat.png", "depicts": "sheep asleep with 'zzz', chick standing on its back chattering with a speech-puff", "name_matches_content": true, "issue": "none" },
+    { "file": "sheep-on-mat.png", "depicts": "sheep resting on a woven mat, eyes closed", "name_matches_content": true, "issue": "eyes fully closed rather than 'half-closed', acceptable" }
+  ],
+  "missingFiles": ["chair.png (cards, bingo, basket — no file exists)", "fish.png (reused-from-W27 asset for cards/bingo/matching — also missing in W27 folder itself)"],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Ch-Ch-Chick!",
+      "line_map": [
+        { "line": "Ch-ch-chick! It's a chick! (hello, Chick!)", "best_image_by_content": "chick.png", "needs": "ok" },
+        { "line": "Ch-ch-chin! On my chin!", "best_image_by_content": "chin.png", "needs": "acceptable-hold (finger placement is slightly off from the literal chin point)" },
+        { "line": "Ch-ch-chop! Chop, chop, chop!", "best_image_by_content": "chop.png", "needs": "ok" },
+        { "line": "Ch-ch-cheese! I like cheese!", "best_image_by_content": "cheese.png", "needs": "ok" },
+        { "line": "A potato?! P-p-potato! Not CH!", "best_image_by_content": "potato-hush-chick.png", "needs": "ok" },
+        { "line": "(chat, Chick, chat!)", "best_image_by_content": "chick-chat.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "Chick Can Chat",
+      "line_map": [
+        { "line": "The chick can chat! (hook, repeats)", "best_image_by_content": "chick-chat.png", "needs": "ok" },
+        { "line": "Sheep sat on a mat.", "best_image_by_content": "sheep-on-mat.png", "needs": "ok" },
+        { "line": "Chick can chat and chat!", "best_image_by_content": "chick-at-sheep.png", "needs": "ok" },
+        { "line": "Sheep can nap. (shhh…) Can Chick nap? (NO — chat!)", "best_image_by_content": "sheep-nap-chick-chat.png", "needs": "ok" },
+        { "line": "Chat, chat, chat! (so much chat!)", "best_image_by_content": "chick-chatter.png", "needs": "acceptable-hold (only 2 of 3 speech bubbles visible)" },
+        { "line": "Chick can chat much!", "best_image_by_content": "chick-much-chat.png", "needs": "ok" },
+        { "line": "A potato?! (POTATO!) Chick can not chat!", "best_image_by_content": "potato-hush-chick.png", "needs": "ok" }
+      ],
+      "aliases": { "chick (general pacing/energy line)": "chick-a-lot.png" },
+      "generate": [
+        { "proposed_filename": "chair.png", "line": "materials cards/bingo/basket only (no book line)", "mj_prompt": "a small wooden child's chair, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": []
+    }
+  ]
+}

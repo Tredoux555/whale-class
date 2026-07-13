@@ -1,0 +1,66 @@
+{
+  "week": 12,
+  "images": [
+    { "file": "dog.png", "depicts": "small shaggy brown-and-white dog lying down", "name_matches_content": true, "issue": null },
+    { "file": "dog-digs.png", "depicts": "scruffy terrier mid-dig, dirt flying, tail up", "name_matches_content": true, "issue": null },
+    { "file": "dog-digging.png", "depicts": "dog's muddy face poking out of a dug hole, dirt spraying", "name_matches_content": true, "issue": null },
+    { "file": "dog-digging-deep.png", "depicts": "scruffy terrier digging next to a pink piglet, both in a dirt pit", "name_matches_content": true, "issue": null },
+    { "file": "dog-digging-slow.png", "depicts": "terrier close-up sniffing dirt, small round object visible near nose", "name_matches_content": true, "issue": null },
+    { "file": "gate.png", "depicts": "wooden garden picket gate, ajar", "name_matches_content": true, "issue": null },
+    { "file": "gift.png", "depicts": "wrapped green gift box with a large silver bow", "name_matches_content": true, "issue": null },
+    { "file": "glove.png", "depicts": "green knitted mitten/glove", "name_matches_content": true, "issue": null },
+    { "file": "goat.png", "depicts": "baby goat with long floppy ears, walking", "name_matches_content": true, "issue": null },
+    { "file": "goose.png", "depicts": "white goose walking, side profile, sunbeam", "name_matches_content": true, "issue": null },
+    { "file": "gorilla.png", "depicts": "seated gorilla, close-up thoughtful pose", "name_matches_content": true, "issue": null },
+    { "file": "grapes.png", "depicts": "bunch of dark purple grapes with water droplets", "name_matches_content": true, "issue": null },
+    { "file": "guitar.png", "depicts": "acoustic guitar leaning against coiled rope", "name_matches_content": true, "issue": null },
+    { "file": "hat-in-pit.png", "depicts": "small scruffy terrier wearing a burlap hat, in a dirt pit", "name_matches_content": true, "issue": null },
+    { "file": "pig-in-pit.png", "depicts": "pink pig with small terrier dog, both in a dirt pit", "name_matches_content": true, "issue": null },
+    { "file": "pot-in-pit.png", "depicts": "scruffy terrier with a rusty pot stuck on its head, in a dirt pit", "name_matches_content": true, "issue": null },
+    { "file": "potato-in-pit.png", "depicts": "potato wearing round glasses next to a cavalier-spaniel-type dog, in a dirt pit", "name_matches_content": true, "issue": "the dog breed here (cavalier/spaniel type) does not match the scruffy terrier used in every other pit scene this week" }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "G-G-Go!",
+      "line_map": [
+        { "line": "G-g-goat! It's a goat!", "best_image_by_content": "goat.png", "needs": "ok" },
+        { "line": "G-g-goose! It's a goose!", "best_image_by_content": "goose.png", "needs": "ok" },
+        { "line": "G-g-guitar! It's a guitar!", "best_image_by_content": "guitar.png", "needs": "ok" },
+        { "line": "G-g-gift! It's a gift!", "best_image_by_content": "gift.png", "needs": "ok" },
+        { "line": "G-g-go! Go, dog, go! The dog digs!", "best_image_by_content": "dog-digs.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "The Dog Digs",
+      "line_map": [
+        { "line": "The dog digs! The dog digs! What is in the pit?", "best_image_by_content": "dog-digging.png", "needs": "ok" },
+        { "line": "A pig! (a pig?!) The dog got a pig!", "best_image_by_content": "dog-digging-deep.png", "needs": "ok" },
+        { "line": "A pot! (a pot?!) The dog got a pot!", "best_image_by_content": "pot-in-pit.png", "needs": "ok" },
+        { "line": "A hat! (a hat?!) The dog got a hat!", "best_image_by_content": "hat-in-pit.png", "needs": "ok" },
+        { "line": "A cat?! (a CAT?!) The cat is mad! (hiss!)", "best_image_by_content": null, "needs": "generate" },
+        { "line": "The dog got a potato!", "best_image_by_content": "potato-in-pit.png", "needs": "acceptable-hold", "note": "content matches but dog breed is inconsistent with the rest of the sequence - see wrong_art" }
+      ],
+      "aliases": {},
+      "generate": [
+        {
+          "proposed_filename": "cat-in-pit.png",
+          "line": "A cat?! (a CAT?!) The cat is mad! (hiss!)",
+          "mj_prompt": "dark forest editorial photography, close-up of an angry hissing striped tabby cat popping up out of a dirt pit, fur puffed up, the same scruffy terrier dog from the digging series looking startled beside the hole, dramatic side lighting, muted green background, cinematic Montessori dark-trap aesthetic"
+        }
+      ],
+      "wrong_art": [
+        {
+          "file": "potato-in-pit.png",
+          "issue": "uses a cavalier-spaniel-type dog instead of the scruffy terrier seen in dog-digs.png, dog-digging.png, dog-digging-deep.png, hat-in-pit.png, pig-in-pit.png and pot-in-pit.png - breaks the 'dog' character continuity for the outro",
+          "fix": "regenerate keeping the same scruffy terrier used throughout the rest of the pit sequence",
+          "mj_prompt": "dark forest editorial photography, the same scruffy brown-and-grey terrier from the digging series, muzzle in the dirt, looking curiously at a potato wearing round wire glasses sitting in the dug pit, warm sunbeam, muted green background, cinematic Montessori dark-trap aesthetic"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,978 @@
+[
+  {
+    "week": 1,
+    "filename": "ax.png",
+    "reason": "Ah-ah-ah… ax! Ah-ah-ah… ax!",
+    "mj_prompt": "a small toy hatchet with a wooden handle and a rounded child-safe blade, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 2,
+    "filename": "table.png",
+    "reason": "T-t-table! T-t-table!",
+    "mj_prompt": "a small wooden table, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 3,
+    "filename": "mat-coloring.png",
+    "reason": "listed in spec assets[] but does not exist in the images folder",
+    "mj_prompt": "a simple mat, thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4",
+    "priority": "nice",
+    "oref": null
+  },
+  {
+    "week": 3,
+    "filename": "mat.png",
+    "reason": "M-m-mat! M-m-mat! It's a mat! (a mat!)",
+    "mj_prompt": "a small woven floor mat alone on the floor, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 3,
+    "filename": "potato.png",
+    "reason": "A potato?! (NO!) / P-p-potato! Not M!",
+    "mj_prompt": "a single raw potato, not on any mat, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 4,
+    "filename": "cup.png",
+    "reason": "C-c-cup! C-c-cup! It's a cup!",
+    "mj_prompt": "a simple ceramic cup, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 4,
+    "filename": "mat.png",
+    "reason": "(book spread 1 — \"A mat.\" — no sung lyric, but the asset file is missing entirely)",
+    "mj_prompt": "a small woven floor mat alone on the floor, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "book",
+    "oref": null
+  },
+  {
+    "week": 4,
+    "filename": "potato-not-c.png",
+    "reason": "A potato?! (NO!) P-p-potato! Not C!",
+    "mj_prompt": "a single raw potato alone on a deep forest-green backdrop, dramatic spotlight, comedic rejected feel conveyed through stark side-lighting and a faint cold rim-glow (no text or graphic overlays), ultra-realistic photograph, single subject centered, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 5,
+    "filename": "sam-sat-on-potato.png",
+    "reason": "Sam sat on a POTATO! (POTATO!)",
+    "mj_prompt": "a small wooden peg doll boy with painted brown hair and blue dungarees sitting right on top of a single raw potato on a woven floor mat, comedic startled expression, a tabby cat watching deadpan beside the mat, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 05/images/sam.png"
+  },
+  {
+    "week": 5,
+    "filename": "sam-sat-on-sock.png",
+    "reason": "Sam sat on the sock! (a sock?!)",
+    "mj_prompt": "a small wooden peg doll boy with painted brown hair and blue dungarees sitting obliviously right on top of a single striped cotton sock, surprised comedic expression, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 05/images/sam.png"
+  },
+  {
+    "week": 6,
+    "filename": "sam-solo.png",
+    "reason": "I am Sam! (it's Sam!)",
+    "mj_prompt": "a small wooden peg doll boy with brown hair in blue dungarees standing alone, chest out, declaring himself proudly, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 05/images/sam.png"
+  },
+  {
+    "week": 9,
+    "filename": "hat-on-ant-v2.png",
+    "reason": "The hat is on the ant! (the ant?!)",
+    "mj_prompt": "the same brown felt fedora hat sitting alone on the floor with no ant visible anywhere, mysterious and funny, a tiny black ant is nowhere to be seen — completely hidden underneath, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 06/images/ant-on-mat.png"
+  },
+  {
+    "week": 10,
+    "filename": "all-and-mat-v2.png",
+    "reason": "Dad and Sam and the cat and the ant. (AND, AND, AND!)",
+    "mj_prompt": "a family portrait on a woven mat of a tall wooden peg doll man with a painted brown beard and green cap, a peg doll boy in blue dungarees, a peg doll girl with black pigtails in a red dress, a photorealistic tabby cat, and a tiny black ant all together, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 05/images/sam.png"
+  },
+  {
+    "week": 10,
+    "filename": "dad-and-ant-v2.png",
+    "reason": "Dad and the ant!",
+    "mj_prompt": "a tall wooden peg doll man with a painted brown beard and a green cap squinting down through his fingers at a tiny shiny black ant balanced on his fingertip, dramatic scale contrast, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 10/images/dad.png"
+  },
+  {
+    "week": 10,
+    "filename": "dad-sam-find-v2.png",
+    "reason": "Sam did it! The ant is on Dad's hat!",
+    "mj_prompt": "a small wooden peg doll boy in blue dungarees pointing up triumphantly at a tiny black ant sitting calmly on the brim of a tall wooden peg doll man's green cap, the man's painted brown-bearded wooden face visible below the cap, relief and giggles, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 05/images/sam.png"
+  },
+  {
+    "week": 11,
+    "filename": "pot-cool-v2.png",
+    "reason": "It is not hot. (phew…)",
+    "mj_prompt": "dark forest editorial photography, small black ceramic pot on a wooden counter, NO steam or smoke, calm cool morning light, a striped tabby cat sitting relaxed and casual beside it, muted deep-green background, cinematic Montessori dark-trap aesthetic",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 12,
+    "filename": "cat-in-pit.png",
+    "reason": "A cat?! (a CAT?!) The cat is mad! (hiss!)",
+    "mj_prompt": "dark forest editorial photography, close-up of an angry hissing striped tabby cat popping up out of a dirt pit, fur puffed up, the same scruffy terrier dog from the digging series looking startled beside the hole, dramatic side lighting, muted green background, cinematic Montessori dark-trap aesthetic",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 04/images/cat.png"
+  },
+  {
+    "week": 13,
+    "filename": "big-dog-and-bus.png",
+    "reason": "As big as a bus! (a bus!)",
+    "mj_prompt": "dark forest editorial photography, a huge shaggy grey Great Dane-type dog (matching big-dog-towering.png / big.png) standing beside a small vintage toy double-decker bus for scale comparison, dramatic low angle, muted green background, cinematic Montessori dark-trap aesthetic",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 12/images/dog.png"
+  },
+  {
+    "week": 14,
+    "filename": "hen-on-cat.png",
+    "reason": "On the cat?! (on the CAT?!) Ten hens on the cat!",
+    "mj_prompt": "dark forest editorial photography, a fluffy brown hen perched calmly on top of a wide-eyed striped tabby cat's head, cat looking alarmed and annoyed, muted green background, cinematic Montessori dark-trap aesthetic, matches the visual style of hens-in-pen.png",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 04/images/cat.png"
+  },
+  {
+    "week": 15,
+    "filename": "dog-chasing-cat.png",
+    "reason": "The dog ran at the cat!",
+    "mj_prompt": "dark forest editorial photography, a scruffy terrier dog running full-speed after a fleeing striped tabby cat, motion blur, dust kicked up, muted green background, cinematic Montessori dark-trap aesthetic, matches the staging of cat-chasing-rat.png",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 12/images/dog.png"
+  },
+  {
+    "week": 15,
+    "filename": "rat-hid.png",
+    "reason": "The red rat hid! (it hid!)",
+    "mj_prompt": "dark forest editorial photography, the same red-cloaked rat peeking out from behind a rock or log, mostly hidden with one eye visible, muted green background, cinematic Montessori dark-trap aesthetic, matches red-rat.png",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 15/images/rat.png"
+  },
+  {
+    "week": 15,
+    "filename": "rat-sat.png",
+    "reason": "The red rat sat! (it sat!)",
+    "mj_prompt": "dark forest editorial photography, a russet-red rat wearing a small red knitted cloak sitting calmly upright on its haunches, paws folded, muted green background, cinematic Montessori dark-trap aesthetic, matches red-rat.png",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 15/images/rat.png"
+  },
+  {
+    "week": 16,
+    "filename": "cup.png",
+    "reason": "bingo & matching asset (not sung, but in materials)",
+    "mj_prompt": "ultra-realistic photograph, a single small tin cup centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 16,
+    "filename": "sun.png",
+    "reason": "Up in the sun! / bingo & matching asset",
+    "mj_prompt": "ultra-realistic photograph, a single warm golden sun icon/orb centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 16,
+    "filename": "vowel-wall-complete.png",
+    "reason": "The wall is full! (A-E-I-O-U!)",
+    "mj_prompt": "ultra-realistic photograph, a wooden classroom wall with five glowing gold letters A E I O U lit in sequence, warm celebratory light, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 17,
+    "filename": "cat.png",
+    "reason": "reused bingoPool/matching asset (not sung this week, low priority)",
+    "mj_prompt": "ultra-realistic photograph, a single ginger tabby cat sitting centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 04/images/cat.png"
+  },
+  {
+    "week": 17,
+    "filename": "potato.png",
+    "reason": "reused bingoPool asset (not sung this week, low priority)",
+    "mj_prompt": "ultra-realistic photograph, a single round potato with tiny round glasses, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 18,
+    "filename": "dog.png",
+    "reason": "reused bingoPool/matching asset (not sung as standalone, low priority)",
+    "mj_prompt": "ultra-realistic photograph, a single scruffy brown dog sitting centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 12/images/dog.png"
+  },
+  {
+    "week": 18,
+    "filename": "potato.png",
+    "reason": "reused bingoPool asset (low priority)",
+    "mj_prompt": "ultra-realistic photograph, a single round potato with tiny round glasses, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 19,
+    "filename": "web-dry.png",
+    "reason": "It's a web! / spread 1 'A web.'",
+    "mj_prompt": "ultra-realistic photograph, a single dewless dry spider web strung across the dark, backlit so every strand glows silver, no water droplets, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 21,
+    "filename": "potato.png",
+    "reason": "A potato?! (NO!) P-p-potato! Not K!",
+    "mj_prompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 21,
+    "filename": "sock.png",
+    "reason": "Breakdown: 'duck… sock… rock…' / Hook: 'The duck got the sock!'",
+    "mj_prompt": "a single stripey sock, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 22,
+    "filename": "fan.png",
+    "reason": "fff… (off) … vvv… (on) fan… van… fan… van…",
+    "mj_prompt": "a small handheld electric fan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 23,
+    "filename": "potato.png",
+    "reason": "A potato?! (NO!) P-p-potato! Not Y!",
+    "mj_prompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 24,
+    "filename": "box.png",
+    "reason": "Hook 1 — 'A box! B-O-X! It's a box!'",
+    "mj_prompt": "a plain cardboard box with the lid ajar and something bright watching from the dark slit inside, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 24,
+    "filename": "taxi.png",
+    "reason": "Breakdown — '…ox… wax… taxi…'",
+    "mj_prompt": "a yellow toy taxi cab, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 25,
+    "filename": "duck-quit-it.png",
+    "reason": "Quit it! says the duck!",
+    "mj_prompt": "a white duck with a stern exasperated expression, beak closed in a firm line, one wing raised as if signalling stop, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 25,
+    "filename": "duck.png",
+    "reason": "[Intro] (quack? quack?) / also book spread 1: 'The duck.'",
+    "mj_prompt": "a white duck center stage with its chest puffed and beak closed, confident, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 25,
+    "filename": "potato-plain.png",
+    "reason": "A potato?! (NO!) / P-p-potato! Not Qu!",
+    "mj_prompt": "REUSE FROM WEEK 1 IF POSSIBLE — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 25,
+    "filename": "quick.png",
+    "reason": "quack… quick… quiz… (qu starts them all!)",
+    "mj_prompt": "a golden lightning bolt frozen mid-motion streaking through the frame, sense of speed, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 25,
+    "filename": "segina-quack.png",
+    "reason": "Sejeena says, \"Quack!\"",
+    "mj_prompt": "a wooden peg doll girl with a small bow cupping her hands to her mouth quacking, cheeks round, joyful, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 49/images/girl.png"
+  },
+  {
+    "week": 26,
+    "filename": "bug.png",
+    "reason": "book:1 'The bug.' / establishing cast shot",
+    "mj_prompt": "a round red-shelled beetle wearing a tiny graduation cap with its wings just starting to lift, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 26,
+    "filename": "fox.png",
+    "reason": "materials cards/bingo only (reused from Week 24 — alias from Week 24 folder instead of regenerating if available)",
+    "mj_prompt": "REUSED FROM WEEK 24 — a red fox sitting and looking forward with a sly expression, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 17/images/fox.png"
+  },
+  {
+    "week": 26,
+    "filename": "potato.png",
+    "reason": "materials bingo only (reused from Week 1 — alias from Week 1 folder instead of regenerating if available)",
+    "mj_prompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 26,
+    "filename": "zoo.png",
+    "reason": "materials basket only (no book line)",
+    "mj_prompt": "a little zoo entrance archway with a sign and animal silhouettes, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 27,
+    "filename": "fish-coloring.png",
+    "reason": "coloring, skipped anyway",
+    "mj_prompt": "a simple fish, thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4",
+    "priority": "nice",
+    "oref": null
+  },
+  {
+    "week": 27,
+    "filename": "fish.png",
+    "reason": "book:2 'A fish.' / cards, bingo, matching",
+    "mj_prompt": "one bright orange fish leaping mid-air, droplets frozen in the light, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 28,
+    "filename": "chair.png",
+    "reason": "materials cards/bingo/basket only (no book line)",
+    "mj_prompt": "a small wooden child's chair, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 28,
+    "filename": "fish.png",
+    "reason": "reused-from-W27 asset for cards/bingo/matching — also missing in W27 folder itself",
+    "mj_prompt": "a fish, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "nice",
+    "oref": null
+  },
+  {
+    "week": 30,
+    "filename": "bell.png",
+    "reason": "materials cards/bingo/matching (clean bell tile distinct from the book's hanging ornate bell)",
+    "mj_prompt": "a gleaming brass hand-bell with a wooden handle, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 30,
+    "filename": "doll.png",
+    "reason": "materials cards/bingo only (no book line)",
+    "mj_prompt": "a small soft rag doll, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 30,
+    "filename": "rock.png",
+    "reason": "Sock! Rock! Duck! Kick!",
+    "mj_prompt": "a single smooth grey rock, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 30,
+    "filename": "shell.png",
+    "reason": "materials cards/bingo only (no book line; also owed to Week 27)",
+    "mj_prompt": "an empty spiral seashell, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 30,
+    "filename": "sock.png",
+    "reason": "Sock! Rock! Duck! Kick!",
+    "mj_prompt": "a single striped woolly sock, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 31,
+    "filename": "king.png",
+    "reason": "book spread 1 'A king.' / base card+bingo+matching asset (CRITICAL — missing from folder entirely)",
+    "mj_prompt": "a small round friendly cartoon king in a golden crown with his chest puffed and mouth just opening to sing, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 31/images/king-sing.png"
+  },
+  {
+    "week": 31,
+    "filename": "ring.png",
+    "reason": "Ring! Ring! Long! Long! / The ring! The ring! The king and the ring!",
+    "mj_prompt": "a gold ring with a small gem, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 31/images/king-sing.png"
+  },
+  {
+    "week": 31,
+    "filename": "wing.png",
+    "reason": "Song! Song! Wing! Wing!",
+    "mj_prompt": "a single feathered bird wing spread open, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 33,
+    "filename": "snake-coloring.png",
+    "reason": "materials.coloring lists 'snake' but no coloring-page file exists",
+    "mj_prompt": "a happy friendly snake with big eyes coiled in a spiral, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 33,
+    "filename": "snake.png",
+    "reason": "book:1 'A Snake!' CAST DEBUT + sound-song 'Hello, Snake! sss…' + cards/bingo/matching base asset (CRITICAL — file entirely absent)",
+    "mj_prompt": "a friendly emerald-green garden snake with large gentle amber eyes zipping forward in mid-motion, a happy green blur, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 34,
+    "filename": "flag.png",
+    "reason": "cards/bingo/matching base asset (spec lists it; file entirely absent from folder)",
+    "mj_prompt": "a small triangular flag on a wooden stick, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 35,
+    "filename": "drum-coloring.png",
+    "reason": "materials.coloring lists 'drum' but no coloring-page file exists",
+    "mj_prompt": "a round drum with drumsticks and beat lines, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 35,
+    "filename": "drum.png",
+    "reason": "cards/bingo/matching base asset (spec lists it; file entirely absent)",
+    "mj_prompt": "a small round drum with two crossed drumsticks, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 35,
+    "filename": "frog.png",
+    "reason": "book:1 'A frog.' (neutral pre-grin pose) + sound-song 'FROG! (hop!)' + cards/bingo/matching base asset (CRITICAL — file entirely absent)",
+    "mj_prompt": "a plump glossy green frog sitting with a neutral mouth and a lily pad under one foot, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 36,
+    "filename": "hand-coloring.png",
+    "reason": "coloring page",
+    "mj_prompt": "an open hand with spread fingers, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 36,
+    "filename": "hand.png",
+    "reason": "Hand! Hand! Hand-hand-hand! / HAND! (clap your HAND!)",
+    "mj_prompt": "a child's open hand palm forward with fingers spread, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 36,
+    "filename": "lamp.png",
+    "reason": "materials card word",
+    "mj_prompt": "a small glowing bedside lamp with a round shade, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 36,
+    "filename": "nest.png",
+    "reason": "A nest. (book:1) / Nest-nest-nest!",
+    "mj_prompt": "a cosy round twig nest lined with soft fluff sitting empty on a branch stub, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 36,
+    "filename": "sheep-jump-land.png",
+    "reason": "Sheep can jump and land! Land in the nest!",
+    "mj_prompt": "a fluffy round white sheep with kind dark eyes mid-jump landing into an overstuffed twig nest, wool bulging comically over the rim, a yellow chick and green snake already squished inside laughing, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 47/images/sheep-star.png"
+  },
+  {
+    "week": 37,
+    "filename": "chick-tugs-log.png",
+    "reason": "Chick can help! (help! help!)",
+    "mj_prompt": "a tiny fluffy yellow chick tugging with both wings at a striped skunk's tail poking from a log hollow, feet braced, beak gritted with effort, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 37,
+    "filename": "gift.png",
+    "reason": "materials card word",
+    "mj_prompt": "a small wrapped gift box with a ribbon bow, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 37,
+    "filename": "milk.png",
+    "reason": "Belt-belt-belt! ... Milk! Silk!",
+    "mj_prompt": "a full glass of milk, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 37,
+    "filename": "snake-loops-log.png",
+    "reason": "Snake can help the skunk!",
+    "mj_prompt": "an emerald-green garden snake with large gentle amber eyes looping around a log for extra grip beside a yellow chick, both pulling to free a stuck striped skunk, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 38,
+    "filename": "gate.png",
+    "reason": "G-A-T-E — gate! / book:1 'A gate.'",
+    "mj_prompt": "a tall wrought-iron garden gate latched shut with a small brass name-plate, warm glow beyond it, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 38,
+    "filename": "snake-coloring.png",
+    "reason": "coloring page",
+    "mj_prompt": "a happy friendly snake with big eyes coiled beside a slice of cake, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 39,
+    "filename": "kite-coloring.png",
+    "reason": "coloring page",
+    "mj_prompt": "a diamond kite with a bow tail flying, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 39,
+    "filename": "kite.png",
+    "reason": "K-I-T-E — kite! / book:5 'A kite!'",
+    "mj_prompt": "a bright diamond kite with a long ribbon tail hovering, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 39,
+    "filename": "snake-coloring.png",
+    "reason": "coloring page",
+    "mj_prompt": "a happy friendly snake holding a kite string, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 39,
+    "filename": "snake-holds-kite-string.png",
+    "reason": "Snake has the kite!",
+    "mj_prompt": "a friendly emerald-green garden snake with large gentle amber eyes holding a taut kite string in its tail tip, a bright diamond kite with a ribbon tail clearly visible above, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 39,
+    "filename": "vine.png",
+    "reason": "soundBasket word",
+    "mj_prompt": "a curling green leafy vine, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 40,
+    "filename": "dog-coloring.png",
+    "reason": "coloring page",
+    "mj_prompt": "a happy dog holding a bone, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 12/images/dog.png"
+  },
+  {
+    "week": 40,
+    "filename": "home-coloring.png",
+    "reason": "coloring page",
+    "mj_prompt": "a cosy little house with a dog basket by the door, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 40,
+    "filename": "nose.png",
+    "reason": "N-O-S-E — nose!",
+    "mj_prompt": "a clown's round red nose, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 40,
+    "filename": "rope.png",
+    "reason": "A rope! A rope!",
+    "mj_prompt": "a coiled length of thick rope, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 40,
+    "filename": "rose.png",
+    "reason": "materials card word",
+    "mj_prompt": "a single red rose in bloom, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 41,
+    "filename": "cubes-tune-v2.png",
+    "reason": "The cubes make a tune. (book:7)",
+    "mj_prompt": "a gentle grey mule tapping a row of glowing music cubes with a silver flute held in its mouth, no human hands visible, each cube glowing as it rings a note, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 41,
+    "filename": "mule-concert-v2.png",
+    "reason": "The flute and the cube! Snake can hop! Sheep can hum! (book:8, word-song verse 3)",
+    "mj_prompt": "a gentle grey mule playing a silver flute mid-performance over a row of glowing music cubes, an emerald-green snake swaying beside it and one fluffy white sheep bobbing along in the background, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 47/images/sheep-star.png"
+  },
+  {
+    "week": 42,
+    "filename": "huge-bridge-v2.png",
+    "reason": "The bridge is huge. / Cross, Snake! Cross, Chick! Sheep is on the bridge. (book:5)",
+    "mj_prompt": "a wide view of a tiny fluffy white sheep, an emerald-green snake, a small fluffy yellow chick and a dog crossing a vast glowing arched bridge toward a warm light on the far side, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 47/images/sheep-star.png"
+  },
+  {
+    "week": 43,
+    "filename": "snake-tail-v2.png",
+    "reason": "Snake has a long tail. (book:6)",
+    "mj_prompt": "a friendly emerald-green garden snake with large gentle amber eyes proudly showing off its very long curled tail stretched across a train station platform beside the tracks, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 44,
+    "filename": "bee.png",
+    "reason": "A bee! (book:2, CAST DEBUT)",
+    "mj_prompt": "a plump little honeybee with soft fuzzy gold-and-black stripes and round shiny wings hovering alone in the spotlight, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 44/images/bee-tree.png"
+  },
+  {
+    "week": 45,
+    "filename": "boat.png",
+    "reason": "A boat! (book:4)",
+    "mj_prompt": "a little wooden rowboat pulled up at the edge of a frozen lake with oars ready, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 45,
+    "filename": "goat.png",
+    "reason": "A goat. (book:2)",
+    "mj_prompt": "a sturdy little goat with a shaggy coat standing with steaming breath, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 45,
+    "filename": "snow-growing-v2.png",
+    "reason": "The snow can grow. (book:7)",
+    "mj_prompt": "a wide view of a snowdrift piled high up to a little shaggy goat's shoulders, snow still falling and visibly deeper than before, showing the growing height of the drift beside the goat, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 46,
+    "filename": "bee-light.png",
+    "reason": "Bee can see the light!",
+    "mj_prompt": "a plump gold-and-black honeybee with round shiny wings hovering delighted beside a warm glowing lantern in the dark, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 44/images/bee-tree.png"
+  },
+  {
+    "week": 47,
+    "filename": "car.png",
+    "reason": "A car! (book:5, C-A-R spell-out)",
+    "mj_prompt": "a little car with round headlamps alone in the dark, beams sweeping forward, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 47,
+    "filename": "park.png",
+    "reason": "Run in the park! (materials/cards asset, currently missing)",
+    "mj_prompt": "a park bench under a tree with a lamppost at night, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 47,
+    "filename": "star.png",
+    "reason": "A star! (CAST DEBUT, book:2 + S-T-A-R spell-out)",
+    "mj_prompt": "a warm golden five-point star with a serene sleepy face glowing softly alone against pure darkness, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 51/images/star-looking.png"
+  },
+  {
+    "week": 48,
+    "filename": "corn.png",
+    "reason": "Corn. (book:1, C-O-R-N spell-out)",
+    "mj_prompt": "a golden ear of corn alone in the spotlight, husk half-peeled, kernels gleaming, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 48,
+    "filename": "fork.png",
+    "reason": "A fork! (book:5, F-O-R-K spell-out)",
+    "mj_prompt": "a big wooden pitchfork leaning upright, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 48,
+    "filename": "horse.png",
+    "reason": "A horse. (book:2, cast introduction)",
+    "mj_prompt": "a gentle brown horse with ears forward looking hopefully forward, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 49,
+    "filename": "teacher.png",
+    "reason": "It's a teacher! (hello, teacher!) - sound song verse 3, two-syllable gate",
+    "mj_prompt": "a warm friendly wooden peg-doll teacher figure with a kind smile and a small book, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 50,
+    "filename": "bag.png",
+    "reason": "Bag or bug? (minimal-pair materials card, missing)",
+    "mj_prompt": "a small cloth drawstring bag, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 50,
+    "filename": "bug.png",
+    "reason": "Bag or bug? (minimal-pair materials card, missing)",
+    "mj_prompt": "a round red-shelled beetle, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 50,
+    "filename": "pen.png",
+    "reason": "Pin or pen? (minimal-pair materials card, missing)",
+    "mj_prompt": "a single blue ballpoint pen, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 50,
+    "filename": "pin.png",
+    "reason": "Pin or pen? (minimal-pair materials card, missing)",
+    "mj_prompt": "a single metal safety pin, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 50,
+    "filename": "ship.png",
+    "reason": "A ship. (book:1, first spread - completely missing standalone asset)",
+    "mj_prompt": "a small wooden sailing ship on dark glassy water, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 51,
+    "filename": "book-coloring.png",
+    "reason": "book-coloring.png",
+    "mj_prompt": "a simple book, thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4",
+    "priority": "nice",
+    "oref": null
+  },
+  {
+    "week": 51,
+    "filename": "book.png",
+    "reason": "Short oo — book!",
+    "mj_prompt": "an open picture book, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 51,
+    "filename": "moon-coloring.png",
+    "reason": "moon-coloring.png",
+    "mj_prompt": "a simple moon, thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4",
+    "priority": "nice",
+    "oref": null
+  },
+  {
+    "week": 51,
+    "filename": "moon.png",
+    "reason": "Oo-oo-moon! / Look at the moon! (hook, both songs, anchor word)",
+    "mj_prompt": "a huge pale full moon low in a dark sky with faint craters, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 51,
+    "filename": "zoo.png",
+    "reason": "Long oo — zoo!",
+    "mj_prompt": "a little zoo entrance archway with a sign and animal silhouettes, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 52,
+    "filename": "cow.png",
+    "reason": "A cow! (sound song verse2)",
+    "mj_prompt": "a gentle dairy cow standing, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 52,
+    "filename": "house.png",
+    "reason": "Out of the house! / A mouse in the house!",
+    "mj_prompt": "a small cozy cottage house, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 52,
+    "filename": "mouse.png",
+    "reason": "A mouse in the house!",
+    "mj_prompt": "a tiny grey mouse with big ears, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 54,
+    "filename": "saw.png",
+    "reason": "Saw! Paw! Claw! Draw! / Chick saw the glue…",
+    "mj_prompt": "a small hand saw with a wooden handle, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 56,
+    "filename": "comb.png",
+    "reason": "b is a ghost! …comb…",
+    "mj_prompt": "a simple wooden comb, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 57,
+    "filename": "fish-wishing.png",
+    "reason": "wishes / 'The fish wishes and wishes.'",
+    "mj_prompt": "a bright orange fish with eyes shut and bubbles rising like wishes in dark water, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 58,
+    "filename": "action.png",
+    "reason": "Action! Station! Nation!",
+    "mj_prompt": "a small toy race car frozen mid-motion with speed lines and dust flying, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 58,
+    "filename": "bee-reading.png",
+    "reason": "Bee is reading.",
+    "mj_prompt": "a plump gold-and-black honeybee perched on an open picture book with one leg resting on the page, absorbed, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 44/images/bee-tree.png"
+  },
+  {
+    "week": 58,
+    "filename": "potato-coloring.png",
+    "reason": "materials: coloring (missing asset)",
+    "mj_prompt": "a proud potato wearing a little crown and round glasses, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4",
+    "priority": "nice",
+    "oref": null
+  },
+  {
+    "week": 58,
+    "filename": "potato.png",
+    "reason": "materials: cards, bingo, matching (missing asset)",
+    "mj_prompt": "a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "nice",
+    "oref": null
+  },
+  {
+    "week": 58,
+    "filename": "section.png",
+    "reason": "Motion! Section! Fraction!",
+    "mj_prompt": "an orange sliced into clean sections arranged on a plate, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": null
+  },
+  {
+    "week": 58,
+    "filename": "segina-and-sam.png",
+    "reason": "Sejeena and Sam are here!",
+    "mj_prompt": "a peg doll girl with black pigtails in a red dress and a peg doll boy with brown hair in a red shirt standing side by side wearing tiny graduation caps, beaming, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+    "priority": "video-critical",
+    "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 49/images/girl.png"
+  }
+]

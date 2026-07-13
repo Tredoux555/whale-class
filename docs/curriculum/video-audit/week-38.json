@@ -1,0 +1,57 @@
+{
+  "week": 38,
+  "images": [
+    { "file": "cake.png", "depicts": "golden frosted cake with one lit candle on gold stand", "name_matches_content": true, "issue": null },
+    { "file": "snake-arrives.png", "depicts": "close-up snake face, tongue out", "name_matches_content": true, "issue": "generic snake close-up rather than 'slithering into the light', acceptable" },
+    { "file": "snake-at-gate.png", "depicts": "snake head beside gate bars, a '2' candle glowing beyond", "name_matches_content": true, "issue": null },
+    { "file": "name-on-gate.png", "depicts": "brass nameplate reading SNAKE, snake head at edge", "name_matches_content": true, "issue": null },
+    { "file": "snake-spelling.png", "depicts": "close-up snake head with tail/claw pointing at SNAKE nameplate letters", "name_matches_content": true, "issue": "near-duplicate composition of name-on-gate.png" },
+    { "file": "snake-going-in.png", "depicts": "ornate gate open, snake entering, sheep in party hat peeking around gatepost", "name_matches_content": true, "issue": null },
+    { "file": "snake-ate-cake.png", "depicts": "snake coiled beside a WHOLE, uneaten, fully-frosted cake with lit candle; sheep clapping", "name_matches_content": false, "issue": "spec/book:8 requires crumbs everywhere, one candle licked clean, snake round-bellied — this cake is completely intact, contradicts 'ate the cake'" },
+    { "file": "potato-cake.png", "depicts": "potato with lit candle on ornate plate, snake and sheep looking on", "name_matches_content": true, "issue": null },
+    { "file": "plane.png", "depicts": "vintage toy propeller plane", "name_matches_content": true, "issue": null },
+    { "file": "grape.png", "depicts": "bunch of purple grapes", "name_matches_content": true, "issue": null },
+    { "file": "whale.png", "depicts": "breaching whale", "name_matches_content": true, "issue": null },
+    { "file": "tape.png", "depicts": "roll of tape with curled edge", "name_matches_content": true, "issue": null },
+    { "file": "wave.png", "depicts": "curling ocean wave", "name_matches_content": true, "issue": null },
+    { "file": "cape.png", "depicts": "red cape on wooden hanger", "name_matches_content": true, "issue": null },
+    { "file": "gate.png", "depicts": "MISSING", "name_matches_content": false, "issue": "book:1's own empty-gate-with-glow asset never generated, despite gate-coloring.png existing" },
+    { "file": "snake-coloring.png", "depicts": "MISSING", "name_matches_content": false, "issue": "coloring page never generated (only cake-coloring, gate-coloring present)" }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Magic E Makes Cake",
+      "line_map": [
+        { "line": "Cap… CAPE! Tap… TAPE!", "best_image_by_content": "cape.png / tape.png", "needs": "ok" },
+        { "line": "At… ATE! Can… CANE!", "best_image_by_content": "n/a — abstract transformation, no dedicated asset expected", "needs": "acceptable-hold" },
+        { "line": "Mad… MADE! Plan… PLANE!", "best_image_by_content": "plane.png", "needs": "ok" },
+        { "line": "C-A-K-E — cake! G-A-T-E — gate! S-N-A-K-E — SNAKE! (That's your name!)", "best_image_by_content": "cake.png; gate.png MISSING; snake-spelling.png", "needs": "generate" },
+        { "line": "A potato?! (NO!) / P-p-potato! No magic E!", "best_image_by_content": "potato-cake.png", "needs": "alias" },
+        { "line": "Outro: The E is magic. The E is silent. CAKE!", "best_image_by_content": "cake.png", "needs": "ok" }
+      ],
+      "aliases": { "potato": "potato-cake.png" },
+      "generate": [
+        { "proposed_filename": "gate.png", "line": "G-A-T-E — gate! / book:1 'A gate.'", "mj_prompt": "a tall wrought-iron garden gate latched shut with a small brass name-plate, warm glow beyond it, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "snake-coloring.png", "line": "coloring page", "mj_prompt": "a happy friendly snake with big eyes coiled beside a slice of cake, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+      ],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "The Snake and the Cake",
+      "line_map": [
+        { "line": "The snake ate the cake! (hook, x2) Where is the cake?", "best_image_by_content": "snake-ate-cake.png shows the cake WHOLE, contradicts 'ate'", "needs": "generate" },
+        { "line": "The snake is at the gate! A name on the gate! S-N-A-K-E!", "best_image_by_content": "snake-at-gate.png / name-on-gate.png", "needs": "ok" },
+        { "line": "The gate is… (CLICK!) In went the snake!", "best_image_by_content": "snake-going-in.png", "needs": "ok" },
+        { "line": "The cake is IN the snake!", "best_image_by_content": "snake-ate-cake.png (wrong — see above)", "needs": "generate" },
+        { "line": "A cake on the plate… It's a potato! (Happy name-day, Snake…)", "best_image_by_content": "potato-cake.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": [
+        { "file": "snake-ate-cake.png", "issue": "cake shown fully intact with lit candle instead of eaten/crumbs as the lyric and book text require", "fix": "regenerate showing the aftermath", "mj_prompt": "a round-bellied blissful emerald-green snake coiled beside an empty cake stand scattered with crumbs and one licked-clean candle stub, a fluffy white sheep in a party hat applauding, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ]
+    }
+  ]
+}

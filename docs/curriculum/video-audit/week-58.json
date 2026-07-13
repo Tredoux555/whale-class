@@ -1,0 +1,77 @@
+{
+  "week": 58,
+  "images": [
+    { "file": "celebration-scene.png", "depicts": "gold-lit leafy tree with ~15 generic teddy-bear/woodland-creature figurines gathered below, lanterns, streamers", "name_matches_content": false, "issue": "CRITICAL: uses a generic unnamed woodland-creature crowd (bear/raccoon-like plush figures) instead of the program's actual named cast (Segina, Sam, Cat, Ant, Dad, Dog, Rat, Pup, Bug, Duck, Fox, Sheep, Chick, Snake, Bee, Star, Owl); none of these figures are recognizable as any established character" },
+    { "file": "cast-cat-dog.png", "depicts": "tabby cat and brown dog side by side wearing graduation caps, close-up", "name_matches_content": true, "issue": "none" },
+    { "file": "cast-sheep-snake-bee.png", "depicts": "white fluffy sheep, green/gold snake, and gold-and-black bee together in graduation caps", "name_matches_content": true, "issue": "none" },
+    { "file": "cast-star-owl.png", "depicts": "golden five-point star with a sleeping/serene face beside a tawny owl with huge amber eyes", "name_matches_content": true, "issue": "none" },
+    { "file": "class-jumping.png", "depicts": "chick, snake, sheep, owl, dog, cat, duck, and bee together mid-celebration, dancing/jumping, star held aloft", "name_matches_content": true, "issue": "excellent full-cast-in-motion match, but only the animal cast is present — no Segina, Sam, Ant, Dad, Rat, Pup, Bug, or Fox" },
+    { "file": "tree-question.png", "depicts": "generic furry woodland creatures (same bear/mouse-like design family as celebration-scene) looking up at a glowing tree with a round silhouette at the top", "name_matches_content": false, "issue": "CRITICAL: same generic-creature substitution as celebration-scene.png — should show the named cast looking up at the Pattern Tree" },
+    { "file": "potato-reveal.png", "depicts": "potato with round glasses radiating light, surrounded by generic bespectacled rodent/squirrel-like creatures gasping", "name_matches_content": false, "issue": "CRITICAL: surrounding cast is generic rodent creatures, not the named cast gasping in delight — potato itself is correctly rendered and matches the 'apotheosis' moment" },
+    { "file": "potato-king.png", "depicts": "potato wearing gold crown atop a fully-leafed light-strung tree, arms raised, generic woodland creatures cheering below", "name_matches_content": false, "issue": "CRITICAL: cheering crowd is again the generic creature set, not the named cast — potato+crown+tree rendering itself is correct" },
+    { "file": "graduation-cast-full.png", "depicts": "peg-doll girl (Segina), tiger cat, black ant, small red-spotted bug, grey mouse/rat, brown dog, white duck, red fox, white sheep, yellow chick, green snake, bee, gold star, crowned potato atop leafy tree, open book", "name_matches_content": true, "issue": "PARTIAL: this is the correct named-cast image family (13 of 17 figures identifiable), but is MISSING Owl, Sam (the second peg-doll boy), Dad, and Pup entirely from the finale group shot" },
+    { "file": "station.png", "depicts": "miniature model train station house labeled 'Mat Station' with lamp post and rail tracks", "name_matches_content": true, "issue": "none — good generic 'station' bingo/card image" },
+    { "file": "nation.png", "depicts": "single small blue flag with a ring of gold stars on a pole", "name_matches_content": true, "issue": "none" },
+    { "file": "motion.png", "depicts": "abstract swirling soft-serve/whipped shape with speed-blur rings around it", "name_matches_content": false, "issue": "mjPrompt called for 'a spinning top with speed lines' — this reads as an ice-cream/whipped-cream swirl, not a recognizable toy top; ambiguous for a child audience" },
+    { "file": "fraction.png", "depicts": "round pie cut into 12 equal slices, one slice pulled out", "name_matches_content": true, "issue": "none" },
+    { "file": "vacation.png", "depicts": "striped beach umbrella over a sand bucket with shells, sunbeam", "name_matches_content": true, "issue": "none" }
+  ],
+  "missingFiles": [
+    "potato.png (materials: cards, bingo, matching — 'potato teaching at a whiteboard' asset defined in spec but file does not exist)",
+    "potato-coloring.png (coloring — defined in spec but file does not exist)"
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Celebration!",
+      "line_map": [
+        { "line": "shun… shun… shun… The LAST sound of all!", "best_image_by_content": "none", "needs": "acceptable-hold (abstract intro line)" },
+        { "line": "t-i-o-n says SHUN! Action! Station! Nation! Celebration! The LAST leaf on the Tree!", "best_image_by_content": "station.png + nation.png + celebration-scene.png (celebration/tree)", "needs": "generate ('Action' has zero asset anywhere in spec or folder); celebration-scene.png needs wrong-art fix (see below)" },
+        { "line": "Motion! Section! Fraction! t-i-o-n — always SHUN! A vacation! A celebration!", "best_image_by_content": "motion.png (weak) + fraction.png + vacation.png + celebration-scene.png", "needs": "generate ('Section' has zero asset); reroll motion.png (ambiguous imagery, see wrong_art)" },
+        { "line": "Fifty-eight weeks! Every leaf! Every light! We can read! The whole Tree is GREEN!", "best_image_by_content": "celebration-scene.png", "needs": "wrong-art fix needed (see below) — otherwise acceptable-hold, thematically fits (lit tree)" },
+        { "line": "A potato?! (YES!) At LAST — potato! P-O-T-A-T-O! The king of the Tree!", "best_image_by_content": "potato-reveal.png + potato-king.png", "needs": "wrong-art fix (surrounding cast wrong, potato itself correct)" },
+        { "line": "celebration… graduation… we can read it all! Potato! (the crown!)", "best_image_by_content": "celebration-scene.png + potato-king.png", "needs": "wrong-art fix needed on celebration-scene.png" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "action.png", "line": "Action! Station! Nation!", "mj_prompt": "a small toy race car frozen mid-motion with speed lines and dust flying, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "section.png", "line": "Motion! Section! Fraction!", "mj_prompt": "an orange sliced into clean sections arranged on a plate, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "potato.png", "line": "materials: cards, bingo, matching (missing asset)", "mj_prompt": "a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": [
+        { "file": "motion.png", "issue": "reads as an abstract ice-cream/whipped-cream swirl, not a recognizable spinning top", "fix": "reroll: 'a wooden spinning top actively spinning with visible motion-blur speed lines circling it, tipped on its point on a table, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw'" }
+      ]
+    },
+    {
+      "role": "word",
+      "title": "The Celebration",
+      "line_map": [
+        { "line": "(It's a… where is Sejeena… the cat is on the mat… ship or sheep… why, fly, why…)", "best_image_by_content": "none", "needs": "acceptable-hold — deliberate callback to W1/W2/W4/W50/W55, no current-week image expected" },
+        { "line": "It is the celebration! Who is here? EVERYBODY — the whole cast!", "best_image_by_content": "graduation-cast-full.png", "needs": "wrong-art fix needed — best available image but incomplete cast (missing Owl, Sam, Dad, Pup)" },
+        { "line": "Cat and Dog are here.", "best_image_by_content": "cast-cat-dog.png", "needs": "ok" },
+        { "line": "Sheep and Snake are here.", "best_image_by_content": "cast-sheep-snake-bee.png", "needs": "ok (bonus Bee also present, harmless)" },
+        { "line": "Star and Owl are here! (here! here!)", "best_image_by_content": "cast-star-owl.png", "needs": "ok" },
+        { "line": "Sejeena and Sam are here!", "best_image_by_content": "none", "needs": "GENERATE — critical gap, zero image anywhere in Week 58 shows Segina and Sam together; the only image with Segina at all (graduation-cast-full.png) does not clearly include Sam" },
+        { "line": "The class is jumping and singing!", "best_image_by_content": "class-jumping.png", "needs": "ok — strong match" },
+        { "line": "Bee is reading.", "best_image_by_content": "none", "needs": "generate (no such image exists this week)" },
+        { "line": "Duck is swimming.", "best_image_by_content": "Week 57's duck-swimming.png (cross-week alias)", "needs": "alias — same Duck character, legitimate reuse; no Week 58-specific asset exists" },
+        { "line": "What is on the Tree? (look up! look up!) That is the question…", "best_image_by_content": "tree-question.png", "needs": "wrong-art fix needed (generic creatures, not named cast)" },
+        { "line": "At the top of the Tree… It is… a POTATO! Potato is the king! P-O-T-A-T-O!", "best_image_by_content": "potato-reveal.png + potato-king.png", "needs": "wrong-art fix (surrounding cast wrong, potato correct)" },
+        { "line": "Fifty-eight weeks… a thousand words… It is the best celebration! The whole cast can read! The end.", "best_image_by_content": "graduation-cast-full.png", "needs": "wrong-art fix needed — incomplete cast (missing Owl, Sam, Dad, Pup)" }
+      ],
+      "aliases": { "Duck is swimming": "Week 57 duck-swimming.png" },
+      "generate": [
+        { "proposed_filename": "segina-and-sam.png", "line": "Sejeena and Sam are here!", "mj_prompt": "a peg doll girl with black pigtails in a red dress and a peg doll boy with brown hair in a red shirt standing side by side wearing tiny graduation caps, beaming, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "bee-reading.png", "line": "Bee is reading.", "mj_prompt": "a plump gold-and-black honeybee perched on an open picture book with one leg resting on the page, absorbed, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "potato-coloring.png", "line": "materials: coloring (missing asset)", "mj_prompt": "a proud potato wearing a little crown and round glasses, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+      ],
+      "wrong_art": [
+        { "file": "celebration-scene.png", "issue": "CRITICAL: whole-cast gathering shows generic unnamed woodland-creature figurines instead of the 17-member named cast", "fix": "reroll: 'a peg doll girl with black pigtails, a peg doll boy in a red shirt, a tabby cat, a brown dog, a fluffy white sheep, an emerald-green snake, a gold-and-black bee, a golden five-point star, a tawny owl, a black ant, a grey rat, a white duck, a red fox, a yellow chick gathered together in front of a glowing wall-mounted pattern tree in full leaf with streamers and tiny lanterns, warm celebration, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw'" },
+        { "file": "tree-question.png", "issue": "CRITICAL: same generic-creature substitution — should be the named cast looking up at the Tree", "fix": "reroll using the same named-cast list as celebration-scene.png, all turning to look up at a glowing pattern tree with a round silhouette at the top, suspenseful, dramatic spotlight, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical, ultra-realistic photograph --ar 3:2 --style raw" },
+        { "file": "potato-reveal.png", "issue": "CRITICAL: potato surrounded by generic bespectacled rodent creatures instead of the named cast gasping with delight", "fix": "reroll keeping the potato exactly as rendered, but replace the surrounding crowd with the named cast (as in graduation-cast-full.png) gasping up at the potato at the top of the glowing tree" },
+        { "file": "potato-king.png", "issue": "CRITICAL: cheering crowd below the crowned potato is the generic creature set, not the named cast", "fix": "reroll keeping the crowned potato exactly as rendered, but replace the cheering crowd below with the named cast (Segina, Sam, Cat, Ant, Dad, Dog, Rat, Pup, Bug, Duck, Fox, Sheep, Chick, Snake, Bee, Star, Owl)" },
+        { "file": "graduation-cast-full.png", "issue": "the finale group shot is missing 4 of the 17 named cast members: Owl, Sam (second peg-doll boy), Dad, and Pup", "fix": "reroll ensuring all 17 named characters are visibly present: Segina, Sam, Cat, Ant, Dad, Dog, Rat, Pup, Bug, Duck, Fox, Sheep, Chick, Snake, Bee, Star, Owl, gathered around the fully-leafed glowing pattern tree with the crowned potato at its top and an open book in the middle" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "week": 51,
+  "images": [
+    { "file": "moon-cool.png", "depicts": "cool blue-white full moon, craters visible", "name_matches_content": true, "issue": null },
+    { "file": "star-roof.png", "depicts": "METALLIC gold ornament star with face, on roof", "name_matches_content": true, "issue": "star is hard metallic/brass, not plush fabric like sheep-roof/big-moon/star-looking" },
+    { "file": "star-looking.png", "depicts": "gold plush-fabric star wrapped in blanket, gazing at moon", "name_matches_content": true, "issue": null },
+    { "file": "sheep-roof.png", "depicts": "plush sheep nose-to-nose with a straw/woven-texture star on roof edge, moon behind", "name_matches_content": true, "issue": null },
+    { "file": "big-moon.png", "depicts": "plush sheep lying down, small plush star beside it, huge moon behind", "name_matches_content": true, "issue": null },
+    { "file": "moon-school.png", "depicts": "generic lit cottage/cabin at night with moon above, no schoolhouse signage", "name_matches_content": false, "issue": "doesn't read as a 'school' - looks like an ordinary house, no sign/features distinguishing it" },
+    { "file": "star-sheep-moon.png", "depicts": "metallic gold crescent moon + metallic star in foreground, plush sheep, AND a second round moon over a house in background - two moons in one frame", "name_matches_content": true, "issue": "metallic crescent moon+star inconsistent with plush/full-moon aesthetic used everywhere else; double-moon composition is confusing" },
+    { "file": "potato-roof.png", "depicts": "potato w/ glasses, gold straw-textured star, plush sheep on roof", "name_matches_content": true, "issue": "star again gold/ornament-textured, not soft plush" },
+    { "file": "roof.png", "depicts": "generic red-tiled pitched roof", "name_matches_content": true, "issue": null },
+    { "file": "spoon.png", "depicts": "ornate antique silver spoon", "name_matches_content": true, "issue": null },
+    { "file": "broom.png", "depicts": "straw broom", "name_matches_content": true, "issue": null },
+    { "file": "tooth.png", "depicts": "cute cartoon tooth character", "name_matches_content": true, "issue": null },
+    { "file": "boot.png", "depicts": "rubber rain boot", "name_matches_content": true, "issue": null },
+    { "file": "food.png", "depicts": "gourmet bowl of berries/oats", "name_matches_content": true, "issue": null }
+  ],
+  "missing_files": ["moon.png (book:1, cards, bingo, matching - the ANCHOR WORD image)", "book.png (cards, bingo, matching)", "zoo.png (cards, bingo, matching)", "moon-coloring.png", "book-coloring.png"],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Oo-Oo-Moon!",
+      "line_map": [
+        { "line": "Oo-oo-moon! Oo-oo-moon! Look at the moon!", "best_image_by_content": "moon.png", "needs": "generate" },
+        { "line": "Long oo — zoo!", "best_image_by_content": "zoo.png", "needs": "generate" },
+        { "line": "Long oo — spoon!", "best_image_by_content": "spoon.png", "needs": "ok" },
+        { "line": "Up on the roof! (the roof!)", "best_image_by_content": "roof.png", "needs": "ok" },
+        { "line": "Short oo — book!", "best_image_by_content": "book.png", "needs": "generate" },
+        { "line": "Short oo — look! One team, two sounds!", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "A potato?! P-p-potato!", "best_image_by_content": "potato-roof.png", "needs": "ok" },
+        { "line": "Long moon… short book…", "best_image_by_content": "moon.png / book.png", "needs": "generate" }
+      ]
+    },
+    {
+      "role": "word",
+      "title": "Look at the Moon",
+      "line_map": [
+        { "line": "Look at the moon! Where is the moon? Up on the roof!", "best_image_by_content": "moon.png", "needs": "generate" },
+        { "line": "Star is on the roof.", "best_image_by_content": "star-roof.png", "needs": "alias (note: metallic star flag)" },
+        { "line": "Star can see the moon. Cool is the moon!", "best_image_by_content": "moon-cool.png", "needs": "ok" },
+        { "line": "Sheep is on the roof too.", "best_image_by_content": "sheep-roof.png", "needs": "ok" },
+        { "line": "The moon is at the school. Look at the moon and the school!", "best_image_by_content": "moon-school.png", "needs": "generate (house doesn't read as school)" },
+        { "line": "What is on the roof?! POTATO! Look at the moon. Goodnight, moon.", "best_image_by_content": "potato-roof.png / big-moon.png", "needs": "ok" }
+      ]
+    }
+  ],
+  "aliases": {},
+  "generate": [
+    { "proposed_filename": "moon.png", "line": "Oo-oo-moon! / Look at the moon! (hook, both songs, anchor word)", "mj_prompt": "a huge pale full moon low in a dark sky with faint craters, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "proposed_filename": "book.png", "line": "Short oo — book!", "mj_prompt": "an open picture book, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "proposed_filename": "zoo.png", "line": "Long oo — zoo!", "mj_prompt": "a little zoo entrance archway with a sign and animal silhouettes, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "proposed_filename": "moon-school.png (regen)", "line": "The moon is at the school.", "mj_prompt": "a pale full moon hanging directly over a small country SCHOOLHOUSE with a bell tower and a small sign, down a dark lane, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+  ],
+  "wrong_art": [
+    { "file": "star-roof.png", "issue": "star rendered as hard metallic/brass ornament instead of the soft plush fabric star used in sheep-roof.png/big-moon.png/star-looking.png", "fix": "regenerate with plush fabric texture matching the canonical soft star", "mj_prompt": "a warm golden soft PLUSH FABRIC five-point star toy with a serene stitched sleepy face perched on the ridge of a dark rooftop looking up, no metallic sheen, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "star-sheep-moon.png", "issue": "metallic gold crescent moon + metallic star, plus a SECOND unrelated round moon visible over a house in the background - confusing double-moon composition, breaks full-moon visual continuity", "fix": "regenerate as one full pale moon (matching moon.png), plush star, sheep and star silhouetted together, single schoolhouse in background", "mj_prompt": "a plush golden star toy and a fluffy white plush sheep silhouetted side by side on a rooftop ridge gazing at a single pale full moon and a schoolhouse, peaceful, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "potato-roof.png", "issue": "star prop rendered with straw/gold ornament texture, same metallic-family inconsistency (lower priority - star is background prop here)", "fix": "optional regen to plush star texture for full consistency", "mj_prompt": "a single raw potato wearing tiny round glasses sitting on a dark rooftop between a golden PLUSH FABRIC star toy and a fluffy white plush sheep, all moon-gazing, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+  ]
+}

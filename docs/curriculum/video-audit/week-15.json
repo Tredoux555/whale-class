@@ -1,0 +1,80 @@
+{
+  "week": 15,
+  "images": [
+    { "file": "cat-chasing-rat.png", "depicts": "kitten leaping mid-air chasing a small mouse-like rat", "name_matches_content": true, "issue": null },
+    { "file": "cat-on-bag.png", "depicts": "tabby cat sitting atop a paper bag with a rat drawn on it", "name_matches_content": true, "issue": null },
+    { "file": "potato-and-rat-in-bag.png", "depicts": "potato wearing round glasses, a rat peeking from a bag beside it, cat watching", "name_matches_content": true, "issue": null },
+    { "file": "rabbit.png", "depicts": "white fluffy rabbit close-up", "name_matches_content": true, "issue": null },
+    { "file": "radio.png", "depicts": "vintage teal-and-gold radio with antenna", "name_matches_content": true, "issue": null },
+    { "file": "ran.png", "depicts": "red-furred rat sprinting, strong motion blur streaks", "name_matches_content": true, "issue": null },
+    { "file": "rat-in-bag.png", "depicts": "tan rat poking its head out of a paper bag, tail visible", "name_matches_content": true, "issue": null },
+    { "file": "rat-ripping-bag.png", "depicts": "rat tearing a paper bag apart, paper confetti flying", "name_matches_content": true, "issue": null },
+    { "file": "rat-running.png", "depicts": "brown rat sprinting low angle, motion blur, over water", "name_matches_content": true, "issue": null },
+    { "file": "rat-with-bag.png", "depicts": "rat carrying a paper sack/bag on its back like a pack", "name_matches_content": true, "issue": null },
+    { "file": "rat.png", "depicts": "close-up dark grey rat, plain fur, no cloak", "name_matches_content": true, "issue": null },
+    { "file": "red-rat.png", "depicts": "rat wearing a red knitted cloak/hood, paws clasped", "name_matches_content": true, "issue": null },
+    { "file": "red.png", "depicts": "single glossy red apple", "name_matches_content": true, "issue": null },
+    { "file": "ring.png", "depicts": "gold ring on dark leather surface", "name_matches_content": true, "issue": null },
+    { "file": "robot.png", "depicts": "vintage tin toy robot with spring antenna", "name_matches_content": true, "issue": null },
+    { "file": "rocket.png", "depicts": "red toy rocket on chrome spring legs", "name_matches_content": true, "issue": "faint text-like marks visible in the bottom-left and bottom-right corners resembling a stock-photo watermark/credit line" },
+    { "file": "rope.png", "depicts": "coiled thick brown rope", "name_matches_content": true, "issue": null },
+    { "file": "rose.png", "depicts": "red rose close-up with leaf", "name_matches_content": true, "issue": null },
+    { "file": "ruler.png", "depicts": "wooden ruler with measurement markings", "name_matches_content": true, "issue": null }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "R-R-Rat!",
+      "line_map": [
+        { "line": "R-r-rabbit! It's a rabbit!", "best_image_by_content": "rabbit.png", "needs": "ok" },
+        { "line": "R-r-rocket! It's a rocket!", "best_image_by_content": "rocket.png", "needs": "ok", "note": "check watermark before publishing - see wrong_art" },
+        { "line": "R-r-ring! It's a ring!", "best_image_by_content": "ring.png", "needs": "ok" },
+        { "line": "R-r-robot! It's a robot!", "best_image_by_content": "robot.png", "needs": "ok" },
+        { "line": "R-r-rat! The red rat! (rip, rip, rip!)", "best_image_by_content": "red-rat.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": [
+        {
+          "file": "rocket.png",
+          "issue": "faint text/watermark-style marks visible in bottom-left and bottom-right corners, resembling a stock-photo credit line",
+          "fix": "re-crop or regenerate to confirm no watermark leak before publishing",
+          "mj_prompt": "dark forest editorial photography, red vintage toy rocket ship on chrome spring legs, glass porthole window, muted green background, cinematic Montessori dark-trap aesthetic, no text or watermark"
+        }
+      ]
+    },
+    {
+      "role": "word",
+      "title": "The Red Rat",
+      "line_map": [
+        { "line": "The red rat! The red rat! What can the red rat do?", "best_image_by_content": "red-rat.png", "needs": "ok" },
+        { "line": "The red rat ran! (it ran!)", "best_image_by_content": "ran.png", "needs": "ok" },
+        { "line": "The red rat sat! (it sat!)", "best_image_by_content": null, "needs": "generate" },
+        { "line": "The red rat hid! (it hid!)", "best_image_by_content": null, "needs": "generate" },
+        { "line": "The cat ran at the rat!", "best_image_by_content": "cat-chasing-rat.png", "needs": "ok" },
+        { "line": "The dog ran at the cat!", "best_image_by_content": null, "needs": "generate", "note": "no dog image exists anywhere in this week's image folder" },
+        { "line": "Run, rat, run! (run, run, run!)", "best_image_by_content": "rat-running.png", "needs": "ok" },
+        { "line": "The red rat got a bag… In the bag… a potato! (POTATO!)", "best_image_by_content": "potato-and-rat-in-bag.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [
+        {
+          "proposed_filename": "rat-sat.png",
+          "line": "The red rat sat! (it sat!)",
+          "mj_prompt": "dark forest editorial photography, a russet-red rat wearing a small red knitted cloak sitting calmly upright on its haunches, paws folded, muted green background, cinematic Montessori dark-trap aesthetic, matches red-rat.png"
+        },
+        {
+          "proposed_filename": "rat-hid.png",
+          "line": "The red rat hid! (it hid!)",
+          "mj_prompt": "dark forest editorial photography, the same red-cloaked rat peeking out from behind a rock or log, mostly hidden with one eye visible, muted green background, cinematic Montessori dark-trap aesthetic, matches red-rat.png"
+        },
+        {
+          "proposed_filename": "dog-chasing-cat.png",
+          "line": "The dog ran at the cat!",
+          "mj_prompt": "dark forest editorial photography, a scruffy terrier dog running full-speed after a fleeing striped tabby cat, motion blur, dust kicked up, muted green background, cinematic Montessori dark-trap aesthetic, matches the staging of cat-chasing-rat.png"
+        }
+      ],
+      "wrong_art": []
+    }
+  ]
+}

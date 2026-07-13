@@ -1,0 +1,53 @@
+{
+  "week": 57,
+  "images": [
+    { "file": "running.png", "depicts": "heavy motion-blur of a shaggy animal sprinting through dust, indistinct", "name_matches_content": true, "issue": "very abstract/blurred — reads as 'motion' more than a specific animal, but matches the 'blur of joyful motion, all energy' artNote intent" },
+    { "file": "dog-running.png", "depicts": "close-up brown shaggy dog sprinting head-on, ears back, tongue out, motion blur", "name_matches_content": true, "issue": "none" },
+    { "file": "cat-jumping.png", "depicts": "tabby cat mid-leap, all four paws off ground, small bird flushing up ahead", "name_matches_content": true, "issue": "none" },
+    { "file": "duck-swimming.png", "depicts": "white duck powering across water with bright splash wake", "name_matches_content": true, "issue": "none" },
+    { "file": "bee-singing.png", "depicts": "bee with wings out, musical notes rising, eyes shut", "name_matches_content": true, "issue": "none" },
+    { "file": "sam-playing.png", "depicts": "wooden peg-doll boy in red shirt surrounded by scattered toys, grinning", "name_matches_content": true, "issue": "none" },
+    { "file": "sheep-reading.png", "depicts": "fluffy sheep curled over an open book, eyes closed, one hoof on page", "name_matches_content": true, "issue": "reads as sleeping-on-the-book rather than actively reading, but matches artNote ('absorbed') closely enough" },
+    { "file": "potato-resting.png", "depicts": "potato with sunglasses reclining in a striped beach deckchair on sand", "name_matches_content": true, "issue": "none" },
+    { "file": "swimming.png", "depicts": "wooden peg-doll figure swimming underwater, head breaking the surface", "name_matches_content": true, "issue": "none" },
+    { "file": "singing.png", "depicts": "brown wren singing with musical notes rising, on a branch", "name_matches_content": true, "issue": "spec asked for a generic 'happy open-mouthed songbird'; a wren works fine and matches the week's bird motif" },
+    { "file": "reading.png", "depicts": "open book with a red ribbon bookmark, pages fanned", "name_matches_content": true, "issue": "none" },
+    { "file": "digging.png", "depicts": "shovel mid-dig flinging dirt/sand into the air", "name_matches_content": true, "issue": "none" },
+    { "file": "jumped.png", "depicts": "small rabbit frozen mid-leap in the air", "name_matches_content": true, "issue": "none" },
+    { "file": "boxes.png", "depicts": "stack of cardboard boxes", "name_matches_content": true, "issue": "none" }
+  ],
+  "missingFiles": ["fish-wishing.png (book:8, CRITICAL — referenced by book spread 8 'The fish wishes and wishes' and by BOTH songs' 'wishes' lines; file does not exist AND the spec's assets[] array never defines an mjPrompt for it either — a spec gap, not just a missing render)"],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Running, Jumping, Singing!",
+      "line_map": [
+        { "line": "Run… RUNNING! Jump… JUMPING! Sing… SINGING!", "best_image_by_content": "running.png + singing.png/bee-singing.png", "needs": "alias (no plain jumping.png exists — alias to cat-jumping.png)" },
+        { "line": "Play… PLAYED! Look… LOOKED! Jump… JUMPED!", "best_image_by_content": "sam-playing.png (played) + jumped.png", "needs": "ok ('looked' has no asset — abstract, acceptable-hold)" },
+        { "line": "One cat… two CATS! One dog… two DOGS! One dish… two DISHES!", "best_image_by_content": "none", "needs": "acceptable-hold — no plural-object assets exist for this verse at all; NOTE: sung word is 'dishes' but materials/bingoPool list 'fishes' and 'boxes' as the -es examples — spec-internal lyric/materials mismatch, not just an image gap" },
+        { "line": "A potato?! (NO!) P-p-potato! No ending!", "best_image_by_content": "potato-resting.png", "needs": "ok" },
+        { "line": "running… played… wishes… Every word can grow!", "best_image_by_content": "running.png", "needs": "generate ('wishes' → fish-wishing.png missing)" }
+      ],
+      "aliases": { "jumping (generic use)": "cat-jumping.png (until a plain jumping.png exists)" },
+      "generate": [
+        { "proposed_filename": "fish-wishing.png", "line": "wishes / 'The fish wishes and wishes.'", "mj_prompt": "a bright orange fish with eyes shut and bubbles rising like wishes in dark water, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "Running!",
+      "line_map": [
+        { "line": "Running! Running! The cast is running! All of us — running!", "best_image_by_content": "running.png + dog-running.png", "needs": "ok" },
+        { "line": "The dog is running. The cat is jumping. The duck is swimming! Bee is singing.", "best_image_by_content": "dog-running.png + cat-jumping.png + duck-swimming.png + bee-singing.png", "needs": "ok — full coverage, all 4 verbs matched" },
+        { "line": "Sam played and played. Sheep is reading. The fish wishes and wishes! Everybody is doing something!", "best_image_by_content": "sam-playing.png + sheep-reading.png", "needs": "generate ('the fish wishes' → fish-wishing.png missing, breaks book spread 8 entirely)" },
+        { "line": "running… jumping… reading… But who is resting?! (POTATO!)", "best_image_by_content": "potato-resting.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "fish-wishing.png", "line": "book:8 'The fish wishes and wishes.'", "mj_prompt": "a bright orange fish with eyes shut and bubbles rising like wishes in dark water, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": []
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "week": 37,
+  "images": [
+    { "file": "skunk.png", "depicts": "small skunk, big worried eyes, striped tail curled", "name_matches_content": true, "issue": null },
+    { "file": "skunk-stuck.png", "depicts": "skunk wedged in log hollow, tail and face poking out", "name_matches_content": true, "issue": null },
+    { "file": "cast-rush.png", "depicts": "chick, skunk, and sheep standing together in open ground, skunk free (not stuck)", "name_matches_content": false, "issue": "spec wants Chick/Sheep/Snake rushing toward a STUCK skunk from 3 directions; this shows the skunk itself standing free as part of the group, no urgency, no log" },
+    { "file": "chick-helps-skunk.png", "depicts": "aggressive teeth-bared skunk-like animal in tug-of-war with chick over its striped tail, open ground, no log", "name_matches_content": false, "issue": "no log/rescue context; skunk looks hostile not stuck; doesn't match 'Chick tugging at the stuck skunk's tail to help free it'" },
+    { "file": "snake-helps.png", "depicts": "snake and an angry orange-eyed chick in tug-of-war over a rope, no skunk, no log", "name_matches_content": false, "issue": "does not depict a rescue at all — no skunk present, looks like a fight between snake and chick" },
+    { "file": "sheep-lift.png", "depicts": "sheep heaving a log up on its back, a small creature on top and one underneath digging", "name_matches_content": true, "issue": "reasonable match for the big lift" },
+    { "file": "skunk-free-soft.png", "depicts": "a human hand petting the freed skunk, chick and sheep nearby, snake coiled close", "name_matches_content": true, "issue": "includes an out-of-cast human hand, otherwise conveys relief fine" },
+    { "file": "skunk-belt.png", "depicts": "skunk with pink ribbon/belt around middle, chick/sheep/snake standing around", "name_matches_content": true, "issue": null },
+    { "file": "potato-stuck.png", "depicts": "potato + chick in log hollow, snake and sheep nearby staring", "name_matches_content": true, "issue": null },
+    { "file": "pink.png", "depicts": "a coiled pink rope/cord", "name_matches_content": true, "issue": "spec asked for 'ball of soft yarn'; shown as rope-like cord — close enough on color, texture is off" },
+    { "file": "belt.png", "depicts": "coiled leather belt with buckle", "name_matches_content": true, "issue": null },
+    { "file": "milk.png", "depicts": "MISSING", "name_matches_content": false, "issue": "asset never generated (cards, bingo, matching)" },
+    { "file": "gift.png", "depicts": "MISSING", "name_matches_content": false, "issue": "asset never generated (cards, bingo, matching)" }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Pink-Pink-Pink!",
+      "line_map": [
+        { "line": "Pink! Pink! Pink-pink-pink! / PINK! (think pink!) PINK!", "best_image_by_content": "pink.png", "needs": "ok" },
+        { "line": "Soft-soft-soft! SOFT! So SOFT! (shh, soft!) SOFT!", "best_image_by_content": "skunk-free-soft.png (the skunk's fur being described as soft)", "needs": "alias" },
+        { "line": "Belt-belt-belt! BELT! Milk! Silk! (LLL — feel your tongue!)", "best_image_by_content": "belt.png; milk.png missing", "needs": "generate" },
+        { "line": "Help-help-help! HELP! Gulp! Yelp!", "best_image_by_content": "sheep-lift.png / chick-helps-skunk.png (rescue theme, but neither cleanly depicts 'help')", "needs": "acceptable-hold" },
+        { "line": "A potato?! (NO!) / P-p-potato! No end blend!", "best_image_by_content": "potato-stuck.png", "needs": "alias" },
+        { "line": "Outro: Pink! Soft! Belt! Help! / Milk — not 'miuw'!", "best_image_by_content": "pink.png + belt.png (milk still uncovered)", "needs": "generate" }
+      ],
+      "aliases": { "soft": "skunk-free-soft.png", "potato": "potato-stuck.png" },
+      "generate": [
+        { "proposed_filename": "milk.png", "line": "Belt-belt-belt! ... Milk! Silk!", "mj_prompt": "a full glass of milk, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "gift.png", "line": "materials card word", "mj_prompt": "a small wrapped gift box with a ribbon bow, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "Help the Skunk!",
+      "line_map": [
+        { "line": "Help the skunk! (hook, x4) The skunk is stuck!", "best_image_by_content": "skunk-stuck.png", "needs": "ok" },
+        { "line": "Chick can help! Snake can help the skunk!", "best_image_by_content": "chick-helps-skunk.png / snake-helps.png — neither shows an actual rescue", "needs": "generate" },
+        { "line": "Sheep can lift the skunk! Up! Up! Help the skunk!", "best_image_by_content": "sheep-lift.png", "needs": "ok" },
+        { "line": "The skunk… is up! (hush…) A potato?! (POTATO!) Help a potato?!", "best_image_by_content": "potato-stuck.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "chick-tugs-log.png", "line": "Chick can help! (help! help!)", "mj_prompt": "a tiny fluffy yellow chick tugging with both wings at a striped skunk's tail poking from a log hollow, feet braced, beak gritted with effort, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "snake-loops-log.png", "line": "Snake can help the skunk!", "mj_prompt": "an emerald-green garden snake with large gentle amber eyes looping around a log for extra grip beside a yellow chick, both pulling to free a stuck striped skunk, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": [
+        { "file": "cast-rush.png", "issue": "shows the skunk free and standing with the group instead of stuck in a log with the cast rushing toward it", "fix": "regenerate", "mj_prompt": "a tiny yellow chick, a fluffy white sheep and an emerald-green snake all rushing in from three directions toward a log with a striped skunk stuck inside it, urgency motion lines, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "file": "chick-helps-skunk.png", "issue": "depicts an aggressive tug-of-war with no log, doesn't read as a rescue", "fix": "regenerate (see generate: chick-tugs-log.png)", "mj_prompt": "see generate list" },
+        { "file": "snake-helps.png", "issue": "no skunk present at all, reads as a fight between snake and chick over a rope", "fix": "regenerate (see generate: snake-loops-log.png)", "mj_prompt": "see generate list" }
+      ]
+    }
+  ]
+}

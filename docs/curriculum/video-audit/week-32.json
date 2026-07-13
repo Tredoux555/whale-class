@@ -1,0 +1,49 @@
+{
+  "week": 32,
+  "images": [
+    { "file": "whiz-blur.png", "depicts": "bright horizontal motion-blur streak with trailing sparks on dark stage", "name_matches_content": true, "issue": null },
+    { "file": "chick-what.png", "depicts": "chick spinning wide-eyed, wings up, question marks popping above", "name_matches_content": true, "issue": null },
+    { "file": "sheep-which.png", "depicts": "four-legged realistic sheep squinting at 3 fuzzy shapes, hoof raised", "name_matches_content": true, "issue": "minor cast-continuity note — this sheep is a 3rd realistic four-legged design, distinct from other weeks' round wool-blob sheep, but internally consistent within this book" },
+    { "file": "guess-whip.png", "depicts": "coiled leather whip revealed in light, chick leaning in", "name_matches_content": true, "issue": null },
+    { "file": "guess-ship.png", "depicts": "sheep + small wooden sailing ship in beam of light", "name_matches_content": true, "issue": null },
+    { "file": "guess-fish.png", "depicts": "chick + bright orange fish underwater", "name_matches_content": true, "issue": null },
+    { "file": "where-look.png", "depicts": "chick and sheep back-to-back scanning with crossing flashlight beams", "name_matches_content": true, "issue": null },
+    { "file": "whiz-again.png", "depicts": "chick and sheep with swirling motion-blur circling them", "name_matches_content": true, "issue": null },
+    { "file": "potato-reveal.png", "depicts": "plain potato skidded to a halt with skid marks, chick + sheep gawking", "name_matches_content": true, "issue": null },
+    { "file": "whip.png", "depicts": "coiled leather whip, card asset", "name_matches_content": true, "issue": null },
+    { "file": "whisk.png", "depicts": "metal kitchen whisk, card asset", "name_matches_content": true, "issue": null },
+    { "file": "whale.png", "depicts": "blue whale mid-breach, card asset", "name_matches_content": true, "issue": null },
+    { "file": "wheel.png", "depicts": "wooden cart wheel, card asset", "name_matches_content": true, "issue": null }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Wh-Wh-When?",
+      "line_map": [
+        { "line": "Wh-wh-when? WHEN is it?", "best_image_by_content": null, "needs": "acceptable-hold (abstract question chant, no fixed scene)" },
+        { "line": "Wh-wh-which? WHICH is it?", "best_image_by_content": "sheep-which.png", "needs": "ok" },
+        { "line": "What? Where? Why? The wh words ask and ask!", "best_image_by_content": "chick-what.png / where-look.png", "needs": "ok" },
+        { "line": "Whip and whiz — so quick! Whiz! (zoom!) Whip! (snap!)", "best_image_by_content": "whip.png / whiz-blur.png", "needs": "ok" },
+        { "line": "A potato?! (NO!) P-p-potato! Not WH!", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "Outro: When? Which? What? Where? Why? (who… knows…)", "best_image_by_content": null, "needs": "acceptable-hold" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "Which Is It?",
+      "line_map": [
+        { "line": "Which is it? Which is it? What is it? Where is it?", "best_image_by_content": "sheep-which.png / chick-what.png / where-look.png", "needs": "ok" },
+        { "line": "When can Chick get it? Whiz! It went so quick!", "best_image_by_content": "whiz-blur.png", "needs": "ok" },
+        { "line": "What is it? Where is it? Why is it so quick?", "best_image_by_content": "chick-what.png / where-look.png / whiz-again.png", "needs": "ok (repeat)" },
+        { "line": "Outro: Which… when… what… where… why… A potato?! (POTATO!) THAT is it!", "best_image_by_content": "potato-reveal.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": []
+    }
+  ],
+  "auditor_note": "This is the cleanest week of the five: all 17 manifest assets present, book spreads image-complete, no missing generates, no wrong-art. The 'question words' (which/when/what/where/why) themselves have no dedicated per-word image and never will — they are abstract function words matched only via SCENE content (sheep-which/chick-what/where-look), which is correct and by design. A naive filename-exact-match auditor would score these lines 0%; content-based scoring shows full coverage."
+}

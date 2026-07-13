@@ -1,0 +1,87 @@
+{
+  "week": 10,
+  "images": [
+    { "file": "dad.png", "depicts": "tall wooden peg-doll man, brown beard, green cap", "name_matches_content": true, "issue": null },
+    { "file": "dad-and-sam.png", "depicts": "bearded green-capped Dad beside Sam, hand on shoulder", "name_matches_content": true, "issue": null },
+    { "file": "dad-and-cat.png", "depicts": "bearded green-capped Dad crouching to greet the cat", "name_matches_content": true, "issue": null },
+    { "file": "dad-and-ant.png", "depicts": "a beardless, capless smooth wooden peg-doll head squinting at ant on fingertip", "name_matches_content": true, "issue": "Dad is missing his established brown beard and green cap — looks like a different, generic peg-doll head" },
+    { "file": "sam-and-ant.png", "depicts": "Sam seated with ant on knee, Dad blurred in background", "name_matches_content": true, "issue": null },
+    { "file": "dad-sad.png", "depicts": "bearded green-capped Dad looking at his empty open hand", "name_matches_content": true, "issue": null },
+    { "file": "dad-sam-find.png", "depicts": "Sam pointing up at ant on a green cap brim; the cap is held by a human-looking hand/fingers, not a wooden peg-doll hand", "name_matches_content": true, "issue": "Dad is represented only by the green cap and what appears to be a human hand/fingers rather than his wooden peg-doll hand and bearded head" },
+    { "file": "all-and-mat.png", "depicts": "family portrait: capless/beardless Dad, Sam, Segina, a plush/toy-style cat, and an ant on the mat", "name_matches_content": true, "issue": "Dad again missing beard; the cat is rendered in a different plush/wood-toy art style instead of the photorealistic tabby cat used throughout the series" },
+    { "file": "potato-dad.png", "depicts": "potato wearing green cap beside a beardless capped peg-doll Dad", "name_matches_content": true, "issue": "Dad again shown without his beard (consistent with the drift seen in dad-and-ant.png and all-and-mat.png)" },
+    { "file": "dinosaur.png", "depicts": "friendly green toy dinosaur", "name_matches_content": true, "issue": null },
+    { "file": "doll.png", "depicts": "rag doll with braided hair", "name_matches_content": true, "issue": null },
+    { "file": "drum.png", "depicts": "gold toy drum with drumsticks", "name_matches_content": true, "issue": null },
+    { "file": "door.png", "depicts": "small wooden arched door with round handle", "name_matches_content": true, "issue": null },
+    { "file": "desk.png", "depicts": "small wooden school desk with stool", "name_matches_content": true, "issue": null },
+    { "file": "donut.png", "depicts": "pink-frosted donut with sprinkles", "name_matches_content": true, "issue": null },
+    { "file": "dolphin.png", "depicts": "leaping grey dolphin", "name_matches_content": true, "issue": null },
+    { "file": "deer.png", "depicts": "young spotted fawn deer", "name_matches_content": true, "issue": null }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "D-D-Dad",
+      "line_map": [
+        { "line": "D-d-doll! It's a doll!", "best_image_by_CONTENT": "doll.png", "needs": "ok" },
+        { "line": "D-d-dinosaur! It's a dinosaur!", "best_image_by_CONTENT": "dinosaur.png", "needs": "ok" },
+        { "line": "D-d-drum! It's a drum!", "best_image_by_CONTENT": "drum.png", "needs": "ok" },
+        { "line": "D-d-door! It's a door!", "best_image_by_CONTENT": "door.png", "needs": "ok" },
+        { "line": "A potato?! Not D!", "best_image_by_CONTENT": "no potato image in this week's folder (reused week1 potato.png)", "needs": "acceptable-hold" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "Dad and the Ant",
+      "line_map": [
+        { "line": "Dad and Sam! Dad AND Sam!", "best_image_by_CONTENT": "dad-and-sam.png", "needs": "ok" },
+        { "line": "Dad and the cat! (and the cat!)", "best_image_by_CONTENT": "dad-and-cat.png", "needs": "ok" },
+        { "line": "Dad and the ant!", "best_image_by_CONTENT": "dad-and-ant.png", "needs": "ok (content match) — flagged for cast-consistency, see wrong_art" },
+        { "line": "Sam and the ant! The cat and the ant! All on the mat!", "best_image_by_CONTENT": "sam-and-ant.png (partial — cat+ant not separately shown)", "needs": "acceptable-hold" },
+        { "line": "Dad is sad. (why is Dad sad?)", "best_image_by_CONTENT": "dad-sad.png", "needs": "ok" },
+        { "line": "Sam did it! The ant is on Dad's hat!", "best_image_by_CONTENT": "dad-sam-find.png", "needs": "ok (content match) — flagged for cast-consistency, see wrong_art" },
+        { "line": "Dad and Sam and the cat and the ant. (AND, AND, AND!)", "best_image_by_CONTENT": "all-and-mat.png", "needs": "ok (content match) — flagged for cast-consistency, see wrong_art" },
+        { "line": "Dad and a POTATO?! (POTATO!)", "best_image_by_CONTENT": "potato-dad.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [
+        {
+          "proposed_filename": "dad-and-ant-v2.png",
+          "line": "Dad and the ant!",
+          "mj_prompt": "a tall wooden peg doll man with a painted brown beard and a green cap squinting down through his fingers at a tiny shiny black ant balanced on his fingertip, dramatic scale contrast, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "proposed_filename": "dad-sam-find-v2.png",
+          "line": "Sam did it! The ant is on Dad's hat!",
+          "mj_prompt": "a small wooden peg doll boy in blue dungarees pointing up triumphantly at a tiny black ant sitting calmly on the brim of a tall wooden peg doll man's green cap, the man's painted brown-bearded wooden face visible below the cap, relief and giggles, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "proposed_filename": "all-and-mat-v2.png",
+          "line": "Dad and Sam and the cat and the ant. (AND, AND, AND!)",
+          "mj_prompt": "a family portrait on a woven mat of a tall wooden peg doll man with a painted brown beard and green cap, a peg doll boy in blue dungarees, a peg doll girl with black pigtails in a red dress, a photorealistic tabby cat, and a tiny black ant all together, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ],
+      "wrong_art": [
+        {
+          "file": "dad-and-ant.png",
+          "issue": "Dad's brown beard and green cap are missing — a plain smooth peg-doll head is used instead, breaking cast consistency with dad.png/dad-and-sam.png/dad-and-cat.png/dad-sad.png",
+          "fix": "reroll (see generate list dad-and-ant-v2.png)"
+        },
+        {
+          "file": "dad-sam-find.png",
+          "issue": "Dad is represented only by a green cap held by what looks like a human hand/fingers, not his wooden peg-doll head, beard, and hand",
+          "fix": "reroll (see generate list dad-sam-find-v2.png)"
+        },
+        {
+          "file": "all-and-mat.png",
+          "issue": "Dad is missing his beard/cap detail (plain head) AND the cat is rendered in a plush/wood-toy art style instead of the photorealistic tabby used across the whole series",
+          "fix": "reroll (see generate list all-and-mat-v2.png)"
+        }
+      ]
+    }
+  ]
+}
