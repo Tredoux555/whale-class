@@ -233,10 +233,11 @@ def post_job(daemon, payload):
 
 
 def wait_for_job(daemon, job_id, timeout=1800, interval=3.0):
-    """Poll a job to a terminal state. Returns the final status string."""
+    """Poll a job to a terminal state. Returns ``(status, out_path|None)``."""
     url = daemon.rstrip("/") + "/api/jobs/" + job_id
     deadline = time.time() + timeout
     last = None
+    out_path = None
     while time.time() < deadline:
         try:
             with urllib.request.urlopen(url, timeout=15) as resp:
@@ -246,15 +247,41 @@ def wait_for_job(daemon, job_id, timeout=1800, interval=3.0):
             time.sleep(interval)
             continue
         status = job.get("status")
+        out_path = job.get("out_path") or out_path
         prog = job.get("progress", 0)
         line = "%s %.0f%%" % (status, prog)
         if line != last:
             _log("    … %s" % line)
             last = line
         if status in ("done", "failed", "cancelled"):
-            return status
+            return status, out_path
         time.sleep(interval)
-    return "timeout"
+    return "timeout", out_path
+
+
+def report_accuracy_line(out_path):
+    """Read the shot_report.json beside a finished render and return a one-line
+    accuracy summary, or None if no report is present. Loudly flags any
+    multi-token image whose full phrase IS sung yet never appeared on screen."""
+    if not out_path:
+        return None
+    rpath = os.path.join(os.path.dirname(out_path), "shot_report.json")
+    if not os.path.isfile(rpath):
+        return None
+    try:
+        with open(rpath, encoding="utf-8") as fh:
+            rep = json.load(fh)
+    except (OSError, ValueError):
+        return None
+    s = rep.get("summary", {})
+    missed = s.get("unused_multi_token_phrase_present", []) or []
+    line = ("accuracy: %d/%d images matched · %d anchored · coverage %.0f%%"
+            % (s.get("images_matched", 0), s.get("images_total", 0),
+               s.get("anchored_shots", 0), s.get("coverage_pct", 0.0)))
+    if missed:
+        line += ("\n    ⚠️  UNUSED but their phrase IS in the lyrics (matcher "
+                 "miss): %s" % ", ".join(missed))
+    return line
 
 
 # ---------------------------------------------------------------------------
@@ -325,9 +352,14 @@ def process_song(week, song, wk_dir, theme, pulse, dry_run, daemon, wait):
     result = {"label": label, "slug": slug, "status": "submitted",
               "job_id": job_id}
     if wait:
-        final = wait_for_job(daemon, job_id)
+        final, out_path = wait_for_job(daemon, job_id)
         _log("    -> %s: %s" % (job_id, final))
         result["final"] = final
+        if final == "done":
+            acc = report_accuracy_line(out_path)
+            if acc:
+                _log("    %s" % acc)
+                result["accuracy"] = acc
         if final not in ("done",):
             result["status"] = "failed" if final in ("failed", "timeout") \
                 else result["status"]
