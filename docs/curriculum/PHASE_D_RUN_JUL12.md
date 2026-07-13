@@ -1,5 +1,11 @@
 # PHASE D PRODUCTION RUN — Levels 2–3 (W27–58) — started Jul 12, 2026 (Fable directing)
 
+## 🏁 CLOSED — Jul 13, 2026 ~13:45. PHASE D 100% COMPLETE, FINAL SWEEP ALL GREEN.
+**Every week W27–58: 4 mp3s + gap-clean images + 10 valid non-zero PDFs in pack-v2/ (verified per-week,
+not per-doc-claim). ~490 images · 320 PDFs · 128 song files. 770 Suno credits remain. Only human work
+left = the morning-review checklist (CURRENT STATE Jul 13 ~13:45 below). Next phase = Phase E
+(audio-QR reconciliation + Montree wiring).**
+
 **Mission (Tredoux, authorized): produce ALL media for weeks 27–58 — ~640 MJ images + 64 songs × 2 takes
 (128 Suno files) + render all 32 packs. Same proven loop as `OVERNIGHT_RUN_JUL11.md` (READ IT — all its
 locked rules, techniques, and bug workarounds apply verbatim). If this session dies, ANY session resumes
@@ -313,13 +319,14 @@ from this doc. Disk was cleared to 20 GiB free before start; backup on Extreme S
 - [x] **W48 /or/ + W49 /er/** — COMPLETE Jul 13 ~09:15–09:36 (orphaned agent #4 — its launch turn
   errored with an API 403 yet it spawned anyway): W48 "Or-Or-Corn!" ×2 + "More Corn for the Horse" ×2;
   W49 "Er-Er-Bird!" ×2 + "The Bird and the Girl" ×2. Died after W49.
-- [ ] **W50 (ship/sheep review) — IN FLIGHT at 10:32 Jul 13 via orphaned agent #5** (launch interrupted
-  10:05-ish, spawned anyway): 3 of 4 files landed by 10:32 ("W50 Ship or Sheep (sound take 1).mp3"
-  newest). **NEXT SESSION: ground-check W50–58 mp3 counts + mtimes FIRST — this orphan may have
-  advanced several weeks or died; >10 min silence = dead. Do NOT spawn onto the browser while files
-  are still landing.**
-- [ ] W51–58 (or wherever orphan #5 stopped) — the only remaining Phase D production. 2 songs/week,
-  verbatim spec lyrics, locked style, both takes, `WNN <Title> (take K).mp3` into Week NN/ root.
+- [x] **W50** — COMPLETE Jul 13: orphan #5 landed 3 of 4 (died ~10:30); the missing "Ship or Sheep
+  (sound take 2)" was harvested from the library (no regen) by the afternoon finisher agent.
+- [x] **W51–58** — COMPLETE Jul 13 ~13:20. Orphan #6 (spawned from an interrupted launch ~10:45,
+  worked DESCENDING from W58): W58 ✓ W57 ✓ W56 ✓, died mid-W55 (~12:15, word-song take 1 left
+  unsorted in Downloads). Finisher agent (12:45–13:20): sorted the stray, harvested W55's remaining
+  take, did W54+W53 (found already-submitted cooking), W52 fresh, W51 pure-harvest (orphan had
+  pre-generated both songs — 0 credits). Em-dash/ellipsis typed as "-"/"..." in W52 (glyph-only).
+- [x] **🎉 SUNO 100% — all 32 weeks × 4 files, verified by folder count Jul 13 13:45.**
 
 **🚨 NEW RULE learned this chunk — MP3 download needs a wait, not just a click.** Clicking Download →
 MP3 Audio on a song's detail page triggers a **"Preparing your mp3... This may take a few seconds"**
@@ -333,7 +340,33 @@ bottom playbar "..." icon (~[196,899]) that needs Download→MP3 Audio via a ful
 wide/desktop width shows a "..." icon next to the play button (~[631,311]) with a hover-flyout submenu.
 Screenshot first each time to see which layout is live rather than assuming coordinates.
 
-## ⏱ CURRENT STATE — Jul 13, ~10:35 (Fable — SESSION CLOSING on Tredoux's order; resume after refresh)
+## ⏱ CURRENT STATE — Jul 13, ~13:45 (Fable — PHASE D CLOSED)
+- **🏁 EVERYTHING PRODUCED + VERIFIED.** Final sweep (per-week folder counts, not doc claims):
+  all 32 weeks W27–58 = 4 mp3s + 10 valid non-zero PDFs + gap-clean images. ALL GREEN.
+- **W44 feet.png hole found + closed:** the M4 agent had claimed 14/14 but the manifest wanted 15 —
+  `feet.png` (cards/bingo/matching) was missing, likely skipped under the anatomy-prompt rule. Fresh
+  safe phrasing ("small child's bare feet standing on warm golden sand, photographed from directly
+  above…") rendered clean first try; pack re-rendered exit 0 (bingo 59.6MB, book 27.0MB).
+  **🚨 LESSON: agents' "N/N complete" claims must be re-verified with --gap-only — the final sweep
+  caught a claimed-complete week with a missing manifest image.**
+- **🗣 SEJEENA PRONUNCIATION FIX (Tredoux caught it live):** "Segina" was being sung se-GI-na. The
+  phonetic-respelling rule (print "Segina", sing "Sejeena") had only been applied to W2 — FIVE specs
+  had the literal name in sung lyrics: W22 "The Vet", W25 "The Duck Says Quack", W26 "The Bug Can
+  Buzz" (×2 lines), W49 "The Bird and the Girl", W58 "The Celebration" (×2 lines). All 5 spec JSONs
+  corrected (lyrics field ONLY — titles/book text untouched) and all 5 songs REGENERATED (10 files,
+  ~50 credits). Old mispronounced files preserved in `English Curriculum 2026/_replaced_segina/`
+  (10 files + 1 discarded duplicate download) — delete after Tredoux's review.
+  **🚨 RULE: any cast name with a non-phonetic spelling must be respelled in EVERY song's lyrics
+  field — grep all specs for the printed spelling before production, not after.**
+- **New Suno UI gotcha (regen agent):** the persistent mini-player's "..." download menu is bound to
+  the track LOADED IN THE MINI-PLAYER, not the page you navigated to — navigating by URL alone can
+  silently download a stale track (caught via identical MD5). Always click the row's own thumbnail
+  (row highlights) before using the mini-player menu.
+- **Credits: 770 remaining.** Orphan tally this run: #5 (W50 partial), #6 (W58→W55 descending).
+- **⏳ NEXT: (1) Tredoux morning-review checklist below. (2) Phase E — audio-QR reconciliation
+  (all packs' QR cards carry audioUrl placeholders by design) + Montree wiring (all 3 levels).**
+
+## ⏱ PRIOR STATE — Jul 13, ~10:35 (superseded)
 - **🎉 IMAGES: 100% DONE** (all W27–58, all 32 packs, 10 valid PDFs each — verified).
 - **Suno: W27–49 done (92 files). W50 in-flight via orphaned agent #5 (3/4 files at 10:32, still
   landing). W51–58 = the only remaining production (16 songs, 32 files — minus whatever orphan #5

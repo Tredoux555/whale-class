@@ -2,6 +2,34 @@
 
 **⚠️ STANDING RULE (Tredoux, Jul 10 2026 — PERMANENT): MODEL DELEGATION.** Fable is the DIRECTOR and second brain — it plans, decides, writes the critical copy, and reviews. It does NOT do grunt work. **Sonnet** (preferred over Haiku — more reliable) does all fetching, sweeping, scouting, data-gathering, and auditing via sub-agents. **Opus** builds where appropriate. Never let Fable burn half its context on mechanical work another model can do — spawn agents instead.
 
+## 🏁 SESSION — Jul 13, 2026 (midday, Cowork/Fable directing Sonnet browser agents) — PHASE D 100% COMPLETE: ALL PRODUCTION DONE + SEJEENA FIX — FINAL SWEEP ALL GREEN
+
+**Canonical: `docs/curriculum/PHASE_D_RUN_JUL12.md` (🏁 CLOSED header + CURRENT STATE Jul 13 ~13:45).
+The entire 58-week program is now fully produced: every week W27–58 verified 4 mp3s + gap-clean images
++ 10 valid PDFs (final sweep by folder counts, ALL GREEN). ~490 images · 320 PDFs · 128 L2–3 song
+files. 770 Suno credits left.**
+
+- **Two holes found that the overnight run's own reports missed:** (1) **W44 was missing `feet.png`**
+  despite the agent's "14/14 complete" claim (manifest wanted 15; skipped under the anatomy-prompt
+  rule) — regenerated with safe phrasing, pack re-rendered. 🚨 RULE: re-verify agent completion claims
+  with `--gap-only`; the sweep caught a claimed-complete week. (2) **Sejeena pronunciation** (Tredoux
+  caught it): the print-"Segina"/sing-"Sejeena" rule was only applied to W2 — five specs had the
+  literal name in sung lyrics (W22 The Vet, W25 The Duck Says Quack, W26 The Bug Can Buzz, W49 The
+  Bird and the Girl, W58 The Celebration). Specs fixed (lyrics only) + all 5 songs regenerated; old
+  files preserved in `English Curriculum 2026/_replaced_segina/`. 🚨 RULE: grep every spec for the
+  printed spelling of phonetic-respelled cast names BEFORE production.
+- **Orphan pattern continued (#5, #6):** W51–58 was mostly produced by orphan #6 (spawned from an
+  interrupted launch, worked W58 DESCENDING, died mid-W55); finisher agents harvested strays +
+  pre-cooked jobs (W51 cost 0 credits — fully pre-generated). New Suno gotcha logged in the run doc:
+  mini-player "..." download binds to the LOADED track, not the navigated page — click the row
+  thumbnail first (stale-track download caught via MD5).
+- **⏳ Owed:** Tredoux morning-review checklist (take-picks × 64 songs · W51 metallic star · W52
+  loud-sound proxy · W58 station-coloring · cast eyeball · Pattern Tree/W38 tracing · Sejeena regen
+  listen + delete `_replaced_segina/` after) → then **Phase E**: audio-QR reconciliation + Montree
+  wiring (all 3 levels).
+
+---
+
 ## 🎉 SESSION — Jul 12 21:00 → Jul 13 morning, 2026 (overnight, Cowork/Fable directing Sonnet browser agents) — PHASE D IMAGES 100% COMPLETE (all 32 packs) + SUNO NEARLY DONE
 
 **Canonical live status: `docs/curriculum/PHASE_D_RUN_JUL12.md` (CURRENT STATE Jul 13 ~10:35 + the
