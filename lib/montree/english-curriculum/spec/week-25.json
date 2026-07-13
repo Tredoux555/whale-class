@@ -5,13 +5,76 @@
   "letterDisplay": "Qu qu",
   "soundType": "consonant",
   "anchorWord": "quack",
-  "newWords": ["quiz", "quit", "quack", "quick"],
-  "reviewBank": ["quid", "cat", "dog", "rat", "bug", "duck", "fox", "web", "jam", "sock", "van", "yam", "box", "six", "nut", "big", "run", "on", "in", "wet"],
-  "glue": { "new": ["says"], "known": ["the", "is", "I", "and", "on"] },
-  "oralWords": ["what", "where", "your"],
+  "newWords": [
+    "quiz",
+    "quit",
+    "quack",
+    "quick"
+  ],
+  "reviewBank": [
+    "quid",
+    "cat",
+    "dog",
+    "rat",
+    "bug",
+    "duck",
+    "fox",
+    "web",
+    "jam",
+    "sock",
+    "van",
+    "yam",
+    "box",
+    "six",
+    "nut",
+    "big",
+    "run",
+    "on",
+    "in",
+    "wet"
+  ],
+  "glue": {
+    "new": [
+      "says"
+    ],
+    "known": [
+      "the",
+      "is",
+      "I",
+      "and",
+      "on"
+    ]
+  },
+  "oralWords": [
+    "what",
+    "where",
+    "your"
+  ],
   "sentenceFrame": "The ___ says, \"Quack!\"",
-  "soundBasket": ["queen", "quilt", "quill", "quarter", "quiver", "quokka", "quiz", "question-mark"],
-  "cast": { "introduces": null, "present": ["Segina", "Sam", "Cat", "Ant", "Dog", "Rat", "Bug", "Duck", "Fox"] },
+  "soundBasket": [
+    "queen",
+    "quilt",
+    "quill",
+    "quarter",
+    "quiver",
+    "quokka",
+    "quiz",
+    "question-mark"
+  ],
+  "cast": {
+    "introduces": null,
+    "present": [
+      "Segina",
+      "Sam",
+      "Cat",
+      "Ant",
+      "Dog",
+      "Rat",
+      "Bug",
+      "Duck",
+      "Fox"
+    ]
+  },
   "celebration": "New glue word: says",
   "vowelLights": null,
   "songs": [
@@ -25,7 +88,7 @@
     {
       "role": "word",
       "title": "The Duck Says Quack",
-      "lyrics": "[Intro]\n(quack? quack?)\n\n[Hook]\nThe duck says, \"Quack!\"\nThe duck says, \"Quack!\"\nWhat does the duck say? (quack! quack!)\nThe duck says, \"Quack!\"\n\n[Verse 2]\nThe cat says, \"Quack!\"?\nThe cat says, \"Quack!\"?\n(No! That is not right!)\nBut the cat says, \"Quack!\"\n\n[Verse 3]\nThe dog says, \"Quack!\"\nThe fox says, \"Quack!\"\nQuick, quick! Everyone!\n(Quack! Quack! Quack!)\n\n[Verse 4]\nSam says, \"Quack!\"\nSegina says, \"Quack!\"\nWhat does the duck say? (QUACK!)\nQuit it! says the duck!\n\n[Outro]\nThe potato says…?\n(POTATO! QUACK!)\nThe duck says, \"Quack.\"\n(quack… shhh…)",
+      "lyrics": "[Intro]\n(quack? quack?)\n\n[Hook]\nThe duck says, \"Quack!\"\nThe duck says, \"Quack!\"\nWhat does the duck say? (quack! quack!)\nThe duck says, \"Quack!\"\n\n[Verse 2]\nThe cat says, \"Quack!\"?\nThe cat says, \"Quack!\"?\n(No! That is not right!)\nBut the cat says, \"Quack!\"\n\n[Verse 3]\nThe dog says, \"Quack!\"\nThe fox says, \"Quack!\"\nQuick, quick! Everyone!\n(Quack! Quack! Quack!)\n\n[Verse 4]\nSam says, \"Quack!\"\nSejeena says, \"Quack!\"\nWhat does the duck say? (QUACK!)\nQuit it! says the duck!\n\n[Outro]\nThe potato says…?\n(POTATO! QUACK!)\nThe duck says, \"Quack.\"\n(quack… shhh…)",
       "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
       "sunoNotes": "Introduces the glue word 'says' — a heart word (it does NOT read the way it looks; teach it whole, never blend it). One frame: 'The ___ says, \"Quack!\"' The comedy is the WHOLE cast quacking wrong until the duck says 'Quit it!'. Kids choir answers (quack! quack!). Every qu word (quack, quick, quit) is the 'kw' blend."
     }
@@ -34,51 +97,306 @@
     "title": "The Duck Says Quack",
     "readAloud": false,
     "spreads": [
-      { "n": 1, "text": "The duck.", "image": "duck", "artNote": "The Duck (white) center stage, chest puffed, beak open, clearly about to teach everyone something. A confident quack coming." },
-      { "n": 2, "text": "The duck says, \"Quack!\"", "image": "duck-quack", "artNote": "The Duck mid-quack, beak wide, a little 'QUACK!' speech puff. The heart word 'says' printed for the first time — point to it." },
-      { "n": 3, "text": "The cat says, \"Quack!\"", "image": "cat-quack", "artNote": "The Cat (tabby) attempting to quack, mouth in a ridiculous duck-shape, deeply unconvinced of itself. Comedy gold." },
-      { "n": 4, "text": "The dog says, \"Quack!\"", "image": "dog-quack", "artNote": "The Dog (brown) quacking with total commitment, head thrown back, thrilled to join in even though it's absurd." },
-      { "n": 5, "text": "The rat says, \"Quack, quack!\"", "image": "rat-quack", "artNote": "The Rat (grey) doing tiny high-pitched double quacks, on tiptoe, giving it everything." },
-      { "n": 6, "text": "Sam says, \"Quack!\"", "image": "sam-quack", "artNote": "Sam the peg-doll boy cupping his hands to his mouth, quacking, cheeks round, joyful." },
-      { "n": 7, "text": "Quick! Quick! Quack, quack!", "image": "quack-chorus", "artNote": "The whole cast in a quacking chorus — cat, dog, rat, fox, Sam, Segina all mid-quack, the Duck conducting like a bandleader. Peak chaos." },
-      { "n": 8, "text": "The fox says, \"Quack!\"", "image": "fox-quack", "artNote": "The Fox (red) sly-quacking out the side of its mouth, one eyebrow up, not really trying. Cast callback." },
-      { "n": 9, "text": "It says...?!", "image": "potato-quack", "artNote": "The potato, spotlit, a tiny 'QUACK!' puff coming from it — the potato has joined the chorus. No noun printed — the class SHOUTS the word (and the quack!) from the picture." }
+      {
+        "n": 1,
+        "text": "The duck.",
+        "image": "duck",
+        "artNote": "The Duck (white) center stage, chest puffed, beak open, clearly about to teach everyone something. A confident quack coming."
+      },
+      {
+        "n": 2,
+        "text": "The duck says, \"Quack!\"",
+        "image": "duck-quack",
+        "artNote": "The Duck mid-quack, beak wide, a little 'QUACK!' speech puff. The heart word 'says' printed for the first time — point to it."
+      },
+      {
+        "n": 3,
+        "text": "The cat says, \"Quack!\"",
+        "image": "cat-quack",
+        "artNote": "The Cat (tabby) attempting to quack, mouth in a ridiculous duck-shape, deeply unconvinced of itself. Comedy gold."
+      },
+      {
+        "n": 4,
+        "text": "The dog says, \"Quack!\"",
+        "image": "dog-quack",
+        "artNote": "The Dog (brown) quacking with total commitment, head thrown back, thrilled to join in even though it's absurd."
+      },
+      {
+        "n": 5,
+        "text": "The rat says, \"Quack, quack!\"",
+        "image": "rat-quack",
+        "artNote": "The Rat (grey) doing tiny high-pitched double quacks, on tiptoe, giving it everything."
+      },
+      {
+        "n": 6,
+        "text": "Sam says, \"Quack!\"",
+        "image": "sam-quack",
+        "artNote": "Sam the peg-doll boy cupping his hands to his mouth, quacking, cheeks round, joyful."
+      },
+      {
+        "n": 7,
+        "text": "Quick! Quick! Quack, quack!",
+        "image": "quack-chorus",
+        "artNote": "The whole cast in a quacking chorus — cat, dog, rat, fox, Sam, Segina all mid-quack, the Duck conducting like a bandleader. Peak chaos."
+      },
+      {
+        "n": 8,
+        "text": "The fox says, \"Quack!\"",
+        "image": "fox-quack",
+        "artNote": "The Fox (red) sly-quacking out the side of its mouth, one eyebrow up, not really trying. Cast callback."
+      },
+      {
+        "n": 9,
+        "text": "It says...?!",
+        "image": "potato-quack",
+        "artNote": "The potato, spotlit, a tiny 'QUACK!' puff coming from it — the potato has joined the chorus. No noun printed — the class SHOUTS the word (and the quack!) from the picture."
+      }
     ],
-    "backCoverWords": ["quack", "quick", "quit", "quid", "says", "the", "duck"]
+    "backCoverWords": [
+      "quack",
+      "quick",
+      "quit",
+      "quid",
+      "says",
+      "the",
+      "duck"
+    ]
   },
   "materials": {
-    "threePartCards": ["queen", "quilt", "quill", "quarter", "quiver", "quokka", "quiz", "duck"],
-    "sentences": ["The duck says, \"Quack!\"", "The cat says, \"Quack!\"", "Quick! Quack, quack!", "The fox says, \"Quack!\""],
-    "matching": ["queen", "quilt", "quill", "quarter", "quiver", "duck"],
-    "bingoPool": ["queen", "quilt", "quill", "quarter", "quiver", "quokka", "quiz", "duck", "cat", "dog", "fox", "potato"],
-    "tracing": { "letter": "qu", "words": ["quit", "quack", "quick"] },
-    "coloring": ["queen", "quilt", "duck"],
-    "dictionary": ["quit", "quack", "quick", "quid"],
-    "extras": ["The q+u rule: q NEVER travels alone — pin sandpaper q and u together as one tile, they go everywhere as 'qu' (kw)", "Heart-word 'says': teach it whole on a gold card — it does not read the way it looks, so we know it by sight, never sound it out", "Animal-sound circle: everyone tries to say 'quack' like the duck, then each real animal's real sound — the duck says 'quit it!'"]
+    "threePartCards": [
+      "queen",
+      "quilt",
+      "quill",
+      "quarter",
+      "quiver",
+      "quokka",
+      "quiz",
+      "duck"
+    ],
+    "sentences": [
+      "The duck says, \"Quack!\"",
+      "The cat says, \"Quack!\"",
+      "Quick! Quack, quack!",
+      "The fox says, \"Quack!\""
+    ],
+    "matching": [
+      "queen",
+      "quilt",
+      "quill",
+      "quarter",
+      "quiver",
+      "duck"
+    ],
+    "bingoPool": [
+      "queen",
+      "quilt",
+      "quill",
+      "quarter",
+      "quiver",
+      "quokka",
+      "quiz",
+      "duck",
+      "cat",
+      "dog",
+      "fox",
+      "potato"
+    ],
+    "tracing": {
+      "letter": "qu",
+      "words": [
+        "quit",
+        "quack",
+        "quick"
+      ]
+    },
+    "coloring": [
+      "queen",
+      "quilt",
+      "duck"
+    ],
+    "dictionary": [
+      "quit",
+      "quack",
+      "quick",
+      "quid"
+    ],
+    "extras": [
+      "The q+u rule: q NEVER travels alone — pin sandpaper q and u together as one tile, they go everywhere as 'qu' (kw)",
+      "Heart-word 'says': teach it whole on a gold card — it does not read the way it looks, so we know it by sight, never sound it out",
+      "Animal-sound circle: everyone tries to say 'quack' like the duck, then each real animal's real sound — the duck says 'quit it!'"
+    ]
   },
   "assets": [
-    { "file": "duck.png", "usedBy": ["book:1", "cards", "bingo", "matching", "coloring"], "mjPrompt": "a white duck center stage with its chest puffed and beak open, confident, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "duck-quack.png", "usedBy": ["book:2"], "mjPrompt": "a white duck mid-quack with its beak wide open, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "cat-quack.png", "usedBy": ["book:3"], "mjPrompt": "a tabby cat with its mouth in a ridiculous duck-beak shape attempting to quack, unconvinced, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "dog-quack.png", "usedBy": ["book:4"], "mjPrompt": "a brown dog quacking with total commitment, head thrown back, thrilled, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "rat-quack.png", "usedBy": ["book:5"], "mjPrompt": "a small grey rat on tiptoe doing tiny high-pitched double quacks, giving it everything, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "sam-quack.png", "usedBy": ["book:6"], "mjPrompt": "a wooden peg doll boy in a red shirt cupping his hands to his mouth quacking, cheeks round, joyful, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "quack-chorus.png", "usedBy": ["book:7"], "mjPrompt": "a chaotic chorus of a tabby cat, brown dog, grey rat, red fox and two peg dolls all mid-quack while a white duck conducts them like a bandleader, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "fox-quack.png", "usedBy": ["book:8"], "mjPrompt": "a red fox sly-quacking out the side of its mouth with one eyebrow raised, not really trying, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "potato-quack.png", "usedBy": ["book:9"], "mjPrompt": "a single raw potato under a spotlight with a tiny comic QUACK speech puff coming from it, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "queen.png", "usedBy": ["cards", "bingo", "matching", "coloring"], "mjPrompt": "a friendly toy queen figure with a gold crown and robe, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "quilt.png", "usedBy": ["cards", "bingo", "matching", "coloring"], "mjPrompt": "a folded patchwork quilt, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "quill.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a feather quill pen beside a small inkpot, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "quarter.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a shiny silver quarter coin, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "quiver.png", "usedBy": ["cards", "bingo", "matching"], "mjPrompt": "a leather quiver full of arrows, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "quokka.png", "usedBy": ["cards", "bingo", "basket"], "mjPrompt": "a cute smiling quokka, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "quiz.png", "usedBy": ["cards", "bingo", "basket"], "mjPrompt": "a quiz sheet with question marks and a pencil, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "question-mark.png", "usedBy": ["basket"], "mjPrompt": "a large bold red question mark, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "queen-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a smiling queen with a crown, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
-    { "file": "quilt-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a patchwork quilt with simple squares, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
-    { "file": "duck-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a happy quacking duck with its beak open, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
-    { "file": "potato.png", "usedBy": ["bingo"], "mjPrompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+    {
+      "file": "duck.png",
+      "usedBy": [
+        "book:1",
+        "cards",
+        "bingo",
+        "matching",
+        "coloring"
+      ],
+      "mjPrompt": "a white duck center stage with its chest puffed and beak open, confident, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "duck-quack.png",
+      "usedBy": [
+        "book:2"
+      ],
+      "mjPrompt": "a white duck mid-quack with its beak wide open, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "cat-quack.png",
+      "usedBy": [
+        "book:3"
+      ],
+      "mjPrompt": "a tabby cat with its mouth in a ridiculous duck-beak shape attempting to quack, unconvinced, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "dog-quack.png",
+      "usedBy": [
+        "book:4"
+      ],
+      "mjPrompt": "a brown dog quacking with total commitment, head thrown back, thrilled, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "rat-quack.png",
+      "usedBy": [
+        "book:5"
+      ],
+      "mjPrompt": "a small grey rat on tiptoe doing tiny high-pitched double quacks, giving it everything, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "sam-quack.png",
+      "usedBy": [
+        "book:6"
+      ],
+      "mjPrompt": "a wooden peg doll boy in a red shirt cupping his hands to his mouth quacking, cheeks round, joyful, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "quack-chorus.png",
+      "usedBy": [
+        "book:7"
+      ],
+      "mjPrompt": "a chaotic chorus of a tabby cat, brown dog, grey rat, red fox and two peg dolls all mid-quack while a white duck conducts them like a bandleader, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "fox-quack.png",
+      "usedBy": [
+        "book:8"
+      ],
+      "mjPrompt": "a red fox sly-quacking out the side of its mouth with one eyebrow raised, not really trying, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "potato-quack.png",
+      "usedBy": [
+        "book:9"
+      ],
+      "mjPrompt": "a single raw potato under a spotlight with a tiny comic QUACK speech puff coming from it, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "queen.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching",
+        "coloring"
+      ],
+      "mjPrompt": "a friendly toy queen figure with a gold crown and robe, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "quilt.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching",
+        "coloring"
+      ],
+      "mjPrompt": "a folded patchwork quilt, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "quill.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching"
+      ],
+      "mjPrompt": "a feather quill pen beside a small inkpot, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "quarter.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching"
+      ],
+      "mjPrompt": "a shiny silver quarter coin, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "quiver.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "matching"
+      ],
+      "mjPrompt": "a leather quiver full of arrows, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "quokka.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "basket"
+      ],
+      "mjPrompt": "a cute smiling quokka, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "quiz.png",
+      "usedBy": [
+        "cards",
+        "bingo",
+        "basket"
+      ],
+      "mjPrompt": "a quiz sheet with question marks and a pencil, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "question-mark.png",
+      "usedBy": [
+        "basket"
+      ],
+      "mjPrompt": "a large bold red question mark, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "queen-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a smiling queen with a crown, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "quilt-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a patchwork quilt with simple squares, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "duck-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a happy quacking duck with its beak open, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "potato.png",
+      "usedBy": [
+        "bingo"
+      ],
+      "mjPrompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    }
   ],
   "teacherFocus": "Qu is a blend of two sounds — /k/+/w/ = 'kw' — and it carries the year's spelling rule: q never travels alone, it always brings u. Pin sandpaper q+u as one tile. Introduce the heart word 'says' whole on a gold card — it does not read the way it looks, so we know it by sight and never sound it out. The whole cast quacking wrong is the joke; let them try every animal sound.",
-  "lessonMapEquivalents": [31]
+  "lessonMapEquivalents": [
+    31
+  ]
 }
