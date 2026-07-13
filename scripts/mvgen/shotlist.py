@@ -188,73 +188,257 @@ def filename_tokens(path):
     return toks
 
 
-def build_keyword_index(images):
-    """Map every keyword variant -> image index (first image wins on a clash).
+def build_image_tokens(images):
+    """Ordered token list per image (parallel to ``images``).
 
-    Returns ``(index, image_tokens)`` where ``index`` is ``{variant_key: img_idx}``
-    and ``image_tokens[i]`` is the list of canonical tokens for image ``i``.
-    """
-    index = {}
-    image_tokens = []
-    for i, img in enumerate(images):
-        toks = filename_tokens(img)
-        image_tokens.append(toks)
+    ``mat-on-cat.png`` -> ['mat','cat']; ``cat-on-mat.png`` -> ['cat','mat'];
+    ``sheep-sees-bee.png`` -> ['sheep','sees','bee']. Order is PRESERVED (it is
+    what disambiguates the flip gag) and stopwords are already stripped by
+    ``filename_tokens``."""
+    return [filename_tokens(p) for p in images]
+
+
+def build_coverage_set(image_tokens):
+    """Set of every keyword variant any image can illustrate (coverage only).
+
+    Used to answer "is this sung word covered by SOME image?" without deciding
+    which one — the Shot Planner's missing-word gap list."""
+    covered = set()
+    for toks in image_tokens:
         for tok in toks:
-            for variant in _plural_variants(tok):
-                index.setdefault(variant, i)
-    return index, image_tokens
+            covered |= _plural_variants(tok)
+    return covered
 
 
 # ---------------------------------------------------------------------------
-# Anchors (keyword clusters)
+# Occurrence-based matcher (order-aware; no permanent token ownership)
 # ---------------------------------------------------------------------------
+#
+# Scoring (numeric, best wins):
+#   score = matched_tokens*W_MATCH - unmatched_file_tokens*W_LEFTOVER - recency
+# W_MATCH dominates so a longer phrase ALWAYS beats a shorter one (full
+# [mat,cat] > bare [cat]); the small leftover penalty makes ``cat.png`` [cat]
+# beat ``cat-coloring.png`` [cat,coloring] on a bare "cat"; recency is a tiny
+# term that only ever flips genuine near-ties, so repeated hooks rotate between
+# equal candidates (cat-on-mat <-> cat-on-mat-silly) instead of always picking
+# the same file. recency can never overturn a real +1-token match (W_MATCH is
+# two orders of magnitude larger than the max recency penalty).
+W_MATCH = 100.0        # per matched token (longest phrase wins)
+W_LEFTOVER = 2.0       # penalty per file token NOT matched in the window
+REC_STEP = 2.5         # recency penalty step
+REC_SPAN = 3           # anchors over which the recency penalty decays to 0
 
-def find_clusters(words, index):
-    """Scan the ground-truth lyric words for keyword occurrences.
+# Forward window over the SUNG words that a filename phrase may span.
+WINDOW_WORDS = 8       # at most this many content words ahead
+WINDOW_SEC = 4.0       # ... or this many seconds, whichever comes first
+LINE_GAP = 0.9         # a silent gap longer than this ends the lyric line
 
-    Returns an ordered list of cluster dicts:
-      ``{image, start, end, trigger_word, trigger_time}``.
 
-    Consecutive mentions of the SAME keyword-image (with only non-keyword words
-    such as "It's", "a", "what?" between them) collapse into ONE cluster — the
-    image is already showing, so a repeat does not re-anchor. A mention that maps
-    to a DIFFERENT image closes the current cluster and opens a new one. That is
-    the "different image intervened -> new anchor" rule.
+def _tok_match(lyric_key, file_tok):
+    """True if a sung word key matches a filename token (naive plural folding,
+    both directions)."""
+    if lyric_key == file_tok:
+        return True
+    return (lyric_key in _plural_variants(file_tok)
+            or file_tok in _plural_variants(lyric_key))
+
+
+def _content_words(words):
+    """Ordered list of ``(key, word_dict, orig_index)`` for content lyric words
+    (>=3 chars, non-stopword, non-numeric) — the words an image can illustrate.
+    Ubiquitous words like 'the'/'a'/'is'/'up' are dropped here so they can never
+    anchor a shot, exactly as the filename tokenizer drops them."""
+    out = []
+    for i, w in enumerate(words):
+        key = normalize_token(w.get("word", ""))
+        if (key and not key.isdigit() and len(key) >= _MIN_TOKEN_LEN
+                and key not in _STOPWORDS):
+            out.append((key, w, i))
+    return out
+
+
+def _window_indices(cw, j, consumed=None):
+    """Indices ``[j..k]`` of ``cw`` forming the forward match window from j.
+
+    Stops at WINDOW_WORDS content words, WINDOW_SEC seconds, or a LINE_GAP
+    silence between consecutive sung words (a lyric-line boundary) — so a
+    filename phrase is only matched WITHIN one sung line.
+
+    ``consumed`` (a set of content-word indices already claimed by an earlier
+    phrase) is excluded from the returned window so a matched word can never be
+    reused as a subsequence member of a later phrase (no double-anchoring). The
+    span/line-gap arithmetic still uses the RAW consecutive words (consumed ones
+    included) so the window boundary is unaffected by what was matched — only
+    which words are eligible changes. ``j`` (win[0]) is assumed non-consumed."""
+    consumed = consumed or frozenset()
+    idxs = [j]
+    j_start = float(cw[j][1].get("start", 0.0) or 0.0)
+    last = min(len(cw), j + WINDOW_WORDS)
+    for k in range(j + 1, last):
+        wk = cw[k][1]
+        wk_start = float(wk.get("start", 0.0) or 0.0)
+        if wk_start - j_start > WINDOW_SEC:
+            break
+        prev = cw[k - 1][1]
+        prev_end = float(prev.get("end", prev.get("start", 0.0)) or 0.0)
+        if wk_start - prev_end > LINE_GAP:
+            break
+        if k in consumed:
+            continue  # already claimed — cannot re-anchor / re-match it
+        idxs.append(k)
+    return idxs
+
+
+def _match_image(tokens, cw, win):
+    """Match an image's ordered tokens against the window as a subsequence.
+
+    The image's FIRST token must match the window's FIRST content word (``win[0]``
+    — the position we are anchoring at); the remaining tokens must then appear IN
+    ORDER among the later window words. Returns the list of matched content
+    indices (length >= 1) or ``None`` if the image does not start here."""
+    if not tokens:
+        return None
+    if not _tok_match(cw[win[0]][0], tokens[0]):
+        return None
+    matched = [win[0]]
+    ti = 1
+    wi = 1
+    while ti < len(tokens) and wi < len(win):
+        ci = win[wi]
+        if _tok_match(cw[ci][0], tokens[ti]):
+            matched.append(ci)
+            ti += 1
+        wi += 1
+    return matched
+
+
+def _recency_penalty(img_idx, last_used, anchor_ord):
+    """Small penalty for an image used in the last ``REC_SPAN`` anchors, decaying
+    to 0. Only ever flips genuine near-ties (rotating repeated hooks)."""
+    if img_idx not in last_used:
+        return 0.0
+    gap = anchor_ord - last_used[img_idx]  # >=1 (used at an earlier anchor)
+    return REC_STEP * max(0.0, (REC_SPAN + 1 - gap))
+
+
+def find_matches(words, images, image_tokens=None):
+    """Order-aware, per-occurrence image matcher (replaces the token-index).
+
+    Walks the ground-truth lyric CONTENT words left to right. At each position it
+    considers every image whose first token matches the sung word there, matches
+    the rest of the image's tokens as an ordered subsequence within a forward
+    window, scores the candidates (longest phrase wins; small leftover + recency
+    tiebreaks), and anchors the winner. Consumed phrase words are skipped so
+    "the cat is on the mat" yields ONE cat-on-mat shot (not cat + mat), and "the
+    mat is on the cat" yields mat-on-cat — the flip is disambiguated by token
+    ORDER, not by whichever filename sorts first.
+
+    Returns an ordered list of cluster dicts, shape-compatible with the old
+    token-index matcher's output plus two additive fields::
+
+        {image, start, end, trigger_word, trigger_time, approx,
+         trigger_phrase, match_score}
+
+    Consecutive positions that resolve to the SAME image extend one cluster
+    (no re-anchor), mirroring the old collapse rule.
+
+    CRIT fix: only the WINNING phrase's matched indices are consumed — NOT the
+    whole [first..last] span. Content words that fell between two matched tokens
+    but were not themselves part of the winning phrase stay eligible and can
+    anchor a different image. Repro: images [cat-mat, bird] over "the cat and
+    bird sit on the mat" -> cat-mat consumes {cat, mat}; the un-consumed "bird"
+    in the middle still anchors bird.png. A ``consumed`` set (content-word
+    indices) is threaded through the window builder so a matched word can never
+    double-anchor.
     """
+    if image_tokens is None:
+        image_tokens = build_image_tokens(images)
+    cw = _content_words(words)
+    if not cw or not image_tokens:
+        return []
+
     clusters = []
     cur = None
-    for w in words:
-        key = normalize_token(w.get("word", ""))
-        img = index.get(key)
-        if img is None:
-            # NOT redundant with the index's own plural expansion: this catches
-            # lyric-side plurals whose FOLDED form is the indexed key (e.g. a
-            # 'potato.png' indexes {potato, potatos}; the sung word 'potatoes'
-            # misses those but folds to 'potato' here). Verified needed.
-            for variant in _plural_variants(key):
-                if variant in index:
-                    img = index[variant]
-                    break
-        if img is None:
-            continue  # non-keyword word never breaks a cluster
-        if cur is not None and cur["image"] == img:
-            cur["end"] = float(w["end"])  # extend the sung cluster
+    last_used = {}     # img_idx -> anchor ordinal it last anchored at
+    anchor_ord = 0     # ordinal the NEXT new anchor will receive
+    consumed = set()   # content-word indices already claimed by a phrase
+    j = 0
+    n = len(cw)
+    while j < n:
+        if j in consumed:
+            # Already claimed by an earlier phrase — never re-anchor it.
+            j += 1
+            continue
+        win = _window_indices(cw, j, consumed)
+        best = None            # (score, -img_idx)
+        best_img = None
+        best_matched = None
+        for img_idx, toks in enumerate(image_tokens):
+            matched = _match_image(toks, cw, win)
+            if not matched:
+                continue
+            leftover = len(toks) - len(matched)
+            rec = _recency_penalty(img_idx, last_used, anchor_ord)
+            score = len(matched) * W_MATCH - leftover * W_LEFTOVER - rec
+            key = (score, -img_idx)  # higher score, then lower filename index
+            if best is None or key > best:
+                best, best_img, best_matched = key, img_idx, matched
+        if best_img is None:
+            # No image starts here — a non-keyword word never breaks a cluster.
+            j += 1
+            continue
+        first_ci = best_matched[0]
+        last_ci = best_matched[-1]
+        fw = cw[first_ci][1]
+        ew = cw[last_ci][1]
+        phrase = " ".join(cw[ci][1].get("word", "") for ci in best_matched)
+        if cur is not None and cur["image"] == best_img:
+            # Same image still on screen -> extend its hold, do not re-anchor.
+            cur["end"] = float(ew.get("end", ew.get("start", cur["end"])))
         else:
             if cur is not None:
                 clusters.append(cur)
             cur = {
-                "image": img,
-                "start": float(w["start"]),
-                "end": float(w["end"]),
-                "trigger_word": w["word"],
-                "trigger_time": float(w["start"]),
+                "image": best_img,
+                "start": float(fw.get("start", 0.0) or 0.0),
+                "end": float(ew.get("end", ew.get("start", 0.0)) or 0.0),
+                "trigger_word": fw.get("word", ""),
+                "trigger_time": float(fw.get("start", 0.0) or 0.0),
                 # W1: guessed (even-distributed) trigger times get a wider
                 # pre-roll downstream. Flag carried from the trigger word.
-                "approx": bool(w.get("approx")),
+                "approx": bool(fw.get("approx")),
+                "trigger_phrase": phrase,
+                "match_score": len(best_matched),
             }
+            last_used[best_img] = anchor_ord
+            anchor_ord += 1
+        # Consume ONLY the words this phrase actually matched (not the whole
+        # span) so un-matched intervening words remain eligible to anchor.
+        consumed.update(best_matched)
+        # Resume from the smallest position > first_ci not yet consumed. Matched
+        # tokens deeper in the span stay skipped (they're in ``consumed``); the
+        # bird in "cat ... bird ... mat" is reached here.
+        j = first_ci + 1
+        while j < n and j in consumed:
+            j += 1
     if cur is not None:
         clusters.append(cur)
     return clusters
+
+
+def _phrase_in_content(tokens, cw):
+    """True if the image's full ordered token phrase appears as a subsequence
+    anywhere in the content words (used to flag genuinely-missed multi-token
+    images for the loud batch warning)."""
+    if not tokens:
+        return False
+    ti = 0
+    for (key, _w, _i) in cw:
+        if _tok_match(key, tokens[ti]):
+            ti += 1
+            if ti == len(tokens):
+                return True
+    return False
 
 
 # ---------------------------------------------------------------------------
@@ -362,13 +546,21 @@ def build_shotlist(words, images, downbeats, duration, onsets=None,
     if not words or not images:
         return None
 
-    index, _image_tokens = build_keyword_index(images)
-    if not index:
+    image_tokens = build_image_tokens(images)
+    if not any(image_tokens):
         return None
 
-    clusters = find_clusters(words, index)
+    clusters = find_matches(words, images, image_tokens)
     if not clusters:
         return None  # no object words sung -> nothing to sync; caller cycles
+
+    # find_matches already emits clusters in trigger-time order, but a phrase
+    # whose span brackets a shorter intervening anchor (e.g. cat-mat over
+    # "cat ... bird ... mat") produces OVERLAPPING windows. Sort by trigger_time
+    # (stable) so the resolve loop's monotonic clamping + min-shot-duration
+    # merging always sees anchors in chronological order and resolves the tight
+    # overlaps sanely.
+    clusters = sorted(clusters, key=lambda c: c["trigger_time"])
 
     grid = build_cut_grid(downbeats, duration, onsets=onsets,
                           cut_every=cut_every, snap_ms=snap_ms)
@@ -430,7 +622,9 @@ def build_shotlist(words, images, downbeats, duration, onsets=None,
         prev_end = aend
 
     # --- assemble the full timeline: filler gaps interleaved with anchors ---
-    boundaries = []  # (start, end, image_idx, anchored, trigger_word, trig_time)
+    # boundary = (start, end, image_idx, anchored, trigger_word, trig_time,
+    #             trigger_phrase, match_score)
+    boundaries = []
 
     def _fill_gap(a, b):
         """Fill [a, b) with filler images cut on the grid (merged by min_seg_dur)."""
@@ -452,13 +646,14 @@ def build_shotlist(words, images, downbeats, duration, onsets=None,
             # landing right on ``b``); skip so we never emit a zero-length shot.
             if e - s <= 0.05:
                 continue
-            boundaries.append((s, e, filler.pick(), False, None, None))
+            boundaries.append((s, e, filler.pick(), False, None, None, None, None))
 
     cursor = 0.0
     for (astart, aend, c) in resolved:
         _fill_gap(cursor, astart)
         boundaries.append((astart, aend, c["image"], True,
-                           c["trigger_word"], c["trigger_time"]))
+                           c["trigger_word"], c["trigger_time"],
+                           c.get("trigger_phrase"), c.get("match_score")))
         cursor = aend
     _fill_gap(cursor, round(duration, 3))
 
@@ -468,7 +663,7 @@ def build_shotlist(words, images, downbeats, duration, onsets=None,
     # --- derive return values ---
     segs, image_indices, shots = [], [], []
     cut_times = []
-    for i, (s, e, img, anchored, tw, tt) in enumerate(boundaries):
+    for i, (s, e, img, anchored, tw, tt, tp, ms) in enumerate(boundaries):
         segs.append((round(s, 3), round(e, 3)))
         image_indices.append(img)
         shots.append({
@@ -479,6 +674,9 @@ def build_shotlist(words, images, downbeats, duration, onsets=None,
             "anchored": anchored,
             "trigger_word": tw,
             "trigger_time": round(tt, 3) if tt is not None else None,
+            # Additive (backward-compatible) fields for the shot report + audit.
+            "trigger_phrase": tp,
+            "match_score": ms,
         })
         if i > 0:
             cut_times.append(round(s, 3))
@@ -490,9 +688,73 @@ def format_shotlist(shots):
     lines = ["shot list: %d shots" % len(shots)]
     for i, s in enumerate(shots):
         if s["anchored"]:
-            tag = "ANCHOR word=%r @%.2fs" % (s["trigger_word"], s["trigger_time"])
+            phrase = s.get("trigger_phrase") or s["trigger_word"]
+            tag = ("ANCHOR @%.2fs  phrase=%r (%d tok)"
+                   % (s["trigger_time"], phrase, s.get("match_score") or 1))
         else:
             tag = "filler"
-        lines.append("  [%02d] %6.2f-%6.2f  %-22s  %s"
+        lines.append("  [%02d] %6.2f-%6.2f  %-24s  %s"
                      % (i, s["start"], s["end"], s["image_name"], tag))
     return lines
+
+
+def build_shot_report(shots, images, words, image_tokens=None):
+    """Assemble the machine-verifiable shot report.
+
+    Returns a dict::
+
+        {"shots": [{start,end,image_name,anchored,trigger_word,
+                    trigger_phrase,match_score}, ...],
+         "summary": {images_total, images_matched, anchored_shots,
+                     coverage_pct, images_unused_multi_token[],
+                     unused_multi_token_phrase_present[]}}
+
+    ``unused_multi_token_phrase_present`` is the loud-warning subset: multi-token
+    images whose full phrase IS sung somewhere in the lyrics yet never made it on
+    screen — a real matcher miss, not a legitimate gap-filler.
+    """
+    if image_tokens is None:
+        image_tokens = build_image_tokens(images)
+    cw = _content_words(words or [])
+
+    report_shots = []
+    shown = set()
+    anchored_imgs = set()
+    anchored_shots = 0
+    for s in shots:
+        report_shots.append({
+            "start": s["start"], "end": s["end"],
+            "image_name": s["image_name"],
+            "anchored": s["anchored"],
+            "trigger_word": s.get("trigger_word"),
+            "trigger_phrase": s.get("trigger_phrase"),
+            "match_score": s.get("match_score"),
+        })
+        shown.add(s["image"])
+        if s["anchored"]:
+            anchored_shots += 1
+            anchored_imgs.add(s["image"])
+
+    unused_multi = []
+    unused_multi_phrase = []
+    for i, toks in enumerate(image_tokens):
+        if len(toks) >= 2 and i not in shown:
+            name = os.path.basename(images[i])
+            unused_multi.append(name)
+            if _phrase_in_content(toks, cw):
+                unused_multi_phrase.append(name)
+
+    images_total = len(images)
+    images_matched = len(anchored_imgs)
+    return {
+        "shots": report_shots,
+        "summary": {
+            "images_total": images_total,
+            "images_matched": images_matched,
+            "anchored_shots": anchored_shots,
+            "coverage_pct": (round(100.0 * images_matched / images_total, 1)
+                             if images_total else 0.0),
+            "images_unused_multi_token": sorted(unused_multi),
+            "unused_multi_token_phrase_present": sorted(unused_multi_phrase),
+        },
+    }

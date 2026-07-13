@@ -21,7 +21,8 @@ import threading
 from ass_karaoke import build_ass
 # Beat-grid snapping + segmentation live in shotlist so the cycle path (here)
 # and the lyric-sync path share ONE copy of the snap logic (no duplication).
-from shotlist import build_segments, build_shotlist, format_shotlist
+from shotlist import (build_image_tokens, build_segments, build_shotlist,
+                      build_shot_report, format_shotlist)
 
 
 def _log(msg):
@@ -335,6 +336,28 @@ def render(timeline, images_dir, theme, out_path, video_w, video_h, fps,
                  % (len(segs), n_anchor, cut_every))
             for line in format_shotlist(shots_meta):
                 _log(line)
+            # Machine-verifiable shot report next to the render output — powers
+            # automated lyric<->image accuracy checks WITHOUT watching the video.
+            # A report-write failure must NEVER fail a render (fallback rule).
+            try:
+                report = build_shot_report(
+                    shots_meta, images, words,
+                    image_tokens=build_image_tokens(images))
+                rpath = os.path.join(
+                    os.path.dirname(os.path.abspath(out_path)),
+                    "shot_report.json")
+                with open(rpath, "w", encoding="utf-8") as fh:
+                    import json as _json
+                    _json.dump(report, fh, indent=2)
+                sm = report["summary"]
+                _log("shot_report: %s (%d/%d images matched, %d anchored, "
+                     "%d unused multi-token, %d with phrase in lyrics)"
+                     % (rpath, sm["images_matched"], sm["images_total"],
+                        sm["anchored_shots"],
+                        len(sm["images_unused_multi_token"]),
+                        len(sm["unused_multi_token_phrase_present"])))
+            except Exception as _e:  # noqa: BLE001
+                _log("shot_report: could not write (%s)" % _e)
         else:
             # --- CYCLE PATH (bit-identical to the original) ---
             segs, cut_times = build_segments(

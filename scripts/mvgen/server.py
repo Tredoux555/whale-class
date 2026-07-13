@@ -853,34 +853,43 @@ class Handler(BaseHTTPRequestHandler):
 
         import shotlist as sl  # reuse the SAME keyword/stopword rules as render
         words = timeline.get("words", [])
-        index = sl.build_keyword_index(images)[0] if images else {}
-        clusters = sl.find_clusters(words, index) if index else []
+        image_tokens = sl.build_image_tokens(images) if images else []
+        # Order-aware occurrence matcher (same one the renderer uses) — anchors
+        # now reflect the ACTUAL per-occurrence image, not a first-wins token map.
+        clusters = (sl.find_matches(words, images, image_tokens)
+                    if image_tokens else [])
+        covered = sl.build_coverage_set(image_tokens)
 
         sections = [{"start": s.get("start"), "end": s.get("end"),
                      "label": s.get("label")}
                     for s in timeline.get("sections", [])]
         anchors = [{"word": c["trigger_word"],
+                    "phrase": c.get("trigger_phrase"),
                     "time": round(float(c["trigger_time"]), 3),
                     "image": os.path.basename(images[c["image"]])}
                    for c in clusters]
         matched_imgs = {c["image"] for c in clusters}
         fillers = [os.path.basename(images[i]) for i in range(len(images))
                    if i not in matched_imgs]
-        missing = self._plan_missing(sl, words, index, images_dir, theme)
+        missing = self._plan_missing(sl, words, covered, images_dir, theme)
         return self._json(200, {"sections": sections, "anchors": anchors,
                                 "missing": missing, "fillers": fillers})
 
     @staticmethod
-    def _plan_missing(sl, words, index, images_dir, theme):
+    def _plan_missing(sl, words, covered, images_dir, theme):
         """Distinct sung words (>=3 chars, non-stopword) with no matching image,
-        ranked by count. Filename/prompt use the normalized noun key."""
+        ranked by count. Filename/prompt use the normalized noun key.
+
+        ``covered`` is the set of keyword variants ANY image can illustrate
+        (coverage only — not which image plays)."""
         agg = OrderedDict()
         for w in words:
             key = sl.normalize_token(w.get("word", ""))
             if (not key or key.isdigit() or len(key) < sl._MIN_TOKEN_LEN
                     or key in sl._STOPWORDS):
                 continue
-            if key in index or any(v in index for v in sl._plural_variants(key)):
+            if key in covered or any(v in covered
+                                     for v in sl._plural_variants(key)):
                 continue  # an image already covers this word
             t = round(float(w.get("start", 0.0)), 3)
             e = agg.get(key)

@@ -131,6 +131,7 @@ interface PlanAnchor {
   word: string;
   time: number;
   image: string;
+  phrase?: string;
 }
 
 interface PlanMissing {
