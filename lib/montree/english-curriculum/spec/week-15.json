@@ -17,6 +17,7 @@
   "songs": [
     {
       "role": "sound",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/w15-sound.mp3",
       "title": "R-R-Rat!",
       "lyrics": "[Intro]\nR! R! R-r-r!\n(rrr… rrr… rrr…)\n\n[Hook]\nR! R! R-r-r!\nWhat begins with R?\nR-r-rabbit! R-r-rabbit!\nIt's a rabbit! (a rabbit!)\n\n[Verse 2]\nR! R! R-r-r!\nWhat begins with R?\nR-r-rocket! R-r-rocket!\nIt's a rocket! (a rocket!)\n\n[Verse 3]\nR! R! R-r-r!\nWhat begins with R?\nR-r-ring! R-r-ring!\nIt's a ring! (a ring!)\n\n[Verse 4]\nR! R! R-r-r!\nWhat begins with R?\nR-r-robot! R-r-robot!\nIt's a robot! (a robot!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not R!\n(rrr… rrr… rrr…)\n\n[Outro]\nR-r-rat! The red rat!\nR-r-rat! (rip, rip, rip!)\nR! R! R-r-r!",
       "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
@@ -24,6 +25,7 @@
     },
     {
       "role": "word",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/w15-word.mp3",
       "title": "The Red Rat",
       "lyrics": "[Intro]\n(rrr… rat… rat…)\n\n[Hook]\nThe red rat! The red rat!\nWhat can the red rat do?\nThe red rat ran! (it ran!)\nThe red rat ran, ran, ran!\n\n[Verse 2]\nThe red rat! The red rat!\nWhat can the red rat do?\nThe red rat sat! (it sat!)\nThe red rat sat, sat, sat!\n\n[Verse 3]\nThe red rat! The red rat!\nWhat can the red rat do?\nThe red rat hid! (it hid!)\nThe red rat hid, hid, hid!\n\n[Verse 4]\nThe cat ran at the rat!\nThe dog ran at the cat!\nRun, rat, run! (run, run, run!)\nThe red rat ran, ran, ran!\n\n[Outro]\nThe red rat got a bag…\nIn the bag… a potato!\n(POTATO!)\nThe red rat ran, ran, ran!",
       "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",

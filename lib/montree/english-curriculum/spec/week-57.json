@@ -18,6 +18,7 @@
   "songs": [
     {
       "role": "sound",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/w57-sound.mp3",
       "title": "Running, Jumping, Singing!",
       "lyrics": "[Intro]\n(-ing… -ed… -s…)\nAdd an ending — the word grows!\n\n[Hook]\nRun… RUNNING! (now! now!)\nJump… JUMPING! (now! now!)\nSing… SINGING! (right now!)\nAdd -ing — it's happening NOW!\n\n[Verse 2]\nPlay… PLAYED! (all done!)\nLook… LOOKED! (all done!)\nJump… JUMPED! (all done!)\nAdd -ed — it already happened!\n\n[Verse 3]\nOne cat… two CATS!\nOne dog… two DOGS!\nOne dish… two DISHES!\nAdd -s, add -es — now there's MORE!\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! No ending!\n(-ing… -ed… -s…)\n\n[Outro]\nrunning… played… wishes…\nEvery word can grow! (grow! grow!)\n(-ing… shhh…)",
       "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
@@ -25,6 +26,7 @@
     },
     {
       "role": "word",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/w57-word.mp3",
       "title": "Running!",
       "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nRunning! Running!\nThe cast is running!\nWho is running? (who? who?)\nAll of us — running!\n\n[Verse 2]\nThe dog is running.\nThe cat is jumping.\nThe duck is swimming! (splash! splash!)\nBee is singing.\n\n[Verse 3]\nSam played and played.\nSheep is reading.\nThe fish wishes and wishes! (wish! wish!)\nEverybody is doing something!\n\n[Outro]\nrunning… jumping… reading… (shhh…)\nBut who is resting?!\n(POTATO!)\nRunning! (the whole cast can move!)",
       "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",

@@ -143,6 +143,7 @@
   "songs": [
     {
       "role": "sound",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/w17-sound.mp3",
       "title": "F-F-Fun!",
       "lyrics": "[Intro]\nF! F! F-f-f!\n(fff… fff… fff…)\n\n[Hook]\nF! F! F-f-f!\nWhat begins with F?\nF-f-fish! F-f-fish!\nIt's a fish! (a fish!)\n\n[Verse 2]\nF! F! F-f-f!\nWhat begins with F?\nF-f-fox! F-f-fox!\nIt's a fox! (a fox!)\n\n[Verse 3]\nF! F! F-f-f!\nWhat begins with F?\nF-f-fire! F-f-fire!\nIt's a fire! (a fire!)\n\n[Verse 4]\nF! F! F-f-f!\nWhat begins with F?\nF-f-frog! F-f-frog!\nIt's a frog! (a frog!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not F!\n(fff… fff… fff…)\n\n[Outro]\nF-f-fun! A fun run!\nF-f-fig! The fat fig!\nF! F! F-f-f!",
       "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
@@ -150,6 +151,7 @@
     },
     {
       "role": "word",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/w17-word.mp3",
       "title": "The Fat Fig",
       "lyrics": "[Intro]\n(fun… fun… a fun run…)\n\n[Hook]\nThe fat fig! The fat fig!\nCan the fat fig run?\nThe fat fig ran! (it ran!)\nRun, fat fig, run!\n\n[Verse 2]\nThe fat fig! The fat fig!\nThe dog ran. The pup ran.\nThe rat ran! The cat ran!\nRun, fat fig, run!\n\n[Verse 3]\nThe fat fig! The fat fig!\nThe fat fig is fit!\nThe fat fig got a cup! (a cup!)\nRun, fat fig, run!\n\n[Verse 4]\nFun! Fun! A fun run!\nFun in the sun, sun, sun!\nThe fat fig ran and ran!\nRun, fat fig, run!\n\n[Outro]\nAt the top… a potato ran?!\n(POTATO!)\nRun, fat fig, run, run, run!",
       "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",

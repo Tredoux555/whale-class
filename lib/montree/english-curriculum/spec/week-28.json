@@ -18,6 +18,7 @@
   "songs": [
     {
       "role": "sound",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/w28-sound.mp3",
       "title": "Ch-Ch-Chick!",
       "lyrics": "[Intro]\nCh! Ch! Ch-ch-ch!\n(ch… ch… ch…)\n\n[Hook]\nCh! Ch! Ch-ch-ch!\nTwo letters, ONE sound!\nCh-ch-chick! Ch-ch-chick!\nIt's a chick! (hello, Chick!)\n\n[Verse 2]\nCh! Ch! Ch-ch-ch!\nWhat begins with CH?\nCh-ch-chin! Ch-ch-chin!\nOn my chin! (my chin!)\n\n[Verse 3]\nCh! Ch! Ch-ch-ch!\nWhat begins with CH?\nCh-ch-chop! Ch-ch-chop!\nChop, chop, chop! (chop it up!)\n\n[Verse 4]\nCh! Ch! Ch-ch-ch!\nWhat begins with CH?\nCh-ch-cheese! Ch-ch-cheese!\nI like cheese! (yum, cheese!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not CH!\n(ch… ch… ch…)\n\n[Outro]\nCh-ch-chick! Ch-ch-chick!\nIt's a chick! (a chick!)\nCh! Ch! Ch-ch-ch!\n(chat, Chick, chat!)",
       "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
@@ -25,6 +26,7 @@
     },
     {
       "role": "word",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/w28-word.mp3",
       "title": "Chick Can Chat",
       "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nThe chick can chat!\nThe chick can chat!\nChat, chat, chat! (chat! chat!)\nThe chick can chat!\n\n[Verse 2]\nSheep sat on a mat.\nChick can chat and chat!\nChat, chat, chat! (so much chat!)\nThe chick can chat!\n\n[Verse 3]\nSheep can nap. (shhh…)\nChick can chat much!\nChat, chat, chat! (Chick! Chick!)\nCan Chick nap? (NO — chat!)\n\n[Outro]\nChick can chat… (shhh…)\nA potato?! (POTATO!)\nChick can not chat! (…at last!)",
       "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",

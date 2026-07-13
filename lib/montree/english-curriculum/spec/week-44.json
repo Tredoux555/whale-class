@@ -18,6 +18,7 @@
   "songs": [
     {
       "role": "sound",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/w44-sound.mp3",
       "title": "Ee-Ee-Tree!",
       "lyrics": "[Intro]\n(ee… ee… ee…)\nEe! Ee! Tree!\n\n[Hook]\nDouble E — see! (I can see!)\nE-A — sea! (down by the sea!)\nEe-ee-tree! Ee-ee-tree!\nTwo letters, one sound! (ee!)\n\n[Verse 2]\nS-E-E — see! (see the bee!)\nT-R-E-E — tree! (up the tree!)\nEe-ee-tree! Ee-ee-tree!\nThe E says its name! (ee!)\n\n[Verse 3]\nS-H-E-E-P — Sheep! (that's the name!)\nB-E-E — Bee! (hello, Bee!)\nEe-ee-tree! Ee-ee-tree!\nSheep can READ! (Sheep can read!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! No ee!\n(ee… ee… ee…)\n\n[Outro]\nSee… tree… read… (shhh…)\nEe! Ee! Tree!",
       "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
@@ -25,6 +26,7 @@
     },
     {
       "role": "word",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/w44-word.mp3",
       "title": "Sheep Can Read!",
       "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nSheep can read! Sheep can read!\nS-H-E-E-P — Sheep!\nSheep can read! Sheep can read!\n(That's the name! That's the name!)\n\n[Verse 2]\nThe bee is in the tree!\nSheep can see the bee!\nSheep can read! Sheep can read!\nThe bee can read too — wait… (a bee can read?!)\n\n[Verse 3]\nEat at the tree! (yum! yum!)\nSee the sea! (the deep blue sea!)\nSheep can read! Sheep can read!\nSheep and Bee can read!\n\n[Outro]\nThe tree… the bee… (shhh…)\nAt the sea?! (a potato!)\n(POTATO!)",
       "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",

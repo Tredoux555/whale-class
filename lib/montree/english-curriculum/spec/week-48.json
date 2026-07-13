@@ -18,6 +18,7 @@
   "songs": [
     {
       "role": "sound",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/w48-sound.mp3",
       "title": "Or-Or-Corn!",
       "lyrics": "[Intro]\n(or… or… or…)\nOr! Or! Corn!\n\n[Hook]\nThe R is BOSSY! (orrr!)\nO plus R says /or/! (orrr!)\nOr-or-corn! Or-or-corn!\nTwo letters, one sound! (or!)\n\n[Verse 2]\nC-O-R-N — corn! (eat the corn!)\nF-O-R-K — fork! (on the fork!)\nOr-or-corn! Or-or-corn!\nThe bossy R says /or/! (or!)\n\n[Verse 3]\nMore! More! (more corn!)\nM-O-R-E — more! (at the store!)\nOr-or-corn! Or-or-corn!\nMore corn for the horse!\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not corn!\n(or… or… or…)\n\n[Outro]\nCorn… fork… more… (shhh…)\nOr! Or! Corn!",
       "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
@@ -25,6 +26,7 @@
     },
     {
       "role": "word",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/w48-word.mp3",
       "title": "More Corn for the Horse",
       "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nMore corn for the horse!\nMore corn for the horse!\nMore! More! (more corn!)\nMore corn for the horse!\n\n[Verse 2]\nThe horse can eat the corn!\nThe corn is on the fork!\nMore! More! (more corn!)\nMore corn for the horse!\n\n[Verse 3]\nThe corn is in the store!\nStar can see the corn!\nMore! More! (more corn!)\nMore corn for the horse!\n\n[Outro]\nThe corn… the horse… (shhh…)\nFor the horse?! (a potato!)\n(POTATO!)",
       "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
