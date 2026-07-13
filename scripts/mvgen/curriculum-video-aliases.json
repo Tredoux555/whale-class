@@ -1,13 +1,17 @@
 {
   "_comment": "curriculum-batch.py (FIX 3b) image-name ALIAS map for the mvgen video pipeline ONLY. Keys are week numbers (zero-padded '04' or plain '4' both work). Each value maps an ORIGINAL curriculum image filename to the sung-word VIDEO filename the video should use, so the shotlist matcher can anchor images to the words actually sung WITHOUT renaming the curriculum source files (packs/specs depend on the originals). The aliased name is copied into the project and is what the lyric filter tokenizes. An alias that would collide with another project filename is skipped with a loud warning. Add per-week entries as needed.",
   "04": {
-    "_comment": "W04 'The Cat Is on the Mat' \u2014 the levitating/landing cat is sung with the prepositions up/down; alias so cat-up-* and cat-down-* anchor on the sung 'up'/'down'.",
-    "cat-levitating.png": "cat-up-levitating.png",
-    "cat-landing.png": "cat-down-landing.png",
+    "_comment": "W04 'The Cat Is on the Mat' \u2014 the levitating/landing cat is sung with the prepositions up/down; alias so up-cat-* and down-cat-* START their filename-token match on the sung 'Up!'/'down,' word itself (not 'cat', which loses every up/down window to the far more common cat-on-mat / cat-down-landing-vs-cat.png ties \u2014 sample-render certification Jul13/14 found cat-up-levitating.png stranded as an unanchored filler because its FIRST token 'cat' always tied/lost to cat-on-mat.png at the only reachable window).",
+    "cat-levitating.png": "up-cat-levitating.png",
+    "cat-landing.png": "down-cat-landing.png",
     "potato-beside-cat.png": "mat-potato-beside-cat.png"
   },
   "26": {
     "zipper.png": "zip-zipper.png"
+  },
+  "28": {
+    "_comment": "W28 'Chick Can Chat' — chick-much-chat.png's first token 'chick' always ties/loses to chick-chat.png at every reachable 'chick' window ('much' is several words away — sample-render certification Jul13/14 flagged it unused_multi_token_phrase_present even though 'much'+'chat' ARE sung consecutively ('so much chat!' @15.9-16.3s, 'chat much!' @20.3-21.08s). Alias to start the match on 'much' itself.",
+    "chick-much-chat.png": "much-chat.png"
   },
   "46": {
     "sheep-light.png": "bee-sheep-light.png",
