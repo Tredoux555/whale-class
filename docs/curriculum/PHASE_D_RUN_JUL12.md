@@ -20,8 +20,8 @@ from this doc. Disk was cleared to 20 GiB free before start; backup on Extreme S
 - [x] Images W34–38 (M2 — Jul 12 evening: 71 imgs, 5 packs, all gap-clean)
 - [x] Images W39–43 (M3 — complete Jul 12 night/Jul 13 early: W41+W43 by the orphaned agent, W42-finish + W39 + W40 by the M3-finisher)
 - [x] Images W44–48 (M4 — complete Jul 13 ~03:00, Bee + Star canonicals established)
-- [ ] Images W49–53 (M5)
-- [ ] Images W54–58 (M6)
+- [x] Images W49–53 (M5 — complete Jul 13 ~05:30; Owl W52 + Sam W53 canonicals locked)
+- [ ] Images W54–58 (M6 — W54 ✅18 · W55 ✅19 · W56 ✅18 · W58 ✅16 all with packs; **W57 remaining**)
 - [x] Suno W27–37 (chunk S1 — 22 songs, 44 files)
 - [x] Suno W38–46 (S2 head — 18 songs, 36 files; **W47–48 remain**)
 - [ ] Suno W47–58 (24 songs, 48 files — NOT started, credits ~1,170)
@@ -165,6 +165,31 @@ from this doc. Disk was cleared to 20 GiB free before start; backup on Extreme S
   misfire into disturbing imagery — fall back to icon/children's-book phrasing; (4) CDN job-ID
   extraction via DOM proximity can grab a NEIGHBORING job's images — verify downloaded image content/
   dimensions before moving the file.
+
+- [x] **W49–53 (chunk M5, Jul 13 ~03:10–05:30 — COMPLETE, 73 imgs + 5 packs).** W49 14/14 (bingo
+  34.3MB/book 23.9MB) · W50 9/9 (Mirror-Leaf ship/sheep minimal pairs; 32.7/26.2) · W51 15/15
+  (44.6/23.4) · W52 16/16 (OWL DEBUT — canonical: small round tawny owl, huge amber eyes, mottled
+  brown-and-cream feathers; held across all 7 owl renders; 34.6/26.2) · W53 19/19 (SAM DEBUT —
+  wooden peg-doll boy, red shirt; 43.1/22.7). ⚠️ MORNING-REVIEW FLAGS: W51 star-roof + star-looking
+  rendered a HARD/METALLIC gold star vs the W47 plush canonical (manifest prompt didn't say "plush" —
+  followed verbatim; Tredoux to judge/reroll); W52 loud-sound is a best-available proxy (no quadrant
+  showed the barn/town setting). NEW GOTCHAS: screenshots right after navigate can be STALE — take a
+  fresh standalone screenshot for QC; verify job IDs from the scraped map, never retype (b/c hex typo
+  caused a phantom 404); transient extension disconnect mid-download → just retry the same call.
+- [x] **W58 (from chunk M6, Jul 13 ~05:35–06:45 — THE FINALE, COMPLETE FIRST).** 16/16 + pack (bingo
+  28.9MB, book 26.3MB, exit 0). Money shots verified: potato-king coronation clean; graduation-cast-full
+  = all 17 characters (bee, duck, fox, sheep, chick, emerald snake, star, cat, rat, dog, both peg dolls,
+  crowned potato) in graduation caps around a patterned Pattern-Tree trunk — no drift, no mangled
+  anatomy. 3 rerolls: station-coloring (pencil-sketch shading), celebration-coloring (zentangle mandala
+  → clean crowned-potato tree), class-jumping (CAST DRIFT: generic lions/leopards → rerolled with every
+  cast member explicitly named, all 9 correct). NEW GOTCHAS: feed is DOM-VIRTUALIZED (~4 jobs rendered
+  at a time — scrape job IDs per scroll position); navigate-to-CDN and canvas-download must be TWO
+  separate javascript calls (combined = "Inspected target navigated or closed").
+- [x] **W54–56 (M6 harvest, Jul 13 ~06:45–08:05 — orphaned-agent run, COMPLETE).** The harvest-agent
+  launch turn was interrupted AGAIN and the agent worked orphaned AGAIN (second confirmed instance):
+  W54 18/18 + pack · W55 19/19 + pack · W56 18/18 + pack (last file 08:03). Flagged coloring rerolls
+  from the submission pass (claw/fly/puppy/knee) were in its brief. **W57 (17 jobs, submitted+cooked,
+  incl. flagged jumping-coloring reroll) not yet started at 08:09 — ground-check before resuming.**
 
 ## SUNO CHUNK PROGRESS (Sonnet Suno agent, Jul 12 resume after mid-W32 death)
 - [x] **W27–31** — inherited complete from prior agent/session (4 mp3s each, sorted).
