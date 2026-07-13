@@ -223,14 +223,24 @@ def _kenburns_filter(idx, frames, out_w, out_h, fps, pulses=None):
 def _build_pulse_plan(segs, shots_meta, beats, downbeats, mode):
     """Per-shot list of ``(shot_relative_time, amplitude)`` beat pulses.
 
-    ``mode`` is ``"beat"`` (plain beats + downbeats + anchors) or ``"downbeat"``
-    (only downbeats + anchors). Returns a list parallel to ``segs``.
+    ``mode`` is one of:
+      - ``"anchor"``   — ONLY the sung key-word anchor punches; NO beat/downbeat
+                         terms at all. The camera hits exactly on the vocabulary
+                         word and nothing else (the calm default).
+      - ``"downbeat"`` — downbeats + anchors (only the bar lines pulse).
+      - ``"beat"``     — plain beats + downbeats + anchors (every beat pulses).
+    Returns a list parallel to ``segs``.
 
     Downbeats are a subset of the beat grid, so a beat that is also a downbeat
     is classified once (downbeat amplitude — never double-counted). Anchored
     shots add a punch at the sung word's trigger time. When a shot exceeds
     ``PULSE_MAX_TERMS`` the plain beats are dropped first (anchors + downbeats
     are always kept) to bound the ffmpeg expression length.
+
+    In ``"anchor"`` mode a shot with no anchored word yields an EMPTY per-shot
+    list; the whole plan can be all-empty (no lyrics / no filename matches) and
+    ``_kenburns_filter`` renders pure drift for it — anchor mode never fails a
+    render for lack of anchors (the fallback-ladder principle).
     """
     db = set(round(float(t), 3) for t in downbeats)
     plan = []
@@ -241,14 +251,16 @@ def _build_pulse_plan(segs, shots_meta, beats, downbeats, mode):
             tt = sm.get("trigger_time")
             if sm.get("anchored") and tt is not None and s <= float(tt) < e:
                 terms.append((float(tt), PULSE_AMP_ANCHOR, "anchor"))
-        for b in beats:
-            b = float(b)
-            if b < s or b >= e:
-                continue
-            if round(b, 3) in db:
-                terms.append((b, PULSE_AMP_DOWNBEAT, "down"))
-            elif mode == "beat":
-                terms.append((b, PULSE_AMP_BEAT, "beat"))
+        # "anchor" mode adds NOTHING from the beat grid — anchors only.
+        if mode != "anchor":
+            for b in beats:
+                b = float(b)
+                if b < s or b >= e:
+                    continue
+                if round(b, 3) in db:
+                    terms.append((b, PULSE_AMP_DOWNBEAT, "down"))
+                elif mode == "beat":
+                    terms.append((b, PULSE_AMP_BEAT, "beat"))
         if len(terms) > PULSE_MAX_TERMS:
             keep = [t for t in terms if t[2] != "beat"]
             rest = [t for t in terms if t[2] == "beat"]
@@ -261,7 +273,7 @@ def _build_pulse_plan(segs, shots_meta, beats, downbeats, mode):
 
 def render(timeline, images_dir, theme, out_path, video_w, video_h, fps,
            work_dir=None, seed=42, min_seg_dur=1.8, crf=20, preset="medium",
-           cut_every=2, progress_cb=None, image_sync="lyrics", pulse="beat"):
+           cut_every=2, progress_cb=None, image_sync="lyrics", pulse="anchor"):
     """Render the full video. Returns out_path.
 
     Runs synchronously (the caller may wrap it in nohup for long songs).
@@ -274,7 +286,11 @@ def render(timeline, images_dir, theme, out_path, video_w, video_h, fps,
       - ``"cycle"``: the original content-blind beat-cycling path.
 
     ``pulse`` selects the beat-pulse zoom effect (contract V2 §A):
-      - ``"beat"`` (default): punch on every beat, downbeat, and anchor word.
+      - ``"anchor"`` (default): punch ONLY on the sung key-word landings — the
+        image punches as its word is sung, nothing else. If a render has zero
+        anchored shots (no lyrics / no filename matches) this degrades to pure
+        drift and never fails.
+      - ``"beat"``: punch on every beat, downbeat, and anchor word.
       - ``"downbeat"``: punch only on downbeats + anchor words (calmer).
       - ``"off"``: pure Ken Burns drift — z expression byte-identical to v5.
     If the pulsed ffmpeg expression destabilizes (ffmpeg 4.4 quirk), the render
@@ -370,6 +386,9 @@ def render(timeline, images_dir, theme, out_path, video_w, video_h, fps,
         # ffmpeg 4.4 falls back rather than failing the render (contract §A).
         if pulse == "off":
             ladder = ["off"]
+        elif pulse == "anchor":
+            # Anchor mode already has the fewest terms; fall straight to off.
+            ladder = ["anchor", "off"]
         elif pulse == "downbeat":
             ladder = ["downbeat", "off"]
         else:  # "beat"

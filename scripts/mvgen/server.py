@@ -280,7 +280,7 @@ def _run_job(job):
                 "--engine", "slideshow",
                 "--cut-every", str(job["cut_every"]),
                 "--seed", str(job["seed"]),
-                "--pulse", job.get("pulse", "beat")]
+                "--pulse", job.get("pulse", "anchor")]
     if job.get("lyrics_text"):
         lyrics_path = os.path.join(out_dir, "lyrics.txt")
         try:
@@ -585,9 +585,9 @@ class Handler(BaseHTTPRequestHandler):
         cut_every = body.get("cut_every", 2)
         if cut_every not in (1, 2, 4):
             return self._err(400, "cut_every must be 1, 2 or 4")
-        pulse = body.get("pulse") or "beat"
-        if pulse not in ("off", "beat", "downbeat"):
-            return self._err(400, "pulse must be off|beat|downbeat")
+        pulse = body.get("pulse") or "anchor"
+        if pulse not in ("off", "anchor", "beat", "downbeat"):
+            return self._err(400, "pulse must be off|anchor|beat|downbeat")
         try:  # NIT: garbage seed -> 400, not a 500
             seed = int(body.get("seed", 42))
         except (TypeError, ValueError):

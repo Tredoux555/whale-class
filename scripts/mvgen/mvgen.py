@@ -154,10 +154,11 @@ def main(argv=None):
     p.add_argument("--preset", default="medium", help="x264 preset")
     p.add_argument("--cut-every", type=int, default=2, choices=[1, 2, 4],
                    help="cut on every Nth downbeat (1/2/4 bars; default 2)")
-    p.add_argument("--pulse", default="beat",
-                   choices=["off", "beat", "downbeat"],
-                   help="beat-pulse zoom: 'beat' (every beat/downbeat/anchor; "
-                        "default), 'downbeat' (downbeats+anchors only), 'off'")
+    p.add_argument("--pulse", default="anchor",
+                   choices=["off", "anchor", "beat", "downbeat"],
+                   help="beat-pulse zoom: 'anchor' (only the sung key word's "
+                        "image punches; default), 'downbeat' (downbeats+anchors "
+                        "only), 'beat' (every beat/downbeat/anchor), 'off'")
     p.add_argument("--image-sync", default="lyrics",
                    choices=["lyrics", "cycle"],
                    help="'lyrics' (default): anchor each object image to the "
