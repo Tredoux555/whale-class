@@ -16,6 +16,100 @@ interface DroppedFile { name: string; url: string; }
 
 const FOREST_BG = '#06140e';
 
+// ── The full 58-week strip metadata ──────────────────────────────────────
+// Level 1 (W1–26) comes from WEEK_META (the locked spine). Levels 2–3 (W27–58)
+// are inlined below as STATIC display metadata derived from the week-NN.json
+// specs — label = spec.patternDisplay, hero word = spec.newWords[0] ?? anchorWord
+// (W50, the review week, has no newWords → falls back to its "sheep" anchor).
+// The full spec still lazy-loads only when a week is selected; this array is
+// pure metadata so the strip renders instantly without importing 58 JSONs.
+interface StripItem {
+  week: number;
+  level: 1 | 2 | 3;
+  label: string;      // chip headline (letter / pattern)
+  word: string;       // hero word beneath the label
+  milestone?: string; // celebration emoji marker
+  vowelLights?: boolean;
+}
+
+// Spine-event milestone markers layered on top of Level 1's own 🎉 celebrations.
+const MILESTONES: Record<number, string> = {
+  38: '🎂', // Snake's name-day
+  42: '🎉', // Level 2 finale
+  44: '🎂', // Sheep's name-day
+  53: '💯', // word #1,000
+  58: '👑', // graduation
+};
+
+// Level 2 / 3 static display metadata (W27–58). Derived once from the specs.
+const L2_L3_META: { week: number; level: 2 | 3; label: string; word: string }[] = [
+  { week: 27, level: 2, label: 'sh', word: 'ship' },
+  { week: 28, level: 2, label: 'ch', word: 'chin' },
+  { week: 29, level: 2, label: 'th', word: 'this' },
+  { week: 30, level: 2, label: 'ck ff ll ss zz', word: 'bell' },
+  { week: 31, level: 2, label: 'ng', word: 'sing' },
+  { week: 32, level: 2, label: 'wh', word: 'whip' },
+  { week: 33, level: 2, label: 'st sp sn sm sw sc sk', word: 'stop' },
+  { week: 34, level: 2, label: 'bl cl fl gl pl sl', word: 'flag' },
+  { week: 35, level: 2, label: 'br cr dr fr gr pr tr', word: 'frog' },
+  { week: 36, level: 2, label: '-nd -nt -mp -st', word: 'hand' },
+  { week: 37, level: 2, label: '-nk -ft -lt -lp -lk', word: 'pink' },
+  { week: 38, level: 2, label: 'a_e', word: 'cake' },
+  { week: 39, level: 2, label: 'i_e', word: 'bike' },
+  { week: 40, level: 2, label: 'o_e', word: 'home' },
+  { week: 41, level: 2, label: 'u_e', word: 'cube' },
+  { week: 42, level: 2, label: 'soft c/g · tch/dge', word: 'ice' },
+  { week: 43, level: 3, label: 'ai / ay', word: 'rain' },
+  { week: 44, level: 3, label: 'ee / ea', word: 'see' },
+  { week: 45, level: 3, label: 'oa / ow', word: 'boat' },
+  { week: 46, level: 3, label: 'igh / ie', word: 'night' },
+  { week: 47, level: 3, label: 'ar', word: 'star' },
+  { week: 48, level: 3, label: 'or / ore', word: 'corn' },
+  { week: 49, level: 3, label: 'er / ir / ur', word: 'her' },
+  { week: 50, level: 3, label: '🔁 minimal pairs', word: 'sheep' },
+  { week: 51, level: 3, label: 'oo', word: 'moon' },
+  { week: 52, level: 3, label: 'ou / ow', word: 'out' },
+  { week: 53, level: 3, label: 'oi / oy', word: 'coin' },
+  { week: 54, level: 3, label: 'ew / ue / au / aw', word: 'new' },
+  { week: 55, level: 3, label: 'y (as a vowel)', word: 'my' },
+  { week: 56, level: 3, label: 'kn / wr / mb', word: 'knee' },
+  { week: 57, level: 3, label: '-ing / -ed / -s / -es', word: 'jumping' },
+  { week: 58, level: 3, label: '-tion', word: 'action' },
+];
+
+const STRIP: StripItem[] = [
+  ...WEEK_META.map((m): StripItem => ({
+    week: m.week,
+    level: 1,
+    label: m.letterDisplay,
+    word: m.anchorWord,
+    milestone: MILESTONES[m.week] ?? (m.celebration ? '🎉' : undefined),
+    vowelLights: !!m.vowelLights,
+  })),
+  ...L2_L3_META.map((m): StripItem => ({
+    week: m.week,
+    level: m.level,
+    label: m.label,
+    word: m.word,
+    milestone: MILESTONES[m.week],
+  })),
+];
+
+const LEVEL_SECTIONS: { title: string; items: StripItem[] }[] = [
+  { title: 'Level 1 · Sounds', items: STRIP.filter((s) => s.level === 1) },
+  { title: 'Level 2 · Patterns', items: STRIP.filter((s) => s.level === 2) },
+  { title: 'Level 3 · Reading', items: STRIP.filter((s) => s.level === 3) },
+];
+
+/** Chip headline font size — shrinks for the longer Level 2/3 pattern strings. */
+function labelClass(label: string): string {
+  const len = label.length;
+  if (len <= 3) return 'text-lg';
+  if (len <= 6) return 'text-sm';
+  if (len <= 12) return 'text-[11px]';
+  return 'text-[9px]';
+}
+
 // ── Full-pack CSS scoping ────────────────────────────────────────────────
 // The ten builders each emit generic class names (.page, .grid, .card, .top…)
 // with DIFFERENT meanings. To combine them into one print document we scope
@@ -89,14 +183,18 @@ export default function CurriculumStudioPage() {
   const [expandedLyrics, setExpandedLyrics] = useState<Set<number>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Restore the last-viewed week from localStorage AFTER mount. Doing this in an
-  // effect (not the useState initializer) keeps the first client render identical
-  // to the server render, so hydration matches; the saved week is applied one tick
-  // later without any visible flash before the spec finishes loading.
+  // Pick the initial week AFTER mount: a ?week= deep-link wins, else the saved
+  // week. Reading window.location / localStorage here (an effect) — not in the
+  // useState initializer — keeps the first client render identical to the server
+  // render (always week 1), so hydration matches; the real week is applied one
+  // tick later without a visible flash before the spec finishes loading.
   useEffect(() => {
     try {
+      const param = new URLSearchParams(window.location.search).get('week');
+      const asked = param ? parseInt(param, 10) : NaN;
+      if (asked >= 1 && asked <= 58) { setWeek(asked); return; }
       const saved = parseInt(localStorage.getItem('curriculumStudioWeek') || '', 10);
-      if (saved >= 1 && saved <= 26) setWeek(saved);
+      if (saved >= 1 && saved <= 58) setWeek(saved);
     } catch { /* ignore */ }
   }, []);
 
@@ -135,6 +233,31 @@ export default function CurriculumStudioPage() {
   );
 
   const meta = WEEK_META.find((m) => m.week === week);
+
+  // Spine summary source. Prefer the loaded spec (every field is present for all
+  // 58 weeks); fall back to WEEK_META so Level 1 shows instantly while its spec
+  // loads. WEEK_META only covers W1–26, so Level 2/3 relies on the spec.
+  const summary = spec
+    ? {
+        week: spec.week,
+        letterDisplay: spec.letterDisplay,
+        sound: spec.sound,
+        anchorWord: spec.anchorWord,
+        vowelLights: spec.vowelLights,
+        castIntro: spec.cast?.introduces ?? null,
+        celebration: spec.celebration,
+      }
+    : meta
+    ? {
+        week: meta.week,
+        letterDisplay: meta.letterDisplay,
+        sound: meta.sound,
+        anchorWord: meta.anchorWord,
+        vowelLights: meta.vowelLights,
+        castIntro: meta.castIntro,
+        celebration: meta.celebration,
+      }
+    : null;
 
   const addFiles = useCallback((list: FileList | File[]) => {
     const next: DroppedFile[] = [];
@@ -234,49 +357,50 @@ export default function CurriculumStudioPage() {
       <div className="relative z-10 max-w-6xl mx-auto px-4 pb-16">
         <header className="text-center mt-2 mb-6">
           <h1 className="text-3xl md:text-4xl font-bold" style={{ background: 'linear-gradient(135deg,#6ee7b7,#34d399,#a7f3d0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            The 26-Week Sound Year
+            The 58-Week English Program
           </h1>
           <p className="text-white/40 mt-2 text-sm">Pick a week · drop the pictures · preview and print every material.</p>
         </header>
 
-        {/* Week rail */}
-        <div className="grid grid-cols-4 sm:grid-cols-7 md:grid-cols-9 gap-2 mb-6">
-          {WEEK_META.map((m) => {
-            const active = m.week === week;
-            return (
-              <button key={m.week} onClick={() => setWeek(m.week)}
-                className={`${btn} p-2 text-center border relative`}
-                style={{
-                  background: active ? 'rgba(52,211,153,0.16)' : 'rgba(255,255,255,0.03)',
-                  borderColor: active ? 'rgba(52,211,153,0.5)' : 'rgba(255,255,255,0.08)',
-                }}>
-                <div className="text-lg font-bold leading-none" style={{ color: active ? '#a7f3d0' : '#cfe8dc' }}>{m.letterDisplay}</div>
-                <div className="text-[10px] text-white/40 mt-0.5 truncate">{m.anchorWord}</div>
-                {m.celebration && <div className="text-[9px] mt-0.5 leading-tight" style={{ color: '#E8C96A' }}>🎉</div>}
-                {m.vowelLights && <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full" style={{ background: '#2456c7' }} />}
-                <div className="text-[8px] text-white/25 mt-0.5">W{m.week}</div>
-              </button>
-            );
-          })}
-          {[2, 3].map((lvl) => (
-            <div key={lvl} className="p-2 text-center border rounded-lg opacity-50" style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)' }}>
-              <div className="text-sm font-bold text-white/50">L{lvl}</div>
-              <div className="text-[9px] text-white/30 mt-1">designed<br />— coming</div>
+        {/* Week rail — grouped by level */}
+        <div className="mb-6 space-y-4">
+          {LEVEL_SECTIONS.map((section) => (
+            <div key={section.title}>
+              <div className="text-emerald-200/45 text-[11px] font-semibold tracking-widest uppercase mb-2">{section.title}</div>
+              <div className="grid grid-cols-4 sm:grid-cols-7 md:grid-cols-9 gap-2">
+                {section.items.map((s) => {
+                  const active = s.week === week;
+                  return (
+                    <button key={s.week} onClick={() => setWeek(s.week)}
+                      className={`${btn} p-2 text-center border relative`}
+                      style={{
+                        background: active ? 'rgba(52,211,153,0.16)' : 'rgba(255,255,255,0.03)',
+                        borderColor: active ? 'rgba(52,211,153,0.5)' : 'rgba(255,255,255,0.08)',
+                      }}>
+                      <div className={`${labelClass(s.label)} font-bold leading-tight break-words`} style={{ color: active ? '#a7f3d0' : '#cfe8dc' }}>{s.label}</div>
+                      <div className="text-[10px] text-white/40 mt-0.5 truncate">{s.word}</div>
+                      {s.milestone && <div className="text-[9px] mt-0.5 leading-tight" style={{ color: '#E8C96A' }}>{s.milestone}</div>}
+                      {s.vowelLights && <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full" style={{ background: '#2456c7' }} />}
+                      <div className="text-[8px] text-white/25 mt-0.5">W{s.week}</div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           ))}
         </div>
 
         {/* Spine summary */}
-        {meta && (
+        {summary && (
           <div className="rounded-xl border p-4 mb-5" style={{ borderColor: 'rgba(52,211,153,0.18)', background: 'rgba(16,185,129,0.05)' }}>
             <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-              <span className="text-2xl font-bold" style={{ color: '#a7f3d0' }}>{meta.letterDisplay}</span>
-              <span className="text-white/70">Week {meta.week} · sound <b>/{meta.sound}/</b></span>
-              <span className="text-white/50 text-sm">anchor: <b className="text-white/80">{meta.anchorWord}</b></span>
-              {meta.vowelLights && <span className="text-sm" style={{ color: '#7aa2ff' }}>vowel {meta.vowelLights.toUpperCase()} lights up</span>}
-              {meta.castIntro && <span className="text-sm" style={{ color: '#E8C96A' }}>cast: {meta.castIntro} joins</span>}
-              {meta.celebration && <span className="text-sm" style={{ color: '#E8C96A' }}>🎉 {meta.celebration}</span>}
-              <span className="text-white/30 text-xs ml-auto">lesson-map ≈ L{(weekToLessonMap[meta.week] || []).join(', L')}</span>
+              <span className="text-2xl font-bold" style={{ color: '#a7f3d0' }}>{summary.letterDisplay}</span>
+              <span className="text-white/70">Week {summary.week} · sound <b>/{summary.sound}/</b></span>
+              <span className="text-white/50 text-sm">anchor: <b className="text-white/80">{summary.anchorWord}</b></span>
+              {summary.vowelLights && <span className="text-sm" style={{ color: '#7aa2ff' }}>vowel {summary.vowelLights.toUpperCase()} lights up</span>}
+              {summary.castIntro && <span className="text-sm" style={{ color: '#E8C96A' }}>cast: {summary.castIntro} joins</span>}
+              {summary.celebration && <span className="text-sm" style={{ color: '#E8C96A' }}>🎉 {summary.celebration}</span>}
+              <span className="text-white/30 text-xs ml-auto">lesson-map ≈ L{(weekToLessonMap[summary.week] || []).join(', L')}</span>
             </div>
             {spec && (
               <div className="mt-2 text-sm text-white/55 flex flex-wrap gap-x-5 gap-y-1">
