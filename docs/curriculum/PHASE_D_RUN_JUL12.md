@@ -340,6 +340,23 @@ bottom playbar "..." icon (~[196,899]) that needs Download→MP3 Audio via a ful
 wide/desktop width shows a "..." icon next to the play button (~[631,311]) with a hover-flyout submenu.
 Screenshot first each time to see which layout is live rather than assuming coordinates.
 
+## 🔎 REVIEW-ROUND FIXES — Jul 13 afternoon (Tredoux listening pass, three more holes closed)
+1. **W1 song vocab (Tredoux catch):** "It's A (Potato)" drilled only the article frame ("It's a mat/cup/
+   chair") — zero initial-/a/ vocabulary. Rewrote lyrics (week-01.json, commit `f264589f`): added
+   whisper-rap verses drilling ant/apple/ax/alligator with "Ah" phonetic stutters; hooks kept
+   consonant-initial nouns ON PURPOSE (a-initial nouns force "an" — grammar trap). Regenerated both
+   takes (`W01 It's A (Potato) (take K).mp3`). W2–W8 scanned: all other sound songs drill their
+   sounds correctly — W1 was the lone outlier.
+2. **W2 was still the OLD Jul-2 era:** 2 old-style T-T-Turtle takes + only ONE "Where Is Segina" take,
+   pre-locked-style, pre-WNN naming. Both songs regenerated fresh (4 files, WNN naming, Sejeena
+   verified in sung lyrics); 3 old files archived `OLD W02 *` in `_replaced_segina/`.
+3. **W31 "The King Can Sing" was 14s truncated garbage in BOTH takes** (the deviations-log flag nobody
+   actioned). Regenerated: 67.9s + 44.9s. Old stubs archived `OLD-14s *`. **🚨 RULE: a "final sweep"
+   must check DURATIONS (afinfo, <20s = bad), not just file counts — a full-program duration scan
+   found W31 was the ONLY short-file week.**
+Credits after review round: ~730. New Suno gotcha: a lingering "Preparing your mp3" toast can block
+the next download click silently — dismiss/wait, verify Downloads grew.
+
 ## ⏱ CURRENT STATE — Jul 13, ~13:45 (Fable — PHASE D CLOSED)
 - **🏁 EVERYTHING PRODUCED + VERIFIED.** Final sweep (per-week folder counts, not doc claims):
   all 32 weeks W27–58 = 4 mp3s + 10 valid non-zero PDFs + gap-clean images. ALL GREEN.
