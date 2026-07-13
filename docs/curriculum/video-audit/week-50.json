@@ -1,0 +1,52 @@
+{
+  "week": 50,
+  "images": [
+    { "file": "sheep.png", "depicts": "photorealistic REAL farm sheep, tight curly wool, front portrait", "name_matches_content": true, "issue": "CAST DRIFT: rendered as a realistic farm-photo sheep, not the plush toy 'Sheep' character design used in W46/W47 (sheep-light.png, sheep-star.png)" },
+    { "file": "sheep-sees-ship.png", "depicts": "shaggy long-haired sheep on shore looking at distant ship on moonlit sea", "name_matches_content": true, "issue": "CAST DRIFT: yet a THIRD sheep texture (shaggy/matted, muzzle-forward), differs from both sheep.png and ship-or-sheep.png" },
+    { "file": "sheep-on-ship.png", "depicts": "shaggy sheep aboard wooden boat deck", "name_matches_content": true, "issue": "same shaggy-texture drift as sheep-sees-ship.png; not 'delighted, wobbly' per artNote, sheep looks calm" },
+    { "file": "ship-or-sheep.png", "depicts": "split composition: wooden ship left, PLUSH toy sheep (tan face, glossy eyes) right, glowing question mark between", "name_matches_content": true, "issue": "sheep here is a fourth distinct style (closest to the established plush-toy cast look from earlier weeks) - inconsistent with the shaggy sheep used on adjacent book pages" },
+    { "file": "ship-on-sea.png", "depicts": "wooden ship far out on moonlit sea, shaggy sheep aboard", "name_matches_content": true, "issue": "same shaggy-texture drift" },
+    { "file": "ship-tipping.png", "depicts": "boat leaning hard in gust, wide-eyed shaggy sheep sliding, spray flying", "name_matches_content": true, "issue": "same shaggy-texture drift; content/action match is otherwise excellent" },
+    { "file": "sheep-on-seat.png", "depicts": "shaggy sheep sitting on small wooden bench on deck", "name_matches_content": true, "issue": "same shaggy-texture drift; not clearly gripping/wedged per artNote" },
+    { "file": "potato-between.png", "depicts": "potato wearing orange rope-wrapped garment beside shaggy sheep on wood plank", "name_matches_content": true, "issue": "potato's orange wrap reads more like a scarf/rope binding than a 'tiny orange life-vest'; no ship rail visible" }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Ship or Sheep?",
+      "line_map": [
+        { "line": "Ship or sheep? (which one?) ih — ship! ee — sheep!", "best_image_by_CONTENT": "ship-or-sheep.png", "needs": "ok" },
+        { "line": "Hit or heat? Fit or feet? Sit or seat?", "best_image_by_CONTENT": "none", "needs": "acceptable-hold (abstract minimal-pair drill, handled by materials matching cards not book/song imagery)" },
+        { "line": "Pin or pen? Hat or hut? Cat or cut? Bag or bug?", "best_image_by_CONTENT": "none", "needs": "acceptable-hold (same as above; pin/pen/hat/cat/bag/bug card images themselves are missing from folder - see generate list)" },
+        { "line": "Bridge: A potato?! Ship? Sheep? NO!", "best_image_by_CONTENT": "potato-between.png", "needs": "ok" },
+        { "line": "Outro: Ship… sheep… (say it slow…) Which one? BOTH!", "best_image_by_CONTENT": "ship-or-sheep.png", "needs": "ok" }
+      ]
+    },
+    {
+      "role": "word",
+      "title": "Ship or Sheep? (word song)",
+      "line_map": [
+        { "line": "The sheep is on the ship! (hook, x2)", "best_image_by_CONTENT": "sheep-on-ship.png", "needs": "ok" },
+        { "line": "Ship? Or sheep? (which? which?) Both!", "best_image_by_CONTENT": "ship-or-sheep.png", "needs": "ok" },
+        { "line": "The sheep sees the sea.", "best_image_by_CONTENT": "sheep-sees-ship.png", "needs": "ok" },
+        { "line": "The ship is on the sea.", "best_image_by_CONTENT": "ship-on-sea.png", "needs": "ok" },
+        { "line": "The sheep sits on a seat. (safe, sheep, safe!)", "best_image_by_CONTENT": "sheep-on-seat.png", "needs": "ok" },
+        { "line": "The wind! The ship can tip! Hold on, sheep!", "best_image_by_CONTENT": "ship-tipping.png", "needs": "ok" },
+        { "line": "Ship? Or sheep? (both! both!) The sheep is safe.", "best_image_by_CONTENT": "sheep-on-seat.png", "needs": "ok" },
+        { "line": "Outro: Not a ship… not a sheep… What is it?! (POTATO!)", "best_image_by_CONTENT": "potato-between.png", "needs": "ok" }
+      ]
+    }
+  ],
+  "aliases": {},
+  "generate": [
+    { "proposed_filename": "ship.png", "line": "A ship. (book:1, first spread - completely missing standalone asset)", "mj_prompt": "a small wooden sailing ship on dark glassy water, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "proposed_filename": "pin.png", "line": "Pin or pen? (minimal-pair materials card, missing)", "mj_prompt": "a single metal safety pin, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "proposed_filename": "pen.png", "line": "Pin or pen? (minimal-pair materials card, missing)", "mj_prompt": "a single blue ballpoint pen, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "proposed_filename": "bag.png", "line": "Bag or bug? (minimal-pair materials card, missing)", "mj_prompt": "a small cloth drawstring bag, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "proposed_filename": "bug.png", "line": "Bag or bug? (minimal-pair materials card, missing)", "mj_prompt": "a round red-shelled beetle, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+  ],
+  "wrong_art": [
+    { "file": "sheep.png", "issue": "photorealistic real farm sheep instead of the established plush-toy 'Sheep' cast character design (round white fluffy toy with kind dark eyes, seen in sheep-light.png W46 and sheep-star.png W47)", "fix": "regenerate matching the plush-toy cast design; mj_prompt: 'a fluffy round plush toy sheep with kind dark eyes standing calmly, soft stitched wool texture, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw'" },
+    { "file": "sheep-sees-ship.png / sheep-on-ship.png / ship-on-sea.png / ship-tipping.png / sheep-on-seat.png / potato-between.png", "issue": "all six show a shaggy, matted, long-haired sheep texture that matches NEITHER sheep.png (realistic farm sheep) NOR ship-or-sheep.png (plush toy sheep) - Sheep is rendered in at least 3 different styles across this single 9-page review-week book, the worst cast-consistency break found across weeks 46-50", "fix": "regenerate all Sheep appearances in this book using ONE consistent plush-toy design matching the established cast look (fluffy round white plush, kind dark eyes, tan/cream face) as seen closest in ship-or-sheep.png; treat ship-or-sheep.png's sheep rendering as the reference to match" }
+  ]
+}

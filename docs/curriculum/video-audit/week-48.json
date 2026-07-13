@@ -1,0 +1,56 @@
+{
+  "week": 48,
+  "images": [
+    { "file": "horse-corn.png", "depicts": "extreme close-up brown horse eating ear of corn", "name_matches_content": true, "issue": null },
+    { "file": "more-corn.png", "depicts": "horse nose reaching toward corn cob on low shelf", "name_matches_content": true, "issue": "corn is at mouth-level/reachable, not clearly 'just out of reach' per artNote - minor" },
+    { "file": "corn-fork.png", "depicts": "corn cob balanced on rusty metal garden-fork tines", "name_matches_content": true, "issue": "the fork is a rusty metal garden fork, not matching horn.png's/other props' polish; also no dedicated fork.png exists standalone" },
+    { "file": "horse-more-corn.png", "depicts": "horse nuzzling corn held in a human hand/arm", "name_matches_content": true, "issue": "shows a human hand/arm feeding the horse, not mentioned in artNote ('delighted, tail swishing' not visible)" },
+    { "file": "corn-store.png", "depicts": "rustic grain shed/store with sacks of corn and a glowing plush star in the window/roof area", "name_matches_content": true, "issue": null },
+    { "file": "potato-corn.png", "depicts": "oil-painting style horse looking at a potato in a bucket", "name_matches_content": true, "issue": "rendered as an OIL PAINTING, breaking photographic style used by every other asset in the curriculum" },
+    { "file": "horn.png", "depicts": "shiny brass cornet/trumpet horn", "name_matches_content": true, "issue": null },
+    { "file": "more.png", "depicts": "tall steaming stack of layered food on a plate", "name_matches_content": true, "issue": null },
+    { "file": "store.png", "depicts": "small charming shop storefront with striped awning and 'SHOP' sign", "name_matches_content": true, "issue": null },
+    { "file": "storm.png", "depicts": "plush fluffy storm cloud with lightning bolt", "name_matches_content": true, "issue": null },
+    { "file": "thorn.png", "depicts": "sharp thorn on a stem, macro", "name_matches_content": true, "issue": null }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Or-Or-Corn!",
+      "line_map": [
+        { "line": "Or! Or! Corn! (intro/hook)", "best_image_by_CONTENT": "horse-corn.png", "needs": "alias (no standalone corn.png)" },
+        { "line": "C-O-R-N — corn! (eat the corn!)", "best_image_by_CONTENT": "horse-corn.png", "needs": "generate (dedicated corn.png missing)" },
+        { "line": "F-O-R-K — fork! (on the fork!)", "best_image_by_CONTENT": "corn-fork.png", "needs": "generate (dedicated fork.png missing)" },
+        { "line": "More! More! (more corn!)", "best_image_by_CONTENT": "more-corn.png / more.png", "needs": "ok" },
+        { "line": "M-O-R-E — more! (at the store!)", "best_image_by_CONTENT": "corn-store.png", "needs": "ok" },
+        { "line": "More corn for the horse!", "best_image_by_CONTENT": "horse-more-corn.png", "needs": "ok" },
+        { "line": "Bridge: A potato?! Not corn!", "best_image_by_CONTENT": "potato-corn.png", "needs": "acceptable-hold (content correct, style wrong - see wrong_art)" },
+        { "line": "Outro: Corn... fork... more...", "best_image_by_CONTENT": "horse-corn.png / corn-fork.png / more.png (montage)", "needs": "ok" }
+      ]
+    },
+    {
+      "role": "word",
+      "title": "More Corn for the Horse",
+      "line_map": [
+        { "line": "More corn for the horse! (hook, x2)", "best_image_by_CONTENT": "horse-more-corn.png", "needs": "ok" },
+        { "line": "The horse can eat the corn!", "best_image_by_CONTENT": "horse-corn.png", "needs": "ok" },
+        { "line": "The corn is on the fork!", "best_image_by_CONTENT": "corn-fork.png", "needs": "ok" },
+        { "line": "The corn is in the store!", "best_image_by_CONTENT": "corn-store.png", "needs": "ok" },
+        { "line": "Star can see the corn!", "best_image_by_CONTENT": "corn-store.png", "needs": "ok (star visible glowing in the store scene)" },
+        { "line": "Outro: For the horse?! (a potato!)", "best_image_by_CONTENT": "potato-corn.png", "needs": "acceptable-hold (content correct, style wrong)" }
+      ]
+    }
+  ],
+  "aliases": {
+    "horse-corn.png": "corn-debut-lines (C-O-R-N spell-out, sound song + hook)",
+    "corn-fork.png": "fork-debut-lines (F-O-R-K spell-out, sound song)"
+  },
+  "generate": [
+    { "proposed_filename": "corn.png", "line": "Corn. (book:1, C-O-R-N spell-out)", "mj_prompt": "a golden ear of corn alone in the spotlight, husk half-peeled, kernels gleaming, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "proposed_filename": "horse.png", "line": "A horse. (book:2, cast introduction)", "mj_prompt": "a gentle brown horse with ears forward looking hopefully forward, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "proposed_filename": "fork.png", "line": "A fork! (book:5, F-O-R-K spell-out)", "mj_prompt": "a big wooden pitchfork leaning upright, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+  ],
+  "wrong_art": [
+    { "file": "potato-corn.png", "issue": "rendered in an oil-painting art style, the ONLY non-photographic asset in the week (and among the audited weeks) - breaks visual continuity on the climactic potato-reveal page (book:9)", "fix": "regenerate as ultra-realistic photograph matching the rest of the pack; mj_prompt: 'a single raw potato sitting pleased with itself in a horse's feed bucket where the corn should be, dramatic spotlight on the potato, a gentle brown horse giving it a long doubtful stare, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw'" }
+  ]
+}

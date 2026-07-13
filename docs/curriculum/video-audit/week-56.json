@@ -1,0 +1,57 @@
+{
+  "week": 56,
+  "images": [
+    { "file": "lamb.png", "depicts": "tan/grey shaggy lamb close-up, spotlit, looking up", "name_matches_content": true, "issue": "none" },
+    { "file": "lamb-climb.png", "depicts": "tan shaggy lamb picking way up dark rocky slope", "name_matches_content": true, "issue": "none — but this lamb's coat/design (shaggy tan-grey, longer face) differs from the white curly-fleece lamb used in spreads 3/6/7/8/9" },
+    { "file": "lamb-sees-wren.png", "depicts": "brown wren perched on rock, small WHITE curly lamb looking up at it", "name_matches_content": true, "issue": "lamb design switches to a different (white, short-faced, curly) breed than spreads 1/2/5" },
+    { "file": "wren-cant-climb.png", "depicts": "brown wren alone perched on rock, no lamb present", "name_matches_content": true, "issue": "wren is calmly perched, not 'hopping helplessly at a sheer rock face' — mild tone mismatch but acceptable" },
+    { "file": "lamb-knot.png", "depicts": "tan shaggy lamb nuzzling/biting a large rope knot snagged on rocks", "name_matches_content": true, "issue": "tan-lamb design again (see spread 1/2 note)" },
+    { "file": "lamb-kneels.png", "depicts": "white curly lamb kneeling, working rope knot with teeth, on a green cloth surface", "name_matches_content": true, "issue": "background switches to a flat green fabric/rug instead of the outdoor rocky scene used in every neighboring spread; also white-lamb design" },
+    { "file": "lamb-climbs-free.png", "depicts": "white curly lamb leaping up dark rocks, wren riding on its back", "name_matches_content": true, "issue": "none" },
+    { "file": "lamb-wren-top.png", "depicts": "white curly lamb and wren together on summit rock, adult sheep watching from below", "name_matches_content": true, "issue": "none" },
+    { "file": "potato-lamb.png", "depicts": "potato in tiny climbing harness riding on white curly lamb's back, wren beside them", "name_matches_content": true, "issue": "none" },
+    { "file": "knee.png", "depicts": "bent knee with fabric bandage wrap and adhesive plaster", "name_matches_content": true, "issue": "none" },
+    { "file": "thumb.png", "depicts": "close-up thumbs-up hand", "name_matches_content": true, "issue": "none" },
+    { "file": "knot.png", "depicts": "thick rope tied in a large knot, close-up", "name_matches_content": true, "issue": "none" },
+    { "file": "knife.png", "depicts": "ornate small silver-and-bone table knife on green cloth", "name_matches_content": true, "issue": "none" },
+    { "file": "wren.png", "depicts": "brown wren perched on a lichen-covered branch, tail cocked up", "name_matches_content": true, "issue": "none" },
+    { "file": "wrist.png", "depicts": "child's wrist and hand with a woven straw/rope bracelet", "name_matches_content": true, "issue": "none" }
+  ],
+  "missingFiles": ["comb.png (materials: cards, bingo, matching — only comb-coloring.png exists, no photographic version)"],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "The Ghost Letters",
+      "line_map": [
+        { "line": "k is a ghost! knee… knot… know!", "best_image_by_content": "knee.png + knot.png", "needs": "ok ('know' has no dedicated image — abstract concept, acceptable-hold)" },
+        { "line": "w is a ghost! write… wren… wrist!", "best_image_by_content": "wren.png + wrist.png", "needs": "ok ('write' was never given an asset in the spec — acceptable-hold, hard to depict a verb)" },
+        { "line": "b is a ghost! lamb… thumb… comb… climb!", "best_image_by_content": "lamb.png + thumb.png + lamb-climb.png (climb)", "needs": "generate (comb has zero photographic asset)" },
+        { "line": "A potato?! (NO!) P-p-potato! No ghost letters!", "best_image_by_content": "potato-lamb.png", "needs": "ok" },
+        { "line": "silent k… silent w… silent b… know! (we know it now!)", "best_image_by_content": "lamb-wren-top.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "comb.png", "line": "b is a ghost! …comb…", "mj_prompt": "a simple wooden comb, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "The Lamb Can Climb",
+      "line_map": [
+        { "line": "The lamb can climb! Where is the lamb? Up on the rocks!", "best_image_by_content": "lamb-climb.png", "needs": "ok" },
+        { "line": "The lamb sees a wren. The wren can not climb.", "best_image_by_content": "lamb-sees-wren.png + wren-cant-climb.png", "needs": "ok" },
+        { "line": "The lamb has a knot! The lamb kneels down.", "best_image_by_content": "lamb-knot.png + lamb-kneels.png", "needs": "ok" },
+        { "line": "Now the lamb can climb! Up, up, to the top!", "best_image_by_content": "lamb-climbs-free.png", "needs": "ok" },
+        { "line": "The lamb and the wren know the way!", "best_image_by_content": "lamb-wren-top.png", "needs": "ok" },
+        { "line": "What is on the lamb?! (POTATO!)", "best_image_by_content": "potato-lamb.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": [
+        { "file": "lamb.png / lamb-climb.png / lamb-knot.png", "issue": "these 3 spreads use a shaggy tan-grey, longer-faced lamb design; spreads 3/6/7/8/9 (5 of 9 book pages) use a different white, curly, short-faced lamb design — the book's main character is visually inconsistent across its own pages", "fix": "reroll spreads 1/2/5 (lamb.png, lamb-climb.png, lamb-knot.png) to match the white curly-fleece lamb design used in the majority of the book: 'a small fluffy white curly-fleece lamb looking up, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw' (repeat with climbing/knot-nuzzling poses)" },
+        { "file": "lamb-kneels.png", "issue": "background switches to a flat green cloth/rug instead of the outdoor rocky slope used in every neighboring spread", "fix": "reroll: 'a small white curly-fleece lamb kneeling on folded front legs on a dark rocky outdoor slope, working a rope knot loose with its teeth, patient, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw'" }
+      ]
+    }
+  ]
+}

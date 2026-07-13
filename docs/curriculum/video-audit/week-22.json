@@ -1,0 +1,82 @@
+{
+  "week": 22,
+  "images": [
+    { "file": "vet.png", "depicts": "kindly grey-bearded vet in white coat, stethoscope, green cross sign", "name_matches_content": true, "issue": "" },
+    { "file": "cat-vet.png", "depicts": "tabby cat sitting on vet table with one bandaged paw", "name_matches_content": true, "issue": "" },
+    { "file": "dog-vet.png", "depicts": "wet/muddy curly-haired tan dog lying down, no cone collar, no clinical setting visible", "name_matches_content": false, "issue": "artNote calls for a BROWN dog wearing a cone collar on a vet table with hopeful tail wag; actual image is a wet, muddy curly-coated dog (looks like bath-time, not a vet visit) with no cone collar and no visible clinic/table — reads as 'dog getting a bath' not 'dog at the vet'." },
+    { "file": "rat-vet.png", "depicts": "grey rat close-up with bandaged tail, trying to look brave", "name_matches_content": true, "issue": "" },
+    { "file": "bug-vet.png", "depicts": "red-shelled beetle upside-down on cushion under magnifying glass", "name_matches_content": true, "issue": "" },
+    { "file": "duck-vet.png", "depicts": "white duck holding a blue-striped sock in its bill with a thermometer", "name_matches_content": true, "issue": "" },
+    { "file": "ant-vet.png", "depicts": "single black ant on a table under a large microscope", "name_matches_content": true, "issue": "" },
+    { "file": "van-vet.png", "depicts": "nighttime ice-cream/food truck with awning and menu board, dog+cat figures nearby, no clinic visible", "name_matches_content": false, "issue": "artNote calls for a van parked outside the vet clinic window (green cross, warm evening reveal). Actual image renders as a food/ice-cream truck at night with an awning and serving window — no clinic signage, no green cross, doesn't read as 'at the vet' at all." },
+    { "file": "sam-segina-vet.png", "depicts": "Sam (boy peg doll) and Segina (girl peg doll) in waiting-room armchairs holding pet carriers", "name_matches_content": true, "issue": "" },
+    { "file": "vet-potato.png", "depicts": "potato character with round glasses and white coat holding a stethoscope/tool", "name_matches_content": true, "issue": "" },
+    { "file": "reunion-pile.png", "depicts": "cat (with beetle on head) sleeping on dog, rat tucked in, duck behind, Sam+Segina peg dolls beside, on a woven mat", "name_matches_content": true, "issue": "" },
+    { "file": "van.png", "depicts": "small stylized cream-green delivery van, studio shot", "name_matches_content": true, "issue": "" },
+    { "file": "violin.png", "depicts": "wooden violin with bow, studio shot", "name_matches_content": true, "issue": "" },
+    { "file": "vase.png", "depicts": "dark ceramic vase with one large cream flower", "name_matches_content": true, "issue": "" },
+    { "file": "vest.png", "depicts": "small knitted tan vest with three buttons", "name_matches_content": true, "issue": "" },
+    { "file": "vine.png", "depicts": "leafy green climbing vine with dew drops", "name_matches_content": true, "issue": "" },
+    { "file": "vacuum.png", "depicts": "green upright vacuum cleaner with hose and wand", "name_matches_content": true, "issue": "minor: faint watermark-like text visible bottom-left/bottom-right corners of the image — cosmetic only, doesn't affect subject match." },
+    { "file": "volcano.png", "depicts": "small model volcano with a puff of smoke rising from the cone", "name_matches_content": true, "issue": "" }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "V-V-Vet",
+      "line_map": [
+        { "line": "vvv… vvv… vvv… (teeth on lip, a buzzing motor)", "status": "acceptable-hold", "image": null, "note": "abstract sound-cue, non-visual" },
+        { "line": "V! V! V-v-v! What begins with V? (repeated as Hook 1/2/3 + Final Hook)", "status": "acceptable-hold", "image": null, "note": "framing chant, non-visual; no generic letter-V tile asset exists for this week" },
+        { "line": "V-v-van! V-v-van! It's a van! (a van!)", "status": "ok", "image": "van.png" },
+        { "line": "V-v-violin! V-v-violin! It's a violin! (a violin!)", "status": "ok", "image": "violin.png" },
+        { "line": "V-v-vase! V-v-vase! It's a vase! (a vase!)", "status": "ok", "image": "vase.png" },
+        { "line": "vvv… vvv… (the motor is ON) fff… (off) … vvv… (on) fan… van… fan… van…", "status": "generate", "image": "van.png (partial — 'van' covered, 'fan' has no asset)", "note": "the /f/-/v/ minimal-pair contrast explicitly names 'fan', which has no image anywhere in the week; propose new asset" },
+        { "line": "A potato?! (NO!) P-p-potato! Not V! (vvv… vvv…)", "status": "ok", "image": "potato.png (reused from Week 1, not stored in this folder)" },
+        { "line": "V! V! V-v-v! V-v-volcano! V-v-volcano! It's a volcano, volcano, volcano!", "status": "ok", "image": "volcano.png" }
+      ],
+      "aliases": {},
+      "generate": [
+        {
+          "proposed_filename": "fan.png",
+          "line": "fff… (off) … vvv… (on) fan… van… fan… van…",
+          "mj_prompt": "a small handheld electric fan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "The Vet",
+      "line_map": [
+        { "line": "(the whole class is here…)", "status": "acceptable-hold", "image": null, "note": "abstract intro whisper, non-visual" },
+        { "line": "The cat is at the vet!", "status": "ok", "image": "cat-vet.png" },
+        { "line": "The dog is at the vet!", "status": "generate", "image": "dog-vet.png (exists but wrong content)", "note": "existing dog-vet.png shows a wet muddy dog with no cone collar and no clinic setting — see wrong_art" },
+        { "line": "Who is at the vet? (all of us! all of us!) [x2]", "status": "acceptable-hold", "image": null, "note": "collective chant line; no single existing image shows the full cast together AT the vet (reunion-pile.png is the HOME ending scene, not the vet waiting room) — non-critical, hold" },
+        { "line": "The rat is at the vet!", "status": "ok", "image": "rat-vet.png" },
+        { "line": "The bug is at the vet!", "status": "ok", "image": "bug-vet.png" },
+        { "line": "The duck is at the vet!", "status": "ok", "image": "duck-vet.png" },
+        { "line": "The ant is at the vet!", "status": "ok", "image": "ant-vet.png" },
+        { "line": "A van is at the vet!", "status": "generate", "image": "van-vet.png (exists but wrong content)", "note": "existing van-vet.png renders as a nighttime ice-cream truck, not a van outside a vet clinic — see wrong_art" },
+        { "line": "Sam is at the vet! Segina is at the vet!", "status": "ok", "image": "sam-segina-vet.png" },
+        { "line": "And the vet is… a potato! (POTATO!)", "status": "ok", "image": "vet-potato.png" },
+        { "line": "We are all at the vet… (together… shhh…)", "status": "ok", "image": "reunion-pile.png", "note": "used loosely as the warm closing image (mirrors the book's final spread)" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": [
+        {
+          "file": "dog-vet.png",
+          "issue": "Shows a wet, muddy, curly-haired tan dog lying down — no cone collar, no vet table, no clinical setting. Reads as 'dog after a bath', not 'dog at the vet'. Cast's Dog is established brown; this dog's coat reads more tan/beige.",
+          "fix": "Regenerate showing the established brown Dog wearing a plastic cone collar on a vet examination table with hopeful tail wag, per the original artNote/mjPrompt.",
+          "mj_prompt": "a brown dog wearing a plastic Elizabethan cone collar, sitting on a stainless steel vet examination table with big sad hopeful eyes and tail giving one hopeful wag, clinical vet setting clearly visible, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "file": "van-vet.png",
+          "issue": "Rendered as a nighttime ice-cream/food truck with an awning and serving window (plus stray dog/cat figures on the ground) — no vet clinic, no green cross, no daytime warm 'arrival' reveal. Does not read as 'van at the vet' at all.",
+          "fix": "Regenerate as a plain small delivery/family van parked outside the established vet clinic window (matching vet.png's green cross signage), warm evening light.",
+          "mj_prompt": "a small friendly delivery van parked outside a warm little animal clinic window with a visible green cross sign glowing in the window, warm evening light, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ]
+    }
+  ]
+}

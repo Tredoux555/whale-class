@@ -1,0 +1,52 @@
+{
+  "week": 54,
+  "images": [
+    { "file": "glue.png", "depicts": "bright blue glue bottle with drip", "name_matches_content": true, "issue": null },
+    { "file": "chick-glue.png", "depicts": "fluffy chick cradling blue glue bottle labeled 'GLU'", "name_matches_content": true, "issue": null },
+    { "file": "chick-draw.png", "depicts": "chick holding crayon, scribbling on paper, tongue out", "name_matches_content": true, "issue": null },
+    { "file": "chick-drew-paw.png", "depicts": "chick standing beside a paper with abstract scribbles/marks", "name_matches_content": true, "issue": "scribble doesn't clearly read as a drawn 'paw' shape - minor, acceptable for a kid's crude drawing" },
+    { "file": "chick-saw-glue.png", "depicts": "chick looking wide-eyed at glue bottle tipping/pouring blue glue", "name_matches_content": true, "issue": null },
+    { "file": "glue-on-claw.png", "depicts": "large amorphous blue glue mass/blob with chick standing near puddle", "name_matches_content": true, "issue": "glue blob doesn't clearly read as smeared on a drawn 'claw' shape - abstract, minor" },
+    { "file": "chick-stuck.png", "depicts": "chick and snake face-to-face on a rope/branch, no glue visible, chick beak open, no stuck posture", "name_matches_content": false, "issue": "artNote calls for chick comically stuck by one foot in glue with BECAUSE printed and snake peeking in amused; actual image shows NO glue at all, just chick and snake facing off - completely wrong scene" },
+    { "file": "chick-blew.png", "depicts": "chick blowing on blue glue puddle, cheeks puffed", "name_matches_content": true, "issue": null },
+    { "file": "potato-glue.png", "depicts": "potato half-sunk in blue glue mass, chick and snake nearby", "name_matches_content": true, "issue": null },
+    { "file": "claw.png", "depicts": "single curved animal claw macro", "name_matches_content": true, "issue": null },
+    { "file": "paw.png", "depicts": "furry animal paw pad close-up", "name_matches_content": true, "issue": null },
+    { "file": "straw.png", "depicts": "clear bent drinking straw", "name_matches_content": true, "issue": null },
+    { "file": "hawk.png", "depicts": "kestrel/small falcon perched", "name_matches_content": true, "issue": null },
+    { "file": "screw.png", "depicts": "metal screw macro", "name_matches_content": true, "issue": null },
+    { "file": "yawn.png", "depicts": "kitten mid-yawn", "name_matches_content": true, "issue": null }
+  ],
+  "missing_files": ["saw.png (cards, bingo, matching - key vocabulary word 'saw' used in book text and tracing)"],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "New-Blue-True!",
+      "line_map": [
+        { "line": "New-blue-glue! New-blue-glue! It's new!", "best_image_by_content": "glue.png", "needs": "ok" },
+        { "line": "Chew! Grew! Flew! Drew! A clue!", "best_image_by_content": null, "needs": "acceptable-hold (abstract)" },
+        { "line": "Saw! Paw! Claw! Draw! A hawk on the straw!", "best_image_by_content": "saw.png / paw.png / claw.png / hawk.png / straw.png", "needs": "generate saw.png; rest ok" },
+        { "line": "A potato?! P-p-potato!", "best_image_by_content": "potato-glue.png", "needs": "ok" }
+      ]
+    },
+    {
+      "role": "word",
+      "title": "The New Blue Glue",
+      "line_map": [
+        { "line": "The new blue glue! Where is the glue? On the claw!", "best_image_by_content": "chick-glue.png / glue-on-claw.png", "needs": "ok (glue-on-claw weak match)" },
+        { "line": "Chick has the new blue glue. Chick can draw!", "best_image_by_content": "chick-glue.png / chick-draw.png", "needs": "ok" },
+        { "line": "Chick drew a paw. Chick saw the glue…", "best_image_by_content": "chick-drew-paw.png / saw.png / chick-saw-glue.png", "needs": "generate saw.png; chick-drew-paw.png weak" },
+        { "line": "The glue is on the claw! Chick is stuck — because the glue is new!", "best_image_by_content": "glue-on-claw.png / chick-stuck.png", "needs": "chick-stuck.png needs regenerate (critical)" },
+        { "line": "Chick blew on the glue.", "best_image_by_content": "chick-blew.png", "needs": "ok" },
+        { "line": "What is in the glue?! POTATO! all stuck up!", "best_image_by_content": "potato-glue.png", "needs": "ok" }
+      ]
+    }
+  ],
+  "aliases": {},
+  "generate": [
+    { "proposed_filename": "saw.png", "line": "Saw! Paw! Claw! Draw! / Chick saw the glue…", "mj_prompt": "a small hand saw with a wooden handle, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+  ],
+  "wrong_art": [
+    { "file": "chick-stuck.png", "issue": "completely wrong scene - shows Chick and Snake facing off on a rope, no glue, no stuck-foot posture, no BECAUSE moment depicted at all", "fix": "regenerate to match artNote: chick comically fixed to the spot with one foot glued down, tugging, Snake peeking in amused", "mj_prompt": "a tiny fluffy yellow chick comically fixed to the spot with one foot glued down in a blue glue puddle, straining and tugging to pull free, a friendly emerald-green snake peeking in from the side looking amused, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+  ]
+}

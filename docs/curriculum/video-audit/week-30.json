@@ -1,0 +1,58 @@
+{
+  "week": 30,
+  "images": [
+    { "file": "bell-fell.png", "depicts": "large bronze bell tipping off its mount amid dirt/dust, chick startled beside it", "name_matches_content": true, "issue": "bell is an ornate bronze mounted bell, not the simple brass hand-bell from bell.png's spec; chick shows startle but not clearly 'wings thrown up in alarm'" },
+    { "file": "bell-on-hill.png", "depicts": "large ornate gold ceremonial bell HANGING from a rope under a tree atop a mossy mound", "name_matches_content": true, "issue": "bell is HANGING from a tree branch, not 'sitting at the top of the hill' as spec requires; also far more ornate than the simple brass hand-bell used elsewhere" },
+    { "file": "bell-rolling.png", "depicts": "bronze bell mid-roll in motion blur with chick chasing through dust trail", "name_matches_content": true, "issue": "none" },
+    { "file": "chick-eyes-bell.png", "depicts": "chick pointing up at a bell, determined expression", "name_matches_content": true, "issue": "none" },
+    { "file": "chick-hit-bell.png", "depicts": "chick headbutting a bronze bell with a burst of sparks/shine", "name_matches_content": true, "issue": "none" },
+    { "file": "chick-puff-hill.png", "depicts": "chick running up a grassy slope with dust/effort particles trailing", "name_matches_content": true, "issue": "none" },
+    { "file": "hill.png", "depicts": "small bright-green moss mound with a tiny bonsai-like sprout and a blade of grass at the top, sunbeam", "name_matches_content": true, "issue": "reads more like a moss mound with a miniature plant than a 'grassy hill with one lonely tree' — tree element is too small/toylike" },
+    { "file": "potato-on-hill.png", "depicts": "potato-shaped object atop a mossy mound, chick and sheep looking up at it", "name_matches_content": true, "issue": "none — correct potato depiction" },
+    { "file": "puff.png", "depicts": "round ball of white fur/fluff", "name_matches_content": true, "issue": "reads as a fur/yarn pom-pom rather than a cosmetic powder puff, but loosely acceptable for the word 'puff'" },
+    { "file": "sheep-got-bell.png", "depicts": "sheep nuzzling a bronze bell against its face/head, chick below", "name_matches_content": false, "issue": "spec wants the bell caught 'neatly on its back' (rescue/catch pose); image shows the bell held near the sheep's face/head instead" }
+  ],
+  "missingFiles": ["bell.png (cards, bingo, matching — no file exists)", "doll.png (cards, bingo — no file exists)", "shell.png (cards, bingo — no file exists, also missing in W27)", "sock.png (cards, bingo, matching — no file exists)", "rock.png (cards, bingo, matching — no file exists)"],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Ck! Ck! Bell!",
+      "line_map": [
+        { "line": "Ck says /k/ at the end! Sock! Rock! Duck! Kick!", "best_image_by_content": "none — sock.png and rock.png are both missing", "needs": "generate" },
+        { "line": "Bell! Bell! Puff! Puff! Two at the end!", "best_image_by_content": "bell-on-hill.png + puff.png", "needs": "ok (bell image is stylistically ornate/hanging, see wrong-art)" },
+        { "line": "Miss! Miss! Off! Off! Fizz! Hiss! Yell!", "best_image_by_content": "none — no dedicated images for miss/off/fizz/hiss/yell", "needs": "acceptable-hold (abstract sound-rule examples, not book-illustrated)" },
+        { "line": "Bell! Bell! On the hill! Up the hill — puff, puff, puff!", "best_image_by_content": "bell-on-hill.png + chick-puff-hill.png", "needs": "ok" },
+        { "line": "A potato?! P-p-potato! No double! Not ck!", "best_image_by_content": "potato-on-hill.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "sock.png", "line": "Sock! Rock! Duck! Kick!", "mj_prompt": "a single striped woolly sock, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "rock.png", "line": "Sock! Rock! Duck! Kick!", "mj_prompt": "a single smooth grey rock, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "bell.png", "line": "materials cards/bingo/matching (clean bell tile distinct from the book's hanging ornate bell)", "mj_prompt": "a gleaming brass hand-bell with a wooden handle, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": [
+        { "file": "bell-on-hill.png", "issue": "bell is hanging from a tree by a rope, not sitting at the hilltop; overly ornate gold ceremonial style vs. simple brass hand-bell", "fix": "reroll: 'a big gleaming brass hand-bell sitting upright at the top of a grassy hill under a leaning tree, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw'" }
+      ]
+    },
+    {
+      "role": "word",
+      "title": "The Bell on the Hill",
+      "line_map": [
+        { "line": "The bell is on the hill! (hook, repeats)", "best_image_by_content": "bell-on-hill.png", "needs": "generate (bell hangs from tree, not sitting on hilltop)" },
+        { "line": "Chick can hit the bell! Up! Up! Up the hill!", "best_image_by_content": "chick-eyes-bell.png + chick-puff-hill.png + chick-hit-bell.png", "needs": "ok" },
+        { "line": "Can Sheep miss the bell? No! Sheep will not miss!", "best_image_by_content": "sheep-got-bell.png", "needs": "acceptable-hold" },
+        { "line": "The bell fell off the hill!", "best_image_by_content": "bell-fell.png", "needs": "ok" },
+        { "line": "The bell… the hill… A potato?! (POTATO!) Off the hill?!", "best_image_by_content": "potato-on-hill.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "doll.png", "line": "materials cards/bingo only (no book line)", "mj_prompt": "a small soft rag doll, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "shell.png", "line": "materials cards/bingo only (no book line; also owed to Week 27)", "mj_prompt": "an empty spiral seashell, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "sheep-got-bell.png (reroll)", "line": "Sheep got the bell!", "mj_prompt": "a fluffy round white sheep with kind dark eyes at the bottom of a hill, catching a runaway brass bell neatly ON ITS BACK (not against its face), a tiny yellow chick cheering beside it, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": [
+        { "file": "sheep-got-bell.png", "issue": "bell is held against the sheep's face/head, not caught on its back as the rescue pose requires", "fix": "reroll, see generate list above" }
+      ]
+    }
+  ]
+}

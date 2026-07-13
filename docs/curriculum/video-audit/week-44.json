@@ -1,0 +1,54 @@
+{
+  "week": 44,
+  "images": [
+    { "file": "tree.png", "depicts": "great leafy tree, broad canopy, sunbeams", "name_matches_content": true, "issue": null },
+    { "file": "bee-tree.png", "depicts": "plump toy-style bee tucked into blossom high in tree, wings blurred", "name_matches_content": true, "issue": null },
+    { "file": "sheep-sees-bee.png", "depicts": "sheep gazing up at flying bee near tree", "name_matches_content": true, "issue": null },
+    { "file": "sheep-nameday.png", "depicts": "sheep standing beside gold banner spelling S-H-E-E-P", "name_matches_content": true, "issue": null },
+    { "file": "sheep-reading.png", "depicts": "sheep with open book, bee peeking over shoulder", "name_matches_content": true, "issue": null },
+    { "file": "bee-reading.png", "depicts": "close-up bee wearing round reading glasses on open book", "name_matches_content": true, "issue": null },
+    { "file": "sheep-bee-eat.png", "depicts": "sheep and bee picnic with green apple slice and honey drop under tree", "name_matches_content": true, "issue": null },
+    { "file": "potato-sea.png", "depicts": "sheep, potato wearing sunglasses reading a book, bee, on sand by the sea", "name_matches_content": true, "issue": null },
+    { "file": "feet.png", "depicts": "pair of bare child's feet standing in sand", "name_matches_content": true, "issue": "Regenerated late (per session notes) — verified correct and matches spec." },
+    { "file": "sea.png", "depicts": "calm/dramatic blue sea meeting horizon, waves", "name_matches_content": true, "issue": null },
+    { "file": "read.png", "depicts": "open storybook lying flat", "name_matches_content": true, "issue": null },
+    { "file": "beach.png", "depicts": "sandy beach with golden bucket and spade", "name_matches_content": true, "issue": null },
+    { "file": "see.png", "depicts": "small pair of binoculars", "name_matches_content": true, "issue": null }
+  ],
+  "missing_files": [
+    { "file": "bee.png", "required_for": "book:2 — 'A bee!' (CAST DEBUT spread, decodable at first appearance b+ee)", "issue": "File does not exist anywhere in the Week 44 images folder. The cast-debut spread for Bee has no dedicated image." }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Ee-Ee-Tree!",
+      "line_map": [
+        { "line": "Double E — see! E-A — sea!", "best_image_by_CONTENT": "see.png / sea.png", "needs": "ok" },
+        { "line": "S-E-E — see! (see the bee!) T-R-E-E — tree! (up the tree!)", "best_image_by_CONTENT": "tree.png / see.png", "needs": "ok" },
+        { "line": "S-H-E-E-P — Sheep! B-E-E — Bee! Sheep can READ!", "best_image_by_CONTENT": "sheep-nameday.png + bee.png(MISSING) + sheep-reading.png", "needs": "generate", "note": "bee.png missing for the Bee spell-out moment" },
+        { "line": "A potato?! No ee!", "best_image_by_CONTENT": "none needed (abstract line)", "needs": "acceptable-hold" }
+      ]
+    },
+    {
+      "role": "word",
+      "title": "Sheep Can Read!",
+      "line_map": [
+        { "line": "S-H-E-E-P — Sheep! Sheep can read!", "best_image_by_CONTENT": "sheep-nameday.png", "needs": "ok" },
+        { "line": "The bee is in the tree! Sheep can see the bee!", "best_image_by_CONTENT": "bee-tree.png + sheep-sees-bee.png", "needs": "ok" },
+        { "line": "The bee can read too — wait…", "best_image_by_CONTENT": "bee-reading.png", "needs": "ok" },
+        { "line": "Eat at the tree! See the sea!", "best_image_by_CONTENT": "sheep-bee-eat.png + sea.png", "needs": "ok" },
+        { "line": "Sheep and Bee can read!", "best_image_by_CONTENT": "sheep-reading.png", "needs": "ok" },
+        { "line": "At the sea?! (a potato!)", "best_image_by_CONTENT": "potato-sea.png", "needs": "ok" }
+      ]
+    }
+  ],
+  "aliases": {},
+  "generate": [
+    {
+      "proposed_filename": "bee.png",
+      "line": "A bee! (book:2, CAST DEBUT)",
+      "mj_prompt": "a plump little honeybee with soft fuzzy gold-and-black stripes and round shiny wings hovering alone in the spotlight, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    }
+  ],
+  "wrong_art": []
+}

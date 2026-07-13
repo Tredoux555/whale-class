@@ -1,0 +1,52 @@
+{
+  "week": 29,
+  "images": [
+    { "file": "bath.png", "depicts": "ornate gold/brass claw-foot bathtub with bubbling water and steam, gold lion-paw feet", "name_matches_content": true, "issue": "very ornate fantasy-gold styling vs simple claw-foot tub, but subject and feet shape match" },
+    { "file": "chick-with-moth.png", "depicts": "chick and moth face to face on a rock/ledge", "name_matches_content": true, "issue": "no bathtub rim visible in this shot, unlike the spec's 'perched on the rim of a bathtub'" },
+    { "file": "math.png", "depicts": "small chalk slate with simple sums and a chalk stub", "name_matches_content": true, "issue": "none" },
+    { "file": "moth-in-bath.png", "depicts": "moth resting on rippling water surface", "name_matches_content": true, "issue": "no bathtub edge/rim visible, just open water" },
+    { "file": "moth-on-path.png", "depicts": "moth with wings spread on a mossy stone garden path", "name_matches_content": true, "issue": "none" },
+    { "file": "moth-splash.png", "depicts": "moth in a burst of water spray/droplets", "name_matches_content": true, "issue": "none" },
+    { "file": "moth-with-sheep.png", "depicts": "extreme close-up of sheep's face with moth perched near its nose/forehead, chick below", "name_matches_content": true, "issue": "moth is beside/on the nose bridge rather than clearly 'riding' the nose, but concept holds" },
+    { "file": "moth.png", "depicts": "grey moth with dewy, glittery-detailed wings", "name_matches_content": true, "issue": "wings read as glittery/dewy rather than plain dusty, minor style variance" },
+    { "file": "path.png", "depicts": "mossy stepping-stone garden path", "name_matches_content": true, "issue": "none" },
+    { "file": "potato-in-bath.png", "depicts": "brown potato-shaped object bobbing in a shallow metal dish with water rings, chick beside it", "name_matches_content": true, "issue": "correct potato depiction; the vessel looks like a shallow pan rather than the ornate tub in bath.png — inconsistent tub styling between the two images" },
+    { "file": "thin-moth.png", "depicts": "extreme close-up of moth with thin translucent wing detail", "name_matches_content": true, "issue": "none" },
+    { "file": "thin.png", "depicts": "single bare thin twig standing upright", "name_matches_content": true, "issue": "none" },
+    { "file": "three.png", "depicts": "three red apples grouped together", "name_matches_content": true, "issue": "none" },
+    { "file": "thumb.png", "depicts": "hand giving a thumbs-up", "name_matches_content": true, "issue": "none" }
+  ],
+  "missingFiles": [],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Th-Th-That!",
+      "line_map": [
+        { "line": "Th-th-that! It's THAT!", "best_image_by_content": "moth.png (generic th-object anchor)", "needs": "acceptable-hold (no dedicated 'that' image exists; abstract glue word)" },
+        { "line": "Th-th-this! Th-th-then! This and then! (buzz… buzz…)", "best_image_by_content": "moth.png", "needs": "acceptable-hold (abstract glue words, no dedicated image)" },
+        { "line": "Th-th-thin! Th-th-moth! Thin as a moth! (hush… hush…)", "best_image_by_content": "thin-moth.png", "needs": "ok" },
+        { "line": "Th-th-bath! Th-th-path! Splish in the bath! (splash!)", "best_image_by_content": "bath.png + moth-splash.png", "needs": "ok" },
+        { "line": "A potato?! P-p-potato! Not TH!", "best_image_by_content": "potato-in-bath.png", "needs": "ok" },
+        { "line": "(with… with… with…)", "best_image_by_content": "moth.png", "needs": "acceptable-hold" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "The Moth in the Bath",
+      "line_map": [
+        { "line": "The moth is in the bath! (hook, repeats)", "best_image_by_content": "moth-in-bath.png", "needs": "ok" },
+        { "line": "This moth! That moth! Thin moth in the bath!", "best_image_by_content": "thin-moth.png", "needs": "ok" },
+        { "line": "Splish and splash! (splash! splash!)", "best_image_by_content": "moth-splash.png", "needs": "ok" },
+        { "line": "Then… up! Up! The moth is on the path.", "best_image_by_content": "moth-on-path.png", "needs": "ok" },
+        { "line": "The moth is with Chick!", "best_image_by_content": "chick-with-moth.png", "needs": "acceptable-hold (no bath context visible in shot)" },
+        { "line": "A potato?! (POTATO!) In the bath?! (splash!)", "best_image_by_content": "potato-in-bath.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": []
+    }
+  ]
+}

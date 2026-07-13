@@ -1,0 +1,74 @@
+{
+  "week": 9,
+  "images": [
+    { "file": "hat.png", "depicts": "brown felt fedora hat alone", "name_matches_content": true, "issue": null },
+    { "file": "hat-on-cat.png", "depicts": "cat wearing a dark teal/green bowler-style hat", "name_matches_content": true, "issue": "hat prop is a different color/style (teal bowler) than the established brown felt fedora (hat.png)" },
+    { "file": "hat-on-sam.png", "depicts": "Sam peg doll wearing a tan woven straw sunhat sliding over eyes", "name_matches_content": true, "issue": "hat prop is a woven straw sunhat, a third distinct design vs hat.png's felt fedora and hat-on-cat.png's teal bowler" },
+    { "file": "hat-on-ant.png", "depicts": "brown felt fedora on floor with the ant standing fully visible beside/under the brim, not hidden", "name_matches_content": true, "issue": "spec requires the ant to VANISH completely underneath the hat (funny mystery — just a hat sitting alone); image instead shows the ant clearly visible, not hidden" },
+    { "file": "ant-in-hat.png", "depicts": "cutaway view of ant standing inside the hat like a domed room", "name_matches_content": true, "issue": null },
+    { "file": "hat-still.png", "depicts": "one peg-doll figure in a white knit hat + an olive-green fuzzy hat on floor with a squiggle + cat leaning in", "name_matches_content": true, "issue": "spec calls for BOTH Sam and Segina leaning in curious alongside the cat; only one doll figure present, and the hat is a fourth distinct design (olive fuzzy) vs hat.png" },
+    { "file": "ant-nap-hat.png", "depicts": "one ant asleep inside woven hat brim, with a second ant blurred in the background", "name_matches_content": true, "issue": "two ants visible instead of the single cast-member ant" },
+    { "file": "pat-hat.png", "depicts": "hand reaching toward an ant perched on a woven hat brim edge", "name_matches_content": true, "issue": null },
+    { "file": "potato-hat.png", "depicts": "potato wearing a small dark bowler hat, ant standing beside it", "name_matches_content": true, "issue": "fifth distinct hat design (dark bowler) in this one-hat story" },
+    { "file": "hand.png", "depicts": "open adult hand palm forward", "name_matches_content": true, "issue": null },
+    { "file": "hammer.png", "depicts": "claw hammer with wooden handle", "name_matches_content": true, "issue": null },
+    { "file": "helicopter.png", "depicts": "toy helicopter with spinning rotor", "name_matches_content": true, "issue": null },
+    { "file": "hen.png", "depicts": "plump brown hen", "name_matches_content": true, "issue": null },
+    { "file": "hippo.png", "depicts": "grey hippo standing", "name_matches_content": true, "issue": null },
+    { "file": "honey.png", "depicts": "jar of honey with wooden dipper dripping", "name_matches_content": true, "issue": null },
+    { "file": "horse.png", "depicts": "brown horse standing side view", "name_matches_content": true, "issue": null },
+    { "file": "house.png", "depicts": "small cosy toy house with red roof, lit windows", "name_matches_content": true, "issue": null }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "H-H-Hat",
+      "line_map": [
+        { "line": "H-h-hat! It's a hat!", "best_image_by_CONTENT": "hat.png", "needs": "ok" },
+        { "line": "H-h-hand! It's a hand!", "best_image_by_CONTENT": "hand.png", "needs": "ok" },
+        { "line": "H-h-horse! It's a horse!", "best_image_by_CONTENT": "horse.png", "needs": "ok" },
+        { "line": "H-h-house! It's a house!", "best_image_by_CONTENT": "house.png", "needs": "ok" },
+        { "line": "A potato?! Not H!", "best_image_by_CONTENT": "no potato image in this week's folder (reused week1 potato.png)", "needs": "acceptable-hold" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "A Hat for the Ant",
+      "line_map": [
+        { "line": "The hat is on the ant! (the ant?!) The ant is in the hat!", "best_image_by_CONTENT": "hat-on-ant.png then ant-in-hat.png", "needs": "alias" },
+        { "line": "The hat is on the cat! (the cat?!) The cat is in the hat!", "best_image_by_CONTENT": "hat-on-cat.png", "needs": "ok" },
+        { "line": "The hat is on Sam! (it's Sam!) Sam is in the hat!", "best_image_by_CONTENT": "hat-on-sam.png", "needs": "ok" },
+        { "line": "Who is in the hat? The ant is in the hat!", "best_image_by_CONTENT": "hat-still.png then ant-in-hat.png", "needs": "ok" },
+        { "line": "A hat for a POTATO?! (POTATO!)", "best_image_by_CONTENT": "potato-hat.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [
+        {
+          "proposed_filename": "hat-on-ant-v2.png",
+          "line": "The hat is on the ant! (the ant?!)",
+          "mj_prompt": "the same brown felt fedora hat sitting alone on the floor with no ant visible anywhere, mysterious and funny, a tiny black ant is nowhere to be seen — completely hidden underneath, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ],
+      "wrong_art": [
+        {
+          "file": "hat-on-ant.png",
+          "issue": "ant is fully visible next to/under the hat brim instead of vanished — breaks the 'funny mystery' beat where only a hat is seen",
+          "fix": "reroll (see generate list hat-on-ant-v2.png)"
+        },
+        {
+          "file": "hat-still.png",
+          "issue": "only one doll figure present; spec requires both Sam and Segina leaning in curious alongside the cat",
+          "fix": "reroll — mj_prompt: a felt hat sitting still on the floor with a tiny muffled squiggle above it, a tabby cat, a small wooden peg doll boy in blue dungarees AND a peg doll girl with black pigtails in a red dress both leaning in curious, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "file": "hat.png / hat-on-cat.png / hat-on-sam.png / hat-still.png / potato-hat.png",
+          "issue": "five different hat designs used across the same one-hat story (brown felt fedora, teal bowler, tan woven sunhat, olive fuzzy fedora, dark bowler) — breaks prop continuity for a book whose entire plot is about ONE hat",
+          "fix": "reroll hat-on-cat.png, hat-on-sam.png, hat-still.png and potato-hat.png to all feature the same brown felt fedora shown in hat.png"
+        }
+      ]
+    }
+  ]
+}

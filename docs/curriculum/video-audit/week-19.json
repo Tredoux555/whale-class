@@ -1,0 +1,65 @@
+{
+  "week": 19,
+  "images": [
+    { "file": "web.png", "depicts": "spider web already glistening with dew/droplets", "name_matches_content": true, "issue": "MODERATE: spread 1 ('A web.') is meant to be the DRY establishing shot before spread 2 introduces wetness — but this image already shows heavy droplets, indistinguishable from wet-web.png" },
+    { "file": "wet-web.png", "depicts": "spider web covered in rain droplets, glittering", "name_matches_content": true, "issue": "correct in isolation, but visually near-identical to web.png, breaking the dry-to-wet story beat" },
+    { "file": "wig-on-web.png", "depicts": "curly wig snagged on wet web", "name_matches_content": true, "issue": null },
+    { "file": "bug-on-web.png", "depicts": "red-shelled bug clinging to wet web, damp", "name_matches_content": true, "issue": "low priority: bug is red-shelled here vs tan/brown Bug established in Week 18 — spec-level cast color drift, not an image-vs-spec mismatch (W19's own spec describes it this way)" },
+    { "file": "wet-cat.png", "depicts": "soaked tabby cat, ears flat, glaring", "name_matches_content": true, "issue": null },
+    { "file": "wet-dog.png", "depicts": "drenched brown dog, droopy, one paw up", "name_matches_content": true, "issue": null },
+    { "file": "wet-sam.png", "depicts": "Sam peg-doll boy standing under drip, hair flat, arms out", "name_matches_content": true, "issue": null },
+    { "file": "big-wet-web.png", "depicts": "enormous web spanning spread, wig/bug/leaf stuck to it", "name_matches_content": true, "issue": "minor: an ambiguous sock-like element adds slight confusion" },
+    { "file": "potato-on-web.png", "depicts": "potato stuck dead-center in giant wet web", "name_matches_content": true, "issue": "minor: glasses/face not clearly visible in silhouette" },
+    { "file": "wig.png", "depicts": "single curly wig, spotlit card asset", "name_matches_content": true, "issue": null },
+    { "file": "watch.png", "depicts": "single wristwatch card asset", "name_matches_content": true, "issue": null },
+    { "file": "wagon.png", "depicts": "single toy wagon card asset", "name_matches_content": true, "issue": "minor cosmetic watermark-like artifact bottom-right" },
+    { "file": "worm.png", "depicts": "single worm card asset", "name_matches_content": true, "issue": null },
+    { "file": "wolf.png", "depicts": "single wolf card asset", "name_matches_content": true, "issue": null },
+    { "file": "well.png", "depicts": "single water well card asset", "name_matches_content": true, "issue": null },
+    { "file": "water.png", "depicts": "water-themed card asset", "name_matches_content": true, "issue": null },
+    { "file": "wing.png", "depicts": "single wing card asset", "name_matches_content": true, "issue": null }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "W-W-Web",
+      "line_map": [
+        { "line": "It's a web! (a web!)", "best_image_by_CONTENT": "web.png", "needs": "generate", "note": "should be a dry web for the sound-song intro card use" },
+        { "line": "It's a watch! (a watch!)", "best_image_by_CONTENT": "watch.png", "needs": "ok" },
+        { "line": "It's a wagon! (a wagon!)", "best_image_by_CONTENT": "wagon.png", "needs": "ok" },
+        { "line": "w-w-worm… w-w-wolf… w-w-well…", "best_image_by_CONTENT": "worm.png / wolf.png / well.png", "needs": "ok" },
+        { "line": "A potato?! (NO!) P-p-potato! Not W!", "best_image_by_CONTENT": "potato-on-web.png", "needs": "acceptable-hold" },
+        { "line": "It's a wing, wing, wing!", "best_image_by_CONTENT": "wing.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "web-dry.png", "line": "It's a web! / spread 1 'A web.'", "mj_prompt": "ultra-realistic photograph, a single dewless dry spider web strung across the dark, backlit so every strand glows silver, no water droplets, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "The Wet Web",
+      "line_map": [
+        { "line": "The web is wet! The web is wet!", "best_image_by_CONTENT": "wet-web.png", "needs": "ok" },
+        { "line": "The wig is wet! The wig is wet!", "best_image_by_CONTENT": "wig-on-web.png", "needs": "ok" },
+        { "line": "The bug is wet! The bug is wet!", "best_image_by_CONTENT": "bug-on-web.png", "needs": "ok" },
+        { "line": "Sam is wet! Sam is wet!", "best_image_by_CONTENT": "wet-sam.png", "needs": "ok" },
+        { "line": "The potato is wet! (POTATO!)", "best_image_by_CONTENT": "potato-on-web.png", "needs": "ok" },
+        { "line": "book-only: The cat is wet!", "best_image_by_CONTENT": "wet-cat.png", "needs": "ok" },
+        { "line": "book-only: The dog is wet and sad.", "best_image_by_CONTENT": "wet-dog.png", "needs": "ok" },
+        { "line": "book-only: The web is BIG and wet.", "best_image_by_CONTENT": "big-wet-web.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": [
+        {
+          "file": "web.png",
+          "issue": "MODERATE — used for spread 1 ('A web.'), the dry establishing shot before rain is introduced in spread 2, but already shows heavy dew/droplets, making it visually identical to wet-web.png and killing the dry→wet story progression",
+          "fix": "Regenerate web.png as a genuinely dry web with zero droplets; keep wet-web.png as-is for the rain reveal",
+          "mj_prompt": "ultra-realistic photograph, a single dewless dry spider web strung across the dark, backlit so every strand glows silver, no water droplets, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ]
+    }
+  ]
+}

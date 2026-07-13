@@ -1,0 +1,112 @@
+{
+  "week": 21,
+  "images": [
+    { "file": "duck.png", "depicts": "plump white duck mid-waddle, one eye toward viewer", "name_matches_content": true, "issue": "" },
+    { "file": "duck-sock.png", "depicts": "white duck holding stripey sock in bill, head high", "name_matches_content": true, "issue": "painterly/oil-brush style (not photo) + a visible signature scrawl bottom-right; content correct" },
+    { "file": "duck-rock.png", "depicts": "white duck straining against a grey rock nearly its size", "name_matches_content": true, "issue": "" },
+    { "file": "duck-kit.png", "depicts": "white duck sitting on a cardboard shipping box with a visible Amazon smile-arrow logo", "name_matches_content": false, "issue": "Does NOT show a first-aid/pencil 'kit' — shows a real-brand Amazon shipping box (trademark risk) sitting in for 'kit'. Needs regeneration." },
+    { "file": "duck-kick.png", "depicts": "white duck mid-kick, webbed foot flung out, sock flying off, dust kicked up", "name_matches_content": true, "issue": "" },
+    { "file": "duck-chase-cat.png", "depicts": "tabby cat running with a plain white sock in mouth, duck chasing close behind, wings up", "name_matches_content": true, "issue": "sock shown plain white here vs stripey in duck-sock.png — minor continuity nit, not a naming problem" },
+    { "file": "kid-duck.png", "depicts": "small child scooping up a duck in both arms, both surprised, sock still in duck's bill", "name_matches_content": true, "issue": "" },
+    { "file": "duck-back.png", "depicts": "duck leaping/flying forward with wings spread wide, a sock caught on one foot", "name_matches_content": true, "issue": "Weak match to artNote: brief calls for the duck waddling BACKWARD toward the viewer in a refusal standoff; image shows forward flight/leap, not a backward retreat. Sock+wings-up present, direction wrong." },
+    { "file": "duck-potato.png", "depicts": "duck sitting on a large potato like an egg, spotlit", "name_matches_content": true, "issue": "" },
+    { "file": "kite.png", "depicts": "colorful diamond kite with ribbon tail", "name_matches_content": true, "issue": "small garbled hallucinated watermark-style text in bottom-left corner" },
+    { "file": "king.png", "depicts": "friendly toy king figurine with gold crown, white beard, red/gold robe", "name_matches_content": true, "issue": "" },
+    { "file": "key.png", "depicts": "ornate old brass/bronze key on a dark green surface", "name_matches_content": true, "issue": "" },
+    { "file": "kangaroo.png", "depicts": "kangaroo standing tall, facing camera", "name_matches_content": true, "issue": "" },
+    { "file": "koala.png", "depicts": "fluffy koala clinging to a branch", "name_matches_content": true, "issue": "" },
+    { "file": "kettle.png", "depicts": "shiny metal tea kettle with wooden handle on a gold tray", "name_matches_content": true, "issue": "" },
+    { "file": "rock.png", "depicts": "single smooth grey/brown rock on dark green surface", "name_matches_content": true, "issue": "faint garbled hallucinated watermark-style text in both bottom corners" },
+    { "file": "sock.png", "depicts": "MISSING — file does not exist in images folder", "name_matches_content": false, "issue": "Required standalone sock product-shot is entirely absent. Used by sound-song lyric 'duck…sock…rock…', word-song hook 'The duck got the sock!', plus cards/bingo/matching/coloring." },
+    { "file": "potato.png", "depicts": "MISSING — file does not exist in images folder", "name_matches_content": false, "issue": "Required potato image (spec says 'REUSED FROM WEEK 1') is absent from this week's folder. Used by sound-song bridge line + bingo pool." },
+    { "file": "sock-coloring.png", "depicts": "MISSING — file does not exist in images folder", "name_matches_content": false, "issue": "Coloring-page asset absent (noted for completeness though coloring files were otherwise skipped from visual audit)." }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "K-K-Kick",
+      "line_map": [
+        { "line": "K-k-kite! It's a kite!", "best_image_by_content": "kite.png", "needs": "ok" },
+        { "line": "K-k-king! It's a king!", "best_image_by_content": "king.png", "needs": "ok" },
+        { "line": "K-k-key! It's a key!", "best_image_by_content": "key.png", "needs": "ok" },
+        { "line": "Breakdown: 'duck…' (the same click at the end)", "best_image_by_content": "duck.png", "needs": "ok" },
+        { "line": "Breakdown: 'sock…' (the same click at the end)", "best_image_by_content": null, "needs": "generate" },
+        { "line": "Breakdown: 'rock…' (the same click at the end)", "best_image_by_content": "rock.png", "needs": "ok" },
+        { "line": "A potato?! (NO!) P-p-potato! Not K!", "best_image_by_content": null, "needs": "generate" },
+        { "line": "K-k-kangaroo! It's a kangaroo, kangaroo, kangaroo!", "best_image_by_content": "kangaroo.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [
+        {
+          "proposed_filename": "sock.png",
+          "line": "Breakdown: 'duck… sock… rock…' / Hook: 'The duck got the sock!'",
+          "mj_prompt": "a single stripey sock, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "proposed_filename": "potato.png",
+          "line": "A potato?! (NO!) P-p-potato! Not K!",
+          "mj_prompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ],
+      "wrong_art": [
+        {
+          "file": "kite.png",
+          "issue": "small garbled hallucinated watermark-style text in bottom-left corner",
+          "fix": "regenerate or inpaint out the corner text; otherwise content is correct",
+          "mj_prompt": "a colorful diamond kite with a tail, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical, no text, no watermark, no logos --ar 3:2 --style raw"
+        },
+        {
+          "file": "rock.png",
+          "issue": "faint garbled hallucinated watermark-style text in both bottom corners",
+          "fix": "regenerate or inpaint out the corner text; otherwise content is correct",
+          "mj_prompt": "a smooth grey rock, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical, no text, no watermark, no logos --ar 3:2 --style raw"
+        }
+      ]
+    },
+    {
+      "role": "word",
+      "title": "The Duck Got the Sock",
+      "line_map": [
+        { "line": "The duck got the sock! (Hook, repeated)", "best_image_by_content": "duck-sock.png", "needs": "ok" },
+        { "line": "The duck got the rock! (Verse 2)", "best_image_by_content": "duck-rock.png", "needs": "ok" },
+        { "line": "The duck got the kit! (Verse 3)", "best_image_by_content": null, "needs": "generate" },
+        { "line": "Kick! The duck can kick! (Verse 3)", "best_image_by_content": "duck-kick.png", "needs": "ok" },
+        { "line": "The kid got the duck! (Verse 4)", "best_image_by_content": "kid-duck.png", "needs": "ok" },
+        { "line": "Back! Get back, duck! (Verse 4)", "best_image_by_content": "duck-back.png", "needs": "generate" },
+        { "line": "The duck got the potato! (Outro)", "best_image_by_content": null, "needs": "generate" }
+      ],
+      "aliases": {},
+      "generate": [
+        {
+          "proposed_filename": "duck-kit.png (regenerate, replace existing)",
+          "line": "The duck got the kit!",
+          "mj_prompt": "a white duck sitting on top of a small stolen first-aid kit box or pencil case, guarding it, no logos, no brand text, no readable packaging text, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "proposed_filename": "duck-back.png (regenerate, replace existing)",
+          "line": "Back! Get back, duck!",
+          "mj_prompt": "a white duck waddling backward directly toward the viewer on webbed feet (not flying), wings raised defensively, a stripey sock clamped in its bill, comedic standoff expression, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "proposed_filename": "potato.png",
+          "line": "The duck got the potato!",
+          "mj_prompt": "REUSED FROM WEEK 1 — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ],
+      "wrong_art": [
+        {
+          "file": "duck-kit.png",
+          "issue": "Shows a duck on a cardboard shipping box with a visible Amazon smile-arrow logo instead of a first-aid/pencil kit — real-brand trademark leaked into generation.",
+          "fix": "regenerate with an explicit generic kit box, no logos/readable text",
+          "mj_prompt": "a white duck sitting on top of a small stolen first-aid kit box or pencil case, guarding it, no logos, no brand text, no readable packaging text, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "file": "duck-back.png",
+          "issue": "Depicts the duck leaping/flying forward with wings spread rather than waddling backward toward the viewer in a refusal standoff, as the artNote specifies.",
+          "fix": "regenerate with duck facing/moving toward viewer while retreating backward, feet-first, wings up defensively",
+          "mj_prompt": "a white duck waddling backward directly toward the viewer on webbed feet (not flying), wings raised defensively, a stripey sock clamped in its bill, comedic standoff expression, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ]
+    }
+  ]
+}

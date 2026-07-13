@@ -212,23 +212,24 @@ def main(argv=None):
             _log("cached timeline duration %.2fs != audio %.2fs (>0.5s) -> "
                  "re-analyzing" % (float(cached_dur), actual_dur))
             use_cache = False
-        # Guard against changed lyrics/subs: fingerprint the alignment inputs.
-        # The duration guard above can't see a lyrics/subs edit.
+        # Guard against changed lyrics/subs/AUDIO: fingerprint the alignment
+        # inputs. The duration guard above can't see a lyrics/subs edit, and
+        # (FIX 1) can't see a regenerated take that kept the same filename +
+        # duration — the audio bytes are now part of the fingerprint.
         if use_cache:
             current_fp = compute_inputs_fingerprint(
-                args.lyrics, args.subs, args.model)
+                args.lyrics, args.subs, args.model,
+                audio_path=os.path.abspath(args.audio))
             cached_fp = cached.get("inputs_fingerprint")
-            provided = bool(
-                (args.lyrics and os.path.exists(args.lyrics))
-                or (args.subs and os.path.exists(args.subs)))
             if cached_fp is None:
-                # Old cache lacking the field: only re-analyze if this run
-                # actually supplied lyrics/subs — don't churn no-lyrics renders.
-                if provided:
-                    print("[mvgen] lyrics/subs changed -> re-analyzing")
-                    use_cache = False
+                # Old cache lacking the field entirely: re-analyze so it gets the
+                # new (audio-inclusive) fingerprint — a stale-take reuse is worse
+                # than one re-analysis.
+                print("[mvgen] no input fingerprint on cache -> re-analyzing")
+                use_cache = False
             elif cached_fp != current_fp:
-                print("[mvgen] lyrics/subs changed -> re-analyzing")
+                print("[mvgen] inputs changed (lyrics/subs/audio) -> "
+                      "re-analyzing")
                 use_cache = False
     if use_cache:
         _log("reusing existing %s (pass --reanalyze to refresh)" % timeline_path)

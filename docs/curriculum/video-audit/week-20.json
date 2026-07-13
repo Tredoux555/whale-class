@@ -1,0 +1,55 @@
+{
+  "week": 20,
+  "images": [
+    { "file": "jug.png", "depicts": "round ceramic jug, lid off, spotlit", "name_matches_content": true, "issue": null },
+    { "file": "jam-in-jug.png", "depicts": "thick red jam oozing over jug rim", "name_matches_content": true, "issue": null },
+    { "file": "jam-on-cat.png", "depicts": "cat with red jam splat on face, licking paw", "name_matches_content": true, "issue": null },
+    { "file": "jam-on-dog.png", "depicts": "dog with jam on face", "name_matches_content": true, "issue": null },
+    { "file": "jam-on-rat.png", "depicts": "rat with jam splat, clear rodent design", "name_matches_content": true, "issue": null },
+    { "file": "jam-on-sam.png", "depicts": "Sam peg-doll with jam on him", "name_matches_content": true, "issue": "minor: shirt reads tan/beige with red trim rather than fully red per spec" },
+    { "file": "jet-in-jam.png", "depicts": "toy jet resting in jam", "name_matches_content": true, "issue": "minor: jet lying on side rather than strictly nose-down" },
+    { "file": "sam-jog.png", "depicts": "Sam jogging leaving a jam trail", "name_matches_content": true, "issue": "minor: trail reads as blobs rather than clear footprints" },
+    { "file": "potato-in-jam.png", "depicts": "potato sitting in jam", "name_matches_content": true, "issue": "minor: glasses/face not clearly visible" },
+    { "file": "jam.png", "depicts": "jam card asset", "name_matches_content": true, "issue": null },
+    { "file": "jet.png", "depicts": "single toy jet card asset", "name_matches_content": true, "issue": null },
+    { "file": "jar.png", "depicts": "clear glass jar with lid, card asset", "name_matches_content": true, "issue": null },
+    { "file": "jeep.png", "depicts": "toy green jeep, card asset", "name_matches_content": true, "issue": null },
+    { "file": "jacket.png", "depicts": "child's blue hooded jacket on hanger", "name_matches_content": true, "issue": null },
+    { "file": "juice.png", "depicts": "glass of orange juice with straw and ice", "name_matches_content": true, "issue": null },
+    { "file": "jellyfish.png", "depicts": "translucent jellyfish with glowing tendrils", "name_matches_content": true, "issue": null }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "J-J-Jam",
+      "line_map": [
+        { "line": "It's jam! (it's jam!)", "best_image_by_CONTENT": "jam.png", "needs": "ok" },
+        { "line": "It's a jug! (a jug!)", "best_image_by_CONTENT": "jug.png", "needs": "ok" },
+        { "line": "It's a jet! (a jet!)", "best_image_by_CONTENT": "jet.png", "needs": "ok" },
+        { "line": "j-j-jar… j-j-jeep… j-j-juice…", "best_image_by_CONTENT": "jar.png / jeep.png / juice.png", "needs": "ok" },
+        { "line": "A potato?! (NO!) P-p-potato! Not J!", "best_image_by_CONTENT": "potato-in-jam.png", "needs": "acceptable-hold" },
+        { "line": "It's a jacket, jacket, jacket!", "best_image_by_CONTENT": "jacket.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "Jam in the Jug",
+      "line_map": [
+        { "line": "Jam in the jug! Jam in the jug!", "best_image_by_CONTENT": "jam-in-jug.png", "needs": "ok" },
+        { "line": "Jam on the cat!", "best_image_by_CONTENT": "jam-on-cat.png", "needs": "ok" },
+        { "line": "Jam on the dog!", "best_image_by_CONTENT": "jam-on-dog.png", "needs": "ok" },
+        { "line": "Jam on the rat!", "best_image_by_CONTENT": "jam-on-rat.png", "needs": "ok" },
+        { "line": "Jam on Sam!", "best_image_by_CONTENT": "jam-on-sam.png", "needs": "ok" },
+        { "line": "Jam on the potato! (POTATO!)", "best_image_by_CONTENT": "potato-in-jam.png", "needs": "ok" },
+        { "line": "book-only: jet-in-jam gag spread", "best_image_by_CONTENT": "jet-in-jam.png", "needs": "ok" },
+        { "line": "book-only: Sam jogging spread", "best_image_by_CONTENT": "sam-jog.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": []
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "week": 16,
+  "images": [
+    { "file": "pup.png", "depicts": "tiny bouncing puppy, ears flapping, joyful", "name_matches_content": true, "issue": null },
+    { "file": "pup-running.png", "depicts": "pup running forward, dog cheering behind", "name_matches_content": true, "issue": "breed slightly inconsistent with pup.png (low priority)" },
+    { "file": "pup-running-uphill.png", "depicts": "pup scrambling up grassy hill toward rising sun", "name_matches_content": true, "issue": null },
+    { "file": "pup-on-hut.png", "depicts": "pup balanced on top of small hut, wobbling", "name_matches_content": true, "issue": null },
+    { "file": "pup-on-bus.png", "depicts": "pup on roof of toy bus, cast waving below", "name_matches_content": true, "issue": null },
+    { "file": "pup-in-sun.png", "depicts": "pup leaping toward giant golden sun, vowel bunting", "name_matches_content": true, "issue": null },
+    { "file": "pup-in-mud.png", "depicts": "pup landed in mud puddle, only eyes/grin visible", "name_matches_content": true, "issue": null },
+    { "file": "muddy-cast.png", "depicts": "cast covered in mud: pup, cat, dog, rat", "name_matches_content": true, "issue": "MODERATE: Ant missing from group per artNote; Rat reads as lizard/monster not rodent; Pup indistinct from Dog" },
+    { "file": "cast-summit-party.png", "depicts": "generic 3D-animated crowd of unrelated animals at hilltop", "name_matches_content": false, "issue": "MAJOR: wrong art style (looks like a different animated-movie franchise), wrong/unrecognizable characters, no potato, breaks established photographic Segina/peg-doll cast style" },
+    { "file": "potato-on-summit.png", "depicts": "potato with party hat and round glasses at hilltop", "name_matches_content": true, "issue": null },
+    { "file": "mud.png", "depicts": "splat of brown mud, card asset", "name_matches_content": true, "issue": null },
+    { "file": "run.png", "depicts": "motion-blur running scene card", "name_matches_content": true, "issue": null },
+    { "file": "up.png", "depicts": "upward arrow / up-motion card image", "name_matches_content": true, "issue": null },
+    { "file": "umbrella.png", "depicts": "single open umbrella, spotlit", "name_matches_content": true, "issue": null },
+    { "file": "umpire.png", "depicts": "umpire figure, spotlit card asset", "name_matches_content": true, "issue": null },
+    { "file": "uncle.png", "depicts": "uncle figure card asset", "name_matches_content": true, "issue": null },
+    { "file": "udder.png", "depicts": "cow udder card asset", "name_matches_content": true, "issue": null },
+    { "file": "ugly.png", "depicts": "ugly-themed card asset", "name_matches_content": true, "issue": null },
+    { "file": "under.png", "depicts": "under-position card asset", "name_matches_content": true, "issue": null },
+    { "file": "upset.png", "depicts": "upset-emotion card asset", "name_matches_content": true, "issue": null }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "U-U-Up!",
+      "line_map": [
+        { "line": "It's up! (it's up!)", "best_image_by_CONTENT": "up.png", "needs": "ok" },
+        { "line": "It's an umbrella! (umbrella!)", "best_image_by_CONTENT": "umbrella.png", "needs": "ok" },
+        { "line": "It's under! (down under!)", "best_image_by_CONTENT": "under.png", "needs": "ok" },
+        { "line": "It's my uncle! (an uncle!)", "best_image_by_CONTENT": "uncle.png", "needs": "ok" },
+        { "line": "A potato?! (NO!) P-p-potato! Not U!", "best_image_by_CONTENT": "potato-on-summit.png", "needs": "acceptable-hold" },
+        { "line": "The wall is full! (A-E-I-O-U!)", "best_image_by_CONTENT": "cast-summit-party.png", "needs": "generate", "note": "no clean dedicated vowel-wall-complete asset exists; the only candidate is the wrong-art summit image" },
+        { "line": "U-u-up! Run up, pup!", "best_image_by_CONTENT": "pup-running.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "vowel-wall-complete.png", "line": "The wall is full! (A-E-I-O-U!)", "mj_prompt": "ultra-realistic photograph, a wooden classroom wall with five glowing gold letters A E I O U lit in sequence, warm celebratory light, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "sun.png", "line": "Up in the sun! / bingo & matching asset", "mj_prompt": "ultra-realistic photograph, a single warm golden sun icon/orb centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "cup.png", "line": "bingo & matching asset (not sung, but in materials)", "mj_prompt": "ultra-realistic photograph, a single small tin cup centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "Run Up, Pup!",
+      "line_map": [
+        { "line": "Run up, pup! Run up, pup!", "best_image_by_CONTENT": "pup-running.png", "needs": "ok" },
+        { "line": "Up the hut! (up the hut!)", "best_image_by_CONTENT": "pup-on-hut.png", "needs": "ok" },
+        { "line": "Up the bus! (up the bus!)", "best_image_by_CONTENT": "pup-on-bus.png", "needs": "ok" },
+        { "line": "Up in the sun! (in the sun!)", "best_image_by_CONTENT": "pup-in-sun.png", "needs": "ok" },
+        { "line": "Mud on the pup! Mud on the cat! Mud on the dog! Mud on the rat!", "best_image_by_CONTENT": "muddy-cast.png", "needs": "alias", "note": "usable but flagged in wrong_art for missing Ant / lizard-like Rat" },
+        { "line": "Run up, pup! (run, run, run!)", "best_image_by_CONTENT": "pup-running-uphill.png", "needs": "ok" },
+        { "line": "Up on top… a potato! (POTATO!)", "best_image_by_CONTENT": "potato-on-summit.png", "needs": "ok" },
+        { "line": "Run up, pup! Run up, up, up! (festival close)", "best_image_by_CONTENT": "cast-summit-party.png", "needs": "generate", "note": "book spread 9 anchor image is the major wrong-art item" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": [
+        {
+          "file": "cast-summit-party.png",
+          "issue": "MAJOR — generic 3D-animated-movie-style crowd of unrelated characters, wrong art style entirely (not the established photographic look), no potato present, does not depict Segina/Sam/Cat/Dog/Rat/Ant/Pup",
+          "fix": "Regenerate from scratch matching the established cast + style",
+          "mj_prompt": "ultra-realistic photograph, a peg-doll girl in a red dress (Segina), a peg-doll boy in a red shirt (Sam), a tabby cat, a scruffy brown dog, a grey rat, a small ant, and a tiny bouncing puppy, all together celebrating at a hilltop under five glowing gold letters A E I O U arcing overhead like bunting, confetti falling, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "file": "muddy-cast.png",
+          "issue": "MODERATE — Ant is missing from the group despite the artNote requiring the full cast (pup, cat, dog, rat, ant, Segina, Sam); the Rat character reads as a lizard/monster rather than a recognizable rodent; Pup is hard to distinguish from Dog",
+          "fix": "Regenerate or retouch to add a visible mud-splattered Ant and redesign Rat as a clearly rodent-shaped grey rat",
+          "mj_prompt": "ultra-realistic photograph, a peg-doll girl (Segina) and peg-doll boy (Sam), a tabby cat, a scruffy brown dog, a small tiny bouncing puppy, a grey rat with a pointed rodent snout and long tail, and a small ant, all splattered with brown mud and laughing together, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ]
+    }
+  ]
+}

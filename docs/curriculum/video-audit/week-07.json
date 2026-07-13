@@ -1,0 +1,54 @@
+{
+  "week": 7,
+  "images": [
+    { "file": "cat-naps.png", "depicts": "tabby cat fast asleep curled up", "name_matches_content": true, "issue": null },
+    { "file": "cat-nap-mat.png", "depicts": "cat asleep sprawled on woven mat", "name_matches_content": true, "issue": null },
+    { "file": "cat-nap-map.png", "depicts": "cat asleep on top of open paper map", "name_matches_content": true, "issue": null },
+    { "file": "cat-nap-cap.png", "depicts": "cat curled asleep inside a baseball cap", "name_matches_content": true, "issue": null },
+    { "file": "cat-nap-pan.png", "depicts": "cat asleep coiled inside a frying pan", "name_matches_content": true, "issue": null },
+    { "file": "pat-cat.png", "depicts": "child's hand gently patting sleeping cat's head", "name_matches_content": true, "issue": null },
+    { "file": "tap-cat.png", "depicts": "finger tapping near sleeping cat with ripple sound-lines", "name_matches_content": true, "issue": null },
+    { "file": "cat-naps-through.png", "depicts": "Sam, Segina and ant tiptoeing around sleeping cat", "name_matches_content": true, "issue": "cast drift — Sam's hair/head design (spiky light hair, wool sweater) differs from the painted-wood brown-haired boy used in Week 6" },
+    { "file": "cat-nap-potato.png", "depicts": "cat asleep using potato as pillow", "name_matches_content": true, "issue": null },
+    { "file": "pig.png", "depicts": "small pink piglet", "name_matches_content": true, "issue": null },
+    { "file": "pen.png", "depicts": "two blue ballpoint pens crossed", "name_matches_content": true, "issue": null },
+    { "file": "panda.png", "depicts": "sitting panda cub", "name_matches_content": true, "issue": null },
+    { "file": "parrot.png", "depicts": "colorful macaw parrot perched", "name_matches_content": true, "issue": null },
+    { "file": "penguin.png", "depicts": "small penguin chick standing", "name_matches_content": true, "issue": null },
+    { "file": "pizza.png", "depicts": "slice of cheese pizza", "name_matches_content": true, "issue": null },
+    { "file": "pumpkin.png", "depicts": "round orange pumpkin with stem", "name_matches_content": true, "issue": null },
+    { "file": "paint.png", "depicts": "open paint tin with brush", "name_matches_content": true, "issue": null }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "P-P-Pop",
+      "line_map": [
+        { "line": "P-p-pig! It's a pig!", "best_image_by_CONTENT": "pig.png", "needs": "ok" },
+        { "line": "P-p-pen! It's a pen!", "best_image_by_CONTENT": "pen.png", "needs": "ok" },
+        { "line": "P-p-panda! It's a panda!", "best_image_by_CONTENT": "panda.png", "needs": "ok" },
+        { "line": "P-p-penguin! It's a penguin!", "best_image_by_CONTENT": "penguin.png", "needs": "ok" },
+        { "line": "A potato?! YES?! ... but not the answer!", "best_image_by_CONTENT": "no potato image in this week's folder (reused week1 potato.png)", "needs": "acceptable-hold" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "The Cat Naps",
+      "line_map": [
+        { "line": "The cat naps on the mat! (the mat!)", "best_image_by_CONTENT": "cat-nap-mat.png", "needs": "ok" },
+        { "line": "The cat naps on the map! (a map?!)", "best_image_by_CONTENT": "cat-nap-map.png", "needs": "ok" },
+        { "line": "The cat naps on the cap! (a cap?!)", "best_image_by_CONTENT": "cat-nap-cap.png", "needs": "ok" },
+        { "line": "Pat the cat. (pat, pat!)", "best_image_by_CONTENT": "pat-cat.png", "needs": "ok" },
+        { "line": "Tap, tap, tap!", "best_image_by_CONTENT": "tap-cat.png", "needs": "ok" },
+        { "line": "The cat naps on the pan.", "best_image_by_CONTENT": "cat-nap-pan.png", "needs": "ok" },
+        { "line": "The cat naps on a POTATO! (POTATO!)", "best_image_by_CONTENT": "cat-nap-potato.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": []
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "week": 43,
+  "images": [
+    { "file": "train.png", "depicts": "ornate steam train with glowing headlamp on tracks", "name_matches_content": true, "issue": null },
+    { "file": "rain.png", "depicts": "fat silver raindrops falling and splashing", "name_matches_content": true, "issue": null },
+    { "file": "train-rain.png", "depicts": "train front chugging through heavy rain, headlamp bright", "name_matches_content": true, "issue": null },
+    { "file": "sheep-play-rain.png", "depicts": "fluffy sheep running/splashing through rain water", "name_matches_content": true, "issue": null },
+    { "file": "train-tail.png", "depicts": "red caboose with swinging lantern, tail end of train", "name_matches_content": true, "issue": null },
+    { "file": "snake-tail.png", "depicts": "close-up coiled snake head portrait, tongue out, on rope — generic snake ID shot", "name_matches_content": false, "issue": "Does not show the snake's TAIL prominently or any train/platform context; reads as a stock 'Snake' character portrait rather than 'Snake showing off its long tail' as required by book:6." },
+    { "file": "cast-playing.png", "depicts": "sheep with snake wrapped around it affectionately, tiny chick nearby, rain falling", "name_matches_content": true, "issue": null },
+    { "file": "play-allday.png", "depicts": "wide scene: blurred red train, sheep+chick+snake in foreground, rain", "name_matches_content": true, "issue": null },
+    { "file": "potato-rain.png", "depicts": "anthropomorphic potato under umbrella in puddle, sheep peering from behind red caboose", "name_matches_content": true, "issue": null },
+    { "file": "tail.png", "depicts": "curled fuzzy animal tail close-up", "name_matches_content": true, "issue": null },
+    { "file": "snail.png", "depicts": "garden snail with spiral shell", "name_matches_content": true, "issue": null },
+    { "file": "day.png", "depicts": "bright sun through silhouetted trees at dawn/dusk", "name_matches_content": true, "issue": null },
+    { "file": "play.png", "depicts": "stack of colourful building blocks and balls", "name_matches_content": true, "issue": null },
+    { "file": "hay.png", "depicts": "round golden hay bale", "name_matches_content": true, "issue": null },
+    { "file": "tray.png", "depicts": "wooden serving tray", "name_matches_content": true, "issue": null }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Ay-Ay-Play!",
+      "line_map": [
+        { "line": "R-A-I-N — rain! (in the rain!)", "best_image_by_CONTENT": "rain.png / train-rain.png", "needs": "ok" },
+        { "line": "D-A-Y — day! (all day!)", "best_image_by_CONTENT": "day.png", "needs": "ok" },
+        { "line": "Play in the rain! A train! A tail! (choo-choo!)", "best_image_by_CONTENT": "train.png + snake-tail.png", "needs": "generate", "note": "snake-tail.png doesn't show the tail/platform scene" },
+        { "line": "A potato?! (NO!) P-p-potato! In the rain!", "best_image_by_CONTENT": "potato-rain.png", "needs": "ok" }
+      ]
+    },
+    {
+      "role": "word",
+      "title": "The Train in the Rain",
+      "line_map": [
+        { "line": "The train is in the rain!", "best_image_by_CONTENT": "train-rain.png", "needs": "ok" },
+        { "line": "Sheep can play in the rain!", "best_image_by_CONTENT": "sheep-play-rain.png", "needs": "ok" },
+        { "line": "Snake has a long tail!", "best_image_by_CONTENT": "snake-tail.png", "needs": "generate", "note": "no tail/platform shown, just a generic snake portrait" },
+        { "line": "The train can go! Chick is on the train!", "best_image_by_CONTENT": "train.png / train-tail.png (no dedicated chick-on-train shot; chick covered separately in cast-playing.png)", "needs": "acceptable-hold" },
+        { "line": "The train… the rain… In the rain?! (a potato!)", "best_image_by_CONTENT": "potato-rain.png", "needs": "ok" }
+      ]
+    }
+  ],
+  "aliases": {},
+  "generate": [
+    {
+      "proposed_filename": "snake-tail-v2.png",
+      "line": "Snake has a long tail. (book:6)",
+      "mj_prompt": "a friendly emerald-green garden snake with large gentle amber eyes proudly showing off its very long curled tail stretched across a train station platform beside the tracks, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    }
+  ],
+  "wrong_art": [
+    {
+      "file": "snake-tail.png",
+      "issue": "Current image is a generic close-up snake head/coil portrait with no visible full tail and no platform/train context — fails the 'showing off its tail' requirement of book spread 6.",
+      "fix": "Regenerate per snake-tail-v2.png prompt above, framing the tail and station platform clearly."
+    }
+  ]
+}

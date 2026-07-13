@@ -1,0 +1,61 @@
+{
+  "week": 17,
+  "images": [
+    { "file": "fig.png", "depicts": "single plump purple fig, spotlit", "name_matches_content": true, "issue": null },
+    { "file": "fat-fig.png", "depicts": "round fat fig with tiny legs, grinning", "name_matches_content": true, "issue": null },
+    { "file": "fun-run-start.png", "depicts": "starting line, flag, fat fig and cast poised to race", "name_matches_content": true, "issue": null },
+    { "file": "fig-running.png", "depicts": "fat fig running on tiny legs", "name_matches_content": true, "issue": null },
+    { "file": "cast-running.png", "depicts": "dog, pup, rat, cat running together", "name_matches_content": true, "issue": null },
+    { "file": "fig-flexing.png", "depicts": "fat fig flexing, looking fit", "name_matches_content": true, "issue": null },
+    { "file": "fig-running-tired.png", "depicts": "fat fig running, tired, cast trailing behind", "name_matches_content": true, "issue": "minor: cast-behind not clearly visible" },
+    { "file": "fig-with-cup.png", "depicts": "fat fig holding a small trophy cup", "name_matches_content": true, "issue": null },
+    { "file": "potato-running.png", "depicts": "potato with glasses running/gate-crashing finish line", "name_matches_content": true, "issue": null },
+    { "file": "fish.png", "depicts": "single fish, spotlit card asset", "name_matches_content": true, "issue": null },
+    { "file": "fan.png", "depicts": "single fan card asset", "name_matches_content": true, "issue": null },
+    { "file": "fox.png", "depicts": "single fox, spotlit card asset", "name_matches_content": true, "issue": null },
+    { "file": "fire.png", "depicts": "flame, spotlit card asset", "name_matches_content": true, "issue": null },
+    { "file": "feather.png", "depicts": "single feather card asset", "name_matches_content": true, "issue": null },
+    { "file": "fork.png", "depicts": "single fork card asset", "name_matches_content": true, "issue": null },
+    { "file": "frog.png", "depicts": "single frog, spotlit card asset", "name_matches_content": true, "issue": null },
+    { "file": "flag.png", "depicts": "single flag card asset", "name_matches_content": true, "issue": null },
+    { "file": "fun.png", "depicts": "fun-themed card asset", "name_matches_content": true, "issue": null },
+    { "file": "fit.png", "depicts": "fig character posed as fit/flexing", "name_matches_content": true, "issue": "minor: fig rendered green here vs established purple/red elsewhere — color drift" }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "F-F-Fun!",
+      "line_map": [
+        { "line": "It's a fish! (a fish!)", "best_image_by_CONTENT": "fish.png", "needs": "ok" },
+        { "line": "It's a fox! (a fox!)", "best_image_by_CONTENT": "fox.png", "needs": "ok" },
+        { "line": "It's a fire! (a fire!)", "best_image_by_CONTENT": "fire.png", "needs": "ok" },
+        { "line": "It's a frog! (a frog!)", "best_image_by_CONTENT": "frog.png", "needs": "ok" },
+        { "line": "A potato?! (NO!) P-p-potato! Not F!", "best_image_by_CONTENT": "potato-running.png", "needs": "acceptable-hold" },
+        { "line": "F-f-fun! A fun run!", "best_image_by_CONTENT": "fun-run-start.png", "needs": "ok" },
+        { "line": "F-f-fig! The fat fig!", "best_image_by_CONTENT": "fat-fig.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "The Fat Fig",
+      "line_map": [
+        { "line": "The fat fig! Can the fat fig run? The fat fig ran! (it ran!)", "best_image_by_CONTENT": "fig-running.png", "needs": "ok" },
+        { "line": "The dog ran. The pup ran. The rat ran! The cat ran!", "best_image_by_CONTENT": "cast-running.png", "needs": "ok" },
+        { "line": "The fat fig is fit!", "best_image_by_CONTENT": "fig-flexing.png", "needs": "ok", "note": "fit.png is an alternate candidate but has a fig color drift" },
+        { "line": "The fat fig got a cup! (a cup!)", "best_image_by_CONTENT": "fig-with-cup.png", "needs": "ok" },
+        { "line": "Fun! Fun! A fun run! Fun in the sun, sun, sun!", "best_image_by_CONTENT": "fun-run-start.png", "needs": "ok" },
+        { "line": "The fat fig ran and ran! Run, fat fig, run!", "best_image_by_CONTENT": "fig-running-tired.png", "needs": "ok" },
+        { "line": "At the top… a potato ran?! (POTATO!)", "best_image_by_CONTENT": "potato-running.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "cat.png", "line": "reused bingoPool/matching asset (not sung this week, low priority)", "mj_prompt": "ultra-realistic photograph, a single ginger tabby cat sitting centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "potato.png", "line": "reused bingoPool asset (not sung this week, low priority)", "mj_prompt": "ultra-realistic photograph, a single round potato with tiny round glasses, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": []
+    }
+  ]
+}

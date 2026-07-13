@@ -1,0 +1,91 @@
+{
+  "week": 4,
+  "images": [
+    { "file": "cat.png", "depicts": "tabby cat sitting alert, looking up, sleek short fur", "name_matches_content": true, "issue": null },
+    { "file": "car.png", "depicts": "green vintage toy car, chrome trim", "name_matches_content": true, "issue": null },
+    { "file": "cow.png", "depicts": "brown-and-white dairy cow, close-up head-on", "name_matches_content": true, "issue": null },
+    { "file": "cap.png", "depicts": "tan baseball cap on dark green surface", "name_matches_content": true, "issue": null },
+    { "file": "corn.png", "depicts": "single ear of corn, husk partly peeled back", "name_matches_content": true, "issue": null },
+    { "file": "comb.png", "depicts": "wooden comb resting on dark green cloth", "name_matches_content": true, "issue": null },
+    { "file": "candle.png", "depicts": "lit candle in ornate ceramic holder", "name_matches_content": true, "issue": null },
+    { "file": "cat-on-mat.png", "depicts": "same sleek tabby sitting proudly, centered on woven mat", "name_matches_content": true, "issue": null },
+    { "file": "cat-on-mat-silly.png", "depicts": "cat sprawled belly-up on mat, one paw raised, silly pose", "name_matches_content": true, "issue": null },
+    { "file": "cat-levitating.png", "depicts": "cat floating clearly above mat, gap visible, eyes closed, serene", "name_matches_content": true, "issue": null },
+    { "file": "cat-landing.png", "depicts": "a fluffier, rounder, long-haired cat sitting calmly on mat", "name_matches_content": false, "issue": "Cast drift: fur length/build clearly differs from the tabby established in cat.png/cat-on-mat.png/mat-on-cat.png (looks like a different cat/breed). Also the pose barely reads as 'landing' — no motion/impact cue, near-duplicate of the calm cat-on-mat.png sit." },
+    { "file": "mat-on-cat.png", "depicts": "mat genuinely draped over cat like a blanket, tail + paw poking out, face peeking from under weave", "name_matches_content": true, "issue": null },
+    { "file": "cat-asleep.png", "depicts": "cat curled in a tight circle, eyes closed, sleeping on mat", "name_matches_content": true, "issue": null },
+    { "file": "potato-beside-cat.png", "depicts": "raw potato on mat beside cat's face, one cat eye faintly open", "name_matches_content": true, "issue": null },
+    { "file": "mat.png", "depicts": null, "name_matches_content": false, "issue": "MISSING FILE — listed in spec assets (book:1 'A mat.', bingo, matching) but not present in the images folder." },
+    { "file": "cup.png", "depicts": null, "name_matches_content": false, "issue": "MISSING FILE — listed in spec assets (cards, bingo, matching) and sung in w04-sound.mp3 ('C-c-cup! C-c-cup! It's a cup!') but not present in the images folder." }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "C-C-Cat!",
+      "line_map": [
+        { "line": "C! C! C-c-c!", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "(c… c… c…)", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "C! C! C-c-c!", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "C! C! C-c-c!" },
+        { "line": "What begins with C?", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "C-c-cat! C-c-cat!", "best_image_by_content": "cat.png", "needs": "ok" },
+        { "line": "It's a cat! (a cat!)", "best_image_by_content": "cat.png", "needs": "acceptable-hold" },
+        { "line": "C! C! C-c-c!", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "C! C! C-c-c!" },
+        { "line": "What begins with C?", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "What begins with C?" },
+        { "line": "C-c-cup! C-c-cup!", "best_image_by_content": null, "needs": "generate" },
+        { "line": "It's a cup! (a cup!)", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "C! C! C-c-c!", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "C! C! C-c-c!" },
+        { "line": "What begins with C?", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "What begins with C?" },
+        { "line": "C-c-car! C-c-car!", "best_image_by_content": "car.png", "needs": "ok" },
+        { "line": "It's a car! (a car!)", "best_image_by_content": "car.png", "needs": "acceptable-hold" },
+        { "line": "C! C! C-c-c!", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "C! C! C-c-c!" },
+        { "line": "What begins with C?", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "What begins with C?" },
+        { "line": "C-c-cow! C-c-cow!", "best_image_by_content": "cow.png", "needs": "ok" },
+        { "line": "It's a cow! (a cow!)", "best_image_by_content": "cow.png", "needs": "acceptable-hold" },
+        { "line": "A potato?! (NO!)", "best_image_by_content": null, "needs": "generate" },
+        { "line": "P-p-potato! Not C!", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "(c… c… c…)", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "(c… c… c…)" },
+        { "line": "C-c-cat! C-c-cat!", "best_image_by_content": "cat.png", "needs": "acceptable-hold", "repeat_of": "C-c-cat! C-c-cat!" },
+        { "line": "It's a cat! (a cat!)", "best_image_by_content": "cat.png", "needs": "acceptable-hold", "repeat_of": "It's a cat! (a cat!)" },
+        { "line": "C! C! C-c-c!", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "C! C! C-c-c!" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "cup.png", "line": "C-c-cup! C-c-cup! It's a cup!", "mj_prompt": "a simple ceramic cup, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "potato-not-c.png", "line": "A potato?! (NO!) P-p-potato! Not C!", "mj_prompt": "a single raw potato alone on a deep forest-green backdrop, dramatic spotlight, comedic rejected feel conveyed through stark side-lighting and a faint cold rim-glow (no text or graphic overlays), ultra-realistic photograph, single subject centered, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "The Cat Is on the Mat",
+      "line_map": [
+        { "line": "(We can read. We can read!)", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "The cat is on the mat!", "best_image_by_content": "cat-on-mat.png", "needs": "ok" },
+        { "line": "The cat is on the mat!", "best_image_by_content": "cat-on-mat.png", "needs": "acceptable-hold", "repeat_of": "The cat is on the mat!" },
+        { "line": "Where is the cat? (where? where?)", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "The cat is on the mat!", "best_image_by_content": "cat-on-mat.png", "needs": "acceptable-hold", "repeat_of": "The cat is on the mat!" },
+        { "line": "The mat is on the cat?!", "best_image_by_content": "mat-on-cat.png", "needs": "ok" },
+        { "line": "The mat is on the cat?!", "best_image_by_content": "mat-on-cat.png", "needs": "acceptable-hold", "repeat_of": "The mat is on the cat?!" },
+        { "line": "Where is the cat? (where? where?)", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "Where is the cat? (where? where?)" },
+        { "line": "The mat is on the cat!", "best_image_by_content": "mat-on-cat.png", "needs": "acceptable-hold", "repeat_of": "The mat is on the cat?!" },
+        { "line": "The cat is… on the mat?", "best_image_by_content": "cat-levitating.png", "needs": "ok" },
+        { "line": "(No! Look! Up! Up!)", "best_image_by_content": "cat-levitating.png", "needs": "acceptable-hold" },
+        { "line": "Where is the cat? (where? where?)", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "Where is the cat? (where? where?)" },
+        { "line": "The cat is UP! (Come down, cat!)", "best_image_by_content": "cat-levitating.png", "needs": "ok" },
+        { "line": "The cat is on the mat.", "best_image_by_content": "cat-asleep.png", "needs": "ok" },
+        { "line": "(shhh… the cat is asleep)", "best_image_by_content": "cat-asleep.png", "needs": "acceptable-hold" },
+        { "line": "A potato is on the mat!", "best_image_by_content": "potato-beside-cat.png", "needs": "alias" },
+        { "line": "(POTATO!)", "best_image_by_content": "potato-beside-cat.png", "needs": "acceptable-hold" }
+      ],
+      "aliases": {
+        "a-potato-is-on-the-mat": "potato-beside-cat.png"
+      },
+      "generate": [
+        { "proposed_filename": "mat.png", "line": "(book spread 1 — \"A mat.\" — no sung lyric, but the asset file is missing entirely)", "mj_prompt": "a small woven floor mat alone on the floor, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": [
+        { "file": "cat-landing.png", "issue": "Cast drift — fluffier/longer-haired, rounder-faced cat that doesn't match the tabby established in cat.png/cat-on-mat.png/mat-on-cat.png; the pose also barely reads as 'landing' (no motion or impact cue, near-duplicate of the calm cat-on-mat.png sit pose).", "fix": "reroll", "mj_prompt": "the SAME sleek short-haired tabby cat as cat.png (narrow dark stripes, lean build, pointed ears), captured just touching back down on a small woven floor mat, front paws splayed for impact, fur slightly wind-ruffled at the edges, ears back, wide alert eyes, subtle motion blur near the paws, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ]
+    }
+  ]
+}

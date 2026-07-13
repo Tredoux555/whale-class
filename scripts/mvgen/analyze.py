@@ -420,6 +420,30 @@ _MAX_WINDOWS = 16          # cap on windowed re-transcriptions per song
 _MIN_WINDOW_DUR = 0.6      # don't re-transcribe a sliver
 _WHISPER_SR = 16000
 
+# FIX 5 (giant alignment blob guard): a single sung word never plausibly spans
+# more than this. faster-whisper can emit one "word" covering a whole whispered/
+# held intro (W02 had a 20.7s token; W08 an 8s 'Sit,'), which poisons subtitles
+# AND leaves the region anchorless while the image scheduler cycles fillers. Any
+# aligned word longer than this is DEMOTED: first un-anchored so the existing
+# windowed re-transcription can try to time it properly, and — if it still cannot
+# be timed — BLANKED (dropped from the output) so that region renders
+# subtitle-free and hands the matcher no false anchor, rather than smearing one
+# word across many seconds.
+#
+# WARN-1 (melisma headroom): raised 2.5 -> 4.5. A GENUINE held sung note (a
+# melisma — "caaaaat" drawn across ~3.5-4s over a musical phrase) is a real,
+# correctly-timed word, NOT a blob. The old 2.5 threshold demoted/blanked it,
+# which both lost the subtitle AND — because the dropped span then read as a
+# no-timed-word hole between its neighbours — inflated the inter-token gap past
+# shotlist.MATCH_TOKEN_GAP, silently truncating a correct phrase (traced:
+# "the cat sat[3.5s] in the cap" lost cat-in-cap to a bare cat). 4.5 keeps a
+# sung melisma as a real timed word while still catching the actual artefacts
+# this guard exists for (the 8s and 20.7s blobs are far above 4.5 — headroom is
+# safe). The companion fix is shotlist.MATCH_TOKEN_GAP measuring only true
+# inter-word SILENCE, so a surviving melisma's DURATION no longer counts as
+# cross-line reach.
+_MAX_WORD_SPAN = 4.5
+
 
 def build_aligned_words(audio_path, lyrics_text, duration, aux, model_size):
     """Ground-truth lyric alignment. Returns ``[{word,start,end}]`` where every
@@ -442,6 +466,7 @@ def build_aligned_words(audio_path, lyrics_text, duration, aux, model_size):
         _log("no whisper -> even-distribute all %d lyric words across active "
              "song (RMS-gated)" % len(timed))
         _even_fill(timed, 0, len(timed) - 1, 0.0, duration, active)
+        _blank_long_spans(timed)  # FIX 5 backstop even without whisper
         return _finalize(timed, duration)
 
     # --- Pass 1: full transcript -> DP align ---
@@ -462,6 +487,13 @@ def build_aligned_words(audio_path, lyrics_text, duration, aux, model_size):
     # NB: sparse-false-anchor rejection is deferred to AFTER Pass 2 (see below).
     # Doing it here would reshape the uncovered runs and thus shift Pass-2 window
     # boundaries elsewhere in the song — the fix must not perturb the front half.
+    # FIX 5: un-anchor giant matched spans NOW so Pass 2's windowed
+    # re-transcription can try to time them properly (a demoted giant word
+    # becomes an uncovered run bounded by its neighbours).
+    long_demoted = _demote_long_spans(timed)
+    if long_demoted:
+        _log("pass-1: demoted %d matched span(s) > %.1fs (giant-blob guard) -> "
+             "uncovered for re-transcription" % (long_demoted, _MAX_WORD_SPAN))
     n_matched = sum(1 for w in timed if w["matched"])
     _log("pass-1 alignment: %d matched, %d dropped as compressed/false -> "
          "%d/%d trusted anchors (%.0f%%)"
@@ -515,6 +547,9 @@ def build_aligned_words(audio_path, lyrics_text, duration, aux, model_size):
     # instead of leaving the climax blank. Deferring it past Pass 2 also means it
     # cannot reshape earlier windows — the front half stays byte-identical.
     win_sparse = _reject_sparse_anchors(timed, active)
+    # FIX 5: a window re-transcription can itself yield a giant span — un-anchor
+    # it too (before Pass 3) so it never acts as a bad even-fill boundary.
+    win_long = _demote_long_spans(timed)
 
     # --- Pass 3: RMS-gated even distribution of everything still uncovered ---
     even_runs = 0
@@ -526,9 +561,17 @@ def build_aligned_words(audio_path, lyrics_text, duration, aux, model_size):
         _even_fill(timed, gs, ge, t0, t1, active)
         even_runs += 1
 
-    _log("gap fill: %d windows re-transcribed (%d compressed + %d sparse window "
-         "matches dropped), %d run(s) even-distributed"
-         % (windows_used, win_dropped, win_sparse, even_runs))
+    # FIX 5 backstop: anything STILL longer than _MAX_WORD_SPAN (a lone word
+    # even-spread across a long anchorless region) is blanked -> dropped in
+    # _finalize, leaving that region subtitle-free instead of a multi-second
+    # smear the matcher would false-anchor on.
+    long_blanked = _blank_long_spans(timed)
+
+    _log("gap fill: %d windows re-transcribed (%d compressed + %d sparse + %d "
+         "long window matches dropped), %d run(s) even-distributed, %d long "
+         "span(s) blanked"
+         % (windows_used, win_dropped, win_sparse, win_long, even_runs,
+            long_blanked))
     if os.environ.get("MVGEN_DEBUG"):
         for i, w in enumerate(timed):
             _log("  [%02d] m=%d %6s..%6s  %s"
@@ -540,13 +583,19 @@ def build_aligned_words(audio_path, lyrics_text, duration, aux, model_size):
 
 
 def _uncovered_runs(timed):
-    """Return [(start_idx, end_idx), ...] of maximal runs of unmatched words."""
+    """Return [(start_idx, end_idx), ...] of maximal runs of unmatched words.
+
+    A ``blank`` word (FIX 5 — a demoted giant span that could not be timed) is
+    NOT part of an uncovered run: it must stay untimed (dropped later), so it
+    breaks runs like a matched word does and is never even-distributed."""
+    def _fillable(w):
+        return not w["matched"] and not w.get("blank")
     runs = []
     i, n = 0, len(timed)
     while i < n:
-        if not timed[i]["matched"]:
+        if _fillable(timed[i]):
             j = i
-            while j + 1 < n and not timed[j + 1]["matched"]:
+            while j + 1 < n and _fillable(timed[j + 1]):
                 j += 1
             runs.append((i, j))
             i = j + 1
@@ -669,6 +718,50 @@ def _reject_sparse_anchors(timed, active):
     return dropped
 
 
+def _demote_long_spans(timed):
+    """FIX 5, pass 1: un-anchor any MATCHED word spanning > _MAX_WORD_SPAN.
+
+    A giant matched span is a faster-whisper artifact (one 'word' covering a
+    whole whispered/held phrase). Demoting it (matched=False, start/end=None)
+    merges it back into an uncovered run so the existing windowed
+    re-transcription ladder gets a chance to time it properly. Returns the count
+    demoted. Runs BEFORE Pass 2 so re-transcription can act."""
+    dropped = 0
+    for w in timed:
+        if not w["matched"] or w["start"] is None or w["end"] is None:
+            continue
+        if (float(w["end"]) - float(w["start"])) > _MAX_WORD_SPAN:
+            w["matched"] = False
+            w["start"] = None
+            w["end"] = None
+            dropped += 1
+    return dropped
+
+
+def _blank_long_spans(timed):
+    """FIX 5, final backstop: BLANK any word still spanning > _MAX_WORD_SPAN.
+
+    Runs AFTER all re-transcription + even-distribution. Anything still too long
+    (a lone lyric word even-spread across a long anchorless region, or a giant
+    match re-transcription could not shorten) is marked ``blank`` and cleared —
+    ``_finalize`` then drops it entirely, so the region renders subtitle-free
+    (no smear) and the image matcher gets no false multi-second anchor. Returns
+    the count blanked."""
+    blanked = 0
+    for w in timed:
+        if w.get("blank"):
+            continue
+        s, e = w["start"], w["end"]
+        if s is None or e is None:
+            continue
+        if (float(e) - float(s)) > _MAX_WORD_SPAN:
+            w["blank"] = True
+            w["start"] = None
+            w["end"] = None
+            blanked += 1
+    return blanked
+
+
 def _even_fill(timed, gs, ge, t0, t1, active):
     """Even-distribute timed[gs..ge] across [t0,t1], restricted to active
     (singing) intervals when any overlap the window; else across the raw span.
@@ -706,6 +799,10 @@ def _finalize(timed, duration):
     out = []
     prev_end = 0.0
     for w in timed:
+        # FIX 5: a blanked giant span carries no timing — drop it entirely so the
+        # region stays subtitle-free (no smear) and hands the matcher no anchor.
+        if w.get("blank"):
+            continue
         s = w["start"] if w["start"] is not None else prev_end
         e = w["end"] if w["end"] is not None else s
         s = max(0.0, min(float(s), duration))
@@ -757,12 +854,17 @@ def align_lyrics_to_subs(lyrics_text, subs_words, duration, aux):
     raw_m = sum(1 for w in timed if w["matched"])
     _reject_compressed_matches(timed)
     _reject_sparse_anchors(timed, active)
+    # FIX 5: un-anchor giant matched sub-cue spans before even-fill (no
+    # re-transcription is available on the subs path — they will either be
+    # even-distributed with their run or, if still too long, blanked below).
+    _demote_long_spans(timed)
     for (gs, ge) in _uncovered_runs(timed):
         t0 = _anchor_before(timed, gs)
         t1 = _anchor_after(timed, ge, duration)
         if t1 <= t0:
             t1 = min(duration, t0 + 0.12 * (ge - gs + 1))
         _even_fill(timed, gs, ge, t0, t1, active)
+    _blank_long_spans(timed)  # FIX 5 backstop (see build_aligned_words)
     n_final = sum(1 for w in timed if w["matched"])
     _log("subs+lyrics alignment: %d lyric tokens, %d matched to sub words "
          "(%d after rejection), rest even-distributed"
@@ -774,14 +876,34 @@ def align_lyrics_to_subs(lyrics_text, subs_words, duration, aux):
 # Top-level
 # ---------------------------------------------------------------------------
 
+def _hash_file_bytes(h, path):
+    """Fold a file's raw bytes into hash ``h`` in 1 MB streamed chunks.
+
+    Missing/unreadable files contribute nothing (treated as empty) so the
+    fingerprint stays stable. Streaming keeps memory flat on multi-MB mp3s."""
+    if not (path and os.path.exists(path)):
+        return
+    try:
+        with open(path, "rb") as fh:
+            for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+                h.update(chunk)
+    except OSError:
+        pass
+
+
 def compute_inputs_fingerprint(lyrics_path=None, subs_path=None,
-                               model_size="base"):
+                               model_size="base", audio_path=None):
     """SHA-256 over the alignment inputs that determine the word timing/text.
 
-    A cached timeline.json stores this so a later run can detect that the pasted
-    lyrics or the supplied subs file changed (the duration-only guard cannot).
-    Digest = sha256((lyrics_text or "") + "\\x00" + (subs BYTES or b"") + model).
-    Missing/unreadable files are treated as empty so the fingerprint is stable.
+    A cached timeline.json stores this so a later run can detect that any input
+    changed (the duration-only guard cannot). FIX 1: the AUDIO bytes are folded
+    in — the curriculum take-pick workflow reuses the SAME canonical mp3 filename
+    across regenerated takes, so the out-dir (keyed on filename) and the duration
+    can both be identical while the actual audio differs; without the audio in
+    the fingerprint a regenerated take silently re-used the previous take's
+    timeline. Digest = sha256(lyrics_text + \\x00 + subs BYTES + model + \\x00 +
+    AUDIO BYTES). Old timelines whose fingerprint predates the audio fold simply
+    mismatch once and re-analyze. Missing/unreadable files are treated as empty.
     """
     import hashlib
     h = hashlib.sha256()
@@ -794,15 +916,11 @@ def compute_inputs_fingerprint(lyrics_path=None, subs_path=None,
             lyrics_text = ""
     h.update(lyrics_text.encode("utf-8"))
     h.update(b"\x00")
-    subs_bytes = b""
-    if subs_path and os.path.exists(subs_path):
-        try:
-            with open(subs_path, "rb") as fh:
-                subs_bytes = fh.read()
-        except OSError:
-            subs_bytes = b""
-    h.update(subs_bytes)
+    _hash_file_bytes(h, subs_path)
     h.update((model_size or "").encode("utf-8"))
+    h.update(b"\x00")
+    # FIX 1: the audio itself — the load-bearing addition for regenerated takes.
+    _hash_file_bytes(h, audio_path)
     return h.hexdigest()
 
 
@@ -864,10 +982,12 @@ def build_timeline(audio_path, lyrics_path=None, no_lyrics=False,
         "sections": info["sections"],
         "grid": info["grid"],
         "words": words,
-        # Fingerprint of the alignment inputs (lyrics text + subs bytes + model)
-        # so a cached timeline is invalidated when they change (mvgen.py guard).
+        # Fingerprint of the alignment inputs (lyrics text + subs bytes + model
+        # + AUDIO bytes) so a cached timeline is invalidated when ANY of them
+        # change — including a regenerated take that kept the mp3 filename+
+        # duration (FIX 1). mvgen.py's cache guard recomputes + compares this.
         "inputs_fingerprint": compute_inputs_fingerprint(
-            lyrics_path, subs_path, model_size),
+            lyrics_path, subs_path, model_size, audio_path=audio_path),
     }
 
 

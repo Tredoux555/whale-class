@@ -1,0 +1,55 @@
+{
+  "week": 35,
+  "images": [
+    { "file": "frog-grin.png", "depicts": "plump green frog breaking into an enormous grin", "name_matches_content": true, "issue": null },
+    { "file": "frog-big-grin.png", "depicts": "extreme close-up of a frog's grin, every tooth showing", "name_matches_content": true, "issue": null },
+    { "file": "frog-drum.png", "depicts": "frog straddling a drum, drumsticks blurred mid-bang", "name_matches_content": true, "issue": null },
+    { "file": "crab.png", "depicts": "red crab scuttling, claws mid-snip, eyestalks tilted", "name_matches_content": true, "issue": null },
+    { "file": "crab-grass.png", "depicts": "red crab peeking from a tuft of grass, wide grin", "name_matches_content": true, "issue": null },
+    { "file": "snake-grin-frog.png", "depicts": "emerald snake nose-to-nose with a frog, both grinning", "name_matches_content": true, "issue": null },
+    { "file": "cast-grinning.png", "depicts": "plush-toy-style: frog, crab, snake, chick, sheep lined up grinning ear to ear, drum in front", "name_matches_content": true, "issue": "style drift to plush-toy render vs photoreal house style (same pattern as W31 king-sang-cast.png, W34 cast-clapping.png)" },
+    { "file": "potato-grass.png", "depicts": "potato with a DRAWN-ON marker-style smiley face in a tuft of grass, cast staring", "name_matches_content": true, "issue": "potato has a drawn-on grin, breaking the plain/realistic potato design used in W31-33; same face-drift pattern as W34's potato-on-sled.png" },
+    { "file": "brick.png", "depicts": "single red clay brick", "name_matches_content": true, "issue": null },
+    { "file": "truck.png", "depicts": "orange toy dump truck", "name_matches_content": true, "issue": null },
+    { "file": "grin.png", "depicts": "extreme close-up of another toad/frog face grinning — essentially a duplicate of frog-big-grin.png", "name_matches_content": false, "issue": "content mismatch — spec calls for a generic/abstract toothy smiling mouth close-up (species-neutral); delivered image is just another frog face" }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Fr-Fr-Frog!",
+      "line_map": [
+        { "line": "Fr-fr-frog! FROG! (hop!)", "best_image_by_content": null, "needs": "generate (no plain frog.png exists — closest is frog-grin.png, already grinning)" },
+        { "line": "Cr-cr-crab! CRAB! (snip!)", "best_image_by_content": "crab.png", "needs": "ok" },
+        { "line": "Dr-dr-drum! DRUM! (bang!)", "best_image_by_content": "frog-drum.png", "needs": "ok, but no standalone drum.png card asset exists"},
+        { "line": "Gr-gr-grin! GRIN! (big grin!)", "best_image_by_content": "frog-big-grin.png", "needs": "ok" },
+        { "line": "A potato?! (NO!) P-p-potato! No blend!", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "Outro: Fr-fr-frog! Cr-cr-crab! Dr-dr-drum! Gr-gr-grin!", "best_image_by_content": "frog-grin.png / crab.png / frog-drum.png / frog-big-grin.png", "needs": "ok (repeat)" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "frog.png", "line": "book:1 'A frog.' (neutral pre-grin pose) + sound-song 'FROG! (hop!)' + cards/bingo/matching base asset (CRITICAL — file entirely absent)", "mj_prompt": "a plump glossy green frog sitting with a neutral mouth and a lily pad under one foot, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "Frog Can Grin",
+      "line_map": [
+        { "line": "Frog can grin! (hook, x2) A big, big grin!", "best_image_by_content": "frog-grin.png / frog-big-grin.png", "needs": "ok" },
+        { "line": "Frog can bang the drum! Crab can snap and grin! Grin and grab and grin!", "best_image_by_content": "frog-drum.png + crab.png/crab-grass.png", "needs": "ok" },
+        { "line": "Snake can grin at Frog! Chick can grin and clap! Grin, Frog, grin!", "best_image_by_content": "snake-grin-frog.png + cast-grinning.png (for Chick)", "needs": "alias (no dedicated chick-only image exists this week; cast-grinning.png is the only frame with Chick, and it's style-drifted)" },
+        { "line": "Outro: Frog… the grin… A potato?! (POTATO!) Frog can grin at a potato!", "best_image_by_content": "potato-grass.png", "needs": "ok (style flagged)" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "drum.png", "line": "cards/bingo/matching base asset (spec lists it; file entirely absent)", "mj_prompt": "a small round drum with two crossed drumsticks, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "drum-coloring.png", "line": "materials.coloring lists 'drum' but no coloring-page file exists", "mj_prompt": "a round drum with drumsticks and beat lines, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+      ],
+      "wrong_art": [
+        { "file": "cast-grinning.png", "issue": "plush-toy render style drift vs photoreal house style", "fix": "reroll to photoreal — mj_prompt: a green frog, a red crab, an emerald-green snake, a yellow chick and a white sheep lined up in a row all grinning ear to ear with a drum in front, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "file": "potato-grass.png", "issue": "drawn-on smiley face breaks the plain-potato series canon", "fix": "reroll — mj_prompt: a single plain raw potato (no drawn face) in a tuft of grass, a frog crab snake chick and sheep gathered around all grinning at it, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "file": "grin.png", "issue": "duplicate frog face instead of a generic/abstract smiling-mouth close-up", "fix": "reroll — mj_prompt: a big cheerful toothy human-style smiling mouth close-up, no face or species context, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ]
+    }
+  ]
+}

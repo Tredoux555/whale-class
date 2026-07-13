@@ -1,0 +1,62 @@
+{
+  "week": 42,
+  "images": [
+    { "file": "bridge.png", "depicts": "great stone arched bridge glowing, ice/water below", "name_matches_content": true, "issue": null },
+    { "file": "bridge-to-ice.png", "depicts": "bridge stretching over sunlit rushing water toward warm glow", "name_matches_content": true, "issue": "Water below reads more like flowing/foamy water than 'glittering ice'; acceptable-hold given ice-below.png separately covers the icy look." },
+    { "file": "sheep-bridge.png", "depicts": "fluffy round white creature on rope bridge, one limb raised waving", "name_matches_content": true, "issue": null },
+    { "file": "cast-gathering.png", "depicts": "emerald snake + tiny yellow chick on bridge, blurred white sheep in background", "name_matches_content": true, "issue": null },
+    { "file": "huge-bridge.png", "depicts": "wide bridge view crossed by a hedgehog, bear cub, rabbit, fox and squirrel", "name_matches_content": false, "issue": "WRONG CHARACTERS: shows generic forest animals instead of the designated cast (Sheep, Snake, Chick, Dog)." },
+    { "file": "cage.png", "depicts": "golden lantern-cage hanging on bridge post, candle glowing inside", "name_matches_content": true, "issue": null },
+    { "file": "ice-below.png", "depicts": "swirling icy/foamy water with sparkle, seen from above", "name_matches_content": true, "issue": null },
+    { "file": "dog-catch.png", "depicts": "dog leaping mid-air on bridge, joyful", "name_matches_content": true, "issue": null },
+    { "file": "potato-bridge.png", "depicts": "Sheep, anthropomorphic crowned potato, Dog, Snake, Chick gathered together", "name_matches_content": true, "issue": null },
+    { "file": "ice.png", "depicts": "clear glinting ice cube", "name_matches_content": true, "issue": null },
+    { "file": "mice.png", "depicts": "two grey mice close-up", "name_matches_content": true, "issue": null },
+    { "file": "face.png", "depicts": "smiling face carved into round wooden disc", "name_matches_content": true, "issue": null },
+    { "file": "page.png", "depicts": "curling white paper page", "name_matches_content": true, "issue": null },
+    { "file": "catch.png", "depicts": "baseball glove catching a ball", "name_matches_content": true, "issue": null },
+    { "file": "match.png", "depicts": "wooden match with red tip", "name_matches_content": true, "issue": null }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Ice-Ice-Bridge!",
+      "line_map": [
+        { "line": "I-C-E — ice! (on the ice!)", "best_image_by_CONTENT": "ice.png", "needs": "ok" },
+        { "line": "C-A-G-E — cage!", "best_image_by_CONTENT": "cage.png", "needs": "ok" },
+        { "line": "-tch! Catch! C-A-T-C-H — catch!", "best_image_by_CONTENT": "catch.png", "needs": "ok" },
+        { "line": "-dge! Bridge! B-R-I-D-G-E — bridge!", "best_image_by_CONTENT": "bridge.png", "needs": "ok" },
+        { "line": "Cross the bridge! Level Two is DONE! The tree is full!", "best_image_by_CONTENT": "huge-bridge.png", "needs": "generate", "note": "wrong characters shown" },
+        { "line": "A potato?! (NO!) P-p-potato! On the bridge!", "best_image_by_CONTENT": "potato-bridge.png", "needs": "ok" },
+        { "line": "We cross to READ! (Level Three!)", "best_image_by_CONTENT": "potato-bridge.png / bridge-to-ice.png", "needs": "alias" }
+      ]
+    },
+    {
+      "role": "word",
+      "title": "The Bridge to the Ice",
+      "line_map": [
+        { "line": "A bridge to the ice!", "best_image_by_CONTENT": "bridge-to-ice.png", "needs": "ok" },
+        { "line": "Cross, Snake! Cross, Chick!", "best_image_by_CONTENT": "cast-gathering.png", "needs": "ok" },
+        { "line": "Sheep is on the bridge.", "best_image_by_CONTENT": "sheep-bridge.png", "needs": "ok" },
+        { "line": "The bridge is huge!", "best_image_by_CONTENT": "huge-bridge.png", "needs": "generate", "note": "wrong characters shown" },
+        { "line": "Catch, Dog! Catch!", "best_image_by_CONTENT": "dog-catch.png", "needs": "ok" },
+        { "line": "The bridge… the ice… On the bridge?! (a potato!)", "best_image_by_CONTENT": "potato-bridge.png", "needs": "ok" }
+      ]
+    }
+  ],
+  "aliases": {},
+  "generate": [
+    {
+      "proposed_filename": "huge-bridge-v2.png",
+      "line": "The bridge is huge. / Cross, Snake! Cross, Chick! Sheep is on the bridge. (book:5)",
+      "mj_prompt": "a wide view of a tiny fluffy white sheep, an emerald-green snake, a small fluffy yellow chick and a dog crossing a vast glowing arched bridge toward a warm light on the far side, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    }
+  ],
+  "wrong_art": [
+    {
+      "file": "huge-bridge.png",
+      "issue": "Shows a hedgehog, bear cub, rabbit, fox and squirrel crossing the bridge instead of the designated Level-2 cast (Sheep, Snake, Chick, Dog) — wrong characters entirely, breaks cast continuity for this scene.",
+      "fix": "Regenerate per huge-bridge-v2.png prompt above with the correct 4 cast members."
+    }
+  ]
+}

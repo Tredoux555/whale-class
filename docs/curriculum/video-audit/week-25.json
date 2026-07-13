@@ -1,0 +1,223 @@
+{
+  "week": 25,
+  "images": [
+    {
+      "file": "duck.png",
+      "depicts": "FILE MISSING FROM FOLDER (book spread 1 has no image)",
+      "name_matches_content": false,
+      "issue": "Spec asset + book spread 1 requires duck.png but it does not exist in the Week 25 images folder. Also referenced as fallback for word-song intro line. Must be generated/added."
+    },
+    {
+      "file": "duck-quack.png",
+      "depicts": "real white duck, beak wide open mid-quack, close-up",
+      "name_matches_content": true,
+      "issue": ""
+    },
+    {
+      "file": "cat-quack.png",
+      "depicts": "real tabby cat hissing/snarling with bared fangs and a raised paw, aggressive pose",
+      "name_matches_content": false,
+      "issue": "Does not show the cat 'attempting to quack' in a comedic, unconvinced duck-beak-mouth-shape way per the artNote. It reads as an angry/hissing cat, not a quacking gag."
+    },
+    {
+      "file": "dog-quack.png",
+      "depicts": "real shaggy dog, mouth wide open, head thrown back",
+      "name_matches_content": true,
+      "issue": "Reads slightly more like panting/howling than a joyful committed quack attempt, but close enough to the artNote (head thrown back, mouth open, enthusiastic) to pass."
+    },
+    {
+      "file": "rat-quack.png",
+      "depicts": "real grey rat rearing up on hind legs, front paws raised, mouth closed",
+      "name_matches_content": false,
+      "issue": "Mouth is not open/vocalizing — reads as a startled/reaching pose, not 'tiny high-pitched double quacks.'"
+    },
+    {
+      "file": "sam-quack.png",
+      "depicts": "wooden peg-doll boy in red sweater, hands cupped to mouth, quacking, closed happy eyes",
+      "name_matches_content": true,
+      "issue": ""
+    },
+    {
+      "file": "quack-chorus.png",
+      "depicts": "cat, dog, rat, fox, two small peg dolls, and duck (mid-quack) all together, chaotic group scene",
+      "name_matches_content": true,
+      "issue": "Duck is not visibly 'conducting like a bandleader' as the artNote asks — it's just another quacking member — but the overall 'whole cast chorus' content matches well."
+    },
+    {
+      "file": "fox-quack.png",
+      "depicts": "real red fox, mouth wide open looking upward, howling/yawning-like expression",
+      "name_matches_content": false,
+      "issue": "Does not match 'sly-quacking out the side of its mouth, one eyebrow up, not really trying' — this fox is wide-open-mouthed and skyward, not a sly side-mouth smirk."
+    },
+    {
+      "file": "potato-quack.png",
+      "depicts": "cartoon/CG-rendered potato with googly eyes and a 'QUACK' comic speech bubble",
+      "name_matches_content": false,
+      "issue": "Style break: rendered as a cartoon illustration (googly eyes, comic bubble) instead of the ultra-realistic photograph style used everywhere else in the series, and does not match the established photorealistic 'teacher potato' (glasses, whiteboard) character reused from Week 1."
+    },
+    {
+      "file": "queen.png",
+      "depicts": "smiling wooden peg-doll queen figure with gold crown and red/gold robe",
+      "name_matches_content": true,
+      "issue": ""
+    },
+    {
+      "file": "quilt.png",
+      "depicts": "folded patchwork quilt, multiple fabric colors, tied bundle",
+      "name_matches_content": true,
+      "issue": ""
+    },
+    {
+      "file": "quill.png",
+      "depicts": "large white feather quill pen resting beside a glass inkpot",
+      "name_matches_content": true,
+      "issue": ""
+    },
+    {
+      "file": "quarter.png",
+      "depicts": "close-up silver US quarter coin with 'LIBERTY' visible",
+      "name_matches_content": true,
+      "issue": ""
+    },
+    {
+      "file": "quiver.png",
+      "depicts": "leather quiver full of feathered arrows",
+      "name_matches_content": true,
+      "issue": ""
+    },
+    {
+      "file": "quokka.png",
+      "depicts": "smiling quokka close-up, paws raised, happy expression",
+      "name_matches_content": true,
+      "issue": ""
+    },
+    {
+      "file": "quiz.png",
+      "depicts": "stack of quiz papers with question marks, gold pencil resting on top",
+      "name_matches_content": true,
+      "issue": ""
+    },
+    {
+      "file": "question-mark.png",
+      "depicts": "large glossy red 3D question mark on a dark spotlit surface",
+      "name_matches_content": true,
+      "issue": ""
+    },
+    {
+      "file": "potato.png",
+      "depicts": "FILE MISSING FROM FOLDER (spec says 'REUSED FROM WEEK 1' for bingo pool, and is the correct non-quacking potato needed for the sound song's 'Not Qu!' bridge line)",
+      "name_matches_content": false,
+      "issue": "Not present in Week 25 images folder. Needs to be copied over from Week 1 or regenerated so the sound song bridge line has a plain (non-quacking) potato to contrast against potato-quack.png."
+    }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Qu-Qu-Quack",
+      "line_map": [
+        { "line": "[Intro] kw… kw… kw… (two sounds, one quick glide)", "status": "acceptable-hold", "image": null },
+        { "line": "[Hook 1] Qu! Qu! Kw-kw-kw! What begins with Qu?", "status": "acceptable-hold", "image": null },
+        { "line": "Qu-qu-queen! Qu-qu-queen! It's a queen! (a queen!)", "status": "ok", "image": "queen.png" },
+        { "line": "[Hook 2] Qu! Qu! Kw-kw-kw! What begins with Qu?", "status": "acceptable-hold", "image": null },
+        { "line": "Qu-qu-quilt! Qu-qu-quilt! It's a quilt! (a quilt!)", "status": "ok", "image": "quilt.png" },
+        { "line": "[Hook 3] Qu! Qu! Kw-kw-kw! What begins with Qu?", "status": "acceptable-hold", "image": null },
+        { "line": "Qu-qu-quill! Qu-qu-quill! It's a quill! (a quill!)", "status": "ok", "image": "quill.png" },
+        { "line": "[Breakdown] kw… kw… (q brings u everywhere it goes)", "status": "acceptable-hold", "image": null },
+        { "line": "Q-U… /k/ and /w/… kw… kw…", "status": "acceptable-hold", "image": null },
+        { "line": "quack… (qu starts them all!)", "status": "ok", "image": "duck-quack.png" },
+        { "line": "quick… (qu starts them all!)", "status": "generate", "image": null, "note": "No image conveys 'quick' anywhere in the set." },
+        { "line": "quiz… (qu starts them all!)", "status": "ok", "image": "quiz.png" },
+        { "line": "[Bridge] A potato?! (NO!)", "status": "generate", "image": null, "note": "Needs a PLAIN, non-quacking potato — the only potato asset in this folder (potato-quack.png) shows it quacking, which contradicts 'Not Qu!'" },
+        { "line": "P-p-potato! Not Qu! (kw… kw… kw…)", "status": "generate", "image": null, "note": "Same as above — reuse Week 1's potato.png (teacher potato, glasses) if available, else generate fresh." },
+        { "line": "[Final Hook] Qu! Qu! Kw-kw-kw!", "status": "acceptable-hold", "image": null },
+        { "line": "Qu-qu-quack! Qu-qu-quack!", "status": "ok", "image": "duck-quack.png" },
+        { "line": "The duck says quack, quack, quack!", "status": "ok", "image": "duck-quack.png" }
+      ],
+      "aliases": {},
+      "generate": [
+        {
+          "proposed_filename": "quick.png",
+          "line": "quack… quick… quiz… (qu starts them all!)",
+          "mj_prompt": "a golden lightning bolt frozen mid-motion streaking through the frame, sense of speed, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "proposed_filename": "potato-plain.png",
+          "line": "A potato?! (NO!) / P-p-potato! Not Qu!",
+          "mj_prompt": "REUSE FROM WEEK 1 IF POSSIBLE — a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "The Duck Says Quack",
+      "line_map": [
+        { "line": "[Intro] (quack? quack?)", "status": "ok", "image": "duck-quack.png", "note": "duck.png (plain duck) is missing from the folder; duck-quack.png used as best available substitute." },
+        { "line": "[Hook] The duck says, \"Quack!\"", "status": "ok", "image": "duck-quack.png" },
+        { "line": "The duck says, \"Quack!\" (repeat)", "status": "ok", "image": "duck-quack.png" },
+        { "line": "What does the duck say? (quack! quack!)", "status": "ok", "image": "duck-quack.png" },
+        { "line": "The duck says, \"Quack!\" (repeat)", "status": "ok", "image": "duck-quack.png" },
+        { "line": "[Verse 2] The cat says, \"Quack!\"?", "status": "wrong-art", "image": "cat-quack.png", "note": "Existing file shows a hissing/aggressive cat, not a comedic quack attempt — see wrong_art." },
+        { "line": "The cat says, \"Quack!\"? (repeat)", "status": "wrong-art", "image": "cat-quack.png" },
+        { "line": "(No! That is not right!)", "status": "acceptable-hold", "image": null },
+        { "line": "But the cat says, \"Quack!\"", "status": "wrong-art", "image": "cat-quack.png" },
+        { "line": "[Verse 3] The dog says, \"Quack!\"", "status": "ok", "image": "dog-quack.png" },
+        { "line": "The fox says, \"Quack!\"", "status": "wrong-art", "image": "fox-quack.png", "note": "Existing file shows the fox howling upward, not a sly side-mouth quack — see wrong_art." },
+        { "line": "Quick, quick! Everyone!", "status": "acceptable-hold", "image": null, "note": "'Quick, quick!' itself has no strong visual; 'Everyone!' is covered by the next line's image." },
+        { "line": "(Quack! Quack! Quack!) [everyone]", "status": "ok", "image": "quack-chorus.png" },
+        { "line": "[Verse 4] Sam says, \"Quack!\"", "status": "ok", "image": "sam-quack.png" },
+        { "line": "Sejeena says, \"Quack!\"", "status": "generate", "image": null, "note": "No dedicated Segina-quacking image exists anywhere in the set — quack-chorus.png shows two small blurred peg dolls in the background but neither is a clear, identifiable Segina-quack shot." },
+        { "line": "What does the duck say? (QUACK!)", "status": "ok", "image": "duck-quack.png" },
+        { "line": "Quit it! says the duck!", "status": "generate", "image": null, "note": "No image shows the duck in a stern/scolding 'quit it' pose — duck-quack.png only shows an open-beak quack, not a rebuke." },
+        { "line": "[Outro] The potato says…?", "status": "wrong-art", "image": "potato-quack.png", "note": "Content (potato + QUACK) is thematically correct for this line, but the art style is a cartoon/CG break from the series — see wrong_art." },
+        { "line": "(POTATO! QUACK!)", "status": "wrong-art", "image": "potato-quack.png" },
+        { "line": "The duck says, \"Quack.\"", "status": "ok", "image": "duck-quack.png" },
+        { "line": "(quack… shhh…)", "status": "acceptable-hold", "image": null }
+      ],
+      "aliases": {},
+      "generate": [
+        {
+          "proposed_filename": "duck.png",
+          "line": "[Intro] (quack? quack?) / also book spread 1: 'The duck.'",
+          "mj_prompt": "a white duck center stage with its chest puffed and beak closed, confident, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "proposed_filename": "segina-quack.png",
+          "line": "Sejeena says, \"Quack!\"",
+          "mj_prompt": "a wooden peg doll girl with a small bow cupping her hands to her mouth quacking, cheeks round, joyful, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "proposed_filename": "duck-quit-it.png",
+          "line": "Quit it! says the duck!",
+          "mj_prompt": "a white duck with a stern exasperated expression, beak closed in a firm line, one wing raised as if signalling stop, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ],
+      "wrong_art": [
+        {
+          "file": "cat-quack.png",
+          "issue": "Shows a hissing/snarling cat with bared fangs and a raised claw — reads as aggressive, not a comedic 'attempting to quack, ridiculous duck-beak-shaped mouth, unconvinced' gag.",
+          "fix": "Regenerate with a comedic, mouth-pursed-into-a-round-duck-beak-shape pose, uncertain expression, no aggression.",
+          "mj_prompt": "a tabby cat pursing its mouth into a comically round duck-beak shape trying to quack, eyes uncertain and unconvinced, comedic, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "file": "fox-quack.png",
+          "issue": "Fox is shown wide-mouthed and howling upward, not the artNote's 'sly-quacking out the side of its mouth, one eyebrow up, not really trying.'",
+          "fix": "Regenerate with a closed-ish, side-of-mouth smirk and a raised eyebrow instead of a full howl.",
+          "mj_prompt": "a red fox quacking out of one side of its mostly closed mouth with a sly smirk, one eyebrow raised, barely trying, unconvinced, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "file": "potato-quack.png",
+          "issue": "Rendered as a cartoon/CG illustration with googly eyes and a comic speech bubble — breaks the ultra-realistic-photograph style used across the rest of the series and does not match the photorealistic 'teacher potato' (glasses, whiteboard) established in Week 1.",
+          "fix": "Regenerate in the matching photographic style, keeping the QUACK gag but as a realistic prop/photo composition.",
+          "mj_prompt": "a single raw potato under a dramatic spotlight with a small realistic paper speech-bubble prop reading QUACK propped beside it, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "file": "rat-quack.png",
+          "issue": "Rat's mouth is closed — it reads as a startled/reaching pose rather than 'tiny high-pitched double quacks.' (Referenced by book spread 5, not directly quoted in either song's lyrics.)",
+          "fix": "Regenerate with the rat's mouth open mid-squeak.",
+          "mj_prompt": "a small grey rat on tiptoe with mouth wide open mid-squeak-quack, front paws raised, giving it everything, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ]
+    }
+  ]
+}

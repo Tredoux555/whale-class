@@ -1,0 +1,62 @@
+{
+  "week": 6,
+  "images": [
+    { "file": "all-on-mat.png", "depicts": "ant, Sam, Segina, cat gathered on woven mat", "name_matches_content": true, "issue": null },
+    { "file": "ant-on-mat.png", "depicts": "single ant standing proud on woven mat rope", "name_matches_content": true, "issue": null },
+    { "file": "ant-pops-up.png", "depicts": "ant confronting kitten's face/paw, tense standoff", "name_matches_content": false, "issue": "spec calls for ant popping out TRIUMPHANT from under the cat with a raised fist; image instead shows the same suspense confrontation as cat-over-ant.png, not a resolution beat" },
+    { "file": "ant-proud.png", "depicts": "close-up ant reared up, chest-out proud pose", "name_matches_content": true, "issue": null },
+    { "file": "cat-over-ant.png", "depicts": "cat's face and paw looming over tiny ant on mat", "name_matches_content": true, "issue": null },
+    { "file": "nail.png", "depicts": "single metal nail", "name_matches_content": true, "issue": null },
+    { "file": "napkin.png", "depicts": "folded cloth napkin", "name_matches_content": true, "issue": null },
+    { "file": "needle.png", "depicts": "sewing needle threaded with string", "name_matches_content": true, "issue": null },
+    { "file": "nest.png", "depicts": "woven bird nest with three eggs", "name_matches_content": true, "issue": null },
+    { "file": "net.png", "depicts": "wooden-handled butterfly/fishing net", "name_matches_content": true, "issue": null },
+    { "file": "nose.png", "depicts": "round red clown nose", "name_matches_content": true, "issue": null },
+    { "file": "nurse.png", "depicts": "toy nurse figure in blue uniform", "name_matches_content": true, "issue": null },
+    { "file": "nut.png", "depicts": "cracked walnut in shell", "name_matches_content": true, "issue": null },
+    { "file": "potato-ant.png", "depicts": "potato beside tiny ant", "name_matches_content": true, "issue": null },
+    { "file": "sam-segina-mat.png", "depicts": "Sam and Segina peg dolls seated on mat beside cat", "name_matches_content": true, "issue": null }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "N-N-Nut",
+      "line_map": [
+        { "line": "N-n-nut! It's a nut!", "best_image_by_CONTENT": "nut.png", "needs": "ok" },
+        { "line": "N-n-net! It's a net!", "best_image_by_CONTENT": "net.png", "needs": "ok" },
+        { "line": "N-n-nose! It's a nose!", "best_image_by_CONTENT": "nose.png", "needs": "ok" },
+        { "line": "N-n-nail! It's a nail!", "best_image_by_CONTENT": "nail.png", "needs": "ok" },
+        { "line": "A potato?! P-p-potato! Not N!", "best_image_by_CONTENT": "potato-ant.png (reused/book asset)", "needs": "acceptable-hold" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "I Am an Ant",
+      "line_map": [
+        { "line": "I am an ant! (an ant!)", "best_image_by_CONTENT": "ant-proud.png", "needs": "ok" },
+        { "line": "I am Sam! (it's Sam!)", "best_image_by_CONTENT": "none — only a group shot (sam-segina-mat.png) exists, no Sam solo", "needs": "generate" },
+        { "line": "I am a cat?! No, no — I am an ant!", "best_image_by_CONTENT": "cat.png (reused from Week 4, not in this folder)", "needs": "acceptable-hold" },
+        { "line": "I am an ant. The ant is on the mat.", "best_image_by_CONTENT": "ant-on-mat.png", "needs": "ok" },
+        { "line": "Am I a POTATO?!", "best_image_by_CONTENT": "potato-ant.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [
+        {
+          "proposed_filename": "sam-solo.png",
+          "line": "I am Sam! (it's Sam!)",
+          "mj_prompt": "a small wooden peg doll boy with brown hair in blue dungarees standing alone, chest out, declaring himself proudly, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ],
+      "wrong_art": [
+        {
+          "file": "ant-pops-up.png",
+          "issue": "used for the 'I can! I am an ant!' triumph beat (book:6) but shows the same suspense confrontation as cat-over-ant.png rather than the ant emerging unharmed and triumphant",
+          "fix": "reroll — mj_prompt: a tiny shiny black ant standing triumphantly on top of a surprised tabby cat's paw, one front leg raised like a fist in victory, cat looking impressed/startled (not threatening), comedic and brave, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ]
+    }
+  ]
+}

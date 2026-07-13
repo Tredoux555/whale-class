@@ -1,0 +1,88 @@
+{
+  "week": 2,
+  "images": [
+    { "file": "01-park.png", "depicts": "Segina sitting on slide near swing set, playground", "name_matches_content": true, "issue": null },
+    { "file": "02-school.png", "depicts": "Segina sitting, blurred school building with flag behind", "name_matches_content": true, "issue": null },
+    { "file": "03-mall.png", "depicts": "Segina holding shopping bags, blurred mall storefronts behind", "name_matches_content": true, "issue": null },
+    { "file": "04-police.png", "depicts": "Segina beside police station labeled 'POLICE' with toy police car", "name_matches_content": true, "issue": null },
+    { "file": "05-zoo.png", "depicts": "giraffe head over wooden zoo fence, Segina below", "name_matches_content": true, "issue": null },
+    { "file": "06-busstop.png", "depicts": "Segina beside 'BUS' sign, bus approaching in background", "name_matches_content": true, "issue": null },
+    { "file": "07-supermarket.png", "depicts": "Segina pushing shopping cart in front of market stall with sign", "name_matches_content": true, "issue": null },
+    { "file": "08-home.png", "depicts": "Segina asleep in tiny wooden bed, moonlit window", "name_matches_content": true, "issue": null },
+    { "file": "10-turtle.png", "depicts": "realistic turtle in water, close-up", "name_matches_content": true, "issue": null },
+    { "file": "11-tiger.png", "depicts": "realistic tiger cub lying down, close-up", "name_matches_content": true, "issue": null },
+    { "file": "12-tomato.png", "depicts": "single ripe red tomato with stem", "name_matches_content": true, "issue": null },
+    { "file": "13-taxi.png", "depicts": "yellow toy taxi cab", "name_matches_content": true, "issue": null },
+    { "file": "14-teddy.png", "depicts": "brown teddy bear sitting", "name_matches_content": true, "issue": null },
+    { "file": "15-towel.png", "depicts": "folded white towel on green surface", "name_matches_content": true, "issue": null },
+    { "file": "16-toothbrush.png", "depicts": "toothbrush standing in cup beside towel", "name_matches_content": true, "issue": null },
+    { "file": "18-potato.png", "depicts": "potato with glasses at an easel with paintbrush", "name_matches_content": true, "issue": "mjPrompt specified whiteboard + pointer 'teaching' pose; produced art shows an easel + paintbrush 'painting' pose instead — same joke character, different pose than spec'd" },
+    { "file": "bus stop.png", "depicts": "Segina under a bus-stop sign (icon sign, not text), bus arriving, dusk lighting", "name_matches_content": true, "issue": "duplicate scene of 06-busstop.png — two separate renders exist for the same book:6/map-game asset; spec's assets[] lists the filename as 'bus stop.png' (with space) but the numbered production file is '06-busstop.png' (no space), so the canonical file is ambiguous" },
+    { "file": "map.png", "depicts": "illustrated overhead town map with park, houses, mall-like building, police station (labeled), pond, roads", "name_matches_content": true, "issue": "mjPrompt specified 'no text labels' but the produced map has a visible 'Police' text label" }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "T-T-Turtle",
+      "line_map": [
+        { "line": "t… t… t… t… (tick, tick, tick)", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "T! T! T-t-t!", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "What begins with T?", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "T-t-turtle! T-t-turtle!", "best_image_by_content": "10-turtle.png", "needs": "ok" },
+        { "line": "It's a turtle! (a turtle!)", "best_image_by_content": "10-turtle.png", "needs": "acceptable-hold", "repeat_of": "T-t-turtle! T-t-turtle!" },
+        { "line": "T! T! T-t-t!", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "T! T! T-t-t!" },
+        { "line": "What begins with T?", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "What begins with T?" },
+        { "line": "T-t-tiger! T-t-tiger!", "best_image_by_content": "11-tiger.png", "needs": "ok" },
+        { "line": "It's a tiger! (a tiger!)", "best_image_by_content": "11-tiger.png", "needs": "acceptable-hold", "repeat_of": "T-t-tiger! T-t-tiger!" },
+        { "line": "T! T! T-t-t!", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "T! T! T-t-t!" },
+        { "line": "What begins with T?", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "What begins with T?" },
+        { "line": "T-t-tomato! T-t-tomato!", "best_image_by_content": "12-tomato.png", "needs": "ok" },
+        { "line": "It's a tomato! (a tomato!)", "best_image_by_content": "12-tomato.png", "needs": "acceptable-hold", "repeat_of": "T-t-tomato! T-t-tomato!" },
+        { "line": "t… t… t…", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "t… t… t… t… (tick, tick, tick)" },
+        { "line": "t-t-taxi…", "best_image_by_content": "13-taxi.png", "needs": "ok" },
+        { "line": "t-t-teddy…", "best_image_by_content": "14-teddy.png", "needs": "ok" },
+        { "line": "t-t-towel…", "best_image_by_content": "15-towel.png", "needs": "ok" },
+        { "line": "T! T! T-t-t!", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "T! T! T-t-t!" },
+        { "line": "What begins with T?", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "What begins with T?" },
+        { "line": "A potato?! (NO!)", "best_image_by_content": "18-potato.png", "needs": "ok" },
+        { "line": "P-p-potato! Not T!", "best_image_by_content": "18-potato.png", "needs": "acceptable-hold", "repeat_of": "A potato?! (NO!)" },
+        { "line": "T-t-table! T-t-table!", "best_image_by_content": null, "needs": "generate" },
+        { "line": "It's a table, table, table!", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "T-t-table! T-t-table!" }
+      ],
+      "aliases": {},
+      "generate": [
+        {
+          "proposed_filename": "table.png",
+          "line": "T-t-table! T-t-table!",
+          "mj_prompt": "a small wooden table, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "Where Is Segina?",
+      "line_map": [
+        { "line": "t… t… t…", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "Where is Sejeena?", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "Where is Sejeena? (where? where?)", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "Where is Sejeena?" },
+        { "line": "She's at the park! At the park!", "best_image_by_content": "01-park.png", "needs": "ok" },
+        { "line": "She's at the park, park, park!", "best_image_by_content": "01-park.png", "needs": "acceptable-hold", "repeat_of": "She's at the park! At the park!" },
+        { "line": "She's at school! At school!", "best_image_by_content": "02-school.png", "needs": "ok" },
+        { "line": "She's at school, school, school!", "best_image_by_content": "02-school.png", "needs": "acceptable-hold", "repeat_of": "She's at school! At school!" },
+        { "line": "at… at… at…", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "where is Sejeena…?", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "Where is Sejeena?" },
+        { "line": "She's at the mall! At the mall!", "best_image_by_content": "03-mall.png", "needs": "ok" },
+        { "line": "She's at the mall, mall, mall!", "best_image_by_content": "03-mall.png", "needs": "acceptable-hold", "repeat_of": "She's at the mall! At the mall!" },
+        { "line": "Where is Sejeena? (shhh…)", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "Where is Sejeena?" },
+        { "line": "She's at home.", "best_image_by_content": "08-home.png", "needs": "ok" },
+        { "line": "She's in bed.", "best_image_by_content": "08-home.png", "needs": "acceptable-hold", "repeat_of": "She's at home." },
+        { "line": "Sejeena is asleep…", "best_image_by_content": "08-home.png", "needs": "acceptable-hold", "repeat_of": "She's at home." },
+        { "line": "WAKE UP, SEJEENA!", "best_image_by_content": null, "needs": "acceptable-hold" }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": []
+    }
+  ]
+}

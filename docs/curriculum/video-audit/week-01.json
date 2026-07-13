@@ -1,0 +1,53 @@
+{
+  "week": 1,
+  "images": [
+    { "file": "01-chair.png", "depicts": "wooden child-sized chair, spotlit forest backdrop", "name_matches_content": true, "issue": null },
+    { "file": "02-table.png", "depicts": "low wooden classroom table, spotlit forest backdrop", "name_matches_content": true, "issue": null },
+    { "file": "03-mat.png", "depicts": "rolled woven work mat on unrolled mat", "name_matches_content": true, "issue": null },
+    { "file": "04-cup.png", "depicts": "ceramic cup with blue-brown glaze, handle left", "name_matches_content": true, "issue": null },
+    { "file": "05-book.png", "depicts": "open hardcover book, fanned pages, forest backdrop", "name_matches_content": true, "issue": null },
+    { "file": "06-pencil.png", "depicts": "close-up yellow pencil tip, sharpened, dark backdrop", "name_matches_content": true, "issue": null },
+    { "file": "07-apple.png", "depicts": "shiny red apple with water droplets", "name_matches_content": true, "issue": null },
+    { "file": "08-egg.png", "depicts": "single white egg on small green cushion", "name_matches_content": true, "issue": null },
+    { "file": "09-mystery.png", "depicts": "dark lumpy silhouette under fabric, backlit, suspenseful", "name_matches_content": true, "issue": null },
+    { "file": "10-potato.png", "depicts": "cartoon potato with glasses at mini whiteboard, teaching", "name_matches_content": true, "issue": null },
+    { "file": "11-ant.png", "depicts": "macro close-up black ant on leaf/bark", "name_matches_content": true, "issue": null },
+    { "file": "12-alligator.png", "depicts": "small baby alligator/crocodile close-up head and body", "name_matches_content": true, "issue": null },
+    { "file": "13-astronaut.png", "depicts": "toy astronaut figure in white spacesuit, walking pose", "name_matches_content": true, "issue": null },
+    { "file": "14-ambulance.png", "depicts": "vintage toy ambulance truck with red cross and lights", "name_matches_content": true, "issue": null },
+    { "file": "15-anchor.png", "depicts": "brass/gold ship anchor with rope, close-up", "name_matches_content": true, "issue": null },
+    { "file": "16-abacus.png", "depicts": "wooden abacus with colorful beads, spilled beads nearby", "name_matches_content": true, "issue": null },
+    { "file": "17-acrobat.png", "depicts": "tiny figure mid-handstand/cartwheel on sandy surface", "name_matches_content": true, "issue": null }
+  ],
+  "songs": [
+    {
+      "role": "word",
+      "title": "It's A (Potato)",
+      "line_map": [
+        { "line": "ah… ah… ah… (intro whisper)", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "Ah-ah-ah… ant! Ah-ah-ah… ant!", "best_image_by_content": "11-ant.png", "needs": "ok" },
+        { "line": "Ah-ah-ah… apple! Apple, apple!", "best_image_by_content": "07-apple.png", "needs": "ok" },
+        { "line": "A! A! It's a… (what?)", "best_image_by_content": null, "needs": "acceptable-hold" },
+        { "line": "It's a mat! It's a mat!", "best_image_by_content": "03-mat.png", "needs": "ok" },
+        { "line": "It's a mat, mat, mat!", "best_image_by_content": "03-mat.png", "needs": "acceptable-hold", "repeat_of": "It's a mat! It's a mat!" },
+        { "line": "Ah-ah-ah… ax! Ah-ah-ah… ax!", "best_image_by_content": null, "needs": "generate" },
+        { "line": "Ah-ah-ah… alligator! Alligator, alligator!", "best_image_by_content": "12-alligator.png", "needs": "ok" },
+        { "line": "It's a cup! It's a cup!", "best_image_by_content": "04-cup.png", "needs": "ok" },
+        { "line": "It's a cup, cup, cup!", "best_image_by_content": "04-cup.png", "needs": "acceptable-hold", "repeat_of": "It's a cup! It's a cup!" },
+        { "line": "ah… ah… ah… / it's a… it's a… it's a… (breakdown)", "best_image_by_content": null, "needs": "acceptable-hold", "repeat_of": "ah… ah… ah… (intro whisper)" },
+        { "line": "It's a chair! It's a chair!", "best_image_by_content": "01-chair.png", "needs": "ok" },
+        { "line": "It's a chair, chair, chair!", "best_image_by_content": "01-chair.png", "needs": "acceptable-hold", "repeat_of": "It's a chair! It's a chair!" },
+        { "line": "It's a POTATO! POTATO! POTATO!", "best_image_by_content": "10-potato.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [
+        {
+          "proposed_filename": "ax.png",
+          "line": "Ah-ah-ah… ax! Ah-ah-ah… ax!",
+          "mj_prompt": "a small toy hatchet with a wooden handle and a rounded child-safe blade, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ],
+      "wrong_art": []
+    }
+  ]
+}

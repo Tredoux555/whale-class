@@ -1,0 +1,53 @@
+{
+  "week": 52,
+  "images": [
+    { "file": "owl.png", "depicts": "small round tawny owl close-up, amber eyes, on branch", "name_matches_content": true, "issue": null },
+    { "file": "owl-town.png", "depicts": "owl perched on lamppost scrollwork above blurred town", "name_matches_content": true, "issue": null },
+    { "file": "owl-looks-down.png", "depicts": "owl perched on ornate post looking down", "name_matches_content": true, "issue": null },
+    { "file": "loud-sound.png", "depicts": "close-up owl shaking off water droplets/rain, wings flared - no barn, no town, no sound-burst effect visible", "name_matches_content": false, "issue": "artNote calls for owl startled by a cartoon sound-burst rising from a barn at edge of town; actual image shows owl getting wet, no sound/barn/town depicted at all - KNOWN HOTSPOT confirmed" },
+    { "file": "owl-sees-cow.png", "depicts": "owl on ornate pillar staring at a spotted cow in a lit corridor", "name_matches_content": true, "issue": "background reads as ornate interior/courtyard rather than a town street, but acceptable" },
+    { "file": "cow-in-house.png", "depicts": "cow's head/shoulders filling a doorway inside a shabby room with a lamp", "name_matches_content": true, "issue": null },
+    { "file": "owl-cow-shout.png", "depicts": "owl and cow face to face, both mouths open mid-call", "name_matches_content": true, "issue": null },
+    { "file": "owl-proud.png", "depicts": "owl on post, METALLIC gold star above its head, sheep waving from lit window", "name_matches_content": true, "issue": "star prop is metallic gold ornament, same cross-week star-material inconsistency as W51" },
+    { "file": "potato-town.png", "depicts": "potato beside a tiny streetlamp, owl looking at it", "name_matches_content": true, "issue": null },
+    { "file": "cloud.png", "depicts": "single fluffy white cloud", "name_matches_content": true, "issue": null },
+    { "file": "crown.png", "depicts": "jeweled gold crown macro shot", "name_matches_content": true, "issue": null },
+    { "file": "clown.png", "depicts": "small worn clown figurine", "name_matches_content": true, "issue": null },
+    { "file": "flower.png", "depicts": "single red/coral flower", "name_matches_content": true, "issue": null }
+  ],
+  "missing_files": ["cow.png (cards, bingo, matching)", "house.png (cards, bingo, matching)", "mouse.png (cards, bingo, matching)"],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Ow-Ow-Owl!",
+      "line_map": [
+        { "line": "Ow-ow-owl! It's an owl! (hello, Owl!)", "best_image_by_content": "owl.png", "needs": "ok" },
+        { "line": "A cow! A cloud!", "best_image_by_content": "cow.png / cloud.png", "needs": "generate cow.png; cloud.png ok" },
+        { "line": "Out of the house! Down in the town!", "best_image_by_content": "house.png / owl-town.png", "needs": "generate house.png" },
+        { "line": "Loud! Round! Proud! A mouse in the house!", "best_image_by_content": "mouse.png / house.png", "needs": "generate both" },
+        { "line": "A potato?! P-p-potato!", "best_image_by_content": "potato-town.png", "needs": "ok" }
+      ]
+    },
+    {
+      "role": "word",
+      "title": "The Owl in Town",
+      "line_map": [
+        { "line": "The owl is in the town! Where is the owl?", "best_image_by_content": "owl-town.png", "needs": "ok" },
+        { "line": "The owl looks down. A loud, loud sound!", "best_image_by_content": "owl-looks-down.png / loud-sound.png", "needs": "loud-sound.png needs regenerate" },
+        { "line": "A cow! Out of the house!", "best_image_by_content": "owl-sees-cow.png / cow-in-house.png", "needs": "ok" },
+        { "line": "The owl and the cow shout! Down in the town, so proud!", "best_image_by_content": "owl-cow-shout.png / owl-proud.png", "needs": "ok (star flag on owl-proud)" },
+        { "line": "What is in the town?! POTATO! The owl in town.", "best_image_by_content": "potato-town.png", "needs": "ok" }
+      ]
+    }
+  ],
+  "aliases": {},
+  "generate": [
+    { "proposed_filename": "cow.png", "line": "A cow! (sound song verse2)", "mj_prompt": "a gentle dairy cow standing, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "proposed_filename": "house.png", "line": "Out of the house! / A mouse in the house!", "mj_prompt": "a small cozy cottage house, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "proposed_filename": "mouse.png", "line": "A mouse in the house!", "mj_prompt": "a tiny grey mouse with big ears, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+  ],
+  "wrong_art": [
+    { "file": "loud-sound.png", "issue": "does not depict a loud sound / barn / town at all - shows owl being sprayed with water/rain, feathers flared. This is the flagged known hotspot for W52.", "fix": "regenerate to match artNote: startled owl + cartoon sound-burst rising from a barn at edge of a night town", "mj_prompt": "a startled tawny owl with feathers raised, wings flared, staring toward a big cartoon burst/starburst shape of sound rising from a red barn at the edge of a sleepy night town below, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "owl-proud.png", "issue": "star prop is metallic gold ornament, inconsistent with plush-star convention elsewhere (low priority - background prop)", "fix": "optional regen with plush fabric star", "mj_prompt": "a tawny owl perched proud on a lamppost with chest puffed, a soft PLUSH FABRIC golden star glowing above (no metallic sheen), a fluffy white sheep waving from a lit window, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+  ]
+}

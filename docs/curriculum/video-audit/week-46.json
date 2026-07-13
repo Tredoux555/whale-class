@@ -1,0 +1,59 @@
+{
+  "week": 46,
+  "images": [
+    { "file": "night.png", "depicts": "starry dark-blue forest night sky", "name_matches_content": true, "issue": null },
+    { "file": "light.png", "depicts": "glowing brass oil hurricane lantern on cloth", "name_matches_content": true, "issue": null },
+    { "file": "light-high.png", "depicts": "glowing Victorian street lamppost under tree", "name_matches_content": true, "issue": "different lamp object than light.png (pole lamp vs oil lantern) - style/object drift, not wrong content" },
+    { "file": "light-night.png", "depicts": "forest scene warmed by one glowing tree-light, stars above", "name_matches_content": true, "issue": null },
+    { "file": "sheep-light.png", "depicts": "plush toy sheep beside small oil lantern", "name_matches_content": true, "issue": "sheep gazes sideways at lantern on ground, not 'up' at a high light per artNote - minor" },
+    { "file": "pie.png", "depicts": "golden lattice-crust pie on plate", "name_matches_content": true, "issue": null },
+    { "file": "pie-high.png", "depicts": "golden lattice pie on wooden pedestal/stand", "name_matches_content": true, "issue": "pedestal reads as 'elevated display' not clearly a high shelf 'just out of reach' - minor" },
+    { "file": "bee-pie.png", "depicts": "plush cartoon bee delighted beside a lattice pie", "name_matches_content": true, "issue": null },
+    { "file": "potato-night.png", "depicts": "plush sheep and bee flanking a glowing potato", "name_matches_content": true, "issue": null },
+    { "file": "tie.png", "depicts": "striped bow tie on dark cloth", "name_matches_content": true, "issue": null },
+    { "file": "right.png", "depicts": "hand pointing to the right", "name_matches_content": true, "issue": null },
+    { "file": "bright.png", "depicts": "glowing incandescent light bulb", "name_matches_content": true, "issue": null },
+    { "file": "flight.png", "depicts": "paper airplane in flight", "name_matches_content": true, "issue": null },
+    { "file": "high.png", "depicts": "wooden ladder reaching up in spotlight", "name_matches_content": true, "issue": null }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "igh-igh-Night!",
+      "line_map": [
+        { "line": "Eye! Eye! Night! (intro/hook, x2 refrain)", "best_image_by_CONTENT": "night.png", "needs": "ok" },
+        { "line": "I-G-H — three letters! / Silent G, silent H! / The I says its name!", "best_image_by_CONTENT": "night.png", "needs": "acceptable-hold (abstract phonics instruction, no scene to depict)" },
+        { "line": "N-I-G-H-T — night!", "best_image_by_CONTENT": "night.png", "needs": "ok" },
+        { "line": "L-I-G-H-T — light! (a little light!)", "best_image_by_CONTENT": "light.png", "needs": "ok" },
+        { "line": "Up so high! (way up high!)", "best_image_by_CONTENT": "high.png", "needs": "ok" },
+        { "line": "P-I-E — pie!", "best_image_by_CONTENT": "pie.png", "needs": "ok" },
+        { "line": "T-I-E — tie!", "best_image_by_CONTENT": "tie.png", "needs": "ok" },
+        { "line": "The light is high in the night! (bridge to hook)", "best_image_by_CONTENT": "light-night.png", "needs": "ok" },
+        { "line": "Bridge: A potato?! P-p-potato!", "best_image_by_CONTENT": "potato-night.png", "needs": "ok" },
+        { "line": "Outro: Night... light... high...", "best_image_by_CONTENT": "night.png / light.png / high.png (montage)", "needs": "ok" }
+      ]
+    },
+    {
+      "role": "word",
+      "title": "The Light at Night",
+      "line_map": [
+        { "line": "The light is high in the night! (hook, x2)", "best_image_by_CONTENT": "light-night.png", "needs": "ok" },
+        { "line": "High, high! (way up high!)", "best_image_by_CONTENT": "high.png / light-high.png", "needs": "ok" },
+        { "line": "Sheep can see the light!", "best_image_by_CONTENT": "sheep-light.png", "needs": "ok" },
+        { "line": "Bee can see the light!", "best_image_by_CONTENT": "sheep-light.png", "needs": "alias (no bee+light image exists; only bee+pie)" },
+        { "line": "A pie! A pie! (up so high!)", "best_image_by_CONTENT": "pie.png / pie-high.png", "needs": "ok" },
+        { "line": "The pie is on the light?!", "best_image_by_CONTENT": "pie-high.png", "needs": "alias (closest available; no literal pie-on-lamp image)" },
+        { "line": "Bee can see the pie!", "best_image_by_CONTENT": "bee-pie.png", "needs": "ok" },
+        { "line": "Outro: In the night?! (POTATO!)", "best_image_by_CONTENT": "potato-night.png", "needs": "ok" }
+      ]
+    }
+  ],
+  "aliases": {
+    "sheep-light.png": "bee-can-see-the-light-line (word song verse 2)",
+    "pie-high.png": "the-pie-is-on-the-light-line (word song verse 3)"
+  },
+  "generate": [
+    { "proposed_filename": "bee-light.png", "line": "Bee can see the light!", "mj_prompt": "a plump gold-and-black honeybee with round shiny wings hovering delighted beside a warm glowing lantern in the dark, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+  ],
+  "wrong_art": []
+}

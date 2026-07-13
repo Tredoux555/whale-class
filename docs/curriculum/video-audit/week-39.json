@@ -1,0 +1,63 @@
+{
+  "week": 39,
+  "images": [
+    { "file": "bike.png", "depicts": "gleaming child's bike, one pedal mid-turn", "name_matches_content": true, "issue": null },
+    { "file": "bike-time.png", "depicts": "bike beside a big round clock reading roughly 1:10", "name_matches_content": true, "issue": "clock does not clearly read five o'clock as spec text implies; minor" },
+    { "file": "sheep-on-bike.png", "depicts": "sheep perched on saddle, hooves on pedals", "name_matches_content": true, "issue": null },
+    { "file": "sheep-riding.png", "depicts": "sheep pedaling fast, wool streaming, wheels blurred", "name_matches_content": true, "issue": null },
+    { "file": "snake-kite.png", "depicts": "snake gripping a plain knotted string; NO kite visible anywhere in frame", "name_matches_content": false, "issue": "filename promises a kite but none is shown, just a length of cord tied off" },
+    { "file": "kite-up.png", "depicts": "diamond kite climbing above dark treetops", "name_matches_content": true, "issue": null },
+    { "file": "kite-and-bike.png", "depicts": "sheep on bike with snake wrapped around its neck holding a string; no kite fabric visible in frame", "name_matches_content": false, "issue": "spec wants the kite visibly riding along behind the bike; only trailing wool/streamers are shown, not a kite" },
+    { "file": "potato-on-bike.png", "depicts": "potato with tiny helmet on bike saddle, sheep and snake nearby", "name_matches_content": true, "issue": null },
+    { "file": "five.png", "depicts": "wooden number 5", "name_matches_content": true, "issue": null },
+    { "file": "time.png", "depicts": "round alarm clock", "name_matches_content": true, "issue": null },
+    { "file": "ride.png", "depicts": "child's small scooter, stationary", "name_matches_content": true, "issue": "matches the literal spec asset (scooter) though it shows no riding action" },
+    { "file": "hive.png", "depicts": "woven straw beehive", "name_matches_content": true, "issue": null },
+    { "file": "smile.png", "depicts": "smiley face on wooden token", "name_matches_content": true, "issue": null },
+    { "file": "kite.png", "depicts": "MISSING", "name_matches_content": false, "issue": "book:5's own standalone kite asset never generated, despite two derivative kite images existing" },
+    { "file": "vine.png", "depicts": "MISSING", "name_matches_content": false, "issue": "soundBasket/bingo asset never generated" },
+    { "file": "kite-coloring.png", "depicts": "MISSING", "name_matches_content": false, "issue": "coloring page never generated" },
+    { "file": "snake-coloring.png", "depicts": "MISSING", "name_matches_content": false, "issue": "coloring page never generated (only bike-coloring present)" }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Magic E Makes Bike",
+      "line_map": [
+        { "line": "Bit… BITE! Kit… KITE!", "best_image_by_content": "kite.png missing — no direct visual", "needs": "generate" },
+        { "line": "Fin… FINE! Pin… PINE!", "best_image_by_content": "n/a — abstract transformation pairs", "needs": "acceptable-hold" },
+        { "line": "Hid… HIDE! Rid… RIDE!", "best_image_by_content": "ride.png", "needs": "ok" },
+        { "line": "B-I-K-E — bike! K-I-T-E — kite! F-I-V-E — five!", "best_image_by_content": "bike.png; kite.png missing; five.png", "needs": "generate" },
+        { "line": "A potato?! (NO!) / P-p-potato! No magic E!", "best_image_by_content": "potato-on-bike.png", "needs": "alias" },
+        { "line": "Outro: The E is magic. The E is silent. BIKE!", "best_image_by_content": "bike.png", "needs": "ok" }
+      ],
+      "aliases": { "potato": "potato-on-bike.png" },
+      "generate": [
+        { "proposed_filename": "kite.png", "line": "K-I-T-E — kite! / book:5 'A kite!'", "mj_prompt": "a bright diamond kite with a long ribbon tail hovering, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "vine.png", "line": "soundBasket word", "mj_prompt": "a curling green leafy vine, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "kite-coloring.png", "line": "coloring page", "mj_prompt": "a diamond kite with a bow tail flying, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+        { "proposed_filename": "snake-coloring.png", "line": "coloring page", "mj_prompt": "a happy friendly snake holding a kite string, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+      ],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "The Bike Ride",
+      "line_map": [
+        { "line": "Sheep is on the bike! (hook, x2) Ride, Sheep, ride!", "best_image_by_content": "sheep-on-bike.png / sheep-riding.png", "needs": "ok" },
+        { "line": "A kite is up! Snake has the kite!", "best_image_by_content": "kite-up.png ok; snake-kite.png shows no kite at all", "needs": "generate" },
+        { "line": "The kite can ride!", "best_image_by_content": "kite-and-bike.png shows no visible kite fabric", "needs": "generate" },
+        { "line": "The bike is quick! It is time to ride!", "best_image_by_content": "bike-time.png", "needs": "ok" },
+        { "line": "The bike… the kite… (shhh…) On the bike?! (a potato!)", "best_image_by_content": "potato-on-bike.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "snake-holds-kite-string.png", "line": "Snake has the kite!", "mj_prompt": "a friendly emerald-green garden snake with large gentle amber eyes holding a taut kite string in its tail tip, a bright diamond kite with a ribbon tail clearly visible above, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": [
+        { "file": "snake-kite.png", "issue": "no kite visible in frame, just a knotted string", "fix": "regenerate (see generate: snake-holds-kite-string.png)", "mj_prompt": "see generate list" },
+        { "file": "kite-and-bike.png", "issue": "kite fabric not visible; only wool/streamers trail behind the bike", "fix": "regenerate showing the kite clearly tied to the bike and trailing in the air", "mj_prompt": "a fluffy white sheep riding a bicycle fast with a bright diamond kite visibly tied to the back of the bike trailing high in the air behind it, an emerald-green snake riding on the handlebars, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ]
+    }
+  ]
+}

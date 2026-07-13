@@ -1,0 +1,52 @@
+{
+  "week": 53,
+  "images": [
+    { "file": "sam-boy.png", "depicts": "BALD wooden peg-doll boy, smooth head, red shirt, hands on hips", "name_matches_content": true, "issue": "bald - inconsistent with hair on sam-picks-coin/sam-joy/sam-toy/coin-best/boy.png card" },
+    { "file": "coin-in-soil.png", "depicts": "peg-doll boy with shaggy grey/dark straw hair, TEAL/BLUE-GREY shirt, pointing at coin in soil", "name_matches_content": true, "issue": "shirt is teal/blue, not the canonical RED shirt used everywhere else" },
+    { "file": "sam-picks-coin.png", "depicts": "peg-doll boy with brown shaggy hair, red shirt, holding coin up", "name_matches_content": true, "issue": null },
+    { "file": "coin-toy.png", "depicts": "gold coin + spinning-top toy on a rope/cloud shape, no boy visible", "name_matches_content": true, "issue": null },
+    { "file": "sam-joy.png", "depicts": "peg-doll boy mid-leap holding coin, second doll in background", "name_matches_content": true, "issue": null },
+    { "file": "coin-closeup.png", "depicts": "small pot with black beads (boil), coiled gold rope, gold coin circled, pencil, rope-X shapes", "name_matches_content": true, "issue": "abstract/symbolic rather than literal 'crossed out' icons per artNote; loosely acceptable" },
+    { "file": "sam-toy.png", "depicts": "peg-doll boy with hair, red shirt, seated beside spinning-top toy", "name_matches_content": true, "issue": null },
+    { "file": "coin-best.png", "depicts": "peg-doll boy (hair, red shirt) holding coin beside toy top, other dolls beside", "name_matches_content": true, "issue": null },
+    { "file": "potato-soil.png", "depicts": "potato with miner's helmet in soil hole, blurred striped peg-doll figure in background", "name_matches_content": true, "issue": "background figure has a striped body, a THIRD variant of Sam's design (unclear/blurred)" },
+    { "file": "coin.png", "depicts": "shiny gold coin macro shot", "name_matches_content": true, "issue": null },
+    { "file": "boy.png", "depicts": "peg-doll boy, brown hair, red shirt, smiling - canonical", "name_matches_content": true, "issue": null },
+    { "file": "toy.png", "depicts": "gold/brown spinning-top toy", "name_matches_content": true, "issue": null },
+    { "file": "oil.png", "depicts": "square glass bottle of golden oil", "name_matches_content": true, "issue": null },
+    { "file": "soil.png", "depicts": "mound of dark soil", "name_matches_content": true, "issue": null },
+    { "file": "foil.png", "depicts": "crumpled silver/gold foil", "name_matches_content": true, "issue": null },
+    { "file": "point.png", "depicts": "sharpened pencil tip macro", "name_matches_content": true, "issue": null }
+  ],
+  "missing_files": [],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Oy-Oy-Boy!",
+      "line_map": [
+        { "line": "Oy-oy-boy! It's a boy!", "best_image_by_content": "boy.png", "needs": "ok" },
+        { "line": "A coin! A toy! Oil in the soil!", "best_image_by_content": "coin.png / toy.png / oil.png / soil.png", "needs": "ok" },
+        { "line": "Boil! Coil! Point! Enjoy the toy!", "best_image_by_content": "coin-closeup.png / point.png / toy.png", "needs": "acceptable-hold on coin-closeup" },
+        { "line": "A potato?! P-p-potato!", "best_image_by_content": "potato-soil.png", "needs": "ok" }
+      ]
+    },
+    {
+      "role": "word",
+      "title": "The Boy and the Coin",
+      "line_map": [
+        { "line": "The boy and the coin! Where is the coin? Down in the soil!", "best_image_by_content": "sam-boy.png / coin-in-soil.png", "needs": "wrong-art both (bald + wrong shirt color)" },
+        { "line": "The boy is Sam. Sam sees a coin. Sam digs in the soil!", "best_image_by_content": "sam-boy.png / coin-in-soil.png", "needs": "same as above" },
+        { "line": "Sam has the coin!", "best_image_by_content": "sam-picks-coin.png", "needs": "ok" },
+        { "line": "The coin is for a toy! Sam has so much joy!", "best_image_by_content": "coin-toy.png / sam-joy.png", "needs": "ok" },
+        { "line": "Boil? Coil? Point? A coin! A coin!", "best_image_by_content": "coin-closeup.png", "needs": "acceptable-hold" },
+        { "line": "What is in the soil?! POTATO! that's a thousand words!", "best_image_by_content": "potato-soil.png", "needs": "ok" }
+      ]
+    }
+  ],
+  "aliases": {},
+  "generate": [],
+  "wrong_art": [
+    { "file": "sam-boy.png", "issue": "Sam rendered BALD (smooth wooden head, no hair) - contradicts the canonical hairy design used in boy.png (card), sam-picks-coin.png, sam-joy.png, sam-toy.png, coin-best.png. This is book spread 1 - the character's INTRODUCTION portrait - so the wrong version is the one that sets first impression.", "fix": "regenerate with shaggy brown hair matching boy.png canonical", "mj_prompt": "a wooden peg doll boy with shaggy brown carved hair (matching canonical Sam) in a red shirt standing with hands on hips ready, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "file": "coin-in-soil.png", "issue": "peg-doll boy wears a TEAL/BLUE-GREY shirt instead of the canonical RED shirt seen in every other Sam image this week", "fix": "regenerate with red shirt and matching hair color", "mj_prompt": "a glint of a small gold coin half-buried in dark soil with a peg doll boy in a RED shirt and shaggy brown hair crouched pointing at it wide-eyed, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+  ]
+}

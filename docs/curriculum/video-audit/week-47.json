@@ -1,0 +1,57 @@
+{
+  "week": 47,
+  "images": [
+    { "file": "dark.png", "depicts": "wide deep-blue dark forest path", "name_matches_content": true, "issue": null },
+    { "file": "star-dark.png", "depicts": "plush golden sleepy-faced star ornament hanging with fairy lights", "name_matches_content": true, "issue": "not clearly 'hanging alone' over treetops per artNote, but content is correct (Star glowing in dark)" },
+    { "file": "sheep-star.png", "depicts": "plush sheep and plush star lying face to face", "name_matches_content": true, "issue": null },
+    { "file": "car-park.png", "depicts": "vintage white car parked under tree, star reflected in windshield", "name_matches_content": true, "issue": null },
+    { "file": "farm.png", "depicts": "realistic red barn + sleeping cow at night, real photography", "name_matches_content": true, "issue": null },
+    { "file": "star-farm.png", "depicts": "plush star + plush bee atop a MINIATURE TOY DIORAMA barn", "name_matches_content": true, "issue": "barn is a toy-diorama model, visually inconsistent with the realistic red barn in farm.png (book:7 to book:8 continuity break)" },
+    { "file": "potato-dark.png", "depicts": "plush star nested atop a glowing potato in grass", "name_matches_content": true, "issue": null },
+    { "file": "barn.png", "depicts": "miniature toy-diorama red barn with hayloft", "name_matches_content": true, "issue": "toy-diorama style, inconsistent with realistic farm.png used for the same barn concept" },
+    { "file": "cart.png", "depicts": "small wooden hand cart with wheels", "name_matches_content": true, "issue": null },
+    { "file": "arm.png", "depicts": "muscular flexed arm and fist", "name_matches_content": true, "issue": null }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Ar-Ar-Star!",
+      "line_map": [
+        { "line": "Ar! Ar! Star! (intro/hook)", "best_image_by_CONTENT": "star-dark.png", "needs": "alias (no standalone star.png)" },
+        { "line": "S-T-A-R — star! (up in the dark!)", "best_image_by_CONTENT": "star-dark.png", "needs": "generate (dedicated debut star.png missing)" },
+        { "line": "C-A-R — car! (beep! beep!)", "best_image_by_CONTENT": "car-park.png", "needs": "generate (standalone car.png missing)" },
+        { "line": "Run in the park! (run! run!)", "best_image_by_CONTENT": "car-park.png", "needs": "alias (no dedicated empty-park shot)" },
+        { "line": "Down on the farm! (moo! moo!)", "best_image_by_CONTENT": "farm.png", "needs": "ok" },
+        { "line": "The star is in the dark!", "best_image_by_CONTENT": "star-dark.png", "needs": "ok" },
+        { "line": "Bridge: A potato?! P-p-potato!", "best_image_by_CONTENT": "potato-dark.png", "needs": "ok" },
+        { "line": "Outro: Star... car... park...", "best_image_by_CONTENT": "star-dark.png / car-park.png (montage)", "needs": "ok" }
+      ]
+    },
+    {
+      "role": "word",
+      "title": "The Star in the Dark",
+      "line_map": [
+        { "line": "The star is in the dark! (hook, x2)", "best_image_by_CONTENT": "star-dark.png", "needs": "ok" },
+        { "line": "Shine, star, shine! (way up high!)", "best_image_by_CONTENT": "star-dark.png", "needs": "ok" },
+        { "line": "A car! A car! (beep! beep!)", "best_image_by_CONTENT": "car-park.png", "needs": "generate (standalone car.png missing)" },
+        { "line": "The car is in the park!", "best_image_by_CONTENT": "car-park.png", "needs": "ok" },
+        { "line": "Sheep can see the star!", "best_image_by_CONTENT": "sheep-star.png", "needs": "ok" },
+        { "line": "Down on the farm! The star is on the farm!", "best_image_by_CONTENT": "star-farm.png", "needs": "ok (barn style mismatch flagged separately)" },
+        { "line": "Bee can see the star!", "best_image_by_CONTENT": "star-farm.png", "needs": "ok (bee is visible atop barn roof next to star)" },
+        { "line": "Outro: In the dark?! (a potato!)", "best_image_by_CONTENT": "potato-dark.png", "needs": "ok" }
+      ]
+    }
+  ],
+  "aliases": {
+    "star-dark.png": "star-debut-lines (S-T-A-R spell-out, sound song)",
+    "car-park.png": "car-debut-lines (C-A-R spell-out, both songs)"
+  },
+  "generate": [
+    { "proposed_filename": "star.png", "line": "A star! (CAST DEBUT, book:2 + S-T-A-R spell-out)", "mj_prompt": "a warm golden five-point star with a serene sleepy face glowing softly alone against pure darkness, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "proposed_filename": "car.png", "line": "A car! (book:5, C-A-R spell-out)", "mj_prompt": "a little car with round headlamps alone in the dark, beams sweeping forward, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+    { "proposed_filename": "park.png", "line": "Run in the park! (materials/cards asset, currently missing)", "mj_prompt": "a park bench under a tree with a lamppost at night, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+  ],
+  "wrong_art": [
+    { "file": "star-farm.png", "issue": "barn rendered as a miniature toy diorama, inconsistent with the realistic photographic red barn in farm.png used one page earlier (book:7 to book:8)", "fix": "regenerate star-farm.png with the same realistic red-barn-at-night style as farm.png; mj_prompt: 'a warm golden star with a sleepy face hanging low over a REALISTIC red barn at night matching a farm photograph, a honeybee dozing on a real wooden fencepost, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw'" }
+  ]
+}

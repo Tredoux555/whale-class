@@ -1,0 +1,64 @@
+{
+  "week": 40,
+  "images": [
+    { "file": "bone.png", "depicts": "clean white gleaming dog bone toy", "name_matches_content": true, "issue": null },
+    { "file": "dog-bone.png", "depicts": "scruffy terrier holding a rough wooden STICK/branch in its mouth", "name_matches_content": false, "issue": "prop inconsistency — should be the clean bone from bone.png, not a stick" },
+    { "file": "dog-proud.png", "depicts": "dog lying down, tan/brown bone-shaped chew between paws", "name_matches_content": true, "issue": "bone is brownish not white/clean like bone.png, but shape reads as a bone; acceptable" },
+    { "file": "dog-home.png", "depicts": "dog running toward a small house holding a STICK/twig in mouth", "name_matches_content": false, "issue": "again a stick, not the bone" },
+    { "file": "bone-home.png", "depicts": "dog sitting beside a basket, bone held in mouth (not placed inside basket)", "name_matches_content": true, "issue": "spec wants the dog actively tucking the bone INTO the basket; this shows dog merely standing beside it holding the bone" },
+    { "file": "rope-bone.png", "depicts": "extreme close-up of dog gripping a coiled ROPE; a small brownish shape at frame edge may be the bone but is ambiguous", "name_matches_content": false, "issue": "does not clearly show 'rope in one side of mouth, bone in the other, torn between two treasures' — rope dominates, bone barely visible" },
+    { "file": "bone-nose.png", "depicts": "extreme close-up of dog snout balancing a bone flat on its nose", "name_matches_content": true, "issue": null },
+    { "file": "potato-home.png", "depicts": "dog face beside a potato (and an unexplained stick-like object) in a basket", "name_matches_content": true, "issue": "extra stick-shaped object beside the potato is not called for in spec, minor clutter" },
+    { "file": "cone.png", "depicts": "waffle ice-cream cone", "name_matches_content": true, "issue": null },
+    { "file": "note.png", "depicts": "carved wooden musical note", "name_matches_content": true, "issue": null },
+    { "file": "hose.png", "depicts": "coiled green garden hose with brass fitting", "name_matches_content": true, "issue": null },
+    { "file": "rope.png", "depicts": "MISSING", "name_matches_content": false, "issue": "book:6's own standalone 'a coiled length of rope' asset never generated, only the derivative rope-bone.png exists" },
+    { "file": "nose.png", "depicts": "MISSING", "name_matches_content": false, "issue": "asset never generated (cards, bingo, matching)" },
+    { "file": "rose.png", "depicts": "MISSING", "name_matches_content": false, "issue": "asset never generated (cards, bingo, matching)" },
+    { "file": "dog-coloring.png", "depicts": "MISSING", "name_matches_content": false, "issue": "coloring page never generated" },
+    { "file": "home-coloring.png", "depicts": "MISSING", "name_matches_content": false, "issue": "coloring page never generated (only bone-coloring present)" }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "Magic E Makes Bone",
+      "line_map": [
+        { "line": "Hop… HOPE! Not… NOTE!", "best_image_by_content": "note.png", "needs": "ok" },
+        { "line": "Rob… ROBE! Cod… CODE!", "best_image_by_content": "n/a — abstract transformation pairs", "needs": "acceptable-hold" },
+        { "line": "Rod… RODE! Glob… GLOBE!", "best_image_by_content": "n/a — abstract transformation pairs", "needs": "acceptable-hold" },
+        { "line": "B-O-N-E — bone! H-O-M-E — home! N-O-S-E — nose! (On the nose!)", "best_image_by_content": "bone.png ok; dog-home.png (stick, wrong prop) for home; nose.png missing but bone-nose.png covers 'on the nose'", "needs": "generate" },
+        { "line": "A potato?! (NO!) / P-p-potato! No magic E!", "best_image_by_content": "potato-home.png", "needs": "alias" },
+        { "line": "Outro: The E is magic. The E is silent. BONE!", "best_image_by_content": "bone.png", "needs": "ok" }
+      ],
+      "aliases": { "potato": "potato-home.png", "on the nose": "bone-nose.png" },
+      "generate": [
+        { "proposed_filename": "nose.png", "line": "N-O-S-E — nose!", "mj_prompt": "a clown's round red nose, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "rose.png", "line": "materials card word", "mj_prompt": "a single red rose in bloom, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "proposed_filename": "dog-coloring.png", "line": "coloring page", "mj_prompt": "a happy dog holding a bone, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+        { "proposed_filename": "home-coloring.png", "line": "coloring page", "mj_prompt": "a cosy little house with a dog basket by the door, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+      ],
+      "wrong_art": []
+    },
+    {
+      "role": "word",
+      "title": "The Bone at Home",
+      "line_map": [
+        { "line": "Dog has the bone! (hook, x2)", "best_image_by_content": "dog-bone.png shows a stick, not a bone", "needs": "generate" },
+        { "line": "Home, Dog, home! The bone is at home!", "best_image_by_content": "dog-home.png shows a stick; bone-home.png doesn't show tucking-in action", "needs": "generate" },
+        { "line": "The bone is mine!", "best_image_by_content": "dog-proud.png", "needs": "ok" },
+        { "line": "A rope! A rope! (tug! tug!) The bone is on the nose?!", "best_image_by_content": "rope.png missing (only rope-bone.png, ambiguous); bone-nose.png ok", "needs": "generate" },
+        { "line": "Dog can nap at home! / The bone… the rope… (shhh…) At home?! (a potato!)", "best_image_by_content": "potato-home.png", "needs": "ok" }
+      ],
+      "aliases": {},
+      "generate": [
+        { "proposed_filename": "rope.png", "line": "A rope! A rope!", "mj_prompt": "a coiled length of thick rope, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ],
+      "wrong_art": [
+        { "file": "dog-bone.png", "issue": "dog holds a rough wooden stick, not the clean bone established in bone.png", "fix": "regenerate with the correct prop", "mj_prompt": "a happy friendly scruffy terrier holding a big clean white bone proudly in its jaws, eyes shining, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "file": "dog-home.png", "issue": "dog carries a stick, not the bone, while bounding home", "fix": "regenerate with the correct prop", "mj_prompt": "a friendly scruffy terrier bounding joyfully toward a cosy little house on a hill, a clean white bone in its mouth, ears flying, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "file": "bone-home.png", "issue": "dog merely stands beside the basket holding the bone rather than tucking it inside", "fix": "regenerate showing the tuck-in action", "mj_prompt": "a friendly scruffy terrier gently placing a clean white bone down inside a snug basket by a front door, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
+        { "file": "rope-bone.png", "issue": "rope dominates the frame; the bone is barely visible/ambiguous, doesn't read as 'torn between two treasures'", "fix": "regenerate with both objects clearly visible", "mj_prompt": "a friendly scruffy terrier with a coiled rope in one side of its mouth and a clean white bone in the other, both objects clearly visible, torn between the two, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" }
+      ]
+    }
+  ]
+}

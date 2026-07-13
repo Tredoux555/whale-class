@@ -1,0 +1,200 @@
+{
+  "week": 24,
+  "images": [
+    {
+      "file": "fox-in-box.png",
+      "depicts": "red fox head/paws popping up over a cardboard box edge",
+      "name_matches_content": true,
+      "issue": ""
+    },
+    {
+      "file": "fox-box-peek.png",
+      "depicts": "fox eyes and ears peeking over a box/cardboard rim, close-up",
+      "name_matches_content": true,
+      "issue": ""
+    },
+    {
+      "file": "six-in-box.png",
+      "depicts": "wooden box with number 6 carved on side, six acorns piled, fox beside it",
+      "name_matches_content": true,
+      "issue": ""
+    },
+    {
+      "file": "cat-in-box.png",
+      "depicts": "tabby cat and fox heads together, both peering out of a cardboard box",
+      "name_matches_content": true,
+      "issue": ""
+    },
+    {
+      "file": "duck-in-box.png",
+      "depicts": "white duck belly-flopping into a cardboard box, striped sock in its bill, feathers flying",
+      "name_matches_content": true,
+      "issue": ""
+    },
+    {
+      "file": "mix-in-box.png",
+      "depicts": "fox, cat and duck cuddled/sleeping together resting on a box edge",
+      "name_matches_content": true,
+      "issue": "Correct trio of animals + box present, but pose is a calm sleepy cuddle rather than the artNote's 'overflowing, tangled, box bulging' chaotic mix — tone mismatch, not a content mismatch. Usable as-is."
+    },
+    {
+      "file": "ox-in-box.png",
+      "depicts": "large ox standing over/beside an already-shredded, destroyed cardboard box, ox mostly free/outside",
+      "name_matches_content": false,
+      "issue": "Filename and every use (book spread 8, word-song Verse 4 'STUCK in the box', artNote 'only its rump in, box splitting') require the ox visibly WEDGED/STUCK inside the box with the box still recognizably a box straining around it. This image instead shows the box already torn to pieces on the ground with the ox standing over/past it — no containment is depicted, so it does not read as 'the ox is in the box' or 'stuck.' Needs regeneration."
+    },
+    {
+      "file": "potato-in-box.png",
+      "depicts": "raw potato sitting at the open front corner of a box, fox looking on from the right",
+      "name_matches_content": true,
+      "issue": "Potato sits at the box's near corner/threshold rather than deep inside, but the box is clearly open and the potato is within it — reasonable match to 'the potato sits alone inside, spotlit, fox peeking in from the edge.'"
+    },
+    {
+      "file": "six.png",
+      "depicts": "large carved wooden number 6, standalone",
+      "name_matches_content": true,
+      "issue": ""
+    },
+    {
+      "file": "axe.png",
+      "depicts": "small wood axe with wooden handle, standalone",
+      "name_matches_content": true,
+      "issue": ""
+    },
+    {
+      "file": "socks.png",
+      "depicts": "pair of striped socks (red/yellow/white/green) worn on feet",
+      "name_matches_content": true,
+      "issue": ""
+    },
+    {
+      "file": "wax.png",
+      "depicts": "chunk of yellow beeswax with honeycomb texture",
+      "name_matches_content": true,
+      "issue": ""
+    }
+  ],
+  "songs": [
+    {
+      "role": "sound",
+      "title": "X-X-Box",
+      "line_map": [
+        {
+          "lines": "[Intro — whispered] …ks …ks …ks (the sound hides at the END)",
+          "image": null,
+          "status": "acceptable-hold",
+          "note": "Abstract phonetic-sound line, not a visual noun."
+        },
+        {
+          "lines": "[Hook 1] X! X! …ks …ks! What ENDS with X? A box! B-O-X! It's a box! (a box!)",
+          "image": null,
+          "status": "generate",
+          "note": "No standalone plain-box photo exists in the Week 24 folder (box.png is a cross-week fallback reused from Week 13, out of this week's own asset set). Every Week-24 box image already has an animal in it."
+        },
+        {
+          "lines": "[Hook 2] X! X! …ks …ks! What ENDS with X? A fox! F-O-X! It's a fox! (a fox!)",
+          "image": "fox-in-box.png",
+          "status": "ok",
+          "note": "Clear fox reveal shot; box in frame is not a problem for this line."
+        },
+        {
+          "lines": "[Hook 3] X! X! …ks …ks! What ENDS with X? Six! S-I-X! It is six! (it's six!)",
+          "image": "six.png",
+          "status": "ok",
+          "note": "six-in-box.png is a fine alternate/second shot for this line too."
+        },
+        {
+          "lines": "[Breakdown — whispered] …ks is two sounds… /k/ and /s/… ox… wax… taxi… (…ks hiding inside!) X never starts — X hides at the end!",
+          "image": "ox-in-box.png (for 'ox'), wax.png (for 'wax'), MISSING (for 'taxi')",
+          "status": "mixed",
+          "note": "'ox' → ox-in-box.png shows an ox so it's usable for the word mention even though the image has its own containment problem (see wrong_art). 'wax' → wax.png is a clean match. 'taxi' → no taxi image exists anywhere in the Week 24 folder; needs generation."
+        },
+        {
+          "lines": "[Bridge] A potato?! (does it end in X? NO!) P-p-potato! Not X! (…ks …ks)",
+          "image": "potato-in-box.png",
+          "status": "ok",
+          "note": "Potato + fox gag image works for the potato joke beat."
+        },
+        {
+          "lines": "[Final Hook] Mix! M-I-X! Mix it up, mix it up! …ks …ks …ks!",
+          "image": "mix-in-box.png",
+          "status": "ok",
+          "note": "Correct trio present; tone is calmer than 'mix it up' energy but content is right."
+        }
+      ],
+      "aliases": {},
+      "generate": [
+        {
+          "proposed_filename": "box.png",
+          "line": "Hook 1 — 'A box! B-O-X! It's a box!'",
+          "mj_prompt": "a plain cardboard box with the lid ajar and something bright watching from the dark slit inside, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        },
+        {
+          "proposed_filename": "taxi.png",
+          "line": "Breakdown — '…ox… wax… taxi…'",
+          "mj_prompt": "a yellow toy taxi cab, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ],
+      "wrong_art": [
+        {
+          "file": "ox-in-box.png",
+          "issue": "Shows the ox standing over an already-shredded, destroyed box rather than wedged/stuck inside an intact-but-straining box. Weak for the 'ox' word mention and unusable for the containment gag proper (see word-song Verse 4).",
+          "fix": "Regenerate so the ox is visibly wedged into the box with only its rear end inside and the box still recognizable, straining/splitting but not already torn to pieces.",
+          "mj_prompt": "an enormous ox with only its hind end wedged into a small cardboard box, front legs and head free outside, the box straining and splitting at the seams around its body, comedic tight squeeze, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ]
+    },
+    {
+      "role": "word",
+      "title": "A Fox in a Box",
+      "line_map": [
+        {
+          "lines": "[Intro] (peek… peek…)",
+          "image": "fox-box-peek.png",
+          "status": "ok",
+          "note": "Eyes/ears peeking over the rim is a near-literal match for 'peek… peek…'."
+        },
+        {
+          "lines": "[Hook] A fox in a box! A fox in a box! Who is in the box? (the fox! the fox!) The fox is in the box!",
+          "image": "fox-in-box.png",
+          "status": "ok",
+          "note": "Direct match."
+        },
+        {
+          "lines": "[Verse 2] Six in a box! Six in a box! Who is in the box? (six! six!) Six are in the box!",
+          "image": "six-in-box.png",
+          "status": "ok",
+          "note": "Direct match (six acorns + painted 6)."
+        },
+        {
+          "lines": "[Verse 3] The cat is in the box! The duck is in the box! Who is in the box? (mix! a big mix!) Mix it up in the box!",
+          "image": "cat-in-box.png (cat line), duck-in-box.png (duck line), mix-in-box.png (mix line)",
+          "status": "ok",
+          "note": "Three sequential lines, three correct matching images already exist."
+        },
+        {
+          "lines": "[Verse 4] The ox is in the box?! The ox is in the box?! (too big! too big!) The ox is STUCK in the box!",
+          "image": "ox-in-box.png",
+          "status": "wrong_art",
+          "note": "Existing image shows the box already destroyed and the ox essentially free, not 'too big / stuck in' — see wrong_art entry under the sound song for the shared fix."
+        },
+        {
+          "lines": "[Outro] What is in the box? (POTATO!) A fox in a box… (peek… shhh…)",
+          "image": "potato-in-box.png",
+          "status": "ok",
+          "note": "Potato + fox peeking covers both the reveal and the closing peek beat."
+        }
+      ],
+      "aliases": {},
+      "generate": [],
+      "wrong_art": [
+        {
+          "file": "ox-in-box.png",
+          "issue": "Same as sound-song entry — box already shredded, ox not depicted as stuck/contained, breaks the 'too big! STUCK in the box!' payoff line of Verse 4.",
+          "fix": "Regenerate so the ox is visibly wedged into an intact-but-straining box (rear end in, box splitting at seams, not already torn apart).",
+          "mj_prompt": "an enormous ox with only its hind end wedged into a small cardboard box, front legs and head free outside, the box straining and splitting at the seams around its body, comedic tight squeeze, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+        }
+      ]
+    }
+  ]
+}
