@@ -2,6 +2,34 @@
 
 **⚠️ STANDING RULE (Tredoux, Jul 10 2026 — PERMANENT): MODEL DELEGATION.** Fable is the DIRECTOR and second brain — it plans, decides, writes the critical copy, and reviews. It does NOT do grunt work. **Sonnet** (preferred over Haiku — more reliable) does all fetching, sweeping, scouting, data-gathering, and auditing via sub-agents. **Opus** builds where appropriate. Never let Fable burn half its context on mechanical work another model can do — spawn agents instead.
 
+## 🎉 SESSION — Jul 12 21:00 → Jul 13 morning, 2026 (overnight, Cowork/Fable directing Sonnet browser agents) — PHASE D IMAGES 100% COMPLETE (all 32 packs) + SUNO NEARLY DONE
+
+**Canonical live status: `docs/curriculum/PHASE_D_RUN_JUL12.md` (CURRENT STATE Jul 13 ~09:00 + the
+updated RESUME PROMPT — read it to finish). The overnight push produced EVERY image for W27–58
+(~490 imgs, chunks M2–M6) and rendered ALL 32 packs (10 valid PDFs each, exit 0). Suno: W27–47 done;
+W48–52 in flight; W53–58 the only remaining production. All on ONE browser — the rails serialized.**
+
+- **🚨 THE ORPHAN PATTERN (3 confirmed instances): a user interrupt on the parent turn does NOT
+  reliably kill a launching sub-agent** — it often spawns anyway, works for hours, and its report is
+  unreachable. Direct by GROUND TRUTH: folder counts + file mtimes; >8-10 min silence = dead; never
+  spawn onto a browser whose files are still moving; fold orphan output into the run doc yourself.
+- **Browser-binding saga concluded:** ghost extension deviceIds after window closes cost ~2h of
+  false blockers (logged-out renders, fake timeouts). Rebind = switch_browser Connect-click; verify
+  by loading a real page. The whole night ultimately ran on ONE live browser.
+- **New MJ rules added to the run doc (M3–M6 entries):** cdn-page-only downloads (a.click() silently
+  blocked on the app page; navigate-to-CDN and canvas-download must be 2 separate JS calls) ·
+  DOM-virtualized feed scraping per scroll position · scope img scraping to ±500px of the prompt node
+  (job-ID swap bug) · dramatic-weather prompts can render mushroom clouds — use children's-book
+  phrasing · prompt-typo discipline ("toy shop" → literal signage) · post-navigate screenshots can be
+  stale. Casting canonicals locked for Bee (W44), Star (W47), Owl (W52), Sam (W53); W58 graduation
+  cast (17 characters incl. crowned potato) verified drift-free.
+- **⏳ Owed:** finish Suno W48–58 (resume prompt in run doc) → final verification sweep → Tredoux
+  morning review (64 song take-picks · W51 metallic star · W52 loud-sound proxy · W58
+  station-coloring · cast eyeball · Pattern Tree/W38 tracing) → Phase E audio-QR reconciliation +
+  Montree wiring.
+
+---
+
 ## 💾 SESSION — Jul 12, 2026 (morning, same Cowork session — Sonnet fleet) — BACKUP DONE + DISK CLEARED FOR PHASE D + 222-ORG UNDERPRIVILEGED SCRAPE + OUTREACH ENRICHMENT
 
 **Canonical: `docs/handoffs/SESSION_BACKUP_CLEANUP_UNDERPRIV_JUL12.md` (incl. the Phase-D resume prompt — READ IT to resume).**
