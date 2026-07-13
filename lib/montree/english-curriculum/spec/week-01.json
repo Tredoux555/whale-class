@@ -5,79 +5,451 @@
   "letterDisplay": "Aa",
   "soundType": "vowel",
   "anchorWord": "a",
-  "newWords": ["a"],
+  "newWords": [
+    "a"
+  ],
   "reviewBank": [],
-  "glue": { "new": [], "known": [] },
+  "glue": {
+    "new": [],
+    "known": []
+  },
   "oralWords": [],
   "sentenceFrame": "It's a ___.",
-  "soundBasket": ["apple", "ant", "alligator", "astronaut", "ambulance", "anchor", "abacus", "acrobat", "potato"],
-  "cast": { "introduces": null, "present": [] },
+  "soundBasket": [
+    "apple",
+    "ant",
+    "alligator",
+    "astronaut",
+    "ambulance",
+    "anchor",
+    "abacus",
+    "acrobat",
+    "potato"
+  ],
+  "cast": {
+    "introduces": null,
+    "present": []
+  },
   "celebration": null,
   "vowelLights": "a",
   "songs": [
     {
       "role": "word",
       "title": "It's A (Potato)",
-      "lyrics": "[Intro — whispered]\na… a… a…\n\n[Hook 1 — kids chant]\nA! A! It's a… (what?)\nA! A! It's a… (what?)\nIt's a mat! It's a mat!\nIt's a mat, mat, mat!\n\n[Hook 2 — kids chant]\nA! A! It's a… (what?)\nA! A! It's a… (what?)\nIt's a cup! It's a cup!\nIt's a cup, cup, cup!\n\n[Breakdown — whispered, bass drops out]\na… a… a…\nit's a… it's a… it's a…\n\n[Hook 3 — kids chant]\nA! A! It's a… (what?)\nA! A! It's a… (what?)\nIt's a chair! It's a chair!\nIt's a chair, chair, chair!\n\n[Final Hook — big]\nA! A! It's a… (what?)\nA! A! It's a… (what?)\nIt's a POTATO!\nPOTATO! POTATO!",
+      "lyrics": "[Intro — whispered]\nah… ah… ah…\n\n[Verse 1 — deep whisper-rap]\nAh-ah-ah… ant! Ah-ah-ah… ant!\nAh-ah-ah… apple! Apple, apple!\n\n[Hook 1 — kids chant]\nA! A! It's a… (what?)\nA! A! It's a… (what?)\nIt's a mat! It's a mat!\nIt's a mat, mat, mat!\n\n[Verse 2 — deep whisper-rap]\nAh-ah-ah… ax! Ah-ah-ah… ax!\nAh-ah-ah… alligator! Alligator, alligator!\n\n[Hook 2 — kids chant]\nA! A! It's a… (what?)\nA! A! It's a… (what?)\nIt's a cup! It's a cup!\nIt's a cup, cup, cup!\n\n[Breakdown — whispered, bass drops out]\nah… ah… ah…\nit's a… it's a… it's a…\n\n[Hook 3 — kids chant]\nA! A! It's a… (what?)\nA! A! It's a… (what?)\nIt's a chair! It's a chair!\nIt's a chair, chair, chair!\n\n[Final Hook — big]\nA! A! It's a… (what?)\nA! A! It's a… (what?)\nIt's a POTATO!\nPOTATO! POTATO!",
       "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
-      "sunoNotes": "🚨 W1 EXCEPTION: this single track covers BOTH the sound-song and word-song roles — 'a' IS the sound and the word, so Week 1 ships only one song (every week from W2 on ships two). ONE pattern, ~10 unique words, same melody every hook, one word swapped. The frame stays PURE — no apple/ant/alligator in this track and no a/an talk; the vowel chant lives in the daily Bingo Vowel Song ritual (unplugged, sung at the vowel wall — 'A-E-I-O-U, A-E-I-O-U, A-E-I-O-U'), and the a/an collision lives only in the Wednesday pocket sort. Never mix the three."
+      "sunoNotes": "🚨 W1 EXCEPTION: this single track covers BOTH the sound-song and word-song roles — 'a' IS the sound and the word, so Week 1 ships only one song (every week from W2 on ships two). ONE pattern, ~10 unique words, same melody every hook, one word swapped. The frame stays PURE — no apple/ant/alligator in this track and no a/an talk; the vowel chant lives in the daily Bingo Vowel Song ritual (unplugged, sung at the vowel wall — 'A-E-I-O-U, A-E-I-O-U, A-E-I-O-U'), and the a/an collision lives only in the Wednesday pocket sort. Never mix the three. | Jul 13 2026 revision (Tredoux): added initial-/a/ sound verses (ant, apple, ax, alligator — 'Ah' phonetic stutters per the short-vowel rule, whole words kept) so the /a/ sound is drilled with a-initial vocab; hooks keep consonant-initial nouns because the article 'a' forbids an-words ('It's an apple' would teach 'an')."
     }
   ],
   "book": {
     "title": "It's a…",
     "readAloud": true,
     "spreads": [
-      { "n": 1, "text": "What is it?\nIt's a chair.", "image": "chair", "artNote": "a small wooden child-sized chair" },
-      { "n": 2, "text": "What is it?\nIt's a table.", "image": "table", "artNote": "a low wooden classroom table" },
-      { "n": 3, "text": "What is it?\nIt's a mat.", "image": "mat", "artNote": "a rolled and an unrolled woven work mat" },
-      { "n": 4, "text": "What is it?\nIt's a cup.", "image": "cup", "artNote": "a small ceramic cup" },
-      { "n": 5, "text": "What is it?\nIt's a book.", "image": "book", "artNote": "an open picture book" },
-      { "n": 6, "text": "What is it?\nIt's a pencil.", "image": "pencil", "artNote": "a single yellow pencil, oversized in frame" },
-      { "n": 7, "text": "What is it?\nIt's an apple.", "image": "apple", "artNote": "a shiny red apple — the AN twist, mid-book" },
-      { "n": 8, "text": "What is it?\nIt's an egg.", "image": "egg", "artNote": "a single white egg on a tiny cushion" },
-      { "n": 9, "text": "What… is… it…?", "image": "mystery", "artNote": "dark page, mysterious lumpy silhouette behind dark fabric, dramatic backlight, suspenseful — no answer given" },
-      { "n": 10, "text": "It's a POTATO!", "image": "potato", "artNote": "a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan" }
+      {
+        "n": 1,
+        "text": "What is it?\nIt's a chair.",
+        "image": "chair",
+        "artNote": "a small wooden child-sized chair"
+      },
+      {
+        "n": 2,
+        "text": "What is it?\nIt's a table.",
+        "image": "table",
+        "artNote": "a low wooden classroom table"
+      },
+      {
+        "n": 3,
+        "text": "What is it?\nIt's a mat.",
+        "image": "mat",
+        "artNote": "a rolled and an unrolled woven work mat"
+      },
+      {
+        "n": 4,
+        "text": "What is it?\nIt's a cup.",
+        "image": "cup",
+        "artNote": "a small ceramic cup"
+      },
+      {
+        "n": 5,
+        "text": "What is it?\nIt's a book.",
+        "image": "book",
+        "artNote": "an open picture book"
+      },
+      {
+        "n": 6,
+        "text": "What is it?\nIt's a pencil.",
+        "image": "pencil",
+        "artNote": "a single yellow pencil, oversized in frame"
+      },
+      {
+        "n": 7,
+        "text": "What is it?\nIt's an apple.",
+        "image": "apple",
+        "artNote": "a shiny red apple — the AN twist, mid-book"
+      },
+      {
+        "n": 8,
+        "text": "What is it?\nIt's an egg.",
+        "image": "egg",
+        "artNote": "a single white egg on a tiny cushion"
+      },
+      {
+        "n": 9,
+        "text": "What… is… it…?",
+        "image": "mystery",
+        "artNote": "dark page, mysterious lumpy silhouette behind dark fabric, dramatic backlight, suspenseful — no answer given"
+      },
+      {
+        "n": 10,
+        "text": "It's a POTATO!",
+        "image": "potato",
+        "artNote": "a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan"
+      }
     ],
-    "backCoverWords": ["a", "chair", "table", "mat", "cup", "book", "pencil", "apple", "egg", "potato"]
+    "backCoverWords": [
+      "a",
+      "chair",
+      "table",
+      "mat",
+      "cup",
+      "book",
+      "pencil",
+      "apple",
+      "egg",
+      "potato"
+    ]
   },
   "materials": {
-    "threePartCards": ["chair", "table", "mat", "cup", "book", "pencil", "apple", "egg", "potato"],
-    "sentences": ["It's a chair.", "It's a table.", "It's a mat.", "It's a cup.", "It's a book.", "It's a pencil.", "It's an apple.", "It's an egg.", "It's a potato."],
-    "matching": ["chair", "table", "mat", "cup", "book", "pencil", "apple", "egg", "potato"],
-    "bingoPool": ["chair", "table", "mat", "cup", "book", "pencil", "apple", "egg", "potato", "ant", "alligator", "astronaut", "ambulance", "anchor", "abacus", "acrobat"],
-    "tracing": { "letter": "a", "words": ["a", "apple", "ant"] },
-    "coloring": ["chair", "table", "mat", "cup", "book", "pencil", "apple", "egg", "potato"],
-    "dictionary": ["a", "chair", "table", "mat", "cup", "book", "pencil", "apple", "egg", "potato"],
-    "extras": ["vowel wall A·E·I·O·U cards (blue letters, gold star held back for light-up weeks)", "a/an wall pockets + 11 picture cards (red-dot self-correction on backs)", "sandpaper letter 'a' + sand tray", "/ă/ sound basket + 8 sound cards", "\"It's a …\" object tray + frame card", "song QR card"]
+    "threePartCards": [
+      "chair",
+      "table",
+      "mat",
+      "cup",
+      "book",
+      "pencil",
+      "apple",
+      "egg",
+      "potato"
+    ],
+    "sentences": [
+      "It's a chair.",
+      "It's a table.",
+      "It's a mat.",
+      "It's a cup.",
+      "It's a book.",
+      "It's a pencil.",
+      "It's an apple.",
+      "It's an egg.",
+      "It's a potato."
+    ],
+    "matching": [
+      "chair",
+      "table",
+      "mat",
+      "cup",
+      "book",
+      "pencil",
+      "apple",
+      "egg",
+      "potato"
+    ],
+    "bingoPool": [
+      "chair",
+      "table",
+      "mat",
+      "cup",
+      "book",
+      "pencil",
+      "apple",
+      "egg",
+      "potato",
+      "ant",
+      "alligator",
+      "astronaut",
+      "ambulance",
+      "anchor",
+      "abacus",
+      "acrobat"
+    ],
+    "tracing": {
+      "letter": "a",
+      "words": [
+        "a",
+        "apple",
+        "ant"
+      ]
+    },
+    "coloring": [
+      "chair",
+      "table",
+      "mat",
+      "cup",
+      "book",
+      "pencil",
+      "apple",
+      "egg",
+      "potato"
+    ],
+    "dictionary": [
+      "a",
+      "chair",
+      "table",
+      "mat",
+      "cup",
+      "book",
+      "pencil",
+      "apple",
+      "egg",
+      "potato"
+    ],
+    "extras": [
+      "vowel wall A·E·I·O·U cards (blue letters, gold star held back for light-up weeks)",
+      "a/an wall pockets + 11 picture cards (red-dot self-correction on backs)",
+      "sandpaper letter 'a' + sand tray",
+      "/ă/ sound basket + 8 sound cards",
+      "\"It's a …\" object tray + frame card",
+      "song QR card"
+    ]
   },
   "assets": [
-    { "file": "chair.png", "usedBy": ["book:1", "cards", "bingo", "coloring", "matching", "dictionary"], "mjPrompt": "a small wooden child-sized chair, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "table.png", "usedBy": ["book:2", "cards", "bingo", "coloring", "matching", "dictionary"], "mjPrompt": "a low wooden classroom table, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "mat.png", "usedBy": ["book:3", "cards", "bingo", "coloring", "matching", "dictionary"], "mjPrompt": "a rolled and an unrolled woven work mat, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "cup.png", "usedBy": ["book:4", "cards", "bingo", "coloring", "matching", "dictionary"], "mjPrompt": "a small ceramic cup, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "book.png", "usedBy": ["book:5", "cards", "bingo", "coloring", "matching", "dictionary"], "mjPrompt": "an open picture book, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "pencil.png", "usedBy": ["book:6", "cards", "bingo", "coloring", "matching", "dictionary"], "mjPrompt": "a single yellow pencil, oversized in frame, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "apple.png", "usedBy": ["book:7", "basket", "cards", "bingo", "coloring", "matching", "dictionary"], "mjPrompt": "a shiny red apple, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "egg.png", "usedBy": ["book:8", "cards", "bingo", "coloring", "matching", "dictionary"], "mjPrompt": "a single white egg on a tiny cushion, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "mystery.png", "usedBy": ["book:9"], "mjPrompt": "a mysterious lumpy silhouette behind dark fabric, dramatic backlight, suspenseful, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "potato.png", "usedBy": ["book:10", "cards", "bingo", "coloring", "matching", "dictionary"], "mjPrompt": "a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "ant.png", "usedBy": ["basket", "bingo"], "mjPrompt": "a single black ant, macro photograph, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "alligator.png", "usedBy": ["basket", "bingo"], "mjPrompt": "a small green alligator, full body side view, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "astronaut.png", "usedBy": ["basket", "bingo"], "mjPrompt": "a toy astronaut figure in a white space suit, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "ambulance.png", "usedBy": ["basket", "bingo"], "mjPrompt": "a toy ambulance with a red cross, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "anchor.png", "usedBy": ["basket", "bingo"], "mjPrompt": "a brass ship anchor, miniature, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "abacus.png", "usedBy": ["basket", "bingo"], "mjPrompt": "a wooden abacus with colorful beads, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "acrobat.png", "usedBy": ["basket", "bingo"], "mjPrompt": "a tiny acrobat figure mid-handstand, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw" },
-    { "file": "chair-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a small wooden child-sized chair, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
-    { "file": "table-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a low wooden classroom table, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
-    { "file": "mat-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a small woven floor mat with simple weave pattern, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
-    { "file": "cup-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a simple cup with a handle, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
-    { "file": "book-coloring.png", "usedBy": ["coloring"], "mjPrompt": "an open picture book, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
-    { "file": "pencil-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a single pencil with an eraser tip, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
-    { "file": "apple-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a round apple with a leaf, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
-    { "file": "egg-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a smiling egg in an egg cup, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
-    { "file": "potato-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a friendly potato wearing tiny round glasses, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+    {
+      "file": "chair.png",
+      "usedBy": [
+        "book:1",
+        "cards",
+        "bingo",
+        "coloring",
+        "matching",
+        "dictionary"
+      ],
+      "mjPrompt": "a small wooden child-sized chair, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "table.png",
+      "usedBy": [
+        "book:2",
+        "cards",
+        "bingo",
+        "coloring",
+        "matching",
+        "dictionary"
+      ],
+      "mjPrompt": "a low wooden classroom table, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "mat.png",
+      "usedBy": [
+        "book:3",
+        "cards",
+        "bingo",
+        "coloring",
+        "matching",
+        "dictionary"
+      ],
+      "mjPrompt": "a rolled and an unrolled woven work mat, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "cup.png",
+      "usedBy": [
+        "book:4",
+        "cards",
+        "bingo",
+        "coloring",
+        "matching",
+        "dictionary"
+      ],
+      "mjPrompt": "a small ceramic cup, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "book.png",
+      "usedBy": [
+        "book:5",
+        "cards",
+        "bingo",
+        "coloring",
+        "matching",
+        "dictionary"
+      ],
+      "mjPrompt": "an open picture book, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "pencil.png",
+      "usedBy": [
+        "book:6",
+        "cards",
+        "bingo",
+        "coloring",
+        "matching",
+        "dictionary"
+      ],
+      "mjPrompt": "a single yellow pencil, oversized in frame, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "apple.png",
+      "usedBy": [
+        "book:7",
+        "basket",
+        "cards",
+        "bingo",
+        "coloring",
+        "matching",
+        "dictionary"
+      ],
+      "mjPrompt": "a shiny red apple, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "egg.png",
+      "usedBy": [
+        "book:8",
+        "cards",
+        "bingo",
+        "coloring",
+        "matching",
+        "dictionary"
+      ],
+      "mjPrompt": "a single white egg on a tiny cushion, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "mystery.png",
+      "usedBy": [
+        "book:9"
+      ],
+      "mjPrompt": "a mysterious lumpy silhouette behind dark fabric, dramatic backlight, suspenseful, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "potato.png",
+      "usedBy": [
+        "book:10",
+        "cards",
+        "bingo",
+        "coloring",
+        "matching",
+        "dictionary"
+      ],
+      "mjPrompt": "a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "ant.png",
+      "usedBy": [
+        "basket",
+        "bingo"
+      ],
+      "mjPrompt": "a single black ant, macro photograph, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "alligator.png",
+      "usedBy": [
+        "basket",
+        "bingo"
+      ],
+      "mjPrompt": "a small green alligator, full body side view, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "astronaut.png",
+      "usedBy": [
+        "basket",
+        "bingo"
+      ],
+      "mjPrompt": "a toy astronaut figure in a white space suit, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "ambulance.png",
+      "usedBy": [
+        "basket",
+        "bingo"
+      ],
+      "mjPrompt": "a toy ambulance with a red cross, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "anchor.png",
+      "usedBy": [
+        "basket",
+        "bingo"
+      ],
+      "mjPrompt": "a brass ship anchor, miniature, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "abacus.png",
+      "usedBy": [
+        "basket",
+        "bingo"
+      ],
+      "mjPrompt": "a wooden abacus with colorful beads, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "acrobat.png",
+      "usedBy": [
+        "basket",
+        "bingo"
+      ],
+      "mjPrompt": "a tiny acrobat figure mid-handstand, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "chair-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a small wooden child-sized chair, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "table-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a low wooden classroom table, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "mat-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a small woven floor mat with simple weave pattern, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "cup-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a simple cup with a handle, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "book-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "an open picture book, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "pencil-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a single pencil with an eraser tip, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "apple-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a round apple with a leaf, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "egg-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a smiling egg in an egg cup, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    },
+    {
+      "file": "potato-coloring.png",
+      "usedBy": [
+        "coloring"
+      ],
+      "mjPrompt": "a friendly potato wearing tiny round glasses, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4"
+    }
   ],
   "teacherFocus": "Run the naming frame ('It's a ___') and the pure /ă/ sound game as two SEPARATE rituals all week — they collide on purpose only at Wednesday's a/an pocket sort, never mid-sentence anywhere else.",
-  "lessonMapEquivalents": [6]
+  "lessonMapEquivalents": [
+    6
+  ]
 }
