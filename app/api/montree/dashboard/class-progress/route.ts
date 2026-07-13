@@ -25,7 +25,10 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-type AreaKey = 'practical_life' | 'sensorial' | 'mathematics' | 'language' | 'cultural';
+// 'english' = the flag-gated 58-Week English Program (a conditional 6th area).
+// It aggregates like any other area, but empty english entries are filtered out
+// of the response (see areasOut below) so non-participating schools are unaffected.
+type AreaKey = 'practical_life' | 'sensorial' | 'mathematics' | 'language' | 'cultural' | 'english';
 
 const AREA_ORDER: AreaKey[] = [
   'practical_life',
@@ -33,6 +36,7 @@ const AREA_ORDER: AreaKey[] = [
   'mathematics',
   'language',
   'cultural',
+  'english',
 ];
 
 const AREA_LABEL: Record<AreaKey, string> = {
@@ -41,6 +45,7 @@ const AREA_LABEL: Record<AreaKey, string> = {
   mathematics: 'Mathematics',
   language: 'Language',
   cultural: 'Cultural',
+  english: 'English Program',
 };
 
 interface ChildRow { id: string; name: string; photo_url: string | null }
@@ -93,7 +98,16 @@ function emptyAreaBreakdown(): Record<AreaKey, number> {
     mathematics: 0,
     language: 0,
     cultural: 0,
+    english: 0,
   };
+}
+
+// 'english' is only surfaced when the classroom actually has English Program
+// activity — an empty english entry is dropped so non-participating schools see
+// exactly the 5 core areas they saw before.
+function isVisibleArea(a: { area_key: AreaKey; photos_total: number; works_active: number }): boolean {
+  if (a.area_key !== 'english') return true;
+  return a.photos_total > 0 || a.works_active > 0;
 }
 
 export async function GET(request: NextRequest) {
@@ -318,7 +332,7 @@ export async function GET(request: NextRequest) {
       works_active: agg.worksSet.size,
       top_works: topWorks,
     };
-  });
+  }).filter(isVisibleArea);
 
   const perChild: PerChild[] = roster.map(c => {
     const agg = childAggs.get(c.id)!;
@@ -369,6 +383,8 @@ function emptyResponse(
     classroom_id: classroomId,
     children_count: 0,
     period,
+    // No roster → no activity → english (a conditional area) is dropped, leaving
+    // the 5 core areas exactly as before.
     areas: AREA_ORDER.map(k => ({
       area_key: k,
       area_label: AREA_LABEL[k],
@@ -376,7 +392,7 @@ function emptyResponse(
       photos_total: 0,
       works_active: 0,
       top_works: [],
-    })),
+    })).filter(isVisibleArea),
     per_child: [],
     week_start: weekStartStr,
     generated_at: generatedAt,

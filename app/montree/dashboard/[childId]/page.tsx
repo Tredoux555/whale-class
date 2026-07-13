@@ -318,7 +318,7 @@ export default function WeekPage() {
       .then(data => {
         const allProgress: Assignment[] = data.progress || [];
 
-        const areaOrder = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+        const areaOrder = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural', 'english'];
         const focus: Assignment[] = [];
         const extras: Assignment[] = [];
         const usedWorkNames = new Set<string>();

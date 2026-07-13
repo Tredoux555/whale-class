@@ -3156,6 +3156,12 @@ export const fr: Record<string, string> = {
   'weeklyWrap.teacherReview': 'Examen par l\'enseignant',
   'weeklyWrap.laterWeekBanner': 'This week ended before today — any photos taken today are in a later week.',
   'weeklyWrap.goToCurrentWeek': 'Go to this week →',
+  // English Program (58-Week Curriculum) dashboard card — migration 293. English fallback.
+  'englishProgram.title': 'English Program',
+  'englishProgram.weekLabel': 'Week {week}',
+  'englishProgram.masteredLine': '{count} of {total} mastered',
+  'englishProgram.open': 'Open in Curriculum Studio →',
+  'englishProgram.notSeeded': 'English Program is enabled — run the seed to start tracking the 58 weeks.',
   'weeklyWrap.parentReports': 'Rapports destinés aux parents',
   'weeklyWrap.selectedCount': '{count} sélectionnés',
   'weeklyWrap.selectPrompt': 'Sélectionnez les enfants pour générer individuellement',

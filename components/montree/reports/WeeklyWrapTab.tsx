@@ -104,8 +104,16 @@ const AREA_COLORS: Record<string, { bg: string; text: string; rgb: string }> = {
   mathematics: { bg: 'rgba(168,85,247,0.15)', text: 'rgb(168, 85, 247)', rgb: '168, 85, 247' },
   language: { bg: 'rgba(74,222,128,0.15)', text: 'rgb(74, 222, 128)', rgb: '74, 222, 128' },
   cultural: { bg: 'rgba(249,115,22,0.15)', text: 'rgb(249, 115, 22)', rgb: '249, 115, 22' },
+  english: { bg: 'rgba(232,201,106,0.15)', text: 'rgb(232, 201, 106)', rgb: '232, 201, 106' },
 };
-const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+// 'english' (the flag-gated 58-Week English Program) is a conditional 6th area:
+// it only appears in grouped output when english works are actually tagged (every
+// consumer below filters to non-empty groups), so non-participating schools never
+// see it. It is deliberately EXCLUDED from the "missing areas" nudge (see below).
+const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural', 'english'];
+// Core Montessori areas only — the "didn't work in X this week" nudge must not
+// scold a school for the optional English Program (which most schools don't run).
+const CORE_AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
 const STATUS_FLOW = ['not_started', 'presented', 'practicing', 'mastered'] as const;
 
 // ─── WorkWheelPicker types ──────────────────────────────────
@@ -1316,7 +1324,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                     {/* ── Guru Weekly Summary ── */}
                     {(() => {
                       const activeAreas = areaEntries.map(e => getAreaLabel(e.area));
-                      const missingAreas = AREA_ORDER
+                      const missingAreas = CORE_AREA_ORDER
                         .filter(a => !areaEntries.some(e => e.area === a))
                         .map(a => getAreaLabel(a));
                       const totalWk = r.parent_works.length;

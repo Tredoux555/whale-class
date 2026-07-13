@@ -14,6 +14,7 @@ export const AREA_LABELS_EN: Record<string, string> = {
   mathematics: 'Mathematics',
   language: 'Language',
   cultural: 'Cultural',
+  english: 'English Program',
 };
 
 export const AREA_LABELS_ZH: Record<string, string> = {
@@ -22,6 +23,7 @@ export const AREA_LABELS_ZH: Record<string, string> = {
   mathematics: '数学',
   language: '语言',
   cultural: '文化',
+  english: '英语课程',
 };
 
 export const AREA_LABELS_ES: Record<string, string> = {
@@ -30,6 +32,7 @@ export const AREA_LABELS_ES: Record<string, string> = {
   mathematics: 'Matemáticas',
   language: 'Lenguaje',
   cultural: 'Cultural',
+  english: 'Programa de Inglés',
 };
 
 export const AREA_LABELS_DE: Record<string, string> = {
@@ -38,6 +41,7 @@ export const AREA_LABELS_DE: Record<string, string> = {
   mathematics: 'Mathematik',
   language: 'Sprache',
   cultural: 'Kulturelles',
+  english: 'Englischprogramm',
 };
 
 export const AREA_LABELS_FR: Record<string, string> = {
@@ -46,6 +50,7 @@ export const AREA_LABELS_FR: Record<string, string> = {
   mathematics: 'Mathématiques',
   language: 'Langage',
   cultural: 'Culture',
+  english: 'Programme d’Anglais',
 };
 
 export const AREA_LABELS_PT: Record<string, string> = {
@@ -54,6 +59,7 @@ export const AREA_LABELS_PT: Record<string, string> = {
   mathematics: 'Matemática',
   language: 'Linguagem',
   cultural: 'Cultural',
+  english: 'Programa de Inglês',
 };
 
 export const AREA_LABELS_NL: Record<string, string> = {
@@ -62,6 +68,7 @@ export const AREA_LABELS_NL: Record<string, string> = {
   mathematics: 'Wiskunde',
   language: 'Taal',
   cultural: 'Cultureel',
+  english: 'Engels Programma',
 };
 
 export const AREA_LABELS_IT: Record<string, string> = {
@@ -70,6 +77,7 @@ export const AREA_LABELS_IT: Record<string, string> = {
   mathematics: 'Matematica',
   language: 'Linguaggio',
   cultural: 'Culturale',
+  english: 'Programma di Inglese',
 };
 
 export const AREA_LABELS_JA: Record<string, string> = {
@@ -78,6 +86,7 @@ export const AREA_LABELS_JA: Record<string, string> = {
   mathematics: '算数',
   language: '言語',
   cultural: '文化',
+  english: '英語プログラム',
 };
 
 export const AREA_LABELS_KO: Record<string, string> = {
@@ -86,6 +95,7 @@ export const AREA_LABELS_KO: Record<string, string> = {
   mathematics: '수학',
   language: '언어',
   cultural: '문화',
+  english: '영어 프로그램',
 };
 
 export const AREA_LABELS_UK: Record<string, string> = {
@@ -94,6 +104,7 @@ export const AREA_LABELS_UK: Record<string, string> = {
   mathematics: 'Математика',
   language: 'Мова',
   cultural: 'Культура',
+  english: 'Програма з Англійської',
 };
 
 export const AREA_LABELS_RU: Record<string, string> = {
@@ -102,6 +113,7 @@ export const AREA_LABELS_RU: Record<string, string> = {
   mathematics: 'Математика',
   language: 'Язык',
   cultural: 'Культура',
+  english: 'Программа Английского',
 };
 
 /** Map of all locale → area labels. Keyed by locale string. */
@@ -127,6 +139,7 @@ export const AREA_KEYS = [
   'mathematics',
   'language',
   'cultural',
+  'english',
 ] as const;
 
 export type AreaKey = (typeof AREA_KEYS)[number];
@@ -138,20 +151,20 @@ export type AreaKey = (typeof AREA_KEYS)[number];
 // has a collision (e.g. German Sensorial=Sinnesmaterial vs Sprache=S, or
 // Ukrainian Математика vs Мова both → М), we use a 2-letter abbreviation.
 // ---------------------------------------------------------------------------
-export const AREA_PREFIXES_EN: Record<string, string> = { practical_life: 'P', sensorial: 'S', mathematics: 'M', language: 'L', cultural: 'C' };
-export const AREA_PREFIXES_ZH: Record<string, string> = { practical_life: '日', sensorial: '感', mathematics: '数', language: '语', cultural: '文' };
-export const AREA_PREFIXES_ES: Record<string, string> = { practical_life: 'V', sensorial: 'S', mathematics: 'M', language: 'L', cultural: 'C' };
+export const AREA_PREFIXES_EN: Record<string, string> = { practical_life: 'P', sensorial: 'S', mathematics: 'M', language: 'L', cultural: 'C', english: 'E' };
+export const AREA_PREFIXES_ZH: Record<string, string> = { practical_life: '日', sensorial: '感', mathematics: '数', language: '语', cultural: '文', english: '英' };
+export const AREA_PREFIXES_ES: Record<string, string> = { practical_life: 'V', sensorial: 'S', mathematics: 'M', language: 'L', cultural: 'C', english: 'E' };
 // German: Sinnesmaterial + Sprache both start with S → 2-letter codes throughout
-export const AREA_PREFIXES_DE: Record<string, string> = { practical_life: 'Pr', sensorial: 'Si', mathematics: 'Ma', language: 'Sp', cultural: 'Ku' };
-export const AREA_PREFIXES_FR: Record<string, string> = { practical_life: 'V', sensorial: 'S', mathematics: 'M', language: 'L', cultural: 'C' };
-export const AREA_PREFIXES_PT: Record<string, string> = { practical_life: 'V', sensorial: 'S', mathematics: 'M', language: 'L', cultural: 'C' };
-export const AREA_PREFIXES_NL: Record<string, string> = { practical_life: 'P', sensorial: 'Z', mathematics: 'W', language: 'T', cultural: 'C' };
-export const AREA_PREFIXES_IT: Record<string, string> = { practical_life: 'V', sensorial: 'S', mathematics: 'M', language: 'L', cultural: 'C' };
-export const AREA_PREFIXES_JA: Record<string, string> = { practical_life: '日', sensorial: '感', mathematics: '算', language: '言', cultural: '文' };
-export const AREA_PREFIXES_KO: Record<string, string> = { practical_life: '일', sensorial: '감', mathematics: '수', language: '언', cultural: '문' };
+export const AREA_PREFIXES_DE: Record<string, string> = { practical_life: 'Pr', sensorial: 'Si', mathematics: 'Ma', language: 'Sp', cultural: 'Ku', english: 'En' };
+export const AREA_PREFIXES_FR: Record<string, string> = { practical_life: 'V', sensorial: 'S', mathematics: 'M', language: 'L', cultural: 'C', english: 'E' };
+export const AREA_PREFIXES_PT: Record<string, string> = { practical_life: 'V', sensorial: 'S', mathematics: 'M', language: 'L', cultural: 'C', english: 'E' };
+export const AREA_PREFIXES_NL: Record<string, string> = { practical_life: 'P', sensorial: 'Z', mathematics: 'W', language: 'T', cultural: 'C', english: 'E' };
+export const AREA_PREFIXES_IT: Record<string, string> = { practical_life: 'V', sensorial: 'S', mathematics: 'M', language: 'L', cultural: 'C', english: 'E' };
+export const AREA_PREFIXES_JA: Record<string, string> = { practical_life: '日', sensorial: '感', mathematics: '算', language: '言', cultural: '文', english: '英' };
+export const AREA_PREFIXES_KO: Record<string, string> = { practical_life: '일', sensorial: '감', mathematics: '수', language: '언', cultural: '문', english: '영' };
 // Ukrainian: Математика + Мова both start with М → 2-letter codes throughout
-export const AREA_PREFIXES_UK: Record<string, string> = { practical_life: 'Пр', sensorial: 'Се', mathematics: 'Ма', language: 'Мо', cultural: 'Ку' };
-export const AREA_PREFIXES_RU: Record<string, string> = { practical_life: 'П', sensorial: 'С', mathematics: 'М', language: 'Я', cultural: 'К' };
+export const AREA_PREFIXES_UK: Record<string, string> = { practical_life: 'Пр', sensorial: 'Се', mathematics: 'Ма', language: 'Мо', cultural: 'Ку', english: 'Ан' };
+export const AREA_PREFIXES_RU: Record<string, string> = { practical_life: 'П', sensorial: 'С', mathematics: 'М', language: 'Я', cultural: 'К', english: 'Ан' };
 
 export const AREA_PREFIXES: Record<string, Record<string, string>> = {
   en: AREA_PREFIXES_EN,

@@ -15,10 +15,15 @@ const AREA_CONFIG = {
   mathematics: { name: 'Mathematics', short: 'Math', icon: 'M', color: '#3b82f6', gradient: 'from-blue-500 to-indigo-400', bgLight: '#eff6ff', bgSubtle: '#dbeafe' },
   language: { name: 'Language', short: 'Language', icon: 'L', color: '#22c55e', gradient: 'from-emerald-500 to-green-400', bgLight: '#f0fdf4', bgSubtle: '#dcfce7' },
   cultural: { name: 'Cultural', short: 'Cultural', icon: 'C', color: '#f97316', gradient: 'from-orange-500 to-amber-400', bgLight: '#fff7ed', bgSubtle: '#ffedd5' },
+  english: { name: 'English Program', short: 'English', icon: 'E', color: '#E8C96A', gradient: 'from-amber-400 to-yellow-300', bgLight: '#fffbeb', bgSubtle: '#fef3c7' },
   miscellaneous: { name: 'Miscellaneous', short: 'Misc', icon: '✦', color: '#64748b', gradient: 'from-slate-500 to-gray-400', bgLight: '#f8fafc', bgSubtle: '#f1f5f9' },
 };
 
-const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural', 'miscellaneous'];
+// 'english' (the flag-gated English Program) only groups works that carry the
+// `english` area. The community works this page reads don't include the per-school
+// English Program rows, so the English tab is hidden whenever its count is 0 (see
+// the tab render guard below) — no permanently-empty tab for anyone.
+const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural', 'english', 'miscellaneous'];
 
 function getPhotoUrl(photo: any) {
   if (!photo?.storage_path) return null;
@@ -215,7 +220,10 @@ export default function LibraryBrowsePage() {
         <div className="border-t border-white/[0.06]">
           <div className="max-w-3xl mx-auto px-2">
             <div className="flex overflow-x-auto no-scrollbar -mb-px">
-              {AREA_ORDER.map((areaKey) => {
+              {AREA_ORDER
+                // English Program is conditional — hide its tab unless works are present.
+                .filter((areaKey) => areaKey !== 'english' || (areaCounts[areaKey] || 0) > 0)
+                .map((areaKey) => {
                 const tabCfg = AREA_CONFIG[areaKey];
                 const isActive = activeTab === areaKey;
                 const count = areaCounts[areaKey] || 0;

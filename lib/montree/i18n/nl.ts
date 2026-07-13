@@ -3156,6 +3156,12 @@ export const nl: Record<string, string> = {
   'weeklyWrap.teacherReview': 'Leerkracht Review',
   'weeklyWrap.laterWeekBanner': 'This week ended before today — any photos taken today are in a later week.',
   'weeklyWrap.goToCurrentWeek': 'Go to this week →',
+  // English Program (58-Week Curriculum) dashboard card — migration 293. English fallback.
+  'englishProgram.title': 'English Program',
+  'englishProgram.weekLabel': 'Week {week}',
+  'englishProgram.masteredLine': '{count} of {total} mastered',
+  'englishProgram.open': 'Open in Curriculum Studio →',
+  'englishProgram.notSeeded': 'English Program is enabled — run the seed to start tracking the 58 weeks.',
   'weeklyWrap.parentReports': 'Ouderrapporten',
   'weeklyWrap.selectedCount': '{count} geselecteerd',
   'weeklyWrap.selectPrompt': 'Selecteer kinderen om individueel te genereren',

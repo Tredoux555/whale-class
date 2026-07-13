@@ -11,7 +11,7 @@
 
 import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
-const CANONICAL_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'] as const;
+const CANONICAL_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural', 'english'] as const;
 
 /** Trim, lowercase, collapse whitespace. Used as the canonical key for
  *  comparing work names across sources. */

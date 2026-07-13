@@ -32,6 +32,11 @@ export type FeatureKey =
   // works (tag + track like any work). Virtual/flag-gated in /api/montree/works.
   // Default OFF; schools opt in. See lib/montree/phonics/phonics-works.ts.
   | 'phonics_works'
+  // English Program (58-Week Curriculum) — gates the new `english` curriculum
+  // area. The 58 weeks are seeded as ordinary works (source='english_program')
+  // per school AFTER this flag is enabled, via scripts/curriculum/seed-english-program.mjs.
+  // Migration 293. Default OFF; schools opt in.
+  | 'english_program'
   | 'curriculum_browser'
   | 'community_library'
   | 'picture_bank'

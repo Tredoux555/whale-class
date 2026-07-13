@@ -2183,8 +2183,14 @@ function ClassEnglishHeatmap({
 // "Quiet this week" subhead.
 
 type ClassProgressAreaKey =
-  | 'practical_life' | 'sensorial' | 'mathematics' | 'language' | 'cultural';
+  | 'practical_life' | 'sensorial' | 'mathematics' | 'language' | 'cultural' | 'english';
 
+// The 5 core Montessori areas drive the per-child mini-bar strip + the "/N areas"
+// denominator. 'english' (the flag-gated English Program) is a conditional 6th
+// area: the route only returns an english area summary when english activity
+// exists, so its CARD renders for participating schools while the per-child strip
+// stays the canonical 5. The maps below carry 'english' purely so a present
+// english card never reads an undefined colour/letter/label.
 const CP_AREA_ORDER: ClassProgressAreaKey[] = [
   'practical_life', 'sensorial', 'mathematics', 'language', 'cultural',
 ];
@@ -2197,6 +2203,7 @@ const CP_AREA_COLOR: Record<ClassProgressAreaKey, string> = {
   mathematics:    'rgb(168, 85, 247)',   // purple
   language:       'rgb(74, 222, 128)',   // green
   cultural:       'rgb(249, 115, 22)',   // orange
+  english:        'rgb(232, 201, 106)',  // gold
 };
 
 const CP_AREA_LETTER: Record<ClassProgressAreaKey, string> = {
@@ -2205,6 +2212,7 @@ const CP_AREA_LETTER: Record<ClassProgressAreaKey, string> = {
   mathematics: 'M',
   language: 'L',
   cultural: 'C',
+  english: 'E',
 };
 
 const CP_AREA_LABEL: Record<ClassProgressAreaKey, string> = {
@@ -2213,6 +2221,7 @@ const CP_AREA_LABEL: Record<ClassProgressAreaKey, string> = {
   mathematics: 'Mathematics',
   language: 'Language',
   cultural: 'Cultural',
+  english: 'English Program',
 };
 
 interface CPTopWork {
@@ -2727,6 +2736,10 @@ function ClassProgressChildRow({
   T: Record<string, string>;
 }) {
   const childMaxAreaCount = Math.max(1, ...CP_AREA_ORDER.map(k => child.area_breakdown[k]));
+  // Count active areas over the 5 core areas shown in the mini-bar strip, so the
+  // "/N areas" label always matches the bars (child.areas_active may include the
+  // conditional English Program area, which is surfaced as its own card instead).
+  const coreAreasActive = CP_AREA_ORDER.filter(k => (child.area_breakdown[k] || 0) > 0).length;
   const initial = child.child_name.charAt(0).toUpperCase();
 
   return (
@@ -2792,7 +2805,7 @@ function ClassProgressChildRow({
         letterSpacing: 0.2,
         flexShrink: 0,
       }}>
-        {child.areas_active}/5 areas
+        {coreAreasActive}/{CP_AREA_ORDER.length} areas
       </span>
 
       {/* Photos count */}
