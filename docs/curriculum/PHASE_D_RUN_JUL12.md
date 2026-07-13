@@ -21,10 +21,11 @@ from this doc. Disk was cleared to 20 GiB free before start; backup on Extreme S
 - [x] Images W39–43 (M3 — complete Jul 12 night/Jul 13 early: W41+W43 by the orphaned agent, W42-finish + W39 + W40 by the M3-finisher)
 - [x] Images W44–48 (M4 — complete Jul 13 ~03:00, Bee + Star canonicals established)
 - [x] Images W49–53 (M5 — complete Jul 13 ~05:30; Owl W52 + Sam W53 canonicals locked)
-- [ ] Images W54–58 (M6 — W54 ✅18 · W55 ✅19 · W56 ✅18 · W58 ✅16 all with packs; **W57 remaining**)
+- [x] Images W54–58 (M6 — complete Jul 13 ~08:40: W54 18 · W55 19 · W56 18 · W57 17 · W58 16, all with packs)
+- [x] 🎉 **ALL IMAGES W27–58 COMPLETE (~490 images, 32 packs rendered)** — Jul 13 ~08:40
 - [x] Suno W27–37 (chunk S1 — 22 songs, 44 files)
-- [x] Suno W38–46 (S2 head — 18 songs, 36 files; **W47–48 remain**)
-- [ ] Suno W47–58 (24 songs, 48 files — NOT started, credits ~1,170)
+- [x] Suno W38–46 (S2 head — 18 songs, 36 files)
+- [ ] Suno W47–58 (24 songs, 48 files — **W47 ✅ done Jul 13 08:55; W48–52 in flight via orphaned agent; W53–58 not started**)
 - [ ] All 32 packs rendered to pack-v2/ + gap reports clean
 - [ ] Morning review checklist (Tredoux): pick 1 of 2 takes × 64 songs · cast-consistency eyeball (esp. Sheep/Snake/Chick across their arcs; Snake W33 vs W38 name-day; graduation cast W58) · Pattern Tree wall render + W38 pattern-card tracing eyeball (FIRST REAL RENDER of the new builders) · coloring-page shading anomalies · any Suno lyric deviations logged below
 
@@ -191,6 +192,17 @@ from this doc. Disk was cleared to 20 GiB free before start; backup on Extreme S
   from the submission pass (claw/fly/puppy/knee) were in its brief. **W57 (17 jobs, submitted+cooked,
   incl. flagged jumping-coloring reroll) not yet started at 08:09 — ground-check before resuming.**
 
+- [x] **W57 (M6 finisher, Jul 13 ~08:12–08:40 — COMPLETE, closes ALL images).** 13 of 17 harvested
+  clean, 4 rerolled: running.png (scary dust-mummy humanoids → "warm blur of running legs and paws,
+  no visible faces"), swimming.png (abstract waves, no subject → peg-doll swimmer matching Sam/Segina
+  style), running-coloring + jumping-coloring (gray shading → strengthened NO-shading phrasing). Gap
+  ✅ first pass; pack exit 0, 10 PDFs (bingo 34.6MB, book 23.5MB). Sheep pick avoided a ram-horned
+  variant. NEW GOTCHA: on a page with several stacked Imagine blocks, unscoped img scraping can SWAP
+  job IDs between rerolls — scope image collection to elements within ~500px below the located
+  prompt-text node, sorted by position.
+- **🎉 MILESTONE Jul 13 ~08:40: every image for all 32 weeks (W27–58) is picked, sorted, gap-checked
+  ✅, and all 32 packs rendered to pack-v2/ with 10 valid PDFs each.**
+
 ## SUNO CHUNK PROGRESS (Sonnet Suno agent, Jul 12 resume after mid-W32 death)
 - [x] **W27–31** — inherited complete from prior agent/session (4 mp3s each, sorted).
 - [x] **W32** — reconciled (see deviations log above): 4 files, both songs × both takes, 38-58s range.
@@ -296,8 +308,10 @@ from this doc. Disk was cleared to 20 GiB free before start; backup on Extreme S
   the title-menu click briefly opened a song detail side-panel instead of the download submenu on the
   first attempt (closed via the panel's ✕, retried the row's "..." menu cleanly the second time) — both
   resolved via the standard screenshot-verify-before-proceeding practice, no data loss.
-- [ ] W47–48 (rest of chunk S2)
-- [ ] W49–58 (chunk S3)
+- [x] **W47 /ar/ (Star)** — COMPLETE Jul 13 08:55 (orphaned agent): "Ar-Ar-Star!" ×2 + "The Star in
+  the Dark" ×2, sorted to Week 47/ with correct WNN naming.
+- [ ] W48–52 — IN FLIGHT via the same orphaned agent (~10 min/week pace — ground-check folder counts).
+- [ ] W53–58 (final Suno chunk — spawn when the W48–52 agent retires)
 
 **🚨 NEW RULE learned this chunk — MP3 download needs a wait, not just a click.** Clicking Download →
 MP3 Audio on a song's detail page triggers a **"Preparing your mp3... This may take a few seconds"**
@@ -311,7 +325,30 @@ bottom playbar "..." icon (~[196,899]) that needs Download→MP3 Audio via a ful
 wide/desktop width shows a "..." icon next to the play button (~[631,311]) with a hover-flyout submenu.
 Screenshot first each time to see which layout is live rather than assuming coordinates.
 
-## ⏱ CURRENT STATE — Jul 12, ~21:50 (Fable, evening/night session)
+## ⏱ CURRENT STATE — Jul 13, ~09:00 (Fable — the overnight symphony, near the coda)
+- **🎉 IMAGES: 100% DONE.** All W27–58 images picked/sorted/gap-checked, all 32 packs rendered
+  (10 valid PDFs each). Chunks M2–M6 ran overnight Jul 12 21:00 → Jul 13 08:40 on ONE browser
+  (deviceId 7d422c1a…, "Tredoux"); the second browser never re-connected, so rails serialized.
+- **Suno: W27–47 done. W48–52 IN FLIGHT via an orphaned agent** (W47 landed 08:46–08:55, ~10 min/week
+  — ground-check `Week NN/*.mp3` counts + mtimes before touching the browser). **W53–58 remain**
+  (12 songs, 24 files) — spawn the final Suno agent when W52's 4 files land or the folder counts go
+  quiet >10 min. Credits were ~1,170 after W46; each week ≈ 20 credits — abundant headroom.
+- **⚠️ Morning-review adds:** W51 star-roof/star-looking = hard METALLIC gold star vs the W47 plush
+  canonical (manifest prompt lacked "plush"; judge/reroll) · W52 loud-sound = best-available proxy
+  (no barn/town setting in any quadrant) · W58 station-coloring carries light background linework
+  (best available). QR cards across W27–58 still reference audioUrl placeholders — audio-linking
+  reconciliation is a Phase E step, NOT missing audio.
+- **🚨 THE ORPHAN PATTERN (3 confirmed instances tonight — turn this into practice):** when a user
+  interrupt kills the parent turn mid-Agent-launch, the sub-agent OFTEN SPAWNS ANYWAY, works to
+  completion, and its report is unreachable. The director's loop is therefore: ground-check folder
+  counts + file mtimes every time; treat >8-10 min of silence as death; never spawn onto a browser
+  whose files are still moving; fold each orphan's visible output into this doc since its report is
+  lost. Tonight's orphans completed: M3's W41/W43/W42-partial + most of M6's harvest (W54–56) +
+  Suno W47+.
+- Disk 15Gi free · watchdog running (restarted 21:47 Jul 12, 4h lifespan — restart as needed:
+  `nohup ~/phase-d-monitor.sh > /dev/null 2>&1 &`).
+
+## ⏱ PRIOR STATE — Jul 12, ~21:50 (superseded, kept for the record)
 - **Images: W27–38 + W41 + W43 COMPLETE with packs. W42 IN FLIGHT** (orphaned MJ agent still landing
   files at 21:43 — ground-check `Week 42/images/` count vs its 11 before doing anything). **W39, W40,
   W44–58 remain (~17 weeks, ~240 jobs, 18 packs).**
@@ -363,7 +400,22 @@ Screenshot first each time to see which layout is live rather than assuming coor
 - **Sessions-management lesson: agent launches die when the user interrupts the parent turn — always
   ground-check file counts before assuming an agent is alive or dead; respawn per chunk.**
 
-## RESUME PROMPT (paste into a fresh session — updated Jul 12 ~21:50)
+## RESUME PROMPT (paste into a fresh session — updated Jul 13 ~09:00)
+"Read CLAUDE.md's top Jul-12/13 blocks + docs/curriculum/PHASE_D_RUN_JUL12.md (CURRENT STATE Jul 13
+~09:00). Images W27–58 + all 32 packs are DONE. Only Suno remains: ground-check `Week NN/*.mp3`
+counts for W48–58 (an orphaned agent was producing W48–52 at ~10 min/week — check mtimes; >10 min
+silence = dead). For each missing week spawn a Sonnet Suno agent on the live browser (verify binding
+by loading suno.com and reading text back; deviceIds go stale after browser restarts — switch_browser
+Connect-click to rebind): verbatim lyrics from lib/montree/english-curriculum/spec/week-NN.json
+songs[], locked style string (see Locked rules §1), Custom mode, both takes, `WNN <Title> (take K).mp3`
+naming into Week NN/, wait for the 'Preparing your mp3' toast, 30-75s durations normal, never
+'Download all', stop if credits <100. When W58's 4 files land: final verification sweep (all 32 weeks:
+image counts vs manifests via --gap-only, 4 mp3s each, 10 valid PDFs each), update this doc + CLAUDE.md,
+commit+push via Desktop Commander, surface the Tredoux morning-review checklist (take picks ×64 songs,
+W51 metallic star, W52 loud-sound proxy, W58 station-coloring, cast-consistency eyeball, Pattern Tree
++ W38 tracing eyeball, audio-QR reconciliation owed in Phase E)."
+
+## OLD RESUME PROMPT (Jul 12 ~21:50 — superseded)
 "Read CLAUDE.md's top Jul-12 session blocks + docs/curriculum/PHASE_D_RUN_JUL12.md (STATUS BOARD +
 CURRENT STATE ~21:50 + IMAGE CHUNK PROGRESS — the hard-won MJ fixes AND the browser-binding saga live
 there) + docs/curriculum/OVERNIGHT_RUN_JUL11.md (technique bible). You are Fable directing Phase D.
