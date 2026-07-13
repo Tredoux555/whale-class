@@ -308,10 +308,18 @@ from this doc. Disk was cleared to 20 GiB free before start; backup on Extreme S
   the title-menu click briefly opened a song detail side-panel instead of the download submenu on the
   first attempt (closed via the panel's ✕, retried the row's "..." menu cleanly the second time) — both
   resolved via the standard screenshot-verify-before-proceeding practice, no data loss.
-- [x] **W47 /ar/ (Star)** — COMPLETE Jul 13 08:55 (orphaned agent): "Ar-Ar-Star!" ×2 + "The Star in
-  the Dark" ×2, sorted to Week 47/ with correct WNN naming.
-- [ ] W48–52 — IN FLIGHT via the same orphaned agent (~10 min/week pace — ground-check folder counts).
-- [ ] W53–58 (final Suno chunk — spawn when the W48–52 agent retires)
+- [x] **W47 /ar/ (Star)** — COMPLETE Jul 13 08:55 (orphaned agent #3): "Ar-Ar-Star!" ×2 + "The Star
+  in the Dark" ×2, sorted with correct WNN naming. That orphan died after W47.
+- [x] **W48 /or/ + W49 /er/** — COMPLETE Jul 13 ~09:15–09:36 (orphaned agent #4 — its launch turn
+  errored with an API 403 yet it spawned anyway): W48 "Or-Or-Corn!" ×2 + "More Corn for the Horse" ×2;
+  W49 "Er-Er-Bird!" ×2 + "The Bird and the Girl" ×2. Died after W49.
+- [ ] **W50 (ship/sheep review) — IN FLIGHT at 10:32 Jul 13 via orphaned agent #5** (launch interrupted
+  10:05-ish, spawned anyway): 3 of 4 files landed by 10:32 ("W50 Ship or Sheep (sound take 1).mp3"
+  newest). **NEXT SESSION: ground-check W50–58 mp3 counts + mtimes FIRST — this orphan may have
+  advanced several weeks or died; >10 min silence = dead. Do NOT spawn onto the browser while files
+  are still landing.**
+- [ ] W51–58 (or wherever orphan #5 stopped) — the only remaining Phase D production. 2 songs/week,
+  verbatim spec lyrics, locked style, both takes, `WNN <Title> (take K).mp3` into Week NN/ root.
 
 **🚨 NEW RULE learned this chunk — MP3 download needs a wait, not just a click.** Clicking Download →
 MP3 Audio on a song's detail page triggers a **"Preparing your mp3... This may take a few seconds"**
@@ -325,7 +333,26 @@ bottom playbar "..." icon (~[196,899]) that needs Download→MP3 Audio via a ful
 wide/desktop width shows a "..." icon next to the play button (~[631,311]) with a hover-flyout submenu.
 Screenshot first each time to see which layout is live rather than assuming coordinates.
 
-## ⏱ CURRENT STATE — Jul 13, ~09:00 (Fable — the overnight symphony, near the coda)
+## ⏱ CURRENT STATE — Jul 13, ~10:35 (Fable — SESSION CLOSING on Tredoux's order; resume after refresh)
+- **🎉 IMAGES: 100% DONE** (all W27–58, all 32 packs, 10 valid PDFs each — verified).
+- **Suno: W27–49 done (92 files). W50 in-flight via orphaned agent #5 (3/4 files at 10:32, still
+  landing). W51–58 = the only remaining production (16 songs, 32 files — minus whatever orphan #5
+  finishes before dying).** Credits abundant (each week ≈ 20; ~1,100+ at last sight).
+- **⛔ NO NEW WORK was started after 10:05 per Tredoux's stop order.** Resume = the RESUME PROMPT
+  below. First act of the next session: ground-check W50–58 mp3 counts + mtimes (orphan #5 may have
+  kept going), THEN spawn one Sonnet Suno agent for the remaining weeks on the live browser
+  (deviceId was 7d422c1a… — but verify by loading suno.com and reading text back; rebind via
+  switch_browser Connect-click if stale). After W58 lands: final verification sweep (32 weeks ×
+  {images vs manifest via --gap-only, 4 mp3s, 10 valid PDFs}), update this doc + CLAUDE.md, commit,
+  surface the morning-review checklist.
+- **Morning-review checklist (Tredoux):** pick 1 of 2 takes × 64 songs · W51 metallic star (vs W47
+  plush canonical) · W52 loud-sound proxy · W58 station-coloring light linework · cast-consistency
+  eyeball (Sheep/Snake/Chick arcs, Bee W44, Star W47, Owl W52, Sam W53, W58 graduation 17-cast) ·
+  Pattern Tree wall + W38 pattern-card tracing (first real render of the new builders) · any Suno
+  lyric deviations in this doc's log · Phase E owes audio-QR reconciliation (packs' QR cards carry
+  placeholders by design).
+
+## ⏱ PRIOR STATE — Jul 13, ~09:00 (superseded)
 - **🎉 IMAGES: 100% DONE.** All W27–58 images picked/sorted/gap-checked, all 32 packs rendered
   (10 valid PDFs each). Chunks M2–M6 ran overnight Jul 12 21:00 → Jul 13 08:40 on ONE browser
   (deviceId 7d422c1a…, "Tredoux"); the second browser never re-connected, so rails serialized.
@@ -400,20 +427,20 @@ Screenshot first each time to see which layout is live rather than assuming coor
 - **Sessions-management lesson: agent launches die when the user interrupts the parent turn — always
   ground-check file counts before assuming an agent is alive or dead; respawn per chunk.**
 
-## RESUME PROMPT (paste into a fresh session — updated Jul 13 ~09:00)
+## RESUME PROMPT (paste into a fresh session — updated Jul 13 ~10:35)
 "Read CLAUDE.md's top Jul-12/13 blocks + docs/curriculum/PHASE_D_RUN_JUL12.md (CURRENT STATE Jul 13
-~09:00). Images W27–58 + all 32 packs are DONE. Only Suno remains: ground-check `Week NN/*.mp3`
-counts for W48–58 (an orphaned agent was producing W48–52 at ~10 min/week — check mtimes; >10 min
-silence = dead). For each missing week spawn a Sonnet Suno agent on the live browser (verify binding
-by loading suno.com and reading text back; deviceIds go stale after browser restarts — switch_browser
-Connect-click to rebind): verbatim lyrics from lib/montree/english-curriculum/spec/week-NN.json
-songs[], locked style string (see Locked rules §1), Custom mode, both takes, `WNN <Title> (take K).mp3`
-naming into Week NN/, wait for the 'Preparing your mp3' toast, 30-75s durations normal, never
-'Download all', stop if credits <100. When W58's 4 files land: final verification sweep (all 32 weeks:
-image counts vs manifests via --gap-only, 4 mp3s each, 10 valid PDFs each), update this doc + CLAUDE.md,
-commit+push via Desktop Commander, surface the Tredoux morning-review checklist (take picks ×64 songs,
-W51 metallic star, W52 loud-sound proxy, W58 station-coloring, cast-consistency eyeball, Pattern Tree
-+ W38 tracing eyeball, audio-QR reconciliation owed in Phase E)."
+~10:35). Images W27–58 + all 32 packs are DONE and verified. Only Suno W50–58 remains (W50 was
+in-flight via an orphaned agent at 10:32). FIRST ground-check `Week NN/*.mp3` counts + mtimes for
+W50–58 via Desktop Commander (>10 min silence = orphan dead; never spawn while files are still
+landing). Then spawn ONE Sonnet Suno agent for the remaining weeks on the live browser (verify
+binding by loading suno.com/create and reading text back; deviceIds go stale after browser restarts —
+switch_browser Connect-click to rebind): verbatim lyrics from lib/montree/english-curriculum/spec/
+week-NN.json songs[], locked style string (Locked rules §1), Custom mode, both takes,
+`WNN <Title> (take K).mp3` naming into Week NN/ root, textarea-clearing + cmd+a-hijack + never
+'Download all' rules (Suno progress entries), wait for the 'Preparing your mp3' toast, 30-75s
+durations normal, stop if credits <100. When W58's 4 files land: final verification sweep (all 32
+weeks: --gap-only clean, 4 mp3s each, 10 valid non-zero PDFs each), update this doc + CLAUDE.md,
+commit+push via Desktop Commander, surface the Tredoux morning-review checklist (in CURRENT STATE)."
 
 ## OLD RESUME PROMPT (Jul 12 ~21:50 — superseded)
 "Read CLAUDE.md's top Jul-12 session blocks + docs/curriculum/PHASE_D_RUN_JUL12.md (STATUS BOARD +

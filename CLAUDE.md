@@ -4,10 +4,13 @@
 
 ## 🎉 SESSION — Jul 12 21:00 → Jul 13 morning, 2026 (overnight, Cowork/Fable directing Sonnet browser agents) — PHASE D IMAGES 100% COMPLETE (all 32 packs) + SUNO NEARLY DONE
 
-**Canonical live status: `docs/curriculum/PHASE_D_RUN_JUL12.md` (CURRENT STATE Jul 13 ~09:00 + the
+**Canonical live status: `docs/curriculum/PHASE_D_RUN_JUL12.md` (CURRENT STATE Jul 13 ~10:35 + the
 updated RESUME PROMPT — read it to finish). The overnight push produced EVERY image for W27–58
-(~490 imgs, chunks M2–M6) and rendered ALL 32 packs (10 valid PDFs each, exit 0). Suno: W27–47 done;
-W48–52 in flight; W53–58 the only remaining production. All on ONE browser — the rails serialized.**
+(~490 imgs, chunks M2–M6) and rendered ALL 32 packs (10 valid PDFs each, exit 0). Suno: W27–49 done
+(92 files); W50 was in-flight via orphan #5 at session close; W51–58 the only remaining production
+(~16 songs). All on ONE browser — the rails serialized. SESSION CLOSED 10:35 on Tredoux's stop
+order; resume via the run doc's RESUME PROMPT (ground-check W50–58 mp3 counts FIRST — the orphan
+may have kept producing after close).**
 
 - **🚨 THE ORPHAN PATTERN (3 confirmed instances): a user interrupt on the parent turn does NOT
   reliably kill a launching sub-agent** — it often spawns anyway, works for hours, and its report is
