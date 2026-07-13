@@ -31,17 +31,23 @@ what's open, and the two queued theories (Montree in-app tracking + mvgen music 
 
 ## 2. Open items (small)
 
-1. **W30 "Ck! Ck! Bell!" take pick** — Tredoux never gave one. Both takes still in `Week 30/`
-   as `(take 1)/(take 2)`. When picked: rename winner clean → rerun `upload-songs.mjs` +
-   `set-audio-urls.mjs` → re-render W30 qr_cards → commit. 10-minute job.
-2. **Archives to delete after Tredoux's final sign-off:** `_replaced_segina/` (old mispronounced +
-   pre-era songs) and optionally `_takes_not_picked/` (keep? it's ~130MB of B-takes — suggest keep
-   on the Extreme SSD backup, delete locally).
-3. **Visual morning-review leftovers:** W51 metallic star (vs W47 plush canonical — reroll on request),
+1. ~~W30 take pick~~ **DONE Jul 13 evening — Tredoux picked take 2.** Renamed clean, loser archived,
+   uploaded (`curriculum-songs/w30-sound.mp3`), audioUrl set, W30 qr_cards re-rendered — **all 115
+   songs published, zero placeholders site-wide.** Picks file is COMPLETE (58/58 weeks).
+2. **📸 PHOTO BANK UPLOAD (Tredoux doing manually):** all 1,007 curriculum images were COPIED (originals
+   untouched) to `~/Desktop/English Curriculum 2026/_all_images_flat/` with `wNN-` filename prefixes
+   (e.g. `w27-ship.png`, `w44-sheep-nameday.png`). Tredoux uploads these to the library Photo Bank
+   himself. If a scripted path is ever wanted instead: port `scripts/upload-to-photo-bank.mjs`
+   (bucket 'photo-bank') with category "English Curriculum" + week/sound tags.
+3. **Archives to delete after Tredoux's final sign-off:** `_replaced_segina/` (old mispronounced +
+   pre-era songs) and optionally `_takes_not_picked/` (~130MB of B-takes — suggest keep on the
+   Extreme SSD backup, delete locally). `_all_images_flat/` can go after the photo-bank upload.
+4. **Visual morning-review leftovers:** W51 metallic star (vs W47 plush canonical — reroll on request),
    W52 loud-sound proxy image, W58 station-coloring light linework, cast-consistency eyeball,
    Pattern Tree wall + W38 pattern-card tracing eyeball.
-4. **Live verification after Railway deploy:** Studio page → expand a week → player renders + plays;
-   scan one printed QR card with a phone.
+5. **Live verification: DONE for the Studio** (58-week strip + Level 1/2/3 sections + ?week= deep-link +
+   audio players verified live Jul 13, commit `be69b6e6`). Still owed: scan one PRINTED QR card with a
+   real phone.
 
 ## 3. THEORY A — the curriculum as a trackable system INSIDE Montree (per-school optional)
 
