@@ -17,6 +17,7 @@
   "songs": [
     {
       "role": "sound",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/w04-sound.mp3",
       "title": "C-C-Cat!",
       "lyrics": "[Intro]\nC! C! C-c-c!\n(c… c… c…)\n\n[Hook]\nC! C! C-c-c!\nWhat begins with C?\nC-c-cat! C-c-cat!\nIt's a cat! (a cat!)\n\n[Verse 2]\nC! C! C-c-c!\nWhat begins with C?\nC-c-cup! C-c-cup!\nIt's a cup! (a cup!)\n\n[Verse 3]\nC! C! C-c-c!\nWhat begins with C?\nC-c-car! C-c-car!\nIt's a car! (a car!)\n\n[Verse 4]\nC! C! C-c-c!\nWhat begins with C?\nC-c-cow! C-c-cow!\nIt's a cow! (a cow!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not C!\n(c… c… c…)\n\n[Outro]\nC-c-cat! C-c-cat!\nIt's a cat! (a cat!)\nC! C! C-c-c!",
       "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
@@ -24,6 +25,7 @@
     },
     {
       "role": "word",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/w04-word.mp3",
       "title": "The Cat Is on the Mat",
       "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nThe cat is on the mat!\nThe cat is on the mat!\nWhere is the cat? (where? where?)\nThe cat is on the mat!\n\n[Verse 2]\nThe mat is on the cat?!\nThe mat is on the cat?!\nWhere is the cat? (where? where?)\nThe mat is on the cat!\n\n[Verse 3]\nThe cat is… on the mat?\n(No! Look! Up! Up!)\nWhere is the cat? (where? where?)\nThe cat is UP! (Come down, cat!)\n\n[Outro]\nThe cat is on the mat.\n(shhh… the cat is asleep)\nA potato is on the mat!\n(POTATO!)",
       "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",

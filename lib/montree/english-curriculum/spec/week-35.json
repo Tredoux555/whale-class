@@ -18,6 +18,7 @@
   "songs": [
     {
       "role": "sound",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/w35-sound.mp3",
       "title": "Fr-Fr-Frog!",
       "lyrics": "[Intro]\nFr! Fr! Fr-fr-fr!\n(fr… fr… fr…)\n\n[Hook]\nFr! Fr! Two sounds, TOGETHER!\n/f/ and /r/ — fr! fr!\nFr-fr-frog! Fr-fr-frog!\nFROG! (hop!) FROG!\n\n[Verse 2]\nCr! Cr! /c/ and /r/!\nBlend them quick — cr! cr!\nCr-cr-crab! Cr-cr-crab!\nCRAB! (snip!) CRAB!\n\n[Verse 3]\nDr! Dr! /d/ and /r/!\nBlend them quick — dr! dr!\nDr-dr-drum! Dr-dr-drum!\nDRUM! (bang!) DRUM!\n\n[Verse 4]\nGr! Gr! /g/ and /r/!\nBlend them quick — gr! gr!\nGr-gr-grin! Gr-gr-grin!\nGRIN! (big grin!) GRIN!\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! No blend!\n(fr… fr… fr…)\n\n[Outro]\nFr-fr-frog! Cr-cr-crab!\nDr-dr-drum! Gr-gr-grin!\nTwo sounds together! (blend! blend!)\nFr! Fr! Fr-fr-fr!",
       "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
@@ -25,6 +26,7 @@
     },
     {
       "role": "word",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/w35-word.mp3",
       "title": "Frog Can Grin",
       "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nFrog can grin!\nFrog can grin!\nA big, big grin! (grin! grin!)\nFrog can grin!\n\n[Verse 2]\nFrog can bang the drum!\nCrab can snap and grin!\nGrin and grab and grin! (grin! grin!)\nFrog can grin!\n\n[Verse 3]\nSnake can grin at Frog!\nChick can grin and clap!\nGrin, Frog, grin! (grin! grin!)\nFrog can grin!\n\n[Outro]\nFrog… the grin… (hush…)\nA potato?! (POTATO!)\nFrog can grin at a potato! (grin, Frog, grin!)",
       "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",

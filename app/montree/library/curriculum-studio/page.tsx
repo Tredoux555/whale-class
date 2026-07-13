@@ -445,6 +445,10 @@ export default function CurriculumStudioPage() {
                           </button>
                         </div>
                       </div>
+                      {/* Audio player — appears once the song's mp3 is published (audioUrl set) */}
+                      {s.audioUrl && (
+                        <audio controls preload="none" src={s.audioUrl} style={{ width: '100%', marginTop: 8 }} />
+                      )}
                       {/* Lyrics — collapses to 8 lines; no inner scroll (copy button gets the full text) */}
                       <pre className="text-[11px] text-white/50 mt-2 whitespace-pre-wrap font-sans">{shownLyrics}</pre>
                       {lines.length > 8 && (

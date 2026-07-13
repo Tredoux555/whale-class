@@ -18,6 +18,7 @@
   "songs": [
     {
       "role": "sound",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/w27-sound.mp3",
       "title": "Sh-Sh-Ship!",
       "lyrics": "[Intro]\nSh! Sh! Sh-sh-sh!\n(sh… sh… sh…)\n\n[Hook]\nSh! Sh! Sh-sh-sh!\nTwo letters, ONE sound!\nSh-sh-ship! Sh-sh-ship!\nIt's a ship! (a ship!)\n\n[Verse 2]\nSh! Sh! Sh-sh-sh!\nWhat begins with SH?\nSh-sh-shop! Sh-sh-shop!\nIt's a shop! (a shop!)\n\n[Verse 3]\nSh! Sh! Sh-sh-sh!\nWhat begins with SH?\nSh-sh-shell! Sh-sh-shell!\nIt's a shell! (a shell!)\n\n[Verse 4]\nSh! Sh! Sh-sh-sh!\nWhat begins with SH?\nSh-sh-sheep! Sh-sh-sheep!\nIt's a sheep! (hello, Sheep!)\n\n[Bridge]\nA potato?! (NO!)\nP-p-potato! Not SH!\n(sh… sh… sh…)\n\n[Outro]\nSh-sh-ship! Sh-sh-ship!\nIt's a ship! (a ship!)\nSh! Sh! Sh-sh-sh!\n(shhh… quiet now…)",
       "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
@@ -25,6 +26,7 @@
     },
     {
       "role": "word",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/w27-word.mp3",
       "title": "The Fish on the Ship",
       "lyrics": "[Intro]\n(We can read. We can read!)\n\n[Hook]\nThe fish is on the ship!\nThe fish is on the ship!\nWhere is the fish? (where? where?)\nThe fish is on the ship!\n\n[Verse 2]\nSheep is on the ship!\nSheep is on the ship!\nWish, fish, wish! (wish! wish!)\nThe fish can wish!\n\n[Verse 3]\nThe wish is big! (big! big!)\nThe fish is in! (splash!)\nWhere is the fish? (where? where?)\nThe fish is in! (swim, fish, swim!)\n\n[Outro]\nThe ship… the fish… (shhh…)\nA potato is on the ship!\n(POTATO!)",
       "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
