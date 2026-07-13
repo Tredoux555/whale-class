@@ -85,7 +85,7 @@ type CutEvery = 1 | 2 | 4;
 type BrowseKind = 'audio' | 'images';
 
 // ── V2: pulse / projects / uploads / plan (per the addendum) ────────────────
-type Pulse = 'off' | 'beat' | 'downbeat';
+type Pulse = 'off' | 'anchor' | 'beat' | 'downbeat';
 type UploadKind = 'audio' | 'image' | 'subs'; // NB: upload query uses singular 'image'
 
 interface ProjectFile {
@@ -261,7 +261,7 @@ export default function MvGenStudioPage() {
   const [nowMs, setNowMs] = useState<number>(Date.now());
 
   // ── render form: V2 additions ───────────────────────────────────────────────
-  const [pulse, setPulse] = useState<Pulse>('beat');
+  const [pulse, setPulse] = useState<Pulse>('anchor');
   const [subsPath, setSubsPath] = useState('');
 
   // ── projects ────────────────────────────────────────────────────────────────
@@ -1192,7 +1192,8 @@ export default function MvGenStudioPage() {
                   className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:border-cyan-500 focus:outline-none"
                 >
                   <option value="off">Off</option>
-                  <option value="beat">Every beat (recommended)</option>
+                  <option value="anchor">Key words only (recommended)</option>
+                  <option value="beat">Every beat</option>
                   <option value="downbeat">Downbeats only</option>
                 </select>
               </div>
