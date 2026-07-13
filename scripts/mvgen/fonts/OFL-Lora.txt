@@ -1,0 +1,33 @@
+Bundled fonts — SIL Open Font License 1.1
+=========================================
+
+The .ttf files in this directory are redistributed under the SIL Open Font
+License, Version 1.1 (OFL-1.1). Full license text:
+https://openfontlicense.org  (or https://scripts.sil.org/OFL)
+
+Lora
+----
+  Files: Lora-Regular.ttf, Lora-Italic.ttf, Lora-BoldItalic.ttf
+  Copyright 2011 The Lora Project Authors (https://github.com/cyrealtype/Lora-Cyrillic)
+  Reserved Font Name: "Lora".
+  These static instances were generated (fontTools varLib.instancer) from the
+  upstream Lora variable fonts (wght axis pinned: 400 for Regular/Italic,
+  700 for Bold Italic). Licensed under OFL-1.1.
+
+Andika
+------
+  Files: Andika-Regular.ttf, Andika-Bold.ttf
+  Copyright 2004-2022 SIL International (https://software.sil.org/andika/).
+  Reserved Font Name: "Andika".
+  Licensed under OFL-1.1.
+
+Why bundled
+-----------
+mvgen embeds the theme font into ffmpeg via `fontsdir` so the burned-in
+subtitles render identically on any machine. Without bundling, macOS silently
+substitutes a different serif for the montree theme's Lora (the CI/sandbox
+happened to have Lora installed; the user's Mac does not), changing the look.
+
+Under OFL-1.1 you MAY bundle, embed and redistribute these fonts (including with
+software), provided the above copyright and license notices are kept and the
+Reserved Font Names are not used for modified versions.
