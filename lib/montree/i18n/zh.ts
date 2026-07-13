@@ -3598,6 +3598,12 @@ export const zh = {
   'weeklyWrap.teacherReview': '教师审核',
   'weeklyWrap.laterWeekBanner': '这一周在今天之前就已结束——今天拍摄的照片属于之后的周次。',
   'weeklyWrap.goToCurrentWeek': '前往本周 →',
+  // 英语课程（58 周课程）仪表板卡片 — migration 293。
+  'englishProgram.title': '英语课程',
+  'englishProgram.weekLabel': '第 {week} 周',
+  'englishProgram.masteredLine': '已掌握 {count} / {total}',
+  'englishProgram.open': '打开课程工作室 →',
+  'englishProgram.notSeeded': '英语课程已启用——请运行种子脚本以开始跟踪这 58 周。',
   'weeklyWrap.parentReports': '家长报告',
   'weeklyWrap.selectedCount': '已选 {count} 名',
   'weeklyWrap.selectPrompt': '选择要单独生成的孩子',

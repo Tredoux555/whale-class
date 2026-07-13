@@ -3156,6 +3156,12 @@ export const ko: Record<string, string> = {
   'weeklyWrap.teacherReview': '교사 검토',
   'weeklyWrap.laterWeekBanner': 'This week ended before today — any photos taken today are in a later week.',
   'weeklyWrap.goToCurrentWeek': 'Go to this week →',
+  // English Program (58-Week Curriculum) dashboard card — migration 293. English fallback.
+  'englishProgram.title': 'English Program',
+  'englishProgram.weekLabel': 'Week {week}',
+  'englishProgram.masteredLine': '{count} of {total} mastered',
+  'englishProgram.open': 'Open in Curriculum Studio →',
+  'englishProgram.notSeeded': 'English Program is enabled — run the seed to start tracking the 58 weeks.',
   'weeklyWrap.parentReports': '학부모 보고서',
   'weeklyWrap.selectedCount': '{count}개 선택됨',
   'weeklyWrap.selectPrompt': '개별 생성을 위해 자녀분을 선택해 주세요',

@@ -15,7 +15,9 @@ import { anthropic, HAIKU_MODEL, AI_ENABLED } from '@/lib/ai/anthropic';
 // the flat-tag string so the teacher still gets SOMETHING in the textarea.
 export const maxDuration = 60;
 
-const AREAS = AREA_KEYS;
+// 5 canonical areas only — the English Program (flag-gated 6th area) is tracked
+// via its own works + Curriculum Studio, not the weekly-admin planning grid.
+const AREAS = AREA_KEYS.filter(k => k !== 'english');
 
 // 🚨 Session 111 — weekly summaries are HARD-CAPPED at 40 words total.
 // (Reduced from 50 after user feedback that even 50 was too long.)

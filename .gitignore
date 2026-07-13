@@ -133,3 +133,6 @@ tsconfig.scope-mvgen.json
 tsconfig.scope-curriculum.tmp.json
 tsconfig.scoped.tmp.json
 node_modules/.cache/curriculum-studio/
+
+# English Program (Jul-13): temp scoped tsconfig from build verification (sandbox rm blocked — delete via Desktop Commander)
+tsconfig.english.tmp.json

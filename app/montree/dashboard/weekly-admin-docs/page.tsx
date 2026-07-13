@@ -18,7 +18,11 @@ import VoiceDictate from '@/components/montree/voice/VoiceDictate';
 import { toast } from 'sonner';
 import { AREA_KEYS, getAreaLabel } from '@/lib/montree/i18n/area-labels';
 
-const AREAS = AREA_KEYS.map(key => ({
+// The weekly-admin planning grid is the 5 canonical Montessori areas only. The
+// English Program (a flag-gated 6th area) is tracked via its own works + the
+// Curriculum Studio, not this planning template — excluded here so schools that
+// enable it don't get an empty English planning column.
+const AREAS = AREA_KEYS.filter(key => key !== 'english').map(key => ({
   key,
   label: getAreaLabel(key, 'en'),
   zh: getAreaLabel(key, 'zh'),

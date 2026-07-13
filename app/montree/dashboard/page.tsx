@@ -46,6 +46,7 @@ const ChangelogModal = dynamic(() => import('@/components/montree/ChangelogModal
 const PendingAppointmentsBanner = dynamic(() => import('@/components/montree/appointments/PendingAppointmentsBanner'), { ssr: false });
 const GroupLessonCard = dynamic(() => import('@/components/montree/GroupLessonCard'), { ssr: false });
 const CurriculumGapCard = dynamic(() => import('@/components/montree/CurriculumGapCard'), { ssr: false });
+const EnglishProgramCard = dynamic(() => import('@/components/montree/EnglishProgramCard'), { ssr: false });
 
 
 interface Child {
@@ -834,6 +835,11 @@ export default function DashboardPage() {
                   corner of the curriculum relative to the rest of the room.
                   Hide-when-empty + per-day dismiss. Flag default ON (mig 248). */}
               {isEnabled('curriculum_gap_radar') && <CurriculumGapCard />}
+
+              {/* 🔤 English Program (58-Week Curriculum) — current week + mastery
+                  progress, links into Curriculum Studio. Flag default OFF
+                  (migration 293); schools opt in + seed the weeks per school. */}
+              {isEnabled('english_program') && <EnglishProgramCard />}
 
               {/* ── Student Grid — fills viewport height ──
                   Avatar 58 + gap 10 + name 12 + per-link vertical padding
