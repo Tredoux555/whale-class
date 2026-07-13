@@ -56,6 +56,7 @@ const TOOLS: Tool[] = [
   { id: 'media-library', title: 'Media Library', href: '/admin/media-library', icon: '📁', color: 'bg-slate-500', description: 'Uploaded files' },
   { id: 'montree', title: 'Independent Montree', href: '/admin/montree', icon: '🌳', color: 'bg-green-600', description: 'Multi-tenant' },
   { id: 'site-tester', title: 'Site Tester', href: '/admin/site-tester', icon: '🔍', color: 'bg-slate-600', description: 'Test & debug' },
+  { id: 'mvgen', title: 'MV Studio', href: '/admin/mvgen', icon: '🎼', color: 'bg-emerald-500', description: 'Music video generator' },
 ];
 
 export default function AdminDashboard() {

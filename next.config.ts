@@ -186,8 +186,13 @@ const nextConfig: NextConfig = {
               // device per retry — with two devices doing this dance, they
               // rarely converge in the join window. ":*" port-wildcard fixes
               // it. Diagnosed from Tredoux's iPhone+Mac call log 2026-05-19.
-              "connect-src 'self' https://dmfncjjtsoxrnvcdnvjq.supabase.co https://www.googleapis.com https://static.cloudflareinsights.com https://*.agora.io:* wss://*.agora.io:* https://*.sd-rtn.com:* wss://*.sd-rtn.com:* https://*.agoraio.cn:* wss://*.agoraio.cn:*",
-              "media-src 'self' blob: https://dmfncjjtsoxrnvcdnvjq.supabase.co",
+              // mvgen local daemon — /admin/mvgen talks to a renderer on the operator's own machine; loopback is mixed-content-exempt in Chrome
+              "connect-src 'self' https://dmfncjjtsoxrnvcdnvjq.supabase.co https://www.googleapis.com https://static.cloudflareinsights.com https://*.agora.io:* wss://*.agora.io:* https://*.sd-rtn.com:* wss://*.sd-rtn.com:* https://*.agoraio.cn:* wss://*.agoraio.cn:* http://127.0.0.1:8787 http://localhost:8787",
+              // mvgen local daemon — the /admin/mvgen Library plays rendered mp4s via a native
+              // <video src="http://127.0.0.1:8787/api/media">; a <video> element's src is governed by
+              // media-src (NOT connect-src), so the loopback origins must be listed here too or Chrome
+              // blocks playback. Same operator-own-machine / loopback rationale as connect-src above.
+              "media-src 'self' blob: https://dmfncjjtsoxrnvcdnvjq.supabase.co http://127.0.0.1:8787 http://localhost:8787",
               // worker-src 'self' blob: required by Agora SDK for its audio-processing AudioWorklet
               "worker-src 'self' blob:",
               "frame-ancestors 'none'",
