@@ -107,12 +107,19 @@ export async function POST(req: NextRequest) {
       console.error('[SuperAdminAuth] Audit log failed:', e);
     }
 
-    // Issue JWT session token (1 hour). Client-side 15-min inactivity timeout
-    // is the real session control — JWT just needs to outlast an active session.
+    // Issue JWT session token. The client-side session control is a 15-min
+    // *sliding* inactivity timeout (refreshed on every mouse/key event), so an
+    // actively-used panel can stay "logged in" for many hours. The JWT must
+    // OUTLAST that active session — a short absolute TTL (was 1h) expired
+    // mid-session while the panel still looked authenticated, so every
+    // super-admin API call 401'd and forms (e.g. Partner Program mint) failed
+    // silently with a generic "try again". 12h comfortably outlasts any real
+    // working session; idle >15min still logs the client out and re-login mints
+    // a fresh token. (Client also proactively re-prompts on the token's own exp.)
     const token = await new SignJWT({ role: 'super_admin', ip })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
-      .setExpirationTime('1h')
+      .setExpirationTime('12h')
       .sign(getSuperAdminTokenSecret());
 
     return NextResponse.json({ authenticated: true, token });
