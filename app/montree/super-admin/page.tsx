@@ -46,6 +46,22 @@ type TabType = 'schools' | 'feedback' | 'leads' | 'visitors' | 'agents' | 'agent
 
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
+// Read the `exp` (ms since epoch) from a JWT WITHOUT verifying the signature.
+// Used ONLY to proactively force a clean re-login the moment the super-admin
+// token dies — otherwise the panel keeps looking authenticated (activity keeps
+// the sliding 15-min timer fresh) while every API call 401s and forms fail
+// silently. Returns null if it can't be parsed (→ fall back to idle-only logic).
+function readJwtExpMs(token: string): number | null {
+  try {
+    const seg = token.split('.')[1];
+    if (!seg) return null;
+    const json = JSON.parse(atob(seg.replace(/-/g, '+').replace(/_/g, '/')));
+    return typeof json.exp === 'number' ? json.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+}
+
 type DemoLead = {
   id: string;
   org_name: string;
@@ -325,7 +341,12 @@ export default function SuperAdminPage() {
       const savedTs = sessionStorage.getItem('sa_session_ts');
       if (savedToken && savedTs) {
         const elapsed = Date.now() - parseInt(savedTs, 10);
-        if (elapsed < SESSION_TIMEOUT_MS) {
+        // Don't restore a token that's already expired server-side (or within
+        // 5s of it) — that would render an authenticated-looking panel whose
+        // every API call 401s. null exp = unparseable → keep old idle-only rule.
+        const expMs = readJwtExpMs(savedToken);
+        const tokenLive = expMs === null || expMs - Date.now() > 5000;
+        if (elapsed < SESSION_TIMEOUT_MS && tokenLive) {
           setSaToken(savedToken);
           setAuthenticated(true);
           setLastActivity(Date.now());
@@ -408,7 +429,13 @@ export default function SuperAdminPage() {
 
     const checkSession = setInterval(() => {
       const elapsed = Date.now() - lastActivity;
-      if (elapsed > SESSION_TIMEOUT_MS) {
+      // Also force a clean re-login the moment the JWT itself expires — an
+      // active session (mouse/key events keep `elapsed` low) can otherwise
+      // outlive the token, leaving the panel authenticated-looking while every
+      // API call 401s and forms fail silently. null exp → idle-only fallback.
+      const expMs = readJwtExpMs(saToken);
+      const tokenDead = expMs !== null && expMs - Date.now() <= 5000;
+      if (elapsed > SESSION_TIMEOUT_MS || tokenDead) {
         logAction('session_timeout');
         setAuthenticated(false);
         setSessionWarning(false);
@@ -420,7 +447,7 @@ export default function SuperAdminPage() {
     }, 10000);
 
     return () => clearInterval(checkSession);
-  }, [authenticated, lastActivity, logAction]);
+  }, [authenticated, lastActivity, logAction, saToken]);
 
   // Track activity
   const trackActivity = useCallback(() => {
