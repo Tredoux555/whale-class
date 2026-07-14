@@ -2,6 +2,31 @@
 
 **⚠️ STANDING RULE (Tredoux, Jul 10 2026 — PERMANENT): MODEL DELEGATION.** Fable is the DIRECTOR and second brain — it plans, decides, writes the critical copy, and reviews. It does NOT do grunt work. **Sonnet** (preferred over Haiku — more reliable) does all fetching, sweeping, scouting, data-gathering, and auditing via sub-agents. **Opus** builds where appropriate. Never let Fable burn half its context on mechanical work another model can do — spawn agents instead.
 
+## 🖼 SESSION — Jul 14, 2026 (overnight+day, Cowork/Fable directing) — MVGEN MECHANISM CERTIFIED + 58-WEEK IMAGE AUDIT + 114 CRITICAL IMAGES GENERATED — REROLLS VIA TANDEM PROTOCOL NEXT
+
+**Canonical: `docs/handoffs/HANDOFF_IMAGE_TANDEM_JUL14.md` (resume prompt + full tandem protocol) +
+`docs/handoffs/HANDOFF_VIDEO_CERTIFICATION_JUL14.md` (mechanism detail).** mvgen phrase-matcher
+overhaul CERTIFIED: commits `94e6a6b8`→`14cbb454`→`cfb8fd22`→`9c2500f8`, pushed, 108/108 tests;
+shot reports self-flag misses; alias layer `scripts/mvgen/curriculum-video-aliases.json` (🚨 alias
+FIRST token must be the sung anchor word); audio-hash cache bug fixed. **58-week visual audit**
+(every image actually viewed) → `GENERATE_MANIFEST.json` (122) / `REROLL_MANIFEST.json` (133) +
+canon table + Tredoux veto list in `VIDEO_AUDIT_MASTER_JUL14.md`. **114/114 video-critical
+GENERATE items DONE** (generated, eyeballed, filed to `Week NN/images/`; run board
+`MJ_GENERATION_RUN_JUL14.md`). 🚨 **NO VIDEO RENDERS of any kind — not even samples — until
+Tredoux's explicit go** (said twice); 21 stale pre-image-fix renders quarantined to
+`~/Desktop/Music Videos/_stale_pre_image_fix/`; daemon may stay up on :8787, used for nothing.
+**REMAINING 141: all 133 REROLL entries (none done) + 8 GENERATE leftovers (non-critical).**
+Tredoux's feedback on the 114 done so far: some agent-picked grid tiles weren't the best option →
+**NEW: 🤝 THE TANDEM PROTOCOL** (full steps in the handoff) — agent ONLY submits `mj_prompt`s +
+posts a one-line status card per item, NEVER picks a grid tile or downloads; Tredoux picks +
+downloads in his own MJ window; a reconciliation-pass agent matches `~/Downloads` → manifest
+entries every ~20 items, archives originals to `_replaced_video_audit/Week NN/` before filing
+rerolls, verifies each filed image by reading it. Also this session: `english_program` live on
+Whale (migration 293 run, 58 works seeded, 4 QA classrooms also seeded — cleanup optional);
+`_all_images_flat` renamed for photo bank (Tredoux uploads manually).
+
+---
+
 ## 🚀 SESSION — Jul 13, 2026 (afternoon, same Cowork session) — TAKE PICKS LOCKED + CURRICULUM PUBLISHED TO MONTREE.XYZ (Phase E part 1)
 
 **Canonical: `docs/handoffs/HANDOFF_PHASE_E_CURRICULUM_LIVE_JUL13.md` (incl. resume prompt + the two
