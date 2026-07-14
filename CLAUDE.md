@@ -297,8 +297,8 @@ Next.js 16.1.1 app with two systems:
 Production: `https://montree.xyz` (migrated from teacherpotato.xyz — old domain returns 405 on API calls)
 Deploy: Railway auto-deploys on push to `main`
 Git remote: `git@github.com:Tredoux555/whale-class.git` (SSH — Cowork VM key "Cowork VM Feb 15" added Feb 15, 2026; old "Cowork VM" Feb 11 key is stale)
-Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note space in "Master Brain")
-**⚠️ Git Push — ALWAYS use Desktop Commander FIRST:** `mcp__Desktop_Commander__start_process` with command `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git push origin main 2>&1` and `timeout_ms: 30000`. Do NOT try Cowork VM SSH keys, GitHub PATs, or `scripts/push-to-github.py` — Desktop Commander on the user's Mac is the only reliable push method.
+Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree` (note space in "Master Brain"; folder renamed from `whale` ~Jul 2026 — repo is still whale-class on GitHub)
+**⚠️ Git Push — ALWAYS use Desktop Commander FIRST:** `mcp__Desktop_Commander__start_process` with command `cd ~/Desktop/Master\ Brain/ACTIVE/montree && git push origin main 2>&1` and `timeout_ms: 30000`. Do NOT try Cowork VM SSH keys, GitHub PATs, or `scripts/push-to-github.py` — Desktop Commander on the user's Mac is the only reliable push method.
 
 **⚠️ STANDING RULE (Tredoux, Jun 10 2026): everything runs FROM THE CHAT.** Never tell Tredoux to "open this document/file" for SQL, commands, or instructions — paste the full SQL / command / step directly in the chat message, step by step, like a real assistant walking him through it. Documents are for archives; the chat is the workbench.
 
