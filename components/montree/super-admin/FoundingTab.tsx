@@ -171,14 +171,18 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
   const [mintEmail, setMintEmail] = useState('');
   const [minting, setMinting] = useState(false);
   const [minted, setMinted] = useState<{ code: string; already: boolean } | null>(null);
+  // Inline error for this card — the global `error` banner renders at the TOP
+  // of the tab, off-screen when scrolled down here (see pError note below).
+  const [mintError, setMintError] = useState<string | null>(null);
 
   const mintLink = async () => {
     if (!mintSchool.trim() || !mintEmail.trim()) {
-      setError('School name and email are both needed to mint a link.');
+      setMintError('School name and email are both needed to mint a link.');
       return;
     }
     setMinting(true);
     setMinted(null);
+    setMintError(null);
     try {
       const res = await fetch('/api/montree/super-admin/founding', {
         method: 'PATCH',
@@ -187,16 +191,20 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data?.error || 'Could not mint a founding link. Try again.');
+        setMintError(
+          res.status === 401
+            ? 'Your session has expired — log in again, then mint.'
+            : data?.error || 'Could not mint a founding link. Try again.'
+        );
         return;
       }
       setMinted({ code: data.signup_code, already: !!data.already_existed });
       setMintSchool('');
       setMintEmail('');
-      setError(null);
+      setMintError(null);
       await load();
     } catch {
-      setError('Could not mint a founding link. Try again.');
+      setMintError('Could not mint a founding link. Check your connection and try again.');
     } finally {
       setMinting(false);
     }
@@ -251,6 +259,11 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
   const [pSchool, setPSchool] = useState('');
   const [pShare, setPShare] = useState('20');
   const [pMinting, setPMinting] = useState(false);
+  // Inline error for the partner-mint card. The global `error` banner renders
+  // at the TOP of the tab — off-screen when you're scrolled down at this card —
+  // so a failed mint looked like "nothing happens". Card-local errors render
+  // right under the button instead.
+  const [pError, setPError] = useState<string | null>(null);
   const [partnerResult, setPartnerResult] = useState<PartnerResult | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   // Keyed QR status so multiple "Generate QR code" buttons (the partner-mint
@@ -270,16 +283,17 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
 
   const mintPartner = async () => {
     if (!pName.trim() || !pEmail.trim() || !pSchool.trim()) {
-      setError('Partner name, email, and school name are all needed to mint a partner package.');
+      setPError('Partner name, email, and school name are all needed to mint a partner package.');
       return;
     }
     const share = Number(pShare);
     if (Number.isNaN(share) || share < 0 || share > 100) {
-      setError('Revenue share % must be between 0 and 100.');
+      setPError('Revenue share % must be between 0 and 100.');
       return;
     }
     setPMinting(true);
     setPartnerResult(null);
+    setPError(null);
     try {
       const res = await fetch('/api/montree/super-admin/founding', {
         method: 'PATCH',
@@ -294,7 +308,11 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data?.error || 'Could not mint the partner package. Try again.');
+        setPError(
+          res.status === 401
+            ? 'Your session has expired — log in again, then mint.'
+            : data?.error || 'Could not mint the partner package. Try again.'
+        );
         return;
       }
       setPartnerResult(data as PartnerResult);
@@ -302,10 +320,10 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
       setPEmail('');
       setPSchool('');
       setPShare('20');
-      setError(null);
+      setPError(null);
       await load();
     } catch {
-      setError('Could not mint the partner package. Try again.');
+      setPError('Could not mint the partner package. Check your connection and try again.');
     } finally {
       setPMinting(false);
     }
@@ -532,6 +550,9 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
             {minting ? 'Minting…' : 'Mint link'}
           </button>
         </div>
+        {mintError && (
+          <p style={{ color: '#fca5a5', fontSize: 13, margin: '10px 0 0' }}>{mintError}</p>
+        )}
         {minted && (
           <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
             <code style={{ background: 'rgba(232,201,106,0.12)', color: '#E8C96A', padding: '8px 12px', borderRadius: 8, fontSize: 13 }}>
@@ -597,6 +618,10 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
             {pMinting ? 'Minting…' : 'Mint package'}
           </button>
         </div>
+
+        {pError && (
+          <p style={{ color: '#fca5a5', fontSize: 13, margin: '10px 0 0' }}>{pError}</p>
+        )}
 
         {partnerResult && (
           <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
