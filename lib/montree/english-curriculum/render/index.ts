@@ -11,6 +11,7 @@ import type { AssetMap } from './assets';
 import { assetGapReport as _assetGapReport } from './assets';
 
 import { buildThreePartCards } from './builders/three-part-cards';
+import { buildFlashcards } from './builders/flashcards';
 import { buildSentenceStrips } from './builders/sentence-strips';
 import { buildMatching } from './builders/matching';
 import { buildBingo } from './builders/bingo';
@@ -22,7 +23,7 @@ import { buildVowelWall } from './builders/vowel-wall';
 import { buildQrCards } from './builders/qr-cards';
 
 export type MaterialType =
-  | 'three_part_cards' | 'sentence_strips' | 'matching' | 'bingo'
+  | 'three_part_cards' | 'flashcards' | 'sentence_strips' | 'matching' | 'bingo'
   | 'tracing' | 'coloring' | 'dictionary_journal' | 'book'
   | 'vowel_wall' | 'qr_cards';
 
@@ -42,6 +43,7 @@ export interface BuildResult { html: string; warnings: string[]; }
 /** Ordered catalogue of the ten material types (drives the Studio grid + CLI). */
 export const MATERIAL_TYPES: { type: MaterialType; label: string; emoji: string }[] = [
   { type: 'three_part_cards', label: 'Three-Part Cards', emoji: '🃏' },
+  { type: 'flashcards', label: 'Flashcards', emoji: '⚡' },
   { type: 'sentence_strips', label: 'Sentence Strips', emoji: '📏' },
   { type: 'matching', label: 'Word–Picture Match', emoji: '🔗' },
   { type: 'bingo', label: 'Bingo + Calling Cards', emoji: '🎲' },
@@ -57,6 +59,7 @@ type Builder = (spec: WeekSpec, assets: AssetMap, opts?: BuildOpts) => BuildResu
 
 const BUILDERS: Record<MaterialType, Builder> = {
   three_part_cards: buildThreePartCards,
+  flashcards: buildFlashcards,
   sentence_strips: buildSentenceStrips,
   matching: buildMatching,
   bingo: buildBingo,

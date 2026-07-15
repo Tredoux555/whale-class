@@ -36,8 +36,14 @@ export interface SongSpec {
   sunoStyle: string;
   /** Extra Suno instructions (pronunciation guards, e.g. "never 'tuh'"). */
   sunoNotes?: string;
-  /** Hosted mp3/video URL once produced (QR cards point here). */
+  /** Hosted mp3 URL once produced (QR cards + Studio audio player point here). */
   audioUrl?: string;
+  /**
+   * Hosted music-video URL once a song's video is CERTIFIED + published. Absent
+   * until then — the Studio shows a quiet "coming soon" slot. Same montree.xyz
+   * proxy shape as audioUrl. Never populated by the image publisher.
+   */
+  videoUrl?: string;
 }
 
 export interface BookSpread {
@@ -134,6 +140,17 @@ export interface WeekSpec {
   book: BookSpec;
   materials: MaterialsSpec;
   assets: AssetSpec[];
+  /**
+   * Published-image URL map, keyed by the asset filename STEM (numeric order
+   * prefix stripped, `-coloring` suffix KEPT, lower-cased) → an absolute
+   * montree.xyz proxy URL to the webp in montree-media/curriculum-images/wNN/.
+   * Written by scripts/curriculum/publish-images.mjs. The Studio builds its
+   * AssetMap from this when no local/dropped images are present, so previews
+   * show real pictures without the art living on the operator's Mac. Each key
+   * round-trips through parseAssetFilename identically to the original filename
+   * ("chair" → image "chair"; "chair-coloring" → colouring "chair").
+   */
+  imageUrls?: Record<string, string>;
   /** One-line teacher focus for the week (full scripts live in the manual). */
   teacherFocus: string;
   /** Equivalent lesson-map lesson numbers (interop with the 128-lesson tracker). */
