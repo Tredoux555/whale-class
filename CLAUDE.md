@@ -2,6 +2,72 @@
 
 **⚠️ STANDING RULE (Tredoux, Jul 10 2026 — PERMANENT): MODEL DELEGATION.** Fable is the DIRECTOR and second brain — it plans, decides, writes the critical copy, and reviews. It does NOT do grunt work. **Sonnet** (preferred over Haiku — more reliable) does all fetching, sweeping, scouting, data-gathering, and auditing via sub-agents. **Opus** builds where appropriate. Never let Fable burn half its context on mechanical work another model can do — spawn agents instead.
 
+## 🧠 SESSION — Jul 15, 2026 (Cowork/Fable directing Sonnet+Opus) — DIARY RECALL SHIPPED IN BOTH COACHES (recall_history — the coach can now search its entire verbatim history)
+
+**Canonical: `docs/handoffs/PLAN_DIARY_RECALL_JUL15.md` (contract + build/audit close-out — READ IT FIRST).
+NOT committed — Tredoux pushes both repos (montree via Desktop Commander; lyfcoach-web its own push).**
+Tredoux's ask: the coach "loses" details consolidation didn't keep (a dream, a name) — wanted a true
+permanent diary + tiered recall (7d → 30d → long-term, never read the whole log). Finding: the diary
+ALREADY exists — `story_coach_log` keeps every turn encrypted forever in BOTH repos; the gap was recall
+(coach only saw 12 turns/72h + distilled memories). Built (sacred flow, 2 parallel Opus builds + 2
+independent Sonnet audits, both FIXED-NOW-SHIP): new `recall_history` coach tool (adult + child) —
+semantic (pgvector, text-embedding-3-small write-time on each turn, fail-open) + decrypt-keyword hybrid,
+tiered 7d → 30d → all-time with month-by-month keyword walk-back (200 rows/mo, 12-mo cap, `search_older`
+continuation); RPC `story_coach_log_search` returns ids+metadata ONLY (content never flows through SQL);
+backfill routes (montree `api/story/admin/embed-coach-log` — x-admin-secret=ADMIN_SECRET or own-space
+Bearer; lyfcoach `api/admin/embed-coach-log` — ADMIN_DASHBOARD_KEY); system-prompt rule "NEVER say you
+don't remember without searching". 🚨 BOTH auditors independently caught the anon-GRANT hole on the RPC
+(caller-supplied p_space + guessable space slugs = public diary-metadata probe) → **service_role ONLY,
+never widen**. Montree files: migrations 295+295b + lib/story/coach/{log-embeddings,history-search}.ts +
+tool wiring + route archive-insert moved into `after()` (widens logging to uncaught-error paths — still
+never blocks the stream). Consolidation/metering/family/marriage brains untouched; every path
+space-scoped. **⏳ OWED: run 295→295b in the MONTREE Supabase + the appended 0001_init block in the
+LYFCOACH Supabase (two different projects — SQL pasted in chat) · commit+push both repos · run both
+backfills until remaining=0 · live-test ("remember that dream…") · local `next build` on lyfcoach-web
+(sandbox couldn't verify; tsc exit 0).**
+
+---
+
+## 🎯 SESSION — Jul 15, 2026 pt2/pt3 (same Cowork session) — FLEET GARBLE → THE VIDEO FORMULA: WORD-SONG PATH CERTIFIED, SOUND-SONG TIMING FIX QUEUED — 🚨 NO BULK RENDERS UNTIL TREDOUX TRUSTS
+
+**Canonical: `docs/handoffs/HANDOFF_CHAPTER_CLOSE_JUL15.md` §3 pt3 (the formula + the queued energy-alignment
+contract — READ IT FIRST). 🚨 STANDING ORDER (Tredoux, twice): NO bulk/overnight renders — fix + single test
+renders he reviews personally until he FULLY trusts the system.** The 115-video fleet came out garbled →
+diagnosed (whisper `base` fails stutter-chants → 46-77% approx words → subs drift + images anchor on guesses;
+all prior certifications were low-approx word songs) → fixed in 3 engine passes (approx-run suppression ·
+neighbor-hold/only-sung-images · script-schedule v1) + whisper → **large-v3** (HF cache complete; ModelScope
+mirror trick for Beijing) → **word-song path CERTIFIED 4/4 by Tredoux** (W01 good · W02 Segina "perfect" ·
+W22/W56 in order) · **sound-song v1 REJECTED on W02 Turtle** (section timing still guessed) → next build =
+energy-profile DP alignment + min-hold, full contract + numeric gates in the handoff. 55 garbled fleet videos
+deleted; W03-W10 section-1 renders STALE (pre-formula). Suites 106+43+43 green. 🚨 Fable burned too much
+context on polling/infra this session — Tredoux's explicit rule: agents own ALL waits/polls/recovery; also
+disk hit ENOSPC mid-render once (keep ≥5GB; _projects prune safely). Tandem round-2: 48 grids in Tredoux's
+MJ feed, reconciliation owed. Morning chapter items (thumbnails ×115, all-green materials audit, story-arc
+certification, W58 potato-wording fix) stand — see the pt1 block below.
+
+---
+
+## 🏆 SESSION — Jul 15, 2026 (Cowork/Fable directing Sonnet+Opus) — CHAPTER CLOSE: ALL 93 VIDEO-CRITICAL REROLLS DONE + ALIAS PASS + FULL RENDER FLEET + 115 THUMBNAILS + ALL-GREEN AUDIT + STORY ARC CERTIFIED
+
+**Canonical: `docs/handoffs/HANDOFF_CHAPTER_CLOSE_JUL15.md` (resume prompt + owed items). NOT committed —
+Tredoux pushes via DC.** Re-picks #32/#87 filed (closed all 93 video-critical rerolls) → **alias pass**:
+24 new aliases in `curriculum-video-aliases.json`, verified by `scripts/curriculum/verify-alias-pass-jul15.py`
+(PASS: +34 gap lines, 0 regressions — 🚨 audit script does NOT apply aliases; always measure with the verify
+script) → 2 samples certified by Tredoux → **his GO: full 115-video render fleet** (daemon queue, log
+`/tmp/render_fleet_jul15.log`) + **🤝 tandem round 2: all 48 remaining image items submitted**
+(`TANDEM_QUEUE2_JUL15.json` n94–141; ⏳ Tredoux picks → reconciliation owed) + **115 YouTube thumbnails**
+(`make-thumbnails.py`, `_thumbnails/`, HERO_OVERRIDES map for bad picks) + **materials audit ALL GREEN**
+(115 mp3s · 580 PDFs · validator 58/58 · audioUrls 115/115 live · W30 RESOLVED; `AUDIT_MATERIALS_JUL15_*.md`)
++ **story arc read: reads well end-to-end** (`STORY_ARC_READ_JUL15.md`; ruling: W01/W03 potato-in-print are
+teacher-read books = gag intact; W58 teacher-note wording precision-fixed + pack re-rendered, zero
+placeholders). 🚨 RULES: build-week.mjs needs explicit `--assets .../images --out .../pack-v2` (bare defaults
+write a stray `pack/` with wrong assets) · MJ rejects quote-wrapped prompts · browser file_upload only
+reaches the shared folder (stage orefs in repo `_oref_tmp/`). **⏳ OWED: reconcile 48 picks (archive-first,
+verify each by eye) → re-render affected packs+videos → fleet verification sweep (mp4 count + shot-report
+self-flags) → delete `_oref_tmp/` → final coverage re-run.**
+
+---
+
 ## 🖼 SESSION — Jul 14, 2026 (overnight+day, Cowork/Fable directing) — MVGEN MECHANISM CERTIFIED + 58-WEEK IMAGE AUDIT + 114 CRITICAL IMAGES GENERATED — REROLLS VIA TANDEM PROTOCOL NEXT
 
 **Canonical: `docs/handoffs/HANDOFF_IMAGE_TANDEM_JUL14.md` (resume prompt + full tandem protocol) +
@@ -1487,6 +1553,14 @@ sentence cards and "a real book."
 - **Weekly follow-up cycle: every outreach email unanswered after 7 days gets a follow-up on the SAME thread, repeating weekly — HARD VALVE at 3 unanswered follow-ups** → stop drafting, surface the contact on a "keep or kill" list for Tredoux's call (protects deliverability; never silently mail a dead thread forever).
 - **Comb Gmail EVERY day.** Automated: scheduled task `daily-campaign-sweep` (Cowork, 07:07 daily — file: ~/Documents/Claude/Scheduled/daily-campaign-sweep/SKILL.md) does replies/bounces/follow-ups/new-drafts/status-flips + morning report. Runs only while the Cowork app is open — if it didn't run, do the sweep manually per its steps.
 - **Status flips: ALWAYS via `scripts/outreach-status.py` (CLI over montree.xyz API). Never Chrome-drive the 🌍 tab for statuses.**
+
+**🚨 STANDING ORDERS (Tredoux, Jul 15 2026 — NEW EMAIL DOCTRINE, supersedes all prior default cold-email templates):**
+- **NO SELLING. NO EXPLAINING.** The old pitch emails "tried too hard to sell the product" (Tredoux's verdict, all prior drafts deleted). The technology is so new that explaining it fails — "you actually need to use it to understand it." The email just says hi: this is something new, built by a teacher to help the teacher — massively reduces workload, makes the work more accurate, improves teacher-parent relations. That's ALL the description allowed. Close = if you want to improve your classroom/school, get back to me and I'll share more.
+- **Daily shape: 25 + 25.** 25 drafts to the HIGHEST-VALUE targets (associations, training centres, franchise/network HQs, flagship schools — the mysterious "hello" email) + 25 to UNDERPRIVILEGED schools/orgs (from `docs/outreach/underprivileged/UNDERPRIV_MASTER_RANKED_JUL12.csv`, top-ranked with SEEN emails): "we're reaching out — cutting edge, free for life, in exchange for exposure; for the next few days we have open onboarding slots we'd like to fill."
+- **Canonical Template A — "The Hello" (high value / general), subject `Montree`:** Hi, / This is just a hello. / I'm a Montessori teacher, and I've built something new for the Montessori classroom — technology that didn't exist until now. It exists for one reason: to help the teacher. It takes away most of the workload, makes the work more accurate, and brings parents closer to the classroom than they've ever been. / I'm not going to try to explain it here. It's the kind of thing you have to use to understand. / If you'd like to improve your classroom or school, get back to me and I'll share more. / Kind regards, Tredoux / montree.xyz  (for networks/associations: "the classrooms in your network")
+- **Canonical Template B — "The Offer" (underprivileged), subject `Montree`:** same opening + description discipline, then: we're offering it to your school(s) free, for life, in exchange for exposure — you use it, and let others see what it does for you. For the next few days we have open onboarding slots we'd like to fill. If you'd like one of them, reply and I'll set you up.
+- **Links: ALWAYS bare `montree.xyz` plain text.** The deleted Jul-7/9/10 drafts carried google-redirect-wrapped links (`google.com/url?q=http://montree.xyz…`) — never paste from Gmail's rendered view; type the URL clean.
+- Follow-up cycle, 3-strike valve, dedup rules, and CLI status flips above all still apply unchanged.
 
 Claude is Tredoux's outreach campaign manager. GMass is retired. The workflow is:
 - **Claude drafts** personalized emails as Gmail drafts (50/day target)

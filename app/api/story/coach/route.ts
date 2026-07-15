@@ -25,6 +25,7 @@ import {
   COACH_SONNET_OVERSHOOT,
 } from '@/lib/story/coach/entitlement';
 import { readDiaryField, encryptDiaryField, encryptDiaryFieldOrNull, isDiaryEncryptionConfigured } from '@/lib/story/diary-crypto';
+import { embedText } from '@/lib/story/coach/log-embeddings';
 import {
   buildCoachSystemPrompt,
   buildChildCoachSystemPrompt,
@@ -412,6 +413,57 @@ export async function POST(request: NextRequest) {
     }
   });
 
+  // Archive the exchange (encrypted) + build its semantic index for Diary Recall.
+  // Runs AFTER the response via next/server after() so the OpenAI embed can finish
+  // without the runtime tearing the function down (the embed is a network call —
+  // unlike the bare insert it needs the invocation kept alive). Off the user's
+  // critical path; every failure is silent-safe, and the row stays keyword-
+  // searchable even if the embed fails. SKIPPED for e2e spaces (the server
+  // persists NOTHING readable) and degrades cleanly pre-migration (295 absent →
+  // insert still succeeds; only the embedding UPDATE 42703s and is swallowed).
+  after(async () => {
+    if (isE2e || !isDiaryEncryptionConfigured()) return;
+    const questionForLog = question.slice(0, 8000);
+    const answerForLog = finalText.slice(0, 12000);
+    let insertedId: string | null = null;
+    try {
+      const { data, error } = await supabase
+        .from('story_coach_log')
+        .insert({
+          space,
+          conversation_id: conversationId,
+          question_enc: encryptDiaryField(questionForLog),
+          answer_enc: encryptDiaryFieldOrNull(answerForLog),
+          tools_used: toolsUsed,
+          cipher_version: 1,
+        })
+        .select('id')
+        .single();
+      if (error || !data) {
+        if (error) console.warn('[coach] log insert skipped:', error.message);
+        return;
+      }
+      insertedId = data.id as string;
+    } catch (e) {
+      console.warn('[coach] log insert skipped:', e instanceof Error ? e.message : 'unknown');
+      return;
+    }
+    // Embed the PLAINTEXT turn so recall_history can find it semantically.
+    // Fail-open: no OPENAI_API_KEY / any error → the row stays keyword-searchable.
+    try {
+      const embedding = await embedText(`Q: ${questionForLog}\nA: ${answerForLog}`);
+      if (!embedding) return;
+      const { error: updErr } = await supabase
+        .from('story_coach_log')
+        .update({ embedding: embedding as unknown as string })
+        .eq('id', insertedId)
+        .eq('space', space);
+      if (updErr) console.warn('[coach] log embedding skipped:', updErr.message);
+    } catch (e) {
+      console.warn('[coach] log embedding skipped:', e instanceof Error ? e.message : 'unknown');
+    }
+  });
+
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
@@ -627,23 +679,9 @@ export async function POST(request: NextRequest) {
 
         controller.enqueue(sse(encoder, { type: 'done', duration_ms: Date.now() - startTime, in: totalInput, out: totalOutput }));
 
-        // Archive the exchange (encrypted, fire-and-forget) — the durable record.
-        // Degrades silently if migration 259 isn't run or encryption is unavailable.
-        // SKIPPED for e2e spaces: the server must persist NOTHING readable; the
-        // device keeps its own encrypted coach log.
-        if (!isE2e && isDiaryEncryptionConfigured()) {
-          void supabase
-            .from('story_coach_log')
-            .insert({
-              space,
-              conversation_id: conversationId,
-              question_enc: encryptDiaryField(question.slice(0, 8000)),
-              answer_enc: encryptDiaryFieldOrNull(finalText.slice(0, 12000)),
-              tools_used: toolsUsed,
-              cipher_version: 1,
-            })
-            .then(({ error }) => { if (error) console.warn('[coach] log insert skipped:', error.message); });
-        }
+        // The durable record + its Diary Recall semantic index is written in an
+        // after() block registered above (kept off the stream so the OpenAI embed
+        // can finish without the runtime tearing the function down mid-fetch).
       } catch (streamErr) {
         const msg = streamErr instanceof Error ? streamErr.message : 'Stream error';
         controller.enqueue(sse(encoder, { type: 'error', error: msg }));

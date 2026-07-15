@@ -26,6 +26,7 @@ import {
   type StepStatus,
 } from './build-state';
 import { saveDocument, readDocuments } from './documents';
+import { searchCoachHistory } from './history-search';
 
 export interface CoachToolDeps {
   supabase: SupabaseClient;
@@ -374,6 +375,36 @@ export async function executeCoachTool(
           success: true,
           result_summary: `${docs.length} document${docs.length === 1 ? '' : 's'}`,
           data: { found: docs.length > 0, documents: docs },
+        };
+      }
+
+      case 'recall_history': {
+        // The permanent verbatim diary is server-encrypted; an e2e space keeps
+        // its log only on the device, so there's nothing for the server to search.
+        if (isE2e) {
+          return { success: false, result_summary: 'unavailable here', error: 'History is device-encrypted; server search unavailable.' };
+        }
+        const query = (str(input.query) || '').trim();
+        if (!query) return { success: false, result_summary: 'query required', error: 'query is required — say what to look for.' };
+        const res = await searchCoachHistory(supabase, space, {
+          query,
+          date_from: str(input.date_from),
+          date_to: str(input.date_to),
+          search_older: input.search_older === true,
+        });
+        if (!res.success) {
+          return { success: false, result_summary: 'search failed', error: res.note || 'search failed' };
+        }
+        return {
+          success: true,
+          result_summary: `${res.turns.length} past turn${res.turns.length === 1 ? '' : 's'} (tier: ${res.tier_reached})`,
+          data: {
+            turns: res.turns,
+            tier_reached: res.tier_reached,
+            months_scanned: res.months_scanned,
+            older_unsearched: res.older_unsearched,
+            ...(res.note ? { note: res.note } : {}),
+          },
         };
       }
 
