@@ -224,7 +224,26 @@ export default function CurriculumStudioPage() {
     return () => { alive = false; };
   }, [week]);
 
-  const assets: AssetMap = useMemo(() => buildAssetMap(files), [files]);
+  // AssetMap = published images for THIS week, layered on top of published
+  // images CARRIED FORWARD from every earlier week (spec.imageUrls only holds
+  // what that week's own images/ folder published — a reused cast image like
+  // cat.png or potato.png is published once, under its ORIGIN week, and every
+  // later week's manifest just re-lists the same filename). Without the
+  // earlier-week layer, every week after the character's debut shows a false
+  // "missing" placeholder even though the art exists and is live. Order (later
+  // wins): earlier weeks (oldest first) -> this week's own -> locally dropped
+  // files. imageUrls keys are filename stems ("chair", "chair-coloring") that
+  // round-trip through parseAssetFilename identically to the original
+  // filenames, so the same normalisation applies to all three layers.
+  const assets: AssetMap = useMemo(() => {
+    const priorPublished: DroppedFile[] = priorSpecs.flatMap((ps) =>
+      ps?.imageUrls ? Object.entries(ps.imageUrls).map(([name, url]) => ({ name, url })) : [],
+    );
+    const published: DroppedFile[] = spec?.imageUrls
+      ? Object.entries(spec.imageUrls).map(([name, url]) => ({ name, url }))
+      : [];
+    return buildAssetMap([...priorPublished, ...published, ...files]);
+  }, [spec, priorSpecs, files]);
   const gap = useMemo(() => (spec ? assetGapReport(spec, assets, priorSpecs) : { missing: [] }), [spec, assets, priorSpecs]);
   const missingFiles = useMemo(() => new Set(gap.missing.map((m) => m.file)), [gap]);
   const earlierWeekByFile = useMemo(
@@ -573,6 +592,21 @@ export default function CurriculumStudioPage() {
                       {s.audioUrl && (
                         <audio controls preload="none" src={s.audioUrl} style={{ width: '100%', marginTop: 8 }} />
                       )}
+                      {/* Music video — plays once a certified video is published (videoUrl set);
+                          a quiet "coming soon" slot until then. CSP media-src 'self' covers the
+                          montree.xyz proxy URL (same origin) + loopback for local review. */}
+                      <div style={{ marginTop: 8 }}>
+                        <div className="text-[10px] uppercase tracking-wide mb-1" style={{ color: '#7aa2ff' }}>🎬 Music video</div>
+                        {s.videoUrl ? (
+                          <video controls preload="none" src={s.videoUrl}
+                            style={{ width: '100%', borderRadius: 6, background: '#000' }} />
+                        ) : (
+                          <div className="text-[11px] rounded px-2 py-2 text-center"
+                            style={{ background: 'rgba(122,162,255,0.08)', color: 'rgba(122,162,255,0.7)', border: '1px dashed rgba(122,162,255,0.25)' }}>
+                            Coming soon
+                          </div>
+                        )}
+                      </div>
                       {/* Lyrics — collapses to 8 lines; no inner scroll (copy button gets the full text) */}
                       <pre className="text-[11px] text-white/50 mt-2 whitespace-pre-wrap font-sans">{shownLyrics}</pre>
                       {lines.length > 8 && (
