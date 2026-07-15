@@ -13,6 +13,15 @@ export { getCoachProfile, displayNameForSpace } from './profile';
 export { computeLoad, type LoadReport } from './personal-data';
 export { loadRecentThread, type RecentThreadOpts } from './recent-thread';
 export {
+  setReminder,
+  listReminders,
+  cancelReminder,
+  loadUpcomingSection,
+  nextFutureOccurrence,
+  formatLocalWhen,
+  type Recurrence,
+} from './reminders';
+export {
   writeBuildState,
   loadCurrentBuildState,
   listActiveBuildProjects,

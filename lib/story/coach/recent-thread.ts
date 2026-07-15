@@ -22,6 +22,34 @@ export interface RecentThreadOpts {
   maxTurns?: number;
   /** Only include turns newer than this many hours (keeps the thread "recent"). */
   withinHours?: number;
+  /**
+   * The caller's IANA timezone. When given, each replayed USER message is
+   * prefixed with a compact `[Sent: …]` marker in local time so the coach can
+   * feel elapsed time between turns; without it the marker is UTC-labelled.
+   */
+  tz?: string;
+}
+
+/**
+ * A compact `[Sent: Ddd DD Mon, HH:MM]` marker for one logged turn, formatted in
+ * tz when given (else UTC-labelled). Empty string on a bad timestamp.
+ */
+function sentMarker(createdAt: string | null | undefined, tz?: string): string {
+  if (!createdAt) return '';
+  const d = new Date(createdAt);
+  if (Number.isNaN(d.getTime())) return '';
+  try {
+    const parts = new Intl.DateTimeFormat('en-GB', {
+      weekday: 'short', day: '2-digit', month: 'short',
+      hour: '2-digit', minute: '2-digit', hour12: false, hourCycle: 'h23',
+      ...(tz ? { timeZone: tz } : { timeZone: 'UTC' }),
+    }).formatToParts(d);
+    const g = (t: string) => parts.find((p) => p.type === t)?.value || '';
+    const base = `${g('weekday')} ${g('day')} ${g('month')}, ${g('hour')}:${g('minute')}`;
+    return tz ? `[Sent: ${base}]` : `[Sent: ${base} UTC]`;
+  } catch {
+    return '';
+  }
 }
 
 /**
@@ -64,7 +92,13 @@ export async function loadRecentThread(
     } catch {
       continue; // skip a row we can't decrypt rather than break the thread
     }
-    if (q.trim()) messages.push({ role: 'user', content: q.trim().slice(0, MSG_CAP) });
+    if (q.trim()) {
+      // Stamp the USER turn only — prefixing assistant turns makes the model
+      // start writing timestamps itself. The marker rides on the content string.
+      const marker = sentMarker(r.created_at, opts.tz);
+      const text = q.trim().slice(0, MSG_CAP);
+      messages.push({ role: 'user', content: marker ? `${marker}\n\n${text}` : text });
+    }
     if (a.trim()) messages.push({ role: 'assistant', content: a.trim().slice(0, MSG_CAP) });
   }
   return messages;

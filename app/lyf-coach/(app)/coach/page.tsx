@@ -20,6 +20,7 @@ import Markdown from '@/components/story/personal/Markdown';
 import CoachUpgradeButton from '@/components/story/personal/CoachUpgradeButton';
 import CopyButton from '@/components/story/personal/CopyButton';
 import SaveDocumentsZone from '@/components/story/personal/SaveDocumentsZone';
+import EnableRemindersBell from '@/components/story/lyf-coach/EnableRemindersBell';
 import { T } from '@/lib/story/personal-theme';
 
 const TOOL_LABEL: Record<string, string> = {
@@ -225,13 +226,16 @@ export default function LyfCoachConversationPage() {
           <span>Drop a file, a zip, or a whole folder — I’ll read it.</span>
         </div>
       )}
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, gap: 12 }}>
         <h1 style={{ fontFamily: T.serif, fontSize: 28, fontWeight: 600, margin: 0, letterSpacing: '-0.4px' }}>Coach</h1>
-        {messages.length > 0 && (
-          <button onClick={reset} style={{ appearance: 'none', border: 'none', background: 'transparent', color: T.textDim, fontSize: 13, cursor: 'pointer' }}>
-            New conversation
-          </button>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <EnableRemindersBell />
+          {messages.length > 0 && (
+            <button onClick={reset} style={{ appearance: 'none', border: 'none', background: 'transparent', color: T.textDim, fontSize: 13, cursor: 'pointer' }}>
+              New conversation
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Save-to-documents — a DISTINCT surface (top, own icon/label), never the composer drop. */}

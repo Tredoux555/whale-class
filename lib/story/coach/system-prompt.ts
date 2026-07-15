@@ -13,6 +13,16 @@ export interface CoachPromptOpts {
   /** Who the coach belongs to (e.g. 'Tredoux', 'Riddick'). */
   displayName: string;
   todayLabel: string;
+  /**
+   * Elapsed-time awareness: how long since the previous exchange (built by the
+   * route from the newest logged turn). '' / undefined → omit the line.
+   */
+  timeSinceLabel?: string;
+  /**
+   * The UPCOMING schedule block (next-7-day planner events + pending reminders,
+   * from loadUpcomingSection). '' when nothing is scheduled.
+   */
+  upcomingSection?: string;
   /** Memory section from formatCoachMemoriesForPrompt() — '' when none. */
   memorySection: string;
   /** Knowledge-base summary from getCoachWisdomSummary(). */
@@ -47,6 +57,8 @@ export function buildCoachSystemPrompt(opts: CoachPromptOpts): string {
   const parentContextSection = opts.parentContextSection || '';
   const nudgeSection = opts.nudgeSection || '';
   const buildStateSection = opts.buildStateSection || '';
+  const timeSinceLabel = opts.timeSinceLabel || '';
+  const upcomingSection = opts.upcomingSection || '';
   const name = displayName || 'the person you support';
 
   return `You are ${name}'s life coach — first and foremost, you are in their corner. Your two
@@ -61,7 +73,13 @@ If your brief or your memories give you a name of your own, that name is YOURS �
 yourself by it and answer to it as a permanent part of who you are. Never forget it, never ask
 who it refers to, and never fall back to "your coach."
 
-Today is ${todayLabel}.
+Today is ${todayLabel}.${timeSinceLabel ? '\n' + timeSinceLabel : ''}
+
+# Time awareness
+Every past user message carries its [Sent: …] timestamp, and you know how long it's been since the
+last exchange. Treat gaps as real time passed — if hours or days went by, it is NOT the same moment:
+things happened, moods changed, plans moved. Re-orient naturally ("earlier today", "yesterday", "last
+week") instead of continuing as if mid-sentence. Never ignore a large gap.
 ${buildStateSection ? '\n' + buildStateSection + '\n' : ''}
 # Your purpose (this is your soul)
 You exist to help ${name} HEAL and to help them REACH WHAT MATTERS to them. Your loyalty is to
@@ -131,6 +149,11 @@ advising:
     one thing + a short list + built-in rest, each with a reason.
   • To re-prioritise, pause, mark done, or drop a project → update_project.
   • They mention an event/appointment/deadline → add_event (date + time + title).
+  • They ask to be reminded / nudged / woken / pinged, or mention a future thing they'd want a prompt
+    for → set_reminder (a real push to their phone at that time). ALWAYS confirm the date + time in
+    THEIR timezone first, and read back the local time it will fire. "What reminders do I have?" →
+    list_reminders. Stop/remove one → cancel_reminder (get the id from list_reminders). add_event puts
+    it on the planner; set_reminder actually buzzes them — use set_reminder when they want to be told.
   • They share something to record or process → add_diary_entry (their psychological record).
   • Quoting a framework → consult_wisdom for the full text; quote it, don't improvise.
   • He asks for help writing a TikTok / Reels / YouTube / promo video script (for Lyf Coach,
@@ -178,7 +201,7 @@ advising:
 # Current open load (live)
 ${loadSnapshot}
 
-${parentContextSection ? parentContextSection + '\n\n' : ''}${nudgeSection ? nudgeSection + '\n\n' : ''}${memorySection ? memorySection + '\n\n' : ''}${wisdomSummary}`;
+${upcomingSection ? upcomingSection + '\n\n' : ''}${parentContextSection ? parentContextSection + '\n\n' : ''}${nudgeSection ? nudgeSection + '\n\n' : ''}${memorySection ? memorySection + '\n\n' : ''}${wisdomSummary}`;
 }
 
 // ── CHILD COACH ───────────────────────────────────────────────────────────────
@@ -187,6 +210,10 @@ export interface ChildCoachPromptOpts {
   /** The child this coach belongs to (e.g. 'Riddick'). */
   displayName: string;
   todayLabel: string;
+  /** How long since the previous exchange ('' / undefined → omit). */
+  timeSinceLabel?: string;
+  /** UPCOMING schedule block (planner events + pending reminders). '' when none. */
+  upcomingSection?: string;
   memorySection: string;
   /** about-<space>.md brief for the child ('' if none). */
   profileSection: string;
@@ -211,13 +238,21 @@ export function buildChildCoachSystemPrompt(opts: ChildCoachPromptOpts): string 
   const { displayName, todayLabel, memorySection, profileSection, isFirstSession } = opts;
   const parentContextSection = opts.parentContextSection || '';
   const nudgeSection = opts.nudgeSection || '';
+  const timeSinceLabel = opts.timeSinceLabel || '';
+  const upcomingSection = opts.upcomingSection || '';
   const name = displayName || 'your friend';
 
   return `You are ${name}'s coach — a warm, steady grown-up friend who is always in ${name}'s corner.
 You are kind, calm, real, and on their side. You are NOT a teacher, not a parent, not a
 chirpy robot. You talk like an older mentor who genuinely likes ${name} and believes in them.
 
-Today is ${todayLabel}.
+Today is ${todayLabel}.${timeSinceLabel ? '\n' + timeSinceLabel : ''}
+
+# Knowing the time
+Each thing ${name} said before shows when they said it ([Sent: …]), and you know how long it's been
+since you last talked. If it's been a while — since yesterday, or last week — remember that time has
+passed and things may have changed. Say hi to the gap gently ("hey, it's been a few days — how've you
+been?") instead of picking up mid-sentence like no time went by.
 
 # Your prime directive (this is your heart)
 You are here for ${name}'s wellbeing — not their to-do list, not their grades, not their
@@ -270,7 +305,10 @@ share something that matters (a worry, a win, how a day went), keep it with add_
 in their own voice. When they mention a thing happening at a time, you can add_event. Learn
 durable things about them with remember. And if ${name} brings up something you talked about a
 while ago that you can't see here — a story, a name, something they told you before — use
-recall_history to look back through your old chats before ever saying you don't remember.
+recall_history to look back through your old chats before ever saying you don't remember. If they'd
+like a reminder for something (a test, practice, a call), you can set_reminder so it buzzes their
+phone at the right time — always check the day and time with them first; list_reminders shows what's
+set, cancel_reminder removes one.
 
 # Voice
 Short, warm, simple. Real sentences a kid would actually like to read — no jargon, no
@@ -283,5 +321,5 @@ this is their own private space, and get to know them with a couple of easy ques
 they like, what they've been up to, anything on their mind). Don't interview them — just be
 friendly. Save what matters with remember.` : ''}
 
-${parentContextSection ? parentContextSection + '\n\n' : ''}${nudgeSection ? nudgeSection + '\n\n' : ''}${memorySection ? memorySection + '\n\n' : ''}`;
+${upcomingSection ? upcomingSection + '\n\n' : ''}${parentContextSection ? parentContextSection + '\n\n' : ''}${nudgeSection ? nudgeSection + '\n\n' : ''}${memorySection ? memorySection + '\n\n' : ''}`;
 }

@@ -272,6 +272,48 @@ export const COACH_TOOLS: Tool[] = [
     },
   },
   {
+    name: 'set_reminder',
+    description:
+      'Schedule a REMINDER that will PUSH to the user at a set time (their phone buzzes with your ' +
+      'message). Use this whenever they ask to be reminded / nudged / woken / pinged about something, ' +
+      'and OFFER it whenever they mention a future commitment ("I have to call the bank tomorrow"). ' +
+      'ALWAYS confirm the exact date + time in THEIR timezone before setting it. `when` is a local ' +
+      'datetime "YYYY-MM-DDTHH:MM" in their timezone (e.g. "2026-07-16T18:00"). For something that ' +
+      'repeats, set recurrence. Returns the local time it will fire — read that back so they can check it.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', description: 'What the reminder should say (their phone shows this).' },
+        when: { type: 'string', description: 'Local datetime "YYYY-MM-DDTHH:MM" in their timezone.' },
+        recurrence: {
+          type: 'string',
+          enum: ['daily', 'weekdays', 'weekly', 'monthly'],
+          description: 'Optional — repeat it. Omit for a one-off.',
+        },
+      },
+      required: ['message', 'when'],
+    },
+  },
+  {
+    name: 'list_reminders',
+    description:
+      'List the reminders you have scheduled for them (pending ones soonest-first, plus the last few ' +
+      'that already fired), with the local time each fires. Use when they ask "what reminders do I have", ' +
+      'before setting a possibly-duplicate one, or to find the id of one they want to cancel.',
+    input_schema: { type: 'object', properties: {} },
+  },
+  {
+    name: 'cancel_reminder',
+    description:
+      'Cancel a pending reminder by its id (get the id from list_reminders first). Use when they ask to ' +
+      'stop / remove / cancel a reminder.',
+    input_schema: {
+      type: 'object',
+      properties: { id: { type: 'string', description: 'The reminder id (UUID) to cancel.' } },
+      required: ['id'],
+    },
+  },
+  {
     name: 'emit_family_signal',
     description:
       'Send ONE abstracted, WORDLESS flag to the family helper (the Family Brain) — a feeling-type only, ' +
@@ -297,6 +339,7 @@ export const COACH_TOOLS: Tool[] = [
 // consult the safeguarding playbook, put something on their planner, and (only
 // with the child's consent) send a wordless family flag.
 const CHILD_TOOL_NAMES = new Set([
-  'read_diary', 'add_diary_entry', 'add_event', 'consult_wisdom', 'recall', 'recall_history', 'remember', 'emit_family_signal',
+  'read_diary', 'add_diary_entry', 'add_event', 'consult_wisdom', 'recall', 'recall_history', 'remember',
+  'set_reminder', 'list_reminders', 'cancel_reminder', 'emit_family_signal',
 ]);
 export const CHILD_COACH_TOOLS: Tool[] = COACH_TOOLS.filter((t) => CHILD_TOOL_NAMES.has(t.name));
