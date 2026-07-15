@@ -27,6 +27,7 @@ import {
 } from './build-state';
 import { saveDocument, readDocuments } from './documents';
 import { searchCoachHistory } from './history-search';
+import { setReminder, listReminders, cancelReminder } from './reminders';
 
 export interface CoachToolDeps {
   supabase: SupabaseClient;
@@ -406,6 +407,45 @@ export async function executeCoachTool(
             ...(res.note ? { note: res.note } : {}),
           },
         };
+      }
+
+      case 'set_reminder': {
+        // Reminders persist a server-key-encrypted message + get delivered by the
+        // server cron — that store is server-readable, so it's unavailable in an
+        // end-to-end private (device-encrypted) space, matching build-state/docs.
+        if (isE2e) {
+          return { success: false, result_summary: 'unavailable here', error: 'Reminders aren’t available in an end-to-end private space.' };
+        }
+        const res = await setReminder(supabase, space, {
+          message: str(input.message) || '',
+          when: str(input.when) || '',
+          recurrence: str(input.recurrence),
+          tz,
+        });
+        if (!res.ok) return { success: false, result_summary: 'reminder not set', error: res.error };
+        return {
+          success: true,
+          result_summary: `reminder set for ${res.local_when}`,
+          data: { id: res.id, local_when: res.local_when, recurrence: res.recurrence, remind_at: res.remind_at },
+        };
+      }
+
+      case 'list_reminders': {
+        if (isE2e) return { success: true, result_summary: 'no reminders', data: { pending: [], recent_sent: [] } };
+        const { pending, recent_sent } = await listReminders(supabase, space, tz);
+        return {
+          success: true,
+          result_summary: `${pending.length} pending reminder${pending.length === 1 ? '' : 's'}`,
+          data: { pending, recent_sent },
+        };
+      }
+
+      case 'cancel_reminder': {
+        if (isE2e) return { success: true, result_summary: 'no reminders', data: { found: false } };
+        const id = str(input.id) || '';
+        const res = await cancelReminder(supabase, space, id);
+        if (!res.ok) return { success: false, result_summary: 'cancel failed', error: res.error };
+        return { success: true, result_summary: 'reminder cancelled', data: { id } };
       }
 
       case 'emit_family_signal': {

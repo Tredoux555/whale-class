@@ -136,3 +136,7 @@ node_modules/.cache/curriculum-studio/
 
 # English Program (Jul-13): temp scoped tsconfig from build verification (sandbox rm blocked — delete via Desktop Commander)
 tsconfig.english.tmp.json
+
+# Coach Clock + Reminders (Jul-15): temp scoped tsconfigs from build verification (sandbox rm blocked — delete via Desktop Commander)
+tsconfig.scope-reminders-tmp.json
+tsconfig.scope-route-tmp.json

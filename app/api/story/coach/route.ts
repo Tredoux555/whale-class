@@ -40,6 +40,7 @@ import {
   computeLoad,
   formatLoadSnapshot,
   loadRecentThread,
+  loadUpcomingSection,
   loadCurrentBuildState,
   listActiveBuildProjects,
   formatBuildStateForPrompt,
@@ -66,6 +67,38 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 function sse(encoder: TextEncoder, payload: Record<string, unknown>): Uint8Array {
   return encoder.encode('data: ' + JSON.stringify(payload) + '\n\n');
+}
+
+/**
+ * The "last exchange was N ago" line for the system prompt, built from the newest
+ * logged turn's created_at. First-ever conversation → a fresh-start line;
+ * mid-conversation (<5 min) → a "same moment" line; otherwise the elapsed gap
+ * plus the local datetime it happened (in the caller's tz when known).
+ */
+function buildTimeSinceLabel(lastIso: string | null | undefined, now: Date, tz?: string): string {
+  if (!lastIso) return 'This is your first conversation with them.';
+  const last = new Date(lastIso);
+  if (Number.isNaN(last.getTime())) return '';
+  const diffMs = now.getTime() - last.getTime();
+  if (diffMs < 5 * 60 * 1000) return 'You are mid-conversation (last exchange moments ago).';
+  const mins = Math.round(diffMs / 60000);
+  const hours = Math.round(diffMs / 3600000);
+  const days = Math.round(diffMs / 86400000);
+  let ago: string;
+  if (diffMs < 60 * 60 * 1000) ago = `${mins} minute${mins === 1 ? '' : 's'} ago`;
+  else if (diffMs < 36 * 60 * 60 * 1000) ago = `${hours} hour${hours === 1 ? '' : 's'} ago`;
+  else ago = `${days} day${days === 1 ? '' : 's'} ago`;
+  let localThen = '';
+  try {
+    const parts = new Intl.DateTimeFormat('en-GB', {
+      weekday: 'short', day: '2-digit', month: 'short',
+      hour: '2-digit', minute: '2-digit', hour12: false, hourCycle: 'h23',
+      ...(tz ? { timeZone: tz } : { timeZone: 'UTC' }),
+    }).formatToParts(last);
+    const g = (t: string) => parts.find((p) => p.type === t)?.value || '';
+    localThen = `${g('weekday')} ${g('day')} ${g('month')}, ${g('hour')}:${g('minute')}${tz ? '' : ' UTC'}`;
+  } catch { /* omit the parenthetical */ }
+  return `Your previous exchange with them was ${ago}${localThen ? ` (their local time then: ${localThen})` : ''}.`;
 }
 
 interface BodyShape {
@@ -246,13 +279,43 @@ export async function POST(request: NextRequest) {
   // (recent, not-yet-consolidated turns) so the Coach knows exactly where Tredoux
   // left off — even after a reload or on another device. The client-supplied
   // history is only a fallback for the very first turn (nothing logged yet).
+  // Day/time, anchored to the CALLER's timezone (sent by the client), not the
+  // server's. Computed HERE (before the thread load) so the replayed turns can
+  // carry [Sent: …] timestamps in the caller's local time. clientTz also feeds
+  // the tool deps + the timezone-persist below.
+  const clientTz = typeof body.client_tz === 'string' && IANA_TZ_RE.test(body.client_tz) ? body.client_tz : undefined;
+  const nowInstant = (() => {
+    if (typeof body.client_now === 'string') {
+      const d = new Date(body.client_now);
+      if (!Number.isNaN(d.getTime())) return d;
+    }
+    return new Date();
+  })();
+
   const clientHistory = sanitizeHistory(body.history);
   // e2e spaces have NO server-readable thread (turns are never logged server-side
   // for them) — use the device-supplied history only.
   const serverThread = isE2e
     ? []
-    : await loadRecentThread(supabase, space, { maxTurns: 12, withinHours: 72 });
+    : await loadRecentThread(supabase, space, { maxTurns: 12, withinHours: 72, tz: clientTz });
   const history = serverThread.length ? serverThread : clientHistory;
+
+  // Elapsed-time awareness: how long since the previous exchange. From the newest
+  // logged turn for this space (the current turn isn't logged until after()). e2e
+  // spaces keep no server log, so we can't know — the line is simply omitted.
+  let timeSinceLabel: string | undefined;
+  if (!isE2e) {
+    try {
+      const { data: lastRow } = await supabase
+        .from('story_coach_log')
+        .select('created_at')
+        .eq('space', space)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      timeSinceLabel = buildTimeSinceLabel(lastRow?.created_at as string | null | undefined, nowInstant, clientTz);
+    } catch { /* omit the line on any error */ }
+  }
 
   // Start of a session = first turn of a fresh client conversation (no device-side
   // history). On that turn we surface the saved build state so the next session
@@ -278,18 +341,9 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Day/time, anchored to the CALLER's timezone (sent by the client), not the
-  // server's. Without this the prompt label (server-local) and the tool date
-  // defaults (UTC) could disagree by hours or a whole day. clientTz also flows
-  // into the tool deps so add_event / add_diary_entry default to the caller's day.
-  const clientTz = typeof body.client_tz === 'string' && IANA_TZ_RE.test(body.client_tz) ? body.client_tz : undefined;
-  const nowInstant = (() => {
-    if (typeof body.client_now === 'string') {
-      const d = new Date(body.client_now);
-      if (!Number.isNaN(d.getTime())) return d;
-    }
-    return new Date();
-  })();
+  // Day/time label, anchored to the CALLER's timezone (clientTz / nowInstant
+  // computed above). Without this the prompt label (server-local) and the tool
+  // date defaults (UTC) could disagree by hours or a whole day.
   const todayLabel = (() => {
     try {
       const datePart = new Intl.DateTimeFormat('en-US', {
@@ -357,6 +411,25 @@ export async function POST(request: NextRequest) {
       if (res.nudgeCount) console.info(`[coach] family brain refreshed → ${res.nudgeCount} nudge(s)`);
     } catch (e) {
       console.warn('[coach] family brain skipped:', e instanceof Error ? e.message : 'unknown');
+    }
+  });
+
+  // Persist the caller's timezone (last-seen) so the reminder cron can fire at
+  // their LOCAL time. Fire-and-forget, only writes when it changed, never blocks
+  // the stream. Degrades cleanly pre-migration (42703 → swallowed).
+  after(async () => {
+    if (!clientTz) return;
+    try {
+      const { data: row } = await supabase
+        .from('story_admin_users')
+        .select('timezone')
+        .eq('space', space)
+        .maybeSingle();
+      if (row && row.timezone !== clientTz) {
+        await supabase.from('story_admin_users').update({ timezone: clientTz }).eq('space', space);
+      }
+    } catch (e) {
+      console.warn('[coach] timezone persist skipped:', e instanceof Error ? e.message : 'unknown');
     }
   });
 
@@ -477,13 +550,16 @@ export async function POST(request: NextRequest) {
         const coachName = displayNameForSpace(space);
 
         // Resolve context. For a child we skip the adult productivity wisdom + load.
-        const [memories, profileSection, incomingNotes, nudgeText, wisdomSummary, load] = await Promise.all([
+        const [memories, profileSection, incomingNotes, nudgeText, wisdomSummary, load, upcomingSection] = await Promise.all([
           loadCoachMemories(supabase, space, 40).catch(() => []),
           getCoachProfile(space).catch(() => ''),
           loadIncomingContextForCoach(supabase, space).catch(() => []),
           loadActiveNudgeForSpace(supabase, space).catch(() => null),
           isChild ? Promise.resolve('') : getCoachWisdomSummary().catch(() => ''),
           isChild ? Promise.resolve(null) : computeLoad(supabase, space).catch(() => null),
+          // Their schedule: next-7-day planner events + pending reminders. Skipped
+          // for e2e spaces (no server-readable store). Fail-soft → '' on any error.
+          isE2e ? Promise.resolve('') : loadUpcomingSection(supabase, space, clientTz).catch(() => ''),
         ]);
 
         // Captain context shared INTO this coach: quiet background for a child;
@@ -513,6 +589,8 @@ export async function POST(request: NextRequest) {
           ? buildChildCoachSystemPrompt({
               displayName: coachName,
               todayLabel,
+              timeSinceLabel,
+              upcomingSection,
               memorySection: formatCoachMemoriesForPrompt(memories, coachName),
               profileSection,
               parentContextSection,
@@ -522,6 +600,8 @@ export async function POST(request: NextRequest) {
           : buildCoachSystemPrompt({
               displayName: coachName,
               todayLabel,
+              timeSinceLabel,
+              upcomingSection,
               memorySection: formatCoachMemoriesForPrompt(memories, coachName),
               wisdomSummary,
               profileSection,

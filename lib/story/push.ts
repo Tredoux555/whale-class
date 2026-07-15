@@ -105,6 +105,66 @@ export async function sendCallPush(
 }
 
 /**
+ * Send a COACH reminder push to every device the given SPACE subscribed on the
+ * Lyf Coach page (story_coach_push_subscriptions). Returns how many landed and
+ * how many subscriptions exist, so the caller (the send-reminders cron) can fall
+ * back to email when nothing was delivered. Dead subscriptions (404/410) pruned.
+ */
+export async function sendCoachPush(
+  space: string,
+  payload: { title: string; body: string; url: string },
+): Promise<{ sent: number; subscriptions: number }> {
+  if (!ensureConfigured()) return { sent: 0, subscriptions: 0 };
+
+  const supabase = getSupabase();
+  const { data: subs, error } = await supabase
+    .from('story_coach_push_subscriptions')
+    .select('id, endpoint, p256dh, auth')
+    .eq('space', space);
+  if (error || !subs || subs.length === 0) return { sent: 0, subscriptions: 0 };
+
+  // The body IS the user's own reminder text — that's the whole point. (Push
+  // payloads transit Apple/Google push services under standard Web Push
+  // encryption in transit; acceptable, documented in the cron route.)
+  const body = JSON.stringify({
+    title: (payload.title || 'Lyf Coach').slice(0, 100),
+    body: (payload.body || '').slice(0, 180),
+    url: payload.url || '/lyf-coach/coach',
+  });
+
+  let sent = 0;
+  await Promise.allSettled(
+    subs.map(async (sub) => {
+      try {
+        await webpush.sendNotification(
+          { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+          body
+        );
+        sent += 1;
+        await supabase
+          .from('story_coach_push_subscriptions')
+          .update({ last_used_at: new Date().toISOString() })
+          .eq('id', sub.id);
+      } catch (err: unknown) {
+        const statusCode = (err as { statusCode?: number })?.statusCode;
+        if (statusCode === 404 || statusCode === 410) {
+          await supabase.from('story_coach_push_subscriptions').delete().eq('id', sub.id);
+          console.log(`[story-push] pruned dead coach subscription ${sub.id}`);
+        } else {
+          console.error(
+            '[story-push] coach send failed:',
+            statusCode,
+            err instanceof Error ? err.message : err
+          );
+        }
+      }
+    })
+  );
+
+  return { sent, subscriptions: subs.length };
+}
+
+/**
  * Alert every OTHER sanctuary member about a new emergency-board message.
  * Fire-and-forget at the call site — a push failure never blocks the post.
  * Targets story_member_push_subscriptions (keyed by space); prunes dead subs.

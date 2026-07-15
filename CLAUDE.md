@@ -2,6 +2,33 @@
 
 **⚠️ STANDING RULE (Tredoux, Jul 10 2026 — PERMANENT): MODEL DELEGATION.** Fable is the DIRECTOR and second brain — it plans, decides, writes the critical copy, and reviews. It does NOT do grunt work. **Sonnet** (preferred over Haiku — more reliable) does all fetching, sweeping, scouting, data-gathering, and auditing via sub-agents. **Opus** builds where appropriate. Never let Fable burn half its context on mechanical work another model can do — spawn agents instead.
 
+## ⏰ SESSION — Jul 15, 2026 pt2 (same Cowork session) — COACH CLOCK + PUSH REMINDERS SHIPPED IN BOTH COACHES
+
+**Canonical: `docs/handoffs/PLAN_COACH_CLOCK_REMINDERS_JUL15.md` (contract + close-out). COMMITTED +
+PUSHED both repos this time (Desktop Commander now available in-session).** Tredoux's ask: the coach
+has no sense of time (5h gap = "same moment") + should push reminders. Built (sacred flow, 2 Opus
+builds + 2 Sonnet audits — montree SHIP, lyfcoach FIXED-NOW-SHIP): **(A) Clock** — every replayed
+user message now prefixed `[Sent: Ddd DD Mon, HH:MM]` (user's tz), new `timeSinceLabel` ("previous
+exchange was 5 hours ago") + TIME AWARENESS prompt block (adult+child), timezone persisted to
+`story_admin_users.timezone` fire-and-forget (a cron can now compute the user's local time). **(B)
+Reminders** — `story_coach_reminders` + `story_coach_push_subscriptions` (space-keyed, RLS deny-all)
++ tools set_reminder/list_reminders/cancel_reminder (tz-correct via Intl two-pass DST probe;
+recurrence daily/weekdays/weekly/monthly w/ month-end clamp; e2e spaces blocked — server-readable by
+design) + UPCOMING prompt block (next-7d plan events + pending reminders — the coach can now manage
+the schedule) + web-push delivery: montree reuses web-push/STORY_VAPID_* (`sendCoachPush` in
+lib/story/push.ts, `public/coach-sw.js`, bell on `app/lyf-coach/(app)/coach` — the live page;
+app/montree/lyf-coach is a redirect stub); lyfcoach got push from scratch (web-push@3.6.7 dep,
+LC_VAPID_* envs, lib/story/coach/{push,push-client}.ts, /api/push/{public-key,subscribe},
+Settings→Reminders card + coach-page banner). Dispatch = cron routes
+(montree `api/story/cron/send-reminders`, lyfcoach `api/cron/send-reminders`) gated x-cron-secret,
+claim-before-send (no double-fire), email fallback (verified emails only), counts-only responses —
+**need external 5-min cron (cron-job.org)**. 🚨 lyfcoach local `next build` fails at HEAD on the Mac
+(Node-22 /_not-found prerender quirk, PRE-EXISTING — Railway/Node-20 builds fine, verified live);
+don't chase it as a regression. ⏳ OWED: migration 296 + lyfcoach 0001_init block (SQL in chat) ·
+lyfcoach envs CRON_SECRET/LC_VAPID_* · two cron-job.org jobs · device enable + live reminder test.
+
+---
+
 ## 🧠 SESSION — Jul 15, 2026 (Cowork/Fable directing Sonnet+Opus) — DIARY RECALL SHIPPED IN BOTH COACHES (recall_history — the coach can now search its entire verbatim history)
 
 **Canonical: `docs/handoffs/PLAN_DIARY_RECALL_JUL15.md` (contract + build/audit close-out — READ IT FIRST).
