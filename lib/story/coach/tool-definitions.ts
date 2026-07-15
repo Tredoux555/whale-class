@@ -252,6 +252,26 @@ export const COACH_TOOLS: Tool[] = [
     },
   },
   {
+    name: 'recall_history',
+    description:
+      "Search the user's complete verbatim conversation history (their permanent diary — every " +
+      'past chat, even details that never made it into your memories). Use whenever the user ' +
+      "references something from a past conversation that you can't see in this thread or your " +
+      'memories — a dream, a name, a plan, "remember when I told you…". NEVER tell the user you ' +
+      "don't remember something without searching this first. Searches recent history first, then " +
+      'widens automatically; pass a date range to look at a specific window.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'What to look for, in natural language (required).' },
+        date_from: { type: 'string', description: 'Only search on/after this date, YYYY-MM-DD (optional).' },
+        date_to: { type: 'string', description: 'Only search on/before this date, YYYY-MM-DD (optional).' },
+        search_older: { type: 'boolean', description: 'Continue the deep keyword walk-back past the first year of history — use only when a prior search reported older months were unsearched (optional).' },
+      },
+      required: ['query'],
+    },
+  },
+  {
     name: 'emit_family_signal',
     description:
       'Send ONE abstracted, WORDLESS flag to the family helper (the Family Brain) — a feeling-type only, ' +
@@ -277,6 +297,6 @@ export const COACH_TOOLS: Tool[] = [
 // consult the safeguarding playbook, put something on their planner, and (only
 // with the child's consent) send a wordless family flag.
 const CHILD_TOOL_NAMES = new Set([
-  'read_diary', 'add_diary_entry', 'add_event', 'consult_wisdom', 'recall', 'remember', 'emit_family_signal',
+  'read_diary', 'add_diary_entry', 'add_event', 'consult_wisdom', 'recall', 'recall_history', 'remember', 'emit_family_signal',
 ]);
 export const CHILD_COACH_TOOLS: Tool[] = COACH_TOOLS.filter((t) => CHILD_TOOL_NAMES.has(t.name));
