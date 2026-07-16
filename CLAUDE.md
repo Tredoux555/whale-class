@@ -2,6 +2,33 @@
 
 **⚠️ STANDING RULE (Tredoux, Jul 10 2026 — PERMANENT): MODEL DELEGATION.** Fable is the DIRECTOR and second brain — it plans, decides, writes the critical copy, and reviews. It does NOT do grunt work. **Sonnet** (preferred over Haiku — more reliable) does all fetching, sweeping, scouting, data-gathering, and auditing via sub-agents. **Opus** builds where appropriate. Never let Fable burn half its context on mechanical work another model can do — spawn agents instead.
 
+## 🎒 SESSION — Jul 16, 2026 (Cowork/Fable directing Sonnet+Opus) — GRACE & COURTESY INTRO WEEKS: 10 rules songs + 10 videos + 2 lesson-pack weeks SHIPPED
+
+**Canonical content doc: `docs/curriculum/GRACE_AND_COURTESY_SONGS_JUL16.md` (10 songs, lyrics = subtitle
+ground truth, image manifests, design rulings). Engine build close-out: `docs/handoffs/PLAN_GC_INTRO_WEEKS_JUL16.md`.**
+First-two-weeks-of-school Grace & Courtesy program: 1 rule/day × 10 days (D1 Hello Hello → D10 recap anthem
+"The Whale Class Way"; potato redemption arc D2/D3/D7/D10; positive Montessori phrasing only — HEADINGS-style
+rule phrases ARE the hooks). Fable authored all lyrics; locked Suno style v2; Tredoux picked takes (D08 pick
+matched neither filed take — his Downloads file is canonical). **Assets:** `~/Desktop/Music Videos/Grace and
+Courtesy/Day NN - <Title>/` = gc-dNN.mp3 (pick) + gc-dNN.mp4 + shot report + images/ + _takes_not_picked/.
+**All 10 videos CERTIFIED-path: timing_source=align, 0% approx, 0 flags** (D1+D2 Tredoux-approved samples first).
+**Intro Weeks in the engine (Opus build → Sonnet audit SHIP-W-WARN 0 CRIT → all 6 WARNs fixed):** sentinel
+weeks 101/102 as `spec/intro-week-a|b.json` (globs for `week-NN.json` structurally blind to them; lesson-map
+untouched; W1–58 never renumbered), new `grace-courtesy` soundType validated under a relaxed pass (validator
+exit 0 on all 60), `displayName` masks the sentinel everywhere, Studio renders an "Intro · Grace & Courtesy"
+rail BEFORE Level 1. Materials ×4 per week: rule flashcards + class-rules poster (the one new builder) +
+coloring (line art at `English Curriculum 2026/Intro Weeks/coloring/`) + song QR cards. Packs green at
+`English Curriculum 2026/Intro Week A|B/pack/`. Bonus fix: build-week.mjs ALL_MATERIALS had omitted
+'flashcards' for ALL weeks (pre-existing) — now derived from materialTypesForSpec. 🚨 RULES: intro weeks =
+sentinel ≥100 + displayName, never week 0 or renumbering · coloring/lesson art NEVER goes in a Day's images/
+(pollutes mvgen lyric-match pool). Fleet-check bonus: Jul-15 98-video fleet DRAINED + self-published (81 up);
+stragglers owed: W11 + W02-word resubmit, W56-sound never rendered. ⏳ OWED: DC-delete tsconfig.gcintro.tmp.json
++ .tsbuildinfo · Tredoux eyeball 3 image flags (D05 04-towel, D10 03-chair, coloring day-07-chair watermark) ·
+funnel mock docs/design/FUNNEL_VISION_JUL16.html carries an uncommitted minimalist pass from a misdirected
+prompt (other session's call — do not commit blindly).
+
+---
+
 ## 🏮 SESSION — Jul 16, 2026 pt2 (same Cowork session) — FUNNEL CEREMONY SHIPPED: first-touch funnel rebuilt to the Lanternlight vision, Astra narrating from screen one
 
 **Canonical: `docs/handoffs/SESSION_FUNNEL_CEREMONY_JUL16.md` + binding contract

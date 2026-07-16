@@ -69,7 +69,7 @@ export function buildQrCards(spec: WeekSpec, _assets: AssetMap, opts: BuildOpts 
   }
 
   return {
-    html: docShell({ title: `Week ${spec.week} — Song QR Cards`, css, body: pages.join(''), fontBaseUrl: opts.fontBaseUrl, autoPrint: opts.autoPrint }),
+    html: docShell({ title: `${spec.displayName || `Week ${spec.week}`} — Song QR Cards`, css, body: pages.join(''), fontBaseUrl: opts.fontBaseUrl, autoPrint: opts.autoPrint }),
     warnings,
   };
 }

@@ -34,8 +34,10 @@ const RENDER_ENTRY = path.join(REPO, 'lib', 'montree', 'english-curriculum', 're
 const FONT_DIR = path.join(REPO, 'public', 'fonts');
 
 const ALL_MATERIALS = [
-  'three_part_cards', 'sentence_strips', 'matching', 'bingo', 'tracing',
+  'three_part_cards', 'flashcards', 'sentence_strips', 'matching', 'bingo', 'tracing',
   'coloring', 'dictionary_journal', 'book', 'vowel_wall', 'qr_cards',
+  // Grace & Courtesy Intro Weeks only (default set derives per-spec below):
+  'class_rules_poster',
 ];
 const IMAGE_EXTS = ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg'];
 
@@ -145,44 +147,76 @@ function htmlToPdf(chrome, htmlPath, pdfPath) {
 }
 
 async function main() {
-  const weekNum = parseInt(arg('week', ''), 10);
-  if (!weekNum || Number.isNaN(weekNum)) {
-    console.error('Usage: node scripts/curriculum/build-week.mjs --week N [--materials a,b] [--assets DIR] [--out DIR] [--gap-only] [--strict]');
-    process.exit(2);
-  }
-
-  const specPath = path.join(SPEC_DIR, `week-${pad(weekNum)}.json`);
-  if (!fs.existsSync(specPath)) {
-    console.error(`✗ No spec for week ${weekNum} (${specPath} not found). Authored weeks: ` +
-      fs.readdirSync(SPEC_DIR).filter((f) => /^week-\d+\.json$/.test(f)).join(', '));
-    process.exit(2);
-  }
-  const spec = JSON.parse(fs.readFileSync(specPath, 'utf8'));
-
   const home = os.homedir();
-  const defBase = path.join(home, 'Desktop', 'English Curriculum 2026', `Week ${pad(weekNum)}`);
-  const assetsDir = arg('assets', path.join(defBase, 'assets'));
+  const introArg = arg('intro', null);
+
+  // ── Resolve the spec: a numbered phonics week (--week N) OR a Grace & Courtesy
+  //    Intro Week (--intro a|b). Intro weeks live in intro-week-<x>.json, default
+  //    to the "Intro Week A/B" folders, and use an `images/` asset subfolder.
+  let specPath, spec, defBase, defAssetLeaf, specLabel, priorWeekNum;
+  if (introArg) {
+    const key = String(introArg).trim().toLowerCase();
+    if (key !== 'a' && key !== 'b') {
+      console.error('✗ --intro must be "a" or "b".');
+      process.exit(2);
+    }
+    specPath = path.join(SPEC_DIR, `intro-week-${key}.json`);
+    if (!fs.existsSync(specPath)) {
+      console.error(`✗ No intro spec (${specPath} not found).`);
+      process.exit(2);
+    }
+    spec = JSON.parse(fs.readFileSync(specPath, 'utf8'));
+    defBase = path.join(home, 'Desktop', 'English Curriculum 2026', `Intro Week ${key.toUpperCase()}`);
+    defAssetLeaf = 'images';
+    specLabel = spec.displayName || `Intro Week ${key.toUpperCase()}`;
+    priorWeekNum = 0; // intro weeks have no prior phonics folders
+  } else {
+    const weekNum = parseInt(arg('week', ''), 10);
+    if (!weekNum || Number.isNaN(weekNum)) {
+      console.error('Usage: node scripts/curriculum/build-week.mjs --week N | --intro a|b [--materials a,b] [--assets DIR] [--out DIR] [--gap-only] [--strict]');
+      process.exit(2);
+    }
+    specPath = path.join(SPEC_DIR, `week-${pad(weekNum)}.json`);
+    if (!fs.existsSync(specPath)) {
+      console.error(`✗ No spec for week ${weekNum} (${specPath} not found). Authored weeks: ` +
+        fs.readdirSync(SPEC_DIR).filter((f) => /^week-\d+\.json$/.test(f)).join(', '));
+      process.exit(2);
+    }
+    spec = JSON.parse(fs.readFileSync(specPath, 'utf8'));
+    defBase = path.join(home, 'Desktop', 'English Curriculum 2026', `Week ${pad(weekNum)}`);
+    defAssetLeaf = 'assets';
+    specLabel = `Week ${weekNum} /${spec.sound}/`;
+    priorWeekNum = weekNum;
+  }
+
+  const assetsDir = arg('assets', path.join(defBase, defAssetLeaf));
   const outDir = arg('out', path.join(defBase, 'pack'));
   const strict = flag('strict');
 
-  const materials = (arg('materials', '') || '')
+  const explicitMaterials = (arg('materials', '') || '')
     .split(',').map((s) => s.trim()).filter(Boolean);
-  const toBuild = materials.length ? materials.filter((m) => ALL_MATERIALS.includes(m)) : ALL_MATERIALS;
-  const badMat = materials.filter((m) => !ALL_MATERIALS.includes(m));
-  if (badMat.length) console.warn(`⚠ ignoring unknown material(s): ${badMat.join(', ')}`);
 
   // Bundle + import the shared engine.
   const enginePath = await bundleEngine();
   const engine = await import(pathToFileURL(enginePath).href);
-  const { buildMaterial, buildAssetMap, assetGapReport } = engine;
+  const { buildMaterial, buildAssetMap, assetGapReport, materialTypesForSpec } = engine;
+
+  // Default material set = whatever applies to THIS spec (phonics → the eleven;
+  // Grace & Courtesy → rule flashcards + poster + colouring + song QR).
+  const defaultTypes = materialTypesForSpec(spec).map((m) => m.type);
+  const badMat = explicitMaterials.filter((m) => !ALL_MATERIALS.includes(m));
+  if (badMat.length) console.warn(`⚠ ignoring unknown material(s): ${badMat.join(', ')}`);
+  const toBuild = explicitMaterials.length
+    ? explicitMaterials.filter((m) => ALL_MATERIALS.includes(m))
+    : defaultTypes;
 
   // Scan assets → AssetMap (file:// URLs). Prior-week folders are a FALLBACK for
   // reused images; current-week files are listed LAST so they win in buildAssetMap.
-  const priorDirs = priorAssetDirs(assetsDir, weekNum);
+  const priorDirs = priorAssetDirs(assetsDir, priorWeekNum);
   const priorFiles = priorDirs.flatMap(scanAssets);
   const files = scanAssets(assetsDir);
   const assets = buildAssetMap([...priorFiles, ...files]);
-  console.log(`\n📦 Week ${weekNum} /${spec.sound}/ — ${files.length} asset file(s) in ${assetsDir}`);
+  console.log(`\n📦 ${specLabel} — ${files.length} asset file(s) in ${assetsDir}`);
   if (priorFiles.length) {
     console.log(`↺ ${priorFiles.length} file(s) available as fallback from ${priorDirs.length} earlier week folder(s).`);
   }

@@ -7,10 +7,12 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  buildMaterial, buildAssetMap, assetGapReport, MATERIAL_TYPES,
+  buildMaterial, buildAssetMap, assetGapReport, MATERIAL_TYPES, materialTypesForSpec,
   type AssetMap, type MaterialType,
 } from '@/lib/montree/english-curriculum/render';
-import { getWeek, WEEK_META, weekToLessonMap, type WeekSpec } from '@/lib/montree/english-curriculum/spec';
+import {
+  getWeek, WEEK_META, INTRO_WEEK_META, isIntroWeek, weekToLessonMap, type WeekSpec,
+} from '@/lib/montree/english-curriculum/spec';
 
 interface DroppedFile { name: string; url: string; }
 
@@ -95,7 +97,19 @@ const STRIP: StripItem[] = [
   })),
 ];
 
+// Grace & Courtesy Intro Weeks — rendered FIRST, before Level 1. Sourced from
+// INTRO_WEEK_META (spec/index.ts); their sentinel week numbers never show (the
+// chips use the friendly label + word, the summary uses displayName).
+const INTRO_STRIP: StripItem[] = INTRO_WEEK_META.map((m): StripItem => ({
+  week: m.week,
+  level: 1,
+  label: m.label,
+  word: m.word,
+  milestone: '🌱',
+}));
+
 const LEVEL_SECTIONS: { title: string; items: StripItem[] }[] = [
+  { title: 'Intro · Grace & Courtesy', items: INTRO_STRIP },
   { title: 'Level 1 · Sounds', items: STRIP.filter((s) => s.level === 1) },
   { title: 'Level 2 · Patterns', items: STRIP.filter((s) => s.level === 2) },
   { title: 'Level 3 · Reading', items: STRIP.filter((s) => s.level === 3) },
@@ -192,9 +206,9 @@ export default function CurriculumStudioPage() {
     try {
       const param = new URLSearchParams(window.location.search).get('week');
       const asked = param ? parseInt(param, 10) : NaN;
-      if (asked >= 1 && asked <= 58) { setWeek(asked); return; }
+      if ((asked >= 1 && asked <= 58) || isIntroWeek(asked)) { setWeek(asked); return; }
       const saved = parseInt(localStorage.getItem('curriculumStudioWeek') || '', 10);
-      if (saved >= 1 && saved <= 58) setWeek(saved);
+      if ((saved >= 1 && saved <= 58) || isIntroWeek(saved)) setWeek(saved);
     } catch { /* ignore */ }
   }, []);
 
@@ -217,10 +231,17 @@ export default function CurriculumStudioPage() {
   }, [week]);
 
   // Load earlier weeks' specs so the gap panel can flag reused ("copy in") images.
+  // Intro Weeks (sentinel numbers 101/102) have no "prior" phonics weeks — skip
+  // the load entirely, else `week - 1` would fan out ~100 getWeek() calls.
   useEffect(() => {
     let alive = true;
-    Promise.all(Array.from({ length: Math.max(0, week - 1) }, (_, i) => getWeek(i + 1)))
-      .then((ws) => { if (alive) setPriorSpecs(ws.filter((w): w is WeekSpec => !!w)); });
+    // Intro Weeks (sentinel 101/102) resolve to no priors — Promise.resolve keeps
+    // the setState async (no synchronous-setState-in-effect) AND skips the ~100
+    // getWeek() fan-out that `week - 1` would otherwise trigger.
+    const load = isIntroWeek(week)
+      ? Promise.resolve<(WeekSpec | null)[]>([])
+      : Promise.all(Array.from({ length: Math.max(0, week - 1) }, (_, i) => getWeek(i + 1)));
+    load.then((ws) => { if (alive) setPriorSpecs(ws.filter((w): w is WeekSpec => !!w)); });
     return () => { alive = false; };
   }, [week]);
 
@@ -250,6 +271,11 @@ export default function CurriculumStudioPage() {
     () => new Map(gap.missing.filter((m) => m.fromEarlierWeek).map((m) => [m.file, m.fromEarlierWeek as number])),
     [gap],
   );
+
+  // The material catalogue that applies to THIS week: phonics weeks get the full
+  // grid; Grace & Courtesy Intro Weeks get the curated set (rule flashcards, the
+  // Class Rules poster, colouring, song QR). Drives the grid, previews + full pack.
+  const materialList = useMemo(() => (spec ? materialTypesForSpec(spec) : MATERIAL_TYPES), [spec]);
 
   const meta = WEEK_META.find((m) => m.week === week);
 
@@ -330,7 +356,7 @@ export default function CurriculumStudioPage() {
     const sections: string[] = [];
     const allWarnings: string[] = [];
 
-    MATERIAL_TYPES.forEach((m, i) => {
+    materialList.forEach((m, i) => {
       const { html, warnings: w } = buildMaterial(m.type, spec, assets, { autoPrint: false });
       allWarnings.push(...w.map((x) => `[${m.label}] ${x}`));
       const scope = `.mp-${i}`;
@@ -345,7 +371,7 @@ export default function CurriculumStudioPage() {
 
     const doc =
       `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">` +
-      `<title>Week ${spec.week} — Full Pack</title><style>` +
+      `<title>${spec.displayName || `Week ${spec.week}`} — Full Pack</title><style>` +
       `@page{size:A4;margin:0;}` +
       `html,body{margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}` +
       `@media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;}}` +
@@ -355,7 +381,7 @@ export default function CurriculumStudioPage() {
       `</body></html>`;
     win.document.write(doc);
     win.document.close();
-  }, [spec, assets]);
+  }, [spec, assets, materialList]);
 
   const btn = 'transition-all duration-200 rounded-lg text-sm font-semibold';
 
@@ -400,7 +426,8 @@ export default function CurriculumStudioPage() {
                       <div className="text-[10px] text-white/40 mt-0.5 truncate">{s.word}</div>
                       {s.milestone && <div className="text-[9px] mt-0.5 leading-tight" style={{ color: '#E8C96A' }}>{s.milestone}</div>}
                       {s.vowelLights && <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full" style={{ background: '#2456c7' }} />}
-                      <div className="text-[8px] text-white/25 mt-0.5">W{s.week}</div>
+                      {/* Intro weeks use sentinel numbers (101/102) — never show a "W101" chip; the label already reads "Intro A/B". */}
+                      {!isIntroWeek(s.week) && <div className="text-[8px] text-white/25 mt-0.5">W{s.week}</div>}
                     </button>
                   );
                 })}
@@ -414,12 +441,20 @@ export default function CurriculumStudioPage() {
           <div className="rounded-xl border p-4 mb-5" style={{ borderColor: 'rgba(52,211,153,0.18)', background: 'rgba(16,185,129,0.05)' }}>
             <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
               <span className="text-2xl font-bold" style={{ color: '#a7f3d0' }}>{summary.letterDisplay}</span>
-              <span className="text-white/70">Week {summary.week} · sound <b>/{summary.sound}/</b></span>
-              <span className="text-white/50 text-sm">anchor: <b className="text-white/80">{summary.anchorWord}</b></span>
+              {spec?.displayName ? (
+                <span className="text-white/80 font-semibold">{spec.displayName}</span>
+              ) : (
+                <>
+                  <span className="text-white/70">Week {summary.week} · sound <b>/{summary.sound}/</b></span>
+                  <span className="text-white/50 text-sm">anchor: <b className="text-white/80">{summary.anchorWord}</b></span>
+                </>
+              )}
               {summary.vowelLights && <span className="text-sm" style={{ color: '#7aa2ff' }}>vowel {summary.vowelLights.toUpperCase()} lights up</span>}
               {summary.castIntro && <span className="text-sm" style={{ color: '#E8C96A' }}>cast: {summary.castIntro} joins</span>}
               {summary.celebration && <span className="text-sm" style={{ color: '#E8C96A' }}>🎉 {summary.celebration}</span>}
-              <span className="text-white/30 text-xs ml-auto">lesson-map ≈ L{(weekToLessonMap[summary.week] || []).join(', L')}</span>
+              {(weekToLessonMap[summary.week]?.length ?? 0) > 0 && (
+                <span className="text-white/30 text-xs ml-auto">lesson-map ≈ L{(weekToLessonMap[summary.week] || []).join(', L')}</span>
+              )}
             </div>
             {spec && (
               <div className="mt-2 text-sm text-white/55 flex flex-wrap gap-x-5 gap-y-1">
@@ -518,7 +553,7 @@ export default function CurriculumStudioPage() {
                 </button>
               </div>
               <div className="grid sm:grid-cols-2 gap-3">
-                {MATERIAL_TYPES.map((m) => (
+                {materialList.map((m) => (
                   <div key={m.type} className="rounded-xl border p-3 flex items-center gap-3"
                     style={{ borderColor: previewType === m.type ? 'rgba(52,211,153,0.5)' : 'rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)' }}>
                     <span className="text-2xl">{m.emoji}</span>
@@ -551,7 +586,7 @@ export default function CurriculumStudioPage() {
               {previewType && (
                 <div className="mt-4 rounded-xl border overflow-hidden" style={{ borderColor: 'rgba(255,255,255,0.12)' }}>
                   <div className="flex items-center justify-between px-3 py-2" style={{ background: 'rgba(0,0,0,0.3)' }}>
-                    <span className="text-sm text-white/70">Preview · {MATERIAL_TYPES.find((x) => x.type === previewType)?.label}</span>
+                    <span className="text-sm text-white/70">Preview · {materialList.find((x) => x.type === previewType)?.label}</span>
                     <div className="flex gap-2">
                       <button onClick={() => printMaterial(previewType)} className="text-xs px-2 py-1 rounded" style={{ background: 'rgba(52,211,153,0.16)', color: '#a7f3d0' }}>Print this</button>
                       <button onClick={() => { setPreviewType(null); setWarnings([]); }} className="text-xs px-2 py-1 rounded text-white/50 hover:text-white/80">Close</button>

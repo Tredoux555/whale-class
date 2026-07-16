@@ -1,0 +1,103 @@
+{
+  "week": 102,
+  "level": 1,
+  "sound": "courtesy",
+  "letterDisplay": "🌱",
+  "displayName": "Intro Week B — Grace & Courtesy: Our Work (Days 6–10)",
+  "soundType": "grace-courtesy",
+  "patternDisplay": "Grace & Courtesy",
+  "anchorWord": "mat",
+  "newWords": [],
+  "reviewBank": [],
+  "glue": { "new": [], "known": [] },
+  "oralWords": [],
+  "sentenceFrame": "This is how we do our work.",
+  "soundBasket": [],
+  "cast": { "introduces": null, "present": [] },
+  "celebration": "GRACE & COURTESY — the work cycle and the class anthem. The child learns to choose a work, use a mat, restore the environment, wait and observe — and on Day 10 the whole class sings its year-long anthem.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "rule",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/gc-d06.mp3",
+      "videoUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-videos/gc-d06.mp4",
+      "title": "Roll the Mat",
+      "lyrics": "[Intro — whispered]\nthis is my work… this is my mat…\n\n[Hook 1 — kids chant]\nRoll the mat! Roll the mat!\nUnroll it slow — just like that!\nWhen my work is done, I bring it back,\nand roll, roll, roll the mat!\n\n[Verse — whisper-rap]\nI choose my work from the shelf — just one.\nI carry it slow, then the work is begun.\nMy mat is an island, my work stays on,\nand I roll it up tight when my work is done.\n\n[Hook 2 — kids chant]\nRoll the mat! Roll the mat!\nUnroll it slow — just like that!\nWhen my work is done, I bring it back,\nand roll, roll, roll the mat!\n\n[Breakdown — whispered]\nroll… roll… nice and tight…\ncorner to corner… that's right…\n\n[Final Hook — big]\nRoll the mat! Roll the mat!\nUnroll it slow — just like that!\nWhen my work is done, I bring it back,\nand roll, roll, roll the mat!",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "ONE pattern: \"Roll the mat!\" \"My mat is an island\" is the classic Montessori image for workspace boundaries — the verse carries the whole work cycle (choose one → carry → work on the mat → roll and return)."
+    },
+    {
+      "role": "rule",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/gc-d07.mp3",
+      "videoUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-videos/gc-d07.mp4",
+      "title": "Push In Your Chair",
+      "lyrics": "[Intro — whispered]\ntwo hands… lift it up… quiet…\n\n[Hook 1 — kids chant]\nPush in your chair! Push in your chair!\nWhen you stand up, push in your chair!\nTwo hands, slow, with quiet care —\nnobody bumps when you push in your chair!\n\n[Verse — whisper-rap]\nI lift my chair with two strong hands,\nI set it down soft — it barely lands.\nWhen I stand to go somewhere,\nI turn around and push in my chair.\n\n[Hook 2 — kids chant]\nPush in your chair! Push in your chair!\nWhen you stand up, push in your chair!\nTwo hands, slow, with quiet care —\nnobody bumps when you push in your chair!\n\n[Breakdown — whispered, bass drops out]\n(The potato left his chair out!) oh no…\npush it in, potato… slow… slow…\nclick. (so quiet!)\n\n[Final Hook — big]\nPush in your chair! Push in your chair!\nWhen you stand up, push in your chair!\nTwo hands, slow, with quiet care —\nnobody bumps when you push in your chair!",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "ONE pattern: \"Push in your chair!\" The whispered \"click. (so quiet!)\" is the payoff moment — ask for near-silence there. Potato gag #3."
+    },
+    {
+      "role": "rule",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/gc-d08.mp3",
+      "videoUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-videos/gc-d08.mp4",
+      "title": "May I Watch?",
+      "lyrics": "[Intro — whispered]\nmy friend is working… I want to see…\n\n[Hook 1 — kids chant]\nMay I watch? May I watch?\nI ask my friend, \"May I watch?\"\nHands behind my back, I see —\nand when it's my turn, you can watch me!\n\n[Verse — whisper-rap]\nOne work, one friend — that's the way.\nIf the shelf is empty, I wait today.\nI can watch, or choose something new —\nwaiting is a work I can do!\n\n[Hook 2 — kids chant]\nMay I watch? May I watch?\nI ask my friend, \"May I watch?\"\nHands behind my back, I see —\nand when it's my turn, you can watch me!\n\n[Breakdown — whispered]\nwatching… watching… quiet as a mouse…\nlearning with my eyes…\n\n[Final Hook — big]\nMay I watch? May I watch?\nI ask my friend, \"May I watch?\"\nHands behind my back, I see —\nand when it's my turn, you can watch me!",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "ONE pattern: \"May I watch?\" — the exact G&C script. \"Waiting is a work I can do\" reframes patience as a work, pure Montessori. Hands-behind-back is the classic observing posture."
+    },
+    {
+      "role": "rule",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/gc-d09.mp3",
+      "videoUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-videos/gc-d09.mp4",
+      "title": "Everything Has a Home",
+      "lyrics": "[Intro — whispered]\nwhere does it go?… the shelf knows…\n\n[Hook 1 — kids chant]\nEverything has a home! Everything has a home!\nBack on the shelf where the work will go,\nready for a friend, neat in a row —\neverything has a home!\n\n[Verse — whisper-rap]\nThe beads go here, the map goes there,\nevery little thing has its own little square.\nWhen I put it back the way it was,\nthe next friend smiles — that's what it does!\n\n[Hook 2 — kids chant]\nEverything has a home! Everything has a home!\nBack on the shelf where the work will go,\nready for a friend, neat in a row —\neverything has a home!\n\n[Breakdown — whispered]\nback… back… back on the shelf…\nI can do it all by myself…\n\n[Final Hook — big]\nEverything has a home! Everything has a home!\nBack on the shelf where the work will go,\nready for a friend, neat in a row —\neverything has a home!",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "ONE pattern: \"Everything has a home!\" \"Ready for a friend\" is the canonical Montessori phrase for restoring the environment; \"all by myself\" echoes \"help me do it myself.\""
+    },
+    {
+      "role": "rule",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/gc-d10.mp3",
+      "videoUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-videos/gc-d10.mp4",
+      "title": "The Whale Class Way",
+      "lyrics": "[Intro — whispered]\nwe know the rules… do you?\n\n[Hook — kids chant]\nThat's the way! That's the way!\nThat's the way we work and play!\nEvery day, come what may —\nthat's the Whale Class way!\n\n[Verse 1 — whisper-rap, call and response]\nWhen we come in? (Hello, hello!)\nHow do we walk? (Slow, slow!)\nVoice inside? (Soft and low!)\nHands? (Gentle!) — now you know!\n\n[Hook — kids chant]\nThat's the way! That's the way!\nThat's the way we work and play!\nEvery day, come what may —\nthat's the Whale Class way!\n\n[Verse 2 — whisper-rap, call and response]\nAfter the toilet? (Wash, wash, wash!)\nDone with your mat? (Roll it up!)\nStand from your chair? (Push it in!)\nFriend is working? (\"May I watch?\")\nWhere does the work go? (Back to its home!)\n\n[Breakdown — whispered, bass drops out]\n(Even the potato?) …even the potato…\nhe says hello… he walks so slow…\nhe pushed in his chair! (hooray!)\n\n[Final Hook — big]\nThat's the way! That's the way!\nThat's the way we work and play!\nEvery day, come what may —\nthat's the Whale Class way! (hey!)",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "The ONE allowed multi-rule song — every rule appears as ITS OWN song's exact phrase, so the anthem is retrieval practice, not new teaching. Call-and-response: whisper-rap asks, kids choir answers. Potato redemption arc closes the two weeks. Swap \"Whale Class\" for any class name (title + two lyric lines)."
+    }
+  ],
+  "book": {
+    "title": "Our Work",
+    "readAloud": true,
+    "spreads": [],
+    "backCoverWords": []
+  },
+  "materials": {
+    "threePartCards": [],
+    "sentences": [],
+    "matching": [],
+    "bingoPool": [],
+    "tracing": { "letter": "courtesy", "words": [] },
+    "coloring": ["mat", "chair", "watch", "home", "class"],
+    "dictionary": [],
+    "ruleCards": [
+      { "day": 6, "image": "mat", "phrase": "Roll the mat" },
+      { "day": 7, "image": "chair", "phrase": "Push in your chair" },
+      { "day": 8, "image": "watch", "phrase": "May I watch?" },
+      { "day": 9, "image": "home", "phrase": "Everything has a home" },
+      { "day": 10, "image": "class", "phrase": "That's the way!" }
+    ],
+    "extras": ["Grace & Courtesy presentation cards (carry/roll a mat, carry a chair, observing a friend, returning work to the shelf)", "song QR cards (5 days)", "the class anthem 'The Whale Class Way' — swap in your own class name"]
+  },
+  "assets": [
+    { "file": "mat.png", "usedBy": ["ruleCards:6", "poster", "coloring"], "mjPrompt": "a rolled Montessori work mat resting on a low wooden shelf, tidy and inviting, children's-book illustration, deep forest-green palette, slightly whimsical --ar 3:2" },
+    { "file": "chair.png", "usedBy": ["ruleCards:7", "poster", "coloring"], "mjPrompt": "a small child-size wooden chair tucked neatly under a low table, children's-book illustration, deep forest-green palette, slightly whimsical --ar 3:2" },
+    { "file": "watch.png", "usedBy": ["ruleCards:8", "poster", "coloring"], "mjPrompt": "a child observing a friend's work with hands clasped behind their back, patient and curious, children's-book illustration, deep forest-green palette, slightly whimsical --ar 3:2" },
+    { "file": "home.png", "usedBy": ["ruleCards:9", "poster", "coloring"], "mjPrompt": "a tidy Montessori shelf with every material in its own place, neat rows, children's-book illustration, deep forest-green palette, slightly whimsical --ar 3:2" },
+    { "file": "class.png", "usedBy": ["ruleCards:10", "poster", "coloring"], "mjPrompt": "a whole class of children working peacefully together across the room, wide view, warm and calm, children's-book illustration, deep forest-green palette, slightly whimsical --ar 3:2" },
+    { "file": "mat-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a rolled work mat on a shelf, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "chair-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a little chair tucked under a table, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "watch-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a child watching with hands behind their back, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "home-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a tidy shelf with materials in their places, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "class-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a happy class of children working together, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "Week B builds the work cycle and closes the two weeks with the class anthem: roll the mat, push in your chair, may I watch?, everything has a home, and 'The Whale Class Way' (Day 10) — the recap anthem the class sings all year.",
+  "lessonMapEquivalents": []
+}

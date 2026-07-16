@@ -24,11 +24,18 @@ export type SoundType =
   | 'r-controlled'
   | 'diphthong'
   | 'morphology'
-  | 'silent-letters';
+  | 'silent-letters'
+  // Grace & Courtesy Intro Weeks (Jul 16 2026) — the first-two-weeks-of-school
+  // classroom-rules weeks. NOT phonics: decodability-exempt (see validate-specs
+  // intro pass + PLAN_GC_INTRO_WEEKS_JUL16.md).
+  | 'grace-courtesy';
 
 export interface SongSpec {
-  /** 'sound' = stutter-pattern sound isolation; 'word' = sentence-frame song */
-  role: 'sound' | 'word';
+  /**
+   * 'sound' = stutter-pattern sound isolation; 'word' = sentence-frame song;
+   * 'rule'  = Grace & Courtesy rule-phrase chant (Intro Weeks only).
+   */
+  role: 'sound' | 'word' | 'rule';
   title: string;
   /** Full lyric sheet, Suno-ready ([Verse]/[Hook] tags allowed). */
   lyrics: string;
@@ -102,6 +109,15 @@ export interface MaterialsSpec {
   dictionary: string[];
   /** Free-form week extras (e.g. "vowel wall A poster", "Big Map"). */
   extras?: string[];
+  /**
+   * Grace & Courtesy rule cards (Intro Weeks ONLY). One entry per school day:
+   * an iconic `image` (a word that resolves to an asset) + the exact rule
+   * `phrase` printed as the caption. When present, the flashcards builder
+   * renders these as rule cards (image + phrase, no opening letter card) and the
+   * class-rules poster lays all five on one page. Absent on every phonics week →
+   * the flashcards builder keeps its byte-identical letter-deck behaviour.
+   */
+  ruleCards?: { image: string; phrase: string; day?: number }[];
 }
 
 export interface WeekSpec {
@@ -109,6 +125,13 @@ export interface WeekSpec {
   level: 1 | 2 | 3;
   sound: string;           // "a", "t", "qu", "sh", "a_e", "tion"
   letterDisplay: string;   // "Aa", "Qu qu"
+  /**
+   * Friendly heading shown INSTEAD of "Week N" wherever a week surfaces (Studio
+   * summary + strip). Set on the Grace & Courtesy Intro Weeks so their sentinel
+   * week numbers (101/102) never reach a user; omit on phonics weeks (they show
+   * "Week N" as before — byte-identical).
+   */
+  displayName?: string;
   soundType: SoundType;
   /**
    * Human display form of the pattern where `sound` alone is ambiguous — used by
