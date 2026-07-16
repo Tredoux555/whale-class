@@ -69,8 +69,8 @@ function LockedContent() {
     fontSize: 16, // ≥16px so iOS Safari doesn't zoom on focus
     padding: '12px 14px',
     borderRadius: 12,
-    background: 'rgba(255,255,255,0.06)',
-    border: '1px solid rgba(255,255,255,0.14)',
+    background: 'rgba(0,0,0,0.3)',
+    border: '1px solid rgba(255,255,255,0.12)',
     color: '#ffffff',
     outline: 'none',
   };
@@ -78,7 +78,7 @@ function LockedContent() {
   return (
     <div
       className="min-h-dvh flex items-center justify-center p-4 relative overflow-hidden"
-      style={{ background: '#06140e' }}
+      style={{ background: '#030b08' }}
     >
       {/* Background gradient — matches the login screen */}
       <div
@@ -89,9 +89,8 @@ function LockedContent() {
           zIndex: 0,
           pointerEvents: 'none',
           background: `
-            radial-gradient(ellipse 1000px 800px at 78% 10%, rgba(39,129,90,0.55), rgba(39,129,90,0) 55%),
-            radial-gradient(ellipse 600px 500px at 72% 16%, rgba(130,217,174,0.28), rgba(130,217,174,0) 60%),
-            linear-gradient(155deg, #0c2419 0%, #0a1f16 38%, #081a12 70%, #06140e 100%)
+            radial-gradient(ellipse 900px 700px at 50% -8%, rgba(39,129,90,0.14), rgba(39,129,90,0) 60%),
+            linear-gradient(168deg, #071510 0%, #051009 45%, #030b08 100%)
           `,
         }}
       />
@@ -103,20 +102,20 @@ function LockedContent() {
           </div>
           <h1
             className="text-white mb-2"
-            style={{ fontFamily: 'Lora, Georgia, serif', fontSize: 26, fontWeight: 600 }}
+            style={{ fontFamily: 'Lora, Georgia, serif', fontSize: 26, fontWeight: 400 }}
           >
             This account has been locked.
           </h1>
-          <p className="text-emerald-300/60 text-sm leading-relaxed">
+          <p className="text-white/50 text-sm leading-relaxed">
             Access is paused for now. If you think this is a mistake, send a
             message below and Tredoux will get back to you.
           </p>
         </div>
 
-        <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
+        <div className="bg-white/[0.028] backdrop-blur border border-white/[0.08] rounded-[14px] p-6">
           {sent ? (
             <div className="text-center py-4">
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-4" style={{ background: 'rgba(52,211,153,0.16)' }}>
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-4" style={{ background: 'rgba(232,201,106,0.14)' }}>
                 <span style={{ fontSize: 28 }}>✓</span>
               </div>
               <h2 className="text-white text-lg font-semibold mb-1">Message sent</h2>
@@ -130,7 +129,7 @@ function LockedContent() {
                 </div>
               )}
               <div>
-                <label className="block text-sm mb-1.5 text-emerald-300/70">Your name</label>
+                <label className="block text-sm mb-1.5 text-white/55">Your name</label>
                 <input
                   type="text"
                   value={name}
@@ -141,7 +140,7 @@ function LockedContent() {
                 />
               </div>
               <div>
-                <label className="block text-sm mb-1.5 text-emerald-300/70">Email</label>
+                <label className="block text-sm mb-1.5 text-white/55">Email</label>
                 <input
                   type="email"
                   value={email}
@@ -152,7 +151,7 @@ function LockedContent() {
                 />
               </div>
               <div>
-                <label className="block text-sm mb-1.5 text-emerald-300/70">Message</label>
+                <label className="block text-sm mb-1.5 text-white/55">Message</label>
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
@@ -168,9 +167,9 @@ function LockedContent() {
                 style={{
                   padding: '14px 16px',
                   fontSize: 16,
-                  color: '#04150c',
-                  background: 'linear-gradient(135deg, #34d399 0%, #10b981 100%)',
-                  border: 'none',
+                  color: '#ffffff',
+                  background: '#1D5C41',
+                  border: '1px solid rgba(255,255,255,0.08)',
                   cursor: sending || !message.trim() ? 'not-allowed' : 'pointer',
                 }}
               >
@@ -191,7 +190,7 @@ export default function LockedPage() {
     <Suspense
       fallback={
         <div className="min-h-dvh flex items-center justify-center" style={{ background: '#06140e' }}>
-          <div className="w-8 h-8 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-white/20 border-t-[#E8C96A] rounded-full animate-spin" />
         </div>
       }
     >

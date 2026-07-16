@@ -88,8 +88,8 @@ export default async function WelcomePage({
         justifyContent: 'center',
         padding: '48px 24px',
         background:
-          'radial-gradient(1000px 600px at 85% 8%, rgba(52,211,153,0.14), transparent 60%), linear-gradient(160deg, #0a1a0f 0%, #0c2014 55%, #0a1a0f 100%)',
-        color: '#e7f0ea',
+          'radial-gradient(ellipse 900px 700px at 50% -8%, rgba(39,129,90,0.14), rgba(39,129,90,0) 60%), linear-gradient(168deg, #071510 0%, #051009 45%, #030b08 100%)',
+        color: 'rgba(255,250,240,0.7)',
         textAlign: 'center',
       }}
     >
@@ -99,7 +99,7 @@ export default async function WelcomePage({
       {/* Brand mark */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 36 }}>
         <MontreeLogo size={34} />
-        <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-0.2px', color: '#fff' }}>
+        <span style={{ fontSize: 18, fontWeight: 500, letterSpacing: '0.2px', color: 'rgba(232,201,106,0.85)' }}>
           Montree
         </span>
       </div>
@@ -109,10 +109,10 @@ export default async function WelcomePage({
           <>
             <p
               style={{
-                fontSize: 13,
-                letterSpacing: '2.5px',
+                fontSize: 11,
+                letterSpacing: '3px',
                 textTransform: 'uppercase',
-                color: '#E8C96A',
+                color: 'rgba(232,201,106,0.55)',
                 marginBottom: 18,
               }}
             >
@@ -121,22 +121,22 @@ export default async function WelcomePage({
             <h1
               style={{
                 fontFamily: serif,
-                fontSize: 'clamp(30px, 6vw, 44px)',
-                fontWeight: 600,
+                fontSize: 'clamp(30px, 6vw, 42px)',
+                fontWeight: 400,
                 lineHeight: 1.15,
                 letterSpacing: '-0.5px',
-                color: '#fff',
+                color: 'rgba(255,250,240,0.92)',
                 margin: '0 0 20px',
               }}
             >
               Welcome, {match.school_name}.
             </h1>
-            <p style={{ fontSize: 17, lineHeight: 1.65, color: 'rgba(231,240,234,0.82)', margin: '0 0 10px' }}>
+            <p style={{ fontSize: 17, lineHeight: 1.65, color: 'rgba(255,250,240,0.58)', margin: '0 0 10px' }}>
               Montree was built by a Montessori teacher, for schools like yours
               {match.city ? ` in ${match.city}` : ''}. A teacher takes a photo of a child working —
               Montree does the rest.
             </p>
-            <p style={{ fontSize: 15, lineHeight: 1.7, color: 'rgba(231,240,234,0.55)', margin: '0 0 34px' }}>
+            <p style={{ fontSize: 15, lineHeight: 1.7, color: 'rgba(255,250,240,0.34)', margin: '0 0 34px' }}>
               由一线蒙特梭利老师亲手打造：老师拍一张照片，系统完成观察记录、进度追踪和家长报告。
             </p>
           </>
@@ -145,17 +145,17 @@ export default async function WelcomePage({
             <h1
               style={{
                 fontFamily: serif,
-                fontSize: 'clamp(30px, 6vw, 44px)',
-                fontWeight: 600,
+                fontSize: 'clamp(30px, 6vw, 42px)',
+                fontWeight: 400,
                 lineHeight: 1.15,
                 letterSpacing: '-0.5px',
-                color: '#fff',
+                color: 'rgba(255,250,240,0.92)',
                 margin: '0 0 20px',
               }}
             >
               Welcome to Montree.
             </h1>
-            <p style={{ fontSize: 17, lineHeight: 1.65, color: 'rgba(231,240,234,0.82)', margin: '0 0 34px' }}>
+            <p style={{ fontSize: 17, lineHeight: 1.65, color: 'rgba(255,250,240,0.58)', margin: '0 0 34px' }}>
               Built by a Montessori teacher, for Montessori schools. A teacher takes a photo of a
               child working — Montree does the rest.
             </p>
@@ -168,20 +168,20 @@ export default async function WelcomePage({
           href="/montree/principal/register"
           style={{
             display: 'inline-block',
-            padding: '16px 40px',
-            borderRadius: 999,
-            background: 'linear-gradient(135deg, #34d399, #1D6B48)',
+            padding: '15px 30px',
+            borderRadius: 10,
+            background: '#1D5C41',
             color: '#fff',
-            fontSize: 17,
-            fontWeight: 600,
+            fontSize: '0.95rem',
+            fontWeight: 500,
             textDecoration: 'none',
-            boxShadow: '0 8px 28px rgba(52,211,153,0.30)',
+            border: '1px solid rgba(255,255,255,0.08)',
           }}
         >
           See Montree for your school →
         </Link>
 
-        <p style={{ fontSize: 13, color: 'rgba(231,240,234,0.45)', marginTop: 18 }}>
+        <p style={{ fontSize: 13, color: 'rgba(255,250,240,0.4)', marginTop: 18 }}>
           30 days free · No credit card
           {match ? (
             <>
@@ -192,7 +192,7 @@ export default async function WelcomePage({
         </p>
       </div>
 
-      <p style={{ position: 'absolute', bottom: 22, fontSize: 12, color: 'rgba(231,240,234,0.35)' }}>
+      <p style={{ position: 'absolute', bottom: 22, fontSize: 12, color: 'rgba(255,250,240,0.3)' }}>
         Montree · montree.xyz
       </p>
     </div>

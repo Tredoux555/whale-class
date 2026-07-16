@@ -208,58 +208,51 @@ export default function MontreeExplainer() {
         body {
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
           font-weight: 400;
-          color: rgba(255,255,255,0.85);
-          background: #06140e;
+          color: rgba(255,250,240,0.58);
+          background: #030b08;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
           line-height: 1.5;
           overflow-x: hidden;
         }
         .ex-label {
-          font-size: 10px;
+          font-size: 0.62rem;
           text-transform: uppercase;
-          letter-spacing: 0.14em;
-          color: #E8C96A;
+          letter-spacing: 0.3em;
+          color: rgba(232,201,106,0.55);
           font-weight: 500;
         }
         .ex-pill {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          padding: 14px 28px;
-          border-radius: 999px;
-          background: linear-gradient(180deg, #27815a 0%, #1D6B48 100%);
+          padding: 13px 26px;
+          border-radius: 10px;
+          background: #1D5C41;
           color: #ffffff;
           text-decoration: none;
-          font-size: 0.9375rem;
+          font-size: 0.92rem;
           font-weight: 500;
           letter-spacing: 0.005em;
-          border: 1px solid rgba(130,217,174,0.18);
+          border: 1px solid rgba(255,255,255,0.08);
           cursor: pointer;
-          transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease, border-color 200ms ease;
-          box-shadow:
-            0 1px 0 rgba(130,217,174,0.22) inset,
-            0 0 0 1px rgba(0,0,0,0.25) inset,
-            0 10px 28px -12px rgba(6,20,14,0.85),
-            0 2px 6px -2px rgba(6,20,14,0.6);
+          transition: background 160ms ease;
           white-space: nowrap;
           font-family: inherit;
         }
         .ex-pill:hover {
-          transform: translateY(-1px);
-          border-color: rgba(130,217,174,0.32);
-          filter: brightness(1.06);
+          background: #236B4C;
         }
-        .ex-pill-lg { padding: 18px 34px; font-size: 1rem; }
+        .ex-pill-lg { padding: 15px 30px; font-size: 0.95rem; }
 
         /* ── Nav ── */
         .ex-nav {
           position: sticky;
           top: 0;
           z-index: 50;
-          background: rgba(8,26,18,0.72);
-          backdrop-filter: saturate(180%) blur(14px);
-          -webkit-backdrop-filter: saturate(180%) blur(14px);
+          background: rgba(3,10,7,0.7);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
           border-bottom: 1px solid rgba(255,255,255,0.06);
           padding-top: env(safe-area-inset-top);
         }
@@ -276,11 +269,8 @@ export default function MontreeExplainer() {
           font-family: var(--font-lora), Georgia, serif;
           font-weight: 500;
           font-size: 1.125rem;
-          letter-spacing: -0.01em;
-          background: linear-gradient(90deg, #62C396 0%, #47AB7E 100%);
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
+          letter-spacing: 0.02em;
+          color: rgba(232,201,106,0.85);
         }
         .ex-nav-right { display: flex; align-items: center; gap: 16px; }
         .ex-nav-link {
@@ -303,16 +293,16 @@ export default function MontreeExplainer() {
         .ex-hero h1 {
           font-family: var(--font-lora), Georgia, serif;
           font-weight: 400;
-          font-size: clamp(2.25rem, 5vw, 3.5rem);
+          font-size: clamp(2rem, 5vw, 2.6rem);
           line-height: 1.1;
-          letter-spacing: -0.022em;
-          color: #ffffff;
+          letter-spacing: -0.015em;
+          color: rgba(255,250,240,0.92);
           margin: 0 auto 20px;
           max-width: 18ch;
         }
         .ex-hero-sub {
           font-size: 1.0625rem;
-          color: rgba(255,255,255,0.55);
+          color: rgba(255,250,240,0.58);
           line-height: 1.7;
           max-width: 52ch;
           margin: 0 auto 36px;
@@ -326,11 +316,8 @@ export default function MontreeExplainer() {
           border-radius: 16px;
           overflow: hidden;
           background: #06140e;
-          border: 1px solid rgba(130,217,174,0.22);
-          box-shadow:
-            0 1px 0 rgba(130,217,174,0.08) inset,
-            0 18px 44px -18px rgba(0,0,0,0.75),
-            0 6px 14px -8px rgba(0,0,0,0.5);
+          border: 1px solid rgba(255,255,255,0.08);
+          box-shadow: 0 18px 44px -18px rgba(0,0,0,0.75);
         }
         .ex-hero-video video {
           position: absolute;
@@ -350,7 +337,7 @@ export default function MontreeExplainer() {
           align-items: center;
           justify-content: center;
           gap: 12px;
-          background: linear-gradient(160deg, #154a32 0%, #0a2418 100%);
+          background: linear-gradient(160deg, #0d2c1e 0%, #071510 100%);
         }
         .ex-hero-soon-badge {
           font-size: 11px;
@@ -380,10 +367,10 @@ export default function MontreeExplainer() {
         .ex-features-head h2 {
           font-family: var(--font-lora), Georgia, serif;
           font-weight: 400;
-          font-size: clamp(1.75rem, 3.6vw, 2.5rem);
+          font-size: clamp(1.5rem, 3.6vw, 1.7rem);
           line-height: 1.18;
-          letter-spacing: -0.018em;
-          color: rgba(255,255,255,0.92);
+          letter-spacing: -0.01em;
+          color: rgba(255,250,240,0.92);
         }
         .ex-grid {
           display: grid;
@@ -394,22 +381,20 @@ export default function MontreeExplainer() {
           display: flex;
           flex-direction: column;
           text-align: left;
-          background: rgba(12,36,25,0.55);
-          border: 1px solid rgba(255,255,255,0.07);
-          border-radius: 16px;
+          background: rgba(255,255,255,0.028);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 14px;
           overflow: hidden;
           padding: 0;
           font-family: inherit;
           color: inherit;
-          transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+          transition: border-color 220ms ease;
         }
         .ex-card.is-available { cursor: pointer; }
         .ex-card.is-available:hover {
-          transform: translateY(-3px);
-          border-color: rgba(130,217,174,0.32);
-          box-shadow: 0 18px 40px -20px rgba(0,0,0,0.8);
+          border-color: rgba(255,255,255,0.14);
         }
-        .ex-card.is-available:hover .ex-card-play { transform: scale(1.08); background: rgba(232,201,106,0.95); color: #1a1208; }
+        .ex-card.is-available:hover .ex-card-play { background: rgba(232,201,106,0.9); color: #1a1208; }
         .ex-card-tile {
           position: relative;
           aspect-ratio: 9 / 16;
@@ -482,18 +467,18 @@ export default function MontreeExplainer() {
           font-size: 1.1875rem;
           line-height: 1.25;
           letter-spacing: -0.01em;
-          color: rgba(255,255,255,0.94);
+          color: rgba(255,250,240,0.92);
           margin: 0 0 10px;
         }
         .ex-card-line {
           font-size: 0.9rem;
-          color: rgba(255,255,255,0.5);
+          color: rgba(255,250,240,0.5);
           line-height: 1.6;
           margin: 0 0 14px;
         }
         .ex-card-share {
           font-size: 0.8rem;
-          color: rgba(130,217,174,0.7);
+          color: rgba(232,201,106,0.55);
           letter-spacing: 0.01em;
           margin: 0;
           font-style: italic;
@@ -509,14 +494,14 @@ export default function MontreeExplainer() {
         .ex-closing h2 {
           font-family: var(--font-lora), Georgia, serif;
           font-weight: 400;
-          font-size: clamp(2rem, 5vw, 3rem);
-          line-height: 1.12;
-          letter-spacing: -0.022em;
-          color: #ffffff;
+          font-size: clamp(1.5rem, 4vw, 1.9rem);
+          line-height: 1.14;
+          letter-spacing: -0.012em;
+          color: rgba(255,250,240,0.92);
           margin-bottom: 22px;
         }
         .ex-closing-sub {
-          color: rgba(255,255,255,0.55);
+          color: rgba(255,250,240,0.58);
           font-size: 1.0625rem;
           line-height: 1.7;
           max-width: 46ch;
@@ -558,7 +543,7 @@ export default function MontreeExplainer() {
           border-radius: 16px;
           overflow: hidden;
           background: #06140e;
-          border: 1px solid rgba(130,217,174,0.22);
+          border: 1px solid rgba(255,255,255,0.08);
           box-shadow: 0 30px 80px -20px rgba(0,0,0,0.9);
         }
         .ex-lb-inner video { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -597,9 +582,8 @@ export default function MontreeExplainer() {
         position: 'fixed',
         inset: 0,
         background: `
-          radial-gradient(ellipse 1000px 800px at 78% 10%, rgba(39,129,90,0.55), rgba(39,129,90,0) 55%),
-          radial-gradient(ellipse 600px 500px at 72% 16%, rgba(130,217,174,0.28), rgba(130,217,174,0) 60%),
-          linear-gradient(155deg, #0c2419 0%, #0a1f16 38%, #081a12 70%, #06140e 100%)
+          radial-gradient(ellipse 900px 700px at 50% -8%, rgba(39,129,90,0.14), rgba(39,129,90,0) 60%),
+          linear-gradient(168deg, #071510 0%, #051009 45%, #030b08 100%)
         `,
         zIndex: 0,
         pointerEvents: 'none',
@@ -672,10 +656,10 @@ export default function MontreeExplainer() {
               // Calm per-card gradient for the placeholder tile — varied hue so
               // the wall of cards reads as distinct films, not one repeated tile.
               const hues = [
-                'linear-gradient(160deg, #154a32 0%, #0a2418 100%)',
-                'linear-gradient(160deg, #1d5a3e 0%, #0c2a1c 100%)',
-                'linear-gradient(160deg, #2a6b4a 0%, #0e2e1f 100%)',
-                'linear-gradient(160deg, #133f2c 0%, #081f15 100%)',
+                'linear-gradient(160deg, #0d2c1e 0%, #071510 100%)',
+                'linear-gradient(160deg, #103524 0%, #08180f 100%)',
+                'linear-gradient(160deg, #0b2418 0%, #06120b 100%)',
+                'linear-gradient(160deg, #123a28 0%, #081b12 100%)',
               ];
               const bg = hues[i % hues.length];
               return (
