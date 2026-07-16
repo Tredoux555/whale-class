@@ -1,0 +1,103 @@
+{
+  "week": 101,
+  "level": 1,
+  "sound": "grace",
+  "letterDisplay": "🌱",
+  "displayName": "Intro Week A — Grace & Courtesy: Our Classroom (Days 1–5)",
+  "soundType": "grace-courtesy",
+  "patternDisplay": "Grace & Courtesy",
+  "anchorWord": "hello",
+  "newWords": [],
+  "reviewBank": [],
+  "glue": { "new": [], "known": [] },
+  "oralWords": [],
+  "sentenceFrame": "This is how we treat our friends and our room.",
+  "soundBasket": [],
+  "cast": { "introduces": null, "present": [] },
+  "celebration": "GRACE & COURTESY — the first week of school, before a single letter. The class learns how we greet each other, move, speak, and care for one another and the room.",
+  "vowelLights": null,
+  "songs": [
+    {
+      "role": "rule",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/gc-d01.mp3",
+      "videoUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-videos/gc-d01.mp4",
+      "title": "Hello, Hello!",
+      "lyrics": "[Intro — whispered]\nhello… hello… (who came to school today?)\n\n[Hook 1 — kids chant]\nHello, hello! Hello, hello!\nWe say hello at the classroom door!\nHello to you! Hello to me!\nHello, hello to everybody!\n\n[Verse — whisper-rap]\nA brand new room, a brand new year,\nnew friends, new work — I'm glad you're here.\nLook at me and I'll look at you —\n\"Good morning!\" — that's how we do.\n\n[Hook 2 — kids chant]\nHello, hello! Hello, hello!\nShake my hand, nice and slow!\nHello to you! Hello to me!\nWelcome to our family!\n\n[Breakdown — whispered, bass drops out]\nhello… hello… what's your name?\n(say your name!) we're so glad you came!\n\n[Final Hook — big]\nHello, hello! Hello, hello!\nWe say hello at the classroom door!\nHello to you! Hello to me!\nHello, hello to everybody!",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "ONE pattern: the \"Hello, hello, ___!\" greeting frame. The breakdown is the live-name-round frame the teacher reuses a cappella around the circle. Handshake line anchors the classic G&C greeting presentation."
+    },
+    {
+      "role": "rule",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/gc-d02.mp3",
+      "videoUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-videos/gc-d02.mp4",
+      "title": "Walking Feet",
+      "lyrics": "[Intro — whispered]\ntip… toe… tip… toe… (slow… slow…)\n\n[Hook 1 — kids chant]\nWalking feet! Walking feet!\nInside we use our walking feet!\nHeel to toe, soft and sweet,\neverywhere we go on walking feet!\n\n[Verse — whisper-rap]\nAround the mats, around a friend,\nslow at the start and slow at the end.\nMy feet are quiet, my feet are slow —\nwatch my walking feet go!\n\n[Hook 2 — kids chant]\nWalking feet! Walking feet!\nInside we use our walking feet!\nHeel to toe, soft and sweet,\neverywhere we go on walking feet!\n\n[Breakdown — whispered, bass drops out]\nWho's that running down the hall?! (A potato!)\nWalking feet, potato! (walking feet!)\nthe potato walks… so sweet…\n\n[Final Hook — big]\nWalking feet! Walking feet!\nEven a potato has walking feet!\nHeel to toe, soft and sweet,\neverywhere we go on walking feet!",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "ONE pattern: \"Walking feet!\" — the exact phrase teachers use all year. Potato gag #1: class corrects him WITH the rule phrase (gracious correction is the meta-lesson)."
+    },
+    {
+      "role": "rule",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/gc-d03.mp3",
+      "videoUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-videos/gc-d03.mp4",
+      "title": "My Indoor Voice",
+      "lyrics": "[Intro — whispered]\nshhh… can you hear me?… this is my indoor voice…\n\n[Hook 1 — kids chant, soft]\nIndoor voice, soft and low,\nthat's the voice for inside, you know!\nOutside voice, big and free —\nbut inside, speak soft like me!\n\n[Verse — whisper-rap]\nMy friend is working, thinking hard,\nso my little voice won't travel far.\nSoft as a feather, low as a leaf —\nmy indoor voice is underneath.\n\n[Breakdown — bass drops out]\n(A potato is shouting!) POTATO, HELLO!!\nshhh… indoor voice, potato… (soft and low…)\nthe potato whispers… oh, so low…\n\n[Final Hook — soft, one big line]\nIndoor voice, soft and low,\nthat's the voice for inside, you know!\nWhen we go OUT — (BIG VOICE, GO!)\nbut inside… soft… and low…",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "ONE pattern: the soft/big dynamic contrast. Ask Suno for real dynamic range — whispered hook vs one shouted \"BIG VOICE, GO!\" — the arrangement teaches the rule. Potato gag #2."
+    },
+    {
+      "role": "rule",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/gc-d04.mp3",
+      "videoUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-videos/gc-d04.mp4",
+      "title": "Gentle Hands",
+      "lyrics": "[Intro — whispered]\ngentle… gentle… look at my hands…\n\n[Hook 1 — kids chant]\nGentle hands! Gentle hands!\nKind and careful, gentle hands!\nHands that help, hands that share,\ngentle hands take care, take care!\n\n[Verse — whisper-rap]\nI carry my work with two slow hands,\nI touch my friend soft — she understands.\nHands are for helping, holding, art —\ngentle hands show a gentle heart.\n\n[Hook 2 — kids chant]\nGentle hands! Gentle hands!\nKind and careful, gentle hands!\nHands that help, hands that share,\ngentle hands take care, take care!\n\n[Breakdown — whispered]\ngentle… gentle… (pat, pat, pat)\nsoft on the shelf… soft on the mat…\n\n[Final Hook — big]\nGentle hands! Gentle hands!\nKind and careful, gentle hands!\nHands that help, hands that share,\ngentle hands take care, take care!",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "ONE pattern: \"Gentle hands!\" Positive framing only — hands defined by what they DO (help, share, hold, care)."
+    },
+    {
+      "role": "rule",
+      "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/gc-d05.mp3",
+      "videoUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-videos/gc-d05.mp4",
+      "title": "Wash, Wash, Wash",
+      "lyrics": "[Intro — whispered]\ndrip… drip… (bubbles!)\n\n[Hook 1 — kids chant]\nWash, wash, wash your hands!\nSoap and water, wash your hands!\nAfter the toilet, before we eat,\nwash, wash, wash — nice and neat!\n\n[Verse — whisper-rap]\nRoll up my sleeves, turn the water on,\nsoap on my palms till the germs are gone.\nRub the front, the back, between —\ncount to ten and my hands are clean!\n\n[Hook 2 — kids chant]\nWash, wash, wash your hands!\nSoap and water, wash your hands!\nAfter the toilet, before we eat,\nwash, wash, wash — nice and neat!\n\n[Breakdown — whispered]\nscrub… scrub… bubbles grow…\nrinse them off and watch them go…\nshake, shake… towel dry…\nclean hands, wave goodbye!\n\n[Final Hook — big]\nWash, wash, wash your hands!\nSoap and water, wash your hands!\nAfter the toilet, before we eat,\nwash, wash, wash — nice and neat!",
+      "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
+      "sunoNotes": "ONE pattern: \"Wash, wash, wash your hands!\" The verse is the actual washing procedure in order (sleeves → soap → rub → count → rinse → dry) — sing it AT the sink."
+    }
+  ],
+  "book": {
+    "title": "Our Classroom",
+    "readAloud": true,
+    "spreads": [],
+    "backCoverWords": []
+  },
+  "materials": {
+    "threePartCards": [],
+    "sentences": [],
+    "matching": [],
+    "bingoPool": [],
+    "tracing": { "letter": "grace", "words": [] },
+    "coloring": ["hello", "feet", "voice", "hands", "wash"],
+    "dictionary": [],
+    "ruleCards": [
+      { "day": 1, "image": "hello", "phrase": "Hello, hello!" },
+      { "day": 2, "image": "feet", "phrase": "Walking feet" },
+      { "day": 3, "image": "voice", "phrase": "Indoor voice" },
+      { "day": 4, "image": "hands", "phrase": "Gentle hands" },
+      { "day": 5, "image": "wash", "phrase": "Wash your hands" }
+    ],
+    "extras": ["Grace & Courtesy presentation cards (greeting/handshake, walking on the line, indoor voice, gentle hands, hand-washing)", "song QR cards (5 days)"]
+  },
+  "assets": [
+    { "file": "hello.png", "usedBy": ["ruleCards:1", "poster", "coloring"], "mjPrompt": "children waving hello to each other at the classroom door as one steps in, warm and welcoming, children's-book illustration, deep forest-green palette, soft light, slightly whimsical --ar 3:2" },
+    { "file": "feet.png", "usedBy": ["ruleCards:2", "poster", "coloring"], "mjPrompt": "a child's feet walking heel-to-toe on a wooden classroom floor, close to the ground, calm and careful, children's-book illustration, deep forest-green palette, slightly whimsical --ar 3:2" },
+    { "file": "voice.png", "usedBy": ["ruleCards:3", "poster", "coloring"], "mjPrompt": "a child concentrating peacefully on their work at a small table, quiet and absorbed, children's-book illustration, deep forest-green palette, slightly whimsical --ar 3:2" },
+    { "file": "hands.png", "usedBy": ["ruleCards:4", "poster", "coloring"], "mjPrompt": "small gentle hands cupped together holding something delicate with care, children's-book illustration, deep forest-green palette, slightly whimsical --ar 3:2" },
+    { "file": "wash.png", "usedBy": ["ruleCards:5", "poster", "coloring"], "mjPrompt": "small hands washing with soap and bubbles under a running tap, children's-book illustration, deep forest-green palette, slightly whimsical --ar 3:2" },
+    { "file": "hello-coloring.png", "usedBy": ["coloring"], "mjPrompt": "two children waving hello at a classroom door, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "feet-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a pair of little feet walking heel-to-toe on a line, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "voice-coloring.png", "usedBy": ["coloring"], "mjPrompt": "a child with a finger to their lips, gentle and quiet, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "hands-coloring.png", "usedBy": ["coloring"], "mjPrompt": "two gentle cupped hands, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" },
+    { "file": "wash-coloring.png", "usedBy": ["coloring"], "mjPrompt": "hands washing with soap bubbles at a tap, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4" }
+  ],
+  "teacherFocus": "Two weeks of Grace & Courtesy before Week 1: present one rule a day, model it, sing the day's song at circle, then live it. Week A builds the classroom — greeting, walking feet, indoor voice, gentle hands, hand-washing.",
+  "lessonMapEquivalents": []
+}

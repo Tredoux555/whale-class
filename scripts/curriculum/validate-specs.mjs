@@ -90,7 +90,15 @@ const LEVEL2_START_WEEK = 27; // first Level-2 week; potato force-fail applies f
 const VALID_SOUND_TYPES = new Set([
   'vowel', 'consonant', 'digraph',
   'blend', 'vowel-team', 'magic-e', 'r-controlled', 'diphthong', 'morphology', 'silent-letters',
+  // Grace & Courtesy Intro Weeks (Jul 16 2026) — decodability-exempt (see the
+  // intro pass below). Kept out of PATTERN_REGISTRY so it never touches phonics.
+  'grace-courtesy',
 ]);
+
+// Sentinel week numbers for the two Grace & Courtesy Intro Weeks (mirror
+// spec/index.ts INTRO_WEEK_NUMBERS). Validated by validateIntroWeek(), never by
+// the phonics decodability gate.
+const INTRO_WEEK_NUMBERS = new Set([101, 102]);
 
 // ── Pattern registry (§B5.1) — CUMULATIVE graphemes taught, keyed by week ─────
 // Blends (W33–37) add NOTHING — they are letter-sums by design (recombined
@@ -449,6 +457,63 @@ function validateWeek(spec, ctx) {
   return { warnings, violations, structural, readAloud };
 }
 
+/**
+ * Grace & Courtesy Intro Weeks — RELAXED validation (Jul 16 2026).
+ *
+ * Intro weeks are rule-phrase weeks, NOT phonics: decodability is skipped ENTIRELY
+ * (there is nothing to decode — a child isn't reading yet). But they are NOT
+ * skipped silently: this pass enforces the structure the render engine relies on
+ * (grace-courtesy soundType, sentinel week number, non-empty rule cards, songs,
+ * a book object) and flags manifest gaps as warnings. A structural problem is a
+ * hard failure (exit 1), exactly like a phonics violation.
+ */
+function validateIntroWeek(spec) {
+  const issues = [];
+  const warnings = [];
+
+  if (!INTRO_WEEK_NUMBERS.has(spec.week)) {
+    issues.push(`intro week number ${JSON.stringify(spec.week)} not in {101, 102}`);
+  }
+  if (spec.soundType !== 'grace-courtesy') {
+    issues.push(`intro soundType must be 'grace-courtesy' (got ${JSON.stringify(spec.soundType)})`);
+  }
+  if (spec.level !== 1 && spec.level !== 2 && spec.level !== 3) {
+    issues.push(`invalid level ${JSON.stringify(spec.level)} (expected 1 | 2 | 3)`);
+  }
+  if (!spec.displayName) warnings.push('missing displayName — the Studio will show "Week N" instead of the intro name');
+
+  const rc = spec.materials?.ruleCards;
+  if (!Array.isArray(rc) || rc.length === 0) {
+    issues.push('materials.ruleCards missing or empty — rule flashcards + poster need it');
+  } else {
+    rc.forEach((c, i) => {
+      if (!c || typeof c.image !== 'string' || !c.image.trim()) issues.push(`ruleCards[${i}].image missing`);
+      if (!c || typeof c.phrase !== 'string' || !c.phrase.trim()) issues.push(`ruleCards[${i}].phrase missing`);
+    });
+  }
+
+  if (!Array.isArray(spec.songs) || spec.songs.length === 0) {
+    issues.push('songs missing');
+  } else if (spec.songs.length !== 5) {
+    warnings.push(`expected 5 songs (one per day), found ${spec.songs.length}`);
+  }
+  if (!spec.book) warnings.push('missing book');
+
+  // Manifest completeness — every ruleCards/coloring image should be declared in
+  // assets[] (matched by parsed word). Missing = a gap report, never a failure.
+  const manifestWords = new Set();
+  for (const a of spec.assets ?? []) {
+    const stem = String(a.file || '').replace(/\.[^.]+$/, '').replace(/^\d+[-_\s]+/, '').replace(/[-_\s]coloring$/, '').replace(/[-_\s]+/g, ' ').trim().toLowerCase();
+    if (stem) manifestWords.add(stem);
+  }
+  for (const c of rc ?? []) {
+    const img = String(c?.image || '').toLowerCase().replace(/[-_\s]+/g, ' ').trim();
+    if (img && !manifestWords.has(img)) warnings.push(`ruleCards image "${c.image}" not in assets[]`);
+  }
+
+  return { issues, warnings };
+}
+
 // ── B5.6 in-file self-test fixtures ─────────────────────────────────────────
 function runSelfTest() {
   const FIXTURES = [
@@ -543,15 +608,44 @@ function main() {
     }
   }
 
+  // ── Grace & Courtesy Intro Weeks — relaxed (decodability-exempt) pass ──────
+  const introFiles = fs.readdirSync(SPEC_DIR).filter((f) => /^intro-week-.*\.json$/.test(f)).sort();
+  let totalIntroIssues = 0;
+  if (introFiles.length) {
+    console.log(`\n🌱 Grace & Courtesy Intro Weeks — ${introFiles.length} spec(s) (decodability exempt)\n`);
+    for (const f of introFiles) {
+      let spec;
+      try {
+        spec = JSON.parse(fs.readFileSync(path.join(SPEC_DIR, f), 'utf8'));
+      } catch (e) {
+        console.log(`✗ ${f}: invalid JSON — ${e.message}`);
+        parseFailures++;
+        continue;
+      }
+      const { issues, warnings } = validateIntroWeek(spec);
+      if (issues.length === 0) {
+        console.log(`✓ ${f}  ${spec.displayName || `week ${spec.week}`}`);
+      } else {
+        totalIntroIssues += issues.length;
+        console.log(`✗ ${f}  ${spec.displayName || `week ${spec.week}`} — ${issues.length} structural issue(s):`);
+        for (const s of issues) console.log(`    · [structure] ${s}`);
+      }
+      if (VERBOSE && warnings.length) {
+        for (const w of warnings) console.log(`    ⚠ ${w}`);
+      }
+    }
+  }
+
   console.log('');
-  if (parseFailures > 0 || totalViolations > 0 || totalStructural > 0) {
+  if (parseFailures > 0 || totalViolations > 0 || totalStructural > 0 || totalIntroIssues > 0) {
     if (totalViolations > 0) console.log(`❌ ${totalViolations} decodability violation(s) — FAILED`);
     if (totalStructural > 0) console.log(`❌ ${totalStructural} structural issue(s) — FAILED`);
+    if (totalIntroIssues > 0) console.log(`❌ ${totalIntroIssues} intro-week structural issue(s) — FAILED`);
     if (parseFailures > 0) console.log(`❌ ${parseFailures} spec(s) failed to parse — FAILED`);
     console.log('');
     process.exit(1);
   }
-  console.log('✅ All authored weeks pass decodability.\n');
+  console.log('✅ All authored weeks pass decodability; all intro weeks structurally valid.\n');
   process.exit(0);
 }
 

@@ -39,6 +39,12 @@ function picture(word: string, assets: AssetMap, warnings: string[]): string {
 }
 
 export function buildFlashcards(spec: WeekSpec, assets: AssetMap, opts: BuildOpts = {}): BuildResult {
+  // Grace & Courtesy Intro Weeks: rule cards (iconic image + rule PHRASE) — no
+  // opening letter card, caption kept verbatim (not lowercased). Every phonics
+  // week has no ruleCards → falls straight through to the byte-identical deck.
+  const ruleCards = spec.materials?.ruleCards;
+  if (ruleCards && ruleCards.length) return buildRuleFlashcards(spec, assets, ruleCards, opts);
+
   const warnings: string[] = [];
   const words = (spec.materials?.threePartCards ?? []).map((w) => w.toLowerCase());
 
@@ -82,6 +88,51 @@ export function buildFlashcards(spec: WeekSpec, assets: AssetMap, opts: BuildOpt
 
   return {
     html: docShell({ title: `Week ${spec.week} — Flashcards`, css, body: pages.join(''), fontBaseUrl: opts.fontBaseUrl, autoPrint: opts.autoPrint }),
+    warnings,
+  };
+}
+
+/**
+ * Grace & Courtesy rule flashcards — two per A4 page, LARGE picture on top + the
+ * rule PHRASE beneath (verbatim, not lowercased), same house-green frame as the
+ * phonics deck. One card per school day. Reuses the phonics card geometry so the
+ * two decks look identical on the wall; the only differences are: no opening
+ * letter/glyph card, and a taller word panel (rule phrases run to two lines).
+ */
+function buildRuleFlashcards(
+  spec: WeekSpec,
+  assets: AssetMap,
+  ruleCards: NonNullable<WeekSpec['materials']['ruleCards']>,
+  opts: BuildOpts = {},
+): BuildResult {
+  const warnings: string[] = [];
+  const wordWidthCm = A4_WIDTH_CM - 1.8 /* page padding */ - WHITE_BORDER_CM * 2;
+  // Phrases are longer than single words → start smaller + allow up to two lines.
+  const labelPt = (phrase: string) => adaptiveLabelFontSize(phrase, 40, wordWidthCm, 8);
+
+  const css = `
+.fsheet{height:100%;box-sizing:border-box;padding:9mm;display:flex;flex-direction:column;gap:9mm;}
+.fcard{height:${CARD_H_MM}mm;background:${FRAME_COLOR};padding:${WHITE_BORDER_CM}cm;border-radius:${CARD_BORDER_RADIUS_CM}cm;display:flex;flex-direction:column;gap:${WHITE_BORDER_CM}cm;overflow:hidden;}
+.fc-img{flex:1;min-height:0;background:white;border-radius:${CARD_BORDER_RADIUS_CM}cm;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.fc-img img{width:100%;height:100%;object-fit:cover;display:block;}
+.fc-word{flex:0 0 42mm;background:white;border-radius:${CARD_BORDER_RADIUS_CM}cm;display:flex;align-items:center;justify-content:center;font-family:${KIDS_FONT};font-weight:bold;color:${INK};text-align:center;padding:0.2cm 0.6cm;line-height:1.15;word-break:break-word;overflow-wrap:anywhere;}
+`;
+
+  const card = (rc: { image: string; phrase: string }) =>
+    `<div class="fcard"><div class="fc-img">${picture(rc.image.toLowerCase(), assets, warnings)}</div>` +
+    `<div class="fc-word" style="font-size:${labelPt(rc.phrase)}pt;">${escapeHtml(rc.phrase)}</div></div>`;
+
+  const cards = ruleCards.map(card);
+  const pages: string[] = [];
+  for (let i = 0; i < cards.length; i += 2) {
+    pages.push(`<div class="page fsheet">${cards.slice(i, i + 2).join('')}</div>`);
+  }
+  if (cards.length === 0) {
+    pages.push(`<div class="page"><div class="page-title">No rule cards for this week.</div></div>`);
+  }
+
+  return {
+    html: docShell({ title: `${spec.displayName || `Week ${spec.week}`} — Rule Flashcards`, css, body: pages.join(''), fontBaseUrl: opts.fontBaseUrl, autoPrint: opts.autoPrint }),
     warnings,
   };
 }

@@ -73,7 +73,7 @@ export function buildColoring(spec: WeekSpec, assets: AssetMap, opts: BuildOpts 
   }
 
   return {
-    html: docShell({ title: `Week ${spec.week} — Colouring`, css, body: pages.join(''), fontBaseUrl: opts.fontBaseUrl, autoPrint: opts.autoPrint }),
+    html: docShell({ title: `${spec.displayName || `Week ${spec.week}`} — Colouring`, css, body: pages.join(''), fontBaseUrl: opts.fontBaseUrl, autoPrint: opts.autoPrint }),
     warnings,
   };
 }

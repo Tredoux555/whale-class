@@ -21,11 +21,14 @@ import { buildDictionaryJournal } from './builders/dictionary-journal';
 import { buildBook } from './builders/book';
 import { buildVowelWall } from './builders/vowel-wall';
 import { buildQrCards } from './builders/qr-cards';
+import { buildClassRulesPoster } from './builders/class-rules-poster';
 
 export type MaterialType =
   | 'three_part_cards' | 'flashcards' | 'sentence_strips' | 'matching' | 'bingo'
   | 'tracing' | 'coloring' | 'dictionary_journal' | 'book'
-  | 'vowel_wall' | 'qr_cards';
+  | 'vowel_wall' | 'qr_cards'
+  // Grace & Courtesy Intro Weeks only (never offered on a phonics week):
+  | 'class_rules_poster';
 
 export interface BuildOpts {
   /** Base URL/path for the bundled Andika TTFs. Browser: '/fonts'. CLI: file://…/public/fonts. */
@@ -53,7 +56,32 @@ export const MATERIAL_TYPES: { type: MaterialType; label: string; emoji: string 
   { type: 'book', label: 'The Reader (book)', emoji: '📖' },
   { type: 'vowel_wall', label: 'Wall Posters', emoji: '🅰️' },
   { type: 'qr_cards', label: 'Song QR Cards', emoji: '🎵' },
+  // Intro-Weeks only; filtered OUT of every phonics week by materialTypesForSpec.
+  { type: 'class_rules_poster', label: 'Class Rules Poster', emoji: '📜' },
 ];
+
+/**
+ * The material catalogue that applies to a given week.
+ *   - Grace & Courtesy Intro Weeks (soundType 'grace-courtesy') → a curated set:
+ *     rule flashcards, the Class Rules poster, colouring, song QR cards.
+ *   - Every phonics week → the full catalogue MINUS the intro-only poster
+ *     (byte-identical to the pre-Jul-16 eleven-material list + order).
+ * The Studio grid, the full-pack print, and the CLI all drive off this so a
+ * phonics week never shows an empty poster and an intro week never shows a
+ * tracing/book/bingo it has no content for.
+ */
+const INTRO_MATERIAL_ORDER: MaterialType[] = ['flashcards', 'class_rules_poster', 'coloring', 'qr_cards'];
+const INTRO_LABELS: Partial<Record<MaterialType, string>> = { flashcards: 'Rule Flashcards' };
+
+export function materialTypesForSpec(spec: Pick<WeekSpec, 'soundType'>): typeof MATERIAL_TYPES {
+  if (spec?.soundType === 'grace-courtesy') {
+    return INTRO_MATERIAL_ORDER
+      .map((t) => MATERIAL_TYPES.find((m) => m.type === t))
+      .filter((m): m is (typeof MATERIAL_TYPES)[number] => !!m)
+      .map((m) => (INTRO_LABELS[m.type] ? { ...m, label: INTRO_LABELS[m.type]! } : m));
+  }
+  return MATERIAL_TYPES.filter((m) => m.type !== 'class_rules_poster');
+}
 
 type Builder = (spec: WeekSpec, assets: AssetMap, opts?: BuildOpts) => BuildResult;
 
@@ -69,6 +97,7 @@ const BUILDERS: Record<MaterialType, Builder> = {
   book: buildBook,
   vowel_wall: buildVowelWall,
   qr_cards: buildQrCards,
+  class_rules_poster: buildClassRulesPoster,
 };
 
 /** Build one material type into a full standalone HTML document. Never throws. */

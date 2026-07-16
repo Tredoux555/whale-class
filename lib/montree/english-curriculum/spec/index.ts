@@ -83,7 +83,38 @@ const WEEK_LOADERS: Record<number, () => Promise<{ default: unknown }>> = {
   56: () => import('./week-56.json'),
   57: () => import('./week-57.json'),
   58: () => import('./week-58.json'),
+
+  // ── Grace & Courtesy Intro Weeks (Jul 16 2026) — the first two weeks of ─────
+  // school, BEFORE Week 1. NOT phonics. They use sentinel week numbers (101/102)
+  // so they can NEVER collide with, renumber, or leak into the 1–58 spine — every
+  // publishing/seed script globs week-<NN>.json or loops 1..58, so intro-week-*.json
+  // is invisible to all of them. The Studio renders them FIRST via INTRO_WEEK_META
+  // and masks the number with WeekSpec.displayName; the sentinel is never shown.
+  101: () => import('./intro-week-a.json'),
+  102: () => import('./intro-week-b.json'),
 };
+
+// ── Grace & Courtesy Intro Weeks — sentinel-number helpers ────────────────
+/** The two pre-Level-1 Grace & Courtesy weeks. Sentinel numbers (masked by
+ *  displayName everywhere they surface). */
+export const INTRO_WEEK_NUMBERS = [101, 102] as const;
+/** True for a Grace & Courtesy Intro Week number (101/102). */
+export function isIntroWeek(n: number): boolean {
+  return (INTRO_WEEK_NUMBERS as readonly number[]).includes(n);
+}
+
+export interface IntroWeekMeta {
+  week: number;
+  label: string;       // strip-chip headline ("Intro A")
+  word: string;        // strip sub-line ("Our Classroom")
+  displayName: string; // full heading (masks the sentinel week number)
+}
+
+/** The Intro-Weeks rail metadata (rendered FIRST in the Studio, before Level 1). */
+export const INTRO_WEEK_META: IntroWeekMeta[] = [
+  { week: 101, label: 'Intro A', word: 'Our Classroom', displayName: 'Intro Week A — Grace & Courtesy: Our Classroom (Days 1–5)' },
+  { week: 102, label: 'Intro B', word: 'Our Work', displayName: 'Intro Week B — Grace & Courtesy: Our Work (Days 6–10)' },
+];
 
 /** The authored WeekSpec for week n (1..26), or null if not written yet. */
 export async function getWeek(n: number): Promise<WeekSpec | null> {
@@ -107,9 +138,15 @@ export async function getAllWeeks(): Promise<WeekSpec[]> {
   return out;
 }
 
-/** Which weeks have full authored JSON right now. */
+/** Which PHONICS weeks (the 1–58 spine) have full authored JSON right now.
+ *  🚨 Intro weeks use sentinel numbers (101/102) and are DELIBERATELY excluded
+ *  here so a caller can safely assume a contiguous 1–58 range — get the intro
+ *  sentinels from INTRO_WEEK_NUMBERS instead. Don't drop the `< 100` filter. */
 export function authoredWeekNumbers(): number[] {
-  return Object.keys(WEEK_LOADERS).map(Number).sort((a, b) => a - b);
+  return Object.keys(WEEK_LOADERS)
+    .map(Number)
+    .filter((n) => n < 100)
+    .sort((a, b) => a - b);
 }
 
 // ── The 26-week rail summary (locked spine, MASTER_SPINE.md) ─────────────
