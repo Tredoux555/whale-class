@@ -105,6 +105,24 @@ const GROUNDING: Record<JourneyId, Record<string, { title: string; instructions:
   },
 };
 
+// Additive funnel-screen grounding (English, server-only) for the
+// /principal/setup narrator's optional `screen` param. Mirrors the funnel
+// screens so Haiku references only real steps. Absent screen → not appended.
+const FUNNEL_SCREEN_HINTS: Record<string, string> = {
+  classrooms:
+    'Naming the classrooms they run today. Each classroom arrives with the full Montessori curriculum already on its shelves; more can be added later.',
+  teachers:
+    'Adding one or more teachers per classroom. Each teacher gets their own 6-letter login key, handed over on the next screen.',
+  founding:
+    'A short ceremony while Montree builds the classrooms and cuts the teacher keys — a few seconds.',
+  handoff:
+    'Copying each teacher their 6-letter key (group chat is easiest); teachers open montree.xyz on their phone and enter it to log in. Then they walk into /admin.',
+  code:
+    'Their permanent principal login key is shown — save it safely; recoverable via administration or the recovery email.',
+  details:
+    'Naming the school — their name, the school name, and an optional recovery email.',
+};
+
 function buildAskSystemPrompt(
   journey: JourneyId,
   derived: DerivedJourney,
@@ -167,6 +185,10 @@ export async function POST(request: NextRequest) {
     if (!question) return NextResponse.json({ error: 'question required' }, { status: 400 });
     if (question.length > 500) question = question.slice(0, 500);
     const locale = typeof body?.locale === 'string' && body.locale ? body.locale : 'en';
+    // Optional funnel screen hint (additive — the CopilotDock never sends it, so
+    // its behaviour is unchanged; the funnel narrator on /principal/setup sends
+    // it so Haiku knows which setup screen the principal is looking at).
+    const screen = typeof body?.screen === 'string' ? body.screen.slice(0, 40) : '';
 
     // 2. Budget (never 402 — a hard-limit school gets a coded fallback instead
     //    of an AI answer; the client shows copilot.card.askError).
@@ -188,7 +210,12 @@ export async function POST(request: NextRequest) {
       journey,
     });
     const derived = deriveJourney(journey, state, progress.progress_step_keys);
-    const systemPrompt = buildAskSystemPrompt(journey, derived, state, locale);
+    let systemPrompt = buildAskSystemPrompt(journey, derived, state, locale);
+    // Additive funnel-screen grounding. Only appended when a known screen is
+    // supplied; without it the prompt is byte-identical to before.
+    if (screen && FUNNEL_SCREEN_HINTS[screen]) {
+      systemPrompt += `\n\nThe user is currently on the setup screen "${screen}": ${FUNNEL_SCREEN_HINTS[screen]}`;
+    }
 
     // 4. Haiku, non-streaming, default temperature, tight token cap.
     const message = await anthropic.messages.create({

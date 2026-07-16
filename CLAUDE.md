@@ -2,6 +2,35 @@
 
 **⚠️ STANDING RULE (Tredoux, Jul 10 2026 — PERMANENT): MODEL DELEGATION.** Fable is the DIRECTOR and second brain — it plans, decides, writes the critical copy, and reviews. It does NOT do grunt work. **Sonnet** (preferred over Haiku — more reliable) does all fetching, sweeping, scouting, data-gathering, and auditing via sub-agents. **Opus** builds where appropriate. Never let Fable burn half its context on mechanical work another model can do — spawn agents instead.
 
+## 🏮 SESSION — Jul 16, 2026 pt2 (same Cowork session) — FUNNEL CEREMONY SHIPPED: first-touch funnel rebuilt to the Lanternlight vision, Astra narrating from screen one
+
+**Canonical: `docs/handoffs/SESSION_FUNNEL_CEREMONY_JUL16.md` + binding contract
+`docs/handoffs/PLAN_FUNNEL_CEREMONY_JUL16.md` + visual law `docs/design/FUNNEL_VISION_JUL16.html`
+(Tredoux-approved interactive mock — Fable hand-built it with the canvas-design skill, 2 review rounds)
++ `docs/design/DESIGN_PHILOSOPHY_LANTERNLIGHT_CEREMONY.md`.** The old flat-green signup funnel
+(/montree/try → /principal/setup → /admin) rebuilt to **Lanternlight Ceremony**: near-black stage,
+real gold damascus M artwork (`public/brand/m-mark-transparent.webp`, 68KB + png fallback),
+golden-thread 6-node stepper making try+setup ONE wizard, and **Astra as a top-left NARRATOR on
+every screen** — running second-person narration + working "Ask me anything" from the FIRST pre-auth
+screen (**NEW anonymous `POST /api/montree/onboarding-copilot/ask-public`**: IP rate-limit 6/15min
+fail-open, honeypot, Haiku max_tokens 300, static grounding, no DB, can never 500; authed screens use
+the existing `/ask` + additive `screen` param). `/login-select` reskinned; **CopilotDock moved
+bottom-left → TOP-LEFT** (narrator hands over seamlessly at /admin). Shared framework:
+`components/montree/funnel/{funnel-theme,GoldenThread,AstraNarrator}`; i18n `copilot.funnel.*` ×12
+(EN+ZH real 您). 🚨 **LOCKED DESIGN RULE (Tredoux): funnel pages speak in HEADINGS ONLY; Astra speaks
+in sentences** — no helper subtext/note-cards on pages, ever. 🚨 No `<style jsx>` on these routes
+(SSR/CLS) — FUNNEL_CSS via one dangerouslySetInnerHTML per page. Flow: Fable mock → contract → 2
+SEQUENTIAL Opus builds → Sonnet audit **SHIP, 0 CRIT, 2 trivial WARNs fixed**. Audit verified
+byte-identical survival of: honeypot, founding/referral banner+card-order logic, role→destination
+map, back-block, handleTakeMeIn, QR autosubmit + auth branches, the SSE parser/ticker/overrides,
+copy/share handlers. Sanctioned cleanup: setup page's dead `false &&` welcome overlay +
+PrincipalSetupGuide mount + Tracy celebration card DELETED (−189 lines). Gates: eslint 0 err ×10
+files, scoped tsc ×2 = 0, i18n strict 12/12. ⏳ OWED: DC-delete 3 gitignored temp tsconfigs · kill
+the localhost:8123 mock server · **device walk** (fresh signup Mac + teacher key on phone at 390px,
+ask box pre-auth + authed, founding/referral links intact, dock top-left ticking the handover).
+
+---
+
 ## 🧭 SESSION — Jul 16, 2026 (Cowork/Fable directing Sonnet+Opus) — ONBOARDING COPILOT ("THE GUIDE") SHIPPED — the principal dead-end is closed
 
 **Canonical: `docs/handoffs/SESSION_ONBOARDING_COPILOT_JUL16.md` (close-out + owed items) + binding

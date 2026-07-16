@@ -118,6 +118,12 @@ export default function CopilotDock({
   const [overlay, setOverlay] = useState<Overlay>(null);
   const [hidden, setHidden] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  // Anchor geometry (contract §2 — dock lives TOP-LEFT so it hands over from
+  // the funnel narrator). Measured from the surface's own header so the pill
+  // never overlaps the dashboard header / admin sidebar. Purely positional —
+  // no behavioural change.
+  const [dockTop, setDockTop] = useState(76);
+  const [isWide, setIsWide] = useState(false);
 
   // Ask box
   const [askThread, setAskThread] = useState<AskTurn[]>([]);
@@ -148,6 +154,40 @@ export default function CopilotDock({
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);
   }, []);
+
+  // Measure the top offset so the dock sits just below the surface's header
+  // (teacher: [data-dashboard-header]; admin: sticky mobile bar <960, no bar
+  // on desktop). Re-measured on resize / orientation. Guru-viewport pattern.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const measure = () => {
+      const wide = window.innerWidth >= 960;
+      setIsWide(wide);
+      if (surface === 'teacher') {
+        const h =
+          document.querySelector('[data-dashboard-header]')?.getBoundingClientRect().height || 56;
+        setDockTop(Math.round(h) + 12);
+      } else if (wide) {
+        // Desktop admin has no top bar; sit near the top of the content area.
+        setDockTop(24);
+      } else {
+        const h =
+          document.querySelector('.admin-mobile-bar')?.getBoundingClientRect().height || 56;
+        setDockTop(Math.round(h) + 12);
+      }
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    window.addEventListener('orientationchange', measure);
+    return () => {
+      window.removeEventListener('resize', measure);
+      window.removeEventListener('orientationchange', measure);
+    };
+  }, [surface, mounted]);
+
+  // Left offset: clear of the fixed 240px admin sidebar on desktop admin.
+  const dockLeft =
+    surface === 'principal' ? (isWide ? 256 : 12) : isMobile ? 12 : 16;
 
   const journey: JourneyId =
     data?.journey ?? (surface === 'principal' ? 'principal' : 'teacher');
@@ -416,10 +456,10 @@ export default function CopilotDock({
         paddingBottom: 'env(safe-area-inset-bottom)',
       }
     : {
-        left: 16,
-        bottom: `calc(16px + env(safe-area-inset-bottom))`,
+        left: dockLeft,
+        top: dockTop,
         width: 'min(380px, calc(100vw - 32px))',
-        maxHeight: 'calc(100dvh - 120px)',
+        maxHeight: `calc(100dvh - ${dockTop + 24}px)`,
         borderRadius: 18,
       };
 
@@ -436,8 +476,8 @@ export default function CopilotDock({
           aria-label={t('copilot.pill.next', { title: t(currentStep.titleKey as TranslationKey) })}
           style={{
             position: 'fixed',
-            left: 16,
-            bottom: `calc(16px + env(safe-area-inset-bottom))`,
+            left: dockLeft,
+            top: dockTop,
             zIndex: 9000,
             display: 'flex',
             alignItems: 'center',

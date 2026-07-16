@@ -7,6 +7,18 @@ import { useI18n } from '@/lib/montree/i18n';
 import { getSession, recoverSession } from '@/lib/montree/auth';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import MontreeLogo from '@/components/montree/MonteeLogo';
+import { FUNNEL_CSS } from '@/components/montree/funnel/funnel-theme';
+
+// Render **bold** markers in the quiet Astra hint line.
+function renderHint(text: string) {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+    part.startsWith('**') && part.endsWith('**') ? (
+      <b key={i}>{part.slice(2, -2)}</b>
+    ) : (
+      <span key={i}>{part}</span>
+    )
+  );
+}
 
 function UnifiedLoginContent() {
   const router = useRouter();
@@ -135,70 +147,64 @@ function UnifiedLoginContent() {
   };
 
   return (
-    <div className="min-h-dvh flex items-center justify-center p-4 relative overflow-hidden" style={{ background: '#06140e' }}>
-      {/* Background gradient — matches landing page */}
-      <div aria-hidden="true" style={{
-        position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
-        background: `
-          radial-gradient(ellipse 1000px 800px at 78% 10%, rgba(39,129,90,0.55), rgba(39,129,90,0) 55%),
-          radial-gradient(ellipse 600px 500px at 72% 16%, rgba(130,217,174,0.28), rgba(130,217,174,0) 60%),
-          linear-gradient(155deg, #0c2419 0%, #0a1f16 38%, #081a12 70%, #06140e 100%)
-        `,
-      }} />
+    <div className="fn-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <style dangerouslySetInnerHTML={{ __html: FUNNEL_CSS }} />
 
       {/* Language toggle — respects safe area for notch */}
       <div className="absolute right-4 z-10" style={{ top: 'max(16px, env(safe-area-inset-top, 16px))' }}>
         <LanguageToggle className="bg-white/10 hover:bg-white/20 text-white" />
       </div>
 
-      <div className="relative z-10 w-full max-w-sm">
-        {/* Logo — canonical Montree M monogram per Session 113 V2 brand work */}
-        <div className="text-center mb-8">
-          <div className="inline-flex justify-center mb-4">
-            <MontreeLogo size={80} />
+      <div style={{ position: 'relative', zIndex: 4, width: '100%', maxWidth: 380 }}>
+        {/* Logo — canonical Montree M monogram */}
+        <div style={{ textAlign: 'center', marginBottom: 26 }}>
+          <div style={{ display: 'inline-flex', justifyContent: 'center', marginBottom: 16 }}>
+            <MontreeLogo size={72} />
           </div>
-          <h1 className="text-3xl font-light text-white mb-1">
+          <h1 className="fn-h1" style={{ fontSize: '2rem', marginBottom: 4 }}>
             {t('app.name')}
           </h1>
-          <p className="text-emerald-300/60 text-sm">
+          <p style={{ color: 'rgba(232,201,106,0.6)', fontSize: '0.85rem' }}>
             {t('auth.unifiedSubtitle') || 'Enter your code to continue'}
           </p>
-          <p className="text-white/20 text-xs mt-1">montree.xyz</p>
+          <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.72rem', marginTop: 4 }}>montree.xyz</p>
         </div>
 
-        {/* Login Card */}
-        <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-8">
-          <form onSubmit={(e) => { e.preventDefault(); submitCode(code); }} className="space-y-5">
+        {/* Login card */}
+        <div className="fn-login-card">
+          <form onSubmit={(e) => { e.preventDefault(); submitCode(code); }} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             {error && (
-              <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-xl text-red-300 text-sm text-center">
+              <div className="fn-error" style={{ marginTop: 0, textAlign: 'center' }}>
                 {error}
               </div>
             )}
 
-            <div>
-              <input
-                type="text"
-                value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase().slice(0, 32))}
-                placeholder="ABC123"
-                className="w-full px-4 py-4 bg-white/10 border border-white/20 rounded-xl text-white text-center text-2xl font-mono tracking-[0.3em] placeholder-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
-                required
-                autoFocus
-                autoComplete="off"
-                autoCorrect="off"
-                autoCapitalize="characters"
-                spellCheck={false}
-              />
-            </div>
+            <input
+              type="text"
+              className="fn-code-input"
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase().slice(0, 32))}
+              placeholder="ABC123"
+              required
+              autoFocus
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="characters"
+              spellCheck={false}
+            />
 
             <button
               type="submit"
+              className="fn-pill block"
               disabled={loading || code.trim().length < 4}
-              className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-emerald-500/30 disabled:opacity-50 transition-all text-lg"
             >
               {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{
+                    width: 18, height: 18, border: '2px solid rgba(255,255,255,0.3)',
+                    borderTopColor: '#fff', borderRadius: '50%',
+                    display: 'inline-block', animation: 'fnSpin 0.7s linear infinite',
+                  }} />
                   {t('auth.loggingIn')}
                 </span>
               ) : (
@@ -208,31 +214,24 @@ function UnifiedLoginContent() {
           </form>
         </div>
 
-        {/* Help text */}
-        <div className="text-center mt-6 space-y-3">
-          <p className="text-white/30 text-xs leading-relaxed">
-            {t('auth.unifiedHint') || 'Teachers, principals, and parents — all use the same code you were given.'}
-          </p>
-          <a
-            href="/montree/try"
-            className="text-emerald-400/50 hover:text-emerald-400/70 text-sm inline-block"
-          >
+        {/* Quiet Astra hint line — the single line of narration on this screen
+            (returning users don't need the full narrator). */}
+        <p className="fn-login-hint">{renderHint(t('copilot.funnel.say.login'))}</p>
+
+        {/* Help links */}
+        <div style={{ textAlign: 'center', marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <a href="/montree/try" className="fn-login-link">
             {t('auth.noCode')}
           </a>
-          <div>
-            <a
-              href="/pricing"
-              className="text-white/30 hover:text-white/50 text-xs inline-block transition-colors"
-            >
-              {t('auth.seePricing')}
-            </a>
-          </div>
+          <a href="/pricing" className="fn-login-link muted">
+            {t('auth.seePricing')}
+          </a>
         </div>
       </div>
 
       {/* Footer — respects safe area on iPhones */}
-      <div className="absolute text-center left-0 right-0" style={{ bottom: 'max(24px, env(safe-area-inset-bottom, 24px))' }}>
-        <p className="text-slate-500 text-xs inline-flex items-center justify-center gap-1.5">
+      <div className="absolute text-center left-0 right-0" style={{ bottom: 'max(24px, env(safe-area-inset-bottom, 24px))', zIndex: 4 }}>
+        <p style={{ color: 'rgba(255,250,240,0.25)', fontSize: '0.72rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
           <MontreeLogo size={12} />
           <span>Montree • montree.xyz</span>
         </p>
@@ -244,8 +243,12 @@ function UnifiedLoginContent() {
 export default function LoginSelectPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-dvh flex items-center justify-center" style={{ background: '#06140e' }}>
-        <div className="w-8 h-8 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
+      <div className="fn-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <style dangerouslySetInnerHTML={{ __html: FUNNEL_CSS }} />
+        <div style={{
+          width: 32, height: 32, border: '2px solid rgba(52,211,153,0.3)',
+          borderTopColor: '#34d399', borderRadius: '50%', animation: 'fnSpin 0.7s linear infinite',
+        }} />
       </div>
     }>
       <UnifiedLoginContent />
