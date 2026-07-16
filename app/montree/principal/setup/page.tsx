@@ -309,7 +309,7 @@ export default function PrincipalSetupPage() {
       : step === 2
         ? 'teachers'
         : 'handoff';
-  const threadStep = step === 3 ? 6 : isFounding || step === 2 ? 5 : 4;
+  const threadStep = step === 3 ? 5 : isFounding || step === 2 ? 4 : 3;
 
   return (
     <div className="fn-page">

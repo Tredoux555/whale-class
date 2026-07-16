@@ -33,21 +33,20 @@ import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
 
 // A warm, safe fallback whenever we can't (or won't) call the model. Kept short.
 const GENERIC_ANSWER =
-  'Setting up takes a couple of minutes: name your school, save the login key it gives you, open your classrooms, then hand each teacher their 6-letter key so they can log in from their phones. Pick the gold “Principal” door to begin.';
+  'Setting up takes a couple of minutes: name your school, save the login key it gives you, open your classrooms, then hand each teacher their 6-letter key so they can log in from their phones. Teachers and parents don’t sign up here — they sign in with a code at montree.xyz.';
 
 // Static English map of the funnel — what each screen asks for and the key
 // facts. Server-only; Haiku answers in the visitor's language per the voice
 // rules. This is the wall that keeps the model from inventing screens/buttons.
 const FUNNEL_MAP = `THE MONTREE SETUP FUNNEL (what each screen is):
-1. Welcome / choose your door: three cards — Teacher, Principal/School Owner (the gold one), Parent. Setting up a school and inviting teachers = Principal. A teacher joining an existing school just needs the 6-letter key their principal gives them — they don't sign up here.
-2. Name your school: your name, the school (or classroom) name, and an OPTIONAL email. The email is only used to recover the login key if it's ever lost. Nothing here is shown to parents; all of it can be changed later.
-3. Founding (a short ceremony): Montree creates the school and stocks every classroom's shelves with the full Montessori curriculum automatically. About ten seconds.
-4. Your key: a permanent 6-letter login code shown once. Save it somewhere safe; if lost, administration (or the recovery email) can restore access. This code is how you log in at montree.xyz.
-5. Open your classrooms: name the rooms you run; each arrives with its shelves already stocked. You can add more later.
-6. Add your teachers: one or more per classroom. Each teacher gets their own 6-letter key.
-7. The handoff: copy each teacher their key (group chat is easiest) — they open montree.xyz on their phone and enter it to log in. Montree is made for the teacher's pocket.
+1. Name your school (the opening screen): your name, the school (or classroom) name, and an OPTIONAL email. The email is only used to recover the login key if it's ever lost. Nothing here is shown to parents; all of it can be changed later.
+2. Founding (a short ceremony): Montree creates the school and stocks every classroom's shelves with the full Montessori curriculum automatically. About ten seconds.
+3. Your key: a permanent 6-letter login code shown once. Save it somewhere safe; if lost, administration (or the recovery email) can restore access. This code is how you log in at montree.xyz.
+4. Open your classrooms: name the rooms you run; each arrives with its shelves already stocked. You can add more later.
+5. Add your teachers: one or more per classroom. Each teacher gets their own 6-letter key.
+6. The handoff: copy each teacher their key (group chat is easiest) — they open montree.xyz on their phone and enter it to log in. Montree is made for the teacher's pocket.
 
-KEY FACTS: the login code is a permanent login, not a one-time code. Email is optional and only for recovery. It's best to set the school up from a computer; teachers join from their phones. Classrooms come pre-stocked with curriculum. Teachers each receive a 6-letter key.`;
+KEY FACTS: /try is for founding a school. Teachers and parents do NOT sign up here — they sign in with a code at montree.xyz (login-select): a teacher uses the 6-letter key their principal gives them; a parent uses the code from their child's teacher. The login code is a permanent login, not a one-time code. Email is optional and only for recovery. It's best to set the school up from a computer; teachers join from their phones. Classrooms come pre-stocked with curriculum. Teachers each receive a 6-letter key.`;
 
 function buildSystem(screen: string): string {
   const persona =

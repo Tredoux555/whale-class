@@ -1,14 +1,14 @@
 // components/montree/funnel/GoldenThread.tsx
 //
-// The golden thread — six small lanterns on a hairline carrying the walker's
+// The golden thread — five small lanterns on a hairline carrying the walker's
 // position through the founding procession. Pure presentational.
 //   done  = gold dot
 //   now   = gold dot + glow
 //   line  = lit hairline between done nodes
-// ≤820px collapses to "Step N of 6 · Label" (CSS handles the swap; see
+// ≤820px collapses to "Step N of 5 · Label" (CSS handles the swap; see
 // FUNNEL_CSS .fn-thread-inner / .fn-thread-compact).
 //
-// Labels are i18n keys copilot.funnel.thread.1..6. Depends on the page having
+// Labels are i18n keys copilot.funnel.thread.1..5. Depends on the page having
 // injected FUNNEL_CSS once.
 'use client';
 
@@ -20,12 +20,11 @@ const STEP_KEYS: TranslationKey[] = [
   'copilot.funnel.thread.3',
   'copilot.funnel.thread.4',
   'copilot.funnel.thread.5',
-  'copilot.funnel.thread.6',
 ];
 
 export default function GoldenThread({ step }: { step: number }) {
   const { t } = useI18n();
-  const current = Math.min(Math.max(step, 1), 6);
+  const current = Math.min(Math.max(step, 1), 5);
   const labels = STEP_KEYS.map((k) => t(k));
 
   return (
