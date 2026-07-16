@@ -28,6 +28,14 @@ PrincipalSetupGuide mount + Tracy celebration card DELETED (−189 lines). Gates
 files, scoped tsc ×2 = 0, i18n strict 12/12. ⏳ OWED: DC-delete 3 gitignored temp tsconfigs · kill
 the localhost:8123 mock server · **device walk** (fresh signup Mac + teacher key on phone at 390px,
 ask box pre-auth + authed, founding/referral links intact, dock top-left ticking the handover).
+**pt3 (same night) — OLD-MONEY QUIET PASS + M REMOVAL (Tredoux: "too bling… we've had money for
+generations"):** all gold glows/shadows/gradients stripped (gold = hairlines, eyebrow text, the key
+code, thread dot ONLY), flat #1D5C41 action buttons (no gradient/translate/shine), cards
+rgba(255,255,255,0.028)+0.08 hairlines r14, narrator = borderless left-hairline column w/ text-link
+ask, type down (h1 2.15rem/400), bg glows halved + vignette deleted, ceremony rings deleted — and the
+**hero M + ceremony M REMOVED ENTIRELY** (Tredoux: topbar wordmark is enough; login-select logo
+72→40px). 🚨 RULE: funnel gold NEVER glows; no box-shadow with 232,201,106 anywhere in funnel files.
+Mock HTML deliberately NOT updated (shipped pages are now the visual truth).
 
 ---
 

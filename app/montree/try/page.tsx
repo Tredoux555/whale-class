@@ -261,7 +261,7 @@ export default function TryMontreePage() {
           </picture>
           <span>{t('app.name')}</span>
         </a>
-        <LanguageToggle className="bg-white/10 hover:bg-white/20 text-white" />
+        <LanguageToggle className="bg-white/10 hover:bg-white/20 text-white border border-white/[0.08]" />
       </div>
 
       {/* Golden thread */}
@@ -344,14 +344,7 @@ export default function TryMontreePage() {
             {/* ── S1 · Role ── */}
             {step === 'role' && (
               <div className="center" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                <div className="fn-hero-m">
-                  <picture>
-                    <source srcSet="/brand/m-mark-transparent.webp" type="image/webp" />
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/brand/m-mark.png" alt="Montree" width={188} height={155} />
-                  </picture>
-                </div>
-                <h1 className="fn-h1">{t('copilot.funnel.welcome')}</h1>
+                <h1 className="fn-h1" style={{ marginTop: 48 }}>{t('copilot.funnel.welcome')}</h1>
 
                 {/*
                  * Referral swap: when arriving via ?ref=CODE almost all
@@ -462,16 +455,7 @@ export default function TryMontreePage() {
             {/* ── S3 · Creating (the ceremony) ── */}
             {step === 'creating' && (
               <div className="center" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                <div className="fn-cere-m">
-                  <div className="fn-cere-ring" />
-                  <div className="fn-cere-ring r2" />
-                  <picture>
-                    <source srcSet="/brand/m-mark-transparent.webp" type="image/webp" />
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/brand/m-mark.png" alt="Montree" width={170} height={140} />
-                  </picture>
-                </div>
-                <div className="fn-cere-line">{t(CERE_KEYS[cereIdx])}</div>
+                <div className="fn-cere-line" style={{ marginTop: 120 }}>{t(CERE_KEYS[cereIdx])}</div>
 
                 {error && (
                   <div className="fn-error" style={{ maxWidth: 520 }}>
@@ -493,7 +477,7 @@ export default function TryMontreePage() {
             {/* ── S4 · Code (the key) ── */}
             {step === 'code' && responseData && (
               <div className="center" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                <h1 className="fn-h1" style={{ fontSize: '2.6rem' }}>
+                <h1 className="fn-h1">
                   {codeRole === 'principal'
                     ? t('copilot.funnel.code.heading.principal')
                     : t('copilot.funnel.code.heading.teacher')}
