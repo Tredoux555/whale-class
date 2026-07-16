@@ -58,33 +58,25 @@ export default function FoundingHundred() {
         .fh-card {
           width: 100%;
           max-width: 560px;
-          background: rgba(10, 26, 15, 0.72);
-          border: 1px solid rgba(52, 211, 153, 0.22);
-          border-radius: 22px;
+          background: rgba(255,255,255,0.028);
+          border: 1px solid rgba(232,201,106,0.25);
+          border-radius: 14px;
           padding: 40px 32px;
-          box-shadow: 0 24px 70px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(232,201,106,0.04);
           position: relative;
           overflow: hidden;
         }
-        .fh-glow {
-          position: absolute; top: -120px; right: -100px;
-          width: 320px; height: 320px;
-          background: radial-gradient(circle, rgba(232,201,106,0.11) 0%, transparent 70%);
-          pointer-events: none;
-        }
         .fh-eyebrow {
-          display: inline-block;
-          font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-          color: #E8C96A;
-          border: 1px solid rgba(232,201,106,0.3);
-          border-radius: 999px; padding: 5px 14px; margin-bottom: 20px;
+          display: block;
+          font-size: 0.62rem; font-weight: 500; letter-spacing: 0.3em; text-transform: uppercase;
+          color: rgba(232,201,106,0.55);
+          margin-bottom: 20px;
           position: relative;
         }
         .fh-h2 {
           font-family: var(--font-lora), 'Lora', Georgia, serif;
-          font-size: clamp(1.55rem, 4.6vw, 2.1rem);
-          font-weight: 500; color: #f4f7f5; line-height: 1.22;
-          letter-spacing: -0.4px; margin: 0 0 18px; position: relative;
+          font-size: clamp(1.5rem, 4vw, 1.75rem);
+          font-weight: 400; color: rgba(255,250,240,0.92); line-height: 1.24;
+          letter-spacing: -0.2px; margin: 0 0 18px; position: relative;
         }
         .fh-counter {
           display: flex; align-items: baseline; gap: 10px;
@@ -93,7 +85,6 @@ export default function FoundingHundred() {
         .fh-counter-num {
           font-family: var(--font-lora), 'Lora', Georgia, serif;
           font-size: 3rem; font-weight: 400; color: #E8C96A; letter-spacing: -1px; line-height: 1;
-          text-shadow: 0 0 28px rgba(232,201,106,0.25);
         }
         .fh-counter-label { font-size: 15px; color: rgba(244,247,245,0.55); }
         .fh-body {
@@ -111,26 +102,22 @@ export default function FoundingHundred() {
         .fh-list-dot {
           flex-shrink: 0; margin-top: 8px;
           width: 5px; height: 5px; border-radius: 999px; background: #E8C96A;
-          box-shadow: 0 0 8px rgba(232,201,106,0.5);
         }
-        /* Gold pill — the founder offer wears the founder colour, and the
-           999-radius matches every other CTA on the site. */
+        /* Quiet gold outline — the founder offer keeps its colour as a hairline
+           outline, no fill, no glow. Matches the funnel's flat 10px register. */
         .fh-cta {
           display: inline-flex; align-items: center; justify-content: center;
           margin-top: 4px; position: relative;
-          background: linear-gradient(135deg, #E8C96A 0%, #cfa93f 100%);
-          color: #1a1208; font-weight: 600; font-size: 16px;
-          border: 1px solid rgba(232,201,106,0.4);
-          border-radius: 999px; padding: 16px 30px;
+          background: transparent;
+          color: rgba(232,201,106,0.9); font-weight: 500; font-size: 0.95rem;
+          border: 1px solid rgba(232,201,106,0.35);
+          border-radius: 10px; padding: 14px 28px;
           cursor: pointer; letter-spacing: 0.2px; text-decoration: none;
-          box-shadow: 0 10px 28px -8px rgba(232,201,106,0.45);
-          transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
-          min-height: 52px;
+          transition: background 0.16s ease;
+          min-height: 48px;
         }
         .fh-cta:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 14px 34px -8px rgba(232,201,106,0.55);
-          filter: brightness(1.04);
+          background: rgba(232,201,106,0.06);
         }
         .fh-hint {
           font-size: 12.5px; color: rgba(244,247,245,0.4); margin: 14px 0 0;
@@ -144,8 +131,6 @@ export default function FoundingHundred() {
       ` }} />
 
       <div className="fh-card">
-        <div className="fh-glow" />
-
         <span className="fh-eyebrow">Founding 100</span>
 
         {isFull ? (
