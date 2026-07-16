@@ -161,3 +161,5 @@ tsconfig.gcintro.tmp.tsbuildinfo
 
 # temp scoped tsconfig from Jul-16 11-fix styling audit verification (sandbox rm blocked — delete via Desktop Commander)
 tsconfig.scope-styling-fixes.json
+tsconfig.onboardtmp.json
+tsconfig.onboardtmp.tsbuildinfo

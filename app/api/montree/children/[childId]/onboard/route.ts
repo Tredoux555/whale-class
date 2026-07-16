@@ -159,8 +159,20 @@ export async function POST(
     if (auth instanceof NextResponse) return auth;
 
     const { childId } = await context.params;
-    const body = await request.json();
-    const { transcript, classroom_id, locale: bodyLocale } = body;
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { success: false, error: 'Invalid request body', code: 'invalid_json' },
+        { status: 400 }
+      );
+    }
+    const { transcript, classroom_id, locale: bodyLocale } = body as {
+      transcript?: string;
+      classroom_id?: string;
+      locale?: string;
+    };
     const rawLocale = bodyLocale || getLocaleFromRequest(request.url);
     const locale: Locale = isValidLocale(rawLocale) ? rawLocale : 'en';
 
@@ -256,9 +268,18 @@ export async function POST(
     // Call Sonnet with tool_use for structured extraction
     console.log(`[Onboard] Extracting profile for ${childName} (${childId}) from ${transcript.length} char transcript`);
 
+    // Empty classroom curriculum → the focus_* picks have no vocabulary to map
+    // to real rows. Surface it in logs at extraction time so empty-curriculum
+    // classrooms are diagnosable (they still run via canonical fallbacks).
+    if (availableWorksBlock === '') {
+      console.warn('[Onboard] empty classroom curriculum for', cidForWorks || childId);
+    }
+
     const summaryLanguageInstruction = getAILanguageInstruction(locale);
 
-    const response = await anthropic.messages.create({
+    let response;
+    try {
+      response = await anthropic.messages.create({
       model: aiTier.model,
       max_tokens: 2000,
       tools: [EXTRACTION_TOOL],
@@ -300,7 +321,21 @@ Listen carefully to the transcript — teachers often mention works in passing (
 
 Create a warm summary that confirms back to the teacher what you understood. The summary should focus on what the teacher actually said about this specific child — strengths, weaknesses, current works, interests, personality — rendered back to them clearly and concisely. Mirror the teacher's own thoughts but more organized than how they said it.${summaryLanguageInstruction ? `\n\n${summaryLanguageInstruction} Write the SUMMARY field in this language. All other structured fields stay in English (they are stored values, not user-facing text).` : ''}`,
       }],
-    });
+      });
+    } catch (err) {
+      const e = err as { message?: string; status?: number };
+      console.error('[Onboard] extraction call failed', err);
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'AI extraction unavailable',
+          code: 'extraction_failed',
+          detail: String(e?.message || err).slice(0, 300),
+          anthropic_status: e?.status ?? null,
+        },
+        { status: 502 }
+      );
+    }
 
     // Extract tool_use result
     const toolBlock = response.content.find(b => b.type === 'tool_use');
@@ -551,9 +586,16 @@ Create a warm summary that confirms back to the teacher what you understood. The
     });
 
   } catch (error) {
-    console.error('[Onboard] Error:', error);
+    const ref = Math.random().toString(36).slice(2, 8);
+    console.error(`[Onboard] Error (ref=${ref}):`, error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      {
+        success: false,
+        error: 'Internal server error',
+        code: 'onboard_unhandled',
+        ref,
+        detail: String((error as { message?: string })?.message || error).slice(0, 200),
+      },
       { status: 500 }
     );
   }
