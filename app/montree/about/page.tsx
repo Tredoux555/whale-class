@@ -94,9 +94,9 @@ const ABOUT_STYLES = `
     position: sticky;
     top: 0;
     z-index: 50;
-    backdrop-filter: blur(18px) saturate(140%);
-    -webkit-backdrop-filter: blur(18px) saturate(140%);
-    background: rgba(8,26,18,0.62);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    background: rgba(3,10,7,0.7);
     border-bottom: 1px solid rgba(255,255,255,0.06);
     /* Edge-to-edge iPhones: pad past the status bar. env() = 0 elsewhere. */
     padding-top: env(safe-area-inset-top);
@@ -114,11 +114,11 @@ const ABOUT_STYLES = `
     align-items: center;
     gap: 10px;
     text-decoration: none;
-    color: #ffffff;
+    color: rgba(232,201,106,0.85);
     font-family: var(--font-lora), Georgia, serif;
     font-weight: 500;
     font-size: 1.0625rem;
-    letter-spacing: -0.01em;
+    letter-spacing: 0.02em;
   }
   .m-about-logo-mark {
     width: 26px;
@@ -128,7 +128,7 @@ const ABOUT_STYLES = `
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(130,217,174,0.18);
+    border: 1px solid rgba(232,201,106,0.2);
     color: #E8C96A;
     font-family: var(--font-lora), Georgia, serif;
     font-weight: 500;
@@ -154,10 +154,10 @@ const ABOUT_STYLES = `
   .m-about-hero h1 {
     font-family: var(--font-lora), Georgia, serif;
     font-weight: 400;
-    font-size: clamp(2.4rem, 5.6vw, 3.8rem);
-    letter-spacing: -0.025em;
-    color: #ffffff;
-    line-height: 1.05;
+    font-size: clamp(2rem, 5vw, 2.6rem);
+    letter-spacing: -0.015em;
+    color: rgba(255,250,240,0.92);
+    line-height: 1.06;
     margin: 0;
   }
 
@@ -177,14 +177,14 @@ const ABOUT_STYLES = `
   .m-about-content h2 {
     font-family: var(--font-lora), Georgia, serif;
     font-weight: 400;
-    font-size: clamp(1.5rem, 3.2vw, 2rem);
+    font-size: clamp(1.5rem, 3.2vw, 1.7rem);
     letter-spacing: -0.01em;
-    color: #ffffff;
+    color: rgba(255,250,240,0.92);
     margin: 0 0 22px 0;
     line-height: 1.2;
   }
   .m-about-content p {
-    color: rgba(255,255,255,0.72);
+    color: rgba(255,250,240,0.72);
     line-height: 1.85;
     font-size: 1.0625rem;
     margin: 0 0 18px 0;
@@ -239,7 +239,7 @@ const ABOUT_STYLES = `
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(130,217,174,0.18);
+    border: 1px solid rgba(232,201,106,0.2);
     color: #E8C96A;
     font-family: var(--font-lora), Georgia, serif;
     font-weight: 500;
@@ -283,9 +283,8 @@ export default function AboutPage() {
           position: 'fixed',
           inset: 0,
           background: `
-            radial-gradient(ellipse 1000px 800px at 78% 10%, rgba(39,129,90,0.55), rgba(39,129,90,0) 55%),
-            radial-gradient(ellipse 600px 500px at 72% 16%, rgba(130,217,174,0.28), rgba(130,217,174,0) 60%),
-            linear-gradient(155deg, #0c2419 0%, #0a1f16 38%, #081a12 70%, #06140e 100%)
+            radial-gradient(ellipse 900px 700px at 50% -8%, rgba(39,129,90,0.14), rgba(39,129,90,0) 60%),
+            linear-gradient(168deg, #071510 0%, #051009 45%, #030b08 100%)
           `,
           zIndex: 0,
           pointerEvents: 'none',
@@ -293,7 +292,7 @@ export default function AboutPage() {
       />
 
       {/* Page content rides above the fixed gradient div. */}
-      <div style={{ position: 'relative', zIndex: 1, color: 'rgba(255,255,255,0.85)' }}>
+      <div style={{ position: 'relative', zIndex: 1, color: 'rgba(255,250,240,0.58)' }}>
         <nav className="m-about-nav" aria-label="Primary">
           <div className="m-about-nav-inner">
             <Link className="m-about-logo" href="/montree" aria-label="Montree home">

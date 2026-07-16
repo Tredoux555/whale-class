@@ -10,17 +10,18 @@ const UPDATED = 'June 6, 2026';
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section style={{ marginTop: 28 }}>
-      <h2 style={{ fontSize: 20, fontWeight: 600, color: '#0B2D2A', margin: '0 0 10px' }}>{title}</h2>
-      <div style={{ fontSize: 16, lineHeight: 1.7, color: '#1f2937' }}>{children}</div>
+      <h2 style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontSize: 20, fontWeight: 400, color: 'rgba(232,201,106,0.85)', margin: '0 0 10px' }}>{title}</h2>
+      <div style={{ fontSize: 16, lineHeight: 1.7, color: 'rgba(255,250,240,0.72)' }}>{children}</div>
     </section>
   );
 }
 
 export default function PrivacyPage() {
   return (
-    <main style={{ maxWidth: 760, margin: '0 auto', padding: '48px 24px 80px', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
-      <h1 style={{ fontSize: 30, fontWeight: 700, color: '#0B2D2A', margin: 0 }}>Privacy Policy</h1>
-      <p style={{ fontSize: 14, color: '#6b7280', marginTop: 6 }}>Last updated: {UPDATED}</p>
+    <div style={{ minHeight: '100vh', background: 'radial-gradient(ellipse 900px 700px at 50% -8%, rgba(39,129,90,0.14), rgba(39,129,90,0) 60%), linear-gradient(168deg, #071510 0%, #051009 45%, #030b08 100%)' }}>
+    <main style={{ maxWidth: 760, margin: '0 auto', padding: '48px 24px 80px', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif', color: 'rgba(255,250,240,0.72)' }}>
+      <h1 style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontSize: 30, fontWeight: 400, color: 'rgba(255,250,240,0.92)', margin: 0 }}>Privacy Policy</h1>
+      <p style={{ fontSize: 14, color: 'rgba(255,250,240,0.34)', marginTop: 6 }}>Last updated: {UPDATED}</p>
 
       <Section title="Who we are">
         Montree provides software that helps Montessori and preschool <strong>schools</strong> manage
@@ -91,8 +92,9 @@ export default function PrivacyPage() {
       </Section>
 
       <Section title="Contact">
-        Questions about this policy or your data: <a href="mailto:privacy@montree.xyz" style={{ color: '#0F6E56' }}>privacy@montree.xyz</a>.
+        Questions about this policy or your data: <a href="mailto:privacy@montree.xyz" style={{ color: 'rgba(232,201,106,0.8)' }}>privacy@montree.xyz</a>.
       </Section>
     </main>
+    </div>
   );
 }

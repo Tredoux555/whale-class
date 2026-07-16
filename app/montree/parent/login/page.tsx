@@ -5,13 +5,13 @@ import { useRouter } from 'next/navigation';
 import { Sparkles } from 'lucide-react';
 
 const T = {
-  bg: '#0a1a0f',
-  glow: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)',
-  card: 'rgba(255,255,255,0.06)',
-  blur: 'blur(18px) saturate(140%)',
-  emerald: '#34d399',
-  textPrimary: 'rgba(255,255,255,0.95)',
-  textSecondary: 'rgba(255,255,255,0.65)',
+  bg: '#030b08',
+  glow: 'radial-gradient(ellipse 900px 700px at 50% -8%, rgba(39,129,90,0.14), rgba(39,129,90,0) 60%)',
+  card: 'rgba(255,255,255,0.028)',
+  blur: 'blur(18px)',
+  emerald: '#E8C96A',
+  textPrimary: 'rgba(255,250,240,0.92)',
+  textSecondary: 'rgba(255,250,240,0.58)',
   serif: 'var(--font-lora), Georgia, serif',
   sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
 };
@@ -38,8 +38,8 @@ export default function ParentLoginPage() {
       <div style={{
         background: T.card,
         backdropFilter: T.blur,
-        borderRadius: 20,
-        border: '1px solid rgba(52,211,153,0.15)',
+        borderRadius: 14,
+        border: '1px solid rgba(255,255,255,0.08)',
         padding: '32px',
         width: '100%',
         maxWidth: 384,

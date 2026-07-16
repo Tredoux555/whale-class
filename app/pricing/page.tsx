@@ -104,8 +104,8 @@ export default function PricingPage() {
         html, body { min-height: 100%; }
         body {
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-          color: rgba(255,255,255,0.85);
-          background: #06140e;
+          color: rgba(255,250,240,0.58);
+          background: #030b08;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
           line-height: 1.5;
@@ -115,9 +115,8 @@ export default function PricingPage() {
         .pr-bg {
           position: fixed; inset: 0; z-index: 0; pointer-events: none;
           background:
-            radial-gradient(ellipse 1000px 800px at 78% 8%, rgba(39,129,90,0.5), rgba(39,129,90,0) 55%),
-            radial-gradient(ellipse 600px 500px at 72% 14%, rgba(130,217,174,0.24), rgba(130,217,174,0) 60%),
-            linear-gradient(155deg, #0c2419 0%, #0a1f16 38%, #081a12 70%, #06140e 100%);
+            radial-gradient(ellipse 900px 700px at 50% -8%, rgba(39,129,90,0.14), rgba(39,129,90,0) 60%),
+            linear-gradient(168deg, #071510 0%, #051009 45%, #030b08 100%);
         }
 
         .pr-shell { position: relative; z-index: 1; }
@@ -125,9 +124,9 @@ export default function PricingPage() {
         /* ── Nav ── */
         .pr-nav {
           position: sticky; top: 0; z-index: 50;
-          background: rgba(8,26,18,0.72);
-          backdrop-filter: saturate(180%) blur(14px);
-          -webkit-backdrop-filter: saturate(180%) blur(14px);
+          background: rgba(3,10,7,0.7);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
           border-bottom: 1px solid rgba(255,255,255,0.06);
           padding-top: env(safe-area-inset-top);
         }
@@ -141,10 +140,8 @@ export default function PricingPage() {
         }
         .pr-logo-word {
           font-family: var(--font-lora), Georgia, serif;
-          font-weight: 500; font-size: 1.125rem; letter-spacing: -0.01em;
-          background: linear-gradient(90deg, #62C396 0%, #47AB7E 100%);
-          -webkit-background-clip: text; background-clip: text;
-          -webkit-text-fill-color: transparent;
+          font-weight: 500; font-size: 1.125rem; letter-spacing: 0.02em;
+          color: rgba(232,201,106,0.85);
         }
         .pr-nav-links { display: flex; align-items: center; gap: 20px; }
         .pr-nav-link {
@@ -157,27 +154,27 @@ export default function PricingPage() {
         /* ── Pills ── */
         .pr-pill {
           display: inline-flex; align-items: center; justify-content: center;
-          padding: 14px 28px; border-radius: 999px;
-          background: linear-gradient(180deg, #27815a 0%, #1D6B48 100%);
+          padding: 13px 26px; border-radius: 10px;
+          background: #1D5C41;
           color: #ffffff; text-decoration: none;
-          font-size: 0.9375rem; font-weight: 500; letter-spacing: 0.005em;
-          border: 1px solid rgba(130,217,174,0.18);
+          font-size: 0.92rem; font-weight: 500; letter-spacing: 0.005em;
+          border: 1px solid rgba(255,255,255,0.08);
           cursor: pointer; white-space: nowrap; font-family: inherit;
-          box-shadow: 0 1px 0 rgba(130,217,174,0.22) inset, 0 10px 28px -12px rgba(6,20,14,0.85);
-          transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease;
+          transition: background 160ms ease;
         }
-        .pr-pill:hover { transform: translateY(-1px); filter: brightness(1.06); }
-        .pr-pill-lg { padding: 18px 34px; font-size: 1rem; }
+        .pr-pill:hover { background: #236B4C; }
+        .pr-pill-lg { padding: 15px 30px; font-size: 0.95rem; }
         .pr-pill-ghost {
-          background: transparent; box-shadow: none;
-          border: 1px solid rgba(255,255,255,0.18); color: rgba(255,255,255,0.8);
+          background: rgba(255,255,255,0.05); box-shadow: none;
+          border: 1px solid rgba(255,255,255,0.14); color: rgba(255,250,240,0.92);
         }
-        .pr-pill-ghost:hover { background: rgba(255,255,255,0.04); }
+        .pr-pill-ghost:hover { background: rgba(255,255,255,0.08); }
         .pr-pill-gold {
-          background: linear-gradient(135deg, #E8C96A 0%, #cfa93f 100%);
-          color: #1a1208; border-color: rgba(232,201,106,0.4);
-          box-shadow: 0 10px 28px -12px rgba(232,201,106,0.5);
+          background: transparent;
+          color: rgba(232,201,106,0.9); border-color: rgba(232,201,106,0.35);
+          box-shadow: none;
         }
+        .pr-pill-gold:hover { background: rgba(232,201,106,0.06); }
 
         /* ── Hero ── */
         .pr-hero {
@@ -192,24 +189,22 @@ export default function PricingPage() {
           width: 76px; height: auto;
           aspect-ratio: 480 / 394;
           margin-bottom: 26px;
-          filter:
-            drop-shadow(0 6px 16px rgba(6,20,14,0.7))
-            drop-shadow(0 1px 10px rgba(232,201,106,0.2));
+          filter: drop-shadow(0 10px 26px rgba(0,0,0,0.55));
           user-select: none;
         }
         .pr-eyebrow {
           display: inline-block;
-          font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
-          color: #E8C96A; margin-bottom: 22px;
+          font-size: 0.62rem; font-weight: 500; letter-spacing: 0.3em; text-transform: uppercase;
+          color: rgba(232,201,106,0.55); margin-bottom: 22px;
         }
         .pr-hero h1 {
           font-family: var(--font-lora), Georgia, serif;
-          font-weight: 400; font-size: clamp(2.2rem, 6vw, 3.4rem);
-          line-height: 1.08; letter-spacing: -0.025em; color: #ffffff;
+          font-weight: 400; font-size: clamp(2rem, 5vw, 2.6rem);
+          line-height: 1.1; letter-spacing: -0.015em; color: rgba(255,250,240,0.92);
           margin-bottom: 20px;
         }
         .pr-hero-sub {
-          font-size: 1.0625rem; color: rgba(255,255,255,0.6);
+          font-size: 1.0625rem; color: rgba(255,250,240,0.58);
           line-height: 1.7; max-width: 30rem; margin: 0 auto;
         }
         .pr-gold { color: #E8C96A; }
@@ -222,32 +217,28 @@ export default function PricingPage() {
           align-items: stretch;
         }
         .pr-card {
-          background: rgba(8,20,12,0.6);
-          border: 1px solid rgba(130,217,174,0.16);
-          border-radius: 20px; padding: 36px 30px;
+          background: rgba(255,255,255,0.028);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 14px; padding: 36px 30px;
           display: flex; flex-direction: column; position: relative; overflow: hidden;
-          transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+          transition: border-color 220ms ease;
         }
         @media (hover: hover) {
           .pr-card:hover {
-            transform: translateY(-3px);
-            border-color: rgba(130,217,174,0.32);
-            box-shadow: 0 20px 48px -22px rgba(6,20,14,0.9);
+            border-color: rgba(255,255,255,0.14);
           }
           .pr-card-featured:hover {
-            border-color: rgba(232,201,106,0.68);
-            box-shadow: 0 0 0 1px rgba(232,201,106,0.2), 0 28px 64px -24px rgba(232,201,106,0.34);
+            border-color: rgba(232,201,106,0.45);
           }
         }
         .pr-card-featured {
-          border-color: rgba(232,201,106,0.5);
-          box-shadow: 0 0 0 1px rgba(232,201,106,0.14), 0 24px 60px -26px rgba(232,201,106,0.28);
+          border-color: rgba(232,201,106,0.3);
         }
         .pr-card-badge {
-          position: absolute; top: 20px; right: 24px;
-          font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
-          color: #1a1208; background: rgba(232,201,106,0.92);
-          padding: 4px 12px; border-radius: 999px;
+          position: absolute; top: 24px; right: 24px;
+          font-size: 0.62rem; font-weight: 500; letter-spacing: 0.24em; text-transform: uppercase;
+          color: rgba(232,201,106,0.7); background: none;
+          padding: 0; border-radius: 0;
         }
         .pr-card-name {
           font-size: 0.78rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
@@ -263,7 +254,7 @@ export default function PricingPage() {
         .pr-card-total {
           font-size: 0.875rem; color: rgba(255,255,255,0.4); margin-bottom: 24px;
         }
-        .pr-card-total strong { color: #82d9ae; font-weight: 600; }
+        .pr-card-total strong { color: rgba(255,250,240,0.85); font-weight: 600; }
         .pr-card-featured .pr-card-total strong { color: #E8C96A; }
         .pr-card-bullets {
           list-style: none; margin: 0 0 28px; padding: 0;
@@ -277,26 +268,26 @@ export default function PricingPage() {
         .pr-card-featured .pr-card-check { color: #E8C96A; }
         .pr-card-cta {
           display: block; text-align: center; text-decoration: none;
-          padding: 15px 24px; border-radius: 12px;
-          font-weight: 600; font-size: 0.9375rem; letter-spacing: 0.01em;
-          background: rgba(255,255,255,0.06); color: #ffffff;
-          border: 1px solid rgba(130,217,174,0.22);
-          transition: background 180ms ease, border-color 180ms ease;
+          padding: 14px 24px; border-radius: 10px;
+          font-weight: 500; font-size: 0.92rem; letter-spacing: 0.01em;
+          background: #1D5C41; color: #ffffff;
+          border: 1px solid rgba(255,255,255,0.08);
+          transition: background 160ms ease;
         }
-        .pr-card-cta:hover { background: rgba(255,255,255,0.1); border-color: rgba(130,217,174,0.4); }
+        .pr-card-cta:hover { background: #236B4C; }
         .pr-card-featured .pr-card-cta {
-          background: linear-gradient(135deg, #E8C96A 0%, #cfa93f 100%);
-          color: #1a1208; border-color: rgba(232,201,106,0.4);
+          background: transparent;
+          color: rgba(232,201,106,0.9); border: 1px solid rgba(232,201,106,0.35);
         }
-        .pr-card-featured .pr-card-cta:hover { filter: brightness(1.05); }
+        .pr-card-featured .pr-card-cta:hover { background: rgba(232,201,106,0.06); }
 
         /* ── Slider ── */
         .pr-slider-wrap { padding: 0 24px 72px; }
         .pr-slider-card {
           max-width: 620px; margin: 0 auto;
-          background: rgba(8,20,12,0.55);
-          border: 1px solid rgba(130,217,174,0.14);
-          border-radius: 18px; padding: 32px 30px; text-align: center;
+          background: rgba(255,255,255,0.028);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 14px; padding: 32px 30px; text-align: center;
         }
         .pr-slider-label {
           font-size: 0.78rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
@@ -325,21 +316,19 @@ export default function PricingPage() {
         .pr-slider-total-sub { font-size: 0.75rem; color: rgba(255,255,255,0.35); margin-top: 2px; }
         input[type=range] {
           -webkit-appearance: none; appearance: none;
-          width: 100%; height: 4px; border-radius: 4px;
-          background: linear-gradient(to right, #34d399 0%, #34d399 var(--pct,50%), rgba(255,255,255,0.15) var(--pct,50%), rgba(255,255,255,0.15) 100%);
+          width: 100%; height: 1px; border-radius: 1px;
+          background: linear-gradient(to right, rgba(232,201,106,0.55) 0%, rgba(232,201,106,0.55) var(--pct,50%), rgba(255,255,255,0.12) var(--pct,50%), rgba(255,255,255,0.12) 100%);
           outline: none; cursor: pointer;
         }
         input[type=range]::-webkit-slider-thumb {
           -webkit-appearance: none; appearance: none;
-          width: 22px; height: 22px; border-radius: 50%;
-          background: #ffffff; border: 2px solid #34d399;
-          box-shadow: 0 2px 8px rgba(52,211,153,0.35); cursor: pointer;
-          transition: transform 0.15s;
+          width: 16px; height: 16px; border-radius: 50%;
+          background: #E8C96A; border: none;
+          box-shadow: none; cursor: pointer;
         }
-        input[type=range]::-webkit-slider-thumb:active { transform: scale(1.2); }
         input[type=range]::-moz-range-thumb {
-          width: 22px; height: 22px; border-radius: 50%;
-          background: #ffffff; border: 2px solid #34d399; cursor: pointer;
+          width: 16px; height: 16px; border-radius: 50%;
+          background: #E8C96A; border: none; cursor: pointer;
         }
         .pr-slider-ends { display: flex; justify-content: space-between; margin-top: 8px; }
         .pr-slider-ends span { font-size: 11px; color: rgba(255,255,255,0.3); }
@@ -348,31 +337,26 @@ export default function PricingPage() {
         .pr-founding-wrap { padding: 0 24px 72px; }
         .pr-founding {
           max-width: 680px; margin: 0 auto;
-          background: rgba(10, 26, 15, 0.72);
-          border: 1px solid rgba(52,211,153,0.22);
-          border-radius: 22px; padding: 40px 34px; text-align: center;
+          background: rgba(255,255,255,0.028);
+          border: 1px solid rgba(232,201,106,0.3);
+          border-radius: 14px; padding: 40px 34px; text-align: center;
           position: relative; overflow: hidden;
-          box-shadow: 0 24px 70px rgba(0,0,0,0.4);
-        }
-        .pr-founding-glow {
-          position: absolute; top: -100px; right: -80px; width: 300px; height: 300px;
-          background: radial-gradient(circle, rgba(52,211,153,0.16) 0%, transparent 70%);
-          pointer-events: none;
+          box-shadow: none;
         }
         .pr-founding-eyebrow {
           display: inline-block; position: relative;
-          font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
-          color: #E8C96A; border: 1px solid rgba(232,201,106,0.3);
-          border-radius: 999px; padding: 5px 14px; margin-bottom: 18px;
+          font-size: 0.62rem; font-weight: 500; letter-spacing: 0.3em; text-transform: uppercase;
+          color: rgba(232,201,106,0.7); border: none;
+          border-radius: 0; padding: 0; margin-bottom: 18px;
         }
         .pr-founding h2 {
           font-family: var(--font-lora), Georgia, serif; position: relative;
-          font-weight: 400; font-size: clamp(1.4rem, 3.6vw, 1.9rem);
-          line-height: 1.25; letter-spacing: -0.01em; color: #f4f7f5; margin-bottom: 14px;
+          font-weight: 400; font-size: clamp(1.4rem, 3.6vw, 1.7rem);
+          line-height: 1.25; letter-spacing: -0.01em; color: rgba(255,250,240,0.92); margin-bottom: 14px;
         }
         .pr-founding p {
           position: relative; font-size: 0.9375rem; line-height: 1.7;
-          color: rgba(244,247,245,0.65); max-width: 40ch; margin: 0 auto 26px;
+          color: rgba(255,250,240,0.58); max-width: 40ch; margin: 0 auto 26px;
         }
 
         /* ── FAQ ── */
@@ -382,11 +366,11 @@ export default function PricingPage() {
         }
         .pr-faq h2 {
           font-family: var(--font-lora), Georgia, serif;
-          font-weight: 400; font-size: clamp(1.6rem, 4vw, 2.2rem);
-          color: #ffffff; text-align: center; letter-spacing: -0.02em; margin-bottom: 40px;
+          font-weight: 400; font-size: clamp(1.5rem, 4vw, 1.7rem);
+          color: rgba(255,250,240,0.92); text-align: center; letter-spacing: -0.01em; margin-bottom: 40px;
         }
         .pr-faq-item {
-          border-top: 1px solid rgba(255,255,255,0.07);
+          border-top: 1px solid rgba(255,255,255,0.08);
           padding: 20px 0;
         }
         .pr-faq-item summary {
@@ -395,12 +379,12 @@ export default function PricingPage() {
         }
         .pr-faq-item summary::-webkit-details-marker { display: none; }
         .pr-faq-q {
-          font-size: 0.9375rem; font-weight: 600; color: rgba(255,255,255,0.9); line-height: 1.4;
+          font-size: 0.9375rem; font-weight: 600; color: rgba(255,250,240,0.9); line-height: 1.4;
         }
-        .pr-faq-plus { font-size: 20px; color: #34d399; flex-shrink: 0; user-select: none; line-height: 1; }
+        .pr-faq-plus { font-size: 20px; color: rgba(232,201,106,0.7); flex-shrink: 0; user-select: none; line-height: 1; }
         .pr-faq-item[open] .pr-faq-plus { transform: rotate(45deg); }
         .pr-faq-a {
-          font-size: 0.9375rem; color: rgba(255,255,255,0.5); line-height: 1.75;
+          font-size: 0.9375rem; color: rgba(255,250,240,0.5); line-height: 1.75;
           margin-top: 14px; padding-right: 28px;
         }
 
@@ -411,11 +395,11 @@ export default function PricingPage() {
         }
         .pr-closing h2 {
           font-family: var(--font-lora), Georgia, serif;
-          font-weight: 400; font-size: clamp(1.9rem, 4.6vw, 2.8rem);
-          color: #ffffff; letter-spacing: -0.022em; margin-bottom: 16px;
+          font-weight: 400; font-size: clamp(1.5rem, 4vw, 1.9rem);
+          color: rgba(255,250,240,0.92); letter-spacing: -0.012em; margin-bottom: 16px;
         }
         .pr-closing-sub {
-          font-size: 1.0625rem; color: rgba(255,255,255,0.55);
+          font-size: 1.0625rem; color: rgba(255,250,240,0.58);
           line-height: 1.7; max-width: 32rem; margin: 0 auto 34px;
         }
         .pr-closing-row {
@@ -428,7 +412,7 @@ export default function PricingPage() {
           color: rgba(255,255,255,0.28); font-size: 0.8125rem;
           border-top: 1px solid rgba(255,255,255,0.05);
         }
-        .pr-footer a { color: rgba(130,217,174,0.7); text-decoration: none; }
+        .pr-footer a { color: rgba(255,250,240,0.5); text-decoration: none; }
 
         @media (max-width: 720px) {
           .pr-cards { grid-template-columns: 1fr; gap: 18px; }
@@ -559,7 +543,6 @@ export default function PricingPage() {
         {/* ── FOUNDING 100 STRIP ── */}
         <section className="pr-founding-wrap" ref={addReveal}>
           <div className="pr-founding">
-            <div className="pr-founding-glow" />
             <span className="pr-founding-eyebrow">Founding 100</span>
             <h2>One month of Premium free — then Premium at $3 for life.</h2>
             <p>
