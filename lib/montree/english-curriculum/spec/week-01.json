@@ -19,6 +19,7 @@
   "soundBasket": [
     "apple",
     "ant",
+    "ax",
     "alligator",
     "astronaut",
     "ambulance",
@@ -37,6 +38,7 @@
     {
       "role": "word",
       "audioUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-songs/w01-word.mp3",
+      "videoUrl": "https://montree.xyz/api/montree/media/proxy/curriculum-videos/w01-word.mp4",
       "title": "It's A (Potato)",
       "lyrics": "[Intro — whispered]\nah… ah… ah…\n\n[Verse 1 — deep whisper-rap]\nAh-ah-ah… ant! Ah-ah-ah… ant!\nAh-ah-ah… apple! Apple, apple!\n\n[Hook 1 — kids chant]\nA! A! It's a… (what?)\nA! A! It's a… (what?)\nIt's a mat! It's a mat!\nIt's a mat, mat, mat!\n\n[Verse 2 — deep whisper-rap]\nAh-ah-ah… ax! Ah-ah-ah… ax!\nAh-ah-ah… alligator! Alligator, alligator!\n\n[Hook 2 — kids chant]\nA! A! It's a… (what?)\nA! A! It's a… (what?)\nIt's a cup! It's a cup!\nIt's a cup, cup, cup!\n\n[Breakdown — whispered, bass drops out]\nah… ah… ah…\nit's a… it's a… it's a…\n\n[Hook 3 — kids chant]\nA! A! It's a… (what?)\nA! A! It's a… (what?)\nIt's a chair! It's a chair!\nIt's a chair, chair, chair!\n\n[Final Hook — big]\nA! A! It's a… (what?)\nA! A! It's a… (what?)\nIt's a POTATO!\nPOTATO! POTATO!",
       "sunoStyle": "dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap",
@@ -131,7 +133,15 @@
       "pencil",
       "apple",
       "egg",
-      "potato"
+      "potato",
+      "ant",
+      "ax",
+      "alligator",
+      "astronaut",
+      "ambulance",
+      "anchor",
+      "abacus",
+      "acrobat"
     ],
     "sentences": [
       "It's a chair.",
@@ -153,7 +163,15 @@
       "pencil",
       "apple",
       "egg",
-      "potato"
+      "potato",
+      "ant",
+      "ax",
+      "alligator",
+      "astronaut",
+      "ambulance",
+      "anchor",
+      "abacus",
+      "acrobat"
     ],
     "bingoPool": [
       "chair",
@@ -171,7 +189,8 @@
       "ambulance",
       "anchor",
       "abacus",
-      "acrobat"
+      "acrobat",
+      "ax"
     ],
     "tracing": {
       "letter": "a",
@@ -202,7 +221,15 @@
       "pencil",
       "apple",
       "egg",
-      "potato"
+      "potato",
+      "ant",
+      "ax",
+      "alligator",
+      "astronaut",
+      "ambulance",
+      "anchor",
+      "abacus",
+      "acrobat"
     ],
     "extras": [
       "vowel wall A·E·I·O·U cards (blue letters, gold star held back for light-up weeks)",
@@ -334,15 +361,32 @@
       "file": "ant.png",
       "usedBy": [
         "basket",
-        "bingo"
+        "bingo",
+        "cards",
+        "matching",
+        "dictionary"
       ],
       "mjPrompt": "a single black ant, macro photograph, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+    },
+    {
+      "file": "ax.png",
+      "usedBy": [
+        "basket",
+        "bingo",
+        "cards",
+        "matching",
+        "dictionary"
+      ],
+      "mjPrompt": "a small wooden-handled toy hand axe, child-safe, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
     },
     {
       "file": "alligator.png",
       "usedBy": [
         "basket",
-        "bingo"
+        "bingo",
+        "cards",
+        "matching",
+        "dictionary"
       ],
       "mjPrompt": "a small green alligator, full body side view, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
     },
@@ -350,7 +394,10 @@
       "file": "astronaut.png",
       "usedBy": [
         "basket",
-        "bingo"
+        "bingo",
+        "cards",
+        "matching",
+        "dictionary"
       ],
       "mjPrompt": "a toy astronaut figure in a white space suit, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
     },
@@ -358,7 +405,10 @@
       "file": "ambulance.png",
       "usedBy": [
         "basket",
-        "bingo"
+        "bingo",
+        "cards",
+        "matching",
+        "dictionary"
       ],
       "mjPrompt": "a toy ambulance with a red cross, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
     },
@@ -366,7 +416,10 @@
       "file": "anchor.png",
       "usedBy": [
         "basket",
-        "bingo"
+        "bingo",
+        "cards",
+        "matching",
+        "dictionary"
       ],
       "mjPrompt": "a brass ship anchor, miniature, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
     },
@@ -374,7 +427,10 @@
       "file": "abacus.png",
       "usedBy": [
         "basket",
-        "bingo"
+        "bingo",
+        "cards",
+        "matching",
+        "dictionary"
       ],
       "mjPrompt": "a wooden abacus with colorful beads, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
     },
@@ -382,7 +438,10 @@
       "file": "acrobat.png",
       "usedBy": [
         "basket",
-        "bingo"
+        "bingo",
+        "cards",
+        "matching",
+        "dictionary"
       ],
       "mjPrompt": "a tiny acrobat figure mid-handstand, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
     },
