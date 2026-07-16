@@ -3,18 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sparkles } from 'lucide-react';
-
-const T = {
-  bg: '#030b08',
-  glow: 'radial-gradient(ellipse 900px 700px at 50% -8%, rgba(39,129,90,0.14), rgba(39,129,90,0) 60%)',
-  card: 'rgba(255,255,255,0.028)',
-  blur: 'blur(18px)',
-  emerald: '#E8C96A',
-  textPrimary: 'rgba(255,250,240,0.92)',
-  textSecondary: 'rgba(255,250,240,0.58)',
-  serif: 'var(--font-lora), Georgia, serif',
-  sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
-};
+import { FT } from '@/components/montree/funnel/funnel-theme';
 
 export default function ParentLoginPage() {
   const router = useRouter();
@@ -27,17 +16,17 @@ export default function ParentLoginPage() {
   return (
     <div style={{
       minHeight: '100dvh',
-      background: T.bg,
-      backgroundImage: T.glow,
+      background: FT.bg,
+      backgroundImage: 'radial-gradient(ellipse 900px 700px at 50% -8%, rgba(39,129,90,0.14), rgba(39,129,90,0) 60%)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       padding: '16px',
-      fontFamily: T.sans,
+      fontFamily: FT.sans,
     }}>
       <div style={{
-        background: T.card,
-        backdropFilter: T.blur,
+        background: FT.glass,
+        backdropFilter: 'blur(18px)',
         borderRadius: 14,
         border: '1px solid rgba(255,255,255,0.08)',
         padding: '32px',
@@ -50,9 +39,9 @@ export default function ParentLoginPage() {
           fontSize: 32,
           marginBottom: 16,
         }}>
-          <Sparkles size={32} color={T.emerald} strokeWidth={1.75} />
+          <Sparkles size={32} color={FT.gold} strokeWidth={1.75} />
         </div>
-        <p style={{ color: T.textSecondary, fontSize: 14, margin: 0 }}>Redirecting...</p>
+        <p style={{ color: FT.whisper, fontSize: 14, margin: 0 }}>Redirecting...</p>
       </div>
       <style>{`
         @keyframes cg-pulse {

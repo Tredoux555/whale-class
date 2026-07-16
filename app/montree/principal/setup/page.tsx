@@ -352,7 +352,7 @@ export default function PrincipalSetupPage() {
             <div className="fn-screen center">
               {warnings.length > 0 && (
                 <div className="fn-warn">
-                  <h3>⚠️ {t('principal.setup.warning.itemsNotCreated')}</h3>
+                  <h3>{t('principal.setup.warning.itemsNotCreated')}</h3>
                   <ul>
                     {warnings.map((w, i) => (
                       <li key={i}>• {w}</li>

@@ -146,3 +146,18 @@ tsconfig.scope-copilot.tmp.json
 tsconfig.scope-copilot.tmp.tsbuildinfo
 tsconfig.scope-copilot2.tmp.json
 tsconfig.scope-copilot2.tmp.tsbuildinfo
+
+# Funnel Ceremony (Jul-16 Build 1): temp scoped tsconfig from build verification (sandbox rm blocked — delete via Desktop Commander)
+tsconfig.scope-funnel.tmp.json
+tsconfig.scope-funnel.tmp.tsbuildinfo
+
+# temp scoped tsconfig from Jul-16 Funnel Ceremony Build 2 (sandbox rm blocked — delete via Desktop Commander)
+tsconfig.scope-funnel2.tmp.json
+tsconfig.scope-funnel2.tmp.tsbuildinfo
+
+# temp scoped tsconfig from Jul-16 Grace & Courtesy Intro Weeks build verification (sandbox rm blocked — delete via Desktop Commander)
+tsconfig.gcintro.tmp.json
+tsconfig.gcintro.tmp.tsbuildinfo
+
+# temp scoped tsconfig from Jul-16 11-fix styling audit verification (sandbox rm blocked — delete via Desktop Commander)
+tsconfig.scope-styling-fixes.json

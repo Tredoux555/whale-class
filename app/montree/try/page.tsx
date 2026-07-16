@@ -278,7 +278,6 @@ export default function TryMontreePage() {
                   border: '1px solid rgba(232,201,106,0.35)',
                 }}
               >
-                <span style={{ color: 'rgba(232,201,106,0.9)', fontSize: '1.2rem' }}>🚀</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ color: 'rgba(255,250,240,0.92)', fontSize: 14, fontWeight: 500 }}>
                     Founding 100
@@ -305,7 +304,6 @@ export default function TryMontreePage() {
                   border: '1px solid rgba(232,201,106,0.28)',
                 }}
               >
-                <span style={{ color: 'rgba(232,201,106,0.85)', fontSize: '1.1rem' }}>🎟️</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ color: 'rgba(255,250,240,0.92)', fontSize: 14 }}>
                     Referral code:{' '}

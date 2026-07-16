@@ -227,12 +227,9 @@ export default function PricingPage() {
           .pr-card:hover {
             border-color: rgba(255,255,255,0.14);
           }
-          .pr-card-featured:hover {
-            border-color: rgba(232,201,106,0.45);
-          }
         }
         .pr-card-featured {
-          border-color: rgba(232,201,106,0.3);
+          border-color: rgba(255,255,255,0.08);
         }
         .pr-card-badge {
           position: absolute; top: 24px; right: 24px;
@@ -244,7 +241,6 @@ export default function PricingPage() {
           font-size: 0.78rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
           color: rgba(255,255,255,0.5); margin-bottom: 16px;
         }
-        .pr-card-featured .pr-card-name { color: #E8C96A; }
         .pr-card-price { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
         .pr-card-amount {
           font-family: var(--font-lora), Georgia, serif;
@@ -268,18 +264,13 @@ export default function PricingPage() {
         .pr-card-featured .pr-card-check { color: #E8C96A; }
         .pr-card-cta {
           display: block; text-align: center; text-decoration: none;
-          padding: 14px 24px; border-radius: 10px;
+          padding: 13px 26px; border-radius: 10px;
           font-weight: 500; font-size: 0.92rem; letter-spacing: 0.01em;
           background: #1D5C41; color: #ffffff;
           border: 1px solid rgba(255,255,255,0.08);
           transition: background 160ms ease;
         }
         .pr-card-cta:hover { background: #236B4C; }
-        .pr-card-featured .pr-card-cta {
-          background: transparent;
-          color: rgba(232,201,106,0.9); border: 1px solid rgba(232,201,106,0.35);
-        }
-        .pr-card-featured .pr-card-cta:hover { background: rgba(232,201,106,0.06); }
 
         /* ── Slider ── */
         .pr-slider-wrap { padding: 0 24px 72px; }
@@ -410,7 +401,7 @@ export default function PricingPage() {
         .pr-footer {
           padding: 48px 24px 64px; text-align: center;
           color: rgba(255,255,255,0.28); font-size: 0.8125rem;
-          border-top: 1px solid rgba(255,255,255,0.05);
+          border-top: 1px solid rgba(255,255,255,0.06);
         }
         .pr-footer a { color: rgba(255,250,240,0.5); text-decoration: none; }
 
