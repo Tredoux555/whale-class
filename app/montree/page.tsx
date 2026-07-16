@@ -253,8 +253,8 @@ export default function MontreeLanding() {
         body {
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
           font-weight: 400;
-          color: rgba(255,255,255,0.85);
-          background: #06140e;
+          color: rgba(255,250,240,0.58);
+          background: #030b08;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
           line-height: 1.5;
@@ -266,19 +266,18 @@ export default function MontreeLanding() {
           position: fixed;
           inset: 0;
           background:
-            radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), rgba(39,129,90,0) 55%),
-            radial-gradient(ellipse 700px 600px at 82% 14%, rgba(130,217,174,0.24), rgba(130,217,174,0) 60%),
-            linear-gradient(155deg, #0c2419 0%, #0a1f16 38%, #081a12 70%, #06140e 100%);
+            radial-gradient(ellipse 900px 700px at 50% -8%, rgba(39,129,90,0.14), rgba(39,129,90,0) 60%),
+            linear-gradient(168deg, #071510 0%, #051009 45%, #030b08 100%);
           z-index: 0;
           pointer-events: none;
         }
         .m-bg ~ * { position: relative; z-index: 1; }
 
         .m-label {
-          font-size: 10px;
+          font-size: 0.62rem;
           text-transform: uppercase;
-          letter-spacing: 0.14em;
-          color: #E8C96A;
+          letter-spacing: 0.3em;
+          color: rgba(232,201,106,0.55);
           font-weight: 500;
         }
 
@@ -286,42 +285,26 @@ export default function MontreeLanding() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          padding: 14px 28px;
-          border-radius: 999px;
-          background: linear-gradient(180deg, #27815a 0%, #1D6B48 100%);
+          padding: 13px 26px;
+          border-radius: 10px;
+          background: #1D5C41;
           color: #ffffff;
           text-decoration: none;
-          font-size: 0.9375rem;
+          font-size: 0.92rem;
           font-weight: 500;
           letter-spacing: 0.005em;
-          border: 1px solid rgba(130,217,174,0.18);
+          border: 1px solid rgba(255,255,255,0.08);
           cursor: pointer;
-          transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease, border-color 200ms ease;
-          box-shadow:
-            0 1px 0 rgba(130,217,174,0.22) inset,
-            0 0 0 1px rgba(0,0,0,0.25) inset,
-            0 10px 28px -12px rgba(6,20,14,0.85),
-            0 2px 6px -2px rgba(6,20,14,0.6);
+          transition: background 160ms ease;
           white-space: nowrap;
           font-family: inherit;
         }
         .m-pill:hover {
-          transform: translateY(-1px);
-          border-color: rgba(130,217,174,0.32);
-          box-shadow:
-            0 1px 0 rgba(130,217,174,0.3) inset,
-            0 0 0 1px rgba(0,0,0,0.25) inset,
-            0 16px 36px -12px rgba(6,20,14,0.9),
-            0 0 0 4px rgba(71,171,126,0.08);
-          filter: brightness(1.06);
-        }
-        .m-pill:active {
-          transform: translateY(0);
-          filter: brightness(0.97);
+          background: #236B4C;
         }
         .m-pill-lg {
-          padding: 18px 34px;
-          font-size: 1rem;
+          padding: 15px 30px;
+          font-size: 0.95rem;
         }
 
         /* ── Hero video ── (Session 131 redesign)
@@ -408,7 +391,7 @@ export default function MontreeLanding() {
           appearance: none;
           border: 0;
           background: transparent;
-          color: rgba(255,255,255,0.55);
+          color: rgba(255,250,240,0.58);
           font-family: inherit;
           font-size: 11px;
           font-weight: 600;
@@ -453,14 +436,9 @@ export default function MontreeLanding() {
           line-height: 1;
           box-shadow: 0 6px 18px -6px rgba(0,0,0,0.55);
           transition: opacity 200ms ease, transform 200ms ease;
-          animation: m-hero-unmute-pulse 2400ms ease-in-out infinite;
         }
         .m-hero-corner-video-unmute:hover {
           transform: translateY(-1px);
-        }
-        @keyframes m-hero-unmute-pulse {
-          0%, 100% { box-shadow: 0 6px 18px -6px rgba(232,201,106,0.55); }
-          50% { box-shadow: 0 6px 28px -4px rgba(232,201,106,0.85); }
         }
 
         /* ── Nav ── */
@@ -468,9 +446,9 @@ export default function MontreeLanding() {
           position: sticky;
           top: 0;
           z-index: 50;
-          background: rgba(8,26,18,0.72);
-          backdrop-filter: saturate(180%) blur(14px);
-          -webkit-backdrop-filter: saturate(180%) blur(14px);
+          background: rgba(3,10,7,0.7);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
           border-bottom: 1px solid rgba(255,255,255,0.06);
           /* Edge-to-edge iPhones (notch / Dynamic Island): pad the bar down
              past the status bar so the logo and links never hide under it.
@@ -497,12 +475,9 @@ export default function MontreeLanding() {
         .m-logo-word {
           font-family: var(--font-lora), Georgia, serif;
           font-weight: 500;
-          font-size: 1.125rem;
-          letter-spacing: -0.01em;
-          background: linear-gradient(90deg, #62C396 0%, #47AB7E 100%);
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
+          font-size: 1.1rem;
+          letter-spacing: 0.02em;
+          color: rgba(232,201,106,0.85);
         }
         .m-nav .m-pill {
           padding: 10px 20px;
@@ -534,7 +509,7 @@ export default function MontreeLanding() {
           font-weight: 400;
           font-size: clamp(14px, 1.6vw, 18px);
           letter-spacing: 0.01em;
-          color: rgba(255,255,255,0.55);
+          color: rgba(255,250,240,0.58);
           margin-bottom: 28px;
           max-width: 38ch;
           line-height: 1.6;
@@ -564,9 +539,8 @@ export default function MontreeLanding() {
           font-weight: 400;
           font-size: clamp(16px, 1.5vw, 20px);
           letter-spacing: 0.04em;
-          color: #E8C96A;
+          color: rgba(232,201,106,0.85);
           margin-bottom: 18px;
-          text-shadow: 0 0 24px rgba(232,201,106,0.18);
         }
         /* When the kicker sits BELOW the CTA, swap the top/bottom margin so it
            breathes underneath the button instead of crowding the title above. */
@@ -587,11 +561,11 @@ export default function MontreeLanding() {
            with a clear hierarchy (eyebrow → name → tagline → CTA → line)
            instead of floating. Matches the site's section-label style. */
         .m-hero-eyebrow {
-          font-size: 11px;
+          font-size: 0.62rem;
           text-transform: uppercase;
-          letter-spacing: 0.16em;
+          letter-spacing: 0.3em;
           font-weight: 500;
-          color: #E8C96A;
+          color: rgba(232,201,106,0.55);
           margin: 0 0 20px 0;
         }
         .m-hero h1 {
@@ -599,10 +573,10 @@ export default function MontreeLanding() {
           font-weight: 400;
           /* Sits WITH the tagline in the column, not shouting over it (the nav
              already carries the small wordmark). */
-          font-size: clamp(2.5rem, 4.4vw, 4rem);
-          line-height: 1.02;
-          letter-spacing: -0.025em;
-          color: #ffffff;
+          font-size: clamp(2rem, 5vw, 2.6rem);
+          line-height: 1.08;
+          letter-spacing: -0.015em;
+          color: rgba(255,250,240,0.92);
           margin: 0 0 10px 0;
           max-width: 14ch;
         }
@@ -622,7 +596,7 @@ export default function MontreeLanding() {
         }
         .m-hero-sub {
           font-size: 1.125rem;
-          color: rgba(255,255,255,0.55);
+          color: rgba(255,250,240,0.58);
           line-height: 1.6;
           margin-bottom: 44px;
           max-width: 36ch;
@@ -654,60 +628,26 @@ export default function MontreeLanding() {
           margin: 0;
           z-index: 2;
         }
-        /* The halo is a ::before layer BEHIND the mark and it alone breathes
-           (opacity + box-shadow keyframes). The M itself never dims — a brand
-           mark that pulses in visibility reads as a glitch; a halo that
-           breathes reads as light. A whisper-thin gold ring sits at the halo's
-           edge for craft. */
+        /* Quiet pass (Jul 16): the breathing halo + gold drop-shadow are gone.
+           A transparent gold mark sits perfectly still on the page's own dark
+           ground — no disc, no glow. Only a soft dark drop-shadow for depth. */
         .m-hero-brandmark-glow {
           position: relative;
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          padding: 58px;
-        }
-        .m-hero-brandmark-glow::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          border-radius: 50%;
-          background: radial-gradient(circle, rgba(232,201,106,0.17) 0%, rgba(232,201,106,0.055) 44%, rgba(232,201,106,0) 71%);
-          border: 1px solid rgba(232,201,106,0.09);
-          box-shadow:
-            0 0 60px -14px rgba(232,201,106,0.35),
-            inset 0 0 44px -18px rgba(232,201,106,0.18);
-          animation: m-hero-brandmark-breathe 5600ms ease-in-out infinite;
-          pointer-events: none;
+          padding: 0;
         }
         .m-hero-brandmark-img {
           position: relative;
           display: block;
           /* True aspect of the mark (480x394) — no square letterbox. */
-          width: 208px;
+          width: 110px;
           height: auto;
           aspect-ratio: 480 / 394;
           object-fit: contain;
-          filter:
-            drop-shadow(0 10px 26px rgba(6,20,14,0.72))
-            drop-shadow(0 2px 14px rgba(232,201,106,0.22));
+          filter: drop-shadow(0 10px 26px rgba(0,0,0,0.55));
           user-select: none;
-        }
-        @keyframes m-hero-brandmark-breathe {
-          0%, 100% {
-            opacity: 0.82;
-            box-shadow:
-              0 0 52px -16px rgba(232,201,106,0.3),
-              inset 0 0 40px -18px rgba(232,201,106,0.14);
-          }
-          50% {
-            opacity: 1;
-            box-shadow:
-              0 0 78px -10px rgba(232,201,106,0.52),
-              inset 0 0 50px -16px rgba(232,201,106,0.22);
-          }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .m-hero-brandmark-glow::before { animation: none; }
         }
 
         /* ── Pricing section ── (id="pricing")
@@ -716,7 +656,7 @@ export default function MontreeLanding() {
            Premium is visually featured (gold border + badge). Cards stack on
            mobile. */
         .m-pricing {
-          padding: 96px 32px 96px;
+          padding: 116px 32px 116px;
           border-top: 1px solid rgba(255,255,255,0.06);
         }
         .m-pricing-inner {
@@ -728,14 +668,14 @@ export default function MontreeLanding() {
         .m-pricing h2 {
           font-family: var(--font-lora), Georgia, serif;
           font-weight: 400;
-          font-size: clamp(1.875rem, 4vw, 2.5rem);
-          line-height: 1.15;
-          letter-spacing: -0.02em;
-          color: #ffffff;
+          font-size: clamp(1.45rem, 3.6vw, 1.7rem);
+          line-height: 1.2;
+          letter-spacing: -0.01em;
+          color: rgba(255,250,240,0.92);
           margin-bottom: 14px;
         }
         .m-pricing-tagline {
-          color: rgba(255,255,255,0.55);
+          color: rgba(255,250,240,0.58);
           font-size: 1.0625rem;
           line-height: 1.6;
           max-width: 42ch;
@@ -749,44 +689,37 @@ export default function MontreeLanding() {
           margin-bottom: 40px;
         }
         .m-price-card {
-          background: rgba(8,20,12,0.55);
-          border: 1px solid rgba(130,217,174,0.14);
-          border-radius: 18px;
+          background: rgba(255,255,255,0.028);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 14px;
           padding: 32px 28px;
           display: flex;
           flex-direction: column;
-          transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+          transition: border-color 220ms ease;
         }
-        /* Gentle lift on pointer devices only — touch scrolling shouldn't
-           trigger sticky hover states. */
+        /* Gentle border brighten on pointer devices only — no lift, no shadow. */
         @media (hover: hover) {
           .m-price-card:hover {
-            transform: translateY(-3px);
-            border-color: rgba(130,217,174,0.3);
-            box-shadow: 0 18px 44px -22px rgba(6,20,14,0.9);
+            border-color: rgba(255,255,255,0.14);
           }
           .m-price-card-featured:hover {
-            border-color: rgba(232,201,106,0.68);
-            box-shadow: 0 0 0 1px rgba(232,201,106,0.2), 0 22px 52px -20px rgba(232,201,106,0.3);
+            border-color: rgba(232,201,106,0.45);
           }
         }
         .m-price-card-featured {
-          border-color: rgba(232,201,106,0.5);
-          box-shadow: 0 0 0 1px rgba(232,201,106,0.14), 0 18px 44px -20px rgba(232,201,106,0.22);
+          border-color: rgba(232,201,106,0.3);
           position: relative;
         }
+        /* Quiet pass: badge is no longer a gold pill — it's a small-caps gold
+           text line sitting above the card name (static flow, first child). */
         .m-price-card-badge {
-          position: absolute;
-          top: 18px;
-          right: 22px;
-          font-size: 10px;
-          font-weight: 600;
-          letter-spacing: 0.12em;
+          display: block;
+          font-size: 0.62rem;
+          font-weight: 500;
+          letter-spacing: 0.3em;
           text-transform: uppercase;
-          color: #1a1208;
-          background: rgba(232,201,106,0.92);
-          padding: 4px 11px;
-          border-radius: 999px;
+          color: rgba(232,201,106,0.7);
+          margin-bottom: 12px;
         }
         .m-price-card-name {
           font-size: 0.78rem;
@@ -845,19 +778,19 @@ export default function MontreeLanding() {
           justify-content: center;
         }
         .m-pricing-cta-secondary {
-          font-size: 0.9375rem;
+          font-size: 0.9rem;
           font-weight: 500;
-          color: rgba(255,255,255,0.6);
+          color: rgba(255,250,240,0.58);
           text-decoration: none;
           letter-spacing: 0.01em;
-          padding: 14px 24px;
-          border-radius: 999px;
-          border: 1px solid rgba(255,255,255,0.16);
+          padding: 13px 24px;
+          border-radius: 10px;
+          border: 1px solid rgba(255,255,255,0.14);
           transition: color 200ms ease, border-color 200ms ease, background 200ms ease;
         }
         .m-pricing-cta-secondary:hover {
-          color: rgba(255,255,255,0.9);
-          border-color: rgba(255,255,255,0.3);
+          color: rgba(255,250,240,0.92);
+          border-color: rgba(255,255,255,0.22);
           background: rgba(255,255,255,0.04);
         }
 
@@ -870,7 +803,7 @@ export default function MontreeLanding() {
           margin: 0 auto;
         }
         .m-block {
-          padding: 56px 0;
+          padding: 68px 0;
           border-bottom: 1px solid rgba(255,255,255,0.06);
         }
         .m-block:first-child { padding-top: 16px; }
@@ -879,14 +812,14 @@ export default function MontreeLanding() {
         .m-block h2 {
           font-family: var(--font-lora), Georgia, serif;
           font-weight: 400;
-          font-size: clamp(1.875rem, 3.6vw, 2.5rem);
-          line-height: 1.18;
-          letter-spacing: -0.018em;
-          color: rgba(255,255,255,0.92);
+          font-size: clamp(1.45rem, 3.4vw, 1.7rem);
+          line-height: 1.24;
+          letter-spacing: -0.01em;
+          color: rgba(255,250,240,0.92);
           margin-bottom: 22px;
         }
         .m-block p {
-          color: rgba(255,255,255,0.40);
+          color: rgba(255,250,240,0.5);
           line-height: 1.85;
           font-size: 1.0625rem;
         }
@@ -895,7 +828,7 @@ export default function MontreeLanding() {
            Sits between the three editorial statements and the closing CTA.
            A quiet invitation into /montree/explainer — not a hard sell. */
         .m-explainer-teaser {
-          padding: 96px 32px 96px;
+          padding: 116px 32px 116px;
           text-align: center;
           border-top: 1px solid rgba(255,255,255,0.06);
         }
@@ -903,14 +836,14 @@ export default function MontreeLanding() {
         .m-explainer-teaser h2 {
           font-family: var(--font-lora), Georgia, serif;
           font-weight: 400;
-          font-size: clamp(1.875rem, 4vw, 2.75rem);
-          line-height: 1.15;
-          letter-spacing: -0.02em;
-          color: #ffffff;
+          font-size: clamp(1.45rem, 3.6vw, 1.7rem);
+          line-height: 1.2;
+          letter-spacing: -0.01em;
+          color: rgba(255,250,240,0.92);
           margin-bottom: 18px;
         }
         .m-explainer-teaser-sub {
-          color: rgba(255,255,255,0.55);
+          color: rgba(255,250,240,0.58);
           font-size: 1.0625rem;
           line-height: 1.7;
           max-width: 44ch;
@@ -919,21 +852,21 @@ export default function MontreeLanding() {
 
         /* ── Closing CTA ── */
         .m-closing {
-          padding: 160px 32px 160px;
+          padding: 190px 32px 190px;
           text-align: center;
           border-top: 1px solid rgba(255,255,255,0.06);
         }
         .m-closing h2 {
           font-family: var(--font-lora), Georgia, serif;
           font-weight: 400;
-          font-size: clamp(2.25rem, 5.2vw, 3.4rem);
-          line-height: 1.1;
-          letter-spacing: -0.022em;
-          color: #ffffff;
+          font-size: clamp(1.5rem, 4vw, 1.9rem);
+          line-height: 1.16;
+          letter-spacing: -0.012em;
+          color: rgba(255,250,240,0.92);
           margin-bottom: 24px;
         }
         .m-closing-sub {
-          color: rgba(255,255,255,0.55);
+          color: rgba(255,250,240,0.58);
           font-size: 1.0625rem;
           line-height: 1.7;
           max-width: 44ch;
@@ -952,7 +885,7 @@ export default function MontreeLanding() {
           font-weight: 400;
           font-size: clamp(16px, 2vw, 22px);
           letter-spacing: 0.01em;
-          color: rgba(255,255,255,0.55);
+          color: rgba(255,250,240,0.58);
           margin: 0 auto 12px;
           max-width: 36ch;
           line-height: 1.6;
@@ -1031,8 +964,8 @@ export default function MontreeLanding() {
             max-width: 260px;
             margin: 0 auto 20px;
           }
-          .m-hero-brandmark-glow { padding: 42px; }
-          .m-hero-brandmark-img { width: 156px; }
+          .m-hero-brandmark-glow { padding: 0; }
+          .m-hero-brandmark-img { width: 96px; }
           .m-hero-stack {
             align-items: center;
             max-width: 100%;
@@ -1051,9 +984,9 @@ export default function MontreeLanding() {
              reachable from the on-page Explainer teaser strip further down. */
           .m-nav-link-secondary { display: none; }
           .m-nav-link-explainer { display: none; }
-          .m-nav-link-library { font-size: 0.875rem; }
-          .m-nav-link-pricing { font-size: 0.875rem; }
-          .m-nav-link-login { font-size: 0.875rem; }
+          .m-nav-link-library { font-size: 0.85rem; }
+          .m-nav-link-pricing { font-size: 0.85rem; }
+          .m-nav-link-login { font-size: 0.85rem; }
           /* Tighten inter-link gaps + horizontal padding so Library, Pricing,
              Log in + the language toggle all fit on a narrow phone. The two
              clusters are the direct flex children of .m-nav-inner and carry
@@ -1087,8 +1020,8 @@ export default function MontreeLanding() {
             max-width: 220px;
             margin: 0 auto 18px;
           }
-          .m-hero-brandmark-glow { padding: 36px; }
-          .m-hero-brandmark-img { width: 138px; }
+          .m-hero-brandmark-glow { padding: 0; }
+          .m-hero-brandmark-img { width: 88px; }
           .m-editorial { padding: 40px 24px 100px; }
           .m-block { padding: 40px 0; }
           .m-pricing { padding: 64px 24px 64px; }
@@ -1110,9 +1043,8 @@ export default function MontreeLanding() {
         position: 'fixed',
         inset: 0,
         background: `
-          radial-gradient(ellipse 1000px 800px at 78% 10%, rgba(39,129,90,0.55), rgba(39,129,90,0) 55%),
-          radial-gradient(ellipse 600px 500px at 72% 16%, rgba(130,217,174,0.28), rgba(130,217,174,0) 60%),
-          linear-gradient(155deg, #0c2419 0%, #0a1f16 38%, #081a12 70%, #06140e 100%)
+          radial-gradient(ellipse 900px 700px at 50% -8%, rgba(39,129,90,0.14), rgba(39,129,90,0) 60%),
+          linear-gradient(168deg, #071510 0%, #051009 45%, #030b08 100%)
         `,
         zIndex: 0,
         pointerEvents: 'none',
@@ -1133,21 +1065,21 @@ export default function MontreeLanding() {
         <div className="m-nav-inner">
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <a className="m-logo" href="/montree" aria-label="Montree home">
-              <MontreeLogo size={28} />
+              <MontreeLogo size={22} showBackground={false} />
               <span className="m-logo-word">Montree</span>
             </a>
             <Link
               className="m-nav-link m-nav-link-library"
               href="/montree/library"
               style={{
-                fontSize: '0.875rem',
-                color: 'rgba(255,255,255,0.55)',
+                fontSize: '0.85rem',
+                color: 'rgba(255,250,240,0.58)',
                 textDecoration: 'none',
                 letterSpacing: '0.01em',
                 transition: 'color 200ms ease',
               }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}
+              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,250,240,0.92)' )}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,250,240,0.58)')}
             >
               {t('landing.nav.library')}
             </Link>
@@ -1155,14 +1087,14 @@ export default function MontreeLanding() {
               className="m-nav-link m-nav-link-explainer"
               href="/montree/explainer"
               style={{
-                fontSize: '0.875rem',
-                color: 'rgba(255,255,255,0.55)',
+                fontSize: '0.85rem',
+                color: 'rgba(255,250,240,0.58)',
                 textDecoration: 'none',
                 letterSpacing: '0.01em',
                 transition: 'color 200ms ease',
               }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}
+              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,250,240,0.92)' )}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,250,240,0.58)')}
             >
               {t('landing.nav.explainer')}
             </Link>
@@ -1172,14 +1104,14 @@ export default function MontreeLanding() {
               className="m-nav-link m-nav-link-pricing"
               href="/pricing"
               style={{
-                fontSize: '0.875rem',
-                color: 'rgba(255,255,255,0.55)',
+                fontSize: '0.85rem',
+                color: 'rgba(255,250,240,0.58)',
                 textDecoration: 'none',
                 letterSpacing: '0.01em',
                 transition: 'color 200ms ease',
               }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}
+              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,250,240,0.92)' )}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,250,240,0.58)')}
             >
               {t('landing.nav.pricing')}
             </Link>
@@ -1187,9 +1119,9 @@ export default function MontreeLanding() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {/* Ambassador nav link removed (Jul 2026) — no more public agent
                 recruitment. /montree/become-an-agent now redirects to home. */}
-            <Link className="m-nav-link m-nav-link-secondary" href="/montree/about" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>
+            <Link className="m-nav-link m-nav-link-secondary" href="/montree/about" style={{ fontSize: '0.85rem', color: 'rgba(255,250,240,0.58)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,250,240,0.92)' )}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,250,240,0.58)')}>
               About
             </Link>
             {/* Security nav link removed per user directive — the /montree/security
@@ -1198,9 +1130,9 @@ export default function MontreeLanding() {
             {/* "What's new" link removed from public landing nav per Session 108 directive —
                 /montree/changelog is internal-use only now. The route still exists for direct
                 access. */}
-            <Link className="m-nav-link m-nav-link-login" href="/montree/login-select" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)' )}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>
+            <Link className="m-nav-link m-nav-link-login" href="/montree/login-select" style={{ fontSize: '0.85rem', color: 'rgba(255,250,240,0.58)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 200ms ease' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,250,240,0.92)' )}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,250,240,0.58)')}>
               {t('landing.nav.login')}
             </Link>
             <LanguageToggle />
@@ -1356,13 +1288,13 @@ export default function MontreeLanding() {
             <img> carries explicit width/height to reserve layout (CLS). */}
         <div className="m-hero-brandmark" aria-hidden="true">
           <span className="m-hero-brandmark-glow">
-            {/* 480px WebP (56KB vs the 235KB master PNG) — the hero never
-                renders the mark above ~208 CSS px, so 480w covers 2x DPR.
-                width/height reflect the TRUE 480x394 aspect (no letterbox). */}
+            {/* Transparent gold mark on the page's own dark ground — no disc.
+                480x394 true aspect (no letterbox); the hero renders it at
+                ≤110 CSS px so this covers >2x DPR. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               className="m-hero-brandmark-img"
-              src="/brand/m-mark-480.webp"
+              src="/brand/m-mark-transparent.webp"
               alt=""
               width={480}
               height={394}
