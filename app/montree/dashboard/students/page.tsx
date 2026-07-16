@@ -609,6 +609,7 @@ export default function StudentsPage() {
           )}
           <button
             data-tutorial="add-student-button"
+            data-copilot="add-students"
             onClick={openAddForm}
             className="px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600"
           >

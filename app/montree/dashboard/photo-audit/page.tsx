@@ -2681,6 +2681,7 @@ export default function PhotoAuditPage() {
             return (
               <button
                 key={tab.key}
+                data-copilot={tab.key === 'all' ? 'confirm-tab' : undefined}
                 onClick={() => setZone(tab.key as Zone)}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 999, background: isActive ? 'rgba(52,211,153,0.10)' : 'rgba(255,255,255,0.04)', border: `1px solid ${isActive ? 'rgba(52,211,153,0.55)' : 'rgba(255,255,255,0.10)'}`, color: isActive ? '#34d399' : 'rgba(255,255,255,0.55)', fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 120ms ease' }}
               >

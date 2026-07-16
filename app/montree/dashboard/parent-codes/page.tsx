@@ -425,6 +425,7 @@ export default function TeacherParentCodesPage() {
             return (
               <button
                 key={key}
+                data-copilot={key === 'codes' ? 'parent-codes' : key === 'reports' ? 'reports-pill' : undefined}
                 onClick={() => setActiveTab(key)}
                 style={{
                   display: 'inline-flex',

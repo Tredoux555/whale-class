@@ -622,13 +622,17 @@ function DashboardHeader() {
           <div className="mt-header-right-cluster" style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
             <LanguageToggle />
 
-            <IconBtn
-              title={t('capture.takePhoto')}
-              active={pathname === '/montree/dashboard/capture'}
-              onClick={() => router.push('/montree/dashboard/capture')}
-            >
-              <Camera size={18} strokeWidth={1.75} color="#fff" />
-            </IconBtn>
+            {/* Wrapper carries the copilot anchor (IconBtn doesn't forward
+                data-* props); inline-flex keeps layout identical. */}
+            <span data-copilot="camera" style={{ display: 'inline-flex' }}>
+              <IconBtn
+                title={t('capture.takePhoto')}
+                active={pathname === '/montree/dashboard/capture'}
+                onClick={() => router.push('/montree/dashboard/capture')}
+              >
+                <Camera size={18} strokeWidth={1.75} color="#fff" />
+              </IconBtn>
+            </span>
 
             {/* Messages — promoted from the More menu to a first-class icon
                 so principals + parents can reach this channel in one tap.
@@ -658,7 +662,7 @@ function DashboardHeader() {
             </IconBtn>
 
             {/* More menu */}
-            <div ref={moreMenuRef} style={{ position: 'relative' }}>
+            <div ref={moreMenuRef} data-copilot="more-menu" style={{ position: 'relative' }}>
               <IconBtn
                 title={t('nav.more') || 'More'}
                 active={showMoreMenu}

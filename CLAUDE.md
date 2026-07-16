@@ -2,6 +2,78 @@
 
 **⚠️ STANDING RULE (Tredoux, Jul 10 2026 — PERMANENT): MODEL DELEGATION.** Fable is the DIRECTOR and second brain — it plans, decides, writes the critical copy, and reviews. It does NOT do grunt work. **Sonnet** (preferred over Haiku — more reliable) does all fetching, sweeping, scouting, data-gathering, and auditing via sub-agents. **Opus** builds where appropriate. Never let Fable burn half its context on mechanical work another model can do — spawn agents instead.
 
+## 🧭 SESSION — Jul 16, 2026 (Cowork/Fable directing Sonnet+Opus) — ONBOARDING COPILOT ("THE GUIDE") SHIPPED — the principal dead-end is closed
+
+**Canonical: `docs/handoffs/SESSION_ONBOARDING_COPILOT_JUL16.md` (close-out + owed items) + binding
+contract `docs/handoffs/PLAN_ONBOARDING_COPILOT_JUL16.md` (§2 pinned interface, §4 Fable-authored copy,
+§7 landmines — READ BEFORE TOUCHING). NOT committed — Tredoux pushes via Desktop Commander (scoped add).
+⏳ MIGRATION 297 PENDING Tredoux's Supabase run (SQL in chat; fail-closed pre-run — dock stays hidden).**
+Tredoux's ask: principals finish the setup wizard, land on /admin (Astra chat), and don't know what to do
+next — build a bolt-on step-by-step advisor for principal AND teacher, coded steps + AI warmth, screen by
+screen. Built (sacred flow: 3 Sonnet scouts → Fable contract+copy → 2 parallel Opus builds → Sonnet audit
+**FIXED-NOW-SHIP, 0 CRIT, 2 WARN fixed**): **CopilotDock** — floating pill→guide card on both surfaces
+(dashboard + admin layouts), **deterministic step engine** (`lib/montree/onboarding-copilot/journeys.ts`,
+pure) deriving completion from REAL DB state via `GET /api/montree/onboarding-copilot/state` (cheap count
+queries; `{enabled:false}` on any failure — copilot can never break a page). Principal journey (Astra
+voice): classroom → teacher → **handover** (waits on the teacher's ACTUAL first login `last_login_at`,
+live waiting line, celebrates with the real name) → students → first photo → first report. Teacher journey
+(Guru voice): students → voice_intro (optional; hidden if `tell_guru_onboarding` off; points AT the
+takeover, never re-triggers it — Jul-3 landmine respected) → photo → confirm → parent code → report.
+Anchor PULSE (`data-copilot` attrs ×7, portal ring) not spotlight-dimming. Ask-box = **HAIKU all tiers
+incl. free** (onboarding never 402s; budget-metered + logApiUsage; journey-map-grounded prompt, "never
+invent UI"). Storage: NO new tables — reuses `montree_onboarding_progress` (migration 131, was
+zero-callers). Migration 297 = flag `onboarding_copilot` default TRUE (self-retiring for done schools).
+i18n ~85 `copilot.*` keys ×12 (EN+ZH real, 你 teacher/您 principal; 10 English-fallback). **Bonus bug
+fixed:** `POST /api/montree/admin/classrooms` now seeds curriculum (post-setup classrooms silently got
+empty shelves). 🚨 RULES: coded steps are ground truth, AI never decides navigation · copilot AI = Haiku
+for all tiers · dock never un-completes a step client-side (high-watermark) · Feb-27 dead guide components
+stay dead · new steps = journeys.ts + i18n keys, never hardcoded in the dock. Verified: harness 11/11,
+eslint 0 err, scoped tsc 0 err on copilot files, i18n parity mechanically diffed ×12. ⏳ OWED: migration
+297 · commit+push (DC, scoped) · DC-delete `scripts/_tmp_copilot_harness.mjs` + 2 gitignored temp scoped
+tsconfigs · **device verification walk** (fresh principal → P1–P3 → teacher logs in on 2nd device →
+principal card ticks itself → teacher T1–T6 → completions fire once → dock gone next login).
+
+---
+
+## 🎯 SESSION — Jul 15, 2026 pt4/night (same Cowork session) — FORCED ALIGNMENT SHIPPED (the timing saga ends) + FULL 98-VIDEO FLEET LAUNCHED
+
+**Canonical: `docs/handoffs/SESSION_FORCED_ALIGN_FLEET_JUL15.md` (READ FIRST — fleet-state check
+steps) + `docs/handoffs/PLAN_FORCED_ALIGN_JUL15.md` (contract) + `docs/curriculum/
+SOUNDSONG_TIMING_FIX_JUL15.md` (full technical record). NOT committed — push list in the handoff §6
+(Desktop Commander, scoped add, tree has unrelated dirt).** Closes the pt3 "sound-song timing fix
+queued" item. Dead ends ruled out first: Suno exposes NO word/line timing on any reachable
+non-Premier surface (full API/DOM/network audit); whisper large-v3 on an isolated vocals stem was
+WORSE than the full mix (98.6% vs 80.8% approx); Tredoux's MacWhisper SRT only covered ~20% of the
+lyrics, dry-run proved it would regress the pipeline (caught before a render was spent). **THE FIX:
+stable-ts FORCED ALIGNMENT** — known lyric text fitted to the audio via DTW over cross-attention,
+never transcribed/guessed — landed every word within ~0.2-0.5s of hand-timed truth on the worst
+song. Tredoux: "God damn! It nailed it!" Opus build → Sonnet fresh-eyes audit: **SHIP, 0 bugs**,
+257/257 tests (106+71+80). **Forced alignment is now the PRIMARY timing source** in `analyze.py`
+(subs still wins over everything; align is the normal-case path; whisper transcription demoted to
+fallback-only). New `scripts/mvgen/align_worker.py` runs alignment as a subprocess of a dedicated
+venv (`~/mvgen-models/align-venv` — torch/stable-ts, the daemon's own python has no torch); env
+`MVGEN_ALIGN`/`MVGEN_ALIGN_MODEL`/`MVGEN_ALIGN_VENV`, all folded into the cache fingerprint.
+Align-timed words are ~0% approx → songs that needed script mode now run the certified anchor path
+directly (W02-sound: script→anchor). `timing_source` ("align"/"transcribe"/"subs"/"none") written
+into every `shot_report.json` — **and is now the publish quality gate** (new
+`scripts/curriculum/publish-videos.mjs`: only publishes videos with `timing_source=="align"`,
+mirrors the songs/images publish pattern, stamps `songs[].videoUrl`). Certified tonight: W02-sound,
+W03×2, W04×2, W05-W10×12 — all align/0% approx. ⚠️ **W09-sound "H-H-Hat"** (sparse vocab → script
+mode) **FAILED its energy gate** — published anyway (gate ≠ publish block) but flagged for
+Tredoux's personal review, don't treat as certified yet. **Full remaining 98-video fleet (W01,
+W02-word, W11-58×2) LAUNCHED** on the daemon queue tonight (monitor `_tmp_fleet_monitor_jul15c.sh`,
+log `/tmp/fleet_monitor_jul15c.log`, auto-runs publish-videos.mjs --all on drain →
+`/tmp/publish_videos.log`) — **check completion state on resume, see the handoff §3.** 🚨 **RULE:**
+a prune/cleanup step running concurrently with an active render queue must check "is this title a
+LIVE job right now" against the daemon's own job list, not title-match against on-disk output alone
+— the first monitor deleted 4 in-flight jobs' inputs this way (rebuilt + resubmitted; v2 monitor
+fixed it). Also tonight: Week 1 /a/ vocab gap fixed (7 of 8 sound-basket words were never wired into
+print materials — all 8 now in cards/matching/dictionary, validator 58/58); Studio missing-pictures
+prior-week-asset-fallback fix (commit `a28e1ef5`, **already pushed**, 1,185/1,185 image coverage);
+W02 stray stool.png replaced with the real table asset; W03 Sejeena/Segina alias added.
+
+---
+
 ## ⏰ SESSION — Jul 15, 2026 pt2 (same Cowork session) — COACH CLOCK + PUSH REMINDERS SHIPPED IN BOTH COACHES
 
 **Canonical: `docs/handoffs/PLAN_COACH_CLOCK_REMINDERS_JUL15.md` (contract + close-out). COMMITTED +

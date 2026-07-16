@@ -34,6 +34,13 @@ const TracyFloat = dynamic(() => import('@/components/montree/admin/TracyFloat')
   ssr: false,
   loading: () => null,
 });
+// Onboarding Copilot ("The Guide") — principal journey. Mounted only once auth
+// is confirmed (there is no FeaturesProvider on /montree/admin/*; the copilot's
+// own /state route is the sole gate). ssr:false, house pattern.
+const CopilotDock = dynamic(
+  () => import('@/components/montree/onboarding-copilot/CopilotDock'),
+  { ssr: false, loading: () => null }
+);
 // "Sparkles" (Ask Guru) was previously in the sidebar but Astra IS the
 // principal's chief-of-staff AI surface — Guru is the per-child Maria
 // Montessori in your pocket for teachers, and Astra can call it as a
@@ -180,6 +187,7 @@ function SidebarContent({ schoolName, isActive, onLogout, nav }: SidebarContentP
             <Link
               key={item.href}
               href={item.href}
+              data-copilot={item.href === '/montree/admin/classrooms' ? 'nav-classrooms' : undefined}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -701,6 +709,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           /montree/admin (which IS Astra in full-page form). The component
           renders null on that route internally, so nothing to gate here. */}
       <TracyFloat />
+
+      {/* Onboarding Copilot — principal journey. Only mount once auth is
+          confirmed (no FeaturesProvider here; its /state route gates itself).
+          Pill sits bottom-left, clear of Astra's top-right float. */}
+      {authState === 'authed' && <CopilotDock surface="principal" />}
 
       <style jsx global>{`
 @media (min-width: 960px) {
