@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
-import { FUNNEL_CSS } from '@/components/montree/funnel/funnel-theme';
+import { FT, FUNNEL_CSS } from '@/components/montree/funnel/funnel-theme';
 import GoldenThread from '@/components/montree/funnel/GoldenThread';
 import AstraNarrator from '@/components/montree/funnel/AstraNarrator';
 
@@ -20,8 +21,8 @@ interface TrialResponse {
     email: string | null;
     password_set_at: string | null;
   };
-  // The 'Parent' picker entry signs up as a STANDARD teacher account — clean
-  // school app, no parent-specific handling. $7 for their one child ("the hack").
+  // The teacher side-door (?role=teacher / ?role=parent) signs up as a STANDARD
+  // teacher account — clean school app, no parent-specific handling.
   classroom?: {
     id: string;
     name: string;
@@ -65,12 +66,13 @@ const CERE_KEYS = ['copilot.funnel.cere.1', 'copilot.funnel.cere.2', 'copilot.fu
 export default function TryMontreePage() {
   const router = useRouter();
   const { t, locale } = useI18n();
-  const [step, setStep] = useState<'role' | 'details' | 'creating' | 'code'>('role');
-  // The 'Parent' card on the picker routes straight into the teacher flow —
-  // identical signup, no parent-specific handling. It's just a friendlier
-  // entry label. The "I'm a parent / this is great value" feeling happens
-  // later, inside the app — never at signup.
-  const [selectedRole, setSelectedRole] = useState<'teacher' | 'principal' | null>(null);
+  // /try is single-purpose: founding a school. The flow opens directly on the
+  // details form. No role picker.
+  const [step, setStep] = useState<'details' | 'creating' | 'code'>('details');
+  // Role is 'principal' by default (the founding-school flow). A hidden query
+  // side door (?role=teacher, or ?role=parent → teacher behaviour) reuses the
+  // SAME form for a standard teacher account. No UI links to the side door.
+  const [role, setRole] = useState<'teacher' | 'principal'>('principal');
   const [userName, setUserName] = useState('');
   const [schoolName, setSchoolName] = useState('');
   const [userEmail, setUserEmail] = useState('');
@@ -86,9 +88,9 @@ export default function TryMontreePage() {
   // Ceremony line index (display only).
   const [cereIdx, setCereIdx] = useState(0);
 
-  // Read ?ref=CODE and ?founding=CODE from URL on mount. Using window.location
-  // keeps us out of Suspense-boundary territory (useSearchParams in Next 13+
-  // requires Suspense).
+  // Read ?ref=CODE, ?founding=CODE and ?role=… from URL on mount. Using
+  // window.location keeps us out of Suspense-boundary territory (useSearchParams
+  // in Next 13+ requires Suspense).
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
@@ -107,6 +109,13 @@ export default function TryMontreePage() {
           setFoundingCode(cleaned);
         }
       }
+      // Hidden side door — teachers/parents normally sign in with a code at
+      // /login-select; this reuses the founding form for a standard teacher
+      // account. Both ?role=teacher and ?role=parent map to teacher.
+      const roleParam = params.get('role');
+      if (roleParam === 'teacher' || roleParam === 'parent') {
+        setRole('teacher');
+      }
     } catch {
       // ignore
     }
@@ -124,11 +133,7 @@ export default function TryMontreePage() {
     return () => window.clearInterval(id);
   }, [step]);
 
-  const handleRoleSelect = (role: 'teacher' | 'principal') => {
-    setSelectedRole(role);
-    setStep('details');
-    setError('');
-  };
+  const isPrincipal = role === 'principal';
 
   const handleDetailsSubmit = async () => {
     if (!userName.trim()) {
@@ -136,7 +141,7 @@ export default function TryMontreePage() {
       return;
     }
     if (!schoolName.trim()) {
-      setError(selectedRole === 'principal' ? t('signup.pleaseEnterSchool') : t('signup.pleaseEnterSchoolClassroom'));
+      setError(isPrincipal ? t('signup.pleaseEnterSchool') : t('signup.pleaseEnterSchoolClassroom'));
       return;
     }
 
@@ -148,7 +153,7 @@ export default function TryMontreePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          role: selectedRole,
+          role,
           name: userName.trim(),
           schoolName: schoolName.trim(),
           email: userEmail.trim(),
@@ -214,38 +219,22 @@ export default function TryMontreePage() {
     }
   };
 
-  const handleBackClick = (e: React.MouseEvent) => {
-    if (step === 'creating' || step === 'code') {
-      e.preventDefault();
-      return;
-    }
-    if (step === 'details') {
-      e.preventDefault();
-      setStep('role');
-      setSelectedRole(null);
-      setError('');
-      return;
-    }
-  };
-
   // ── Narrator / thread derivation (presentational) ──────────────────────────
-  // On the arrival screen Astra hosts; once a role is chosen the narrator takes
-  // that role's persona (parent → teacher signup → Guru).
-  const codeRole = responseData?.role ?? selectedRole;
+  // Astra hosts the founding flow (principal); the hidden teacher side door hands
+  // narration to Guru.
+  const codeRole = responseData?.role ?? role;
   const narratorJourney: 'principal' | 'teacher' =
-    step === 'role'
-      ? 'principal'
-      : step === 'code'
-        ? codeRole === 'principal'
-          ? 'principal'
-          : 'teacher'
-        : selectedRole === 'principal'
-          ? 'principal'
-          : 'teacher';
-  const screenKey = step; // 'role' | 'details' | 'creating' | 'code'
-  const threadStep = step === 'role' ? 1 : step === 'code' ? 3 : 2;
-  const isPrincipalDetails = selectedRole === 'principal';
-  const backDisabled = step === 'creating' || step === 'code';
+    step === 'code'
+      ? codeRole === 'principal'
+        ? 'principal'
+        : 'teacher'
+      : isPrincipal
+        ? 'principal'
+        : 'teacher';
+  const screenKey = step; // 'details' | 'creating' | 'code'
+  // /try thread positions: details=1, creating=1, code=2 (of 5). The teacher
+  // side door hides the thread entirely.
+  const threadStep = step === 'code' ? 2 : 1;
 
   return (
     <div className="fn-page">
@@ -264,8 +253,8 @@ export default function TryMontreePage() {
         <LanguageToggle className="bg-white/10 hover:bg-white/20 text-white border border-white/[0.08]" />
       </div>
 
-      {/* Golden thread */}
-      <GoldenThread step={threadStep} />
+      {/* Golden thread — hidden entirely on the teacher side door */}
+      {isPrincipal && <GoldenThread step={threadStep} />}
 
       <div className="fn-hall">
         {/* The narrator — top-left, every screen */}
@@ -274,16 +263,6 @@ export default function TryMontreePage() {
         {/* The stage */}
         <div className="fn-stage-wrap">
           <div className="fn-screen">
-            {/* Back link — preserves the original back-block behaviour */}
-            <a
-              href="/montree"
-              onClick={handleBackClick}
-              className={`fn-backlink${backDisabled ? ' disabled' : ''}`}
-              aria-disabled={backDisabled}
-            >
-              ← {t('common.back')}
-            </a>
-
             {/* Founding 100 banner — every step except code. Takes precedence
                 over the referral banner (amendment A6). */}
             {foundingCode && step !== 'code' && (
@@ -341,45 +320,14 @@ export default function TryMontreePage() {
               </div>
             )}
 
-            {/* ── S1 · Role ── */}
-            {step === 'role' && (
-              <div className="center" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                <h1 className="fn-h1" style={{ marginTop: 48 }}>{t('copilot.funnel.welcome')}</h1>
-
-                {/*
-                 * Referral swap: when arriving via ?ref=CODE almost all
-                 * redeemers are principals/owners, so the gold Principal card
-                 * leads (order: principal · teacher · parent). Without a code
-                 * the natural order (teacher · principal · parent) stands.
-                 * Each card triggers its OWN role — mapping is unchanged;
-                 * only visual order shifts (the swap the outreach links rely on).
-                 */}
-                <div className="fn-roles">
-                  {referralCode ? (
-                    <>
-                      <PrincipalCard onSelect={() => handleRoleSelect('principal')} t={t} />
-                      <TeacherCard onSelect={() => handleRoleSelect('teacher')} t={t} />
-                      <ParentCard onSelect={() => handleRoleSelect('teacher')} t={t} />
-                    </>
-                  ) : (
-                    <>
-                      <TeacherCard onSelect={() => handleRoleSelect('teacher')} t={t} />
-                      <PrincipalCard onSelect={() => handleRoleSelect('principal')} t={t} />
-                      <ParentCard onSelect={() => handleRoleSelect('teacher')} t={t} />
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* ── S2 · Details ── */}
-            {step === 'details' && selectedRole && (
+            {/* ── S1 · Details (the school form — the opening screen) ── */}
+            {step === 'details' && (
               <div style={{ maxWidth: 560 }}>
-                <h2 className="fn-h2" style={{ marginBottom: 32 }}>
-                  {isPrincipalDetails
-                    ? t('copilot.funnel.details.heading.principal')
-                    : t('copilot.funnel.details.heading.teacher')}
-                </h2>
+                <h1 className="fn-h1" style={{ marginBottom: 32 }}>
+                  {isPrincipal
+                    ? t('copilot.funnel.foundHeading')
+                    : t('copilot.funnel.foundHeadingTeacher')}
+                </h1>
 
                 <div className="fn-field">
                   <label>{t('signup.yourName')}</label>
@@ -388,19 +336,19 @@ export default function TryMontreePage() {
                     className="fn-input"
                     value={userName}
                     onChange={(e) => setUserName(e.target.value)}
-                    placeholder={isPrincipalDetails ? t('signup.namePlaceholder.principal') : t('signup.namePlaceholder.teacher')}
+                    placeholder={isPrincipal ? t('signup.namePlaceholder.principal') : t('signup.namePlaceholder.teacher')}
                     autoFocus
                   />
                 </div>
 
                 <div className="fn-field">
-                  <label>{isPrincipalDetails ? t('signup.schoolName') : t('signup.schoolClassroomName')}</label>
+                  <label>{isPrincipal ? t('signup.schoolName') : t('signup.schoolClassroomName')}</label>
                   <input
                     type="text"
                     className="fn-input"
                     value={schoolName}
                     onChange={(e) => setSchoolName(e.target.value)}
-                    placeholder={isPrincipalDetails ? t('signup.schoolPlaceholder.principal') : t('signup.schoolPlaceholder.teacher')}
+                    placeholder={isPrincipal ? t('signup.schoolPlaceholder.principal') : t('signup.schoolPlaceholder.teacher')}
                     onKeyDown={(e) => e.key === 'Enter' && handleDetailsSubmit()}
                   />
                   {/* Display-only slug preview (not wired to anything). */}
@@ -444,15 +392,26 @@ export default function TryMontreePage() {
                 )}
 
                 <button className="fn-pill" onClick={handleDetailsSubmit} style={{ marginTop: 6 }}>
-                  {isPrincipalDetails
+                  {isPrincipal
                     ? t('copilot.funnel.details.cta.principal')
                     : t('copilot.funnel.details.cta.teacher')}{' '}
                   →
                 </button>
+
+                {/* Quiet sign-in line for teachers/parents who arrived with a
+                    code — text-level, no border, hush colour. */}
+                <div style={{ marginTop: 20 }}>
+                  <Link
+                    href="/montree/login-select"
+                    style={{ color: FT.hush, fontSize: '0.8rem', textDecoration: 'none' }}
+                  >
+                    {t('copilot.funnel.haveCode')}
+                  </Link>
+                </div>
               </div>
             )}
 
-            {/* ── S3 · Creating (the ceremony) ── */}
+            {/* ── S2 · Creating (the ceremony) ── */}
             {step === 'creating' && (
               <div className="center" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
                 <div className="fn-cere-line" style={{ marginTop: 120 }}>{t(CERE_KEYS[cereIdx])}</div>
@@ -463,8 +422,7 @@ export default function TryMontreePage() {
                     <button
                       onClick={() => {
                         setError('');
-                        setStep('role');
-                        setSelectedRole(null);
+                        setStep('details');
                       }}
                     >
                       {t('common.tryAgain')}
@@ -474,7 +432,7 @@ export default function TryMontreePage() {
               </div>
             )}
 
-            {/* ── S4 · Code (the key) ── */}
+            {/* ── S3 · Code (the key) ── */}
             {step === 'code' && responseData && (
               <div className="center" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
                 <h1 className="fn-h1">
@@ -510,40 +468,5 @@ export default function TryMontreePage() {
 
       <div className="fn-foot">Montree · montree.xyz</div>
     </div>
-  );
-}
-
-// ── Role cards (presentational; each triggers its own role) ──────────────────
-type T = ReturnType<typeof useI18n>['t'];
-
-function TeacherCard({ onSelect, t }: { onSelect: () => void; t: T }) {
-  return (
-    <button type="button" className="fn-rcard" onClick={onSelect}>
-      <span className="fn-ric">👩‍🏫</span>
-      <h3>{t('copilot.funnel.role.teacher.title')}</h3>
-      <p>{t('copilot.funnel.role.teacher.desc')}</p>
-    </button>
-  );
-}
-
-function PrincipalCard({ onSelect, t }: { onSelect: () => void; t: T }) {
-  return (
-    <button type="button" className="fn-rcard goldcard" onClick={onSelect}>
-      <span className="fn-rbadge">{t('copilot.funnel.role.badge')}</span>
-      <span className="fn-ric">🎓</span>
-      <h3>{t('copilot.funnel.role.principal.title')}</h3>
-      <p>{t('copilot.funnel.role.principal.desc')}</p>
-      <span className="fn-rgo">{t('copilot.funnel.role.begin')} →</span>
-    </button>
-  );
-}
-
-function ParentCard({ onSelect, t }: { onSelect: () => void; t: T }) {
-  return (
-    <button type="button" className="fn-rcard" onClick={onSelect}>
-      <span className="fn-ric">🏡</span>
-      <h3>{t('copilot.funnel.role.parent.title')}</h3>
-      <p>{t('copilot.funnel.role.parent.desc')}</p>
-    </button>
   );
 }

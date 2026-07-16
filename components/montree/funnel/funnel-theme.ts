@@ -125,21 +125,6 @@ export const FUNNEL_CSS = `
 .fn-h1{font-family:${FT.serif}; font-weight:400; font-size:2.15rem; line-height:1.12; letter-spacing:0.005em; color:${FT.voice}}
 .fn-h2{font-family:${FT.serif}; font-weight:400; font-size:1.7rem; line-height:1.16; color:${FT.voice}}
 
-/* role cards */
-.fn-roles{display:grid; grid-template-columns:1fr 1.14fr 1fr; gap:16px; width:100%; margin-top:28px; align-items:stretch}
-.fn-rcard{position:relative; text-align:left; background:${FT.glass}; border:1px solid ${FT.glassEdge};
-  border-radius:14px; padding:24px 22px 22px; backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
-  transition:border-color .18s ease; cursor:pointer; color:inherit; width:100%; display:block}
-.fn-rcard:hover{border-color:rgba(255,255,255,0.18)}
-.fn-rcard .fn-ric{font-size:1.7rem; margin-bottom:12px; display:block}
-.fn-rcard h3{font-family:${FT.serif}; font-weight:500; font-size:1.32rem; margin-bottom:7px; color:${FT.voice}}
-.fn-rcard p{font-size:0.8rem; line-height:1.55; color:${FT.whisper}}
-.fn-rcard.goldcard{border-color:rgba(232,201,106,0.3)}
-.fn-rcard.goldcard:hover{border-color:rgba(232,201,106,0.55)}
-.fn-rbadge{display:block; margin-bottom:10px;
-  color:rgba(232,201,106,0.7); font-size:0.6rem; font-weight:600; letter-spacing:0.22em; text-transform:uppercase; white-space:nowrap}
-.fn-rgo{margin-top:14px; display:inline-block; font-size:0.9rem; font-weight:500; color:${FT.gold}}
-
 /* form pieces */
 .fn-field{margin-bottom:22px; text-align:left; width:100%}
 .fn-field label{display:block; font-size:0.82rem; color:${FT.whisper}; margin-bottom:8px; letter-spacing:0.02em}
@@ -211,8 +196,6 @@ export const FUNNEL_CSS = `
 @media (max-width:1040px){
   .fn-hall{grid-template-columns:1fr; padding:18px 18px 50px}
   .fn-narrator{position:relative; top:0; width:100%; margin-bottom:22px}
-  .fn-roles{grid-template-columns:1fr}
-  .fn-rcard.goldcard{order:-1}
   .fn-h1{font-size:1.85rem} .fn-h2{font-size:1.45rem}
   .fn-thekey{font-size:1.9rem}
 }
