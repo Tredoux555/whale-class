@@ -140,3 +140,9 @@ tsconfig.english.tmp.json
 # Coach Clock + Reminders (Jul-15): temp scoped tsconfigs from build verification (sandbox rm blocked — delete via Desktop Commander)
 tsconfig.scope-reminders-tmp.json
 tsconfig.scope-route-tmp.json
+
+# Onboarding Copilot (Jul-16): temp scoped tsconfig from fresh-eyes audit (sandbox rm blocked — delete via Desktop Commander)
+tsconfig.scope-copilot.tmp.json
+tsconfig.scope-copilot.tmp.tsbuildinfo
+tsconfig.scope-copilot2.tmp.json
+tsconfig.scope-copilot2.tmp.tsbuildinfo

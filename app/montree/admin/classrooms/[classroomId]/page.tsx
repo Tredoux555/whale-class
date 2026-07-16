@@ -491,7 +491,7 @@ export default function ClassroomDetailPage({
       </header>
 
       {/* ── Teaching team section ─────────────────────────────────── */}
-      <section style={{ marginBottom: 44 }}>
+      <section data-copilot="teaching-team" style={{ marginBottom: 44 }}>
         <SectionHeader
           title="Teaching team"
           actionLabel="Add teacher"

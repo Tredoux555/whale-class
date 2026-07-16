@@ -3,6 +3,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import DashboardHeader from '@/components/montree/DashboardHeader';
 import NetworkStatusBanner from '@/components/montree/NetworkStatusBanner';
 import BackgroundTaskBanner from '@/components/montree/BackgroundTaskBanner';
@@ -10,6 +11,14 @@ import PushRegistrar from '@/components/montree/PushRegistrar';
 import { registerSyncTriggers } from '@/lib/montree/offline/sync-triggers';
 import { FeaturesProvider } from '@/lib/montree/features';
 import { getSession } from '@/lib/montree/auth';
+
+// Onboarding Copilot ("The Guide") — floating pill → guide card, ssr:false
+// (house pattern). Its own /state route is the sole gate; it renders nothing
+// until the school + role qualify, and retires itself once the journey is done.
+const CopilotDock = dynamic(
+  () => import('@/components/montree/onboarding-copilot/CopilotDock'),
+  { ssr: false, loading: () => null }
+);
 // PERF: Removed 2 onboarding API calls that fired on EVERY page navigation.
 // Onboarding guides are HIDDEN (Feb 27) — all renders wrapped with `false &&`.
 // To re-enable: search for "HIDDEN: onboarding guides disabled" and restore API calls here.
@@ -39,6 +48,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <DashboardHeader />
         {children}
         <BackgroundTaskBanner />
+        <CopilotDock surface="teacher" />
       </div>
     </FeaturesProvider>
   );

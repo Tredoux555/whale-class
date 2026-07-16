@@ -59,6 +59,11 @@ export type FeatureKey =
   | 'daily_language_6'
   // Onboarding
   | 'tell_guru_onboarding'
+  // Onboarding Copilot ("The Guide") — a floating guide dock that walks new
+  // principals (Astra voice) + teachers (Guru voice) through first setup,
+  // deriving completion from real DB state. Migration 297. Default ON —
+  // established schools complete instantly and the dock retires itself.
+  | 'onboarding_copilot'
   // Child week view
   | 'weekly_activity_summary'
   // Weekly report AI tier (free = no AI, haiku = cheap, sonnet = premium)
