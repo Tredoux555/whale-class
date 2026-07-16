@@ -191,15 +191,15 @@ function GuruContent() {
       {/* Paywall Modal (homeschool parents only) */}
       {showPaywall && guruStatus?.is_locked && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center">
+          <div className="rounded-2xl border border-[rgba(52,211,153,0.15)] max-w-sm w-full p-6 text-center" style={{ background: '#0c1f14' }}>
             <div className="text-5xl mb-4">🌿</div>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">{t('guru.unlockGuru')}</h2>
-            <p className="text-gray-600 mb-4">
+            <h2 className="text-xl font-bold text-white/95 mb-2" style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontWeight: 500 }}>{t('guru.unlockGuru')}</h2>
+            <p className="text-white/70 mb-4">
               {t('guru.usedFreeSessions')}
             </p>
-            <div className="rounded-xl p-4 mb-5 bg-[#F5E6D3]/60">
-              <div className="text-3xl font-bold text-[#0D3330]">$5<span className="text-base font-normal text-[#0D3330]/60">{t('guru.pricePerChild')}</span></div>
-              <div className="text-sm mt-1 text-[#0D3330]/70">{t('guru.unlimitedCancel')}</div>
+            <div className="rounded-xl p-4 mb-5 border border-[rgba(52,211,153,0.15)]" style={{ background: 'rgba(52,211,153,0.06)' }}>
+              <div className="text-3xl font-bold text-white/95">$5<span className="text-base font-normal text-white/50">{t('guru.pricePerChild')}</span></div>
+              <div className="text-sm mt-1 text-white/60">{t('guru.unlimitedCancel')}</div>
             </div>
             <button
               onClick={handleUpgrade}
@@ -208,7 +208,7 @@ function GuruContent() {
             >
               {checkoutLoading ? t('guru.openingCheckout') : t('guru.upgradeNow')}
             </button>
-            <button onClick={() => setShowPaywall(false)} className="mt-3 text-sm text-gray-400 hover:text-gray-600">
+            <button onClick={() => setShowPaywall(false)} className="mt-3 text-sm text-white/40 hover:text-white/70">
               {t('guru.maybeLater')}
             </button>
           </div>

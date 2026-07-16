@@ -75,7 +75,7 @@ export default function ProgressDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
+      <div className="flex items-center justify-center py-24">
         <div className="text-4xl animate-bounce">📊</div>
       </div>
     );
@@ -83,30 +83,30 @@ export default function ProgressDetailPage() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 p-4">
+    <div>
       <Toaster position="top-center" />
-      
+
       {/* Header */}
       <div className="max-w-2xl mx-auto mb-6">
-        <Link href={`/montree/dashboard/${childId}/progress`} className="text-emerald-600 text-sm mb-2 inline-block">
+        <Link href={`/montree/dashboard/${childId}/progress`} className="text-[#34d399] text-sm mb-2 inline-block">
           ← {t('progress.back')}
         </Link>
-        <h1 className="text-2xl font-bold text-gray-800">{t('progress.detailed_title')}</h1>
+        <h1 className="text-2xl font-bold text-white/95" style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontWeight: 500 }}>{t('progress.detailed_title')}</h1>
       </div>
 
       {/* Stats Cards */}
       <div className="max-w-2xl mx-auto grid grid-cols-3 gap-3 mb-6">
-        <div className="bg-white rounded-xl p-4 text-center shadow-sm">
-          <div className="text-3xl font-bold text-emerald-600">{totalMastered}</div>
-          <div className="text-xs text-gray-500">{t('progress.mastered')}</div>
+        <div className="bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-xl p-4 text-center">
+          <div className="text-3xl font-bold text-[#34d399]">{totalMastered}</div>
+          <div className="text-xs text-white/50">{t('progress.mastered')}</div>
         </div>
-        <div className="bg-white rounded-xl p-4 text-center shadow-sm">
-          <div className="text-3xl font-bold text-blue-500">{totalPracticing}</div>
-          <div className="text-xs text-gray-500">{t('progress.practicing')}</div>
+        <div className="bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-xl p-4 text-center">
+          <div className="text-3xl font-bold text-blue-300">{totalPracticing}</div>
+          <div className="text-xs text-white/50">{t('progress.practicing')}</div>
         </div>
-        <div className="bg-white rounded-xl p-4 text-center shadow-sm">
-          <div className="text-3xl font-bold text-gray-600">{progress.length}</div>
-          <div className="text-xs text-gray-500">{t('progress.total_works')}</div>
+        <div className="bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-xl p-4 text-center">
+          <div className="text-3xl font-bold text-white/70">{progress.length}</div>
+          <div className="text-xs text-white/50">{t('progress.total_works')}</div>
         </div>
       </div>
 
@@ -116,7 +116,7 @@ export default function ProgressDetailPage() {
           <button
             onClick={() => setSelectedArea(null)}
             className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap ${
-              !selectedArea ? 'bg-emerald-500 text-white' : 'bg-white text-gray-600'
+              !selectedArea ? 'bg-[#1D6B48] text-white' : 'bg-white/[0.06] text-white/60 border border-[rgba(52,211,153,0.15)]'
             }`}
           >
             {t('progress.all_areas')}
@@ -126,7 +126,7 @@ export default function ProgressDetailPage() {
               key={area.key}
               onClick={() => setSelectedArea(area.key)}
               className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap flex items-center gap-1 ${
-                selectedArea === area.key ? 'bg-emerald-500 text-white' : 'bg-white text-gray-600'
+                selectedArea === area.key ? 'bg-[#1D6B48] text-white' : 'bg-white/[0.06] text-white/60 border border-[rgba(52,211,153,0.15)]'
               }`}
             >
               <AreaBadge area={area.key} size="xs" />
@@ -139,13 +139,13 @@ export default function ProgressDetailPage() {
 
       {/* Status Tabs */}
       <div className="max-w-2xl mx-auto mb-4">
-        <div className="flex bg-white rounded-xl p-1 shadow-sm">
+        <div className="flex bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-xl p-1">
           {(['all', 'mastered', 'practicing'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`flex-1 py-2 rounded-lg text-sm font-medium capitalize ${
-                activeTab === tab ? 'bg-emerald-500 text-white' : 'text-gray-500'
+                activeTab === tab ? 'bg-[#1D6B48] text-white' : 'text-white/50'
               }`}
             >
               {tab === 'all' ? `${t('progress.all')} (${progress.length})` :
@@ -159,28 +159,28 @@ export default function ProgressDetailPage() {
       {/* Works List */}
       <div className="max-w-2xl mx-auto space-y-2">
         {filteredProgress.length === 0 ? (
-          <div className="bg-white rounded-xl p-8 text-center">
+          <div className="bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-xl p-8 text-center">
             <div className="text-4xl mb-2">📋</div>
-            <p className="text-gray-500">{t('progress.no_works')}</p>
+            <p className="text-white/50">{t('progress.no_works')}</p>
           </div>
         ) : (
           filteredProgress.map(p => {
             const area = getAreaConfig(p.area);
             return (
-              <div key={p.id} className="bg-white rounded-xl p-4 shadow-sm flex items-center gap-3">
+              <div key={p.id} className="bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-xl p-4 flex items-center gap-3">
                 <AreaBadge area={p.area} size="sm" />
                 <div className="flex-1">
-                  <p className="font-medium text-gray-800">{p.work_name}</p>
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <p className="font-medium text-white/90">{p.work_name}</p>
+                  <div className="flex items-center gap-2 text-xs text-white/50">
                     <span>{area.name}</span>
                     {p.presented_at && <span>• Started {formatDate(p.presented_at)}</span>}
                     {p.mastered_at && <span>• Mastered {formatDate(p.mastered_at)}</span>}
                   </div>
                 </div>
                 <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  p.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
-                  p.status === 'practicing' ? 'bg-blue-100 text-blue-700' :
-                  'bg-amber-100 text-amber-700'
+                  p.status === 'completed' ? 'bg-emerald-500/15 text-emerald-200' :
+                  p.status === 'practicing' ? 'bg-blue-500/15 text-blue-200' :
+                  'bg-amber-500/15 text-amber-200'
                 }`}>
                   {p.status === 'completed' ? `✓ ${t('progress.mastered')}` :
                    p.status === 'practicing' ? t('progress.practicing') : t('progress.presented')}
@@ -194,23 +194,23 @@ export default function ProgressDetailPage() {
       {/* Area Breakdown */}
       {areaStats.length > 0 && !selectedArea && (
         <div className="max-w-2xl mx-auto mt-8">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">{t('progress.by_area')}</h2>
+          <h2 className="text-lg font-bold text-white/95 mb-4" style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontWeight: 500 }}>{t('progress.by_area')}</h2>
           <div className="space-y-3">
             {areaStats.map(area => (
-              <div key={area.key} className="bg-white rounded-xl p-4 shadow-sm">
+              <div key={area.key} className="bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <AreaBadge area={area.key} size="sm" />
-                    <span className="font-medium text-gray-800">{area.name}</span>
+                    <span className="font-medium text-white/90">{area.name}</span>
                   </div>
-                  <span className="text-sm text-gray-500">{area.mastered}/{area.total}</span>
+                  <span className="text-sm text-white/50">{area.mastered}/{area.total}</span>
                 </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div 
+                <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                  <div
                     className="h-full rounded-full transition-all"
-                    style={{ 
+                    style={{
                       width: `${area.total > 0 ? (area.mastered / area.total) * 100 : 0}%`,
-                      backgroundColor: area.color 
+                      backgroundColor: area.color
                     }}
                   />
                 </div>

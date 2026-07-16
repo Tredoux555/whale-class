@@ -34,12 +34,19 @@ interface Props {
   redirectTo?: string;
   /** Extra cleanup (e.g. clear localStorage) before redirect. */
   onDeleted?: () => void;
+  /**
+   * Dark-glass register for teacher/principal surfaces (dashboard/settings,
+   * admin/settings). Defaults to false so the parent portal — which stays on
+   * its own light theme — is untouched.
+   */
+  dark?: boolean;
 }
 
 export default function DeleteAccountSection({
   endpoint = '/api/montree/auth/delete-account',
   redirectTo = '/montree/login',
   onDeleted,
+  dark = false,
 }: Props) {
   const router = useRouter();
   const [preview, setPreview] = useState<Preview | null>(null);
@@ -88,10 +95,92 @@ export default function DeleteAccountSection({
   }
 
   if (preview?.blocked) {
+    if (dark) {
+      return (
+        <div
+          className="rounded-xl p-4"
+          style={{ background: 'rgba(232,201,106,0.10)', border: '1px solid rgba(232,201,106,0.25)' }}
+        >
+          <h3 className="font-semibold text-sm mb-1" style={{ color: '#E8C96A', fontFamily: '"Inter", sans-serif' }}>Account deletion</h3>
+          <p className="text-sm" style={{ color: 'rgba(232,201,106,0.85)', fontFamily: '"Inter", sans-serif' }}>{preview.blockedReason}</p>
+        </div>
+      );
+    }
     return (
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
         <h3 className="text-amber-800 font-semibold text-sm mb-1">Account deletion</h3>
         <p className="text-amber-700 text-sm">{preview.blockedReason}</p>
+      </div>
+    );
+  }
+
+  if (dark) {
+    return (
+      <div
+        className="rounded-xl p-5"
+        style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(248,113,113,0.30)' }}
+      >
+        <h3 className="font-semibold mb-1" style={{ color: '#f87171', fontFamily: 'var(--font-lora), Georgia, serif' }}>Delete account</h3>
+        <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.65)', fontFamily: '"Inter", sans-serif' }}>
+          {preview?.summary || 'Permanently delete your account and associated data.'}
+        </p>
+
+        {!open ? (
+          <button
+            onClick={() => setOpen(true)}
+            disabled={!preview}
+            className="w-full sm:w-auto px-4 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50"
+            style={{ background: 'rgba(248,113,113,0.12)', border: '1px solid rgba(248,113,113,0.30)', color: '#f87171', fontFamily: '"Inter", sans-serif' }}
+          >
+            Delete my account
+          </button>
+        ) : (
+          <div className="space-y-3">
+            {needsPhrase && (
+              <div>
+                <label className="block text-sm mb-1" style={{ color: 'rgba(255,255,255,0.65)', fontFamily: '"Inter", sans-serif' }}>
+                  Type <span className="font-semibold" style={{ color: 'rgba(255,255,255,0.95)' }}>{phrase}</span> to confirm:
+                </label>
+                <input
+                  type="text"
+                  value={confirmText}
+                  onChange={(e) => setConfirmText(e.target.value)}
+                  placeholder={phrase}
+                  className="w-full px-3 py-2 rounded-lg focus:outline-none"
+                  style={{ background: 'rgba(0,0,0,0.30)', border: '1px solid rgba(248,113,113,0.30)', color: 'rgba(255,255,255,0.90)', fontFamily: '"Inter", sans-serif' }}
+                  autoComplete="off"
+                />
+              </div>
+            )}
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Reason (optional)"
+              rows={2}
+              className="w-full px-3 py-2 rounded-lg focus:outline-none text-sm"
+              style={{ background: 'rgba(0,0,0,0.30)', border: '1px solid rgba(52,211,153,0.20)', color: 'rgba(255,255,255,0.90)', fontFamily: '"Inter", sans-serif' }}
+            />
+            {error && <p className="text-sm" style={{ color: '#f87171', fontFamily: '"Inter", sans-serif' }}>{error}</p>}
+            <div className="flex gap-2">
+              <button
+                onClick={handleDelete}
+                disabled={busy || !phraseOk}
+                className="px-4 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50"
+                style={{ background: 'rgba(220,38,38,0.85)', color: '#fff', fontFamily: '"Inter", sans-serif' }}
+              >
+                {busy ? 'Deleting…' : 'Permanently delete'}
+              </button>
+              <button
+                onClick={() => { setOpen(false); setError(null); setConfirmText(''); }}
+                disabled={busy}
+                className="px-4 py-2.5 rounded-lg font-medium transition-colors"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.15)', color: 'rgba(255,255,255,0.65)', fontFamily: '"Inter", sans-serif' }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

@@ -183,26 +183,55 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
 
   const firstName = childName.split(' ')[0];
 
+  // Dark-glass register (matches gallery/dashboard reference pages):
+  // page shell #0a1a0f, glass card rgba(255,255,255,0.06) + 1px
+  // rgba(52,211,153,0.15) hairline, no shadows, emerald #34d399 actions,
+  // Lora headings, white .95/.65/.40 text tiers, dark inputs.
+  const cardStyle: React.CSSProperties = {
+    background: 'rgba(255,255,255,0.06)',
+    border: '1px solid rgba(52,211,153,0.15)',
+    borderRadius: 14,
+    padding: 20,
+    backdropFilter: 'blur(18px) saturate(140%)',
+    WebkitBackdropFilter: 'blur(18px) saturate(140%)',
+  };
+  const headingStyle: React.CSSProperties = {
+    fontFamily: 'var(--font-lora), Georgia, serif',
+    fontWeight: 500,
+    color: 'rgba(255,255,255,0.95)',
+  };
+  const bodyTextStyle: React.CSSProperties = {
+    fontFamily: '"Inter", sans-serif',
+    color: 'rgba(255,255,255,0.65)',
+  };
+  const mutedTextStyle: React.CSSProperties = {
+    fontFamily: '"Inter", sans-serif',
+    color: 'rgba(255,255,255,0.40)',
+  };
+
   return (
-    <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl border border-emerald-200 p-5 shadow-sm">
+    <div style={cardStyle}>
 
       {/* ── Prompt stage ── */}
       {stage === 'prompt' && (
         <div className="text-center space-y-4">
-          <div className="w-16 h-16 mx-auto bg-emerald-100 rounded-full flex items-center justify-center">
+          <div
+            className="w-16 h-16 mx-auto rounded-full flex items-center justify-center"
+            style={{ background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.20)' }}
+          >
             <span className="text-3xl">🌱</span>
           </div>
           <div>
-            <h3 className="text-lg font-bold text-gray-800">
+            <h3 className="text-lg" style={headingStyle}>
               {t('tellGuru.tellMeAbout', { name: firstName })}
             </h3>
-            <p className="text-sm text-gray-500 mt-2 max-w-sm mx-auto">
+            <p className="text-sm mt-2 max-w-sm mx-auto" style={bodyTextStyle}>
               {t('tellGuru.tellMeDescription', { name: firstName })}
             </p>
           </div>
           <button
             onClick={startRecording}
-            className="w-20 h-20 mx-auto bg-emerald-500 hover:bg-emerald-600 active:scale-95 rounded-full flex items-center justify-center shadow-lg transition-all"
+            className="w-20 h-20 mx-auto bg-emerald-500 hover:bg-emerald-600 active:scale-95 rounded-full flex items-center justify-center transition-all"
           >
             <svg width="32" height="32" viewBox="0 0 24 24" fill="white" stroke="none">
               <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
@@ -211,14 +240,15 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
               <line x1="8" y1="23" x2="16" y2="23" stroke="white" strokeWidth="2" strokeLinecap="round"/>
             </svg>
           </button>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs" style={mutedTextStyle}>
             {t('tellGuru.tapToStart')}
           </p>
 
           {/* Also allow typing */}
           <button
             onClick={() => { setIsEditing(true); setStage('prompt'); }}
-            className="text-xs text-emerald-600 underline"
+            className="text-xs underline"
+            style={{ color: '#34d399', fontFamily: '"Inter", sans-serif' }}
           >
             {t('tellGuru.orTypeInstead')}
           </button>
@@ -230,7 +260,13 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
                 value={editedTranscript}
                 onChange={e => setEditedTranscript(e.target.value)}
                 placeholder={t('tellGuru.textPlaceholder', { name: firstName })}
-                className="w-full h-32 p-3 text-sm border border-emerald-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                className="w-full h-32 p-3 text-sm rounded-xl resize-none focus:outline-none"
+                style={{
+                  background: 'rgba(0,0,0,0.30)',
+                  border: '1px solid rgba(52,211,153,0.25)',
+                  color: 'rgba(255,255,255,0.90)',
+                  fontFamily: '"Inter", sans-serif',
+                }}
                 autoFocus
               />
               <button
@@ -248,23 +284,23 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
       {/* ── Recording stage ── */}
       {stage === 'recording' && (
         <div className="text-center space-y-4">
-          <div className="text-sm text-gray-500">
+          <div className="text-sm" style={bodyTextStyle}>
             {t('tellGuru.recording')}
           </div>
-          <div className="text-4xl font-light text-emerald-600 tabular-nums">
+          <div className="text-4xl font-light tabular-nums" style={{ color: '#34d399' }}>
             {formatTime(recordingTime)}
           </div>
           {/* Pulsing ring */}
           <button
             onClick={stopRecording}
-            className="w-20 h-20 mx-auto bg-red-500 hover:bg-red-600 active:scale-95 rounded-full flex items-center justify-center shadow-lg transition-all animate-pulse"
+            className="w-20 h-20 mx-auto bg-red-500 hover:bg-red-600 active:scale-95 rounded-full flex items-center justify-center transition-all animate-pulse"
           >
             <div className="w-8 h-8 bg-white rounded-sm" />
           </button>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs" style={mutedTextStyle}>
             {t('tellGuru.tapToStop')}
           </p>
-          <p className="text-xs text-emerald-600 italic">
+          <p className="text-xs italic" style={{ color: '#34d399', fontFamily: '"Inter", sans-serif' }}>
             {recordingTime < 10
               ? t('tellGuru.encourageStart')
               : recordingTime < 30
@@ -278,8 +314,11 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
       {/* ── Transcribing stage ── */}
       {stage === 'transcribing' && (
         <div className="text-center space-y-4 py-4">
-          <div className="w-10 h-10 mx-auto border-3 border-emerald-200 border-t-emerald-500 rounded-full animate-spin" />
-          <p className="text-sm text-gray-600">
+          <div
+            className="w-10 h-10 mx-auto rounded-full animate-spin"
+            style={{ border: '3px solid rgba(52,211,153,0.15)', borderTopColor: '#34d399' }}
+          />
+          <p className="text-sm" style={bodyTextStyle}>
             {t('tellGuru.transcribing')}
           </p>
         </div>
@@ -288,12 +327,15 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
       {/* ── Processing stage ── */}
       {stage === 'processing' && (
         <div className="text-center space-y-4 py-4">
-          <div className="w-10 h-10 mx-auto border-3 border-emerald-200 border-t-emerald-500 rounded-full animate-spin" />
-          <p className="text-sm text-gray-600">
+          <div
+            className="w-10 h-10 mx-auto rounded-full animate-spin"
+            style={{ border: '3px solid rgba(52,211,153,0.15)', borderTopColor: '#34d399' }}
+          />
+          <p className="text-sm" style={bodyTextStyle}>
             {t('tellGuru.gettingToKnow', { name: firstName })}
           </p>
           {transcript && (
-            <p className="text-xs text-gray-400 max-w-sm mx-auto line-clamp-3 italic">
+            <p className="text-xs max-w-sm mx-auto line-clamp-3 italic" style={mutedTextStyle}>
               &ldquo;{transcript}&rdquo;
             </p>
           )}
@@ -303,23 +345,29 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
       {/* ── Done stage ── */}
       {stage === 'done' && (
         <div className="text-center space-y-3 py-2">
-          <div className="w-14 h-14 mx-auto bg-emerald-100 rounded-full flex items-center justify-center">
-            <span className="text-2xl">✓</span>
+          <div
+            className="w-14 h-14 mx-auto rounded-full flex items-center justify-center"
+            style={{ background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.20)' }}
+          >
+            <span className="text-2xl" style={{ color: '#34d399' }}>✓</span>
           </div>
-          <h3 className="text-base font-bold text-gray-800">
+          <h3 className="text-base" style={headingStyle}>
             {t('tellGuru.knowChildNow', { name: firstName })}
           </h3>
           {extractedSummary && (
-            <p className="text-sm text-gray-500 max-w-sm mx-auto">
+            <p className="text-sm max-w-sm mx-auto" style={bodyTextStyle}>
               {extractedSummary}
             </p>
           )}
           {gamePlan && (
-            <div className="mt-2 px-4 py-2 bg-amber-50 rounded-xl border border-amber-100">
-              <p className="text-xs text-amber-700 font-medium">
+            <div
+              className="mt-2 px-4 py-2 rounded-xl"
+              style={{ background: 'rgba(232,201,106,0.10)', border: '1px solid rgba(232,201,106,0.25)' }}
+            >
+              <p className="text-xs font-medium" style={{ color: '#E8C96A', fontFamily: '"Inter", sans-serif' }}>
                 🗺️ {t('tellGuru.gamePlanReady')}
               </p>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="text-xs mt-0.5" style={bodyTextStyle}>
                 {gamePlan.headline}
               </p>
             </div>
@@ -330,7 +378,7 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
       {/* ── Error stage ── */}
       {stage === 'error' && (
         <div className="text-center space-y-3 py-2">
-          <p className="text-sm text-red-600">{errorMsg}</p>
+          <p className="text-sm" style={{ color: '#f87171', fontFamily: '"Inter", sans-serif' }}>{errorMsg}</p>
           <button
             onClick={handleRetry}
             className="px-4 py-2 bg-emerald-500 text-white rounded-xl text-sm font-medium active:scale-95 transition-all"

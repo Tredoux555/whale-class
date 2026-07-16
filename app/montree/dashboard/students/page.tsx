@@ -15,6 +15,9 @@ import { AREA_CONFIG, AREA_ORDER } from '@/lib/montree/types';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
 
 
+// Dark-register serif for headings (Jul 16 2026 sweep).
+const SERIF = "var(--font-lora), 'Iowan Old Style', Georgia, serif";
+
 // Derive curriculum areas from shared config (canonical colors)
 const CURRICULUM_AREAS = AREA_ORDER.map(id => ({
   id,
@@ -169,23 +172,23 @@ function CurriculumPicker({
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-2 bg-white border border-slate-200 rounded-lg text-left flex items-center gap-2 hover:border-blue-300 transition-colors text-sm"
+        className="w-full p-2 bg-black/30 border border-[rgba(52,211,153,0.15)] rounded-lg text-left flex items-center gap-2 hover:border-[rgba(52,211,153,0.35)] transition-colors text-sm"
         style={{ borderLeftColor: color, borderLeftWidth: '3px' }}
       >
         <AreaBadge area={areaId} size="sm" />
-        <span className="flex-1 truncate text-slate-600">{displayLabel}</span>
-        <span className="text-slate-400 text-xs">{isOpen ? '▲' : '▼'}</span>
+        <span className="flex-1 truncate text-white/70">{displayLabel}</span>
+        <span className="text-white/40 text-xs">{isOpen ? '▲' : '▼'}</span>
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden">
-          <div className="p-2 border-b border-slate-100">
+        <div className="absolute z-50 top-full left-0 right-0 mt-1 border border-[rgba(52,211,153,0.2)] rounded-lg shadow-xl overflow-hidden" style={{ background: '#0f2418' }}>
+          <div className="p-2 border-b border-white/10">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('common.search')}
-              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded text-sm placeholder-slate-400 focus:border-blue-400 outline-none"
+              className="w-full px-2 py-1.5 bg-black/30 border border-[rgba(52,211,153,0.15)] rounded text-sm text-white/90 placeholder-white/40 focus:border-[#34d399] outline-none"
               autoFocus
             />
           </div>
@@ -193,33 +196,33 @@ function CurriculumPicker({
             {!searchQuery && (
               <button
                 onClick={() => { onSelect(null); setIsOpen(false); }}
-                className={`w-full px-3 py-2 text-left hover:bg-slate-50 flex items-center gap-2 text-sm ${selectedWorkId === null ? 'bg-blue-50' : ''}`}
+                className={`w-full px-3 py-2 text-left hover:bg-white/5 flex items-center gap-2 text-sm ${selectedWorkId === null ? 'bg-[#34d399]/10' : ''}`}
               >
-                <span className="text-slate-400">—</span>
-                <span className="text-slate-500">{t('students.notStarted')}</span>
+                <span className="text-white/40">—</span>
+                <span className="text-white/60">{t('students.notStarted')}</span>
               </button>
             )}
             {filteredWorks.map((work, idx) => (
               <button
                 key={work.id}
                 onClick={() => { onSelect(work.id, work.name); setIsOpen(false); setSearchQuery(''); }}
-                className={`w-full px-3 py-2 text-left hover:bg-slate-50 flex items-center gap-2 text-sm ${selectedWorkId === work.id ? 'bg-blue-50' : ''}`}
+                className={`w-full px-3 py-2 text-left hover:bg-white/5 flex items-center gap-2 text-sm ${selectedWorkId === work.id ? 'bg-[#34d399]/10' : ''}`}
               >
                 <span className="w-5 h-5 rounded-full text-[10px] font-bold text-white flex items-center justify-center" style={{ backgroundColor: color }}>
                   {idx + 1}
                 </span>
-                <span className="flex-1 truncate text-slate-700">{work.name}</span>
-                {selectedWorkId === work.id && <span className="text-blue-500">✓</span>}
+                <span className="flex-1 truncate text-white/85">{work.name}</span>
+                {selectedWorkId === work.id && <span className="text-[#34d399]">✓</span>}
               </button>
             ))}
           </div>
 
           {/* Divider and Add Custom Work */}
-          <div className="border-t border-slate-100 p-2">
+          <div className="border-t border-white/10 p-2">
             {!isAddingCustom ? (
               <button
                 onClick={(e) => { e.stopPropagation(); setIsAddingCustom(true); }}
-                className="w-full px-3 py-2 text-left text-sm text-teal-600 hover:bg-teal-50 rounded flex items-center gap-2"
+                className="w-full px-3 py-2 text-left text-sm text-[#34d399] hover:bg-[#34d399]/10 rounded flex items-center gap-2"
               >
                 <span>+</span>
                 <span>{t('students.addCustomWork')}</span>
@@ -231,14 +234,14 @@ function CurriculumPicker({
                   value={customWorkName}
                   onChange={(e) => setCustomWorkName(e.target.value)}
                   placeholder={t('students.customWorkPlaceholder')}
-                  className="flex-1 px-2 py-1.5 bg-slate-50 border border-slate-200 rounded text-sm placeholder-slate-400 focus:border-teal-400 outline-none"
+                  className="flex-1 px-2 py-1.5 bg-black/30 border border-[rgba(52,211,153,0.15)] rounded text-sm text-white/90 placeholder-white/40 focus:border-[#34d399] outline-none"
                   autoFocus
                   onKeyDown={(e) => { if (e.key === 'Enter') handleAddCustomWork(); if (e.key === 'Escape') { setIsAddingCustom(false); setCustomWorkName(''); } }}
                 />
                 <button
                   onClick={handleAddCustomWork}
                   disabled={!customWorkName.trim() || isSubmitting}
-                  className="px-3 py-1.5 bg-teal-500 text-white rounded text-sm font-medium disabled:opacity-50"
+                  className="px-3 py-1.5 bg-[#1D6B48] text-white rounded text-sm font-medium disabled:opacity-50 hover:bg-[#236B4C]"
                 >
                   {isSubmitting ? t('common.loading') : t('common.add')}
                 </button>
@@ -582,27 +585,33 @@ export default function StudentsPage() {
 
   if (!session || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0a1a0f' }}>
         <div className="animate-bounce text-4xl">👶</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen relative" style={{ background: '#0a1a0f', color: '#fff' }}>
+      {/* Fixed off-centre emerald glow */}
+      <div aria-hidden="true" style={{
+        position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
+        background: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.32), rgba(39,129,90,0.12) 30%, transparent 60%)',
+      }} />
+      <div className="relative" style={{ zIndex: 1 }}>
       <Toaster position="top-center" />
 
       {/* Sub-header */}
-      <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+      <div className="border-b border-[rgba(52,211,153,0.15)] px-4 py-3 flex items-center justify-between" style={{ background: 'rgba(8,20,12,0.90)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
         <div className="flex items-center gap-2">
           <span className="text-xl">👶</span>
-          <h1 className="font-bold text-slate-800">{isHomeschoolParent(session) ? t('students.children') : t('students.title')}</h1>
+          <h1 className="font-bold text-white/95" style={{ fontFamily: SERIF, fontWeight: 500 }}>{isHomeschoolParent(session) ? t('students.children') : t('students.title')}</h1>
         </div>
         <div className="flex items-center gap-2">
           {!isHomeschoolParent(session) && (
             <button
               onClick={() => router.push('/montree/dashboard/labels')}
-              className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-200"
+              className="px-3 py-1.5 bg-white/[0.08] text-white/70 rounded-lg text-sm font-medium hover:bg-white/[0.14] border border-[rgba(52,211,153,0.15)]"
             >
               🏷️ {t('nav.labels')}
             </button>
@@ -611,7 +620,7 @@ export default function StudentsPage() {
             data-tutorial="add-student-button"
             data-copilot="add-students"
             onClick={openAddForm}
-            className="px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600"
+            className="px-3 py-1.5 bg-[#1D6B48] text-white rounded-lg text-sm font-medium hover:bg-[#236B4C]"
           >
             + {isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}
           </button>
@@ -623,12 +632,12 @@ export default function StudentsPage() {
         {students.length === 0 ? (
           <div className="text-center py-12">
             <span className="text-6xl mb-4 block">👶</span>
-            <p className="text-slate-500 mb-4">
+            <p className="text-white/60 mb-4">
               {isHomeschoolParent(session) ? t('students.noChildren') : t('students.noStudents')}
             </p>
             <button
               onClick={openAddForm}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg font-medium"
+              className="px-4 py-2 bg-[#1D6B48] text-white rounded-lg font-medium hover:bg-[#236B4C]"
             >
               {isHomeschoolParent(session) ? t('students.addFirstChild') : t('students.addFirst')}
             </button>
@@ -638,11 +647,11 @@ export default function StudentsPage() {
             {students.map((student) => (
               <div
                 key={student.id}
-                className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm"
+                className="bg-white/[0.06] rounded-xl border border-[rgba(52,211,153,0.15)] p-4"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-lg">
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg overflow-hidden" style={{ background: 'rgba(16,185,129,0.15)', fontFamily: SERIF }}>
                       {student.photo_url ? (
                         <img src={student.photo_url} className="w-full h-full object-cover rounded-full" alt="" />
                       ) : (
@@ -650,8 +659,8 @@ export default function StudentsPage() {
                       )}
                     </div>
                     <div>
-                      <p className="font-semibold text-slate-800">{student.name}</p>
-                      <p className="text-xs text-slate-400">
+                      <p className="font-semibold text-white/95">{student.name}</p>
+                      <p className="text-xs text-white/40">
                         {student.age ? `${student.age} ${t('students.yearsOld')}` : t('students.ageNotSet')}
                       </p>
                     </div>
@@ -659,13 +668,13 @@ export default function StudentsPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => openEditForm(student)}
-                      className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-sm hover:bg-slate-200"
+                      className="px-3 py-1.5 bg-white/[0.08] text-white/70 rounded-lg text-sm hover:bg-white/[0.14] border border-[rgba(52,211,153,0.15)]"
                     >
                       {t('students.edit')}
                     </button>
                     <button
                       onClick={() => setDeleteConfirm(student.id)}
-                      className="px-3 py-1.5 bg-red-50 text-red-500 rounded-lg text-sm hover:bg-red-100"
+                      className="px-3 py-1.5 bg-red-500/10 text-red-300 rounded-lg text-sm hover:bg-red-500/20"
                     >
                       {t('students.remove')}
                     </button>
@@ -674,20 +683,20 @@ export default function StudentsPage() {
 
                 {/* Delete Confirmation */}
                 {deleteConfirm === student.id && (
-                  <div className="mt-3 p-3 bg-red-50 rounded-lg border border-red-200">
-                    <p className="text-red-700 text-sm mb-2">
+                  <div className="mt-3 p-3 bg-red-500/10 rounded-lg border border-red-500/30">
+                    <p className="text-red-200 text-sm mb-2">
                       {t('students.deleteConfirm')} {student.name}? {t('students.deleteConfirmMessage')}
                     </p>
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleDelete(student.id)}
-                        className="px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm font-medium"
+                        className="px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600"
                       >
                         {t('students.yes')}
                       </button>
                       <button
                         onClick={() => setDeleteConfirm(null)}
-                        className="px-3 py-1.5 bg-slate-200 text-slate-600 rounded-lg text-sm"
+                        className="px-3 py-1.5 bg-white/[0.08] text-white/70 rounded-lg text-sm hover:bg-white/[0.14]"
                       >
                         {t('common.cancel')}
                       </button>
@@ -699,22 +708,22 @@ export default function StudentsPage() {
           </div>
         )}
 
-        <p className="text-center text-slate-400 text-xs mt-6">
+        <p className="text-center text-white/40 text-xs mt-6">
           {students.length} {isHomeschoolParent(session) ? t('students.children') : t('students.title')} {t('students.in')} {session.classroom?.name}
         </p>
       </main>
 
       {/* Add/Edit Form Modal */}
       {showForm && !bulkMode && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center">
-          <div data-tutorial="student-form" className="bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-4 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white">
-              <h2 className="font-bold text-lg text-slate-800">
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center">
+          <div data-tutorial="student-form" className="w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto border border-[rgba(52,211,153,0.15)]" style={{ background: '#0c1f14' }}>
+            <div className="p-4 border-b border-white/10 flex items-center justify-between sticky top-0" style={{ background: '#0c1f14' }}>
+              <h2 className="font-bold text-lg text-white/95" style={{ fontFamily: SERIF, fontWeight: 500 }}>
                 {editingStudent
                   ? `${t('common.edit')} ${isHomeschoolParent(session) ? t('students.child') || 'Child' : t('students.student') || 'Student'}`
                   : `${t('common.add')} ${isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}`}
               </h2>
-              <button onClick={closeForm} className="text-slate-400 hover:text-slate-600 text-xl">
+              <button onClick={closeForm} className="text-white/40 hover:text-white/70 text-xl">
                 ✕
               </button>
             </div>
@@ -722,13 +731,13 @@ export default function StudentsPage() {
             <div className="p-4 space-y-4">
               {/* Name */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">{t('students.name')}</label>
+                <label className="block text-sm font-medium text-white/70 mb-1">{t('students.name')}</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder={isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:border-blue-400 outline-none"
+                  className="w-full p-3 bg-black/30 border border-[rgba(52,211,153,0.18)] rounded-xl text-white/90 placeholder-white/40 focus:border-[#34d399] outline-none"
                   autoFocus
                 />
               </div>
@@ -736,9 +745,9 @@ export default function StudentsPage() {
               {/* Profile Photo (edit mode only) */}
               {editingStudent && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">{t('students.photo')}</label>
+                  <label className="block text-sm font-medium text-white/70 mb-2">{t('students.photo')}</label>
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-xl overflow-hidden flex-shrink-0">
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl overflow-hidden flex-shrink-0" style={{ background: 'rgba(16,185,129,0.15)', fontFamily: SERIF }}>
                       {editingStudent.photo_url ? (
                         <img src={editingStudent.photo_url} className="w-full h-full object-cover" alt="" />
                       ) : (
@@ -748,7 +757,7 @@ export default function StudentsPage() {
                     <button
                       type="button"
                       onClick={() => setShowPhotoCapture(true)}
-                      className="flex-1 px-4 py-3 bg-blue-50 border border-blue-200 text-blue-600 rounded-xl font-medium hover:bg-blue-100 transition-colors text-sm"
+                      className="flex-1 px-4 py-3 bg-[#34d399]/10 border border-[rgba(52,211,153,0.3)] text-[#34d399] rounded-xl font-medium hover:bg-[#34d399]/20 transition-colors text-sm"
                     >
                       📸 {editingStudent.photo_url ? t('students.changePhoto') : t('students.takePhoto')}
                     </button>
@@ -758,11 +767,11 @@ export default function StudentsPage() {
 
               {/* Age */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">{t('students.age')}</label>
+                <label className="block text-sm font-medium text-white/70 mb-1">{t('students.age')}</label>
                 <select
                   value={formData.age}
                   onChange={(e) => setFormData({ ...formData, age: parseFloat(e.target.value) })}
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:border-blue-400 outline-none"
+                  className="w-full p-3 bg-black/30 border border-[rgba(52,211,153,0.18)] rounded-xl text-white/90 focus:border-[#34d399] outline-none"
                 >
                   {AGE_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>{opt.label} {t('students.yearsOld')}</option>
@@ -772,14 +781,14 @@ export default function StudentsPage() {
 
               {/* Tenure - How long in program */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-white/70 mb-1">
                   {t('students.tenure')}
-                  <span className="text-slate-400 font-normal ml-1">{t('students.guruHint')}</span>
+                  <span className="text-white/40 font-normal ml-1">{t('students.guruHint')}</span>
                 </label>
                 <select
                   value={formData.tenure}
                   onChange={(e) => setFormData({ ...formData, tenure: e.target.value })}
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:border-blue-400 outline-none"
+                  className="w-full p-3 bg-black/30 border border-[rgba(52,211,153,0.18)] rounded-xl text-white/90 focus:border-[#34d399] outline-none"
                 >
                   {TENURE_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -790,7 +799,7 @@ export default function StudentsPage() {
               {/* Curriculum Progress (only for new students) */}
               {!editingStudent && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-white/70 mb-2">
                     {t('students.currentWork')} (optional)
                   </label>
                   <div className="space-y-2">
@@ -819,17 +828,17 @@ export default function StudentsPage() {
               )}
             </div>
 
-            <div className="p-4 border-t border-slate-100 flex gap-3">
+            <div className="p-4 border-t border-white/10 flex gap-3">
               <button
                 onClick={closeForm}
-                className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-medium"
+                className="flex-1 py-3 bg-white/[0.08] text-white/70 rounded-xl font-medium hover:bg-white/[0.14]"
               >
                 {t('common.cancel')}
               </button>
               <button
                 onClick={handleSave}
                 disabled={!formData.name.trim() || saving}
-                className="flex-1 py-3 bg-blue-500 text-white rounded-xl font-medium disabled:opacity-50"
+                className="flex-1 py-3 bg-[#1D6B48] text-white rounded-xl font-medium disabled:opacity-50 hover:bg-[#236B4C]"
               >
                 {saving ? t('common.loading') : editingStudent
                   ? `${t('common.update')} ${isHomeschoolParent(session) ? t('students.child') || 'Child' : t('students.student') || 'Student'}`
@@ -860,23 +869,23 @@ export default function StudentsPage() {
 
       {/* Bulk Import Form Modal */}
       {showForm && bulkMode && (
-        <div className="fixed inset-0 z-50 bg-black/50 overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/60 overflow-y-auto">
           <div className="min-h-screen flex items-start justify-center py-8 px-4">
-            <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl">
+            <div className="w-full max-w-2xl rounded-2xl shadow-2xl border border-[rgba(52,211,153,0.15)]" style={{ background: '#0c1f14' }}>
               {/* Header */}
-              <div className="p-6 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white rounded-t-2xl">
-                <h2 className="font-bold text-xl text-slate-800">{isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}</h2>
-                <button onClick={closeForm} className="text-slate-400 hover:text-slate-600 text-2xl">
+              <div className="p-6 border-b border-white/10 flex items-center justify-between sticky top-0 rounded-t-2xl" style={{ background: '#0c1f14' }}>
+                <h2 className="font-bold text-xl text-white/95" style={{ fontFamily: SERIF, fontWeight: 500 }}>{isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}</h2>
+                <button onClick={closeForm} className="text-white/40 hover:text-white/70 text-2xl">
                   ✕
                 </button>
               </div>
 
               {/* Banner */}
-              <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-100 p-6 flex gap-4">
+              <div className="border-b border-[rgba(52,211,153,0.15)] p-6 flex gap-4" style={{ background: 'rgba(52,211,153,0.06)' }}>
                 <div className="text-3xl flex-shrink-0">🌱</div>
                 <div>
-                  <h3 className="font-bold text-slate-900 mb-1">{isHomeschoolParent(session) ? t('students.buildingProfilesChild') : t('students.buildingProfiles')}</h3>
-                  <p className="text-sm text-slate-700 leading-relaxed">
+                  <h3 className="font-bold text-white/95 mb-1" style={{ fontFamily: SERIF, fontWeight: 500 }}>{isHomeschoolParent(session) ? t('students.buildingProfilesChild') : t('students.buildingProfiles')}</h3>
+                  <p className="text-sm text-white/70 leading-relaxed">
                     {t('students.buildingProfilesDescription')}
                   </p>
                 </div>
@@ -885,16 +894,16 @@ export default function StudentsPage() {
               {/* Students List */}
               <div className="p-6 space-y-6 max-h-[calc(100vh-280px)] overflow-y-auto">
                 {bulkStudents.map((student, index) => (
-                  <div key={index} className="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:shadow-md transition-shadow">
+                  <div key={index} className="bg-white/[0.04] rounded-2xl p-6 border border-[rgba(52,211,153,0.12)]">
                     {/* Student Number Header */}
                     <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-bold text-lg text-slate-800">
+                      <h4 className="font-bold text-lg text-white/95" style={{ fontFamily: SERIF, fontWeight: 500 }}>
                         {isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')} {index + 1}
                       </h4>
                       {index > 0 && (
                         <button
                           onClick={() => removeStudent(index)}
-                          className="text-slate-400 hover:text-red-500 text-2xl font-light"
+                          className="text-white/40 hover:text-red-400 text-2xl font-light"
                         >
                           ✕
                         </button>
@@ -905,24 +914,24 @@ export default function StudentsPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                       {/* Name */}
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">{t('students.name')} *</label>
+                        <label className="block text-sm font-medium text-white/70 mb-1">{t('students.name')} *</label>
                         <input
                           type="text"
                           value={student.name}
                           onChange={(e) => updateBulkStudent(index, 'name', e.target.value)}
                           placeholder={isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}
-                          className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:border-teal-400 outline-none text-sm"
+                          className="w-full p-2.5 bg-black/30 border border-[rgba(52,211,153,0.18)] rounded-lg text-white/90 placeholder-white/40 focus:border-[#34d399] outline-none text-sm"
                           {...(index === 0 ? { 'data-guide': 'name' } : {})}
                         />
                       </div>
 
                       {/* Age */}
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">{t('students.age')}</label>
+                        <label className="block text-sm font-medium text-white/70 mb-1">{t('students.age')}</label>
                         <select
                           value={student.age}
                           onChange={(e) => updateBulkStudent(index, 'age', parseFloat(e.target.value))}
-                          className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-slate-700 focus:border-teal-400 outline-none text-sm"
+                          className="w-full p-2.5 bg-black/30 border border-[rgba(52,211,153,0.18)] rounded-lg text-white/90 focus:border-[#34d399] outline-none text-sm"
                           {...(index === 0 ? { 'data-guide': 'age' } : {})}
                         >
                           {AGE_OPTIONS.map((opt) => (
@@ -933,11 +942,11 @@ export default function StudentsPage() {
 
                       {/* Gender */}
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">{t('students.gender')}</label>
+                        <label className="block text-sm font-medium text-white/70 mb-1">{t('students.gender')}</label>
                         <select
                           value={student.gender}
                           onChange={(e) => updateBulkStudent(index, 'gender', e.target.value)}
-                          className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-slate-700 focus:border-teal-400 outline-none text-sm"
+                          className="w-full p-2.5 bg-black/30 border border-[rgba(52,211,153,0.18)] rounded-lg text-white/90 focus:border-[#34d399] outline-none text-sm"
                           {...(index === 0 ? { 'data-guide': 'gender' } : {})}
                         >
                           {GENDER_OPTIONS.map((opt) => (
@@ -949,11 +958,11 @@ export default function StudentsPage() {
 
                     {/* Row 2: Tenure */}
                     <div className="mb-4">
-                      <label className="block text-sm font-medium text-slate-700 mb-1">{isHomeschoolParent(session) ? t('students.tenure') : t('students.tenureSchool')}</label>
+                      <label className="block text-sm font-medium text-white/70 mb-1">{isHomeschoolParent(session) ? t('students.tenure') : t('students.tenureSchool')}</label>
                       <select
                         value={student.tenure}
                         onChange={(e) => updateBulkStudent(index, 'tenure', e.target.value)}
-                        className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-slate-700 focus:border-teal-400 outline-none text-sm"
+                        className="w-full p-2.5 bg-black/30 border border-[rgba(52,211,153,0.18)] rounded-lg text-white/90 focus:border-[#34d399] outline-none text-sm"
                         {...(index === 0 ? { 'data-guide': 'tenure' } : {})}
                       >
                         {TENURE_OPTIONS.map((opt) => (
@@ -964,10 +973,10 @@ export default function StudentsPage() {
 
                     {/* Row 3: Curriculum */}
                     <div className="mb-4" {...(index === 0 ? { 'data-guide': 'curriculum-section' } : {})}>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <label className="block text-sm font-medium text-white/70 mb-2">
                         {t('students.currentWork')}
                       </label>
-                      <p className="text-xs text-slate-500 mb-3">
+                      <p className="text-xs text-white/50 mb-3">
                         {t('students.currentWorkHint')}
                       </p>
                       <div className="space-y-2">
@@ -993,7 +1002,7 @@ export default function StudentsPage() {
 
                     {/* Row 4: Notes */}
                     <div {...(index === 0 ? { 'data-guide': 'profile-notes' } : {})}>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">
+                      <label className="block text-sm font-medium text-white/70 mb-1">
                         {t('students.profileNotes')}
                       </label>
                       <textarea
@@ -1001,9 +1010,9 @@ export default function StudentsPage() {
                         onChange={(e) => updateBulkStudent(index, 'notes', e.target.value)}
                         placeholder={t('students.buildingProfilesDescription')}
                         rows={4}
-                        className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:border-teal-400 outline-none text-sm resize-none"
+                        className="w-full p-2.5 bg-black/30 border border-[rgba(52,211,153,0.18)] rounded-lg text-white/90 placeholder-white/40 focus:border-[#34d399] outline-none text-sm resize-none"
                       />
-                      <p className="text-xs text-slate-500 mt-1">
+                      <p className="text-xs text-white/50 mt-1">
                         {t('students.guruPrivacyNote')}
                       </p>
                     </div>
@@ -1013,11 +1022,11 @@ export default function StudentsPage() {
 
               {/* Add Another Student Button */}
               {bulkStudents.length < 30 && (
-                <div className="px-6 py-4 border-t border-slate-100">
+                <div className="px-6 py-4 border-t border-white/10">
                   <button
                     onClick={addAnotherStudent}
                     data-guide="add-another"
-                    className="w-full py-2.5 px-4 bg-teal-50 border-2 border-dashed border-teal-200 text-teal-700 rounded-lg font-medium hover:bg-teal-100 transition-colors text-sm"
+                    className="w-full py-2.5 px-4 bg-[#34d399]/10 border-2 border-dashed border-[rgba(52,211,153,0.3)] text-[#34d399] rounded-lg font-medium hover:bg-[#34d399]/20 transition-colors text-sm"
                   >
                     + {isHomeschoolParent(session) ? t('students.addAnotherChild') : t('students.addAnother')}
                   </button>
@@ -1025,10 +1034,10 @@ export default function StudentsPage() {
               )}
 
               {/* Footer */}
-              <div className="p-6 border-t border-slate-100 flex gap-3 bg-slate-50 rounded-b-2xl">
+              <div className="p-6 border-t border-white/10 flex gap-3 rounded-b-2xl" style={{ background: 'rgba(255,255,255,0.02)' }}>
                 <button
                   onClick={closeForm}
-                  className="flex-1 py-3 bg-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-300 transition-colors"
+                  className="flex-1 py-3 bg-white/[0.08] text-white/70 rounded-lg font-medium hover:bg-white/[0.14] transition-colors"
                 >
                   {t('common.cancel')}
                 </button>
@@ -1036,7 +1045,7 @@ export default function StudentsPage() {
                   onClick={handleBulkSave}
                   data-guide="save-all"
                   disabled={bulkStudents.filter(s => s.name.trim()).length === 0 || saving}
-                  className="flex-1 py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-lg font-medium disabled:opacity-50 hover:shadow-lg transition-all"
+                  className="flex-1 py-3 bg-[#1D6B48] text-white rounded-lg font-medium disabled:opacity-50 hover:bg-[#236B4C] transition-colors"
                 >
                   {saving ? t('common.loading') : `${t('students.saveAll')} (${bulkStudents.filter(s => s.name.trim()).length})`}
                 </button>
@@ -1056,6 +1065,7 @@ export default function StudentsPage() {
           childName={bulkStudents[0]?.name || ''}
         />
       )}
+      </div>
     </div>
   );
 }

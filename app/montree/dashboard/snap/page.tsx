@@ -105,9 +105,9 @@ const STATUS_EMOJI: Record<string, string> = {
 };
 
 const NORM_LABELS: Record<string, { emoji: string; label: string; color: string }> = {
-  normalized: { emoji: '🟢', label: 'Normalized', color: 'text-emerald-700' },
-  normalizing: { emoji: '🟡', label: 'Normalizing', color: 'text-amber-700' },
-  deviated: { emoji: '🔴', label: 'Deviated', color: 'text-red-700' },
+  normalized: { emoji: '🟢', label: 'Normalized', color: 'text-emerald-300' },
+  normalizing: { emoji: '🟡', label: 'Normalizing', color: 'text-amber-300' },
+  deviated: { emoji: '🔴', label: 'Deviated', color: 'text-red-300' },
 };
 
 const CYCLE_LABELS: Record<string, string> = {
@@ -126,10 +126,10 @@ const TRAJECTORY_LABELS: Record<string, { emoji: string; label: string }> = {
 };
 
 const ADVANCE_LABELS: Record<string, { emoji: string; label: string; color: string }> = {
-  stay: { emoji: '🔄', label: 'Stay on this work', color: 'bg-amber-50 text-amber-800' },
-  advance: { emoji: '⏩', label: 'Ready to advance', color: 'bg-emerald-50 text-emerald-800' },
-  revisit_prerequisites: { emoji: '⬅️', label: 'Revisit prerequisites', color: 'bg-red-50 text-red-800' },
-  try_variation: { emoji: '🔀', label: 'Try a variation', color: 'bg-violet-50 text-violet-800' },
+  stay: { emoji: '🔄', label: 'Stay on this work', color: 'bg-amber-500/15 text-amber-200' },
+  advance: { emoji: '⏩', label: 'Ready to advance', color: 'bg-emerald-500/15 text-emerald-200' },
+  revisit_prerequisites: { emoji: '⬅️', label: 'Revisit prerequisites', color: 'bg-red-500/15 text-red-200' },
+  try_variation: { emoji: '🔀', label: 'Try a variation', color: 'bg-violet-500/15 text-violet-200' },
 };
 
 const CYCLE_I18N_KEY: Record<string, string> = {
@@ -151,16 +151,16 @@ function Section({ title, emoji, defaultOpen = false, children: content }: {
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+    <div className="bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-2xl overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-2 p-4 text-left hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center gap-2 p-4 text-left hover:bg-white/[0.04] transition-colors"
       >
         <span className="text-lg">{emoji}</span>
-        <span className="font-semibold text-gray-800 flex-1">{title}</span>
-        <span className="text-gray-400 text-sm">{open ? '▾' : '▸'}</span>
+        <span className="font-semibold text-white/90 flex-1">{title}</span>
+        <span className="text-white/40 text-sm">{open ? '▾' : '▸'}</span>
       </button>
-      {open && <div className="px-4 pb-4 border-t border-gray-100 pt-3">{content}</div>}
+      {open && <div className="px-4 pb-4 border-t border-white/10 pt-3">{content}</div>}
     </div>
   );
 }
@@ -176,11 +176,11 @@ function AreaBar({ area, stats }: { area: string; stats: AreaStatData }) {
       >
         {config?.icon || area[0]?.toUpperCase()}
       </span>
-      <span className="w-24 truncate text-gray-700">{config?.label || area}</span>
-      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+      <span className="w-24 truncate text-white/70">{config?.label || area}</span>
+      <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
         <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: config?.color || '#6b7280' }} />
       </div>
-      <span className="text-gray-500 text-xs w-16 text-right">{stats.mastered}/{stats.total_in_curriculum}</span>
+      <span className="text-white/50 text-xs w-16 text-right">{stats.mastered}/{stats.total_in_curriculum}</span>
     </div>
   );
 }
@@ -492,21 +492,27 @@ export default function SnapIdentifyPage() {
   const nextSteps = result?.next_steps || {} as NextStepsData;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen relative pb-20" style={{ background: '#0a1a0f', color: '#fff' }}>
+      {/* Fixed off-centre emerald glow */}
+      <div aria-hidden="true" style={{
+        position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
+        background: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.32), rgba(39,129,90,0.12) 30%, transparent 60%)',
+      }} />
+      <div className="relative" style={{ zIndex: 1 }}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-violet-600 to-purple-700 text-white px-4 py-3 flex items-center justify-between sticky top-0 z-40">
-        <button onClick={() => { stopCamera(); router.back(); }} className="text-white/80 hover:text-white">
+      <div className="text-white px-4 py-3 flex items-center justify-between sticky top-0 z-40 border-b border-[rgba(52,211,153,0.15)]" style={{ background: 'rgba(8,20,12,0.92)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
+        <button onClick={() => { stopCamera(); router.back(); }} className="text-white/60 hover:text-white">
           ← {t('common.back')}
         </button>
-        <h1 className="font-bold text-lg">{t('snap.title') || '📸 Snap & Identify'}</h1>
+        <h1 className="font-bold text-lg text-white/95" style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontWeight: 500 }}>{t('snap.title') || '📸 Snap & Identify'}</h1>
         <div className="w-16" />
       </div>
 
       {/* Phase: Camera — take photo first, no child selected yet */}
       {phase === 'camera' && !heldSnap && (
         <div className="flex flex-col items-center">
-          <div className="bg-white px-4 py-2 w-full max-w-lg text-center shadow-sm">
-            <p className="text-sm text-gray-600">{t('snap.snapFirstHint') || 'Take a photo of any child working — tag them after'}</p>
+          <div className="px-4 py-2 w-full max-w-lg text-center border-b border-[rgba(52,211,153,0.12)]" style={{ background: 'rgba(8,20,12,0.6)' }}>
+            <p className="text-sm text-white/60">{t('snap.snapFirstHint') || 'Take a photo of any child working — tag them after'}</p>
           </div>
 
           <div className="relative w-full max-w-lg aspect-[4/3] bg-black">
@@ -515,7 +521,7 @@ export default function SnapIdentifyPage() {
               <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center justify-center bg-gradient-to-t from-black/60">
                 <button
                   onClick={captureFromCamera}
-                  className="w-16 h-16 rounded-full bg-white border-4 border-violet-400 shadow-lg active:scale-95 transition-transform"
+                  className="w-16 h-16 rounded-full bg-white border-4 border-[#34d399] shadow-lg active:scale-95 transition-transform"
                   aria-label="Capture photo"
                 />
               </div>
@@ -523,7 +529,7 @@ export default function SnapIdentifyPage() {
           </div>
 
           <input ref={fileInputRef} type="file" accept="image/jpeg,.jpg,.jpeg" capture="environment" onChange={handleFileInput} className="hidden" />
-          <button onClick={() => fileInputRef.current?.click()} className="mt-3 text-sm text-violet-600 hover:text-violet-700 underline">
+          <button onClick={() => fileInputRef.current?.click()} className="mt-3 text-sm text-[#34d399] hover:text-[#5fe0b0] underline">
             {t('snap.uploadFromGallery')}
           </button>
         </div>
@@ -535,10 +541,10 @@ export default function SnapIdentifyPage() {
           <div className="relative w-full max-w-lg">
             <img src={heldSnap.preview} alt="Captured" className="w-full aspect-[4/3] object-cover" />
             <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center justify-center gap-4 bg-gradient-to-t from-black/60">
-              <button onClick={retakePhoto} className="px-5 py-2.5 bg-white/90 text-gray-700 rounded-lg font-medium shadow-md">
+              <button onClick={retakePhoto} className="px-5 py-2.5 bg-white/[0.12] text-white/85 rounded-lg font-medium border border-white/15 hover:bg-white/[0.18]">
                 {t('snap.retake')}
               </button>
-              <button onClick={proceedToTag} className="px-5 py-2.5 bg-violet-600 text-white rounded-lg font-medium shadow-md hover:bg-violet-700">
+              <button onClick={proceedToTag} className="px-5 py-2.5 bg-[#1D6B48] text-white rounded-lg font-medium hover:bg-[#236B4C]">
                 {t('snap.tagChild') || 'Tag Child →'}
               </button>
             </div>
@@ -550,13 +556,13 @@ export default function SnapIdentifyPage() {
       {phase === 'tag-child' && heldSnap && (
         <div className="max-w-lg mx-auto p-4">
           {/* Thumbnail of the held snap */}
-          <div className="flex items-center gap-3 mb-4 bg-white rounded-xl p-3 shadow-sm">
+          <div className="flex items-center gap-3 mb-4 bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-xl p-3">
             <img src={heldSnap.preview} alt="Snap" className="w-16 h-12 rounded-lg object-cover" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-gray-800">{t('snap.whoIsThis') || 'Who is this?'}</p>
-              <p className="text-xs text-gray-500">{t('snap.tapToTag') || 'Tap the child to start analysis'}</p>
+              <p className="text-sm font-medium text-white/90">{t('snap.whoIsThis') || 'Who is this?'}</p>
+              <p className="text-xs text-white/50">{t('snap.tapToTag') || 'Tap the child to start analysis'}</p>
             </div>
-            <button onClick={retakePhoto} className="text-xs text-gray-400 hover:text-gray-600">
+            <button onClick={retakePhoto} className="text-xs text-white/40 hover:text-white/70">
               {t('snap.retake')}
             </button>
           </div>
@@ -566,23 +572,23 @@ export default function SnapIdentifyPage() {
               <button
                 key={child.id}
                 onClick={() => tagChildAndSubmit(child)}
-                className="w-full flex items-center gap-3 p-3 bg-white rounded-xl shadow-sm hover:shadow-md hover:bg-violet-50 transition-all text-left"
+                className="w-full flex items-center gap-3 p-3 bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-xl hover:bg-white/[0.10] transition-all text-left"
               >
                 {child.photo_url ? (
                   <img src={child.photo_url} alt="" className="w-10 h-10 rounded-full object-cover" />
                 ) : (
-                  <span className="w-10 h-10 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center font-bold text-sm">
+                  <span className="w-10 h-10 rounded-full text-[#34d399] flex items-center justify-center font-bold text-sm" style={{ background: 'rgba(16,185,129,0.15)' }}>
                     {child.name.charAt(0)}
                   </span>
                 )}
-                <span className="font-medium text-gray-800">{child.name}</span>
-                <span className="ml-auto text-violet-500">→</span>
+                <span className="font-medium text-white/90">{child.name}</span>
+                <span className="ml-auto text-[#34d399]">→</span>
               </button>
             ))}
           </div>
 
           {children.length === 0 && (
-            <p className="text-center text-gray-400 py-8">{t('common.loading')}</p>
+            <p className="text-center text-white/40 py-8">{t('common.loading')}</p>
           )}
         </div>
       )}
@@ -590,7 +596,7 @@ export default function SnapIdentifyPage() {
       {/* Pending analyses floating indicator */}
       {pendingAnalyses.length > 0 && phase !== 'result' && (
         <div className="fixed bottom-6 left-4 right-4 z-50 max-w-lg mx-auto">
-          <div className="bg-violet-600 text-white rounded-xl px-4 py-3 shadow-lg flex items-center gap-3">
+          <div className="bg-[#1D6B48] text-white rounded-xl px-4 py-3 shadow-lg flex items-center gap-3 border border-[rgba(52,211,153,0.3)]">
             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium">
@@ -609,21 +615,21 @@ export default function SnapIdentifyPage() {
         <div className="max-w-lg mx-auto p-4 space-y-3">
 
           {/* 1. Photo + Work ID Card */}
-          <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+          <div className="bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-2xl overflow-hidden">
             {result.photo_url && (
               <img src={result.photo_url} alt="Captured work" className="w-full aspect-[4/3] object-cover" />
             )}
             <div className="p-4">
               <div className="flex items-center gap-2 mb-1">
                 <span className={`text-xs font-medium ${
-                  result.confidence === 'high' ? 'text-emerald-600' :
-                  result.confidence === 'medium' ? 'text-amber-600' : 'text-red-500'
+                  result.confidence === 'high' ? 'text-emerald-300' :
+                  result.confidence === 'medium' ? 'text-amber-300' : 'text-red-300'
                 }`}>
                   {result.confidence === 'high' ? t('snap.confidenceHigh') :
                    result.confidence === 'medium' ? t('snap.confidenceMedium') : t('snap.confidenceLow')}
                 </span>
               </div>
-              <h2 className="text-xl font-bold text-gray-900">{result.work_name}</h2>
+              <h2 className="text-xl font-bold text-white/95" style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontWeight: 500 }}>{result.work_name}</h2>
               <div className="flex items-center gap-2 mt-1">
                 <span
                   className="w-5 h-5 rounded-full inline-flex items-center justify-center text-white text-[10px] font-bold"
@@ -631,24 +637,24 @@ export default function SnapIdentifyPage() {
                 >
                   {AREA_CONFIG[result.area as keyof typeof AREA_CONFIG]?.icon || result.area[0]?.toUpperCase()}
                 </span>
-                <span className="text-sm text-gray-600">{result.area_label}</span>
-                <span className="text-sm ml-auto">{STATUS_EMOJI[result.status] || ''} {result.status}</span>
+                <span className="text-sm text-white/60">{result.area_label}</span>
+                <span className="text-sm ml-auto text-white/80">{STATUS_EMOJI[result.status] || ''} {result.status}</span>
               </div>
 
               {/* Normalization + Work Cycle badges */}
               <div className="flex gap-2 mt-3 flex-wrap">
                 {obs.normalization && NORM_LABELS[obs.normalization] && (
-                  <span className={`text-xs px-2 py-1 rounded-full bg-gray-100 ${NORM_LABELS[obs.normalization].color}`}>
+                  <span className={`text-xs px-2 py-1 rounded-full bg-white/10 ${NORM_LABELS[obs.normalization].color}`}>
                     {NORM_LABELS[obs.normalization].emoji} {t(`snap.${obs.normalization}`) || NORM_LABELS[obs.normalization].label}
                   </span>
                 )}
                 {obs.work_cycle_phase && CYCLE_LABELS[obs.work_cycle_phase] && (
-                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700">
+                  <span className="text-xs px-2 py-1 rounded-full bg-white/10 text-white/70">
                     {CYCLE_LABELS[obs.work_cycle_phase].split(' ')[0]} {CYCLE_I18N_KEY[obs.work_cycle_phase] ? t(CYCLE_I18N_KEY[obs.work_cycle_phase]) : obs.work_cycle_phase}
                   </span>
                 )}
                 {analysis.trajectory && TRAJECTORY_LABELS[analysis.trajectory] && (
-                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700">
+                  <span className="text-xs px-2 py-1 rounded-full bg-white/10 text-white/70">
                     {TRAJECTORY_LABELS[analysis.trajectory].emoji} {TRAJECTORY_I18N_KEY[analysis.trajectory] ? t(TRAJECTORY_I18N_KEY[analysis.trajectory]) : TRAJECTORY_LABELS[analysis.trajectory].label}
                   </span>
                 )}
@@ -658,47 +664,47 @@ export default function SnapIdentifyPage() {
 
           {/* 2. Observation Notes */}
           <Section title={t('snap.sectionObservation')} emoji="👁" defaultOpen>
-            <p className="text-gray-700 text-sm leading-relaxed mb-3">{obs.detailed_notes || t('snap.noDetailedNotes')}</p>
+            <p className="text-white/70 text-sm leading-relaxed mb-3">{obs.detailed_notes || t('snap.noDetailedNotes')}</p>
             <div className="grid grid-cols-2 gap-2 text-xs">
               {obs.concentration_level && (
-                <div className="bg-gray-50 rounded-lg p-2">
-                  <span className="text-gray-500">{t('snap.concentration')}:</span>{' '}
-                  <span className="font-medium text-gray-700 capitalize">{obs.concentration_level.replace('_', ' ')}</span>
+                <div className="bg-white/[0.04] rounded-lg p-2">
+                  <span className="text-white/50">{t('snap.concentration')}:</span>{' '}
+                  <span className="font-medium text-white/80 capitalize">{obs.concentration_level.replace('_', ' ')}</span>
                 </div>
               )}
               {obs.independence_level && (
-                <div className="bg-gray-50 rounded-lg p-2">
-                  <span className="text-gray-500">{t('snap.independence')}:</span>{' '}
-                  <span className="font-medium text-gray-700 capitalize">{obs.independence_level.replace('_', ' ')}</span>
+                <div className="bg-white/[0.04] rounded-lg p-2">
+                  <span className="text-white/50">{t('snap.independence')}:</span>{' '}
+                  <span className="font-medium text-white/80 capitalize">{obs.independence_level.replace('_', ' ')}</span>
                 </div>
               )}
               {obs.emotional_state && (
-                <div className="bg-gray-50 rounded-lg p-2">
-                  <span className="text-gray-500">{t('snap.emotional')}:</span>{' '}
-                  <span className="font-medium text-gray-700 capitalize">{obs.emotional_state.replace('_', ' ')}</span>
+                <div className="bg-white/[0.04] rounded-lg p-2">
+                  <span className="text-white/50">{t('snap.emotional')}:</span>{' '}
+                  <span className="font-medium text-white/80 capitalize">{obs.emotional_state.replace('_', ' ')}</span>
                 </div>
               )}
               {obs.technique_notes && (
-                <div className="bg-gray-50 rounded-lg p-2 col-span-2">
-                  <span className="text-gray-500">{t('snap.technique')}:</span>{' '}
-                  <span className="font-medium text-gray-700">{obs.technique_notes}</span>
+                <div className="bg-white/[0.04] rounded-lg p-2 col-span-2">
+                  <span className="text-white/50">{t('snap.technique')}:</span>{' '}
+                  <span className="font-medium text-white/80">{obs.technique_notes}</span>
                 </div>
               )}
               {typeof obs.repetition_noted === 'boolean' && (
-                <div className="bg-gray-50 rounded-lg p-2">
-                  <span className="text-gray-500">{t('snap.repetition')}:</span>{' '}
-                  <span className="font-medium text-gray-700">{obs.repetition_noted ? '✓' : '—'}</span>
+                <div className="bg-white/[0.04] rounded-lg p-2">
+                  <span className="text-white/50">{t('snap.repetition')}:</span>{' '}
+                  <span className="font-medium text-white/80">{obs.repetition_noted ? '✓' : '—'}</span>
                 </div>
               )}
               {typeof obs.self_correcting === 'boolean' && (
-                <div className="bg-gray-50 rounded-lg p-2">
-                  <span className="text-gray-500">{t('snap.selfCorrecting')}:</span>{' '}
-                  <span className="font-medium text-gray-700">{obs.self_correcting ? '✓' : '—'}</span>
+                <div className="bg-white/[0.04] rounded-lg p-2">
+                  <span className="text-white/50">{t('snap.selfCorrecting')}:</span>{' '}
+                  <span className="font-medium text-white/80">{obs.self_correcting ? '✓' : '—'}</span>
                 </div>
               )}
             </div>
             {obs.control_of_error_notes && obs.control_of_error_notes !== 'not visible from photo' && (
-              <p className="text-xs text-gray-600 mt-2 bg-amber-50 p-2 rounded-lg">
+              <p className="text-xs text-amber-200 mt-2 p-2 rounded-lg" style={{ background: 'rgba(245,158,11,0.12)' }}>
                 🔍 {t('snap.controlOfError')}: {obs.control_of_error_notes}
               </p>
             )}
@@ -706,9 +712,9 @@ export default function SnapIdentifyPage() {
 
           {/* 3. Sensitive Period */}
           {result.sensitive_period_alignment && result.sensitive_period_alignment !== 'No specific alignment' && (
-            <div className="bg-violet-50 border border-violet-100 rounded-2xl p-4">
-              <p className="text-violet-800 text-sm">
-                🌱 <span className="font-semibold">{t('snap.sensitivePeriod')}:</span> {result.sensitive_period_alignment}
+            <div className="rounded-2xl p-4 border border-[rgba(52,211,153,0.15)]" style={{ background: 'rgba(52,211,153,0.06)' }}>
+              <p className="text-white/80 text-sm">
+                🌱 <span className="font-semibold text-[#34d399]">{t('snap.sensitivePeriod')}:</span> {result.sensitive_period_alignment}
               </p>
             </div>
           )}
@@ -723,16 +729,16 @@ export default function SnapIdentifyPage() {
               </div>
             )}
             {analysis.relative_strength && (
-              <p className="text-sm text-gray-600">{analysis.relative_strength}</p>
+              <p className="text-sm text-white/70">{analysis.relative_strength}</p>
             )}
             {analysis.area_progress_summary && (
-              <p className="text-sm text-gray-500 mt-1">{analysis.area_progress_summary}</p>
+              <p className="text-sm text-white/50 mt-1">{analysis.area_progress_summary}</p>
             )}
             {analysis.time_on_work && (
-              <p className="text-xs text-gray-400 mt-2">⏱ {analysis.time_on_work}</p>
+              <p className="text-xs text-white/40 mt-2">⏱ {analysis.time_on_work}</p>
             )}
             {analysis.prerequisite_status && (
-              <p className="text-xs mt-1 text-gray-500">📋 {analysis.prerequisite_status}</p>
+              <p className="text-xs mt-1 text-white/50">📋 {analysis.prerequisite_status}</p>
             )}
           </Section>
 
@@ -741,17 +747,17 @@ export default function SnapIdentifyPage() {
             <Section title={t('snap.sectionCrossArea')} emoji="🔗">
               {crossArea.foundation_gaps && crossArea.foundation_gaps.length > 0 && (
                 <div className="mb-3">
-                  <p className="text-xs font-semibold text-red-700 mb-1">{t('snap.foundationGaps')}:</p>
+                  <p className="text-xs font-semibold text-red-300 mb-1">{t('snap.foundationGaps')}:</p>
                   {crossArea.foundation_gaps.map((gap, i) => (
-                    <p key={i} className="text-sm text-red-600 ml-2">• {gap}</p>
+                    <p key={i} className="text-sm text-red-200 ml-2">• {gap}</p>
                   ))}
                 </div>
               )}
               {crossArea.recommended_support_works && crossArea.recommended_support_works.length > 0 && (
                 <div>
-                  <p className="text-xs font-semibold text-gray-700 mb-1">{t('snap.recommendedWorks')}:</p>
+                  <p className="text-xs font-semibold text-white/70 mb-1">{t('snap.recommendedWorks')}:</p>
                   {crossArea.recommended_support_works.map((w, i) => (
-                    <div key={i} className="flex items-start gap-2 text-sm text-gray-600 ml-2 mb-1">
+                    <div key={i} className="flex items-start gap-2 text-sm text-white/60 ml-2 mb-1">
                       <span
                         className="w-4 h-4 rounded-full inline-flex items-center justify-center text-white text-[8px] font-bold mt-0.5 shrink-0"
                         style={{ backgroundColor: AREA_CONFIG[w.area as keyof typeof AREA_CONFIG]?.color || '#6b7280' }}
@@ -774,26 +780,26 @@ export default function SnapIdentifyPage() {
               </div>
             )}
             {nextSteps.reason && (
-              <p className="text-sm text-gray-700 mb-3">{nextSteps.reason}</p>
+              <p className="text-sm text-white/70 mb-3">{nextSteps.reason}</p>
             )}
             {nextSteps.next_work_in_area && (
-              <p className="text-sm text-gray-600 mb-2">
-                ➡️ {t('snap.nextInSequence')}: <strong>{nextSteps.next_work_in_area}</strong>
+              <p className="text-sm text-white/60 mb-2">
+                ➡️ {t('snap.nextInSequence')}: <strong className="text-white/85">{nextSteps.next_work_in_area}</strong>
               </p>
             )}
             {nextSteps.suggested_variations && nextSteps.suggested_variations.length > 0 && (
               <div className="mb-2">
-                <p className="text-xs font-semibold text-gray-500 mb-1">{t('snap.variationsToTry')}:</p>
+                <p className="text-xs font-semibold text-white/50 mb-1">{t('snap.variationsToTry')}:</p>
                 {nextSteps.suggested_variations.map((v, i) => (
-                  <p key={i} className="text-sm text-gray-600 ml-2">• {v}</p>
+                  <p key={i} className="text-sm text-white/60 ml-2">• {v}</p>
                 ))}
               </div>
             )}
             {nextSteps.priority_actions && nextSteps.priority_actions.length > 0 && (
-              <div className="bg-violet-50 rounded-lg p-3 mt-2">
-                <p className="text-xs font-semibold text-violet-700 mb-1">{t('snap.priorityActions')}:</p>
+              <div className="rounded-lg p-3 mt-2 border border-[rgba(52,211,153,0.15)]" style={{ background: 'rgba(52,211,153,0.06)' }}>
+                <p className="text-xs font-semibold text-[#34d399] mb-1">{t('snap.priorityActions')}:</p>
                 {nextSteps.priority_actions.map((a, i) => (
-                  <p key={i} className="text-sm text-violet-800 ml-2">{i + 1}. {a}</p>
+                  <p key={i} className="text-sm text-white/80 ml-2">{i + 1}. {a}</p>
                 ))}
               </div>
             )}
@@ -802,22 +808,22 @@ export default function SnapIdentifyPage() {
           {/* 7. Weekly Admin Narrative */}
           {result.weekly_narrative && (
             <Section title={t('snap.sectionWeeklyAdmin')} emoji="📝">
-              <div className="bg-gray-50 rounded-lg p-3 mb-2">
-                <p className="text-sm text-gray-700 leading-relaxed">
+              <div className="bg-white/[0.04] rounded-lg p-3 mb-2">
+                <p className="text-sm text-white/75 leading-relaxed">
                   {showZh && result.weekly_narrative_zh ? result.weekly_narrative_zh : result.weekly_narrative}
                 </p>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={copyNarrative}
-                  className="text-xs px-3 py-1.5 bg-violet-100 text-violet-700 rounded-lg hover:bg-violet-200 transition-colors"
+                  className="text-xs px-3 py-1.5 bg-[#34d399]/15 text-[#34d399] rounded-lg hover:bg-[#34d399]/25 transition-colors"
                 >
                   {narrativeCopied ? `✓ ${t('snap.copied')}` : `📋 ${t('snap.copyNarrative')}`}
                 </button>
                 {result.weekly_narrative_zh && (
                   <button
                     onClick={() => setShowZh(!showZh)}
-                    className="text-xs px-3 py-1.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
+                    className="text-xs px-3 py-1.5 bg-white/10 text-white/70 rounded-lg hover:bg-white/[0.16] transition-colors"
                   >
                     {showZh ? 'EN' : '中文'}
                   </button>
@@ -827,14 +833,14 @@ export default function SnapIdentifyPage() {
           )}
 
           {/* 8. Status confirmation + parent visibility toggle */}
-          <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 text-center">
-            <p className="text-emerald-700 text-sm">
+          <div className="rounded-xl p-3 text-center border border-[rgba(52,211,153,0.2)]" style={{ background: 'rgba(52,211,153,0.08)' }}>
+            <p className="text-emerald-200 text-sm">
               {result.progress_updated
                 ? `✅ ${resultChild.name} — ${t('snap.progressUpdated')} — ${result.work_name} → ${result.status}`
                 : `⚠️ ${t('snap.progressIssue')}`
               }
             </p>
-            <p className="text-emerald-600 text-xs mt-1">{t('snap.photoSaved')}</p>
+            <p className="text-emerald-300/80 text-xs mt-1">{t('snap.photoSaved')}</p>
           </div>
 
           {/* Parent report visibility toggle */}
@@ -845,20 +851,21 @@ export default function SnapIdentifyPage() {
               togglingVisibility ? 'opacity-60 cursor-not-allowed' : ''
             } ${
               parentVisible
-                ? 'bg-white border border-gray-200 hover:bg-gray-50'
-                : 'bg-amber-50 border border-amber-200 hover:bg-amber-100'
+                ? 'bg-white/[0.06] border border-[rgba(52,211,153,0.15)] hover:bg-white/[0.10]'
+                : 'border border-amber-500/30 hover:bg-amber-500/20'
             }`}
+            style={parentVisible ? undefined : { background: 'rgba(245,158,11,0.12)' }}
           >
             <div className="flex items-center gap-2">
               <span className="text-lg">{parentVisible ? '👁' : '🙈'}</span>
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-white/80">
                 {t('snap.parentReportLabel') || 'Parent Report'}
               </span>
             </div>
             <span className={`text-xs px-2 py-1 rounded-full font-medium ${
               parentVisible
-                ? 'bg-emerald-100 text-emerald-700'
-                : 'bg-amber-100 text-amber-700'
+                ? 'bg-emerald-500/15 text-emerald-200'
+                : 'bg-amber-500/15 text-amber-200'
             }`}>
               {parentVisible
                 ? (t('snap.visible') || 'Visible')
@@ -871,7 +878,7 @@ export default function SnapIdentifyPage() {
           <div className="flex gap-3 pt-2">
             <button
               onClick={backToCamera}
-              className="flex-1 py-3 bg-violet-600 text-white rounded-xl font-medium hover:bg-violet-700 transition-colors"
+              className="flex-1 py-3 bg-[#1D6B48] text-white rounded-xl font-medium hover:bg-[#236B4C] transition-colors"
             >
               📸 {t('snap.snapAnother') || 'Snap Another'}
             </button>
@@ -879,12 +886,13 @@ export default function SnapIdentifyPage() {
 
           <button
             onClick={() => router.push(`/montree/dashboard/${resultChild.id}/progress`)}
-            className="w-full py-2.5 text-sm text-violet-600 hover:text-violet-700 underline"
+            className="w-full py-2.5 text-sm text-[#34d399] hover:text-[#5fe0b0] underline"
           >
             {resultChild.name} — {t('snap.viewProgress')}
           </button>
         </div>
       )}
+      </div>
     </div>
   );
 }

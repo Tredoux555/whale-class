@@ -220,8 +220,10 @@ export default function TeacherSummaryPage() {
   };
 
   const getAreaColor = (area: string) => {
+    // Dark-register (Jul 16 sweep): uniform glass tile. Area colour is carried
+    // by the inline AreaBadge, not a light full-card background.
     const config = AREA_CONFIG[normalizeArea(area)];
-    return config ? `${config.bg} ${config.text}` : 'bg-gray-100 text-gray-700';
+    return config ? 'bg-white/[0.04] text-white/85' : 'bg-white/[0.04] text-white/85';
   };
 
   // ============================================
@@ -230,10 +232,10 @@ export default function TeacherSummaryPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+      <div className="flex items-center justify-center py-24">
         <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-500 border-t-transparent mb-4" />
-          <p className="text-gray-600">{t('summary.loading')}</p>
+          <div className="animate-spin rounded-full h-10 w-10 border-4 border-[#34d399] border-t-transparent mb-4" />
+          <p className="text-white/60">{t('summary.loading')}</p>
         </div>
       </div>
     );
@@ -241,13 +243,13 @@ export default function TeacherSummaryPage() {
 
   if (error || !summary) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+      <div className="flex items-center justify-center py-24">
         <div className="text-center p-6">
           <div className="text-4xl mb-4">❌</div>
-          <p className="text-gray-600 mb-4">{error || t('summary.loadError')}</p>
+          <p className="text-white/60 mb-4">{error || t('summary.loadError')}</p>
           <button
             onClick={() => router.back()}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+            className="px-4 py-2 bg-[#1D6B48] text-white rounded-lg hover:bg-[#236B4C]"
           >
             {t('summary.goBack')}
           </button>
@@ -257,26 +259,26 @@ export default function TeacherSummaryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div>
       {/* Sub-header */}
-      <div className="bg-white border-b border-slate-200 px-4 py-3">
+      <div className="bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-2xl px-4 py-3 mb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-xl">📊</span>
             <div>
-              <h1 className="font-bold text-gray-800">
+              <h1 className="font-bold text-white/95" style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontWeight: 500 }}>
                 {summary.child.name}&apos;s Summary
               </h1>
-              <p className="text-xs text-gray-500">{summary.period}</p>
+              <p className="text-xs text-white/50">{summary.period}</p>
             </div>
           </div>
 
           {/* Period toggle */}
-          <div className="flex bg-gray-100 rounded-lg p-1">
+          <div className="flex bg-black/30 rounded-lg p-1">
             <button
               onClick={() => setPeriod('week')}
               className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                period === 'week' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'
+                period === 'week' ? 'bg-[#34d399]/15 text-[#34d399]' : 'text-white/60 hover:bg-white/10'
               }`}
             >
               {t('summary.week')}
@@ -284,7 +286,7 @@ export default function TeacherSummaryPage() {
             <button
               onClick={() => setPeriod('month')}
               className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                period === 'month' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'
+                period === 'month' ? 'bg-[#34d399]/15 text-[#34d399]' : 'text-white/60 hover:bg-white/10'
               }`}
             >
               {t('summary.month')}
@@ -293,43 +295,43 @@ export default function TeacherSummaryPage() {
         </div>
       </div>
 
-      <main className="p-4 space-y-4 pb-24">
+      <main className="space-y-4 pb-24">
         {/* Overview Stats */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <h2 className="font-bold text-gray-700 mb-3">📊 {t('summary.overview')}</h2>
+        <div className="bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-2xl p-4">
+          <h2 className="font-bold text-white/90 mb-3">📊 {t('summary.overview')}</h2>
           <div className="grid grid-cols-3 gap-3">
-            <div className="text-center p-3 bg-blue-50 rounded-xl">
-              <div className="text-2xl font-bold text-blue-600">
+            <div className="text-center p-3 bg-white/[0.04] rounded-xl">
+              <div className="text-2xl font-bold text-[#34d399]">
                 {summary.totalWorksThisPeriod}
               </div>
-              <div className="text-xs text-gray-500">{t('summary.totalActivities')}</div>
+              <div className="text-xs text-white/50">{t('summary.totalActivities')}</div>
             </div>
-            <div className="text-center p-3 bg-green-50 rounded-xl">
-              <div className="text-2xl font-bold text-green-600">
+            <div className="text-center p-3 bg-white/[0.04] rounded-xl">
+              <div className="text-2xl font-bold text-emerald-300">
                 {summary.statusBreakdown.mastered}
               </div>
-              <div className="text-xs text-gray-500">{t('summary.mastered')}</div>
+              <div className="text-xs text-white/50">{t('summary.mastered')}</div>
             </div>
-            <div className="text-center p-3 bg-purple-50 rounded-xl">
-              <div className="text-2xl font-bold text-purple-600">
+            <div className="text-center p-3 bg-white/[0.04] rounded-xl">
+              <div className="text-2xl font-bold text-violet-300">
                 {summary.areasWorked.length}
               </div>
-              <div className="text-xs text-gray-500">{t('summary.areasCovered')}</div>
+              <div className="text-xs text-white/50">{t('summary.areasCovered')}</div>
             </div>
           </div>
         </div>
 
         {/* Areas Worked */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <h2 className="font-bold text-gray-700 mb-3">✅ {t('summary.areasWorkedOn')}</h2>
+        <div className="bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-2xl p-4">
+          <h2 className="font-bold text-white/90 mb-3">✅ {t('summary.areasWorkedOn')}</h2>
           {summary.areasWorked.length === 0 ? (
-            <p className="text-gray-400 text-center py-4">{t('summary.noWorkThisPeriod')}</p>
+            <p className="text-white/40 text-center py-4">{t('summary.noWorkThisPeriod')}</p>
           ) : (
             <div className="space-y-2">
               {summary.areasWorked.map(area => (
                 <div
                   key={area.area}
-                  className={`p-3 rounded-xl ${getAreaColor(area.area)}`}
+                  className={`p-3 rounded-xl border border-[rgba(52,211,153,0.12)] ${getAreaColor(area.area)}`}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="font-medium flex items-center gap-1.5">
@@ -337,7 +339,7 @@ export default function TeacherSummaryPage() {
                     </span>
                     <span className="text-sm font-bold">{area.count} {t('summary.activities')}</span>
                   </div>
-                  <div className="text-sm opacity-80">
+                  <div className="text-sm text-white/55">
                     {area.works.slice(0, 3).join(', ')}
                     {area.works.length > 3 && ` +${area.works.length - 3} more`}
                   </div>
@@ -349,16 +351,16 @@ export default function TeacherSummaryPage() {
 
         {/* Neglected Areas */}
         {summary.areasNeglected.length > 0 && (
-          <div className="bg-white rounded-2xl p-4 shadow-sm border-l-4 border-amber-400">
-            <h2 className="font-bold text-gray-700 mb-3">⚠️ {t('summary.areasToConsider')}</h2>
-            <p className="text-sm text-gray-600 mb-2">
+          <div className="bg-white/[0.06] rounded-2xl p-4 border border-[rgba(52,211,153,0.15)] border-l-4 border-l-amber-400">
+            <h2 className="font-bold text-white/90 mb-3">⚠️ {t('summary.areasToConsider')}</h2>
+            <p className="text-sm text-white/60 mb-2">
               {t('summary.areasNotWorked').replace('{period}', period)}
             </p>
             <div className="flex flex-wrap gap-2">
               {summary.areasNeglected.map(area => (
                 <span
                   key={area}
-                  className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm"
+                  className="px-3 py-1 bg-amber-500/15 text-amber-200 rounded-full text-sm"
                 >
                   <AreaBadge area={area} size="xs" className="inline-block" /> {formatAreaName(area)}
                 </span>
@@ -368,13 +370,13 @@ export default function TeacherSummaryPage() {
         )}
 
         {/* Status Breakdown */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <h2 className="font-bold text-gray-700 mb-3">📈 {t('summary.progressBreakdown')}</h2>
+        <div className="bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-2xl p-4">
+          <h2 className="font-bold text-white/90 mb-3">📈 {t('summary.progressBreakdown')}</h2>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">{t('summary.presented')}</span>
+              <span className="text-sm text-white/60">{t('summary.presented')}</span>
               <div className="flex items-center gap-2">
-                <div className="w-32 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="w-32 h-2 bg-white/10 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-yellow-400"
                     style={{
@@ -382,15 +384,15 @@ export default function TeacherSummaryPage() {
                     }}
                   />
                 </div>
-                <span className="text-sm font-medium w-8 text-right">
+                <span className="text-sm font-medium w-8 text-right text-white/80">
                   {summary.statusBreakdown.presented}
                 </span>
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">{t('summary.practicing')}</span>
+              <span className="text-sm text-white/60">{t('summary.practicing')}</span>
               <div className="flex items-center gap-2">
-                <div className="w-32 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="w-32 h-2 bg-white/10 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-blue-400"
                     style={{
@@ -398,15 +400,15 @@ export default function TeacherSummaryPage() {
                     }}
                   />
                 </div>
-                <span className="text-sm font-medium w-8 text-right">
+                <span className="text-sm font-medium w-8 text-right text-white/80">
                   {summary.statusBreakdown.practicing}
                 </span>
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">{t('summary.mastered')}</span>
+              <span className="text-sm text-white/60">{t('summary.mastered')}</span>
               <div className="flex items-center gap-2">
-                <div className="w-32 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="w-32 h-2 bg-white/10 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-green-400"
                     style={{
@@ -414,7 +416,7 @@ export default function TeacherSummaryPage() {
                     }}
                   />
                 </div>
-                <span className="text-sm font-medium w-8 text-right">
+                <span className="text-sm font-medium w-8 text-right text-white/80">
                   {summary.statusBreakdown.mastered}
                 </span>
               </div>
@@ -423,13 +425,13 @@ export default function TeacherSummaryPage() {
         </div>
 
         {/* AI Insights */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
+        <div className="bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-2xl p-4">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-bold text-gray-700">🤖 {t('summary.guruInsights')}</h2>
+            <h2 className="font-bold text-white/90">🤖 {t('summary.guruInsights')}</h2>
             <button
               onClick={generateAiInsight}
               disabled={loadingAi}
-              className="px-3 py-1.5 bg-indigo-500 text-white rounded-lg text-sm font-medium hover:bg-indigo-600 disabled:opacity-50 flex items-center gap-1"
+              className="px-3 py-1.5 bg-[#1D6B48] text-white rounded-lg text-sm font-medium hover:bg-[#236B4C] disabled:opacity-50 flex items-center gap-1"
             >
               {loadingAi ? (
                 <>
@@ -445,11 +447,11 @@ export default function TeacherSummaryPage() {
           </div>
 
           {aiInsight ? (
-            <div className="p-4 bg-indigo-50 rounded-xl">
-              <p className="text-sm text-gray-700 whitespace-pre-wrap">{aiInsight}</p>
+            <div className="p-4 rounded-xl border border-[rgba(52,211,153,0.15)]" style={{ background: 'rgba(52,211,153,0.06)' }}>
+              <p className="text-sm text-white/80 whitespace-pre-wrap">{aiInsight}</p>
             </div>
           ) : (
-            <div className="p-4 bg-gray-50 rounded-xl text-center text-gray-400">
+            <div className="p-4 bg-white/[0.04] rounded-xl text-center text-white/40">
               <p className="text-sm">
                 {t('summary.askGuruPrompt')}
               </p>
@@ -459,25 +461,25 @@ export default function TeacherSummaryPage() {
 
         {/* Recent Activity */}
         {summary.recentProgress.length > 0 && (
-          <div className="bg-white rounded-2xl p-4 shadow-sm">
-            <h2 className="font-bold text-gray-700 mb-3">🕐 {t('summary.recentActivity')}</h2>
+          <div className="bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-2xl p-4">
+            <h2 className="font-bold text-white/90 mb-3">🕐 {t('summary.recentActivity')}</h2>
             <div className="space-y-2">
               {summary.recentProgress.map((p, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+                  className="flex items-center justify-between p-2 bg-white/[0.04] rounded-lg"
                 >
                   <div className="flex items-center gap-2">
                     <AreaBadge area={p.area} size="xs" />
-                    <span className="text-sm font-medium">{p.work_name}</span>
+                    <span className="text-sm font-medium text-white/85">{p.work_name}</span>
                   </div>
                   <span
                     className={`text-xs px-2 py-0.5 rounded-full ${
                       p.status === 'mastered'
-                        ? 'bg-green-100 text-green-700'
+                        ? 'bg-emerald-500/15 text-emerald-200'
                         : p.status === 'practicing'
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-yellow-100 text-yellow-700'
+                        ? 'bg-blue-500/15 text-blue-200'
+                        : 'bg-yellow-500/15 text-yellow-200'
                     }`}
                   >
                     {p.status}
@@ -493,7 +495,7 @@ export default function TeacherSummaryPage() {
       <div className="fixed bottom-6 right-6">
         <Link
           href={`/montree/dashboard/print?child=${childId}`}
-          className="w-14 h-14 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-xl hover:bg-blue-600 transition-all hover:scale-105"
+          className="w-14 h-14 bg-[#1D6B48] text-white rounded-full flex items-center justify-center shadow-xl hover:bg-[#236B4C] transition-all hover:scale-105"
         >
           <span className="text-2xl">🖨️</span>
         </Link>

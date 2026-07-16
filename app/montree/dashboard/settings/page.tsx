@@ -39,67 +39,74 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
+    <div className="min-h-screen relative" style={{ background: '#0a1a0f', color: '#fff' }}>
+      {/* Fixed off-centre emerald glow */}
+      <div aria-hidden="true" style={{
+        position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
+        background: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.32), rgba(39,129,90,0.12) 30%, transparent 60%)',
+      }} />
+      <div className="relative" style={{ zIndex: 1 }}>
       {/* Sub-header */}
-      <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center gap-2">
+      <div className="border-b border-[rgba(52,211,153,0.15)] px-4 py-3 flex items-center gap-2" style={{ background: 'rgba(8,20,12,0.90)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
         <span className="text-xl">⚙️</span>
-        <h1 className="font-bold text-gray-800">{t('settings.title')}</h1>
+        <h1 className="font-bold text-white/95" style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontWeight: 500 }}>{t('settings.title')}</h1>
       </div>
 
       <main className="p-4 max-w-lg mx-auto space-y-6">
         {/* Profile Section */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-emerald-100">
+        <div className="bg-white/[0.06] rounded-2xl p-5 border border-[rgba(52,211,153,0.15)]">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center text-3xl shadow-lg">
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl" style={{ background: 'rgba(16,185,129,0.15)' }}>
               {classroomIcon}
             </div>
             <div className="flex-1">
-              <div className="text-gray-900 font-bold text-lg">{teacherName || 'Teacher'}</div>
-              <div className="text-gray-500 text-sm">{classroomName}</div>
-              <div className="text-emerald-600 text-xs mt-1">✓ {t('settings.active')}</div>
+              <div className="text-white/95 font-bold text-lg">{teacherName || 'Teacher'}</div>
+              <div className="text-white/50 text-sm">{classroomName}</div>
+              <div className="text-[#34d399] text-xs mt-1">✓ {t('settings.active')}</div>
             </div>
           </div>
         </div>
 
         {/* Settings List */}
         <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide px-1">{t('settings.quickAccess')}</h3>
+          <h3 className="text-sm font-semibold text-white/50 uppercase tracking-wide px-1">{t('settings.quickAccess')}</h3>
           {SETTINGS_ITEMS.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center gap-4 bg-white hover:bg-emerald-50 border border-gray-100 hover:border-emerald-200 rounded-xl p-4 transition-all group shadow-sm"
+              className="flex items-center gap-4 bg-white/[0.06] hover:bg-white/[0.10] border border-[rgba(52,211,153,0.15)] hover:border-[rgba(52,211,153,0.35)] rounded-xl p-4 transition-all group"
             >
-              <div className="w-12 h-12 bg-emerald-100 group-hover:bg-emerald-200 rounded-xl flex items-center justify-center transition-colors">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center transition-colors" style={{ background: 'rgba(16,185,129,0.12)' }}>
                 <span className="text-2xl">{item.emoji}</span>
               </div>
               <div className="flex-1">
-                <div className="text-gray-800 font-medium">{t(item.key)}</div>
-                <div className="text-gray-500 text-sm">{t(item.descKey)}</div>
+                <div className="text-white/90 font-medium">{t(item.key)}</div>
+                <div className="text-white/50 text-sm">{t(item.descKey)}</div>
               </div>
-              <span className="text-gray-300 group-hover:text-emerald-500 transition-colors">→</span>
+              <span className="text-white/30 group-hover:text-[#34d399] transition-colors">→</span>
             </Link>
           ))}
         </div>
 
         {/* Delete Account (Apple App Store Guideline 5.1.1(v)) */}
-        <DeleteAccountSection redirectTo="/montree/login" onDeleted={clearSession} />
+        <DeleteAccountSection redirectTo="/montree/login" onDeleted={clearSession} dark />
 
         {/* Sign Out */}
-        <div className="pt-4 border-t border-gray-200">
+        <div className="pt-4 border-t border-white/10">
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center justify-center gap-2 bg-red-50 border border-red-200 rounded-xl p-4 text-red-600 font-medium hover:bg-red-100 transition-all"
+            className="w-full flex items-center justify-center gap-2 bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-300 font-medium hover:bg-red-500/20 transition-all"
           >
             🚪 {t('settings.signOut')}
           </button>
         </div>
 
         {/* Version */}
-        <div className="text-center text-gray-400 text-xs pt-4">
+        <div className="text-center text-white/40 text-xs pt-4">
           {t('settings.version')} 🌳
         </div>
       </main>
+      </div>
     </div>
   );
 }

@@ -15,24 +15,18 @@ export default function ToolsPage() {
       icon: '👨‍👩‍👧',
       titleKey: 'teacherTools.parentCodes' as TranslationKey,
       descKey: 'teacherTools.parentCodesDesc' as TranslationKey,
-      gradient: 'from-emerald-500 to-teal-600',
-      hoverGradient: 'hover:from-emerald-600 hover:to-teal-700',
     },
     {
       href: '/montree/dashboard/videos/preview',
       icon: '🎬',
       titleKey: 'teacherTools.weeklyVideos' as TranslationKey,
       descKey: 'teacherTools.weeklyVideosDesc' as TranslationKey,
-      gradient: 'from-purple-500 to-violet-600',
-      hoverGradient: 'hover:from-purple-600 hover:to-violet-700',
     },
     {
       href: '/montree/dashboard/weekly-wrap',
       icon: '📊',
       titleKey: 'teacherTools.weeklyReports' as TranslationKey,
       descKey: 'teacherTools.weeklyReportsDesc' as TranslationKey,
-      gradient: 'from-blue-500 to-indigo-600',
-      hoverGradient: 'hover:from-blue-600 hover:to-indigo-700',
     },
     // Games card REMOVED Jul 3 2026 — feature retired from teacher-facing nav.
     {
@@ -40,33 +34,33 @@ export default function ToolsPage() {
       icon: '📚',
       titleKey: 'teacherTools.curriculumEditor' as TranslationKey,
       descKey: 'teacherTools.curriculumEditorDesc' as TranslationKey,
-      gradient: 'from-amber-500 to-orange-600',
-      hoverGradient: 'hover:from-amber-600 hover:to-orange-700',
     },
     {
       href: '/admin/weekly-planning',
       icon: '📅',
       titleKey: 'teacherTools.weeklyPlanning' as TranslationKey,
       descKey: 'teacherTools.weeklyPlanningDesc' as TranslationKey,
-      gradient: 'from-pink-500 to-rose-600',
-      hoverGradient: 'hover:from-pink-600 hover:to-rose-700',
     },
     {
       href: '/montree/admin',
       icon: '⚙️',
       titleKey: 'teacherTools.schoolAdmin' as TranslationKey,
       descKey: 'teacherTools.schoolAdminDesc' as TranslationKey,
-      gradient: 'from-gray-500 to-slate-600',
-      hoverGradient: 'hover:from-gray-600 hover:to-slate-700',
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 flex flex-col">
+    <div className="min-h-screen relative flex flex-col" style={{ background: '#0a1a0f', color: '#fff' }}>
+      {/* Fixed off-centre emerald glow */}
+      <div aria-hidden="true" style={{
+        position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
+        background: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.32), rgba(39,129,90,0.12) 30%, transparent 60%)',
+      }} />
+      <div className="relative flex flex-col flex-1" style={{ zIndex: 1 }}>
       {/* Sub-header */}
-      <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center gap-2">
+      <div className="border-b border-[rgba(52,211,153,0.15)] px-4 py-3 flex items-center gap-2" style={{ background: 'rgba(8,20,12,0.90)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
         <span className="text-xl">🔧</span>
-        <h1 className="font-bold text-gray-800">{t('teacherTools.title' as TranslationKey)}</h1>
+        <h1 className="font-bold text-white/95" style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontWeight: 500 }}>{t('teacherTools.title' as TranslationKey)}</h1>
       </div>
 
       {/* Tools Grid */}
@@ -76,30 +70,31 @@ export default function ToolsPage() {
             <Link
               key={tool.href}
               href={tool.href}
-              className={`flex items-center gap-4 p-5 bg-gradient-to-br ${tool.gradient} ${tool.hoverGradient} rounded-2xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]`}
+              className="flex items-center gap-4 p-5 bg-white/[0.06] hover:bg-white/[0.10] border border-[rgba(52,211,153,0.15)] hover:border-[rgba(52,211,153,0.35)] rounded-2xl transition-all group"
             >
-              <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.12)' }}>
                 <span className="text-3xl">{tool.icon}</span>
               </div>
               <div className="flex-1">
-                <div className="text-white font-bold text-lg">{t(tool.titleKey)}</div>
-                <div className="text-white/80 text-sm">{t(tool.descKey)}</div>
+                <div className="text-white/95 font-bold text-lg">{t(tool.titleKey)}</div>
+                <div className="text-white/60 text-sm">{t(tool.descKey)}</div>
               </div>
-              <span className="text-white/60 text-xl">→</span>
+              <span className="text-white/30 group-hover:text-[#34d399] text-xl transition-colors">→</span>
             </Link>
           ))}
         </div>
 
         {/* Quick tip */}
-        <div className="max-w-2xl mx-auto mt-6 p-4 bg-emerald-100 rounded-xl border border-emerald-200">
+        <div className="max-w-2xl mx-auto mt-6 p-4 rounded-xl border border-[rgba(52,211,153,0.15)]" style={{ background: 'rgba(52,211,153,0.06)' }}>
           <div className="flex items-start gap-3">
             <span className="text-xl">💡</span>
-            <div className="text-sm text-emerald-800">
-              <strong>{t('teacherTools.tipLabel' as TranslationKey)}</strong> {t('teacherTools.tipText' as TranslationKey)}
+            <div className="text-sm text-white/70">
+              <strong className="text-white/90">{t('teacherTools.tipLabel' as TranslationKey)}</strong> {t('teacherTools.tipText' as TranslationKey)}
             </div>
           </div>
         </div>
       </main>
+      </div>
     </div>
   );
 }
