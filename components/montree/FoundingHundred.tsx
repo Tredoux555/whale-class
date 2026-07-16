@@ -86,9 +86,9 @@ export default function FoundingHundred() {
           font-family: var(--font-lora), 'Lora', Georgia, serif;
           font-size: 3rem; font-weight: 400; color: #E8C96A; letter-spacing: -1px; line-height: 1;
         }
-        .fh-counter-label { font-size: 15px; color: rgba(244,247,245,0.55); }
+        .fh-counter-label { font-size: 15px; color: rgba(255,250,240,0.55); }
         .fh-body {
-          font-size: 15px; line-height: 1.7; color: rgba(244,247,245,0.72);
+          font-size: 15px; line-height: 1.7; color: rgba(255,250,240,0.72);
           margin: 0 0 16px; position: relative;
         }
         .fh-list {
@@ -97,7 +97,7 @@ export default function FoundingHundred() {
         }
         .fh-list li {
           display: flex; align-items: flex-start; gap: 10px;
-          font-size: 14px; line-height: 1.55; color: rgba(244,247,245,0.68);
+          font-size: 14px; line-height: 1.55; color: rgba(255,250,240,0.68);
         }
         .fh-list-dot {
           flex-shrink: 0; margin-top: 8px;
@@ -111,7 +111,7 @@ export default function FoundingHundred() {
           background: transparent;
           color: rgba(232,201,106,0.9); font-weight: 500; font-size: 0.95rem;
           border: 1px solid rgba(232,201,106,0.35);
-          border-radius: 10px; padding: 14px 28px;
+          border-radius: 10px; padding: 13px 26px;
           cursor: pointer; letter-spacing: 0.2px; text-decoration: none;
           transition: background 0.16s ease;
           min-height: 48px;
@@ -120,7 +120,7 @@ export default function FoundingHundred() {
           background: rgba(232,201,106,0.06);
         }
         .fh-hint {
-          font-size: 12.5px; color: rgba(244,247,245,0.4); margin: 14px 0 0;
+          font-size: 12.5px; color: rgba(255,250,240,0.4); margin: 14px 0 0;
           position: relative; line-height: 1.5;
         }
         @media (max-width: 480px) {

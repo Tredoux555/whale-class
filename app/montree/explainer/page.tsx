@@ -562,7 +562,6 @@ export default function MontreeExplainer() {
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 8px 22px -8px rgba(0,0,0,0.7);
         }
         @media (max-width: 640px) {
           .ex-nav-inner { padding: 14px 20px; }

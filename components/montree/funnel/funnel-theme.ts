@@ -149,7 +149,6 @@ export const FUNNEL_CSS = `
 .fn-pill.block{width:100%}
 .fn-backlink{display:inline-block; color:${FT.hush}; font-size:0.86rem; text-decoration:none; cursor:pointer; margin-bottom:22px; background:none; border:none; padding:0; font-family:${FT.sans}}
 .fn-backlink:hover{color:${FT.whisper}}
-.fn-backlink.disabled{opacity:0.5; cursor:not-allowed}
 
 /* ceremony — just the line, no mark, no rings */
 .fn-cere-line{font-family:${FT.serif}; font-style:italic; font-size:1.05rem; color:rgba(255,250,240,0.6); min-height:2em}

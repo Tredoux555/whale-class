@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { getSession } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
@@ -9,42 +9,6 @@ import MontreeLogo from '@/components/montree/MonteeLogo';
 import FoundingHundred from '@/components/montree/FoundingHundred';
 
 // /montree/page.tsx — Montree landing page (v2 — deep forest palette)
-
-// Splash video assets — one per language we currently offer (EN + 中文 only).
-// The picker on the video itself is INDEPENDENT of the page-wide LanguageToggle
-// (which switches UI strings across 12 locales). The video toggle is a small
-// EN / 中文 pill pair overlaid on the corner-video; it only flips THIS video's
-// src + poster. Independent state by design — a French principal browsing the
-// site shouldn't be forced into the English video, and we don't want the EN
-// video to disappear the moment someone clicks 中文 on the UI toggle.
-// Videos are served from the montree-media Supabase bucket via the CDN-cached
-// media proxy (range-seekable, Cloudflare edge cache) rather than committed to
-// /public — they're 48-65MB each and don't belong in git. Posters stay local
-// (tiny). To swap a splash video: re-upload to montree-media/splash/ and the
-// proxy URL is unchanged.
-const SPLASH_VIDEOS = {
-  en: {
-    // v4 (Session 134) = the all-encompassing MAIN EXPLAINER film as the EN
-    // hero (portrait 9:16, 720x1280 CRF26 faststart, ~5.9MB). The 中文 slot
-    // keeps the Astra clip. Versioned filename busts the CDN cache.
-    src: '/api/montree/media/proxy/splash/montree-splash-video-v4.mp4',
-    poster: '/montree-splash-video-v4-poster.jpg',
-    label: 'EN',
-  },
-  zh: {
-    src: '/api/montree/media/proxy/splash/montree-splash-video-zh-v3.mp4',
-    poster: '/montree-splash-video-zh-v3-poster.jpg',
-    label: '中文',
-  },
-} as const;
-type SplashVideoLocale = keyof typeof SPLASH_VIDEOS;
-
-// Hero explainer video — hidden on the splash FOR NOW (Tredoux, Jul 2026).
-// Flip to true to bring the corner video (+ EN/中文 toggle + tap-for-sound)
-// back. Typed boolean so the video JSX/state/effect stay wired and lint-clean
-// while hidden. The nav "Explainer" link + /montree/explainer page are
-// untouched — this only removes the video from the splash hero.
-const SHOW_HERO_VIDEO: boolean = false;
 
 export default function MontreeLanding() {
   const { t } = useI18n();
@@ -131,60 +95,6 @@ export default function MontreeLanding() {
     return () => { cancelled = true; };
   }, []);
 
-  // Video-only locale state. Defaults to EN on every fresh page load.
-  // Not persisted — keep it simple; toggle is a stateless visual switch.
-  const [videoLocale, setVideoLocale] = useState<SplashVideoLocale>('en');
-
-  // User-consent-to-sound state. Browser autoplay policy requires the
-  // initial mount to be muted. Once the user explicitly taps the "Tap
-  // for sound" overlay (or unmutes via native controls), we set this to
-  // true and the unmute state propagates across locale toggles — so the
-  // 中文 video also plays with sound once EN's been unmuted, and vice
-  // versa. Mirrors the YouTube / Instagram autoplay-with-sound pattern.
-  const [userUnmuted, setUserUnmuted] = useState(false);
-
-  // Refs to the two video elements so we can imperatively toggle the
-  // .muted property when the user taps the unmute overlay. React's
-  // declarative `muted` attribute is initial-state-only on some
-  // browsers (Chrome respects it via re-render, but Safari is sticky)
-  // — setting .muted directly via ref is the reliable cross-browser path.
-  const videoRefs = useRef<Record<SplashVideoLocale, HTMLVideoElement | null>>({
-    en: null,
-    zh: null,
-  });
-
-  // Whenever userUnmuted flips or videoLocale changes, sync the .muted
-  // property on every video element, play the active locale, and PAUSE
-  // the inactive one. The inactive video no longer background-plays —
-  // it sits at preload="none" showing its poster until first activated
-  // (PERF_PASS_JUN13.md finding 4: eagerly downloading BOTH locale
-  // videos cost ~11MB on first load; the first EN↔中文 toggle now pays
-  // a one-time short buffer instead). play() on a muted video needs no
-  // gesture; unmuted play() happens inside the toggle/unmute click's
-  // effect, where transient user activation still applies. Silent
-  // .catch — if play() fails the user can hit play via native controls.
-  //
-  // NOTE: the fetch() cache-prime that used to live here was removed —
-  // Lighthouse showed it RACING the <video> element's own request
-  // (force-cache doesn't dedupe an in-flight Range-semantics media
-  // request), so the EN video was downloaded twice (5.7MB × 2).
-  useEffect(() => {
-    if (!SHOW_HERO_VIDEO) return; // hero video hidden — nothing to sync
-    (['en', 'zh'] as const).forEach((loc) => {
-      const el = videoRefs.current[loc];
-      if (!el) return;
-      const isActive = loc === videoLocale;
-      el.muted = !(isActive && userUnmuted);
-      if (isActive) {
-        el.play().catch(() => {
-          /* user can re-trigger via native controls */
-        });
-      } else {
-        el.pause();
-      }
-    });
-  }, [videoLocale, userUnmuted]);
-
   useEffect(() => {
     const obs = new IntersectionObserver(
       (entries) => {
@@ -261,18 +171,6 @@ export default function MontreeLanding() {
           overflow-x: hidden;
         }
 
-        /* Full-page gradient — rendered as a real DOM element so Next.js doesn't block it */
-        .m-bg {
-          position: fixed;
-          inset: 0;
-          background:
-            radial-gradient(ellipse 900px 700px at 50% -8%, rgba(39,129,90,0.14), rgba(39,129,90,0) 60%),
-            linear-gradient(168deg, #071510 0%, #051009 45%, #030b08 100%);
-          z-index: 0;
-          pointer-events: none;
-        }
-        .m-bg ~ * { position: relative; z-index: 1; }
-
         .m-label {
           font-size: 0.62rem;
           text-transform: uppercase;
@@ -305,140 +203,6 @@ export default function MontreeLanding() {
         .m-pill-lg {
           padding: 15px 30px;
           font-size: 0.95rem;
-        }
-
-        /* ── Hero video ── (Session 131 redesign)
-           Autoplay muted loop ambient clip flowing ABOVE the centered
-           hero text. Was a 28vw top-left corner widget in S130; now a
-           wide hero banner. ~720px max-width on desktop so it stays
-           readable on ultra-wide displays; full width of the hero
-           content box on tablets and phones.
-
-           Frame includes a self-contained EN / 中文 toggle overlay in the
-           top-right. Independent of the page-wide LanguageToggle.
-
-           Tap-for-sound pill (.m-hero-corner-video-unmute) sits in the
-           bottom-left of the frame ABOVE the native controls bar. Shown
-           only when the active video is muted; disappears once the user
-           consents to sound (either by tapping the pill or by using the
-           native unmute icon). The class names retain the -corner-
-           historical prefix to minimize churn across S130's other refs.
-        */
-        .m-hero-corner-video {
-          position: relative;
-          /* Portrait 9:16 video. Desktop: the LEFT column of the split hero —
-             a fixed ~380px-wide phone-shaped preview. On ≤880px it returns to a
-             full-width centred clip above the text (see media queries). */
-          flex: 0 0 auto;
-          width: 340px;
-          max-width: 40vw;
-          margin: 0;
-          z-index: 2;
-        }
-        .m-hero-corner-video-frame {
-          position: relative;
-          /* aspect-ratio lives on the frame (not the videos) because both
-             videos are absolutely positioned inside and stacked — the
-             frame defines the height all on its own. */
-          aspect-ratio: 9 / 16;
-          border-radius: 12px;
-          overflow: hidden;
-          background: #06140e;
-          border: 1px solid rgba(130,217,174,0.22);
-          box-shadow:
-            0 1px 0 rgba(130,217,174,0.08) inset,
-            0 18px 44px -18px rgba(0,0,0,0.75),
-            0 6px 14px -8px rgba(0,0,0,0.5);
-        }
-        /* Both EN and 中文 video elements render simultaneously, stacked
-           inside the frame. Active one is opacity 1 + receives clicks /
-           keyboard / native controls. Inactive one is opacity 0 + ignored
-           by AT and pointers, paused at preload="none" (poster only — its
-           media downloads on first activation; see the JSX comment). Both
-           elements stay mounted so toggling BACK to a previously-watched
-           locale is still an instant opacity flip. */
-        .m-hero-corner-video-element {
-          position: absolute;
-          inset: 0;
-          display: block;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          background: #06140e;
-          transition: opacity 180ms ease;
-        }
-        /* EN / 中文 pill pair lives TOP-RIGHT of the frame, not bottom,
-           so it doesn't collide with the native video controls which
-           always render at the bottom of the <video> element (and would
-           overlap the toggle on hover-show or persistent-on-mobile). */
-        .m-hero-corner-video-toggle {
-          position: absolute;
-          top: 8px;
-          right: 8px;
-          display: inline-flex;
-          gap: 2px;
-          padding: 3px;
-          border-radius: 999px;
-          background: rgba(0,0,0,0.55);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          border: 1px solid rgba(255,255,255,0.12);
-          /* Z-index 3 so the toggle floats above BOTH video elements
-             (active = z-index 2, inactive = z-index 1). */
-          z-index: 3;
-        }
-        .m-hero-corner-video-toggle-btn {
-          appearance: none;
-          border: 0;
-          background: transparent;
-          color: rgba(255,250,240,0.58);
-          font-family: inherit;
-          font-size: 11px;
-          font-weight: 600;
-          letter-spacing: 0.02em;
-          padding: 4px 10px;
-          border-radius: 999px;
-          cursor: pointer;
-          transition: background 160ms ease, color 160ms ease;
-          line-height: 1;
-        }
-        .m-hero-corner-video-toggle-btn:hover {
-          color: rgba(255,255,255,0.92);
-        }
-        .m-hero-corner-video-toggle-btn[aria-pressed='true'] {
-          background: rgba(232,201,106,0.92);
-          color: #1a1208;
-        }
-        /* Tap-for-sound pill — Session 131. Sits BOTTOM-LEFT of the
-           video frame (native controls take the full bottom edge but
-           a small pill at left clears the iOS unmute icon on the right).
-           Visible only when the video is muted AND the user hasn't yet
-           consented to sound. Disappears the moment they tap. */
-        .m-hero-corner-video-unmute {
-          position: absolute;
-          bottom: 48px; /* sits above the native controls bar */
-          left: 12px;
-          z-index: 3;
-          appearance: none;
-          border: 1px solid rgba(232,201,106,0.45);
-          background: rgba(232,201,106,0.92);
-          color: #1a1208;
-          font-family: inherit;
-          font-size: 12px;
-          font-weight: 600;
-          letter-spacing: 0.02em;
-          padding: 7px 14px;
-          border-radius: 999px;
-          cursor: pointer;
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          line-height: 1;
-          box-shadow: 0 6px 18px -6px rgba(0,0,0,0.55);
-          transition: opacity 200ms ease, transform 200ms ease;
-        }
-        .m-hero-corner-video-unmute:hover {
-          transform: translateY(-1px);
         }
 
         /* ── Nav ── */
@@ -609,15 +373,13 @@ export default function MontreeLanding() {
         }
 
         /* ── Hero gold M brandmark ── (amendment A10)
-           The hero explainer video is hidden (SHOW_HERO_VIDEO=false). In its
-           place we render the transparent gold M inside a soft gold radial
-           glow so the hero has a brand anchor on the LEFT column of the split
-           layout. This element lives OUTSIDE the video conditional so it always
-           shows regardless of the video flag. The "breathing" is opacity +
-           box-shadow ONLY — never a scaling blob — and is disabled under
-           prefers-reduced-motion. The <img> carries explicit width/height to
-           reserve layout (CLS). On ≤880px the split hero collapses and the mark
-           centres above the title (media queries below). */
+           The transparent gold M sits inside a soft gold radial glow that
+           gives the hero its brand anchor on the LEFT column of the split
+           layout. The "breathing" is opacity + box-shadow ONLY — never a
+           scaling blob — and is disabled under prefers-reduced-motion. The
+           <img> carries explicit width/height to reserve layout (CLS). On
+           ≤880px the split hero collapses and the mark centres above the
+           title (media queries below). */
         .m-hero-brandmark {
           flex: 0 0 auto;
           display: flex;
@@ -877,7 +639,7 @@ export default function MontreeLanding() {
         .m-bottom-quote {
           padding: 80px 32px 96px;
           text-align: center;
-          border-top: 1px solid rgba(255,255,255,0.04);
+          border-top: 1px solid rgba(255,255,255,0.06);
         }
         .m-bottom-quote-body {
           font-family: var(--font-lora), Georgia, serif;
@@ -953,11 +715,6 @@ export default function MontreeLanding() {
             max-width: 540px;
             padding: 56px 24px 90px;
           }
-          .m-hero-corner-video {
-            width: 100%;
-            max-width: 340px;
-            margin: 0 auto 36px;
-          }
           /* Split hero collapses — the gold M centres above the title. */
           .m-hero-brandmark {
             width: 100%;
@@ -999,22 +756,6 @@ export default function MontreeLanding() {
           .m-hero { padding: 32px 24px 80px; }
           .m-hero .m-label { margin-bottom: 28px; }
           .m-hero-sub { margin-bottom: 32px; }
-          .m-hero-corner-video {
-            /* Mobile: portrait 9:16. Cap width so a tall phone video doesn't
-               push the title too far down the fold — ~300px → ~533px tall,
-               comfortable on a typical ~700px-tall mobile hero. */
-            width: 86%;
-            max-width: 300px;
-            margin: 0 auto 28px;
-          }
-          .m-hero-corner-video-frame { border-radius: 10px; }
-          .m-hero-corner-video-toggle { top: 6px; right: 6px; }
-          .m-hero-corner-video-toggle-btn { font-size: 10px; padding: 3px 8px; }
-          .m-hero-corner-video-unmute {
-            font-size: 11px;
-            padding: 6px 12px;
-            bottom: 56px; /* clear of native controls on iOS */
-          }
           .m-hero-brandmark {
             width: 68%;
             max-width: 220px;
@@ -1141,150 +882,17 @@ export default function MontreeLanding() {
       </nav>
 
       {/* ── HERO ──
-          Session 130: brand-statement form + corner autoplay video.
-            • Corner video: top-left, autoplay muted loop, EN/中文 toggle
-              overlaid. Independent of the page-wide LanguageToggle.
             • Centered text stack:
               1. Montree                                — h1, brand name
               2. the AI Montessori classroom revolution — tagline below
               3. Try it                                 — primary CTA
               4. Work smarter not harder                — italic gold kicker
-
-          Why corner-video and not inline-below-hero / lightbox / pre-roll:
-          users landing on the page want to know what Montree is BEFORE
-          they read anything. The video plays the moment the page loads,
-          ambient and muted, in the corner where it doesn't fight the
-          centered text but is the first thing the eye picks up.
       */}
       <section className="m-hero">
-        {/* Hero explainer video — hidden for now (SHOW_HERO_VIDEO flag at
-            top of file). Flip to true to restore. NOT wrapped with
-            ref={addReveal} — the reveal pattern's JS-set opacity racing the
-            <video>'s first paint caused the 2ms flash users reported. */}
-        {SHOW_HERO_VIDEO && (
-        <div className="m-hero-corner-video">
-          <div className="m-hero-corner-video-frame">
-            {/* Dual-video pattern (Session 131, slimmed in the Jun 13 perf
-                pass): BOTH EN and 中文 video elements stay mounted and
-                stacked inside the frame, but only the ACTIVE locale
-                downloads media. The inactive one sits at preload="none"
-                showing its (local, tiny) poster — its first activation
-                pays a one-time short buffer. Previously both files
-                (5.7MB + 5.3MB) downloaded eagerly with preload="auto",
-                which dominated the 13.4MB first-load weight Lighthouse
-                flagged (PERF_PASS_JUN13.md finding 4).
-
-                Active video uses preload="metadata", not "auto" — with
-                autoPlay the browser streams progressively anyway, and
-                metadata keeps the poster as the LCP candidate instead of
-                blocking on video bytes.
-
-                Key off the LOCALE (not src) so React keeps each <video>
-                element across toggles — once a locale HAS been activated,
-                toggling back to it is instant (element + buffer survive).
-
-                controls — only on the active locale's element, so the
-                hidden video's native control bar doesn't ghost-render
-                underneath. Active video gets the full native HTML5
-                control bar (mute/unmute, scrubber, fullscreen, PiP).
-
-                playsInline — kept so the video does NOT auto-fullscreen
-                on first tap (iOS Safari default). User can still go
-                fullscreen explicitly via the controls. */}
-            {(['en', 'zh'] as const).map((loc) => {
-              const isActive = videoLocale === loc;
-              const v = SPLASH_VIDEOS[loc];
-              return (
-                <video
-                  key={loc}
-                  ref={(el) => {
-                    videoRefs.current[loc] = el;
-                  }}
-                  className="m-hero-corner-video-element"
-                  src={v.src}
-                  poster={v.poster}
-                  autoPlay={isActive}
-                  muted
-                  loop
-                  controls={isActive}
-                  playsInline
-                  preload={isActive ? 'metadata' : 'none'}
-                  aria-hidden={!isActive}
-                  aria-label={isActive ? 'Montree introduction video' : undefined}
-                  tabIndex={isActive ? 0 : -1}
-                  style={{
-                    opacity: isActive ? 1 : 0,
-                    pointerEvents: isActive ? 'auto' : 'none',
-                    zIndex: isActive ? 2 : 1,
-                  }}
-                  /* Volume-change listener: if the user unmutes via the
-                     native controls (speaker icon), reflect that into
-                     userUnmuted state so the pill disappears AND the
-                     unmute persists across locale toggle. Without this,
-                     a user could unmute via the speaker icon, hit 中文,
-                     and find sound gone again. */
-                  onVolumeChange={(e) => {
-                    if (!isActive) return;
-                    const el = e.currentTarget;
-                    if (!el.muted && !userUnmuted) {
-                      setUserUnmuted(true);
-                    }
-                  }}
-                />
-              );
-            })}
-            {/* Tap-for-sound pill — only when the active video is still
-                muted. Once tapped (or once the user uses native controls
-                to unmute), userUnmuted flips true and the pill is
-                removed forever for this page load. */}
-            {!userUnmuted && (
-              <button
-                type="button"
-                className="m-hero-corner-video-unmute"
-                aria-label="Tap to enable sound"
-                onClick={() => setUserUnmuted(true)}
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-                </svg>
-                Tap for sound
-              </button>
-            )}
-            <div className="m-hero-corner-video-toggle" role="group" aria-label="Video language">
-              {(['en', 'zh'] as const).map((loc) => (
-                <button
-                  key={loc}
-                  type="button"
-                  className="m-hero-corner-video-toggle-btn"
-                  aria-pressed={videoLocale === loc}
-                  onClick={() => setVideoLocale(loc)}
-                >
-                  {SPLASH_VIDEOS[loc].label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-        )}
-
         {/* ── Hero gold M brandmark ── (amendment A10)
-            Rendered OUTSIDE the SHOW_HERO_VIDEO conditional so the hero always
-            has a brand anchor on the LEFT column of the split layout while the
-            explainer video is hidden. The transparent gold M sits inside a soft
-            gold radial glow that "breathes" via opacity + box-shadow only (no
-            scaling blob; disabled under prefers-reduced-motion — see CSS).
+            The transparent gold M sits inside a soft gold radial glow that
+            "breathes" via opacity + box-shadow only (no scaling blob;
+            disabled under prefers-reduced-motion — see CSS).
             <img> carries explicit width/height to reserve layout (CLS). */}
         <div className="m-hero-brandmark" aria-hidden="true">
           <span className="m-hero-brandmark-glow">
