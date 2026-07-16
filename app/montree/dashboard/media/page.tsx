@@ -191,15 +191,18 @@ export default function MediaPage() {
   // ============================================
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 flex flex-col">
+    <div
+      className="min-h-screen bg-[#0a1a0f] flex flex-col"
+      style={{ backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(39,129,90,0.32), transparent 60%)' }}
+    >
       {/* Sub-header */}
-      <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+      <div className="bg-[rgba(7,18,12,0.9)] border-b border-[rgba(52,211,153,0.15)] px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           {selectionMode ? (
             <>
               <button
                 onClick={exitSelectionMode}
-                className="w-9 h-9 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                className="w-9 h-9 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white/80 rounded-lg transition-colors"
               >
                 <span className="text-sm">✕</span>
               </button>
@@ -207,11 +210,11 @@ export default function MediaPage() {
                 type="checkbox"
                 checked={selectedIds.size > 0 && selectedIds.size === media.length && media.length > 0}
                 onChange={handleSelectAll}
-                className="w-5 h-5 cursor-pointer accent-blue-500 rounded"
+                className="w-5 h-5 cursor-pointer accent-emerald-500 rounded"
               />
               <div>
-                <h1 className="font-bold text-gray-800">{t('media.select_photos')}</h1>
-                <p className="text-xs text-gray-500">
+                <h1 className="font-bold text-white/90">{t('media.select_photos')}</h1>
+                <p className="text-xs text-white/40">
                   {selectedIds.size} {t('media.selected')}
                 </p>
               </div>
@@ -220,8 +223,8 @@ export default function MediaPage() {
             <div className="flex items-center gap-2">
               <span className="text-xl">🖼️</span>
               <div>
-                <h1 className="font-bold text-gray-800">{t('media.photo_gallery')}</h1>
-                <p className="text-xs text-gray-500">
+                <h1 className="font-bold text-white/90">{t('media.photo_gallery')}</h1>
+                <p className="text-xs text-white/40">
                   {media.length} {media.length === 1 ? t('media.photo_singular') : t('media.photo_plural')} • {t('media.tap_to_edit')}
                 </p>
               </div>
@@ -237,7 +240,7 @@ export default function MediaPage() {
               disabled={selectedIds.size === 0 || deleting}
               className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
                 selectedIds.size === 0 || deleting
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  ? 'bg-white/5 text-white/30 cursor-not-allowed'
                   : 'bg-red-500 hover:bg-red-600 text-white shadow-md'
               }`}
             >
@@ -247,13 +250,13 @@ export default function MediaPage() {
             <>
               <button
                 onClick={() => setSelectionMode(true)}
-                className="w-9 h-9 bg-blue-500 text-white rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors shadow-sm"
+                className="w-9 h-9 bg-emerald-500 text-[#04150c] rounded-lg flex items-center justify-center hover:bg-emerald-400 transition-colors"
               >
                 <span className="text-sm">✓</span>
               </button>
               <Link
                 href="/montree/dashboard/capture"
-                className="w-9 h-9 bg-emerald-500 text-white rounded-lg flex items-center justify-center hover:bg-emerald-600 transition-colors shadow-sm"
+                className="w-9 h-9 bg-emerald-500 text-[#04150c] rounded-lg flex items-center justify-center hover:bg-emerald-400 transition-colors"
               >
                 <span className="text-lg">+</span>
               </Link>
@@ -263,13 +266,13 @@ export default function MediaPage() {
       </div>
 
       {/* Filter tabs */}
-      <div className="bg-white border-b border-gray-100 px-4 py-2 flex gap-2 overflow-x-auto">
+      <div className="bg-[rgba(7,18,12,0.75)] border-b border-[rgba(52,211,153,0.1)] px-4 py-2 flex gap-2 overflow-x-auto">
         <button
           onClick={() => { setActiveTab('recent'); setSelectedChildId(null); }}
           className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
             activeTab === 'recent' && !selectedChildId
-              ? 'bg-blue-100 text-blue-700'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              ? 'bg-[rgba(52,211,153,0.15)] text-emerald-300'
+              : 'bg-white/5 text-white/60 hover:bg-white/10'
           }`}
         >
           🕐 {t('media.recent')}
@@ -278,15 +281,15 @@ export default function MediaPage() {
           onClick={() => { setActiveTab('untagged'); setSelectedChildId(null); }}
           className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
             activeTab === 'untagged'
-              ? 'bg-yellow-100 text-yellow-700'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              ? 'bg-amber-500/15 text-amber-300'
+              : 'bg-white/5 text-white/60 hover:bg-white/10'
           }`}
         >
           ⚠️ {t('media.untagged')}
         </button>
 
         {/* Divider */}
-        <div className="w-px bg-gray-200 mx-1" />
+        <div className="w-px bg-white/10 mx-1" />
 
         {/* Child filters */}
         {children.slice(0, 5).map(child => (
@@ -295,8 +298,8 @@ export default function MediaPage() {
             onClick={() => { setActiveTab('all'); setSelectedChildId(child.id); }}
             className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
               selectedChildId === child.id
-                ? 'bg-blue-100 text-blue-700'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-[rgba(52,211,153,0.15)] text-emerald-300'
+                : 'bg-white/5 text-white/60 hover:bg-white/10'
             }`}
           >
             {child.name.split(' ')[0]}
@@ -305,7 +308,7 @@ export default function MediaPage() {
 
         {children.length > 5 && (
           <button
-            className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+            className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap bg-white/5 text-white/60 hover:bg-white/10 transition-colors"
           >
             +{children.length - 5} more
           </button>
@@ -313,8 +316,8 @@ export default function MediaPage() {
       </div>
 
       {/* Area filter */}
-      <div className="bg-gray-50 border-b border-gray-100 px-4 py-3 flex gap-2 overflow-x-auto">
-        <span className="text-xs font-semibold text-gray-600 whitespace-nowrap flex items-center pr-2">
+      <div className="bg-[rgba(7,18,12,0.6)] border-b border-[rgba(52,211,153,0.1)] px-4 py-3 flex gap-2 overflow-x-auto">
+        <span className="text-xs font-semibold text-white/50 whitespace-nowrap flex items-center pr-2">
           {t('media.area')}:
         </span>
         {(['all', 'practical_life', 'sensorial', 'mathematics', 'language', 'cultural'] as AreaFilter[]).map(area => (
@@ -323,8 +326,8 @@ export default function MediaPage() {
             onClick={() => setSelectedArea(area)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
               selectedArea === area
-                ? 'bg-emerald-500 text-white shadow-md'
-                : 'bg-white text-gray-600 border border-gray-200 hover:border-emerald-300 hover:bg-emerald-50'
+                ? 'bg-emerald-500 text-[#04150c] shadow-md'
+                : 'bg-white/[0.06] text-white/60 border border-[rgba(52,211,153,0.15)] hover:border-[rgba(52,211,153,0.35)] hover:bg-white/[0.1]'
             }`}
           >
             {t(AREA_LABELS[area])}
@@ -357,7 +360,7 @@ export default function MediaPage() {
       {!selectionMode && (
         <Link
           href="/montree/dashboard/capture"
-          className="fixed bottom-6 right-6 w-16 h-16 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-xl hover:bg-blue-600 transition-all hover:scale-105 active:scale-95"
+          className="fixed bottom-6 right-6 w-16 h-16 bg-emerald-500 text-[#04150c] rounded-full flex items-center justify-center shadow-xl hover:bg-emerald-400 transition-all hover:scale-105 active:scale-95"
         >
           <span className="text-3xl">📷</span>
         </Link>
@@ -366,13 +369,13 @@ export default function MediaPage() {
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6">
+          <div className="bg-[#0d1f14] border border-[rgba(52,211,153,0.15)] rounded-2xl shadow-2xl max-w-sm w-full p-6">
             <div className="text-center">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-12 h-12 bg-red-500/15 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl">🗑️</span>
               </div>
-              <h2 className="text-lg font-bold text-gray-900 mb-2">{t('media.delete_confirm_title')} {selectedIds.size} {selectedIds.size === 1 ? t('media.photo_singular') : t('media.photo_plural')}?</h2>
-              <p className="text-sm text-gray-600 mb-6">
+              <h2 className="text-lg font-bold text-white/90 mb-2">{t('media.delete_confirm_title')} {selectedIds.size} {selectedIds.size === 1 ? t('media.photo_singular') : t('media.photo_plural')}?</h2>
+              <p className="text-sm text-white/60 mb-6">
                 {t('media.delete_confirm_desc')}
               </p>
             </div>
@@ -381,7 +384,7 @@ export default function MediaPage() {
               <button
                 onClick={() => setShowDeleteConfirm(false)}
                 disabled={deleting}
-                className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2.5 bg-white/[0.06] border border-[rgba(52,211,153,0.15)] text-white/80 rounded-lg font-medium hover:bg-white/[0.1] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t('common.cancel')}
               </button>

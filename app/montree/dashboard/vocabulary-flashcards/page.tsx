@@ -429,18 +429,21 @@ const VocabularyFlashcardGenerator = () => {
   const readyCount = cards.length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-cyan-50 to-blue-50">
-      <div className="bg-white border-b border-slate-200 px-4 py-3">
+    <div
+      className="min-h-screen bg-[#0a1a0f]"
+      style={{ backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(39,129,90,0.32), transparent 60%)' }}
+    >
+      <div className="bg-[rgba(7,18,12,0.9)] border-b border-[rgba(52,211,153,0.15)] px-4 py-3">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-xl">🃏</span>
-            <h1 className="font-bold text-gray-800">{t('flashcard.title')}</h1>
+            <h1 className="font-bold text-white/90">{t('flashcard.title')}</h1>
           </div>
           {readyCount > 0 && (
             <button
               onClick={generatePrintableSheet}
               disabled={generating}
-              className="bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg text-sm font-medium"
+              className="bg-emerald-500 hover:bg-emerald-600 disabled:bg-white/10 disabled:text-white/30 text-[#04150c] px-4 py-2 rounded-lg text-sm font-medium"
             >
               {generating ? `⏳ ${t('flashcard.generating')}` : `🖨️ ${t('flashcard.printCards').replace('{count}', String(readyCount))}`}
             </button>
@@ -450,15 +453,15 @@ const VocabularyFlashcardGenerator = () => {
 
       <div className="max-w-6xl mx-auto p-6">
         {/* Week Selector */}
-        <div className="bg-white rounded-xl shadow-sm border border-cyan-200 p-4 mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">📅 {t('flashcard.selectWeek')}</h2>
+        <div className="bg-white/[0.06] rounded-xl border border-[rgba(52,211,153,0.15)] p-4 mb-6">
+          <h2 className="text-lg font-semibold text-white/90 mb-3">📅 {t('flashcard.selectWeek')}</h2>
           <div className="flex gap-2 overflow-x-auto pb-2">
             {CIRCLE_TIME_CURRICULUM.slice(0, 20).map((week) => (
               <button
                 key={week.week}
                 onClick={() => { setSelectedWeek(week.week); setCards([]); }}
                 className={`px-3 py-2 rounded-lg whitespace-nowrap transition-all text-sm flex items-center gap-1 ${
-                  selectedWeek === week.week ? 'text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-cyan-100'
+                  selectedWeek === week.week ? 'text-white shadow-lg' : 'bg-white/5 text-white/70 hover:bg-white/10'
                 }`}
                 style={selectedWeek === week.week ? { backgroundColor: week.color } : {}}
               >
@@ -482,8 +485,8 @@ const VocabularyFlashcardGenerator = () => {
         )}
 
         {/* Copyable Word List */}
-        <div className="bg-white rounded-xl shadow-sm border border-cyan-200 p-4 mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">📝 {t('flashcard.wordList')}</h2>
+        <div className="bg-white/[0.06] rounded-xl border border-[rgba(52,211,153,0.15)] p-4 mb-6">
+          <h2 className="text-lg font-semibold text-white/90 mb-3">📝 {t('flashcard.wordList')}</h2>
           <div className="flex flex-wrap gap-2">
             {vocabulary.map((word) => (
               <button
@@ -496,13 +499,13 @@ const VocabularyFlashcardGenerator = () => {
                     setTimeout(() => { el.textContent = word; }, 1000);
                   }
                 }}
-                className="px-3 py-1 bg-gray-100 hover:bg-cyan-100 rounded-lg text-sm font-medium text-gray-700 transition-all"
+                className="px-3 py-1 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium text-white/70 transition-all"
               >
                 <span id={`word-${word}`}>{word}</span>
               </button>
             ))}
           </div>
-          <p className="text-xs text-gray-400 mt-2">{t('flashcard.copyInstruction')}</p>
+          <p className="text-xs text-white/40 mt-2">{t('flashcard.copyInstruction')}</p>
         </div>
 
         {/* Folder/ZIP Drop Zone */}
@@ -511,24 +514,24 @@ const VocabularyFlashcardGenerator = () => {
           onDragLeave={() => setDragOverZone(false)}
           onDrop={handleZoneDrop}
           className={`mb-6 border-2 border-dashed rounded-xl p-6 text-center transition-all ${
-            dragOverZone 
-              ? 'border-cyan-500 bg-cyan-50' 
-              : 'border-gray-300 bg-white hover:border-cyan-300'
+            dragOverZone
+              ? 'border-emerald-500 bg-emerald-500/10'
+              : 'border-[rgba(52,211,153,0.25)] bg-white/[0.06] hover:border-[rgba(52,211,153,0.4)]'
           }`}
         >
           {processingZip ? (
             <div className="flex items-center justify-center gap-3">
               <div className="animate-spin text-2xl">⏳</div>
-              <span className="text-gray-600">{t('flashcard.processingImages')}</span>
+              <span className="text-white/60">{t('flashcard.processingImages')}</span>
             </div>
           ) : (
             <>
               <div className="text-4xl mb-2">📁</div>
-              <p className="font-semibold text-gray-700">{t('flashcard.dropFolder')}</p>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="font-semibold text-white/70">{t('flashcard.dropFolder')}</p>
+              <p className="text-sm text-white/50 mt-1">
                 {t('flashcard.nameImages')}
               </p>
-              <label className="inline-block mt-3 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg cursor-pointer font-medium">
+              <label className="inline-block mt-3 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-[#04150c] rounded-lg cursor-pointer font-medium">
                 📂 {t('flashcard.chooseFolder')}
                 <input
                   type="file"
@@ -540,7 +543,7 @@ const VocabularyFlashcardGenerator = () => {
                   onChange={handleFolderSelect}
                 />
               </label>
-              <p className="text-xs text-gray-400 mt-2">
+              <p className="text-xs text-white/40 mt-2">
                 {t('flashcard.alsoAccepts')}
               </p>
             </>
@@ -548,28 +551,28 @@ const VocabularyFlashcardGenerator = () => {
         </div>
 
         {/* Settings */}
-        <div className="bg-white rounded-xl shadow-sm border border-cyan-200 p-4 mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">⚙️ {t('flashcard.cardStyle')}</h2>
+        <div className="bg-white/[0.06] rounded-xl border border-[rgba(52,211,153,0.15)] p-4 mb-6">
+          <h2 className="text-lg font-semibold text-white/90 mb-3">⚙️ {t('flashcard.cardStyle')}</h2>
           <div className="flex flex-wrap gap-4">
             <div>
-              <label className="block text-sm text-gray-600 mb-1">{t('flashcard.borderColor')}</label>
+              <label className="block text-sm text-white/60 mb-1">{t('flashcard.borderColor')}</label>
               <div className="flex gap-2">
                 {['#00BCD4', '#4CAF50', '#FF9800', '#E91E63', '#9C27B0', '#2196F3'].map(color => (
                   <button
                     key={color}
                     onClick={() => setBorderColor(color)}
-                    className={`w-8 h-8 rounded-full border-2 ${borderColor === color ? 'border-gray-800 scale-110' : 'border-transparent'}`}
+                    className={`w-8 h-8 rounded-full border-2 ${borderColor === color ? 'border-white scale-110' : 'border-transparent'}`}
                     style={{ backgroundColor: color }}
                   />
                 ))}
               </div>
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">{t('flashcard.font')}</label>
+              <label className="block text-sm text-white/60 mb-1">{t('flashcard.font')}</label>
               <select
                 value={fontFamily}
                 onChange={(e) => setFontFamily(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-1"
+                className="bg-white/[0.06] text-white/90 border border-[rgba(52,211,153,0.15)] rounded-lg px-3 py-1"
               >
                 <option value="Comic Sans MS">Comic Sans</option>
                 <option value="Arial">Arial</option>
@@ -580,13 +583,13 @@ const VocabularyFlashcardGenerator = () => {
         </div>
 
         {/* Vocabulary Grid */}
-        <div className="bg-white rounded-xl shadow-sm border border-cyan-200 p-4">
+        <div className="bg-white/[0.06] rounded-xl border border-[rgba(52,211,153,0.15)] p-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">📇 {vocabulary.length} {t('flashcard.vocabularyWords')}</h2>
-            <span className="text-sm text-gray-500">{t('flashcard.readyCount').replace('{ready}', String(readyCount)).replace('{total}', String(vocabulary.length))}</span>
+            <h2 className="text-lg font-semibold text-white/90">📇 {vocabulary.length} {t('flashcard.vocabularyWords')}</h2>
+            <span className="text-sm text-white/50">{t('flashcard.readyCount').replace('{ready}', String(readyCount)).replace('{total}', String(vocabulary.length))}</span>
           </div>
 
-          <p className="text-gray-600 text-sm mb-4">
+          <p className="text-white/70 text-sm mb-4">
             {t('flashcard.dropZipInstruction')}
           </p>
 
@@ -594,13 +597,13 @@ const VocabularyFlashcardGenerator = () => {
             {vocabulary.map((word) => {
               const card = getCardForWord(word);
               const isDragOver = dragOverWord === word;
-              
+
               return (
                 <div
                   key={word}
                   tabIndex={0}
                   className={`relative rounded-xl overflow-hidden transition-all cursor-pointer ${
-                    card ? 'ring-2 ring-green-500' : selectedWord === word ? 'ring-2 ring-blue-500 bg-blue-50' : isDragOver ? 'ring-2 ring-cyan-500 bg-cyan-50' : 'ring-1 ring-gray-200 hover:ring-cyan-300'
+                    card ? 'ring-2 ring-green-500' : selectedWord === word ? 'ring-2 ring-emerald-400 bg-emerald-500/10' : isDragOver ? 'ring-2 ring-emerald-500 bg-emerald-500/10' : 'ring-1 ring-white/15 hover:ring-[rgba(52,211,153,0.4)]'
                   }`}
                   style={{ aspectRatio: '1' }}
                   onClick={() => setSelectedWord(word)}
@@ -620,9 +623,9 @@ const VocabularyFlashcardGenerator = () => {
                       </button>
                     </>
                   ) : (
-                    <div className={`w-full h-full flex flex-col items-center justify-center ${selectedWord === word ? 'bg-blue-50' : 'bg-gray-50 hover:bg-cyan-50'}`}>
+                    <div className={`w-full h-full flex flex-col items-center justify-center ${selectedWord === word ? 'bg-emerald-500/10' : 'bg-white/5 hover:bg-white/10'}`}>
                       <span className="text-3xl mb-1">{selectedWord === word ? '📋' : '📷'}</span>
-                      <span className="text-xs text-gray-500 text-center px-2">
+                      <span className="text-xs text-white/50 text-center px-2">
                         {selectedWord === word ? t('flashcard.pressToPass') : t('flashcard.clickThenPaste')}
                       </span>
                       <input
@@ -634,8 +637,8 @@ const VocabularyFlashcardGenerator = () => {
                       />
                     </div>
                   )}
-                  
-                  <div 
+
+                  <div
                     className="absolute bottom-0 left-0 right-0 py-2 text-center font-bold text-white text-sm lowercase"
                     style={{ backgroundColor: borderColor }}
                   >
@@ -653,7 +656,7 @@ const VocabularyFlashcardGenerator = () => {
             <button
               onClick={generatePrintableSheet}
               disabled={generating}
-              className="bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg flex items-center gap-2"
+              className="bg-emerald-500 hover:bg-emerald-600 disabled:bg-white/10 disabled:text-white/30 text-[#04150c] px-8 py-4 rounded-xl font-bold text-lg shadow-lg flex items-center gap-2"
             >
               {generating ? <>⏳ {t('flashcard.generating')}</> : <>🎴 {t('flashcard.generateCards').replace('{count}', String(readyCount))}</>}
             </button>

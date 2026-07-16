@@ -782,7 +782,7 @@ export default function WeeklyWrapPage() {
     }
 
     return (
-      <div key={r.child_id} className={`bg-white rounded-xl border overflow-hidden ${selectionMode && selectedChildIds.has(r.child_id) ? 'border-blue-400 ring-1 ring-blue-200' : 'border-gray-200'}`}>
+      <div key={r.child_id} className={`bg-white/[0.06] rounded-xl border overflow-hidden ${selectionMode && selectedChildIds.has(r.child_id) ? 'border-emerald-400 ring-1 ring-emerald-400/30' : 'border-[rgba(52,211,153,0.15)]'}`}>
         {/* Header row */}
         <button
           onClick={() => {
@@ -803,13 +803,13 @@ export default function WeeklyWrapPage() {
               setShelfWorks(prev => ({ ...prev, [r.child_id]: getShelfForChild(r) }));
             }
           }}
-          className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-gray-50 transition-colors"
+          className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-white/[0.04] transition-colors"
         >
           {selectionMode && (
             <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
               selectedChildIds.has(r.child_id)
-                ? 'bg-blue-600 border-blue-600 text-white'
-                : 'border-gray-300 bg-white'
+                ? 'bg-emerald-600 border-emerald-600 text-white'
+                : 'border-white/30 bg-white/5'
             }`}>
               {selectedChildIds.has(r.child_id) && <span className="text-[11px]">✓</span>}
             </div>
@@ -820,32 +820,32 @@ export default function WeeklyWrapPage() {
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <p className="font-semibold text-gray-900 text-sm">{r.child_name}</p>
-              <span className="text-[10px] text-gray-400">{totalWorks} {t('weeklyWrap.worksCount')}</span>
+              <p className="font-semibold text-white/90 text-sm">{r.child_name}</p>
+              <span className="text-[10px] text-white/40">{totalWorks} {t('weeklyWrap.worksCount')}</span>
               {isApproved && (
-                <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-medium">✓</span>
+                <span className="text-[10px] bg-emerald-500/15 text-emerald-300 px-1.5 py-0.5 rounded-full font-medium">✓</span>
               )}
               {r.flags_count > 0 && (
-                <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">
+                <span className="text-[10px] bg-amber-500/15 text-amber-300 px-1.5 py-0.5 rounded-full font-medium">
                   {r.flags_count === 1 ? t('weeklyWrap.flagsCountOne', { count: String(r.flags_count) }) : t('weeklyWrap.flagsCount', { count: String(r.flags_count) })}
                 </span>
               )}
             </div>
             {!isExpanded && previewText && (
-              <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{previewText}</p>
+              <p className="text-xs text-white/40 mt-0.5 line-clamp-1">{previewText}</p>
             )}
           </div>
 
-          <span className={`text-gray-300 transition-transform text-xs ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
+          <span className={`text-white/30 transition-transform text-xs ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
         </button>
 
         {/* Expanded */}
         {isExpanded && (
-          <div className="px-4 pb-4 border-t border-gray-100 space-y-4">
+          <div className="px-4 pb-4 border-t border-white/10 space-y-4">
 
             {/* ── This Week Summary ── */}
             <div className="mt-3">
-              <p className="text-sm font-semibold text-gray-800 mb-2">
+              <p className="text-sm font-semibold text-white/90 mb-2">
                 {t('weeklyWrap.thisWeekDid', { name: firstName })}
               </p>
               {areaEntries.length > 0 ? (
@@ -856,13 +856,13 @@ export default function WeeklyWrapPage() {
                       <div key={area}>
                         <div className="flex items-center gap-2 mb-1">
                           <AreaBadge area={area} size="sm" />
-                          <span className="text-sm font-medium text-gray-700">{label}</span>
+                          <span className="text-sm font-medium text-white/70">{label}</span>
                         </div>
                         <div className="flex flex-wrap gap-1.5 pl-7">
                           {works.map((w) => (
                             <span
                               key={w.name}
-                              className="inline-flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-full px-2.5 py-1 text-xs text-gray-700 group/chip hover:border-gray-300 transition-colors"
+                              className="inline-flex items-center gap-1 bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-full px-2.5 py-1 text-xs text-white/70 group/chip hover:border-[rgba(52,211,153,0.3)] transition-colors"
                             >
                               {w.display}
                               <button
@@ -870,7 +870,7 @@ export default function WeeklyWrapPage() {
                                   e.stopPropagation();
                                   handleRemoveWork(r.child_id, w.name, w.area);
                                 }}
-                                className="w-4 h-4 rounded-full flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors ml-0.5"
+                                className="w-4 h-4 rounded-full flex items-center justify-center text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors ml-0.5"
                                 title={t('common.delete')}
                               >
                                 ×
@@ -883,7 +883,7 @@ export default function WeeklyWrapPage() {
                   })}
                 </div>
               ) : (
-                <p className="text-sm text-gray-400 italic pl-1">
+                <p className="text-sm text-white/40 italic pl-1">
                   {t('weeklyWrap.noRecordedActivities')}
                 </p>
               )}
@@ -893,9 +893,9 @@ export default function WeeklyWrapPage() {
             {r.flags.length > 0 && (
               <div className="space-y-1">
                 {r.flags.map((f, i) => (
-                  <div key={i} className="flex items-start gap-2 text-xs bg-amber-50 rounded-lg p-2">
+                  <div key={i} className="flex items-start gap-2 text-xs bg-amber-500/10 rounded-lg p-2">
                     <span>{f.level === 'red' ? '🔴' : '🟡'}</span>
-                    <p className="text-gray-700">{cleanUUIDs(f.issue)}</p>
+                    <p className="text-white/70">{cleanUUIDs(f.issue)}</p>
                   </div>
                 ))}
               </div>
@@ -903,14 +903,14 @@ export default function WeeklyWrapPage() {
 
             {/* ── Recommendation Sentence ── */}
             {recSentenceParts.length > 0 && (
-              <p className="text-sm text-gray-600 italic leading-relaxed">
+              <p className="text-sm text-white/60 italic leading-relaxed">
                 {t('weeklyWrap.recommendNextWeek', { name: firstName, areas: recSentenceParts.join({ zh: '、', es: ', ' }[locale] || ', ') })}
               </p>
             )}
 
             {/* ── Next Week's Focus (mirrors child week view exactly) ── */}
-            <div className="bg-white rounded-2xl p-4 shadow-sm">
-              <h2 className="font-bold text-gray-800 mb-3">
+            <div className="bg-white/[0.04] rounded-2xl p-4 border border-[rgba(52,211,153,0.12)]">
+              <h2 className="font-bold text-white/90 mb-3">
                 {t('weeklyWrap.nextWeeksFocus')}
               </h2>
               <div className="space-y-2">
@@ -919,7 +919,7 @@ export default function WeeklyWrapPage() {
                   return (
                     <div
                       key={`${r.child_id}-shelf-${item.area}`}
-                      className="flex items-center gap-3 p-2.5 rounded-xl bg-gray-50"
+                      className="flex items-center gap-3 p-2.5 rounded-xl bg-white/[0.04]"
                     >
                       <button
                         onClick={() => openShelfPicker(r.child_id, idx, item.area, item.work)}
@@ -933,11 +933,11 @@ export default function WeeklyWrapPage() {
                         onClick={() => openShelfPicker(r.child_id, idx, item.area, item.work)}
                       >
                         {item.work ? (
-                          <p className="font-medium text-gray-800 text-sm">
+                          <p className="font-medium text-white/90 text-sm">
                             {(locale === 'zh' && item.work_zh) ? item.work_zh : item.work}
                           </p>
                         ) : (
-                          <p className="font-medium text-gray-400 text-sm italic">
+                          <p className="font-medium text-white/40 text-sm italic">
                             {t('weeklyWrap.tapToSelect')}
                           </p>
                         )}
@@ -952,7 +952,7 @@ export default function WeeklyWrapPage() {
                           {statusCfg.label}
                         </button>
                       ) : (
-                        <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs">○</span>
+                        <span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-white/40 text-xs">○</span>
                       )}
                     </div>
                   );
@@ -961,9 +961,9 @@ export default function WeeklyWrapPage() {
             </div>
 
             {/* ── Teacher Notes + Voice ── */}
-            <div className="pt-2 border-t border-gray-100">
+            <div className="pt-2 border-t border-white/10">
               <div className="flex items-center gap-2 mb-1.5">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <p className="text-xs font-semibold text-white/40 uppercase tracking-wider">
                   {t('weeklyWrap.teacherNotes')}
                 </p>
                 <ChildVoiceNote
@@ -979,7 +979,7 @@ export default function WeeklyWrapPage() {
                 value={teacherNotes[r.child_id] || ''}
                 onChange={(e) => setTeacherNotes(prev => ({ ...prev, [r.child_id]: e.target.value }))}
                 placeholder={t('weeklyWrap.recordOrType')}
-                className="w-full border border-gray-200 rounded-lg p-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[60px] resize-y placeholder:text-gray-300"
+                className="w-full bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-lg p-2.5 text-sm text-white/80 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 min-h-[60px] resize-y placeholder:text-white/30"
                 rows={2}
               />
             </div>
@@ -997,7 +997,7 @@ export default function WeeklyWrapPage() {
             )}
 
             {/* Action buttons */}
-            <div className="flex gap-2 pt-2 border-t border-gray-100">
+            <div className="flex gap-2 pt-2 border-t border-white/10">
               {!isApproved ? (
                 <button
                   onClick={() => handleApprove(r)}
@@ -1007,7 +1007,7 @@ export default function WeeklyWrapPage() {
                   {approvingId === r.child_id ? t('weeklyWrap.approving') : t('weeklyWrap.agree')}
                 </button>
               ) : (
-                <div className="flex-1 py-2 rounded-lg bg-emerald-100 text-emerald-700 text-sm font-semibold text-center">
+                <div className="flex-1 py-2 rounded-lg bg-emerald-500/15 text-emerald-300 text-sm font-semibold text-center">
                   ✓ {t('weeklyWrap.approved')}
                 </div>
               )}
@@ -1016,14 +1016,14 @@ export default function WeeklyWrapPage() {
                 <button
                   onClick={() => handleUpdateShelf(r)}
                   disabled={shelfUpdatingId === r.child_id}
-                  className="px-4 py-2 rounded-lg border-2 border-emerald-200 text-emerald-700 text-sm font-semibold hover:bg-emerald-50 disabled:opacity-50 transition-colors"
+                  className="px-4 py-2 rounded-lg border-2 border-emerald-500/30 text-emerald-300 text-sm font-semibold hover:bg-emerald-500/10 disabled:opacity-50 transition-colors"
                 >
                   {shelfUpdatingId === r.child_id ? '...' : t('weeklyWrap.updateShelf')}
                 </button>
               )}
 
               {isShelfUpdated && (
-                <div className="px-4 py-2 rounded-lg bg-emerald-50 text-emerald-600 text-sm font-medium text-center">
+                <div className="px-4 py-2 rounded-lg bg-emerald-500/15 text-emerald-300 text-sm font-medium text-center">
                   ✓ {t('weeklyWrap.shelfUpdated')}
                 </div>
               )}
@@ -1046,7 +1046,7 @@ export default function WeeklyWrapPage() {
     const isSent = r.parent_status === 'sent';
 
     return (
-      <div key={r.child_id} className={`bg-white rounded-xl border overflow-hidden ${selectionMode && selectedChildIds.has(r.child_id) ? 'border-blue-400 ring-1 ring-blue-200' : 'border-gray-200'}`}>
+      <div key={r.child_id} className={`bg-white/[0.06] rounded-xl border overflow-hidden ${selectionMode && selectedChildIds.has(r.child_id) ? 'border-emerald-400 ring-1 ring-emerald-400/30' : 'border-[rgba(52,211,153,0.15)]'}`}>
         {/* Header */}
         <button
           onClick={() => {
@@ -1061,13 +1061,13 @@ export default function WeeklyWrapPage() {
             }
             setExpandedParent(isExpanded ? null : r.child_id);
           }}
-          className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-gray-50 transition-colors"
+          className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-white/[0.04] transition-colors"
         >
           {selectionMode && (
             <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
               selectedChildIds.has(r.child_id)
-                ? 'bg-blue-600 border-blue-600 text-white'
-                : 'border-gray-300 bg-white'
+                ? 'bg-emerald-600 border-emerald-600 text-white'
+                : 'border-white/30 bg-white/5'
             }`}>
               {selectedChildIds.has(r.child_id) && <span className="text-[11px]">✓</span>}
             </div>
@@ -1078,34 +1078,34 @@ export default function WeeklyWrapPage() {
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <p className="font-semibold text-gray-900 text-sm">{r.child_name}</p>
-              <span className="text-xs text-gray-400">📸 {photos.length}</span>
+              <p className="font-semibold text-white/90 text-sm">{r.child_name}</p>
+              <span className="text-xs text-white/40">📸 {photos.length}</span>
               {isSent && (
-                <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-medium">
+                <span className="text-[10px] bg-emerald-500/15 text-emerald-300 px-1.5 py-0.5 rounded-full font-medium">
                   {t('weeklyWrap.sentDone')}
                 </span>
               )}
               {edited && (
-                <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">
+                <span className="text-[10px] bg-amber-500/15 text-amber-300 px-1.5 py-0.5 rounded-full font-medium">
                   {t('weeklyWrap.edited')}
                 </span>
               )}
             </div>
             {narrative && !isExpanded && (
-              <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{narrative}</p>
+              <p className="text-xs text-white/40 mt-0.5 line-clamp-1">{narrative}</p>
             )}
           </div>
 
-          <span className={`text-gray-300 transition-transform text-xs ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
+          <span className={`text-white/30 transition-transform text-xs ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
         </button>
 
         {/* Expanded: full parent report preview */}
         {isExpanded && (
-          <div className="px-4 pb-4 border-t border-gray-100 space-y-4">
+          <div className="px-4 pb-4 border-t border-white/10 space-y-4">
             {/* Narrative section */}
             <div className="mt-3">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <p className="text-xs font-semibold text-white/40 uppercase tracking-wider">
                   {t('weeklyWrap.parentNarrative')}
                 </p>
                 {!isEditing ? (
@@ -1116,14 +1116,14 @@ export default function WeeklyWrapPage() {
                         setNarrativeEdits(prev => ({ ...prev, [r.child_id]: narrative }));
                       }
                     }}
-                    className="text-xs text-emerald-600 font-medium hover:underline"
+                    className="text-xs text-emerald-400 font-medium hover:underline"
                   >
                     {t('common.edit')}
                   </button>
                 ) : (
                   <button
                     onClick={() => setEditingNarrative(null)}
-                    className="text-xs text-gray-500 font-medium hover:underline"
+                    className="text-xs text-white/50 font-medium hover:underline"
                   >
                     {t('common.done')}
                   </button>
@@ -1134,11 +1134,11 @@ export default function WeeklyWrapPage() {
                 <textarea
                   value={narrativeEdits[r.child_id] ?? narrative}
                   onChange={(e) => setNarrativeEdits(prev => ({ ...prev, [r.child_id]: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-lg p-3 text-sm text-gray-700 leading-relaxed focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[100px] resize-y"
+                  className="w-full bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-lg p-3 text-sm text-white/80 leading-relaxed focus:outline-none focus:ring-2 focus:ring-emerald-500/40 min-h-[100px] resize-y"
                 />
               ) : (
-                <div className="border-l-4 border-emerald-300 pl-3 bg-emerald-50/30 py-2 rounded-r-lg">
-                  <p className="text-sm text-gray-700 leading-relaxed italic">
+                <div className="border-l-4 border-emerald-400/50 pl-3 bg-emerald-500/[0.06] py-2 rounded-r-lg">
+                  <p className="text-sm text-white/80 leading-relaxed italic">
                     &ldquo;{narrative}&rdquo;
                   </p>
                 </div>
@@ -1148,7 +1148,7 @@ export default function WeeklyWrapPage() {
             {/* Photos — full width, vertical stack, with descriptions */}
             {photos.length > 0 && (
               <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                <p className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">
                   {t('weeklyWrap.photos')} ({photos.length})
                 </p>
                 <div className="space-y-4">
@@ -1163,16 +1163,16 @@ export default function WeeklyWrapPage() {
                       : undefined;
                     const areaStyle = matchedWork
                       ? (AREA_COLORS[matchedWork.area] || AREA_COLORS.cultural)
-                      : { emoji: '📸', bg: 'bg-gray-50', text: 'text-gray-600' };
+                      : { emoji: '📸', bg: 'bg-white/10', text: 'text-white/60' };
 
                     return (
-                      <div key={photo.id} className="rounded-xl overflow-hidden border border-gray-200 bg-white">
+                      <div key={photo.id} className="rounded-xl overflow-hidden border border-[rgba(52,211,153,0.15)] bg-white/[0.04]">
                         {/* Full-width photo */}
                         <div className="relative group">
                           <img
                             src={photo.url}
                             alt={photo.work_name || t('weeklyWrap.activityPhoto')}
-                            className="w-full object-contain max-h-[400px] bg-gray-50"
+                            className="w-full object-contain max-h-[400px] bg-black/20"
                             loading="lazy"
                           />
                           {/* Crop / reorder / delete controls */}
@@ -1209,7 +1209,7 @@ export default function WeeklyWrapPage() {
                           {/* Work name + area badge */}
                           <div className="flex items-center gap-2">
                             {photo.work_name && (
-                              <p className="font-semibold text-gray-900 text-sm">
+                              <p className="font-semibold text-white/90 text-sm">
                                 {(locale === 'zh' && matchedWork?.name_zh) ? matchedWork.name_zh : photo.work_name}
                               </p>
                             )}
@@ -1222,21 +1222,21 @@ export default function WeeklyWrapPage() {
 
                           {/* Parent-friendly description: what the child is doing */}
                           {matchedWork?.parent_description && (
-                            <p className="text-sm text-gray-600 leading-relaxed">
+                            <p className="text-sm text-white/70 leading-relaxed">
                               {matchedWork.parent_description}
                             </p>
                           )}
 
                           {/* Why it matters */}
                           {matchedWork?.why_it_matters && (
-                            <p className="text-xs text-emerald-700 leading-relaxed italic">
+                            <p className="text-xs text-emerald-300 leading-relaxed italic">
                               {matchedWork.why_it_matters}
                             </p>
                           )}
 
                           {/* Teacher caption */}
                           {photo.caption && (
-                            <p className="text-xs text-gray-400 italic mt-1">
+                            <p className="text-xs text-white/40 italic mt-1">
                               {photo.caption}
                             </p>
                           )}
@@ -1260,7 +1260,7 @@ export default function WeeklyWrapPage() {
                 link here. */}
 
             {/* Save + Send buttons */}
-            <div className="flex gap-2 pt-2 border-t border-gray-100">
+            <div className="flex gap-2 pt-2 border-t border-white/10">
               {edited && (
                 <button
                   onClick={() => handleSaveEdits(r)}
@@ -1316,13 +1316,13 @@ export default function WeeklyWrapPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
+      <div className="min-h-screen bg-[#0a1a0f] p-6">
         <div className="max-w-3xl mx-auto">
           <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-gray-200 rounded w-1/3" />
-            <div className="h-4 bg-gray-200 rounded w-1/2" />
+            <div className="h-8 bg-white/10 rounded w-1/3" />
+            <div className="h-4 bg-white/10 rounded w-1/2" />
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-20 bg-gray-200 rounded-xl" />
+              <div key={i} className="h-20 bg-white/10 rounded-xl" />
             ))}
           </div>
         </div>
@@ -1333,33 +1333,36 @@ export default function WeeklyWrapPage() {
   // ─── Main Render ───
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div
+      className="min-h-screen bg-[#0a1a0f] pb-24"
+      style={{ backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(39,129,90,0.32), transparent 60%)' }}
+    >
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <header className="bg-[rgba(7,18,12,0.9)] border-b border-[rgba(52,211,153,0.15)] sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
               <Link
                 href="/montree/dashboard"
-                className="text-emerald-600 text-sm font-medium hover:underline"
+                className="text-emerald-400 text-sm font-medium hover:underline"
               >
                 ← {t('common.back')}
               </Link>
               <div>
-                <h1 className="text-lg font-bold text-gray-900">
+                <h1 className="text-lg font-bold text-white/95">
                   {t('weeklyWrap.weeklyWrap')}
                 </h1>
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => navigateWeek(-1)}
-                    className="px-1.5 py-0.5 text-gray-400 hover:bg-gray-100 rounded text-xs"
+                    className="px-1.5 py-0.5 text-white/40 hover:bg-white/10 rounded text-xs"
                   >
                     ◀
                   </button>
-                  <p className="text-xs text-gray-400">{weekDisplay} · {reports.length} {t('weeklyWrap.children')}</p>
+                  <p className="text-xs text-white/40">{weekDisplay} · {reports.length} {t('weeklyWrap.children')}</p>
                   <button
                     onClick={() => navigateWeek(1)}
-                    className="px-1.5 py-0.5 text-gray-400 hover:bg-gray-100 rounded text-xs"
+                    className="px-1.5 py-0.5 text-white/40 hover:bg-white/10 rounded text-xs"
                   >
                     ▶
                   </button>
@@ -1369,10 +1372,10 @@ export default function WeeklyWrapPage() {
 
             <div className="flex items-center gap-2">
               {/* Stats */}
-              <div className="hidden sm:flex items-center gap-2 text-xs text-gray-400 mr-1">
+              <div className="hidden sm:flex items-center gap-2 text-xs text-white/40 mr-1">
                 <span>📸 {totalPhotos}</span>
-                {totalFlags > 0 && <span className="text-amber-600 font-medium">{totalFlags}</span>}
-                <span className="text-emerald-600 font-medium">{approvedCount}/{reports.length}</span>
+                {totalFlags > 0 && <span className="text-amber-400 font-medium">{totalFlags}</span>}
+                <span className="text-emerald-400 font-medium">{approvedCount}/{reports.length}</span>
               </div>
 
               {/* Select mode toggle */}
@@ -1384,8 +1387,8 @@ export default function WeeklyWrapPage() {
                   }}
                   className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                     selectionMode
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                      ? 'bg-emerald-500/15 text-emerald-300'
+                      : 'bg-white/5 text-white/50 hover:bg-white/10'
                   }`}
                 >
                   {selectionMode
@@ -1399,7 +1402,7 @@ export default function WeeklyWrapPage() {
                 <button
                   onClick={() => handleGenerate(true, Array.from(selectedChildIds))}
                   disabled={generating}
-                  className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+                  className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
                 >
                   {generating ? (
                     <>
@@ -1436,7 +1439,7 @@ export default function WeeklyWrapPage() {
 
           {/* Generation progress bar */}
           {generating && genTotal > 0 && (
-            <div className="mb-2 w-full h-1 bg-gray-100 rounded-full overflow-hidden">
+            <div className="mb-2 w-full h-1 bg-white/10 rounded-full overflow-hidden">
               <div
                 className="h-full bg-emerald-500 rounded-full transition-all duration-500"
                 style={{ width: `${Math.round((genDone / genTotal) * 100)}%` }}
@@ -1445,13 +1448,13 @@ export default function WeeklyWrapPage() {
           )}
 
           {/* Tab bar */}
-          <div className="flex border-b border-gray-200 -mb-px">
+          <div className="flex border-b border-white/10 -mb-px">
             <button
               onClick={() => setActiveTab('teacher')}
               className={`flex-1 text-center py-2.5 text-sm font-semibold border-b-2 transition-colors ${
                 activeTab === 'teacher'
-                  ? 'border-emerald-600 text-emerald-700'
-                  : 'border-transparent text-gray-400 hover:text-gray-600'
+                  ? 'border-emerald-500 text-emerald-300'
+                  : 'border-transparent text-white/40 hover:text-white/70'
               }`}
             >
               {t('weeklyWrap.teacherSummary')}
@@ -1460,13 +1463,13 @@ export default function WeeklyWrapPage() {
               onClick={() => setActiveTab('parents')}
               className={`flex-1 text-center py-2.5 text-sm font-semibold border-b-2 transition-colors ${
                 activeTab === 'parents'
-                  ? 'border-emerald-600 text-emerald-700'
-                  : 'border-transparent text-gray-400 hover:text-gray-600'
+                  ? 'border-emerald-500 text-emerald-300'
+                  : 'border-transparent text-white/40 hover:text-white/70'
               }`}
             >
               {t('weeklyWrap.parentReports')}
               {readyToSend > 0 && (
-                <span className="ml-1.5 bg-emerald-100 text-emerald-700 text-[10px] px-1.5 py-0.5 rounded-full">
+                <span className="ml-1.5 bg-emerald-500/15 text-emerald-300 text-[10px] px-1.5 py-0.5 rounded-full">
                   {readyToSend}
                 </span>
               )}
@@ -1477,14 +1480,14 @@ export default function WeeklyWrapPage() {
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-3">
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-sm text-red-300">
             {error}
           </div>
         )}
 
         {/* Honest tier notice — wrap refreshed plans but wrote no reports (Core tier). */}
         {genNotice && !error && (
-          <div className="rounded-lg p-3 text-sm" style={{ background: 'rgba(232,201,106,0.10)', border: '1px solid rgba(232,201,106,0.32)', color: '#9a7d2e', lineHeight: 1.5 }}>
+          <div className="rounded-lg p-3 text-sm" style={{ background: 'rgba(232,201,106,0.10)', border: '1px solid rgba(232,201,106,0.32)', color: '#e8c96a', lineHeight: 1.5 }}>
             {genNotice}
           </div>
         )}
@@ -1492,7 +1495,7 @@ export default function WeeklyWrapPage() {
         {reports.length === 0 && !error && (
           <div className="text-center py-12">
             <p className="text-4xl mb-3">📋</p>
-            <p className="text-gray-400">
+            <p className="text-white/40">
               {t('weeklyWrap.noReportsFound')}
             </p>
           </div>
@@ -1503,8 +1506,8 @@ export default function WeeklyWrapPage() {
           <>
             {/* Selection bar */}
             {selectionMode && (
-              <div className="flex items-center justify-between bg-blue-50 rounded-lg px-3 py-2">
-                <span className="text-xs text-blue-700 font-medium">
+              <div className="flex items-center justify-between bg-emerald-500/10 rounded-lg px-3 py-2">
+                <span className="text-xs text-emerald-300 font-medium">
                   {selectedChildIds.size > 0
                     ? t('weeklyWrap.selected', { count: String(selectedChildIds.size) })
                     : t('weeklyWrap.tapToSelectChildren')}
@@ -1517,7 +1520,7 @@ export default function WeeklyWrapPage() {
                       setSelectedChildIds(new Set(reports.map(r => r.child_id)));
                     }
                   }}
-                  className="text-xs text-blue-600 font-semibold hover:text-blue-800"
+                  className="text-xs text-emerald-300 font-semibold hover:text-emerald-200"
                 >
                   {selectedChildIds.size === reports.length
                     ? t('weeklyWrap.deselectAll')
@@ -1529,7 +1532,7 @@ export default function WeeklyWrapPage() {
             {/* Flagged children first */}
             {sortedReports.filter(r => r.flags_count > 0).length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs font-semibold text-amber-600 uppercase tracking-wider">
+                <p className="text-xs font-semibold text-amber-400 uppercase tracking-wider">
                   {t('weeklyWrap.needsAttention')}
                 </p>
                 {sortedReports.filter(r => r.flags_count > 0).map(renderTeacherCard)}
@@ -1539,7 +1542,7 @@ export default function WeeklyWrapPage() {
             {/* All others */}
             <div className="space-y-2">
               {sortedReports.filter(r => r.flags_count > 0).length > 0 && (
-                <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mt-4">
+                <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mt-4">
                   {t('weeklyWrap.onTrack')}
                 </p>
               )}
@@ -1574,7 +1577,7 @@ export default function WeeklyWrapPage() {
                     }
                     setApprovingId(null);
                   }}
-                  className="w-full py-3 rounded-lg border-2 border-emerald-200 text-emerald-700 text-sm font-semibold hover:bg-emerald-50 disabled:opacity-50 transition-colors"
+                  className="w-full py-3 rounded-lg border-2 border-emerald-500/30 text-emerald-300 text-sm font-semibold hover:bg-emerald-500/10 disabled:opacity-50 transition-colors"
                 >
                   {approvingId
                     ? t('weeklyWrap.approvingAll')
@@ -1589,8 +1592,8 @@ export default function WeeklyWrapPage() {
         {activeTab === 'parents' && reports.length > 0 && (
           <div className="space-y-2">
             {selectionMode && (
-              <div className="flex items-center justify-between bg-blue-50 rounded-lg px-3 py-2">
-                <span className="text-xs text-blue-700 font-medium">
+              <div className="flex items-center justify-between bg-emerald-500/10 rounded-lg px-3 py-2">
+                <span className="text-xs text-emerald-300 font-medium">
                   {selectedChildIds.size > 0
                     ? t('weeklyWrap.selected', { count: String(selectedChildIds.size) })
                     : t('weeklyWrap.tapToSelectChildren')}
@@ -1603,7 +1606,7 @@ export default function WeeklyWrapPage() {
                       setSelectedChildIds(new Set(reports.map(r => r.child_id)));
                     }
                   }}
-                  className="text-xs text-blue-600 font-semibold hover:text-blue-800"
+                  className="text-xs text-emerald-300 font-semibold hover:text-emerald-200"
                 >
                   {selectedChildIds.size === reports.length
                     ? t('weeklyWrap.deselectAll')
@@ -1618,15 +1621,15 @@ export default function WeeklyWrapPage() {
 
       {/* Sticky bottom bar — Send All (Parent tab only) */}
       {activeTab === 'parents' && readyToSend > 0 && !sent && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-20">
+        <div className="fixed bottom-0 left-0 right-0 bg-[rgba(7,18,12,0.95)] border-t border-[rgba(52,211,153,0.15)] p-4 z-20">
           <div className="max-w-3xl mx-auto flex items-center justify-between">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-white/50">
               {t('weeklyWrap.reportsReadyToSend', { count: String(readyToSend) })}
             </p>
             <div className="flex items-center gap-3">
               <Link
                 href="/montree/dashboard/students"
-                className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
               >
                 ✉️ {t('weeklyWrap.inviteParents')}
               </Link>

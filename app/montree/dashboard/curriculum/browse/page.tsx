@@ -242,24 +242,24 @@ export default function CurriculumBrowsePage() {
   }
 
   return (
-    <div className={`min-h-screen ${isParent ? HOME_THEME.pageBg : 'bg-slate-50'}`}>
+    <div className={`min-h-screen ${isParent ? HOME_THEME.pageBg : 'bg-[#0a1a0f]'}`}>
       {/* Header */}
-      <div className={`border-b sticky top-0 z-20 ${isParent ? 'bg-[#0D3330] border-[#0D3330]' : 'bg-white border-slate-200'}`}>
+      <div className={`border-b sticky top-0 z-20 ${isParent ? 'bg-[#0D3330] border-[#0D3330]' : 'bg-[rgba(7,18,12,0.9)] border-[rgba(52,211,153,0.15)]'}`}>
         <div className="max-w-4xl mx-auto px-4 py-3">
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.back()}
-              className={`p-1 ${isParent ? 'text-white/60 hover:text-white' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`p-1 ${isParent ? 'text-white/60 hover:text-white' : 'text-white/50 hover:text-white/80'}`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
             <div className="flex-1">
-              <h1 className={`text-lg font-bold ${isParent ? 'text-white' : 'text-slate-900'}`}>
+              <h1 className={`text-lg font-bold ${isParent ? 'text-white' : 'text-white/95'}`}>
                 {t('curriculum.browseTitle' as any)}
               </h1>
-              <p className={`text-xs ${isParent ? 'text-white/60' : 'text-slate-500'}`}>
+              <p className={`text-xs ${isParent ? 'text-white/60' : 'text-white/50'}`}>
                 {totalWorks} {t('curriculum.worksAcrossAreas' as any)}
               </p>
             </div>
@@ -268,7 +268,7 @@ export default function CurriculumBrowsePage() {
       </div>
 
       {/* Area Tabs — horizontal scroll */}
-      <div className={`border-b sticky top-[57px] z-10 ${isParent ? 'bg-[#FFFDF8] border-[#0D3330]/10' : 'bg-white border-slate-100'}`}>
+      <div className={`border-b sticky top-[57px] z-10 ${isParent ? 'bg-[#FFFDF8] border-[#0D3330]/10' : 'bg-[rgba(7,18,12,0.75)] border-[rgba(52,211,153,0.1)]'}`}>
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex gap-1 overflow-x-auto py-2 -mx-1 scrollbar-hide">
             {AREA_ORDER.map(areaId => {
@@ -281,7 +281,7 @@ export default function CurriculumBrowsePage() {
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
                     isActive
                       ? 'text-white shadow-sm'
-                      : 'text-slate-600 hover:bg-slate-100'
+                      : isParent ? 'text-slate-600 hover:bg-slate-100' : 'text-white/60 hover:bg-white/10'
                   }`}
                   style={isActive ? { backgroundColor: cfg.color } : undefined}
                 >
@@ -305,7 +305,7 @@ export default function CurriculumBrowsePage() {
         <div className="flex gap-2">
           {/* Search */}
           <div className="flex-1 relative">
-            <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 ${isParent ? 'text-slate-400' : 'text-white/40'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
@@ -314,13 +314,13 @@ export default function CurriculumBrowsePage() {
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('curriculum.searchAreaWorks' as any)}
               className={`w-full pl-9 pr-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:border-transparent ${
-                isParent ? 'border-[#0D3330]/15 focus:ring-[#0D3330]/30 bg-[#FFFDF8]' : 'border-slate-200 focus:ring-emerald-500'
+                isParent ? 'border-[#0D3330]/15 focus:ring-[#0D3330]/30 bg-[#FFFDF8]' : 'border-[rgba(52,211,153,0.15)] focus:ring-emerald-500/40 bg-white/[0.06] text-white/90 placeholder:text-white/40'
               }`}
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className={`absolute right-3 top-1/2 -translate-y-1/2 ${isParent ? 'text-slate-400 hover:text-slate-600' : 'text-white/40 hover:text-white/70'}`}
               >
                 ✕
               </button>
@@ -331,7 +331,7 @@ export default function CurriculumBrowsePage() {
             value={ageFilter}
             onChange={(e) => setAgeFilter(e.target.value)}
             className={`px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 ${
-              isParent ? 'border-[#0D3330]/15 bg-[#FFFDF8] focus:ring-[#0D3330]/30' : 'border-slate-200 bg-white focus:ring-emerald-500'
+              isParent ? 'border-[#0D3330]/15 bg-[#FFFDF8] focus:ring-[#0D3330]/30' : 'border-[rgba(52,211,153,0.15)] bg-white/[0.06] text-white/90 focus:ring-emerald-500/40'
             }`}
           >
             {Object.entries(AGE_KEYS).map(([val, key]) => (
@@ -358,7 +358,7 @@ export default function CurriculumBrowsePage() {
         )}
 
         {/* Results count */}
-        <p className="text-xs text-slate-500 mt-1.5 pl-1">
+        <p className={`text-xs mt-1.5 pl-1 ${isParent ? 'text-slate-500' : 'text-white/50'}`}>
           {filteredWorkCount === areaWorkCount
             ? `${areaWorkCount} ${t('curriculum.worksInArea' as any)} ${areaName(selectedArea)}`
             : `${filteredWorkCount} ${t('curriculum.worksOfTotal' as any)} ${areaWorkCount} ${t('curriculum.works' as any)}`
@@ -370,7 +370,7 @@ export default function CurriculumBrowsePage() {
       {/* Categories + Works */}
       <div className="max-w-4xl mx-auto px-4 pb-8">
         {filteredCategories.length === 0 ? (
-          <div className="text-center py-12 text-slate-400">
+          <div className={`text-center py-12 ${isParent ? 'text-slate-400' : 'text-white/40'}`}>
             <p className="text-lg">{t('curriculum.noWorksFound' as any)}</p>
             <p className="text-sm mt-1">{t('curriculum.tryAdjusting' as any)}</p>
           </div>
@@ -383,7 +383,7 @@ export default function CurriculumBrowsePage() {
                   expandedCategory === category.id ? null : category.id
                 )}
                 className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg border transition-colors ${
-                  isParent ? 'bg-[#FFFDF8] border-[#0D3330]/10 hover:bg-[#F5E6D3]/30' : 'bg-white border-slate-200 hover:bg-slate-50'
+                  isParent ? 'bg-[#FFFDF8] border-[#0D3330]/10 hover:bg-[#F5E6D3]/30' : 'bg-white/[0.06] border-[rgba(52,211,153,0.15)] hover:bg-white/[0.1]'
                 }`}
               >
                 <span
@@ -391,11 +391,11 @@ export default function CurriculumBrowsePage() {
                   style={{ backgroundColor: areaConfig?.color }}
                 />
                 <div className="flex-1 text-left">
-                  <h3 className="text-sm font-semibold text-slate-800">{category.name}</h3>
-                  <p className="text-xs text-slate-500">{category.works.length} {t('curriculum.works' as any)}</p>
+                  <h3 className={`text-sm font-semibold ${isParent ? 'text-slate-800' : 'text-white/90'}`}>{category.name}</h3>
+                  <p className={`text-xs ${isParent ? 'text-slate-500' : 'text-white/50'}`}>{category.works.length} {t('curriculum.works' as any)}</p>
                 </div>
                 <svg
-                  className={`w-4 h-4 text-slate-400 transition-transform ${
+                  className={`w-4 h-4 transition-transform ${isParent ? 'text-slate-400' : 'text-white/40'} ${
                     expandedCategory === category.id ? 'rotate-180' : ''
                   }`}
                   fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -449,11 +449,11 @@ function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, i
   const ageLabel = t((AGE_KEYS[work.ageRange] || 'curriculum.allAges') as any) || work.ageRange;
 
   return (
-    <div className={`rounded-lg border overflow-hidden ${isParent ? 'bg-[#FFFDF8] border-[#0D3330]/10' : 'bg-white border-slate-200'}`}>
+    <div className={`rounded-lg border overflow-hidden ${isParent ? 'bg-[#FFFDF8] border-[#0D3330]/10' : 'bg-white/[0.06] border-[rgba(52,211,153,0.15)]'}`}>
       {/* Collapsed view */}
       <button
         onClick={onToggle}
-        className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors ${isParent ? 'hover:bg-[#F5E6D3]/20' : 'hover:bg-slate-50'}`}
+        className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors ${isParent ? 'hover:bg-[#F5E6D3]/20' : 'hover:bg-white/[0.1]'}`}
       >
         <span
           className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
@@ -462,8 +462,8 @@ function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, i
           {index + 1}
         </span>
         <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-medium text-slate-800 truncate">{locale === 'zh' && work.chineseName ? work.chineseName : work.name}</h4>
-          <p className="text-xs text-slate-500 truncate">{work.description}</p>
+          <h4 className={`text-sm font-medium truncate ${isParent ? 'text-slate-800' : 'text-white/90'}`}>{locale === 'zh' && work.chineseName ? work.chineseName : work.name}</h4>
+          <p className={`text-xs truncate ${isParent ? 'text-slate-500' : 'text-white/50'}`}>{work.description}</p>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           {difficultyBadge && (
@@ -471,11 +471,11 @@ function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, i
               {difficultyBadge.label}
             </span>
           )}
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500">
+          <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${isParent ? 'bg-slate-100 text-slate-500' : 'bg-white/10 text-white/60'}`}>
             {ageLabel.includes('(') ? ageLabel.split(' (')[0] : ageLabel}
           </span>
           <svg
-            className={`w-4 h-4 text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+            className={`w-4 h-4 transition-transform ${isParent ? 'text-slate-400' : 'text-white/40'} ${isExpanded ? 'rotate-180' : ''}`}
             fill="none" stroke="currentColor" viewBox="0 0 24 24"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -485,9 +485,9 @@ function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, i
 
       {/* Expanded view */}
       {isExpanded && (
-        <div className="border-t border-slate-100 px-4 py-3 space-y-4">
+        <div className={`border-t px-4 py-3 space-y-4 ${isParent ? 'border-slate-100' : 'border-white/10'}`}>
           {/* Description */}
-          <p className="text-sm text-slate-600">{work.description}</p>
+          <p className={`text-sm ${isParent ? 'text-slate-600' : 'text-white/70'}`}>{work.description}</p>
 
           {/* Key Info Grid */}
           <div className="grid grid-cols-2 gap-3">
@@ -496,17 +496,19 @@ function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, i
               label={t('curriculum.ageRange' as any)}
               icon="🎂"
               value={ageLabel}
+              isParent={isParent}
             />
             {/* Levels */}
             <InfoBlock
               label={t('curriculum.levels' as any)}
               icon="📊"
               value={`${work.levels.length} ${work.levels.length === 1 ? t('curriculum.progressionLevel' as any) : t('curriculum.progressionLevelsPlural' as any)}`}
+              isParent={isParent}
             />
           </div>
 
           {/* Materials */}
-          <Section title={isParent ? t('curriculum.materialsYouNeed' as any) : t('curriculum.materials' as any)} icon="🧰">
+          <Section title={isParent ? t('curriculum.materialsYouNeed' as any) : t('curriculum.materials' as any)} icon="🧰" isParent={isParent}>
             <div className="flex flex-wrap gap-1.5">
               {work.materials.map((material, i) => (
                 <span key={i} className="text-xs px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
@@ -518,7 +520,7 @@ function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, i
 
           {/* Direct Aims */}
           {work.directAims && work.directAims.length > 0 && (
-            <Section title={isParent ? t('curriculum.whatChildLearns' as any) : t('curriculum.directAims' as any)} icon="🎯">
+            <Section title={isParent ? t('curriculum.whatChildLearns' as any) : t('curriculum.directAims' as any)} icon="🎯" isParent={isParent}>
               <div className="flex flex-wrap gap-1.5">
                 {work.directAims.map((aim, i) => (
                   <span key={i} className="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -531,7 +533,7 @@ function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, i
 
           {/* Indirect Aims */}
           {work.indirectAims && work.indirectAims.length > 0 && (
-            <Section title={isParent ? t('curriculum.hiddenBenefits' as any) : t('curriculum.indirectAims' as any)} icon="✨">
+            <Section title={isParent ? t('curriculum.hiddenBenefits' as any) : t('curriculum.indirectAims' as any)} icon="✨" isParent={isParent}>
               <div className="flex flex-wrap gap-1.5">
                 {work.indirectAims.map((aim, i) => (
                   <span key={i} className="text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
@@ -544,10 +546,10 @@ function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, i
 
           {/* Prerequisites */}
           {work.prerequisites && work.prerequisites.length > 0 && (
-            <Section title={t('curriculum.prerequisites' as any)} icon="🔗">
+            <Section title={t('curriculum.prerequisites' as any)} icon="🔗" isParent={isParent}>
               <div className="flex flex-wrap gap-1.5">
                 {work.prerequisites.map((preReqId, i) => (
-                  <span key={i} className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                  <span key={i} className={`text-xs px-2 py-1 rounded-full border ${isParent ? 'bg-slate-100 text-slate-600 border-slate-200' : 'bg-white/10 text-white/70 border-[rgba(52,211,153,0.15)]'}`}>
                     {allWorksMap[preReqId] || preReqId}
                   </span>
                 ))}
@@ -557,13 +559,13 @@ function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, i
 
           {/* Control of Error */}
           {work.controlOfError && (
-            <Section title={isParent ? t('curriculum.howTheySelfCorrect' as any) : t('curriculum.controlOfError' as any)} icon="🔍">
-              <p className="text-xs text-slate-600">{work.controlOfError}</p>
+            <Section title={isParent ? t('curriculum.howTheySelfCorrect' as any) : t('curriculum.controlOfError' as any)} icon="🔍" isParent={isParent}>
+              <p className={`text-xs ${isParent ? 'text-slate-600' : 'text-white/70'}`}>{work.controlOfError}</p>
             </Section>
           )}
 
           {/* Levels / Progression */}
-          <Section title={t('curriculum.progressionLevels' as any)} icon="📈">
+          <Section title={t('curriculum.progressionLevels' as any)} icon="📈" isParent={isParent}>
             <div className="space-y-2">
               {work.levels.map((level) => (
                 <div key={level.level} className="flex gap-2">
@@ -574,8 +576,8 @@ function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, i
                     {level.level}
                   </span>
                   <div>
-                    <p className="text-xs font-medium text-slate-700">{level.name}</p>
-                    <p className="text-xs text-slate-500">{level.description}</p>
+                    <p className={`text-xs font-medium ${isParent ? 'text-slate-700' : 'text-white/80'}`}>{level.name}</p>
+                    <p className={`text-xs ${isParent ? 'text-slate-500' : 'text-white/50'}`}>{level.description}</p>
                     {level.videoSearchTerms && level.videoSearchTerms.length > 0 && (
                       <a
                         href={`https://www.youtube.com/results?search_query=${encodeURIComponent(level.videoSearchTerms[0])}`}
@@ -601,19 +603,19 @@ function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, i
 // Reusable UI components
 // ============================================
 
-function InfoBlock({ label, icon, value }: { label: string; icon: string; value: string }) {
+function InfoBlock({ label, icon, value, isParent }: { label: string; icon: string; value: string; isParent?: boolean }) {
   return (
-    <div className="bg-slate-50 rounded-lg px-3 py-2">
-      <p className="text-[10px] text-slate-500 uppercase tracking-wider">{icon} {label}</p>
-      <p className="text-sm font-medium text-slate-700 mt-0.5">{value}</p>
+    <div className={`rounded-lg px-3 py-2 ${isParent ? 'bg-slate-50' : 'bg-white/[0.04] border border-[rgba(52,211,153,0.12)]'}`}>
+      <p className={`text-[10px] uppercase tracking-wider ${isParent ? 'text-slate-500' : 'text-white/50'}`}>{icon} {label}</p>
+      <p className={`text-sm font-medium mt-0.5 ${isParent ? 'text-slate-700' : 'text-white/80'}`}>{value}</p>
     </div>
   );
 }
 
-function Section({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) {
+function Section({ title, icon, children, isParent }: { title: string; icon: string; children: React.ReactNode; isParent?: boolean }) {
   return (
     <div>
-      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+      <p className={`text-xs font-semibold uppercase tracking-wider mb-1.5 ${isParent ? 'text-slate-500' : 'text-white/50'}`}>
         {icon} {title}
       </p>
       {children}

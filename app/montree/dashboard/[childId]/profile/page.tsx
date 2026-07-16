@@ -60,10 +60,10 @@ const TEMPERAMENT_KEYS: Record<string, { labelKey: string; lowKey: string; highK
 };
 
 const SENSITIVE_PERIOD_OPTIONS = [
-  { value: 'not_started', labelKey: 'profile.spOption.notStarted', color: 'bg-gray-200 text-gray-600' },
-  { value: 'active', labelKey: 'profile.spOption.active', color: 'bg-green-400 text-green-800' },
-  { value: 'waning', labelKey: 'profile.spOption.waning', color: 'bg-amber-300 text-amber-800' },
-  { value: 'complete', labelKey: 'profile.spOption.complete', color: 'bg-blue-300 text-blue-800' },
+  { value: 'not_started', labelKey: 'profile.spOption.notStarted', color: 'bg-white/15 text-white/80' },
+  { value: 'active', labelKey: 'profile.spOption.active', color: 'bg-emerald-500/25 text-emerald-100' },
+  { value: 'waning', labelKey: 'profile.spOption.waning', color: 'bg-amber-500/25 text-amber-100' },
+  { value: 'complete', labelKey: 'profile.spOption.complete', color: 'bg-blue-500/25 text-blue-100' },
 ];
 
 const SENSITIVE_PERIODS = [
@@ -91,20 +91,20 @@ function Slider({
   return (
     <div className="mb-4">
       <div className="flex justify-between items-center mb-1">
-        <span className="text-sm font-medium text-gray-700">{t(config.labelKey as any)}</span>
-        <span className="text-xs text-gray-500">{currentValue}/5</span>
+        <span className="text-sm font-medium text-white/80">{t(config.labelKey as any)}</span>
+        <span className="text-xs text-white/50">{currentValue}/5</span>
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-xs text-gray-400 w-20 text-right">{t(config.lowKey as any)}</span>
+        <span className="text-xs text-white/40 w-20 text-right">{t(config.lowKey as any)}</span>
         <input
           type="range"
           min={1}
           max={5}
           value={currentValue}
           onChange={(e) => onChange(parseInt(e.target.value))}
-          className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-violet-500"
+          className="flex-1 h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-emerald-500"
         />
-        <span className="text-xs text-gray-400 w-20">{t(config.highKey as any)}</span>
+        <span className="text-xs text-white/40 w-20">{t(config.highKey as any)}</span>
       </div>
     </div>
   );
@@ -235,25 +235,25 @@ export default function ProfilePage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-bold text-gray-800">
+          <h2 className="text-xl font-bold text-white/95" style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontWeight: 500 }}>
             {child?.name?.split(' ')[0]}&apos;s {t('profile.title')}
           </h2>
-          <p className="text-sm text-gray-500">{t('profile.subtitle')}</p>
+          <p className="text-sm text-white/50">{t('profile.subtitle')}</p>
         </div>
         <Link
           href={`/montree/dashboard/guru?child=${childId}`}
-          className="px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors flex items-center gap-2"
+          className="px-4 py-2 bg-[#1D6B48] text-white rounded-lg hover:bg-[#236B4C] transition-colors flex items-center gap-2"
         >
           🔮 {t('profile.askGuru')}
         </Link>
       </div>
 
       {/* Temperament Section */}
-      <section className="bg-white rounded-xl shadow-sm p-4 mb-4">
-        <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+      <section className="bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-xl p-4 mb-4">
+        <h3 className="font-bold text-white/90 mb-4 flex items-center gap-2">
           <span>🎭</span> {t('profile.temperament')}
         </h3>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-white/50 mb-4">
           {t('profile.rateTraits')}
         </p>
 
@@ -290,14 +290,14 @@ export default function ProfilePage() {
       </section>
 
       {/* Focus Section */}
-      <section className="bg-white rounded-xl shadow-sm p-4 mb-4">
-        <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+      <section className="bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-xl p-4 mb-4">
+        <h3 className="font-bold text-white/90 mb-4 flex items-center gap-2">
           <span>🎯</span> {t('profile.focusLearning')}
         </h3>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">
+            <label className="text-sm font-medium text-white/70 block mb-1">
               {t('profile.baselineFocus')}
             </label>
             <input
@@ -310,12 +310,12 @@ export default function ProfilePage() {
                 baseline_focus_minutes: parseInt(e.target.value) || undefined,
               }))}
               placeholder={t('profile.focusPlaceholder')}
-              className="w-full p-2 border rounded-lg bg-gray-50"
+              className="w-full p-2 bg-black/30 border border-[rgba(52,211,153,0.18)] rounded-lg text-white/90 placeholder-white/40 focus:border-[#34d399] outline-none"
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">
+            <label className="text-sm font-medium text-white/70 block mb-1">
               {t('profile.optimalWorkTime')}
             </label>
             <select
@@ -324,7 +324,7 @@ export default function ProfilePage() {
                 ...prev,
                 optimal_time_of_day: e.target.value || undefined,
               }))}
-              className="w-full p-2 border rounded-lg bg-gray-50"
+              className="w-full p-2 bg-black/30 border border-[rgba(52,211,153,0.18)] rounded-lg text-white/90 placeholder-white/40 focus:border-[#34d399] outline-none"
             >
               <option value="">{t('profile.select')}</option>
               <option value="morning">{t('profile.morning')}</option>
@@ -336,7 +336,7 @@ export default function ProfilePage() {
 
         <div className="mt-4 grid grid-cols-3 gap-4">
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">{t('profile.visual')}</label>
+            <label className="text-sm font-medium text-white/70 block mb-1">{t('profile.visual')}</label>
             <input
               type="range"
               min={1}
@@ -346,11 +346,11 @@ export default function ProfilePage() {
                 ...prev,
                 learning_modality_visual: parseInt(e.target.value),
               }))}
-              className="w-full accent-violet-500"
+              className="w-full accent-emerald-500"
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">{t('profile.auditory')}</label>
+            <label className="text-sm font-medium text-white/70 block mb-1">{t('profile.auditory')}</label>
             <input
               type="range"
               min={1}
@@ -360,11 +360,11 @@ export default function ProfilePage() {
                 ...prev,
                 learning_modality_auditory: parseInt(e.target.value),
               }))}
-              className="w-full accent-violet-500"
+              className="w-full accent-emerald-500"
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">{t('profile.kinesthetic')}</label>
+            <label className="text-sm font-medium text-white/70 block mb-1">{t('profile.kinesthetic')}</label>
             <input
               type="range"
               min={1}
@@ -374,15 +374,15 @@ export default function ProfilePage() {
                 ...prev,
                 learning_modality_kinesthetic: parseInt(e.target.value),
               }))}
-              className="w-full accent-violet-500"
+              className="w-full accent-emerald-500"
             />
           </div>
         </div>
       </section>
 
       {/* Sensitive Periods */}
-      <section className="bg-white rounded-xl shadow-sm p-4 mb-4">
-        <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+      <section className="bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-xl p-4 mb-4">
+        <h3 className="font-bold text-white/90 mb-4 flex items-center gap-2">
           <span>🌱</span> {t('profile.sensitivePeriods')}
         </h3>
 
@@ -390,8 +390,8 @@ export default function ProfilePage() {
           {SENSITIVE_PERIODS.map(period => (
             <div key={period.key} className="flex items-center justify-between">
               <div>
-                <span className="font-medium text-gray-700">{t(period.labelKey as any)}</span>
-                <p className="text-xs text-gray-400">{t(period.descKey as any)}</p>
+                <span className="font-medium text-white/80">{t(period.labelKey as any)}</span>
+                <p className="text-xs text-white/40">{t(period.descKey as any)}</p>
               </div>
               <div className="flex gap-1">
                 {SENSITIVE_PERIOD_OPTIONS.map(option => {
@@ -404,7 +404,7 @@ export default function ProfilePage() {
                       className={`px-2 py-1 text-xs rounded-lg transition-all ${
                         isSelected
                           ? option.color + ' font-medium'
-                          : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                          : 'bg-white/[0.06] text-white/40 hover:bg-white/[0.12]'
                       }`}
                     >
                       {t(option.labelKey as any)}
@@ -418,33 +418,33 @@ export default function ProfilePage() {
       </section>
 
       {/* Family Context */}
-      <section className="bg-white rounded-xl shadow-sm p-4 mb-4">
-        <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+      <section className="bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-xl p-4 mb-4">
+        <h3 className="font-bold text-white/90 mb-4 flex items-center gap-2">
           <span>👨‍👩‍👧</span> {t('profile.familyContext')}
         </h3>
 
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">
+            <label className="text-sm font-medium text-white/70 block mb-1">
               {t('profile.familyNotes')}
             </label>
             <textarea
               value={profile.family_notes || ''}
               onChange={(e) => setProfile(prev => ({ ...prev, family_notes: e.target.value }))}
               placeholder={t('profile.familyNotesPlaceholder')}
-              className="w-full p-3 border rounded-lg bg-gray-50 resize-none"
+              className="w-full p-3 bg-black/30 border border-[rgba(52,211,153,0.18)] rounded-lg text-white/90 placeholder-white/40 focus:border-[#34d399] outline-none resize-none"
               rows={3}
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">
+            <label className="text-sm font-medium text-white/70 block mb-1">
               {t('profile.sleepStatus')}
             </label>
             <select
               value={profile.sleep_status || 'normal'}
               onChange={(e) => setProfile(prev => ({ ...prev, sleep_status: e.target.value }))}
-              className="w-full p-2 border rounded-lg bg-gray-50"
+              className="w-full p-2 bg-black/30 border border-[rgba(52,211,153,0.18)] rounded-lg text-white/90 placeholder-white/40 focus:border-[#34d399] outline-none"
             >
               <option value="normal">{t('profile.normal')}</option>
               <option value="disrupted">{t('profile.disruptedTemporary')}</option>
@@ -453,14 +453,14 @@ export default function ProfilePage() {
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">
+            <label className="text-sm font-medium text-white/70 block mb-1">
               {t('profile.specialConsiderations')}
             </label>
             <textarea
               value={profile.special_considerations || ''}
               onChange={(e) => setProfile(prev => ({ ...prev, special_considerations: e.target.value }))}
               placeholder={t('profile.specialConsiderationsPlaceholder')}
-              className="w-full p-3 border rounded-lg bg-gray-50 resize-none"
+              className="w-full p-3 bg-black/30 border border-[rgba(52,211,153,0.18)] rounded-lg text-white/90 placeholder-white/40 focus:border-[#34d399] outline-none resize-none"
               rows={2}
             />
           </div>
@@ -468,14 +468,14 @@ export default function ProfilePage() {
       </section>
 
       {/* What Works / Triggers */}
-      <section className="bg-white rounded-xl shadow-sm p-4 mb-4">
-        <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+      <section className="bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-xl p-4 mb-4">
+        <h3 className="font-bold text-white/90 mb-4 flex items-center gap-2">
           <span>✨</span> {t('profile.worksTriggers')}
         </h3>
 
         {/* Successful Strategies */}
         <div className="mb-4">
-          <label className="text-sm font-medium text-gray-700 block mb-2">
+          <label className="text-sm font-medium text-white/70 block mb-2">
             {t('profile.successfulStrategies')}
           </label>
           <div className="flex gap-2 mb-2">
@@ -485,11 +485,11 @@ export default function ProfilePage() {
               onChange={(e) => setNewStrategy(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && addStrategy()}
               placeholder={t('profile.addStrategy')}
-              className="flex-1 p-2 border rounded-lg bg-gray-50"
+              className="flex-1 p-2 bg-black/30 border border-[rgba(52,211,153,0.18)] rounded-lg text-white/90 placeholder-white/40 focus:border-[#34d399] outline-none"
             />
             <button
               onClick={addStrategy}
-              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+              className="px-4 py-2 bg-[#1D6B48] text-white rounded-lg hover:bg-[#236B4C]"
             >
               +
             </button>
@@ -498,10 +498,10 @@ export default function ProfilePage() {
             {(profile.successful_strategies || []).map((s, i) => (
               <span
                 key={i}
-                className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm flex items-center gap-2"
+                className="px-3 py-1 bg-emerald-500/15 text-emerald-200 rounded-full text-sm flex items-center gap-2"
               >
                 {s}
-                <button onClick={() => removeStrategy(i)} className="hover:text-green-900">
+                <button onClick={() => removeStrategy(i)} className="hover:text-emerald-100">
                   ×
                 </button>
               </span>
@@ -511,7 +511,7 @@ export default function ProfilePage() {
 
         {/* Challenging Triggers */}
         <div>
-          <label className="text-sm font-medium text-gray-700 block mb-2">
+          <label className="text-sm font-medium text-white/70 block mb-2">
             {t('profile.challengingTriggers')}
           </label>
           <div className="flex gap-2 mb-2">
@@ -521,11 +521,11 @@ export default function ProfilePage() {
               onChange={(e) => setNewTrigger(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && addTrigger()}
               placeholder={t('profile.addTrigger')}
-              className="flex-1 p-2 border rounded-lg bg-gray-50"
+              className="flex-1 p-2 bg-black/30 border border-[rgba(52,211,153,0.18)] rounded-lg text-white/90 placeholder-white/40 focus:border-[#34d399] outline-none"
             />
             <button
               onClick={addTrigger}
-              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+              className="px-4 py-2 bg-red-500/80 text-white rounded-lg hover:bg-red-500"
             >
               +
             </button>
@@ -534,10 +534,10 @@ export default function ProfilePage() {
             {(profile.challenging_triggers || []).map((t, i) => (
               <span
                 key={i}
-                className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm flex items-center gap-2"
+                className="px-3 py-1 bg-red-500/15 text-red-200 rounded-full text-sm flex items-center gap-2"
               >
                 {t}
-                <button onClick={() => removeTrigger(i)} className="hover:text-red-900">
+                <button onClick={() => removeTrigger(i)} className="hover:text-red-100">
                   ×
                 </button>
               </span>
@@ -547,13 +547,13 @@ export default function ProfilePage() {
       </section>
 
       {/* Save Button */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+      <div className="fixed bottom-0 left-0 right-0 border-t border-[rgba(52,211,153,0.15)] p-4 pb-[max(1rem,env(safe-area-inset-bottom))]" style={{ background: 'rgba(8,20,12,0.95)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
         <div className="max-w-4xl mx-auto">
           <button
             onClick={handleSave}
             disabled={saving}
-            className="w-full py-3 bg-gradient-to-r from-violet-500 to-indigo-600 text-white font-medium rounded-lg
-                     disabled:opacity-50 hover:from-violet-600 hover:to-indigo-700 transition-all"
+            className="w-full py-3 bg-[#1D6B48] text-white font-medium rounded-lg
+                     disabled:opacity-50 hover:bg-[#236B4C] transition-all"
           >
             {saving ? t('profile.saving') : t('profile.saveButton')}
           </button>

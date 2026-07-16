@@ -218,24 +218,27 @@ export default function ClassroomBuilderPage() {
   if (!session) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div
+      className="min-h-screen bg-[#0a1a0f] pb-24"
+      style={{ backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(39,129,90,0.32), transparent 60%)' }}
+    >
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white border-b px-4 py-3">
+      <div className="sticky top-0 z-10 bg-[rgba(7,18,12,0.9)] border-b border-[rgba(52,211,153,0.15)] px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.push('/montree/dashboard')}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-white/50 hover:text-white/80 transition-colors"
             >
               ←
             </button>
-            <h1 className="text-lg font-semibold text-gray-800">Classroom Builder</h1>
+            <h1 className="text-lg font-semibold text-white/90">Classroom Builder</h1>
           </div>
           {step === 'paste' && (
-            <span className="text-xs text-gray-400">Step 1 of 2</span>
+            <span className="text-xs text-white/40">Step 1 of 2</span>
           )}
           {step === 'preview' && (
-            <span className="text-xs text-gray-400">Step 2 of 2</span>
+            <span className="text-xs text-white/40">Step 2 of 2</span>
           )}
         </div>
       </div>
@@ -244,9 +247,9 @@ export default function ClassroomBuilderPage() {
         {/* ─── STEP 1: Paste ─── */}
         {step === 'paste' && (
           <div className="space-y-6">
-            <div className="bg-white rounded-xl border p-4 shadow-sm">
-              <h2 className="text-sm font-semibold text-gray-700 mb-1">How it works</h2>
-              <p className="text-xs text-gray-500">
+            <div className="bg-white/[0.06] rounded-xl border border-[rgba(52,211,153,0.15)] p-4">
+              <h2 className="text-sm font-semibold text-white/70 mb-1">How it works</h2>
+              <p className="text-xs text-white/50">
                 Copy the names column from your spreadsheet and paste it in the left box.
                 Then copy the birthdays column and paste it in the right box.
                 The rows should be in the same order so each name matches its birthday.
@@ -256,34 +259,34 @@ export default function ClassroomBuilderPage() {
             <div className="grid grid-cols-2 gap-3">
               {/* Names box */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label className="block text-sm font-medium text-white/70 mb-1.5">
                   Names <span className="text-red-400">*</span>
                 </label>
                 <textarea
                   value={namesText}
                   onChange={e => setNamesText(e.target.value)}
                   placeholder={"Amy\nAustin\nEric\nHayden\nJoey"}
-                  className="w-full h-64 px-3 py-2 border border-gray-200 rounded-lg text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 placeholder:text-gray-300"
+                  className="w-full h-64 px-3 py-2 bg-white/[0.06] text-white/90 border border-[rgba(52,211,153,0.15)] rounded-lg text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 placeholder:text-white/30"
                   spellCheck={false}
                 />
-                <p className="text-[10px] text-gray-400 mt-1">
+                <p className="text-[10px] text-white/40 mt-1">
                   One name per line · {namesText.split('\n').filter(l => l.trim()).length} names
                 </p>
               </div>
 
               {/* Birthdays box */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Birthdays <span className="text-gray-400 text-xs font-normal">(optional)</span>
+                <label className="block text-sm font-medium text-white/70 mb-1.5">
+                  Birthdays <span className="text-white/40 text-xs font-normal">(optional)</span>
                 </label>
                 <textarea
                   value={birthdaysText}
                   onChange={e => setBirthdaysText(e.target.value)}
                   placeholder={"03/15/2020\n07/22/2019\n11/01/2020\n05/30/2019\n09/14/2020"}
-                  className="w-full h-64 px-3 py-2 border border-gray-200 rounded-lg text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 placeholder:text-gray-300"
+                  className="w-full h-64 px-3 py-2 bg-white/[0.06] text-white/90 border border-[rgba(52,211,153,0.15)] rounded-lg text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 placeholder:text-white/30"
                   spellCheck={false}
                 />
-                <p className="text-[10px] text-gray-400 mt-1">
+                <p className="text-[10px] text-white/40 mt-1">
                   Same order as names · MM/DD/YYYY or YYYY-MM-DD
                 </p>
               </div>
@@ -292,7 +295,7 @@ export default function ClassroomBuilderPage() {
             <button
               onClick={handlePreview}
               disabled={!namesText.trim()}
-              className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-300 text-white font-medium rounded-xl transition-colors text-sm"
+              className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-white/10 disabled:text-white/30 text-[#04150c] font-medium rounded-xl transition-colors text-sm"
             >
               Preview →
             </button>
@@ -303,64 +306,64 @@ export default function ClassroomBuilderPage() {
         {step === 'preview' && (
           <div className="space-y-4">
             {/* Stats bar */}
-            <div className="flex items-center gap-3 bg-white rounded-xl border p-3 shadow-sm">
+            <div className="flex items-center gap-3 bg-white/[0.06] rounded-xl border border-[rgba(52,211,153,0.15)] p-3">
               <div className="flex-1 text-center">
-                <p className="text-lg font-bold text-emerald-600">{stats.valid}</p>
-                <p className="text-[10px] text-gray-500">Ready</p>
+                <p className="text-lg font-bold text-emerald-400">{stats.valid}</p>
+                <p className="text-[10px] text-white/50">Ready</p>
               </div>
-              <div className="w-px h-8 bg-gray-200" />
+              <div className="w-px h-8 bg-white/10" />
               <div className="flex-1 text-center">
-                <p className="text-lg font-bold text-blue-600">{stats.withBirthday}</p>
-                <p className="text-[10px] text-gray-500">With birthday</p>
+                <p className="text-lg font-bold text-white/85">{stats.withBirthday}</p>
+                <p className="text-[10px] text-white/50">With birthday</p>
               </div>
               {stats.errors > 0 && (
                 <>
-                  <div className="w-px h-8 bg-gray-200" />
+                  <div className="w-px h-8 bg-white/10" />
                   <div className="flex-1 text-center">
-                    <p className="text-lg font-bold text-red-500">{stats.errors}</p>
-                    <p className="text-[10px] text-gray-500">Errors</p>
+                    <p className="text-lg font-bold text-red-400">{stats.errors}</p>
+                    <p className="text-[10px] text-white/50">Errors</p>
                   </div>
                 </>
               )}
             </div>
 
             {/* Student table */}
-            <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+            <div className="bg-white/[0.06] rounded-xl border border-[rgba(52,211,153,0.15)] overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b bg-gray-50">
-                    <th className="text-left px-4 py-2 text-xs font-medium text-gray-500 w-8">#</th>
-                    <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Name</th>
-                    <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Birthday</th>
-                    <th className="text-left px-4 py-2 text-xs font-medium text-gray-500 w-16">Age</th>
-                    <th className="text-center px-4 py-2 text-xs font-medium text-gray-500 w-12">OK</th>
+                  <tr className="border-b border-white/10 bg-white/[0.03]">
+                    <th className="text-left px-4 py-2 text-xs font-medium text-white/50 w-8">#</th>
+                    <th className="text-left px-4 py-2 text-xs font-medium text-white/50">Name</th>
+                    <th className="text-left px-4 py-2 text-xs font-medium text-white/50">Birthday</th>
+                    <th className="text-left px-4 py-2 text-xs font-medium text-white/50 w-16">Age</th>
+                    <th className="text-center px-4 py-2 text-xs font-medium text-white/50 w-12">OK</th>
                   </tr>
                 </thead>
                 <tbody>
                   {students.map((s, i) => (
                     <tr
                       key={i}
-                      className={`border-b last:border-0 ${!s.valid ? 'bg-red-50' : ''}`}
+                      className={`border-b border-white/10 last:border-0 ${!s.valid ? 'bg-red-500/10' : ''}`}
                     >
-                      <td className="px-4 py-2.5 text-xs text-gray-400">{i + 1}</td>
-                      <td className="px-4 py-2.5 font-medium text-gray-800">{s.name}</td>
-                      <td className="px-4 py-2.5 text-gray-600">
+                      <td className="px-4 py-2.5 text-xs text-white/40">{i + 1}</td>
+                      <td className="px-4 py-2.5 font-medium text-white/90">{s.name}</td>
+                      <td className="px-4 py-2.5 text-white/70">
                         {s.birthday ? (
                           <span>{s.birthday}</span>
                         ) : s.birthdayRaw ? (
-                          <span className="text-red-500 text-xs">{s.birthdayRaw}</span>
+                          <span className="text-red-400 text-xs">{s.birthdayRaw}</span>
                         ) : (
-                          <span className="text-gray-300">—</span>
+                          <span className="text-white/30">—</span>
                         )}
                       </td>
-                      <td className="px-4 py-2.5 text-gray-500">
+                      <td className="px-4 py-2.5 text-white/50">
                         {s.birthday ? calculateAge(s.birthday) : '—'}
                       </td>
                       <td className="px-4 py-2.5 text-center">
                         {s.valid ? (
-                          <span className="text-emerald-500">✓</span>
+                          <span className="text-emerald-400">✓</span>
                         ) : (
-                          <span className="text-red-500 text-xs" title={s.error}>✕</span>
+                          <span className="text-red-400 text-xs" title={s.error}>✕</span>
                         )}
                       </td>
                     </tr>
@@ -371,12 +374,12 @@ export default function ClassroomBuilderPage() {
 
             {/* Error details */}
             {stats.errors > 0 && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-xs font-medium text-red-700 mb-1">
+              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+                <p className="text-xs font-medium text-red-300 mb-1">
                   {stats.errors} student{stats.errors > 1 ? 's' : ''} with issues (will be skipped):
                 </p>
                 {students.filter(s => !s.valid).map((s, i) => (
-                  <p key={i} className="text-xs text-red-600">• {s.name}: {s.error}</p>
+                  <p key={i} className="text-xs text-red-300/80">• {s.name}: {s.error}</p>
                 ))}
               </div>
             )}
@@ -385,14 +388,14 @@ export default function ClassroomBuilderPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setStep('paste')}
-                className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors text-sm"
+                className="flex-1 py-3 bg-white/[0.06] border border-[rgba(52,211,153,0.15)] hover:bg-white/[0.1] text-white/80 font-medium rounded-xl transition-colors text-sm"
               >
                 ← Back to edit
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={submitting || stats.valid === 0}
-                className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-300 text-white font-medium rounded-xl transition-colors text-sm"
+                className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-white/10 disabled:text-white/30 text-[#04150c] font-medium rounded-xl transition-colors text-sm"
               >
                 {submitting ? (
                   <span className="flex items-center justify-center gap-2">
@@ -411,10 +414,10 @@ export default function ClassroomBuilderPage() {
         {step === 'done' && (
           <div className="text-center py-16">
             <p className="text-5xl mb-4">🎉</p>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">
+            <h2 className="text-xl font-bold text-white/90 mb-2">
               {createdCount} student{createdCount !== 1 ? 's' : ''} added!
             </h2>
-            <p className="text-sm text-gray-500 mb-8">
+            <p className="text-sm text-white/50 mb-8">
               Your classroom is ready. The students will appear on your dashboard.
             </p>
             <div className="flex gap-3 max-w-xs mx-auto">
@@ -426,13 +429,13 @@ export default function ClassroomBuilderPage() {
                   setStudents([]);
                   setCreatedCount(0);
                 }}
-                className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors text-sm"
+                className="flex-1 py-2.5 bg-white/[0.06] border border-[rgba(52,211,153,0.15)] hover:bg-white/[0.1] text-white/80 font-medium rounded-xl transition-colors text-sm"
               >
                 Add more
               </button>
               <button
                 onClick={() => router.push('/montree/dashboard')}
-                className="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-xl transition-colors text-sm"
+                className="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-[#04150c] font-medium rounded-xl transition-colors text-sm"
               >
                 Go to Dashboard
               </button>

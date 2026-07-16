@@ -141,7 +141,7 @@ export default function VoiceObservationPage() {
 
   if (loading || featuresLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a1a0f] flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full" />
       </div>
     );
@@ -150,17 +150,22 @@ export default function VoiceObservationPage() {
   // Premium gate
   if (!isEnabled('voice_observations')) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
+      <div className="min-h-screen bg-[#0a1a0f] p-6 relative">
+        <div
+          aria-hidden
+          className="fixed inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(circle at 50% 0%, rgba(39,129,90,0.32), transparent 60%)' }}
+        />
         <Toaster position="top-center" />
-        <div className="max-w-lg mx-auto text-center py-20">
+        <div className="relative max-w-lg mx-auto text-center py-20">
           <div className="text-6xl mb-4">🎤</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-3">
+          <h1 className="text-2xl font-bold text-white/95 mb-3">
             {t('voiceObs.premium') || 'Voice Observations'}
           </h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-white/60 mb-6">
             {t('voiceObs.premiumDescription') || 'AI-powered hands-free classroom observation. Record your work cycle, and let AI identify students, match works, and propose progress updates.'}
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-white/40">
             {t('voiceObs.contactAdmin') || 'Contact your administrator to enable this premium feature.'}
           </p>
         </div>
@@ -169,25 +174,30 @@ export default function VoiceObservationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0a1a0f] relative">
+      <div
+        aria-hidden
+        className="fixed inset-0 pointer-events-none"
+        style={{ background: 'radial-gradient(circle at 50% 0%, rgba(39,129,90,0.32), transparent 60%)' }}
+      />
       <Toaster position="top-center" />
 
       {/* Header */}
-      <div className="bg-white border-b px-4 py-3 flex items-center justify-between">
+      <div className="relative bg-[rgba(7,18,12,0.9)] border-b border-[rgba(52,211,153,0.15)] px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={() => router.push('/montree/dashboard')} className="text-gray-500 hover:text-gray-700">
+          <button onClick={() => router.push('/montree/dashboard')} className="text-white/50 hover:text-white/80">
             ←
           </button>
-          <h1 className="text-lg font-semibold text-gray-900">
+          <h1 className="text-lg font-semibold text-white/95">
             🎤 {t('voiceObs.title') || 'Voice Observation'}
           </h1>
         </div>
         {pageState !== 'idle' && activeSession && (
-          <span className="text-xs text-gray-500">{activeSession.sessionDate}</span>
+          <span className="text-xs text-white/40">{activeSession.sessionDate}</span>
         )}
       </div>
 
-      <div className="max-w-2xl mx-auto p-4">
+      <div className="relative max-w-2xl mx-auto p-4">
         {/* State: IDLE */}
         {pageState === 'idle' && (
           <div>
@@ -202,23 +212,23 @@ export default function VoiceObservationPage() {
             {/* History */}
             {history.length > 0 && (
               <div className="mt-8">
-                <h2 className="text-sm font-semibold text-gray-700 mb-3">
+                <h2 className="text-sm font-semibold text-white/70 mb-3">
                   {t('voiceObs.sessionHistory') || 'Session History'}
                 </h2>
                 <div className="space-y-2">
                   {history.map(h => (
-                    <div key={h.id} className="bg-white rounded-lg border p-3 flex justify-between items-center">
+                    <div key={h.id} className="bg-white/[0.06] rounded-lg border border-[rgba(52,211,153,0.15)] p-3 flex justify-between items-center">
                       <div>
-                        <div className="text-sm font-medium text-gray-900">{h.session_date}</div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-sm font-medium text-white/90">{h.session_date}</div>
+                        <div className="text-xs text-white/40">
                           {Math.round((h.duration_seconds || 0) / 60)}min · {h.approved_count || 0} {t('voiceObs.approved') || 'approved'}
                         </div>
                       </div>
                       <span className={`text-xs px-2 py-1 rounded-full ${
-                        h.status === 'committed' ? 'bg-emerald-100 text-emerald-700' :
-                        h.status === 'failed' ? 'bg-red-100 text-red-700' :
-                        h.status === 'expired' ? 'bg-gray-100 text-gray-500' :
-                        'bg-amber-100 text-amber-700'
+                        h.status === 'committed' ? 'bg-emerald-500/15 text-emerald-300' :
+                        h.status === 'failed' ? 'bg-red-500/15 text-red-300' :
+                        h.status === 'expired' ? 'bg-white/10 text-white/50' :
+                        'bg-amber-500/15 text-amber-300'
                       }`}>
                         {h.status}
                       </span>
@@ -229,7 +239,7 @@ export default function VoiceObservationPage() {
             )}
 
             {history.length === 0 && (
-              <div className="text-center text-gray-400 text-sm mt-12">
+              <div className="text-center text-white/40 text-sm mt-12">
                 {t('voiceObs.noSessions') || 'No sessions yet. Start your first voice observation!'}
               </div>
             )}
@@ -267,10 +277,10 @@ export default function VoiceObservationPage() {
         {pageState === 'committed' && (
           <div className="text-center py-16">
             <div className="text-6xl mb-4">✅</div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">
+            <h2 className="text-xl font-bold text-white/95 mb-2">
               {t('voiceObs.committed') || 'Observations Committed!'}
             </h2>
-            <p className="text-gray-600 mb-6 text-sm">
+            <p className="text-white/60 mb-6 text-sm">
               {t('voiceObs.committedDescription') || 'Student progress has been updated. All audio and transcripts have been permanently deleted.'}
             </p>
             <button

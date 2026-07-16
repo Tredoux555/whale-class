@@ -63,6 +63,27 @@ ask, type down (h1 2.15rem/400), bg glows halved + vignette deleted, ceremony ri
 **hero M + ceremony M REMOVED ENTIRELY** (Tredoux: topbar wordmark is enough; login-select logo
 72→40px). 🚨 RULE: funnel gold NEVER glows; no box-shadow with 232,201,106 anywhere in funnel files.
 Mock HTML deliberately NOT updated (shipped pages are now the visual truth).
+**pt4 (Jul 16 night → Jul 17) — TEACHER-SIDE DARK SWEEP (~27 files) + /montree/onboarding RETIRED +
+ONBOARD-500 HARDENED:** Tredoux walked the teacher path live: hit the white legacy screens + a REAL
+500 on voice-onboarding. (1) Sonnet investigation of `children/[childId]/onboard`: route was hardened
+everywhere EXCEPT the Sonnet extraction call + request.json — the only two ops that could produce the
+generic 500 (likely Anthropic 429/529/truncation; real error in Railway logs; curriculum-seed ruled
+out as direct cause — try/instant teacher branch DOES seed). Opus fix: extraction call wrapped →
+diagnosable 502 `{code:'extraction_failed', detail, anthropic_status}`, invalid_json 400, outer catch
+gains `ref` id + detail, empty-curriculum console.warn pre-extraction. (2) The Jul-4 "~24 white teacher
+screens" backlog CLOSED: 2 parallel Opus chunks converted students(+modals)/settings/tools/snap/
+weekly-wrap/labels(chrome)/progress-overview/albums/media/voice-observation/language-tracker/
+classroom-builder/curriculum-browse(teacher branch only — HOME_THEME parent branch preserved via
+isParent prop)/vocabulary-flashcards/reports viewers/per-child summary+weekly-review+language-
+presentation+progress-detail+profile+observations/guru paywall modal/admin parent-codes + stragglers
+TellGuruCard + DeleteAccountSection(dark prop; parent/account stays light) to the in-app dark register
+(#0a1a0f + one emerald glow, glass 0.06/hairline 52,211,153@0.15, no shadows, Lora/Inter). Paper stays
+white (labels sheet, parent-code cards, print/, report bodies); games untouched per standing call.
+(3) **`/montree/onboarding` RETIRED** → router.replace('/montree/dashboard/students') (its
+seedCurriculum was redundant — try/instant already seeds; unified-login redirect chain verified
+loop-free). Sonnet cleanup audit: 1 dark-on-dark miss fixed, print CSS + copilot-dock z-order verified.
+⏳ OWED: DC-delete temp tsconfigs (darkskin/darksweep/cleanupaudit/onboardtmp + gcintro) · Tredoux
+retry the Marina voice-onboard (error now diagnosable if it recurs) · device eyeball of the dark sweep.
 
 ---
 

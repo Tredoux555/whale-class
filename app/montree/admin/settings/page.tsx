@@ -347,7 +347,7 @@ export default function AdminSettingsPage() {
 
       {/* Delete Account (Apple App Store Guideline 5.1.1(v)) */}
       <div style={{ marginTop: 24 }}>
-        <DeleteAccountSection redirectTo="/montree/login" />
+        <DeleteAccountSection redirectTo="/montree/login" dark />
       </div>
     </div>
   );

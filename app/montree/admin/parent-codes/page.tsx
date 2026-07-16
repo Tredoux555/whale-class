@@ -73,31 +73,37 @@ export default function ParentCodesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a1a0f] flex items-center justify-center">
         <div className="text-center">
           <span className="text-4xl animate-bounce block mb-4">🌳</span>
-          <p className="text-gray-600">{t('parentCodes.loading' as TranslationKey)}</p>
+          <p className="text-white/60">{t('parentCodes.loading' as TranslationKey)}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0a1a0f] relative">
+      {/* Dark-register: one fixed radial emerald glow (screen only) */}
+      <div
+        aria-hidden
+        className="fixed inset-0 pointer-events-none print:hidden"
+        style={{ background: 'radial-gradient(circle at 50% 0%, rgba(39,129,90,0.32), transparent 60%)' }}
+      />
       {/* Header - hide on print */}
-      <header className="bg-white border-b print:hidden">
+      <header className="relative bg-[rgba(7,18,12,0.9)] border-b border-[rgba(52,211,153,0.15)] print:hidden">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
                 href="/montree/dashboard"
-                className="text-gray-500 hover:text-gray-700"
+                className="text-white/50 hover:text-white/80"
               >
                 ← {t('parentCodes.backToDashboard' as TranslationKey)}
               </Link>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">{t('parentCodes.title' as TranslationKey)}</h1>
-                <p className="text-sm text-gray-500">{codes.length} {t('parentCodes.students' as TranslationKey)}</p>
+                <h1 className="text-xl font-bold text-white/95">{t('parentCodes.title' as TranslationKey)}</h1>
+                <p className="text-sm text-white/40">{codes.length} {t('parentCodes.students' as TranslationKey)}</p>
               </div>
             </div>
             <div className="flex gap-3">
@@ -110,7 +116,7 @@ export default function ParentCodesPage() {
               </button>
               <button
                 onClick={handlePrint}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="px-4 py-2 bg-white/[0.06] border border-[rgba(52,211,153,0.15)] text-white/80 rounded-lg hover:bg-white/[0.1]"
               >
                 🖨️ {t('parentCodes.printCards' as TranslationKey)}
               </button>
@@ -126,12 +132,12 @@ export default function ParentCodesPage() {
       </div>
 
       {/* Code Cards Grid */}
-      <main className="max-w-6xl mx-auto px-4 py-6">
+      <main className="relative max-w-6xl mx-auto px-4 py-6">
         {codes.length === 0 ? (
           <div className="text-center py-12">
             <span className="text-6xl block mb-4">📭</span>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">{t('parentCodes.noCodesYet' as TranslationKey)}</h2>
-            <p className="text-gray-500 mb-4">{t('parentCodes.generateForAll' as TranslationKey)}</p>
+            <h2 className="text-xl font-bold text-white/95 mb-2">{t('parentCodes.noCodesYet' as TranslationKey)}</h2>
+            <p className="text-white/40 mb-4">{t('parentCodes.generateForAll' as TranslationKey)}</p>
             <button
               onClick={generateAllCodes}
               disabled={generating}

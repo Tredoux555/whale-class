@@ -147,31 +147,34 @@ export default function LanguageTrackerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div
+      className="min-h-screen bg-[#0a1a0f]"
+      style={{ backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(39,129,90,0.32), transparent 60%)' }}
+    >
       <div className="max-w-2xl mx-auto px-4 pt-20 pb-24">
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-1">
-            <button onClick={() => router.back()} className="text-gray-400 hover:text-gray-600 text-xl">←</button>
-            <h1 className="text-xl font-bold text-gray-900">
+            <button onClick={() => router.back()} className="text-white/50 hover:text-white/80 text-xl">←</button>
+            <h1 className="text-xl font-bold text-white/95">
               🇬🇧 {L('English Corner', '英语角')}
             </h1>
           </div>
           {(currentTab === 'overview' && data) && (
-            <p className="text-sm text-gray-500 ml-8">
+            <p className="text-sm text-white/50 ml-8">
               {L('This week', '本周')} ({weekLabel}) · {data.visitedCount}/{data.totalChildren} {L('visited', '已到访')}
             </p>
           )}
         </div>
 
         {/* Tabs */}
-        <div className="mb-6 flex gap-2 border-b border-gray-200">
+        <div className="mb-6 flex gap-2 border-b border-white/10">
           <button
             onClick={() => handleTabChange('overview')}
             className={`px-4 py-2 text-sm font-medium transition-colors ${
               currentTab === 'overview'
-                ? 'text-emerald-600 border-b-2 border-emerald-600'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'text-emerald-400 border-b-2 border-emerald-400'
+                : 'text-white/50 hover:text-white/80'
             }`}
           >
             {L('Overview', '概览')}
@@ -180,8 +183,8 @@ export default function LanguageTrackerPage() {
             onClick={() => handleTabChange('bingo')}
             className={`px-4 py-2 text-sm font-medium transition-colors ${
               currentTab === 'bingo'
-                ? 'text-emerald-600 border-b-2 border-emerald-600'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'text-emerald-400 border-b-2 border-emerald-400'
+                : 'text-white/50 hover:text-white/80'
             }`}
           >
             {L('Bingo Phonics', 'Bingo 拼音')}
@@ -190,8 +193,8 @@ export default function LanguageTrackerPage() {
             onClick={() => handleTabChange('paperwork')}
             className={`px-4 py-2 text-sm font-medium transition-colors ${
               currentTab === 'paperwork'
-                ? 'text-emerald-600 border-b-2 border-emerald-600'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'text-emerald-400 border-b-2 border-emerald-400'
+                : 'text-white/50 hover:text-white/80'
             }`}
           >
             {L('Paperwork', '作业')}
@@ -208,9 +211,9 @@ export default function LanguageTrackerPage() {
             )}
 
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
-                <p className="text-red-600 text-sm">{error}</p>
-                <button onClick={fetchData} className="mt-2 text-sm text-red-500 underline">
+              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-center">
+                <p className="text-red-300 text-sm">{error}</p>
+                <button onClick={fetchData} className="mt-2 text-sm text-red-300 underline">
                   {L('Retry', '重试')}
                 </button>
               </div>
@@ -220,7 +223,7 @@ export default function LanguageTrackerPage() {
           <>
             {/* Progress bar */}
             <div className="mb-6">
-              <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+              <div className="h-3 bg-white/10 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full transition-all duration-500"
                   style={{ width: `${data.totalChildren > 0 ? (data.visitedCount / data.totalChildren) * 100 : 0}%` }}
@@ -240,10 +243,10 @@ export default function LanguageTrackerPage() {
                     <Link
                       key={child.id}
                       href={`/montree/dashboard/${child.id}`}
-                      className="flex items-center gap-2.5 bg-white border border-gray-100 rounded-xl px-3 py-2.5 hover:border-red-200 hover:bg-red-50/30 transition-colors"
+                      className="flex items-center gap-2.5 bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-xl px-3 py-2.5 hover:border-red-400/40 hover:bg-red-500/10 transition-colors"
                     >
                       <ChildAvatar name={child.name} photoUrl={child.photo_url} />
-                      <span className="text-sm font-medium text-gray-700 truncate">{child.name}</span>
+                      <span className="text-sm font-medium text-white/80 truncate">{child.name}</span>
                     </Link>
                   ))}
                 </div>
@@ -262,12 +265,12 @@ export default function LanguageTrackerPage() {
                     <Link
                       key={child.id}
                       href={`/montree/dashboard/${child.id}`}
-                      className="block bg-white border border-gray-100 rounded-xl px-4 py-3 hover:border-emerald-200 transition-colors"
+                      className="block bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-xl px-4 py-3 hover:border-[rgba(52,211,153,0.35)] transition-colors"
                     >
                       <div className="flex items-center gap-3 mb-2">
                         <ChildAvatar name={child.name} photoUrl={child.photo_url} />
                         <div className="flex-1 min-w-0">
-                          <span className="text-sm font-semibold text-gray-900">{child.name}</span>
+                          <span className="text-sm font-semibold text-white/90">{child.name}</span>
                           <span className="ml-2 text-xs text-emerald-600">
                             {child.works.length} {L(child.works.length === 1 ? 'work' : 'works', '项作业')}
                           </span>
@@ -278,7 +281,7 @@ export default function LanguageTrackerPage() {
                         {child.works.map((work, i) => (
                           <span
                             key={`${work.workName}-${i}`}
-                            className="inline-flex items-center gap-1 text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full"
+                            className="inline-flex items-center gap-1 text-xs bg-emerald-500/15 text-emerald-300 px-2 py-1 rounded-full"
                           >
                             {isZh && work.workNameChinese ? work.workNameChinese : work.workName}
                             <span className="text-emerald-400">{formatDay(work.capturedAt)}</span>
@@ -303,7 +306,7 @@ export default function LanguageTrackerPage() {
 
             {/* Empty state */}
             {data.visited.length === 0 && data.notYet.length === 0 && (
-              <div className="text-center py-12 text-gray-400">
+              <div className="text-center py-12 text-white/40">
                 <p className="text-3xl mb-2">📚</p>
                 <p>{L('No students found', '没有学生数据')}</p>
               </div>
@@ -313,7 +316,7 @@ export default function LanguageTrackerPage() {
             <div className="mt-8 text-center">
               <button
                 onClick={fetchData}
-                className="text-sm text-gray-400 hover:text-emerald-500 transition-colors"
+                className="text-sm text-white/40 hover:text-emerald-400 transition-colors"
               >
                 ↻ {L('Refresh', '刷新')}
               </button>
@@ -335,7 +338,7 @@ export default function LanguageTrackerPage() {
             {bingoData && !bingoLoading && (
               <>
                 <div className="mb-6">
-                  <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="h-3 bg-white/10 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full transition-all duration-500"
                       style={{ width: `${bingoData.totalChildren > 0 ? (bingoData.visitedCount / bingoData.totalChildren) * 100 : 0}%` }}
@@ -355,10 +358,10 @@ export default function LanguageTrackerPage() {
                         <Link
                           key={child.id}
                           href={`/montree/dashboard/${child.id}`}
-                          className="flex items-center gap-2.5 bg-white border border-gray-100 rounded-xl px-3 py-2.5 hover:border-red-200 hover:bg-red-50/30 transition-colors"
+                          className="flex items-center gap-2.5 bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-xl px-3 py-2.5 hover:border-red-400/40 hover:bg-red-500/10 transition-colors"
                         >
                           <ChildAvatar name={child.name} photoUrl={child.photo_url} />
-                          <span className="text-sm font-medium text-gray-700 truncate">{child.name}</span>
+                          <span className="text-sm font-medium text-white/80 truncate">{child.name}</span>
                         </Link>
                       ))}
                     </div>
@@ -377,12 +380,12 @@ export default function LanguageTrackerPage() {
                         <Link
                           key={child.id}
                           href={`/montree/dashboard/${child.id}`}
-                          className="block bg-white border border-gray-100 rounded-xl px-4 py-3 hover:border-emerald-200 transition-colors"
+                          className="block bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-xl px-4 py-3 hover:border-[rgba(52,211,153,0.35)] transition-colors"
                         >
                           <div className="flex items-center gap-3 mb-2">
                             <ChildAvatar name={child.name} photoUrl={child.photo_url} />
                             <div className="flex-1 min-w-0">
-                              <span className="text-sm font-semibold text-gray-900">{child.name}</span>
+                              <span className="text-sm font-semibold text-white/90">{child.name}</span>
                               <span className="ml-2 text-xs text-emerald-600">
                                 {child.works.length} {L(child.works.length === 1 ? 'session' : 'sessions', '项作业')}
                               </span>
@@ -393,7 +396,7 @@ export default function LanguageTrackerPage() {
                             {child.works.map((work, i) => (
                               <span
                                 key={`${work.workName}-${i}`}
-                                className="inline-flex items-center gap-1 text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full"
+                                className="inline-flex items-center gap-1 text-xs bg-emerald-500/15 text-emerald-300 px-2 py-1 rounded-full"
                               >
                                 {formatDay(work.capturedAt)}
                               </span>
@@ -417,7 +420,7 @@ export default function LanguageTrackerPage() {
 
                 {/* Empty */}
                 {bingoData.visited.length === 0 && bingoData.notYet.length === 0 && (
-                  <div className="text-center py-12 text-gray-400">
+                  <div className="text-center py-12 text-white/40">
                     <p className="text-3xl mb-2">📚</p>
                     <p>{L('No students found', '没有学生数据')}</p>
                   </div>
@@ -426,7 +429,7 @@ export default function LanguageTrackerPage() {
                 <div className="mt-8 text-center">
                   <button
                     onClick={fetchBingoData}
-                    className="text-sm text-gray-400 hover:text-emerald-500 transition-colors"
+                    className="text-sm text-white/40 hover:text-emerald-400 transition-colors"
                   >
                     ↻ {L('Refresh', '刷新')}
                   </button>

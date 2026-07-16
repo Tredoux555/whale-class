@@ -43,37 +43,37 @@ function ReportViewContent() {
   
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-500 border-t-transparent" />
+      <div className="min-h-screen bg-[#0a1a0f] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-4 border-emerald-500 border-t-transparent" />
       </div>
     );
   }
-  
+
   if (error || !reportId) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a1a0f] flex items-center justify-center">
         <div className="text-center">
           <div className="text-5xl mb-4">😕</div>
-          <p className="text-gray-600 mb-4">{error || t('reportView.noReportId' as TranslationKey)}</p>
-          <Link href="/montree/dashboard/weekly-wrap" className="text-blue-500 hover:underline">
+          <p className="text-white/60 mb-4">{error || t('reportView.noReportId' as TranslationKey)}</p>
+          <Link href="/montree/dashboard/weekly-wrap" className="text-[#34d399] hover:underline">
             ← {t('reportView.backToReports' as TranslationKey)}
           </Link>
         </div>
       </div>
     );
   }
-  
+
   // Native placeholder - will be replaced with SQLite queries in Phase 2
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-[#0a1a0f] p-4">
       <div className="max-w-2xl mx-auto">
-        <Link href="/montree/dashboard/weekly-wrap" className="text-blue-500 mb-4 inline-block">
+        <Link href="/montree/dashboard/weekly-wrap" className="text-[#34d399] mb-4 inline-block">
           ← {t('reportView.backToReports' as TranslationKey)}
         </Link>
-        <div className="bg-white rounded-xl p-6 shadow-sm">
-          <h1 className="text-xl font-bold text-gray-800 mb-4">{t('reportView.title' as TranslationKey)}</h1>
-          <p className="text-gray-600">{t('reportView.reportId' as TranslationKey)}: {reportId}</p>
-          <p className="text-gray-400 text-sm mt-4">
+        <div className="bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-xl p-6">
+          <h1 className="text-xl font-bold text-white/95 mb-4">{t('reportView.title' as TranslationKey)}</h1>
+          <p className="text-white/60">{t('reportView.reportId' as TranslationKey)}: {reportId}</p>
+          <p className="text-white/40 text-sm mt-4">
             {t('reportView.nativeComingSoon' as TranslationKey)}
           </p>
         </div>
@@ -85,8 +85,8 @@ function ReportViewContent() {
 export default function ReportViewPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-500 border-t-transparent" />
+      <div className="min-h-screen bg-[#0a1a0f] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-4 border-emerald-500 border-t-transparent" />
       </div>
     }>
       <ReportViewContent />

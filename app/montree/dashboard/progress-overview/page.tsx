@@ -139,16 +139,16 @@ function ChildCard({ child, locale }: { child: ChildProgress; locale: string }) 
   const [expanded, setExpanded] = useState(true);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="bg-white/[0.06] rounded-xl border border-[rgba(52,211,153,0.15)] overflow-hidden">
       {/* Header */}
       <button
         onClick={() => setExpanded(e => !e)}
-        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/[0.04] transition-colors text-left"
       >
         <ChildAvatar name={child.name} photoUrl={child.photo_url} />
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-gray-800 text-sm">{child.name}</p>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="font-semibold text-white/90 text-sm">{child.name}</p>
+          <p className="text-xs text-white/40 mt-0.5">
             {child.totalPhotos} photo{child.totalPhotos !== 1 ? 's' : ''} ·{' '}
             {child.areas.length} area{child.areas.length !== 1 ? 's' : ''}
           </p>
@@ -168,12 +168,12 @@ function ChildCard({ child, locale }: { child: ChildProgress; locale: string }) 
           })}
         </div>
 
-        <span className="text-gray-400 ml-1 text-xs">{expanded ? '▾' : '▸'}</span>
+        <span className="text-white/40 ml-1 text-xs">{expanded ? '▾' : '▸'}</span>
       </button>
 
       {/* Body */}
       {expanded && child.areas.length > 0 && (
-        <div className="px-4 pb-4 flex flex-col gap-3 border-t border-gray-50 pt-3">
+        <div className="px-4 pb-4 flex flex-col gap-3 border-t border-white/10 pt-3">
           {child.areas.map(area => (
             <AreaRow key={area.areaKey} area={area} locale={locale} />
           ))}
@@ -181,7 +181,7 @@ function ChildCard({ child, locale }: { child: ChildProgress; locale: string }) 
       )}
 
       {expanded && child.areas.length === 0 && (
-        <p className="px-4 pb-4 text-sm text-gray-400 italic">
+        <p className="px-4 pb-4 text-sm text-white/40 italic">
           {locale === 'zh' ? '本期间无照片记录' : 'No photo evidence this period'}
         </p>
       )}
@@ -193,7 +193,7 @@ function ChildCard({ child, locale }: { child: ChildProgress; locale: string }) 
 
 function Legend({ locale }: { locale: string }) {
   return (
-    <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
+    <div className="flex items-center gap-3 text-xs text-white/50 flex-wrap">
       <span className="font-medium">
         {locale === 'zh' ? '状态：' : 'Status:'}
       </span>
@@ -285,11 +285,11 @@ function SummaryBar({
       {items.map(item => (
         <div
           key={item.label}
-          className="bg-white rounded-lg border border-gray-100 shadow-sm px-2 py-2 text-center"
+          className="bg-white/[0.06] rounded-lg border border-[rgba(52,211,153,0.15)] px-2 py-2 text-center"
         >
           <div className="text-lg">{item.emoji}</div>
-          <div className="text-lg font-bold text-gray-800 leading-tight">{item.value}</div>
-          <div className="text-[10px] text-gray-400 leading-tight mt-0.5">{item.label}</div>
+          <div className="text-lg font-bold text-white/90 leading-tight">{item.value}</div>
+          <div className="text-[10px] text-white/40 leading-tight mt-0.5">{item.label}</div>
         </div>
       ))}
     </div>
@@ -348,18 +348,21 @@ export default function ProgressOverviewPage() {
     : '';
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div
+      className="min-h-screen bg-[#0a1a0f] pb-20"
+      style={{ backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(39,129,90,0.32), transparent 60%)' }}
+    >
       {/* Spacer for fixed header */}
       <div className="h-16" />
 
       <div className="max-w-2xl mx-auto px-4 pt-4">
         {/* Page title */}
         <div className="mb-4">
-          <h1 className="text-xl font-bold text-gray-800">
+          <h1 className="text-xl font-bold text-white/90">
             {locale === 'zh' ? '班级进度总览' : 'Class Progress Overview'}
           </h1>
           {dateLabel && (
-            <p className="text-xs text-gray-400 mt-0.5">{dateLabel}</p>
+            <p className="text-xs text-white/40 mt-0.5">{dateLabel}</p>
           )}
         </div>
 
@@ -372,7 +375,7 @@ export default function ProgressOverviewPage() {
               className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${
                 period === p.key
                   ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                  : 'bg-white/[0.06] text-white/60 border border-[rgba(52,211,153,0.15)] hover:bg-white/[0.1]'
               }`}
             >
               {locale === 'zh' ? p.labelZh : p.labelEn}
@@ -384,7 +387,7 @@ export default function ProgressOverviewPage() {
         {loading && (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
             <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-white/40">
               {locale === 'zh' ? '加载中…' : 'Loading…'}
             </p>
           </div>
@@ -392,11 +395,11 @@ export default function ProgressOverviewPage() {
 
         {/* Error */}
         {error && !loading && (
-          <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-4">
-            <p className="text-sm text-red-700">{error}</p>
+          <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 mb-4">
+            <p className="text-sm text-red-300">{error}</p>
             <button
               onClick={() => fetchData(period)}
-              className="mt-2 text-xs text-red-600 underline"
+              className="mt-2 text-xs text-red-300 underline"
             >
               {locale === 'zh' ? '重试' : 'Try again'}
             </button>
@@ -422,7 +425,7 @@ export default function ProgressOverviewPage() {
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder={locale === 'zh' ? '搜索儿童…' : 'Search children…'}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                  className="w-full bg-white/[0.06] text-white/90 placeholder:text-white/40 border border-[rgba(52,211,153,0.15)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
                 />
               </div>
             )}
@@ -430,7 +433,7 @@ export default function ProgressOverviewPage() {
             {/* Child cards */}
             <div className="flex flex-col gap-3">
               {filteredChildren.length === 0 && (
-                <div className="text-center py-12 text-gray-400 text-sm">
+                <div className="text-center py-12 text-white/40 text-sm">
                   {search
                     ? locale === 'zh'
                       ? '未找到儿童'
@@ -446,7 +449,7 @@ export default function ProgressOverviewPage() {
             </div>
 
             {/* Refresh hint */}
-            <p className="text-center text-xs text-gray-300 mt-6">
+            <p className="text-center text-xs text-white/30 mt-6">
               {locale === 'zh'
                 ? '数据来自已确认的照片记录'
                 : 'Data sourced from confirmed photo evidence'}

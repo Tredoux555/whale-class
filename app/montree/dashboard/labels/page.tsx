@@ -87,10 +87,10 @@ export default function LabelsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a1a0f] flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-3 animate-pulse">🏷️</div>
-          <p className="text-slate-400">{t('labels.loading')}</p>
+          <p className="text-white/40">{t('labels.loading')}</p>
         </div>
       </div>
     );
@@ -99,29 +99,35 @@ export default function LabelsPage() {
   return (
     <>
       {/* Screen UI — hidden when printing */}
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 print:hidden">
+      <div className="min-h-screen bg-[#0a1a0f] print:hidden relative">
+        {/* Dark-register: one fixed radial emerald glow */}
+        <div
+          aria-hidden
+          className="fixed inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(circle at 50% 0%, rgba(39,129,90,0.32), transparent 60%)' }}
+        />
         {/* Header */}
-        <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+        <div className="relative bg-[rgba(7,18,12,0.9)] border-b border-[rgba(52,211,153,0.15)] px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <button onClick={() => router.back()} className="text-slate-400 hover:text-slate-600 p-1">
+            <button onClick={() => router.back()} className="text-white/50 hover:text-white/80 p-1">
               ←
             </button>
             <span className="text-xl">🏷️</span>
-            <h1 className="font-bold text-slate-800">{t('labels.label_generator')}</h1>
+            <h1 className="font-bold text-white/95">{t('labels.label_generator')}</h1>
           </div>
           <button
             onClick={() => window.print()}
             disabled={selectedStudents.length === 0}
-            className="px-4 py-1.5 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="px-4 py-1.5 bg-[#34d399] text-[#04150c] rounded-lg text-sm font-medium hover:bg-[#2bbd88] disabled:opacity-40 disabled:cursor-not-allowed"
           >
             🖨️ {t('common.print')}
           </button>
         </div>
 
-        <main className="p-4 max-w-3xl mx-auto space-y-6">
+        <main className="relative p-4 max-w-3xl mx-auto space-y-6">
           {/* Template Picker */}
           <section>
-            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">{t('labels.template')}</h2>
+            <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wide mb-3">{t('labels.template')}</h2>
             <div className="grid grid-cols-3 gap-3">
               {TEMPLATES.map(tmpl => (
                 <button
@@ -129,13 +135,13 @@ export default function LabelsPage() {
                   onClick={() => setTemplate(tmpl.id)}
                   className={`p-4 rounded-xl border-2 text-center transition-all ${
                     template === tmpl.id
-                      ? 'border-blue-500 bg-blue-50 shadow-sm'
-                      : 'border-slate-200 bg-white hover:border-slate-300'
+                      ? 'border-[#34d399] bg-[rgba(52,211,153,0.1)]'
+                      : 'border-[rgba(52,211,153,0.15)] bg-white/[0.06] hover:border-[rgba(52,211,153,0.3)]'
                   }`}
                 >
                   <div className="text-2xl mb-1">{tmpl.icon}</div>
-                  <div className="font-medium text-sm text-slate-800">{t(tmpl.nameKey)}</div>
-                  <div className="text-xs text-slate-400 mt-0.5">{t(tmpl.descKey)}</div>
+                  <div className="font-medium text-sm text-white/90">{t(tmpl.nameKey)}</div>
+                  <div className="text-xs text-white/40 mt-0.5">{t(tmpl.descKey)}</div>
                 </button>
               ))}
             </div>
@@ -143,16 +149,16 @@ export default function LabelsPage() {
 
           {/* Class Logo Upload */}
           <section>
-            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">{t('labels.class_logo') || 'Class Logo'}</h2>
+            <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wide mb-3">{t('labels.class_logo') || 'Class Logo'}</h2>
             {logoDataUrl ? (
-              <div className="flex items-center gap-4 p-3 bg-white rounded-xl border border-slate-200">
+              <div className="flex items-center gap-4 p-3 bg-white/[0.06] rounded-xl border border-[rgba(52,211,153,0.15)]">
                 <img src={logoDataUrl} alt="Class logo" className="w-16 h-16 object-contain rounded-lg" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-slate-700 font-medium">{t('labels.logo_applied') || 'Logo will appear on all labels'}</p>
+                  <p className="text-sm text-white/80 font-medium">{t('labels.logo_applied') || 'Logo will appear on all labels'}</p>
                 </div>
                 <button
                   onClick={() => setLogoDataUrl(null)}
-                  className="text-xs text-red-400 hover:text-red-600 px-2 py-1 rounded hover:bg-red-50 flex-shrink-0"
+                  className="text-xs text-red-400 hover:text-red-300 px-2 py-1 rounded hover:bg-red-500/10 flex-shrink-0"
                 >
                   {t('labels.remove') || 'Remove'}
                 </button>
@@ -170,13 +176,13 @@ export default function LabelsPage() {
                 onClick={() => logoInputRef.current?.click()}
                 className={`p-6 rounded-xl border-2 border-dashed text-center cursor-pointer transition-all ${
                   logoDragging
-                    ? 'border-blue-400 bg-blue-50'
-                    : 'border-slate-300 bg-white hover:border-blue-300 hover:bg-blue-50/50'
+                    ? 'border-[#34d399] bg-[rgba(52,211,153,0.1)]'
+                    : 'border-[rgba(52,211,153,0.25)] bg-white/[0.06] hover:border-[rgba(52,211,153,0.4)] hover:bg-white/[0.08]'
                 }`}
               >
                 <div className="text-3xl mb-2">🖼️</div>
-                <p className="text-sm text-slate-600 font-medium">{t('labels.drop_logo') || 'Drop an image here or click to browse'}</p>
-                <p className="text-xs text-slate-400 mt-1">{t('labels.logo_formats') || 'JPEG, PNG — appears on every label'}</p>
+                <p className="text-sm text-white/70 font-medium">{t('labels.drop_logo') || 'Drop an image here or click to browse'}</p>
+                <p className="text-xs text-white/40 mt-1">{t('labels.logo_formats') || 'JPEG, PNG — appears on every label'}</p>
                 <input
                   ref={logoInputRef}
                   type="file"
@@ -195,13 +201,13 @@ export default function LabelsPage() {
           {/* Student Selector */}
           <section>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">
+              <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wide">
                 {t('labels.students')} ({selected.size}/{students.length})
               </h2>
               <div className="flex gap-2">
-                <button onClick={selectAll} className="text-xs text-blue-500 hover:underline">{t('labels.select_all')}</button>
-                <span className="text-slate-300">|</span>
-                <button onClick={selectNone} className="text-xs text-slate-400 hover:underline">{t('labels.none')}</button>
+                <button onClick={selectAll} className="text-xs text-[#34d399] hover:underline">{t('labels.select_all')}</button>
+                <span className="text-white/20">|</span>
+                <button onClick={selectNone} className="text-xs text-white/40 hover:underline">{t('labels.none')}</button>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -211,8 +217,8 @@ export default function LabelsPage() {
                   onClick={() => toggleStudent(student.id)}
                   className={`flex items-center gap-2 p-2.5 rounded-xl border transition-all text-left ${
                     selected.has(student.id)
-                      ? 'border-blue-400 bg-blue-50'
-                      : 'border-slate-200 bg-white opacity-50'
+                      ? 'border-[#34d399] bg-[rgba(52,211,153,0.1)]'
+                      : 'border-[rgba(52,211,153,0.12)] bg-white/[0.04] opacity-50'
                   }`}
                 >
                   <div
@@ -225,9 +231,9 @@ export default function LabelsPage() {
                       <span className="text-slate-600">{student.name.charAt(0).toUpperCase()}</span>
                     )}
                   </div>
-                  <span className="text-sm font-medium text-slate-700 truncate">{student.name}</span>
+                  <span className="text-sm font-medium text-white/80 truncate">{student.name}</span>
                   {selected.has(student.id) && (
-                    <span className="ml-auto text-blue-500 text-xs">✓</span>
+                    <span className="ml-auto text-[#34d399] text-xs">✓</span>
                   )}
                 </button>
               ))}
@@ -237,8 +243,9 @@ export default function LabelsPage() {
           {/* Preview */}
           {selectedStudents.length > 0 && (
             <section>
-              <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">{t('labels.preview')}</h2>
-              <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+              <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wide mb-3">{t('labels.preview')}</h2>
+              {/* Paper preview surface — stays white (renders the printable sheet) */}
+              <div className="bg-white rounded-xl border border-[rgba(52,211,153,0.15)] p-6 shadow-sm">
                 <div
                   className="grid gap-4"
                   style={{ gridTemplateColumns: `repeat(${currentTemplate.cols}, 1fr)` }}
@@ -259,7 +266,7 @@ export default function LabelsPage() {
           )}
 
           {selectedStudents.length === 0 && (
-            <div className="text-center py-8 text-slate-400">
+            <div className="text-center py-8 text-white/40">
               <p>{t('labels.select_to_preview')}</p>
             </div>
           )}

@@ -203,7 +203,7 @@ export default function LanguagePresentationPage() {
   if (mode === 'present') {
     if (!includedSlides.length) {
       return (
-        <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="fixed inset-0 bg-black text-white flex items-center justify-center z-50">
           <button
             onClick={() => router.push(`/montree/dashboard/${childId}/language-presentation`)}
             className="text-emerald-400"
@@ -280,22 +280,22 @@ export default function LanguagePresentationPage() {
 
   // --- CURATE MODE ---
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div>
       <Toaster position="top-center" />
 
       {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
+      <div className="bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-2xl mb-4">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
           <Link
             href={`/montree/dashboard/${childId}`}
-            className="text-gray-500 hover:text-emerald-600 text-sm"
+            className="text-white/50 hover:text-[#34d399] text-sm"
           >
             ← {t('Back', '返回')}
           </Link>
           <div className="flex-1">
-            <h1 className="font-serif text-lg text-gray-900">
+            <h1 className="text-lg text-white/95" style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontWeight: 500 }}>
               {t('Language Presentation', '语言演示')}
-              {plan && <span className="text-gray-400 font-sans"> · {plan.child_name}</span>}
+              {plan && <span className="text-white/40 font-sans"> · {plan.child_name}</span>}
             </h1>
           </div>
           {plan && includedSlides.length > 0 && (
@@ -303,7 +303,7 @@ export default function LanguagePresentationPage() {
               onClick={() =>
                 router.push(`/montree/dashboard/${childId}/language-presentation?mode=present`)
               }
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium"
+              className="px-4 py-2 bg-[#1D6B48] hover:bg-[#236B4C] text-white rounded-lg text-sm font-medium"
             >
               🎬 {t('Present', '演示')}
             </button>
@@ -319,14 +319,14 @@ export default function LanguagePresentationPage() {
         )}
 
         {loading ? (
-          <div className="text-center py-20 text-gray-500">{t('Loading…', '加载中…')}</div>
+          <div className="text-center py-20 text-white/50">{t('Loading…', '加载中…')}</div>
         ) : !plan ? (
-          <div className="bg-white border border-stone-200 rounded-xl p-10 text-center">
+          <div className="bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-xl p-10 text-center">
             <div className="text-5xl mb-4">📖</div>
-            <h2 className="font-serif text-xl text-gray-900 mb-2">
+            <h2 className="text-xl text-white/95 mb-2" style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontWeight: 500 }}>
               {t("No presentation yet", '尚未生成演示')}
             </h2>
-            <p className="text-gray-600 text-sm mb-6 max-w-md mx-auto leading-relaxed">
+            <p className="text-white/60 text-sm mb-6 max-w-md mx-auto leading-relaxed">
               {t(
                 "Sonnet will curate this child's Language photos from February 1 to today into a presentation plan. You can then toggle, reorder, and edit before showing parents.",
                 'Sonnet 将把此孩子 2 月 1 日至今的语言区照片整理为一份演示方案，您可在展示给家长前调整幻灯片顺序与文字。'
@@ -335,7 +335,7 @@ export default function LanguagePresentationPage() {
             <button
               onClick={handleGenerate}
               disabled={generating}
-              className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-stone-300 text-white rounded-lg font-medium"
+              className="px-6 py-3 bg-[#1D6B48] hover:bg-[#236B4C] disabled:opacity-50 text-white rounded-lg font-medium"
             >
               {generating
                 ? t('Curating… (30-60s)', '整理中…（30-60 秒）')
@@ -345,24 +345,24 @@ export default function LanguagePresentationPage() {
         ) : (
           <>
             {/* Stats + regen */}
-            <div className="bg-white border border-stone-200 rounded-xl p-4 mb-4 flex items-center gap-4 flex-wrap">
-              <div className="text-sm text-gray-700">
+            <div className="bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-xl p-4 mb-4 flex items-center gap-4 flex-wrap">
+              <div className="text-sm text-white/70">
                 <span className="font-medium">{includedSlides.length}</span>
-                <span className="text-gray-500">
+                <span className="text-white/50">
                   {' '}
                   / {plan.slides.length} {t('slides included', '张幻灯片已选')}
                 </span>
-                <span className="mx-2 text-gray-300">·</span>
+                <span className="mx-2 text-white/30">·</span>
                 <span>
                   {plan.photo_count} {t('photos', '张照片')}
                 </span>
               </div>
-              {saving && <span className="text-xs text-gray-400">{t('Saving…', '保存中…')}</span>}
+              {saving && <span className="text-xs text-white/40">{t('Saving…', '保存中…')}</span>}
               <div className="flex-1" />
               <button
                 onClick={handleGenerate}
                 disabled={generating}
-                className="px-3 py-1.5 text-sm text-emerald-700 hover:bg-emerald-50 rounded-lg disabled:opacity-50"
+                className="px-3 py-1.5 text-sm text-[#34d399] hover:bg-[#34d399]/10 rounded-lg disabled:opacity-50"
               >
                 {generating ? t('Regenerating…', '重新生成中…') : t('↻ Regenerate', '↻ 重新生成')}
               </button>
@@ -431,16 +431,16 @@ function SlideRow({
   }[slide.kind];
 
   const kindColor = {
-    intro: 'bg-amber-100 text-amber-800',
-    chapter: 'bg-violet-100 text-violet-800',
-    photo: 'bg-emerald-100 text-emerald-800',
-    closing: 'bg-rose-100 text-rose-800',
+    intro: 'bg-amber-500/15 text-amber-200',
+    chapter: 'bg-violet-500/15 text-violet-200',
+    photo: 'bg-emerald-500/15 text-emerald-200',
+    closing: 'bg-rose-500/15 text-rose-200',
   }[slide.kind];
 
   return (
     <div
-      className={`bg-white border rounded-xl p-3 flex gap-3 transition-opacity ${
-        slide.included ? 'border-stone-200' : 'border-stone-200 opacity-50'
+      className={`bg-white/[0.06] border rounded-xl p-3 flex gap-3 transition-opacity ${
+        slide.included ? 'border-[rgba(52,211,153,0.15)]' : 'border-[rgba(52,211,153,0.15)] opacity-50'
       }`}
     >
       {/* Include toggle */}
@@ -449,7 +449,7 @@ function SlideRow({
           type="checkbox"
           checked={slide.included}
           onChange={onToggle}
-          className="w-5 h-5 accent-emerald-600"
+          className="w-5 h-5 accent-emerald-500"
         />
       </label>
 
@@ -464,12 +464,12 @@ function SlideRow({
         <div
           className={`w-20 h-20 rounded-lg flex items-center justify-center flex-shrink-0 ${
             slide.kind === 'intro'
-              ? 'bg-amber-50'
+              ? 'bg-amber-500/10'
               : slide.kind === 'chapter'
-              ? 'bg-violet-50'
+              ? 'bg-violet-500/10'
               : slide.kind === 'closing'
-              ? 'bg-rose-50'
-              : 'bg-stone-100'
+              ? 'bg-rose-500/10'
+              : 'bg-white/[0.04]'
           }`}
         >
           <span className="text-2xl">
@@ -485,31 +485,31 @@ function SlideRow({
             {kindLabel}
           </span>
           {slide.chapter && slide.kind === 'photo' && (
-            <span className="text-xs text-gray-500 truncate">{slide.chapter}</span>
+            <span className="text-xs text-white/50 truncate">{slide.chapter}</span>
           )}
           {slide.work_name && (
-            <span className="text-xs text-gray-400 truncate">· {slide.work_name}</span>
+            <span className="text-xs text-white/40 truncate">· {slide.work_name}</span>
           )}
         </div>
         {slide.kind === 'chapter' && (
-          <h3 className="font-serif text-base text-gray-900 mb-1">{slide.chapter}</h3>
+          <h3 className="text-base text-white/95 mb-1" style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontWeight: 500 }}>{slide.chapter}</h3>
         )}
         {isEditing ? (
           <div>
             <textarea
               value={draftCaption}
               onChange={(e) => onChangeDraft(e.target.value)}
-              className="w-full text-sm p-2 border border-emerald-300 rounded focus:outline-none focus:border-emerald-500"
+              className="w-full text-sm p-2 bg-black/30 text-white/90 border border-[rgba(52,211,153,0.3)] rounded focus:outline-none focus:border-[#34d399]"
               rows={3}
             />
             <div className="flex gap-2 mt-1">
               <button
                 onClick={onCommit}
-                className="text-xs px-2 py-1 bg-emerald-600 text-white rounded"
+                className="text-xs px-2 py-1 bg-[#1D6B48] text-white rounded hover:bg-[#236B4C]"
               >
                 {t('Save', '保存')}
               </button>
-              <button onClick={onCancelEdit} className="text-xs px-2 py-1 text-gray-500">
+              <button onClick={onCancelEdit} className="text-xs px-2 py-1 text-white/50 hover:text-white/70">
                 {t('Cancel', '取消')}
               </button>
             </div>
@@ -517,10 +517,10 @@ function SlideRow({
         ) : (
           <p
             onClick={onStartEdit}
-            className="text-sm text-gray-700 leading-snug cursor-text hover:bg-stone-50 p-1 -m-1 rounded"
+            className="text-sm text-white/75 leading-snug cursor-text hover:bg-white/[0.04] p-1 -m-1 rounded"
           >
             {slide.caption || (
-              <span className="text-gray-400 italic">{t('(click to add caption)', '（点击添加文字）')}</span>
+              <span className="text-white/40 italic">{t('(click to add caption)', '（点击添加文字）')}</span>
             )}
           </p>
         )}
@@ -530,14 +530,14 @@ function SlideRow({
       <div className="flex flex-col gap-1 flex-shrink-0">
         <button
           onClick={onUp}
-          className="text-gray-400 hover:text-emerald-600 text-sm w-6 h-6 rounded hover:bg-emerald-50"
+          className="text-white/40 hover:text-[#34d399] text-sm w-6 h-6 rounded hover:bg-[#34d399]/10"
           title={t('Move up', '上移')}
         >
           ▲
         </button>
         <button
           onClick={onDown}
-          className="text-gray-400 hover:text-emerald-600 text-sm w-6 h-6 rounded hover:bg-emerald-50"
+          className="text-white/40 hover:text-[#34d399] text-sm w-6 h-6 rounded hover:bg-[#34d399]/10"
           title={t('Move down', '下移')}
         >
           ▼

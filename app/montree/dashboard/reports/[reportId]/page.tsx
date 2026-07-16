@@ -90,7 +90,7 @@ export default function ReportViewPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a1a0f] flex items-center justify-center">
         <span className="text-4xl animate-pulse">📊</span>
       </div>
     );
@@ -98,11 +98,11 @@ export default function ReportViewPage() {
 
   if (error || !report) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a1a0f] flex items-center justify-center">
         <div className="text-center">
           <span className="text-4xl mb-4 block">❌</span>
-          <p className="text-gray-600">{error || t('reports.reportNotFound')}</p>
-          <Link href="/montree/dashboard/weekly-wrap" className="text-emerald-600 mt-4 inline-block">
+          <p className="text-white/60">{error || t('reports.reportNotFound')}</p>
+          <Link href="/montree/dashboard/weekly-wrap" className="text-[#34d399] mt-4 inline-block">
             ← {t('reports.backToReports')}
           </Link>
         </div>
@@ -114,7 +114,7 @@ export default function ReportViewPage() {
   const { overall_progress } = content.summary;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
+    <div className="min-h-screen bg-[#0a1a0f]">
       {/* Header */}
       <header className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-4 py-6">
         <div className="max-w-3xl mx-auto">
@@ -275,7 +275,7 @@ export default function ReportViewPage() {
         )}
 
         {/* Footer */}
-        <div className="text-center py-6 text-gray-400 text-sm">
+        <div className="text-center py-6 text-white/40 text-sm">
           <p>{t('reports.generated')} {formatDate(report.generated_at)}</p>
           <p className="mt-1">🌱 Montree • {t('reports.montessoriProgressTracking')}</p>
         </div>
