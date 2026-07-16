@@ -127,6 +127,58 @@ export function computeStripLayout(cardSizeCm: number = DEFAULT_STRIP_SIZE_CM): 
   };
 }
 
+// ── Word–picture matching sheet ─────────────────────────────────────────
+/** One word+picture pair's visual row height (picture size + a hair of padding). */
+export const MATCHING_ROW_CONTENT_CM = 3.2;
+export const MATCHING_PIC_SIZE_CM = 3.0;
+/** Word column width — fits the longest curriculum word without wrapping (font shrinks to fit if not). */
+export const MATCHING_WORD_COL_CM = 7.0;
+/** Picture column width — dot + internal gap + the picture itself. */
+export const MATCHING_PIC_COL_CM = 4.2;
+/** Fixed header block (title/name row + instruction row) — a KNOWN constant so the
+ *  row-pagination math never has to guess at font-metric text-box heights. */
+export const MATCHING_HEADER_CM = 3.4;
+export const MATCHING_SHEET_PAD_V_CM = 1.4;
+export const MATCHING_SHEET_PAD_H_CM = 1.8;
+/** Hard cap on rows/page — keeps the line-drawing gap generous even when more would fit. */
+export const MATCHING_MAX_ROWS_PER_PAGE = 6;
+
+export interface MatchingLayout {
+  rowsPerPage: number;
+  rowContentCm: number;
+  wordColCm: number;
+  picColCm: number;
+  picSizeCm: number;
+  /** The real, guaranteed empty gutter between the word column and the picture column
+   *  (the child draws their line across it). Never collapses to ~0 like flex:1 did. */
+  colGapCm: number;
+  /** Vertical space available for the row grid, below the fixed header + sheet padding. */
+  usableHeightCm: number;
+}
+
+/** Port of the house "compute-then-render" pattern (see computeStripLayout). Two
+ *  fixed-width grid columns + an explicit empty gutter column between them — this
+ *  is what makes the drawing gap real instead of two flex:1 columns collapsing
+ *  their content toward the shared boundary. */
+export function computeMatchingLayout(): MatchingLayout {
+  const usableWidthCm = A4_WIDTH_CM - MATCHING_SHEET_PAD_H_CM * 2;
+  const usableHeightCm = A4_HEIGHT_CM - MATCHING_SHEET_PAD_V_CM * 2 - MATCHING_HEADER_CM;
+  const rowsPerPage = Math.min(
+    MATCHING_MAX_ROWS_PER_PAGE,
+    Math.max(1, Math.floor(usableHeightCm / MATCHING_ROW_CONTENT_CM)),
+  );
+  const colGapCm = Math.min(6.0, Math.max(3.0, usableWidthCm - MATCHING_WORD_COL_CM - MATCHING_PIC_COL_CM));
+  return {
+    rowsPerPage,
+    rowContentCm: MATCHING_ROW_CONTENT_CM,
+    wordColCm: MATCHING_WORD_COL_CM,
+    picColCm: MATCHING_PIC_COL_CM,
+    picSizeCm: MATCHING_PIC_SIZE_CM,
+    colGapCm,
+    usableHeightCm,
+  };
+}
+
 // ── Bingo (picture-bingo-generator.html) ────────────────────────────────
 /** Board grid is 4×4 by default. */
 export const BINGO_GRID_SIZE = 4;
