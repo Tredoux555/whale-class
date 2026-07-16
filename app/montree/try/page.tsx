@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
+import { FUNNEL_CSS } from '@/components/montree/funnel/funnel-theme';
+import GoldenThread from '@/components/montree/funnel/GoldenThread';
+import AstraNarrator from '@/components/montree/funnel/AstraNarrator';
 
 interface TrialResponse {
   success: boolean;
@@ -43,6 +46,22 @@ interface TrialResponse {
   userId: string;
 }
 
+// Display-only slug preview (mirrors the mock's slugit — never wired to
+// anything server-side; the real slug is decided by the API).
+function slugify(v: string): string {
+  return (
+    (v || '')
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-') || 'your-school'
+  );
+}
+
+// Ceremony lines cycled while the school is being founded.
+const CERE_KEYS = ['copilot.funnel.cere.1', 'copilot.funnel.cere.2', 'copilot.funnel.cere.3'] as const;
+
 export default function TryMontreePage() {
   const router = useRouter();
   const { t, locale } = useI18n();
@@ -64,6 +83,8 @@ export default function TryMontreePage() {
   // Honeypot — a hidden field real users never fill. Bots that auto-fill every
   // input trip it; the server fakes success and writes nothing.
   const [website, setWebsite] = useState('');
+  // Ceremony line index (display only).
+  const [cereIdx, setCereIdx] = useState(0);
 
   // Read ?ref=CODE and ?founding=CODE from URL on mount. Using window.location
   // keeps us out of Suspense-boundary territory (useSearchParams in Next 13+
@@ -90,6 +111,18 @@ export default function TryMontreePage() {
       // ignore
     }
   }, []);
+
+  // Rotate the founding-ceremony lines while creating (display only).
+  useEffect(() => {
+    if (step !== 'creating') {
+      setCereIdx(0);
+      return;
+    }
+    const id = window.setInterval(() => {
+      setCereIdx((i) => (i + 1) % CERE_KEYS.length);
+    }, 1500);
+    return () => window.clearInterval(id);
+  }, [step]);
 
   const handleRoleSelect = (role: 'teacher' | 'principal') => {
     setSelectedRole(role);
@@ -195,340 +228,338 @@ export default function TryMontreePage() {
     }
   };
 
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden" style={{ background: '#06140e' }}>
-      {/* Background gradient — matches landing page */}
-      <div aria-hidden="true" style={{
-        position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
-        background: `
-          radial-gradient(ellipse 1000px 800px at 78% 10%, rgba(39,129,90,0.55), rgba(39,129,90,0) 55%),
-          radial-gradient(ellipse 600px 500px at 72% 16%, rgba(130,217,174,0.28), rgba(130,217,174,0) 60%),
-          linear-gradient(155deg, #0c2419 0%, #0a1f16 38%, #081a12 70%, #06140e 100%)
-        `,
-      }} />
+  // ── Narrator / thread derivation (presentational) ──────────────────────────
+  // On the arrival screen Astra hosts; once a role is chosen the narrator takes
+  // that role's persona (parent → teacher signup → Guru).
+  const codeRole = responseData?.role ?? selectedRole;
+  const narratorJourney: 'principal' | 'teacher' =
+    step === 'role'
+      ? 'principal'
+      : step === 'code'
+        ? codeRole === 'principal'
+          ? 'principal'
+          : 'teacher'
+        : selectedRole === 'principal'
+          ? 'principal'
+          : 'teacher';
+  const screenKey = step; // 'role' | 'details' | 'creating' | 'code'
+  const threadStep = step === 'role' ? 1 : step === 'code' ? 3 : 2;
+  const isPrincipalDetails = selectedRole === 'principal';
+  const backDisabled = step === 'creating' || step === 'code';
 
-      {/* Language toggle — top right (clears the status bar on edge-to-edge iPhones) */}
-      <div className="absolute right-4 z-20" style={{ top: 'max(16px, env(safe-area-inset-top, 16px))' }}>
+  return (
+    <div className="fn-page">
+      <style dangerouslySetInnerHTML={{ __html: FUNNEL_CSS }} />
+
+      {/* Topbar — M artwork + wordmark + EN toggle (preserved) */}
+      <div className="fn-topbar">
+        <a className="fn-wordmark" href="/montree">
+          <picture>
+            <source srcSet="/brand/m-mark-transparent.webp" type="image/webp" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/m-mark.png" alt="Montree" width={30} height={25} />
+          </picture>
+          <span>{t('app.name')}</span>
+        </a>
         <LanguageToggle className="bg-white/10 hover:bg-white/20 text-white" />
       </div>
 
-      <div className="relative z-10 w-full max-w-md">
-        {/* Back link */}
-        <a
-          href="/montree"
-          onClick={handleBackClick}
-          className={`inline-flex items-center gap-2 hover:text-white mb-8 transition-colors ${
-            step === 'creating' || step === 'code' ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
-          }`}
-          style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.875rem', letterSpacing: '0.01em' }}
-        >
-          <span>←</span> {t('common.back')}
-        </a>
+      {/* Golden thread */}
+      <GoldenThread step={threadStep} />
 
-        {/* Founding 100 banner — shown on every step if a ?founding= code was
-            detected. Takes precedence over the referral banner (a valid founding
-            code makes referral irrelevant server-side — amendment A6). */}
-        {foundingCode && step !== 'code' && (
-          <div className="mb-6 px-4 py-3 rounded-xl flex items-center gap-3" style={{
-            background: 'rgba(232,201,106,0.12)',
-            border: '1px solid rgba(232,201,106,0.4)',
-          }}>
-            <span style={{ color: 'rgba(232,201,106,0.9)', fontSize: '1.2rem' }}>🚀</span>
-            <div className="flex-1 min-w-0">
-              <p className="text-white text-sm font-medium">Founding 100</p>
-              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem' }}>
-                One month of Premium free, then Premium locked at $3/student for life.
-              </p>
-            </div>
-          </div>
-        )}
+      <div className="fn-hall">
+        {/* The narrator — top-left, every screen */}
+        <AstraNarrator screenKey={screenKey} journey={narratorJourney} authed={false} />
 
-        {/* Referral code banner — shown on every step if a ?ref= code was
-            detected AND no founding code is present (founding wins). */}
-        {referralCode && !foundingCode && step !== 'code' && (
-          <div className="mb-6 px-4 py-3 rounded-xl flex items-center gap-3" style={{
-            background: 'rgba(232,201,106,0.10)',
-            border: '1px solid rgba(232,201,106,0.32)',
-          }}>
-            <span style={{ color: 'rgba(232,201,106,0.85)', fontSize: '1.1rem' }}>🎟️</span>
-            <div className="flex-1 min-w-0">
-              <p className="text-white text-sm">
-                Referral code: <code className="font-mono font-medium" style={{ color: 'rgba(232,201,106,0.95)' }}>{referralCode}</code>
-              </p>
-              <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.78rem' }}>
-                You&apos;ll be linked to your referrer when your school is created.
-              </p>
-            </div>
-          </div>
-        )}
+        {/* The stage */}
+        <div className="fn-stage-wrap">
+          <div className="fn-screen">
+            {/* Back link — preserves the original back-block behaviour */}
+            <a
+              href="/montree"
+              onClick={handleBackClick}
+              className={`fn-backlink${backDisabled ? ' disabled' : ''}`}
+              aria-disabled={backDisabled}
+            >
+              ← {t('common.back')}
+            </a>
 
-        {/* Step 1: Role Selection */}
-        {/*
-         * Phase 5 polish: when arriving via ?ref=CODE, almost all redeemers
-         * are principals/owners signing up their school. We reorder the
-         * picker so Principal is the prominent option and Teacher drops to a
-         * smaller "I'm actually a teacher" link below. Without a referral
-         * code, both options stay equally weighted in their original order.
-         */}
-        {step === 'role' && (
-          <div className="text-center">
-            <h1 className="text-3xl font-light text-white mb-10">
-              {t('signup.iAmA')}
-            </h1>
-
-            <div className="flex flex-col gap-4">
-              {/* Primary CTA: principal first when redeeming a referral code */}
-              <button
-                onClick={() => handleRoleSelect(referralCode ? 'principal' : 'teacher')}
-                className="w-full px-6 py-5 rounded-2xl text-left transition-all hover:scale-[1.01] active:scale-[0.99]"
+            {/* Founding 100 banner — every step except code. Takes precedence
+                over the referral banner (amendment A6). */}
+            {foundingCode && step !== 'code' && (
+              <div
                 style={{
-                  background: referralCode
-                    ? 'linear-gradient(135deg, rgba(60,45,10,0.45) 0%, rgba(12,20,10,0.6) 100%)'
-                    : 'linear-gradient(135deg, rgba(39,129,90,0.32) 0%, rgba(12,36,25,0.55) 100%)',
-                  border: referralCode
-                    ? '1px solid rgba(232,201,106,0.18)'
-                    : '1px solid rgba(130,217,174,0.22)',
-                  boxShadow: referralCode
-                    ? '0 1px 0 rgba(232,201,106,0.10) inset, 0 12px 32px -12px rgba(6,20,14,0.8)'
-                    : '0 1px 0 rgba(130,217,174,0.14) inset, 0 12px 32px -12px rgba(6,20,14,0.8)',
+                  marginBottom: 22,
+                  padding: '13px 16px',
+                  borderRadius: 14,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  background: 'rgba(232,201,106,0.10)',
+                  border: '1px solid rgba(232,201,106,0.35)',
                 }}
               >
-                <span className="text-lg font-medium text-white block">
-                  {referralCode ? `👔 ${t('signup.principal')}` : `👩‍🏫 ${t('signup.teacher')}`}
-                </span>
-                <span
-                  className="text-sm font-normal mt-1 block"
-                  style={{ color: referralCode ? 'rgba(232,201,106,0.5)' : 'rgba(130,217,174,0.55)' }}
-                >
-                  {referralCode ? t('signup.principalDesc') : t('signup.teacherDesc')}
-                </span>
-              </button>
-
-              {/* Secondary CTA: same role-pair, opposite of the primary */}
-              <button
-                onClick={() => handleRoleSelect(referralCode ? 'teacher' : 'principal')}
-                className="w-full px-6 py-5 rounded-2xl text-left transition-all hover:scale-[1.01] active:scale-[0.99]"
-                style={{
-                  background: referralCode
-                    ? 'linear-gradient(135deg, rgba(39,129,90,0.32) 0%, rgba(12,36,25,0.55) 100%)'
-                    : 'linear-gradient(135deg, rgba(60,45,10,0.45) 0%, rgba(12,20,10,0.6) 100%)',
-                  border: referralCode
-                    ? '1px solid rgba(130,217,174,0.22)'
-                    : '1px solid rgba(232,201,106,0.18)',
-                  boxShadow: referralCode
-                    ? '0 1px 0 rgba(130,217,174,0.14) inset, 0 12px 32px -12px rgba(6,20,14,0.8)'
-                    : '0 1px 0 rgba(232,201,106,0.10) inset, 0 12px 32px -12px rgba(6,20,14,0.8)',
-                }}
-              >
-                <span className="text-lg font-medium text-white block">
-                  {referralCode ? `👩‍🏫 ${t('signup.teacher')}` : `👔 ${t('signup.principal')}`}
-                </span>
-                <span
-                  className="text-sm font-normal mt-1 block"
-                  style={{ color: referralCode ? 'rgba(130,217,174,0.55)' : 'rgba(232,201,106,0.5)' }}
-                >
-                  {referralCode ? t('signup.teacherDesc') : t('signup.principalDesc')}
-                </span>
-              </button>
-
-              {/* Parent — a friendlier entry label that drops straight into the
-                  IDENTICAL teacher signup (role 'teacher', same fields, clean
-                  school app). No parent-specific handling anywhere — that's what
-                  keeps it a "hack": they get the full school product for their
-                  one child at the same $7/student schools pay. Always present
-                  (not part of the referral teacher/principal swap above). */}
-              <button
-                onClick={() => handleRoleSelect('teacher')}
-                className="w-full px-6 py-5 rounded-2xl text-left transition-all hover:scale-[1.01] active:scale-[0.99]"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(45,118,128,0.30) 0%, rgba(10,28,28,0.55) 100%)',
-                  border: '1px solid rgba(125,205,217,0.22)',
-                  boxShadow: '0 1px 0 rgba(125,205,217,0.14) inset, 0 12px 32px -12px rgba(6,20,14,0.8)',
-                }}
-              >
-                <span className="text-lg font-medium text-white block">
-                  🏡 {t('signup.homeParent')}
-                </span>
-                <span
-                  className="text-sm font-normal mt-1 block"
-                  style={{ color: 'rgba(150,208,217,0.6)' }}
-                >
-                  {t('signup.homeParentDesc')}
-                </span>
-              </button>
-
-            </div>
-          </div>
-        )}
-
-        {/* Step 2: Details */}
-        {step === 'details' && selectedRole && (
-          <div className="text-center">
-            <h1 className="text-3xl font-light text-white mb-2">
-              {t('signup.quickDetails')}
-            </h1>
-            <p className="text-slate-400 text-sm mb-8">
-              {t('signup.soWeKnow')}
-            </p>
-
-            <div className="flex flex-col gap-4 text-left">
-              <div>
-                <label className="block text-sm mb-2 text-emerald-300/70">{t('signup.yourName')}</label>
-                <input
-                  type="text"
-                  value={userName}
-                  onChange={(e) => setUserName(e.target.value)}
-                  placeholder={selectedRole === 'principal' ? t('signup.namePlaceholder.principal') : t('signup.namePlaceholder.teacher')}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
-                  autoFocus
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm mb-2 text-emerald-300/70">
-                  {selectedRole === 'principal' ? t('signup.schoolName') : t('signup.schoolClassroomName')}
-                </label>
-                <input
-                  type="text"
-                  value={schoolName}
-                  onChange={(e) => setSchoolName(e.target.value)}
-                  placeholder={selectedRole === 'principal' ? t('signup.schoolPlaceholder.principal') : t('signup.schoolPlaceholder.teacher')}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
-                  onKeyDown={(e) => e.key === 'Enter' && handleDetailsSubmit()}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm mb-2 text-emerald-300/70">Email</label>
-                <input
-                  type="email"
-                  value={userEmail}
-                  onChange={(e) => setUserEmail(e.target.value)}
-                  placeholder="e.g. sarah@school.com"
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
-                  onKeyDown={(e) => e.key === 'Enter' && handleDetailsSubmit()}
-                />
-                <p className="text-xs text-slate-400 mt-1">So we can help you get started and recover your code</p>
-              </div>
-
-              {/* Honeypot — hidden from real users, a spam trap for bots that
-                  auto-fill every field. Kept out of the tab order + hidden from
-                  assistive tech. If filled, the server fakes success. */}
-              <input
-                type="text"
-                name="website"
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}
-                tabIndex={-1}
-                autoComplete="off"
-                aria-hidden="true"
-                style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
-              />
-
-              {error && (
-                <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-xl text-red-300 text-sm text-center">
-                  {error}
+                <span style={{ color: 'rgba(232,201,106,0.9)', fontSize: '1.2rem' }}>🚀</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ color: 'rgba(255,250,240,0.92)', fontSize: 14, fontWeight: 500 }}>
+                    Founding 100
+                  </p>
+                  <p style={{ color: 'rgba(255,250,240,0.58)', fontSize: '0.8rem' }}>
+                    One month of Premium free, then Premium locked at $3/student for life.
+                  </p>
                 </div>
-              )}
-
-              <button
-                onClick={handleDetailsSubmit}
-                className="w-full mt-2 py-4 font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-emerald-500/30"
-              >
-                {t('signup.getMyCode')}
-              </button>
-
-              <button
-                onClick={() => {
-                  setStep('role');
-                  setSelectedRole(null);
-                  setError('');
-                }}
-                className="text-slate-500 hover:text-slate-300 text-sm transition-colors"
-              >
-                {t('signup.backToRoles')}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 3: Creating (Loading) */}
-        {step === 'creating' && (
-          <div className="text-center py-16">
-            <div className="mb-8 flex justify-center">
-              <div className="w-16 h-16 bg-emerald-500/30 rounded-full flex items-center justify-center animate-pulse">
-                <div className="w-12 h-12 bg-emerald-500/50 rounded-full animate-pulse" />
               </div>
-            </div>
+            )}
 
-            <h2 className="text-2xl font-semibold text-white mb-3">
-              {t('signup.settingUp')}
-            </h2>
+            {/* Referral banner — every step except code, and only when no
+                founding code is present (founding wins). */}
+            {referralCode && !foundingCode && step !== 'code' && (
+              <div
+                style={{
+                  marginBottom: 22,
+                  padding: '13px 16px',
+                  borderRadius: 14,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  background: 'rgba(232,201,106,0.08)',
+                  border: '1px solid rgba(232,201,106,0.28)',
+                }}
+              >
+                <span style={{ color: 'rgba(232,201,106,0.85)', fontSize: '1.1rem' }}>🎟️</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ color: 'rgba(255,250,240,0.92)', fontSize: 14 }}>
+                    Referral code:{' '}
+                    <code className="font-mono" style={{ color: 'rgba(232,201,106,0.95)', fontWeight: 500 }}>
+                      {referralCode}
+                    </code>
+                  </p>
+                  <p style={{ color: 'rgba(255,250,240,0.5)', fontSize: '0.78rem' }}>
+                    You&apos;ll be linked to your referrer when your school is created.
+                  </p>
+                </div>
+              </div>
+            )}
 
-            <p className="text-slate-400">
-              {t('signup.justAMoment')}
-            </p>
+            {/* ── S1 · Role ── */}
+            {step === 'role' && (
+              <div className="center" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                <div className="fn-hero-m">
+                  <picture>
+                    <source srcSet="/brand/m-mark-transparent.webp" type="image/webp" />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/brand/m-mark.png" alt="Montree" width={188} height={155} />
+                  </picture>
+                </div>
+                <h1 className="fn-h1">{t('copilot.funnel.welcome')}</h1>
 
-            {error && (
-              <div className="mt-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl max-w-lg mx-auto">
-                <pre className="text-red-400 text-xs whitespace-pre-wrap break-all font-mono">{error}</pre>
-                <button
-                  onClick={() => {
-                    setError('');
-                    setStep('role');
-                    setSelectedRole(null);
-                  }}
-                  className="mt-3 text-red-300 hover:text-red-200 text-sm underline"
-                >
-                  {t('common.tryAgain')}
+                {/*
+                 * Referral swap: when arriving via ?ref=CODE almost all
+                 * redeemers are principals/owners, so the gold Principal card
+                 * leads (order: principal · teacher · parent). Without a code
+                 * the natural order (teacher · principal · parent) stands.
+                 * Each card triggers its OWN role — mapping is unchanged;
+                 * only visual order shifts (the swap the outreach links rely on).
+                 */}
+                <div className="fn-roles">
+                  {referralCode ? (
+                    <>
+                      <PrincipalCard onSelect={() => handleRoleSelect('principal')} t={t} />
+                      <TeacherCard onSelect={() => handleRoleSelect('teacher')} t={t} />
+                      <ParentCard onSelect={() => handleRoleSelect('teacher')} t={t} />
+                    </>
+                  ) : (
+                    <>
+                      <TeacherCard onSelect={() => handleRoleSelect('teacher')} t={t} />
+                      <PrincipalCard onSelect={() => handleRoleSelect('principal')} t={t} />
+                      <ParentCard onSelect={() => handleRoleSelect('teacher')} t={t} />
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ── S2 · Details ── */}
+            {step === 'details' && selectedRole && (
+              <div style={{ maxWidth: 560 }}>
+                <h2 className="fn-h2" style={{ marginBottom: 32 }}>
+                  {isPrincipalDetails
+                    ? t('copilot.funnel.details.heading.principal')
+                    : t('copilot.funnel.details.heading.teacher')}
+                </h2>
+
+                <div className="fn-field">
+                  <label>{t('signup.yourName')}</label>
+                  <input
+                    type="text"
+                    className="fn-input"
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)}
+                    placeholder={isPrincipalDetails ? t('signup.namePlaceholder.principal') : t('signup.namePlaceholder.teacher')}
+                    autoFocus
+                  />
+                </div>
+
+                <div className="fn-field">
+                  <label>{isPrincipalDetails ? t('signup.schoolName') : t('signup.schoolClassroomName')}</label>
+                  <input
+                    type="text"
+                    className="fn-input"
+                    value={schoolName}
+                    onChange={(e) => setSchoolName(e.target.value)}
+                    placeholder={isPrincipalDetails ? t('signup.schoolPlaceholder.principal') : t('signup.schoolPlaceholder.teacher')}
+                    onKeyDown={(e) => e.key === 'Enter' && handleDetailsSubmit()}
+                  />
+                  {/* Display-only slug preview (not wired to anything). */}
+                  <div className="fn-slug">
+                    montree.xyz/<b>{slugify(schoolName)}</b>
+                  </div>
+                </div>
+
+                <div className="fn-field">
+                  <label>
+                    {t('copilot.funnel.email')} <i>({t('copilot.funnel.optional')})</i>
+                  </label>
+                  <input
+                    type="email"
+                    className="fn-input"
+                    value={userEmail}
+                    onChange={(e) => setUserEmail(e.target.value)}
+                    placeholder="you@school.org"
+                    onKeyDown={(e) => e.key === 'Enter' && handleDetailsSubmit()}
+                  />
+                </div>
+
+                {/* Honeypot — hidden from real users, a spam trap for bots that
+                    auto-fill every field. Kept out of the tab order + hidden from
+                    assistive tech. If filled, the server fakes success. */}
+                <input
+                  type="text"
+                  name="website"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
+                />
+
+                {error && (
+                  <div className="fn-error" style={{ marginBottom: 18 }}>
+                    <pre>{error}</pre>
+                  </div>
+                )}
+
+                <button className="fn-pill" onClick={handleDetailsSubmit} style={{ marginTop: 6 }}>
+                  {isPrincipalDetails
+                    ? t('copilot.funnel.details.cta.principal')
+                    : t('copilot.funnel.details.cta.teacher')}{' '}
+                  →
                 </button>
               </div>
             )}
-          </div>
-        )}
 
-        {/* Step 4: Code Reveal */}
-        {step === 'code' && responseData && (
-          <div className="text-center">
-            <div className="mb-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-500/20 rounded-full mb-4">
-                <span className="text-3xl">✨</span>
+            {/* ── S3 · Creating (the ceremony) ── */}
+            {step === 'creating' && (
+              <div className="center" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                <div className="fn-cere-m">
+                  <div className="fn-cere-ring" />
+                  <div className="fn-cere-ring r2" />
+                  <picture>
+                    <source srcSet="/brand/m-mark-transparent.webp" type="image/webp" />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/brand/m-mark.png" alt="Montree" width={170} height={140} />
+                  </picture>
+                </div>
+                <div className="fn-cere-line">{t(CERE_KEYS[cereIdx])}</div>
+
+                {error && (
+                  <div className="fn-error" style={{ maxWidth: 520 }}>
+                    <pre>{error}</pre>
+                    <button
+                      onClick={() => {
+                        setError('');
+                        setStep('role');
+                        setSelectedRole(null);
+                      }}
+                    >
+                      {t('common.tryAgain')}
+                    </button>
+                  </div>
+                )}
               </div>
+            )}
 
-              <h2 className="text-2xl font-semibold text-white mb-2">
-                {t('signup.thisIsYourCode')}
-              </h2>
+            {/* ── S4 · Code (the key) ── */}
+            {step === 'code' && responseData && (
+              <div className="center" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                <h1 className="fn-h1" style={{ fontSize: '2.6rem' }}>
+                  {codeRole === 'principal'
+                    ? t('copilot.funnel.code.heading.principal')
+                    : t('copilot.funnel.code.heading.teacher')}
+                </h1>
 
-              <p className="text-slate-400 text-sm">
-                {t('signup.saveItSafe')}
-              </p>
-            </div>
-
-            {/* Code Display */}
-            <div className="mb-8 p-8 bg-gradient-to-br from-emerald-500/20 to-teal-500/10 border border-emerald-500/30 rounded-2xl">
-              <div className="font-mono text-5xl font-bold text-emerald-300 tracking-wider">
-                {code.toUpperCase()}
+                <div className="fn-keyplate">
+                  <div className="fn-eyebrow">
+                    {codeRole === 'principal'
+                      ? t('copilot.funnel.code.eyebrow.principal')
+                      : t('copilot.funnel.code.eyebrow.teacher')}
+                  </div>
+                  <div className="fn-thekey">{code.toUpperCase()}</div>
+                  <div className="fn-keybtns">
+                    <button className="fn-pill gold" onClick={handleCopyCode}>
+                      {copied ? t('signup.copied') : t('signup.copyCode')}
+                    </button>
+                    <button className="fn-pill" onClick={handleTakeMeIn}>
+                      {codeRole === 'principal'
+                        ? t('copilot.funnel.code.enter.principal')
+                        : t('copilot.funnel.code.enter.teacher')}{' '}
+                      →
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-
-            {/* Copy Button */}
-            <button
-              onClick={handleCopyCode}
-              className="w-full mb-4 px-4 py-3 bg-slate-800/60 border border-slate-700 text-slate-300 rounded-xl hover:bg-slate-700/60 hover:border-slate-600 transition-all text-sm font-medium"
-            >
-              {copied ? t('signup.copied') : t('signup.copyCode')}
-            </button>
-
-            {/* Take me in button */}
-            <button
-              onClick={handleTakeMeIn}
-              className="w-full py-4 font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-emerald-500/30"
-            >
-              {t('signup.takeMeIn')}
-            </button>
+            )}
           </div>
-        )}
+        </div>
       </div>
+
+      <div className="fn-foot">Montree · montree.xyz</div>
     </div>
+  );
+}
+
+// ── Role cards (presentational; each triggers its own role) ──────────────────
+type T = ReturnType<typeof useI18n>['t'];
+
+function TeacherCard({ onSelect, t }: { onSelect: () => void; t: T }) {
+  return (
+    <button type="button" className="fn-rcard" onClick={onSelect}>
+      <span className="fn-ric">👩‍🏫</span>
+      <h3>{t('copilot.funnel.role.teacher.title')}</h3>
+      <p>{t('copilot.funnel.role.teacher.desc')}</p>
+    </button>
+  );
+}
+
+function PrincipalCard({ onSelect, t }: { onSelect: () => void; t: T }) {
+  return (
+    <button type="button" className="fn-rcard goldcard" onClick={onSelect}>
+      <span className="fn-rbadge">{t('copilot.funnel.role.badge')}</span>
+      <span className="fn-ric">🎓</span>
+      <h3>{t('copilot.funnel.role.principal.title')}</h3>
+      <p>{t('copilot.funnel.role.principal.desc')}</p>
+      <span className="fn-rgo">{t('copilot.funnel.role.begin')} →</span>
+    </button>
+  );
+}
+
+function ParentCard({ onSelect, t }: { onSelect: () => void; t: T }) {
+  return (
+    <button type="button" className="fn-rcard" onClick={onSelect}>
+      <span className="fn-ric">🏡</span>
+      <h3>{t('copilot.funnel.role.parent.title')}</h3>
+      <p>{t('copilot.funnel.role.parent.desc')}</p>
+    </button>
   );
 }

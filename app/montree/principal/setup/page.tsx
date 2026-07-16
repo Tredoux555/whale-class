@@ -1,16 +1,18 @@
 // /montree/principal/setup/page.tsx
-// Session 105: Principal Setup - Add classrooms & teachers (beautiful green theme)
+// Lanternlight Ceremony — the founding procession's back half (steps 4–6):
+//   classrooms → teachers → SSE founding overlay → the handoff success.
+// Reskin only. Every API call, the SSE reader/parser, the localStorage guard,
+// and the per-teacher share/copy handlers behave byte-identically to the old
+// green-theme page — the difference is skin + narrator (Astra top-left).
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
-import PrincipalSetupGuide from '@/components/montree/onboarding/PrincipalSetupGuide';
-import TracyAvatar from '@/components/montree/admin/TracyAvatar';
-import MontreeLogo from '@/components/montree/MonteeLogo';
 import LanguageToggle from '@/components/montree/LanguageToggle';
-
+import { FT, FUNNEL_CSS } from '@/components/montree/funnel/funnel-theme';
+import GoldenThread from '@/components/montree/funnel/GoldenThread';
+import AstraNarrator from '@/components/montree/funnel/AstraNarrator';
 
 const EMOJI_OPTIONS = ['🌳', '🐼', '🦁', '🐘', '🦋', '🌟', '🌈', '🌻', '🍎', '🎨', '📚', '🎵'];
 const COLOR_OPTIONS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
@@ -19,15 +21,70 @@ type Teacher = { id: string; name: string; email: string };
 type Classroom = { id: string; name: string; icon: string; color: string; teachers: Teacher[] };
 type CreatedTeacher = { id: string; name: string; login_code: string; classroom_name: string; classroom_icon: string };
 
-// Curated setup steps — shown one at a time with smooth transitions
-const getSetupSteps = (t: any) => [
-  { emoji: '🏫', text: t('principal.setup.step.classrooms') },
-  { emoji: '📚', text: t('principal.setup.step.curriculum') },
-  { emoji: '🌱', text: t('principal.setup.step.activities') },
-  { emoji: '👩‍🏫', text: t('principal.setup.step.teachers') },
-  { emoji: '🔑', text: t('principal.setup.step.codes') },
-  { emoji: '✨', text: t('principal.setup.step.finishing') },
+// The founding ceremony's step lines, shown one at a time during the SSE.
+// SIX entries BY DESIGN: the SSE step ticker + server-override index math is
+// byte-identical to the original green page — Math.min(prev+1, len-2) caps the
+// cosmetic ticker, completion sets len-1, and the server drives 'curriculum'→2,
+// 'teachers'/'curriculum_done'→3. The two curriculum ticks (1,2) share the same
+// "stocking" line while the real progress bar (current/total) fills.
+const getSetupSteps = (t: any): string[] => [
+  t('copilot.funnel.setup.building'),
+  t('copilot.funnel.setup.stocking'),
+  t('copilot.funnel.setup.stocking'),
+  t('copilot.funnel.setup.teachers'),
+  t('copilot.funnel.setup.keys'),
+  t('copilot.funnel.setup.finishing'),
 ];
+
+// Setup-only screen styles (classrooms / teachers / handoff) transcribed from
+// the approved mock. Kept page-local (Build 1's shared funnel-theme.ts is left
+// untouched — no fork, no restyle); concatenated into the single style
+// injection alongside FUNNEL_CSS. All classes fn- prefixed to match convention.
+const SETUP_CSS = `
+.fn-croom{display:flex; align-items:center; gap:15px; background:${FT.glass}; border:1px solid ${FT.glassEdge}; border-radius:16px; padding:15px 17px; margin-bottom:13px}
+.fn-cemoji{width:50px; height:50px; border-radius:13px; flex:none; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.09); display:flex; align-items:center; justify-content:center; font-size:1.5rem; cursor:pointer; transition:transform .15s ease; color:inherit}
+.fn-cemoji:hover{transform:scale(1.07)}
+.fn-cname{flex:1; min-width:0}
+.fn-croom .fn-input{padding:11px 14px; font-size:0.96rem}
+.fn-sws{display:flex; gap:8px}
+.fn-sw{width:21px; height:21px; border-radius:50%; cursor:pointer; border:2px solid transparent; transition:all .14s ease; padding:0}
+.fn-sw.sel{border-color:${FT.gold}; box-shadow:0 0 10px rgba(232,201,106,0.4)}
+.fn-remove{width:30px; height:30px; border-radius:50%; flex:none; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.10); color:rgba(255,250,240,0.45); font-size:1.05rem; line-height:1; display:flex; align-items:center; justify-content:center; transition:all .15s ease}
+.fn-remove:hover{background:rgba(239,68,68,0.18); color:rgba(252,165,165,0.9); border-color:rgba(239,68,68,0.3)}
+.fn-addrow{width:100%; border:1px dashed rgba(255,255,255,0.17); border-radius:16px; padding:15px; text-align:center; color:${FT.whisper}; font-size:0.9rem; cursor:pointer; transition:all .16s ease; margin-bottom:13px; background:none}
+.fn-addrow:hover{border-color:rgba(52,211,153,0.4); color:${FT.voice}}
+.fn-tgroup{background:${FT.glass}; border:1px solid ${FT.glassEdge}; border-radius:16px; padding:18px; margin-bottom:14px}
+.fn-ghead{display:flex; align-items:center; gap:9px; font-family:${FT.serif}; font-size:1.06rem; margin-bottom:13px; color:${FT.voice}}
+.fn-trow{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; align-items:center}
+.fn-trow .fn-input{padding:12px 14px; font-size:0.95rem}
+.fn-temail{display:flex; gap:8px; align-items:center; min-width:0}
+.fn-temail .fn-input{flex:1; min-width:0}
+.fn-addteacher{font-size:0.84rem; color:${FT.emeraldHi}; cursor:pointer; display:inline-block; margin-top:2px; background:none; border:none; padding:0}
+.fn-formfoot{display:flex; align-items:center; justify-content:flex-end; margin-top:8px}
+.fn-bloom{width:76px; height:76px; border-radius:50%; border:2px solid ${FT.gold}; margin:20px auto 26px; display:flex; align-items:center; justify-content:center; color:${FT.gold}; font-size:1.9rem; box-shadow:0 0 60px -8px rgba(232,201,106,0.5); animation:fnBloomIn 1.5s ease both}
+@keyframes fnBloomIn{0%{transform:scale(0.6); opacity:0; box-shadow:0 0 0 0 rgba(232,201,106,0)}55%{transform:scale(1.06); opacity:1; box-shadow:0 0 80px 0 rgba(232,201,106,0.55)}100%{transform:scale(1); box-shadow:0 0 60px -8px rgba(232,201,106,0.5)}}
+.fn-keycard{display:flex; align-items:center; gap:16px; background:${FT.glass}; border:1px solid ${FT.glassEdge}; border-radius:18px; padding:18px 20px; margin-bottom:14px; text-align:left; flex-wrap:wrap}
+.fn-kemoji{width:52px; height:52px; border-radius:14px; flex:none; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.09); display:flex; align-items:center; justify-content:center; font-size:1.5rem}
+.fn-kwho{flex:1; min-width:0}
+.fn-kname{font-family:${FT.serif}; font-size:1.12rem; color:${FT.voice}}
+.fn-kroom{font-size:0.8rem; color:${FT.whisper}; margin-top:3px}
+.fn-kcode{font-family:ui-monospace,Menlo,monospace; font-weight:600; font-size:1.2rem; letter-spacing:0.2em; color:${FT.gold}; background:rgba(0,0,0,0.4); border:1px solid rgba(232,201,106,0.35); border-radius:11px; padding:11px 16px 11px 19px; white-space:nowrap}
+.fn-kbtn{border-radius:999px; padding:10px 17px; font-size:0.85rem; font-weight:600; background:rgba(255,255,255,0.06); color:${FT.voice}; border:1px solid rgba(255,255,255,0.13); transition:filter .15s ease}
+.fn-kbtn:hover{filter:brightness(1.12)}
+.fn-kbtn.send{background:${FT.action}; border-color:rgba(130,217,174,0.2); color:#fff}
+.fn-kbtn.done{background:${FT.emerald}; border-color:transparent; color:#fff}
+.fn-groupcta{width:100%; margin-top:6px; border-radius:15px; padding:16px; font-size:0.95rem; font-weight:600; background:rgba(232,201,106,0.08); border:1px solid rgba(232,201,106,0.4); color:${FT.gold}; transition:all .16s ease}
+.fn-groupcta:hover{background:rgba(232,201,106,0.14)}
+.fn-groupcta.done{background:rgba(52,211,153,0.16); border-color:rgba(52,211,153,0.4); color:${FT.emeraldHi}}
+.fn-walkin{margin-top:30px; text-align:center}
+.fn-warn{width:100%; background:rgba(239,68,68,0.10); border:1px solid rgba(239,68,68,0.3); border-radius:16px; padding:16px 18px; margin-bottom:18px; text-align:left}
+.fn-warn h3{color:rgba(252,165,165,0.95); font-family:${FT.serif}; font-weight:500; font-size:1.05rem; margin-bottom:8px}
+.fn-warn ul{list-style:none; color:rgba(252,165,165,0.82); font-size:0.85rem; line-height:1.6; margin:0; padding:0}
+.fn-warn p{color:rgba(252,165,165,0.6); font-size:0.78rem; margin-top:8px}
+@media (max-width:1040px){
+  .fn-trow{grid-template-columns:1fr}
+}
+`;
 
 export default function PrincipalSetupPage() {
   const router = useRouter();
@@ -36,21 +93,11 @@ export default function PrincipalSetupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [school, setSchool] = useState<any>(null);
-  const [principalName, setPrincipalName] = useState('');
-  const [showWelcome, setShowWelcome] = useState(false);
 
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [createdTeachers, setCreatedTeachers] = useState<CreatedTeacher[]>([]);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
-
-  // Principal setup guide state — only show once per device
-  const [showSetupGuide, setShowSetupGuide] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return !localStorage.getItem('montree_guide_principal_done');
-    }
-    return true;
-  });
 
   useEffect(() => {
     const stored = localStorage.getItem('montree_school');
@@ -60,18 +107,6 @@ export default function PrincipalSetupPage() {
       router.push('/montree/principal/login');
       return;
     }
-
-    // Get principal name
-    const principalData = localStorage.getItem('montree_principal');
-    if (principalData) {
-      const p = JSON.parse(principalData);
-      setPrincipalName(p.name || '');
-    }
-
-    // Show welcome overlay only once per device
-    if (!localStorage.getItem('montree_principal_welcome_done')) {
-      setShowWelcome(true);
-    }
   }, [router]);
 
   const addClassroom = () => {
@@ -79,7 +114,7 @@ export default function PrincipalSetupPage() {
     const availableEmoji = EMOJI_OPTIONS.find(e => !usedEmojis.includes(e)) || '📚';
     const usedColors = classrooms.map(c => c.color);
     const availableColor = COLOR_OPTIONS.find(c => !usedColors.includes(c)) || '#10b981';
-    
+
     setClassrooms([...classrooms, {
       id: crypto.randomUUID(),
       name: '',
@@ -261,504 +296,280 @@ export default function PrincipalSetupPage() {
 
   if (!school) return null;
 
-  const dismissWelcome = () => {
-    setShowWelcome(false);
-    localStorage.setItem('montree_principal_welcome_done', '1');
-  };
+  // ── Narrator / thread derivation (presentational) ──────────────────────────
+  // Astra walks the principal through the whole back half. The founding overlay
+  // is a stage screen (loading===true), NOT a fixed takeover — the narrator
+  // stays lit on the left throughout (matches the mock).
+  const isFounding = loading;
+  const screenKey = isFounding
+    ? 'founding'
+    : step === 1
+      ? 'classrooms'
+      : step === 2
+        ? 'teachers'
+        : 'handoff';
+  const threadStep = step === 3 ? 6 : isFounding || step === 2 ? 5 : 4;
 
   return (
-    <>
-    {/* HIDDEN: onboarding guides disabled */}
-    <PrincipalSetupGuide
-      isVisible={false && showSetupGuide && !showWelcome && !loading}
-      onComplete={() => { localStorage.setItem('montree_guide_principal_done', '1'); setShowSetupGuide(false); }}
-      onSkip={() => { localStorage.setItem('montree_guide_principal_done', '1'); setShowSetupGuide(false); }}
-      wizardStep={step}
-      hasClassrooms={classrooms.length > 0}
-      hasTeachers={createdTeachers.length > 0}
-    />
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 p-6 relative overflow-hidden">
+    <div className="fn-page">
+      <style dangerouslySetInnerHTML={{ __html: FUNNEL_CSS + SETUP_CSS }} />
 
-      {/* Top bar — home link + language toggle */}
-      <div className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between p-5">
-        <Link href="/montree" className="flex items-center gap-2.5 no-underline">
-          <MontreeLogo size={30} />
-          <span className="text-white text-base font-semibold tracking-tight">Montree</span>
-        </Link>
-        <LanguageToggle />
+      {/* Topbar — M artwork + wordmark + EN toggle (consistent with /try) */}
+      <div className="fn-topbar">
+        <a className="fn-wordmark" href="/montree">
+          <picture>
+            <source srcSet="/brand/m-mark-transparent.webp" type="image/webp" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/m-mark.png" alt="Montree" width={30} height={25} />
+          </picture>
+          <span>{t('app.name')}</span>
+        </a>
+        <LanguageToggle className="bg-white/10 hover:bg-white/20 text-white" />
       </div>
 
-      {/* ============ WELCOME OVERLAY — HIDDEN: onboarding guides disabled ============ */}
-      {false && showWelcome && school && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/90 backdrop-blur-md">
-          {/* Ambient glow behind the card */}
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/15 rounded-full blur-[120px] pointer-events-none" />
+      {/* Golden thread */}
+      <GoldenThread step={threadStep} />
 
-          <div
-            className="relative z-10 text-center px-6"
-            style={{ animation: 'welcome-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}
-          >
-            {/* Montree M monogram with glow ring (Session 113 V2 brand work) */}
-            <div className="relative inline-block mb-8">
-              <div className="absolute inset-0 w-24 h-24 rounded-full bg-emerald-400/20 blur-xl" style={{ animation: 'welcome-pulse 3s ease-in-out infinite' }} />
-              <div className="relative flex items-center justify-center">
-                <MontreeLogo size={96} />
+      <div className="fn-hall">
+        {/* The narrator — top-left, every screen (authed Astra, hands over at /admin) */}
+        <AstraNarrator screenKey={screenKey} journey="principal" authed={true} />
+
+        {/* The stage */}
+        <div className="fn-stage-wrap">
+          {isFounding ? (
+            /* ── SSE founding overlay — the ceremony (real progress bar) ── */
+            <div className="fn-screen center">
+              <div className="fn-cere-m">
+                <div className="fn-cere-ring" />
+                <div className="fn-cere-ring r2" />
+                <picture>
+                  <source srcSet="/brand/m-mark-transparent.webp" type="image/webp" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/brand/m-mark.png" alt="Montree" width={170} height={140} />
+                </picture>
+              </div>
+              <div className="fn-cere-line">
+                {getSetupSteps(t)[setupStepIndex] || t('copilot.funnel.setup.finishing')}
+              </div>
+              <div className="fn-cere-bar">
+                <i style={{ width: `${Math.max(progressPercent, 6)}%` }} />
               </div>
             </div>
-
-            {/* Welcome text */}
-            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3 tracking-tight">
-              {t('principal.setup.welcome')} {principalName ? `${t('principal.setup.principal')} ${principalName.split(' ')[0]}` : `${t('principal.setup.principal')}!`}
-            </h1>
-
-            <p className="text-lg sm:text-xl text-emerald-200/80 mb-2 font-light">
-              {t('principal.setup.readyToSetup')}{' '}
-              <span className="text-emerald-300 font-medium">{school.name}</span>?
-            </p>
-
-            <p className="text-emerald-400/60 text-sm mb-10">
-              {t('principal.setup.addClassroomsFirst')}
-            </p>
-
-            {/* Let's Go button */}
-            <button
-              onClick={dismissWelcome}
-              className="group relative inline-flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-lg font-semibold rounded-2xl shadow-xl shadow-emerald-500/30 hover:shadow-2xl hover:shadow-emerald-500/40 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
-            >
-              <span>{t('principal.setup.letsGo')}</span>
-              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </button>
-
-            {/* Subtle Montree branding */}
-            <p className="mt-12 text-slate-500 text-xs tracking-widest uppercase">
-              Montree
-            </p>
-          </div>
-
-          {/* Animations */}
-          <style dangerouslySetInnerHTML={{ __html: `
-            @keyframes welcome-enter {
-              from { opacity: 0; transform: scale(0.92) translateY(20px); }
-              to { opacity: 1; transform: scale(1) translateY(0); }
-            }
-            @keyframes welcome-pulse {
-              0%, 100% { opacity: 0.4; transform: scale(1); }
-              50% { opacity: 0.7; transform: scale(1.15); }
-            }
-          `}} />
-        </div>
-      )}
-
-      {/* Background glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-
-      <div className="relative z-10 max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl shadow-lg shadow-emerald-500/30 mb-4">
-            <span className="text-3xl">{step === 3 ? '🎉' : '🏫'}</span>
-          </div>
-          <h1 className="text-2xl font-light text-white mb-1">
-            {step === 3 ? t('principal.setup.setupComplete') : `${t('principal.setup.settingUp')} ${school.name}`}
-          </h1>
-          <p className="text-emerald-300/70 text-sm">
-            {step === 1 && t('principal.setup.addClassrooms')}
-            {step === 2 && t('principal.setup.assignTeachers')}
-            {step === 3 && (createdTeachers.length > 0 ? t('principal.setup.shareCodesWithTeachers') : t('principal.setup.goToDashboard'))}
-          </p>
-          
-          {step < 3 && (
-            <div className="flex justify-center gap-2 mt-4">
-              <div className={`w-3 h-3 rounded-full ${step >= 1 ? 'bg-emerald-400' : 'bg-white/20'}`} />
-              <div className={`w-3 h-3 rounded-full ${step >= 2 ? 'bg-emerald-400' : 'bg-white/20'}`} />
-            </div>
-          )}
-        </div>
-
-        {/* Loading Overlay — smooth curated step progression */}
-        {loading && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm">
-            <div className="bg-white/10 backdrop-blur border border-white/20 rounded-3xl p-8 text-center max-w-md mx-4">
-              <div className="text-6xl mb-6 transition-all duration-700 ease-in-out" key={setupStepIndex}>
-                {getSetupSteps(t)[setupStepIndex]?.emoji || '⏳'}
-              </div>
-              <h2 className="text-xl font-semibold text-white mb-3">
-                {t('principal.setup.settingUpSchool')}
-              </h2>
-              <p className="text-emerald-300 text-lg mb-4 transition-opacity duration-500" key={`text-${setupStepIndex}`}>
-                {getSetupSteps(t)[setupStepIndex]?.text || t('principal.setup.gettingReady')}
-              </p>
-
-              {/* Step indicators */}
-              <div className="flex justify-center gap-2 mb-5">
-                {getSetupSteps(t).map((_, i) => (
-                  <div
-                    key={i}
-                    className={`h-1.5 rounded-full transition-all duration-500 ${
-                      i <= setupStepIndex
-                        ? 'w-6 bg-emerald-400'
-                        : 'w-3 bg-white/20'
-                    }`}
-                  />
-                ))}
-              </div>
-
-              {/* Progress bar for curriculum seeding */}
-              {progressPercent > 0 && (
-                <div className="w-full bg-white/10 rounded-full h-2 mb-4 overflow-hidden">
-                  <div
-                    className="bg-gradient-to-r from-emerald-400 to-teal-400 h-full rounded-full transition-all duration-500 ease-out"
-                    style={{ width: `${progressPercent}%` }}
-                  />
+          ) : step === 3 ? (
+            /* ── Handoff — the success ── */
+            <div className="fn-screen center">
+              {warnings.length > 0 && (
+                <div className="fn-warn">
+                  <h3>⚠️ {t('principal.setup.warning.itemsNotCreated')}</h3>
+                  <ul>
+                    {warnings.map((w, i) => (
+                      <li key={i}>• {w}</li>
+                    ))}
+                  </ul>
+                  <p>{t('principal.setup.warning.tryAgain')}</p>
                 </div>
               )}
 
-              <p className="text-white/40 text-xs">
-                {progressPercent > 0
-                  ? t('principal.setup.percentComplete').replace('{percent}', String(progressPercent))
-                  : t('principal.setup.buildingEnvironment')}
-              </p>
-            </div>
-          </div>
-        )}
+              <div className="fn-bloom">✓</div>
+              <h1 className="fn-h1" style={{ fontSize: '2.7rem', marginBottom: 30 }}>
+                {t('copilot.funnel.handoff.heading', { school: school.name })}
+              </h1>
 
-        {error && (
-          <div className="mb-6 p-3 bg-red-500/20 border border-red-500/30 rounded-xl">
-            <p className="text-red-300 text-sm">{error}</p>
-          </div>
-        )}
+              {createdTeachers.length > 0 && (
+                <div style={{ width: '100%' }}>
+                  {createdTeachers.map((teacher) => (
+                    <div key={teacher.id} className="fn-keycard">
+                      <div className="fn-kemoji">{teacher.classroom_icon}</div>
+                      <div className="fn-kwho">
+                        <div className="fn-kname">{teacher.name}</div>
+                        <div className="fn-kroom">{teacher.classroom_name}</div>
+                      </div>
+                      <span className="fn-kcode">{teacher.login_code}</span>
+                      <button
+                        className={`fn-kbtn${copiedCode === teacher.login_code ? ' done' : ''}`}
+                        onClick={() => copyCode(teacher.login_code)}
+                      >
+                        {copiedCode === teacher.login_code ? '✓' : t('copilot.funnel.handoff.copy')}
+                      </button>
+                      <button
+                        className={`fn-kbtn send${copiedCode === `share-${teacher.login_code}` ? ' done' : ''}`}
+                        onClick={() => shareCode(teacher)}
+                      >
+                        {copiedCode === `share-${teacher.login_code}` ? '✓' : `${t('copilot.funnel.handoff.send')} →`}
+                      </button>
+                    </div>
+                  ))}
 
-        {/* Step 1: Add Classrooms */}
-        {step === 1 && (
-          <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
-            <div className="space-y-4 mb-6">
-              {classrooms.map((classroom, index) => (
-                <div 
-                  key={classroom.id}
-                  className="bg-white/5 border border-white/10 rounded-xl p-4"
-                  style={{ borderLeftColor: classroom.color, borderLeftWidth: '4px' }}
+                  <button
+                    className={`fn-groupcta${copiedCode === 'all' ? ' done' : ''}`}
+                    onClick={copyAllCodes}
+                  >
+                    {copiedCode === 'all' ? `✓ ${t('principal.setup.copiedPaste')}` : t('copilot.funnel.handoff.groupCta')}
+                  </button>
+                </div>
+              )}
+
+              <div className="fn-walkin">
+                <button
+                  className="fn-pill"
+                  style={{ fontSize: '1.05rem', padding: '17px 36px' }}
+                  onClick={() => router.push('/montree/admin')}
                 >
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => {
-                        const nextEmoji = EMOJI_OPTIONS[(EMOJI_OPTIONS.indexOf(classroom.icon) + 1) % EMOJI_OPTIONS.length];
-                        updateClassroom(classroom.id, { icon: nextEmoji });
-                      }}
-                      className="text-3xl hover:scale-110 transition-transform"
-                    >
-                      {classroom.icon}
-                    </button>
+                  {t('copilot.funnel.handoff.walkin')} →
+                </button>
+              </div>
+            </div>
+          ) : step === 1 ? (
+            /* ── Classrooms ── */
+            <div className="fn-screen" style={{ maxWidth: 600 }}>
+              <h2 className="fn-h2" style={{ marginBottom: 28 }}>
+                {t('copilot.funnel.classrooms.heading')}
+              </h2>
+
+              {error && (
+                <div className="fn-error" style={{ marginBottom: 18 }}>
+                  <pre>{error}</pre>
+                </div>
+              )}
+
+              {classrooms.map((classroom, index) => (
+                <div key={classroom.id} className="fn-croom">
+                  <button
+                    type="button"
+                    className="fn-cemoji"
+                    title={t('principal.setup.classroomName').replace('{num}', String(index + 1))}
+                    onClick={() => {
+                      const nextEmoji = EMOJI_OPTIONS[(EMOJI_OPTIONS.indexOf(classroom.icon) + 1) % EMOJI_OPTIONS.length];
+                      updateClassroom(classroom.id, { icon: nextEmoji });
+                    }}
+                  >
+                    {classroom.icon}
+                  </button>
+                  <div className="fn-cname">
                     <input
                       type="text"
+                      className="fn-input"
                       value={classroom.name}
                       onChange={(e) => updateClassroom(classroom.id, { name: e.target.value })}
                       placeholder={t('principal.setup.classroomName').replace('{num}', String(index + 1))}
-                      className="flex-1 p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:border-emerald-400 outline-none"
                     />
-                    <div className="flex gap-1">
-                      {COLOR_OPTIONS.slice(0, 4).map(color => (
-                        <button
-                          key={color}
-                          onClick={() => updateClassroom(classroom.id, { color })}
-                          className={`w-6 h-6 rounded-full ${classroom.color === color ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-800' : ''}`}
-                          style={{ backgroundColor: color }}
-                        />
-                      ))}
-                    </div>
-                    <button
-                      onClick={() => removeClassroom(classroom.id)}
-                      className="w-8 h-8 rounded-full bg-white/10 hover:bg-red-500/30 text-white/50 hover:text-red-300 flex items-center justify-center transition-colors"
-                    >
-                      ×
-                    </button>
                   </div>
+                  <div className="fn-sws">
+                    {COLOR_OPTIONS.slice(0, 4).map((color) => (
+                      <button
+                        type="button"
+                        key={color}
+                        aria-label={color}
+                        className={`fn-sw${classroom.color === color ? ' sel' : ''}`}
+                        style={{ background: color }}
+                        onClick={() => updateClassroom(classroom.id, { color })}
+                      />
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    className="fn-remove"
+                    aria-label="remove"
+                    onClick={() => removeClassroom(classroom.id)}
+                  >
+                    ×
+                  </button>
                 </div>
               ))}
-            </div>
 
-            <button
-              onClick={addClassroom}
-              data-tutorial="create-classroom-button"
-              data-guide="add-classroom-btn"
-              className="w-full py-4 border-2 border-dashed border-white/20 rounded-xl text-white/60 hover:text-white hover:border-emerald-400/50 hover:bg-emerald-500/10 transition-all"
-            >
-              + {t('principal.setup.addClassroom')}
-            </button>
+              <button type="button" className="fn-addrow" onClick={addClassroom}>
+                ＋ {t('copilot.funnel.classrooms.add')}
+              </button>
 
-            <button
-              onClick={() => setStep(2)}
-              disabled={classrooms.length === 0 || classrooms.some(c => !c.name.trim())}
-              data-guide="continue-teachers-btn"
-              className="w-full mt-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {t('principal.setup.continueTeachers')} →
-            </button>
-          </div>
-        )}
-
-        {/* Step 2: Add Teachers */}
-        {step === 2 && (
-          <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
-            <div className="space-y-6">
-              {classrooms.map(classroom => (
-                <div 
-                  key={classroom.id}
-                  className="bg-white/5 border border-white/10 rounded-xl p-4"
-                  style={{ borderLeftColor: classroom.color, borderLeftWidth: '4px' }}
+              <div className="fn-formfoot">
+                <button
+                  className="fn-pill"
+                  onClick={() => setStep(2)}
+                  disabled={classrooms.length === 0 || classrooms.some((c) => !c.name.trim())}
                 >
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="text-2xl">{classroom.icon}</span>
-                    <span className="font-semibold text-white">{classroom.name}</span>
+                  {t('copilot.funnel.classrooms.cta')} →
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* ── Teachers ── */
+            <div className="fn-screen" style={{ maxWidth: 600 }}>
+              <button type="button" className="fn-backlink" onClick={() => setStep(1)}>
+                ← {t('copilot.funnel.teachers.back')}
+              </button>
+              <h2 className="fn-h2" style={{ marginBottom: 26 }}>
+                {t('copilot.funnel.teachers.heading')}
+              </h2>
+
+              {error && (
+                <div className="fn-error" style={{ marginBottom: 18 }}>
+                  <pre>{error}</pre>
+                </div>
+              )}
+
+              {classrooms.map((classroom) => (
+                <div key={classroom.id} className="fn-tgroup">
+                  <div className="fn-ghead">
+                    <span>{classroom.icon}</span>
+                    <span>{classroom.name}</span>
                   </div>
-                  
-                  <div className="space-y-3">
-                    {classroom.teachers.map((teacher, tIndex) => (
-                      <div key={teacher.id} className="flex gap-3 items-center">
-                        <input
-                          type="text"
-                          value={teacher.name}
-                          onChange={(e) => updateTeacher(classroom.id, teacher.id, { name: e.target.value })}
-                          placeholder={t('principal.setup.teacherName')}
-                          {...(tIndex === 0 ? { 'data-guide': 'teacher-name-first' } : {})}
-                          className="flex-1 p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:border-emerald-400 outline-none"
-                        />
+
+                  {classroom.teachers.map((teacher) => (
+                    <div key={teacher.id} className="fn-trow">
+                      <input
+                        type="text"
+                        className="fn-input"
+                        value={teacher.name}
+                        onChange={(e) => updateTeacher(classroom.id, teacher.id, { name: e.target.value })}
+                        placeholder={t('copilot.funnel.teacherName')}
+                      />
+                      <div className="fn-temail">
                         <input
                           type="email"
+                          className="fn-input"
                           value={teacher.email}
                           onChange={(e) => updateTeacher(classroom.id, teacher.id, { email: e.target.value })}
-                          placeholder={t('principal.setup.emailOptional')}
-                          className="flex-1 p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:border-emerald-400 outline-none"
+                          placeholder={t('copilot.funnel.teacherEmail')}
                         />
                         {classroom.teachers.length > 1 && (
                           <button
+                            type="button"
+                            className="fn-remove"
+                            aria-label="remove"
                             onClick={() => removeTeacher(classroom.id, teacher.id)}
-                            className="w-8 h-8 rounded-full bg-white/10 hover:bg-red-500/30 text-white/50 hover:text-red-300 flex items-center justify-center"
                           >
                             ×
                           </button>
                         )}
                       </div>
-                    ))}
-                  </div>
-                  
+                    </div>
+                  ))}
+
                   <button
+                    type="button"
+                    className="fn-addteacher"
                     onClick={() => addTeacher(classroom.id)}
-                    data-tutorial="add-teacher-button"
-                    className="mt-3 text-sm text-emerald-400 hover:text-emerald-300"
                   >
-                    + {t('principal.setup.addAnotherTeacher')}
+                    ＋ {t('copilot.funnel.teachers.addAnother')}
                   </button>
                 </div>
               ))}
-            </div>
 
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setStep(1)}
-                className="px-6 py-4 bg-white/10 border border-white/20 text-white rounded-xl hover:bg-white/20 transition-all"
-              >
-                ← {t('principal.setup.back')}
-              </button>
-              <button
-                data-tutorial="setup-submit-button"
-                data-guide="complete-setup-btn"
-                onClick={handleSubmit}
-                disabled={loading || classrooms.some(c => c.teachers.every(t => !t.name.trim()))}
-                className="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <span className="animate-spin">⏳</span>
-                    <span>{t('principal.setup.settingUp')}</span>
-                  </span>
-                ) : `${t('principal.setup.completeSetup')} ✓`}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 3: Success - Onboarding Complete */}
-        {step === 3 && (
-          <div className="space-y-6">
-            {/* Warning if some items failed */}
-            {warnings.length > 0 && (
-              <div className="bg-red-500/20 border border-red-500/30 rounded-2xl p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xl">⚠️</span>
-                  <h3 className="text-red-300 font-semibold">{t('principal.setup.warning.itemsNotCreated')}</h3>
-                </div>
-                <ul className="text-red-200/80 text-sm space-y-1">
-                  {warnings.map((w, i) => (
-                    <li key={i}>• {w}</li>
-                  ))}
-                </ul>
-                <p className="text-red-200/60 text-xs mt-2">{t('principal.setup.warning.tryAgain')}</p>
-              </div>
-            )}
-
-            {/* Success Message */}
-            <div data-tutorial="overview-section" data-guide="setup-overview" className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 rounded-2xl p-6 text-center">
-              <div className="text-5xl mb-4">🎉</div>
-              <h2 className="text-2xl font-bold text-white mb-2">
-                {t('principal.setup.success.classroomsReady').replace('{count}', String(classrooms.length))}
-              </h2>
-              <p className="text-emerald-200">
-                {t('principal.setup.success.shareWithTeachers')}
-              </p>
-            </div>
-
-            {/*
-              Astra celebration card — appears at the setup-complete moment.
-              No AI call; static greeting that uses Astra's visual voice
-              (avatar + gold action-line arrow) to congratulate the principal
-              and point them at the next concrete step.
-              Per user directive: 'I want Astra to pop up here congratulating
-              the principal on creating her classrooms and guiding her to
-              the next step of making a message to send to the teachers.'
-            */}
-            <div
-              style={{
-                background: 'rgba(8,20,12,0.65)',
-                border: '1px solid rgba(232,201,106,0.32)',
-                borderRadius: '18px',
-                padding: '18px 18px 20px 18px',
-                display: 'flex',
-                gap: '14px',
-                alignItems: 'flex-start',
-                backdropFilter: 'blur(18px)',
-              }}
-            >
-              <TracyAvatar size={44} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p
-                  style={{
-                    fontFamily: 'var(--font-lora), Georgia, serif',
-                    fontSize: '17px',
-                    color: '#f5f8ef',
-                    margin: 0,
-                    lineHeight: 1.45,
-                  }}
+              <div className="fn-formfoot">
+                <button
+                  className="fn-pill"
+                  onClick={handleSubmit}
+                  disabled={loading || classrooms.some((c) => c.teachers.every((tt) => !tt.name.trim()))}
                 >
-                  {principalName ? `Beautiful work, ${principalName.split(/\s+/)[0]}.` : 'Beautiful work.'}{' '}
-                  {classrooms.length === 1
-                    ? "Your first classroom is ready."
-                    : `All ${classrooms.length} of your classrooms are ready.`}{' '}
-                  Now your teachers just need their codes — and the message below is already written for you.
-                </p>
-                <p
-                  style={{
-                    marginTop: '14px',
-                    fontSize: '14.5px',
-                    lineHeight: 1.55,
-                    color: '#f0d68a',
-                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-                  }}
-                >
-                  <span style={{ color: 'rgba(232,201,106,0.55)', marginRight: '6px' }}>→</span>
-                  Tap <strong style={{ color: '#f5f8ef', fontWeight: 600 }}>{t('principal.setup.copyMessage')}</strong> below, then paste it into your teachers&apos; group chat.
-                </p>
+                  {t('copilot.funnel.teachers.cta')} ✓
+                </button>
               </div>
             </div>
-
-            {/* Teacher Codes */}
-            {createdTeachers.length > 0 && (
-              <div data-tutorial="manage-teachers-button" data-guide="teacher-codes" className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                    <span>🔑</span> {t('principal.setup.teacherLoginCodes')}
-                  </h3>
-                </div>
-
-                {/* Share to Group Chat CTA */}
-                <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 mb-4">
-                  <p className="text-emerald-200 text-sm mb-3">
-                    📱 {t('principal.setup.shareToGroupChat')}
-                  </p>
-                  <button
-                    onClick={copyAllCodes}
-                    className={`w-full py-3 font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 ${
-                      copiedCode === 'all'
-                        ? 'bg-emerald-500 text-white'
-                        : 'bg-emerald-500 text-white hover:bg-emerald-600'
-                    }`}
-                  >
-                    {copiedCode === 'all' ? `✓ ${t('principal.setup.copiedPaste')}` : `📋 ${t('principal.setup.copyMessage')}`}
-                  </button>
-                </div>
-
-                <div className="space-y-3 mb-4">
-                  {createdTeachers.map((teacher) => (
-                    <div
-                      key={teacher.id}
-                      className="bg-white/5 border border-white/10 rounded-xl p-3 flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-xl">{teacher.classroom_icon}</span>
-                        <div>
-                          <p className="font-medium text-white text-sm">{teacher.name}</p>
-                          <p className="text-emerald-300/60 text-xs">{teacher.classroom_name}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <code className="px-3 py-1.5 bg-emerald-500/20 text-emerald-300 font-mono rounded-lg">
-                          {teacher.login_code}
-                        </code>
-                        <button
-                          onClick={() => copyCode(teacher.login_code)}
-                          className={`px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                            copiedCode === teacher.login_code
-                              ? 'bg-emerald-500 text-white'
-                              : 'bg-white/10 text-white hover:bg-white/20'
-                          }`}
-                        >
-                          {copiedCode === teacher.login_code ? '✓' : t('principal.setup.copy')}
-                        </button>
-                        <button
-                          onClick={() => shareCode(teacher)}
-                          className={`px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                            copiedCode === `share-${teacher.login_code}`
-                              ? 'bg-emerald-500 text-white'
-                              : 'bg-teal-500/30 text-teal-300 hover:bg-teal-500/50'
-                          }`}
-                        >
-                          {copiedCode === `share-${teacher.login_code}` ? '✓' : '📱'}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex items-center gap-3">
-                  <span className="text-xl">⚠️</span>
-                  <p className="text-amber-300 text-sm">
-                    {t('principal.setup.warning.saveCodes')}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Go to Dashboard */}
-            <button
-              onClick={() => router.push('/montree/admin')}
-              data-guide="go-dashboard-btn"
-              className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl transition-all"
-            >
-              {t('principal.setup.goDashboard')} →
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      {/* Footer */}
-      <div className="absolute bottom-6 left-0 right-0 text-center">
-        <p className="text-slate-500 text-xs inline-flex items-center justify-center gap-1.5">
-          <MontreeLogo size={12} />
-          <span>Montree • montree.xyz</span>
-        </p>
-      </div>
+      <div className="fn-foot">Montree · montree.xyz</div>
     </div>
-    </>
   );
 }
