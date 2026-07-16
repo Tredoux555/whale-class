@@ -152,14 +152,14 @@ function UnifiedLoginContent() {
 
       {/* Language toggle — respects safe area for notch */}
       <div className="absolute right-4 z-10" style={{ top: 'max(16px, env(safe-area-inset-top, 16px))' }}>
-        <LanguageToggle className="bg-white/10 hover:bg-white/20 text-white" />
+        <LanguageToggle className="bg-white/10 hover:bg-white/20 text-white border border-white/[0.08]" />
       </div>
 
       <div style={{ position: 'relative', zIndex: 4, width: '100%', maxWidth: 380 }}>
         {/* Logo — canonical Montree M monogram */}
         <div style={{ textAlign: 'center', marginBottom: 26 }}>
           <div style={{ display: 'inline-flex', justifyContent: 'center', marginBottom: 16 }}>
-            <MontreeLogo size={72} />
+            <MontreeLogo size={40} />
           </div>
           <h1 className="fn-h1" style={{ fontSize: '2rem', marginBottom: 4 }}>
             {t('app.name')}

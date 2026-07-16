@@ -41,19 +41,19 @@ const getSetupSteps = (t: any): string[] => [
 // untouched — no fork, no restyle); concatenated into the single style
 // injection alongside FUNNEL_CSS. All classes fn- prefixed to match convention.
 const SETUP_CSS = `
-.fn-croom{display:flex; align-items:center; gap:15px; background:${FT.glass}; border:1px solid ${FT.glassEdge}; border-radius:16px; padding:15px 17px; margin-bottom:13px}
+.fn-croom{display:flex; align-items:center; gap:15px; background:${FT.glass}; border:1px solid ${FT.glassEdge}; border-radius:14px; padding:15px 17px; margin-bottom:13px}
 .fn-cemoji{width:50px; height:50px; border-radius:13px; flex:none; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.09); display:flex; align-items:center; justify-content:center; font-size:1.5rem; cursor:pointer; transition:transform .15s ease; color:inherit}
 .fn-cemoji:hover{transform:scale(1.07)}
 .fn-cname{flex:1; min-width:0}
 .fn-croom .fn-input{padding:11px 14px; font-size:0.96rem}
 .fn-sws{display:flex; gap:8px}
 .fn-sw{width:21px; height:21px; border-radius:50%; cursor:pointer; border:2px solid transparent; transition:all .14s ease; padding:0}
-.fn-sw.sel{border-color:${FT.gold}; box-shadow:0 0 10px rgba(232,201,106,0.4)}
+.fn-sw.sel{border-color:${FT.gold}}
 .fn-remove{width:30px; height:30px; border-radius:50%; flex:none; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.10); color:rgba(255,250,240,0.45); font-size:1.05rem; line-height:1; display:flex; align-items:center; justify-content:center; transition:all .15s ease}
 .fn-remove:hover{background:rgba(239,68,68,0.18); color:rgba(252,165,165,0.9); border-color:rgba(239,68,68,0.3)}
 .fn-addrow{width:100%; border:1px dashed rgba(255,255,255,0.17); border-radius:16px; padding:15px; text-align:center; color:${FT.whisper}; font-size:0.9rem; cursor:pointer; transition:all .16s ease; margin-bottom:13px; background:none}
 .fn-addrow:hover{border-color:rgba(52,211,153,0.4); color:${FT.voice}}
-.fn-tgroup{background:${FT.glass}; border:1px solid ${FT.glassEdge}; border-radius:16px; padding:18px; margin-bottom:14px}
+.fn-tgroup{background:${FT.glass}; border:1px solid ${FT.glassEdge}; border-radius:14px; padding:18px; margin-bottom:14px}
 .fn-ghead{display:flex; align-items:center; gap:9px; font-family:${FT.serif}; font-size:1.06rem; margin-bottom:13px; color:${FT.voice}}
 .fn-trow{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; align-items:center}
 .fn-trow .fn-input{padding:12px 14px; font-size:0.95rem}
@@ -61,21 +61,22 @@ const SETUP_CSS = `
 .fn-temail .fn-input{flex:1; min-width:0}
 .fn-addteacher{font-size:0.84rem; color:${FT.emeraldHi}; cursor:pointer; display:inline-block; margin-top:2px; background:none; border:none; padding:0}
 .fn-formfoot{display:flex; align-items:center; justify-content:flex-end; margin-top:8px}
-.fn-bloom{width:76px; height:76px; border-radius:50%; border:2px solid ${FT.gold}; margin:20px auto 26px; display:flex; align-items:center; justify-content:center; color:${FT.gold}; font-size:1.9rem; box-shadow:0 0 60px -8px rgba(232,201,106,0.5); animation:fnBloomIn 1.5s ease both}
-@keyframes fnBloomIn{0%{transform:scale(0.6); opacity:0; box-shadow:0 0 0 0 rgba(232,201,106,0)}55%{transform:scale(1.06); opacity:1; box-shadow:0 0 80px 0 rgba(232,201,106,0.55)}100%{transform:scale(1); box-shadow:0 0 60px -8px rgba(232,201,106,0.5)}}
-.fn-keycard{display:flex; align-items:center; gap:16px; background:${FT.glass}; border:1px solid ${FT.glassEdge}; border-radius:18px; padding:18px 20px; margin-bottom:14px; text-align:left; flex-wrap:wrap}
+.fn-bloom{width:48px; height:48px; border-radius:50%; border:1px solid ${FT.gold}; margin:20px auto 26px; display:flex; align-items:center; justify-content:center; color:${FT.gold}; font-size:1.2rem; box-shadow:none; animation:fnBloomIn 0.9s ease both}
+@keyframes fnBloomIn{0%{transform:scale(0.9); opacity:0}100%{transform:scale(1); opacity:1}}
+.fn-keycard{display:flex; align-items:center; gap:16px; background:${FT.glass}; border:1px solid ${FT.glassEdge}; border-radius:14px; padding:18px 20px; margin-bottom:14px; text-align:left; flex-wrap:wrap}
 .fn-kemoji{width:52px; height:52px; border-radius:14px; flex:none; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.09); display:flex; align-items:center; justify-content:center; font-size:1.5rem}
 .fn-kwho{flex:1; min-width:0}
 .fn-kname{font-family:${FT.serif}; font-size:1.12rem; color:${FT.voice}}
 .fn-kroom{font-size:0.8rem; color:${FT.whisper}; margin-top:3px}
-.fn-kcode{font-family:ui-monospace,Menlo,monospace; font-weight:600; font-size:1.2rem; letter-spacing:0.2em; color:${FT.gold}; background:rgba(0,0,0,0.4); border:1px solid rgba(232,201,106,0.35); border-radius:11px; padding:11px 16px 11px 19px; white-space:nowrap}
+.fn-kcode{font-family:ui-monospace,Menlo,monospace; font-weight:600; font-size:1rem; letter-spacing:0.2em; color:${FT.gold}; background:transparent; border:1px solid rgba(232,201,106,0.3); border-radius:11px; padding:11px 16px 11px 19px; white-space:nowrap}
 .fn-kbtn{border-radius:999px; padding:10px 17px; font-size:0.85rem; font-weight:600; background:rgba(255,255,255,0.06); color:${FT.voice}; border:1px solid rgba(255,255,255,0.13); transition:filter .15s ease}
 .fn-kbtn:hover{filter:brightness(1.12)}
-.fn-kbtn.send{background:${FT.action}; border-color:rgba(130,217,174,0.2); color:#fff}
+.fn-kbtn.send{background:#1D5C41; border-color:rgba(255,255,255,0.08); color:#fff; padding:9px 14px}
+.fn-kbtn.send:hover{background:#236B4C; filter:none}
 .fn-kbtn.done{background:${FT.emerald}; border-color:transparent; color:#fff}
-.fn-groupcta{width:100%; margin-top:6px; border-radius:15px; padding:16px; font-size:0.95rem; font-weight:600; background:rgba(232,201,106,0.08); border:1px solid rgba(232,201,106,0.4); color:${FT.gold}; transition:all .16s ease}
-.fn-groupcta:hover{background:rgba(232,201,106,0.14)}
-.fn-groupcta.done{background:rgba(52,211,153,0.16); border-color:rgba(52,211,153,0.4); color:${FT.emeraldHi}}
+.fn-groupcta{width:100%; margin-top:6px; border-radius:10px; padding:14px; font-size:0.9rem; font-weight:500; background:transparent; border:1px solid rgba(232,201,106,0.35); color:rgba(232,201,106,0.9); transition:background .16s ease}
+.fn-groupcta:hover{background:rgba(232,201,106,0.06)}
+.fn-groupcta.done{background:rgba(52,211,153,0.12); border-color:rgba(52,211,153,0.35); color:${FT.emeraldHi}}
 .fn-walkin{margin-top:30px; text-align:center}
 .fn-warn{width:100%; background:rgba(239,68,68,0.10); border:1px solid rgba(239,68,68,0.3); border-radius:16px; padding:16px 18px; margin-bottom:18px; text-align:left}
 .fn-warn h3{color:rgba(252,165,165,0.95); font-family:${FT.serif}; font-weight:500; font-size:1.05rem; margin-bottom:8px}
@@ -324,7 +325,7 @@ export default function PrincipalSetupPage() {
           </picture>
           <span>{t('app.name')}</span>
         </a>
-        <LanguageToggle className="bg-white/10 hover:bg-white/20 text-white" />
+        <LanguageToggle className="bg-white/10 hover:bg-white/20 text-white border border-white/[0.08]" />
       </div>
 
       {/* Golden thread */}
@@ -339,16 +340,7 @@ export default function PrincipalSetupPage() {
           {isFounding ? (
             /* ── SSE founding overlay — the ceremony (real progress bar) ── */
             <div className="fn-screen center">
-              <div className="fn-cere-m">
-                <div className="fn-cere-ring" />
-                <div className="fn-cere-ring r2" />
-                <picture>
-                  <source srcSet="/brand/m-mark-transparent.webp" type="image/webp" />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/brand/m-mark.png" alt="Montree" width={170} height={140} />
-                </picture>
-              </div>
-              <div className="fn-cere-line">
+              <div className="fn-cere-line" style={{ marginTop: 120 }}>
                 {getSetupSteps(t)[setupStepIndex] || t('copilot.funnel.setup.finishing')}
               </div>
               <div className="fn-cere-bar">
@@ -371,7 +363,7 @@ export default function PrincipalSetupPage() {
               )}
 
               <div className="fn-bloom">✓</div>
-              <h1 className="fn-h1" style={{ fontSize: '2.7rem', marginBottom: 30 }}>
+              <h1 className="fn-h1" style={{ marginBottom: 30 }}>
                 {t('copilot.funnel.handoff.heading', { school: school.name })}
               </h1>
 
@@ -412,7 +404,6 @@ export default function PrincipalSetupPage() {
               <div className="fn-walkin">
                 <button
                   className="fn-pill"
-                  style={{ fontSize: '1.05rem', padding: '17px 36px' }}
                   onClick={() => router.push('/montree/admin')}
                 >
                   {t('copilot.funnel.handoff.walkin')} →

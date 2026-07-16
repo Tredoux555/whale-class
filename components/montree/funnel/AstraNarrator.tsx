@@ -102,7 +102,7 @@ export default function AstraNarrator({
       <div className="fn-n-ask">
         {!open ? (
           <button type="button" className="fn-n-ask-btn" onClick={() => setOpen(true)}>
-            <span className="dots">••</span> {t('copilot.funnel.ask')}
+            <span className="dots">··</span> {t('copilot.funnel.ask')}
           </button>
         ) : (
           <div className="fn-n-chat">
