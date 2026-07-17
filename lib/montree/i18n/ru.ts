@@ -2842,6 +2842,8 @@ export const ru: Record<string, string> = {
   'parentCodes.portalAccess': 'Доступ родителей на портал',
   'parentCodes.accessCode': 'Код доступа',
   'parentCodes.connected': 'Подключено',
+  'parentCodes.reportSeen': 'Seen {date}',
+  'parentCodes.reportNotSeen': 'Not yet seen',
   'features.failedToLoad': 'Ошибка при загрузке функций',
   'features.enabled': 'Включено',
   'features.disabled': 'Отключено',

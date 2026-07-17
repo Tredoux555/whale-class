@@ -3282,6 +3282,8 @@ export const en = {
   'parentCodes.portalAccess': 'Parent Portal Access',
   'parentCodes.accessCode': 'Access Code',
   'parentCodes.connected': 'Connected',
+  'parentCodes.reportSeen': 'Seen {date}',
+  'parentCodes.reportNotSeen': 'Not yet seen',
 
   // ── Features Admin ──
   'features.failedToLoad': 'Failed to load features',

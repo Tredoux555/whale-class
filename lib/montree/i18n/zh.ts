@@ -3243,6 +3243,8 @@ export const zh = {
   'parentCodes.portalAccess': '家长门户访问',
   'parentCodes.accessCode': '访问码',
   'parentCodes.connected': '已连接',
+  'parentCodes.reportSeen': '已查看 {date}',
+  'parentCodes.reportNotSeen': '尚未查看',
 
   // ── 功能开关管理 ──
   'features.failedToLoad': '加载功能列表失败',

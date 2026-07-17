@@ -2842,6 +2842,8 @@ export const uk: Record<string, string> = {
   'parentCodes.portalAccess': 'Доступ до батьківського порталу',
   'parentCodes.accessCode': 'Код доступу',
   'parentCodes.connected': 'Підключено',
+  'parentCodes.reportSeen': 'Seen {date}',
+  'parentCodes.reportNotSeen': 'Not yet seen',
   'features.failedToLoad': 'Не вдалося завантажити функції',
   'features.enabled': 'Увімкнено',
   'features.disabled': 'Вимкнено',

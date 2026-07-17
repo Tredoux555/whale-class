@@ -182,6 +182,19 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    // Build D2 (read receipt): stamp first_opened_at the FIRST time an authorized
+    // parent opens this sent report. `.is('first_opened_at', null)` guard means we
+    // never overwrite the first-open moment. Fire-and-forget — a failure here must
+    // never block the report render.
+    void supabase
+      .from('montree_weekly_reports')
+      .update({ first_opened_at: new Date().toISOString() })
+      .eq('id', reportId)
+      .is('first_opened_at', null)
+      .then(({ error: openErr }: { error: { message?: string } | null }) => {
+        if (openErr) console.error('[parent report] first_opened_at stamp failed (non-fatal):', openErr.message);
+      });
+
     // Get child info with classroom_id
     const { data: child, error: childError } = await supabase
       .from('montree_children')

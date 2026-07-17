@@ -2842,6 +2842,8 @@ export const de: Record<string, string> = {
   'parentCodes.portalAccess': 'Elternportalzugriff',
   'parentCodes.accessCode': 'Zugriffscode',
   'parentCodes.connected': 'Verbunden',
+  'parentCodes.reportSeen': 'Seen {date}',
+  'parentCodes.reportNotSeen': 'Not yet seen',
   'features.failedToLoad': 'Funktionen konnten nicht geladen werden',
   'features.enabled': 'Aktiviert',
   'features.disabled': 'Deaktiviert',

@@ -2842,6 +2842,8 @@ export const nl: Record<string, string> = {
   'parentCodes.portalAccess': 'Toegang tot ouderportaal',
   'parentCodes.accessCode': 'Toegangscode',
   'parentCodes.connected': 'Verbonden',
+  'parentCodes.reportSeen': 'Seen {date}',
+  'parentCodes.reportNotSeen': 'Not yet seen',
   'features.failedToLoad': 'Functies konden niet worden geladen',
   'features.enabled': 'Ingeschakeld',
   'features.disabled': 'Uitgeschakeld',

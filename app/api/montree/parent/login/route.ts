@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getSupabase } from '@/lib/supabase-client';
-import { createParentToken } from '@/lib/montree/server-auth';
+import { createParentToken, MONTREE_JWT_TTL_DAYS } from '@/lib/montree/server-auth';
 import { verifyPassword, isLegacyHash, hashPassword } from '@/lib/montree/password';
 import { isSchoolLocked } from '@/lib/montree/school-lock';
 import { checkRateLimit } from '@/lib/rate-limiter';
@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 30,
+      maxAge: MONTREE_JWT_TTL_DAYS * 24 * 60 * 60, // parity with JWT TTL (default 3650d)
       path: '/',
     });
 

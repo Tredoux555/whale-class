@@ -3,7 +3,7 @@
 // Returns role + session data + sets appropriate cookie
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { createMontreeToken, setMontreeAuthCookie, createParentToken } from '@/lib/montree/server-auth';
+import { createMontreeToken, setMontreeAuthCookie, createParentToken, MONTREE_JWT_TTL_DAYS } from '@/lib/montree/server-auth';
 import { verifyPassword, legacySha256 } from '@/lib/montree/password';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
@@ -389,7 +389,11 @@ export async function POST(request: NextRequest) {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 30, // 30 days
+        // Matches the JWT TTL (MONTREE_JWT_TTL_DAYS, effectively permanent) —
+        // parents get the same never-silently-logged-out treatment as teachers
+        // (D4, PLAN_FRICTION_COSMETICS_JUL17). Was 30 days, which silently
+        // expired the cookie under a 10-year token on this QR/unified path.
+        maxAge: MONTREE_JWT_TTL_DAYS * 24 * 60 * 60,
         path: '/',
       });
 
