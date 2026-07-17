@@ -1,13 +1,17 @@
 // /montree/teacher/register/page.tsx
 // Session: Personal Classroom - Teacher registration for individual teachers
+// Lanternlight reskin (Jul 2026): skin-only conversion to the funnel register
+// (near-black stage, gold hairlines/eyebrow, flat #1D5C41 action). Every
+// handler, state, validation, API call and redirect is byte-identical to the
+// old teal-gradient page — className/style changes only.
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
-import MontreeLogo from '@/components/montree/MonteeLogo';
 import LanguageToggle from '@/components/montree/LanguageToggle';
+import { FT, FUNNEL_CSS } from '@/components/montree/funnel/funnel-theme';
 
 export default function TeacherRegisterPage() {
   const router = useRouter();
@@ -74,182 +78,193 @@ export default function TeacherRegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 p-6 relative overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
+    <div className="fn-page">
+      <style dangerouslySetInnerHTML={{ __html: FUNNEL_CSS }} />
 
-      {/* Top bar — home link + language toggle */}
-      <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-5">
-        <Link href="/montree" className="flex items-center gap-2.5 no-underline">
-          <MontreeLogo size={30} />
-          <span className="text-white text-base font-semibold tracking-tight">Montree</span>
-        </Link>
-        <LanguageToggle />
+      {/* Topbar — M artwork + wordmark + EN toggle (consistent with /try) */}
+      <div className="fn-topbar">
+        <a className="fn-wordmark" href="/montree">
+          <picture>
+            <source srcSet="/brand/m-mark-transparent.webp" type="image/webp" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/m-mark.png" alt="Montree" width={30} height={25} />
+          </picture>
+          <span>{t('app.name')}</span>
+        </a>
+        <LanguageToggle className="bg-white/10 hover:bg-white/20 text-white border border-white/[0.08]" />
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 w-full max-w-md">
-        {/* Logo & Progress */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-3xl shadow-2xl shadow-emerald-500/30 mb-6">
-            <span className="text-4xl">🌱</span>
-          </div>
-          <h1 className="text-3xl font-light text-white mb-2">
-            {t('register.welcomeTo' as TranslationKey)} <span className="font-semibold">Montree</span>
-          </h1>
-          <p className="text-emerald-300/70 text-sm">
-            {t('register.startTrial' as TranslationKey)}
-          </p>
+      {/* Stage — centered form */}
+      <div className="fn-stage-wrap" style={{ padding: '32px 20px 72px' }}>
+        <div className="fn-screen center" style={{ maxWidth: 460 }}>
+          {/* Heading & progress */}
+          <div style={{ marginBottom: 32, width: '100%' }}>
+            <div className="fn-eyebrow" style={{ textAlign: 'center' }}>{t('app.name')}</div>
+            <h1 className="fn-h1" style={{ textAlign: 'center' }}>
+              {t('register.welcomeTo' as TranslationKey)}
+            </h1>
+            <p style={{ color: FT.whisper, fontSize: '0.9rem', textAlign: 'center', marginTop: 10 }}>
+              {t('register.startTrial' as TranslationKey)}
+            </p>
 
-          {/* Progress dots */}
-          <div className="flex justify-center gap-2 mt-6">
-            <div className={`w-3 h-3 rounded-full ${step >= 1 ? 'bg-emerald-400' : 'bg-white/20'}`} />
-            <div className={`w-3 h-3 rounded-full ${step >= 2 ? 'bg-emerald-400' : 'bg-white/20'}`} />
-          </div>
-        </div>
-
-        <form onSubmit={handleRegister}>
-          {/* Step 1: Teacher Info */}
-          {step === 1 && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">{t('register.yourName' as TranslationKey)}</label>
-                <input
-                  type="text"
-                  value={teacherName}
-                  onChange={(e) => setTeacherName(e.target.value)}
-                  placeholder={t('register.namePlaceholder' as TranslationKey)}
-                  className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
-                  autoFocus
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">{t('register.schoolName' as TranslationKey)}</label>
-                <input
-                  type="text"
-                  value={schoolName}
-                  onChange={(e) => setSchoolName(e.target.value)}
-                  placeholder={t('register.schoolPlaceholder' as TranslationKey)}
-                  className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
-                  required
-                />
-                <p className="mt-2 text-emerald-400/60 text-xs">
-                  {t('register.schoolNameHint' as TranslationKey)}
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setStep(2)}
-                disabled={!teacherName.trim() || !schoolName.trim()}
-                className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 mt-6"
-              >
-                {t('common.continue' as TranslationKey)} →
-              </button>
+            {/* Progress dots */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 20 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: step >= 1 ? FT.gold : 'rgba(255,255,255,0.14)' }} />
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: step >= 2 ? FT.gold : 'rgba(255,255,255,0.14)' }} />
             </div>
-          )}
+          </div>
 
-          {/* Step 2: Account Credentials */}
-          {step === 2 && (
-            <div className="space-y-4">
+          <form onSubmit={handleRegister} style={{ width: '100%' }}>
+            {/* Step 1: Teacher Info */}
+            {step === 1 && (
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">{t('register.email' as TranslationKey)}</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t('register.emailPlaceholder' as TranslationKey)}
-                  className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
-                  autoFocus
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">{t('register.createPassword' as TranslationKey)}</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={t('register.passwordPlaceholder' as TranslationKey)}
-                  className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">{t('register.confirmPassword' as TranslationKey)}</label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
-                  required
-                />
-              </div>
-
-              {error && (
-                <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-xl">
-                  <p className="text-red-300 text-sm">{error}</p>
+                <div className="fn-field">
+                  <label>{t('register.yourName' as TranslationKey)}</label>
+                  <input
+                    type="text"
+                    value={teacherName}
+                    onChange={(e) => setTeacherName(e.target.value)}
+                    placeholder={t('register.namePlaceholder' as TranslationKey)}
+                    className="fn-input"
+                    autoFocus
+                    required
+                  />
                 </div>
-              )}
 
-              <div className="flex gap-3 mt-6">
+                <div className="fn-field">
+                  <label>{t('register.schoolName' as TranslationKey)}</label>
+                  <input
+                    type="text"
+                    value={schoolName}
+                    onChange={(e) => setSchoolName(e.target.value)}
+                    placeholder={t('register.schoolPlaceholder' as TranslationKey)}
+                    className="fn-input"
+                    required
+                  />
+                  <div className="fn-slug" style={{ color: FT.hush }}>
+                    {t('register.schoolNameHint' as TranslationKey)}
+                  </div>
+                </div>
+
                 <button
                   type="button"
-                  onClick={() => setStep(1)}
-                  className="px-6 py-4 bg-white/10 backdrop-blur border border-white/20 text-white font-semibold rounded-xl hover:bg-white/20 transition-all"
+                  onClick={() => setStep(2)}
+                  disabled={!teacherName.trim() || !schoolName.trim()}
+                  className="fn-pill block"
+                  style={{ marginTop: 6 }}
                 >
-                  ← {t('common.back' as TranslationKey)}
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading || !email || !password || !confirmPassword}
-                  className="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                >
-                  {loading ? t('register.creating' as TranslationKey) : t('register.createAccount' as TranslationKey)}
+                  {t('common.continue' as TranslationKey)} →
                 </button>
               </div>
-            </div>
-          )}
-        </form>
+            )}
 
-        {/* Trial Info Banner */}
-        <div className="mt-8 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl">
-          <p className="text-emerald-300 text-sm text-center">
-            ✨ <span className="font-semibold">{t('register.trialDuration' as TranslationKey)}</span> • {t('register.trialStudentLimit' as TranslationKey)}
-          </p>
-          <p className="text-emerald-300/60 text-xs text-center mt-2">
-            {t('register.trialConvince' as TranslationKey)}
-          </p>
-        </div>
+            {/* Step 2: Account Credentials */}
+            {step === 2 && (
+              <div>
+                <div className="fn-field">
+                  <label>{t('register.email' as TranslationKey)}</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={t('register.emailPlaceholder' as TranslationKey)}
+                    className="fn-input"
+                    autoFocus
+                    required
+                  />
+                </div>
 
-        {/* Links */}
-        <div className="mt-8 text-center space-y-3">
-          <p className="text-white/50 text-sm">
-            {t('register.registerSchool' as TranslationKey)}{' '}
-            <Link href="/montree/principal/register" className="text-emerald-400 hover:text-emerald-300 font-semibold">
-              {t('register.registerAsPrincipal' as TranslationKey)}
-            </Link>
-          </p>
-          <p className="text-white/50 text-sm">
-            {t('register.alreadyHaveAccount' as TranslationKey)}{' '}
-            <Link href="/montree/login" className="text-emerald-400 hover:text-emerald-300">
-              {t('register.signIn' as TranslationKey)}
-            </Link>
-          </p>
+                <div className="fn-field">
+                  <label>{t('register.createPassword' as TranslationKey)}</label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={t('register.passwordPlaceholder' as TranslationKey)}
+                    className="fn-input"
+                    required
+                  />
+                </div>
+
+                <div className="fn-field">
+                  <label>{t('register.confirmPassword' as TranslationKey)}</label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="fn-input"
+                    required
+                  />
+                </div>
+
+                {error && (
+                  <div className="fn-error" style={{ marginBottom: 18 }}>
+                    <pre>{error}</pre>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: 12, marginTop: 6 }}>
+                  <button
+                    type="button"
+                    onClick={() => setStep(1)}
+                    className="fn-pill ghost"
+                  >
+                    ← {t('common.back' as TranslationKey)}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading || !email || !password || !confirmPassword}
+                    className="fn-pill"
+                    style={{ flex: 1 }}
+                  >
+                    {loading ? t('register.creating' as TranslationKey) : t('register.createAccount' as TranslationKey)}
+                  </button>
+                </div>
+              </div>
+            )}
+          </form>
+
+          {/* Trial Info Banner */}
+          <div
+            style={{
+              marginTop: 28,
+              width: '100%',
+              padding: '14px 16px',
+              borderRadius: 14,
+              background: 'rgba(232,201,106,0.08)',
+              border: '1px solid rgba(232,201,106,0.28)',
+              textAlign: 'center',
+            }}
+          >
+            <p style={{ color: FT.voice, fontSize: '0.86rem' }}>
+              <span style={{ fontWeight: 600 }}>{t('register.trialDuration' as TranslationKey)}</span> · {t('register.trialStudentLimit' as TranslationKey)}
+            </p>
+            <p style={{ color: FT.whisper, fontSize: '0.78rem', marginTop: 6 }}>
+              {t('register.trialConvince' as TranslationKey)}
+            </p>
+          </div>
+
+          {/* Links */}
+          <div style={{ marginTop: 24, textAlign: 'center' }}>
+            <p style={{ color: FT.whisper, fontSize: '0.86rem', marginBottom: 12 }}>
+              {t('register.registerSchool' as TranslationKey)}{' '}
+              <Link href="/montree/principal/register" className="fn-login-link">
+                {t('register.registerAsPrincipal' as TranslationKey)}
+              </Link>
+            </p>
+            <p style={{ color: FT.whisper, fontSize: '0.86rem' }}>
+              {t('register.alreadyHaveAccount' as TranslationKey)}{' '}
+              <Link href="/montree/login" className="fn-login-link">
+                {t('register.signIn' as TranslationKey)}
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="absolute bottom-6 text-center">
-        <p className="text-slate-500 text-xs">
-          🌳 Montree • montree.xyz
-        </p>
-      </div>
+      <div className="fn-foot">Montree · montree.xyz</div>
     </div>
   );
 }

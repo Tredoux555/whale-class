@@ -1,13 +1,17 @@
 // /montree/principal/register/page.tsx
 // Session 105: Principal Registration - Create account + school
+// Lanternlight reskin (Jul 2026): skin-only conversion to the funnel register
+// register (near-black stage, gold hairlines/eyebrow, flat #1D5C41 action).
+// Every handler, state, validation, API call and redirect is byte-identical to
+// the old teal-gradient page — className/style changes only.
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
-import MontreeLogo from '@/components/montree/MonteeLogo';
 import LanguageToggle from '@/components/montree/LanguageToggle';
+import { FT, FUNNEL_CSS } from '@/components/montree/funnel/funnel-theme';
 
 export default function PrincipalRegisterPage() {
   const router = useRouter();
@@ -45,7 +49,7 @@ export default function PrincipalRegisterPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (password !== confirmPassword) {
       setError(t('principalRegister.passwordMismatch'));
       return;
@@ -93,183 +97,183 @@ export default function PrincipalRegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 p-6 relative overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
+    <div className="fn-page">
+      <style dangerouslySetInnerHTML={{ __html: FUNNEL_CSS }} />
 
-      {/* Top bar — home link + language toggle */}
-      <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-5">
-        <Link href="/montree" className="flex items-center gap-2.5 no-underline">
-          <MontreeLogo size={30} />
-          <span className="text-white text-base font-semibold tracking-tight">Montree</span>
-        </Link>
-        <LanguageToggle />
+      {/* Topbar — M artwork + wordmark + EN toggle (consistent with /try) */}
+      <div className="fn-topbar">
+        <a className="fn-wordmark" href="/montree">
+          <picture>
+            <source srcSet="/brand/m-mark-transparent.webp" type="image/webp" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/m-mark.png" alt="Montree" width={30} height={25} />
+          </picture>
+          <span>{t('app.name')}</span>
+        </a>
+        <LanguageToggle className="bg-white/10 hover:bg-white/20 text-white border border-white/[0.08]" />
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 w-full max-w-md">
-        {/* Logo & Progress */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-3xl shadow-2xl shadow-emerald-500/30 mb-6">
-            <span className="text-4xl">🌱</span>
-          </div>
-          <h1 className="text-3xl font-light text-white mb-2">
-            {t('principalRegister.welcome')} <span className="font-semibold">Montree</span>
-          </h1>
-          <p className="text-emerald-300/70 text-sm">
-            {t('principalRegister.subtitle')}
-          </p>
-          
-          {/* Progress dots */}
-          <div className="flex justify-center gap-2 mt-6">
-            <div className={`w-3 h-3 rounded-full ${step >= 1 ? 'bg-emerald-400' : 'bg-white/20'}`} />
-            <div className={`w-3 h-3 rounded-full ${step >= 2 ? 'bg-emerald-400' : 'bg-white/20'}`} />
-          </div>
-        </div>
+      {/* Stage — centered form */}
+      <div className="fn-stage-wrap" style={{ padding: '32px 20px 72px' }}>
+        <div className="fn-screen center" style={{ maxWidth: 460 }}>
+          {/* Heading & progress */}
+          <div style={{ marginBottom: 32, width: '100%' }}>
+            <div className="fn-eyebrow" style={{ textAlign: 'center' }}>{t('app.name')}</div>
+            <h1 className="fn-h1" style={{ textAlign: 'center' }}>
+              {t('principalRegister.welcome')}
+            </h1>
+            <p style={{ color: FT.whisper, fontSize: '0.9rem', textAlign: 'center', marginTop: 10 }}>
+              {t('principalRegister.subtitle')}
+            </p>
 
-        <form onSubmit={handleRegister}>
-          {/* Step 1: School Info */}
-          {step === 1 && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">{t('principalRegister.schoolNameLabel')}</label>
-                <input
-                  type="text"
-                  value={schoolName}
-                  onChange={(e) => setSchoolName(e.target.value)}
-                  placeholder={t('principalRegister.schoolNamePlaceholder')}
-                  className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
-                  autoFocus
-                  required
-                />
-                {schoolName && (
-                  <p className="mt-2 text-emerald-400/60 text-sm">
-                    montree.app/{generateSlug(schoolName)}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">{t('principalRegister.principalNameLabel')}</label>
-                <input
-                  type="text"
-                  value={principalName}
-                  onChange={(e) => setPrincipalName(e.target.value)}
-                  placeholder={t('principalRegister.principalNamePlaceholder')}
-                  className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
-                  required
-                />
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setStep(2)}
-                disabled={!schoolName.trim() || !principalName.trim()}
-                className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 mt-6"
-              >
-                {t('principalRegister.continue')}
-              </button>
+            {/* Progress dots */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 20 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: step >= 1 ? FT.gold : 'rgba(255,255,255,0.14)' }} />
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: step >= 2 ? FT.gold : 'rgba(255,255,255,0.14)' }} />
             </div>
-          )}
+          </div>
 
-          {/* Step 2: Account Credentials */}
-          {step === 2 && (
-            <div className="space-y-4">
+          <form onSubmit={handleRegister} style={{ width: '100%' }}>
+            {/* Step 1: School Info */}
+            {step === 1 && (
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">{t('principalRegister.emailLabel')}</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t('principalRegister.emailPlaceholder')}
-                  className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
-                  autoFocus
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">{t('principalRegister.passwordLabel')}</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={t('principalRegister.passwordPlaceholder')}
-                  className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">{t('principalRegister.confirmPasswordLabel')}</label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder={t('principalRegister.confirmPasswordPlaceholder')}
-                  className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">{t('principalRegister.referralCodeLabel')}</label>
-                <input
-                  type="text"
-                  value={referralCode}
-                  onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                  placeholder={t('principalRegister.referralCodePlaceholder')}
-                  className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
-                  maxLength={32}
-                  autoComplete="off"
-                  spellCheck={false}
-                />
-              </div>
-
-              {error && (
-                <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-xl">
-                  <p className="text-red-300 text-sm">{error}</p>
+                <div className="fn-field">
+                  <label>{t('principalRegister.schoolNameLabel')}</label>
+                  <input
+                    type="text"
+                    value={schoolName}
+                    onChange={(e) => setSchoolName(e.target.value)}
+                    placeholder={t('principalRegister.schoolNamePlaceholder')}
+                    className="fn-input"
+                    autoFocus
+                    required
+                  />
+                  {schoolName && (
+                    <div className="fn-slug">
+                      montree.xyz/<b>{generateSlug(schoolName)}</b>
+                    </div>
+                  )}
                 </div>
-              )}
 
-              <div className="flex gap-3 mt-6">
+                <div className="fn-field">
+                  <label>{t('principalRegister.principalNameLabel')}</label>
+                  <input
+                    type="text"
+                    value={principalName}
+                    onChange={(e) => setPrincipalName(e.target.value)}
+                    placeholder={t('principalRegister.principalNamePlaceholder')}
+                    className="fn-input"
+                    required
+                  />
+                </div>
+
                 <button
                   type="button"
-                  onClick={() => setStep(1)}
-                  className="px-6 py-4 bg-white/10 backdrop-blur border border-white/20 text-white font-semibold rounded-xl hover:bg-white/20 transition-all"
+                  onClick={() => setStep(2)}
+                  disabled={!schoolName.trim() || !principalName.trim()}
+                  className="fn-pill block"
+                  style={{ marginTop: 6 }}
                 >
-                  {t('principalRegister.back')}
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading || !email || !password || !confirmPassword}
-                  className="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                >
-                  {loading ? t('principalRegister.creatingAccount') : t('principalRegister.createAccount')}
+                  {t('principalRegister.continue')}
                 </button>
               </div>
-            </div>
-          )}
-        </form>
+            )}
 
-        {/* Links */}
-        <div className="mt-8 text-center">
-          <p className="text-white/50 text-sm">
-            {t('principalRegister.alreadyHaveAccount')}{' '}
-            <Link href="/montree/principal/login" className="text-emerald-400 hover:text-emerald-300">
-              {t('principalRegister.signIn')}
-            </Link>
-          </p>
+            {/* Step 2: Account Credentials */}
+            {step === 2 && (
+              <div>
+                <div className="fn-field">
+                  <label>{t('principalRegister.emailLabel')}</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={t('principalRegister.emailPlaceholder')}
+                    className="fn-input"
+                    autoFocus
+                    required
+                  />
+                </div>
+
+                <div className="fn-field">
+                  <label>{t('principalRegister.passwordLabel')}</label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={t('principalRegister.passwordPlaceholder')}
+                    className="fn-input"
+                    required
+                  />
+                </div>
+
+                <div className="fn-field">
+                  <label>{t('principalRegister.confirmPasswordLabel')}</label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder={t('principalRegister.confirmPasswordPlaceholder')}
+                    className="fn-input"
+                    required
+                  />
+                </div>
+
+                <div className="fn-field">
+                  <label>{t('principalRegister.referralCodeLabel')}</label>
+                  <input
+                    type="text"
+                    value={referralCode}
+                    onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                    placeholder={t('principalRegister.referralCodePlaceholder')}
+                    className="fn-input"
+                    maxLength={32}
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+                </div>
+
+                {error && (
+                  <div className="fn-error" style={{ marginBottom: 18 }}>
+                    <pre>{error}</pre>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: 12, marginTop: 6 }}>
+                  <button
+                    type="button"
+                    onClick={() => setStep(1)}
+                    className="fn-pill ghost"
+                  >
+                    {t('principalRegister.back')}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading || !email || !password || !confirmPassword}
+                    className="fn-pill"
+                    style={{ flex: 1 }}
+                  >
+                    {loading ? t('principalRegister.creatingAccount') : t('principalRegister.createAccount')}
+                  </button>
+                </div>
+              </div>
+            )}
+          </form>
+
+          {/* Links */}
+          <div style={{ marginTop: 28, textAlign: 'center' }}>
+            <p style={{ color: FT.whisper, fontSize: '0.86rem' }}>
+              {t('principalRegister.alreadyHaveAccount')}{' '}
+              <Link href="/montree/principal/login" className="fn-login-link">
+                {t('principalRegister.signIn')}
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="absolute bottom-6 text-center">
-        <p className="text-slate-500 text-xs inline-flex items-center justify-center gap-1.5">
-          <MontreeLogo size={12} />
-          <span>Montree • montree.xyz</span>
-        </p>
-      </div>
+      <div className="fn-foot">Montree · montree.xyz</div>
     </div>
   );
 }

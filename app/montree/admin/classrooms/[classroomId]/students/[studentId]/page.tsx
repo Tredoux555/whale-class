@@ -186,24 +186,30 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a1a0f] flex items-center justify-center">
         <div className="text-5xl animate-bounce">📊</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900">
+    <div
+      className="min-h-screen bg-[#0a1a0f]"
+      style={{ backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(39,129,90,0.32), transparent 60%)' }}
+    >
       <Toaster position="top-center" />
 
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-gradient-to-r from-emerald-600 to-teal-700 px-4 py-3 shadow-lg">
+      <div
+        className="sticky top-0 z-40 bg-[#0a1a0f] border-b border-[rgba(52,211,153,0.15)] px-4 pb-3"
+        style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))' }}
+      >
         <div className="max-w-4xl mx-auto flex items-center gap-3">
-          <button onClick={() => router.push(`/montree/admin/classrooms/${classroomId}`)} className="p-2 rounded-lg bg-white/20 hover:bg-white/30 text-white">
+          <button onClick={() => router.push(`/montree/admin/classrooms/${classroomId}`)} className="p-2 rounded-lg bg-white/[0.06] border border-[rgba(52,211,153,0.15)] hover:bg-white/10 text-white">
             ←
           </button>
           {/* Student avatar */}
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center overflow-hidden">
+          <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center overflow-hidden">
             {student?.photo_url ? (
               <img src={student.photo_url} alt={student.name} className="w-full h-full object-cover" />
             ) : (
@@ -212,7 +218,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
           </div>
           <div>
             <h1 className="text-lg font-bold text-white">{student?.name || 'Student'}</h1>
-            <p className="text-emerald-100 text-xs">{classroomName}{student?.age ? ` · ${student.age} years old` : ''}</p>
+            <p className="text-white/50 text-xs">{classroomName}{student?.age ? ` · ${student.age} years old` : ''}</p>
           </div>
         </div>
       </div>
@@ -222,17 +228,17 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
         {/* Hero Stats */}
         {stats && (
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-white/10 rounded-xl p-4 text-center">
+            <div className="bg-white/[0.06] rounded-xl border border-[rgba(52,211,153,0.15)] p-4 text-center">
               <div className="text-3xl mb-1">⭐</div>
               <div className="text-2xl font-bold text-white">{stats.mastered}</div>
               <div className="text-emerald-300 text-xs">Mastered</div>
             </div>
-            <div className="bg-white/10 rounded-xl p-4 text-center">
+            <div className="bg-white/[0.06] rounded-xl border border-[rgba(52,211,153,0.15)] p-4 text-center">
               <div className="text-3xl mb-1">🔄</div>
               <div className="text-2xl font-bold text-white">{stats.practicing}</div>
               <div className="text-emerald-300 text-xs">Practicing</div>
             </div>
-            <div className="bg-white/10 rounded-xl p-4 text-center">
+            <div className="bg-white/[0.06] rounded-xl border border-[rgba(52,211,153,0.15)] p-4 text-center">
               <div className="text-3xl mb-1">📋</div>
               <div className="text-2xl font-bold text-white">{stats.presented}</div>
               <div className="text-emerald-300 text-xs">Presented</div>
@@ -244,7 +250,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
         <button
           onClick={generateQuickReport}
           disabled={guruLoading}
-          className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-2xl font-semibold text-lg hover:from-emerald-600 hover:to-teal-600 active:scale-[0.98] transition-all shadow-lg disabled:opacity-60"
+          className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-semibold text-lg hover:bg-emerald-500 active:scale-[0.98] transition-all disabled:opacity-60"
         >
           {guruLoading ? (
             <span className="flex items-center justify-center gap-2">
@@ -257,7 +263,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
 
         {/* Guru Response (inline) */}
         {showGuru && (guruLoading || guruResponse) && (
-          <div className="bg-white/10 rounded-2xl p-5 border border-emerald-500/30">
+          <div className="bg-white/[0.06] rounded-2xl p-5 border border-[rgba(52,211,153,0.15)]">
             {guruLoading && !guruResponse && (
               <div className="text-center py-8">
                 <div className="text-4xl animate-bounce mb-3">🧠</div>
@@ -328,7 +334,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
                       onChange={e => setGuruQuestion(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter' && guruQuestion.trim()) askGuru(guruQuestion); }}
                       placeholder={t('admin.form.askFollowUpQuestion')}
-                      className="flex-1 px-4 py-2 bg-black/20 border border-white/20 rounded-xl text-white text-sm placeholder:text-white/30"
+                      className="flex-1 px-4 py-2 bg-black/20 border border-[rgba(52,211,153,0.15)] rounded-xl text-white text-sm placeholder:text-white/30"
                     />
                     <button
                       onClick={() => askGuru(guruQuestion)}
@@ -353,7 +359,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
 
         {/* Progress Bars */}
         {summary?.areas && summary.areas.length > 0 && (
-          <div className="bg-white/10 rounded-2xl p-5">
+          <div className="bg-white/[0.06] rounded-2xl border border-[rgba(52,211,153,0.15)] p-5">
             <h2 className="text-white font-semibold mb-4">{t('admin.sections.progressByArea')}</h2>
             <div className="space-y-3">
               {summary.areas.map(area => (
@@ -385,7 +391,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
                     <span className="text-emerald-300 text-sm font-medium">{summary.overall.percent}%</span>
                   </div>
                   <div className="h-3 bg-white/10 rounded-full overflow-hidden">
-                    <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-500" style={{ width: `${summary.overall.percent}%` }} />
+                    <div className="h-full rounded-full bg-emerald-500 transition-all duration-500" style={{ width: `${summary.overall.percent}%` }} />
                   </div>
                 </div>
               )}
@@ -394,7 +400,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
         )}
 
         {/* Reports Sent to Parents */}
-        <div className="bg-white/10 rounded-2xl p-5">
+        <div className="bg-white/[0.06] rounded-2xl border border-[rgba(52,211,153,0.15)] p-5">
           <h2 className="text-white font-semibold mb-4">{t('admin.sections.reportsSentToParents')}</h2>
           {reports.length === 0 ? (
             <p className="text-white/50 text-sm text-center py-4">{t('admin.emptyStates.noReportsSent')}</p>
@@ -446,7 +452,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
 
         {/* Quick Questions for Guru */}
         {!showGuru && (
-          <div className="bg-white/5 rounded-2xl p-4">
+          <div className="bg-white/[0.06] rounded-2xl border border-[rgba(52,211,153,0.15)] p-4">
             <p className="text-white/50 text-xs mb-3">{t('admin.labels.quickQuestionsForGuru')}:</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {[
@@ -458,7 +464,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
                 <button
                   key={i}
                   onClick={() => { setShowGuru(true); setGuruQuestion(q); askGuru(q); }}
-                  className="text-left px-3 py-2 bg-white/5 rounded-lg text-white/70 text-sm hover:bg-white/10 transition-colors"
+                  className="text-left px-3 py-2 bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-lg text-white/70 text-sm hover:bg-white/10 transition-colors"
                 >
                   {q}
                 </button>

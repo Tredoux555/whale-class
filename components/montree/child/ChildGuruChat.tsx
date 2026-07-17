@@ -333,7 +333,7 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
           alignItems: 'center',
           justifyContent: 'center',
           cursor: 'pointer',
-          boxShadow: '0 10px 30px rgba(16,185,129,0.40)',
+          boxShadow: 'none',
           zIndex: 50,
           transition: 'all 140ms ease',
         }}
@@ -357,7 +357,7 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
       borderRadius: 18,
       backdropFilter: T.blur,
       WebkitBackdropFilter: T.blur,
-      boxShadow: '0 24px 60px rgba(0,0,0,0.55)',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
@@ -644,7 +644,7 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
               border: `1px solid ${(!input.trim() || isLoading) ? 'rgba(52,211,153,0.20)' : 'rgba(52,211,153,0.55)'}`,
               color: (!input.trim() || isLoading) ? 'rgba(52,211,153,0.50)' : '#06281a',
               cursor: (!input.trim() || isLoading) ? 'not-allowed' : 'pointer',
-              boxShadow: (!input.trim() || isLoading) ? 'none' : '0 4px 14px rgba(16,185,129,0.30)',
+              boxShadow: 'none',
               transition: 'all 120ms ease',
             }}
           >

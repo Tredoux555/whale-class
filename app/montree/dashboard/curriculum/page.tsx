@@ -264,7 +264,7 @@ export default function CurriculumPage() {
               <button
                 data-tutorial="curriculum-add-button"
                 onClick={() => setShowAddModal(true)}
-                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', borderRadius: 12, color: '#06281a', fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 14px rgba(16,185,129,0.25)' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', borderRadius: 12, color: '#06281a', fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: 'none' }}
               >
                 <span>➕</span>
                 <span className="hidden sm:inline">{t('weekview.addWork')}</span>
@@ -281,7 +281,7 @@ export default function CurriculumPage() {
             <h2 style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontSize: 22, fontWeight: 500, color: 'rgba(255,255,255,0.95)', marginBottom: 8 }}>{t('curriculum.noCurriculum')}</h2>
             <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 14, color: 'rgba(255,255,255,0.45)', marginBottom: 24 }}>{t('curriculum.noCurriculumDesc')}</p>
             <button onClick={handleImportCurriculum} disabled={importing}
-              style={{ background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', borderRadius: 14, padding: '14px 32px', color: '#06281a', fontFamily: '"Inter", sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer', boxShadow: '0 4px 20px rgba(16,185,129,0.30)', opacity: importing ? 0.5 : 1 }}>
+              style={{ background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', borderRadius: 14, padding: '14px 32px', color: '#06281a', fontFamily: '"Inter", sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer', boxShadow: 'none', opacity: importing ? 0.5 : 1 }}>
               {importing ? t('curriculum.importing') : `📥 ${t('curriculum.importMaster')}`}
             </button>
           </div>
@@ -313,7 +313,7 @@ export default function CurriculumPage() {
                       textAlign: 'left',
                       cursor: 'pointer',
                       transition: 'all 140ms ease',
-                      boxShadow: isSelected ? `0 0 0 1px rgba(${rgb}, 0.20)` : 'none',
+                      boxShadow: 'none',
                     }}>
                     <div className="mb-2 flex items-center gap-2">
                       <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: `rgb(${rgb})`, flexShrink: 0 }} />
@@ -385,7 +385,7 @@ export default function CurriculumPage() {
         <button
           onClick={() => setShowAddModal(true)}
           className="fixed bottom-20 right-4 sm:hidden z-30 active:scale-95"
-          style={{ width: 56, height: 56, background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, boxShadow: '0 4px 20px rgba(16,185,129,0.35)', cursor: 'pointer' }}
+          style={{ width: 56, height: 56, background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, boxShadow: '0 8px 32px rgba(0,0,0,0.45)', cursor: 'pointer' }}
         >
           ➕
         </button>

@@ -987,7 +987,7 @@ function TeacherRow({
                 border: '1px solid rgba(52,211,153,0.22)',
                 borderRadius: 12,
                 padding: 6,
-                boxShadow: '0 12px 36px rgba(0,0,0,0.45)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
                 zIndex: 10,
               }}
             >

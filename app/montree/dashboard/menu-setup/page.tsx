@@ -208,7 +208,7 @@ export default function MenuSetupPage() {
               color: dirty ? '#06140e' : 'rgba(255,255,255,0.4)',
               fontSize: 15, fontWeight: 700, fontFamily: SANS,
               cursor: saving || !dirty ? 'default' : 'pointer',
-              boxShadow: dirty ? '0 10px 30px -10px rgba(52,211,153,0.6)' : 'none',
+              boxShadow: 'none',
             }}
           >
             <Check size={18} strokeWidth={2.2} />

@@ -514,8 +514,7 @@ export default function MiraFloat() {
           border: '1px solid rgba(232,201,106,0.45)',
           borderRadius: '50%',
           cursor: 'pointer',
-          boxShadow:
-            '0 6px 22px rgba(0,0,0,0.45), 0 0 0 4px rgba(232,201,106,0.06)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -536,7 +535,7 @@ export default function MiraFloat() {
               borderRadius: '50%',
               background: T.gold,
               border: '2px solid #07120c',
-              boxShadow: '0 0 0 2px rgba(232,201,106,0.35)',
+              boxShadow: 'none',
             }}
           />
         )}
@@ -555,8 +554,7 @@ export default function MiraFloat() {
           }
           .mira-float-trigger:hover {
             transform: translateY(-1px);
-            box-shadow: 0 8px 26px rgba(0, 0, 0, 0.5),
-              0 0 0 4px rgba(232, 201, 106, 0.12);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
           }
         `}</style>
       </button>
@@ -578,7 +576,7 @@ export default function MiraFloat() {
         backdropFilter: 'blur(22px)',
         border: T.cardBorder,
         borderRadius: 18,
-        boxShadow: '0 18px 56px rgba(0, 0, 0, 0.55)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',

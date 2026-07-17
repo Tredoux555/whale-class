@@ -56,7 +56,7 @@ function ChildAvatar({ name, photoUrl }: { name: string; photoUrl: string | null
   }
 
   return (
-    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+    <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
       {initials}
     </div>
   );

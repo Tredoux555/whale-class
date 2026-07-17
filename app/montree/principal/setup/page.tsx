@@ -51,7 +51,7 @@ const SETUP_CSS = `
 .fn-sw.sel{border-color:${FT.gold}}
 .fn-remove{width:30px; height:30px; border-radius:50%; flex:none; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.10); color:rgba(255,250,240,0.45); font-size:1.05rem; line-height:1; display:flex; align-items:center; justify-content:center; transition:all .15s ease}
 .fn-remove:hover{background:rgba(239,68,68,0.18); color:rgba(252,165,165,0.9); border-color:rgba(239,68,68,0.3)}
-.fn-addrow{width:100%; border:1px dashed rgba(255,255,255,0.17); border-radius:16px; padding:15px; text-align:center; color:${FT.whisper}; font-size:0.9rem; cursor:pointer; transition:all .16s ease; margin-bottom:13px; background:none}
+.fn-addrow{width:100%; border:1px dashed rgba(255,255,255,0.17); border-radius:14px; padding:15px; text-align:center; color:${FT.whisper}; font-size:0.9rem; cursor:pointer; transition:all .16s ease; margin-bottom:13px; background:none}
 .fn-addrow:hover{border-color:rgba(52,211,153,0.4); color:${FT.voice}}
 .fn-tgroup{background:${FT.glass}; border:1px solid ${FT.glassEdge}; border-radius:14px; padding:18px; margin-bottom:14px}
 .fn-ghead{display:flex; align-items:center; gap:9px; font-family:${FT.serif}; font-size:1.06rem; margin-bottom:13px; color:${FT.voice}}
@@ -78,7 +78,7 @@ const SETUP_CSS = `
 .fn-groupcta:hover{background:rgba(232,201,106,0.06)}
 .fn-groupcta.done{background:rgba(52,211,153,0.12); border-color:rgba(52,211,153,0.35); color:${FT.emeraldHi}}
 .fn-walkin{margin-top:30px; text-align:center}
-.fn-warn{width:100%; background:rgba(239,68,68,0.10); border:1px solid rgba(239,68,68,0.3); border-radius:16px; padding:16px 18px; margin-bottom:18px; text-align:left}
+.fn-warn{width:100%; background:rgba(239,68,68,0.10); border:1px solid rgba(239,68,68,0.3); border-radius:14px; padding:16px 18px; margin-bottom:18px; text-align:left}
 .fn-warn h3{color:rgba(252,165,165,0.95); font-family:${FT.serif}; font-weight:500; font-size:1.05rem; margin-bottom:8px}
 .fn-warn ul{list-style:none; color:rgba(252,165,165,0.82); font-size:0.85rem; line-height:1.6; margin:0; padding:0}
 .fn-warn p{color:rgba(252,165,165,0.6); font-size:0.78rem; margin-top:8px}

@@ -141,7 +141,7 @@ const ctaStyle: CSSProperties = {
   letterSpacing: 0.1,
   cursor: 'pointer',
   whiteSpace: 'nowrap',
-  boxShadow: '0 4px 14px rgba(16,185,129,0.25)',
+  // Build E: decorative button glow removed — flat register, no shadows.
 };
 
 const ghostBtn: CSSProperties = {
@@ -2089,7 +2089,7 @@ function ClassEnglishHeatmap({
                   transform: isHovered ? 'scale(1.4)' : 'scale(1)',
                   transition: 'transform 100ms ease, border 100ms ease',
                   zIndex: isHovered ? 5 : 1,
-                  boxShadow: isHovered ? '0 2px 8px rgba(0,0,0,0.40)' : 'none',
+                  boxShadow: 'none',
                 }}
               />
             );
@@ -2632,7 +2632,7 @@ function ClassProgressAreaCard({
           alignItems: 'center',
           justifyContent: 'center',
           flexShrink: 0,
-          boxShadow: `0 0 0 1px ${color}, 0 0 12px ${color}33`,
+          boxShadow: 'none',
         }}>
           {letter}
         </div>

@@ -799,7 +799,7 @@ export default function WeeklyWrapPage() {
               {selectedChildIds.has(r.child_id) && <span className="text-[11px]">✓</span>}
             </div>
           )}
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold flex-shrink-0 text-sm">
+          <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold flex-shrink-0 text-sm">
             {firstName.charAt(0)}
           </div>
 
@@ -1057,7 +1057,7 @@ export default function WeeklyWrapPage() {
               {selectedChildIds.has(r.child_id) && <span className="text-[11px]">✓</span>}
             </div>
           )}
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold flex-shrink-0 text-sm">
+          <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold flex-shrink-0 text-sm">
             {firstName.charAt(0)}
           </div>
 

@@ -489,7 +489,7 @@ export default function CopilotDock({
             borderRadius: 999,
             backdropFilter: T.blur,
             WebkitBackdropFilter: T.blur,
-            boxShadow: '0 8px 30px rgba(0,0,0,0.45)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
             cursor: 'pointer',
             fontFamily: T.sans,
             color: T.textPrimary,
@@ -546,7 +546,7 @@ export default function CopilotDock({
             border: `1px solid ${T.cardBorder}`,
             backdropFilter: 'blur(22px)',
             WebkitBackdropFilter: 'blur(22px)',
-            boxShadow: '0 18px 56px rgba(0,0,0,0.55)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
@@ -830,7 +830,7 @@ export default function CopilotDock({
                       fontSize: 13.5,
                       fontWeight: 600,
                       cursor: 'pointer',
-                      boxShadow: '0 4px 14px rgba(16,185,129,0.30)',
+                      boxShadow: 'none',
                     }}
                   >
                     {t('copilot.card.takeMeThere')}
