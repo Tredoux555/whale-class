@@ -3890,6 +3890,9 @@ export const ru: Record<string, string> = {
   'landing.hero.subtitle': 'Педагог делает фотографию. Montree делает всё остальное.',
   'landing.hero.cta': 'Попробовать',
   'landing.hero.fineprint': 'Starter $3 · Premium $7 за активного ребёнка / месяц · 7 дней Premium бесплатно',
+  // Foundation strip (below the hero)
+  'landing.foundation.line': 'Every subscription helps carry a school in need.',
+  'landing.foundation.sub': 'Montree Foundation schools run free, funded by the schools that can pay.',
   'landing.pricing.label': 'Цены',
   'landing.pricing.title': 'Простые и честные цены.',
   'landing.pricing.trialLine': 'Каждая школа начинает с 7 дней Premium бесплатно.',

@@ -4296,6 +4296,9 @@ export const zh = {
   'landing.hero.subtitle': '老师拍照。Montree 完成其余工作。',
   'landing.hero.cta': '立即体验',
   'landing.hero.fineprint': 'Starter $3 · Premium $7 每位活跃学生 / 月 · 7 天 Premium 免费',
+  // Foundation strip (below the hero)
+  'landing.foundation.line': '每一份订阅，都在托起一所需要帮助的学校。',
+  'landing.foundation.sub': 'Montree 基金会的学校免费使用，费用由有能力付费的学校共同承担。',
   'landing.pricing.label': '价格',
   'landing.pricing.title': '简单、透明的价格。',
   'landing.pricing.trialLine': '每所学校都从 7 天免费 Premium 开始。',

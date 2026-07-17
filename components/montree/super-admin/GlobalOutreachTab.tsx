@@ -257,7 +257,6 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
   const [grand, setGrand] = useState<Grand | null>(null);
   const [loadingAgg, setLoadingAgg] = useState(true);
   const [aggError, setAggError] = useState<string | null>(null);
-  const [showAll, setShowAll] = useState(false);
   const [countryTableOpen, setCountryTableOpen] = useState(false);
 
   // contacts browser
@@ -292,7 +291,7 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
   const loadAgg = useCallback(async () => {
     setLoadingAgg(true);
     try {
-      const res = await fetch(`/api/montree/super-admin/global-outreach?view=by_country${showAll ? '&all=1' : ''}`, {
+      const res = await fetch('/api/montree/super-admin/global-outreach?view=by_country', {
         headers: authHeaders, cache: 'no-store',
       });
       if (!res.ok) {
@@ -308,7 +307,7 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
     } finally {
       setLoadingAgg(false);
     }
-  }, [authHeaders, showAll]);
+  }, [authHeaders]);
 
   useEffect(() => { loadAgg(); }, [loadAgg]);
 
@@ -322,7 +321,6 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
     setLoadingContacts(true);
     try {
       const params = new URLSearchParams({ view: 'contacts', limit: String(PER), offset: String(page * PER) });
-      if (showAll) params.set('all', '1');
       if (country) params.set('country', country);
       if (debouncedQ.trim()) params.set('q', debouncedQ.trim());
       if (disadvantagedOnly) params.set('disadvantaged', '1');
@@ -349,7 +347,7 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
     } finally {
       setLoadingContacts(false);
     }
-  }, [authHeaders, page, country, statusFilter, debouncedQ, showAll, socialView, socialStatusFilter, disadvantagedOnly]);
+  }, [authHeaders, page, country, statusFilter, debouncedQ, socialView, socialStatusFilter, disadvantagedOnly]);
 
   useEffect(() => { loadContacts(); }, [loadContacts]);
 
@@ -358,7 +356,6 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
     if (!socialView) return;
     try {
       const params = new URLSearchParams({ view: 'social_counts' });
-      if (showAll) params.set('all', '1');
       if (country) params.set('country', country);
       if (disadvantagedOnly) params.set('disadvantaged', '1');
       const res = await fetch(`/api/montree/super-admin/global-outreach?${params.toString()}`, {
@@ -371,12 +368,12 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
     } catch {
       // non-fatal — counter strip just stays blank
     }
-  }, [authHeaders, socialView, showAll, country, disadvantagedOnly]);
+  }, [authHeaders, socialView, country, disadvantagedOnly]);
 
   useEffect(() => { loadSocialCounts(); }, [loadSocialCounts]);
 
   // reset to page 0 when filters change
-  useEffect(() => { setPage(0); }, [country, statusFilter, debouncedQ, showAll, socialView, socialStatusFilter, disadvantagedOnly]);
+  useEffect(() => { setPage(0); }, [country, statusFilter, debouncedQ, socialView, socialStatusFilter, disadvantagedOnly]);
 
   const changeStatus = async (id: string, newStatus: string) => {
     const prev = contacts;
@@ -418,7 +415,6 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
   const doExport = async () => {
     try {
       const params = new URLSearchParams({ view: 'export' });
-      if (showAll) params.set('all', '1');
       if (country) params.set('country', country);
       if (statusFilter) params.set('status', statusFilter);
       const res = await fetch(`/api/montree/super-admin/global-outreach?${params.toString()}`, {
@@ -574,18 +570,14 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
             <div style={{ fontSize: 11, color: T.textSecondary }}>{s.label}</div>
           </div>
         ))}
-        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: T.textSecondary, marginLeft: 'auto', cursor: 'pointer' }}>
-          <input type="checkbox" checked={showAll} onChange={e => setShowAll(e.target.checked)} style={{ accentColor: T.emerald }} />
-          All contacts (widen beyond this scrape)
-        </label>
       </div>
 
       {aggError && <div style={{ ...cardStyle, borderColor: 'rgba(239,68,68,0.4)', color: T.red, marginBottom: 16 }}>⚠ {aggError}</div>}
 
       {/* (e) empty-state hint */}
-      {!loadingAgg && !aggError && grand && grand.total === 0 && !showAll && (
+      {!loadingAgg && !aggError && grand && grand.total === 0 && (
         <div style={{ ...cardStyle, borderColor: 'rgba(232,201,106,0.4)', color: T.gold, marginBottom: 16 }}>
-          No contacts in this scrape yet. Import the master CSV
+          No contacts yet. Import the master CSV
           (<code>docs/outreach/Montree_Global_Master_Jul2026.csv</code>) using the box below.
         </div>
       )}

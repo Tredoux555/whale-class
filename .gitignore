@@ -163,3 +163,7 @@ tsconfig.gcintro.tmp.tsbuildinfo
 tsconfig.scope-styling-fixes.json
 tsconfig.onboardtmp.json
 tsconfig.onboardtmp.tsbuildinfo
+tsconfig.foundsunset.tmp.json
+tsconfig.foundsunset.tmp.tsbuildinfo
+tsconfig.foundface.tmp.json
+tsconfig.foundface.tmp.tsbuildinfo

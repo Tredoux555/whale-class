@@ -162,81 +162,6 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
     }
   };
 
-  // One-shot mint (Jul 6 launch): school name + email → admitted row + FND-
-  // code + shareable link, in a single click. This is the primary founding
-  // workflow — schools apply BY EMAIL, so there's rarely a waitlist row to
-  // admit first. Duplicate email that's already admitted+coded returns the
-  // existing code (idempotent); other duplicates get a clear 409 message.
-  const [mintSchool, setMintSchool] = useState('');
-  const [mintEmail, setMintEmail] = useState('');
-  const [minting, setMinting] = useState(false);
-  const [minted, setMinted] = useState<{ code: string; already: boolean } | null>(null);
-  // Inline error for this card — the global `error` banner renders at the TOP
-  // of the tab, off-screen when scrolled down here (see pError note below).
-  const [mintError, setMintError] = useState<string | null>(null);
-
-  const mintLink = async () => {
-    if (!mintSchool.trim() || !mintEmail.trim()) {
-      setMintError('School name and email are both needed to mint a link.');
-      return;
-    }
-    setMinting(true);
-    setMinted(null);
-    setMintError(null);
-    try {
-      const res = await fetch('/api/montree/super-admin/founding', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'x-super-admin-token': sessionToken },
-        body: JSON.stringify({ action: 'create_admitted', school_name: mintSchool.trim(), email: mintEmail.trim() }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setMintError(
-          res.status === 401
-            ? 'Your session has expired — log in again, then mint.'
-            : data?.error || 'Could not mint a founding link. Try again.'
-        );
-        return;
-      }
-      setMinted({ code: data.signup_code, already: !!data.already_existed });
-      setMintSchool('');
-      setMintEmail('');
-      setMintError(null);
-      await load();
-    } catch {
-      setMintError('Could not mint a founding link. Check your connection and try again.');
-    } finally {
-      setMinting(false);
-    }
-  };
-
-  // ── Universal Founding 100 link (migration 291) ──
-  // Get-or-create the ONE public multi-use code. Idempotent server-side, so the
-  // link persists across reloads (it's read from config on every load()).
-  const [universalMinting, setUniversalMinting] = useState(false);
-
-  const createUniversalLink = async () => {
-    setUniversalMinting(true);
-    try {
-      const res = await fetch('/api/montree/super-admin/founding', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'x-super-admin-token': sessionToken },
-        body: JSON.stringify({ action: 'get_or_create_universal_code' }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setError(data?.error || 'Could not create the universal link. Try again.');
-        return;
-      }
-      setError(null);
-      await load();
-    } catch {
-      setError('Could not create the universal link. Try again.');
-    } finally {
-      setUniversalMinting(false);
-    }
-  };
-
   // ── Partner Program mint (one shot) ──
   // Partner name + email + school + share % → signup link (Premium FREE for
   // life) + referral code/link (revenue share) + agent dashboard login, all in
@@ -438,11 +363,6 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
 
   const visible = filter === 'all' ? rows : rows.filter((r) => r.status === filter);
 
-  // Universal Founding 100 link (migration 291), derived from config so no
-  // non-null assertions are needed in the JSX below.
-  const universalCode = config.universal_signup_code || null;
-  const universalLink = universalCode ? `https://montree.xyz/montree/try?founding=${universalCode}` : null;
-
   const card: React.CSSProperties = {
     background: '#0f172a', border: '1px solid rgba(148,163,184,0.14)',
     borderRadius: 14, padding: 20,
@@ -460,15 +380,9 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
 
   return (
     <div style={{ color: '#e2e8f0', fontFamily: 'Inter, system-ui, sans-serif' }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 4 }}>
-        <h2 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>🚀 Founding 100</h2>
-        <span style={{ fontSize: 13, color: '#64748b' }}>
-          {loading ? 'Loading…' : `${remaining} of ${config.cap} spots remaining`}
-        </span>
-      </div>
+      <h2 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 6px' }}>🌱 Foundation</h2>
       <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 20px' }}>
-        The public counter shows spots remaining based on schools <strong style={{ color: '#94a3b8' }}>you admit here</strong> — not raw signups.
-        Admitting a school does not charge it $3; set that school&apos;s per-school billing override to lock the price when you&apos;re ready.
+        Foundation schools run free, by invitation. Mint a grant below.
       </p>
 
       {error && (
@@ -477,105 +391,12 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
         </div>
       )}
 
-      {/* ── Founder messages (migration 292) ──
-          Direct line from Founding-member principals. Collapsible list of
-          principal_super_admin threads with inline reply. */}
-      <FoundingInbox saToken={sessionToken} />
-
-      {/* ── Universal Founding 100 link (migration 291) ──
-          ONE public multi-use link for Facebook groups + email. Every signup
-          through it auto-joins the Founding 100 at $3/life until the 100 fill,
-          then the SAME link falls back to a normal trial (never a dead link). */}
-      <div style={{ ...card, borderColor: 'rgba(52,211,153,0.4)', marginBottom: 16 }}>
-        <div style={{ ...label, color: '#34d399', marginBottom: 4 }}>🌍 Universal Founding 100 link</div>
-        <p style={{ fontSize: 12, color: '#64748b', margin: '0 0 12px' }}>
-          One link to post in Facebook groups + email. Every signup through it auto-joins the Founding 100 at{' '}
-          <strong style={{ color: '#34d399' }}>$3/student for life</strong> (1 month of Premium free first). It stops
-          granting automatically once the 100 spots fill — after that the same link still works, falling back to a
-          normal trial. It never expires and never becomes a dead link.
-        </p>
-        {universalCode && universalLink ? (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
-            <code style={{ background: 'rgba(52,211,153,0.12)', color: '#34d399', padding: '8px 12px', borderRadius: 8, fontSize: 13, maxWidth: 460, overflowX: 'auto', whiteSpace: 'nowrap' }}>
-              {universalLink}
-            </code>
-            <button style={btn('#334155', '#e2e8f0')} onClick={() => copyLink(universalCode)}>
-              {copiedCode === universalCode ? '✓ Copied' : 'Copy link'}
-            </button>
-            <button
-              style={btn('#34d399', '#04150c')}
-              disabled={qrStatusMap.universal === 'working'}
-              onClick={() => generateQrCard(universalLink, universalCode, 'universal')}
-            >
-              {qrStatusMap.universal === 'working'
-                ? 'Generating…'
-                : qrStatusMap.universal === 'done'
-                ? '✓ Downloaded'
-                : qrStatusMap.universal === 'error'
-                ? 'Failed — retry'
-                : 'Generate QR code'}
-            </button>
-          </div>
-        ) : (
-          <button style={btn('#34d399', '#04150c')} disabled={universalMinting} onClick={createUniversalLink}>
-            {universalMinting ? 'Creating…' : 'Create universal link'}
-          </button>
-        )}
-      </div>
-
-      {/* ── Mint a founding link (one shot) ──
-          The headline action: type the school + email from their application
-          email, click Mint → admitted row + FND- code + shareable link. */}
-      <div style={{ ...card, borderColor: 'rgba(232,201,106,0.4)', marginBottom: 16 }}>
-        <div style={{ ...label, color: '#E8C96A', marginBottom: 10 }}>🚀 Mint a founding link</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
-          <input
-            style={{ ...input, width: 220 }}
-            placeholder="School name"
-            value={mintSchool}
-            onChange={(e) => setMintSchool(e.target.value)}
-          />
-          <input
-            style={{ ...input, width: 240 }}
-            placeholder="Their email"
-            type="email"
-            value={mintEmail}
-            onChange={(e) => setMintEmail(e.target.value)}
-          />
-          <button
-            style={btn('#E8C96A', '#1a1208')}
-            disabled={minting}
-            onClick={mintLink}
-          >
-            {minting ? 'Minting…' : 'Mint link'}
-          </button>
-        </div>
-        {mintError && (
-          <p style={{ color: '#fca5a5', fontSize: 13, margin: '10px 0 0' }}>{mintError}</p>
-        )}
-        {minted && (
-          <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
-            <code style={{ background: 'rgba(232,201,106,0.12)', color: '#E8C96A', padding: '8px 12px', borderRadius: 8, fontSize: 13 }}>
-              https://montree.xyz/montree/try?founding={minted.code}
-            </code>
-            <button style={btn('#334155', '#e2e8f0')} onClick={() => copyLink(minted.code)}>
-              {copiedCode === minted.code ? '✓ Copied' : 'Copy link'}
-            </button>
-            {minted.already && (
-              <span style={{ fontSize: 12, color: '#94a3b8' }}>Email already admitted — this is their existing link.</span>
-            )}
-          </div>
-        )}
-        <p style={{ fontSize: 12, color: '#64748b', margin: '10px 0 0' }}>
-          The link gives the school 1 month of Premium free, then Premium locked at $3/student for life. Single use.
-        </p>
-      </div>
-
-      {/* ── Mint a PARTNER package (one shot) ──
-          Underprivileged-school partner: Premium FREE for life + a referral
+      {/* ── Foundation grant (one shot) ──
+          The headline action now that Founding 100 is retired: a genuinely
+          in-need ("Foundation") school gets Premium FREE for life + a referral
           code (revenue share) + an agent dashboard login, all in one click. */}
       <div style={{ ...card, borderColor: 'rgba(129,140,248,0.4)', marginBottom: 16 }}>
-        <div style={{ ...label, color: '#a5b4fc', marginBottom: 4 }}>🤝 Mint a partner package</div>
+        <div style={{ ...label, color: '#a5b4fc', marginBottom: 4 }}>🌱 Foundation grant (free for life)</div>
         <p style={{ fontSize: 12, color: '#64748b', margin: '0 0 10px' }}>
           One submission → a signup link (Premium <strong style={{ color: '#a5b4fc' }}>free for life</strong>), a referral code + promo link (revenue share), and an agent dashboard login.
         </p>
@@ -695,6 +516,11 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
         )}
       </div>
 
+      {/* ── Founder messages (migration 292) ──
+          Direct line from Founding-member principals. Collapsible list of
+          principal_super_admin threads with inline reply. */}
+      <FoundingInbox saToken={sessionToken} />
+
       {/* ── Config + stats ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 16 }}>
         <div style={card}>
@@ -738,6 +564,9 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
           {config.is_closed ? '↺ Re-open the offer' : '■ Close the offer now'}
         </button>
       </div>
+
+      {/* ── History (waitlist rows) ── */}
+      <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 12px', color: '#94a3b8' }}>History</h3>
 
       {/* ── Filter pills ── */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>

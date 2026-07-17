@@ -6,13 +6,14 @@
 //   - status change → PATCH /api/montree/super-admin/campaign-manager {id,status}
 //
 // Views:
-//   ?view=by_country[&all=1]  — per-country aggregate + grand totals
-//   ?view=contacts&country=&status=&q=&limit=&offset=[&all=1]  — paged browser
-//   ?view=export&country=&status=[&all=1]  — CSV attachment (paged, injection-guarded)
+//   ?view=by_country[&batch_tag=<tag>]  — per-country aggregate + grand totals
+//   ?view=contacts&country=&status=&q=&limit=&offset=[&batch_tag=<tag>]  — paged browser
+//   ?view=export&country=&status=[&batch_tag=<tag>]  — CSV attachment (paged, injection-guarded)
 //
-// Default scope is batch_tag='global-scrape-jul2026'. The `all=1` toggle widens
-// to the whole table, excluding agent_application rows and coalescing NULL/empty
-// country to 'Unknown' in aggregation (amendment I3).
+// Default scope is now the WHOLE table (one master flow, Jul 17): every row
+// minus agent_application, coalescing NULL/empty country to 'Unknown' in
+// aggregation (amendment I3). Pass ?batch_tag=<tag> to narrow to a single import
+// batch (e.g. the original 'global-scrape-jul2026' scrape).
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { getSupabase } from '@/lib/supabase-client';
@@ -39,11 +40,12 @@ type Row = {
   contact_type: string | null;
 };
 
-// Apply the tab scope to a query builder. Default = batch-scoped; all=true
-// widens to the whole table minus agent_application rows.
-function scoped<T>(q: T, all: boolean): T {
+// Apply the tab scope to a query builder. Default (batchTag null/empty) = the
+// whole table minus agent_application rows. Pass an explicit batch_tag to narrow
+// to that single import batch.
+function scoped<T>(q: T, batchTag: string): T {
   // @ts-expect-error — supabase builder chaining preserves the type at runtime.
-  return all ? q.neq('contact_type', 'agent_application') : q.eq('batch_tag', BATCH_TAG);
+  return batchTag ? q.eq('batch_tag', batchTag) : q.neq('contact_type', 'agent_application');
 }
 
 // Apply a country filter. by_country coalesces NULL/empty country to the
@@ -66,7 +68,11 @@ export async function GET(request: NextRequest) {
   const supabase = getSupabase();
   const url = new URL(request.url);
   const view = url.searchParams.get('view') || 'by_country';
-  const all = url.searchParams.get('all') === '1';
+  // One master flow (Jul 17): default scope is the whole table. A caller may
+  // still narrow to one import batch by passing ?batch_tag=<tag>. The legacy
+  // ?all=1 toggle is now the default, so it's accepted-and-ignored.
+  const batchTag = url.searchParams.get('batch_tag') || '';
+  const widen = !batchTag; // whole-table aggregation (coalesce empty country)
   const country = url.searchParams.get('country') || '';
   const status = url.searchParams.get('status') || '';
   const disadvantaged = url.searchParams.get('disadvantaged') === '1';
@@ -90,13 +96,13 @@ export async function GET(request: NextRequest) {
           .from('montree_outreach_contacts')
           .select('country,status,email,contact_type')
           .range(from, from + PAGE_SIZE - 1);
-        q = scoped(q, all);
+        q = scoped(q, batchTag);
         const { data, error } = await q;
         if (error) throw error;
         const rows = (data || []) as Row[];
 
         for (const r of rows) {
-          const key = all ? (r.country && r.country.trim() ? r.country : 'Unknown') : (r.country || 'Unknown');
+          const key = widen ? (r.country && r.country.trim() ? r.country : 'Unknown') : (r.country || 'Unknown');
           let e = acc.get(key);
           if (!e) {
             e = { country: key, total: 0, with_email: 0, new: 0, drafted: 0, sent: 0, replied: 0, bounced: 0, converted: 0, dead: 0, disadvantaged: 0 };
@@ -141,7 +147,7 @@ export async function GET(request: NextRequest) {
           .from('montree_outreach_contacts')
           .select('social_status,facebook_url')
           .range(from, from + PAGE_SIZE - 1);
-        q = scoped(q, all);
+        q = scoped(q, batchTag);
         q = filterCountry(q, country);
         if (disadvantaged) q = q.eq('contact_type', 'disadvantaged_school');
         const { data, error } = await q;
@@ -182,7 +188,7 @@ export async function GET(request: NextRequest) {
           .select('*', { count: 'exact' })
           .order('updated_at', { ascending: false })
           .range(offset, offset + limit - 1);
-        query = scoped(query, all);
+        query = scoped(query, batchTag);
         query = filterCountry(query, country);
         if (status) query = query.eq('status', status);
         if (disadvantaged) query = query.eq('contact_type', 'disadvantaged_school');
@@ -231,7 +237,7 @@ export async function GET(request: NextRequest) {
           .select(cols.join(','))
           .order('updated_at', { ascending: false })
           .range(from, from + PAGE_SIZE - 1);
-        query = scoped(query, all);
+        query = scoped(query, batchTag);
         query = filterCountry(query, country);
         if (status) query = query.eq('status', status);
 

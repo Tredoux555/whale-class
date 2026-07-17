@@ -3893,6 +3893,9 @@ export const nl: Record<string, string> = {
   'landing.hero.subtitle': 'Een onderwijzer maakt een foto. Montree doet de rest.',
   'landing.hero.cta': 'Probeer het',
   'landing.hero.fineprint': 'Starter $3 · Premium $7 per actief kind / maand · 7 dagen Premium, gratis',
+  // Foundation strip (below the hero)
+  'landing.foundation.line': 'Every subscription helps carry a school in need.',
+  'landing.foundation.sub': 'Montree Foundation schools run free, funded by the schools that can pay.',
   'landing.pricing.label': 'Prijzen',
   'landing.pricing.title': 'Simpele, eerlijke prijzen.',
   'landing.pricing.trialLine': 'Elke school begint met 7 dagen Premium, gratis.',

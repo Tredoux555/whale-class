@@ -17,20 +17,6 @@ import MontreeLogo from '@/components/montree/MonteeLogo';
 // <style jsx> renders nothing into SSR HTML), and --font-lora for headings.
 // Hardcoded English by design (as the previous pricing page was).
 
-// Founding 100 apply-by-email (same mailto as the homepage FoundingHundred).
-const APPLY_TO = 'tredoux555@gmail.com';
-const APPLY_SUBJECT = 'Founding 100 Application — [Your school]';
-const APPLY_BODY = [
-  'School name:',
-  'Country:',
-  'Number of students:',
-  'Why you want in:',
-].join('\n');
-const APPLY_MAILTO =
-  `mailto:${APPLY_TO}` +
-  `?subject=${encodeURIComponent(APPLY_SUBJECT)}` +
-  `&body=${encodeURIComponent(APPLY_BODY)}`;
-
 const FAQ: { q: string; a: string }[] = [
   {
     q: 'How does the free trial work?',
@@ -49,8 +35,8 @@ const FAQ: { q: string; a: string }[] = [
     a: 'Claude Sonnet is Anthropic\'s most capable model — the reasoning behind the parent letters, teacher reports, and developmental analysis that teachers describe as "magic." It reasons deeply, writes with genuine warmth, and understands Montessori philosophy in a way that shows in every output. Premium runs on Sonnet; Starter runs on our fast model.',
   },
   {
-    q: 'What is the Founding 100?',
-    a: 'The first hundred schools we hand-pick to build Montree with. Founding schools get one month of Premium free, then Premium locked at the $3 Starter price — for life. In exchange, they help us validate Montree with their feedback and a testimonial. Applications are read personally and schools are enrolled in small batches of 10–15. Once the hundred are in, the offer closes.',
+    q: 'Do you support schools that can\'t pay?',
+    a: 'Yes. The Montree Foundation carries genuinely in-need schools completely free — funded by the schools that can pay. It is invite-only, offered at our discretion to schools doing real work in hard places. Every subscription helps carry a school in need. If that is you, reach out and tell us your story.',
   },
   {
     q: 'Is pricing per classroom or per school?',
@@ -169,12 +155,6 @@ export default function PricingPage() {
           border: 1px solid rgba(255,255,255,0.14); color: rgba(255,250,240,0.92);
         }
         .pr-pill-ghost:hover { background: rgba(255,255,255,0.08); }
-        .pr-pill-gold {
-          background: transparent;
-          color: rgba(232,201,106,0.9); border-color: rgba(232,201,106,0.35);
-          box-shadow: none;
-        }
-        .pr-pill-gold:hover { background: rgba(232,201,106,0.06); }
 
         /* ── Hero ── */
         .pr-hero {
@@ -323,32 +303,6 @@ export default function PricingPage() {
         }
         .pr-slider-ends { display: flex; justify-content: space-between; margin-top: 8px; }
         .pr-slider-ends span { font-size: 11px; color: rgba(255,255,255,0.3); }
-
-        /* ── Founding 100 strip ── */
-        .pr-founding-wrap { padding: 0 24px 72px; }
-        .pr-founding {
-          max-width: 680px; margin: 0 auto;
-          background: rgba(255,255,255,0.028);
-          border: 1px solid rgba(232,201,106,0.3);
-          border-radius: 14px; padding: 40px 34px; text-align: center;
-          position: relative; overflow: hidden;
-          box-shadow: none;
-        }
-        .pr-founding-eyebrow {
-          display: inline-block; position: relative;
-          font-size: 0.62rem; font-weight: 500; letter-spacing: 0.3em; text-transform: uppercase;
-          color: rgba(232,201,106,0.7); border: none;
-          border-radius: 0; padding: 0; margin-bottom: 18px;
-        }
-        .pr-founding h2 {
-          font-family: var(--font-lora), Georgia, serif; position: relative;
-          font-weight: 400; font-size: clamp(1.4rem, 3.6vw, 1.7rem);
-          line-height: 1.25; letter-spacing: -0.01em; color: rgba(255,250,240,0.92); margin-bottom: 14px;
-        }
-        .pr-founding p {
-          position: relative; font-size: 0.9375rem; line-height: 1.7;
-          color: rgba(255,250,240,0.58); max-width: 40ch; margin: 0 auto 26px;
-        }
 
         /* ── FAQ ── */
         .pr-faq-wrap { padding: 0 24px 80px; }
@@ -528,19 +482,6 @@ export default function PricingPage() {
               <span>5 students</span>
               <span>60 students</span>
             </div>
-          </div>
-        </section>
-
-        {/* ── FOUNDING 100 STRIP ── */}
-        <section className="pr-founding-wrap" ref={addReveal}>
-          <div className="pr-founding">
-            <span className="pr-founding-eyebrow">Founding 100</span>
-            <h2>One month of Premium free — then Premium at $3 for life.</h2>
-            <p>
-              The first hundred schools we hand-pick to build Montree with lock Premium at the Starter
-              price, forever. Applications are read personally. Once the hundred are in, the offer closes.
-            </p>
-            <a className="pr-pill pr-pill-lg pr-pill-gold" href={APPLY_MAILTO}>Apply by email</a>
           </div>
         </section>
 

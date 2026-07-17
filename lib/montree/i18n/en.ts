@@ -4158,6 +4158,9 @@ export const en = {
   'landing.hero.subtitle': 'A teacher takes a photo. Montree does the rest.',
   'landing.hero.cta': 'Try it',
   'landing.hero.fineprint': 'Starter $3 · Premium $7 per active student / month · 7 days of Premium, free',
+  // Foundation strip (below the hero)
+  'landing.foundation.line': 'Every subscription helps carry a school in need.',
+  'landing.foundation.sub': 'Montree Foundation schools run free, funded by the schools that can pay.',
   // Landing pricing section (id="pricing")
   'landing.pricing.label': 'Pricing',
   'landing.pricing.title': 'Simple, honest pricing.',
