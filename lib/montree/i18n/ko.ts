@@ -2842,6 +2842,8 @@ export const ko: Record<string, string> = {
   'parentCodes.portalAccess': '부모 포탈 접근',
   'parentCodes.accessCode': '접근 코드',
   'parentCodes.connected': '연결됨',
+  'parentCodes.reportSeen': 'Seen {date}',
+  'parentCodes.reportNotSeen': 'Not yet seen',
   'features.failedToLoad': '기능을 로드하지 못했습니다',
   'features.enabled': '활성화됨',
   'features.disabled': '비활성화됨',

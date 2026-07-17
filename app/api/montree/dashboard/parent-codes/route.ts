@@ -80,9 +80,12 @@ export async function GET(request: NextRequest) {
     // mirroring the latest-per-child invite pattern above — never per-child
     // fetches. Non-fatal: a failure here must not take down the codes list.
     const lastReportPerChild = new Map<string, string>();
+    // Build D2 (read receipt): the open timestamp of that SAME latest sent
+    // report per child. Captured on the first-encountered (latest) row.
+    const lastReportOpenedPerChild = new Map<string, string>();
     const { data: sentReports, error: reportErr } = await supabase
       .from('montree_weekly_reports')
-      .select('child_id, sent_at, published_at, created_at')
+      .select('child_id, sent_at, published_at, created_at, first_opened_at')
       .in('child_id', childIds)
       .eq('status', 'sent')
       .order('created_at', { ascending: false });
@@ -92,6 +95,9 @@ export async function GET(request: NextRequest) {
       for (const rep of sentReports || []) {
         if (!lastReportPerChild.has(rep.child_id)) {
           lastReportPerChild.set(rep.child_id, rep.sent_at || rep.published_at || rep.created_at);
+          if (rep.first_opened_at) {
+            lastReportOpenedPerChild.set(rep.child_id, rep.first_opened_at);
+          }
         }
       }
     }
@@ -142,6 +148,7 @@ export async function GET(request: NextRequest) {
           expires_at: inv?.expires_at || null,
           used: !!inv?.used_at,
           last_report_sent_at: lastReportPerChild.get(child.id) || null,
+          last_report_opened_at: lastReportOpenedPerChild.get(child.id) || null,
           parent_id: parentByChild.get(child.id) || null,
         };
       })

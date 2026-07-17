@@ -177,3 +177,7 @@ tsconfig.demotracker.tmp.json
 tsconfig.demotracker.tmp.tsbuildinfo
 # stray migration runner left by the sandbox (rm blocked) — delete via Desktop Commander
 _run299.mjs
+
+# temp scoped tsconfig from Jul-17 Build D friction pass verification (sandbox rm blocked — delete via Desktop Commander)
+tsconfig.buildD.tmp.json
+tsconfig.buildD.tmp.tsbuildinfo

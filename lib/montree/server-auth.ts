@@ -59,7 +59,7 @@ export interface ParentTokenPayload {
 
 /**
  * Create a signed JWT for a Montree teacher, principal, or homeschool parent session.
- * TTL is MONTREE_JWT_TTL_DAYS (default 30) — see constant above.
+ * TTL is MONTREE_JWT_TTL_DAYS (default 3650 ≈ 10y) — see constant above.
  */
 export async function createMontreeToken(payload: MontreeTokenPayload): Promise<string> {
   const ttl = `${MONTREE_JWT_TTL_DAYS}d`;
@@ -111,8 +111,9 @@ export async function verifyMontreeToken(token: string): Promise<MontreeTokenPay
 
 /**
  * Create a signed JWT for a parent session.
- * Token is valid for 30 days (matches the previous cookie maxAge).
- * Stored inside an HTTP-only cookie — not sent as a Bearer header.
+ * TTL is MONTREE_JWT_TTL_DAYS (default 3650 ≈ 10y) — parity with teacher/
+ * principal tokens so a parent on their own device is never silently logged
+ * out. Stored inside an HTTP-only cookie — not sent as a Bearer header.
  */
 export async function createParentToken(payload: ParentTokenPayload): Promise<string> {
   const token = await new SignJWT({
@@ -125,7 +126,7 @@ export async function createParentToken(payload: ParentTokenPayload): Promise<st
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(payload.sub) // child_id
     .setIssuedAt()
-    .setExpirationTime('30d')
+    .setExpirationTime(`${MONTREE_JWT_TTL_DAYS}d`)
     .sign(getSecretKey());
 
   return token;
@@ -161,7 +162,7 @@ export async function verifyParentToken(token: string): Promise<ParentTokenPaylo
 /**
  * Set the montree-auth httpOnly cookie on a NextResponse.
  * Call this in login routes after creating the JWT token.
- * maxAge matches the JWT TTL (MONTREE_JWT_TTL_DAYS, default 30 days).
+ * maxAge matches the JWT TTL (MONTREE_JWT_TTL_DAYS, default 3650 ≈ 10y).
  */
 export function setMontreeAuthCookie(
   response: NextResponse,

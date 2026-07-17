@@ -2842,6 +2842,8 @@ export const ja: Record<string, string> = {
   'parentCodes.portalAccess': '親ポータルアクセス',
   'parentCodes.accessCode': 'アクセスコード',
   'parentCodes.connected': '接続済み',
+  'parentCodes.reportSeen': 'Seen {date}',
+  'parentCodes.reportNotSeen': 'Not yet seen',
   'features.failedToLoad': '機能の読み込みに失敗しました',
   'features.enabled': '有効',
   'features.disabled': '無効',

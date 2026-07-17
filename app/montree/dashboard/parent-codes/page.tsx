@@ -62,6 +62,7 @@ interface CodeRow {
   expires_at: string | null;
   used: boolean;
   last_report_sent_at: string | null;
+  last_report_opened_at: string | null;
   parent_id: string | null;
 }
 
@@ -535,6 +536,17 @@ export default function TeacherParentCodesPage() {
                       <p style={{ margin: '2px 0 0', fontSize: 12, color: T.textMuted }}>
                         {t('parentCodes.parentPortalAccess')}
                       </p>
+                      {/* Build D2 (read receipt): quiet seen / not-yet-seen line,
+                          only once a report has actually been sent. */}
+                      {row.last_report_sent_at && (
+                        <p style={{ margin: '2px 0 0', fontSize: 12, color: T.textMuted }}>
+                          {row.last_report_opened_at
+                            ? t('parentCodes.reportSeen', {
+                                date: new Date(row.last_report_opened_at).toLocaleDateString(),
+                              })
+                            : t('parentCodes.reportNotSeen')}
+                        </p>
+                      )}
                     </div>
                     {row.code && row.used && (
                       <span
