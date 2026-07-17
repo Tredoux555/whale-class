@@ -8,6 +8,7 @@ import { getChineseDescriptionsMap } from '@/lib/curriculum/comprehensive-guides
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
+import { getSchoolTimezone, currentWeekStartInTz } from '@/lib/montree/school-time';
 
 // Area-based generic descriptions - used as LAST RESORT when no DB description found
 // Keyed by area_key from the progress data (always correct - no guessing needed)
@@ -338,10 +339,10 @@ export async function GET(request: NextRequest) {
     // ============================================================
     // STEP 3: Get selected photos for this week's report
     // ============================================================
-    const now = new Date();
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - now.getDay());
-    const weekStartStr = weekStart.toISOString().split('T')[0];
+    // School-local MONDAY convention (matches reports/send, reports/photos and
+    // the weekly-wrap system) — via the server-side timezone authority.
+    const tz = await getSchoolTimezone(auth.schoolId);
+    const weekStartStr = currentWeekStartInTz(tz);
 
     const { data: draftReport } = await supabase
       .from('montree_weekly_reports')

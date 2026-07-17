@@ -10,6 +10,7 @@ import { useI18n } from '@/lib/montree/i18n';
 import { AREA_LABELS_ZH, AREA_LABELS_EN, getAreaLabel as getAreaLabelI18n } from '@/lib/montree/i18n/area-labels';
 import { getIntlLocale } from '@/lib/montree/i18n/locales';
 import { getSession } from '@/lib/montree/auth';
+import { currentWeekStart, shiftWeek, weekEnd as getWeekEnd } from '@/lib/montree/week-key';
 import { montreeApi } from '@/lib/montree/api';
 import ChildVoiceNote from '@/components/montree/voice-notes/ChildVoiceNote';
 import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
@@ -117,16 +118,11 @@ export default function WeeklyWrapPage() {
   const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
   const weekParam = searchParams.get('week');
   const weekEndParam = searchParams.get('week_end');
-  const weekStart = (weekParam && ISO_DATE.test(weekParam)) ? weekParam : (() => {
-    const d = new Date();
-    d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); // back to Monday
-    return d.toISOString().slice(0, 10);
-  })();
-  const weekEnd = (weekEndParam && ISO_DATE.test(weekEndParam)) ? weekEndParam : (() => {
-    const d = new Date(`${weekStart}T00:00:00Z`);
-    d.setUTCDate(d.getUTCDate() + 6);
-    return d.toISOString().slice(0, 10);
-  })();
+  // Default = the LOCAL current week (lib/montree/week-key.ts), not the UTC
+  // week — on an east-of-UTC device early Monday morning (China 00:00–07:59)
+  // the UTC computation still points at LAST week. Param path unchanged.
+  const weekStart = (weekParam && ISO_DATE.test(weekParam)) ? weekParam : currentWeekStart();
+  const weekEnd = (weekEndParam && ISO_DATE.test(weekEndParam)) ? weekEndParam : getWeekEnd(weekStart);
 
   const [session, setSession] = useState<{ classroom: { id: string; name: string }; school: { id: string } } | null>(null);
   const [reports, setReports] = useState<ReportResult[]>([]);
@@ -321,19 +317,8 @@ export default function WeeklyWrapPage() {
   const approvedCount = approvedIds.size;
   const readyToSend = reports.filter(r => r.parent_narrative && r.report_id).length;
 
-  // Week navigation helpers
-  const shiftWeek = (ws: string, weeks: number) => {
-    const d = new Date(`${ws}T00:00:00Z`);
-    d.setUTCDate(d.getUTCDate() + weeks * 7);
-    return d.toISOString().slice(0, 10);
-  };
-
-  const getWeekEnd = (ws: string) => {
-    const d = new Date(`${ws}T00:00:00Z`);
-    d.setUTCDate(d.getUTCDate() + 6);
-    return d.toISOString().slice(0, 10);
-  };
-
+  // Week navigation helpers — shiftWeek / getWeekEnd (aliased weekEnd) come from
+  // the canonical lib/montree/week-key.ts; local duplicates removed.
   const navigateWeek = (direction: number) => {
     const newStart = shiftWeek(weekStart, direction);
     const newEnd = getWeekEnd(newStart);

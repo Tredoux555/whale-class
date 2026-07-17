@@ -12,6 +12,7 @@ import { useFeatures } from '@/hooks/useFeatures';
 import { sortChildrenByCustomOrder } from '@/lib/montree/weekly-admin/child-order';
 import { ChevronLeft, ChevronRight, FileText, ClipboardList, Sparkles, Download, Save, AlertTriangle, Minus, Plus, BookOpen } from 'lucide-react';
 import TeachingNotesView from './TeachingNotesView';
+import { currentWeekStart, shiftWeek } from '@/lib/montree/week-key';
 
 const AREAS = [
   { key: 'practical_life', label: 'Practical Life', zh: '日常' },
@@ -136,21 +137,11 @@ interface WeeklyAdminTabProps {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────
-
-function getCurrentMonday(): string {
-  const now = new Date();
-  const beijing = new Date(now.getTime() + 8 * 60 * 60 * 1000);
-  const day = beijing.getUTCDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  beijing.setUTCDate(beijing.getUTCDate() + diff);
-  return beijing.toISOString().slice(0, 10);
-}
-
-function shiftWeek(weekStart: string, weeks: number): string {
-  const d = new Date(`${weekStart}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + weeks * 7);
-  return d.toISOString().slice(0, 10);
-}
+// Week-key math (currentWeekStart / shiftWeek) is the single canonical helper
+// in lib/montree/week-key.ts — LOCAL calendar dates, no toISOString slip. The
+// old local helper hardcoded a +8h Beijing offset; the shared
+// helper uses the device's real timezone. Do NOT reintroduce a local copy.
+// (The removed function was named getCurrentMonday.)
 
 // ─── Monthly Summary helpers ─────────────────────────────────
 // Monthly Summary lives in the same Weekly Admin tab as a 4th sub-tab. It
@@ -205,7 +196,7 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const [weekStart, setWeekStart] = useState(() => getCurrentMonday());
+  const [weekStart, setWeekStart] = useState(() => currentWeekStart());
   const [activeTab, setActiveTab] = useState<'summary' | 'plan' | 'teaching' | 'monthly'>('summary');
   const [summaryNotes, setSummaryNotes] = useState<SummaryNotes>({});
   const [planNotes, setPlanNotes] = useState<PlanNotes>({});
@@ -856,18 +847,18 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
           <button
             onClick={() => {
               const next = shiftWeek(weekStart, 1);
-              const maxWeek = activeTab === 'plan' ? shiftWeek(getCurrentMonday(), 1) : getCurrentMonday();
+              const maxWeek = activeTab === 'plan' ? shiftWeek(currentWeekStart(), 1) : currentWeekStart();
               if (next <= maxWeek) setWeekStart(next);
             }}
-            disabled={weekStart >= (activeTab === 'plan' ? shiftWeek(getCurrentMonday(), 1) : getCurrentMonday())}
+            disabled={weekStart >= (activeTab === 'plan' ? shiftWeek(currentWeekStart(), 1) : currentWeekStart())}
             aria-label="Next week"
             style={{
               ...ghostBtn,
               width: 28,
               height: 28,
               padding: 0,
-              opacity: weekStart >= (activeTab === 'plan' ? shiftWeek(getCurrentMonday(), 1) : getCurrentMonday()) ? 0.30 : 1,
-              cursor: weekStart >= (activeTab === 'plan' ? shiftWeek(getCurrentMonday(), 1) : getCurrentMonday()) ? 'not-allowed' : 'pointer',
+              opacity: weekStart >= (activeTab === 'plan' ? shiftWeek(currentWeekStart(), 1) : currentWeekStart()) ? 0.30 : 1,
+              cursor: weekStart >= (activeTab === 'plan' ? shiftWeek(currentWeekStart(), 1) : currentWeekStart()) ? 'not-allowed' : 'pointer',
             }}
           >
             <ChevronRight size={14} strokeWidth={1.75} />
