@@ -116,7 +116,7 @@ export default function ReportViewPage() {
   return (
     <div className="min-h-screen bg-[#0a1a0f]">
       {/* Header */}
-      <header className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-4 py-6">
+      <header className="bg-[#0a1a0f] border-b border-emerald-400/15 text-white px-4 py-6">
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center gap-3 mb-4">
             <Link 

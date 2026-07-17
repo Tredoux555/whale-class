@@ -91,7 +91,7 @@ export default function WelcomeModal({
             borderRadius: 24,
             backdropFilter: 'blur(24px) saturate(140%)',
             WebkitBackdropFilter: 'blur(24px) saturate(140%)',
-            boxShadow: '0 24px 60px rgba(0,0,0,0.55)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
             color: T.textPrimary,
             pointerEvents: 'auto',
             backgroundImage: 'radial-gradient(ellipse 480px 320px at 50% -10%, rgba(52,211,153,0.16), transparent 60%)',
@@ -133,7 +133,7 @@ export default function WelcomeModal({
               marginBottom: 18,
               background: 'linear-gradient(135deg, #34d399, #10b981)',
               border: '1px solid rgba(52,211,153,0.55)',
-              boxShadow: '0 10px 30px rgba(16,185,129,0.30)',
+              boxShadow: 'none',
               color: '#06281a',
             }}>
               <Sprout size={34} strokeWidth={1.75} />
@@ -182,7 +182,7 @@ export default function WelcomeModal({
               alignItems: 'center',
               justifyContent: 'center',
               gap: 8,
-              boxShadow: '0 6px 20px rgba(16,185,129,0.35)',
+              boxShadow: 'none',
               transition: 'transform 120ms ease',
             }}
           >

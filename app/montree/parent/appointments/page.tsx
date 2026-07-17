@@ -48,7 +48,7 @@ const T = {
   gold: '#E8C96A',
   card: 'rgba(255,255,255,0.06)',
   cardBg: 'rgba(8,20,12,0.55)',
-  cardBorder: '1px solid rgba(52,211,153,0.18)',
+  cardBorder: '1px solid rgba(52,211,153,0.15)',
   cardBorderStrong: '1px solid rgba(52,211,153,0.35)',
   inputBg: 'rgba(0,0,0,0.30)',
   inputBorder: '1px solid rgba(52,211,153,0.25)',

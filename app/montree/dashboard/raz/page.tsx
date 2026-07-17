@@ -744,7 +744,7 @@ export default function RazTrackerPage() {
                 width: 72, height: 72, borderRadius: '50%',
                 background: '#fff', border: '4px solid rgba(255,255,255,0.3)',
                 cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 0 20px rgba(255,255,255,0.2)',
+                boxShadow: 'none',
                 position: 'relative',
               }}
             >

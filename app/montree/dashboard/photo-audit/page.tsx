@@ -3217,7 +3217,7 @@ const iconTooltipStyle: CSSProperties = {
   pointerEvents: 'none',
   zIndex: 50,
   border: '1px solid rgba(52,211,153,0.30)',
-  boxShadow: '0 4px 12px rgba(0,0,0,0.40)',
+  boxShadow: 'none',
   fontFamily: "'Inter', -apple-system, sans-serif",
 };
 

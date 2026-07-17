@@ -149,7 +149,7 @@ const MENU_PANEL_STYLE: React.CSSProperties = {
   borderRadius: 14,
   backdropFilter: 'blur(24px) saturate(140%)',
   WebkitBackdropFilter: 'blur(24px) saturate(140%)',
-  boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
+  boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
   zIndex: 60,
   // iPad fix: dvh (dynamic viewport height) shrinks with the Safari address bar
   // and bottom toolbar — vh doesn't, which clips the bottom of the scroll area.
@@ -554,7 +554,7 @@ function DashboardHeader() {
                   background: C.menuBg, border: `1px solid ${C.border}`,
                   borderRadius: 12,
                   backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.5)', zIndex: 60, fontFamily: SANS,
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.45)', zIndex: 60, fontFamily: SANS,
                 }}>
                   {teachers.map(teacher => (
                     <div key={teacher.id} style={{
@@ -965,7 +965,7 @@ function DashboardHeader() {
                   position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0,
                   background: 'rgba(8,20,12,0.97)', border: `1px solid ${C.border}`,
                   borderRadius: 10, overflow: 'hidden', zIndex: 60,
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
                   maxHeight: 256, overflowY: 'auto',
                 }}>
                   {filtered.map((student, idx) => (
@@ -1012,7 +1012,7 @@ function DashboardHeader() {
                   position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0,
                   background: 'rgba(8,20,12,0.97)', border: `1px solid ${C.border}`,
                   borderRadius: 10, padding: 12, zIndex: 60,
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
                 }}>
                   <p style={{ fontSize: 13, color: C.textMute, textAlign: 'center', margin: 0, fontFamily: SANS }}>
                     {t('nav.noStudentsFound') || 'No students found'}

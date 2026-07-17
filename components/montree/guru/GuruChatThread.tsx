@@ -890,7 +890,7 @@ export default function GuruChatThread({
           borderRadius: 22,
           backdropFilter: T.blur,
           WebkitBackdropFilter: T.blur,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
         }}>
           {/* Image upload */}
           <input
@@ -974,7 +974,7 @@ export default function GuruChatThread({
               border: `1px solid ${(!inputText.trim() || sending) ? 'rgba(52,211,153,0.20)' : 'rgba(52,211,153,0.55)'}`,
               color: (!inputText.trim() || sending) ? 'rgba(52,211,153,0.50)' : '#06281a',
               cursor: (!inputText.trim() || sending) ? 'not-allowed' : 'pointer',
-              boxShadow: (!inputText.trim() || sending) ? 'none' : '0 4px 14px rgba(16,185,129,0.30)',
+              boxShadow: 'none',
               transition: 'all 120ms ease',
             }}
           >

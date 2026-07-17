@@ -259,7 +259,7 @@ function ParentPhotosGrouped({ photos, parentWorks, childId, firstName, locale, 
                       borderRadius: 16,
                       overflow: 'hidden',
                       border: T.cardBorder,
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                      boxShadow: 'none',
                       position: 'relative',
                       group: true,
                     } as any}
@@ -298,7 +298,7 @@ function ParentPhotosGrouped({ photos, parentWorks, childId, firstName, locale, 
                           transition: 'opacity 200ms ease',
                           border: 'none',
                           cursor: 'pointer',
-                          boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+                          boxShadow: 'none',
                         }}
                         onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1'; }}
                         onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '0'; }}
@@ -1945,7 +1945,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                         fontSize: 18,
                         fontWeight: 700,
                         flexShrink: 0,
-                        boxShadow: '0 4px 14px rgba(16,185,129,0.30)',
+                        boxShadow: 'none',
                       }}>
                         {firstName.charAt(0)}
                       </div>
@@ -2128,7 +2128,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                 fontWeight: 700,
                 cursor: (sending || sent) ? 'not-allowed' : 'pointer',
                 opacity: (sending || sent) ? 0.55 : 1,
-                boxShadow: (sending || sent) ? 'none' : '0 4px 14px rgba(16,185,129,0.30)',
+                boxShadow: 'none',
               }}
             >
               {sending

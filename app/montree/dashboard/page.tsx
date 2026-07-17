@@ -701,7 +701,7 @@ export default function DashboardPage() {
                 WebkitBackdropFilter: 'blur(18px) saturate(140%)',
                 color: 'rgba(255,255,255,0.95)',
                 cursor: 'pointer',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.30)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
                 transition: 'all 160ms ease',
                 fontFamily: '"Inter", -apple-system, sans-serif',
               }}

@@ -78,7 +78,7 @@ function LoadingScreen({ t }: { t: (key: string) => string }) {
   return (
     <div style={{ minHeight: "100dvh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ textAlign: "center" }}>
-        <div style={{ width: "4rem", height: "4rem", background: `linear-gradient(to bottom right, #34d399, #14b8a6)`, borderRadius: "0.5rem", boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", marginLeft: "auto", marginRight: "auto", marginBottom: "1rem", animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite" }}>
+        <div style={{ width: "4rem", height: "4rem", background: `linear-gradient(to bottom right, #34d399, #10b981)`, borderRadius: "12px", boxShadow: "0 10px 15px -3px rgba(52,211,153,0.20)", display: "flex", alignItems: "center", justifyContent: "center", marginLeft: "auto", marginRight: "auto", marginBottom: "1rem", animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite" }}>
           <span style={{ fontSize: "1.875rem" }}>📊</span>
         </div>
         <p style={{ color: T.textSecondary }}>{t('parentWeeklyReview.loadingReport')}</p>
@@ -235,7 +235,7 @@ function ParentWeeklyReviewContent() {
   return (
     <div style={{ minHeight: "100dvh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
       {/* Header */}
-      <header style={{ background: T.card, backdropFilter: T.blur }}>
+      <header style={{ background: T.card, backdropFilter: T.blur, position: "sticky", top: 0, zIndex: 10, paddingTop: "env(safe-area-inset-top)" }}>
         <div style={{ maxWidth: "56rem", marginLeft: "auto", marginRight: "auto", paddingLeft: "1rem", paddingRight: "1rem", paddingTop: "1rem", paddingBottom: "1rem" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <Link
@@ -270,11 +270,11 @@ function ParentWeeklyReviewContent() {
                 }
               }}
               disabled={availableWeeks.indexOf(selectedWeek) >= availableWeeks.length - 1}
-              style={{ background: T.card, backdropFilter: T.blur, padding: "0.75rem 1rem", borderRadius: "0.5rem", border: T.cardBorder, color: T.textSecondary, cursor: "pointer" }}
+              style={{ background: T.card, backdropFilter: T.blur, padding: "0.75rem 1rem", borderRadius: "12px", border: T.cardBorder, color: T.textSecondary, cursor: "pointer" }}
             >
               ◀
             </button>
-            <div style={{ background: T.card, backdropFilter: T.blur, padding: "0.75rem 1.5rem", borderRadius: "0.5rem", border: T.cardBorder }}>
+            <div style={{ background: T.card, backdropFilter: T.blur, padding: "0.75rem 1.5rem", borderRadius: "12px", border: T.cardBorder }}>
               <span style={{ fontWeight: "500", color: T.textPrimary }}>
                 {formatWeekRange(analysis.week_start, analysis.week_end)}
               </span>
@@ -287,7 +287,7 @@ function ParentWeeklyReviewContent() {
                 }
               }}
               disabled={availableWeeks.indexOf(selectedWeek) <= 0}
-              style={{ background: T.card, backdropFilter: T.blur, padding: "0.75rem 1rem", borderRadius: "0.5rem", border: T.cardBorder, color: T.textSecondary, cursor: "pointer" }}
+              style={{ background: T.card, backdropFilter: T.blur, padding: "0.75rem 1rem", borderRadius: "12px", border: T.cardBorder, color: T.textSecondary, cursor: "pointer" }}
             >
               ▶
             </button>
@@ -295,11 +295,11 @@ function ParentWeeklyReviewContent() {
         )}
 
         {/* Hero Card - Child Photo + Greeting */}
-        <div style={{ background: `linear-gradient(to bottom right, ${T.emerald}, #14b8a6)`, borderRadius: "1.5rem", padding: "1.5rem", color: T.textPrimary, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)" }}>
+        <div style={{ background: `linear-gradient(to bottom right, ${T.emerald}, #10b981)`, borderRadius: "24px", padding: "1.5rem", color: T.textPrimary, boxShadow: "0 20px 25px -5px rgba(52,211,153,0.20)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1rem" }}>
-            <div style={{ background: T.card, backdropFilter: T.blur, width: "80px", height: "80px", borderRadius: "0.75rem", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <div style={{ background: T.card, backdropFilter: T.blur, width: "80px", height: "80px", borderRadius: "14px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               {child.photo_url ? (
-                <img src={child.photo_url} alt={child.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "0.75rem" }} />
+                <img src={child.photo_url} alt={child.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "14px" }} />
               ) : (
                 <span style={{ fontSize: "2.25rem" }}>👧</span>
               )}
@@ -309,7 +309,7 @@ function ParentWeeklyReviewContent() {
               <p style={{ color: 'rgba(255,255,255,0.7)' }}>{child.classroom_name || t('parentWeeklyReview.myClassroom' as any)}</p>
             </div>
           </div>
-          <div style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: T.blur, padding: "1.25rem", borderRadius: "0.75rem" }}>
+          <div style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: T.blur, padding: "1.25rem", borderRadius: "14px" }}>
             <p style={{ fontSize: "1.125rem", lineHeight: "1.5" }}>
               {analysis.parent_summary || t('parentWeeklyReview.defaultSummary' as any).replace('{childName}', child.name)}
             </p>
@@ -318,7 +318,7 @@ function ParentWeeklyReviewContent() {
 
         {/* Concentration Score */}
         {analysis.concentration_score && (
-          <div style={{ background: T.card, backdropFilter: T.blur, borderRadius: "0.75rem", padding: "1.5rem" }}>
+          <div style={{ background: T.card, backdropFilter: T.blur, borderRadius: "14px", padding: "1.5rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
               <span style={{ fontSize: "1.5rem" }}>🎯</span>
               <h3 style={{ fontWeight: "700", color: T.textPrimary }}>{t('parentWeeklyReview.focusTitle')}</h3>
@@ -351,7 +351,7 @@ function ParentWeeklyReviewContent() {
 
         {/* Active Sensitive Periods */}
         {analysis.active_sensitive_periods && analysis.active_sensitive_periods.length > 0 && (
-          <div style={{ background: T.card, backdropFilter: T.blur, borderRadius: "0.75rem", padding: "1.5rem" }}>
+          <div style={{ background: T.card, backdropFilter: T.blur, borderRadius: "14px", padding: "1.5rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
               <span style={{ fontSize: "1.5rem" }}>✨</span>
               <div>
@@ -363,7 +363,7 @@ function ParentWeeklyReviewContent() {
               {analysis.active_sensitive_periods.map((period) => {
                 const info = getSensitivePeriodInfo(period);
                 return (
-                  <div key={period} style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", padding: "0.75rem", background: 'rgba(245,158,11,0.10)', borderRadius: "0.75rem", border: `1px solid rgba(245,158,11,0.15)` }}>
+                  <div key={period} style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", padding: "0.75rem", background: 'rgba(245,158,11,0.10)', borderRadius: "14px", border: `1px solid rgba(245,158,11,0.15)` }}>
                     <span style={{ fontSize: "1.5rem", flexShrink: 0 }}>{info.icon}</span>
                     <div>
                       <p style={{ fontWeight: "500", color: T.textPrimary }}>{info.name}</p>
@@ -378,7 +378,7 @@ function ParentWeeklyReviewContent() {
 
         {/* Area Balance */}
         {analysis.area_distribution && Object.keys(analysis.area_distribution).length > 0 && (
-          <div style={{ background: T.card, backdropFilter: T.blur, borderRadius: "0.75rem", padding: "1.5rem" }}>
+          <div style={{ background: T.card, backdropFilter: T.blur, borderRadius: "14px", padding: "1.5rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
               <span style={{ fontSize: "1.5rem" }}>📊</span>
               <h3 style={{ fontWeight: "700", color: T.textPrimary }}>{t('parentWeeklyReview.learningAreasTitle')}</h3>
@@ -401,7 +401,7 @@ function ParentWeeklyReviewContent() {
 
         {/* Home Activities */}
         {homeActivities.length > 0 && (
-          <div style={{ background: T.card, backdropFilter: T.blur, borderRadius: "0.75rem", padding: "1.5rem" }}>
+          <div style={{ background: T.card, backdropFilter: T.blur, borderRadius: "14px", padding: "1.5rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
               <span style={{ fontSize: "1.5rem" }}>🏠</span>
               <div>
@@ -411,7 +411,7 @@ function ParentWeeklyReviewContent() {
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               {homeActivities.map((activity, idx) => (
-                <div key={idx} style={{ padding: "1rem", background: 'rgba(59,130,246,0.10)', borderRadius: "0.75rem", border: `1px solid rgba(59,130,246,0.15)` }}>
+                <div key={idx} style={{ padding: "1rem", background: 'rgba(59,130,246,0.10)', borderRadius: "14px", border: `1px solid rgba(59,130,246,0.15)` }}>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem" }}>
                     <span style={{ fontSize: "1.5rem", flexShrink: 0 }}>{activity.icon}</span>
                     <div style={{ flex: 1 }}>
@@ -432,7 +432,7 @@ function ParentWeeklyReviewContent() {
 
         {/* Recommended Works */}
         {analysis.recommended_works && analysis.recommended_works.length > 0 && (
-          <div style={{ background: T.card, backdropFilter: T.blur, borderRadius: "0.75rem", padding: "1.5rem" }}>
+          <div style={{ background: T.card, backdropFilter: T.blur, borderRadius: "14px", padding: "1.5rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
               <span style={{ fontSize: "1.5rem" }}>🎯</span>
               <div>
@@ -442,7 +442,7 @@ function ParentWeeklyReviewContent() {
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
               {analysis.recommended_works.slice(0, 3).map((rec, idx) => (
-                <div key={idx} style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", padding: "0.75rem", background: 'rgba(147,51,234,0.10)', borderRadius: "0.75rem", border: `1px solid rgba(147,51,234,0.15)` }}>
+                <div key={idx} style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", padding: "0.75rem", background: 'rgba(147,51,234,0.10)', borderRadius: "14px", border: `1px solid rgba(147,51,234,0.15)` }}>
                   <span style={{ fontSize: "1.25rem" }}>{getAreaIcon(rec.area)}</span>
                   <div>
                     <p style={{ fontWeight: "500", color: T.textPrimary }}>{locale === 'zh' && rec.chineseName ? rec.chineseName : rec.work_name}</p>

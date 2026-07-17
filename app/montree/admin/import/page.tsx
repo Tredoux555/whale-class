@@ -216,7 +216,7 @@ export default function ImportPage() {
               <p className="text-white/60 mb-6">
                 {t('import.docxFiles' as TranslationKey)}
               </p>
-              <label className="inline-block px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl cursor-pointer hover:shadow-lg hover:shadow-emerald-500/30 transition-all font-medium text-lg">
+              <label className="inline-block px-8 py-4 bg-emerald-600 text-white rounded-xl cursor-pointer hover:bg-emerald-500 transition-all font-medium text-lg">
                 {t('import.chooseFile' as TranslationKey)}
                 <input
                   type="file"
@@ -278,7 +278,7 @@ export default function ImportPage() {
             <div className="flex gap-3 mt-6">
               <Link
                 href="/montree/admin/students"
-                className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl text-center font-medium hover:shadow-lg hover:shadow-emerald-500/30 transition-all"
+                className="flex-1 py-3 bg-emerald-600 text-white rounded-xl text-center font-medium hover:bg-emerald-500 transition-all"
               >
                 {t('import.viewStudents' as TranslationKey)} →
               </Link>

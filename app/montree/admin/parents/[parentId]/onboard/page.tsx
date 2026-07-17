@@ -633,7 +633,7 @@ export default function ParentOnboardPage() {
                   border: 'none',
                   cursor: 'pointer',
                   color: '#0a1a0f',
-                  boxShadow: '0 0 32px rgba(52,211,153,0.35)',
+                  boxShadow: 'none',
                 }}
                 aria-label="Start recording"
               >

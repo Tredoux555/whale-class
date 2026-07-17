@@ -286,15 +286,15 @@ export default function ParentReportPage() {
       <div style={{ minHeight: "100dvh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed" }}>
         <div style={{ maxWidth: "32rem", marginLeft: "auto", marginRight: "auto", padding: "1.5rem" }}>
           <div style={{ animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite", display: "flex", flexDirection: "column", gap: "1.5rem", marginTop: "3rem" }}>
-            <div style={{ background: T.card, borderRadius: "0.75rem", height: "2rem" }} />
-            <div style={{ background: T.card, borderRadius: "0.75rem", height: "2rem" }} />
+            <div style={{ background: T.card, borderRadius: "14px", height: "2rem" }} />
+            <div style={{ background: T.card, borderRadius: "14px", height: "2rem" }} />
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-              <div style={{ background: T.card, borderRadius: "0.75rem", height: "1.5rem" }} />
-              <div style={{ background: T.card, borderRadius: "0.75rem", height: "1.5rem" }} />
-              <div style={{ background: T.card, borderRadius: "0.75rem", height: "1.5rem" }} />
+              <div style={{ background: T.card, borderRadius: "14px", height: "1.5rem" }} />
+              <div style={{ background: T.card, borderRadius: "14px", height: "1.5rem" }} />
+              <div style={{ background: T.card, borderRadius: "14px", height: "1.5rem" }} />
             </div>
-            <div style={{ background: T.card, borderRadius: "0.75rem", height: "2rem" }} />
-            <div style={{ background: T.card, borderRadius: "0.75rem", height: "2rem" }} />
+            <div style={{ background: T.card, borderRadius: "14px", height: "2rem" }} />
+            <div style={{ background: T.card, borderRadius: "14px", height: "2rem" }} />
           </div>
         </div>
       </div>
@@ -346,7 +346,7 @@ export default function ParentReportPage() {
         <div style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "2rem", paddingBottom: "1.5rem" }}>
           {/* Child initial + name */}
           <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.25rem" }}>
-            <div style={{ width: "4rem", height: "4rem", borderRadius: "9999px", background: `linear-gradient(to bottom right, ${T.emerald}, #14b8a6)`, display: "flex", alignItems: "center", justifyContent: "center", color: T.textPrimary, fontSize: "1.5rem", fontWeight: "700", boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}>
+            <div style={{ width: "4rem", height: "4rem", borderRadius: "9999px", background: `linear-gradient(to bottom right, ${T.emerald}, #10b981)`, display: "flex", alignItems: "center", justifyContent: "center", color: T.textPrimary, fontSize: "1.5rem", fontWeight: "700", boxShadow: "0 10px 15px -3px rgba(52,211,153,0.20)" }}>
               {firstName.charAt(0)}
             </div>
             <div>
@@ -380,13 +380,13 @@ export default function ParentReportPage() {
 
           {/* ═══ AI Narrative Summary ═══ */}
           {report.narrative?.summary ? (
-            <div style={{ borderLeft: `4px solid ${T.emerald}`, background: 'rgba(52,211,153,0.10)', borderRadius: "0 0.75rem 0.75rem 0", paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "1rem", paddingBottom: "1rem", marginBottom: "0.5rem" }}>
+            <div style={{ borderLeft: `4px solid ${T.emerald}`, background: 'rgba(52,211,153,0.10)', borderRadius: "0 14px 14px 0", paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "1rem", paddingBottom: "1rem", marginBottom: "0.5rem" }}>
               <p style={{ color: T.textSecondary, whiteSpace: 'pre-line' }}>
                 {cleanNarrative(report.narrative.summary)}
               </p>
             </div>
           ) : report.parent_summary ? (
-            <div style={{ borderLeft: `4px solid ${T.emerald}`, background: 'rgba(52,211,153,0.10)', borderRadius: "0 0.75rem 0.75rem 0", paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "1rem", paddingBottom: "1rem", marginBottom: "0.5rem" }}>
+            <div style={{ borderLeft: `4px solid ${T.emerald}`, background: 'rgba(52,211,153,0.10)', borderRadius: "0 14px 14px 0", paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "1rem", paddingBottom: "1rem", marginBottom: "0.5rem" }}>
               <p style={{ color: T.textSecondary, whiteSpace: 'pre-line' }}>
                 {cleanNarrative(report.parent_summary)}
               </p>
@@ -414,7 +414,7 @@ export default function ParentReportPage() {
             Math.min(100, Math.round(((ep.current_lesson - 1) / ep.total_lessons) * 100)),
           );
           return (
-            <div style={{ marginLeft: '1.25rem', marginRight: '1.25rem', marginBottom: '1rem', background: T.card, border: `1px solid ${T.cardBorder}`, borderRadius: '0.9rem', padding: '1rem 1.15rem' }}>
+            <div style={{ marginLeft: '1.25rem', marginRight: '1.25rem', marginBottom: '1rem', background: T.card, border: `1px solid ${T.cardBorder}`, borderRadius: '14px', padding: '1rem 1.15rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                 <span style={{ fontSize: '1.05rem' }} aria-hidden>📖</span>
                 <span style={{ color: T.textPrimary, fontWeight: 600, fontSize: '0.95rem' }}>
@@ -428,8 +428,8 @@ export default function ParentReportPage() {
                   <>{first} is in the <strong style={{ color }}>{phaseName} phase</strong> of reading, working on <strong style={{ color: T.textPrimary }}>Lesson {ep.current_lesson} — {ep.lesson_label}</strong>.</>
                 )}
               </p>
-              <div style={{ height: '0.4rem', borderRadius: '0.2rem', background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
-                <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: '0.2rem' }} />
+              <div style={{ height: '0.4rem', borderRadius: '4px', background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+                <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: '4px' }} />
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.3rem', fontSize: '0.7rem', color: 'rgba(255,255,255,0.45)' }}>
                 <span>
@@ -482,7 +482,7 @@ export default function ParentReportPage() {
                       style={{
                         width: "2rem",
                         height: "2rem",
-                        borderRadius: "0.5rem",
+                        borderRadius: "12px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -519,7 +519,7 @@ export default function ParentReportPage() {
 
                   {/* Why it matters — developmental insight */}
                   {work.why_it_matters && (
-                    <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: "0.75rem", paddingLeft: "1rem", paddingRight: "1rem", paddingTop: "0.75rem", paddingBottom: "0.75rem" }}>
+                    <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: "14px", paddingLeft: "1rem", paddingRight: "1rem", paddingTop: "0.75rem", paddingBottom: "0.75rem" }}>
                       <p style={{ fontSize: "0.75rem", fontWeight: "600", color: T.textMuted, marginBottom: "0.25rem" }}>
                         {t('parentReport.whyItMatters')}
                       </p>
@@ -531,7 +531,7 @@ export default function ParentReportPage() {
 
                   {/* Teacher's note */}
                   {work.photo_caption && (
-                    <div style={{ background: 'rgba(59,130,246,0.10)', borderRadius: "0.75rem", paddingLeft: "1rem", paddingRight: "1rem", paddingTop: "0.75rem", paddingBottom: "0.75rem" }}>
+                    <div style={{ background: 'rgba(59,130,246,0.10)', borderRadius: "14px", paddingLeft: "1rem", paddingRight: "1rem", paddingTop: "0.75rem", paddingBottom: "0.75rem" }}>
                       <p style={{ fontSize: "0.75rem", fontWeight: "600", color: '#3b82f6', marginBottom: "0.25rem" }}>
                         {t('parentReport.teachersNote')}
                       </p>
@@ -572,7 +572,7 @@ export default function ParentReportPage() {
                       setLightboxIndex(photoWorks.length + i);
                       setLightboxOpen(true);
                     }}
-                    style={{ aspectRatio: "1/1", borderRadius: "0.75rem", overflow: "hidden", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                    style={{ aspectRatio: "1/1", borderRadius: "14px", overflow: "hidden", background: "none", border: "none", cursor: "pointer", padding: 0 }}
                   >
                     <img
                       src={photo.url}

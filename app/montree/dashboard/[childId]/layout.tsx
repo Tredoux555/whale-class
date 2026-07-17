@@ -123,7 +123,7 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
             <div style={{
               width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
               background: 'rgba(16,185,129,0.15)',
-              boxShadow: '0 0 16px 4px rgba(52,211,153,0.28)',
+              boxShadow: 'none',
               overflow: 'hidden',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>

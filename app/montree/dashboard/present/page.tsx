@@ -44,7 +44,7 @@ function ChildAvatar({ child, size = 96 }: { child: Child; size?: number }) {
           borderRadius: '50%',
           overflow: 'hidden',
           background: 'rgba(52,211,153,0.15)',
-          boxShadow: '0 0 24px 4px rgba(52,211,153,0.20)',
+          boxShadow: 'none',
           flexShrink: 0,
         }}
       >
@@ -426,7 +426,7 @@ export default function PresentAlbumPage() {
               borderRadius: 16,
               background: 'rgba(10,26,15,0.96)',
               border: '1px solid rgba(232,201,106,0.35)',
-              boxShadow: '0 12px 40px rgba(0,0,0,0.55)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
               zIndex: 5,
               WebkitOverflowScrolling: 'touch',
               overscrollBehavior: 'contain',

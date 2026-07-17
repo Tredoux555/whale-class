@@ -546,6 +546,7 @@ function CaptureContent() {
         position: 'relative',
         zIndex: 10,
         padding: selectedEvent ? '0 16px 8px' : '40px 16px 8px',
+        paddingTop: `calc(${selectedEvent ? '0px' : '40px'} + env(safe-area-inset-top, 0px))`,
       }}>
         <button
           onClick={safeExit}
@@ -776,7 +777,7 @@ function CaptureContent() {
             justifyContent: 'center',
             gap: 7,
             transition: 'all 120ms ease',
-            boxShadow: selectedChildIds.length > 0 ? '0 6px 20px rgba(16,185,129,0.30)' : 'none',
+            boxShadow: 'none',
           }}
         >
           {selectedChildIds.length === 0 ? (
