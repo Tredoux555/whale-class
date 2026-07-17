@@ -13,6 +13,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyMontreeToken, MONTREE_AUTH_COOKIE } from './server-auth';
+import type { MontreeTokenPayload } from './server-auth';
+import { isSchoolLocked } from './school-lock';
 
 export interface VerifiedRequest {
   userId: string;
@@ -23,6 +25,35 @@ export interface VerifiedRequest {
   // for shell agents). Agent routes MUST self-scope via founding_teacher_id =
   // userId, NOT via schoolId.
   role: 'teacher' | 'principal' | 'homeschool_parent' | 'agent';
+}
+
+/**
+ * Turn a verified token payload into a VerifiedRequest, enforcing the abuse
+ * lock (migration 286) once — factored so BOTH the cookie and Bearer paths run
+ * the identical check.
+ *
+ * Agent sessions (Phase 7b) are exempt: their schoolId is INERT (a placeholder
+ * on the agent's montree_teachers row), so a lock check against it is
+ * meaningless. Agent routes self-scope via founding_teacher_id.
+ *
+ * Lock enforcement fails OPEN (see school-lock.ts) — an outage never locks out
+ * the world.
+ */
+async function toVerifiedOrLocked(
+  payload: MontreeTokenPayload,
+): Promise<VerifiedRequest | NextResponse> {
+  if (payload.role !== 'agent' && (await isSchoolLocked(payload.schoolId))) {
+    return NextResponse.json(
+      { error: 'This account has been locked.', code: 'school_locked' },
+      { status: 403 },
+    );
+  }
+  return {
+    userId: payload.sub,
+    schoolId: payload.schoolId,
+    classroomId: payload.classroomId,
+    role: payload.role,
+  };
 }
 
 /**
@@ -53,12 +84,7 @@ export async function verifySchoolRequest(
   if (cookieToken) {
     const payload = await verifyMontreeToken(cookieToken);
     if (payload) {
-      return {
-        userId: payload.sub,
-        schoolId: payload.schoolId,
-        classroomId: payload.classroomId,
-        role: payload.role,
-      };
+      return toVerifiedOrLocked(payload);
     }
     // Cookie exists but token invalid/expired — fall through to check Bearer header
   }
@@ -70,12 +96,7 @@ export async function verifySchoolRequest(
     const payload = await verifyMontreeToken(token);
 
     if (payload) {
-      return {
-        userId: payload.sub,
-        schoolId: payload.schoolId,
-        classroomId: payload.classroomId,
-        role: payload.role,
-      };
+      return toVerifiedOrLocked(payload);
     }
 
     // Token was provided but invalid
