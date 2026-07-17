@@ -32,6 +32,8 @@ const CampaignTab = dynamic(() => import('@/components/montree/super-admin/Campa
 const PlaybookTab = dynamic(() => import('@/components/montree/super-admin/PlaybookTab'), { ssr: false });
 const FoundingTab = dynamic(() => import('@/components/montree/super-admin/FoundingTab'), { ssr: false });
 const GlobalOutreachTab = dynamic(() => import('@/components/montree/super-admin/GlobalOutreachTab'), { ssr: false });
+// 🧭 Command — one-glance business tab (Jul 17). Reads existing endpoints only.
+const CommandTab = dynamic(() => import('@/components/montree/super-admin/CommandTab'), { ssr: false });
 
 
 interface DmMessage {
@@ -42,7 +44,7 @@ interface DmMessage {
   created_at: string;
 }
 
-type TabType = 'schools' | 'feedback' | 'leads' | 'visitors' | 'agents' | 'agent-inbox' | 'money' | 'campaign' | 'playbook' | 'health' | 'dlq' | 'errors' | 'outreach' | 'founding' | 'global-outreach';
+type TabType = 'command' | 'schools' | 'feedback' | 'leads' | 'visitors' | 'agents' | 'agent-inbox' | 'money' | 'campaign' | 'playbook' | 'health' | 'dlq' | 'errors' | 'outreach' | 'founding' | 'global-outreach';
 
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -370,7 +372,7 @@ export default function SuperAdminPage() {
     if (typeof window === 'undefined') return;
     const sp = new URLSearchParams(window.location.search);
     const tab = sp.get('tab');
-    const valid: TabType[] = ['schools', 'feedback', 'leads', 'visitors', 'agents', 'agent-inbox', 'money', 'campaign', 'playbook', 'health', 'dlq', 'errors', 'outreach', 'founding', 'global-outreach'];
+    const valid: TabType[] = ['command', 'schools', 'feedback', 'leads', 'visitors', 'agents', 'agent-inbox', 'money', 'campaign', 'playbook', 'health', 'dlq', 'errors', 'outreach', 'founding', 'global-outreach'];
     if (tab && (valid as string[]).includes(tab)) {
       setActiveTab(tab as TabType);
     }
@@ -778,6 +780,13 @@ export default function SuperAdminPage() {
               Then the daily drivers (Schools, Leads, Feedback, Money), then
               the rest by frequency. Plumbing/diagnostics (Health, DLQ,
               Errors) sit at the end. */}
+          {/* 🧭 Command leads the strip (Jul 17) — the one-glance business view. */}
+          <SuperAdminTab
+            active={activeTab === 'command'}
+            onClick={() => setActiveTab('command')}
+            icon="🧭"
+            label="Command"
+          />
           <SuperAdminTab
             active={activeTab === 'founding'}
             onClick={() => setActiveTab('founding')}
@@ -821,6 +830,10 @@ export default function SuperAdminPage() {
         </div>
 
         {/* Tab Content */}
+        {activeTab === 'command' && (
+          <CommandTab sessionToken={saToken} onNavigate={(t) => setActiveTab(t)} />
+        )}
+
         {activeTab === 'schools' && (
           <SchoolsTab
             schools={adminData.schools}
