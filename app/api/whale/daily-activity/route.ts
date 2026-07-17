@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
         const { data: matchedActivity } = await supabase
           .from('activities')
           .select('id')
-          .ilike('name', `%${curriculumWork.work_name}%`)
+          .ilike('name', `%${String(curriculumWork.work_name).replace(/[%_\\]/g, '\\$&')}%`)
           .limit(1)
           .single();
 

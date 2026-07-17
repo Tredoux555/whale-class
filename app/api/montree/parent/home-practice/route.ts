@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
       .from('montree_classroom_curriculum_works')
       .select('name, description, parent_description, why_it_matters, direct_aims')
       .eq('classroom_id', classroomId)
-      .ilike('name', focus.work_name)
+      .ilike('name', String(focus.work_name).replace(/[%_\\]/g, '\\$&'))
       .maybeSingle();
     const aims = Array.isArray((workRow as { direct_aims?: unknown })?.direct_aims)
       ? ((workRow as { direct_aims: unknown[] }).direct_aims).map(String).join(', ')

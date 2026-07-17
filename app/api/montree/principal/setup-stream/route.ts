@@ -9,14 +9,10 @@ import { batchTranslateAllLocales } from '@/lib/montree/insert-curriculum-work';
 import { buildLocaleInsertFields } from '@/lib/montree/locales-config';
 import { applyGlobalTranslations } from '@/lib/montree/curriculum/apply-global-translations';
 import { MINIMAL_DEFAULT_MENU } from '@/lib/montree/menu/config';
+import { generateSecureCode } from '@/lib/montree/secure-code';
 
 function generateLoginCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for (let i = 0; i < 6; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return code;
+  return generateSecureCode();
 }
 
 const DEFAULT_AREAS = [

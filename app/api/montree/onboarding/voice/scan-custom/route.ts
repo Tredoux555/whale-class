@@ -137,6 +137,7 @@ If everything the teacher mentioned can be matched, return an empty array. False
     const response = await anthropic.messages.create({
       model: HAIKU_MODEL,
       max_tokens: 1000,
+      temperature: 0,
       tools: [SCAN_TOOL],
       tool_choice: { type: 'tool', name: 'identify_unmatched_works' },
       messages: [{ role: 'user', content: prompt }],

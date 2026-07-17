@@ -30,6 +30,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { legacySha256 } from '@/lib/montree/password';
 import { logAgentAudit } from '@/lib/montree/referral/agent-audit';
+import { generateSecureCode } from '@/lib/montree/secure-code';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,11 +39,8 @@ export const dynamic = 'force-dynamic';
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 function generateAgentLoginCode(): string {
-  let code = '';
-  for (let i = 0; i < 6; i += 1) {
-    code += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)];
-  }
-  return code;
+  // Crypto-safe; preserves the canonical no-I/O/0/1 alphabet.
+  return generateSecureCode(6, CODE_ALPHABET);
 }
 
 function buildWelcomeMessage(opts: {

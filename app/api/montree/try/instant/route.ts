@@ -15,6 +15,7 @@ import { MINIMAL_DEFAULT_MENU } from '@/lib/montree/menu/config';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { getClientIP } from '@/lib/montree/audit-logger';
 import { applyAiTier } from '@/lib/montree/billing/apply-ai-tier';
+import { generateSecureCode } from '@/lib/montree/secure-code';
 
 /**
  * Resolve the primary locale for a new school at signup.
@@ -564,11 +565,8 @@ async function seedCurriculumForClassroom(
 // Same charset as existing teacher codes - no confusing chars
 const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 function generateCode(): string {
-  let code = '';
-  for (let i = 0; i < 6; i++) {
-    code += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)];
-  }
-  return code;
+  // Crypto-safe; preserves this route's exact (no-L) alphabet.
+  return generateSecureCode(6, CODE_CHARS);
 }
 
 function generateSlug(baseName: string): string {

@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const { data: existingWork } = await supabase
       .from('curriculum_roadmap')
       .select('id, name, chinese_name, video_url')
-      .ilike('name', workName)
+      .ilike('name', String(workName).replace(/[%_\\]/g, '\\$&'))
       .single();
 
     const { data: assignment, error } = await supabase

@@ -5,14 +5,11 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { legacySha256 } from '@/lib/montree/password';
 import { MINIMAL_DEFAULT_MENU } from '@/lib/montree/menu/config';
+import { generateSecureCode } from '@/lib/montree/secure-code';
 
 function generateLoginCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for (let i = 0; i < 6; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return code;
+  // Crypto-safe 6-char credential (no 0/O/1/I).
+  return generateSecureCode();
 }
 
 // List teachers for school

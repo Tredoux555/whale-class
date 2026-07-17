@@ -18,19 +18,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { legacySha256 } from '@/lib/montree/password';
+import { generateSecureCode } from '@/lib/montree/secure-code';
 // sendPrincipalInviteEmail import removed: email send is now skipped — see
 // the comment near the JSON response below for the rationale.
 
 export const maxDuration = 60; // Email send + DB writes; well under any timeout.
 
 function generateLoginCode(): string {
-  // Avoid I, O, 0, 1 to keep codes unambiguous when shared verbally.
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for (let i = 0; i < 6; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return code;
+  // Crypto-safe; avoids I, O, 0, 1 to keep codes unambiguous when shared verbally.
+  return generateSecureCode();
 }
 
 interface InviteBody {

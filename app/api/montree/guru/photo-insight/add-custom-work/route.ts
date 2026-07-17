@@ -261,6 +261,7 @@ export async function POST(request: NextRequest) {
           return anthropic!.messages.create({
             model: HAIKU_MODEL,
             max_tokens: 150,
+            temperature: 0,
             system: `You are a Montessori classroom material describer. Given a photo of a child working with materials, describe ONLY the physical materials/objects visible — NOT the child, NOT the activity, NOT the room. Focus on: shape, color, size, material (wood/metal/fabric/plastic), arrangement, and any distinctive visual features. Keep it to 1-2 sentences, max 120 words.`,
             messages: [{
               role: 'user',
