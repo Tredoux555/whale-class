@@ -272,3 +272,61 @@ super-admin tab strip (before 🌱 Foundation).
 - **Landmines respected:** billing logic untouched; no API routes edited (READ ONLY); other tabs'
   code untouched beyond the strip wiring; pre-existing dirty files (outreach/route.ts, admin/layout.tsx,
   etc.) NOT staged.
+
+---
+
+### Addendum 3 (Jul 17 night): Demo tracker live
+
+Tredoux's order: build the dedicated demo/meeting tracker end-to-end tonight, replacing the 🧭
+Command tab's honest "next build" placeholder (Addendum 2 §3) with a real, DB-backed section.
+Fulfils the Operator Mandate DEMO PROTOCOL (`MASTER_OUTREACH_RUNBOOK_JUL17.md` §5½) — the moment a
+demo/call is agreed, it gets recorded with datetime + timezone and shows on the Command tab with a
+countdown, in both the agreed zone and Tredoux's local (Shanghai).
+
+**New DB table `montree_demo_meetings`** (migration `299_demo_meetings.sql` — **RUN Jul 17 via the
+pooler, Tredoux-sanctioned**; slated "298" in the brief but `298_normalize_week_keys.sql` already
+existed, so renumbered to 299 to avoid a filename collision — table name / API / wiring unchanged):
+`id uuid pk`, `org_name` (NOT NULL), `contact_name`, `contact_email`, `source_contact_id uuid`
+(soft ref to `montree_outreach_contacts`, **no FK** — deleting an outreach row must never wipe a
+demo), `scheduled_at timestamptz` (NOT NULL), `timezone text DEFAULT 'Asia/Shanghai'`,
+`status text DEFAULT 'scheduled' CHECK IN (scheduled/held/cancelled/no_show)`, `outcome_notes`,
+`dossier_ready boolean DEFAULT false`, `created_at`/`updated_at` + `montree_demo_meetings_touch_updated_at`
+trigger. **RLS ENABLED, no policies** (deny-all; server uses the service role). Idempotent.
+Verified on prod after the pooler run: 12 columns present, CHECK constraint correct, `relrowsecurity=true`,
+both indexes (`idx_demo_meetings_scheduled`, `idx_demo_meetings_status`) + pkey.
+
+**New API `app/api/montree/super-admin/demo-meetings/route.ts`** — `verifySuperAdminAuth` (same
+posture as the founding route). GET (upcoming `scheduled_at` ASC first, then past DESC, ≤100),
+POST (create — `org_name` + valid `scheduled_at` ISO required), PATCH (by `id` — any of
+`status`/`scheduled_at`/`timezone`/`outcome_notes`/contact fields/`org_name`/`dossier_ready`).
+Missing table (42P01) → clean **503** `{migration_pending:true}` with a run-me hint, never a raw 500.
+`export const dynamic = 'force-dynamic'`.
+
+**`CommandTab.tsx`** — the placeholder card is replaced with a self-contained `<DemosSection>`
+(module-scope, owns its own fetch/state → fails in isolation, never blanks the tab). Renders:
+inline quick-add form (organisation, contact name, email, `datetime-local`, timezone `<select>` of
+9 common zones defaulting to Asia/Shanghai) that converts the wall-clock + zone to a correct UTC
+instant (two-pass `Intl` offset, DST-safe); an **upcoming** list (org + countdown "in N days" /
+"tomorrow" / "in Nh", contact line, the datetime shown in BOTH the stored zone and Shanghai when
+they differ) with per-row **Held ✓ / Cancel ✕ / No-show** buttons; and a **collapsed Past demos**
+list (last 10, status-coloured, still actionable if a stale `scheduled` row's time has passed).
+
+**Runbook edit:** `MASTER_OUTREACH_RUNBOOK_JUL17.md` §5½ DEMO PROTOCOL now says to record the demo
+in `montree_demo_meetings` via the demo-meetings API (or a pooler insert), which feeds the 🧭
+Command tab; dossier + morning-reminder duties unchanged.
+
+**Gates:** eslint on both touched code files → **0 errors** (1 warning: the canonical
+`useEffect(()=>{load()},[load])` load-on-mount pattern on the main CommandTab load effect —
+identical to FoundingTab, pre-existing, a stylistic newer-rule warning, not an error). Scoped
+`tsc -p tsconfig.demotracker.tmp.json` (includes next-env.d.ts) → **exit 0**. No i18n (hardcoded
+English, like FoundingTab). No `<style jsx>` (inline style objects). No gold box-shadow.
+
+**Files touched (staged):** `migrations/299_demo_meetings.sql` (new),
+`app/api/montree/super-admin/demo-meetings/route.ts` (new),
+`components/montree/super-admin/CommandTab.tsx`, `docs/outreach/MASTER_OUTREACH_RUNBOOK_JUL17.md`,
+this plan doc, `.gitignore` (ignore the temp tsconfig + the stray `_run299.mjs` migration runner).
+
+**⏳ Owed / cleanup (Desktop Commander — sandbox `rm` blocked):** delete `tsconfig.demotracker.tmp.json`
+(+ `.tsbuildinfo`) and the stray `_run299.mjs` pooler-runner left in the repo root (both gitignored,
+excluded from the commit). Runtime-audit owed: open 🧭 Command on live, add a demo, verify the
+dual-timezone render + countdown + status buttons.

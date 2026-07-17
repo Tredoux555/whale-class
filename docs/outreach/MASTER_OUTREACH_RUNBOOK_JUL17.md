@@ -91,6 +91,26 @@ Workers pick the next skeleton in rotation per school and may only adjust the gr
 history check per profile, ≤20-25/day), then FB follows (≤30-40/day), then flips + session log.
 🚨 NEVER auto-send outside that supervised session. 🚨 Stop instantly on any platform pushback.
 
+## 5½. THE OPERATOR MANDATE (Tredoux, Jul 17 night — standing)
+Fable runs the whole campaign AND the business ledger. Every daily run must also maintain and report:
+- **PIPELINE LEDGER** (from master list + montree_schools + waitlist): spoken-to (replied), in-demo,
+  signed-trial, signed-paying, Foundation/free (Greenwoods $3-life · Isha Vidhya · Tatenda pending),
+  rejected (dead w/ reason). Any school crossing a stage appears in the morning report by name.
+- **DEMO PROTOCOL**: the moment a demo/call is agreed in any thread, record it (org, contact, datetime
+  + timezone) in `montree_demo_meetings` via the demo-meetings API
+  (`POST /api/montree/super-admin/demo-meetings`, or a pooler insert) — this feeds the 🧭 Command tab,
+  which shows every upcoming demo with a countdown and the datetime in both the agreed timezone and
+  Tredoux's local (Shanghai). AND prep him: a Sonnet research dossier on the school (size, pedagogy,
+  decision-maker, likely objections, 3 talking points / 3 landmines — Isha Vidhya format) delivered
+  BEFORE the meeting, plus a reminder the morning of. Use the existing dossier infra where useful.
+- **MONEY**: track signups→revenue via Money tab / montree_finance_transactions + Stripe; morning
+  report carries MRR, paying-school count, trial conversions due this week. Monthly (1st): P&L
+  summary + set-aside estimate for tax. Tax preparation is coordinated with the HK accountant
+  (Vistra/Pamela thread) — Fable prepares numbers and deadlines, the accountant certifies. Flag any
+  billing anomaly (trial expiring on an engaged school, failed payment, Foundation misuse) same-day.
+- Weekly (Sunday): full business brief — pipeline movement, revenue, costs (AI spend from API
+  usage), reply rates, and one strategic recommendation.
+
 ## 5. WEEKLY RHYTHM
 Every contacted, non-replied, non-dead thread gets its next touch exactly on the 7-day boundary until
 the 3-touch law closes it. Sunday's run additionally reports: pipeline totals, reply rate per
