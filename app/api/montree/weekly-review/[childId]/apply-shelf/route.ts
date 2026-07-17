@@ -10,6 +10,7 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import { getSupabase } from '@/lib/supabase-client';
 import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
 import { findCurriculumWorkByName, enrichWithChineseNames } from '@/lib/montree/curriculum-loader';
+import { seedRecommendedWork } from '@/lib/montree/progress/seed-recommended-work';
 
 
 // Railway/Next.js default serverless timeout is 15s. AI calls can
@@ -75,6 +76,7 @@ Return ONLY the JSON array, no markdown fencing.`;
     const response = await anthropic.messages.create({
       model: AI_MODEL,
       max_tokens: 1024,
+      temperature: 0,
       messages: [{ role: 'user', content: extractPrompt }],
     });
 
@@ -136,20 +138,10 @@ Return ONLY the JSON array, no markdown fencing.`;
         continue;
       }
 
-      // Also ensure progress record exists
-      const { error: progressError } = await supabase
-        .from('montree_child_progress')
-        .upsert({
-          child_id: childId,
-          work_name: workName,
-          area: rec.area,
-          status: 'not_started',
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'child_id,work_name' });
-
-      if (progressError) {
-        console.error('Progress upsert error:', progressError);
-      }
+      // Also ensure a progress record exists — but NEVER downgrade an advanced
+      // one. seedRecommendedWork inserts 'not_started' only when no row exists;
+      // an existing presented/practicing/mastered row is left completely alone.
+      await seedRecommendedWork({ supabase, childId, workName, area: rec.area });
 
       // Store guru reasoning
       try {

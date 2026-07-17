@@ -6,6 +6,7 @@ import { legacySha256 } from '@/lib/montree/password';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { getLocationFromRequest } from '@/lib/ip-geolocation';
 import { DEFAULTS } from '@/lib/montree/constants';
+import { generateSecureCode } from '@/lib/montree/secure-code';
 
 // Generate URL-friendly slug
 function generateSlug(name: string): string {
@@ -16,14 +17,9 @@ function generateSlug(name: string): string {
     .substring(0, 50);
 }
 
-// Generate 6-character login code
+// Generate crypto-safe 6-character login code (no confusing chars)
 function generateLoginCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // No confusing chars
-  let code = '';
-  for (let i = 0; i < 6; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return code;
+  return generateSecureCode();
 }
 
 interface ClassroomInput {

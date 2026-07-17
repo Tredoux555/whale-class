@@ -225,6 +225,7 @@ export async function extractFromVoiceNote(
     const response = await anthropic.messages.create({
       model: HAIKU_MODEL,
       max_tokens: 1024,
+      temperature: 0,
       system: systemPrompt,
       tools: [getVoiceNoteToolDefinition()],
       messages: [

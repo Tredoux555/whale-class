@@ -21,17 +21,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { legacySha256 } from '@/lib/montree/password';
+import { generateSecureCode } from '@/lib/montree/secure-code';
 
 export const maxDuration = 30;
 
 // 6-char code, alphabet excludes I/O/0/1 (Session 84 invite-principal pattern).
 function generateLoginCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for (let i = 0; i < 6; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return code;
+  return generateSecureCode();
 }
 
 const PRINCIPAL_FIELDS = 'id, school_id, email, name, role, is_active, last_login, created_at, updated_at';

@@ -5,6 +5,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySuperAdminPassword } from '@/lib/verify-super-admin';
 import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { getClientIP } from '@/lib/montree/audit-logger';
 
 // Build sequence map once at module load (work_key -> sequence number)
 let _sequenceMap: Map<string, number> | null = null;
@@ -174,6 +176,24 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
+
+    // Public, unauthenticated submission — rate limit 5 / 15 min per IP.
+    // FAIL-OPEN: a limiter-table outage must never block a genuine submission.
+    const ip = getClientIP(request.headers);
+    const { allowed, retryAfterSeconds } = await checkRateLimit(
+      supabase,
+      ip,
+      '/api/montree/community/works',
+      5,
+      15
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many submissions. Please try again in a little while.', retryAfterSeconds },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds ?? 900) } }
+      );
+    }
+
     const formData = await request.formData();
 
     // Extract text fields

@@ -61,7 +61,7 @@ export async function resolveCalendarScope(
           .eq('school_id', staff.schoolId)
           .eq('role', 'principal')
           .eq('is_active', true)
-          .ilike('email', teacherEmail) // case-insensitive match
+          .ilike('email', teacherEmail.replace(/[%_\\]/g, '\\$&')) // case-insensitive match
           .maybeSingle();
         if (adminRow) {
           console.warn(

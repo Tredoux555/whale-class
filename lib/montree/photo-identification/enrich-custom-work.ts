@@ -181,6 +181,7 @@ Write a warm, educational description for parents explaining what this work is a
     const response = await anthropic.messages.create({
       model: AI_MODEL,
       max_tokens: 1024,
+      temperature: 0,
       messages: [{ role: 'user', content: prompt }],
     });
 

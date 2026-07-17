@@ -323,8 +323,10 @@ async function executeSearchSchool(
   const term = String(input.search_term || '').trim();
   if (!term) return { success: false, error: 'search_term is required' };
 
-  // Sanitize for PostgREST filter safety — escape dots, commas, parens that could inject filter syntax
-  const sanitized = term.replace(/[.,()]/g, '');
+  // Sanitize for PostgREST filter safety — strip dots, commas, parens that could
+  // inject filter syntax — then escape SQL LIKE wildcards so a literal %/_ in the
+  // term can't act as a wildcard.
+  const sanitized = term.replace(/[.,()]/g, '').replace(/[%_\\]/g, '\\$&');
   const pattern = `%${sanitized}%`;
   const classroomIds = await getSchoolClassroomIds(supabase, schoolId);
 

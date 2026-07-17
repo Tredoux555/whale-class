@@ -110,7 +110,7 @@ export async function POST(
         .from('montree_classroom_curriculum_works')
         .select('name, parent_description, why_it_matters')
         .eq('classroom_id', child.classroom_id)
-        .ilike('name', focusList[0].work_name)
+        .ilike('name', focusList[0].work_name.replace(/[%_\\]/g, '\\$&'))
         .maybeSingle<{ name: string; parent_description: string | null; why_it_matters: string | null }>();
       if (workRow) {
         workContext = [workRow.parent_description, workRow.why_it_matters].filter(Boolean).join(' ');

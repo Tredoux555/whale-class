@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { MINIMAL_DEFAULT_MENU } from '@/lib/montree/menu/config';
+import { generateSecureCode } from '@/lib/montree/secure-code';
 
 // GET /api/montree/classroom/teachers?classroom_id=UUID
 // Returns all teachers for the given classroom
@@ -94,12 +95,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    // Generate a unique 6-char login code
-    const charset = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // No O/0/I/1 to avoid confusion
-    let loginCode = '';
-    for (let i = 0; i < 6; i++) {
-      loginCode += charset[Math.floor(Math.random() * charset.length)];
-    }
+    // Generate a unique crypto-safe 6-char login code (no O/0/I/1)
+    const loginCode = generateSecureCode();
 
     // Hash the login code for password_hash (same SHA256 pattern as other teacher creation routes)
     const { legacySha256 } = await import('@/lib/montree/password');
@@ -123,10 +120,7 @@ export async function POST(request: NextRequest) {
     if (insertError || !teacher) {
       // Login code collision — extremely rare, retry once
       if (insertError.code === '23505' && insertError.message?.includes('login_code')) {
-        let retryCode = '';
-        for (let i = 0; i < 6; i++) {
-          retryCode += charset[Math.floor(Math.random() * charset.length)];
-        }
+        const retryCode = generateSecureCode();
         const { data: retryTeacher, error: retryError } = await supabase
           .from('montree_teachers')
           .insert({

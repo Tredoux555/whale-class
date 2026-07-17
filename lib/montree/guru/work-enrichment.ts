@@ -109,6 +109,7 @@ JSON structure required:
         const response = await anthropic.messages.create({
           model: AI_MODEL,
           max_tokens: 800,
+          temperature: 0,
           system: systemPrompt,
           messages: [{ role: 'user', content: userPrompt }],
         }, { signal: controller.signal });

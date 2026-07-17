@@ -167,6 +167,7 @@ If the work name is vague, infer reasonably from the area. Stay neutral and prof
         const response = await anthropic.messages.create({
           model: AI_MODEL,
           max_tokens: 1500,
+          temperature: 0,
           tools: [ENRICH_TOOL],
           tool_choice: { type: 'tool', name: 'fill_custom_work' },
           messages: [{ role: 'user', content: prompt }],

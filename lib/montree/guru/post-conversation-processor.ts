@@ -189,7 +189,7 @@ JSON:`;
           const { data: customWork } = await supabase
             .from('montree_classroom_curriculum_works')
             .select('id')
-            .ilike('name', change.work_name)
+            .ilike('name', change.work_name.replace(/[%_\\]/g, '\\$&'))
             .limit(1)
             .maybeSingle();
           if (!customWork) continue; // Skip invalid work names
