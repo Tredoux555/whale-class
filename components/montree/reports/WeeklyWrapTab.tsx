@@ -14,6 +14,7 @@ import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 import InviteParentModal from '@/components/montree/InviteParentModal';
 import UpgradeCard, { extractUpgradeFromResponse } from '@/components/montree/UpgradeCard';
 import { ChevronLeft, ChevronRight, Loader2, AlertCircle } from 'lucide-react';
+import { currentWeekStart, shiftWeek, weekEnd as computeWeekEnd } from '@/lib/montree/week-key';
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -126,29 +127,10 @@ interface PickerWork {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────
-
-function getCurrentMonday(): string {
-  // Must match DashboardHeader's date serialization:
-  // local Monday at midnight → toISOString() → YYYY-MM-DD (UTC)
-  const now = new Date();
-  const dow = now.getDay();
-  const mon = new Date(now);
-  mon.setDate(now.getDate() - ((dow + 6) % 7));
-  mon.setHours(0, 0, 0, 0);
-  return mon.toISOString().split('T')[0];
-}
-
-function shiftWeek(ws: string, weeks: number): string {
-  const d = new Date(`${ws}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + weeks * 7);
-  return d.toISOString().slice(0, 10);
-}
-
-function getWeekEnd(ws: string): string {
-  const d = new Date(`${ws}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + 6);
-  return d.toISOString().slice(0, 10);
-}
+// Week-key math (currentWeekStart / shiftWeek / weekEnd) is the single
+// canonical helper in lib/montree/week-key.ts — it builds LOCAL calendar dates
+// so the key is not shifted a day early on devices east of UTC. Do NOT
+// reintroduce a local getCurrentMonday() that serializes via toISOString().
 
 function toCanonicalArea(raw: string): string {
   if (!raw) return '';
@@ -396,22 +378,22 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
   const effectiveClassroomId = classroomId || getSession()?.classroom?.id || '';
 
   // Week
-  const [weekStart, setWeekStart] = useState(() => getCurrentMonday());
-  const weekEnd = useMemo(() => getWeekEnd(weekStart), [weekStart]);
+  const [weekStart, setWeekStart] = useState(() => currentWeekStart());
+  const weekEnd = useMemo(() => computeWeekEnd(weekStart), [weekStart]);
   const weekDisplay = useMemo(() => {
     const dateLocale = getIntlLocale(locale);
     const fmt = (d: Date) => d.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' });
     return `${fmt(new Date(weekStart))} – ${fmt(new Date(weekEnd))}`;
   }, [weekStart, weekEnd, locale]);
 
-  // ── Current-week guard rail ──────────────────────────────────
-  // Timezone footgun: the week key serializes local-Monday-midnight to UTC, so
-  // for users east of UTC (China/Asia) the shown week can end a day early — on
-  // some days (e.g. Sunday for UTC+8) "this week" ends BEFORE today, and photos
-  // taken today fall outside the window and silently vanish from the report.
-  // We can't safely re-key the whole date system here, so we surface it: if the
-  // shown week ended before today's LOCAL date, nudge the teacher to jump to the
-  // week that actually contains today.
+  // ── Current-week guard rail (residual safety net) ────────────
+  // The old timezone footgun (local-Monday-midnight serialized to UTC → key one
+  // day early for east-of-UTC users) is now fixed at the source: currentWeekStart
+  // in lib/montree/week-key.ts builds the key from LOCAL date parts, and the
+  // server report routes key off the school's timezone. This guard stays as a
+  // cheap belt-and-braces net for any stale param or edge case: if the shown week
+  // ended before today's LOCAL date, nudge the teacher to jump to the week that
+  // actually contains today.
   const todayLocalStr = useMemo(() => {
     const n = new Date();
     return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
@@ -424,9 +406,9 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
   const jumpToCurrentWeek = useCallback(() => {
     // Walk (in the app's own week serialization) to the week containing today,
     // so the target key stays consistent with how reports are stored/queried.
-    let ws = getCurrentMonday();
+    let ws = currentWeekStart();
     let guard = 0;
-    while (getWeekEnd(ws) < todayLocalStr && guard < 60) { ws = shiftWeek(ws, 1); guard++; }
+    while (computeWeekEnd(ws) < todayLocalStr && guard < 60) { ws = shiftWeek(ws, 1); guard++; }
     while (ws > todayLocalStr && guard < 120) { ws = shiftWeek(ws, -1); guard++; }
     setWeekStart(ws);
   }, [todayLocalStr]);

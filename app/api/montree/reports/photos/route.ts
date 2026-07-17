@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { getSchoolTimezone, currentWeekStartInTz } from '@/lib/montree/school-time';
 
 export async function PATCH(request: NextRequest) {
   try {
@@ -25,11 +26,17 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // Get the current draft report (or create one)
-    const now = new Date();
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - now.getDay());
-    const weekStartStr = weekStart.toISOString().split('T')[0];
+    // Get the current draft report (or create one).
+    // School-local MONDAY convention (matches reports/send, reports/preview and
+    // the weekly-wrap system) — via the server-side timezone authority.
+    const tz = await getSchoolTimezone(auth.schoolId);
+    const weekStartStr = currentWeekStartInTz(tz);
+    // A UTC-midnight Date of that Monday, used only to derive week_number /
+    // report_year via the unchanged formula below, and week_end (start + 6).
+    const weekStart = new Date(`${weekStartStr}T00:00:00Z`);
+    const weekEndDate = new Date(weekStart);
+    weekEndDate.setUTCDate(weekStart.getUTCDate() + 6);
+    const weekEndStr = weekEndDate.toISOString().split('T')[0];
 
     // Get child info including classroom
     const { data: child } = await supabase
@@ -70,7 +77,7 @@ export async function PATCH(request: NextRequest) {
           classroom_id: child.classroom_id,
           school_id,
           week_start: weekStartStr,
-          week_end: weekStartStr,
+          week_end: weekEndStr,
           week_number: weekNumber,
           report_year: reportYear,
           report_type: 'teacher',

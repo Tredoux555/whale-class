@@ -13,6 +13,7 @@ import {
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 import { getIntlLocale } from '@/lib/montree/i18n/locales';
+import { currentWeekStart, weekEnd } from '@/lib/montree/week-key';
 
 interface Child {
   id: string;
@@ -74,16 +75,11 @@ export default function BatchNarrativesCard({ classroomId, children }: Props) {
   }, []);
 
   const getWeekDates = () => {
-    const now = new Date();
-    const dayOfWeek = now.getDay();
-    const monday = new Date(now);
-    monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7));
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
-    return {
-      week_start: monday.toISOString().split('T')[0],
-      week_end: sunday.toISOString().split('T')[0],
-    };
+    // Canonical LOCAL week key — see lib/montree/week-key.ts. Previously built a
+    // local Monday then serialized via toISOString(), landing a day early east
+    // of UTC (the whole China market).
+    const week_start = currentWeekStart();
+    return { week_start, week_end: weekEnd(week_start) };
   };
 
   const handleGenerate = useCallback(async (forceRegenerate = false) => {

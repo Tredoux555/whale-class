@@ -17,6 +17,7 @@ import { sortChildrenByCustomOrder } from '@/lib/montree/weekly-admin/child-orde
 import VoiceDictate from '@/components/montree/voice/VoiceDictate';
 import { toast } from 'sonner';
 import { AREA_KEYS, getAreaLabel } from '@/lib/montree/i18n/area-labels';
+import { currentWeekStart, shiftWeek } from '@/lib/montree/week-key';
 
 // The weekly-admin planning grid is the 5 canonical Montessori areas only. The
 // English Program (a flag-gated 6th area) is tracked via its own works + the
@@ -157,7 +158,7 @@ export default function WeeklyAdminDocsPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const [weekStart, setWeekStart] = useState(() => getCurrentMonday());
+  const [weekStart, setWeekStart] = useState(() => currentWeekStart());
 
   const [activeTab, setActiveTab] = useState<'summary' | 'plan'>('summary');
 
@@ -529,7 +530,7 @@ export default function WeeklyAdminDocsPage() {
 
   if (!session) return null;
 
-  const isMaxWeek = weekStart >= (activeTab === 'plan' ? shiftWeek(getCurrentMonday(), 1) : getCurrentMonday());
+  const isMaxWeek = weekStart >= (activeTab === 'plan' ? shiftWeek(currentWeekStart(), 1) : currentWeekStart());
 
   return (
     <div style={{
@@ -651,7 +652,7 @@ export default function WeeklyAdminDocsPage() {
         <button
           onClick={() => {
             const next = shiftWeek(weekStart, 1);
-            const maxWeek = activeTab === 'plan' ? shiftWeek(getCurrentMonday(), 1) : getCurrentMonday();
+            const maxWeek = activeTab === 'plan' ? shiftWeek(currentWeekStart(), 1) : currentWeekStart();
             if (next <= maxWeek) setWeekStart(next);
           }}
           disabled={isMaxWeek}
@@ -1144,18 +1145,7 @@ function PlanCard({
 }
 
 // ─── Helpers ─────────────────────────────────────────────────
-
-function getCurrentMonday(): string {
-  const now = new Date();
-  const beijing = new Date(now.getTime() + 8 * 60 * 60 * 1000);
-  const day = beijing.getUTCDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  beijing.setUTCDate(beijing.getUTCDate() + diff);
-  return beijing.toISOString().slice(0, 10);
-}
-
-function shiftWeek(weekStart: string, weeks: number): string {
-  const d = new Date(`${weekStart}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + weeks * 7);
-  return d.toISOString().slice(0, 10);
-}
+// Week-key math (currentWeekStart / shiftWeek) is the single canonical helper
+// in lib/montree/week-key.ts — LOCAL calendar dates, no toISOString slip. The
+// old local helper hardcoded a +8h Beijing offset; the shared
+// helper uses the device's real timezone. Do NOT reintroduce a local copy.

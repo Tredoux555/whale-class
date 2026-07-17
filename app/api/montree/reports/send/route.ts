@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
+import { getSchoolTimezone, currentWeekStartInTz } from '@/lib/montree/school-time';
 import type { Locale } from '@/lib/montree/i18n/locales';
 import { isValidLocale } from '@/lib/montree/i18n/locales';
 import { getLocaleFromRequest, getTranslator, getTranslatedStatus, getTranslatedAreaName, getIntlLocale } from '@/lib/montree/i18n/server';
@@ -91,11 +92,14 @@ export async function POST(request: NextRequest) {
     const works = (progress || []).filter(w => !excludedSet.has(w.work_name));
 
     // First, check if there's a draft report with selected photos
-    // The photos route creates a draft with week_start as the key
-    const nowDate = new Date();
-    const weekStart = new Date(nowDate);
-    weekStart.setDate(nowDate.getDate() - nowDate.getDay());
-    const weekStartStr = weekStart.toISOString().split('T')[0];
+    // The photos route creates a draft with week_start as the key.
+    // School-local MONDAY convention (matches reports/photos, reports/preview
+    // and the weekly-wrap system) — via the server-side timezone authority.
+    const tz = await getSchoolTimezone(auth.schoolId);
+    const weekStartStr = currentWeekStartInTz(tz);
+    // A UTC-midnight Date of that Monday, used only to derive week_number /
+    // report_year via the unchanged formula below.
+    const weekStart = new Date(`${weekStartStr}T00:00:00Z`);
 
     // Look for existing draft report with selected photos
     const { data: draftReport } = await supabase
@@ -536,9 +540,9 @@ export async function POST(request: NextRequest) {
       report_locale: locale,
     };
 
-    // Calculate week start (Sunday) and end (Saturday)
-    const weekEndDate = new Date(nowDate);
-    weekEndDate.setDate(nowDate.getDate() + (6 - nowDate.getDay()));
+    // Week end = the Sunday that closes the school-local Monday week (start + 6).
+    const weekEndDate = new Date(weekStart);
+    weekEndDate.setUTCDate(weekStart.getUTCDate() + 6);
     const weekEndStr = weekEndDate.toISOString().split('T')[0];
 
     // Calculate week_number and report_year (required NOT NULL columns)
