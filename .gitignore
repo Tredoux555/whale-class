@@ -171,3 +171,9 @@ tsconfig.foundface.tmp.tsbuildinfo
 # temp scoped tsconfig from Jul-17 🧭 Command tab build verification (sandbox rm blocked — delete via Desktop Commander)
 tsconfig.command.tmp.json
 tsconfig.command.tmp.tsbuildinfo
+
+# temp scoped tsconfig from Jul-17 Demo tracker build verification (sandbox rm blocked — delete via Desktop Commander)
+tsconfig.demotracker.tmp.json
+tsconfig.demotracker.tmp.tsbuildinfo
+# stray migration runner left by the sandbox (rm blocked) — delete via Desktop Commander
+_run299.mjs
