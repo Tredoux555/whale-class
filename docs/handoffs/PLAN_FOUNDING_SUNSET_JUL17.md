@@ -227,3 +227,48 @@ too, that's a follow-up.
   by the scope widening. Gates: `npx eslint` on all 3 touched files → 0 errors/warnings; scoped
   `npx tsc -p tsconfig.foundface.tmp.json` → exit 0; `tsconfig.foundface.tmp.json`/`.tsbuildinfo`
   correctly gitignored. **VERDICT: SHIP.**
+
+---
+
+### Addendum 2 (Jul 17 night): 🧭 Command tab
+
+Tredoux's Operator Mandate (`MASTER_OUTREACH_RUNBOOK_JUL17.md` §5½) asked for ONE super-admin button
+that shows the whole business at a glance. Built as a new **🧭 Command** tab, placed FIRST in the
+super-admin tab strip (before 🌱 Foundation).
+
+- **New file:** `components/montree/super-admin/CommandTab.tsx`. **No new migrations, no new tables,
+  zero API changes** — reads EXISTING super-admin endpoints only, fanned out in parallel via
+  `Promise.allSettled` so each section fails in isolation (its own error line) and a single dead
+  endpoint can never blank the tab.
+- **Endpoints consumed (all GET, `x-super-admin-token`):** `/super-admin/schools` (`{schools}`),
+  `/super-admin/founding` (`{config, admitted, rows}`), `/super-admin/global-outreach?view=by_country`
+  (`{grand}` for replied/dead counts), `?view=contacts&status=replied` and `?view=contacts&status=dead`
+  (names for the pipeline columns). Everything degrades gracefully — a missing field just thins a card.
+- **What it renders (top-to-bottom, FoundingTab dark-slate register, inline styles, no `<style jsx>`,
+  no gold shadow):**
+  1. **Business strip** — cards: Schools total · Paying (`subscription_tier==='paid'`) · Trialing
+     (`tier==='trial'` or `subscription_status==='trialing'`) with "trials ending ≤7d: N" derived from
+     `trial_ends_at` · Free / Foundation (`tier==='free'`) with "Foundation grants: N"
+     (`founding_member===true` OR `billing_override_usd===0`) · **MRR (est.)** — only shown when there
+     is ≥1 paid school; = Σ over paid schools of (per-student `billing_override_usd` if >0, else the $7
+     premium list price) × `student_count`, clearly labelled an estimate (truth lives in the Money tab).
+  2. **Pipeline** — five scrolling columns with school NAMES: Spoken to (outreach `status=replied`,
+     org + country + updated) · Signed · trial (trial schools, newest first) · Signed · paying (paid
+     schools) · Foundation / free (founding rows `status==='admitted'` OR redeemed — Greenwoods shows
+     "✓ redeemed", Isha Vidhya / Tatenda show "admitted") · Rejected (dead outreach contacts whose
+     `notes` match a decline regex; if none surface, falls back to a "Recorded rejections" const —
+     Wheatley / Ardtona House / Montessori Aotearoa — labelled honestly).
+  3. **Demos & meetings** — honest placeholder card ("Demos are captured in the daily brief. Dedicated
+     tracker: next build."). No fake data.
+  4. **Today** — footer of link-style buttons that jump to Foundation / Global Outreach / Money /
+     Schools via an `onNavigate` prop wired to the parent's `setActiveTab`.
+- **Wiring:** `app/montree/super-admin/page.tsx` — dynamic import, `command` added to `TabType` + the
+  `valid[]` deep-link array, the 🧭 Command pill inserted FIRST in the strip, and the tab-content
+  render (`<CommandTab sessionToken={saToken} onNavigate={(t) => setActiveTab(t)} />`).
+- **Gates:** eslint on both touched files → **0 errors** (1 warning: the canonical `useEffect(()=>{load()},[load])`
+  load-on-mount pattern, identical to FoundingTab — a stylistic newer-rule warning, not an error).
+  Scoped `tsc -p tsconfig.command.tmp.json` → **exit 0**. No i18n changes (hardcoded English, like
+  FoundingTab). Temp tsconfig gitignored (`tsconfig.command.tmp.json` — delete via Desktop Commander).
+- **Landmines respected:** billing logic untouched; no API routes edited (READ ONLY); other tabs'
+  code untouched beyond the strip wiring; pre-existing dirty files (outreach/route.ts, admin/layout.tsx,
+  etc.) NOT staged.

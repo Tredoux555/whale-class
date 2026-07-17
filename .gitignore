@@ -167,3 +167,7 @@ tsconfig.foundsunset.tmp.json
 tsconfig.foundsunset.tmp.tsbuildinfo
 tsconfig.foundface.tmp.json
 tsconfig.foundface.tmp.tsbuildinfo
+
+# temp scoped tsconfig from Jul-17 🧭 Command tab build verification (sandbox rm blocked — delete via Desktop Commander)
+tsconfig.command.tmp.json
+tsconfig.command.tmp.tsbuildinfo
