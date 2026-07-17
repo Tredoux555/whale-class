@@ -24,7 +24,7 @@ import { getRelevantBrainWisdom, recordLearning } from '@/lib/montree/guru/brain
 import { processTeacherConversation } from '@/lib/montree/guru/post-conversation-processor';
 import type { MessageParam, ToolResultBlockParam, ContentBlockParam } from '@anthropic-ai/sdk/resources/messages';
 
-const MAX_TOOL_ROUNDS = 3; // 3 rounds sufficient with SPEED RULE in prompt (batch tool calls)
+const MAX_TOOL_ROUNDS = 8; // was 3 — shelf-fill across 5 areas needs more rounds; SPEED RULE still batches calls
 const API_TIMEOUT_MS = 45_000; // 45s per API call (was 30s — too aggressive for complex tool-use questions)
 const TOTAL_REQUEST_TIMEOUT_MS = 55_000; // 55s hard wall — must be under Railway's 60s proxy timeout to avoid 504
 
@@ -1007,7 +1007,8 @@ export async function POST(request: NextRequest) {
         }
 
         // Tool rounds maxed out — generate summary from tool results
-        if (toolResponse.stop_reason === 'tool_use') {
+        const toolLoopCutShort = toolResponse.stop_reason === 'tool_use';
+        if (toolLoopCutShort) {
           const reason = rounds >= MAX_TOOL_ROUNDS ? `max rounds (${MAX_TOOL_ROUNDS})` : `total timeout (${Date.now() - requestStart}ms)`;
           console.warn(`[Guru Stream] Tool loop stopped: ${reason}. Actions completed: ${actionsTaken.length}`);
         }
@@ -1018,7 +1019,12 @@ export async function POST(request: NextRequest) {
           .join('\n');
 
         if (!responseText.trim() && actionsTaken.length > 0) {
-          responseText = `Done! Here's what I did:\n\n${actionsTaken.filter(a => a.success).map(a => a.message).join('\n\n')}`;
+          const doneSummary = actionsTaken.filter(a => a.success).map(a => a.message).join('\n\n');
+          // If the loop was cut short (max rounds / timeout) with tool_use still pending,
+          // don't falsely claim we finished — acknowledge partial progress and invite continuation.
+          responseText = toolLoopCutShort
+            ? `I got through part of it — here's what's done so far:\n\n${doneSummary}\n\nSay 'continue' and I'll finish the rest.`
+            : `Done! Here's what I did:\n\n${doneSummary}`;
         }
 
         const { input_tokens = 0, output_tokens = 0 } = toolResponse.usage || {};
@@ -1139,7 +1145,8 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      if (response.stop_reason === 'tool_use') {
+      const toolLoopCutShort = response.stop_reason === 'tool_use';
+      if (toolLoopCutShort) {
         const reason = rounds >= MAX_TOOL_ROUNDS ? `max rounds (${MAX_TOOL_ROUNDS})` : `total timeout (${Date.now() - requestStart}ms)`;
         console.warn(`[Guru] Tool loop stopped: ${reason}. Actions completed: ${actionsTaken.length}`);
       }
@@ -1161,9 +1168,12 @@ export async function POST(request: NextRequest) {
           .filter(a => a.success)
           .map(a => a.message)
           .join('\n\n');
-        // Wrap in a friendly prefix
+        // Wrap in a prefix. If the loop was cut short (max rounds / timeout) with
+        // tool_use still pending, acknowledge partial progress instead of claiming done.
         if (responseText) {
-          responseText = `Done! Here's what I did:\n\n${responseText}`;
+          responseText = toolLoopCutShort
+            ? `I got through part of it — here's what's done so far:\n\n${responseText}\n\nSay 'continue' and I'll finish the rest.`
+            : `Done! Here's what I did:\n\n${responseText}`;
         }
       }
 

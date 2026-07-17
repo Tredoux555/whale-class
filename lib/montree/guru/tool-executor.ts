@@ -6,6 +6,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { AREA_LABELS_EN as AREA_LABELS } from '@/lib/montree/i18n/area-labels';
 import { updateChildSettings } from './settings-helper';
 import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
+import { seedRecommendedWork } from '@/lib/montree/progress/seed-recommended-work';
 
 // Build a set of valid work names at module load for fast lookup
 const VALID_WORK_NAMES: Set<string> = new Set();
@@ -115,31 +116,15 @@ export async function executeTool(
 
       if (error) return { success: false, message: 'Failed to set focus work' };
 
-      // CRITICAL: Also ensure work exists in progress table (so week view can see it)
+      // CRITICAL: Also ensure work exists in progress table (so week view can see it).
       // Without this, set_focus_work only writes to montree_child_focus_works which
       // the week view doesn't read as a source of works — only for the is_focus flag.
-      const { data: existingProgress } = await supabase
-        .from('montree_child_progress')
-        .select('id')
-        .eq('child_id', effectiveChildId)
-        .eq('work_name', work_name)
-        .maybeSingle();
-
-      if (!existingProgress) {
-        // Setting a focus work means "this is next" — NOT "already presented".
-        // Seed as not_started so the shelf honours "start with zero". The teacher
-        // marks presented/practicing/mastered via update_progress as it actually
-        // happens. (Was 'presented' + presented_at, which contradicted cold-start.)
-        await supabase
-          .from('montree_child_progress')
-          .insert({
-            child_id: effectiveChildId,
-            work_name,
-            area,
-            status: 'not_started',
-            updated_at: new Date().toISOString(),
-          });
-      }
+      //
+      // Route through the canonical seeder (seed-recommended-work): setting a focus
+      // work means "this is next" — NOT "already presented". It seeds as not_started
+      // and NEVER downgrades an existing row, so the shelf honours "start with zero"
+      // without ever wiping a child's real progress.
+      await seedRecommendedWork({ supabase, childId: effectiveChildId, workName: work_name, area });
 
       // Store Guru's reasoning per area in child settings (for ShelfView display)
       const reason = input.reason as string | undefined;
