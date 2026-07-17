@@ -8,6 +8,7 @@ import { cookies } from 'next/headers';
 import { getSupabase } from '@/lib/supabase-client';
 import { createParentToken } from '@/lib/montree/server-auth';
 import { verifyPassword, isLegacyHash, hashPassword } from '@/lib/montree/password';
+import { isSchoolLocked } from '@/lib/montree/school-lock';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 
@@ -83,6 +84,16 @@ export async function POST(req: NextRequest) {
     if (isLegacyHash(parent.password_hash)) {
       const bcryptHash = await hashPassword(password);
       await supabase.from('montree_parents').update({ password_hash: bcryptHash }).eq('id', parent.id);
+    }
+
+    // Refuse a locked school BEFORE minting the session cookie. isSchoolLocked is
+    // cached + fail-open, so an outage never locks parents out. (Closes the
+    // "locked school can still mint a new parent session" gap.)
+    if (parent.school_id && (await isSchoolLocked(parent.school_id))) {
+      return NextResponse.json(
+        { error: 'This account has been locked.', code: 'school_locked' },
+        { status: 403 }
+      );
     }
     
     // 3. Get parent's children

@@ -8,6 +8,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { cookies } from 'next/headers';
 import { createParentToken } from '@/lib/montree/server-auth';
 import { resolveAuthorizedParent } from '@/lib/montree/verify-parent-request';
+import { isSchoolLocked } from '@/lib/montree/school-lock';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 
@@ -123,6 +124,17 @@ export async function POST(request: NextRequest) {
         success: false,
         error: 'Could not find child record. Please contact your teacher.'
       }, { status: 404 });
+    }
+
+    // Refuse access to a locked school BEFORE minting anything (session cookie,
+    // provisioned parent row, usage bump). isSchoolLocked is cached + fail-open,
+    // so an outage never locks parents out. (Closes the "locked school can still
+    // mint a new parent session" gap.)
+    if (child.school_id && (await isSchoolLocked(child.school_id))) {
+      return NextResponse.json(
+        { success: false, error: 'This account has been locked.', code: 'school_locked' },
+        { status: 403 }
+      );
     }
 
     // Update usage tracking
