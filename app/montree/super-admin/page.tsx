@@ -781,8 +781,8 @@ export default function SuperAdminPage() {
           <SuperAdminTab
             active={activeTab === 'founding'}
             onClick={() => setActiveTab('founding')}
-            icon="🚀"
-            label="Founding 100"
+            icon="🌱"
+            label="Foundation"
             badge={foundingUnread > 0 ? { text: `✉ ${foundingUnread}`, color: 'red' } : null}
           />
           <SuperAdminTab active={activeTab === 'global-outreach'} onClick={() => setActiveTab('global-outreach')} icon="🌍" label="Global Outreach" />

@@ -3893,6 +3893,9 @@ export const ja: Record<string, string> = {
   'landing.hero.subtitle': '先生が写真を撮ります。Montreeがあとはすべて行います。',
   'landing.hero.cta': '試してみる',
   'landing.hero.fineprint': 'Starter $3 · Premium $7 アクティブな園児1人 / 月 · 7日間のPremiumが無料',
+  // Foundation strip (below the hero)
+  'landing.foundation.line': 'Every subscription helps carry a school in need.',
+  'landing.foundation.sub': 'Montree Foundation schools run free, funded by the schools that can pay.',
   'landing.pricing.label': '料金',
   'landing.pricing.title': 'シンプルで誠実な料金。',
   'landing.pricing.trialLine': 'どの園も7日間のPremiumを無料で始められます。',

@@ -1732,6 +1732,12 @@ sentence cards and "a real book."
 
 **🚨 THIS IS A STANDING INSTRUCTION FOR EVERY SESSION. READ THIS FIRST. 🚨**
 
+**🚨🚨 CANONICAL AS OF JUL 17 2026: `docs/outreach/MASTER_OUTREACH_RUNBOOK_JUL17.md` — Fable's
+locked templates (email A/B, FU1/FU2, 8 IG skeletons), the 3-touch law, the daily cycle, and the
+one-master-list rule. Where anything below conflicts with the runbook, THE RUNBOOK WINS. The
+free-for-life offer is FROZEN — never offer the product free; Foundation grants are Tredoux's hand
+only. Montessori-fit only, always.**
+
 **🚨 STANDING ORDERS (Tredoux, Jul 7 2026 — SOLID MEMORY, do not forget):**
 - **Volume: 50 drafts/day** (supersedes the Jul-6 "20/day ramp" cap — Tredoux's explicit call: "I need to get through the volume"). Follow-ups count toward and take PRIORITY within the 50. Never queue more drafts than the daily budget.
 - **Weekly follow-up cycle: every outreach email unanswered after 7 days gets a follow-up on the SAME thread, repeating weekly — HARD VALVE at 3 unanswered follow-ups** → stop drafting, surface the contact on a "keep or kill" list for Tredoux's call (protects deliverability; never silently mail a dead thread forever).

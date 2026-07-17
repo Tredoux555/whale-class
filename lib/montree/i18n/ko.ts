@@ -3893,6 +3893,9 @@ export const ko: Record<string, string> = {
   'landing.hero.subtitle': '교사가 사진을 찍으면, Montree가 나머지를 처리해요.',
   'landing.hero.cta': '체험해 보기',
   'landing.hero.fineprint': 'Starter $3 · Premium $7 활동 중인 학생당 / 월 · 7일 무료 Premium',
+  // Foundation strip (below the hero)
+  'landing.foundation.line': 'Every subscription helps carry a school in need.',
+  'landing.foundation.sub': 'Montree Foundation schools run free, funded by the schools that can pay.',
   'landing.pricing.label': '요금',
   'landing.pricing.title': '간단하고 정직한 요금.',
   'landing.pricing.trialLine': '모든 학교는 7일 무료 Premium으로 시작합니다.',

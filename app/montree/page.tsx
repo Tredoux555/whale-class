@@ -6,7 +6,6 @@ import { getSession } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import MontreeLogo from '@/components/montree/MonteeLogo';
-import FoundingHundred from '@/components/montree/FoundingHundred';
 
 // /montree/page.tsx — Montree landing page (v2 — deep forest palette)
 
@@ -586,6 +585,33 @@ export default function MontreeLanding() {
           font-size: 1.0625rem;
         }
 
+        /* ── Foundation strip ──
+           Sits directly below the hero. A quiet charity line — no gold glow,
+           just a hairline-bordered dark-forest band in the editorial voice. */
+        .m-foundation {
+          padding: 84px 32px;
+          text-align: center;
+          border-top: 1px solid rgba(255,255,255,0.06);
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .m-foundation-line {
+          font-family: var(--font-lora), Georgia, serif;
+          font-weight: 400;
+          font-size: clamp(1.35rem, 3.4vw, 1.6rem);
+          line-height: 1.3;
+          letter-spacing: -0.01em;
+          color: rgba(255,250,240,0.9);
+          max-width: 26ch;
+          margin: 0 auto 16px;
+        }
+        .m-foundation-sub {
+          color: rgba(255,250,240,0.5);
+          font-size: 1rem;
+          line-height: 1.7;
+          max-width: 44ch;
+          margin: 0 auto;
+        }
+
         /* ── Explainer teaser strip ──
            Sits between the three editorial statements and the closing CTA.
            A quiet invitation into /montree/explainer — not a hard sell. */
@@ -763,6 +789,7 @@ export default function MontreeLanding() {
           }
           .m-hero-brandmark-glow { padding: 0; }
           .m-hero-brandmark-img { width: 88px; }
+          .m-foundation { padding: 56px 24px; }
           .m-editorial { padding: 40px 24px 100px; }
           .m-block { padding: 40px 0; }
           .m-pricing { padding: 64px 24px 64px; }
@@ -924,8 +951,14 @@ export default function MontreeLanding() {
         </div>
       </section>
 
-      {/* ── FOUNDING 100 WAITLIST (directly below the hero) ── */}
-      <FoundingHundred />
+      {/* ── FOUNDATION STRIP (directly below the hero) ──
+          Quiet charity line — the subscription-funds-a-school-in-need story
+          that replaced the retired Founding 100 promo. Dark forest register,
+          no gold glow. */}
+      <section className="m-foundation" aria-label="Montree Foundation" ref={addReveal}>
+        <p className="m-foundation-line">{t('landing.foundation.line')}</p>
+        <p className="m-foundation-sub">{t('landing.foundation.sub')}</p>
+      </section>
 
       {/* ── THREE STATEMENTS ── */}
       <section className="m-editorial" aria-label="What Montree does">
