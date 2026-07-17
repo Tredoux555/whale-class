@@ -202,15 +202,42 @@ export async function GET(request: NextRequest) {
     m => m.child_id !== null && rosterIdSet.has(m.child_id),
   );
 
-  // Junction links — child_id ∈ roster + media_id ∈ candidates
-  let junctionRows: JunctionRow[] = [];
+  // Junction links — child_id ∈ roster + media_id ∈ candidates.
+  // 🚨 Paginate: a busy classroom (many group photos × many linked children)
+  // can exceed the PostgREST 1000-row default, which silently truncates and
+  // drops group-photo attribution. Loop with .range() until a page returns
+  // < PAGE_SIZE rows; hard safety cap of 20 pages (20k links). Behavior for
+  // small classrooms is byte-identical to the old single query.
+  const junctionRows: JunctionRow[] = [];
   if (candidateMediaIds.length > 0) {
-    const { data: junctionRaw } = await supabase
-      .from('montree_media_children')
-      .select('media_id, child_id')
-      .in('media_id', candidateMediaIds)
-      .in('child_id', rosterIds);
-    junctionRows = (junctionRaw || []) as JunctionRow[];
+    const PAGE_SIZE = 1000;
+    const MAX_PAGES = 20;
+    for (let page = 0; page < MAX_PAGES; page++) {
+      const from = page * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+      // .order() is REQUIRED for correct .range() pagination — without a
+      // stable sort, page boundaries are undefined and rows can be skipped
+      // or duplicated across pages.
+      const { data: junctionRaw, error: junctionErr } = await supabase
+        .from('montree_media_children')
+        .select('media_id, child_id')
+        .in('media_id', candidateMediaIds)
+        .in('child_id', rosterIds)
+        .order('media_id', { ascending: true })
+        .order('child_id', { ascending: true })
+        .range(from, to);
+      if (junctionErr) {
+        // A mid-loop error must not masquerade as "pagination naturally
+        // ended" — that would silently return partial attribution. Log and
+        // stop; the accumulated rows are still returned (degraded, visible
+        // in logs) rather than pretending completeness on a null page.
+        console.error('[class-progress] junction pagination error on page', page, junctionErr.message);
+        break;
+      }
+      const pageRows = (junctionRaw || []) as JunctionRow[];
+      junctionRows.push(...pageRows);
+      if (pageRows.length < PAGE_SIZE) break;
+    }
   }
 
   // ─── 4. Build (child_id, media_id, work_id, captured_at) tuples,

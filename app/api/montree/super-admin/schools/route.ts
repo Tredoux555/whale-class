@@ -6,6 +6,7 @@ import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger'
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { clearBudgetCache } from '@/lib/montree/api-usage';
+import { invalidateSchoolLock } from '@/lib/montree/school-lock';
 import { applyAiTier } from '@/lib/montree/billing/apply-ai-tier';
 import { deriveTier } from '@/lib/montree/reports/resolve-model';
 
@@ -560,6 +561,18 @@ export async function PATCH(request: NextRequest) {
 
     if (!data) {
       return NextResponse.json({ error: 'School not found' }, { status: 404 });
+    }
+
+    // Invalidate the in-process lock cache so this container reflects the
+    // lock/unlock immediately (other containers pick it up within the 60s TTL).
+    // Fire-and-forget — synchronous Map op, but guarded so it never throws into
+    // the response path.
+    if (lockAction) {
+      try {
+        invalidateSchoolLock(schoolId);
+      } catch (e) {
+        console.error('[super-admin] lock-cache invalidation failed:', e);
+      }
     }
 
     // Audit-log a lock/unlock (migration 286). Fire-and-forget — never blocks.
