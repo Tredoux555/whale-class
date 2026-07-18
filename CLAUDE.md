@@ -2,18 +2,36 @@
 
 **⚠️ STANDING RULE (Tredoux, Jul 10 2026 — PERMANENT): MODEL DELEGATION.** Fable is the DIRECTOR and second brain — it plans, decides, writes the critical copy, and reviews. It does NOT do grunt work. **Sonnet** (preferred over Haiku — more reliable) does all fetching, sweeping, scouting, data-gathering, and auditing via sub-agents. **Opus** builds where appropriate. Never let Fable burn half its context on mechanical work another model can do — spawn agents instead.
 
-## 📖 SESSION — Jul 18, 2026 pt2 (Cowork/Fable) — EASY READERS STARTED, PINNED FOR LAPTOP MIGRATION (M1→M2)
+## 📖 SESSION — Jul 18, 2026 pt2 (Cowork/Fable directing Sonnet+Opus) — ✅ ALL 11 DARK PHONICS EASY READERS RENDERED, COMPOSED + PUBLISHED (same day, M1→M2 migration ran in parallel)
 
-**Canonical: `docs/handoffs/PLAN_EASY_READERS_DARK_PHONICS_JUL18.md` (READ IT FIRST — resume prompt inside)
-+ `lib/montree/english-curriculum/spec/easy-readers-manifest-v2.json` (all 77 prompts, style-corrected).**
-Mission: render + compose the 11 Dark Phonics Easy Readers (dark-phonics-readers.html). Done before pin:
-manifest built; disk scout complete (**0/66 reader images exist** — same-title files on disk are decoys from
-other projects); **🎨 STYLE LOCKED (Tredoux): "colored hand-drawn pen-and-ink, fine crosshatch, whimsical
-Dr. Seuss children's-book style, big googly eyes, plain white background"** — the readers page's printed
-style block + `--sref 9999` are WRONG/placeholder, manifest-v2 has the fix; sref fallback = the public
-lesson-art proxy URLs. Decisions: PDF pipeline (not Canva), deliver disk + site. Next: quick MJ re-verify →
-sample reader "the-cat-sat" for Tredoux's style sign-off → tandem fleet the rest → file → build PDFs →
-publish + DC push. NOT committed — Tredoux pushes via DC.
+**Canonical: `docs/handoffs/PLAN_EASY_READERS_DARK_PHONICS_JUL18.md` +
+`lib/montree/english-curriculum/spec/easy-readers-manifest-v2.json` (all 77 prompts, style-corrected).**
+The 11 Easy Readers (dark-phonics-readers.html) went from 0 images → published books in one session.
+**🎨 STYLE LOCKED (Tredoux): "colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss
+children's-book style, big googly eyes, plain white background"** — style lives in PROMPT TEXT, no --sref
+(the page's old `--sref 9999` was a placeholder, now stripped everywhere). Flow: MJ archive re-verify (0
+pre-existing) → sample the-cat-sat → Tredoux GO + **delegated tile-picking to agents** (supersedes tandem
+for this run; grids remain in MJ for re-picks) → 66 prompts fleeted in 3 queue-paced waves → 4 pick+file
+waves (each image eyeballed at file time + Fable spot-checked 10) → `docs/curriculum/tools/
+build_easy_readers.py` (Opus-built, 19cm-square 7-page books: dark cover/gold title, white pages, big
+Andika decodable line; 0-byte guard) → 11/11 PDFs at `English Curriculum 2026/Dark Phonics/Easy Readers/
+<slug>/book.pdf` → pdftoppm-verified by eye → uploaded via NEW `scripts/curriculum/publish-easy-readers.mjs`
+to `dark-phonics/readers/<slug>.pdf` → readers page updated (locked style in all 77 printed prompts, intro
+rewritten, 📖 PDF button per reader → proxy links `?bucket=dark-phonics&v=2`).
+**Rerolls that were needed (rules learned):** mud-pup cover ×2 (final = "sculpted entirely out of wet
+dripping mud" phrasing — for full-transformation gags, describe the RESULT STATE as the subject, not the
+process); big-splash cover/p1/p2/p4 (🚨 water/splash scenes drag MJ into blue watercolor wash — write water
+as "thin ink lines and droplets with only light blue watercolor accents"; "three splashy poses" of ONE
+character renders 3 separate animals — write "one single cat… the one cat large and central"); fox p5 was
+silently EATEN by MJ's "Too many queued prompts" banner despite appearing queued (🚨 queue-limit banner =
+ground-check that prompt later, agents must pace below ~6 queued). 🚨 Sub-agents can't rely on the extension
+booting: first browser agent got "not connected" — parent verified `list_connected_browsers` + created the
+tab group, relaunched agent with deviceId/tabId in the prompt = clean. 🚨 A too-early proxy fetch of a
+just-uploaded file POISONS the Cloudflare edge cache for 7 days — hence the `&v=2` on the page links; bump
+the version on any re-upload. PDF `<title>` comes from the render-source HTML — builder sets a real title.
+⏳ OWED: DC-delete `_tmp_verify_readers/` + per-reader `_book.html` build artifacts (harmless) · Tredoux
+eyeball the 11 books live · optional: swap any agent pick he dislikes (grids in MJ, rebuild+republish w/
+version bump). Committed+pushed via DC this session.
 
 ---
 
