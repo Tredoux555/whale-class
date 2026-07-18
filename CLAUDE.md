@@ -21,9 +21,28 @@ buttons (+deck button; scripted edit `docs/curriculum/tools/add_vocab_buttons.py
 rebuilt+published. ⚠️ L32–53 have SONGS but NO letter-flashcards — authoring 22 new cards = Tredoux
 decision, not a recovery task. 🚨 Mid-session the disk hit 0 BYTES free (ENOSPC broke Write + killed
 Chrome/extension); cache purge → ~1GB, Tredoux cleared more → 5.9GB. Chrome relaunch via plain
-`open -a` reconnected the extension (no dialog needed). ⏳ OWED: Tredoux eyeball packs live post-deploy
-(don't hammer proxy links early — 7-day edge-cache poison rule; vocab-packs links ship `&v=1`) ·
-baby.png cheeks a bit odd (best of 4) — swap if disliked · decide L32–53 flashcard build.
+`open -a` reconnected the extension (no dialog needed).
+**LIVE-REVIEW ROUND (same night, Tredoux walked the site):** (1) Library placement fixed — the hub was
+the LAST library card named "Phonics Songs"; now FIRST card "Dark Phonics" (`3ddcd855`). (2) **Matching
+sheet edge-to-edge** (`42b22bb8`): words flush left / pictures flush right, gutter swallows the width
+(~9.3cm dot gap, was centred 6cm; geometry.ts MATCHING_WORD_COL_CM + padHCm/padVCm exported to CSS);
+all 58 weeks' matching.pdf re-rendered. (3) **Weekly flashcards TRUE DUPLEX** (`40a80f79`): was
+single-face picture+word; now front/back page PAIRS aligned for LONG-EDGE flip (printer default) —
+picture fronts, big word backs, letter card front Aa / back /a/, blank-slot padding for odd counts;
+all 58 weeks re-rendered. 🚨 RULE: duplex card PDFs are authored for LONG-edge flip — short-edge
+prints backs upside-down. (4) **Hub content-first reorg** (`9720a45f`, Opus): tabs = Songs · 🃏
+Flashcards (NEW dark-phonics-flashcards.html: deck + 27 letter-card + 46 vocab-pack buttons) · Picture
+Books · Easy Readers · Sing-Along; Creation + Original links tucked in a muted 🛠 Workshop dropdown;
+readers page leads with the book, prompts collapsed in <details>. (5) **Deck style unified**
+(`e44594df`): bucket had 22 old glow-square cards vs 5 clean green-frame — all 27 republished from
+pack-v2 (uniform frame), deck rebuilt 43.7MB, links bumped (letter v=2, deck v=3; also fixed a
+`proxyflashcards` missing-slash 404 typo). (6) **SCENE COMBO CARDS**: every vocab pack now OPENS with
+the catchphrase scene (snake IN the sock) — front scene / back the phrase in curly quotes. 27 scenes
+reused from `Dark Phonics/lesson-NN.png` (copied to `Vocab/scenes/`), 19 fresh MJ renders (L32-53)
+authored+picked same flow; composer extended (scene additive, never blocks); 46/46 rebuilt+republished,
+storage-verified 46/46 (⚠️ Supabase verify-on-overwrite reads stale bytes at first — re-verify after
+~1min, don't panic), vocab links bumped v=1→v=2 both pages. ⏳ OWED: Tredoux eyeball flashcards tab +
+duplex print test + baby.png cheeks swap if disliked.
 
 ---
 
