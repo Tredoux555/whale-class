@@ -114,7 +114,14 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
 
   const fetchNotes = useCallback(async () => {
     try {
-      const res = await montreeApi(`/api/montree/teacher-notes?classroom_id=${classroomId}&limit=20`);
+      // 🚨 cache:'no-store' — the GET route sends Cache-Control
+      // (private, max-age=30, stale-while-revalidate=60). Without this, the
+      // browser HTTP cache serves the pre-write snapshot for ~10-60s after a
+      // POST, so a just-saved note doesn't appear on refetch or reload.
+      // Same fix pattern as the Jul-4 child-gallery staleness (commit 8c658754).
+      const res = await montreeApi(`/api/montree/teacher-notes?classroom_id=${classroomId}&limit=20`, {
+        cache: 'no-store',
+      });
       const data = await res.json();
       if (res.ok) {
         setNotes(data.notes || []);
@@ -128,6 +135,20 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
 
   useEffect(() => {
     fetchNotes();
+  }, [fetchNotes]);
+
+  // Refetch when the tab regains focus / becomes visible — catches notes
+  // saved in another tab and guarantees a fresh read after returning to the page.
+  useEffect(() => {
+    const refetchOnReturn = () => {
+      if (document.visibilityState === 'visible') fetchNotes();
+    };
+    document.addEventListener('visibilitychange', refetchOnReturn);
+    window.addEventListener('focus', refetchOnReturn);
+    return () => {
+      document.removeEventListener('visibilitychange', refetchOnReturn);
+      window.removeEventListener('focus', refetchOnReturn);
+    };
   }, [fetchNotes]);
 
   // Cleanup on unmount: stop recording only (background tasks survive navigation)
