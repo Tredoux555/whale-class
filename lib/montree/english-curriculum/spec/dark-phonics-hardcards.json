@@ -1,0 +1,360 @@
+{
+ "_note": "Dark Phonics per-song 'hard card' vocab packs. Cards = catchphrase concrete nouns only (Tredoux Jul 18). Images render to ~/Desktop/English Curriculum 2026/Dark Phonics/Vocab/<word>.png; REUSE words copy from Easy Reader art.",
+ "style_locked": "colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background.",
+ "songs": {
+  "5": {
+   "phrase": "snake in my sock",
+   "cards": [
+    "snake",
+    "sock"
+   ]
+  },
+  "6": {
+   "phrase": "ant on my apple",
+   "cards": [
+    "ant",
+    "apple"
+   ]
+  },
+  "7": {
+   "phrase": "tick-tock, stinky sock",
+   "cards": [
+    "clock",
+    "sock"
+   ]
+  },
+  "8": {
+   "phrase": "pop, pop, puppy poop",
+   "cards": [
+    "pup"
+   ]
+  },
+  "9": {
+   "phrase": "icky, sticky pig",
+   "cards": [
+    "pig"
+   ]
+  },
+  "10": {
+   "phrase": "no-no, nanny goat",
+   "cards": [
+    "goat"
+   ]
+  },
+  "11": {
+   "phrase": "mmm, muddy monkey",
+   "cards": [
+    "monkey"
+   ]
+  },
+  "12": {
+   "phrase": "dirty dog, dig dig dig",
+   "cards": [
+    "dog"
+   ]
+  },
+  "13": {
+   "phrase": "goat got my gum",
+   "cards": [
+    "goat",
+    "gum"
+   ]
+  },
+  "14": {
+   "phrase": "hot dog on a log",
+   "cards": [
+    "hotdog",
+    "log"
+   ]
+  },
+  "15": {
+   "phrase": "cat ate my cookie",
+   "cards": [
+    "cat",
+    "cookie"
+   ]
+  },
+  "16": {
+   "phrase": "kooky king kicks",
+   "cards": [
+    "king"
+   ]
+  },
+  "17": {
+   "phrase": "kick the stinky sock",
+   "cards": [
+    "sock"
+   ]
+  },
+  "18": {
+   "phrase": "ten messy hens",
+   "cards": [
+    "hen"
+   ]
+  },
+  "19": {
+   "phrase": "yummy bug in my cup",
+   "cards": [
+    "bug",
+    "cup"
+   ]
+  },
+  "20": {
+   "phrase": "run, run, red rat",
+   "cards": [
+    "rat"
+   ]
+  },
+  "21": {
+   "phrase": "ha-ha, hairy hippo",
+   "cards": [
+    "hippo"
+   ]
+  },
+  "22": {
+   "phrase": "big baby burp",
+   "cards": [
+    "baby"
+   ]
+  },
+  "23": {
+   "phrase": "funny fox in my fan",
+   "cards": [
+    "fox",
+    "fan"
+   ]
+  },
+  "24": {
+   "phrase": "lazy lion licks",
+   "cards": [
+    "lion"
+   ]
+  },
+  "25": {
+   "phrase": "jump in the jelly jam",
+   "cards": [
+    "jam"
+   ]
+  },
+  "26": {
+   "phrase": "vroom-vroom van",
+   "cards": [
+    "van"
+   ]
+  },
+  "27": {
+   "phrase": "wiggly wet worm",
+   "cards": [
+    "worm"
+   ]
+  },
+  "28": {
+   "phrase": "six fox in a box",
+   "cards": [
+    "fox",
+    "box"
+   ]
+  },
+  "29": {
+   "phrase": "yummy yellow yo-yo",
+   "cards": [
+    "yoyo"
+   ]
+  },
+  "30": {
+   "phrase": "zippy zebra, zzz",
+   "cards": [
+    "zebra"
+   ]
+  },
+  "31": {
+   "phrase": "quick quacky duck",
+   "cards": [
+    "duck"
+   ]
+  },
+  "32": {
+   "phrase": "cat, pig, dog - woof",
+   "cards": [
+    "cat",
+    "pig",
+    "dog"
+   ]
+  },
+  "35": {
+   "phrase": "fat cat in a hat",
+   "cards": [
+    "cat",
+    "hat"
+   ]
+  },
+  "36": {
+   "phrase": "big pig did a jig",
+   "cards": [
+    "pig"
+   ]
+  },
+  "37": {
+   "phrase": "hop on a hot log",
+   "cards": [
+    "log"
+   ]
+  },
+  "38": {
+   "phrase": "wet pet in my bed",
+   "cards": [
+    "pet",
+    "bed"
+   ]
+  },
+  "39": {
+   "phrase": "big bug hug",
+   "cards": [
+    "bug"
+   ]
+  },
+  "40": {
+   "phrase": "cat? cot? cut? - which one",
+   "cards": [
+    "cat",
+    "cot",
+    "cut"
+   ]
+  },
+  "41": {
+   "phrase": "buzz off, fuzzy bee",
+   "cards": [
+    "bee"
+   ]
+  },
+  "42": {
+   "phrase": "sheep go baba",
+   "cards": [
+    "sheep"
+   ]
+  },
+  "43": {
+   "phrase": "cheeky little chick",
+   "cards": [
+    "chick"
+   ]
+  },
+  "44": {
+   "phrase": "moth in my bath",
+   "cards": [
+    "moth",
+    "bath"
+   ]
+  },
+  "45": {
+   "phrase": "wheee, big fat whale",
+   "cards": [
+    "whale"
+   ]
+  },
+  "47": {
+   "phrase": "jump, jump, fast hands",
+   "cards": [
+    "hand"
+   ]
+  },
+  "48": {
+   "phrase": "pink sock in the sink",
+   "cards": [
+    "sock",
+    "sink"
+   ]
+  },
+  "49": {
+   "phrase": "slip, slip, slimy snail",
+   "cards": [
+    "snail"
+   ]
+  },
+  "50": {
+   "phrase": "clap, clap, silly clown",
+   "cards": [
+    "clown"
+   ]
+  },
+  "51": {
+   "phrase": "green frog on a drum",
+   "cards": [
+    "frog",
+    "drum"
+   ]
+  },
+  "52": {
+   "phrase": "two twins twist",
+   "cards": [
+    "twins"
+   ]
+  },
+  "53": {
+   "phrase": "big splash, scrub-a-dub",
+   "cards": [
+    "splash"
+   ]
+  }
+ },
+ "skipped_lessons": {
+  "33": "a, e, i, o, u... achoo (vowel review - no concrete noun)",
+  "34": "a to z, easy-peasy (alphabet review)",
+  "46": "this, that (abstract - no concrete noun)"
+ },
+ "reuse_images": {
+  "cat": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Dark Phonics/Easy Readers/the-cat-sat/p1.png",
+  "fox": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Dark Phonics/Easy Readers/fox-in-a-box/p1.png",
+  "pup": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Dark Phonics/Easy Readers/mud-pup/p1.png",
+  "chick": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Dark Phonics/Easy Readers/fish-and-chick/p2.png",
+  "frog": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Dark Phonics/Easy Readers/frog-and-crab/p1.png",
+  "moth": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Dark Phonics/Easy Readers/this-and-that/p3.png"
+ },
+ "render_prompts": {
+  "ant": "one single big friendly cartoon ant with a plump shiny segmented body and six little legs, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "apple": "one big shiny bright-red apple with a single green leaf and a little stem, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "baby": "one single round happy cartoon baby in a nappy with a single curl of hair and huge cheeks mid-burp, tiny bubbles floating up, large and central, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "bath": "one single happy cartoon child sitting in a bubbly bathtub full of foamy bubbles, water shown as thin ink lines and droplets with only light blue watercolor accents, large and central, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "bed": "one cozy little bed with a plump pillow and a soft folded patchwork quilt, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "bee": "one single round fuzzy yellow-and-black striped cartoon bee with tiny wings, a cheeky grin and huge white googly eyes, hovering with a looping dotted flight path, large and central, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "box": "one plain closed brown cardboard box with taped flaps, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "bug": "one single round friendly cartoon ladybug beetle with tiny spots and little legs, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "clock": "one single friendly round alarm clock with two brass bells on top and little feet, its face completely blank with just two hands and no numbers, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "clown": "one single silly cartoon clown with a red nose, wild rainbow hair, a polka-dot suit and huge white googly eyes, clapping with both hands, big comic clap lines, large and central, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "cookie": "one single giant round chocolate-chip cookie with a big cartoon bite taken out of it, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "cot": "one small folding camp cot with a striped canvas top and wooden legs, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "cup": "one cute rounded teacup on a little saucer, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "cut": "one single cheerful cartoon child snipping a sheet of paper with big safety scissors, comic motion lines, the one child large and central, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "dog": "one single happy cartoon dog with soft brown fur, floppy ears and a wagging tail, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "drum": "one colorful round toy drum with a tight top and two crossed drumsticks resting on it, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "duck": "one single scraggly black cartoon duck with wild fluffy feathers, a big bright orange bill and huge white googly eyes, standing alone large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "fan": "one spinning electric desk fan with a round cage and a little stand, soft motion lines on the blades, large and central, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "goat": "one single cheerful cartoon goat with two little curved horns and a fuzzy beard, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "gum": "one single bright pink bubblegum bubble being blown by a cheerful cartoon child, the huge round pink bubble large and central, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "hand": "one single cheerful cartoon child holding up one wide-open hand palm forward with fingers spread, the open hand the obvious focus, large and central, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "hat": "one tall fancy black top hat with a smart ribbon band, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "hen": "one single plump bright-red cartoon hen with a floppy orange comb, round googly eyes, a small yellow beak and stubby wings, standing alone large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "hippo": "one single big round hairy cartoon hippo with a huge smiling mouth, tiny ears and scraggly tufts of hair, huge white googly eyes, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "hotdog": "one single cartoon hot dog in a soft bun with a wiggly line of mustard, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "jam": "one open glass jar of thick red jam with a spoon dripping a glob of it, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "king": "one single skinny kooky cartoon king with a golden crown, wild scraggly hair, a huge toothy grin and a red royal robe, dancing a silly high kick, large and central, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "lion": "one single lazy cartoon lion with a huge scraggly golden mane, huge white googly eyes, licking its lips with a big pink tongue, lying down large and central, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "log": "one single chunky brown wooden log with visible bark and cut ends, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "monkey": "one single scraggly cheeky brown monkey with wild tufty fur, a round pale face, huge white googly eyes and a long curling tail, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "pet": "one single cheerful cartoon child gently stroking a plump grey-and-white cat, the one child large and central, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "pig": "one single round pink cartoon pig with a curly tail and a cute snout, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "rat": "one single cheerful grey cartoon rat with round ears and a long curly tail, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "sheep": "one single plump woolly white cartoon sheep with a scraggly cloud of wool, a grey face and huge white googly eyes, standing alone large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "sink": "one kitchen sink basin with a curved tap running, water shown as thin ink lines and droplets with only light blue watercolor accents, large and central, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "snail": "one single slow smiling cartoon snail with a swirly brown shell, long eye-stalks with huge white googly eyes, and a glossy slime trail behind it, large and central, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "snake": "one single friendly green cartoon snake curled in a gentle coil with a little pink tongue, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "sock": "one single red-and-white striped sock lying slightly slouched, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "splash": "one single cheerful cartoon child jumping straight into a puddle making a big splash, water shown as thin ink lines and droplets with only light blue watercolor accents, the one child large and central, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "twins": "exactly two identical cartoon children standing side by side in matching outfits with matching smiles, large and central, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "van": "one little cheerful red delivery van with round headlights, seen from the side, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "whale": "one big friendly rounded blue whale with a little spout, water shown as thin ink lines and droplets with only light blue watercolor accents, large and central, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "worm": "one single wiggly pink cartoon worm with huge white googly eyes, curved in a happy S-shaped wiggle on a small patch of soil, large and central filling the frame, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "yoyo": "one single bright yellow yo-yo spinning at the end of its string held by a cartoon hand above it, the yo-yo large and central, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+  "zebra": "one single zippy cartoon zebra with bold black-and-white stripes, a scraggly mane, huge white googly eyes, mid-gallop with comic speed lines, large and central, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+ }
+}
