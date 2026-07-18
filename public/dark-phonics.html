@@ -13,6 +13,16 @@ header{position:sticky;top:0;z-index:5;background:var(--bar);border-bottom:1px s
 .tab:hover{color:var(--ink);background:#191926}
 .tab.on{color:#fff;background:var(--bg);border-color:var(--ac);font-weight:600}
 .sep{width:1px;background:var(--line);margin:2px 4px}.tab.alt{opacity:.85}
+.tabs{align-items:flex-end}
+.shop{position:relative;margin-left:auto}
+.shop>summary{list-style:none;color:var(--mut);border:1px solid var(--line);border-bottom:none;border-radius:9px 9px 0 0;padding:8px 12px;font-size:13px;cursor:pointer;white-space:nowrap;opacity:.6}
+.shop>summary::-webkit-details-marker{display:none}.shop>summary::marker{content:''}
+.shop[open]>summary,.shop>summary:hover{opacity:1;color:var(--ink);background:#191926}
+.shop.on>summary{color:#fff;border-color:var(--ac);opacity:1}
+.shopmenu{position:absolute;right:0;top:100%;z-index:9;background:var(--bar);border:1px solid var(--line);border-radius:9px 0 9px 9px;padding:6px;min-width:180px;display:flex;flex-direction:column;gap:2px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.shopmenu button,.shopmenu a{background:transparent;color:var(--mut);border:none;border-radius:7px;padding:8px 12px;font-size:13px;text-align:left;cursor:pointer;text-decoration:none;white-space:nowrap;display:block}
+.shopmenu button:hover,.shopmenu a:hover{background:#191926;color:var(--ink)}
+.shopmenu button.on{color:#fff;background:#22223a}
 #content{padding:0 16px 80px}.wrap{max-width:760px;margin:0 auto}
 h1{font-size:30px;margin:30px 0 4px}h1 .d{color:var(--ac)}.sub{color:var(--mut);margin:0 0 8px}
 .note{background:var(--card);border:1px solid #262636;border-radius:12px;padding:14px 16px;color:var(--mut);font-size:14px;margin:18px 0 28px}.note b{color:var(--ink)}
@@ -43,19 +53,26 @@ details.box>summary{outline:none}details.box>summary::-webkit-details-marker{dis
   <div id="dphint"></div>
   <div class="tabs">
     <button class="tab on" data-src="/dark-phonics-songs.html">🎵 Songs</button>
-    <button class="tab" data-src="/dark-phonics-singalong.html">🎤 Sing-Along Cards</button>
+    <button class="tab" data-src="/dark-phonics-flashcards.html">🃏 Flashcards</button>
     <button class="tab" data-src="/dark-phonics-books.html">📕 Picture Books</button>
     <button class="tab" data-src="/dark-phonics-readers.html">📗 Easy Readers</button>
-    <button class="tab" data-src="/dark-phonics-creation.html">🎛 Creation</button>
-    <div class="sep"></div>
-    <a class="tab alt" href="/pink-phase-songs-teacher.html" target="_blank" rel="noopener">Original Songs ↗</a>
-    <a class="tab alt" href="/pink-readers.html" target="_blank" rel="noopener">Original Readers ↗</a>
+    <button class="tab" data-src="/dark-phonics-singalong.html">🎤 Sing-Along Cards</button>
+    <details class="shop" id="shop">
+      <summary>🛠 Workshop</summary>
+      <div class="shopmenu">
+        <button class="tab-alt" data-src="/dark-phonics-creation.html">🎛 Creation</button>
+        <a href="/pink-phase-songs-teacher.html" target="_blank" rel="noopener">Original Songs ↗</a>
+        <a href="/pink-readers.html" target="_blank" rel="noopener">Original Readers ↗</a>
+      </div>
+    </details>
   </div>
 </header>
 <div id="content"><div class="wrap"><div class="loading">Loading…</div></div></div>
 <script>
 var content=document.getElementById('content');
 var tabs=document.querySelectorAll('button.tab');
+var shopBtns=document.querySelectorAll('.shopmenu button[data-src]');
+var shop=document.getElementById('shop');
 var dpq=document.getElementById('dpq');
 function dpMatch(card,term){
   if(!term)return true;
@@ -110,9 +127,23 @@ function load(url){
     applyFilter();
   }).catch(function(){ content.innerHTML='<div class="wrap"><div class="loading">Could not load. <a style="color:var(--ac)" href="'+url+'">Open directly ↗</a></div></div>'; });
 }
+function selectSrc(src){
+  tabs.forEach(function(x){x.classList.remove('on')});
+  shopBtns.forEach(function(x){x.classList.remove('on')});
+  if(shop)shop.classList.remove('on');
+  var hit=false;
+  tabs.forEach(function(t){if(t.dataset.src===src){t.classList.add('on');hit=true;}});
+  if(!hit){shopBtns.forEach(function(b){if(b.dataset.src===src){b.classList.add('on');if(shop)shop.classList.add('on');hit=true;}});}
+  return hit;
+}
 tabs.forEach(function(t){ t.addEventListener('click',function(){
-  tabs.forEach(function(x){x.classList.remove('on')}); t.classList.add('on');
+  selectSrc(t.dataset.src);
   localStorage.setItem('dp_tab',t.dataset.src); load(t.dataset.src);
+});});
+shopBtns.forEach(function(b){ b.addEventListener('click',function(){
+  selectSrc(b.dataset.src);
+  if(shop)shop.removeAttribute('open');
+  localStorage.setItem('dp_tab',b.dataset.src); load(b.dataset.src);
 });});
 // copy buttons (delegated, works for injected content)
 document.addEventListener('click',function(e){
@@ -126,7 +157,7 @@ document.addEventListener('click',function(e){
 });
 var saved=localStorage.getItem('dp_tab');
 var start=null;
-if(saved){tabs.forEach(function(t){if(t.dataset.src===saved){tabs.forEach(function(x){x.classList.remove('on')});t.classList.add('on');start=saved;}});}
+if(saved&&selectSrc(saved)){start=saved;}
 load(start||'/dark-phonics-songs.html');
 </script>
 </body></html>
