@@ -1,0 +1,33 @@
+{
+  "_note": "Dark Phonics single-card + Studio-video data. Keyed by lesson-map.ts lesson number (05-31, the SATPIN alphabet). A week maps to a lesson via spec/index.ts weekToLessonMap (first mapped lesson present here wins). 'sound' + 'title' are the video ground truth (filenames in ~/Desktop/Dark Phonics Songs/Dark Phonics — Final Videos (5-31)/). 'image' is a file in the --dark-phonics-dir (default ~/Desktop/English Curriculum 2026/Dark Phonics). 'videoUrl' was verified at build time (Jul 17 2026) against the public Supabase 'dark-phonics' bucket — every lesson-NN.mp4 in videos/ exists; null = no player. NOT a WeekSpec; the validator never sees it.",
+  "videoUrlTemplate": "https://montree.xyz/api/montree/media/proxy/videos/lesson-NN.mp4?bucket=dark-phonics",
+  "lessons": {
+    "05": { "sound": "s", "title": "Snake in my Sock", "image": "lesson-05.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-05.mp4?bucket=dark-phonics" },
+    "06": { "sound": "a", "title": "Ant on my Apple", "image": "lesson-06.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-06.mp4?bucket=dark-phonics" },
+    "07": { "sound": "t", "title": "Tick-Tock Stinky Sock", "image": "lesson-07.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-07.mp4?bucket=dark-phonics" },
+    "08": { "sound": "p", "title": "Pop Pop Puppy Poop", "image": "lesson-08.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-08.mp4?bucket=dark-phonics" },
+    "09": { "sound": "i", "title": "Icky Sticky Pig", "image": "lesson-09.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-09.mp4?bucket=dark-phonics" },
+    "10": { "sound": "n", "title": "No-No Nanny Goat", "image": "lesson-10.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-10.mp4?bucket=dark-phonics" },
+    "11": { "sound": "m", "title": "Muddy Monkey", "image": "lesson-11.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-11.mp4?bucket=dark-phonics" },
+    "12": { "sound": "d", "title": "Dirty Dog Dig Dig", "image": "lesson-12.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-12.mp4?bucket=dark-phonics" },
+    "13": { "sound": "g", "title": "Goat Got My Gum", "image": "lesson-13.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-13.mp4?bucket=dark-phonics" },
+    "14": { "sound": "o", "title": "Hot Dog on a Log", "image": "lesson-14.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-14.mp4?bucket=dark-phonics" },
+    "15": { "sound": "c", "title": "Cat Ate My Cookie", "image": "lesson-15.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-15.mp4?bucket=dark-phonics" },
+    "16": { "sound": "k", "title": "Kooky King", "image": "lesson-16.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-16.mp4?bucket=dark-phonics" },
+    "17": { "sound": "ck", "title": "Kick the Stinky Sock", "image": "lesson-17.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-17.mp4?bucket=dark-phonics" },
+    "18": { "sound": "e", "title": "Ten Messy Hens", "image": "lesson-18.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-18.mp4?bucket=dark-phonics" },
+    "19": { "sound": "u", "title": "Yummy Bug in my Cup", "image": "lesson-19.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-19.mp4?bucket=dark-phonics" },
+    "20": { "sound": "r", "title": "Red Rat Run", "image": "lesson-20.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-20.mp4?bucket=dark-phonics" },
+    "21": { "sound": "h", "title": "Hairy Hippo", "image": "lesson-21.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-21.mp4?bucket=dark-phonics" },
+    "22": { "sound": "b", "title": "Big Baby Burp", "image": "lesson-22.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-22.mp4?bucket=dark-phonics" },
+    "23": { "sound": "f", "title": "Funny Fox in my Fan", "image": "lesson-23.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-23.mp4?bucket=dark-phonics" },
+    "24": { "sound": "l", "title": "Lazy Lion Licks", "image": "lesson-24.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-24.mp4?bucket=dark-phonics" },
+    "25": { "sound": "j", "title": "Jump in the Jelly Jam", "image": "lesson-25.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-25.mp4?bucket=dark-phonics" },
+    "26": { "sound": "v", "title": "Vroom-Vroom Van", "image": "lesson-26.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-26.mp4?bucket=dark-phonics" },
+    "27": { "sound": "w", "title": "Wiggly Wet Worm", "image": "lesson-27.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-27.mp4?bucket=dark-phonics" },
+    "28": { "sound": "x", "title": "Six Fox in a Box", "image": "lesson-28.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-28.mp4?bucket=dark-phonics" },
+    "29": { "sound": "y", "title": "Yummy Yellow Yo-Yo", "image": "lesson-29.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-29.mp4?bucket=dark-phonics" },
+    "30": { "sound": "z", "title": "Zippy Zebra", "image": "lesson-30.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-30.mp4?bucket=dark-phonics" },
+    "31": { "sound": "qu", "title": "Quick Quacky Duck", "image": "lesson-31.png", "videoUrl": "https://montree.xyz/api/montree/media/proxy/videos/lesson-31.mp4?bucket=dark-phonics" }
+  }
+}

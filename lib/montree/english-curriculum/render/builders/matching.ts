@@ -48,10 +48,11 @@ export function buildMatching(spec: WeekSpec, assets: AssetMap, opts: BuildOpts 
 
   // Uniform font size across every word on every page — one shrink-to-fit pass
   // (the house adaptive-font utility), never a hardcoded size that could wrap a
-  // long word and blow the fixed row height.
+  // long word and blow the fixed row height. The word text lives in its half
+  // minus the dot + inner gap.
   const dotAndGapCm = 0.45 + 0.6;
   const fpt = all.length
-    ? computeUniformStripFontSize(all, 26, L.wordColCm - dotAndGapCm, L.rowContentCm - 0.4)
+    ? computeUniformStripFontSize(all, 26, L.halfColCm - dotAndGapCm, L.rowContentCm - 0.4)
     : 26;
 
   const css = `
@@ -60,7 +61,7 @@ export function buildMatching(spec: WeekSpec, assets: AssetMap, opts: BuildOpts 
 .top .aa{font-size:24pt;font-weight:700;font-family:${KIDS_FONT};color:${FRAME_COLOR};}
 .top .nm{font-size:12pt;color:#555;font-family:${KIDS_FONT};}
 .instr{height:0.8cm;margin-bottom:0.6cm;display:flex;align-items:center;font-size:12pt;color:#666;font-family:${KIDS_FONT};}
-.match{display:grid;grid-template-columns:${L.wordColCm}cm ${L.colGapCm}cm ${L.picColCm}cm;justify-content:center;height:${L.usableHeightCm}cm;}
+.match{display:grid;grid-template-columns:${L.halfColCm}cm ${L.colGapCm}cm ${L.halfColCm}cm;justify-content:center;height:${L.usableHeightCm}cm;}
 .wcell{display:flex;align-items:center;justify-content:flex-end;gap:6mm;font-family:${KIDS_FONT};font-weight:700;font-size:${fpt}pt;color:${INK};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:100%;}
 .pcell{display:flex;align-items:center;justify-content:flex-start;gap:6mm;height:100%;}
 .dot{width:4.5mm;height:4.5mm;border-radius:50%;background:${FRAME_COLOR};flex-shrink:0;}

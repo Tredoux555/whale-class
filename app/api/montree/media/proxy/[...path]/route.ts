@@ -21,6 +21,7 @@ const ALLOWED_BUCKETS = new Set([
   'montree-media',
   'story-uploads',
   'photo-bank',
+  'dark-phonics', // public — Dark Phonics films/pictures for the curriculum Studio
 ]);
 const DEFAULT_BUCKET = 'montree-media';
 
