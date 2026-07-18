@@ -1,0 +1,38 @@
+# Montree engagement cron — the "alarm clock" for trial lifecycle emails +
+# the Friday report-ready push (Build D, PLAN_FRICTION_COSMETICS_JUL17).
+#
+# GitHub runs this on ITS servers every hour (no Mac, no extra account needed).
+# It simply POSTs the engagement endpoint with the secret header; the server
+# does all the real work and answers with counts.
+#
+# Requires ONE repo secret: Settings → Secrets and variables → Actions →
+# "CRON_SECRET" — must match the CRON_SECRET env var in Railway. If either is
+# missing, the endpoint answers 401 and nothing sends (fail-closed, safe).
+#
+# Note: GitHub schedules are best-effort — runs can drift by up to ~15-30 min.
+# The engagement route is designed for that (send-once ledgers + wide windows).
+# The workflow_dispatch trigger adds a manual "Run workflow" button for testing.
+
+name: Montree engagement cron
+
+on:
+  schedule:
+    - cron: '15 * * * *' # every hour at :15 UTC
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call engagement endpoint
+        run: |
+          set -e
+          RESPONSE=$(curl -sS -X POST "https://montree.xyz/api/montree/cron/engagement" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            --max-time 150 \
+            -w "\nHTTP %{http_code}")
+          echo "$RESPONSE"
+          # Fail the run visibly if the endpoint rejected us (secret mismatch /
+          # env not set) so a misconfiguration shows up red in the Actions tab.
+          echo "$RESPONSE" | grep -q "HTTP 200"
