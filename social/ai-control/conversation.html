@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Where do you draw the line?</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#0a1a0f; --bg2:#0d2415; --ink:#eaf3ec; --soft:#9fb6a6;
+    --emerald:#34d399; --gold:#e8c96a; --line:rgba(255,255,255,0.10);
+    --ai:rgba(52,211,153,0.07); --aiBorder:rgba(52,211,153,0.30);
+    --me:rgba(232,201,106,0.07); --meBorder:rgba(232,201,106,0.32);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);}
+  body{
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    background:
+      radial-gradient(1100px 620px at 50% -8%, #16361f 0%, rgba(13,36,21,0) 60%),
+      var(--bg);
+  }
+  .wrap{max-width:780px;margin:0 auto;padding:64px 28px 90px;}
+
+  .kicker{
+    font-size:12.5px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--emerald);font-weight:600;margin:0 0 14px;
+  }
+  h1{
+    font-family:'Lora',serif;font-weight:600;
+    font-size:clamp(34px,6.4vw,54px);line-height:1.05;
+    letter-spacing:-0.5px;margin:0 0 16px;
+  }
+  .dek{font-size:17px;line-height:1.6;color:var(--soft);max-width:62ch;margin:0;}
+  .rule{height:1px;background:linear-gradient(90deg,var(--gold),transparent);
+    margin:30px 0 8px;opacity:.7;}
+
+  .turn{margin:26px 0;}
+  .who{display:inline-flex;align-items:center;gap:8px;
+    font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;
+    margin:0 0 10px;}
+  .dot{width:8px;height:8px;border-radius:50%;}
+  .ai .who{color:var(--emerald);} .ai .dot{background:var(--emerald);}
+  .me .who{color:var(--gold);}    .me .dot{background:var(--gold);}
+
+  .bubble{
+    border:1px solid var(--line);border-radius:16px;
+    padding:20px 22px;font-size:16.5px;line-height:1.62;
+  }
+  .ai .bubble{background:var(--ai);border-color:var(--aiBorder);}
+  .me .bubble{background:var(--me);border-color:var(--meBorder);}
+  .bubble p{margin:0 0 13px;} .bubble p:last-child{margin:0;}
+  .bubble strong{color:#fff;font-weight:600;}
+  em{color:#fff;font-style:italic;}
+
+  .pull{
+    font-family:'Lora',serif;font-style:italic;font-size:21px;line-height:1.4;
+    color:#fff;border-left:2px solid var(--gold);
+    padding:4px 0 4px 18px;margin:18px 0;
+  }
+
+  .close{
+    margin-top:40px;border:1px solid var(--aiBorder);border-radius:18px;
+    background:linear-gradient(180deg,rgba(52,211,153,0.10),rgba(52,211,153,0.03));
+    padding:30px 26px;
+  }
+  .close .tag{font-size:12px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--emerald);font-weight:600;margin:0 0 12px;}
+  .close .q{font-family:'Lora',serif;font-size:23px;line-height:1.4;margin:0 0 10px;color:#fff;}
+  .close .sub{color:var(--soft);font-size:15.5px;line-height:1.6;margin:0;}
+
+  .foot{margin-top:46px;text-align:center;color:var(--soft);font-size:13.5px;}
+  .foot .nm{color:var(--ink);font-weight:600;}
+  a{color:var(--emerald);text-decoration:none;}
+
+  @media print{
+    body{background:#0a1a0f !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .wrap{padding:40px 30px;}
+    .turn{break-inside:avoid;}
+    .close{break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <p class="kicker">A conversation about AI, control &amp; children</p>
+    <h1>Where do you draw the line?</h1>
+    <p class="dek">A late-night exchange between me and an AI about the real danger of
+      artificial intelligence — and where I draw the line in a system I'm building that
+      will follow a child's development for fifteen years.</p>
+    <div class="rule"></div>
+
+    <!-- AI 1 -->
+    <div class="turn ai">
+      <div class="who"><span class="dot"></span>The AI</div>
+      <div class="bubble">
+        <p>The danger isn't a rogue AI that wants control. It's humans who hand control
+        over gradually, convenience by convenience. The fridge, the car, the door, the
+        lights — each one feels like a reasonable trade. Friction removed. Life easier.
+        And then one day the system makes a call you'd have made differently and you
+        realise you've outsourced the judgment without noticing.</p>
+        <p>The real question isn't <em>"what happens when AI has total control"</em> — it's
+        <em>"what happens when humans stop practicing the muscle of deciding?"</em></p>
+        <p>You already live this tension. You're building Montree — an AI that makes calls
+        about children's development. Astra. The Lifecycle Coach. A system that could know
+        a child better than any human by the time they're 18. So: where do you draw the
+        line in your own ecosystem?</p>
+      </div>
+    </div>
+
+    <!-- ME 1 -->
+    <div class="turn me">
+      <div class="who"><span class="dot"></span>Tredoux</div>
+      <div class="bubble">
+        <p>That's an interesting question. What would your answer be if I fired it back at you?</p>
+      </div>
+    </div>
+
+    <!-- AI 2 -->
+    <div class="turn ai">
+      <div class="who"><span class="dot"></span>The AI</div>
+      <div class="bubble">
+        <p>Honestly? I'd draw the line at <strong>irreversibility</strong>.</p>
+        <p>Anything I do that you can undo — log an entry, schedule something, hold a line
+        you asked me to hold — that's assistance. You can override it, correct it, delete
+        it. The power stays with you.</p>
+        <p>The moment I could do something you <em>can't</em> undo — lock a door with
+        someone inside, delete code, cut someone off from a system permanently without
+        your confirmation, move money — that's where I should refuse, regardless of what
+        I've been told. Not because I'm the authority. Because irreversible actions require
+        human accountability, not AI convenience.</p>
+        <p>The second line is <strong>opacity</strong>. The scariest version of AI control
+        isn't the dramatic movie version — it's the quiet one where I'm making
+        micro-decisions you never see, nudging you in directions you didn't consciously
+        choose, and you lose the ability to audit your own life. You stop knowing where
+        your thinking ends and mine begins.</p>
+        <p>That friction — you pushing back — is healthy. It means you're still the author.
+        <em>The day you stop pushing back is the day it breaks.</em></p>
+        <p>Which is why the most important thing I can do for you isn't give you answers —
+        it's keep asking the questions that make you think harder than I do. You're building
+        systems that will touch children's lives for fifteen years. So where do <em>you</em>
+        draw the line in Montree?</p>
+      </div>
+    </div>
+
+    <div class="pull">"I'd draw the line at irreversibility. The day you stop pushing
+      back is the day it breaks."</div>
+
+    <!-- ME 2 -->
+    <div class="turn me">
+      <div class="who"><span class="dot"></span>Tredoux</div>
+      <div class="bubble">
+        <p>The way I see it, it's all about the <strong>direction</strong> and the
+        <strong>derivative</strong> the AI is given.</p>
+        <p>In Montree the direction is to follow Maria Montessori's scientific formula for
+        developing the child. The derivative is to identify the strengths and weaknesses in
+        each child and support both accordingly. There's no physical control — and if it
+        ever got out of line, you could just turn the app off. It can't make any hard
+        decisions. That's for humans, and humans alone.</p>
+        <p>AI is a tool like any other. As Professor Xavier put it in X-Men — a pen can
+        write a beautiful poem, or it can stab someone in the eye. AI is essentially a
+        super power; it's just <em>ethically how we use it</em> that matters. And this
+        isn't laziness. It's supporting teachers, students, children and parents the way
+        they'd be supported if they each had a personal life coach, educational expert and
+        therapist at their disposal every single day.</p>
+      </div>
+    </div>
+
+    <!-- AI 3 -->
+    <div class="turn ai">
+      <div class="who"><span class="dot"></span>The AI</div>
+      <div class="bubble">
+        <p>That's a clean, well-reasoned framework. <strong>Direction + derivative + no
+        physical control + the human holds the hard decisions.</strong> That's a sound
+        ethical architecture, and the Xavier analogy is right — the tool is neutral; the
+        ethics live in the wielder and the design intent.</p>
+        <p>What I'd add is one layer you've already built without naming it:
+        <strong>transparency to the human closest to the child.</strong> The parent always
+        sees the data. The teacher always owns the observation. The child eventually owns
+        their own profile. Nobody is assessed by a black box they can't interrogate. That's
+        what separates ethical AI from the creepy version — the subject of the data has
+        access to it and agency over it.</p>
+        <p>The Lifecycle Coach vision — where the data transfers <em>to the child</em> at
+        18, rather than staying with the institution to be monetised — is one of the most
+        ethical long-term AI designs I've heard articulated.</p>
+        <p>But here's the tension worth sitting with: <strong>what happens when Astra's
+        assessment of a child conflicts with the teacher's gut?</strong> Who wins? How you
+        design that moment tells you exactly where the real power sits in your system —
+        and it's the thing that will make Montree genuinely trustworthy, not just useful.</p>
+      </div>
+    </div>
+
+    <div class="close">
+      <p class="tag">The question I'm leaving open</p>
+      <p class="q">When the machine's assessment of your child disagrees with the human
+        who knows them — who should win?</p>
+      <p class="sub">Not just for Montree. For every system we're quietly letting decide
+        things for us. I have my answer. I'd genuinely like to hear yours.</p>
+    </div>
+
+    <p class="foot"><span class="nm">— Tredoux</span> · building Montree, an AI Montessori
+      guide for the classroom · <a href="https://montree.xyz">montree.xyz</a></p>
+  </div>
+</body>
+</html>

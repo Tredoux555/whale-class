@@ -1,0 +1,491 @@
+[
+ {
+  "n": 94,
+  "kind": "reroll-book",
+  "week": 3,
+  "filename": "mask-on-mat.png",
+  "issue": "shows a fringed/feathered tribal-style mask with visible teeth \u2014 a completely different mask design than the plain mask.png card (smooth swirled abstract mask, no fringe) used for cards/bingo/matching",
+  "mj_prompt": "a colorful swirled festival mask with teal, gold and deep red patterns and smooth oval eyeholes (same design as the mask trading card, no feathers or fringe), propped upright on a small woven floor mat facing the viewer, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 95,
+  "kind": "reroll-book",
+  "week": 3,
+  "filename": "monkey-on-mat.png",
+  "issue": "monkey is airborne above the mat with no contact \u2014 wrong preposition for 'on the mat'",
+  "mj_prompt": "a playful young monkey mid-landing with at least one paw and its tail pressed firmly onto a small woven floor mat, clearly in contact with the mat's surface, other limbs still in bouncing motion, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 96,
+  "kind": "reroll-book",
+  "week": 19,
+  "filename": "web.png",
+  "issue": "MODERATE \u2014 used for spread 1 ('A web.'), the dry establishing shot before rain is introduced in spread 2, but already shows heavy dew/droplets, making it visually identical to wet-web.png and killing the dry\u2192wet story progression",
+  "mj_prompt": "ultra-realistic photograph, a single dewless dry spider web strung across the dark, backlit so every strand glows silver, no water droplets, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 97,
+  "kind": "reroll-book",
+  "week": 21,
+  "filename": "duck-back.png",
+  "issue": "marked for regeneration in source ledger: Back! Get back, duck!",
+  "mj_prompt": "a white duck waddling backward directly toward the viewer on webbed feet (not flying), wings raised defensively, a stripey sock clamped in its bill, comedic standoff expression, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 98,
+  "kind": "reroll-book",
+  "week": 21,
+  "filename": "duck-kit.png",
+  "issue": "marked for regeneration in source ledger: The duck got the kit!",
+  "mj_prompt": "a white duck sitting on top of a small stolen first-aid kit box or pencil case, guarding it, no logos, no brand text, no readable packaging text, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 99,
+  "kind": "reroll-book",
+  "week": 23,
+  "filename": "yak.png",
+  "issue": "marked for regeneration in source ledger: Y-y-yak! Y-y-yak! It's a yak! (a yak!)",
+  "mj_prompt": "a shaggy Tibetan yak standing, stocky oxen-shaped body, short thick down-curved horns, dewlap, very long dark shaggy coat reaching near the ground, bushy tail, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 100,
+  "kind": "reroll-book",
+  "week": 27,
+  "filename": "big-wish.png",
+  "issue": "marked for regeneration in source ledger: The wish is big.",
+  "mj_prompt": "a bright orange fish on a ship deck under a whole sky glowing with starlight over a dark still sea, hushed and hopeful, quiet spread, no splashing, dim gentle spotlight, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical, ultra-realistic photograph --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 101,
+  "kind": "reroll-book",
+  "week": 27,
+  "filename": "shell.png",
+  "issue": "marked for regeneration in source ledger: Sh-sh-shell!",
+  "mj_prompt": "an empty spiral seashell alone on a surface, no creature inside, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 102,
+  "kind": "reroll-book",
+  "week": 29,
+  "filename": "potato-in-bath.png",
+  "issue": "correct potato depiction; the vessel looks like a shallow pan rather than the ornate tub in bath.png \u2014 inconsistent tub styling between the two images",
+  "mj_prompt": "regenerate potato-in-bath.png to fix: correct potato depiction; the vessel looks like a shallow pan rather than the ornate tub in bath.png \u2014 inconsistent tub styling between the two images. Match the canonical cast design/style established elsewhere in the curriculum; ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 103,
+  "kind": "reroll-book",
+  "week": 30,
+  "filename": "bell-on-hill.png",
+  "issue": "bell is hanging from a tree by a rope, not sitting at the hilltop; overly ornate gold ceremonial style vs. simple brass hand-bell",
+  "mj_prompt": "reroll: 'a big gleaming brass hand-bell sitting upright at the top of a grassy hill under a leaning tree, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw'",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 104,
+  "kind": "reroll-book",
+  "week": 33,
+  "filename": "skip.png",
+  "issue": "depicts a whip, not a skipping rope",
+  "mj_prompt": "reroll \u2014 mj_prompt: a child's wooden skipping rope with red handles mid-loop, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 105,
+  "kind": "reroll-book",
+  "week": 34,
+  "filename": "chick-clap.png",
+  "issue": "wings spread outward, not brought together \u2014 reads as jumping, not clapping",
+  "mj_prompt": "reroll \u2014 mj_prompt: a tiny fluffy yellow chick clapping her two wings TOGETHER in front of her body in excitement at the top of a snowy slope, snow puffs at her feet, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 106,
+  "kind": "reroll-book",
+  "week": 35,
+  "filename": "grin.png",
+  "issue": "duplicate frog face instead of a generic/abstract smiling-mouth close-up",
+  "mj_prompt": "reroll \u2014 mj_prompt: a big cheerful toothy human-style smiling mouth close-up, no face or species context, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 107,
+  "kind": "reroll-book",
+  "week": 36,
+  "filename": "band.png",
+  "issue": "shows a solid metal ring, not a stretchy rubber band",
+  "mj_prompt": "a stretchy pink rubber band looped and slightly twisted, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 108,
+  "kind": "reroll-book",
+  "week": 37,
+  "filename": "cast-rush.png",
+  "issue": "shows the skunk free and standing with the group instead of stuck in a log with the cast rushing toward it",
+  "mj_prompt": "a tiny yellow chick, a fluffy white sheep and an emerald-green snake all rushing in from three directions toward a log with a striped skunk stuck inside it, urgency motion lines, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 109,
+  "kind": "reroll-book",
+  "week": 37,
+  "filename": "chick-helps-skunk.png",
+  "issue": "depicts an aggressive tug-of-war with no log, doesn't read as a rescue",
+  "mj_prompt": "a tiny fluffy yellow chick gently helping a striped skunk squeeze free from a log hollow, wings pushing, skunk relieved, cooperative rescue scene (not a fight), log clearly visible, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending",
+  "prompt_authored": "Fable Jul15"
+ },
+ {
+  "n": 110,
+  "kind": "reroll-book",
+  "week": 37,
+  "filename": "snake-helps.png",
+  "issue": "no skunk present at all, reads as a fight between snake and chick over a rope",
+  "mj_prompt": "an emerald-green garden snake with large gentle amber eyes looping around a log to help pull it open while a striped skunk wriggles free and a tiny fluffy yellow chick cheers, cooperative rescue scene with all three animals visible, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending",
+  "prompt_authored": "Fable Jul15"
+ },
+ {
+  "n": 111,
+  "kind": "reroll-book",
+  "week": 38,
+  "filename": "snake-ate-cake.png",
+  "issue": "cake shown fully intact with lit candle instead of eaten/crumbs as the lyric and book text require",
+  "mj_prompt": "a round-bellied blissful emerald-green snake coiled beside an empty cake stand scattered with crumbs and one licked-clean candle stub, a fluffy white sheep in a party hat applauding, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 112,
+  "kind": "reroll-book",
+  "week": 39,
+  "filename": "kite-and-bike.png",
+  "issue": "kite fabric not visible; only wool/streamers trail behind the bike",
+  "mj_prompt": "a fluffy white sheep riding a bicycle fast with a bright diamond kite visibly tied to the back of the bike trailing high in the air behind it, an emerald-green snake riding on the handlebars, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 113,
+  "kind": "reroll-book",
+  "week": 39,
+  "filename": "snake-kite.png",
+  "issue": "no kite visible in frame, just a knotted string",
+  "mj_prompt": "a friendly emerald-green garden snake with large gentle amber eyes flying a bright diamond kite with a long ribbon tail clearly visible up in the air, taut string held in its tail tip, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending",
+  "prompt_authored": "Fable Jul15"
+ },
+ {
+  "n": 114,
+  "kind": "reroll-book",
+  "week": 40,
+  "filename": "rope-bone.png",
+  "issue": "rope dominates the frame; the bone is barely visible/ambiguous, doesn't read as 'torn between two treasures'",
+  "mj_prompt": "a friendly scruffy terrier with a coiled rope in one side of its mouth and a clean white bone in the other, both objects clearly visible, torn between the two, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 115,
+  "kind": "reroll-book",
+  "week": 41,
+  "filename": "cubes-tune.png",
+  "issue": "A human hand holds/taps the flute near the cubes instead of the mule \u2014 breaks animal-only visual consistency for the 'cubes make a tune' scene.",
+  "mj_prompt": "a gentle grey mule tapping a row of glowing music cubes with a silver flute held in its mouth, no human hands visible, each cube glowing as it rings a note, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending",
+  "prompt_sourced": "week ledger v2 prompt"
+ },
+ {
+  "n": 116,
+  "kind": "reroll-book",
+  "week": 43,
+  "filename": "snake-tail.png",
+  "issue": "Current image is a generic close-up snake head/coil portrait with no visible full tail and no platform/train context \u2014 fails the 'showing off its tail' requirement of book spread 6.",
+  "mj_prompt": "a friendly emerald-green garden snake with large gentle amber eyes proudly showing off its very long curled tail stretched across a train station platform beside the tracks, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending",
+  "prompt_sourced": "week ledger v2 prompt"
+ },
+ {
+  "n": 117,
+  "kind": "reroll-book",
+  "week": 45,
+  "filename": "snow-growing.png",
+  "issue": "Static close-up of goat head nuzzling snow; does not depict a piling/growing snowdrift as required by the line 'The snow can grow' and the spec artNote (drift up to the goat's shoulders).",
+  "mj_prompt": "a wide view of a snowdrift piled high up to a little shaggy goat's shoulders, snow still falling and visibly deeper than before, showing the growing height of the drift beside the goat, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending",
+  "prompt_sourced": "week ledger v2 prompt"
+ },
+ {
+  "n": 118,
+  "kind": "reroll-book",
+  "week": 46,
+  "filename": "light-high.png",
+  "issue": "different lamp object than light.png (pole lamp vs oil lantern) - style/object drift, not wrong content",
+  "mj_prompt": "regenerate light-high.png to fix: different lamp object than light.png (pole lamp vs oil lantern) - style/object drift, not wrong content. Match the canonical cast design/style established elsewhere in the curriculum; ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 119,
+  "kind": "reroll-book",
+  "week": 47,
+  "filename": "barn.png",
+  "issue": "toy-diorama style, inconsistent with realistic farm.png used for the same barn concept",
+  "mj_prompt": "regenerate barn.png to fix: toy-diorama style, inconsistent with realistic farm.png used for the same barn concept. Match the canonical cast design/style established elsewhere in the curriculum; ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 120,
+  "kind": "reroll-book",
+  "week": 48,
+  "filename": "potato-corn.png",
+  "issue": "rendered in an oil-painting art style, the ONLY non-photographic asset in the week (and among the audited weeks) - breaks visual continuity on the climactic potato-reveal page (book:9)",
+  "mj_prompt": "a single raw potato sitting pleased with itself in a horse",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 121,
+  "kind": "reroll-book",
+  "week": 51,
+  "filename": "moon-school.png",
+  "issue": "marked for regeneration in source ledger: The moon is at the school.",
+  "mj_prompt": "a pale full moon hanging directly over a small country SCHOOLHOUSE with a bell tower and a small sign, down a dark lane, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 122,
+  "kind": "reroll-book",
+  "week": 54,
+  "filename": "chick-stuck.png",
+  "issue": "completely wrong scene - shows Chick and Snake facing off on a rope, no glue, no stuck-foot posture, no BECAUSE moment depicted at all",
+  "mj_prompt": "a tiny fluffy yellow chick comically fixed to the spot with one foot glued down in a blue glue puddle, straining and tugging to pull free, a friendly emerald-green snake peeking in from the side looking amused, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 123,
+  "kind": "reroll-book",
+  "week": 58,
+  "filename": "motion.png",
+  "issue": "reads as an abstract ice-cream/whipped-cream swirl, not a recognizable spinning top",
+  "mj_prompt": "reroll: 'a wooden spinning top actively spinning with visible motion-blur speed lines circling it, tipped on its point on a table, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw'",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 124,
+  "kind": "reroll-nice",
+  "week": 8,
+  "filename": "injection.png",
+  "issue": "hallucinated garbled watermark text baked into the render",
+  "mj_prompt": "reroll \u2014 mj_prompt: a toy doctor's syringe injection with clear glass barrel and blue liquid, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical, no text or watermark --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 125,
+  "kind": "reroll-nice",
+  "week": 15,
+  "filename": "rocket.png",
+  "issue": "faint text/watermark-style marks visible in bottom-left and bottom-right corners, resembling a stock-photo credit line",
+  "mj_prompt": "dark forest editorial photography, red vintage toy rocket ship on chrome spring legs, glass porthole window, muted green background, cinematic Montessori dark-trap aesthetic, no text or watermark",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 126,
+  "kind": "reroll-nice",
+  "week": 16,
+  "filename": "pup-running.png",
+  "issue": "breed slightly inconsistent with pup.png (low priority)",
+  "mj_prompt": "regenerate pup-running.png to fix: breed slightly inconsistent with pup.png (low priority). Match the canonical cast design/style established elsewhere in the curriculum; ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/docs/curriculum/video-audit/_oref_tmp/pup.png",
+  "status": "pending",
+  "oref_original": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 16/images/pup.png"
+ },
+ {
+  "n": 127,
+  "kind": "reroll-nice",
+  "week": 17,
+  "filename": "fit.png",
+  "issue": "minor: fig rendered green here vs established purple/red elsewhere \u2014 color drift",
+  "mj_prompt": "regenerate fit.png to fix: minor: fig rendered green here vs established purple/red elsewhere \u2014 color drift. Match the canonical cast design/style established elsewhere in the curriculum; ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 128,
+  "kind": "reroll-nice",
+  "week": 19,
+  "filename": "bug-on-web.png",
+  "issue": "low priority: bug is red-shelled here vs tan/brown Bug established in Week 18 \u2014 spec-level cast color drift, not an image-vs-spec mismatch (W19's own spec describes it this way)",
+  "mj_prompt": "regenerate bug-on-web.png to fix: low priority: bug is red-shelled here vs tan/brown Bug established in Week 18 \u2014 spec-level cast color drift, not an image-vs-spec mismatch (W19's own spec describes it this way). Match the canonical cast design/style established elsewhere in the curriculum; ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 129,
+  "kind": "reroll-nice",
+  "week": 21,
+  "filename": "kite.png",
+  "issue": "small garbled hallucinated watermark-style text in bottom-left corner",
+  "mj_prompt": "a colorful diamond kite with a tail, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical, no text, no watermark, no logos --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 130,
+  "kind": "reroll-nice",
+  "week": 21,
+  "filename": "rock.png",
+  "issue": "faint garbled hallucinated watermark-style text in both bottom corners",
+  "mj_prompt": "a smooth grey rock, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical, no text, no watermark, no logos --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 131,
+  "kind": "reroll-nice",
+  "week": 24,
+  "filename": "ox-in-box.png",
+  "issue": "Shows the ox standing over an already-shredded, destroyed box rather than wedged/stuck inside an intact-but-straining box. Weak for the 'ox' word mention and unusable for the containment gag proper (see word-song Verse 4).",
+  "mj_prompt": "an enormous ox with only its hind end wedged into a small cardboard box, front legs and head free outside, the box straining and splitting at the seams around its body, comedic tight squeeze, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 132,
+  "kind": "reroll-nice",
+  "week": 25,
+  "filename": "potato-quack.png",
+  "issue": "Rendered as a cartoon/CG illustration with googly eyes and a comic speech bubble \u2014 breaks the ultra-realistic-photograph style used across the rest of the series and does not match the photorealistic 'teacher potato' (glasses, whiteboard) established in Week 1.",
+  "mj_prompt": "a single raw potato under a dramatic spotlight with a small realistic paper speech-bubble prop reading QUACK propped beside it, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/docs/curriculum/video-audit/_oref_tmp/10-potato.png",
+  "status": "pending",
+  "oref_original": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 01/images/10-potato.png"
+ },
+ {
+  "n": 133,
+  "kind": "reroll-nice",
+  "week": 52,
+  "filename": "owl-proud.png",
+  "issue": "star prop is metallic gold ornament, inconsistent with plush-star convention elsewhere (low priority - background prop)",
+  "mj_prompt": "a tawny owl perched proud on a lamppost with chest puffed, a soft PLUSH FABRIC golden star glowing above (no metallic sheen), a fluffy white sheep waving from a lit window, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/docs/curriculum/video-audit/_oref_tmp/owl.png",
+  "status": "pending",
+  "oref_original": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 52/images/owl.png"
+ },
+ {
+  "n": 134,
+  "kind": "generate",
+  "week": 3,
+  "filename": "mat-coloring.png",
+  "issue": "",
+  "mj_prompt": "a simple mat, thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 135,
+  "kind": "generate",
+  "week": 4,
+  "filename": "mat.png",
+  "issue": "",
+  "mj_prompt": "a small woven floor mat alone on the floor, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 136,
+  "kind": "generate",
+  "week": 27,
+  "filename": "fish-coloring.png",
+  "issue": "",
+  "mj_prompt": "a simple fish, thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 137,
+  "kind": "generate",
+  "week": 28,
+  "filename": "fish.png",
+  "issue": "",
+  "mj_prompt": "a fish, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 138,
+  "kind": "generate",
+  "week": 51,
+  "filename": "book-coloring.png",
+  "issue": "",
+  "mj_prompt": "a simple book, thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 139,
+  "kind": "generate",
+  "week": 51,
+  "filename": "moon-coloring.png",
+  "issue": "",
+  "mj_prompt": "a simple moon, thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 140,
+  "kind": "generate",
+  "week": 58,
+  "filename": "potato-coloring.png",
+  "issue": "",
+  "mj_prompt": "a proud potato wearing a little crown and round glasses, simple thick-outline coloring book line art, black lines on pure white, no shading, child-friendly --ar 3:4",
+  "oref": null,
+  "status": "pending"
+ },
+ {
+  "n": 141,
+  "kind": "generate",
+  "week": 58,
+  "filename": "potato.png",
+  "issue": "",
+  "mj_prompt": "a potato wearing tiny round glasses standing at a miniature whiteboard with a pointer, teaching, deadpan, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "pending"
+ }
+]

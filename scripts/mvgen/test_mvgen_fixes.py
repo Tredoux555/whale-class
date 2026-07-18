@@ -242,15 +242,151 @@ def test_fix3b_alias_collision():
 def test_fix3b_alias_file_loads():
     print("FIX 3b: the shipped alias file loads with the W04 starter entry")
     am = cb.load_aliases(4)
-    check("W04 alias: cat-levitating -> cat-up-levitating",
-          am.get("cat-levitating.png") == "cat-up-levitating.png", str(am))
-    check("W04 alias: cat-landing -> cat-down-landing",
-          am.get("cat-landing.png") == "cat-down-landing.png", str(am))
+    # cfb8fd22 (Jul 14) moved the anchor word to the FRONT of the alias
+    # (rule: alias FIRST token must be the sung anchor word) — test follows.
+    check("W04 alias: cat-levitating -> up-cat-levitating",
+          am.get("cat-levitating.png") == "up-cat-levitating.png", str(am))
+    check("W04 alias: cat-landing -> down-cat-landing",
+          am.get("cat-landing.png") == "down-cat-landing.png", str(am))
     check("_comment doc key is NOT treated as an alias",
           "_comment" not in am)
     check("zero-pad and plain week keys both resolve",
           cb.load_aliases(4) == am)
     check("a week with no aliases -> {}", cb.load_aliases(99) == {})
+
+
+# --- FORCED ALIGNMENT: env config, signature, fingerprint, approx propagation ---
+
+def test_align_env_config():
+    print("FORCED-ALIGN: env config (default on, MVGEN_ALIGN off, venv path)")
+    saved = {k: os.environ.get(k) for k in
+             ("MVGEN_ALIGN", "MVGEN_ALIGN_MODEL", "MVGEN_ALIGN_PYTHON",
+              "MVGEN_ALIGN_VENV")}
+    try:
+        for k in saved:
+            os.environ.pop(k, None)
+        check("default: alignment enabled", az._align_enabled() is True)
+        check("default model is 'base'", az._align_model() == "base")
+        for v in ("off", "0", "false", "no", "OFF", " Off "):
+            os.environ["MVGEN_ALIGN"] = v
+            check("MVGEN_ALIGN=%r disables" % v, az._align_enabled() is False)
+        os.environ["MVGEN_ALIGN"] = "on"
+        check("MVGEN_ALIGN=on enables", az._align_enabled() is True)
+        os.environ["MVGEN_ALIGN_MODEL"] = "large-v3"
+        check("MVGEN_ALIGN_MODEL override honored",
+              az._align_model() == "large-v3")
+        # MVGEN_ALIGN_VENV (a DIR) resolves to <venv>/bin/python (contract).
+        d = tempfile.mkdtemp()
+        binp = os.path.join(d, "bin")
+        os.makedirs(binp)
+        open(os.path.join(binp, "python"), "w").write("#!/bin/sh\n")
+        os.environ.pop("MVGEN_ALIGN_PYTHON", None)
+        os.environ["MVGEN_ALIGN_VENV"] = d
+        check("MVGEN_ALIGN_VENV resolves <venv>/bin/python",
+              az._align_python() == os.path.join(binp, "python"))
+        # An explicit MVGEN_ALIGN_PYTHON interpreter wins over the venv dir.
+        d2 = tempfile.mkdtemp()
+        py2 = os.path.join(d2, "python")
+        open(py2, "w").write("#!/bin/sh\n")
+        os.environ["MVGEN_ALIGN_PYTHON"] = py2
+        check("MVGEN_ALIGN_PYTHON explicit interpreter wins",
+              az._align_python() == py2)
+        os.environ["MVGEN_ALIGN_PYTHON"] = "/nope/does/not/exist/python"
+        check("nonexistent interpreter -> None (degrade to transcribe)",
+              az._align_python() is None)
+    finally:
+        for k, v in saved.items():
+            os.environ.pop(k, None) if v is None else os.environ.__setitem__(k, v)
+
+
+def test_align_signature_and_fingerprint():
+    print("FORCED-ALIGN: signature + cache fingerprint toggle on mode/model")
+    saved = {k: os.environ.get(k) for k in ("MVGEN_ALIGN", "MVGEN_ALIGN_MODEL")}
+    d = tempfile.mkdtemp()
+    lyr = os.path.join(d, "lyrics.txt")
+    open(lyr, "w").write("the cat sat on the mat")
+    a1 = os.path.join(d, "take.mp3")
+    open(a1, "wb").write(b"AUDIO-BYTES" * 5000)
+    try:
+        os.environ["MVGEN_ALIGN"] = "on"
+        os.environ["MVGEN_ALIGN_MODEL"] = "base"
+        check("signature is 'align:base' when on",
+              az._align_signature() == "align:base")
+        fp_on = az.compute_inputs_fingerprint(lyr, None, "base", audio_path=a1)
+        os.environ["MVGEN_ALIGN"] = "off"
+        check("signature is 'off' when disabled",
+              az._align_signature() == "off")
+        fp_off = az.compute_inputs_fingerprint(lyr, None, "base", audio_path=a1)
+        check("fingerprint changes when align mode toggles", fp_on != fp_off)
+        os.environ["MVGEN_ALIGN"] = "on"
+        os.environ["MVGEN_ALIGN_MODEL"] = "large-v3"
+        fp_lg = az.compute_inputs_fingerprint(lyr, None, "base", audio_path=a1)
+        check("fingerprint changes when align model changes", fp_on != fp_lg)
+    finally:
+        for k, v in saved.items():
+            os.environ.pop(k, None) if v is None else os.environ.__setitem__(k, v)
+
+
+def test_align_approx_false_propagation():
+    print("FORCED-ALIGN: aligned words carry approx False (monkeypatched worker)")
+    saved_fn = az._forced_align_words
+    saved_env = os.environ.get("MVGEN_ALIGN")
+    try:
+        os.environ["MVGEN_ALIGN"] = "on"
+        canned = [
+            {"word": "the", "start": 0.10, "end": 0.30},
+            {"word": "cat", "start": 0.30, "end": 0.70},
+            {"word": "sat", "start": 0.70, "end": 1.10},
+            {"word": "table", "start": 40.30, "end": 41.20},
+        ]
+        az._forced_align_words = lambda *a, **k: [dict(w) for w in canned]
+        out = az.build_forced_aligned_words("/x.mp3", "the cat sat\ntable", 50.0)
+        check("returns a 4-word list", isinstance(out, list) and len(out) == 4)
+        check("NO aligned word carries approx (approx collapses to 0%)",
+              all(not w.get("approx") for w in out), str(out))
+        check("timings preserved + monotonic non-decreasing",
+              all(out[i]["start"] <= out[i + 1]["start"]
+                  for i in range(len(out) - 1)))
+        check("'table' timing survived alignment",
+              any(w["word"] == "table" and abs(w["start"] - 40.30) < 0.02
+                  for w in out), str(out))
+        az._forced_align_words = lambda *a, **k: []
+        check("empty align output -> None (drives the transcribe fallback)",
+              az.build_forced_aligned_words("/x.mp3", "the cat", 5.0) is None)
+        az._forced_align_words = lambda *a, **k: None
+        check("worker None -> None (drives the transcribe fallback)",
+              az.build_forced_aligned_words("/x.mp3", "the cat", 5.0) is None)
+    finally:
+        az._forced_align_words = saved_fn
+        os.environ.pop("MVGEN_ALIGN", None) if saved_env is None \
+            else os.environ.__setitem__("MVGEN_ALIGN", saved_env)
+
+
+def test_align_off_and_missing_fall_back():
+    print("FORCED-ALIGN: off / missing venv -> None (transcription fallback)")
+    saved = {k: os.environ.get(k) for k in
+             ("MVGEN_ALIGN", "MVGEN_ALIGN_PYTHON", "MVGEN_ALIGN_VENV")}
+    try:
+        os.environ["MVGEN_ALIGN"] = "off"
+        check("MVGEN_ALIGN=off -> _forced_align_words returns None",
+              az._forced_align_words("/x.mp3", "the cat sat") is None)
+        os.environ["MVGEN_ALIGN"] = "on"
+        os.environ.pop("MVGEN_ALIGN_VENV", None)
+        os.environ["MVGEN_ALIGN_PYTHON"] = "/definitely/not/here/python"
+        check("missing venv python -> _forced_align_words None",
+              az._forced_align_words("/x.mp3", "the cat sat") is None)
+        check("build_forced_aligned_words None -> fallback path taken",
+              az.build_forced_aligned_words("/x.mp3", "the cat sat", 5.0) is None)
+        # _clean_lyrics_for_align mirrors the proven capcut split: pure section
+        # tags dropped, sung lines space-joined into one alignment string.
+        check("clean drops pure [section] tag lines",
+              az._clean_lyrics_for_align("[Intro]\n[Hook]\n") == "")
+        check("clean space-joins sung lines (matches capcut invocation)",
+              az._clean_lyrics_for_align("[Intro]\nT-t-turtle\n\nIt is a turtle")
+              == "T-t-turtle It is a turtle")
+    finally:
+        for k, v in saved.items():
+            os.environ.pop(k, None) if v is None else os.environ.__setitem__(k, v)
 
 
 def main():
@@ -259,7 +395,10 @@ def main():
               test_fix5_subs_end_to_end, test_fix3_lyric_filter,
               test_fix3_fallback_under_four, test_fix3_all_mode,
               test_fix3b_alias_layer, test_fix3b_alias_collision,
-              test_fix3b_alias_file_loads):
+              test_fix3b_alias_file_loads,
+              test_align_env_config, test_align_signature_and_fingerprint,
+              test_align_approx_false_propagation,
+              test_align_off_and_missing_fall_back):
         t()
         print()
     print("=" * 60)

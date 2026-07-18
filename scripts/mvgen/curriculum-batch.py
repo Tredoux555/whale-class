@@ -200,7 +200,10 @@ def _lyric_cover(lyrics):
     shotlist matcher would anchor it."""
     keys = set()
     for w in extract_lyric_words(lyrics or ""):
-        k = w["key"]
+        # De-stutter the RAW token first so a stutter-chant word ('t-t-taxi' ->
+        # 'taxi') is recognised as sung — otherwise its image (taxi.png) is wrongly
+        # dropped from the video pool, which is the exact W02 stutter-song miss.
+        k = sl.normalize_token(sl.destutter(w["word"]))
         if (k and not k.isdigit() and len(k) >= sl._MIN_TOKEN_LEN
                 and k not in sl._STOPWORDS):
             keys.add(k)
@@ -335,7 +338,7 @@ def build_project(slug, mp3_path, image_pairs, lyrics):
     return audio_dest, images_dir
 
 
-def job_payload(audio_dest, images_dir, lyrics, theme, pulse):
+def job_payload(audio_dest, images_dir, lyrics, theme, pulse, schedule="auto"):
     """The exact ``POST /api/jobs`` body — mirrors the dashboard's submitRender."""
     return {
         "audio_path": audio_dest,
@@ -345,6 +348,7 @@ def job_payload(audio_dest, images_dir, lyrics, theme, pulse):
         "engine": "slideshow",
         "cut_every": DEFAULT_CUT_EVERY,
         "pulse": pulse,
+        "schedule": schedule,
     }
 
 
@@ -430,7 +434,7 @@ def report_accuracy_line(out_path):
 # ---------------------------------------------------------------------------
 
 def process_song(week, song, wk_dir, theme, pulse, dry_run, daemon, wait,
-                 alias_map=None, images_filter="lyrics"):
+                 alias_map=None, images_filter="lyrics", schedule="auto"):
     """Plan + (unless dry-run) submit one song. Returns a result dict."""
     role = (song.get("role") or "song").strip()
     title = song.get("title") or ""
@@ -490,7 +494,8 @@ def process_song(week, song, wk_dir, theme, pulse, dry_run, daemon, wait,
         preview_audio = os.path.join(PROJECTS_ROOT, slug, "audio",
                                      os.path.basename(mp3))
         preview_images = os.path.join(PROJECTS_ROOT, slug, "images")
-        payload = job_payload(preview_audio, preview_images, lyrics, theme, pulse)
+        payload = job_payload(preview_audio, preview_images, lyrics, theme,
+                              pulse, schedule)
         pj = dict(payload)
         pj["lyrics_text"] = "<%d chars>" % len(lyrics) if lyrics else None
         _log("    PAYLOAD: %s" % json.dumps(pj))
@@ -503,7 +508,8 @@ def process_song(week, song, wk_dir, theme, pulse, dry_run, daemon, wait,
         return {"label": label, "slug": slug, "status": "failed",
                 "reason": "project build: %s" % e}
 
-    payload = job_payload(audio_dest, images_dest, lyrics, theme, pulse)
+    payload = job_payload(audio_dest, images_dest, lyrics, theme, pulse,
+                          schedule)
     job_id, msg = post_job(daemon, payload)
     if job_id is None:
         _log("    -> %s" % msg)
@@ -530,7 +536,7 @@ def process_song(week, song, wk_dir, theme, pulse, dry_run, daemon, wait,
 
 
 def process_week(week, song_filter, theme, pulse, dry_run, daemon, wait,
-                 images_filter="lyrics"):
+                 images_filter="lyrics", schedule="auto"):
     spec, err = load_spec(week)
     if spec is None:
         _log("Week %02d: %s" % (week, err))
@@ -560,7 +566,8 @@ def process_week(week, song_filter, theme, pulse, dry_run, daemon, wait,
         results.append(process_song(week, song, wk_dir, theme, pulse,
                                     dry_run, daemon, wait,
                                     alias_map=alias_map,
-                                    images_filter=images_filter))
+                                    images_filter=images_filter,
+                                    schedule=schedule))
     if song_filter != "all" and not results:
         _log("  (no '%s' song in week %02d)" % (song_filter, week))
     return results
@@ -584,6 +591,12 @@ def main(argv=None):
     p.add_argument("--pulse", default="anchor",
                    choices=["off", "anchor", "beat", "downbeat"],
                    help="beat-pulse mode (default anchor — key words only)")
+    p.add_argument("--schedule", default="auto",
+                   choices=["auto", "script", "anchor"],
+                   help="image scheduling: 'auto' (default) uses the anchor pass "
+                        "but switches to the lyric-sheet SCRIPT schedule when "
+                        "anchoring is poor (stutter songs); 'script' forces it; "
+                        "'anchor' forces the certified anchor path.")
     p.add_argument("--images-filter", default="lyrics",
                    choices=["lyrics", "all"],
                    help="'lyrics' (default): only images whose (aliased) name is "
@@ -608,9 +621,9 @@ def main(argv=None):
         weeks = list(range(lo, hi + 1))
 
     _log("mvgen curriculum-batch — %d week(s), song=%s theme=%s pulse=%s "
-         "images=%s%s"
-         % (len(weeks), args.song, args.theme, args.pulse, args.images_filter,
-            "  [DRY RUN]" if args.dry_run else ""))
+         "schedule=%s images=%s%s"
+         % (len(weeks), args.song, args.theme, args.pulse, args.schedule,
+            args.images_filter, "  [DRY RUN]" if args.dry_run else ""))
     _log("curriculum root: %s" % CURRICULUM_ROOT)
     _log("projects root  : %s" % PROJECTS_ROOT)
     if not args.dry_run and not os.path.isdir(CURRICULUM_ROOT):
@@ -620,7 +633,8 @@ def main(argv=None):
     for wk in weeks:
         all_results.extend(process_week(wk, args.song, args.theme, args.pulse,
                                         args.dry_run, args.daemon, args.wait,
-                                        images_filter=args.images_filter))
+                                        images_filter=args.images_filter,
+                                        schedule=args.schedule))
 
     # summary
     def _count(st):

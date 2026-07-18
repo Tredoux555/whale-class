@@ -429,3 +429,174 @@ Each block = ready to paste. Keep the hook as line 1.
 - [ ] YouTube: title + description + tags filled, marked as Short
 - [ ] Captions/subtitles on
 - [ ] Reviewed — **you** hit Post
+
+---
+
+## TikTok / Reels Quote-Card Punch Lines — Classroom Problem → How Montree Helps (50)
+
+*Added 2026-07-01. Card-ready one-liners for the quote-video format (quote card → Montree end screen). Voice: educator-to-educator, warm, not salesy. Pair each with dark-forest imagery (classroom light, small hands, wooden materials, nature).*
+
+1. You became a teacher for the children. Not the paperwork.
+2. Seventeen notebooks, one child's progress. Montree makes it one.
+3. Observations you'll "write up later." Later never comes — Montree captures them now.
+4. Report season used to eat your weekends. Montree gives them back.
+5. A relief teacher walks in blind. Montree shows them exactly where every child is.
+6. You can't hold 30 children's progress in your head. Montree can.
+7. Parent evening shouldn't be the first time they hear how their child's doing.
+8. The child who's quietly slipping — Montree helps you catch them early.
+9. Lesson given, never recorded. Montree logs it in two taps.
+10. Progress on sticky notes and in your head. Montree puts it somewhere safe.
+11. Inspection next week? Your records are already ready.
+12. Stop rebuilding the same report 25 times. Montree drafts it for you.
+13. Handover day is chaos. Montree makes it a login.
+14. You're teaching AND doing data entry. Montree takes one off your plate.
+15. Which child hasn't been observed this week? Montree already knows.
+16. Parents ask "how's my child doing?" Montree gives you the real answer.
+17. The curriculum you've covered — and the gaps. Montree shows both.
+18. A whole classroom, tracked, without a single spreadsheet.
+19. Montessori runs on observation. Montree makes observing effortless.
+20. You see everything in the room. Montree helps you remember it.
+21. New child joins mid-term. Montree sets them up in minutes.
+22. Notes in a drawer help no one. Montree turns them into progress.
+23. The 6pm report grind is over. Montree writes the first draft.
+24. You know the child. Montree keeps the record.
+25. Every "I'll log it tomorrow" is a lost observation. Montree logs it today.
+26. Fees, attendance, records — one place, not five.
+27. Your best teaching happens on the mat, not at the desk. Montree keeps you there.
+28. Track 30 work cycles without losing your mind.
+29. The child mastered it — did anyone write it down? Montree did.
+30. Parents want a window into the day. Montree opens it.
+31. Planning tomorrow shouldn't take your whole evening. Montree makes it minutes.
+32. You shouldn't need a photographic memory to run a classroom. Montree remembers for you.
+33. Scattered WhatsApps and paper slips. Montree — one calm feed.
+34. Show parents progress they can actually see.
+35. The quiet one, the coasting one, the stuck one — Montree helps you see them all.
+36. Observations today become reports in minutes, not marathons.
+37. Your assistant is off sick. Montree keeps the room running.
+38. Every lesson, every child, every step — held in one place.
+39. Less time proving the work. More time doing it.
+40. The paperwork that follows a child, follows them automatically.
+41. Stop guessing who needs what next. Montree shows you.
+42. A term of growth, ready to share in seconds.
+43. You didn't train for admin. Montree handles it.
+44. The mental load of 30 children — Montree carries some of it.
+45. Progress you can prove — to parents and inspectors alike.
+46. From observation to report without retyping a word.
+47. Know exactly where every child is, the moment you're asked.
+48. The classroom stays yours. Montree just does the remembering.
+49. Follow the child — Montree keeps up with the paper trail.
+50. Great teaching, buried under admin. Montree digs it out.
+
+---
+
+## TikTok / Reels Quote-Card Punch Lines — Parent-Facing / Demand-Generating (50)
+
+*Added 2026-07-01. For parents: spark "wait, why don't I have this?" and "ask your school." Voice: warm, parent-to-parent, a little provocative. Many work as first-frame hooks. Pair with dark-forest imagery (a child's hands, a parent reading a report on a phone, morning classroom light).*
+
+1. Does your child's school use Montree? Maybe ask.
+2. Do you actually know what your child did today? You could.
+3. Parent evening twice a year isn't knowing your child.
+4. Some parents get a weekly report on their child. Do you?
+5. Your child's growth, every week — not just at report time.
+6. "How was school?" "Fine." There's a better answer.
+7. A window into your child's day, from your phone.
+8. You deserve to see your child learning — not just hear about it later.
+9. The best schools tell you before there's a problem, not after.
+10. Weekly progress on your child, in plain language. That's Montree.
+11. Would you know if your child were quietly falling behind?
+12. Your child is more than a class average.
+13. Ask your school one question: "Do you use Montree?"
+14. Real updates on your child. Not a fridge full of worksheets.
+15. See what lit your child up this week.
+16. The milestones you'd hate to miss — don't.
+17. Peace of mind is knowing how your child is really doing.
+18. Every parent wants their child to be seen. Montree proves they are.
+19. Progress you can watch unfold, week by week.
+20. Your child's teacher sees the growth. You should too.
+21. Not another newsletter. Updates about YOUR child.
+22. Imagine a weekly note on exactly what your child mastered.
+23. You're their first teacher. Montree keeps you in the loop.
+24. Schools that use Montree keep parents in the room. Is yours one?
+25. Your child did something wonderful today. Wouldn't you want to know?
+26. Stop waiting for parent evening to find out.
+27. A child's progress shouldn't be a mystery to their own parent.
+28. Montree turns "trust us" into "here's the proof."
+29. Know when to celebrate — and when to step in — right away.
+30. The parents who feel most connected? Their schools use Montree.
+31. Your child's week, told simply, sent to you.
+32. Ask if your school gives weekly progress. If not, ask about Montree.
+33. From guessing to knowing — that's the difference for parents.
+34. Watch your child's confidence grow, one report at a time.
+35. Feel like part of your child's day again.
+36. The difference between hoping they're okay and knowing they are.
+37. Your child is learning to do it themselves. Watch it happen.
+38. A progress report that reads like a story, not a spreadsheet.
+39. Good schools notice the small stuff — and tell you.
+40. Montree keeps the conversation going between you and the classroom.
+41. Every parent deserves to know. Montree gives schools the tools.
+42. What if you never missed a milestone again?
+43. Your child, this week: here's what they did. Simple.
+44. The school that shares is the school that cares.
+45. Curious how your child spends their day? Now you can see.
+46. No more "I didn't know." With Montree, you always do.
+47. Your child's growth deserves an audience — starting with you.
+48. The good schools already send weekly progress. With Montree.
+49. Being a great parent is easier when you're actually kept informed.
+50. If your school used Montree, you'd already know how well your child is doing.
+
+---
+
+## TikTok / Reels Quote-Card Punch Lines — Principal / Owner-Facing (50)
+
+*Added 2026-07-01. For principals & school owners (the buyers): enrollment, retention, teacher burnout, reputation, oversight, differentiation. Voice: owner-to-owner, ROI + mission. Pair with dark-forest imagery (a calm principal, a full classroom, a school entrance at golden hour).*
+
+1. Parents choose the school that keeps them in the loop. Make it yours.
+2. The reason good teachers quit? Admin. Montree fixes that.
+3. Engaged parents don't leave. Montree keeps them engaged.
+4. Full classrooms start with parents who feel involved.
+5. Your school's best marketing is a parent who feels informed.
+6. Stand out from every school in your area — weekly progress reports.
+7. Inspection-ready every day. Not a scramble.
+8. See every classroom from one screen.
+9. Retention is cheaper than enrollment. Montree protects both.
+10. The waitlist goes to the school parents trust.
+11. Your teachers didn't train to do data entry. Give them their time back.
+12. A school running on paper is running on borrowed time.
+13. Lower teacher burnout. Higher parent satisfaction. One platform.
+14. Parents pay for peace of mind. Montree delivers it weekly.
+15. When a family feels seen, they renew.
+16. Every classroom, every child, every fee — one view.
+17. Word of mouth is your growth engine. Informed parents fuel it.
+18. Differentiate on transparency. Parents notice.
+19. The modern Montessori school communicates like one.
+20. Stop losing families you could have kept.
+21. Your reputation is built one parent update at a time.
+22. Give tours that end in "how do you keep parents so informed?"
+23. Compliance, records, reports — handled, not hunted for.
+24. Free your teachers to teach. Watch retention climb — theirs and the families'.
+25. A principal shouldn't fly blind across five classrooms.
+26. The school that shares progress is the school parents recommend.
+27. Fewer "where's my child's report?" emails. More calm.
+28. Enrollment season is won on trust. Build it year-round.
+29. Turn parent communication from a chore into your edge.
+30. Run the business side so you can lead the school side.
+31. Great teachers stay where the admin doesn't crush them.
+32. Your fees, attendance, and records — finally in one place.
+33. Parents talk. Give them something great to say.
+34. The difference between a full school and an empty one is trust.
+35. Scale without losing the personal touch.
+36. Data across classrooms, not scattered in notebooks.
+37. Be the school other schools copy.
+38. A professional school looks professional to parents. Montree makes it easy.
+39. Keep families for years, not terms.
+40. The quiet cost of admin is the teachers you lose. Cut it.
+41. Show prospective parents exactly what they'll get. Weekly.
+42. Your school's story, told to every parent, every week.
+43. Fill seats by keeping the families you have happy.
+44. Leadership is easier when you can see the whole school at once.
+45. Turn every satisfied parent into your next enrollment.
+46. Modern parents expect updates. Meet them there.
+47. Protect your teachers' time — your most expensive asset.
+48. One platform for the classroom, the office, and the family.
+49. The best-run schools make it look effortless. This is how.
+50. Give parents a reason to stay — before they look elsewhere.

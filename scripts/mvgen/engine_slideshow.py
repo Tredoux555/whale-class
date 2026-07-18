@@ -22,7 +22,8 @@ from ass_karaoke import build_ass
 # Beat-grid snapping + segmentation live in shotlist so the cycle path (here)
 # and the lyric-sync path share ONE copy of the snap logic (no duplication).
 from shotlist import (build_image_tokens, build_segments, build_shotlist,
-                      build_shot_report, format_shotlist)
+                      build_script_schedule, build_shot_report, format_shotlist,
+                      script_should_engage, subtitle_words)
 
 
 def _log(msg):
@@ -274,7 +275,8 @@ def _build_pulse_plan(segs, shots_meta, beats, downbeats, mode):
 
 def render(timeline, images_dir, theme, out_path, video_w, video_h, fps,
            work_dir=None, seed=42, min_seg_dur=1.8, crf=20, preset="medium",
-           cut_every=2, progress_cb=None, image_sync="lyrics", pulse="anchor"):
+           cut_every=2, progress_cb=None, image_sync="lyrics", pulse="anchor",
+           schedule="auto", lyrics_text=None):
     """Render the full video. Returns out_path.
 
     Runs synchronously (the caller may wrap it in nohup for long songs).
@@ -318,10 +320,44 @@ def render(timeline, images_dir, theme, out_path, video_w, video_h, fps,
         prepped = _prescale_images(images, work_dir)
 
         shot = None
+        schedule_mode = "anchor"
         if image_sync == "lyrics" and words:
-            shot = build_shotlist(
+            # Always run the certified anchor pass first (unchanged).
+            anchor_shot = build_shotlist(
                 words, images, downbeats, duration, onsets=onsets,
                 cut_every=cut_every, min_seg_dur=min_seg_dur)
+            anchored_ct = (len({m["image"] for m in anchor_shot[3]
+                                if m["anchored"]}) if anchor_shot else 0)
+            engage, dbg = script_should_engage(anchored_ct, len(images), words)
+            if schedule == "script":
+                want_script = True
+            elif schedule == "auto":
+                want_script = engage
+            else:  # "anchor" — never override the certified path
+                want_script = False
+            if want_script and lyrics_text:
+                script_shot = build_script_schedule(
+                    words, images, lyrics_text, downbeats, duration,
+                    onsets=onsets, cut_every=cut_every, min_seg_dur=min_seg_dur,
+                    sections=timeline.get("sections"),
+                    rms_env=timeline.get("rms_envelope"), beats=beats)
+                if script_shot is not None:
+                    shot = script_shot
+                    schedule_mode = "script"
+                    _log("schedule=%s -> SCRIPT-SCHEDULE engaged (%s)"
+                         % (schedule, dbg))
+                else:
+                    shot = anchor_shot
+                    _log("schedule=%s: script requested but not applicable "
+                         "(no sheet-owned images) -> anchor path (%s)"
+                         % (schedule, dbg))
+            else:
+                shot = anchor_shot
+                if schedule == "auto":
+                    _log("schedule=auto: anchor pass sufficient -> anchor path "
+                         "(%s)" % dbg)
+                elif schedule == "script" and not lyrics_text:
+                    _log("schedule=script but no lyrics text -> anchor path")
             if shot is None:
                 _log("image-sync=lyrics: no keyword matches -> cycle fallback")
         elif image_sync == "lyrics":
@@ -332,8 +368,9 @@ def render(timeline, images_dir, theme, out_path, video_w, video_h, fps,
             segs, img_indices, cut_times, shots_meta = shot
             seg_images = [prepped[i] for i in img_indices]
             n_anchor = sum(1 for s in shots_meta if s["anchored"])
-            _log("%d shots (image-sync=lyrics, %d anchored, cut_every=%d)"
-                 % (len(segs), n_anchor, cut_every))
+            _log("%d shots (image-sync=lyrics, schedule=%s, %d anchored, "
+                 "cut_every=%d)"
+                 % (len(segs), schedule_mode, n_anchor, cut_every))
             for line in format_shotlist(shots_meta):
                 _log(line)
             # Machine-verifiable shot report next to the render output — powers
@@ -342,7 +379,9 @@ def render(timeline, images_dir, theme, out_path, video_w, video_h, fps,
             try:
                 report = build_shot_report(
                     shots_meta, images, words,
-                    image_tokens=build_image_tokens(images))
+                    image_tokens=build_image_tokens(images),
+                    schedule_mode=schedule_mode,
+                    timing_source=timeline.get("timing_source", "transcribe"))
                 rpath = os.path.join(
                     os.path.dirname(os.path.abspath(out_path)),
                     "shot_report.json")
@@ -350,16 +389,18 @@ def render(timeline, images_dir, theme, out_path, video_w, video_h, fps,
                     import json as _json
                     _json.dump(report, fh, indent=2)
                 sm = report["summary"]
-                _log("shot_report: %s (%d/%d images matched, %d anchored, "
-                     "%d unused multi-token, %d with phrase in lyrics)"
-                     % (rpath, sm["images_matched"], sm["images_total"],
-                        sm["anchored_shots"],
+                _log("shot_report: %s (schedule=%s, %d/%d images matched, %d "
+                     "anchored, %.1fs held, %d unused multi-token, %d with "
+                     "phrase in lyrics)"
+                     % (rpath, sm.get("schedule_mode", "anchor"),
+                        sm["images_matched"], sm["images_total"],
+                        sm["anchored_shots"], sm.get("held_gap_seconds", 0.0),
                         len(sm["images_unused_multi_token"]),
                         len(sm["unused_multi_token_phrase_present"])))
             except Exception as _e:  # noqa: BLE001
                 _log("shot_report: could not write (%s)" % _e)
         else:
-            # --- CYCLE PATH (bit-identical to the original) ---
+            # --- CYCLE PATH (bit-identical render to the original) ---
             segs, cut_times = build_segments(
                 downbeats, duration, onsets=onsets, cut_every=cut_every,
                 min_seg_dur=min_seg_dur)
@@ -368,6 +409,37 @@ def render(timeline, images_dir, theme, out_path, video_w, video_h, fps,
             # Assign a prepped image to each shot, cycling if fewer images than
             # shots (handles the 1-image case too).
             seg_images = [prepped[i % len(prepped)] for i in range(len(segs))]
+            # Rule 6: if lyric-sync was requested but produced ZERO anchors
+            # (no matches), we are cycling over the whole pool as a fallback —
+            # NEVER a black video. Log it + write a shot_report carrying the
+            # "zero anchors — cadence fallback" quality flag so a batch sweep can
+            # triage it. A report-write failure must NEVER fail a render.
+            if image_sync == "lyrics" and words:
+                _log("image-sync=lyrics: ZERO anchors -> cadence fallback over "
+                     "the whole image pool (%d images)" % len(images))
+            try:
+                cyc_shots = [{
+                    "start": round(s, 3), "end": round(e, 3),
+                    "image": i % max(1, len(images)),
+                    "image_name": os.path.basename(images[i % len(images)]),
+                    "anchored": False, "trigger_word": None,
+                    "trigger_time": None, "trigger_phrase": None,
+                    "match_score": None,
+                } for i, (s, e) in enumerate(segs)]
+                report = build_shot_report(
+                    cyc_shots, images, words,
+                    image_tokens=build_image_tokens(images),
+                    timing_source=timeline.get("timing_source", "transcribe"))
+                rpath = os.path.join(
+                    os.path.dirname(os.path.abspath(out_path)),
+                    "shot_report.json")
+                with open(rpath, "w", encoding="utf-8") as fh:
+                    import json as _json
+                    _json.dump(report, fh, indent=2)
+                _log("shot_report: %s (cadence fallback, flags=%s)"
+                     % (rpath, report["summary"]["quality_flags"]))
+            except Exception as _e:  # noqa: BLE001
+                _log("shot_report: could not write (%s)" % _e)
 
         _audit_cuts(cut_times, beats)
 
@@ -390,14 +462,26 @@ def render(timeline, images_dir, theme, out_path, video_w, video_h, fps,
             cur = "[vframe]"
         ass_path = os.path.join(work_dir, "subs.ass")
         fontsdir = _prepare_fonts(theme, work_dir)
-        if words:
-            ass_doc = build_ass(words, theme, video_w, video_h)
+        # Subtitle suppression: drop words inside long approx (even-distributed)
+        # runs — their karaoke timing has drifted seconds off the singing, so
+        # per the blob-guard philosophy they render subtitle-free (a blank beat
+        # beats a wrong subtitle). Short approx runs are kept.
+        sub_words = subtitle_words(words) if words else []
+        if words and len(sub_words) != len(words):
+            _log("subtitle suppression: %d approx-run word(s) rendered "
+                 "subtitle-free (long-approx-run guard)"
+                 % (len(words) - len(sub_words)))
+        if sub_words:
+            ass_doc = build_ass(sub_words, theme, video_w, video_h)
             with open(ass_path, "w", encoding="utf-8") as fh:
                 fh.write(ass_doc)
             ass_opt = "ass=filename=%s" % _ff_escape(ass_path)
             if fontsdir:
                 ass_opt += ":fontsdir=%s" % _ff_escape(fontsdir)
             tail += ";%s%s[vout]" % (cur, ass_opt)
+        elif words:
+            _log("all words suppressed (long approx runs) -> no subtitles")
+            tail += ";%snull[vout]" % cur
         else:
             _log("no words in timeline -> rendering without subtitles")
             tail += ";%snull[vout]" % cur

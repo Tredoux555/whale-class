@@ -1,0 +1,933 @@
+[
+ {
+  "n": 1,
+  "week": 3,
+  "filename": "potato-on-mat.png",
+  "issue": "Segina peg-doll's hair texture, face detail, and dress style differ from her appearance in segina-on-mat.png (cast consistency drift)",
+  "mj_prompt": "a single raw potato dramatically spotlit in the center of a small woven floor mat, a wooden peg doll girl with matte black pigtails, simple painted dot-eyes and a smile-line mouth, long-sleeved textured red dress (matching her exact appearance in segina-on-mat.png), peeking in from the edge of frame, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 49/images/girl.png",
+  "status": "filed"
+ },
+ {
+  "n": 2,
+  "week": 4,
+  "filename": "cat-landing.png",
+  "issue": "Cast drift \u2014 fluffier/longer-haired, rounder-faced cat that doesn't match the tabby established in cat.png/cat-on-mat.png/mat-on-cat.png; the pose also barely reads as 'landing' (no motion or impact cue, near-duplicate of the calm cat-on-mat.png sit pose).",
+  "mj_prompt": "the SAME sleek short-haired tabby cat as cat.png (narrow dark stripes, lean build, pointed ears), captured just touching back down on a small woven floor mat, front paws splayed for impact, fur slightly wind-ruffled at the edges, ears back, wide alert eyes, subtle motion blur near the paws, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 04/images/cat.png",
+  "status": "filed",
+  "final_prompt": "the SAME sleek short-haired tabby cat as cat.png (narrow dark stripes, lean build, pointed ears), captured just touching back down on a small woven floor mat, front paws splayed for impact, fur slightly wind-ruffled at the edges, ears back, wide alert eyes, subtle motion blur near the paws, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 3,
+  "week": 5,
+  "filename": "cat-on-sam.png",
+  "issue": "cast drift: Sam's hair is rendered as pale straw/raffia bristle texture instead of the painted brown wood hair used in sam.png, sam-sat.png, sam-on-mat.png",
+  "mj_prompt": "a smug tabby cat perched on top of the head of a small wooden peg doll boy with painted brown wood hair (short, carved, glossy brown finish, matching sam.png) and blue dungarees, cat sitting like a living hat, on a woven mat, comedic, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 05/images/sam.png",
+  "status": "filed",
+  "final_prompt": "a smug tabby cat perched on top of the head of a small wooden peg doll boy with painted brown wood hair (short, carved, glossy brown finish, matching sam.png) and blue dungarees, cat sitting like a living hat, on a woven mat, comedic, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 4,
+  "week": 5,
+  "filename": "potato-mat-sam.png",
+  "issue": "cast drift: the cat depicted is a small round-faced kitten with different fur texture and eye styling, inconsistent with the mature adult tabby cat used in sam-on-cat.png, cat-on-sam.png, sam-cat-sat.png, and cat-on-mat.png",
+  "mj_prompt": "a single raw potato dramatically spotlit on a small woven floor mat, a wooden peg doll boy in blue dungarees with painted brown wood hair (matching sam.png) and the same mature tabby cat used elsewhere this week (adult proportions, heavy jowl markings, amber eyes) staring at the potato deadpan from beside the mat, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 05/images/sam.png",
+  "status": "filed",
+  "final_prompt": "a single raw potato dramatically spotlit on a small woven floor mat, a wooden peg doll boy in blue dungarees with painted brown wood hair (matching sam.png) and the same mature tabby cat used elsewhere this week (adult proportions, heavy jowl markings, amber eyes) staring at the potato deadpan from beside the mat, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 5,
+  "week": 5,
+  "filename": "sam-cat-mat.png",
+  "issue": "Sam's head shows no hair at all (plain bald smooth wooden ball, viewed from behind), inconsistent with every other Sam image which shows carved/painted brown hair",
+  "mj_prompt": "a small wooden peg doll boy with painted brown wood hair (short, carved, glossy brown finish, matching sam.png) in blue dungarees and a tabby cat sharing a small woven floor mat peacefully, both facing forward, a wooden peg doll girl with black pigtails and red dress peeking in from the edge, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 05/images/sam.png",
+  "status": "filed",
+  "final_prompt": "a small wooden peg doll boy with painted brown wood hair (short, carved, glossy brown finish, matching sam.png) in blue dungarees and a tabby cat sharing a small woven floor mat peacefully, both facing forward, a wooden peg doll girl with black pigtails and red dress peeking in from the edge, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 6,
+  "week": 5,
+  "filename": "sam-cat-sat.png",
+  "issue": "cast drift: Sam's hair is rendered as pale straw/raffia bristle texture instead of the painted brown wood hair used elsewhere",
+  "mj_prompt": "a small wooden peg doll boy with painted brown wood hair (short, carved, glossy brown finish, matching sam.png) in blue dungarees and a tabby cat sitting side by side on a woven mat, both sulking with a truce, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 05/images/sam.png",
+  "status": "filed",
+  "final_prompt": "a small wooden peg doll boy with painted brown wood hair (short, carved, glossy brown finish, matching sam.png) in blue dungarees and a tabby cat sitting side by side on a woven mat, both sulking with a truce, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 7,
+  "week": 5,
+  "filename": "sam-on-cat.png",
+  "issue": "Sam is shown sitting upright BESIDE a reclining cat, not on top of it \u2014 the core gag (Sam obliviously sits down on the cat) is not depicted at all",
+  "mj_prompt": "a small wooden peg doll boy with painted brown hair and blue dungarees sitting obliviously right on top of a startled tabby cat curled on a woven mat, cat's eyes bulging wide, one paw sticking out from under the boy, comedic, ultra-realistic photograph, single subject grouping centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 05/images/sam.png",
+  "status": "filed",
+  "final_prompt": "a small wooden peg doll boy with painted brown hair and blue dungarees sitting obliviously right on top of a startled tabby cat curled on a woven mat, cat's eyes bulging wide, one paw sticking out from under the boy, comedic, ultra-realistic photograph, single subject grouping centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 8,
+  "week": 6,
+  "filename": "ant-pops-up.png",
+  "issue": "used for the 'I can! I am an ant!' triumph beat (book:6) but shows the same suspense confrontation as cat-over-ant.png rather than the ant emerging unharmed and triumphant",
+  "mj_prompt": "reroll \u2014 mj_prompt: a tiny shiny black ant standing triumphantly on top of a surprised tabby cat's paw, one front leg raised like a fist in victory, cat looking impressed/startled (not threatening), comedic and brave, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 06/images/ant-on-mat.png",
+  "status": "filed",
+  "final_prompt": "a tiny shiny black ant standing triumphantly on top of a surprised tabby cat's paw, one front leg raised like a fist in victory, cat looking impressed/startled (not threatening), comedic and brave, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 9,
+  "week": 7,
+  "filename": "cat-naps-through.png",
+  "issue": "cast drift \u2014 Sam's hair/head design (spiky light hair, wool sweater) differs from the painted-wood brown-haired boy used in Week 6",
+  "mj_prompt": "regenerate cat-naps-through.png to fix: cast drift \u2014 Sam's hair/head design (spiky light hair, wool sweater) differs from the painted-wood brown-haired boy used in Week 6. Match the canonical cast design/style established elsewhere in the curriculum; ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 04/images/cat.png",
+  "status": "filed",
+  "final_prompt": "a sleek short-haired tabby cat (matching cat.png) fast asleep curled up on a small woven floor mat, deeply napping, a small wooden peg doll boy with painted brown wood hair and blue dungarees (matching sam.png) tiptoeing past exaggeratedly behind, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 10,
+  "week": 8,
+  "filename": "cat-command3.png",
+  "issue": "cast drift \u2014 this Sam figure (yarn/fuzzy hair, tan outfit) doesn't match the painted-wood peg-doll boy design used elsewhere; cat is absent from the shot",
+  "mj_prompt": "regenerate cat-command3.png to fix: cast drift \u2014 this Sam figure (yarn/fuzzy hair, tan outfit) doesn't match the painted-wood peg-doll boy design used elsewhere; cat is absent from the shot. Match the canonical cast design/style established elsewhere in the curriculum; ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 04/images/cat.png",
+  "status": "filed",
+  "final_prompt": "a small wooden peg doll boy with painted brown wood hair and blue dungarees (matching sam.png) pointing a firm commanding finger at a sleek short-haired tabby cat sitting obediently at attention on a small woven floor mat, training-moment energy, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 11,
+  "week": 9,
+  "filename": "hat-on-ant.png",
+  "issue": "ant is fully visible next to/under the hat brim instead of vanished \u2014 breaks the 'funny mystery' beat where only a hat is seen",
+  "mj_prompt": "reroll (see generate list hat-on-ant-v2.png)",
+  "oref": null,
+  "status": "filed",
+  "final_prompt": "a single brown felt fedora hat sitting alone in the middle of the floor, lifted a tiny crack off the ground as if something very small is hiding underneath, no creature visible at all, comedic mystery, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 12,
+  "week": 9,
+  "filename": "hat-on-cat.png",
+  "issue": "five different hat designs used across the same one-hat story (brown felt fedora, teal bowler, tan woven sunhat, olive fuzzy fedora, dark bowler) \u2014 breaks prop continuity for a book whose entire plot is about ONE hat",
+  "mj_prompt": "reroll hat-on-cat.png, hat-on-sam.png, hat-still.png and potato-hat.png to all feature the same brown felt fedora shown in hat.png",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 04/images/cat.png",
+  "status": "filed",
+  "final_prompt": "the same brown felt fedora hat perched at a jaunty angle on the head of a sleek short-haired tabby cat (matching cat.png), cat looking mildly unimpressed, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 13,
+  "week": 9,
+  "filename": "hat-on-sam.png",
+  "issue": "five different hat designs used across the same one-hat story (brown felt fedora, teal bowler, tan woven sunhat, olive fuzzy fedora, dark bowler) \u2014 breaks prop continuity for a book whose entire plot is about ONE hat",
+  "mj_prompt": "reroll hat-on-cat.png, hat-on-sam.png, hat-still.png and potato-hat.png to all feature the same brown felt fedora shown in hat.png",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 05/images/sam.png",
+  "status": "filed",
+  "final_prompt": "the same brown felt fedora hat sitting oversized on the head of a small wooden peg doll boy with painted brown wood hair and blue dungarees (matching sam.png), slipping down over his painted eyes, comedic, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 14,
+  "week": 9,
+  "filename": "hat-still.png",
+  "issue": "only one doll figure present; spec requires both Sam and Segina leaning in curious alongside the cat",
+  "mj_prompt": "reroll \u2014 mj_prompt: a felt hat sitting still on the floor with a tiny muffled squiggle above it, a tabby cat, a small wooden peg doll boy in blue dungarees AND a peg doll girl with black pigtails in a red dress both leaning in curious, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 49/images/girl.png",
+  "status": "filed",
+  "final_prompt": "a felt hat sitting still on the floor with a tiny muffled squiggle above it, a tabby cat, a small wooden peg doll boy in blue dungarees AND a peg doll girl with black pigtails in a red dress both leaning in curious, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 15,
+  "week": 9,
+  "filename": "hat.png",
+  "issue": "five different hat designs used across the same one-hat story (brown felt fedora, teal bowler, tan woven sunhat, olive fuzzy fedora, dark bowler) \u2014 breaks prop continuity for a book whose entire plot is about ONE hat",
+  "mj_prompt": "reroll hat-on-cat.png, hat-on-sam.png, hat-still.png and potato-hat.png to all feature the same brown felt fedora shown in hat.png",
+  "oref": null,
+  "status": "filed",
+  "final_prompt": "a single brown felt fedora hat, the hero prop, centered on bare floorboards, nothing else in frame, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 16,
+  "week": 9,
+  "filename": "potato-hat.png",
+  "issue": "five different hat designs used across the same one-hat story (brown felt fedora, teal bowler, tan woven sunhat, olive fuzzy fedora, dark bowler) \u2014 breaks prop continuity for a book whose entire plot is about ONE hat",
+  "mj_prompt": "reroll hat-on-cat.png, hat-on-sam.png, hat-still.png and potato-hat.png to all feature the same brown felt fedora shown in hat.png",
+  "oref": null,
+  "status": "filed",
+  "final_prompt": "a single raw potato wearing the same brown felt fedora hat, deadpan comedy, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 17,
+  "week": 10,
+  "filename": "all-and-mat.png",
+  "issue": "Dad is missing his beard/cap detail (plain head) AND the cat is rendered in a plush/wood-toy art style instead of the photorealistic tabby used across the whole series",
+  "mj_prompt": "reroll (see generate list all-and-mat-v2.png)",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 10/images/dad.png",
+  "status": "filed",
+  "final_prompt": "a tall wooden peg-doll dad with a big bushy brown fiber beard, mustache, pink nose and green cap (matching dad.png), a small wooden peg doll boy in blue dungarees, a wooden peg doll girl with black pigtails and red dress, a photorealistic sleek short-haired tabby cat and a tiny shiny black ant ALL crowded together on one small woven floor mat, cozy and comedic, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 18,
+  "week": 10,
+  "filename": "dad-and-ant.png",
+  "issue": "Dad's brown beard and green cap are missing \u2014 a plain smooth peg-doll head is used instead, breaking cast consistency with dad.png/dad-and-sam.png/dad-and-cat.png/dad-sad.png",
+  "mj_prompt": "reroll (see generate list dad-and-ant-v2.png)",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 10/images/dad.png",
+  "status": "filed",
+  "final_prompt": "a tall wooden peg-doll dad with a big bushy brown fiber beard, mustache, pink nose and green cap (matching dad.png) crouching down to look at a tiny shiny black ant on a small woven floor mat, gentle curiosity, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 19,
+  "week": 10,
+  "filename": "dad-sam-find.png",
+  "issue": "Dad is represented only by a green cap held by what looks like a human hand/fingers, not his wooden peg-doll head, beard, and hand",
+  "mj_prompt": "reroll (see generate list dad-sam-find-v2.png)",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 05/images/sam.png",
+  "status": "filed",
+  "final_prompt": "a tall wooden peg-doll dad with a big bushy brown fiber beard and green cap (matching dad.png) and a small wooden peg doll boy in blue dungarees (matching sam.png) leaning down together discovering a tiny shiny black ant on the floorboards, delighted surprise, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 20,
+  "week": 10,
+  "filename": "potato-dad.png",
+  "issue": "Dad again shown without his beard (consistent with the drift seen in dad-and-ant.png and all-and-mat.png)",
+  "mj_prompt": "regenerate potato-dad.png to fix: Dad again shown without his beard (consistent with the drift seen in dad-and-ant.png and all-and-mat.png). Match the canonical cast design/style established elsewhere in the curriculum; ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 10/images/dad.png",
+  "status": "filed",
+  "final_prompt": "a single raw potato dramatically spotlit on a small woven floor mat, a tall wooden peg-doll dad with a big bushy brown fiber beard and green cap (matching dad.png) staring at it deadpan from beside the mat, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 21,
+  "week": 11,
+  "filename": "pot-cool.png",
+  "issue": "named 'cool' but still shows visible steam rising from the pot, contradicting the 'not hot / phew, all is calm' lyric beat",
+  "mj_prompt": "dark forest editorial photography, small black ceramic pot on a wooden counter, NO steam, calm cool morning light, a striped tabby cat sitting relaxed beside it, muted green background, cinematic Montessori dark-trap aesthetic",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 04/images/cat.png",
+  "status": "filed",
+  "final_prompt": "dark forest editorial photography, small black ceramic pot on a wooden counter, NO steam, calm cool morning light, a striped tabby cat sitting relaxed beside it, muted green background, cinematic Montessori dark-trap aesthetic --ar 3:2 --style raw"
+ },
+ {
+  "n": 22,
+  "week": 12,
+  "filename": "potato-in-pit.png",
+  "issue": "uses a cavalier-spaniel-type dog instead of the scruffy terrier seen in dog-digs.png, dog-digging.png, dog-digging-deep.png, hat-in-pit.png, pig-in-pit.png and pot-in-pit.png - breaks the 'dog' character continuity for the outro",
+  "mj_prompt": "dark forest editorial photography, the same scruffy brown-and-grey terrier from the digging series, muzzle in the dirt, looking curiously at a potato wearing round wire glasses sitting in the dug pit, warm sunbeam, muted green background, cinematic Montessori dark-trap aesthetic",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 12/images/dog.png",
+  "status": "filed",
+  "final_prompt": "dark forest editorial photography, the same scruffy brown-and-grey terrier from the digging series, muzzle in the dirt, looking curiously at a potato wearing round wire glasses sitting in the dug pit, warm sunbeam, muted green background, cinematic Montessori dark-trap aesthetic --ar 3:2 --style raw"
+ },
+ {
+  "n": 23,
+  "week": 13,
+  "filename": "big-dog-and-pig.png",
+  "issue": "this single week's 'big dog' character appears as at least 4 different breeds across the story beats (wrinkly mastiff, Great-Dane-like grey dog, hound-type, scruffy terrier) - no consistent 'big dog' identity carries through the song",
+  "mj_prompt": "dark forest editorial photography, the same large grey brindle Great Dane-type dog (floppy ears, wrinkled jowls) from the towering/big shots, [scene-specific pairing with pig/kitten/hiding/potato], muted green background, cinematic Montessori dark-trap aesthetic",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 13/images/big-dog.png",
+  "status": "filed",
+  "final_prompt": "the same large grey brindle Great Dane-type dog with floppy ears and wrinkled jowls (matching big-dog.png) standing beside a small pink pig, dramatic size contrast, both curious and friendly, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 24,
+  "week": 13,
+  "filename": "big-dog-hiding.png",
+  "issue": "this single week's 'big dog' character appears as at least 4 different breeds across the story beats (wrinkly mastiff, Great-Dane-like grey dog, hound-type, scruffy terrier) - no consistent 'big dog' identity carries through the song",
+  "mj_prompt": "dark forest editorial photography, the same large grey brindle Great Dane-type dog (floppy ears, wrinkled jowls) from the towering/big shots, [scene-specific pairing with pig/kitten/hiding/potato], muted green background, cinematic Montessori dark-trap aesthetic",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 13/images/big-dog.png",
+  "status": "filed",
+  "final_prompt": "the same large grey brindle Great Dane-type dog with floppy ears and wrinkled jowls (matching big-dog.png) comically trying to hide behind a far-too-small potted plant, hindquarters and tail completely visible, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 25,
+  "week": 13,
+  "filename": "big-dog-meets-cat.png",
+  "issue": "this single week's 'big dog' character appears as at least 4 different breeds across the story beats (wrinkly mastiff, Great-Dane-like grey dog, hound-type, scruffy terrier) - no consistent 'big dog' identity carries through the song",
+  "mj_prompt": "dark forest editorial photography, the same large grey brindle Great Dane-type dog (floppy ears, wrinkled jowls) from the towering/big shots, [scene-specific pairing with pig/kitten/hiding/potato], muted green background, cinematic Montessori dark-trap aesthetic",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 13/images/big-dog.png",
+  "status": "filed",
+  "final_prompt": "the same large grey brindle Great Dane-type dog with floppy ears and wrinkled jowls (matching big-dog.png) lowering its huge head nose-to-nose with a tiny striped tabby kitten, gentle giant meeting, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 26,
+  "week": 13,
+  "filename": "potato-and-big-dog.png",
+  "issue": "this single week's 'big dog' character appears as at least 4 different breeds across the story beats (wrinkly mastiff, Great-Dane-like grey dog, hound-type, scruffy terrier) - no consistent 'big dog' identity carries through the song",
+  "mj_prompt": "dark forest editorial photography, the same large grey brindle Great Dane-type dog (floppy ears, wrinkled jowls) from the towering/big shots, [scene-specific pairing with pig/kitten/hiding/potato], muted green background, cinematic Montessori dark-trap aesthetic",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 13/images/big-dog.png",
+  "status": "filed",
+  "final_prompt": "a single raw potato dramatically spotlit on the floor, the same large grey brindle Great Dane-type dog with floppy ears and wrinkled jowls (matching big-dog.png) staring down at it deadpan, dramatic size contrast, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 27,
+  "week": 14,
+  "filename": "hen-on-dog.png",
+  "issue": "filename and image content show a hen on a DOG's head, but the lyric it must illustrate is explicitly 'On the cat?! (on the CAT?!) Ten hens on the cat!' - no dog appears anywhere in this song's lyrics, and no cat appears in this image",
+  "mj_prompt": "see generate list entry hen-on-cat.png",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 12/images/dog.png",
+  "status": "filed",
+  "final_prompt": "dark forest editorial photography, a fluffy brown hen perched calmly on the back of a scruffy warm-brown terrier dog (matching dog.png), dog looking sideways alarmed and annoyed, muted green background, cinematic Montessori dark-trap aesthetic, matches the visual style of hens-in-pen.png --ar 3:2 --style raw"
+ },
+ {
+  "n": 28,
+  "week": 14,
+  "filename": "hens-on-man.png",
+  "issue": "these use a photorealistic human adult rather than the peg-doll cast style established elsewhere in the curriculum - visual style break, lower priority than the hen-on-dog mismatch",
+  "mj_prompt": "dark forest editorial photography, wooden peg-doll farmer character (Sam/Segina cast style) with hens perched on head and shoulders / running from chasing hens, feathers flying, muted green background, cinematic Montessori dark-trap aesthetic",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 10/images/dad.png",
+  "status": "filed",
+  "final_prompt": "a tall wooden peg-doll farmer man with a big bushy brown fiber beard and green cap (matching dad.png) standing stiff and wide-eyed with fluffy brown hens perched on his head and both shoulders, feathers drifting down, comedic, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 29,
+  "week": 14,
+  "filename": "man-chasing-hens.png",
+  "issue": "these use a photorealistic human adult rather than the peg-doll cast style established elsewhere in the curriculum - visual style break, lower priority than the hen-on-dog mismatch",
+  "mj_prompt": "dark forest editorial photography, wooden peg-doll farmer character (Sam/Segina cast style) with hens perched on head and shoulders / running from chasing hens, feathers flying, muted green background, cinematic Montessori dark-trap aesthetic",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 10/images/dad.png",
+  "status": "filed",
+  "final_prompt": "a tall wooden peg-doll farmer man with a big bushy brown fiber beard and green cap (matching dad.png) running after three fluffy brown hens scattering ahead of him, feathers flying everywhere, comedic chaos, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 30,
+  "week": 16,
+  "filename": "cast-summit-party.png",
+  "issue": "MAJOR \u2014 generic 3D-animated-movie-style crowd of unrelated characters, wrong art style entirely (not the established photographic look), no potato present, does not depict Segina/Sam/Cat/Dog/Rat/Ant/Pup",
+  "mj_prompt": "ultra-realistic photograph, a peg-doll girl in a red dress (Segina), a peg-doll boy in a red shirt (Sam), a tabby cat, a scruffy brown dog, a grey rat, a small ant, and a tiny bouncing puppy, all together celebrating at a hilltop under five glowing gold letters A E I O U arcing overhead like bunting, confetti falling, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 49/images/girl.png",
+  "status": "filed",
+  "final_prompt": "ultra-realistic photograph, a peg-doll girl in a red dress (Segina), a peg-doll boy in a red shirt (Sam), a tabby cat, a scruffy brown dog, a grey rat, a small ant, and a tiny bouncing puppy, all together celebrating at a hilltop under five glowing gold letters A E I O U arcing overhead like bunting, confetti falling, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 31,
+  "week": 16,
+  "filename": "muddy-cast.png",
+  "issue": "MODERATE \u2014 Ant is missing from the group despite the artNote requiring the full cast (pup, cat, dog, rat, ant, Segina, Sam); the Rat character reads as a lizard/monster rather than a recognizable rodent; Pup is hard to distinguish from Dog",
+  "mj_prompt": "ultra-realistic photograph, a peg-doll girl (Segina) and peg-doll boy (Sam), a tabby cat, a scruffy brown dog, a small tiny bouncing puppy, a grey rat with a pointed rodent snout and long tail, and a small ant, all splattered with brown mud and laughing together, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 49/images/girl.png",
+  "status": "filed",
+  "final_prompt": "ultra-realistic photograph, a peg-doll girl (Segina) and peg-doll boy (Sam), a tabby cat, a scruffy brown dog, a small tiny bouncing puppy, a grey rat with a pointed rodent snout and long tail, and a small ant, all splattered with brown mud and laughing together, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 32,
+  "week": 22,
+  "filename": "dog-vet.png",
+  "issue": "Shows a wet, muddy, curly-haired tan dog lying down \u2014 no cone collar, no vet table, no clinical setting. Reads as 'dog after a bath', not 'dog at the vet'. Cast's Dog is established brown; this dog's coat reads more tan/beige.",
+  "mj_prompt": "a brown dog wearing a plastic Elizabethan cone collar, sitting on a stainless steel vet examination table with big sad hopeful eyes and tail giving one hopeful wag, clinical vet setting clearly visible, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 12/images/dog.png",
+  "status": "filed",
+  "final_prompt": "a brown dog wearing a plastic Elizabethan cone collar, sitting on a stainless steel vet examination table with big sad hopeful eyes and tail giving one hopeful wag, clinical vet setting clearly visible, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "repick": "Jul 15 00:12 \u2014 Tredoux re-pick filed; prior pick archived as <name>.repick1.png in _replaced_video_audit"
+ },
+ {
+  "n": 33,
+  "week": 22,
+  "filename": "van-vet.png",
+  "issue": "Rendered as a nighttime ice-cream/food truck with an awning and serving window (plus stray dog/cat figures on the ground) \u2014 no vet clinic, no green cross, no daytime warm 'arrival' reveal. Does not read as 'van at the vet' at all.",
+  "mj_prompt": "a small friendly delivery van parked outside a warm little animal clinic window with a visible green cross sign glowing in the window, warm evening light, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 12/images/dog.png",
+  "status": "filed",
+  "final_prompt": "a small friendly delivery van parked outside a warm little animal clinic window with a visible green cross sign glowing in the window, warm evening light, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 34,
+  "week": 23,
+  "filename": "jam-yum.png",
+  "issue": "Dog's coat reads grey/tan wire-haired terrier, not the established solid-brown 'Dog' cast color used elsewhere in the curriculum (e.g. Week 20 jam callback) \u2014 cast-consistency drift, not a content mismatch.",
+  "mj_prompt": "regenerate jam-yum.png to fix: Dog's coat reads grey/tan wire-haired terrier, not the established solid-brown 'Dog' cast color used elsewhere in the curriculum (e.g. Week 20 jam callback) \u2014 cast-consistency drift, not a content mismatch.. Match the canonical cast design/style established elsewhere in the curriculum; ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 12/images/dog.png",
+  "status": "filed",
+  "final_prompt": "a solid warm-brown scruffy dog (matching dog.png) joyfully licking red jam from an open glass jar, jam smeared on its muzzle, pure yum delight, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 35,
+  "week": 25,
+  "filename": "cat-quack.png",
+  "issue": "Shows a hissing/snarling cat with bared fangs and a raised claw \u2014 reads as aggressive, not a comedic 'attempting to quack, ridiculous duck-beak-shaped mouth, unconvinced' gag.",
+  "mj_prompt": "a tabby cat pursing its mouth into a comically round duck-beak shape trying to quack, eyes uncertain and unconvinced, comedic, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 04/images/cat.png",
+  "status": "filed",
+  "final_prompt": "a tabby cat pursing its mouth into a comically round duck-beak shape trying to quack, eyes uncertain and unconvinced, comedic, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 36,
+  "week": 25,
+  "filename": "fox-quack.png",
+  "issue": "Fox is shown wide-mouthed and howling upward, not the artNote's 'sly-quacking out the side of its mouth, one eyebrow up, not really trying.'",
+  "mj_prompt": "a red fox quacking out of one side of its mostly closed mouth with a sly smirk, one eyebrow raised, barely trying, unconvinced, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 17/images/fox.png",
+  "status": "filed",
+  "final_prompt": "a red fox quacking out of one side of its mostly closed mouth with a sly smirk, one eyebrow raised, barely trying, unconvinced, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 37,
+  "week": 25,
+  "filename": "rat-quack.png",
+  "issue": "Rat's mouth is closed \u2014 it reads as a startled/reaching pose rather than 'tiny high-pitched double quacks.' (Referenced by book spread 5, not directly quoted in either song's lyrics.)",
+  "mj_prompt": "a small grey rat on tiptoe with mouth wide open mid-squeak-quack, front paws raised, giving it everything, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 15/images/rat.png",
+  "status": "filed",
+  "final_prompt": "a small grey rat on tiptoe with mouth wide open mid-squeak-quack, front paws raised, giving it everything, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 38,
+  "week": 26,
+  "filename": "dog-dig.png",
+  "issue": "marked for regeneration in source ledger: The dog can dig.",
+  "mj_prompt": "a brown dog mid-dig, front paws thrown into a dirt hole, dirt flying up behind it, tail up, clearly excavating a hole in the ground, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 12/images/dog.png",
+  "status": "filed",
+  "final_prompt": "a brown dog mid-dig, front paws thrown into a dirt hole, dirt flying up behind it, tail up, clearly excavating a hole in the ground, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 39,
+  "week": 26,
+  "filename": "graduation-cast.png",
+  "issue": "marked for regeneration in source ledger: Sam can. Sejeena can. The bug can buzz!",
+  "mj_prompt": "a graduation group on a small woven floor mat \u2014 a tabby cat, black ant, brown terrier dog, grey rat, a ROUND RED-SHELLED BEETLE (not an apple), a white duck, and an actual RED FOX (not a peg-doll), all in tiny graduation caps, with a peg doll boy in a red shirt and a peg doll girl with black pigtails and a red dress beaming beside them, an open book in the middle, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 49/images/girl.png",
+  "status": "filed",
+  "final_prompt": "a graduation group on a small woven floor mat \u2014 a tabby cat, black ant, brown terrier dog, grey rat, a ROUND RED-SHELLED BEETLE (not an apple), a white duck, and an actual RED FOX (not a peg-doll), all in tiny graduation caps, with a peg doll boy in a red shirt and a peg doll girl with black pigtails and a red dress beaming beside them, an open book in the middle, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 40,
+  "week": 26,
+  "filename": "zigzag-buzz.png",
+  "issue": "painterly/illustrated style breaks the photographic pack style",
+  "mj_prompt": "regenerate photographically: 'a celebratory scene of lightning zaps and zigzag streamers with a red-shelled beetle buzzing loops overhead, festive, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw'",
+  "oref": null,
+  "status": "filed",
+  "final_prompt": "a celebratory scene of lightning zaps and zigzag streamers with a red-shelled beetle buzzing loops overhead, festive, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 41,
+  "week": 27,
+  "filename": "potato-on-ship.png",
+  "issue": "CRITICAL: depicts a coconut/plush toy with a face, not a potato \u2014 breaks the recurring potato joke-tile",
+  "mj_prompt": "reroll: 'a single raw potato wearing a tiny folded paper sailor hat sitting alone on the wooden deck of a small ship, dramatic spotlight on the potato, a fluffy white sheep staring at it from the wheel, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw'",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 47/images/sheep-star.png",
+  "status": "filed",
+  "final_prompt": "a single raw potato wearing a tiny folded paper sailor hat sitting alone on the wooden deck of a small ship, dramatic spotlight on the potato, a fluffy white sheep staring at it from the wheel, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 42,
+  "week": 30,
+  "filename": "sheep-got-bell.png",
+  "issue": "marked for regeneration in source ledger: Sheep got the bell!",
+  "mj_prompt": "a fluffy round white sheep with kind dark eyes at the bottom of a hill, catching a runaway brass bell neatly ON ITS BACK (not against its face), a tiny yellow chick cheering beside it, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 47/images/sheep-star.png",
+  "status": "filed",
+  "final_prompt": "a fluffy round white sheep with kind dark eyes at the bottom of a hill, catching a runaway brass bell neatly ON ITS BACK (not against its face), a tiny yellow chick cheering beside it, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 43,
+  "week": 31,
+  "filename": "chick-sing.png",
+  "issue": "the 'king' is drawn as a second silver-crowned bird creature instead of Chick singing beside the established king design",
+  "mj_prompt": "reroll \u2014 mj_prompt: a tiny fluffy yellow chick with a stubby orange beak wide open singing beside the round peachy gold-crowned king (matching king-sing.png), a tiny music note above her, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 31/images/king-sing.png",
+  "status": "filed",
+  "final_prompt": "a tiny fluffy yellow chick with a stubby orange beak wide open singing beside the round peachy gold-crowned king (matching king-sing.png), a tiny music note above her, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 44,
+  "week": 31,
+  "filename": "king-sang-cast.png",
+  "issue": "plush-toy render style drift + 3rd sheep design variant (bunny ears, cartoon face)",
+  "mj_prompt": "reroll \u2014 mj_prompt: a round peachy friendly king in a golden crown, a tiny yellow chick and a fluffy white wool-blob sheep (matching sheep-sing.png) taking a curtain-call bow together with music notes settling around them, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 31/images/king-sing.png",
+  "status": "filed",
+  "final_prompt": "a round peachy friendly king in a golden crown, a tiny yellow chick and a fluffy white wool-blob sheep (matching sheep-sing.png) taking a curtain-call bow together with music notes settling around them, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 45,
+  "week": 31,
+  "filename": "king-singing-big.png",
+  "issue": "bearded human-style king, breaks cast consistency",
+  "mj_prompt": "reroll \u2014 mj_prompt: a round friendly king (peachy, chibi-creature build matching king-sing.png) belting out a song with crown tipping and a big swirl of music notes filling the spotlight, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 31/images/king-sing.png",
+  "status": "filed",
+  "final_prompt": "a round friendly king (peachy, chibi-creature build matching king-sing.png) belting out a song with crown tipping and a big swirl of music notes filling the spotlight, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 46,
+  "week": 31,
+  "filename": "king-sings-potato.png",
+  "issue": "king rendered as a 4th distinct (white fluffy human-faced) design",
+  "mj_prompt": "reroll \u2014 mj_prompt: a single raw potato (plain, no face) on a small velvet cushion in a spotlight while the round peachy gold-crowned king (matching king-sing.png) with arms wide serenades it earnestly, a yellow chick and a white wool-blob sheep exchanging a look, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 42/images/potato-bridge.png",
+  "status": "filed",
+  "final_prompt": "a single raw potato (plain, no face) on a small velvet cushion in a spotlight while the round peachy gold-crowned king (matching king-sing.png) with arms wide serenades it earnestly, a yellow chick and a white wool-blob sheep exchanging a look, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 47,
+  "week": 31,
+  "filename": "long-song.png",
+  "issue": "cast drift \u2014 king rendered as a white fluffy human-faced creature, a 3rd distinct king design",
+  "mj_prompt": "regenerate long-song.png to fix: cast drift \u2014 king rendered as a white fluffy human-faced creature, a 3rd distinct king design. Match the canonical cast design/style established elsewhere in the curriculum; ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 31/images/king-sing.png",
+  "status": "filed",
+  "final_prompt": "the round peachy chibi-creature king with gold crown (matching king-sing.png) mid-song holding an impossibly long unfurling paper song-scroll that trails across the whole floor, an endless stream of music notes swirling upward, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 48,
+  "week": 33,
+  "filename": "chick-sheep-stop.png",
+  "issue": "the STOP-gesture character has a cat face and wings instead of the established sheep",
+  "mj_prompt": "reroll \u2014 mj_prompt: a tiny yellow chick and a fluffy round white wool sheep with wings and hooves thrown up in a big STOP gesture as a green blur whizzes between them, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 47/images/sheep-star.png",
+  "status": "filed",
+  "final_prompt": "a tiny yellow chick and a fluffy round white wool sheep with wings and hooves thrown up in a big STOP gesture as a green blur whizzes between them, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 49,
+  "week": 34,
+  "filename": "cast-clapping.png",
+  "issue": "plush-toy render style drift vs photoreal house style",
+  "mj_prompt": "reroll to photoreal \u2014 mj_prompt: a red sled skidded to a stop at the bottom of a slope in a fan of snow with a tiny yellow chick, a white woolly sheep and an emerald-green snake all clapping and cheering, a flag flying, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 47/images/sheep-star.png",
+  "status": "filed",
+  "final_prompt": "a red sled skidded to a stop at the bottom of a slope in a fan of snow with a tiny yellow chick, a white woolly sheep and an emerald-green snake all clapping and cheering, a flag flying, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 50,
+  "week": 34,
+  "filename": "potato-on-sled.png",
+  "issue": "drawn-on cartoon face + ribbon scarf breaks the plain-potato series canon",
+  "mj_prompt": "reroll \u2014 mj_prompt: an empty red sled with a single plain potato (no face) perched where a rider should sit, wearing a small flag like a cape, about to slide off, a yellow chick white sheep and green snake gaping, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 42/images/potato-bridge.png",
+  "status": "filed",
+  "final_prompt": "an empty red sled with a single plain potato (no face) perched where a rider should sit, wearing a small flag like a cape, about to slide off, a yellow chick white sheep and green snake gaping, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 51,
+  "week": 34,
+  "filename": "sheep-on-sled.png",
+  "issue": "sheep has a bear/koala face instead of the established woolly design",
+  "mj_prompt": "reroll \u2014 mj_prompt: a fluffy round white sheep with kind dark eyes piling onto the back of a speeding red sled behind an emerald-green snake, wool streaming, delighted and terrified, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 47/images/sheep-star.png",
+  "status": "filed",
+  "final_prompt": "a fluffy round white sheep with kind dark eyes piling onto the back of a speeding red sled behind an emerald-green snake, wool streaming, delighted and terrified, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 52,
+  "week": 35,
+  "filename": "cast-grinning.png",
+  "issue": "plush-toy render style drift vs photoreal house style",
+  "mj_prompt": "reroll to photoreal \u2014 mj_prompt: a green frog, a red crab, an emerald-green snake, a yellow chick and a white sheep lined up in a row all grinning ear to ear with a drum in front, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 47/images/sheep-star.png",
+  "status": "filed",
+  "final_prompt": "a green frog, a red crab, an emerald-green snake, a yellow chick and a white sheep lined up in a row all grinning ear to ear with a drum in front, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 53,
+  "week": 35,
+  "filename": "potato-grass.png",
+  "issue": "drawn-on smiley face breaks the plain-potato series canon",
+  "mj_prompt": "reroll \u2014 mj_prompt: a single plain raw potato (no drawn face) in a tuft of grass, a frog crab snake chick and sheep gathered around all grinning at it, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 42/images/potato-bridge.png",
+  "status": "filed",
+  "final_prompt": "a single plain raw potato (no drawn face) in a tuft of grass, a frog crab snake chick and sheep gathered around all grinning at it, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 54,
+  "week": 40,
+  "filename": "bone-home.png",
+  "issue": "dog merely stands beside the basket holding the bone rather than tucking it inside",
+  "mj_prompt": "a friendly scruffy terrier gently placing a clean white bone down inside a snug basket by a front door, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 12/images/dog.png",
+  "status": "filed",
+  "final_prompt": "a friendly scruffy terrier gently placing a clean white bone down inside a snug basket by a front door, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 55,
+  "week": 40,
+  "filename": "dog-bone.png",
+  "issue": "dog holds a rough wooden stick, not the clean bone established in bone.png",
+  "mj_prompt": "a happy friendly scruffy terrier holding a big clean white bone proudly in its jaws, eyes shining, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 12/images/dog.png",
+  "status": "filed",
+  "final_prompt": "a happy friendly scruffy terrier holding a big clean white bone proudly in its jaws, eyes shining, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 56,
+  "week": 40,
+  "filename": "dog-home.png",
+  "issue": "dog carries a stick, not the bone, while bounding home",
+  "mj_prompt": "a friendly scruffy terrier bounding joyfully toward a cosy little house on a hill, a clean white bone in its mouth, ears flying, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 12/images/dog.png",
+  "status": "filed",
+  "final_prompt": "a friendly scruffy terrier bounding joyfully toward a cosy little house on a hill, a clean white bone in its mouth, ears flying, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 57,
+  "week": 41,
+  "filename": "mule-concert.png",
+  "issue": "Shows a lamb/sheep-like creature playing the flute with eyes closed instead of the mule; the mule only nuzzles from the side; a second fluffy sheep duplicated in background.",
+  "mj_prompt": "Regenerate per mule-concert-v2.png prompt above \u2014 mule must be the flute performer.",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 47/images/sheep-star.png",
+  "status": "filed",
+  "final_prompt": "a gentle grey mule playing a silver flute mid-performance over a row of glowing music cubes, an emerald-green snake swaying beside it and one fluffy white sheep bobbing along in the background, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 58,
+  "week": 42,
+  "filename": "huge-bridge.png",
+  "issue": "Shows a hedgehog, bear cub, rabbit, fox and squirrel crossing the bridge instead of the designated Level-2 cast (Sheep, Snake, Chick, Dog) \u2014 wrong characters entirely, breaks cast continuity for this scene.",
+  "mj_prompt": "Regenerate per huge-bridge-v2.png prompt above with the correct 4 cast members.",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 47/images/sheep-star.png",
+  "status": "filed",
+  "final_prompt": "a wide view of a tiny fluffy white sheep, an emerald-green snake, a small fluffy yellow chick and a brown dog crossing a vast glowing arched bridge toward a warm light on the far side, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 59,
+  "week": 47,
+  "filename": "star-farm.png",
+  "issue": "barn rendered as a miniature toy diorama, inconsistent with the realistic photographic red barn in farm.png used one page earlier (book:7 to book:8)",
+  "mj_prompt": "a warm golden star with a sleepy face hanging low over a REALISTIC red barn at night matching a farm photograph, a honeybee dozing on a real wooden fencepost, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 51/images/star-looking.png",
+  "status": "filed",
+  "final_prompt": "a warm golden star with a sleepy face hanging low over a REALISTIC red barn at night matching a farm photograph, a honeybee dozing on a real wooden fencepost, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 60,
+  "week": 49,
+  "filename": "bird-better.png",
+  "issue": "girl rendered as a soft cream yarn/wool figure with no visible black hair or red dress - completely unrecognizable as Segina, the week's cast focus",
+  "mj_prompt": "a wooden peg doll girl with black pigtails held by red beads and a red dress holding out her finger, a small brown bird standing on it with wings spread wide ready to fly, joyful, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 49/images/girl.png",
+  "status": "filed",
+  "final_prompt": "a wooden peg doll girl with black pigtails held by red beads and a red dress holding out her finger, a small brown bird standing on it with wings spread wide ready to fly, joyful, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 61,
+  "week": 49,
+  "filename": "bird-turn.png",
+  "issue": "background doll (blurred) does not match canonical peg-doll design",
+  "mj_prompt": "regenerate with canonical peg-doll Segina softly blurred in background, matching girl.png design cues (black pigtails, red beads, red dress)",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 49/images/girl.png",
+  "status": "filed",
+  "final_prompt": "a small brown bird banking into a graceful turn mid-flight, wings spread, the wooden peg doll girl with black pigtails with red beads and textured red dress (matching girl.png) softly blurred in the background watching, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 62,
+  "week": 49,
+  "filename": "bird-under-shirt.png",
+  "issue": "same burlap rag-doll drift as segina-help.png",
+  "mj_prompt": "regenerate matching canonical peg-doll design; keep bird tucked under red collar, same mj_prompt style correction as segina-help.png",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 49/images/girl.png",
+  "status": "filed",
+  "final_prompt": "a tiny brown bird snuggled warm under the red collar of a wooden peg doll girl's textured red dress, only the bird's head peeking out, girl with matte black pigtails with red beads and smooth resin peg-doll skin (matching girl.png), tender, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 63,
+  "week": 49,
+  "filename": "segina-help.png",
+  "issue": "Segina rendered as a soft burlap rag-doll instead of the canonical hard peg-doll design seen in segina.png and girl.png (black pigtails with red beads, smooth resin skin, red fabric dress)",
+  "mj_prompt": "a wooden peg doll girl with black pigtails held by red beads and a red dress, smooth painted skin matching a hard peg-doll figurine, reaching gently and carefully toward a small brown bird, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 49/images/girl.png",
+  "status": "filed",
+  "final_prompt": "a wooden peg doll girl with black pigtails held by red beads and a red dress, smooth painted skin matching a hard peg-doll figurine, reaching gently and carefully toward a small brown bird, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 64,
+  "week": 50,
+  "filename": "potato-between.png",
+  "issue": "all six show a shaggy, matted, long-haired sheep texture that matches NEITHER sheep.png (realistic farm sheep) NOR ship-or-sheep.png (plush toy sheep) - Sheep is rendered in at least 3 different styles across this single 9-page review-week book, the worst cast-consistency break found across weeks 46-50",
+  "mj_prompt": "regenerate all Sheep appearances in this book using ONE consistent plush-toy design matching the established cast look (fluffy round white plush, kind dark eyes, tan/cream face) as seen closest in ship-or-sheep.png; treat ship-or-sheep.png's sheep rendering as the reference to match",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 47/images/sheep-star.png",
+  "status": "filed",
+  "final_prompt": "a single plain raw potato sitting exactly between a small wooden toy ship and a round fluffy white plush-toy sheep with kind dark eyes and a cream face, both facing the potato, comedic, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 65,
+  "week": 50,
+  "filename": "sheep-on-seat.png",
+  "issue": "all six show a shaggy, matted, long-haired sheep texture that matches NEITHER sheep.png (realistic farm sheep) NOR ship-or-sheep.png (plush toy sheep) - Sheep is rendered in at least 3 different styles across this single 9-page review-week book, the worst cast-consistency break found across weeks 46-50",
+  "mj_prompt": "regenerate all Sheep appearances in this book using ONE consistent plush-toy design matching the established cast look (fluffy round white plush, kind dark eyes, tan/cream face) as seen closest in ship-or-sheep.png; treat ship-or-sheep.png's sheep rendering as the reference to match",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 47/images/sheep-star.png",
+  "status": "filed",
+  "final_prompt": "a round fluffy white plush-toy sheep with kind dark eyes and a cream face sitting neatly on a small wooden seat, prim and proud, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 66,
+  "week": 50,
+  "filename": "sheep-on-ship.png",
+  "issue": "all six show a shaggy, matted, long-haired sheep texture that matches NEITHER sheep.png (realistic farm sheep) NOR ship-or-sheep.png (plush toy sheep) - Sheep is rendered in at least 3 different styles across this single 9-page review-week book, the worst cast-consistency break found across weeks 46-50",
+  "mj_prompt": "regenerate all Sheep appearances in this book using ONE consistent plush-toy design matching the established cast look (fluffy round white plush, kind dark eyes, tan/cream face) as seen closest in ship-or-sheep.png; treat ship-or-sheep.png's sheep rendering as the reference to match",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 47/images/sheep-star.png",
+  "status": "filed",
+  "final_prompt": "a round fluffy white plush-toy sheep with kind dark eyes and a cream face standing on the wooden deck of a small ship, wool ruffled by sea wind, ultra-realistic photograph, dramatic spotlight, deep forest-green sea and sky, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 67,
+  "week": 50,
+  "filename": "sheep-sees-ship.png",
+  "issue": "all six show a shaggy, matted, long-haired sheep texture that matches NEITHER sheep.png (realistic farm sheep) NOR ship-or-sheep.png (plush toy sheep) - Sheep is rendered in at least 3 different styles across this single 9-page review-week book, the worst cast-consistency break found across weeks 46-50",
+  "mj_prompt": "regenerate all Sheep appearances in this book using ONE consistent plush-toy design matching the established cast look (fluffy round white plush, kind dark eyes, tan/cream face) as seen closest in ship-or-sheep.png; treat ship-or-sheep.png's sheep rendering as the reference to match",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 47/images/sheep-star.png",
+  "status": "filed",
+  "final_prompt": "a round fluffy white plush-toy sheep with kind dark eyes and a cream face standing on the shore gazing out at a small wooden ship on dark green water, wonder, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 68,
+  "week": 50,
+  "filename": "sheep.png",
+  "issue": "photorealistic real farm sheep instead of the established plush-toy 'Sheep' cast character design (round white fluffy toy with kind dark eyes, seen in sheep-light.png W46 and sheep-star.png W47)",
+  "mj_prompt": "a fluffy round plush toy sheep with kind dark eyes standing calmly, soft stitched wool texture, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 47/images/sheep-star.png",
+  "status": "filed",
+  "final_prompt": "a fluffy round plush toy sheep with kind dark eyes standing calmly, soft stitched wool texture, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 69,
+  "week": 50,
+  "filename": "ship-on-sea.png",
+  "issue": "all six show a shaggy, matted, long-haired sheep texture that matches NEITHER sheep.png (realistic farm sheep) NOR ship-or-sheep.png (plush toy sheep) - Sheep is rendered in at least 3 different styles across this single 9-page review-week book, the worst cast-consistency break found across weeks 46-50",
+  "mj_prompt": "regenerate all Sheep appearances in this book using ONE consistent plush-toy design matching the established cast look (fluffy round white plush, kind dark eyes, tan/cream face) as seen closest in ship-or-sheep.png; treat ship-or-sheep.png's sheep rendering as the reference to match",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 47/images/sheep-star.png",
+  "status": "filed",
+  "final_prompt": "a small wooden ship sailing on rolling deep-green sea, a round fluffy white plush-toy sheep with kind dark eyes visible on deck, ultra-realistic photograph, dramatic spotlight, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 70,
+  "week": 50,
+  "filename": "ship-or-sheep.png",
+  "issue": "sheep here is a fourth distinct style (closest to the established plush-toy cast look from earlier weeks) - inconsistent with the shaggy sheep used on adjacent book pages",
+  "mj_prompt": "regenerate ship-or-sheep.png to fix: sheep here is a fourth distinct style (closest to the established plush-toy cast look from earlier weeks) - inconsistent with the shaggy sheep used on adjacent book pages. Match the canonical cast design/style established elsewhere in the curriculum; ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 47/images/sheep-star.png",
+  "status": "filed",
+  "final_prompt": "split scene: a small wooden ship on dark green water on the left and a round fluffy white plush-toy sheep with kind dark eyes on the right, facing each other like a picture riddle, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 71,
+  "week": 50,
+  "filename": "ship-tipping.png",
+  "issue": "all six show a shaggy, matted, long-haired sheep texture that matches NEITHER sheep.png (realistic farm sheep) NOR ship-or-sheep.png (plush toy sheep) - Sheep is rendered in at least 3 different styles across this single 9-page review-week book, the worst cast-consistency break found across weeks 46-50",
+  "mj_prompt": "regenerate all Sheep appearances in this book using ONE consistent plush-toy design matching the established cast look (fluffy round white plush, kind dark eyes, tan/cream face) as seen closest in ship-or-sheep.png; treat ship-or-sheep.png's sheep rendering as the reference to match",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 47/images/sheep-star.png",
+  "status": "filed",
+  "final_prompt": "a small wooden ship tipping steeply on a big dark-green wave, a round fluffy white plush-toy sheep with kind dark eyes sliding across the deck with wide alarmed eyes, comedic peril, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 72,
+  "week": 51,
+  "filename": "potato-roof.png",
+  "issue": "star prop rendered with straw/gold ornament texture, same metallic-family inconsistency (lower priority - star is background prop here)",
+  "mj_prompt": "a single raw potato wearing tiny round glasses sitting on a dark rooftop between a golden PLUSH FABRIC star toy and a fluffy white plush sheep, all moon-gazing, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 51/images/star-looking.png",
+  "status": "filed",
+  "final_prompt": "a single raw potato wearing tiny round glasses sitting on a dark rooftop between a golden PLUSH FABRIC star toy and a fluffy white plush sheep, all moon-gazing, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 73,
+  "week": 51,
+  "filename": "star-roof.png",
+  "issue": "star rendered as hard metallic/brass ornament instead of the soft plush fabric star used in sheep-roof.png/big-moon.png/star-looking.png",
+  "mj_prompt": "a warm golden soft PLUSH FABRIC five-point star toy with a serene stitched sleepy face perched on the ridge of a dark rooftop looking up, no metallic sheen, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 51/images/star-looking.png",
+  "status": "filed",
+  "final_prompt": "a warm golden soft PLUSH FABRIC five-point star toy with a serene stitched sleepy face perched on the ridge of a dark rooftop looking up, no metallic sheen, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 74,
+  "week": 51,
+  "filename": "star-sheep-moon.png",
+  "issue": "metallic gold crescent moon + metallic star, plus a SECOND unrelated round moon visible over a house in the background - confusing double-moon composition, breaks full-moon visual continuity",
+  "mj_prompt": "a plush golden star toy and a fluffy white plush sheep silhouetted side by side on a rooftop ridge gazing at a single pale full moon and a schoolhouse, peaceful, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 47/images/sheep-star.png",
+  "status": "filed",
+  "final_prompt": "a plush golden star toy and a fluffy white plush sheep silhouetted side by side on a rooftop ridge gazing at a single pale full moon and a schoolhouse, peaceful, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 75,
+  "week": 52,
+  "filename": "loud-sound.png",
+  "issue": "does not depict a loud sound / barn / town at all - shows owl being sprayed with water/rain, feathers flared. This is the flagged known hotspot for W52.",
+  "mj_prompt": "a startled tawny owl with feathers raised, wings flared, staring toward a big cartoon burst/starburst shape of sound rising from a red barn at the edge of a sleepy night town below, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 52/images/owl.png",
+  "status": "filed",
+  "final_prompt": "a startled tawny owl with feathers raised, wings flared, staring toward a big cartoon burst/starburst shape of sound rising from a red barn at the edge of a sleepy night town below, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 76,
+  "week": 53,
+  "filename": "coin-in-soil.png",
+  "issue": "peg-doll boy wears a TEAL/BLUE-GREY shirt instead of the canonical RED shirt seen in every other Sam image this week",
+  "mj_prompt": "a glint of a small gold coin half-buried in dark soil with a peg doll boy in a RED shirt and shaggy brown hair crouched pointing at it wide-eyed, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 05/images/sam.png",
+  "status": "filed",
+  "final_prompt": "a glint of a small gold coin half-buried in dark soil with a peg doll boy in a RED shirt and shaggy brown hair crouched pointing at it wide-eyed, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 77,
+  "week": 53,
+  "filename": "sam-boy.png",
+  "issue": "Sam rendered BALD (smooth wooden head, no hair) - contradicts the canonical hairy design used in boy.png (card), sam-picks-coin.png, sam-joy.png, sam-toy.png, coin-best.png. This is book spread 1 - the character's INTRODUCTION portrait - so the wrong version is the one that sets first impression.",
+  "mj_prompt": "a wooden peg doll boy with shaggy brown carved hair (matching canonical Sam) in a red shirt standing with hands on hips ready, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 05/images/sam.png",
+  "status": "filed",
+  "final_prompt": "a wooden peg doll boy with shaggy brown carved hair (matching canonical Sam) in a red shirt standing with hands on hips ready, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 78,
+  "week": 55,
+  "filename": "bug-helps.png",
+  "issue": "Bug rendered as a bizarre hybrid with actual rubber tire-wheels instead of hind legs - unusual design that may not read clearly as an insect character to a child",
+  "mj_prompt": "a round red-shelled beetle character with six insect legs (no wheels), trundling up with an encouraging look, carrying a tiny grass ramp under one arm, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": null,
+  "status": "filed",
+  "final_prompt": "a round red-shelled beetle character with six insect legs (no wheels), trundling up with an encouraging look, carrying a tiny grass ramp under one arm, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 79,
+  "week": 55,
+  "filename": "fly-cant-fly.png",
+  "issue": "same cast-consistency failure - photorealistic instead of plush",
+  "mj_prompt": "a plush-toy housefly with fuzzy felt texture flapping hard but stuck on the ground with a small comic dust cloud, matching the canonical plush Fly design, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 55/images/fly.png",
+  "status": "filed",
+  "final_prompt": "a plush-toy housefly with fuzzy felt texture flapping hard but stuck on the ground with a small comic dust cloud, matching the canonical plush Fly design, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 80,
+  "week": 55,
+  "filename": "fly-flies.png",
+  "issue": "same cast-consistency failure - photorealistic fly; also the red beetle here doesn't match bug-helps.png's wheeled design (2 different Bug renderings too)",
+  "mj_prompt": "a plush-toy housefly lifting off airborne with wings a blur, matching the canonical plush Fly design, a red beetle (matching bug-helps.png canonical) and a photoreal honeybee cheering below, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 55/images/fly.png",
+  "status": "filed",
+  "final_prompt": "a plush-toy housefly lifting off airborne with wings a blur, matching the canonical plush Fly design, a red beetle (matching bug-helps.png canonical) and a photoreal honeybee cheering below, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 81,
+  "week": 55,
+  "filename": "fly-happy.png",
+  "issue": "a THIRD distinct fly design - cartoon/plush with googly blue eyes, doesn't match fly.png's amber compound eyes either",
+  "mj_prompt": "a plush-toy housefly with fuzzy felt texture and large amber compound glass eyes looping joyfully through the air with a big grin, matching the canonical plush Fly design exactly, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 55/images/fly.png",
+  "status": "filed",
+  "final_prompt": "a plush-toy housefly with fuzzy felt texture and large amber compound glass eyes looping joyfully through the air with a big grin, matching the canonical plush Fly design exactly, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 82,
+  "week": 55,
+  "filename": "fly-sad.png",
+  "issue": "SEVERE cast-consistency failure: this is the SAME protagonist character (Fly) as fly.png (book spread 1, the intro portrait) but rendered in a completely different visual style - photorealistic real housefly instead of the plush-toy design established at debut",
+  "mj_prompt": "a plush-toy housefly with fuzzy felt texture and large amber compound glass eyes, slumped on a green leaf with wings drooping, forlorn, matching the canonical plush Fly design, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 55/images/fly.png",
+  "status": "filed",
+  "final_prompt": "a plush-toy housefly with fuzzy felt texture and large amber compound glass eyes, slumped on a green leaf with wings drooping, forlorn, matching the canonical plush Fly design, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 83,
+  "week": 55,
+  "filename": "fly-shy.png",
+  "issue": "same cast-consistency failure as fly-sad.png - photorealistic fly instead of plush",
+  "mj_prompt": "a plush-toy housefly with fuzzy felt texture and large amber compound glass eyes, hiding behind a blade of grass peeking out shyly, matching the canonical plush Fly design, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 55/images/fly.png",
+  "status": "filed",
+  "final_prompt": "a plush-toy housefly with fuzzy felt texture and large amber compound glass eyes, hiding behind a blade of grass peeking out shyly, matching the canonical plush Fly design, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 84,
+  "week": 55,
+  "filename": "potato-sky.png",
+  "issue": "photorealistic tiny fly instead of plush",
+  "mj_prompt": "a single raw potato tangled in a tiny paper kite floating high in a night sky with a PLUSH-TOY housefly (matching canonical Fly design) buzzing happy circles around it, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 55/images/fly.png",
+  "status": "filed",
+  "final_prompt": "a single raw potato tangled in a tiny paper kite floating high in a night sky with a PLUSH-TOY housefly (matching canonical Fly design) buzzing happy circles around it, dramatic spotlight on the potato, ultra-realistic photograph, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 85,
+  "week": 56,
+  "filename": "lamb-climb.png",
+  "issue": "these 3 spreads use a shaggy tan-grey, longer-faced lamb design; spreads 3/6/7/8/9 (5 of 9 book pages) use a different white, curly, short-faced lamb design \u2014 the book's main character is visually inconsistent across its own pages",
+  "mj_prompt": "reroll spreads 1/2/5 (lamb.png, lamb-climb.png, lamb-knot.png) to match the white curly-fleece lamb design used in the majority of the book: 'a small fluffy white curly-fleece lamb looking up, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw' (repeat with climbing/knot-nuzzling poses)",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 56/images/lamb-climbs-free.png",
+  "status": "filed",
+  "final_prompt": "a small fluffy white curly-fleece lamb (matching lamb-climbs-free.png) climbing determinedly up a dark rocky outdoor slope, one hoof raised onto the next ledge, ultra-realistic photograph, dramatic light, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 86,
+  "week": 56,
+  "filename": "lamb-kneels.png",
+  "issue": "background switches to a flat green cloth/rug instead of the outdoor rocky slope used in every neighboring spread",
+  "mj_prompt": "reroll: 'a small white curly-fleece lamb kneeling on folded front legs on a dark rocky outdoor slope, working a rope knot loose with its teeth, patient, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw'",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 56/images/lamb-climbs-free.png",
+  "status": "filed",
+  "final_prompt": "a small white curly-fleece lamb kneeling on folded front legs on a dark rocky outdoor slope, working a rope knot loose with its teeth, patient, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 87,
+  "week": 56,
+  "filename": "lamb-knot.png",
+  "issue": "these 3 spreads use a shaggy tan-grey, longer-faced lamb design; spreads 3/6/7/8/9 (5 of 9 book pages) use a different white, curly, short-faced lamb design \u2014 the book's main character is visually inconsistent across its own pages",
+  "mj_prompt": "reroll spreads 1/2/5 (lamb.png, lamb-climb.png, lamb-knot.png) to match the white curly-fleece lamb design used in the majority of the book: 'a small fluffy white curly-fleece lamb looking up, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw' (repeat with climbing/knot-nuzzling poses)",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 56/images/lamb-climbs-free.png",
+  "status": "filed",
+  "final_prompt": "a small fluffy white curly-fleece lamb (matching lamb-climbs-free.png) on a dark rocky outdoor slope nosing at a thick rope tied in a stubborn knot, focused and patient, ultra-realistic photograph, dramatic light, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw",
+  "repick": "Jul 15 00:12 \u2014 Tredoux re-pick filed; prior pick archived as <name>.repick1.png in _replaced_video_audit"
+ },
+ {
+  "n": 88,
+  "week": 56,
+  "filename": "lamb.png",
+  "issue": "these 3 spreads use a shaggy tan-grey, longer-faced lamb design; spreads 3/6/7/8/9 (5 of 9 book pages) use a different white, curly, short-faced lamb design \u2014 the book's main character is visually inconsistent across its own pages",
+  "mj_prompt": "reroll spreads 1/2/5 (lamb.png, lamb-climb.png, lamb-knot.png) to match the white curly-fleece lamb design used in the majority of the book: 'a small fluffy white curly-fleece lamb looking up, ultra-realistic photograph, single subject centered, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw' (repeat with climbing/knot-nuzzling poses)",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 56/images/lamb-climbs-free.png",
+  "status": "filed",
+  "final_prompt": "a small fluffy white curly-fleece lamb (matching lamb-climbs-free.png) standing on a dark rocky outdoor slope looking up hopefully, hero portrait, ultra-realistic photograph, dramatic light, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 89,
+  "week": 58,
+  "filename": "celebration-scene.png",
+  "issue": "CRITICAL: whole-cast gathering shows generic unnamed woodland-creature figurines instead of the 17-member named cast",
+  "mj_prompt": "reroll: 'a peg doll girl with black pigtails, a peg doll boy in a red shirt, a tabby cat, a brown dog, a fluffy white sheep, an emerald-green snake, a gold-and-black bee, a golden five-point star, a tawny owl, a black ant, a grey rat, a white duck, a red fox, a yellow chick gathered together in front of a glowing wall-mounted pattern tree in full leaf with streamers and tiny lanterns, warm celebration, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw'",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 47/images/sheep-star.png",
+  "status": "filed",
+  "final_prompt": "a peg doll girl with black pigtails, a peg doll boy in a red shirt, a tabby cat, a brown dog, a fluffy white sheep, an emerald-green snake, a gold-and-black bee, a golden five-point star, a tawny owl, a black ant, a grey rat, a white duck, a red fox, a yellow chick gathered together in front of a glowing wall-mounted pattern tree in full leaf with streamers and tiny lanterns, warm celebration, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 90,
+  "week": 58,
+  "filename": "graduation-cast-full.png",
+  "issue": "the finale group shot is missing 4 of the 17 named cast members: Owl, Sam (second peg-doll boy), Dad, and Pup",
+  "mj_prompt": "reroll ensuring all 17 named characters are visibly present: Segina, Sam, Cat, Ant, Dad, Dog, Rat, Pup, Bug, Duck, Fox, Sheep, Chick, Snake, Bee, Star, Owl, gathered around the fully-leafed glowing pattern tree with the crowned potato at its top and an open book in the middle",
+  "oref": "/Users/tredouxwillemse/Desktop/English Curriculum 2026/Week 49/images/girl.png",
+  "status": "filed",
+  "final_prompt": "the full graduation cast gathered around a fully-leafed glowing pattern tree: a wooden peg doll girl with black pigtails and red dress, a wooden peg doll boy in blue dungarees, a bearded wooden peg-doll dad in a green cap, a tabby cat, a brown dog, a small puppy, a rat, a fox, a duck, a tiny black ant, a red-shelled beetle, a fluffy yellow chick, an emerald-green snake, a round white plush sheep, a gold-and-black honeybee, a golden plush star and a tawny owl, all celebrating together, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 91,
+  "week": 58,
+  "filename": "potato-king.png",
+  "issue": "CRITICAL: cheering crowd below the crowned potato is the generic creature set, not the named cast",
+  "mj_prompt": "reroll keeping the crowned potato exactly as rendered, but replace the cheering crowd below with the named cast (Segina, Sam, Cat, Ant, Dad, Dog, Rat, Pup, Bug, Duck, Fox, Sheep, Chick, Snake, Bee, Star, Owl)",
+  "oref": null,
+  "status": "filed",
+  "final_prompt": "a crowned potato with a tiny gold crown perched at the very top of a glowing pattern tree, below it a cheering crowd of the full named cast: a wooden peg doll girl with black pigtails and red dress, a wooden peg doll boy in blue dungarees, a bearded wooden peg-doll dad in a green cap, a tabby cat, a brown dog, a small puppy, a rat, a fox, a duck, a tiny black ant, a red-shelled beetle, a fluffy yellow chick, an emerald-green snake, a round white plush sheep, a gold-and-black honeybee, a golden plush star and a tawny owl, paws and arms raised, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 92,
+  "week": 58,
+  "filename": "potato-reveal.png",
+  "issue": "CRITICAL: potato surrounded by generic bespectacled rodent creatures instead of the named cast gasping with delight",
+  "mj_prompt": "reroll keeping the potato exactly as rendered, but replace the surrounding crowd with the named cast (as in graduation-cast-full.png) gasping up at the potato at the top of the glowing tree",
+  "oref": null,
+  "status": "filed",
+  "final_prompt": "a single plain raw potato at the very top of a fully-leafed glowing pattern tree, gathered below and gasping up at it with delight the full named cast: a wooden peg doll girl with black pigtails and red dress, a wooden peg doll boy in blue dungarees, a bearded wooden peg-doll dad in a green cap, a tabby cat, a brown dog, a small puppy, a rat, a fox, a duck, a tiny black ant, a red-shelled beetle, a fluffy yellow chick, an emerald-green snake, a round white plush sheep, a gold-and-black honeybee, a golden plush star and a tawny owl, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ },
+ {
+  "n": 93,
+  "week": 58,
+  "filename": "tree-question.png",
+  "issue": "CRITICAL: same generic-creature substitution \u2014 should be the named cast looking up at the Tree",
+  "mj_prompt": "reroll using the same named-cast list as celebration-scene.png, all turning to look up at a glowing pattern tree with a round silhouette at the top, suspenseful, dramatic spotlight, deep forest-green backdrop, soft shadows, cinematic, slightly whimsical, ultra-realistic photograph --ar 3:2 --style raw",
+  "oref": null,
+  "status": "filed",
+  "final_prompt": "the full named cast (a wooden peg doll girl with black pigtails and red dress, a wooden peg doll boy in blue dungarees, a bearded wooden peg-doll dad in a green cap, a tabby cat, a brown dog, a small puppy, a rat, a fox, a duck, a tiny black ant, a red-shelled beetle, a fluffy yellow chick, an emerald-green snake, a round white plush sheep, a gold-and-black honeybee, a golden plush star and a tawny owl) all turned to look up at a glowing pattern tree with a mysterious round silhouette at its very top, suspenseful, ultra-realistic photograph, dramatic spotlight on deep forest-green backdrop, soft shadows, cinematic, slightly whimsical --ar 3:2 --style raw"
+ }
+]

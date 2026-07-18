@@ -325,15 +325,22 @@ def test_fix6_verse_isolation():
           m_far == [0], str(m_far))
 
 
-# --- FIX 4: never end on an unmatched filler -------------------------------
+# --- FIX 4 (Jul-15 hold rule): tail is a HELD anchor, never a filler --------
+#
+# RETIRED behaviour: the old FIX 4 let unmatched fillers cycle through a long
+# tail (>8s) and only reserved a final held shot. Under the Jul-15 hold rule an
+# image may ONLY be on screen around its own sung word, so unmatched fillers are
+# NEVER shown — the last anchored image is simply HELD across the whole tail
+# (and the whole intro). The old "long-tail runs fillers in the tail" assertion
+# is deliberately gone; the new assertions demand the opposite (no fillers).
 
 def test_fix4_ending():
-    print("FIX 4: video never ends on an unmatched filler")
+    print("FIX 4 (hold rule): tail/intro held on the matched image, no fillers")
     images = ["cat.png", "apple.png", "ball.png", "drum.png"]  # only cat sung
     words = words_from("look the cat")  # single anchor early
     downbeats = [round(x * 0.5, 3) for x in range(1, 60)]
 
-    # Short tail (<= 8s): the last anchored image is HELD to the end.
+    # Short tail: the last (only) anchored image is HELD to the end.
     short = sl.build_shotlist(words, images, downbeats, duration=6.0)
     assert short is not None
     ss, _i, _c, s_shots = short
@@ -342,19 +349,25 @@ def test_fix4_ending():
     check("short-tail last shot reaches the end",
           abs(s_shots[-1]["end"] - 6.0) < 1e-6, str(s_shots[-1]["end"]))
 
-    # Long tail (> 8s): fillers may cycle, but the FINAL shot is still matched.
+    # Long tail: NO fillers cycle — the matched image is held the whole time.
     long = sl.build_shotlist(words, images, downbeats, duration=20.0)
     assert long is not None
     ls, _i2, _c2, l_shots = long
     names = [s["image_name"] for s in l_shots]
-    check("long-tail runs fillers in the tail",
-          any(n in ("apple.png", "ball.png", "drum.png") for n in names[1:]),
+    check("long-tail shows NO unmatched fillers (retired behaviour)",
+          not any(n in ("apple.png", "ball.png", "drum.png") for n in names),
           str(names))
+    check("long-tail is entirely the matched image (cat.png held)",
+          set(names) == {"cat.png"}, str(names))
     check("long-tail final shot is the matched image (cat.png)",
           l_shots[-1]["image_name"] == "cat.png", str(names[-3:]))
     check("long-tail final shot reaches the end",
           abs(l_shots[-1]["end"] - 20.0) < 1e-6, str(l_shots[-1]["end"]))
-    # contiguity preserved.
+    check("every long-tail shot is anchored (no filler shots)",
+          all(s["anchored"] for s in l_shots), str(names))
+    # contiguity preserved + starts at t=0 (intro hold).
+    check("timeline starts at t=0 (intro hold)", abs(ls[0][0]) < 1e-6,
+          str(ls[0]))
     for a, b in zip(ls, ls[1:]):
         assert abs(a[1] - b[0]) < 1e-6, "long-tail shots must tile"
     check("long-tail shots tile contiguously", True)
@@ -431,6 +444,261 @@ def test_warn2_stopwords():
 
 # --- no lyrics / zero match fallback ---------------------------------------
 
+# --- APPROX-RUN SUPPRESSION: the stutter-song garble guard ------------------
+
+def _aw(word, start, end, approx=True):
+    """A timed word dict, ``approx`` by default (an even-distributed guess)."""
+    d = {"word": word, "start": round(start, 3), "end": round(end, 3)}
+    if approx:
+        d["approx"] = True
+    return d
+
+
+def test_approx_run_length_boundary():
+    print("approx suppression: run-length boundary (4 kept vs 5 suppressed)")
+    # Short spans so ONLY the word-count rule can trip (each ~0.3s, gap 0.1s).
+    def run(n):
+        return [_aw("w%d" % i, 0.5 + i * 0.4, 0.5 + i * 0.4 + 0.3)
+                for i in range(n)]
+    sup4, spans4 = sl.compute_approx_suppression(run(4))
+    check("4-word approx run NOT suppressed (< 5, short span)",
+          sup4 == set() and spans4 == [], "%s / %s" % (sup4, spans4))
+    sup5, spans5 = sl.compute_approx_suppression(run(5))
+    check("5-word approx run suppressed (count rule)",
+          sup5 == {0, 1, 2, 3, 4} and len(spans5) == 1,
+          "%s / %s" % (sorted(sup5), spans5))
+    # A real (non-approx) word BREAKS the run: two 3-word approx runs around it
+    # each stay below threshold even though 6 approx words exist in total.
+    mixed = (run(3)
+             + [{"word": "real", "start": 2.0, "end": 2.3}]
+             + [_aw("x%d" % i, 2.5 + i * 0.4, 2.5 + i * 0.4 + 0.3)
+                for i in range(3)])
+    supm, spansm = sl.compute_approx_suppression(mixed)
+    check("a real word breaks the run -> two 3-runs both kept",
+          supm == set() and spansm == [], "%s / %s" % (supm, spansm))
+
+
+def test_approx_span_boundary():
+    print("approx suppression: span boundary (<6s kept vs >=6s suppressed)")
+    # Only 3 words (count rule cannot trip) — the SPAN rule is under test.
+    below = [_aw("a", 0.0, 0.3), _aw("b", 2.5, 2.8), _aw("c", 5.2, 5.5)]  # 5.5s
+    supb, spb = sl.compute_approx_suppression(below)
+    check("3-word approx run spanning 5.5s NOT suppressed (< 6s)",
+          supb == set() and spb == [], "%s / %s" % (supb, spb))
+    at = [_aw("a", 0.0, 0.3), _aw("b", 3.0, 3.3), _aw("c", 5.7, 6.0)]     # 6.0s
+    supa, spa = sl.compute_approx_suppression(at)
+    check("3-word approx run spanning 6.0s suppressed (span rule)",
+          supa == {0, 1, 2} and spa == [[0.0, 6.0]], "%s / %s" % (supa, spa))
+
+
+def test_approx_anchor_exclusion():
+    print("approx suppression: no image anchors on a suppressed word")
+    images = ["cat.png", "dog.png"]
+    # 5-word approx run (indices 0-4) that INCLUDES the sung 'cat'; then a real,
+    # non-approx 'dog' outside the run.
+    words = [
+        _aw("la", 0.5, 0.8), _aw("cat", 0.9, 1.2), _aw("la", 1.3, 1.6),
+        _aw("la", 1.7, 2.0), _aw("la", 2.1, 2.4),
+        {"word": "dog", "start": 5.0, "end": 5.3},   # real anchor
+    ]
+    sup, _spans = sl.compute_approx_suppression(words)
+    check("the sung 'cat' (index 1) is inside the suppressed run", 1 in sup)
+    clusters = sl.find_matches(words, images, suppressed_idx=sup)
+    names = [os.path.basename(images[c["image"]]) for c in clusters]
+    print("    gated anchors:", names)
+    check("suppressed 'cat' does NOT anchor cat.png", "cat.png" not in names,
+          str(names))
+    check("real 'dog' still anchors", "dog.png" in names, str(names))
+    # Control: WITHOUT the gate, the same 'cat' WOULD anchor -> proves the gate
+    # (not some other filter) is what excludes it.
+    names_no = [os.path.basename(images[c["image"]])
+                for c in sl.find_matches(words, images)]
+    check("control: un-gated 'cat' WOULD anchor", "cat.png" in names_no,
+          str(names_no))
+    # And build_shotlist (which computes suppression internally) agrees.
+    downbeats = [round(x * 0.5, 3) for x in range(1, 16)]
+    shot = sl.build_shotlist(words, images, downbeats, duration=7.0)
+    assert shot is not None
+    _s, _i, _c, shots_meta = shot
+    anchored = {m["image_name"] for m in shots_meta if m["anchored"]}
+    check("build_shotlist gates the suppressed 'cat' too",
+          "cat.png" not in anchored and "dog.png" in anchored, str(anchored))
+
+
+def test_approx_report_fields():
+    print("approx suppression: shot_report self-flag fields")
+    images = ["cat.png", "dog.png"]
+    # 8 approx words (one suppressed run) + 2 real -> 80% approx.
+    words = [_aw("x%d" % i, 0.5 + i * 0.5, 0.5 + i * 0.5 + 0.3)
+             for i in range(8)]
+    words += [{"word": "cat", "start": 6.0, "end": 6.3},
+              {"word": "dog", "start": 7.0, "end": 7.3}]
+    downbeats = [round(x * 0.5, 3) for x in range(1, 20)]
+    shot = sl.build_shotlist(words, images, downbeats, duration=9.0)
+    assert shot is not None
+    _s, _i, _c, shots_meta = shot
+    sm = sl.build_shot_report(shots_meta, images, words)["summary"]
+    print("    approx_pct=%s spans=%s flags=%s"
+          % (sm["approx_pct"], sm["suppressed_spans"], sm["quality_flags"]))
+    check("approx_pct present + correct (8/10 = 80.0)", sm["approx_pct"] == 80.0,
+          str(sm["approx_pct"]))
+    check("suppressed_spans lists the one long run",
+          len(sm["suppressed_spans"]) == 1
+          and len(sm["suppressed_spans"][0]) == 2, str(sm["suppressed_spans"]))
+    check("quality_flags warns when approx_pct > 60",
+          len(sm["quality_flags"]) == 1
+          and "approx_pct" in sm["quality_flags"][0], str(sm["quality_flags"]))
+    check("subtitle_words drops the suppressed run",
+          {w["word"] for w in sl.subtitle_words(words)} == {"cat", "dog"},
+          str([w["word"] for w in sl.subtitle_words(words)]))
+
+    # A clean song: zero approx -> empty flags/spans, list returned unchanged.
+    clean = [{"word": "cat", "start": 0.5, "end": 0.8},
+             {"word": "dog", "start": 1.0, "end": 1.3}]
+    shot2 = sl.build_shotlist(clean, images, downbeats, duration=3.0)
+    assert shot2 is not None
+    _s2, _i2, _c2, meta2 = shot2
+    sm2 = sl.build_shot_report(meta2, images, clean)["summary"]
+    check("clean song: approx_pct 0.0", sm2["approx_pct"] == 0.0)
+    check("clean song: no suppressed spans", sm2["suppressed_spans"] == [])
+    check("clean song: no quality flags", sm2["quality_flags"] == [])
+    check("subtitle_words leaves a clean list intact",
+          sl.subtitle_words(clean) == clean)
+
+
+# --- Jul-15 HOLD RULE: no fillers; hold neighbours across gaps --------------
+
+def _shot_at(shots, t):
+    """The shot on screen at time ``t`` (or None)."""
+    for s in shots:
+        if s["start"] <= t < s["end"]:
+            return s
+    return None
+
+
+def test_hold_unanchored_never_shown():
+    print("HOLD: an unanchored image is NEVER shown (no cadence fillers)")
+    # cat is sung; apple/ball never are -> they must never reach the screen.
+    images = ["cat.png", "apple.png", "ball.png"]
+    words = words_from("look the cat and the cat")
+    downbeats = [round(x * 0.5, 3) for x in range(1, 40)]
+    shot = sl.build_shotlist(words, images, downbeats, duration=8.0)
+    assert shot is not None
+    _s, _i, _c, shots = shot
+    names = {m["image_name"] for m in shots}
+    print("    shown:", names)
+    check("only the sung image (cat.png) is ever shown",
+          names == {"cat.png"}, str(names))
+    check("apple.png / ball.png never appear",
+          "apple.png" not in names and "ball.png" not in names, str(names))
+    check("every emitted shot is anchored (no filler shots)",
+          all(m["anchored"] for m in shots), str([m["anchored"] for m in shots]))
+
+
+def test_hold_intro_first_anchor():
+    print("HOLD: the intro holds the FIRST anchor's image from t=0")
+    images = ["cat.png"]
+    # 'cat' is not sung until 5.0s -> the intro (0..~5s) must hold cat.png.
+    words = [{"word": "cat", "start": 5.0, "end": 5.3}]
+    downbeats = [round(x * 0.5, 3) for x in range(1, 24)]
+    shot = sl.build_shotlist(words, images, downbeats, duration=8.0)
+    assert shot is not None
+    segs, _i, _c, shots = shot
+    check("timeline starts at t=0", abs(segs[0][0]) < 1e-6, str(segs[0]))
+    check("the first shot is the first anchor's image (cat.png)",
+          shots[0]["image_name"] == "cat.png", shots[0]["image_name"])
+    check("the intro shot is anchored (held first word's image)",
+          shots[0]["anchored"], str(shots[0]))
+    # At t=1.0 (well before the word at 5.0s) cat.png is already on screen.
+    at1 = _shot_at(shots, 1.0)
+    check("cat.png on screen at t=1.0 (before its word is sung)",
+          at1 is not None and at1["image_name"] == "cat.png", str(at1))
+
+
+def test_hold_gap_previous_anchor():
+    print("HOLD: a gap between anchors holds the PREVIOUS anchor's image")
+    # cat@1.0, dog@6.0, apple never sung. The 1s..6s gap must hold cat.png, NOT
+    # apple.png (the old cadence filler); dog.png appears only near its own word.
+    images = ["cat.png", "dog.png", "apple.png"]
+    words = [{"word": "cat", "start": 1.0, "end": 1.3},
+             {"word": "dog", "start": 6.0, "end": 6.3}]
+    downbeats = [round(x * 0.5, 3) for x in range(1, 20)]
+    shot = sl.build_shotlist(words, images, downbeats, duration=9.0)
+    assert shot is not None
+    segs, _i, _c, shots = shot
+    names = {m["image_name"] for m in shots}
+    print("    shown:", names, "shots:", [(m["start"], m["end"],
+          m["image_name"]) for m in shots])
+    check("apple.png (unanchored) never appears in the gap", "apple.png" not in names,
+          str(names))
+    mid = _shot_at(shots, 4.0)  # mid-gap
+    check("mid-gap (t=4.0) holds the previous anchor cat.png",
+          mid is not None and mid["image_name"] == "cat.png", str(mid))
+    check("dog.png anchors (its own word)", "dog.png" in names, str(names))
+    # The cat shot ends exactly where the dog shot starts (contiguous hold).
+    cat_shot = next(m for m in shots if m["image_name"] == "cat.png")
+    dog_shot = next(m for m in shots if m["image_name"] == "dog.png")
+    check("cat's hold ends exactly at dog's start (contiguous)",
+          abs(cat_shot["end"] - dog_shot["start"]) < 1e-6,
+          "%s / %s" % (cat_shot["end"], dog_shot["start"]))
+    for a, b in zip(segs, segs[1:]):
+        assert abs(a[1] - b[0]) < 1e-6, "shots must tile contiguously"
+    check("shots tile contiguously", True)
+
+
+def test_hold_zero_anchor_fallback():
+    print("HOLD: zero anchors -> None (cadence fallback) + quality flag")
+    images = ["cat.png", "dog.png"]
+    # No keyword ever sung -> build_shotlist returns None so the caller cycles
+    # over the whole pool (rule 6 — never a black video).
+    words = words_from("la la la doo doo")
+    check("zero keyword matches -> build_shotlist None",
+          sl.build_shotlist(words, images, [0.5, 1.0, 1.5], 2.0) is None)
+    # The engine's cycle path then builds all-unanchored shots; the shot report
+    # must carry the 'zero anchors — cadence fallback' quality flag.
+    cyc_shots = [
+        {"start": 0.0, "end": 2.0, "image": 0, "image_name": "cat.png",
+         "anchored": False, "trigger_word": None, "trigger_phrase": None,
+         "match_score": None},
+        {"start": 2.0, "end": 4.0, "image": 1, "image_name": "dog.png",
+         "anchored": False, "trigger_word": None, "trigger_phrase": None,
+         "match_score": None},
+    ]
+    sm = sl.build_shot_report(cyc_shots, images, words)["summary"]
+    print("    cadence-fallback summary:", sm["quality_flags"],
+          "held=%s" % sm.get("held_gap_seconds"))
+    check("zero anchored shots reported", sm["anchored_shots"] == 0)
+    check("quality_flags carries the cadence-fallback warning",
+          "zero anchors — cadence fallback" in sm["quality_flags"],
+          str(sm["quality_flags"]))
+    check("cycle-path shots contribute 0 held seconds",
+          sm["held_gap_seconds"] == 0.0, str(sm["held_gap_seconds"]))
+
+
+def test_hold_held_gap_seconds_present():
+    print("HOLD: held_gap_seconds is present + measures held art")
+    images = ["cat.png", "dog.png", "apple.png"]
+    words = [{"word": "cat", "start": 1.0, "end": 1.3},
+             {"word": "dog", "start": 6.0, "end": 6.3}]
+    downbeats = [round(x * 0.5, 3) for x in range(1, 20)]
+    shot = sl.build_shotlist(words, images, downbeats, duration=9.0)
+    assert shot is not None
+    _s, _i, _c, shots = shot
+    # Every anchored shot carries its core window for the held calc.
+    check("shots carry core_start/core_end",
+          all("core_start" in m and "core_end" in m for m in shots),
+          str(shots[0].keys()))
+    sm = sl.build_shot_report(shots, images, words)["summary"]
+    print("    held_gap_seconds=%s" % sm["held_gap_seconds"])
+    check("held_gap_seconds present in summary", "held_gap_seconds" in sm)
+    # Big intro (0..~1s) + gap (~1..6s) + tail held -> comfortably positive.
+    check("held_gap_seconds > 0 (intro + gap + tail are held)",
+          sm["held_gap_seconds"] > 0.0, str(sm["held_gap_seconds"]))
+    # Sanity: held can never exceed the video duration.
+    check("held_gap_seconds <= duration", sm["held_gap_seconds"] <= 9.0 + 1e-6,
+          str(sm["held_gap_seconds"]))
+
+
 def test_fallback():
     print("no-lyrics / zero-match fallback (build_shotlist returns None)")
     images = ["cat.png", "mat-on-cat.png"]
@@ -451,7 +719,13 @@ def main():
               test_coloring_penalty, test_intervening_word_anchors,
               test_adjacent_phrase_no_self_reanchor, test_fix2_short_tokens,
               test_fix6_verse_isolation, test_fix4_ending,
-              test_warn1_held_note_phrase, test_warn2_stopwords, test_fallback):
+              test_warn1_held_note_phrase, test_warn2_stopwords,
+              test_approx_run_length_boundary, test_approx_span_boundary,
+              test_approx_anchor_exclusion, test_approx_report_fields,
+              test_hold_unanchored_never_shown, test_hold_intro_first_anchor,
+              test_hold_gap_previous_anchor, test_hold_zero_anchor_fallback,
+              test_hold_held_gap_seconds_present,
+              test_fallback):
         t()
         print()
     print("=" * 60)

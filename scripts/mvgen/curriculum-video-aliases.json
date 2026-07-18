@@ -1,13 +1,18 @@
 {
   "_comment": "curriculum-batch.py (FIX 3b) image-name ALIAS map for the mvgen video pipeline ONLY. Keys are week numbers (zero-padded '04' or plain '4' both work). Each value maps an ORIGINAL curriculum image filename to the sung-word VIDEO filename the video should use, so the shotlist matcher can anchor images to the words actually sung WITHOUT renaming the curriculum source files (packs/specs depend on the originals). The aliased name is copied into the project and is what the lyric filter tokenizes. An alias that would collide with another project filename is skipped with a loud warning. Add per-week entries as needed.",
+  "03": {
+    "_comment": "W03 'On the Mat' word song sings the phonetic respelling 'Sejeena' ('Sejeena is on the mat! (Sejeena!)') but the book/asset filename is 'segina-on-mat.png' (print spelling) — the matcher's first-token rule requires an exact string match, so 'segina' can never anchor on sung 'sejeena' (same root cause as the W26/W58 graduation-cast fix). Alias so the copied file's first token literally spells 'sejeena'.",
+    "segina-on-mat.png": "sejeena-on-mat.png"
+  },
   "04": {
-    "_comment": "W04 'The Cat Is on the Mat' \u2014 the levitating/landing cat is sung with the prepositions up/down; alias so up-cat-* and down-cat-* START their filename-token match on the sung 'Up!'/'down,' word itself (not 'cat', which loses every up/down window to the far more common cat-on-mat / cat-down-landing-vs-cat.png ties \u2014 sample-render certification Jul13/14 found cat-up-levitating.png stranded as an unanchored filler because its FIRST token 'cat' always tied/lost to cat-on-mat.png at the only reachable window).",
+    "_comment": "W04 'The Cat Is on the Mat' — the levitating/landing cat is sung with the prepositions up/down; alias so up-cat-* and down-cat-* START their filename-token match on the sung 'Up!'/'down,' word itself (not 'cat', which loses every up/down window to the far more common cat-on-mat / cat-down-landing-vs-cat.png ties — sample-render certification Jul13/14 found cat-up-levitating.png stranded as an unanchored filler because its FIRST token 'cat' always tied/lost to cat-on-mat.png at the only reachable window).",
     "cat-levitating.png": "up-cat-levitating.png",
     "cat-landing.png": "down-cat-landing.png",
     "potato-beside-cat.png": "mat-potato-beside-cat.png"
   },
   "26": {
-    "zipper.png": "zip-zipper.png"
+    "zipper.png": "zip-zipper.png",
+    "graduation-cast.png": "where-is-sejeena.png"
   },
   "28": {
     "_comment": "W28 'Chick Can Chat' — chick-much-chat.png's first token 'chick' always ties/loses to chick-chat.png at every reachable 'chick' window ('much' is several words away — sample-render certification Jul13/14 flagged it unused_multi_token_phrase_present even though 'much'+'chat' ARE sung consecutively ('so much chat!' @15.9-16.3s, 'chat much!' @20.3-21.08s). Alias to start the match on 'much' itself.",
@@ -28,5 +33,62 @@
   "49": {
     "bird-under-shirt.png": "line-bird-under-shirt.png",
     "segina-help.png": "bird-segina-help.png"
-  }
+  },
+  "05": {
+    "sam-cat-mat.png": "cat-sat-on-mat.png"
+  },
+  "08": {
+    "cat-in-tin.png": "sat-in-a-tin.png",
+    "cat-in-cap.png": "sat-in-a-cap.png",
+    "cat-proud-mat.png": "sat-on-the-mat.png",
+    "potato-cat-sit.png": "potato-sat-on-mat.png"
+  },
+  "10": {
+    "all-and-mat-v2.png": "all-on-the-mat.png"
+  },
+  "11": {
+    "on-celebrate.png": "on-can-read.png"
+  },
+  "12": {
+    "dog-digging-deep.png": "what-in-the-pit.png"
+  },
+  "14": {
+    "hens-in-pen.png": "in-the-pen.png",
+    "hens-on-man.png": "on-the-man.png",
+    "hen-on-cat.png": "on-the-cat.png"
+  },
+  "15": {
+    "potato-and-rat-in-bag.png": "in-the-bag-potato.png"
+  },
+  "22": {
+    "vacuum.png": "motor-on.png"
+  },
+  "30": {
+    "chick-eyes-bell.png": "miss-off.png"
+  },
+  "36": {
+    "chick-went-up.png": "went-up.png"
+  },
+  "38": {
+    "snake-going-in.png": "in-went-the-snake.png"
+  },
+  "52": {
+    "owl-town.png": "down-in-the-town.png",
+    "owl-sees-cow.png": "what-in-the-town.png",
+    "owl-cow-shout.png": "out-and-about.png",
+    "owl-proud.png": "up-can-fly.png"
+  },
+  "55": {
+    "fly-flies.png": "up-high.png"
+  },
+  "56": {
+    "lamb-climbs-free.png": "up-on-the-rocks.png",
+    "wren-cant-climb.png": "up-up-top.png"
+  },
+  "58": {
+    "potato-reveal.png": "last-leaf-on-the-tree.png",
+    "tree-question.png": "what-is-on-the-tree.png",
+    "graduation-cast-full.png": "where-is-sejeena.png"
+  },
+  "_comment_jul15": "Jul 15 alias-mapping pass vs VIDEO_COVERAGE_AUDIT_JUL14.md critical gaps. 24 new entries, all first-token = sung anchor word, verified zero phrase-coverage regressions by scripts/curriculum/verify-alias-pass-jul15.py (RESULT: PASS; 34 gap lines newly phrase-covered). Gaps intentionally NOT aliased (no suitable existing image or already renderer-covered): W02 wake-up, W04 (certified, aliased earlier), W08 we-are-in, W24 both, W26 motor-lines + cat-on-mat, W28 (certified), W29 flap, W31 nose, W37 tongue, W49 both."
 }
