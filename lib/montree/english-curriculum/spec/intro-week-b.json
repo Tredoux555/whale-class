@@ -1,4 +1,5 @@
 {
+  "imageUrls": {"chair":"https://montree.xyz/api/montree/media/proxy/curriculum-images/intro-b/chair.webp","chair-coloring":"https://montree.xyz/api/montree/media/proxy/curriculum-images/intro-b/chair-coloring.webp","class":"https://montree.xyz/api/montree/media/proxy/curriculum-images/intro-b/class.webp","class-coloring":"https://montree.xyz/api/montree/media/proxy/curriculum-images/intro-b/class-coloring.webp","home":"https://montree.xyz/api/montree/media/proxy/curriculum-images/intro-b/home.webp","home-coloring":"https://montree.xyz/api/montree/media/proxy/curriculum-images/intro-b/home-coloring.webp","mat":"https://montree.xyz/api/montree/media/proxy/curriculum-images/intro-b/mat.webp","mat-coloring":"https://montree.xyz/api/montree/media/proxy/curriculum-images/intro-b/mat-coloring.webp","watch":"https://montree.xyz/api/montree/media/proxy/curriculum-images/intro-b/watch.webp","watch-coloring":"https://montree.xyz/api/montree/media/proxy/curriculum-images/intro-b/watch-coloring.webp"},
   "week": 102,
   "level": 1,
   "sound": "courtesy",

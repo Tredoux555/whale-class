@@ -11,7 +11,8 @@ import {
   type AssetMap, type MaterialType,
 } from '@/lib/montree/english-curriculum/render';
 import {
-  getWeek, WEEK_META, INTRO_WEEK_META, isIntroWeek, weekToLessonMap, type WeekSpec,
+  getWeek, WEEK_META, INTRO_WEEK_META, isIntroWeek, weekToLessonMap,
+  getDarkPhonicsForWeek, type WeekSpec,
 } from '@/lib/montree/english-curriculum/spec';
 
 interface DroppedFile { name: string; url: string; }
@@ -277,6 +278,28 @@ export default function CurriculumStudioPage() {
   // Class Rules poster, colouring, song QR). Drives the grid, previews + full pack.
   const materialList = useMemo(() => (spec ? materialTypesForSpec(spec) : MATERIAL_TYPES), [spec]);
 
+  // The Dark Phonics film for this week (if the week maps to a lesson with a
+  // published video). Plays FIRST in the songs area, before the curriculum songs.
+  const darkPhonics = useMemo(() => getDarkPhonicsForWeek(week), [week]);
+
+  // The Dark Phonics flashcard payload for THIS week (if the week maps to a
+  // lesson). The front image loads from the public `dark-phonics` bucket via the
+  // media proxy — the SAME proxy pattern as the baked videoUrls
+  // (pictures/lesson-NN.png). Only the dark_phonics_card builder reads this, and
+  // preview/print feed it in below; it never enters the full-pack print.
+  const darkPhonicsCardOpts = useMemo(
+    () =>
+      darkPhonics
+        ? {
+            lesson: darkPhonics.lesson,
+            sound: darkPhonics.sound,
+            title: darkPhonics.title,
+            imageUrl: `https://montree.xyz/api/montree/media/proxy/pictures/${darkPhonics.image}?bucket=dark-phonics`,
+          }
+        : null,
+    [darkPhonics],
+  );
+
   const meta = WEEK_META.find((m) => m.week === week);
 
   // Spine summary source. Prefer the loaded spec (every field is present for all
@@ -326,21 +349,27 @@ export default function CurriculumStudioPage() {
 
   const preview = useCallback((type: MaterialType) => {
     if (!spec) return;
-    const { html, warnings: w } = buildMaterial(type, spec, assets, { autoPrint: false });
+    const opts = type === 'dark_phonics_card' && darkPhonicsCardOpts
+      ? { autoPrint: false, darkPhonics: darkPhonicsCardOpts }
+      : { autoPrint: false };
+    const { html, warnings: w } = buildMaterial(type, spec, assets, opts);
     setPreviewHtml(html);
     setPreviewType(type);
     setWarnings(w);
-  }, [spec, assets]);
+  }, [spec, assets, darkPhonicsCardOpts]);
 
   const printMaterial = useCallback((type: MaterialType) => {
     if (!spec) return;
-    const { html, warnings: w } = buildMaterial(type, spec, assets, { autoPrint: true });
+    const opts = type === 'dark_phonics_card' && darkPhonicsCardOpts
+      ? { autoPrint: true, darkPhonics: darkPhonicsCardOpts }
+      : { autoPrint: true };
+    const { html, warnings: w } = buildMaterial(type, spec, assets, opts);
     setWarnings(w); // surface any warnings in the preview area — never block printing
     const win = window.open('', '_blank');
     if (!win) { alert('Please allow pop-ups to print.'); return; }
     win.document.write(html);
     win.document.close();
-  }, [spec, assets]);
+  }, [spec, assets, darkPhonicsCardOpts]);
 
   // Combined full pack — ONE document, ONE synchronous window.open (so pop-up
   // blockers don't kill it). Each material's own CSS is scoped under a unique
@@ -566,6 +595,23 @@ export default function CurriculumStudioPage() {
                     </div>
                   </div>
                 ))}
+                {/* Dark Phonics single flashcard — only on weeks that map to a Dark
+                    Phonics lesson. Rendered here (not in materialList) so it carries
+                    its own darkPhonics payload and never enters the full-pack print,
+                    which can't supply that payload. */}
+                {darkPhonicsCardOpts && (
+                  <div key="dark_phonics_card" className="rounded-xl border p-3 flex items-center gap-3"
+                    style={{ borderColor: previewType === 'dark_phonics_card' ? 'rgba(52,211,153,0.5)' : 'rgba(122,162,255,0.25)', background: 'rgba(122,162,255,0.05)' }}>
+                    <span className="text-2xl">🎬</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm text-white/85 font-medium truncate">Dark Phonics Flashcard</div>
+                      <div className="flex gap-2 mt-1">
+                        <button onClick={() => preview('dark_phonics_card')} className="text-xs px-2 py-1 rounded" style={{ background: 'rgba(255,255,255,0.08)', color: '#cfe8dc' }}>Preview</button>
+                        <button onClick={() => printMaterial('dark_phonics_card')} className="text-xs px-2 py-1 rounded" style={{ background: 'rgba(52,211,153,0.14)', color: '#a7f3d0' }}>Print</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Warnings — surfaced from the render engine (missing images, etc.).
@@ -586,7 +632,7 @@ export default function CurriculumStudioPage() {
               {previewType && (
                 <div className="mt-4 rounded-xl border overflow-hidden" style={{ borderColor: 'rgba(255,255,255,0.12)' }}>
                   <div className="flex items-center justify-between px-3 py-2" style={{ background: 'rgba(0,0,0,0.3)' }}>
-                    <span className="text-sm text-white/70">Preview · {materialList.find((x) => x.type === previewType)?.label}</span>
+                    <span className="text-sm text-white/70">Preview · {previewType === 'dark_phonics_card' ? 'Dark Phonics Flashcard' : materialList.find((x) => x.type === previewType)?.label}</span>
                     <div className="flex gap-2">
                       <button onClick={() => printMaterial(previewType)} className="text-xs px-2 py-1 rounded" style={{ background: 'rgba(52,211,153,0.16)', color: '#a7f3d0' }}>Print this</button>
                       <button onClick={() => { setPreviewType(null); setWarnings([]); }} className="text-xs px-2 py-1 rounded text-white/50 hover:text-white/80">Close</button>
@@ -599,11 +645,20 @@ export default function CurriculumStudioPage() {
           </div>
 
           {/* Songs — full width, below Materials (teacher's core action comes first) */}
-          {spec.songs?.length > 0 && (
+          {((spec.songs?.length ?? 0) > 0 || darkPhonics?.videoUrl) && (
             <section className="mt-5 rounded-xl border p-4" style={{ borderColor: 'rgba(167,139,250,0.2)', background: 'rgba(124,58,237,0.05)' }}>
               <h2 className="font-semibold text-white/85 mb-2">🎵 Songs</h2>
+              {/* Dark Phonics film — plays FIRST, before the curriculum songs. */}
+              {darkPhonics?.videoUrl && (
+                <div className="rounded-lg p-3 mb-3" style={{ background: 'rgba(0,0,0,0.25)' }}>
+                  <span className="text-[10px] uppercase tracking-wide" style={{ color: '#7aa2ff' }}>🎬 Dark Phonics</span>
+                  <div className="text-white/85 text-sm font-semibold mb-2">Dark Phonics — {darkPhonics.title}</div>
+                  <video controls preload="none" src={darkPhonics.videoUrl}
+                    style={{ width: '100%', borderRadius: 6, background: '#000' }} />
+                </div>
+              )}
               <div className="grid md:grid-cols-2 gap-3">
-                {spec.songs.map((s, i) => {
+                {spec.songs?.map((s, i) => {
                   const lines = s.lyrics.split('\n');
                   const lyricsExpanded = expandedLyrics.has(i);
                   const shownLyrics = lyricsExpanded ? s.lyrics : lines.slice(0, 8).join('\n');

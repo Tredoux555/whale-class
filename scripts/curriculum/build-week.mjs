@@ -38,6 +38,10 @@ const ALL_MATERIALS = [
   'coloring', 'dictionary_journal', 'book', 'vowel_wall', 'qr_cards',
   // Grace & Courtesy Intro Weeks only (default set derives per-spec below):
   'class_rules_poster',
+  // Dark Phonics single card — pack-only; appended by default on mapped phonics
+  // weeks (never surfaced by materialTypesForSpec). Whitelisted so --materials
+  // dark_phonics_card works and it isn't stripped as "unknown".
+  'dark_phonics_card',
 ];
 const IMAGE_EXTS = ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg'];
 
@@ -192,6 +196,7 @@ async function main() {
   const assetsDir = arg('assets', path.join(defBase, defAssetLeaf));
   const outDir = arg('out', path.join(defBase, 'pack'));
   const strict = flag('strict');
+  const darkPhonicsDir = arg('dark-phonics-dir', path.join(home, 'Desktop', 'English Curriculum 2026', 'Dark Phonics'));
 
   const explicitMaterials = (arg('materials', '') || '')
     .split(',').map((s) => s.trim()).filter(Boolean);
@@ -199,16 +204,42 @@ async function main() {
   // Bundle + import the shared engine.
   const enginePath = await bundleEngine();
   const engine = await import(pathToFileURL(enginePath).href);
-  const { buildMaterial, buildAssetMap, assetGapReport, materialTypesForSpec } = engine;
+  const { buildMaterial, buildAssetMap, assetGapReport, materialTypesForSpec, getDarkPhonicsForWeek } = engine;
 
   // Default material set = whatever applies to THIS spec (phonics → the eleven;
   // Grace & Courtesy → rule flashcards + poster + colouring + song QR).
   const defaultTypes = materialTypesForSpec(spec).map((m) => m.type);
   const badMat = explicitMaterials.filter((m) => !ALL_MATERIALS.includes(m));
   if (badMat.length) console.warn(`⚠ ignoring unknown material(s): ${badMat.join(', ')}`);
-  const toBuild = explicitMaterials.length
+  let toBuild = explicitMaterials.length
     ? explicitMaterials.filter((m) => ALL_MATERIALS.includes(m))
     : defaultTypes;
+
+  // ── Dark Phonics single card (pack-only) ─────────────────────────────────
+  // Resolve the week → Dark Phonics lesson (weekToLessonMap + dark-phonics.json,
+  // via the shared getDarkPhonicsForWeek — never a hardcoded parallel list) and
+  // its --dark-phonics-dir image. Applicable + image present → add the card to a
+  // DEFAULT pack (or keep it when named explicitly). No mapping / no image → the
+  // material is dropped SILENTLY (not a warning, not a gap entry) per the spec.
+  let darkPhonicsOpts = null;
+  if (!introArg && typeof getDarkPhonicsForWeek === 'function') {
+    const dp = getDarkPhonicsForWeek(spec.week);
+    if (dp) {
+      const imgPath = path.join(darkPhonicsDir, dp.image);
+      if (fs.existsSync(imgPath)) {
+        darkPhonicsOpts = { lesson: dp.lesson, sound: dp.sound, title: dp.title, imageUrl: pathToFileURL(imgPath).href };
+        console.log(`🎬 Dark Phonics: lesson ${dp.lesson} /${dp.sound}/ "${dp.title}" — card + video for this week.`);
+      }
+    }
+  }
+  if (darkPhonicsOpts) {
+    if (!explicitMaterials.length && !toBuild.includes('dark_phonics_card')) {
+      toBuild = [...toBuild, 'dark_phonics_card'];
+    }
+  } else {
+    // Silent skip: no mapped lesson or the image is absent.
+    toBuild = toBuild.filter((m) => m !== 'dark_phonics_card');
+  }
 
   // Scan assets → AssetMap (file:// URLs). Prior-week folders are a FALLBACK for
   // reused images; current-week files are listed LAST so they win in buildAssetMap.
@@ -253,7 +284,9 @@ async function main() {
   let hadError = false;
   for (const type of toBuild) {
     try {
-      const { html, warnings } = buildMaterial(type, spec, assets, { fontBaseUrl });
+      const buildOpts = { fontBaseUrl };
+      if (type === 'dark_phonics_card' && darkPhonicsOpts) buildOpts.darkPhonics = darkPhonicsOpts;
+      const { html, warnings } = buildMaterial(type, spec, assets, buildOpts);
       const htmlPath = path.join(outDir, `${type}.html`);
       fs.writeFileSync(htmlPath, html);
       let line = `  ✓ ${type}.html`;

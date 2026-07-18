@@ -131,10 +131,14 @@ export function computeStripLayout(cardSizeCm: number = DEFAULT_STRIP_SIZE_CM): 
 /** One word+picture pair's visual row height (picture size + a hair of padding). */
 export const MATCHING_ROW_CONTENT_CM = 3.2;
 export const MATCHING_PIC_SIZE_CM = 3.0;
-/** Word column width — fits the longest curriculum word without wrapping (font shrinks to fit if not). */
-export const MATCHING_WORD_COL_CM = 7.0;
-/** Picture column width — dot + internal gap + the picture itself. */
-export const MATCHING_PIC_COL_CM = 4.2;
+/** The connector dot diameter (matches the .dot CSS in matching.ts). */
+export const MATCHING_DOT_CM = 0.45;
+/** Dot-to-dot line-drawing gap (CENTRE-to-centre). Kept in the 6–7cm comfort band
+ *  Tredoux asked for. The word half and picture half are EQUAL and the row is
+ *  centred, so the two dots sit symmetric about the page centre — the pair reads
+ *  as one centred unit instead of the word floating left with the picture pinned
+ *  to the far right edge (the old asymmetric 7cm/4.2cm columns did that). */
+export const MATCHING_DOT_GAP_CM = 6.0;
 /** Fixed header block (title/name row + instruction row) — a KNOWN constant so the
  *  row-pagination math never has to guess at font-metric text-box heights. */
 export const MATCHING_HEADER_CM = 3.4;
@@ -146,20 +150,22 @@ export const MATCHING_MAX_ROWS_PER_PAGE = 6;
 export interface MatchingLayout {
   rowsPerPage: number;
   rowContentCm: number;
-  wordColCm: number;
-  picColCm: number;
+  /** Width of the word half AND the picture half (EQUAL → the dots come out
+   *  symmetric about the page centre when the 3-col grid is centred). */
+  halfColCm: number;
   picSizeCm: number;
-  /** The real, guaranteed empty gutter between the word column and the picture column
-   *  (the child draws their line across it). Never collapses to ~0 like flex:1 did. */
+  /** The real, guaranteed empty gutter column between the two dots (the child
+   *  draws their line across it). This is the gap between the dot INNER edges;
+   *  the CSS dots sit on its two boundaries so centre-to-centre ≈ this + dot. */
   colGapCm: number;
   /** Vertical space available for the row grid, below the fixed header + sheet padding. */
   usableHeightCm: number;
 }
 
-/** Port of the house "compute-then-render" pattern (see computeStripLayout). Two
- *  fixed-width grid columns + an explicit empty gutter column between them — this
- *  is what makes the drawing gap real instead of two flex:1 columns collapsing
- *  their content toward the shared boundary. */
+/** Port of the house "compute-then-render" pattern (see computeStripLayout). Three
+ *  centred grid columns — EQUAL word/picture halves either side of one explicit
+ *  gutter column — so the drawing gap is real (never collapses like flex:1) AND
+ *  the word+dot / dot+picture pair is centred as a single unit on the page. */
 export function computeMatchingLayout(): MatchingLayout {
   const usableWidthCm = A4_WIDTH_CM - MATCHING_SHEET_PAD_H_CM * 2;
   const usableHeightCm = A4_HEIGHT_CM - MATCHING_SHEET_PAD_V_CM * 2 - MATCHING_HEADER_CM;
@@ -167,12 +173,16 @@ export function computeMatchingLayout(): MatchingLayout {
     MATCHING_MAX_ROWS_PER_PAGE,
     Math.max(1, Math.floor(usableHeightCm / MATCHING_ROW_CONTENT_CM)),
   );
-  const colGapCm = Math.min(6.0, Math.max(3.0, usableWidthCm - MATCHING_WORD_COL_CM - MATCHING_PIC_COL_CM));
+  // The dots sit on the two inner boundaries of the gutter, so the gutter COLUMN
+  // is the centre-to-centre distance minus one dot diameter.
+  const colGapCm = Math.max(3.0, MATCHING_DOT_GAP_CM - MATCHING_DOT_CM);
+  // Equal halves either side of the gutter → the whole 3-col grid fills the usable
+  // width and, being centred, lands the two dots symmetric about the page centre.
+  const halfColCm = (usableWidthCm - colGapCm) / 2;
   return {
     rowsPerPage,
     rowContentCm: MATCHING_ROW_CONTENT_CM,
-    wordColCm: MATCHING_WORD_COL_CM,
-    picColCm: MATCHING_PIC_COL_CM,
+    halfColCm,
     picSizeCm: MATCHING_PIC_SIZE_CM,
     colGapCm,
     usableHeightCm,

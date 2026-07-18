@@ -1,4 +1,5 @@
 {
+  "imageUrls": {"feet":"https://montree.xyz/api/montree/media/proxy/curriculum-images/intro-a/feet.webp","feet-coloring":"https://montree.xyz/api/montree/media/proxy/curriculum-images/intro-a/feet-coloring.webp","hands":"https://montree.xyz/api/montree/media/proxy/curriculum-images/intro-a/hands.webp","hands-coloring":"https://montree.xyz/api/montree/media/proxy/curriculum-images/intro-a/hands-coloring.webp","hello":"https://montree.xyz/api/montree/media/proxy/curriculum-images/intro-a/hello.webp","hello-coloring":"https://montree.xyz/api/montree/media/proxy/curriculum-images/intro-a/hello-coloring.webp","voice":"https://montree.xyz/api/montree/media/proxy/curriculum-images/intro-a/voice.webp","voice-coloring":"https://montree.xyz/api/montree/media/proxy/curriculum-images/intro-a/voice-coloring.webp","wash":"https://montree.xyz/api/montree/media/proxy/curriculum-images/intro-a/wash.webp","wash-coloring":"https://montree.xyz/api/montree/media/proxy/curriculum-images/intro-a/wash-coloring.webp"},
   "week": 101,
   "level": 1,
   "sound": "grace",

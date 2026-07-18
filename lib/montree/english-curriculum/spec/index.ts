@@ -13,6 +13,7 @@
  */
 
 import type { WeekSpec, SkeletonWeek } from './types';
+import darkPhonicsData from './dark-phonics.json';
 
 // ── Authored-week loaders (extend as weeks are written) ─────────────────
 // JSON imports widen literal types (level → number), so the loaders are typed
@@ -216,6 +217,56 @@ export const weekToLessonMap: Record<number, number[]> = {
   49: [73, 74, 75], 50: [], 51: [95, 96], 52: [91, 92], 53: [93, 94],
   54: [97, 98, 99], 55: [62, 63, 64], 56: [104, 105, 106], 57: [65, 66, 67], 58: [109],
 };
+
+// ── Dark Phonics — one double-sided card + one video per mapped week ──────
+// The Dark Phonics deck (Tredoux's dark-trap SATPIN alphabet films, lessons
+// 05–31 in lesson-map.ts) rides on top of the phonics packs: each week that
+// maps to a Dark Phonics lesson gains ONE printable flashcard (picture front /
+// BIG letter + catchphrase back) and, in the Studio, its music video plays
+// FIRST in the songs area. Keyed by lesson number; a week resolves via
+// weekToLessonMap (the FIRST mapped lesson present in dark-phonics.json wins —
+// e.g. W21 → [16,17] takes 16 "k", leaving 17 "ck" for W30 → [41,17]). A week
+// with no mapped Dark Phonics lesson silently gets no card and no video. This
+// data is NOT a WeekSpec and the decodability validator never sees it.
+export interface DarkPhonicsCard {
+  /** Zero-padded lesson-map lesson number, e.g. "05", "17", "31". */
+  lesson: string;
+  /** The sound/grapheme the film teaches, e.g. "s", "ck", "qu". */
+  sound: string;
+  /** The catchphrase (film title), e.g. "Quick Quacky Duck". */
+  title: string;
+  /** The card-front image filename, resolved under the --dark-phonics-dir. */
+  image: string;
+  /** Verified-at-build-time montree.xyz proxy URL, or null if no film exists. */
+  videoUrl: string | null;
+}
+
+const DARK_PHONICS_LESSONS = (
+  darkPhonicsData as {
+    lessons: Record<string, { sound: string; title: string; image: string; videoUrl: string | null }>;
+  }
+).lessons;
+
+/** The Dark Phonics card/video for a week, or null if the week maps to none.
+ *  Pure (weekToLessonMap + dark-phonics.json only) — safe in Node + browser. */
+export function getDarkPhonicsForWeek(week: number): DarkPhonicsCard | null {
+  const lessons = weekToLessonMap[week];
+  if (!lessons || !lessons.length) return null;
+  for (const n of lessons) {
+    const key = String(n).padStart(2, '0');
+    const entry = DARK_PHONICS_LESSONS[key];
+    if (entry) {
+      return {
+        lesson: key,
+        sound: entry.sound,
+        title: entry.title,
+        image: entry.image,
+        videoUrl: entry.videoUrl ?? null,
+      };
+    }
+  }
+  return null;
+}
 
 // ── Level 2 / 3 skeletons (design only) ─────────────────────────────────
 export async function getLevel2Skeleton(): Promise<SkeletonWeek[]> {

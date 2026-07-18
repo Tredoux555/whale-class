@@ -57,6 +57,18 @@ function argWeek() {
   if (i >= 0 && process.argv[i + 1]) { const n = parseInt(process.argv[i + 1], 10); if (n >= 1 && n <= 58) return n; }
   return null;
 }
+// Grace & Courtesy Intro Weeks live OUTSIDE the numbered 1–58 spine: source in
+// `Intro Week A|B/images/`, spec in intro-week-a|b.json, uploaded under
+// curriculum-images/intro-a|intro-b/. `--intro a|b` publishes one; `--intro all`
+// (or bare, alongside no --week) publishes both.
+function argIntro() {
+  const i = process.argv.indexOf('--intro');
+  if (i < 0) return null;
+  const k = (process.argv[i + 1] || 'all').trim().toLowerCase();
+  if (k === 'a' || k === 'b') return [k];
+  if (k === 'all') return ['a', 'b'];
+  return null;
+}
 
 // ── Load .env.local manually (split on FIRST '=' only) ──
 function loadEnv() {
@@ -103,22 +115,25 @@ function stemFor(filename) {
   return stem || null;
 }
 
-async function processWeek(week, report) {
-  const specPath = path.join(SPEC_DIR, `week-${pad(week)}.json`);
-  if (!fs.existsSync(specPath)) { report.noSpec.push(week); return; }
-
-  const imagesDir = path.join(IMAGES_ROOT, `Week ${pad(week)}`, 'images');
-  if (!fs.existsSync(imagesDir)) { report.noImages.push(week); return; }
+/**
+ * Publish one folder of images → `curriculum-images/<destSub>/` and stamp the
+ * given spec's imageUrls. Shared by numbered weeks (`Week NN/images` → w<NN>) and
+ * the Grace & Courtesy Intro Weeks (`Intro Week A|B/images` → intro-a|intro-b).
+ * `label` is a human tag ("W01", "Intro A") for logs + the report lists.
+ */
+async function publishFolder({ specPath, imagesDir, destSub, label, specName }, report) {
+  if (!fs.existsSync(specPath)) { report.noSpec.push(label); return; }
+  if (!fs.existsSync(imagesDir)) { report.noImages.push(label); return; }
 
   const srcFiles = fs.readdirSync(imagesDir).filter((f) => SRC_EXTS.includes(path.extname(f).toLowerCase()));
-  if (srcFiles.length === 0) { report.noImages.push(week); return; }
+  if (srcFiles.length === 0) { report.noImages.push(label); return; }
 
   const imageUrls = {};
   const stemsSeen = new Set();
   for (const f of srcFiles) {
     const stem = stemFor(f);
     if (!stem) continue;
-    if (stemsSeen.has(stem)) console.log(`  ⚠ W${pad(week)}: duplicate stem "${stem}" (from ${f}) — overwriting`);
+    if (stemsSeen.has(stem)) console.log(`  ⚠ ${label}: duplicate stem "${stem}" (from ${f}) — overwriting`);
     stemsSeen.add(stem);
 
     const srcPath = path.join(imagesDir, f);
@@ -129,18 +144,18 @@ async function processWeek(week, report) {
         .webp({ quality: WEBP_QUALITY })
         .toBuffer();
     } catch (e) {
-      console.error(`  ❌ W${pad(week)} ${f}: encode failed — ${e.message}`);
+      console.error(`  ❌ ${label} ${f}: encode failed — ${e.message}`);
       report.failed++;
       continue;
     }
 
-    const dest = `${PREFIX}/w${pad(week)}/${stem}.webp`;
+    const dest = `${PREFIX}/${destSub}/${stem}.webp`;
     const url = `${BASE}/${dest}`;
     imageUrls[stem] = url;
     report.bytes += webp.length;
 
     if (DRY_RUN) {
-      console.log(`  ○ W${pad(week)} ${f}  →  ${dest}  (${(webp.length / 1024).toFixed(0)} KB)`);
+      console.log(`  ○ ${label} ${f}  →  ${dest}  (${(webp.length / 1024).toFixed(0)} KB)`);
       report.uploaded++;
       continue;
     }
@@ -150,13 +165,13 @@ async function processWeek(week, report) {
       // one retry for flaky uploads
       const retry = await supabase.storage.from(BUCKET).upload(dest, webp, { contentType: 'image/webp', upsert: true });
       if (retry.error) {
-        console.error(`  ❌ W${pad(week)} ${f}: ${retry.error.message}`);
+        console.error(`  ❌ ${label} ${f}: ${retry.error.message}`);
         report.failed++;
         delete imageUrls[stem];
         continue;
       }
     }
-    console.log(`  ✅ W${pad(week)} ${f}  →  ${dest}  (${(webp.length / 1024).toFixed(0)} KB)`);
+    console.log(`  ✅ ${label} ${f}  →  ${dest}  (${(webp.length / 1024).toFixed(0)} KB)`);
     report.uploaded++;
   }
 
@@ -177,26 +192,55 @@ async function processWeek(week, report) {
 
   if (out !== orig) {
     report.specsChanged++;
-    if (DRY_RUN) console.log(`  ○ would patch week-${pad(week)}.json (${stemKeys.length} imageUrls)`);
-    else { fs.writeFileSync(specPath, out); console.log(`  📝 patched week-${pad(week)}.json (${stemKeys.length} imageUrls)`); }
+    if (DRY_RUN) console.log(`  ○ would patch ${specName} (${stemKeys.length} imageUrls)`);
+    else { fs.writeFileSync(specPath, out); console.log(`  📝 patched ${specName} (${stemKeys.length} imageUrls)`); }
   }
 }
 
+async function processWeek(week, report) {
+  return publishFolder({
+    specPath: path.join(SPEC_DIR, `week-${pad(week)}.json`),
+    imagesDir: path.join(IMAGES_ROOT, `Week ${pad(week)}`, 'images'),
+    destSub: `w${pad(week)}`,
+    label: `W${pad(week)}`,
+    specName: `week-${pad(week)}.json`,
+  }, report);
+}
+
+async function processIntro(key, report) {
+  const K = key.toUpperCase();
+  return publishFolder({
+    specPath: path.join(SPEC_DIR, `intro-week-${key}.json`),
+    imagesDir: path.join(IMAGES_ROOT, `Intro Week ${K}`, 'images'),
+    destSub: `intro-${key}`,
+    label: `Intro ${K}`,
+    specName: `intro-week-${key}.json`,
+  }, report);
+}
+
 async function main() {
+  const intro = argIntro();
   const only = argWeek();
-  console.log(`=== Publish curriculum images → ${BUCKET}/${PREFIX}/ ${DRY_RUN ? '(DRY RUN) ' : ''}${only ? `[week ${only} only] ` : '[all 58 weeks] '}===\n`);
+  const scopeLabel = intro
+    ? `[intro ${intro.join(' + ')}] `
+    : only ? `[week ${only} only] ` : '[all 58 weeks] ';
+  console.log(`=== Publish curriculum images → ${BUCKET}/${PREFIX}/ ${DRY_RUN ? '(DRY RUN) ' : ''}${scopeLabel}===\n`);
 
   const report = { uploaded: 0, failed: 0, bytes: 0, specsChanged: 0, noSpec: [], noImages: [] };
-  const weeks = only ? [only] : Array.from({ length: 58 }, (_, i) => i + 1);
-  for (const w of weeks) await processWeek(w, report);
+  if (intro) {
+    for (const k of intro) await processIntro(k, report);
+  } else {
+    const weeks = only ? [only] : Array.from({ length: 58 }, (_, i) => i + 1);
+    for (const w of weeks) await processWeek(w, report);
+  }
 
   console.log(`\n=== ${DRY_RUN ? 'Dry-run' : 'Publish'} complete ===`);
   console.log(`✅ ${DRY_RUN ? 'Would upload' : 'Uploaded'}: ${report.uploaded}`);
   console.log(`❌ Failed: ${report.failed}`);
   console.log(`📦 Total: ${(report.bytes / 1048576).toFixed(1)} MB`);
   console.log(`📝 Specs ${DRY_RUN ? 'to change' : 'changed'}: ${report.specsChanged}`);
-  if (report.noImages.length) console.log(`⚠️  No images/ dir: weeks ${report.noImages.join(', ')}`);
-  if (report.noSpec.length) console.log(`⚠️  No spec: weeks ${report.noSpec.join(', ')}`);
+  if (report.noImages.length) console.log(`⚠️  No images/ dir: ${report.noImages.join(', ')}`);
+  if (report.noSpec.length) console.log(`⚠️  No spec: ${report.noSpec.join(', ')}`);
 }
 
 main().catch((e) => { console.error('Fatal:', e); process.exit(1); });

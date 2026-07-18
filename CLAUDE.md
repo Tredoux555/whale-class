@@ -2,6 +2,63 @@
 
 **⚠️ STANDING RULE (Tredoux, Jul 10 2026 — PERMANENT): MODEL DELEGATION.** Fable is the DIRECTOR and second brain — it plans, decides, writes the critical copy, and reviews. It does NOT do grunt work. **Sonnet** (preferred over Haiku — more reliable) does all fetching, sweeping, scouting, data-gathering, and auditing via sub-agents. **Opus** builds where appropriate. Never let Fable burn half its context on mechanical work another model can do — spawn agents instead.
 
+## 🃏 SESSION — Jul 18, 2026 (Cowork/Fable directing Opus) — DARK PHONICS LIVE-GAPS CLOSED + SCOPED DEPLOY (matching centered · Studio flashcard card · intro-week + DP-picture publish)
+
+**Follow-on to the Jul-17 dark-phonics build (below). Tredoux reviewed LIVE, flagged 4 gaps → fixed +
+DEPLOYED (scoped commit). Canonical stays `docs/handoffs/PLAN_DARK_PHONICS_CARD_JUL17.md`.**
+- **(1) Matching layout** (`render/geometry.ts` + `builders/matching.ts`): the old asymmetric 7cm/4.2cm
+  columns left the word floating centre-left with the picture pinned to the far page edge (~6.4cm dots,
+  lopsided). Rebuilt as EQUAL halves either side of one gutter → the two dots now sit symmetric about the
+  page centre (a true centred pair), dot-gap tuned to 6.0cm. New knob `MATCHING_DOT_GAP_CM` (centre-to-
+  centre). Raster-verified W1.
+- **(2) Studio dark-phonics flashcard IN** (`curriculum-studio/page.tsx`): on weeks where
+  `getDarkPhonicsForWeek` returns a lesson, a "Dark Phonics Flashcard" card (Preview + Print) now shows in
+  the materials grid — carries its own `darkPhonics` payload (front image via the media proxy,
+  `pictures/lesson-NN.png?bucket=dark-phonics`, SAME pattern as the baked videoUrls) so it never enters the
+  full-pack print (which can't supply the payload). Builder + descender padding reused unchanged; raster-
+  verified qu (digraph+descender) + a.
+- **(3) Missing Studio pictures published (data):** the 5 recovered DP pictures (lessons 14/17/18/20/31)
+  were filed locally but NOT in the bucket → uploaded to `dark-phonics/pictures/` (bucket now 27/27, so the
+  Studio card front loads for every mapped week). Intro Weeks showed "0/10 ready" because the intro specs
+  had no imageUrls → extended `publish-images.mjs` with `--intro a|b|all` (source `Intro Week A|B/images/`
+  → `curriculum-images/intro-a|intro-b/`), published all 20 images + stamped `intro-week-a|b.json`
+  (10/10 each). **W1 dictionary "missing art for 'a'"** = the anchor LETTER, no `a.png` exists on disk (not
+  a picturable object) → left as-is per "report don't invent"; inherent cosmetic warning for anchor-letter
+  dictionary rows.
+- **Gates:** eslint 0 err on touched files (2 pre-existing warnings, untouched effects); scoped tsc 0.
+  🚨 Proxy `dark-phonics` allowlist ships in THIS commit — Studio DP videos + card fronts 502→200 on deploy.
+
+## 🃏 SESSION — Jul 17, 2026 (Cowork/Fable directing Sonnet+Opus) — DARK PHONICS JOINED THE CURRICULUM: 1 flashcard/week in packs + video-first Studio + PHOTO BANK INGEST (1,322 rows)
+
+**Canonical: `docs/handoffs/PLAN_DARK_PHONICS_CARD_JUL17.md` (contract + close-out). NOT committed —
+Tredoux pushes via DC. 🚨 Studio dark-phonics videos 502 until the proxy-allowlist edit deploys.**
+Tredoux's ruling: the "dark phonics" videos (catchy — "Kooky King", "Icky Sticky Pig") join the sensible
+curriculum: Studio plays the dark phonics film FIRST each week, then the curriculum songs; packs gain ONE
+double-sided flashcard (picture front / BIG letter + catchphrase back) — deliberately NOT a full pack.
+**Assets recovered first:** dark phonics home = `~/Desktop/Dark Phonics Songs/` (27 final videos, lessons
+5–31, `Dark Phonics — Final Videos (5-31)/`); images = 22 in the Supabase `dark-phonics` bucket
+(`pictures/lesson-NN.png`) + lesson-31 duck originals found unfiled on the Extreme SSD backup + lessons
+14/17/18/20 cut as clean video frames. All 27 filed to `English Curriculum 2026/Dark Phonics/lesson-NN.png`
+(🚨 NEVER into `Week NN/images/` — mvgen pollution). Pre-built deck also found: `~/Downloads/Documents/
+Dark-Phonics-Flashcards.pdf` (22 lessons, superseded by the new per-week cards). **Build (sacred flow,
+audit FIX-FIRST → fixed):** `spec/dark-phonics.json` (27 lessons, videoUrls bucket-verified at build time)
++ `render/builders/dark-phonics-card.ts` + `getDarkPhonicsForWeek` (weekToLessonMap; W21 takes L16, W30
+takes L17; W27–29/31–58 silently skip) + `--dark-phonics-dir` in build-week.mjs + Studio video-first +
+`dark-phonics` added to the media-proxy public-bucket allowlist. Audit CRIT: descender glyphs g/j/p/q/y
+overlapped the catchphrase on 5/27 cards — caught by RASTERIZING real PDFs (🚨 RULE: visual verification of
+rendered cards means pdftoppm + eyes, never pdftotext; spot-check samples must include a descender glyph).
+Fixed em-proportional; other 22 cards byte-identical. 27/27 card PDFs in pack-v2, week specs/lesson-map/
+validator untouched. **Photo bank same session:** `_all_images_flat` (1,007 PNG) ingested via NEW
+`scripts/upload-curriculum-images-to-photo-bank.mjs` (PNG→JPEG q90 white-flattened, week/sound tags from
+spec filename match, uploaded_by='system') — +936 uploaded / 70 already present / 1 dupe collapsed; NEW
+`scripts/dedupe-photo-bank.mjs` removed 18 exact-content dupes (all old public rows); bank = 1,322 rows,
+100% JPEG, 0 orphans. ⏳ OWED: DC commit+push (incl. proxy allowlist — then verify Studio playback live) ·
+DC-delete `tsconfig.darkphonics.tmp.json` + `.tsbuildinfo` · Tredoux eyeball: lesson-17 ck chicken art vs
+lesson-18 hens similarity (alternates in `Dark Phonics/_staging/`) + lesson-31 grey duck vs white deck ·
+optional bank eyeball: 5 cross-label dupe pairs + 114 same-label variety groups (/tmp lists in close-out).
+
+---
+
 ## 🎒 SESSION — Jul 16, 2026 (Cowork/Fable directing Sonnet+Opus) — GRACE & COURTESY INTRO WEEKS: 10 rules songs + 10 videos + 2 lesson-pack weeks SHIPPED
 
 **Canonical content doc: `docs/curriculum/GRACE_AND_COURTESY_SONGS_JUL16.md` (10 songs, lyrics = subtitle

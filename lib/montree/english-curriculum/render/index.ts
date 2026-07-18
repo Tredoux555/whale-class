@@ -22,13 +22,19 @@ import { buildBook } from './builders/book';
 import { buildVowelWall } from './builders/vowel-wall';
 import { buildQrCards } from './builders/qr-cards';
 import { buildClassRulesPoster } from './builders/class-rules-poster';
+import { buildDarkPhonicsCard } from './builders/dark-phonics-card';
 
 export type MaterialType =
   | 'three_part_cards' | 'flashcards' | 'sentence_strips' | 'matching' | 'bingo'
   | 'tracing' | 'coloring' | 'dictionary_journal' | 'book'
   | 'vowel_wall' | 'qr_cards'
   // Grace & Courtesy Intro Weeks only (never offered on a phonics week):
-  | 'class_rules_poster';
+  | 'class_rules_poster'
+  // Dark Phonics single card — pack-only, added by the CLI on mapped weeks via
+  // getDarkPhonicsForWeek + opts.darkPhonics. Deliberately NOT in MATERIAL_TYPES
+  // /materialTypesForSpec (the Studio has no lesson images; it plays the video
+  // in the songs area instead), so it never shows as a grid tile or full-pack item.
+  | 'dark_phonics_card';
 
 export interface BuildOpts {
   /** Base URL/path for the bundled Andika TTFs. Browser: '/fonts'. CLI: file://…/public/fonts. */
@@ -39,6 +45,10 @@ export interface BuildOpts {
   seed?: number;
   /** Override the base card edge length (cm). */
   cardSizeCm?: number;
+  /** Dark Phonics card payload (CLI-supplied). The picture, the grapheme, and
+   *  the catchphrase for the single double-sided card. imageUrl is a resolved
+   *  file:// (CLI) URL; only the dark_phonics_card builder reads it. */
+  darkPhonics?: { lesson: string; sound: string; title: string; imageUrl: string };
 }
 
 export interface BuildResult { html: string; warnings: string[]; }
@@ -98,6 +108,7 @@ const BUILDERS: Record<MaterialType, Builder> = {
   vowel_wall: buildVowelWall,
   qr_cards: buildQrCards,
   class_rules_poster: buildClassRulesPoster,
+  dark_phonics_card: buildDarkPhonicsCard,
 };
 
 /** Build one material type into a full standalone HTML document. Never throws. */
@@ -126,6 +137,11 @@ export function assetGapReport(spec: WeekSpec, assets: AssetMap, priorSpecs: Wee
 }
 
 // Re-exports so callers have one import surface.
+// Dark Phonics week→card/video lookup — surfaced here so the build-week.mjs CLI
+// (which bundles + imports this render entry) can resolve it without a second
+// esbuild entry. Pure (weekToLessonMap + dark-phonics.json); no eager week loads.
+export { getDarkPhonicsForWeek } from '../spec';
+export type { DarkPhonicsCard } from '../spec';
 export type { AssetMap, AssetFile, ParsedFilename, AssetGap } from './assets';
 export { buildAssetMap, parseAssetFilename, resolveImage } from './assets';
 export { letterStrokeSVG, KNOWN_STROKE_LETTERS } from './letter-strokes';
