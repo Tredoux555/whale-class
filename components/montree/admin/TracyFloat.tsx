@@ -797,7 +797,10 @@ export default function TracyFloat() {
           // Dynamic Island. Top-right on every screen — uniform with MiraFloat.
           top: 'calc(env(safe-area-inset-top, 0px) + 16px)',
           right: 16,
-          zIndex: 35,
+          // Astra is always on top — she must sit ABOVE the onboarding-copilot
+          // ring (8999) and dock (9000), which portal/float at the root
+          // stacking context. Nothing may overlap her.
+          zIndex: 9500,
           width: 56,
           height: 56,
           padding: 0,
@@ -849,7 +852,9 @@ export default function TracyFloat() {
         position: 'fixed',
         top: 'calc(env(safe-area-inset-top, 0px) + 16px)',
         right: 16,
-        zIndex: 35,
+        // Astra is always on top — panel must sit ABOVE the onboarding-copilot
+        // ring (8999) and dock (9000). Nothing may overlap her panel.
+        zIndex: 9500,
         width: 'min(380px, calc(100vw - 32px))',
         maxHeight: 'calc(100dvh - env(safe-area-inset-top, 0px) - 32px)',
         background: T.cardBg,
