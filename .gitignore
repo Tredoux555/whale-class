@@ -185,3 +185,7 @@ tsconfig.buildD.tmp.tsbuildinfo
 # temp scoped tsconfig from Jul-17 Dark Phonics card build verification (delete via Desktop Commander)
 tsconfig.darkphonics.tmp.json
 tsconfig.darkphonics.tmp.tsbuildinfo
+
+# temp scoped tsconfig from Jul-18 partner-banner fix build verification (sandbox rm blocked — delete via Desktop Commander)
+tsconfig.partnerfix.tmp.json
+tsconfig.partnerfix.tmp.tsbuildinfo

@@ -82,6 +82,13 @@ export default function TryMontreePage() {
   const [copied, setCopied] = useState(false);
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [foundingCode, setFoundingCode] = useState<string | null>(null);
+  // Grant type behind the founding code, looked up anonymously on mount.
+  // 'partner_free_life' → Foundation Partner banner (Premium free for life);
+  // anything else / null → the default Founding 100 banner. Fails open: a
+  // failed lookup keeps the default copy.
+  const [foundingGrantType, setFoundingGrantType] = useState<
+    'founding_3_life' | 'partner_free_life' | null
+  >(null);
   // Honeypot — a hidden field real users never fill. Bots that auto-fill every
   // input trip it; the server fakes success and writes nothing.
   const [website, setWebsite] = useState('');
@@ -93,6 +100,7 @@ export default function TryMontreePage() {
   // in Next 13+ requires Suspense).
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    const controller = new AbortController();
     try {
       const params = new URLSearchParams(window.location.search);
       const ref = params.get('ref');
@@ -107,6 +115,23 @@ export default function TryMontreePage() {
         const cleaned = founding.trim().toUpperCase();
         if (cleaned.length >= 4 && cleaned.length <= 32) {
           setFoundingCode(cleaned);
+          // Anonymously resolve the grant type so partner codes show the
+          // "Foundation Partner" banner instead of the Founding 100 copy.
+          // Fail open — on any error the banner keeps its default copy.
+          fetch(`/api/montree/founding/lookup?code=${encodeURIComponent(cleaned)}`, {
+            signal: controller.signal,
+          })
+            .then((res) => (res.ok ? res.json() : null))
+            .then((d) => {
+              if (d && d.valid && d.grant_type) {
+                setFoundingGrantType(d.grant_type);
+              }
+            })
+            .catch((err) => {
+              if (err?.name !== 'AbortError') {
+                console.error('[try] founding lookup failed (non-fatal):', err);
+              }
+            });
         }
       }
       // Hidden side door — teachers/parents normally sign in with a code at
@@ -119,6 +144,7 @@ export default function TryMontreePage() {
     } catch {
       // ignore
     }
+    return () => controller.abort();
   }, []);
 
   // Rotate the founding-ceremony lines while creating (display only).
@@ -263,8 +289,10 @@ export default function TryMontreePage() {
         {/* The stage */}
         <div className="fn-stage-wrap">
           <div className="fn-screen">
-            {/* Founding 100 banner — every step except code. Takes precedence
-                over the referral banner (amendment A6). */}
+            {/* Founding 100 / Foundation Partner banner — every step except
+                code. Takes precedence over the referral banner (amendment A6).
+                Partner codes (grant_type='partner_free_life') show the
+                Foundation Partner copy; all others show Founding 100. */}
             {foundingCode && step !== 'code' && (
               <div
                 style={{
@@ -279,12 +307,25 @@ export default function TryMontreePage() {
                 }}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ color: 'rgba(255,250,240,0.92)', fontSize: 14, fontWeight: 500 }}>
-                    Founding 100
-                  </p>
-                  <p style={{ color: 'rgba(255,250,240,0.58)', fontSize: '0.8rem' }}>
-                    One month of Premium free, then Premium locked at $3/student for life.
-                  </p>
+                  {foundingGrantType === 'partner_free_life' ? (
+                    <>
+                      <p style={{ color: 'rgba(255,250,240,0.92)', fontSize: 14, fontWeight: 500 }}>
+                        Foundation Partner
+                      </p>
+                      <p style={{ color: 'rgba(255,250,240,0.58)', fontSize: '0.8rem' }}>
+                        Premium free, for life. You&apos;re one of the partners we&apos;re building Montree with.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p style={{ color: 'rgba(255,250,240,0.92)', fontSize: 14, fontWeight: 500 }}>
+                        Founding 100
+                      </p>
+                      <p style={{ color: 'rgba(255,250,240,0.58)', fontSize: '0.8rem' }}>
+                        One month of Premium free, then Premium locked at $3/student for life.
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
             )}
