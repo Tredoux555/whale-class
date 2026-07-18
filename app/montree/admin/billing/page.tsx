@@ -208,7 +208,13 @@ function BillingPageContent() {
   //                     canceled). Founding schools skip the chooser (they get
   //                     the founding card instead).
   const isFounding = data.school.founding_member === true;
-  const showPlanChooser = isStripeRail && !isActive && !isFounding;
+  // Foundation Partner (grant_type='partner_free_life') schools carry a $0
+  // per-student billing override → Premium free for life. They must NOT see
+  // the "$3/student for life" Founding 100 copy. Detect from the effective
+  // price the status route already computes ($0 override).
+  const isPartner =
+    data.pricing.is_overridden === true && data.pricing.price_per_student_usd === 0;
+  const showPlanChooser = isStripeRail && !isActive && !isFounding && !isPartner;
   const trialDaysRemaining = data.school.trial_days_remaining;
 
   return (
@@ -344,8 +350,25 @@ function BillingPageContent() {
               </div>
             )}
 
-            {/* Founding 100 — Premium locked at $3 for life */}
-            {isFounding && !isActive && (
+            {/* Foundation Partner — Premium free for life ($0 override).
+                Checked BEFORE the Founding 100 card so a partner never sees
+                the "$3/student for life" copy. No checkout button: there is
+                nothing to pay. */}
+            {isPartner && !isActive && (
+              <div className="mt-6 rounded-xl border-2 p-5" style={{ borderColor: '#E8C96A', background: 'rgba(232,201,106,0.08)' }}>
+                <div className="flex items-baseline justify-between gap-3 flex-wrap">
+                  <h3 className="text-lg font-light" style={{ color: '#E8C96A' }}>Foundation Partner</h3>
+                  <span className="text-sm tabular-nums" style={{ color: '#E8C96A' }}>Free<span className="text-white/40 text-xs">· for life</span></span>
+                </div>
+                <p className="mt-2 text-white/80 text-sm leading-relaxed">
+                  Premium free, for life. Full Sonnet reports, Sonnet photo fallback, Sonnet Guru + Astra — nothing to pay.
+                </p>
+              </div>
+            )}
+
+            {/* Founding 100 — Premium locked at $3 for life. Partners are
+                excluded (they get the Foundation Partner card above). */}
+            {isFounding && !isPartner && !isActive && (
               <div className="mt-6 rounded-xl border-2 p-5" style={{ borderColor: '#E8C96A', background: 'rgba(232,201,106,0.08)' }}>
                 <div className="flex items-baseline justify-between gap-3 flex-wrap">
                   <h3 className="text-lg font-light" style={{ color: '#E8C96A' }}>Founding 100</h3>
