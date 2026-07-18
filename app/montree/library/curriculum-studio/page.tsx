@@ -196,6 +196,7 @@ export default function CurriculumStudioPage() {
   const [dragOver, setDragOver] = useState(false);
   const [assetsExpanded, setAssetsExpanded] = useState(false);
   const [expandedLyrics, setExpandedLyrics] = useState<Set<number>>(new Set());
+  const [showHelp, setShowHelp] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Pick the initial week AFTER mount: a ?week= deep-link wins, else the saved
@@ -413,6 +414,13 @@ export default function CurriculumStudioPage() {
   }, [spec, assets, materialList]);
 
   const btn = 'transition-all duration-200 rounded-lg text-sm font-semibold';
+  // Close the How-to-use modal on Escape.
+  useEffect(() => {
+    if (!showHelp) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setShowHelp(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [showHelp]);
 
   return (
     <div className="min-h-screen relative" style={{ background: FOREST_BG, color: '#e6f0ea' }}>
@@ -425,7 +433,19 @@ export default function CurriculumStudioPage() {
       <nav className="relative z-10 px-6 flex items-center justify-between"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)', paddingBottom: '0.75rem' }}>
         <Link href="/montree/library" className="text-white/40 text-sm hover:text-white/70 transition-colors">← Library</Link>
-        <span className="text-emerald-300/70 text-xs tracking-widest uppercase">Curriculum Studio</span>
+        <div className="flex items-center gap-3">
+          <span className="text-emerald-300/70 text-xs tracking-widest uppercase">Curriculum Studio</span>
+          <button
+            type="button"
+            onClick={() => setShowHelp(true)}
+            aria-label="How to use"
+            title="How to use"
+            className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-semibold transition-colors"
+            style={{ border: '1px solid rgba(52,211,153,0.4)', color: 'rgba(167,243,220,0.75)', background: 'rgba(255,255,255,0.03)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = '#a7f3d0'; e.currentTarget.style.borderColor = 'rgba(52,211,153,0.7)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(167,243,220,0.75)'; e.currentTarget.style.borderColor = 'rgba(52,211,153,0.4)'; }}
+          >?</button>
+        </div>
       </nav>
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 pb-16">
@@ -719,6 +739,44 @@ export default function CurriculumStudioPage() {
           </>
         )}
       </div>
+
+      {/* How-to-use modal */}
+      {showHelp && (
+        <div
+          onClick={() => setShowHelp(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 50, display: 'flex',
+            alignItems: 'center', justifyContent: 'center', padding: 16,
+            background: 'rgba(3,10,7,0.72)',
+          }}>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            role="dialog" aria-modal="true" aria-label="How to use the Weekly Curriculum"
+            style={{
+              position: 'relative', maxWidth: 460, width: '100%', maxHeight: '85vh', overflowY: 'auto',
+              background: '#0c2419', border: '1px solid rgba(52,211,153,0.28)', borderRadius: 16,
+              padding: '22px 22px 24px', boxShadow: '0 18px 48px rgba(0,0,0,0.55)', color: '#e6f0ea',
+            }}>
+            <button
+              type="button" onClick={() => setShowHelp(false)} aria-label="Close"
+              style={{
+                position: 'absolute', top: 12, right: 12, width: 30, height: 30, borderRadius: '50%',
+                border: '1px solid rgba(255,255,255,0.14)', background: 'rgba(255,255,255,0.04)',
+                color: 'rgba(255,255,255,0.7)', fontSize: 16, cursor: 'pointer', lineHeight: 1,
+              }}>×</button>
+            <h2 style={{ margin: '0 0 4px', fontSize: 19, fontWeight: 700, color: '#a7f3d0' }}>How to use the Weekly Curriculum</h2>
+            <p style={{ margin: '0 0 14px', fontSize: 14, color: 'rgba(255,255,255,0.72)' }}>One sound per week, in order. Just do the next week.</p>
+            <ol style={{ margin: '0 0 14px', paddingLeft: 20, fontSize: 14, lineHeight: 1.6, color: 'rgba(255,255,255,0.82)' }}>
+              <li>Open this week&rsquo;s card.</li>
+              <li>Play the videos every day — the Dark Phonics song first, then the week&rsquo;s songs.</li>
+              <li>Print the pack. Card PDFs print two-sided with normal settings.</li>
+              <li>Use a little each day: flash the cards, one worksheet, sing again.</li>
+            </ol>
+            <p style={{ margin: '0 0 8px', fontSize: 14, color: 'rgba(255,255,255,0.72)' }}>Books unlock as sounds accumulate — hand each reader out at its gate.</p>
+            <p style={{ margin: 0, fontSize: 14, color: 'rgba(255,255,255,0.72)' }}><strong style={{ color: '#a7f3d0' }}>Next week:</strong> open the next card. That&rsquo;s the whole system.</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

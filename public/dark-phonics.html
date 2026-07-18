@@ -45,10 +45,26 @@ details.box>summary{outline:none}details.box>summary::-webkit-details-marker{dis
 #dpq:focus{border-color:var(--ac)}
 #dpq::placeholder{color:var(--mut)}
 #dphint{display:none;color:var(--mut);font-size:13px;padding:0 0 10px}
+.brandrow{display:flex;align-items:center;justify-content:space-between;margin:0 0 8px}
+.brandrow .brand{margin:0}
+.helpbtn{flex:none;width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--mut);font-size:15px;font-weight:600;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.helpbtn:hover{color:var(--ink);border-color:var(--ac);background:#191926}
+.modal-ov{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(6,6,12,.72)}
+.modal-ov.open{display:flex}
+.modal-card{position:relative;max-width:460px;width:100%;max-height:85vh;overflow-y:auto;background:var(--card);border:1px solid #2a2a40;border-radius:16px;padding:22px 22px 24px;box-shadow:0 18px 48px rgba(0,0,0,.6);color:var(--ink)}
+.modal-x{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;border:1px solid #34344e;background:#0e0e16;color:var(--mut);font-size:16px;line-height:1;cursor:pointer}
+.modal-x:hover{color:var(--ink)}
+.modal-card h2{margin:0 0 6px;font-size:19px;color:var(--y)}
+.modal-card p{margin:0 0 12px;font-size:14px;color:var(--mut)}
+.modal-card p b{color:var(--ink)}
+.modal-card .rhythm{color:var(--ink)}
 </style></head>
 <body>
 <header>
-  <div class="brand"><span class="d">Dark</span> Phonics</div>
+  <div class="brandrow">
+    <div class="brand"><span class="d">Dark</span> Phonics</div>
+    <button id="dphelp" class="helpbtn" type="button" title="How to use" aria-label="How to use">?</button>
+  </div>
   <div class="dpsearch"><input id="dpq" type="search" inputmode="search" autocomplete="off" placeholder="Find a letter, sound or word…"></div>
   <div id="dphint"></div>
   <div class="tabs">
@@ -67,6 +83,18 @@ details.box>summary{outline:none}details.box>summary::-webkit-details-marker{dis
     </details>
   </div>
 </header>
+<div class="modal-ov" id="dphelpov" role="dialog" aria-modal="true" aria-label="How to use Dark Phonics">
+  <div class="modal-card">
+    <button class="modal-x" id="dphelpx" type="button" aria-label="Close">×</button>
+    <h2>How to use Dark Phonics</h2>
+    <p>One silly song per sound, in teaching order (lessons 5–53). Same path as the weekly curriculum.</p>
+    <p>🎵 <b>Songs</b> — play this week's song every day. Repetition is the whole trick.</p>
+    <p>🃏 <b>Flashcards</b> — after singing, flash the cards: the scene first ("snake in my sock!"), then each word. Print two-sided with normal settings — fronts and backs line up by themselves.</p>
+    <p>📕 <b>Books &amp; Easy Readers</b> — the child reads these ALONE. "Gate: Lesson N" means: hand it out once the class has passed that song.</p>
+    <p>🎤 <b>Sing-Along Cards</b> — lyric cards for circle time.</p>
+    <p class="rhythm"><b>Daily rhythm (10 min):</b> sing → flash the cards → done.</p>
+  </div>
+</div>
 <div id="content"><div class="wrap"><div class="loading">Loading…</div></div></div>
 <script>
 var content=document.getElementById('content');
@@ -74,6 +102,16 @@ var tabs=document.querySelectorAll('button.tab');
 var shopBtns=document.querySelectorAll('.shopmenu button[data-src]');
 var shop=document.getElementById('shop');
 var dpq=document.getElementById('dpq');
+// How-to-use modal
+var dphelp=document.getElementById('dphelp');
+var dphelpov=document.getElementById('dphelpov');
+var dphelpx=document.getElementById('dphelpx');
+function openHelp(){if(dphelpov)dphelpov.classList.add('open');}
+function closeHelp(){if(dphelpov)dphelpov.classList.remove('open');}
+if(dphelp)dphelp.addEventListener('click',openHelp);
+if(dphelpx)dphelpx.addEventListener('click',closeHelp);
+if(dphelpov)dphelpov.addEventListener('click',function(e){if(e.target===dphelpov)closeHelp();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeHelp();});
 function dpMatch(card,term){
   if(!term)return true;
   var sr=(card.textContent||'').toLowerCase();
