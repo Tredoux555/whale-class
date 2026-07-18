@@ -57,6 +57,25 @@ const ALLOWED_CONTACT_COLUMNS = new Set<string>([
   'social_invited_at',
   'social_replied_at',
   'social_notes',
+  // Outreach V2.1 segmentation + verification (migration 294). Same tolerance
+  // as the social block above: safe to whitelist before 294 runs — an insert
+  // carrying these before the columns exist 42703s into error_samples per-row,
+  // every legacy row still imports. Without the whitelist entries the route
+  // silently drops them and outreach-import-v2.mjs's writes would be no-ops.
+  'segment',
+  'montessori_verified',
+  'montessori_evidence_url',
+  'disadvantaged_verified',
+  'disadvantaged_evidence_url',
+  'fb_followers',
+  'ig_followers',
+  'social_checked_date',
+  'contact_role',
+  'responsiveness_score',
+  'responsiveness_rationale',
+  'warm_path',
+  'verification_status',
+  'outreach_code',
   'created_at',
   'updated_at',
 ]);

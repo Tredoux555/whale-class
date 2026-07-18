@@ -13,10 +13,10 @@ Produces:
 import json, re, os, glob, sys
 from collections import defaultdict, Counter
 
-SPEC_DIR = "/sessions/modest-vigilant-edison/mnt/Desktop/Master Brain/ACTIVE/montree/lib/montree/english-curriculum/spec"
-IMAGES_ROOT = "/sessions/modest-vigilant-edison/mnt/Desktop/English Curriculum 2026"
-OUT_MD = "/sessions/modest-vigilant-edison/mnt/Desktop/Master Brain/ACTIVE/montree/docs/curriculum/VIDEO_COVERAGE_AUDIT_JUL14.md"
-OUT_JSON = "/sessions/modest-vigilant-edison/mnt/Desktop/Master Brain/ACTIVE/montree/docs/curriculum/video-coverage-audit-jul14.json"
+SPEC_DIR = "/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/lib/montree/english-curriculum/spec"
+IMAGES_ROOT = "/Users/tredouxwillemse/Desktop/English Curriculum 2026"
+OUT_MD = "/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/docs/curriculum/VIDEO_COVERAGE_AUDIT_JUL14.md"
+OUT_JSON = "/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/docs/curriculum/video-coverage-audit-jul14.json"
 
 # ---- tokenizer rules ----
 CONNECTIVES = {

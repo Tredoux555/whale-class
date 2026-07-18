@@ -1,0 +1,384 @@
+{
+ "readers": [
+  {
+   "slug": "the-cat-sat",
+   "gate": 17,
+   "title": "The Cat Sat",
+   "character_sheet": "Character reference sheet of a plump round cartoon house cat with soft grey-and-white fur, a big round head, huge round amber eyes, a tiny pink triangle nose, small pointed ears and short whiskers: the same character shown three times - front view, side view, and a happy expression - standing apart on a plain white background, model sheet, turnaround, consistent character design, same colours and proportions. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes. plain white background. no text, no words, no letters --ar 3:2",
+   "cover_prompt": "a plump round cartoon house cat with soft grey-and-white fur, a big round head, huge round amber eyes, a tiny pink triangle nose, small pointed ears and short whiskers, sitting upright and proud, with two more identical cats balanced in a wobbly stack on its head, the cats large and central. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+   "pages": [
+    {
+     "n": 1,
+     "text": "A cat.",
+     "prompt": "a plump round cartoon house cat with soft grey-and-white fur, a big round head, huge round amber eyes, a tiny pink triangle nose, small pointed ears and short whiskers, sitting upright alone, large and filling the frame as the single clear subject, friendly smile. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 2,
+     "text": "The cat sat.",
+     "prompt": "a plump grey-and-white cat with huge amber eyes, sitting down neatly, large and central, satisfied closed-eye smile. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 3,
+     "text": "A cat sat on a cat.",
+     "prompt": "two identical cats (a plump grey-and-white cat with huge amber eyes) stacked, one sitting calmly on the other's head, both large and clearly visible. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 4,
+     "text": "A cat on a cat on a cat!",
+     "prompt": "three identical cats (a plump grey-and-white cat with huge amber eyes) stacked in a tall wobbly tower filling the frame, leaning and about to tip. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 5,
+     "text": "Tip-top cats!",
+     "prompt": "a tall comical tower of four identical cats (a plump grey-and-white cat with huge amber eyes) teetering and filling the frame, the top cat waving a paw. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    }
+   ]
+  },
+  {
+   "slug": "mud-pup",
+   "gate": 19,
+   "title": "Mud Pup",
+   "character_sheet": "Character reference sheet of a small round golden-brown puppy with big floppy ears, an oversized shiny dark-eyed face, a tiny black nose and a short stubby wagging tail: the same character shown three times - front view, side view, and a happy expression - standing apart on a plain white background, model sheet, turnaround, consistent character design, same colours and proportions. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes. plain white background. no text, no words, no letters --ar 3:2",
+   "cover_prompt": "a small round golden-brown puppy with big floppy ears, an oversized shiny dark-eyed face, a tiny black nose and a short stubby wagging tail, sitting in a big glossy brown MUD puddle, caked head to toe in mud with only its eyes and goofy grin showing, large and central. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+   "pages": [
+    {
+     "n": 1,
+     "text": "A pup.",
+     "prompt": "a small round golden-brown puppy with big floppy ears, an oversized shiny dark-eyed face, a tiny black nose and a short stubby wagging tail, clean and fluffy, sitting alone large and filling the frame as the single clear subject, looking up hopefully. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 2,
+     "text": "The pup is in mud.",
+     "prompt": "a wide scene of a big squishy brown MUD puddle spreading across the whole ground, glossy and obvious, with the small golden-brown floppy-eared puppy sitting right in the middle of it, splattered. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 3,
+     "text": "Mud, mud, mud!",
+     "prompt": "the small golden-brown floppy-eared puppy, rolling on its back in a big MUD puddle, thick chunky brown mud flying everywhere in cartoon splats filling the frame. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 4,
+     "text": "The pup is a mud pup.",
+     "prompt": "the small golden-brown floppy-eared puppy, now a walking lump of brown MUD, only its eyes and pink tongue showing, standing large and central like a tiny mud monster. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 5,
+     "text": "Mud pup, sit!",
+     "prompt": "the small golden-brown floppy-eared puppy, muddy, sitting on a clean white floor and leaving a big obvious brown MUDDY bottom-print, the muddy print large and clearly shown beside it. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    }
+   ]
+  },
+  {
+   "slug": "hen-in-bed",
+   "gate": 22,
+   "title": "Hen in Bed",
+   "character_sheet": "Character reference sheet of a plump bright-red cartoon hen with a floppy orange comb, round googly eyes, a small yellow beak, rosy cheeks and stubby wings: the same character shown three times - front view, side view, and a happy expression - standing apart on a plain white background, model sheet, turnaround, consistent character design, same colours and proportions. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes. plain white background. no text, no words, no letters --ar 3:2",
+   "cover_prompt": "a plump bright-red cartoon hen with a floppy orange comb, round googly eyes, a small yellow beak, rosy cheeks and stubby wings, tucked under a patchwork blanket in a cosy wooden child's BED, the bed and hen together large and central. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+   "pages": [
+    {
+     "n": 1,
+     "text": "A hen.",
+     "prompt": "a plump bright-red cartoon hen with a floppy orange comb, round googly eyes, a small yellow beak, rosy cheeks and stubby wings, standing alone, large and filling the frame as the single clear subject. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 2,
+     "text": "A big red hen.",
+     "prompt": "the plump bright-red hen with googly eyes, drawn extra big, round and puffed up, filling most of the frame to show how BIG it is. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 3,
+     "text": "The hen ran.",
+     "prompt": "the plump bright-red hen with googly eyes, running fast across the frame, legs blurred, bright-red feathers flying behind, big comic speed lines. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 4,
+     "text": "The hen ran to the bed.",
+     "prompt": "a wide bedroom scene with a cosy wooden child's BED large and clearly shown on one side, complete with pillow and blanket, and the plump bright-red hen with googly eyes running toward it, the bed unmistakable. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 5,
+     "text": "A hen in my bed!",
+     "prompt": "a cosy child's BED large and central filling most of the frame, blanket and pillow clearly drawn, with the plump bright-red hen with googly eyes snuggled under the blanket head on the pillow, a surprised child peeking from the edge. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    }
+   ]
+  },
+  {
+   "slug": "fox-in-a-box",
+   "gate": 28,
+   "title": "Fox in a Box",
+   "character_sheet": "Character reference sheet of a small bright-orange cartoon fox with a fluffy white-tipped tail, white cheeks and belly, big bright mischievous eyes, pointed black-tipped ears and a cheeky grin: the same character shown three times - front view, side view, and a happy expression - standing apart on a plain white background, model sheet, turnaround, consistent character design, same colours and proportions. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes. plain white background. no text, no words, no letters --ar 3:2",
+   "cover_prompt": "a big brown cardboard BOX large and central, with the bright-orange white-tipped-tail fox squeezed inside peeking over the rim, both clearly shown. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+   "pages": [
+    {
+     "n": 1,
+     "text": "A fox.",
+     "prompt": "a small bright-orange cartoon fox with a fluffy white-tipped tail, white cheeks and belly, big bright mischievous eyes, pointed black-tipped ears and a cheeky grin, sitting alone, large and filling the frame as the single clear subject, bushy tail curled. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 2,
+     "text": "A fox in a box.",
+     "prompt": "a big open brown cardboard BOX standing large in the centre of the frame, clearly box-shaped with flaps, and the bright-orange white-tipped-tail fox sitting inside peeking happily over the rim. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 3,
+     "text": "Six fox in a box!",
+     "prompt": "one big brown cardboard BOX in the centre with SIX tiny identical orange foxes crammed in and overflowing out of it, the six foxes clearly countable. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 4,
+     "text": "A big fox, a big mix.",
+     "prompt": "one giant orange fox beside a jumbled MIX of little foxes and cardboard boxes piled together, the big fox clearly the biggest. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 5,
+     "text": "Fix the box, fox!",
+     "prompt": "a big burst brown cardboard BOX large and central with sticky tape patching a rip, and the bright-orange white-tipped-tail fox holding the tape mid-fix, the box the clear focus. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    }
+   ]
+  },
+  {
+   "slug": "cat-cot-cut",
+   "gate": 40,
+   "title": "Cat? Cot? Cut?",
+   "character_sheet": "Character reference sheet of a plump round cartoon house cat with soft grey-and-white fur, huge round amber eyes, a tiny pink nose and small pointed ears: the same character shown three times - front view, side view, and a happy expression - standing apart on a plain white background, model sheet, turnaround, consistent character design, same colours and proportions. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes. plain white background. no text, no words, no letters --ar 3:2",
+   "cover_prompt": "three clearly separate objects lined up side by side, equal size and unmistakable: a grey-and-white CAT, a small folding camp-bed (a COT), and a paw with a big white bandage plaster (a CUT), with floating question marks. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+   "pages": [
+    {
+     "n": 1,
+     "text": "A cat.",
+     "prompt": "a plump round cartoon house cat with soft grey-and-white fur, huge round amber eyes, a tiny pink nose and small pointed ears, sitting alone, large and filling the frame as the single clear subject, friendly. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 2,
+     "text": "A cot.",
+     "prompt": "a small folding wooden camp-bed (a COT) standing large in the centre of the frame, clearly showing its four legs and striped canvas top, unmistakably a little bed; a small plump grey-and-white cat with big amber eyes sits beside it, smaller, looking up. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 3,
+     "text": "A cut.",
+     "prompt": "an extreme close-up of a paw with a chunky white bandage plaster wrapped around it (a CUT), the bandaged paw filling most of the frame and clearly the subject; a small plump grey-and-white cat with big amber eyes peeks in from the side, worried. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 4,
+     "text": "The cat is on the cot.",
+     "prompt": "a small folding camp-bed (a COT) shown large and fully visible side-on, legs and canvas clear, with a small plump grey-and-white cat with big amber eyes lounging sprawled lazily on top of it. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 5,
+     "text": "Cat? Cot? Cut!",
+     "prompt": "the three look-alike objects again, equal size and unmistakable - a grey CAT, a COT (camp-bed) and a CUT (bandaged paw) - arranged in a row with question marks. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    }
+   ]
+  },
+  {
+   "slug": "the-bell-fell",
+   "gate": 41,
+   "title": "The Bell Fell",
+   "character_sheet": "Character reference sheet of a shiny golden hand-bell with a smooth round body, a little brown wooden handle on top, and a simple cute cartoon face (two dot eyes and a small smile): the same character shown three times - front view, side view, and a happy expression - standing apart on a plain white background, model sheet, turnaround, consistent character design, same colours and proportions. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes. plain white background. no text, no words, no letters --ar 3:2",
+   "cover_prompt": "a wide scene of a big grassy green HILL, with the shiny golden bell with a little face tumbling down its slope, motion lines, blue sky - the whole hill visible from top to bottom. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+   "pages": [
+    {
+     "n": 1,
+     "text": "A bell.",
+     "prompt": "a shiny golden hand-bell with a smooth round body, a little brown wooden handle on top, and a simple cute cartoon face (two dot eyes and a small smile), sitting still, large and filling the frame as the single clear subject, gleaming gold. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 2,
+     "text": "A bell on a hill.",
+     "prompt": "a wide storybook scene of one big steep round grassy green HILL filling almost the whole frame, soft blue sky behind, the whole hill visible from base to summit; the shiny golden bell with a little face sits small right at the very top of the hill. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 3,
+     "text": "The bell fell!",
+     "prompt": "the shiny golden bell with a little face, tipping off a green hilltop and starting to roll, large and central, eyes wide with surprise, the slope dropping away below. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 4,
+     "text": "Off the hill it fell.",
+     "prompt": "a wide scene of a big green HILL with the shiny golden bell with a little face rolling fast down the slope, bouncing, motion lines and little dust puffs, the whole hillside shown. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 5,
+     "text": "Bonk! Bad bell.",
+     "prompt": "the shiny golden bell with a little face, crash-landed at the bottom of the hill with a big yellow cartoon BONK starburst above it, large and central, dizzy spiral eyes. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    }
+   ]
+  },
+  {
+   "slug": "fish-and-chick",
+   "gate": 43,
+   "title": "Fish and Chick",
+   "character_sheet": "Character reference sheet of a round plump orange goldfish with big round eyes and fluttery fins, together with a tiny fluffy yellow chick with a small orange beak and big round eyes: the same character shown three times - front view, side view, and a happy expression - standing apart on a plain white background, model sheet, turnaround, consistent character design, same colours and proportions. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes. plain white background. no text, no words, no letters --ar 3:2",
+   "cover_prompt": "the tiny yellow chick riding on the back of the round orange fish, both large and central as friends, gentle blue water. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+   "pages": [
+    {
+     "n": 1,
+     "text": "A fish.",
+     "prompt": "the round orange goldfish alone, large and filling the frame as the single clear subject, blowing bubbles in soft blue water. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 2,
+     "text": "A chick.",
+     "prompt": "the tiny fluffy yellow chick alone, large and filling the frame as the single clear subject, big round eyes. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 3,
+     "text": "The fish and the chick.",
+     "prompt": "the orange fish and the yellow chick side by side, both large and clear, smiling at each other. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 4,
+     "text": "The chick is on the fish!",
+     "prompt": "the yellow chick standing on top of the orange fish like a surfboard, both clearly shown and central, water splashing. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 5,
+     "text": "Chip-chip, chick!",
+     "prompt": "a small pile of yellow CHIPS in the centre of the frame, clearly shown, with the yellow chick beside it pecking one. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    }
+   ]
+  },
+  {
+   "slug": "this-and-that",
+   "gate": 46,
+   "title": "This and That",
+   "character_sheet": "Character reference sheet of a small fuzzy grey-brown moth with big round friendly eyes, soft feathery antennae, rosy cheeks and rounded wings with simple cream spots: the same character shown three times - front view, side view, and a happy expression - standing apart on a plain white background, model sheet, turnaround, consistent character design, same colours and proportions. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes. plain white background. no text, no words, no letters --ar 3:2",
+   "cover_prompt": "a small fuzzy grey-brown moth with big round friendly eyes, soft feathery antennae, rosy cheeks and rounded wings with simple cream spots, fluttering between two warm glowing yellow lamps, the moth large and central, a few smaller moths around. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+   "pages": [
+    {
+     "n": 1,
+     "text": "This.",
+     "prompt": "a small fuzzy grey-brown moth with big round friendly eyes, soft feathery antennae, rosy cheeks and rounded wings with simple cream spots, alone, large and central, with a clear cartoon hand pointing right at it from the side. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 2,
+     "text": "That.",
+     "prompt": "the fuzzy grey-brown moth with big eyes, over on the far side of the frame, with a clear pointing cartoon hand on the near side aimed across toward it. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 3,
+     "text": "This is a moth.",
+     "prompt": "a small fuzzy grey-brown moth with big round friendly eyes, soft feathery antennae, rosy cheeks and rounded wings with simple cream spots, shown large and clearly with a soft yellow glow behind it, the single clear subject. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 4,
+     "text": "That is a moth!",
+     "prompt": "two identical moths (the fuzzy grey-brown moth with big eyes) side by side, both large and clear, comic double-take. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 5,
+     "text": "This, that... moths!",
+     "prompt": "a whole goofy swarm of identical fuzzy moths filling the frame, a child laughing in the corner. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    }
+   ]
+  },
+  {
+   "slug": "jump-in-the-sand",
+   "gate": 48,
+   "title": "Jump in the Sand",
+   "character_sheet": "Character reference sheet of a small round golden-brown puppy with big floppy ears, big shiny dark eyes and a short wagging tail: the same character shown three times - front view, side view, and a happy expression - standing apart on a plain white background, model sheet, turnaround, consistent character design, same colours and proportions. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes. plain white background. no text, no words, no letters --ar 3:2",
+   "cover_prompt": "a small round golden-brown puppy with big floppy ears, big shiny dark eyes and a short wagging tail, leaping high above a big pile of golden SAND, sand flying everywhere, the puppy large and central mid-jump. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+   "pages": [
+    {
+     "n": 1,
+     "text": "Jump!",
+     "prompt": "a small round golden-brown puppy with big floppy ears, big shiny dark eyes and a short wagging tail, crouched and springing straight upward mid-leap, large and central, excited open grin, motion lines. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 2,
+     "text": "Jump in the sand.",
+     "prompt": "a wide scene of a big stretch of golden SAND filling the ground, with the small golden-brown floppy-eared puppy jumping down into it, sand puffing up around its paws. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 3,
+     "text": "Jump, jump, jump!",
+     "prompt": "the small golden-brown floppy-eared puppy, bouncing across golden sand in three side-by-side leap poses, sand flying, gleeful. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 4,
+     "text": "A big jump in the sand.",
+     "prompt": "the small golden-brown floppy-eared puppy, doing one huge dramatic leap above a big burst of golden SAND, heroic pose, the sandy ground spread wide below. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 5,
+     "text": "Sand on the pup!",
+     "prompt": "the small golden-brown floppy-eared puppy, almost completely buried in a big mound of golden SAND, only its nose and two eyes poking out, the sand mound large and central. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    }
+   ]
+  },
+  {
+   "slug": "frog-and-crab",
+   "gate": 51,
+   "title": "Frog and Crab",
+   "character_sheet": "Character reference sheet of a round cheerful bright-green frog with big bulgy eyes and a wide smile, together with a small round red crab with big claws and a grumpy little frowning face: the same character shown three times - front view, side view, and a happy expression - standing apart on a plain white background, model sheet, turnaround, consistent character design, same colours and proportions. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes. plain white background. no text, no words, no letters --ar 3:2",
+   "cover_prompt": "the bright-green frog and the grumpy red crab side by side, both large and central, a comic mismatched duo. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+   "pages": [
+    {
+     "n": 1,
+     "text": "A frog.",
+     "prompt": "the round cheerful green frog alone, large and filling the frame as the single clear subject, big bulgy eyes. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 2,
+     "text": "A crab.",
+     "prompt": "the small red crab alone, large and filling the frame as the single clear subject, big claws raised, grumpy frown. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 3,
+     "text": "The frog and the crab.",
+     "prompt": "the green frog and the red crab together, both large and clear, opposite moods. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 4,
+     "text": "The frog sat on the crab!",
+     "prompt": "the green frog plopped sitting right on top of the grumpy red crab, both clearly shown, the crab squashed underneath. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 5,
+     "text": "The crab is mad!",
+     "prompt": "the red crab large and central waving both claws furiously with steam puffs, the green frog hopping away smaller in the corner. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    }
+   ]
+  },
+  {
+   "slug": "big-splash",
+   "gate": 53,
+   "title": "Big Splash",
+   "character_sheet": "Character reference sheet of a plump round cartoon house cat with soft grey-and-white fur and huge round amber eyes, sitting in a white bathtub: the same character shown three times - front view, side view, and a happy expression - standing apart on a plain white background, model sheet, turnaround, consistent character design, same colours and proportions. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes. plain white background. no text, no words, no letters --ar 3:2",
+   "cover_prompt": "the plump grey-and-white cat with big amber eyes, in a white bathtub making a giant cartoon SPLASH of water arcing everywhere, the splash and bubbles large and filling the frame. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1",
+   "pages": [
+    {
+     "n": 1,
+     "text": "Splash!",
+     "prompt": "a big dramatic cartoon water SPLASH of blue water and white droplets filling the frame, with the surprised face of the plump grey-and-white cat with big amber eyes in the middle of it. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 2,
+     "text": "A big splash.",
+     "prompt": "a huge wall of water erupting up out of a white bathtub, the big SPLASH dominant and central, the soggy cat at its base. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 3,
+     "text": "Splash in the tub.",
+     "prompt": "a white bathtub (a TUB) shown large and clearly in the centre of the frame, full of bubbly water, with the plump grey-and-white cat with big amber eyes sitting in it and water sloshing over the rim. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 4,
+     "text": "Splash, splash, splash!",
+     "prompt": "the plump grey-and-white cat with big amber eyes, slapping the bath water in three splashy poses, big splashes and bubbles filling the frame. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    },
+    {
+     "n": 5,
+     "text": "The cat is wet!",
+     "prompt": "the plump grey-and-white cat with big amber eyes, soaked and dripping, sitting in a puddle beside the tub, fur flat and clearly WET, water drops everywhere, unimpressed face. colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1"
+    }
+   ]
+  }
+ ],
+ "_style": {
+  "locked_style_block": "colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background.",
+  "source": "Tredoux-approved Jul 18 2026, taken verbatim from his MJ 'Mo popcorn letter p' job (midjourney.com/jobs/27454da2-f5a1-49bb-b65b-9076eb278fe1). No --sref needed - style lives in the prompt text.",
+  "sref_fallback": "https://montree.xyz/api/montree/media/proxy/pictures/lesson-NN.png?bucket=dark-phonics (public lesson art, use as --sref only if prompt-only style drifts)",
+  "note": "--sref 9999 was a PLACEHOLDER in dark-phonics-readers.html and has been stripped. Page prompts keep --ar 1:1, character sheets --ar 3:2."
+ }
+}

@@ -2,11 +2,11 @@
   "generated": "2026-07-14",
   "curriculum_totals": {
     "songs_audited": 115,
-    "avg_coverage_pct": 49.0,
-    "critical_scene_gaps": 91,
-    "weeks_with_gaps": 31,
-    "ambiguous_pairs": 305,
-    "totally_unmatchable_images": 390
+    "avg_coverage_pct": 57.8,
+    "critical_scene_gaps": 54,
+    "weeks_with_gaps": 24,
+    "ambiguous_pairs": 448,
+    "totally_unmatchable_images": 471
   },
   "week_summaries": [
     {
@@ -15,12 +15,12 @@
         {
           "role": "word",
           "title": "It's A (Potato)",
-          "coverage_pct": 50.0,
+          "coverage_pct": 54.54545454545454,
           "critical_gaps": 0,
           "total_lines": 22
         }
       ],
-      "avg_coverage_pct": 50.0,
+      "avg_coverage_pct": 54.54545454545454,
       "critical_gap_count": 0,
       "unused_image_count": 10,
       "ambiguous_pair_count": 0
@@ -31,7 +31,7 @@
         {
           "role": "sound",
           "title": "T-T-Turtle",
-          "coverage_pct": 56.25,
+          "coverage_pct": 68.75,
           "critical_gaps": 0,
           "total_lines": 16
         },
@@ -43,7 +43,7 @@
           "total_lines": 20
         }
       ],
-      "avg_coverage_pct": 45.625,
+      "avg_coverage_pct": 51.875,
       "critical_gap_count": 1,
       "unused_image_count": 9,
       "ambiguous_pair_count": 0
@@ -54,22 +54,22 @@
         {
           "role": "sound",
           "title": "M-M-Moon!",
-          "coverage_pct": 44.44444444444444,
+          "coverage_pct": 66.66666666666666,
           "critical_gaps": 0,
           "total_lines": 18
         },
         {
           "role": "word",
           "title": "On the Mat",
-          "coverage_pct": 35.0,
-          "critical_gaps": 11,
+          "coverage_pct": 95.0,
+          "critical_gaps": 0,
           "total_lines": 20
         }
       ],
-      "avg_coverage_pct": 39.72222222222222,
-      "critical_gap_count": 11,
-      "unused_image_count": 7,
-      "ambiguous_pair_count": 6
+      "avg_coverage_pct": 80.83333333333333,
+      "critical_gap_count": 0,
+      "unused_image_count": 12,
+      "ambiguous_pair_count": 15
     },
     {
       "week": 4,
@@ -77,7 +77,7 @@
         {
           "role": "sound",
           "title": "C-C-Cat!",
-          "coverage_pct": 50.0,
+          "coverage_pct": 68.75,
           "critical_gaps": 0,
           "total_lines": 16
         },
@@ -89,7 +89,7 @@
           "total_lines": 17
         }
       ],
-      "avg_coverage_pct": 63.23529411764706,
+      "avg_coverage_pct": 72.61029411764706,
       "critical_gap_count": 2,
       "unused_image_count": 7,
       "ambiguous_pair_count": 9
@@ -115,7 +115,7 @@
       "avg_coverage_pct": 71.44736842105263,
       "critical_gap_count": 1,
       "unused_image_count": 8,
-      "ambiguous_pair_count": 8
+      "ambiguous_pair_count": 13
     },
     {
       "week": 6,
@@ -137,7 +137,7 @@
       ],
       "avg_coverage_pct": 31.623931623931625,
       "critical_gap_count": 0,
-      "unused_image_count": 7,
+      "unused_image_count": 8,
       "ambiguous_pair_count": 0
     },
     {
@@ -206,8 +206,8 @@
       ],
       "avg_coverage_pct": 72.77777777777777,
       "critical_gap_count": 0,
-      "unused_image_count": 7,
-      "ambiguous_pair_count": 8
+      "unused_image_count": 8,
+      "ambiguous_pair_count": 10
     },
     {
       "week": 10,
@@ -229,8 +229,8 @@
       ],
       "avg_coverage_pct": 68.62745098039215,
       "critical_gap_count": 1,
-      "unused_image_count": 5,
-      "ambiguous_pair_count": 7
+      "unused_image_count": 7,
+      "ambiguous_pair_count": 13
     },
     {
       "week": 11,
@@ -252,8 +252,8 @@
       ],
       "avg_coverage_pct": 46.434782608695656,
       "critical_gap_count": 3,
-      "unused_image_count": 8,
-      "ambiguous_pair_count": 7
+      "unused_image_count": 9,
+      "ambiguous_pair_count": 9
     },
     {
       "week": 12,
@@ -298,8 +298,8 @@
       ],
       "avg_coverage_pct": 73.75,
       "critical_gap_count": 0,
-      "unused_image_count": 10,
-      "ambiguous_pair_count": 11
+      "unused_image_count": 11,
+      "ambiguous_pair_count": 13
     },
     {
       "week": 14,
@@ -321,7 +321,7 @@
       ],
       "avg_coverage_pct": 57.589285714285715,
       "critical_gap_count": 3,
-      "unused_image_count": 7,
+      "unused_image_count": 8,
       "ambiguous_pair_count": 2
     },
     {
@@ -344,8 +344,8 @@
       ],
       "avg_coverage_pct": 73.01587301587301,
       "critical_gap_count": 1,
-      "unused_image_count": 11,
-      "ambiguous_pair_count": 9
+      "unused_image_count": 12,
+      "ambiguous_pair_count": 11
     },
     {
       "week": 16,
@@ -367,8 +367,8 @@
       ],
       "avg_coverage_pct": 72.5,
       "critical_gap_count": 0,
-      "unused_image_count": 12,
-      "ambiguous_pair_count": 8
+      "unused_image_count": 13,
+      "ambiguous_pair_count": 9
     },
     {
       "week": 17,
@@ -376,22 +376,22 @@
         {
           "role": "sound",
           "title": "F-F-Fun!",
-          "coverage_pct": 55.55555555555556,
+          "coverage_pct": 66.66666666666666,
           "critical_gaps": 0,
           "total_lines": 18
         },
         {
           "role": "word",
           "title": "The Fat Fig",
-          "coverage_pct": 80.0,
+          "coverage_pct": 95.0,
           "critical_gaps": 0,
           "total_lines": 20
         }
       ],
-      "avg_coverage_pct": 67.77777777777777,
+      "avg_coverage_pct": 80.83333333333333,
       "critical_gap_count": 0,
-      "unused_image_count": 11,
-      "ambiguous_pair_count": 7
+      "unused_image_count": 12,
+      "ambiguous_pair_count": 8
     },
     {
       "week": 18,
@@ -399,22 +399,22 @@
         {
           "role": "sound",
           "title": "L-L-Log!",
-          "coverage_pct": 55.55555555555556,
+          "coverage_pct": 66.66666666666666,
           "critical_gaps": 0,
           "total_lines": 18
         },
         {
           "role": "word",
           "title": "The Bug on the Log",
-          "coverage_pct": 95.0,
+          "coverage_pct": 100.0,
           "critical_gaps": 0,
           "total_lines": 20
         }
       ],
-      "avg_coverage_pct": 75.27777777777777,
+      "avg_coverage_pct": 83.33333333333333,
       "critical_gap_count": 0,
-      "unused_image_count": 12,
-      "ambiguous_pair_count": 12
+      "unused_image_count": 13,
+      "ambiguous_pair_count": 14
     },
     {
       "week": 19,
@@ -436,8 +436,8 @@
       ],
       "avg_coverage_pct": 50.588235294117645,
       "critical_gap_count": 0,
-      "unused_image_count": 8,
-      "ambiguous_pair_count": 7
+      "unused_image_count": 9,
+      "ambiguous_pair_count": 8
     },
     {
       "week": 20,
@@ -468,22 +468,22 @@
         {
           "role": "sound",
           "title": "K-K-Kick",
-          "coverage_pct": 56.25,
+          "coverage_pct": 68.75,
           "critical_gaps": 0,
           "total_lines": 16
         },
         {
           "role": "word",
           "title": "The Duck Got the Sock",
-          "coverage_pct": 76.19047619047619,
+          "coverage_pct": 80.95238095238095,
           "critical_gaps": 0,
           "total_lines": 21
         }
       ],
-      "avg_coverage_pct": 66.2202380952381,
+      "avg_coverage_pct": 74.85119047619048,
       "critical_gap_count": 0,
-      "unused_image_count": 8,
-      "ambiguous_pair_count": 9
+      "unused_image_count": 10,
+      "ambiguous_pair_count": 11
     },
     {
       "week": 22,
@@ -514,22 +514,22 @@
         {
           "role": "sound",
           "title": "Y-Y-Yes",
-          "coverage_pct": 60.0,
+          "coverage_pct": 73.33333333333333,
           "critical_gaps": 0,
           "total_lines": 15
         },
         {
           "role": "word",
           "title": "Yum! A Yam!",
-          "coverage_pct": 29.411764705882355,
+          "coverage_pct": 41.17647058823529,
           "critical_gaps": 0,
           "total_lines": 17
         }
       ],
-      "avg_coverage_pct": 44.705882352941174,
+      "avg_coverage_pct": 57.25490196078431,
       "critical_gap_count": 0,
-      "unused_image_count": 7,
-      "ambiguous_pair_count": 2
+      "unused_image_count": 8,
+      "ambiguous_pair_count": 3
     },
     {
       "week": 24,
@@ -537,22 +537,22 @@
         {
           "role": "sound",
           "title": "X-X-Box",
-          "coverage_pct": 13.043478260869565,
+          "coverage_pct": 21.73913043478261,
           "critical_gaps": 2,
           "total_lines": 23
         },
         {
           "role": "word",
           "title": "A Fox in a Box",
-          "coverage_pct": 52.63157894736842,
-          "critical_gaps": 5,
+          "coverage_pct": 78.94736842105263,
+          "critical_gaps": 0,
           "total_lines": 19
         }
       ],
-      "avg_coverage_pct": 32.837528604118994,
-      "critical_gap_count": 7,
-      "unused_image_count": 2,
-      "ambiguous_pair_count": 1
+      "avg_coverage_pct": 50.34324942791762,
+      "critical_gap_count": 2,
+      "unused_image_count": 8,
+      "ambiguous_pair_count": 9
     },
     {
       "week": 25,
@@ -560,22 +560,22 @@
         {
           "role": "sound",
           "title": "Qu-Qu-Quack",
-          "coverage_pct": 30.434782608695656,
+          "coverage_pct": 39.130434782608695,
           "critical_gaps": 0,
           "total_lines": 23
         },
         {
           "role": "word",
           "title": "The Duck Says Quack",
-          "coverage_pct": 4.761904761904762,
+          "coverage_pct": 42.857142857142854,
           "critical_gaps": 0,
           "total_lines": 21
         }
       ],
-      "avg_coverage_pct": 17.598343685300208,
+      "avg_coverage_pct": 40.993788819875775,
       "critical_gap_count": 0,
-      "unused_image_count": 6,
-      "ambiguous_pair_count": 0
+      "unused_image_count": 10,
+      "ambiguous_pair_count": 2
     },
     {
       "week": 26,
@@ -583,22 +583,22 @@
         {
           "role": "sound",
           "title": "Z-Z-Zip",
-          "coverage_pct": 21.73913043478261,
+          "coverage_pct": 34.78260869565217,
           "critical_gaps": 2,
           "total_lines": 23
         },
         {
           "role": "word",
           "title": "The Bug Can Buzz",
-          "coverage_pct": 9.523809523809524,
+          "coverage_pct": 47.61904761904761,
           "critical_gaps": 3,
           "total_lines": 21
         }
       ],
-      "avg_coverage_pct": 15.631469979296067,
+      "avg_coverage_pct": 41.20082815734989,
       "critical_gap_count": 5,
-      "unused_image_count": 6,
-      "ambiguous_pair_count": 1
+      "unused_image_count": 9,
+      "ambiguous_pair_count": 5
     },
     {
       "week": 27,
@@ -613,15 +613,15 @@
         {
           "role": "word",
           "title": "The Fish on the Ship",
-          "coverage_pct": 43.75,
-          "critical_gaps": 2,
+          "coverage_pct": 81.25,
+          "critical_gaps": 0,
           "total_lines": 16
         }
       ],
-      "avg_coverage_pct": 37.875,
-      "critical_gap_count": 2,
-      "unused_image_count": 7,
-      "ambiguous_pair_count": 2
+      "avg_coverage_pct": 56.625,
+      "critical_gap_count": 0,
+      "unused_image_count": 8,
+      "ambiguous_pair_count": 6
     },
     {
       "week": 28,
@@ -643,7 +643,7 @@
       ],
       "avg_coverage_pct": 53.25,
       "critical_gap_count": 1,
-      "unused_image_count": 5,
+      "unused_image_count": 6,
       "ambiguous_pair_count": 9
     },
     {
@@ -675,22 +675,22 @@
         {
           "role": "sound",
           "title": "Ck! Ck! Bell!",
-          "coverage_pct": 18.181818181818183,
+          "coverage_pct": 27.27272727272727,
           "critical_gaps": 1,
           "total_lines": 22
         },
         {
           "role": "word",
           "title": "The Bell on the Hill",
-          "coverage_pct": 56.25,
+          "coverage_pct": 81.25,
           "critical_gaps": 0,
           "total_lines": 16
         }
       ],
-      "avg_coverage_pct": 37.21590909090909,
+      "avg_coverage_pct": 54.26136363636363,
       "critical_gap_count": 1,
-      "unused_image_count": 3,
-      "ambiguous_pair_count": 4
+      "unused_image_count": 8,
+      "ambiguous_pair_count": 10
     },
     {
       "week": 31,
@@ -698,22 +698,22 @@
         {
           "role": "sound",
           "title": "Ng-Ng-King!",
-          "coverage_pct": 24.0,
+          "coverage_pct": 32.0,
           "critical_gaps": 2,
           "total_lines": 25
         },
         {
           "role": "word",
           "title": "The King Can Sing",
-          "coverage_pct": 26.923076923076923,
+          "coverage_pct": 76.92307692307693,
           "critical_gaps": 0,
           "total_lines": 26
         }
       ],
-      "avg_coverage_pct": 25.46153846153846,
+      "avg_coverage_pct": 54.46153846153847,
       "critical_gap_count": 2,
-      "unused_image_count": 2,
-      "ambiguous_pair_count": 3
+      "unused_image_count": 4,
+      "ambiguous_pair_count": 7
     },
     {
       "week": 32,
@@ -744,22 +744,22 @@
         {
           "role": "sound",
           "title": "St-St-Stop!",
-          "coverage_pct": 0.0,
+          "coverage_pct": 3.8461538461538463,
           "critical_gaps": 0,
           "total_lines": 26
         },
         {
           "role": "word",
           "title": "Stop, Snake, Stop!",
-          "coverage_pct": 18.75,
-          "critical_gaps": 1,
+          "coverage_pct": 81.25,
+          "critical_gaps": 0,
           "total_lines": 16
         }
       ],
-      "avg_coverage_pct": 9.375,
-      "critical_gap_count": 1,
-      "unused_image_count": 5,
-      "ambiguous_pair_count": 0
+      "avg_coverage_pct": 42.54807692307692,
+      "critical_gap_count": 0,
+      "unused_image_count": 6,
+      "ambiguous_pair_count": 7
     },
     {
       "week": 34,
@@ -767,22 +767,22 @@
         {
           "role": "sound",
           "title": "Fl-Fl-Flag!",
-          "coverage_pct": 20.0,
+          "coverage_pct": 32.0,
           "critical_gaps": 0,
           "total_lines": 25
         },
         {
           "role": "word",
           "title": "The Flag on the Sled",
-          "coverage_pct": 62.5,
+          "coverage_pct": 75.0,
           "critical_gaps": 0,
           "total_lines": 16
         }
       ],
-      "avg_coverage_pct": 41.25,
+      "avg_coverage_pct": 53.5,
       "critical_gap_count": 0,
-      "unused_image_count": 5,
-      "ambiguous_pair_count": 5
+      "unused_image_count": 6,
+      "ambiguous_pair_count": 7
     },
     {
       "week": 35,
@@ -790,22 +790,22 @@
         {
           "role": "sound",
           "title": "Fr-Fr-Frog!",
-          "coverage_pct": 24.0,
+          "coverage_pct": 40.0,
           "critical_gaps": 0,
           "total_lines": 25
         },
         {
           "role": "word",
           "title": "Frog Can Grin",
-          "coverage_pct": 81.25,
+          "coverage_pct": 87.5,
           "critical_gaps": 0,
           "total_lines": 16
         }
       ],
-      "avg_coverage_pct": 52.625,
+      "avg_coverage_pct": 63.75,
       "critical_gap_count": 0,
-      "unused_image_count": 5,
-      "ambiguous_pair_count": 6
+      "unused_image_count": 7,
+      "ambiguous_pair_count": 11
     },
     {
       "week": 36,
@@ -813,22 +813,22 @@
         {
           "role": "sound",
           "title": "Hand-Hand-Hand!",
-          "coverage_pct": 16.0,
-          "critical_gaps": 2,
+          "coverage_pct": 44.0,
+          "critical_gaps": 1,
           "total_lines": 25
         },
         {
           "role": "word",
           "title": "The Best Nest",
-          "coverage_pct": 62.5,
-          "critical_gaps": 3,
+          "coverage_pct": 87.5,
+          "critical_gaps": 0,
           "total_lines": 16
         }
       ],
-      "avg_coverage_pct": 39.25,
-      "critical_gap_count": 5,
-      "unused_image_count": 4,
-      "ambiguous_pair_count": 1
+      "avg_coverage_pct": 65.75,
+      "critical_gap_count": 1,
+      "unused_image_count": 9,
+      "ambiguous_pair_count": 9
     },
     {
       "week": 37,
@@ -836,7 +836,7 @@
         {
           "role": "sound",
           "title": "Pink-Pink-Pink!",
-          "coverage_pct": 28.000000000000004,
+          "coverage_pct": 36.0,
           "critical_gaps": 1,
           "total_lines": 25
         },
@@ -848,9 +848,9 @@
           "total_lines": 16
         }
       ],
-      "avg_coverage_pct": 45.25,
+      "avg_coverage_pct": 49.25,
       "critical_gap_count": 1,
-      "unused_image_count": 4,
+      "unused_image_count": 7,
       "ambiguous_pair_count": 5
     },
     {
@@ -859,22 +859,22 @@
         {
           "role": "sound",
           "title": "Magic E Makes Cake",
-          "coverage_pct": 20.0,
+          "coverage_pct": 25.0,
           "critical_gaps": 0,
           "total_lines": 20
         },
         {
           "role": "word",
           "title": "The Snake and the Cake",
-          "coverage_pct": 62.5,
+          "coverage_pct": 68.75,
           "critical_gaps": 1,
           "total_lines": 16
         }
       ],
-      "avg_coverage_pct": 41.25,
+      "avg_coverage_pct": 46.875,
       "critical_gap_count": 1,
       "unused_image_count": 6,
-      "ambiguous_pair_count": 2
+      "ambiguous_pair_count": 4
     },
     {
       "week": 39,
@@ -882,22 +882,22 @@
         {
           "role": "sound",
           "title": "Magic E Makes Bike",
-          "coverage_pct": 20.0,
+          "coverage_pct": 30.0,
           "critical_gaps": 0,
           "total_lines": 20
         },
         {
           "role": "word",
           "title": "The Bike Ride",
-          "coverage_pct": 81.25,
+          "coverage_pct": 87.5,
           "critical_gaps": 0,
           "total_lines": 16
         }
       ],
-      "avg_coverage_pct": 50.625,
+      "avg_coverage_pct": 58.75,
       "critical_gap_count": 0,
-      "unused_image_count": 6,
-      "ambiguous_pair_count": 5
+      "unused_image_count": 10,
+      "ambiguous_pair_count": 10
     },
     {
       "week": 40,
@@ -905,22 +905,22 @@
         {
           "role": "sound",
           "title": "Magic E Makes Bone",
-          "coverage_pct": 16.666666666666664,
-          "critical_gaps": 1,
+          "coverage_pct": 27.77777777777778,
+          "critical_gaps": 0,
           "total_lines": 18
         },
         {
           "role": "word",
           "title": "The Bone at Home",
-          "coverage_pct": 68.75,
+          "coverage_pct": 75.0,
           "critical_gaps": 0,
           "total_lines": 16
         }
       ],
-      "avg_coverage_pct": 42.70833333333333,
-      "critical_gap_count": 1,
-      "unused_image_count": 4,
-      "ambiguous_pair_count": 4
+      "avg_coverage_pct": 51.388888888888886,
+      "critical_gap_count": 0,
+      "unused_image_count": 7,
+      "ambiguous_pair_count": 6
     },
     {
       "week": 41,
@@ -942,8 +942,8 @@
       ],
       "avg_coverage_pct": 60.06944444444444,
       "critical_gap_count": 0,
-      "unused_image_count": 7,
-      "ambiguous_pair_count": 8
+      "unused_image_count": 9,
+      "ambiguous_pair_count": 13
     },
     {
       "week": 42,
@@ -965,8 +965,8 @@
       ],
       "avg_coverage_pct": 67.5,
       "critical_gap_count": 0,
-      "unused_image_count": 9,
-      "ambiguous_pair_count": 7
+      "unused_image_count": 10,
+      "ambiguous_pair_count": 9
     },
     {
       "week": 43,
@@ -988,8 +988,8 @@
       ],
       "avg_coverage_pct": 80.59210526315789,
       "critical_gap_count": 0,
-      "unused_image_count": 9,
-      "ambiguous_pair_count": 9
+      "unused_image_count": 10,
+      "ambiguous_pair_count": 11
     },
     {
       "week": 44,
@@ -997,7 +997,7 @@
         {
           "role": "sound",
           "title": "Ee-Ee-Tree!",
-          "coverage_pct": 57.89473684210527,
+          "coverage_pct": 63.1578947368421,
           "critical_gaps": 0,
           "total_lines": 19
         },
@@ -1009,10 +1009,10 @@
           "total_lines": 16
         }
       ],
-      "avg_coverage_pct": 69.57236842105263,
+      "avg_coverage_pct": 72.20394736842105,
       "critical_gap_count": 0,
-      "unused_image_count": 6,
-      "ambiguous_pair_count": 2
+      "unused_image_count": 7,
+      "ambiguous_pair_count": 6
     },
     {
       "week": 45,
@@ -1020,22 +1020,22 @@
         {
           "role": "sound",
           "title": "Oh-Oh-Snow!",
-          "coverage_pct": 64.70588235294117,
-          "critical_gaps": 2,
+          "coverage_pct": 82.35294117647058,
+          "critical_gaps": 0,
           "total_lines": 17
         },
         {
           "role": "word",
           "title": "The Goat in the Snow",
-          "coverage_pct": 62.5,
-          "critical_gaps": 1,
+          "coverage_pct": 81.25,
+          "critical_gaps": 0,
           "total_lines": 16
         }
       ],
-      "avg_coverage_pct": 63.60294117647059,
-      "critical_gap_count": 3,
-      "unused_image_count": 7,
-      "ambiguous_pair_count": 4
+      "avg_coverage_pct": 81.80147058823529,
+      "critical_gap_count": 0,
+      "unused_image_count": 9,
+      "ambiguous_pair_count": 10
     },
     {
       "week": 46,
@@ -1057,8 +1057,8 @@
       ],
       "avg_coverage_pct": 75.32894736842105,
       "critical_gap_count": 0,
-      "unused_image_count": 7,
-      "ambiguous_pair_count": 9
+      "unused_image_count": 8,
+      "ambiguous_pair_count": 10
     },
     {
       "week": 47,
@@ -1066,22 +1066,22 @@
         {
           "role": "sound",
           "title": "Ar-Ar-Star!",
-          "coverage_pct": 26.31578947368421,
-          "critical_gaps": 1,
+          "coverage_pct": 63.1578947368421,
+          "critical_gaps": 0,
           "total_lines": 19
         },
         {
           "role": "word",
           "title": "The Star in the Dark",
-          "coverage_pct": 43.75,
-          "critical_gaps": 4,
+          "coverage_pct": 87.5,
+          "critical_gaps": 0,
           "total_lines": 16
         }
       ],
-      "avg_coverage_pct": 35.0328947368421,
-      "critical_gap_count": 5,
-      "unused_image_count": 5,
-      "ambiguous_pair_count": 3
+      "avg_coverage_pct": 75.32894736842105,
+      "critical_gap_count": 0,
+      "unused_image_count": 6,
+      "ambiguous_pair_count": 8
     },
     {
       "week": 48,
@@ -1089,22 +1089,22 @@
         {
           "role": "sound",
           "title": "Or-Or-Corn!",
-          "coverage_pct": 23.52941176470588,
-          "critical_gaps": 1,
+          "coverage_pct": 70.58823529411765,
+          "critical_gaps": 0,
           "total_lines": 17
         },
         {
           "role": "word",
           "title": "More Corn for the Horse",
-          "coverage_pct": 56.25,
-          "critical_gaps": 1,
+          "coverage_pct": 87.5,
+          "critical_gaps": 0,
           "total_lines": 16
         }
       ],
-      "avg_coverage_pct": 39.88970588235294,
-      "critical_gap_count": 2,
-      "unused_image_count": 5,
-      "ambiguous_pair_count": 5
+      "avg_coverage_pct": 79.04411764705883,
+      "critical_gap_count": 0,
+      "unused_image_count": 8,
+      "ambiguous_pair_count": 14
     },
     {
       "week": 49,
@@ -1112,7 +1112,7 @@
         {
           "role": "sound",
           "title": "Er-Er-Bird!",
-          "coverage_pct": 15.0,
+          "coverage_pct": 20.0,
           "critical_gaps": 1,
           "total_lines": 20
         },
@@ -1124,7 +1124,7 @@
           "total_lines": 17
         }
       ],
-      "avg_coverage_pct": 28.088235294117645,
+      "avg_coverage_pct": 30.588235294117645,
       "critical_gap_count": 2,
       "unused_image_count": 5,
       "ambiguous_pair_count": 3
@@ -1135,22 +1135,22 @@
         {
           "role": "sound",
           "title": "Ship or Sheep?",
-          "coverage_pct": 30.0,
+          "coverage_pct": 40.0,
           "critical_gaps": 0,
           "total_lines": 20
         },
         {
           "role": "word",
           "title": "Ship or Sheep?",
-          "coverage_pct": 76.47058823529412,
+          "coverage_pct": 82.35294117647058,
           "critical_gaps": 0,
           "total_lines": 17
         }
       ],
-      "avg_coverage_pct": 53.23529411764706,
+      "avg_coverage_pct": 61.17647058823529,
       "critical_gap_count": 0,
-      "unused_image_count": 3,
-      "ambiguous_pair_count": 6
+      "unused_image_count": 5,
+      "ambiguous_pair_count": 11
     },
     {
       "week": 51,
@@ -1158,22 +1158,22 @@
         {
           "role": "sound",
           "title": "Oo-Oo-Moon!",
-          "coverage_pct": 10.0,
+          "coverage_pct": 40.0,
           "critical_gaps": 0,
           "total_lines": 20
         },
         {
           "role": "word",
           "title": "Look at the Moon",
-          "coverage_pct": 41.17647058823529,
+          "coverage_pct": 76.47058823529412,
           "critical_gaps": 0,
           "total_lines": 17
         }
       ],
-      "avg_coverage_pct": 25.588235294117645,
+      "avg_coverage_pct": 58.23529411764706,
       "critical_gap_count": 0,
-      "unused_image_count": 6,
-      "ambiguous_pair_count": 3
+      "unused_image_count": 8,
+      "ambiguous_pair_count": 7
     },
     {
       "week": 52,
@@ -1181,22 +1181,22 @@
         {
           "role": "sound",
           "title": "Ow-Ow-Owl!",
-          "coverage_pct": 25.0,
-          "critical_gaps": 3,
+          "coverage_pct": 35.0,
+          "critical_gaps": 1,
           "total_lines": 20
         },
         {
           "role": "word",
           "title": "The Owl in Town",
-          "coverage_pct": 52.94117647058824,
-          "critical_gaps": 5,
+          "coverage_pct": 64.70588235294117,
+          "critical_gaps": 4,
           "total_lines": 17
         }
       ],
-      "avg_coverage_pct": 38.970588235294116,
-      "critical_gap_count": 8,
-      "unused_image_count": 6,
-      "ambiguous_pair_count": 5
+      "avg_coverage_pct": 49.85294117647059,
+      "critical_gap_count": 5,
+      "unused_image_count": 8,
+      "ambiguous_pair_count": 9
     },
     {
       "week": 53,
@@ -1227,7 +1227,7 @@
         {
           "role": "sound",
           "title": "New-Blue-True!",
-          "coverage_pct": 15.0,
+          "coverage_pct": 25.0,
           "critical_gaps": 0,
           "total_lines": 20
         },
@@ -1239,10 +1239,10 @@
           "total_lines": 17
         }
       ],
-      "avg_coverage_pct": 45.73529411764706,
+      "avg_coverage_pct": 50.73529411764706,
       "critical_gap_count": 0,
       "unused_image_count": 6,
-      "ambiguous_pair_count": 7
+      "ambiguous_pair_count": 8
     },
     {
       "week": 55,
@@ -1326,14 +1326,14 @@
         {
           "role": "word",
           "title": "The Celebration",
-          "coverage_pct": 10.0,
+          "coverage_pct": 15.0,
           "critical_gaps": 2,
           "total_lines": 20
         }
       ],
-      "avg_coverage_pct": 12.142857142857142,
+      "avg_coverage_pct": 14.642857142857142,
       "critical_gap_count": 3,
-      "unused_image_count": 4,
+      "unused_image_count": 6,
       "ambiguous_pair_count": 0
     }
   ],
@@ -1343,8 +1343,8 @@
       "role": "word",
       "title": "It's A (Potato)",
       "total_sung_lines": 22,
-      "covered_lines_phrase": 11,
-      "coverage_pct": 50.0,
+      "covered_lines_phrase": 12,
+      "coverage_pct": 54.54545454545454,
       "lines": [
         {
           "line": "ah\u2026 ah\u2026 ah\u2026",
@@ -1438,8 +1438,8 @@
             "ah",
             "ax"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "ax.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -1591,7 +1591,8 @@
         "07-apple.png",
         "10-potato.png",
         "11-ant.png",
-        "12-alligator.png"
+        "12-alligator.png",
+        "ax.png"
       ]
     },
     {
@@ -1599,8 +1600,8 @@
       "role": "sound",
       "title": "T-T-Turtle",
       "total_sung_lines": 16,
-      "covered_lines_phrase": 9,
-      "coverage_pct": 56.25,
+      "covered_lines_phrase": 11,
+      "coverage_pct": 68.75,
       "lines": [
         {
           "line": "(tick, tick, tick)",
@@ -1753,8 +1754,8 @@
             "table",
             "table"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "table.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -1764,8 +1765,8 @@
             "table",
             "table"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "table.png",
+          "match_type": "phrase",
           "is_scene_line": false
         }
       ],
@@ -1775,7 +1776,8 @@
         "11-tiger.png",
         "12-tomato.png",
         "13-taxi.png",
-        "18-potato.png"
+        "18-potato.png",
+        "table.png"
       ]
     },
     {
@@ -2048,8 +2050,8 @@
       "role": "sound",
       "title": "M-M-Moon!",
       "total_sung_lines": 18,
-      "covered_lines_phrase": 8,
-      "coverage_pct": 44.44444444444444,
+      "covered_lines_phrase": 12,
+      "coverage_pct": 66.66666666666666,
       "lines": [
         {
           "line": "(mmm\u2026 mmm\u2026)",
@@ -2190,8 +2192,8 @@
           "tokens": [
             "potato"
           ],
-          "best_image": "potato-on-mat.png",
-          "match_type": "weak",
+          "best_image": "potato.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -2200,8 +2202,8 @@
             "potato",
             "not"
           ],
-          "best_image": "potato-on-mat.png",
-          "match_type": "weak",
+          "best_image": "potato.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -2220,8 +2222,8 @@
             "mat",
             "mat"
           ],
-          "best_image": "mango-on-mat.png",
-          "match_type": "weak",
+          "best_image": "mat.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -2230,19 +2232,19 @@
             "mat",
             "mat"
           ],
-          "best_image": "mango-on-mat.png",
-          "match_type": "weak",
+          "best_image": "mat.png",
+          "match_type": "phrase",
           "is_scene_line": false
         }
       ],
       "critical_gaps": [],
       "images_used": [
-        "mango-on-mat.png",
+        "mat.png",
         "monkey.png",
         "moon.png",
         "mop.png",
         "mouse.png",
-        "potato-on-mat.png"
+        "potato.png"
       ]
     },
     {
@@ -2250,8 +2252,8 @@
       "role": "word",
       "title": "On the Mat",
       "total_sung_lines": 20,
-      "covered_lines_phrase": 7,
-      "coverage_pct": 35.0,
+      "covered_lines_phrase": 19,
+      "coverage_pct": 95.0,
       "lines": [
         {
           "line": "On the mat! On the mat!",
@@ -2261,8 +2263,8 @@
             "on",
             "mat"
           ],
-          "best_image": "mango-on-mat.png",
-          "match_type": "weak",
+          "best_image": "mat.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -2272,8 +2274,8 @@
             "on",
             "mat"
           ],
-          "best_image": "mango-on-mat.png",
-          "match_type": "weak",
+          "best_image": "mat.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -2284,7 +2286,7 @@
             "mat",
             "moon"
           ],
-          "best_image": "moon-on-mat.png",
+          "best_image": "mat.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -2295,7 +2297,7 @@
             "on",
             "mat"
           ],
-          "best_image": "moon-on-mat.png",
+          "best_image": "mat.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -2307,8 +2309,8 @@
             "on",
             "mat"
           ],
-          "best_image": "mango-on-mat.png",
-          "match_type": "weak",
+          "best_image": "mat.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -2318,8 +2320,8 @@
             "on",
             "mat"
           ],
-          "best_image": "mango-on-mat.png",
-          "match_type": "weak",
+          "best_image": "mat.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -2330,7 +2332,7 @@
             "mat",
             "mouse"
           ],
-          "best_image": "mouse-on-mat.png",
+          "best_image": "mat.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -2341,7 +2343,7 @@
             "on",
             "mat"
           ],
-          "best_image": "mouse-on-mat.png",
+          "best_image": "mat.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -2353,8 +2355,8 @@
             "on",
             "mat"
           ],
-          "best_image": "mango-on-mat.png",
-          "match_type": "weak",
+          "best_image": "mat.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -2364,8 +2366,8 @@
             "on",
             "mat"
           ],
-          "best_image": "mango-on-mat.png",
-          "match_type": "weak",
+          "best_image": "mat.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -2376,7 +2378,7 @@
             "mat",
             "monkey"
           ],
-          "best_image": "monkey-on-mat.png",
+          "best_image": "mat.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -2387,7 +2389,7 @@
             "on",
             "mat"
           ],
-          "best_image": "monkey-on-mat.png",
+          "best_image": "mat.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -2399,8 +2401,8 @@
             "on",
             "mat"
           ],
-          "best_image": "mango-on-mat.png",
-          "match_type": "weak",
+          "best_image": "mat.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -2410,8 +2412,8 @@
             "on",
             "mat"
           ],
-          "best_image": "mango-on-mat.png",
-          "match_type": "weak",
+          "best_image": "mat.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -2422,8 +2424,8 @@
             "mat",
             "sejeena"
           ],
-          "best_image": "mango-on-mat.png",
-          "match_type": "weak",
+          "best_image": "mat.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -2433,8 +2435,8 @@
             "on",
             "mat"
           ],
-          "best_image": "mango-on-mat.png",
-          "match_type": "weak",
+          "best_image": "mat.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -2444,7 +2446,7 @@
             "on",
             "mat"
           ],
-          "best_image": "potato-on-mat.png",
+          "best_image": "mat.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -2453,8 +2455,8 @@
           "tokens": [
             "potato"
           ],
-          "best_image": "potato-on-mat.png",
-          "match_type": "weak",
+          "best_image": "potato.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -2465,8 +2467,8 @@
             "on",
             "mat"
           ],
-          "best_image": "mango-on-mat.png",
-          "match_type": "weak",
+          "best_image": "mat.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -2479,102 +2481,10 @@
           "is_scene_line": false
         }
       ],
-      "critical_gaps": [
-        {
-          "week": 3,
-          "role": "word",
-          "song_title": "On the Mat",
-          "line": "On the mat! On the mat!",
-          "match_type": "weak",
-          "nearest_image": "mango-on-mat.png"
-        },
-        {
-          "week": 3,
-          "role": "word",
-          "song_title": "On the Mat",
-          "line": "What is on the mat?",
-          "match_type": "weak",
-          "nearest_image": "mango-on-mat.png"
-        },
-        {
-          "week": 3,
-          "role": "word",
-          "song_title": "On the Mat",
-          "line": "On the mat! On the mat!",
-          "match_type": "weak",
-          "nearest_image": "mango-on-mat.png"
-        },
-        {
-          "week": 3,
-          "role": "word",
-          "song_title": "On the Mat",
-          "line": "What is on the mat?",
-          "match_type": "weak",
-          "nearest_image": "mango-on-mat.png"
-        },
-        {
-          "week": 3,
-          "role": "word",
-          "song_title": "On the Mat",
-          "line": "On the mat! On the mat!",
-          "match_type": "weak",
-          "nearest_image": "mango-on-mat.png"
-        },
-        {
-          "week": 3,
-          "role": "word",
-          "song_title": "On the Mat",
-          "line": "What is on the mat?",
-          "match_type": "weak",
-          "nearest_image": "mango-on-mat.png"
-        },
-        {
-          "week": 3,
-          "role": "word",
-          "song_title": "On the Mat",
-          "line": "On the mat! On the mat!",
-          "match_type": "weak",
-          "nearest_image": "mango-on-mat.png"
-        },
-        {
-          "week": 3,
-          "role": "word",
-          "song_title": "On the Mat",
-          "line": "What is on the mat?",
-          "match_type": "weak",
-          "nearest_image": "mango-on-mat.png"
-        },
-        {
-          "week": 3,
-          "role": "word",
-          "song_title": "On the Mat",
-          "line": "Sejeena is on the mat! (Sejeena!)",
-          "match_type": "weak",
-          "nearest_image": "mango-on-mat.png"
-        },
-        {
-          "week": 3,
-          "role": "word",
-          "song_title": "On the Mat",
-          "line": "Sejeena is on the mat!",
-          "match_type": "weak",
-          "nearest_image": "mango-on-mat.png"
-        },
-        {
-          "week": 3,
-          "role": "word",
-          "song_title": "On the Mat",
-          "line": "On the mat! On the mat!",
-          "match_type": "weak",
-          "nearest_image": "mango-on-mat.png"
-        }
-      ],
+      "critical_gaps": [],
       "images_used": [
-        "mango-on-mat.png",
-        "monkey-on-mat.png",
-        "moon-on-mat.png",
-        "mouse-on-mat.png",
-        "potato-on-mat.png"
+        "mat.png",
+        "potato.png"
       ]
     },
     {
@@ -2582,8 +2492,8 @@
       "role": "sound",
       "title": "C-C-Cat!",
       "total_sung_lines": 16,
-      "covered_lines_phrase": 8,
-      "coverage_pct": 50.0,
+      "covered_lines_phrase": 11,
+      "coverage_pct": 68.75,
       "lines": [
         {
           "line": "What begins with C?",
@@ -2633,8 +2543,8 @@
             "cup",
             "cup"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "cup.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -2643,8 +2553,8 @@
             "cup",
             "cup"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "cup.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -2724,8 +2634,8 @@
             "potato",
             "not"
           ],
-          "best_image": "potato-beside-cat.png",
-          "match_type": "weak",
+          "best_image": "potato-not-c.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -2754,7 +2664,9 @@
         "car.png",
         "cat.png",
         "cow.png",
-        "potato-beside-cat.png"
+        "cup.png",
+        "potato-beside-cat.png",
+        "potato-not-c.png"
       ]
     },
     {
@@ -3295,7 +3207,7 @@
             "sock",
             "sock"
           ],
-          "best_image": "sam-sat.png",
+          "best_image": "sam-sat-on-sock.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -3307,7 +3219,7 @@
             "on",
             "sock"
           ],
-          "best_image": "sam-sat.png",
+          "best_image": "sam-sat-on-sock.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -3427,7 +3339,7 @@
             "on",
             "potato"
           ],
-          "best_image": "sam-sat.png",
+          "best_image": "sam-sat-on-potato.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -3454,6 +3366,8 @@
       "images_used": [
         "cat-on-sam.png",
         "potato-mat-sam.png",
+        "sam-sat-on-potato.png",
+        "sam-sat-on-sock.png",
         "sam-sat.png",
         "sam.png"
       ]
@@ -5600,7 +5514,7 @@
             "ant",
             "ant"
           ],
-          "best_image": "dad-and-ant.png",
+          "best_image": "dad-and-ant-v2.png",
           "match_type": "weak",
           "is_scene_line": false
         },
@@ -5611,7 +5525,7 @@
             "on",
             "mat"
           ],
-          "best_image": "all-and-mat.png",
+          "best_image": "all-and-mat-v2.png",
           "match_type": "weak",
           "is_scene_line": true
         },
@@ -5714,11 +5628,12 @@
           "song_title": "Dad and the Ant",
           "line": "All on the mat!",
           "match_type": "weak",
-          "nearest_image": "all-and-mat.png"
+          "nearest_image": "all-and-mat-v2.png"
         }
       ],
       "images_used": [
-        "all-and-mat.png",
+        "all-and-mat-v2.png",
+        "dad-and-ant-v2.png",
         "dad-and-ant.png",
         "dad-and-cat.png",
         "dad-and-sam.png",
@@ -6578,7 +6493,7 @@
             "in",
             "pit"
           ],
-          "best_image": "hat-in-pit.png",
+          "best_image": "cat-in-pit.png",
           "match_type": "weak",
           "is_scene_line": true
         },
@@ -6622,7 +6537,7 @@
             "in",
             "pit"
           ],
-          "best_image": "hat-in-pit.png",
+          "best_image": "cat-in-pit.png",
           "match_type": "weak",
           "is_scene_line": true
         },
@@ -6666,7 +6581,7 @@
             "in",
             "pit"
           ],
-          "best_image": "hat-in-pit.png",
+          "best_image": "cat-in-pit.png",
           "match_type": "weak",
           "is_scene_line": true
         },
@@ -6710,7 +6625,7 @@
             "in",
             "pit"
           ],
-          "best_image": "hat-in-pit.png",
+          "best_image": "cat-in-pit.png",
           "match_type": "weak",
           "is_scene_line": true
         },
@@ -6720,8 +6635,8 @@
             "cat",
             "cat"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "cat-in-pit.png",
+          "match_type": "weak",
           "is_scene_line": false
         },
         {
@@ -6731,8 +6646,8 @@
             "mad",
             "hiss"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "cat-in-pit.png",
+          "match_type": "weak",
           "is_scene_line": false
         },
         {
@@ -6754,7 +6669,7 @@
             "in",
             "pit"
           ],
-          "best_image": "hat-in-pit.png",
+          "best_image": "cat-in-pit.png",
           "match_type": "weak",
           "is_scene_line": true
         },
@@ -6786,7 +6701,7 @@
           "song_title": "The Dog Digs",
           "line": "What is in the pit?",
           "match_type": "weak",
-          "nearest_image": "hat-in-pit.png"
+          "nearest_image": "cat-in-pit.png"
         },
         {
           "week": 12,
@@ -6794,7 +6709,7 @@
           "song_title": "The Dog Digs",
           "line": "What is in the pit?",
           "match_type": "weak",
-          "nearest_image": "hat-in-pit.png"
+          "nearest_image": "cat-in-pit.png"
         },
         {
           "week": 12,
@@ -6802,7 +6717,7 @@
           "song_title": "The Dog Digs",
           "line": "What is in the pit?",
           "match_type": "weak",
-          "nearest_image": "hat-in-pit.png"
+          "nearest_image": "cat-in-pit.png"
         },
         {
           "week": 12,
@@ -6810,7 +6725,7 @@
           "song_title": "The Dog Digs",
           "line": "What is in the pit?",
           "match_type": "weak",
-          "nearest_image": "hat-in-pit.png"
+          "nearest_image": "cat-in-pit.png"
         },
         {
           "week": 12,
@@ -6818,10 +6733,11 @@
           "song_title": "The Dog Digs",
           "line": "What is in the pit?",
           "match_type": "weak",
-          "nearest_image": "hat-in-pit.png"
+          "nearest_image": "cat-in-pit.png"
         }
       ],
       "images_used": [
+        "cat-in-pit.png",
         "dog-digs.png",
         "dog.png",
         "hat-in-pit.png",
@@ -7639,7 +7555,7 @@
             "on",
             "cat"
           ],
-          "best_image": "hen-on-dog.png",
+          "best_image": "hen-on-cat.png",
           "match_type": "weak",
           "is_scene_line": true
         },
@@ -7651,7 +7567,7 @@
             "on",
             "cat"
           ],
-          "best_image": "ten-hens.png",
+          "best_image": "hen-on-cat.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -7722,14 +7638,14 @@
           "song_title": "Ten Hens",
           "line": "On the cat?! (on the CAT?!)",
           "match_type": "weak",
-          "nearest_image": "hen-on-dog.png"
+          "nearest_image": "hen-on-cat.png"
         }
       ],
       "images_used": [
         "bed.png",
         "big-egg.png",
         "get.png",
-        "hen-on-dog.png",
+        "hen-on-cat.png",
         "hens-in-pen.png",
         "hens-on-man.png",
         "potato-egg.png",
@@ -8044,7 +7960,7 @@
             "sat",
             "sat"
           ],
-          "best_image": "rat.png",
+          "best_image": "rat-sat.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -8057,7 +7973,7 @@
             "sat",
             "sat"
           ],
-          "best_image": "rat.png",
+          "best_image": "rat-sat.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -8093,7 +8009,7 @@
             "hid",
             "hid"
           ],
-          "best_image": "rat.png",
+          "best_image": "rat-hid.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -8106,7 +8022,7 @@
             "hid",
             "hid"
           ],
-          "best_image": "rat.png",
+          "best_image": "rat-hid.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -8220,6 +8136,8 @@
       "images_used": [
         "potato-and-rat-in-bag.png",
         "ran.png",
+        "rat-hid.png",
+        "rat-sat.png",
         "rat.png"
       ]
     },
@@ -8403,8 +8321,8 @@
             "wall",
             "full"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "vowel-wall-complete.png",
+          "match_type": "weak",
           "is_scene_line": false
         },
         {
@@ -8427,7 +8345,8 @@
         "umbrella.png",
         "uncle.png",
         "under.png",
-        "up.png"
+        "up.png",
+        "vowel-wall-complete.png"
       ]
     },
     {
@@ -8587,7 +8506,7 @@
             "in",
             "sun"
           ],
-          "best_image": "up.png",
+          "best_image": "sun.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -8700,6 +8619,7 @@
         "potato-on-summit.png",
         "pup.png",
         "run.png",
+        "sun.png",
         "up.png"
       ]
     },
@@ -8708,8 +8628,8 @@
       "role": "sound",
       "title": "F-F-Fun!",
       "total_sung_lines": 18,
-      "covered_lines_phrase": 10,
-      "coverage_pct": 55.55555555555556,
+      "covered_lines_phrase": 12,
+      "coverage_pct": 66.66666666666666,
       "lines": [
         {
           "line": "(fff\u2026 fff\u2026 fff\u2026)",
@@ -8851,8 +8771,8 @@
           "tokens": [
             "potato"
           ],
-          "best_image": "potato-running.png",
-          "match_type": "weak",
+          "best_image": "potato.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -8861,8 +8781,8 @@
             "potato",
             "not"
           ],
-          "best_image": "potato-running.png",
-          "match_type": "weak",
+          "best_image": "potato.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -8908,7 +8828,7 @@
         "fox.png",
         "frog.png",
         "fun.png",
-        "potato-running.png"
+        "potato.png"
       ]
     },
     {
@@ -8916,8 +8836,8 @@
       "role": "word",
       "title": "The Fat Fig",
       "total_sung_lines": 20,
-      "covered_lines_phrase": 16,
-      "coverage_pct": 80.0,
+      "covered_lines_phrase": 19,
+      "coverage_pct": 95.0,
       "lines": [
         {
           "line": "(fun\u2026 fun\u2026 a fun run\u2026)",
@@ -9011,8 +8931,8 @@
             "cat",
             "ran"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "cat.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -9132,8 +9052,8 @@
             "potato",
             "ran"
           ],
-          "best_image": "potato-running.png",
-          "match_type": "weak",
+          "best_image": "potato.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -9141,8 +9061,8 @@
           "tokens": [
             "potato"
           ],
-          "best_image": "potato-running.png",
-          "match_type": "weak",
+          "best_image": "potato.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -9162,9 +9082,10 @@
       ],
       "critical_gaps": [],
       "images_used": [
+        "cat.png",
         "fat-fig.png",
         "fun.png",
-        "potato-running.png"
+        "potato.png"
       ]
     },
     {
@@ -9172,8 +9093,8 @@
       "role": "sound",
       "title": "L-L-Log!",
       "total_sung_lines": 18,
-      "covered_lines_phrase": 10,
-      "coverage_pct": 55.55555555555556,
+      "covered_lines_phrase": 12,
+      "coverage_pct": 66.66666666666666,
       "lines": [
         {
           "line": "(lll\u2026 lll\u2026 lll\u2026)",
@@ -9315,8 +9236,8 @@
           "tokens": [
             "potato"
           ],
-          "best_image": "potato-on-log.png",
-          "match_type": "weak",
+          "best_image": "potato.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -9325,8 +9246,8 @@
             "potato",
             "not"
           ],
-          "best_image": "potato-on-log.png",
-          "match_type": "weak",
+          "best_image": "potato.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -9372,7 +9293,7 @@
         "lemon.png",
         "lion.png",
         "log.png",
-        "potato-on-log.png"
+        "potato.png"
       ]
     },
     {
@@ -9380,8 +9301,8 @@
       "role": "word",
       "title": "The Bug on the Log",
       "total_sung_lines": 20,
-      "covered_lines_phrase": 19,
-      "coverage_pct": 95.0,
+      "covered_lines_phrase": 20,
+      "coverage_pct": 100.0,
       "lines": [
         {
           "line": "(on the log\u2026 on the log\u2026)",
@@ -9488,7 +9409,7 @@
             "on",
             "log"
           ],
-          "best_image": "log.png",
+          "best_image": "dog.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -9585,8 +9506,8 @@
           "tokens": [
             "potato"
           ],
-          "best_image": "potato-on-log.png",
-          "match_type": "weak",
+          "best_image": "potato.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -9606,8 +9527,9 @@
         "bug-on-log.png",
         "bug.png",
         "cat-on-log.png",
+        "dog.png",
         "log.png",
-        "potato-on-log.png"
+        "potato.png"
       ]
     },
     {
@@ -10387,8 +10309,8 @@
       "role": "sound",
       "title": "K-K-Kick",
       "total_sung_lines": 16,
-      "covered_lines_phrase": 9,
-      "coverage_pct": 56.25,
+      "covered_lines_phrase": 11,
+      "coverage_pct": 68.75,
       "lines": [
         {
           "line": "(dry clicks, like a clock)",
@@ -10525,8 +10447,8 @@
           "tokens": [
             "potato"
           ],
-          "best_image": "duck-potato.png",
-          "match_type": "weak",
+          "best_image": "potato.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -10535,8 +10457,8 @@
             "potato",
             "not"
           ],
-          "best_image": "duck-potato.png",
-          "match_type": "weak",
+          "best_image": "potato.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -10563,12 +10485,12 @@
       ],
       "critical_gaps": [],
       "images_used": [
-        "duck-potato.png",
         "duck-sock.png",
         "kangaroo.png",
         "key.png",
         "king.png",
-        "kite.png"
+        "kite.png",
+        "potato.png"
       ]
     },
     {
@@ -10576,8 +10498,8 @@
       "role": "word",
       "title": "The Duck Got the Sock",
       "total_sung_lines": 21,
-      "covered_lines_phrase": 16,
-      "coverage_pct": 76.19047619047619,
+      "covered_lines_phrase": 17,
+      "coverage_pct": 80.95238095238095,
       "lines": [
         {
           "line": "(quack\u2026 quack\u2026)",
@@ -10787,8 +10709,8 @@
           "tokens": [
             "potato"
           ],
-          "best_image": "duck-potato.png",
-          "match_type": "weak",
+          "best_image": "potato.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -10816,8 +10738,8 @@
       "critical_gaps": [],
       "images_used": [
         "duck-back.png",
-        "duck-potato.png",
-        "duck.png"
+        "duck.png",
+        "potato.png"
       ]
     },
     {
@@ -10977,7 +10899,7 @@
             "fan",
             "van"
           ],
-          "best_image": "van.png",
+          "best_image": "fan.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -11059,6 +10981,7 @@
         }
       ],
       "images_used": [
+        "fan.png",
         "van.png",
         "vase.png",
         "vet-potato.png",
@@ -11273,8 +11196,8 @@
       "role": "sound",
       "title": "Y-Y-Yes",
       "total_sung_lines": 15,
-      "covered_lines_phrase": 9,
-      "coverage_pct": 60.0,
+      "covered_lines_phrase": 11,
+      "coverage_pct": 73.33333333333333,
       "lines": [
         {
           "line": "(a quick smiling glide)",
@@ -11396,8 +11319,8 @@
           "tokens": [
             "potato"
           ],
-          "best_image": "potato-taste.png",
-          "match_type": "weak",
+          "best_image": "potato.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -11406,8 +11329,8 @@
             "potato",
             "not"
           ],
-          "best_image": "potato-taste.png",
-          "match_type": "weak",
+          "best_image": "potato.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -11434,7 +11357,7 @@
       ],
       "critical_gaps": [],
       "images_used": [
-        "potato-taste.png",
+        "potato.png",
         "yacht.png",
         "yak.png",
         "yam.png",
@@ -11447,8 +11370,8 @@
       "role": "word",
       "title": "Yum! A Yam!",
       "total_sung_lines": 17,
-      "covered_lines_phrase": 5,
-      "coverage_pct": 29.411764705882355,
+      "covered_lines_phrase": 7,
+      "coverage_pct": 41.17647058823529,
       "lines": [
         {
           "line": "(nom\u2026 nom\u2026 nom\u2026)",
@@ -11603,8 +11526,8 @@
             "potato",
             "yum"
           ],
-          "best_image": "fig-yum.png",
-          "match_type": "weak",
+          "best_image": "potato.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -11613,8 +11536,8 @@
             "potato",
             "yum"
           ],
-          "best_image": "fig-yum.png",
-          "match_type": "weak",
+          "best_image": "potato.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -11642,6 +11565,7 @@
       "images_used": [
         "fig-yum.png",
         "nut-yum.png",
+        "potato.png",
         "sock-taste.png",
         "yam.png"
       ]
@@ -11651,8 +11575,8 @@
       "role": "sound",
       "title": "X-X-Box",
       "total_sung_lines": 23,
-      "covered_lines_phrase": 3,
-      "coverage_pct": 13.043478260869565,
+      "covered_lines_phrase": 5,
+      "coverage_pct": 21.73913043478261,
       "lines": [
         {
           "line": "\u2026ks \u2026ks \u2026ks",
@@ -11703,8 +11627,8 @@
           "tokens": [
             "box"
           ],
-          "best_image": "cat-in-box.png",
-          "match_type": "weak",
+          "best_image": "box.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -11713,8 +11637,8 @@
             "box",
             "box"
           ],
-          "best_image": "cat-in-box.png",
-          "match_type": "weak",
+          "best_image": "box.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -11818,7 +11742,7 @@
             "hiding",
             "inside"
           ],
-          "best_image": "wax.png",
+          "best_image": "taxi.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -11919,12 +11843,12 @@
         }
       ],
       "images_used": [
-        "cat-in-box.png",
+        "box.png",
         "fox-box-peek.png",
         "mix-in-box.png",
         "potato-in-box.png",
         "six.png",
-        "wax.png"
+        "taxi.png"
       ]
     },
     {
@@ -11932,8 +11856,8 @@
       "role": "word",
       "title": "A Fox in a Box",
       "total_sung_lines": 19,
-      "covered_lines_phrase": 10,
-      "coverage_pct": 52.63157894736842,
+      "covered_lines_phrase": 15,
+      "coverage_pct": 78.94736842105263,
       "lines": [
         {
           "line": "(peek\u2026 peek\u2026)",
@@ -11955,7 +11879,7 @@
             "in",
             "box"
           ],
-          "best_image": "fox-in-box.png",
+          "best_image": "box.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -11967,8 +11891,8 @@
             "fox",
             "fox"
           ],
-          "best_image": "fox-in-box.png",
-          "match_type": "weak",
+          "best_image": "box.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -11978,7 +11902,7 @@
             "in",
             "box"
           ],
-          "best_image": "fox-in-box.png",
+          "best_image": "box.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -11992,7 +11916,7 @@
             "in",
             "box"
           ],
-          "best_image": "six-in-box.png",
+          "best_image": "box.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -12004,7 +11928,7 @@
             "six",
             "six"
           ],
-          "best_image": "six.png",
+          "best_image": "box.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -12016,7 +11940,7 @@
             "in",
             "box"
           ],
-          "best_image": "six.png",
+          "best_image": "box.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -12027,7 +11951,7 @@
             "in",
             "box"
           ],
-          "best_image": "cat-in-box.png",
+          "best_image": "box.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -12038,7 +11962,7 @@
             "in",
             "box"
           ],
-          "best_image": "duck-in-box.png",
+          "best_image": "box.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -12051,8 +11975,8 @@
             "big",
             "mix"
           ],
-          "best_image": "mix-in-box.png",
-          "match_type": "weak",
+          "best_image": "box.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -12063,18 +11987,7 @@
             "in",
             "box"
           ],
-          "best_image": "mix-in-box.png",
-          "match_type": "weak",
-          "is_scene_line": true
-        },
-        {
-          "line": "The ox is in the box?!",
-          "tokens": [
-            "ox",
-            "in",
-            "box"
-          ],
-          "best_image": "ox-in-box.png",
+          "best_image": "box.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -12085,7 +11998,18 @@
             "in",
             "box"
           ],
-          "best_image": "ox-in-box.png",
+          "best_image": "box.png",
+          "match_type": "phrase",
+          "is_scene_line": true
+        },
+        {
+          "line": "The ox is in the box?!",
+          "tokens": [
+            "ox",
+            "in",
+            "box"
+          ],
+          "best_image": "box.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -12109,8 +12033,8 @@
             "in",
             "box"
           ],
-          "best_image": "ox-in-box.png",
-          "match_type": "weak",
+          "best_image": "box.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -12120,8 +12044,8 @@
             "in",
             "box"
           ],
-          "best_image": "cat-in-box.png",
-          "match_type": "weak",
+          "best_image": "box.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -12140,7 +12064,7 @@
             "in",
             "box"
           ],
-          "best_image": "fox-in-box.png",
+          "best_image": "box.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -12155,58 +12079,11 @@
           "is_scene_line": false
         }
       ],
-      "critical_gaps": [
-        {
-          "week": 24,
-          "role": "word",
-          "song_title": "A Fox in a Box",
-          "line": "Who is in the box? (the fox! the fox!)",
-          "match_type": "weak",
-          "nearest_image": "fox-in-box.png"
-        },
-        {
-          "week": 24,
-          "role": "word",
-          "song_title": "A Fox in a Box",
-          "line": "Who is in the box? (mix! a big mix!)",
-          "match_type": "weak",
-          "nearest_image": "mix-in-box.png"
-        },
-        {
-          "week": 24,
-          "role": "word",
-          "song_title": "A Fox in a Box",
-          "line": "Mix it up in the box!",
-          "match_type": "weak",
-          "nearest_image": "mix-in-box.png"
-        },
-        {
-          "week": 24,
-          "role": "word",
-          "song_title": "A Fox in a Box",
-          "line": "The ox is STUCK in the box!",
-          "match_type": "weak",
-          "nearest_image": "ox-in-box.png"
-        },
-        {
-          "week": 24,
-          "role": "word",
-          "song_title": "A Fox in a Box",
-          "line": "What is in the box?",
-          "match_type": "weak",
-          "nearest_image": "cat-in-box.png"
-        }
-      ],
+      "critical_gaps": [],
       "images_used": [
-        "cat-in-box.png",
-        "duck-in-box.png",
+        "box.png",
         "fox-box-peek.png",
-        "fox-in-box.png",
-        "mix-in-box.png",
-        "ox-in-box.png",
-        "potato-in-box.png",
-        "six-in-box.png",
-        "six.png"
+        "potato-in-box.png"
       ]
     },
     {
@@ -12214,8 +12091,8 @@
       "role": "sound",
       "title": "Qu-Qu-Quack",
       "total_sung_lines": 23,
-      "covered_lines_phrase": 7,
-      "coverage_pct": 30.434782608695656,
+      "covered_lines_phrase": 9,
+      "coverage_pct": 39.130434782608695,
       "lines": [
         {
           "line": "kw\u2026 kw\u2026 kw\u2026",
@@ -12237,8 +12114,8 @@
             "quick",
             "glide"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "quick.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -12422,7 +12299,7 @@
             "them",
             "all"
           ],
-          "best_image": "quiz.png",
+          "best_image": "quick.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -12431,7 +12308,7 @@
           "tokens": [
             "potato"
           ],
-          "best_image": "potato-quack.png",
+          "best_image": "potato-plain.png",
           "match_type": "weak",
           "is_scene_line": false
         },
@@ -12442,7 +12319,7 @@
             "not",
             "qu"
           ],
-          "best_image": "potato-quack.png",
+          "best_image": "potato-plain.png",
           "match_type": "weak",
           "is_scene_line": false
         },
@@ -12493,20 +12370,20 @@
             "quack",
             "quack"
           ],
-          "best_image": "duck-quack.png",
-          "match_type": "weak",
+          "best_image": "duck.png",
+          "match_type": "phrase",
           "is_scene_line": false
         }
       ],
       "critical_gaps": [],
       "images_used": [
         "cat-quack.png",
-        "duck-quack.png",
-        "potato-quack.png",
+        "duck.png",
+        "potato-plain.png",
         "queen.png",
+        "quick.png",
         "quill.png",
-        "quilt.png",
-        "quiz.png"
+        "quilt.png"
       ]
     },
     {
@@ -12514,8 +12391,8 @@
       "role": "word",
       "title": "The Duck Says Quack",
       "total_sung_lines": 21,
-      "covered_lines_phrase": 1,
-      "coverage_pct": 4.761904761904762,
+      "covered_lines_phrase": 9,
+      "coverage_pct": 42.857142857142854,
       "lines": [
         {
           "line": "(quack? quack?)",
@@ -12534,8 +12411,8 @@
             "say",
             "quack"
           ],
-          "best_image": "duck-quack.png",
-          "match_type": "weak",
+          "best_image": "duck.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -12545,8 +12422,8 @@
             "say",
             "quack"
           ],
-          "best_image": "duck-quack.png",
-          "match_type": "weak",
+          "best_image": "duck.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -12559,8 +12436,8 @@
             "quack",
             "quack"
           ],
-          "best_image": "duck-quack.png",
-          "match_type": "weak",
+          "best_image": "duck.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -12570,8 +12447,8 @@
             "say",
             "quack"
           ],
-          "best_image": "duck-quack.png",
-          "match_type": "weak",
+          "best_image": "duck.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -12648,8 +12525,8 @@
             "quick",
             "everyone"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "quick.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -12694,8 +12571,8 @@
             "say",
             "quack"
           ],
-          "best_image": "duck-quack.png",
-          "match_type": "weak",
+          "best_image": "duck.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -12705,8 +12582,8 @@
             "say",
             "duck"
           ],
-          "best_image": "duck-quack.png",
-          "match_type": "weak",
+          "best_image": "duck.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -12715,7 +12592,7 @@
             "potato",
             "say"
           ],
-          "best_image": "potato-quack.png",
+          "best_image": "potato-plain.png",
           "match_type": "weak",
           "is_scene_line": false
         },
@@ -12736,8 +12613,8 @@
             "say",
             "quack"
           ],
-          "best_image": "duck-quack.png",
-          "match_type": "weak",
+          "best_image": "duck.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -12755,9 +12632,11 @@
       "images_used": [
         "cat-quack.png",
         "dog-quack.png",
-        "duck-quack.png",
+        "duck.png",
         "fox-quack.png",
+        "potato-plain.png",
         "potato-quack.png",
+        "quick.png",
         "sam-quack.png"
       ]
     },
@@ -12766,8 +12645,8 @@
       "role": "sound",
       "title": "Z-Z-Zip",
       "total_sung_lines": 23,
-      "covered_lines_phrase": 5,
-      "coverage_pct": 21.73913043478261,
+      "covered_lines_phrase": 8,
+      "coverage_pct": 34.78260869565217,
       "lines": [
         {
           "line": "zzz\u2026 zzz\u2026 zzz\u2026",
@@ -12964,8 +12843,8 @@
             "time",
             "now"
           ],
-          "best_image": "potato-graduation.png",
-          "match_type": "weak",
+          "best_image": "potato.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -12974,8 +12853,8 @@
             "potato",
             "not"
           ],
-          "best_image": "potato-graduation.png",
-          "match_type": "weak",
+          "best_image": "potato.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -13020,8 +12899,8 @@
             "buzz",
             "buzz"
           ],
-          "best_image": "bug-buzz.png",
-          "match_type": "weak",
+          "best_image": "bug.png",
+          "match_type": "phrase",
           "is_scene_line": false
         }
       ],
@@ -13046,7 +12925,8 @@
       "images_used": [
         "bug-buzz.png",
         "bug-zip.png",
-        "potato-graduation.png",
+        "bug.png",
+        "potato.png",
         "zebra.png",
         "zero.png",
         "zigzag-buzz.png"
@@ -13057,8 +12937,8 @@
       "role": "word",
       "title": "The Bug Can Buzz",
       "total_sung_lines": 21,
-      "covered_lines_phrase": 2,
-      "coverage_pct": 9.523809523809524,
+      "covered_lines_phrase": 10,
+      "coverage_pct": 47.61904761904761,
       "lines": [
         {
           "line": "(It's a\u2026 where is\u2026 on the mat\u2026)",
@@ -13081,8 +12961,8 @@
             "can",
             "buzz"
           ],
-          "best_image": "bug-buzz.png",
-          "match_type": "weak",
+          "best_image": "bug.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -13105,8 +12985,8 @@
             "can",
             "buzz"
           ],
-          "best_image": "bug-buzz.png",
-          "match_type": "weak",
+          "best_image": "bug.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -13147,8 +13027,8 @@
             "can",
             "tag"
           ],
-          "best_image": "ant-tag.png",
-          "match_type": "weak",
+          "best_image": "fox.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -13168,8 +13048,8 @@
           "tokens": [
             "potato"
           ],
-          "best_image": "potato-graduation.png",
-          "match_type": "weak",
+          "best_image": "potato.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -13202,8 +13082,8 @@
             "can",
             "buzz"
           ],
-          "best_image": "bug-buzz.png",
-          "match_type": "weak",
+          "best_image": "bug.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -13257,8 +13137,8 @@
             "potato",
             "can"
           ],
-          "best_image": "potato-graduation.png",
-          "match_type": "weak",
+          "best_image": "potato.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -13266,8 +13146,8 @@
           "tokens": [
             "potato"
           ],
-          "best_image": "potato-graduation.png",
-          "match_type": "weak",
+          "best_image": "potato.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -13277,8 +13157,8 @@
             "can",
             "buzz"
           ],
-          "best_image": "bug-buzz.png",
-          "match_type": "weak",
+          "best_image": "bug.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -13329,10 +13209,11 @@
         }
       ],
       "images_used": [
-        "ant-tag.png",
         "bug-buzz.png",
+        "bug.png",
         "cat-nap.png",
-        "potato-graduation.png",
+        "fox.png",
+        "potato.png",
         "rat-run.png",
         "zigzag.png"
       ]
@@ -13660,8 +13541,8 @@
       "role": "word",
       "title": "The Fish on the Ship",
       "total_sung_lines": 16,
-      "covered_lines_phrase": 7,
-      "coverage_pct": 43.75,
+      "covered_lines_phrase": 13,
+      "coverage_pct": 81.25,
       "lines": [
         {
           "line": "(We can read. We can read!)",
@@ -13705,8 +13586,8 @@
             "where",
             "where"
           ],
-          "best_image": "fish-in-water.png",
-          "match_type": "weak",
+          "best_image": "fish.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -13751,8 +13632,8 @@
             "wish",
             "wish"
           ],
-          "best_image": "big-wish.png",
-          "match_type": "weak",
+          "best_image": "fish.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -13762,8 +13643,8 @@
             "can",
             "wish"
           ],
-          "best_image": "big-wish.png",
-          "match_type": "weak",
+          "best_image": "fish.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -13785,8 +13666,8 @@
             "in",
             "splash"
           ],
-          "best_image": "fish-in-water.png",
-          "match_type": "weak",
+          "best_image": "fish.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -13797,8 +13678,8 @@
             "where",
             "where"
           ],
-          "best_image": "fish-in-water.png",
-          "match_type": "weak",
+          "best_image": "fish.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -13810,8 +13691,8 @@
             "fish",
             "swim"
           ],
-          "best_image": "fish-in-water.png",
-          "match_type": "weak",
+          "best_image": "fish.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -13821,7 +13702,7 @@
             "fish",
             "shhh"
           ],
-          "best_image": "ship.png",
+          "best_image": "fish.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -13846,28 +13727,11 @@
           "is_scene_line": false
         }
       ],
-      "critical_gaps": [
-        {
-          "week": 27,
-          "role": "word",
-          "song_title": "The Fish on the Ship",
-          "line": "The fish is in! (splash!)",
-          "match_type": "weak",
-          "nearest_image": "fish-in-water.png"
-        },
-        {
-          "week": 27,
-          "role": "word",
-          "song_title": "The Fish on the Ship",
-          "line": "The fish is in! (swim, fish, swim!)",
-          "match_type": "weak",
-          "nearest_image": "fish-in-water.png"
-        }
-      ],
+      "critical_gaps": [],
       "images_used": [
         "big-wish.png",
-        "fish-in-water.png",
         "fish-on-ship.png",
+        "fish.png",
         "potato-on-ship.png",
         "ship.png"
       ]
@@ -14958,8 +14822,8 @@
       "role": "sound",
       "title": "Ck! Ck! Bell!",
       "total_sung_lines": 22,
-      "covered_lines_phrase": 4,
-      "coverage_pct": 18.181818181818183,
+      "covered_lines_phrase": 6,
+      "coverage_pct": 27.27272727272727,
       "lines": [
         {
           "line": "Ck! Ck! Ck-ck-ck!",
@@ -14994,8 +14858,8 @@
             "duck",
             "kick"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "rock.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -15049,7 +14913,7 @@
             "puff",
             "puff"
           ],
-          "best_image": "puff.png",
+          "best_image": "bell.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -15145,8 +15009,8 @@
             "sock",
             "rock"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "rock.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -15228,9 +15092,10 @@
       ],
       "images_used": [
         "bell-on-hill.png",
+        "bell.png",
         "hill.png",
         "potato-on-hill.png",
-        "puff.png"
+        "rock.png"
       ]
     },
     {
@@ -15238,8 +15103,8 @@
       "role": "word",
       "title": "The Bell on the Hill",
       "total_sung_lines": 16,
-      "covered_lines_phrase": 9,
-      "coverage_pct": 56.25,
+      "covered_lines_phrase": 13,
+      "coverage_pct": 81.25,
       "lines": [
         {
           "line": "(We can read. We can read!)",
@@ -15283,8 +15148,8 @@
             "where",
             "where"
           ],
-          "best_image": "bell-fell.png",
-          "match_type": "weak",
+          "best_image": "bell.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -15306,8 +15171,8 @@
             "hit",
             "bell"
           ],
-          "best_image": "chick-hit-bell.png",
-          "match_type": "weak",
+          "best_image": "bell.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -15355,8 +15220,8 @@
             "miss",
             "bell"
           ],
-          "best_image": "sheep-got-bell.png",
-          "match_type": "weak",
+          "best_image": "bell.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -15379,8 +15244,8 @@
             "bell",
             "bell"
           ],
-          "best_image": "chick-hit-bell.png",
-          "match_type": "weak",
+          "best_image": "bell.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -15402,7 +15267,7 @@
             "hill",
             "hush"
           ],
-          "best_image": "hill.png",
+          "best_image": "bell.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -15434,7 +15299,7 @@
       "images_used": [
         "bell-fell.png",
         "bell-on-hill.png",
-        "chick-hit-bell.png",
+        "bell.png",
         "hill.png",
         "potato-on-hill.png",
         "sheep-got-bell.png"
@@ -15445,8 +15310,8 @@
       "role": "sound",
       "title": "Ng-Ng-King!",
       "total_sung_lines": 25,
-      "covered_lines_phrase": 6,
-      "coverage_pct": 24.0,
+      "covered_lines_phrase": 8,
+      "coverage_pct": 32.0,
       "lines": [
         {
           "line": "Ng! Ng! Ng-ng-ng!",
@@ -15554,8 +15419,8 @@
             "long",
             "long"
           ],
-          "best_image": "long-song.png",
-          "match_type": "weak",
+          "best_image": "ring.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -15591,7 +15456,7 @@
             "sing",
             "song"
           ],
-          "best_image": "song.png",
+          "best_image": "king.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -15721,8 +15586,8 @@
             "sing",
             "nnng"
           ],
-          "best_image": "king-sing.png",
-          "match_type": "weak",
+          "best_image": "king.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -15773,7 +15638,9 @@
         "gong.png",
         "king-sing.png",
         "king-sings-potato.png",
+        "king.png",
         "long-song.png",
+        "ring.png",
         "song.png"
       ]
     },
@@ -15782,8 +15649,8 @@
       "role": "word",
       "title": "The King Can Sing",
       "total_sung_lines": 26,
-      "covered_lines_phrase": 7,
-      "coverage_pct": 26.923076923076923,
+      "covered_lines_phrase": 20,
+      "coverage_pct": 76.92307692307693,
       "lines": [
         {
           "line": "(We can read. We can read!)",
@@ -15804,8 +15671,8 @@
             "can",
             "sing"
           ],
-          "best_image": "king-sing.png",
-          "match_type": "weak",
+          "best_image": "king.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -15815,8 +15682,8 @@
             "can",
             "sing"
           ],
-          "best_image": "king-sing.png",
-          "match_type": "weak",
+          "best_image": "king.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -15837,8 +15704,8 @@
             "can",
             "sing"
           ],
-          "best_image": "king-sing.png",
-          "match_type": "weak",
+          "best_image": "king.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -15860,8 +15727,8 @@
             "sing",
             "long"
           ],
-          "best_image": "king-sing.png",
-          "match_type": "weak",
+          "best_image": "king.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -15883,8 +15750,8 @@
             "can",
             "sing"
           ],
-          "best_image": "king-sing.png",
-          "match_type": "weak",
+          "best_image": "king.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -15929,8 +15796,8 @@
             "can",
             "sing"
           ],
-          "best_image": "king-sing.png",
-          "match_type": "weak",
+          "best_image": "king.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -15939,8 +15806,8 @@
             "ring",
             "ring"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "ring.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -15949,8 +15816,8 @@
             "king",
             "ring"
           ],
-          "best_image": "king-sang-cast.png",
-          "match_type": "weak",
+          "best_image": "king.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -15973,8 +15840,8 @@
             "can",
             "sing"
           ],
-          "best_image": "king-sing.png",
-          "match_type": "weak",
+          "best_image": "king.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -15986,8 +15853,8 @@
             "can",
             "sing"
           ],
-          "best_image": "king-sing.png",
-          "match_type": "weak",
+          "best_image": "king.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -16010,8 +15877,8 @@
             "can",
             "sing"
           ],
-          "best_image": "king-sing.png",
-          "match_type": "weak",
+          "best_image": "king.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -16021,8 +15888,8 @@
             "can",
             "sing"
           ],
-          "best_image": "king-sing.png",
-          "match_type": "weak",
+          "best_image": "king.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -16043,8 +15910,8 @@
             "can",
             "sing"
           ],
-          "best_image": "king-sing.png",
-          "match_type": "weak",
+          "best_image": "king.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -16089,10 +15956,11 @@
       "images_used": [
         "chick-sing.png",
         "gong-bang.png",
-        "king-sang-cast.png",
         "king-sing.png",
         "king-sings-potato.png",
+        "king.png",
         "long-song.png",
+        "ring.png",
         "song.png"
       ]
     },
@@ -16609,8 +16477,8 @@
       "role": "sound",
       "title": "St-St-Stop!",
       "total_sung_lines": 26,
-      "covered_lines_phrase": 0,
-      "coverage_pct": 0.0,
+      "covered_lines_phrase": 1,
+      "coverage_pct": 3.8461538461538463,
       "lines": [
         {
           "line": "St! St! St-st-st!",
@@ -16788,8 +16656,8 @@
             "snake",
             "sss"
           ],
-          "best_image": "chick-chase-snake.png",
-          "match_type": "weak",
+          "best_image": "snake.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -16927,12 +16795,12 @@
       ],
       "critical_gaps": [],
       "images_used": [
-        "chick-chase-snake.png",
         "chick-sheep-stop.png",
         "potato-stops-snake.png",
         "snake-snap-twig.png",
         "snake-spin.png",
-        "snake-swim.png"
+        "snake-swim.png",
+        "snake.png"
       ]
     },
     {
@@ -16940,8 +16808,8 @@
       "role": "word",
       "title": "Stop, Snake, Stop!",
       "total_sung_lines": 16,
-      "covered_lines_phrase": 3,
-      "coverage_pct": 18.75,
+      "covered_lines_phrase": 13,
+      "coverage_pct": 81.25,
       "lines": [
         {
           "line": "(We can read. We can read!)",
@@ -16962,8 +16830,8 @@
             "snake",
             "stop"
           ],
-          "best_image": "potato-stops-snake.png",
-          "match_type": "weak",
+          "best_image": "snake.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -16973,8 +16841,8 @@
             "snake",
             "stop"
           ],
-          "best_image": "potato-stops-snake.png",
-          "match_type": "weak",
+          "best_image": "snake.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -16987,8 +16855,8 @@
             "stop",
             "stop"
           ],
-          "best_image": "potato-stops-snake.png",
-          "match_type": "weak",
+          "best_image": "snake.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -16998,8 +16866,8 @@
             "snake",
             "stop"
           ],
-          "best_image": "potato-stops-snake.png",
-          "match_type": "weak",
+          "best_image": "snake.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -17009,8 +16877,8 @@
             "can",
             "spin"
           ],
-          "best_image": "snake-spin.png",
-          "match_type": "weak",
+          "best_image": "snake.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -17035,8 +16903,8 @@
             "swish",
             "swish"
           ],
-          "best_image": "snake-swim.png",
-          "match_type": "weak",
+          "best_image": "snake.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -17046,8 +16914,8 @@
             "snake",
             "stop"
           ],
-          "best_image": "potato-stops-snake.png",
-          "match_type": "weak",
+          "best_image": "snake.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -17070,8 +16938,8 @@
             "not",
             "stop"
           ],
-          "best_image": "potato-stops-snake.png",
-          "match_type": "weak",
+          "best_image": "snake.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -17092,8 +16960,8 @@
             "snake",
             "stop"
           ],
-          "best_image": "potato-stops-snake.png",
-          "match_type": "weak",
+          "best_image": "snake.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -17103,8 +16971,8 @@
             "stop",
             "hush"
           ],
-          "best_image": "potato-stops-snake.png",
-          "match_type": "weak",
+          "best_image": "snake.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -17134,22 +17002,12 @@
           "is_scene_line": false
         }
       ],
-      "critical_gaps": [
-        {
-          "week": 33,
-          "role": "word",
-          "song_title": "Stop, Snake, Stop!",
-          "line": "Snake can swim in a swish! (swish! swish!)",
-          "match_type": "weak",
-          "nearest_image": "snake-swim.png"
-        }
-      ],
+      "critical_gaps": [],
       "images_used": [
         "potato-stops-snake.png",
         "skip.png",
         "snake-snap-twig.png",
-        "snake-spin.png",
-        "snake-swim.png"
+        "snake.png"
       ]
     },
     {
@@ -17157,8 +17015,8 @@
       "role": "sound",
       "title": "Fl-Fl-Flag!",
       "total_sung_lines": 25,
-      "covered_lines_phrase": 5,
-      "coverage_pct": 20.0,
+      "covered_lines_phrase": 8,
+      "coverage_pct": 32.0,
       "lines": [
         {
           "line": "Fl! Fl! Fl-fl-fl!",
@@ -17217,8 +17075,8 @@
             "fl",
             "flag"
           ],
-          "best_image": "flag-flapping.png",
-          "match_type": "weak",
+          "best_image": "flag.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -17228,8 +17086,8 @@
             "wave",
             "flag"
           ],
-          "best_image": "flag-flapping.png",
-          "match_type": "weak",
+          "best_image": "flag.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -17417,8 +17275,8 @@
             "cl",
             "clap"
           ],
-          "best_image": "chick-clap.png",
-          "match_type": "weak",
+          "best_image": "flag.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -17465,7 +17323,7 @@
       "critical_gaps": [],
       "images_used": [
         "chick-clap.png",
-        "flag-flapping.png",
+        "flag.png",
         "plum.png",
         "potato-on-sled.png",
         "sled.png"
@@ -17476,8 +17334,8 @@
       "role": "word",
       "title": "The Flag on the Sled",
       "total_sung_lines": 16,
-      "covered_lines_phrase": 10,
-      "coverage_pct": 62.5,
+      "covered_lines_phrase": 12,
+      "coverage_pct": 75.0,
       "lines": [
         {
           "line": "(We can read. We can read!)",
@@ -17521,8 +17379,8 @@
             "where",
             "where"
           ],
-          "best_image": "flag-flapping.png",
-          "match_type": "weak",
+          "best_image": "flag.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -17545,8 +17403,8 @@
             "clap",
             "clap"
           ],
-          "best_image": "chick-clap.png",
-          "match_type": "weak",
+          "best_image": "flag.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -17639,7 +17497,7 @@
             "sled",
             "hush"
           ],
-          "best_image": "sled.png",
+          "best_image": "flag.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -17670,8 +17528,8 @@
       "critical_gaps": [],
       "images_used": [
         "chick-clap.png",
-        "flag-flapping.png",
         "flag-on-sled.png",
+        "flag.png",
         "potato-on-sled.png",
         "sled-slip.png",
         "sled.png"
@@ -17682,8 +17540,8 @@
       "role": "sound",
       "title": "Fr-Fr-Frog!",
       "total_sung_lines": 25,
-      "covered_lines_phrase": 6,
-      "coverage_pct": 24.0,
+      "covered_lines_phrase": 10,
+      "coverage_pct": 40.0,
       "lines": [
         {
           "line": "Fr! Fr! Fr-fr-fr!",
@@ -17742,8 +17600,8 @@
             "fr",
             "frog"
           ],
-          "best_image": "frog-big-grin.png",
-          "match_type": "weak",
+          "best_image": "frog.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -17753,8 +17611,8 @@
             "hop",
             "frog"
           ],
-          "best_image": "frog-big-grin.png",
-          "match_type": "weak",
+          "best_image": "frog.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -17838,8 +17696,8 @@
             "dr",
             "drum"
           ],
-          "best_image": "frog-drum.png",
-          "match_type": "weak",
+          "best_image": "drum.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -17849,8 +17707,8 @@
             "bang",
             "drum"
           ],
-          "best_image": "frog-drum.png",
-          "match_type": "weak",
+          "best_image": "drum.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -17956,7 +17814,7 @@
             "gr",
             "grin"
           ],
-          "best_image": "grin.png",
+          "best_image": "drum.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -17990,8 +17848,8 @@
       "critical_gaps": [],
       "images_used": [
         "crab.png",
-        "frog-big-grin.png",
-        "frog-drum.png",
+        "drum.png",
+        "frog.png",
         "grin.png",
         "potato-grass.png"
       ]
@@ -18001,8 +17859,8 @@
       "role": "word",
       "title": "Frog Can Grin",
       "total_sung_lines": 16,
-      "covered_lines_phrase": 13,
-      "coverage_pct": 81.25,
+      "covered_lines_phrase": 14,
+      "coverage_pct": 87.5,
       "lines": [
         {
           "line": "(We can read. We can read!)",
@@ -18023,7 +17881,7 @@
             "can",
             "grin"
           ],
-          "best_image": "grin.png",
+          "best_image": "frog.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -18034,7 +17892,7 @@
             "can",
             "grin"
           ],
-          "best_image": "grin.png",
+          "best_image": "frog.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -18058,7 +17916,7 @@
             "can",
             "grin"
           ],
-          "best_image": "grin.png",
+          "best_image": "frog.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -18070,8 +17928,8 @@
             "bang",
             "drum"
           ],
-          "best_image": "frog-drum.png",
-          "match_type": "weak",
+          "best_image": "drum.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -18106,7 +17964,7 @@
             "can",
             "grin"
           ],
-          "best_image": "grin.png",
+          "best_image": "frog.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -18119,7 +17977,7 @@
             "at",
             "frog"
           ],
-          "best_image": "grin.png",
+          "best_image": "frog.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -18155,7 +18013,7 @@
             "can",
             "grin"
           ],
-          "best_image": "grin.png",
+          "best_image": "frog.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -18200,8 +18058,9 @@
       "critical_gaps": [],
       "images_used": [
         "crab.png",
-        "frog-drum.png",
+        "drum.png",
         "frog-grin.png",
+        "frog.png",
         "grin.png",
         "potato-grass.png"
       ]
@@ -18211,8 +18070,8 @@
       "role": "sound",
       "title": "Hand-Hand-Hand!",
       "total_sung_lines": 25,
-      "covered_lines_phrase": 4,
-      "coverage_pct": 16.0,
+      "covered_lines_phrase": 11,
+      "coverage_pct": 44.0,
       "lines": [
         {
           "line": "Hand! Hand! Hand-hand-hand!",
@@ -18223,8 +18082,8 @@
             "hand",
             "hand"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "hand.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -18272,8 +18131,8 @@
             "hand",
             "hand"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "hand.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -18285,8 +18144,8 @@
             "hand",
             "hand"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "hand.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -18393,8 +18252,8 @@
             "nest",
             "st"
           ],
-          "best_image": "best-nest.png",
-          "match_type": "weak",
+          "best_image": "nest.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -18417,8 +18276,8 @@
             "nest",
             "nest"
           ],
-          "best_image": "best-nest.png",
-          "match_type": "weak",
+          "best_image": "nest.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -18429,8 +18288,8 @@
             "tweet",
             "nest"
           ],
-          "best_image": "cast-in-nest.png",
-          "match_type": "weak",
+          "best_image": "nest.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -18472,7 +18331,7 @@
             "jump",
             "nest"
           ],
-          "best_image": "jump.png",
+          "best_image": "hand.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -18509,8 +18368,8 @@
             "hand",
             "hand"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "hand.png",
+          "match_type": "phrase",
           "is_scene_line": false
         }
       ],
@@ -18522,21 +18381,13 @@
           "line": "Off it WENT! (whoosh!) WENT!",
           "match_type": "weak",
           "nearest_image": "chick-went-up.png"
-        },
-        {
-          "week": 36,
-          "role": "sound",
-          "song_title": "Hand-Hand-Hand!",
-          "line": "In the NEST! (tweet!) NEST!",
-          "match_type": "weak",
-          "nearest_image": "cast-in-nest.png"
         }
       ],
       "images_used": [
-        "best-nest.png",
-        "cast-in-nest.png",
         "chick-went-up.png",
+        "hand.png",
         "jump.png",
+        "nest.png",
         "potato-nest.png"
       ]
     },
@@ -18545,8 +18396,8 @@
       "role": "word",
       "title": "The Best Nest",
       "total_sung_lines": 16,
-      "covered_lines_phrase": 10,
-      "coverage_pct": 62.5,
+      "covered_lines_phrase": 14,
+      "coverage_pct": 87.5,
       "lines": [
         {
           "line": "(We can read. We can read!)",
@@ -18625,8 +18476,8 @@
             "in",
             "nest"
           ],
-          "best_image": "chick-in-nest.png",
-          "match_type": "weak",
+          "best_image": "nest.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -18660,8 +18511,8 @@
             "in",
             "nest"
           ],
-          "best_image": "snake-rest-nest.png",
-          "match_type": "weak",
+          "best_image": "nest.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -18685,8 +18536,8 @@
             "land",
             "land"
           ],
-          "best_image": "cast-in-nest.png",
-          "match_type": "weak",
+          "best_image": "nest.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -18706,8 +18557,8 @@
             "soft",
             "hush"
           ],
-          "best_image": "best-nest.png",
-          "match_type": "weak",
+          "best_image": "nest.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -18728,45 +18579,18 @@
             "potato",
             "nest"
           ],
-          "best_image": "potato-nest.png",
+          "best_image": "nest.png",
           "match_type": "phrase",
           "is_scene_line": true
         }
       ],
-      "critical_gaps": [
-        {
-          "week": 36,
-          "role": "word",
-          "song_title": "The Best Nest",
-          "line": "Chick went in the nest!",
-          "match_type": "weak",
-          "nearest_image": "chick-in-nest.png"
-        },
-        {
-          "week": 36,
-          "role": "word",
-          "song_title": "The Best Nest",
-          "line": "Snake can rest in the nest!",
-          "match_type": "weak",
-          "nearest_image": "snake-rest-nest.png"
-        },
-        {
-          "week": 36,
-          "role": "word",
-          "song_title": "The Best Nest",
-          "line": "Land in the nest! (land! land!)",
-          "match_type": "weak",
-          "nearest_image": "cast-in-nest.png"
-        }
-      ],
+      "critical_gaps": [],
       "images_used": [
         "best-nest.png",
-        "cast-in-nest.png",
-        "chick-in-nest.png",
         "chick-went-up.png",
         "jump.png",
-        "potato-nest.png",
-        "snake-rest-nest.png"
+        "nest.png",
+        "potato-nest.png"
       ]
     },
     {
@@ -18774,8 +18598,8 @@
       "role": "sound",
       "title": "Pink-Pink-Pink!",
       "total_sung_lines": 25,
-      "covered_lines_phrase": 7,
-      "coverage_pct": 28.000000000000004,
+      "covered_lines_phrase": 9,
+      "coverage_pct": 36.0,
       "lines": [
         {
           "line": "Pink! Pink! Pink-pink-pink!",
@@ -18945,8 +18769,8 @@
             "your",
             "tongue"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "milk.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -19061,8 +18885,8 @@
             "miuw",
             "lllk"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "milk.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -19090,6 +18914,7 @@
       "images_used": [
         "belt.png",
         "chick-helps-skunk.png",
+        "milk.png",
         "pink.png",
         "potato-stuck.png",
         "skunk-free-soft.png"
@@ -19296,8 +19121,8 @@
       "role": "sound",
       "title": "Magic E Makes Cake",
       "total_sung_lines": 20,
-      "covered_lines_phrase": 4,
-      "coverage_pct": 20.0,
+      "covered_lines_phrase": 5,
+      "coverage_pct": 25.0,
       "lines": [
         {
           "line": "(ay\u2026 ay\u2026 ay\u2026)",
@@ -19421,8 +19246,8 @@
           "tokens": [
             "gate"
           ],
-          "best_image": "name-on-gate.png",
-          "match_type": "weak",
+          "best_image": "gate.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -19511,6 +19336,7 @@
       "images_used": [
         "cake.png",
         "cape.png",
+        "gate.png",
         "name-on-gate.png",
         "plane.png",
         "potato-cake.png",
@@ -19523,8 +19349,8 @@
       "role": "word",
       "title": "The Snake and the Cake",
       "total_sung_lines": 16,
-      "covered_lines_phrase": 10,
-      "coverage_pct": 62.5,
+      "covered_lines_phrase": 11,
+      "coverage_pct": 68.75,
       "lines": [
         {
           "line": "(We can read. We can read!)",
@@ -19590,7 +19416,7 @@
             "at",
             "gate"
           ],
-          "best_image": "snake-at-gate.png",
+          "best_image": "gate.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -19601,7 +19427,7 @@
             "on",
             "gate"
           ],
-          "best_image": "name-on-gate.png",
+          "best_image": "gate.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -19621,8 +19447,8 @@
             "gate",
             "click"
           ],
-          "best_image": "name-on-gate.png",
-          "match_type": "weak",
+          "best_image": "gate.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -19719,10 +19545,10 @@
       ],
       "images_used": [
         "cake.png",
+        "gate.png",
         "name-on-gate.png",
         "potato-cake.png",
         "snake-arrives.png",
-        "snake-at-gate.png",
         "snake-going-in.png"
       ]
     },
@@ -19731,8 +19557,8 @@
       "role": "sound",
       "title": "Magic E Makes Bike",
       "total_sung_lines": 20,
-      "covered_lines_phrase": 4,
-      "coverage_pct": 20.0,
+      "covered_lines_phrase": 6,
+      "coverage_pct": 30.0,
       "lines": [
         {
           "line": "(eye\u2026 eye\u2026 eye\u2026)",
@@ -19763,8 +19589,8 @@
             "kit",
             "kite"
           ],
-          "best_image": "kite-and-bike.png",
-          "match_type": "weak",
+          "best_image": "kite.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -19856,8 +19682,8 @@
           "tokens": [
             "kite"
           ],
-          "best_image": "kite-and-bike.png",
-          "match_type": "weak",
+          "best_image": "kite.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -19944,7 +19770,7 @@
       "images_used": [
         "bike.png",
         "five.png",
-        "kite-and-bike.png",
+        "kite.png",
         "potato-on-bike.png",
         "ride.png"
       ]
@@ -19954,8 +19780,8 @@
       "role": "word",
       "title": "The Bike Ride",
       "total_sung_lines": 16,
-      "covered_lines_phrase": 13,
-      "coverage_pct": 81.25,
+      "covered_lines_phrase": 14,
+      "coverage_pct": 87.5,
       "lines": [
         {
           "line": "(We can read. We can read!)",
@@ -20034,8 +19860,8 @@
             "ha",
             "kite"
           ],
-          "best_image": "snake-kite.png",
-          "match_type": "weak",
+          "best_image": "kite.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -20058,7 +19884,7 @@
             "can",
             "ride"
           ],
-          "best_image": "ride.png",
+          "best_image": "kite.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -20147,9 +19973,9 @@
       "images_used": [
         "bike.png",
         "kite-up.png",
+        "kite.png",
         "potato-on-bike.png",
-        "ride.png",
-        "snake-kite.png"
+        "ride.png"
       ]
     },
     {
@@ -20157,8 +19983,8 @@
       "role": "sound",
       "title": "Magic E Makes Bone",
       "total_sung_lines": 18,
-      "covered_lines_phrase": 3,
-      "coverage_pct": 16.666666666666664,
+      "covered_lines_phrase": 5,
+      "coverage_pct": 27.77777777777778,
       "lines": [
         {
           "line": "Magic E! Magic E!",
@@ -20280,8 +20106,8 @@
           "tokens": [
             "nose"
           ],
-          "best_image": "bone-nose.png",
-          "match_type": "weak",
+          "best_image": "nose.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -20292,8 +20118,8 @@
             "on",
             "nose"
           ],
-          "best_image": "bone-nose.png",
-          "match_type": "weak",
+          "best_image": "nose.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -20344,20 +20170,11 @@
           "is_scene_line": false
         }
       ],
-      "critical_gaps": [
-        {
-          "week": 40,
-          "role": "sound",
-          "song_title": "Magic E Makes Bone",
-          "line": "(On the nose! On the nose!)",
-          "match_type": "weak",
-          "nearest_image": "bone-nose.png"
-        }
-      ],
+      "critical_gaps": [],
       "images_used": [
         "bone-home.png",
-        "bone-nose.png",
         "bone.png",
+        "nose.png",
         "note.png",
         "potato-home.png"
       ]
@@ -20367,8 +20184,8 @@
       "role": "word",
       "title": "The Bone at Home",
       "total_sung_lines": 16,
-      "covered_lines_phrase": 11,
-      "coverage_pct": 68.75,
+      "covered_lines_phrase": 12,
+      "coverage_pct": 75.0,
       "lines": [
         {
           "line": "(We can read. We can read!)",
@@ -20483,8 +20300,8 @@
             "tug",
             "tug"
           ],
-          "best_image": "rope-bone.png",
-          "match_type": "weak",
+          "best_image": "rope.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -20563,7 +20380,7 @@
         "bone.png",
         "dog-home.png",
         "potato-home.png",
-        "rope-bone.png"
+        "rope.png"
       ]
     },
     {
@@ -21850,8 +21667,8 @@
       "role": "sound",
       "title": "Ee-Ee-Tree!",
       "total_sung_lines": 19,
-      "covered_lines_phrase": 11,
-      "coverage_pct": 57.89473684210527,
+      "covered_lines_phrase": 12,
+      "coverage_pct": 63.1578947368421,
       "lines": [
         {
           "line": "(ee\u2026 ee\u2026 ee\u2026)",
@@ -21932,7 +21749,7 @@
             "see",
             "bee"
           ],
-          "best_image": "see.png",
+          "best_image": "bee.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -21990,8 +21807,8 @@
             "hello",
             "bee"
           ],
-          "best_image": "bee-reading.png",
-          "match_type": "weak",
+          "best_image": "bee.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -22078,7 +21895,7 @@
       ],
       "critical_gaps": [],
       "images_used": [
-        "bee-reading.png",
+        "bee.png",
         "potato-sea.png",
         "read.png",
         "sea.png",
@@ -22163,7 +21980,7 @@
             "in",
             "tree"
           ],
-          "best_image": "tree.png",
+          "best_image": "bee.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -22175,7 +21992,7 @@
             "see",
             "bee"
           ],
-          "best_image": "see.png",
+          "best_image": "bee.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -22205,7 +22022,7 @@
             "can",
             "read"
           ],
-          "best_image": "read.png",
+          "best_image": "bee.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -22257,7 +22074,7 @@
             "can",
             "read"
           ],
-          "best_image": "read.png",
+          "best_image": "bee.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -22268,7 +22085,7 @@
             "bee",
             "shhh"
           ],
-          "best_image": "tree.png",
+          "best_image": "bee.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -22295,10 +22112,10 @@
       ],
       "critical_gaps": [],
       "images_used": [
+        "bee.png",
         "potato-sea.png",
         "read.png",
         "sea.png",
-        "see.png",
         "sheep-bee-eat.png",
         "tree.png"
       ]
@@ -22308,8 +22125,8 @@
       "role": "sound",
       "title": "Oh-Oh-Snow!",
       "total_sung_lines": 17,
-      "covered_lines_phrase": 11,
-      "coverage_pct": 64.70588235294117,
+      "covered_lines_phrase": 14,
+      "coverage_pct": 82.35294117647058,
       "lines": [
         {
           "line": "Oh! Oh! Snow!",
@@ -22328,8 +22145,8 @@
             "boat",
             "goat"
           ],
-          "best_image": "goat-boat.png",
-          "match_type": "weak",
+          "best_image": "boat.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -22373,8 +22190,8 @@
             "on",
             "boat"
           ],
-          "best_image": "goat-boat.png",
-          "match_type": "weak",
+          "best_image": "boat.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -22416,8 +22233,8 @@
             "row",
             "row"
           ],
-          "best_image": "goat-boat.png",
-          "match_type": "weak",
+          "best_image": "boat.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -22450,7 +22267,7 @@
             "in",
             "snow"
           ],
-          "best_image": "snow.png",
+          "best_image": "goat.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -22482,7 +22299,7 @@
             "snow",
             "shhh"
           ],
-          "best_image": "goat-snow.png",
+          "best_image": "boat.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -22496,27 +22313,10 @@
           "is_scene_line": false
         }
       ],
-      "critical_gaps": [
-        {
-          "week": 45,
-          "role": "sound",
-          "song_title": "Oh-Oh-Snow!",
-          "line": "O-A in the middle! (boat! goat!)",
-          "match_type": "weak",
-          "nearest_image": "goat-boat.png"
-        },
-        {
-          "week": 45,
-          "role": "sound",
-          "song_title": "Oh-Oh-Snow!",
-          "line": "B-O-A-T \u2014 boat! (on the boat!)",
-          "match_type": "weak",
-          "nearest_image": "goat-boat.png"
-        }
-      ],
+      "critical_gaps": [],
       "images_used": [
-        "goat-boat.png",
-        "goat-snow.png",
+        "boat.png",
+        "goat.png",
         "grow.png",
         "potato-snow.png",
         "snow.png"
@@ -22527,8 +22327,8 @@
       "role": "word",
       "title": "The Goat in the Snow",
       "total_sung_lines": 16,
-      "covered_lines_phrase": 10,
-      "coverage_pct": 62.5,
+      "covered_lines_phrase": 13,
+      "coverage_pct": 81.25,
       "lines": [
         {
           "line": "(We can read. We can read!)",
@@ -22549,7 +22349,7 @@
             "in",
             "snow"
           ],
-          "best_image": "snow.png",
+          "best_image": "goat.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -22560,7 +22360,7 @@
             "in",
             "snow"
           ],
-          "best_image": "snow.png",
+          "best_image": "goat.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -22583,7 +22383,7 @@
             "in",
             "snow"
           ],
-          "best_image": "snow.png",
+          "best_image": "goat.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -22594,8 +22394,8 @@
             "on",
             "boat"
           ],
-          "best_image": "goat-boat.png",
-          "match_type": "weak",
+          "best_image": "boat.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -22607,8 +22407,8 @@
             "row",
             "row"
           ],
-          "best_image": "goat-boat.png",
-          "match_type": "weak",
+          "best_image": "goat.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -22677,8 +22477,8 @@
             "row",
             "boat"
           ],
-          "best_image": "goat-boat.png",
-          "match_type": "weak",
+          "best_image": "boat.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -22713,19 +22513,11 @@
           "is_scene_line": false
         }
       ],
-      "critical_gaps": [
-        {
-          "week": 45,
-          "role": "word",
-          "song_title": "The Goat in the Snow",
-          "line": "The goat is on the boat!",
-          "match_type": "weak",
-          "nearest_image": "goat-boat.png"
-        }
-      ],
+      "critical_gaps": [],
       "images_used": [
-        "goat-boat.png",
+        "boat.png",
         "goat-snow.png",
+        "goat.png",
         "grow.png",
         "potato-snow.png",
         "snow.png"
@@ -23185,8 +22977,8 @@
       "role": "sound",
       "title": "Ar-Ar-Star!",
       "total_sung_lines": 19,
-      "covered_lines_phrase": 5,
-      "coverage_pct": 26.31578947368421,
+      "covered_lines_phrase": 12,
+      "coverage_pct": 63.1578947368421,
       "lines": [
         {
           "line": "(ar\u2026 ar\u2026 ar\u2026)",
@@ -23206,8 +22998,8 @@
             "ar",
             "star"
           ],
-          "best_image": "sheep-star.png",
-          "match_type": "weak",
+          "best_image": "star.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -23242,8 +23034,8 @@
             "ar",
             "star"
           ],
-          "best_image": "sheep-star.png",
-          "match_type": "weak",
+          "best_image": "star.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -23278,8 +23070,8 @@
             "beep",
             "beep"
           ],
-          "best_image": "car-park.png",
-          "match_type": "weak",
+          "best_image": "car.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -23292,8 +23084,8 @@
             "ar",
             "star"
           ],
-          "best_image": "sheep-star.png",
-          "match_type": "weak",
+          "best_image": "star.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -23317,8 +23109,8 @@
             "run",
             "run"
           ],
-          "best_image": "car-park.png",
-          "match_type": "weak",
+          "best_image": "park.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -23344,8 +23136,8 @@
             "ar",
             "star"
           ],
-          "best_image": "sheep-star.png",
-          "match_type": "weak",
+          "best_image": "star.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -23409,27 +23201,20 @@
             "ar",
             "star"
           ],
-          "best_image": "sheep-star.png",
-          "match_type": "weak",
+          "best_image": "star.png",
+          "match_type": "phrase",
           "is_scene_line": false
         }
       ],
-      "critical_gaps": [
-        {
-          "week": 47,
-          "role": "sound",
-          "song_title": "Ar-Ar-Star!",
-          "line": "Run in the park! (run! run!)",
-          "match_type": "weak",
-          "nearest_image": "car-park.png"
-        }
-      ],
+      "critical_gaps": [],
       "images_used": [
         "car-park.png",
+        "car.png",
         "dark.png",
         "farm.png",
+        "park.png",
         "potato-dark.png",
-        "sheep-star.png"
+        "star.png"
       ]
     },
     {
@@ -23437,8 +23222,8 @@
       "role": "word",
       "title": "The Star in the Dark",
       "total_sung_lines": 16,
-      "covered_lines_phrase": 7,
-      "coverage_pct": 43.75,
+      "covered_lines_phrase": 14,
+      "coverage_pct": 87.5,
       "lines": [
         {
           "line": "(We can read. We can read!)",
@@ -23484,8 +23269,8 @@
             "up",
             "high"
           ],
-          "best_image": "sheep-star.png",
-          "match_type": "weak",
+          "best_image": "star.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -23507,8 +23292,8 @@
             "beep",
             "beep"
           ],
-          "best_image": "car-park.png",
-          "match_type": "weak",
+          "best_image": "car.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -23518,8 +23303,8 @@
             "in",
             "park"
           ],
-          "best_image": "car-park.png",
-          "match_type": "weak",
+          "best_image": "car.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -23532,8 +23317,8 @@
             "up",
             "high"
           ],
-          "best_image": "sheep-star.png",
-          "match_type": "weak",
+          "best_image": "star.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -23544,8 +23329,8 @@
             "see",
             "star"
           ],
-          "best_image": "sheep-star.png",
-          "match_type": "weak",
+          "best_image": "star.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -23582,8 +23367,8 @@
             "up",
             "high"
           ],
-          "best_image": "sheep-star.png",
-          "match_type": "weak",
+          "best_image": "star.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -23594,8 +23379,8 @@
             "see",
             "star"
           ],
-          "best_image": "sheep-star.png",
-          "match_type": "weak",
+          "best_image": "star.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -23630,46 +23415,13 @@
           "is_scene_line": false
         }
       ],
-      "critical_gaps": [
-        {
-          "week": 47,
-          "role": "word",
-          "song_title": "The Star in the Dark",
-          "line": "Shine, star, shine! (way up high!)",
-          "match_type": "weak",
-          "nearest_image": "sheep-star.png"
-        },
-        {
-          "week": 47,
-          "role": "word",
-          "song_title": "The Star in the Dark",
-          "line": "The car is in the park!",
-          "match_type": "weak",
-          "nearest_image": "car-park.png"
-        },
-        {
-          "week": 47,
-          "role": "word",
-          "song_title": "The Star in the Dark",
-          "line": "Shine, star, shine! (way up high!)",
-          "match_type": "weak",
-          "nearest_image": "sheep-star.png"
-        },
-        {
-          "week": 47,
-          "role": "word",
-          "song_title": "The Star in the Dark",
-          "line": "Shine, star, shine! (way up high!)",
-          "match_type": "weak",
-          "nearest_image": "sheep-star.png"
-        }
-      ],
+      "critical_gaps": [],
       "images_used": [
-        "car-park.png",
+        "car.png",
         "dark.png",
         "farm.png",
         "potato-dark.png",
-        "sheep-star.png"
+        "star.png"
       ]
     },
     {
@@ -23677,16 +23429,16 @@
       "role": "sound",
       "title": "Or-Or-Corn!",
       "total_sung_lines": 17,
-      "covered_lines_phrase": 4,
-      "coverage_pct": 23.52941176470588,
+      "covered_lines_phrase": 12,
+      "coverage_pct": 70.58823529411765,
       "lines": [
         {
           "line": "Or! Or! Corn!",
           "tokens": [
             "corn"
           ],
-          "best_image": "corn-fork.png",
-          "match_type": "weak",
+          "best_image": "corn.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -23716,8 +23468,8 @@
             "corn",
             "corn"
           ],
-          "best_image": "corn-fork.png",
-          "match_type": "weak",
+          "best_image": "corn.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -23739,8 +23491,8 @@
             "eat",
             "corn"
           ],
-          "best_image": "corn-fork.png",
-          "match_type": "weak",
+          "best_image": "corn.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -23750,8 +23502,8 @@
             "on",
             "fork"
           ],
-          "best_image": "corn-fork.png",
-          "match_type": "weak",
+          "best_image": "fork.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -23760,8 +23512,8 @@
             "corn",
             "corn"
           ],
-          "best_image": "corn-fork.png",
-          "match_type": "weak",
+          "best_image": "corn.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -23782,7 +23534,7 @@
             "more",
             "corn"
           ],
-          "best_image": "more-corn.png",
+          "best_image": "corn.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -23803,8 +23555,8 @@
             "corn",
             "corn"
           ],
-          "best_image": "corn-fork.png",
-          "match_type": "weak",
+          "best_image": "corn.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -23815,7 +23567,7 @@
             "for",
             "horse"
           ],
-          "best_image": "more-corn.png",
+          "best_image": "corn.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -23835,8 +23587,8 @@
             "not",
             "corn"
           ],
-          "best_image": "potato-corn.png",
-          "match_type": "weak",
+          "best_image": "corn.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -23856,24 +23608,16 @@
           "tokens": [
             "corn"
           ],
-          "best_image": "corn-fork.png",
-          "match_type": "weak",
+          "best_image": "corn.png",
+          "match_type": "phrase",
           "is_scene_line": false
         }
       ],
-      "critical_gaps": [
-        {
-          "week": 48,
-          "role": "sound",
-          "song_title": "Or-Or-Corn!",
-          "line": "F-O-R-K \u2014 fork! (on the fork!)",
-          "match_type": "weak",
-          "nearest_image": "corn-fork.png"
-        }
-      ],
+      "critical_gaps": [],
       "images_used": [
         "corn-fork.png",
-        "more-corn.png",
+        "corn.png",
+        "fork.png",
         "more.png",
         "potato-corn.png"
       ]
@@ -23883,8 +23627,8 @@
       "role": "word",
       "title": "More Corn for the Horse",
       "total_sung_lines": 16,
-      "covered_lines_phrase": 9,
-      "coverage_pct": 56.25,
+      "covered_lines_phrase": 14,
+      "coverage_pct": 87.5,
       "lines": [
         {
           "line": "(We can read. We can read!)",
@@ -23906,7 +23650,7 @@
             "for",
             "horse"
           ],
-          "best_image": "more-corn.png",
+          "best_image": "corn.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -23918,7 +23662,7 @@
             "for",
             "horse"
           ],
-          "best_image": "more-corn.png",
+          "best_image": "corn.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -23930,7 +23674,7 @@
             "more",
             "corn"
           ],
-          "best_image": "more-corn.png",
+          "best_image": "corn.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -23942,7 +23686,7 @@
             "for",
             "horse"
           ],
-          "best_image": "more-corn.png",
+          "best_image": "corn.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -23954,8 +23698,8 @@
             "eat",
             "corn"
           ],
-          "best_image": "horse-corn.png",
-          "match_type": "weak",
+          "best_image": "corn.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -23965,8 +23709,8 @@
             "on",
             "fork"
           ],
-          "best_image": "corn-fork.png",
-          "match_type": "weak",
+          "best_image": "corn.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -23977,7 +23721,7 @@
             "more",
             "corn"
           ],
-          "best_image": "more-corn.png",
+          "best_image": "corn.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -23989,7 +23733,7 @@
             "for",
             "horse"
           ],
-          "best_image": "more-corn.png",
+          "best_image": "corn.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -24000,7 +23744,7 @@
             "in",
             "store"
           ],
-          "best_image": "store.png",
+          "best_image": "corn.png",
           "match_type": "phrase",
           "is_scene_line": true
         },
@@ -24012,8 +23756,8 @@
             "see",
             "corn"
           ],
-          "best_image": "corn-fork.png",
-          "match_type": "weak",
+          "best_image": "corn.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -24024,7 +23768,7 @@
             "more",
             "corn"
           ],
-          "best_image": "more-corn.png",
+          "best_image": "corn.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -24036,7 +23780,7 @@
             "for",
             "horse"
           ],
-          "best_image": "more-corn.png",
+          "best_image": "corn.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -24047,8 +23791,8 @@
             "horse",
             "shhh"
           ],
-          "best_image": "horse-corn.png",
-          "match_type": "weak",
+          "best_image": "corn.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -24058,8 +23802,8 @@
             "horse",
             "potato"
           ],
-          "best_image": "horse-corn.png",
-          "match_type": "weak",
+          "best_image": "horse.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -24072,22 +23816,11 @@
           "is_scene_line": false
         }
       ],
-      "critical_gaps": [
-        {
-          "week": 48,
-          "role": "word",
-          "song_title": "More Corn for the Horse",
-          "line": "The corn is on the fork!",
-          "match_type": "weak",
-          "nearest_image": "corn-fork.png"
-        }
-      ],
+      "critical_gaps": [],
       "images_used": [
-        "corn-fork.png",
-        "horse-corn.png",
-        "more-corn.png",
-        "potato-corn.png",
-        "store.png"
+        "corn.png",
+        "horse.png",
+        "potato-corn.png"
       ]
     },
     {
@@ -24095,8 +23828,8 @@
       "role": "sound",
       "title": "Er-Er-Bird!",
       "total_sung_lines": 20,
-      "covered_lines_phrase": 3,
-      "coverage_pct": 15.0,
+      "covered_lines_phrase": 4,
+      "coverage_pct": 20.0,
       "lines": [
         {
           "line": "(er\u2026 er\u2026 er\u2026)",
@@ -24260,8 +23993,8 @@
             "hello",
             "teacher"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "teacher.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -24342,7 +24075,8 @@
         "bird-better.png",
         "bird-turn.png",
         "girl.png",
-        "potato-fern.png"
+        "potato-fern.png",
+        "teacher.png"
       ]
     },
     {
@@ -24567,8 +24301,8 @@
       "role": "sound",
       "title": "Ship or Sheep?",
       "total_sung_lines": 20,
-      "covered_lines_phrase": 6,
-      "coverage_pct": 30.0,
+      "covered_lines_phrase": 8,
+      "coverage_pct": 40.0,
       "lines": [
         {
           "line": "(ih\u2026 ee\u2026 ih\u2026 ee\u2026)",
@@ -24694,8 +24428,8 @@
             "pen",
             "ih"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "pen.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -24727,8 +24461,8 @@
             "bug",
             "uh"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "bag.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -24798,6 +24532,8 @@
       ],
       "critical_gaps": [],
       "images_used": [
+        "bag.png",
+        "pen.png",
         "potato-between.png",
         "sheep-on-seat.png",
         "sheep.png"
@@ -24808,8 +24544,8 @@
       "role": "word",
       "title": "Ship or Sheep?",
       "total_sung_lines": 17,
-      "covered_lines_phrase": 13,
-      "coverage_pct": 76.47058823529412,
+      "covered_lines_phrase": 14,
+      "coverage_pct": 82.35294117647058,
       "lines": [
         {
           "line": "(We can hear it. We can hear it!)",
@@ -24921,8 +24657,8 @@
             "can",
             "tip"
           ],
-          "best_image": "sheep-on-ship.png",
-          "match_type": "weak",
+          "best_image": "ship.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -25008,7 +24744,8 @@
         "potato-between.png",
         "sheep-on-ship.png",
         "sheep.png",
-        "ship-on-sea.png"
+        "ship-on-sea.png",
+        "ship.png"
       ]
     },
     {
@@ -25016,8 +24753,8 @@
       "role": "sound",
       "title": "Oo-Oo-Moon!",
       "total_sung_lines": 20,
-      "covered_lines_phrase": 2,
-      "coverage_pct": 10.0,
+      "covered_lines_phrase": 8,
+      "coverage_pct": 40.0,
       "lines": [
         {
           "line": "(oo\u2026 oo\u2026 oo\u2026)",
@@ -25074,8 +24811,8 @@
             "oo",
             "moon"
           ],
-          "best_image": "big-moon.png",
-          "match_type": "weak",
+          "best_image": "moon.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -25086,8 +24823,8 @@
             "moon",
             "moon"
           ],
-          "best_image": "big-moon.png",
-          "match_type": "weak",
+          "best_image": "moon.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -25110,8 +24847,8 @@
             "oo",
             "zoo"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "zoo.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -25157,8 +24894,8 @@
             "oo",
             "book"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "book.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -25227,8 +24964,8 @@
             "oo",
             "oo"
           ],
-          "best_image": "big-moon.png",
-          "match_type": "weak",
+          "best_image": "book.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -25237,8 +24974,8 @@
             "look",
             "moon"
           ],
-          "best_image": "big-moon.png",
-          "match_type": "weak",
+          "best_image": "moon.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -25254,10 +24991,12 @@
       ],
       "critical_gaps": [],
       "images_used": [
-        "big-moon.png",
+        "book.png",
+        "moon.png",
         "potato-roof.png",
         "roof.png",
-        "spoon.png"
+        "spoon.png",
+        "zoo.png"
       ]
     },
     {
@@ -25265,8 +25004,8 @@
       "role": "word",
       "title": "Look at the Moon",
       "total_sung_lines": 17,
-      "covered_lines_phrase": 7,
-      "coverage_pct": 41.17647058823529,
+      "covered_lines_phrase": 13,
+      "coverage_pct": 76.47058823529412,
       "lines": [
         {
           "line": "(We can read. We can read!)",
@@ -25287,8 +25026,8 @@
             "at",
             "moon"
           ],
-          "best_image": "big-moon.png",
-          "match_type": "weak",
+          "best_image": "moon.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -25298,8 +25037,8 @@
             "at",
             "moon"
           ],
-          "best_image": "big-moon.png",
-          "match_type": "weak",
+          "best_image": "moon.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -25310,8 +25049,8 @@
             "where",
             "where"
           ],
-          "best_image": "big-moon.png",
-          "match_type": "weak",
+          "best_image": "moon.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -25344,8 +25083,8 @@
             "see",
             "moon"
           ],
-          "best_image": "star-sheep-moon.png",
-          "match_type": "weak",
+          "best_image": "moon.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -25390,8 +25129,8 @@
             "at",
             "school"
           ],
-          "best_image": "moon-school.png",
-          "match_type": "weak",
+          "best_image": "moon.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -25423,7 +25162,7 @@
             "moon",
             "shhh"
           ],
-          "best_image": "roof.png",
+          "best_image": "moon.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -25456,20 +25195,19 @@
             "goodnight",
             "moon"
           ],
-          "best_image": "big-moon.png",
-          "match_type": "weak",
+          "best_image": "moon.png",
+          "match_type": "phrase",
           "is_scene_line": false
         }
       ],
       "critical_gaps": [],
       "images_used": [
-        "big-moon.png",
         "moon-cool.png",
         "moon-school.png",
+        "moon.png",
         "potato-roof.png",
         "roof.png",
-        "star-looking.png",
-        "star-sheep-moon.png"
+        "star-looking.png"
       ]
     },
     {
@@ -25477,8 +25215,8 @@
       "role": "sound",
       "title": "Ow-Ow-Owl!",
       "total_sung_lines": 20,
-      "covered_lines_phrase": 5,
-      "coverage_pct": 25.0,
+      "covered_lines_phrase": 7,
+      "coverage_pct": 35.0,
       "lines": [
         {
           "line": "(ow\u2026 ow\u2026 ow\u2026)",
@@ -25580,8 +25318,8 @@
             "out",
             "house"
           ],
-          "best_image": "cow-in-house.png",
-          "match_type": "weak",
+          "best_image": "house.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -25627,8 +25365,8 @@
             "in",
             "house"
           ],
-          "best_image": "cow-in-house.png",
-          "match_type": "weak",
+          "best_image": "house.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -25683,7 +25421,7 @@
             "ow",
             "ow"
           ],
-          "best_image": "owl.png",
+          "best_image": "house.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -25713,23 +25451,7 @@
           "week": 52,
           "role": "sound",
           "song_title": "Ow-Ow-Owl!",
-          "line": "Out of the house!",
-          "match_type": "weak",
-          "nearest_image": "cow-in-house.png"
-        },
-        {
-          "week": 52,
-          "role": "sound",
-          "song_title": "Ow-Ow-Owl!",
           "line": "Down in the town! (the town!)",
-          "match_type": "weak",
-          "nearest_image": "cow-in-house.png"
-        },
-        {
-          "week": 52,
-          "role": "sound",
-          "song_title": "Ow-Ow-Owl!",
-          "line": "A mouse in the house!",
           "match_type": "weak",
           "nearest_image": "cow-in-house.png"
         }
@@ -25737,6 +25459,7 @@
       "images_used": [
         "cloud.png",
         "cow-in-house.png",
+        "house.png",
         "loud-sound.png",
         "owl.png",
         "potato-town.png"
@@ -25747,8 +25470,8 @@
       "role": "word",
       "title": "The Owl in Town",
       "total_sung_lines": 17,
-      "covered_lines_phrase": 9,
-      "coverage_pct": 52.94117647058824,
+      "covered_lines_phrase": 11,
+      "coverage_pct": 64.70588235294117,
       "lines": [
         {
           "line": "(We can read. We can read!)",
@@ -25836,8 +25559,8 @@
             "moo",
             "moo"
           ],
-          "best_image": "cow-in-house.png",
-          "match_type": "weak",
+          "best_image": "cow.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -25846,8 +25569,8 @@
             "out",
             "house"
           ],
-          "best_image": "cow-in-house.png",
-          "match_type": "weak",
+          "best_image": "house.png",
+          "match_type": "phrase",
           "is_scene_line": true
         },
         {
@@ -25857,7 +25580,7 @@
             "cow",
             "shout"
           ],
-          "best_image": "owl-cow-shout.png",
+          "best_image": "cow.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -25955,14 +25678,6 @@
           "week": 52,
           "role": "word",
           "song_title": "The Owl in Town",
-          "line": "Out of the house!",
-          "match_type": "weak",
-          "nearest_image": "cow-in-house.png"
-        },
-        {
-          "week": 52,
-          "role": "word",
-          "song_title": "The Owl in Town",
           "line": "Down in the town, so proud!",
           "match_type": "weak",
           "nearest_image": "cow-in-house.png"
@@ -25986,8 +25701,9 @@
       ],
       "images_used": [
         "cow-in-house.png",
+        "cow.png",
+        "house.png",
         "loud-sound.png",
-        "owl-cow-shout.png",
         "owl-looks-down.png",
         "owl.png",
         "potato-town.png"
@@ -26452,8 +26168,8 @@
       "role": "sound",
       "title": "New-Blue-True!",
       "total_sung_lines": 20,
-      "covered_lines_phrase": 3,
-      "coverage_pct": 15.0,
+      "covered_lines_phrase": 5,
+      "coverage_pct": 25.0,
       "lines": [
         {
           "line": "(oo\u2026 aw\u2026 oo\u2026 aw\u2026)",
@@ -26614,8 +26330,8 @@
             "saw",
             "saw"
           ],
-          "best_image": "chick-saw-glue.png",
-          "match_type": "weak",
+          "best_image": "saw.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -26660,8 +26376,8 @@
             "oo",
             "aw"
           ],
-          "best_image": "chick-saw-glue.png",
-          "match_type": "weak",
+          "best_image": "saw.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -26689,11 +26405,11 @@
       "critical_gaps": [],
       "images_used": [
         "chick-drew-paw.png",
-        "chick-saw-glue.png",
         "claw.png",
         "glue.png",
         "hawk.png",
-        "potato-glue.png"
+        "potato-glue.png",
+        "saw.png"
       ]
     },
     {
@@ -27470,7 +27186,7 @@
             "comb",
             "climb"
           ],
-          "best_image": "lamb.png",
+          "best_image": "comb.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -27566,6 +27282,7 @@
       ],
       "critical_gaps": [],
       "images_used": [
+        "comb.png",
         "knee.png",
         "lamb.png",
         "potato-lamb.png",
@@ -28186,8 +27903,8 @@
             "wish",
             "wish"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "fish-wishing.png",
+          "match_type": "weak",
           "is_scene_line": false
         },
         {
@@ -28252,6 +27969,7 @@
         "cat-jumping.png",
         "dog-running.png",
         "duck-swimming.png",
+        "fish-wishing.png",
         "potato-resting.png",
         "reading.png",
         "running.png",
@@ -28305,7 +28023,7 @@
             "station",
             "nation"
           ],
-          "best_image": "nation.png",
+          "best_image": "action.png",
           "match_type": "phrase",
           "is_scene_line": false
         },
@@ -28513,9 +28231,9 @@
         }
       ],
       "images_used": [
+        "action.png",
         "celebration-scene.png",
         "fraction.png",
-        "nation.png",
         "potato-king.png",
         "tree-question.png",
         "vacation.png"
@@ -28526,8 +28244,8 @@
       "role": "word",
       "title": "The Celebration",
       "total_sung_lines": 20,
-      "covered_lines_phrase": 2,
-      "coverage_pct": 10.0,
+      "covered_lines_phrase": 3,
+      "coverage_pct": 15.0,
       "lines": [
         {
           "line": "(It's a\u2026 where is Sejeena\u2026 the cat is on the mat\u2026 ship or sheep\u2026 why, fly, why\u2026)",
@@ -28631,8 +28349,8 @@
             "are",
             "here"
           ],
-          "best_image": null,
-          "match_type": "none",
+          "best_image": "segina-and-sam.png",
+          "match_type": "weak",
           "is_scene_line": false
         },
         {
@@ -28654,8 +28372,8 @@
             "duck",
             "swimming"
           ],
-          "best_image": "cast-sheep-snake-bee.png",
-          "match_type": "weak",
+          "best_image": "bee-reading.png",
+          "match_type": "phrase",
           "is_scene_line": false
         },
         {
@@ -28783,12 +28501,14 @@
         }
       ],
       "images_used": [
+        "bee-reading.png",
         "cast-cat-dog.png",
         "cast-sheep-snake-bee.png",
         "cast-star-owl.png",
         "celebration-scene.png",
         "class-jumping.png",
         "potato-king.png",
+        "segina-and-sam.png",
         "tree-question.png"
       ]
     }
@@ -28801,94 +28521,6 @@
       "line": "WAKE UP, SEJEENA!",
       "match_type": "none",
       "nearest_image": null
-    },
-    {
-      "week": 3,
-      "role": "word",
-      "song_title": "On the Mat",
-      "line": "On the mat! On the mat!",
-      "match_type": "weak",
-      "nearest_image": "mango-on-mat.png"
-    },
-    {
-      "week": 3,
-      "role": "word",
-      "song_title": "On the Mat",
-      "line": "What is on the mat?",
-      "match_type": "weak",
-      "nearest_image": "mango-on-mat.png"
-    },
-    {
-      "week": 3,
-      "role": "word",
-      "song_title": "On the Mat",
-      "line": "On the mat! On the mat!",
-      "match_type": "weak",
-      "nearest_image": "mango-on-mat.png"
-    },
-    {
-      "week": 3,
-      "role": "word",
-      "song_title": "On the Mat",
-      "line": "What is on the mat?",
-      "match_type": "weak",
-      "nearest_image": "mango-on-mat.png"
-    },
-    {
-      "week": 3,
-      "role": "word",
-      "song_title": "On the Mat",
-      "line": "On the mat! On the mat!",
-      "match_type": "weak",
-      "nearest_image": "mango-on-mat.png"
-    },
-    {
-      "week": 3,
-      "role": "word",
-      "song_title": "On the Mat",
-      "line": "What is on the mat?",
-      "match_type": "weak",
-      "nearest_image": "mango-on-mat.png"
-    },
-    {
-      "week": 3,
-      "role": "word",
-      "song_title": "On the Mat",
-      "line": "On the mat! On the mat!",
-      "match_type": "weak",
-      "nearest_image": "mango-on-mat.png"
-    },
-    {
-      "week": 3,
-      "role": "word",
-      "song_title": "On the Mat",
-      "line": "What is on the mat?",
-      "match_type": "weak",
-      "nearest_image": "mango-on-mat.png"
-    },
-    {
-      "week": 3,
-      "role": "word",
-      "song_title": "On the Mat",
-      "line": "Sejeena is on the mat! (Sejeena!)",
-      "match_type": "weak",
-      "nearest_image": "mango-on-mat.png"
-    },
-    {
-      "week": 3,
-      "role": "word",
-      "song_title": "On the Mat",
-      "line": "Sejeena is on the mat!",
-      "match_type": "weak",
-      "nearest_image": "mango-on-mat.png"
-    },
-    {
-      "week": 3,
-      "role": "word",
-      "song_title": "On the Mat",
-      "line": "On the mat! On the mat!",
-      "match_type": "weak",
-      "nearest_image": "mango-on-mat.png"
     },
     {
       "week": 4,
@@ -28960,7 +28592,7 @@
       "song_title": "Dad and the Ant",
       "line": "All on the mat!",
       "match_type": "weak",
-      "nearest_image": "all-and-mat.png"
+      "nearest_image": "all-and-mat-v2.png"
     },
     {
       "week": 11,
@@ -28992,7 +28624,7 @@
       "song_title": "The Dog Digs",
       "line": "What is in the pit?",
       "match_type": "weak",
-      "nearest_image": "hat-in-pit.png"
+      "nearest_image": "cat-in-pit.png"
     },
     {
       "week": 12,
@@ -29000,7 +28632,7 @@
       "song_title": "The Dog Digs",
       "line": "What is in the pit?",
       "match_type": "weak",
-      "nearest_image": "hat-in-pit.png"
+      "nearest_image": "cat-in-pit.png"
     },
     {
       "week": 12,
@@ -29008,7 +28640,7 @@
       "song_title": "The Dog Digs",
       "line": "What is in the pit?",
       "match_type": "weak",
-      "nearest_image": "hat-in-pit.png"
+      "nearest_image": "cat-in-pit.png"
     },
     {
       "week": 12,
@@ -29016,7 +28648,7 @@
       "song_title": "The Dog Digs",
       "line": "What is in the pit?",
       "match_type": "weak",
-      "nearest_image": "hat-in-pit.png"
+      "nearest_image": "cat-in-pit.png"
     },
     {
       "week": 12,
@@ -29024,7 +28656,7 @@
       "song_title": "The Dog Digs",
       "line": "What is in the pit?",
       "match_type": "weak",
-      "nearest_image": "hat-in-pit.png"
+      "nearest_image": "cat-in-pit.png"
     },
     {
       "week": 14,
@@ -29048,7 +28680,7 @@
       "song_title": "Ten Hens",
       "line": "On the cat?! (on the CAT?!)",
       "match_type": "weak",
-      "nearest_image": "hen-on-dog.png"
+      "nearest_image": "hen-on-cat.png"
     },
     {
       "week": 15,
@@ -29099,46 +28731,6 @@
       "nearest_image": "mix-in-box.png"
     },
     {
-      "week": 24,
-      "role": "word",
-      "song_title": "A Fox in a Box",
-      "line": "Who is in the box? (the fox! the fox!)",
-      "match_type": "weak",
-      "nearest_image": "fox-in-box.png"
-    },
-    {
-      "week": 24,
-      "role": "word",
-      "song_title": "A Fox in a Box",
-      "line": "Who is in the box? (mix! a big mix!)",
-      "match_type": "weak",
-      "nearest_image": "mix-in-box.png"
-    },
-    {
-      "week": 24,
-      "role": "word",
-      "song_title": "A Fox in a Box",
-      "line": "Mix it up in the box!",
-      "match_type": "weak",
-      "nearest_image": "mix-in-box.png"
-    },
-    {
-      "week": 24,
-      "role": "word",
-      "song_title": "A Fox in a Box",
-      "line": "The ox is STUCK in the box!",
-      "match_type": "weak",
-      "nearest_image": "ox-in-box.png"
-    },
-    {
-      "week": 24,
-      "role": "word",
-      "song_title": "A Fox in a Box",
-      "line": "What is in the box?",
-      "match_type": "weak",
-      "nearest_image": "cat-in-box.png"
-    },
-    {
       "week": 26,
       "role": "sound",
       "song_title": "Z-Z-Zip",
@@ -29177,22 +28769,6 @@
       "line": "The cat is on the mat.",
       "match_type": "weak",
       "nearest_image": "cat-nap.png"
-    },
-    {
-      "week": 27,
-      "role": "word",
-      "song_title": "The Fish on the Ship",
-      "line": "The fish is in! (splash!)",
-      "match_type": "weak",
-      "nearest_image": "fish-in-water.png"
-    },
-    {
-      "week": 27,
-      "role": "word",
-      "song_title": "The Fish on the Ship",
-      "line": "The fish is in! (swim, fish, swim!)",
-      "match_type": "weak",
-      "nearest_image": "fish-in-water.png"
     },
     {
       "week": 28,
@@ -29235,52 +28811,12 @@
       "nearest_image": null
     },
     {
-      "week": 33,
-      "role": "word",
-      "song_title": "Stop, Snake, Stop!",
-      "line": "Snake can swim in a swish! (swish! swish!)",
-      "match_type": "weak",
-      "nearest_image": "snake-swim.png"
-    },
-    {
       "week": 36,
       "role": "sound",
       "song_title": "Hand-Hand-Hand!",
       "line": "Off it WENT! (whoosh!) WENT!",
       "match_type": "weak",
       "nearest_image": "chick-went-up.png"
-    },
-    {
-      "week": 36,
-      "role": "sound",
-      "song_title": "Hand-Hand-Hand!",
-      "line": "In the NEST! (tweet!) NEST!",
-      "match_type": "weak",
-      "nearest_image": "cast-in-nest.png"
-    },
-    {
-      "week": 36,
-      "role": "word",
-      "song_title": "The Best Nest",
-      "line": "Chick went in the nest!",
-      "match_type": "weak",
-      "nearest_image": "chick-in-nest.png"
-    },
-    {
-      "week": 36,
-      "role": "word",
-      "song_title": "The Best Nest",
-      "line": "Snake can rest in the nest!",
-      "match_type": "weak",
-      "nearest_image": "snake-rest-nest.png"
-    },
-    {
-      "week": 36,
-      "role": "word",
-      "song_title": "The Best Nest",
-      "line": "Land in the nest! (land! land!)",
-      "match_type": "weak",
-      "nearest_image": "cast-in-nest.png"
     },
     {
       "week": 37,
@@ -29297,94 +28833,6 @@
       "line": "In went the snake!",
       "match_type": "weak",
       "nearest_image": "snake-going-in.png"
-    },
-    {
-      "week": 40,
-      "role": "sound",
-      "song_title": "Magic E Makes Bone",
-      "line": "(On the nose! On the nose!)",
-      "match_type": "weak",
-      "nearest_image": "bone-nose.png"
-    },
-    {
-      "week": 45,
-      "role": "sound",
-      "song_title": "Oh-Oh-Snow!",
-      "line": "O-A in the middle! (boat! goat!)",
-      "match_type": "weak",
-      "nearest_image": "goat-boat.png"
-    },
-    {
-      "week": 45,
-      "role": "sound",
-      "song_title": "Oh-Oh-Snow!",
-      "line": "B-O-A-T \u2014 boat! (on the boat!)",
-      "match_type": "weak",
-      "nearest_image": "goat-boat.png"
-    },
-    {
-      "week": 45,
-      "role": "word",
-      "song_title": "The Goat in the Snow",
-      "line": "The goat is on the boat!",
-      "match_type": "weak",
-      "nearest_image": "goat-boat.png"
-    },
-    {
-      "week": 47,
-      "role": "sound",
-      "song_title": "Ar-Ar-Star!",
-      "line": "Run in the park! (run! run!)",
-      "match_type": "weak",
-      "nearest_image": "car-park.png"
-    },
-    {
-      "week": 47,
-      "role": "word",
-      "song_title": "The Star in the Dark",
-      "line": "Shine, star, shine! (way up high!)",
-      "match_type": "weak",
-      "nearest_image": "sheep-star.png"
-    },
-    {
-      "week": 47,
-      "role": "word",
-      "song_title": "The Star in the Dark",
-      "line": "The car is in the park!",
-      "match_type": "weak",
-      "nearest_image": "car-park.png"
-    },
-    {
-      "week": 47,
-      "role": "word",
-      "song_title": "The Star in the Dark",
-      "line": "Shine, star, shine! (way up high!)",
-      "match_type": "weak",
-      "nearest_image": "sheep-star.png"
-    },
-    {
-      "week": 47,
-      "role": "word",
-      "song_title": "The Star in the Dark",
-      "line": "Shine, star, shine! (way up high!)",
-      "match_type": "weak",
-      "nearest_image": "sheep-star.png"
-    },
-    {
-      "week": 48,
-      "role": "sound",
-      "song_title": "Or-Or-Corn!",
-      "line": "F-O-R-K \u2014 fork! (on the fork!)",
-      "match_type": "weak",
-      "nearest_image": "corn-fork.png"
-    },
-    {
-      "week": 48,
-      "role": "word",
-      "song_title": "More Corn for the Horse",
-      "line": "The corn is on the fork!",
-      "match_type": "weak",
-      "nearest_image": "corn-fork.png"
     },
     {
       "week": 49,
@@ -29406,23 +28854,7 @@
       "week": 52,
       "role": "sound",
       "song_title": "Ow-Ow-Owl!",
-      "line": "Out of the house!",
-      "match_type": "weak",
-      "nearest_image": "cow-in-house.png"
-    },
-    {
-      "week": 52,
-      "role": "sound",
-      "song_title": "Ow-Ow-Owl!",
       "line": "Down in the town! (the town!)",
-      "match_type": "weak",
-      "nearest_image": "cow-in-house.png"
-    },
-    {
-      "week": 52,
-      "role": "sound",
-      "song_title": "Ow-Ow-Owl!",
-      "line": "A mouse in the house!",
       "match_type": "weak",
       "nearest_image": "cow-in-house.png"
     },
@@ -29433,14 +28865,6 @@
       "line": "Out and about!",
       "match_type": "none",
       "nearest_image": null
-    },
-    {
-      "week": 52,
-      "role": "word",
-      "song_title": "The Owl in Town",
-      "line": "Out of the house!",
-      "match_type": "weak",
-      "nearest_image": "cow-in-house.png"
     },
     {
       "week": 52,
@@ -29531,9 +28955,57 @@
       "week": 3
     },
     {
+      "a": "mango-on-mat.png",
+      "b": "mat.png",
+      "kind": "subset",
+      "week": 3
+    },
+    {
       "a": "mask-on-mat.png",
       "b": "mask.png",
       "kind": "prefix",
+      "week": 3
+    },
+    {
+      "a": "mask-on-mat.png",
+      "b": "mat.png",
+      "kind": "subset",
+      "week": 3
+    },
+    {
+      "a": "mat.png",
+      "b": "monkey-on-mat.png",
+      "kind": "subset",
+      "week": 3
+    },
+    {
+      "a": "mat.png",
+      "b": "moon-on-mat.png",
+      "kind": "subset",
+      "week": 3
+    },
+    {
+      "a": "mat.png",
+      "b": "mop-on-mat.png",
+      "kind": "subset",
+      "week": 3
+    },
+    {
+      "a": "mat.png",
+      "b": "mouse-on-mat.png",
+      "kind": "subset",
+      "week": 3
+    },
+    {
+      "a": "mat.png",
+      "b": "potato-on-mat.png",
+      "kind": "subset",
+      "week": 3
+    },
+    {
+      "a": "mat.png",
+      "b": "segina-on-mat.png",
+      "kind": "subset",
       "week": 3
     },
     {
@@ -29557,6 +29029,12 @@
     {
       "a": "mouse-on-mat.png",
       "b": "mouse.png",
+      "kind": "prefix",
+      "week": 3
+    },
+    {
+      "a": "potato-on-mat.png",
+      "b": "potato.png",
       "kind": "prefix",
       "week": 3
     },
@@ -29657,6 +29135,36 @@
       "week": 5
     },
     {
+      "a": "sam-sat-on-potato.png",
+      "b": "sam-sat.png",
+      "kind": "prefix",
+      "week": 5
+    },
+    {
+      "a": "sam-sat-on-potato.png",
+      "b": "sam.png",
+      "kind": "prefix",
+      "week": 5
+    },
+    {
+      "a": "sam-sat-on-sock.png",
+      "b": "sam-sat.png",
+      "kind": "prefix",
+      "week": 5
+    },
+    {
+      "a": "sam-sat-on-sock.png",
+      "b": "sam.png",
+      "kind": "prefix",
+      "week": 5
+    },
+    {
+      "a": "sam-sat-on-sock.png",
+      "b": "sock.png",
+      "kind": "subset",
+      "week": 5
+    },
+    {
       "a": "sam-sat.png",
       "b": "sam.png",
       "kind": "prefix",
@@ -29711,6 +29219,18 @@
       "week": 9
     },
     {
+      "a": "hat-on-ant-v2.png",
+      "b": "hat-on-ant.png",
+      "kind": "prefix",
+      "week": 9
+    },
+    {
+      "a": "hat-on-ant-v2.png",
+      "b": "hat.png",
+      "kind": "prefix",
+      "week": 9
+    },
+    {
       "a": "hat-on-ant.png",
       "b": "hat.png",
       "kind": "prefix",
@@ -29747,6 +29267,24 @@
       "week": 9
     },
     {
+      "a": "all-and-mat-v2.png",
+      "b": "all-and-mat.png",
+      "kind": "prefix",
+      "week": 10
+    },
+    {
+      "a": "dad-and-ant-v2.png",
+      "b": "dad-and-ant.png",
+      "kind": "prefix",
+      "week": 10
+    },
+    {
+      "a": "dad-and-ant-v2.png",
+      "b": "dad.png",
+      "kind": "prefix",
+      "week": 10
+    },
+    {
       "a": "dad-and-ant.png",
       "b": "dad.png",
       "kind": "prefix",
@@ -29755,6 +29293,12 @@
     {
       "a": "dad-and-cat.png",
       "b": "dad.png",
+      "kind": "prefix",
+      "week": 10
+    },
+    {
+      "a": "dad-and-sam.png",
+      "b": "dad-sam-find-v2.png",
       "kind": "prefix",
       "week": 10
     },
@@ -29772,6 +29316,18 @@
     },
     {
       "a": "dad-sad.png",
+      "b": "dad.png",
+      "kind": "prefix",
+      "week": 10
+    },
+    {
+      "a": "dad-sam-find-v2.png",
+      "b": "dad-sam-find.png",
+      "kind": "prefix",
+      "week": 10
+    },
+    {
+      "a": "dad-sam-find-v2.png",
       "b": "dad.png",
       "kind": "prefix",
       "week": 10
@@ -29798,6 +29354,18 @@
       "a": "cat-on-pot.png",
       "b": "pot.png",
       "kind": "subset",
+      "week": 11
+    },
+    {
+      "a": "pot-cool-v2.png",
+      "b": "pot-cool.png",
+      "kind": "prefix",
+      "week": 11
+    },
+    {
+      "a": "pot-cool-v2.png",
+      "b": "pot.png",
+      "kind": "prefix",
       "week": 11
     },
     {
@@ -29865,6 +29433,18 @@
       "b": "dog.png",
       "kind": "prefix",
       "week": 12
+    },
+    {
+      "a": "big-dog-and-bus.png",
+      "b": "big-dog.png",
+      "kind": "prefix",
+      "week": 13
+    },
+    {
+      "a": "big-dog-and-bus.png",
+      "b": "big.png",
+      "kind": "prefix",
+      "week": 13
     },
     {
       "a": "big-dog-and-pig.png",
@@ -29963,6 +29543,12 @@
       "week": 15
     },
     {
+      "a": "rat-hid.png",
+      "b": "rat.png",
+      "kind": "prefix",
+      "week": 15
+    },
+    {
       "a": "rat-in-bag.png",
       "b": "rat.png",
       "kind": "prefix",
@@ -29976,6 +29562,12 @@
     },
     {
       "a": "rat-running.png",
+      "b": "rat.png",
+      "kind": "prefix",
+      "week": 15
+    },
+    {
+      "a": "rat-sat.png",
       "b": "rat.png",
       "kind": "prefix",
       "week": 15
@@ -30014,6 +29606,12 @@
       "a": "pup-in-sun.png",
       "b": "pup.png",
       "kind": "prefix",
+      "week": 16
+    },
+    {
+      "a": "pup-in-sun.png",
+      "b": "sun.png",
+      "kind": "subset",
       "week": 16
     },
     {
@@ -30089,6 +29687,12 @@
       "week": 17
     },
     {
+      "a": "potato-running.png",
+      "b": "potato.png",
+      "kind": "prefix",
+      "week": 17
+    },
+    {
       "a": "bug-on-log.png",
       "b": "bug.png",
       "kind": "prefix",
@@ -30144,6 +29748,12 @@
     },
     {
       "a": "dog-pup-on-log.png",
+      "b": "dog.png",
+      "kind": "prefix",
+      "week": 18
+    },
+    {
+      "a": "dog-pup-on-log.png",
       "b": "log.png",
       "kind": "subset",
       "week": 18
@@ -30158,6 +29768,12 @@
       "a": "log.png",
       "b": "potato-on-log.png",
       "kind": "subset",
+      "week": 18
+    },
+    {
+      "a": "potato-on-log.png",
+      "b": "potato.png",
+      "kind": "prefix",
       "week": 18
     },
     {
@@ -30182,6 +29798,12 @@
       "a": "potato-on-web.png",
       "b": "web.png",
       "kind": "subset",
+      "week": 19
+    },
+    {
+      "a": "web-dry.png",
+      "b": "web.png",
+      "kind": "prefix",
       "week": 19
     },
     {
@@ -30287,6 +29909,12 @@
       "week": 21
     },
     {
+      "a": "duck-potato.png",
+      "b": "potato.png",
+      "kind": "subset",
+      "week": 21
+    },
+    {
       "a": "duck-rock.png",
       "b": "duck.png",
       "kind": "prefix",
@@ -30302,6 +29930,12 @@
       "a": "duck-sock.png",
       "b": "duck.png",
       "kind": "prefix",
+      "week": 21
+    },
+    {
+      "a": "duck-sock.png",
+      "b": "sock.png",
+      "kind": "subset",
       "week": 21
     },
     {
@@ -30377,10 +30011,64 @@
       "week": 23
     },
     {
+      "a": "potato-taste.png",
+      "b": "potato.png",
+      "kind": "prefix",
+      "week": 23
+    },
+    {
       "a": "yam.png",
       "b": "yum-yam.png",
       "kind": "subset",
       "week": 23
+    },
+    {
+      "a": "box.png",
+      "b": "cat-in-box.png",
+      "kind": "subset",
+      "week": 24
+    },
+    {
+      "a": "box.png",
+      "b": "duck-in-box.png",
+      "kind": "subset",
+      "week": 24
+    },
+    {
+      "a": "box.png",
+      "b": "fox-box-peek.png",
+      "kind": "subset",
+      "week": 24
+    },
+    {
+      "a": "box.png",
+      "b": "fox-in-box.png",
+      "kind": "subset",
+      "week": 24
+    },
+    {
+      "a": "box.png",
+      "b": "mix-in-box.png",
+      "kind": "subset",
+      "week": 24
+    },
+    {
+      "a": "box.png",
+      "b": "ox-in-box.png",
+      "kind": "subset",
+      "week": 24
+    },
+    {
+      "a": "box.png",
+      "b": "potato-in-box.png",
+      "kind": "subset",
+      "week": 24
+    },
+    {
+      "a": "box.png",
+      "b": "six-in-box.png",
+      "kind": "subset",
+      "week": 24
     },
     {
       "a": "six-in-box.png",
@@ -30389,14 +30077,74 @@
       "week": 24
     },
     {
+      "a": "duck-quack.png",
+      "b": "duck.png",
+      "kind": "prefix",
+      "week": 25
+    },
+    {
+      "a": "duck-quit-it.png",
+      "b": "duck.png",
+      "kind": "prefix",
+      "week": 25
+    },
+    {
+      "a": "bug-buzz.png",
+      "b": "bug.png",
+      "kind": "prefix",
+      "week": 26
+    },
+    {
+      "a": "bug-zip.png",
+      "b": "bug.png",
+      "kind": "prefix",
+      "week": 26
+    },
+    {
+      "a": "fox-mix.png",
+      "b": "fox.png",
+      "kind": "prefix",
+      "week": 26
+    },
+    {
+      "a": "potato-graduation.png",
+      "b": "potato.png",
+      "kind": "prefix",
+      "week": 26
+    },
+    {
       "a": "zigzag-buzz.png",
       "b": "zigzag.png",
       "kind": "prefix",
       "week": 26
     },
     {
+      "a": "fish-in-water.png",
+      "b": "fish.png",
+      "kind": "prefix",
+      "week": 27
+    },
+    {
+      "a": "fish-on-ship.png",
+      "b": "fish.png",
+      "kind": "prefix",
+      "week": 27
+    },
+    {
       "a": "fish-on-ship.png",
       "b": "ship.png",
+      "kind": "subset",
+      "week": 27
+    },
+    {
+      "a": "fish-wishing.png",
+      "b": "fish.png",
+      "kind": "prefix",
+      "week": 27
+    },
+    {
+      "a": "fish.png",
+      "b": "sheep-cheering-fish.png",
       "kind": "subset",
       "week": 27
     },
@@ -30521,8 +30269,44 @@
       "week": 29
     },
     {
+      "a": "bell-fell.png",
+      "b": "bell.png",
+      "kind": "prefix",
+      "week": 30
+    },
+    {
+      "a": "bell-on-hill.png",
+      "b": "bell.png",
+      "kind": "prefix",
+      "week": 30
+    },
+    {
       "a": "bell-on-hill.png",
       "b": "hill.png",
+      "kind": "subset",
+      "week": 30
+    },
+    {
+      "a": "bell-rolling.png",
+      "b": "bell.png",
+      "kind": "prefix",
+      "week": 30
+    },
+    {
+      "a": "bell.png",
+      "b": "chick-eyes-bell.png",
+      "kind": "subset",
+      "week": 30
+    },
+    {
+      "a": "bell.png",
+      "b": "chick-hit-bell.png",
+      "kind": "subset",
+      "week": 30
+    },
+    {
+      "a": "bell.png",
+      "b": "sheep-got-bell.png",
       "kind": "subset",
       "week": 30
     },
@@ -30551,8 +30335,32 @@
       "week": 31
     },
     {
+      "a": "king-sang-cast.png",
+      "b": "king.png",
+      "kind": "prefix",
+      "week": 31
+    },
+    {
       "a": "king-sing.png",
       "b": "king-sings-potato.png",
+      "kind": "prefix",
+      "week": 31
+    },
+    {
+      "a": "king-sing.png",
+      "b": "king.png",
+      "kind": "prefix",
+      "week": 31
+    },
+    {
+      "a": "king-singing-big.png",
+      "b": "king.png",
+      "kind": "prefix",
+      "week": 31
+    },
+    {
+      "a": "king-sings-potato.png",
+      "b": "king.png",
       "kind": "prefix",
       "week": 31
     },
@@ -30567,6 +30375,60 @@
       "b": "whip.png",
       "kind": "subset",
       "week": 32
+    },
+    {
+      "a": "chick-chase-snake.png",
+      "b": "snake.png",
+      "kind": "subset",
+      "week": 33
+    },
+    {
+      "a": "potato-stops-snake.png",
+      "b": "snake.png",
+      "kind": "subset",
+      "week": 33
+    },
+    {
+      "a": "snake-snap-twig.png",
+      "b": "snake.png",
+      "kind": "prefix",
+      "week": 33
+    },
+    {
+      "a": "snake-spin.png",
+      "b": "snake.png",
+      "kind": "prefix",
+      "week": 33
+    },
+    {
+      "a": "snake-spinning.png",
+      "b": "snake.png",
+      "kind": "prefix",
+      "week": 33
+    },
+    {
+      "a": "snake-still-going.png",
+      "b": "snake.png",
+      "kind": "prefix",
+      "week": 33
+    },
+    {
+      "a": "snake-swim.png",
+      "b": "snake.png",
+      "kind": "prefix",
+      "week": 33
+    },
+    {
+      "a": "flag-flapping.png",
+      "b": "flag.png",
+      "kind": "prefix",
+      "week": 34
+    },
+    {
+      "a": "flag-on-sled.png",
+      "b": "flag.png",
+      "kind": "prefix",
+      "week": 34
     },
     {
       "a": "flag-on-sled.png",
@@ -30605,6 +30467,12 @@
       "week": 35
     },
     {
+      "a": "drum.png",
+      "b": "frog-drum.png",
+      "kind": "subset",
+      "week": 35
+    },
+    {
       "a": "frog-big-grin.png",
       "b": "frog-grin.png",
       "kind": "subset",
@@ -30612,8 +30480,26 @@
     },
     {
       "a": "frog-big-grin.png",
+      "b": "frog.png",
+      "kind": "prefix",
+      "week": 35
+    },
+    {
+      "a": "frog-big-grin.png",
       "b": "grin.png",
       "kind": "subset",
+      "week": 35
+    },
+    {
+      "a": "frog-drum.png",
+      "b": "frog.png",
+      "kind": "prefix",
+      "week": 35
+    },
+    {
+      "a": "frog-grin.png",
+      "b": "frog.png",
+      "kind": "prefix",
       "week": 35
     },
     {
@@ -30624,6 +30510,12 @@
     },
     {
       "a": "frog-grin.png",
+      "b": "snake-grin-frog.png",
+      "kind": "subset",
+      "week": 35
+    },
+    {
+      "a": "frog.png",
       "b": "snake-grin-frog.png",
       "kind": "subset",
       "week": 35
@@ -30635,8 +30527,56 @@
       "week": 35
     },
     {
+      "a": "best-nest.png",
+      "b": "nest.png",
+      "kind": "subset",
+      "week": 36
+    },
+    {
+      "a": "cast-in-nest.png",
+      "b": "nest.png",
+      "kind": "subset",
+      "week": 36
+    },
+    {
+      "a": "chick-in-nest.png",
+      "b": "nest.png",
+      "kind": "subset",
+      "week": 36
+    },
+    {
       "a": "chick-jump-nest.png",
       "b": "jump.png",
+      "kind": "subset",
+      "week": 36
+    },
+    {
+      "a": "chick-jump-nest.png",
+      "b": "nest.png",
+      "kind": "subset",
+      "week": 36
+    },
+    {
+      "a": "jump.png",
+      "b": "sheep-jump-land.png",
+      "kind": "subset",
+      "week": 36
+    },
+    {
+      "a": "nest.png",
+      "b": "potato-nest.png",
+      "kind": "subset",
+      "week": 36
+    },
+    {
+      "a": "nest.png",
+      "b": "sheep-in-nest.png",
+      "kind": "subset",
+      "week": 36
+    },
+    {
+      "a": "nest.png",
+      "b": "snake-rest-nest.png",
       "kind": "subset",
       "week": 36
     },
@@ -30683,6 +30623,18 @@
       "week": 38
     },
     {
+      "a": "gate.png",
+      "b": "name-on-gate.png",
+      "kind": "subset",
+      "week": 38
+    },
+    {
+      "a": "gate.png",
+      "b": "snake-at-gate.png",
+      "kind": "subset",
+      "week": 38
+    },
+    {
       "a": "bike-time.png",
       "b": "bike.png",
       "kind": "prefix",
@@ -30713,6 +30665,36 @@
       "week": 39
     },
     {
+      "a": "kite-and-bike.png",
+      "b": "kite.png",
+      "kind": "prefix",
+      "week": 39
+    },
+    {
+      "a": "kite-up.png",
+      "b": "kite.png",
+      "kind": "prefix",
+      "week": 39
+    },
+    {
+      "a": "kite.png",
+      "b": "snake-holds-kite-string.png",
+      "kind": "subset",
+      "week": 39
+    },
+    {
+      "a": "kite.png",
+      "b": "snake-kite.png",
+      "kind": "subset",
+      "week": 39
+    },
+    {
+      "a": "snake-holds-kite-string.png",
+      "b": "snake-kite.png",
+      "kind": "subset",
+      "week": 39
+    },
+    {
       "a": "bone-home.png",
       "b": "bone.png",
       "kind": "prefix",
@@ -30722,6 +30704,12 @@
       "a": "bone-nose.png",
       "b": "bone.png",
       "kind": "prefix",
+      "week": 40
+    },
+    {
+      "a": "bone-nose.png",
+      "b": "nose.png",
+      "kind": "subset",
       "week": 40
     },
     {
@@ -30737,6 +30725,12 @@
       "week": 40
     },
     {
+      "a": "rope-bone.png",
+      "b": "rope.png",
+      "kind": "prefix",
+      "week": 40
+    },
+    {
       "a": "cubes-cute.png",
       "b": "cubes.png",
       "kind": "prefix",
@@ -30745,6 +30739,24 @@
     {
       "a": "cubes-cute.png",
       "b": "cute.png",
+      "kind": "subset",
+      "week": 41
+    },
+    {
+      "a": "cubes-tune-v2.png",
+      "b": "cubes-tune.png",
+      "kind": "prefix",
+      "week": 41
+    },
+    {
+      "a": "cubes-tune-v2.png",
+      "b": "cubes.png",
+      "kind": "prefix",
+      "week": 41
+    },
+    {
+      "a": "cubes-tune-v2.png",
+      "b": "tune.png",
       "kind": "subset",
       "week": 41
     },
@@ -30773,6 +30785,18 @@
       "week": 41
     },
     {
+      "a": "mule-concert-v2.png",
+      "b": "mule-concert.png",
+      "kind": "prefix",
+      "week": 41
+    },
+    {
+      "a": "mule-concert-v2.png",
+      "b": "mule.png",
+      "kind": "prefix",
+      "week": 41
+    },
+    {
       "a": "mule-concert.png",
       "b": "mule.png",
       "kind": "prefix",
@@ -30798,6 +30822,12 @@
     },
     {
       "a": "bridge.png",
+      "b": "huge-bridge-v2.png",
+      "kind": "subset",
+      "week": 42
+    },
+    {
+      "a": "bridge.png",
       "b": "huge-bridge.png",
       "kind": "subset",
       "week": 42
@@ -30818,6 +30848,12 @@
       "a": "catch.png",
       "b": "dog-catch.png",
       "kind": "subset",
+      "week": 42
+    },
+    {
+      "a": "huge-bridge-v2.png",
+      "b": "huge-bridge.png",
+      "kind": "prefix",
       "week": 42
     },
     {
@@ -30857,6 +30893,18 @@
       "week": 43
     },
     {
+      "a": "snake-tail-v2.png",
+      "b": "snake-tail.png",
+      "kind": "prefix",
+      "week": 43
+    },
+    {
+      "a": "snake-tail-v2.png",
+      "b": "tail.png",
+      "kind": "subset",
+      "week": 43
+    },
+    {
       "a": "snake-tail.png",
       "b": "tail.png",
       "kind": "subset",
@@ -30881,8 +30929,32 @@
       "week": 43
     },
     {
+      "a": "bee-reading.png",
+      "b": "bee.png",
+      "kind": "prefix",
+      "week": 44
+    },
+    {
+      "a": "bee-tree.png",
+      "b": "bee.png",
+      "kind": "prefix",
+      "week": 44
+    },
+    {
       "a": "bee-tree.png",
       "b": "tree.png",
+      "kind": "subset",
+      "week": 44
+    },
+    {
+      "a": "bee.png",
+      "b": "sheep-bee-eat.png",
+      "kind": "subset",
+      "week": 44
+    },
+    {
+      "a": "bee.png",
+      "b": "sheep-sees-bee.png",
       "kind": "subset",
       "week": 44
     },
@@ -30891,6 +30963,30 @@
       "b": "sea.png",
       "kind": "subset",
       "week": 44
+    },
+    {
+      "a": "boat.png",
+      "b": "goat-boat.png",
+      "kind": "subset",
+      "week": 45
+    },
+    {
+      "a": "goat-boat.png",
+      "b": "goat.png",
+      "kind": "prefix",
+      "week": 45
+    },
+    {
+      "a": "goat-rowing.png",
+      "b": "goat.png",
+      "kind": "prefix",
+      "week": 45
+    },
+    {
+      "a": "goat-snow.png",
+      "b": "goat.png",
+      "kind": "prefix",
+      "week": 45
     },
     {
       "a": "goat-snow.png",
@@ -30911,10 +31007,28 @@
       "week": 45
     },
     {
+      "a": "snow-growing-v2.png",
+      "b": "snow-growing.png",
+      "kind": "prefix",
+      "week": 45
+    },
+    {
+      "a": "snow-growing-v2.png",
+      "b": "snow.png",
+      "kind": "prefix",
+      "week": 45
+    },
+    {
       "a": "snow-growing.png",
       "b": "snow.png",
       "kind": "prefix",
       "week": 45
+    },
+    {
+      "a": "bee-light.png",
+      "b": "light.png",
+      "kind": "subset",
+      "week": 46
     },
     {
       "a": "bee-pie.png",
@@ -30971,6 +31085,18 @@
       "week": 46
     },
     {
+      "a": "car-park.png",
+      "b": "car.png",
+      "kind": "prefix",
+      "week": 47
+    },
+    {
+      "a": "car-park.png",
+      "b": "park.png",
+      "kind": "subset",
+      "week": 47
+    },
+    {
       "a": "dark.png",
       "b": "potato-dark.png",
       "kind": "subset",
@@ -30989,8 +31115,68 @@
       "week": 47
     },
     {
+      "a": "sheep-star.png",
+      "b": "star.png",
+      "kind": "subset",
+      "week": 47
+    },
+    {
+      "a": "star-dark.png",
+      "b": "star.png",
+      "kind": "prefix",
+      "week": 47
+    },
+    {
+      "a": "star-farm.png",
+      "b": "star.png",
+      "kind": "prefix",
+      "week": 47
+    },
+    {
+      "a": "corn-fork.png",
+      "b": "corn.png",
+      "kind": "prefix",
+      "week": 48
+    },
+    {
+      "a": "corn-fork.png",
+      "b": "fork.png",
+      "kind": "subset",
+      "week": 48
+    },
+    {
+      "a": "corn-store.png",
+      "b": "corn.png",
+      "kind": "prefix",
+      "week": 48
+    },
+    {
       "a": "corn-store.png",
       "b": "store.png",
+      "kind": "subset",
+      "week": 48
+    },
+    {
+      "a": "corn.png",
+      "b": "horse-corn.png",
+      "kind": "subset",
+      "week": 48
+    },
+    {
+      "a": "corn.png",
+      "b": "horse-more-corn.png",
+      "kind": "subset",
+      "week": 48
+    },
+    {
+      "a": "corn.png",
+      "b": "more-corn.png",
+      "kind": "subset",
+      "week": 48
+    },
+    {
+      "a": "corn.png",
+      "b": "potato-corn.png",
       "kind": "subset",
       "week": 48
     },
@@ -30998,6 +31184,18 @@
       "a": "horse-corn.png",
       "b": "horse-more-corn.png",
       "kind": "subset",
+      "week": 48
+    },
+    {
+      "a": "horse-corn.png",
+      "b": "horse.png",
+      "kind": "prefix",
+      "week": 48
+    },
+    {
+      "a": "horse-more-corn.png",
+      "b": "horse.png",
+      "kind": "prefix",
       "week": 48
     },
     {
@@ -31055,6 +31253,12 @@
       "week": 50
     },
     {
+      "a": "sheep-on-ship.png",
+      "b": "ship.png",
+      "kind": "subset",
+      "week": 50
+    },
+    {
       "a": "sheep-sees-ship.png",
       "b": "sheep.png",
       "kind": "prefix",
@@ -31067,10 +31271,58 @@
       "week": 50
     },
     {
+      "a": "sheep-sees-ship.png",
+      "b": "ship.png",
+      "kind": "subset",
+      "week": 50
+    },
+    {
       "a": "sheep.png",
       "b": "ship-or-sheep.png",
       "kind": "subset",
       "week": 50
+    },
+    {
+      "a": "ship-on-sea.png",
+      "b": "ship.png",
+      "kind": "prefix",
+      "week": 50
+    },
+    {
+      "a": "ship-or-sheep.png",
+      "b": "ship.png",
+      "kind": "prefix",
+      "week": 50
+    },
+    {
+      "a": "ship-tipping.png",
+      "b": "ship.png",
+      "kind": "prefix",
+      "week": 50
+    },
+    {
+      "a": "big-moon.png",
+      "b": "moon.png",
+      "kind": "subset",
+      "week": 51
+    },
+    {
+      "a": "moon-cool.png",
+      "b": "moon.png",
+      "kind": "prefix",
+      "week": 51
+    },
+    {
+      "a": "moon-school.png",
+      "b": "moon.png",
+      "kind": "prefix",
+      "week": 51
+    },
+    {
+      "a": "moon.png",
+      "b": "star-sheep-moon.png",
+      "kind": "subset",
+      "week": 51
     },
     {
       "a": "potato-roof.png",
@@ -31089,6 +31341,30 @@
       "b": "star-roof.png",
       "kind": "subset",
       "week": 51
+    },
+    {
+      "a": "cow-in-house.png",
+      "b": "cow.png",
+      "kind": "prefix",
+      "week": 52
+    },
+    {
+      "a": "cow-in-house.png",
+      "b": "house.png",
+      "kind": "subset",
+      "week": 52
+    },
+    {
+      "a": "cow.png",
+      "b": "owl-cow-shout.png",
+      "kind": "subset",
+      "week": 52
+    },
+    {
+      "a": "cow.png",
+      "b": "owl-sees-cow.png",
+      "kind": "subset",
+      "week": 52
     },
     {
       "a": "owl-cow-shout.png",
@@ -31201,6 +31477,12 @@
     {
       "a": "chick-saw-glue.png",
       "b": "glue.png",
+      "kind": "subset",
+      "week": 54
+    },
+    {
+      "a": "chick-saw-glue.png",
+      "b": "saw.png",
       "kind": "subset",
       "week": 54
     },
@@ -31380,12 +31662,17 @@
       "map.png"
     ],
     "3": [
+      "mango-on-mat.png",
       "mango.png",
       "map.png",
       "mask-on-mat.png",
       "mask.png",
       "milk.png",
+      "monkey-on-mat.png",
+      "moon-on-mat.png",
       "mop-on-mat.png",
+      "mouse-on-mat.png",
+      "potato-on-mat.png",
       "segina-on-mat.png"
     ],
     "4": [
@@ -31414,7 +31701,8 @@
       "napkin.png",
       "needle.png",
       "nest.png",
-      "nurse.png"
+      "nurse.png",
+      "sam-solo.png"
     ],
     "7": [
       "cat-nap-map.png",
@@ -31438,6 +31726,7 @@
     "9": [
       "ant-nap-hat.png",
       "hammer.png",
+      "hat-on-ant-v2.png",
       "hat-still.png",
       "helicopter.png",
       "hen.png",
@@ -31445,6 +31734,8 @@
       "honey.png"
     ],
     "10": [
+      "all-and-mat.png",
+      "dad-sam-find-v2.png",
       "dad-sam-find.png",
       "deer.png",
       "desk.png",
@@ -31458,6 +31749,7 @@
       "on-celebrate.png",
       "orange.png",
       "ostrich.png",
+      "pot-cool-v2.png",
       "pot-cool.png",
       "sam-pot.png"
     ],
@@ -31476,6 +31768,7 @@
       "bat.png",
       "bee.png",
       "bell.png",
+      "big-dog-and-bus.png",
       "big-dog-and-pig.png",
       "big-dog-hiding.png",
       "big-dog-towering.png",
@@ -31487,6 +31780,7 @@
       "elf.png",
       "envelope.png",
       "exit.png",
+      "hen-on-dog.png",
       "hens-on-bed.png",
       "man-chasing-hens.png",
       "ten.png"
@@ -31494,6 +31788,7 @@
     "15": [
       "cat-chasing-rat.png",
       "cat-on-bag.png",
+      "dog-chasing-cat.png",
       "radio.png",
       "rat-in-bag.png",
       "rat-ripping-bag.png",
@@ -31506,6 +31801,7 @@
     ],
     "16": [
       "cast-summit-party.png",
+      "cup.png",
       "muddy-cast.png",
       "pup-in-mud.png",
       "pup-in-sun.png",
@@ -31529,7 +31825,8 @@
       "fit.png",
       "flag.png",
       "fork.png",
-      "fun-run-start.png"
+      "fun-run-start.png",
+      "potato-running.png"
     ],
     "18": [
       "bug-running-log.png",
@@ -31543,11 +31840,13 @@
       "lizard.png",
       "lock.png",
       "log-on-bug.png",
-      "lollipop.png"
+      "lollipop.png",
+      "potato-on-log.png"
     ],
     "19": [
       "bug-on-web.png",
       "water.png",
+      "web-dry.png",
       "wet-cat.png",
       "wet-dog.png",
       "wet-web.png",
@@ -31566,11 +31865,13 @@
       "duck-chase-cat.png",
       "duck-kick.png",
       "duck-kit.png",
+      "duck-potato.png",
       "duck-rock.png",
       "kettle.png",
       "kid-duck.png",
       "koala.png",
-      "rock.png"
+      "rock.png",
+      "sock.png"
     ],
     "22": [
       "ant-vet.png",
@@ -31590,6 +31891,7 @@
       "big-yam.png",
       "jam-yum.png",
       "mop-taste.png",
+      "potato-taste.png",
       "yarn.png",
       "yogurt.png",
       "yolk.png",
@@ -31597,26 +31899,40 @@
     ],
     "24": [
       "axe.png",
-      "socks.png"
+      "cat-in-box.png",
+      "duck-in-box.png",
+      "fox-in-box.png",
+      "ox-in-box.png",
+      "six-in-box.png",
+      "socks.png",
+      "wax.png"
     ],
     "25": [
+      "duck-quack.png",
+      "duck-quit-it.png",
       "quack-chorus.png",
       "quarter.png",
       "question-mark.png",
       "quiver.png",
+      "quiz.png",
       "quokka.png",
-      "rat-quack.png"
+      "rat-quack.png",
+      "segina-quack.png"
     ],
     "26": [
+      "ant-tag.png",
       "dog-dig.png",
       "duck-quack2.png",
       "fox-mix.png",
       "graduation-cast.png",
+      "potato-graduation.png",
       "zipper.png",
+      "zoo.png",
       "zucchini.png"
     ],
     "27": [
       "dish.png",
+      "fish-in-water.png",
       "fish-wishing.png",
       "shark.png",
       "shed.png",
@@ -31625,6 +31941,7 @@
       "shoe.png"
     ],
     "28": [
+      "chair.png",
       "cherry.png",
       "chick-a-lot.png",
       "chick-at-sheep.png",
@@ -31644,11 +31961,18 @@
     "30": [
       "bell-rolling.png",
       "chick-eyes-bell.png",
-      "chick-puff-hill.png"
+      "chick-hit-bell.png",
+      "chick-puff-hill.png",
+      "doll.png",
+      "puff.png",
+      "shell.png",
+      "sock.png"
     ],
     "31": [
+      "king-sang-cast.png",
       "king-singing-big.png",
-      "sheep-sing.png"
+      "sheep-sing.png",
+      "wing.png"
     ],
     "32": [
       "guess-fish.png",
@@ -31661,6 +31985,7 @@
       "whiz-blur.png"
     ],
     "33": [
+      "chick-chase-snake.png",
       "snail.png",
       "snake-spinning.png",
       "snake-still-going.png",
@@ -31670,6 +31995,7 @@
     "34": [
       "cast-clapping.png",
       "clock.png",
+      "flag-flapping.png",
       "sheep-on-sled.png",
       "slug.png",
       "snake-on-sled.png"
@@ -31678,20 +32004,30 @@
       "brick.png",
       "cast-grinning.png",
       "crab-grass.png",
+      "frog-big-grin.png",
+      "frog-drum.png",
       "snake-grin-frog.png",
       "truck.png"
     ],
     "36": [
       "band.png",
+      "cast-in-nest.png",
+      "chick-in-nest.png",
       "chick-jump-nest.png",
+      "lamp.png",
       "sheep-in-nest.png",
+      "sheep-jump-land.png",
+      "snake-rest-nest.png",
       "tent.png"
     ],
     "37": [
       "cast-rush.png",
+      "chick-tugs-log.png",
+      "gift.png",
       "sheep-lift.png",
       "skunk-belt.png",
-      "snake-helps.png"
+      "snake-helps.png",
+      "snake-loops-log.png"
     ],
     "38": [
       "grape.png",
@@ -31704,21 +32040,30 @@
     "39": [
       "bike-time.png",
       "hive.png",
+      "kite-and-bike.png",
       "sheep-on-bike.png",
       "sheep-riding.png",
       "smile.png",
-      "time.png"
+      "snake-holds-kite-string.png",
+      "snake-kite.png",
+      "time.png",
+      "vine.png"
     ],
     "40": [
+      "bone-nose.png",
       "cone.png",
       "dog-bone.png",
       "dog-proud.png",
-      "hose.png"
+      "hose.png",
+      "rope-bone.png",
+      "rose.png"
     ],
     "41": [
       "cubes-cute.png",
+      "cubes-tune-v2.png",
       "cubes-tune.png",
       "dune.png",
+      "mule-concert-v2.png",
       "mule-concert.png",
       "mule-flute.png",
       "prune.png",
@@ -31728,6 +32073,7 @@
       "cast-gathering.png",
       "dog-catch.png",
       "face.png",
+      "huge-bridge-v2.png",
       "huge-bridge.png",
       "ice-below.png",
       "match.png",
@@ -31741,6 +32087,7 @@
       "play-allday.png",
       "sheep-play-rain.png",
       "snail.png",
+      "snake-tail-v2.png",
       "snake-tail.png",
       "train-rain.png",
       "train-tail.png",
@@ -31748,6 +32095,7 @@
     ],
     "44": [
       "beach.png",
+      "bee-reading.png",
       "bee-tree.png",
       "feet.png",
       "sheep-nameday.png",
@@ -31757,13 +32105,16 @@
     "45": [
       "coat.png",
       "crow.png",
+      "goat-boat.png",
       "goat-rowing.png",
       "road.png",
       "sheep-snow.png",
+      "snow-growing-v2.png",
       "snow-growing.png",
       "toad.png"
     ],
     "46": [
+      "bee-light.png",
       "bee-pie.png",
       "bright.png",
       "flight.png",
@@ -31776,13 +32127,17 @@
       "arm.png",
       "barn.png",
       "cart.png",
+      "sheep-star.png",
       "star-dark.png",
       "star-farm.png"
     ],
     "48": [
       "corn-store.png",
       "horn.png",
+      "horse-corn.png",
       "horse-more-corn.png",
+      "more-corn.png",
+      "store.png",
       "storm.png",
       "thorn.png"
     ],
@@ -31794,22 +32149,28 @@
       "segina.png"
     ],
     "50": [
+      "bug.png",
+      "pin.png",
       "sheep-sees-ship.png",
       "ship-or-sheep.png",
       "ship-tipping.png"
     ],
     "51": [
+      "big-moon.png",
       "boot.png",
       "broom.png",
       "food.png",
       "sheep-roof.png",
       "star-roof.png",
+      "star-sheep-moon.png",
       "tooth.png"
     ],
     "52": [
       "clown.png",
       "crown.png",
       "flower.png",
+      "mouse.png",
+      "owl-cow-shout.png",
       "owl-proud.png",
       "owl-sees-cow.png",
       "owl-town.png"
@@ -31859,7 +32220,9 @@
     "58": [
       "graduation-cast-full.png",
       "motion.png",
+      "nation.png",
       "potato-reveal.png",
+      "section.png",
       "station.png"
     ]
   },
@@ -32024,6 +32387,7 @@
       "whip-coloring.png"
     ],
     "33": [
+      "snake-coloring.png",
       "spider-coloring.png",
       "swim-coloring.png"
     ],
@@ -32034,9 +32398,11 @@
     ],
     "35": [
       "crab-coloring.png",
+      "drum-coloring.png",
       "frog-coloring.png"
     ],
     "36": [
+      "hand-coloring.png",
       "jump-coloring.png",
       "nest-coloring.png"
     ],
@@ -32047,13 +32413,18 @@
     ],
     "38": [
       "cake-coloring.png",
-      "gate-coloring.png"
+      "gate-coloring.png",
+      "snake-coloring.png"
     ],
     "39": [
-      "bike-coloring.png"
+      "bike-coloring.png",
+      "kite-coloring.png",
+      "snake-coloring.png"
     ],
     "40": [
-      "bone-coloring.png"
+      "bone-coloring.png",
+      "dog-coloring.png",
+      "home-coloring.png"
     ],
     "41": [
       "cube-coloring.png",

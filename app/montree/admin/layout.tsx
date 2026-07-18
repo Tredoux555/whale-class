@@ -712,7 +712,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Onboarding Copilot — principal journey. Only mount once auth is
           confirmed (no FeaturesProvider here; its /state route gates itself).
-          Pill sits bottom-left, clear of Astra's top-right float. */}
+          Pill sits TOP-LEFT (clear of the 240px sidebar + Astra's top-right
+          float) so it hands over seamlessly from the funnel narrator. */}
       {authState === 'authed' && <CopilotDock surface="principal" />}
 
       <style jsx global>{`

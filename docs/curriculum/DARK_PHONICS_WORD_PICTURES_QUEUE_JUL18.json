@@ -1,0 +1,706 @@
+[
+  {
+    "lesson": 5,
+    "sound": "s",
+    "word": "snake",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a coiled garden snake with a mischievous grin peeking out of a striped sock, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-05-snake.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 5,
+    "sound": "s",
+    "word": "sock",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a single striped children's sock lying rumpled on the floor, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-05-sock.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 5,
+    "sound": "s",
+    "word": "sun",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a bright cheerful sun with a wobbly hand-drawn outline peeking over a hill, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-05-sun.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 6,
+    "sound": "a",
+    "word": "ant",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a tiny round ant marching proudly, seen up close, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-06-ant.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 6,
+    "sound": "a",
+    "word": "apple",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a shiny red apple with one small bite taken out of it, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-06-apple.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 7,
+    "sound": "t",
+    "word": "sock",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a droopy smelly striped sock with wavy stink lines rising off it, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-07-sock.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 7,
+    "sound": "t",
+    "word": "top",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a wooden spinning top mid-spin with motion swirl lines, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-07-top.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 7,
+    "sound": "t",
+    "word": "tap",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of an old-fashioned brass water tap dripping a single drop, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-07-tap.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 8,
+    "sound": "p",
+    "word": "puppy",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a scruffy floppy-eared puppy sitting with its tongue out, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-08-puppy.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 8,
+    "sound": "p",
+    "word": "poop",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a small cartoon dog-poop pile with a tiny cloud of stink lines, played for giggles not gross-out, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-08-poop.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 8,
+    "sound": "p",
+    "word": "pop",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a round pink bubblegum bubble bursting with little pop lines, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-08-pop.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 8,
+    "sound": "p",
+    "word": "pat",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a child's open hand gently patting a fuzzy puppy's head, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-08-pat.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 9,
+    "sound": "i",
+    "word": "pig",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a round pink pig covered in icky sticky mud splats, mid-oink, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-09-pig.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 9,
+    "sound": "i",
+    "word": "sit",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a round pink pig sitting down neatly on its haunches, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-09-sit.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 9,
+    "sound": "i",
+    "word": "tip",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a small bucket tipping over with mud spilling out, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-09-tip.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 9,
+    "sound": "i",
+    "word": "sip",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a pig sipping from a tiny cup through a bent straw, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-09-sip.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 10,
+    "sound": "n",
+    "word": "goat",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a shaggy nanny goat shaking its head no with curly horns, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-10-goat.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 10,
+    "sound": "n",
+    "word": "nap",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a sleepy lamb curled up napping under a blanket, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-10-nap.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 10,
+    "sound": "n",
+    "word": "pin",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a single silver safety pin lying on its side, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-10-pin.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 10,
+    "sound": "n",
+    "word": "pan",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a round black frying pan seen from above, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-10-pan.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 11,
+    "sound": "m",
+    "word": "monkey",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a scruffy brown monkey covered in muddy handprints, grinning, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-11-monkey.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 11,
+    "sound": "m",
+    "word": "mud",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a splattered puddle of thick brown mud with a few bubbles, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-11-mud.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 11,
+    "sound": "m",
+    "word": "map",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of an old hand-drawn treasure map with a dotted trail and an X, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-11-map.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 11,
+    "sound": "m",
+    "word": "mat",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a woven welcome mat lying flat on the floor, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-11-mat.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 11,
+    "sound": "m",
+    "word": "man",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a friendly round-faced man in overalls waving, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-11-man.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 12,
+    "sound": "d",
+    "word": "dog",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a scruffy dirty dog covered in dust mid-dig, tail wagging, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-12-dog.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 12,
+    "sound": "d",
+    "word": "dig",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a small shovel mid-scoop flinging dirt into the air, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-12-dig.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 12,
+    "sound": "d",
+    "word": "dad",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a smiling dad figure with a moustache and rolled-up sleeves, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-12-dad.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 12,
+    "sound": "d",
+    "word": "dip",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a chip dipping into a small bowl of sauce, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-12-dip.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 13,
+    "sound": "g",
+    "word": "goat",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of the same shaggy nanny goat chewing happily with a guilty grin, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-13-goat.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 13,
+    "sound": "g",
+    "word": "gum",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a pink wad of bubblegum stretched into a long sticky strand, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-13-gum.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 13,
+    "sound": "g",
+    "word": "pig",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a round pink pig peeking mischievously from behind a fence, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-13-pig.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 13,
+    "sound": "g",
+    "word": "dig",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a curly-horned goat pawing at the dirt with one hoof, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-13-dig.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 14,
+    "sound": "o",
+    "word": "dog",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of the same scruffy dog panting happily, sitting on a log in the sun, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-14-dog.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 14,
+    "sound": "o",
+    "word": "log",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a rounded brown tree log with visible bark rings, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-14-log.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 14,
+    "sound": "o",
+    "word": "pot",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a black cooking pot with a curl of steam rising, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-14-pot.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 14,
+    "sound": "o",
+    "word": "top",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a wooden spinning top balanced on its point, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-14-top.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 15,
+    "sound": "c",
+    "word": "cat",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a round-eyed striped cat licking cookie crumbs off its whiskers, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-15-cat.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 15,
+    "sound": "c",
+    "word": "cookie",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a round chocolate-chip cookie with one bite missing, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-15-cookie.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 15,
+    "sound": "c",
+    "word": "can",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a simple tin can with a curled-back lid, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-15-can.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 15,
+    "sound": "c",
+    "word": "cap",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a small striped baseball cap sitting jauntily on its side, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-15-cap.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 16,
+    "sound": "k",
+    "word": "king",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a wobbly-crowned king mid-kick, cape flying, comically off-balance, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-16-king.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 16,
+    "sound": "k",
+    "word": "kick",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a single sneakered foot mid-kick with motion swirl lines, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-16-kick.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 16,
+    "sound": "k",
+    "word": "kid",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a giggling small child jumping with arms up, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-16-kid.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 16,
+    "sound": "k",
+    "word": "kit",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a little toolbox kit open with a wrench and screwdriver poking out, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-16-kit.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 16,
+    "sound": "k",
+    "word": "kite",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a diamond-shaped kite with a long ribbon tail flying in the wind, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-16-kite.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 17,
+    "sound": "ck",
+    "word": "kick",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a sneakered foot kicking a striped sock across the floor with swirl lines, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-17-kick.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 17,
+    "sound": "ck",
+    "word": "sock",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of the same droopy smelly striped sock flying through the air with stink lines, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-17-sock.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 17,
+    "sound": "ck",
+    "word": "pick",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of two fingers pinching a sock by the very corner to avoid the smell, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-17-pick.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 18,
+    "sound": "e",
+    "word": "hen",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a fluffy messy hen with ruffled feathers and straw stuck to its tail, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-18-hen.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 18,
+    "sound": "e",
+    "word": "pen",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a rustic wooden fence pen with hay scattered on the ground, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-18-pen.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 19,
+    "sound": "u",
+    "word": "bug",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a round googly-eyed bug peeking over the rim of a cup, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-19-bug.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 19,
+    "sound": "u",
+    "word": "cup",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a striped drinking cup with a bendy straw, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-19-cup.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 19,
+    "sound": "u",
+    "word": "pup",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a tiny puppy looking curiously into an empty cup, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-19-pup.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 20,
+    "sound": "r",
+    "word": "rat",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a scruffy bright red rat mid-sprint with a long curling tail, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-20-rat.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 20,
+    "sound": "r",
+    "word": "run",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a pair of little feet mid-sprint with motion swoosh lines, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-20-run.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 21,
+    "sound": "h",
+    "word": "hippo",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a round hairy hippo laughing with its mouth wide open, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-21-hippo.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 21,
+    "sound": "h",
+    "word": "hat",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a floppy sun hat with a wide brim, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-21-hat.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 21,
+    "sound": "h",
+    "word": "hop",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a bunny mid-hop with both feet off the ground, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-21-hop.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 22,
+    "sound": "b",
+    "word": "baby",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a chubby-cheeked baby mid-burp with a tiny cartoon burp cloud, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-22-baby.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 22,
+    "sound": "b",
+    "word": "burp",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a small comic-style speech bubble with a squiggly burp motion line, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-22-burp.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 22,
+    "sound": "b",
+    "word": "boat",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a little wooden rowboat bobbing on gentle wavy water, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-22-boat.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 22,
+    "sound": "b",
+    "word": "bed",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a cosy little bed with a striped blanket tucked in, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-22-bed.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 23,
+    "sound": "f",
+    "word": "fox",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a bushy-tailed fox peeking out from behind a spinning desk fan, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-23-fox.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 23,
+    "sound": "f",
+    "word": "fan",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of an old-fashioned desk fan with round blades and a swirl of moving air lines, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-23-fan.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 24,
+    "sound": "l",
+    "word": "lion",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a sleepy lion sprawled out lazily, tongue out mid-lick, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-24-lion.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 24,
+    "sound": "l",
+    "word": "lick",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a round pink tongue mid-lick with a little shine, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-24-lick.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 24,
+    "sound": "l",
+    "word": "lap",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a pair of crossed knees making a lap, seen from above, with a blanket, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-24-lap.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 24,
+    "sound": "l",
+    "word": "leg",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a single bent leg with a striped sock and shoe, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-24-leg.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 24,
+    "sound": "l",
+    "word": "log",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a rounded brown tree log with visible bark rings, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-24-log.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 25,
+    "sound": "j",
+    "word": "jump",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a barefoot child mid-jump with both feet off the ground and motion lines, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-25-jump.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 25,
+    "sound": "j",
+    "word": "jam",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a glass jar of wobbly purple jam with a spoon stuck in it, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-25-jam.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 25,
+    "sound": "j",
+    "word": "jar",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of an empty glass jar with a round lid sitting open, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-25-jar.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 26,
+    "sound": "v",
+    "word": "van",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a boxy old-fashioned van with round headlights and a smiling grille, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-26-van.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 26,
+    "sound": "v",
+    "word": "vet",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a friendly vet in a white coat holding a stethoscope, kneeling beside a puppy, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-26-vet.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 27,
+    "sound": "w",
+    "word": "worm",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a wiggly pink worm curling into a wobbly loop after the rain, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-27-worm.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 27,
+    "sound": "w",
+    "word": "wind",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of swirling wavy wind lines blowing a few loose leaves sideways, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-27-wind.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 27,
+    "sound": "w",
+    "word": "web",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a delicate spider web with dewdrops caught in the strands, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-27-web.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 28,
+    "sound": "x",
+    "word": "fox",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a bushy-tailed fox peeking curiously out of a cardboard box, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-28-fox.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 28,
+    "sound": "x",
+    "word": "box",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a plain cardboard box with its flaps open, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-28-box.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 29,
+    "sound": "y",
+    "word": "yo-yo",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a round yellow yo-yo spinning on its string with a little motion swirl, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-29-yo-yo.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 29,
+    "sound": "y",
+    "word": "yam",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a knobbly orange-brown yam sitting on its own, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-29-yam.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 30,
+    "sound": "z",
+    "word": "zebra",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a zippy black-and-white striped zebra mid-gallop with a flowing mane, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-30-zebra.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 30,
+    "sound": "z",
+    "word": "zip",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a metal zipper pull mid-zip along its track, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-30-zip.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 30,
+    "sound": "z",
+    "word": "zoo",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a simple striped zoo gate with a rounded archway sign, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-30-zoo.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 31,
+    "sound": "qu",
+    "word": "duck",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a quick little duck mid-quack with wings flapping, waddling fast, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-31-duck.png",
+    "character_ref": true
+  },
+  {
+    "lesson": 31,
+    "sound": "qu",
+    "word": "queen",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a wobbly-crowned queen in a flowing gown, gently waving, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-31-queen.png",
+    "character_ref": false
+  },
+  {
+    "lesson": 31,
+    "sound": "qu",
+    "word": "quiz",
+    "mj_prompt": "scruffy scratchy ink and watercolor children's book illustration of a small clipboard with a handwritten quiz sheet and a pencil, white background, expressive linework, muted watercolor washes --ar 1:1",
+    "target_filename": "~/Desktop/English Curriculum 2026/Dark Phonics/words/lesson-31-quiz.png",
+    "character_ref": false
+  }
+]

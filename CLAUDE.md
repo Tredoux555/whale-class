@@ -2,6 +2,21 @@
 
 **⚠️ STANDING RULE (Tredoux, Jul 10 2026 — PERMANENT): MODEL DELEGATION.** Fable is the DIRECTOR and second brain — it plans, decides, writes the critical copy, and reviews. It does NOT do grunt work. **Sonnet** (preferred over Haiku — more reliable) does all fetching, sweeping, scouting, data-gathering, and auditing via sub-agents. **Opus** builds where appropriate. Never let Fable burn half its context on mechanical work another model can do — spawn agents instead.
 
+## 📖 SESSION — Jul 18, 2026 pt2 (Cowork/Fable) — EASY READERS STARTED, PINNED FOR LAPTOP MIGRATION (M1→M2)
+
+**Canonical: `docs/handoffs/PLAN_EASY_READERS_DARK_PHONICS_JUL18.md` (READ IT FIRST — resume prompt inside)
++ `lib/montree/english-curriculum/spec/easy-readers-manifest-v2.json` (all 77 prompts, style-corrected).**
+Mission: render + compose the 11 Dark Phonics Easy Readers (dark-phonics-readers.html). Done before pin:
+manifest built; disk scout complete (**0/66 reader images exist** — same-title files on disk are decoys from
+other projects); **🎨 STYLE LOCKED (Tredoux): "colored hand-drawn pen-and-ink, fine crosshatch, whimsical
+Dr. Seuss children's-book style, big googly eyes, plain white background"** — the readers page's printed
+style block + `--sref 9999` are WRONG/placeholder, manifest-v2 has the fix; sref fallback = the public
+lesson-art proxy URLs. Decisions: PDF pipeline (not Canva), deliver disk + site. Next: quick MJ re-verify →
+sample reader "the-cat-sat" for Tredoux's style sign-off → tandem fleet the rest → file → build PDFs →
+publish + DC push. NOT committed — Tredoux pushes via DC.
+
+---
+
 ## 🃏 SESSION — Jul 18, 2026 (Cowork/Fable directing Opus) — DARK PHONICS LIVE-GAPS CLOSED + SCOPED DEPLOY (matching centered · Studio flashcard card · intro-week + DP-picture publish)
 
 **Follow-on to the Jul-17 dark-phonics build (below). Tredoux reviewed LIVE, flagged 4 gaps → fixed +

@@ -165,6 +165,14 @@ def main(argv=None):
                         "moment its word is sung (needs lyrics; auto-falls-back "
                         "to cycle if no words/matches). 'cycle': content-blind "
                         "beat-cycling (the original behaviour).")
+    p.add_argument("--schedule", default="auto",
+                   choices=["auto", "script", "anchor"],
+                   help="image scheduling strategy: 'auto' (default) uses the "
+                        "certified anchor pass, but REPLACES it with the "
+                        "lyric-sheet SCRIPT schedule when anchoring is poor "
+                        "(few images anchored or whisper largely failed — "
+                        "stutter songs); 'script' forces the sheet schedule; "
+                        "'anchor' forces the certified anchor path.")
     p.add_argument("--progress-file", default=None,
                    help="append JSON-line progress {stage,progress} here "
                         "(for the daemon)")
@@ -290,6 +298,16 @@ def main(argv=None):
     def _on_render(frac):
         prog.emit("rendering", 40.0 + 60.0 * frac)
 
+    # Script-schedule mode needs the RAW lyric sheet (section markers included);
+    # the timeline only carries the flattened, section-stripped words.
+    lyrics_text = None
+    if args.lyrics and os.path.exists(args.lyrics):
+        try:
+            with open(args.lyrics, "r", encoding="utf-8") as fh:
+                lyrics_text = fh.read()
+        except OSError as e:
+            _log("could not read lyrics for script-schedule (%s)" % e)
+
     from engine_slideshow import render
     render(
         timeline=timeline,
@@ -307,6 +325,8 @@ def main(argv=None):
         progress_cb=_on_render,
         image_sync=args.image_sync,
         pulse=args.pulse,
+        schedule=args.schedule,
+        lyrics_text=lyrics_text,
     )
     prog.emit("done", 100)
     print("OK: %s" % out_path)

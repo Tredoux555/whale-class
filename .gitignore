@@ -181,3 +181,7 @@ _run299.mjs
 # temp scoped tsconfig from Jul-17 Build D friction pass verification (sandbox rm blocked — delete via Desktop Commander)
 tsconfig.buildD.tmp.json
 tsconfig.buildD.tmp.tsbuildinfo
+
+# temp scoped tsconfig from Jul-17 Dark Phonics card build verification (delete via Desktop Commander)
+tsconfig.darkphonics.tmp.json
+tsconfig.darkphonics.tmp.tsbuildinfo

@@ -42,6 +42,7 @@ DEFAULT_BASE_URL = "https://montree.xyz"
 EMAIL_STATUSES = {
     "new", "drafted", "sent", "replied", "bounced",
     "converted", "dead", "demo_requested", "contacted", "follow_up",
+    "pilot",
 }
 # Ladder rank for downgrade protection. Higher = later in the pipeline.
 # Terminal / off-ladder states get a high rank so we never clobber them.
@@ -54,6 +55,7 @@ EMAIL_RANK = {
     "demo_requested": 3,
     "replied": 3,
     "bounced": 3,       # a bounce is a terminal outcome of a send
+    "pilot": 4,         # V2.1 (migration 294): actively piloting, pre-convert
     "converted": 5,
     "dead": 5,
 }

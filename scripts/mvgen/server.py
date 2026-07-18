@@ -280,7 +280,8 @@ def _run_job(job):
                 "--engine", "slideshow",
                 "--cut-every", str(job["cut_every"]),
                 "--seed", str(job["seed"]),
-                "--pulse", job.get("pulse", "anchor")]
+                "--pulse", job.get("pulse", "anchor"),
+                "--schedule", job.get("schedule", "auto")]
     if job.get("lyrics_text"):
         lyrics_path = os.path.join(out_dir, "lyrics.txt")
         try:
@@ -588,6 +589,9 @@ class Handler(BaseHTTPRequestHandler):
         pulse = body.get("pulse") or "anchor"
         if pulse not in ("off", "anchor", "beat", "downbeat"):
             return self._err(400, "pulse must be off|anchor|beat|downbeat")
+        schedule = body.get("schedule") or "auto"
+        if schedule not in ("auto", "script", "anchor"):
+            return self._err(400, "schedule must be auto|script|anchor")
         try:  # NIT: garbage seed -> 400, not a 500
             seed = int(body.get("seed", 42))
         except (TypeError, ValueError):
@@ -605,7 +609,7 @@ class Handler(BaseHTTPRequestHandler):
             "progress": 0.0, "stage": "queued", "mode": mode,
             "created_at": time.time(),
             "audio_path": audio_path, "images_dir": images_dir,
-            "subs_path": subs_path, "pulse": pulse,
+            "subs_path": subs_path, "pulse": pulse, "schedule": schedule,
             "theme": theme, "cut_every": cut_every, "seed": seed,
             "model": model, "lyrics_text": lyrics_text,
             "out_path": None, "error": None, "log_tail": [],
@@ -856,7 +860,11 @@ class Handler(BaseHTTPRequestHandler):
         image_tokens = sl.build_image_tokens(images) if images else []
         # Order-aware occurrence matcher (same one the renderer uses) — anchors
         # now reflect the ACTUAL per-occurrence image, not a first-wins token map.
-        clusters = (sl.find_matches(words, images, image_tokens)
+        # Jul-15 approx-run guard parity: the renderer excludes anchors inside
+        # suppressed approx runs — the planner must mirror it or the preview lies.
+        suppressed_idx, _spans = sl.compute_approx_suppression(words)
+        clusters = (sl.find_matches(words, images, image_tokens,
+                                    suppressed_idx=suppressed_idx)
                     if image_tokens else [])
         covered = sl.build_coverage_set(image_tokens)
 

@@ -1,0 +1,87 @@
+{
+  "_note": "FORMAT SAMPLE — not yet wired into the seed script. 5 hand-authored curated entries for global visual memory (montree_global_visual_memory). Fields work_key/work_name/area/visual_description/key_materials/negative_descriptions are authored here; source='curated' and description_confidence are set by seed-global-visual-memory.mjs. visual_description stays under the 900-char cap. negative_descriptions carry the discriminative 'NOT its look-alike' checks that distinguish confusion pairs.",
+  "entries": [
+    {
+      "work_key": "se_cylinder_block_1",
+      "work_name": "Cylinder Block 1",
+      "area": "sensorial",
+      "visual_description": "A single solid rectangular block of blond, unpainted hardwood lying horizontally, with a row of ten circular wells drilled into its top surface. Ten wooden cylinders sit in the wells, each cylinder topped by a small round knob (button handle) that the child pinches to lift it out. In Block 1 the cylinders graduate in DIAMETER across the row (widest to narrowest) while staying the same height. During work the removed cylinders are often lined up on the mat or table beside the block, ready to be matched back into their wells. The whole material is one connected wooden block plus its knobbed cylinders — never loose sticks, never numerals, never colour.",
+      "key_materials": [
+        "One solid rectangular wooden block with ten graduated circular wells drilled in a single row",
+        "Ten wooden cylinders, each with a small round knob / button handle on top",
+        "Natural unpainted blond hardwood",
+        "Each cylinder fits only its matching well (built-in control of error)"
+      ],
+      "negative_descriptions": [
+        "NOT Spindle Boxes: Cylinder Blocks are ONE solid block with round knobbed cylinders seated in drilled holes and show NO numerals; Spindle Boxes are open partitioned boxes holding loose plain rods with printed numerals 0-9 above the compartments.",
+        "NOT Knobless Cylinders: these cylinders HAVE knobs and sit inside a drilled wooden block; Knobless Cylinders are free-standing coloured cylinders with no knobs and no block.",
+        "NOT a counting / number work: there are no numerals and no counting — this is a sensorial dimension-grading work."
+      ]
+    },
+    {
+      "work_key": "ma_spindle_box",
+      "work_name": "Spindle Boxes",
+      "area": "mathematics",
+      "visual_description": "One or two shallow wooden boxes divided into a row of open compartments, each compartment topped by a printed numeral running 0 through 9. Beside or within them lies a set of 45 identical, plain, thin wooden spindles (smooth rods with no knobs), often loosely piled or grouped by the child with ribbon or elastic bands. The child counts spindles into each numbered compartment so the quantity matches the numeral, with the zero compartment deliberately left empty. The defining picture is printed numerals over open compartments plus many loose identical plain rods — no single drilled block, no knobs, no graduated sizing.",
+      "key_materials": [
+        "One or two wooden boxes divided into open compartments, each labelled with a printed numeral 0-9",
+        "45 loose, identical, plain wooden spindles (thin smooth rods, no knobs)",
+        "Printed numerals above each compartment",
+        "Spindles often bundled into groups by the child"
+      ],
+      "negative_descriptions": [
+        "NOT Cylinder Blocks: Spindle Boxes hold LOOSE plain rods in open numbered compartments and display printed numerals 0-9; Cylinder Blocks are one solid block with round knobbed cylinders seated in drilled holes and have NO numerals.",
+        "NOT Number Rods: spindles are many identical loose thin rods counted into compartments; Number Rods are ten graduated red-and-blue segmented rods laid out on a mat.",
+        "NOT a sensorial work: this is a Mathematics counting work associating quantity with the numerals 0-9, including zero."
+      ]
+    },
+    {
+      "work_key": "se_red_rods",
+      "work_name": "Red Rods",
+      "area": "sensorial",
+      "visual_description": "Ten wooden rods of identical square cross-section, all painted the same uniform solid red, differing only in LENGTH — the shortest 10cm, the longest a full metre, in equal 10cm steps. They are worked on a floor mat, usually carried one at a time and arranged shortest-to-longest into a stair or fan. The defining picture is a set of rods that are all one continuous red with no divisions, segments, or second colour anywhere along them; only their length changes.",
+      "key_materials": [
+        "Ten wooden rods of equal thickness, all painted uniform solid red",
+        "Lengths graduate from 10cm to 100cm in 10cm steps",
+        "Each rod is one continuous red with no segments or divisions",
+        "Worked on a floor mat, often ordered shortest to longest"
+      ],
+      "negative_descriptions": [
+        "NOT Number Rods: Red Rods are entirely ONE uniform red and graded only by length; Number Rods are the same shape but each rod is divided into alternating RED and BLUE 10cm segments for counting.",
+        "NOT Brown Stair: Red Rods vary in LENGTH only (long thin rods of equal thickness); the Brown Stair is brown prisms of equal length that vary in THICKNESS."
+      ]
+    },
+    {
+      "work_key": "ma_number_rods",
+      "work_name": "Number Rods",
+      "area": "mathematics",
+      "visual_description": "Ten wooden rods graduating in length from 10cm to a full metre in 10cm steps, each rod divided into alternating RED and BLUE 10cm segments — so rod 1 is a single red segment, rod 2 is red-blue, and so on, the number of segments equalling the rod's value 1 to 10. Worked on a floor mat, usually arranged as a stair and counted segment by segment, often paired with numeral cards 1-10. The defining picture is the alternating red-and-blue banding along every rod.",
+      "key_materials": [
+        "Ten wooden rods graduating 10cm to 100cm in 10cm steps",
+        "Each rod divided into alternating RED and BLUE 10cm segments",
+        "Number of segments equals the rod's value (1-10)",
+        "Often paired with numeral cards 1-10"
+      ],
+      "negative_descriptions": [
+        "NOT Red Rods: Number Rods have alternating RED and BLUE segments used for counting; Red Rods are entirely uniform red with no segments and are a purely sensorial length work.",
+        "NOT Spindle Boxes: Number Rods are ten solid graduated segmented rods laid on a mat; Spindle Boxes are loose plain spindles counted into numbered compartments."
+      ]
+    },
+    {
+      "work_key": "se_pink_tower",
+      "work_name": "Pink Tower",
+      "area": "sensorial",
+      "visual_description": "Ten solid wooden CUBES, all painted the same uniform pink, ranging from a tiny 1cm cube to a large 10cm cube with each cube's edge stepping up by 1cm. They are built into a vertical tower on a floor mat, the largest cube on the bottom up to the smallest on top. The defining picture is uniform-pink cubes graded in size (volume) and stacked — three-dimensional blocks, all the same colour, only their size changing.",
+      "key_materials": [
+        "Ten solid wooden cubes, all painted uniform pink",
+        "Sizes graduate from a 1cm cube to a 10cm cube",
+        "Built as a vertical tower, largest to smallest",
+        "Worked on a floor mat"
+      ],
+      "negative_descriptions": [
+        "NOT Brown Stair: the Pink Tower is uniform-pink CUBES graded in all three dimensions and stacked into a tower; the Brown Stair is brown rectangular PRISMS of equal length graded in thickness and laid out flat as a stair, not stacked.",
+        "NOT Knobless Cylinders: Pink Tower pieces are solid cubes; Knobless Cylinders are round cylinders."
+      ]
+    }
+  ]
+}

@@ -98,6 +98,12 @@ def analyze_audio(audio_path):
     _log("%d sections, %d active intervals" % (len(sections),
                                                len(active_intervals)))
 
+    # --- fine RMS envelope (for energy-profile section alignment, script mode) ---
+    # The 3-level ``sections`` are too coarse for the DP aligner (they merge the
+    # per-verse energy modulation away). A compact fixed-bin envelope preserves
+    # the shape the aligner needs while staying tiny + sample-rate independent.
+    rms_envelope = _rms_envelope(y, sr, duration)
+
     info = {
         "duration": round(duration, 3),
         "sample_rate": int(sr),
@@ -106,6 +112,7 @@ def analyze_audio(audio_path):
         "downbeats": [round(float(t), 3) for t in downbeats],
         "onsets": onsets,
         "sections": sections,
+        "rms_envelope": rms_envelope,
         "grid": {
             "base_tempo": round(base_tempo, 2),
             "chosen_factor": grid["factor"],
@@ -260,6 +267,46 @@ def _rms_sections(y, sr, duration, n_levels=3):
     return merged, active_intervals
 
 
+def _rms_envelope(y, sr, duration, bin_sec=0.1):
+    """Compact, sample-rate-independent smoothed-RMS envelope for the energy
+    aligner (script mode). Returns ``{"hop_sec": bin_sec, "values": [floats]}``
+    where ``values[k]`` is the mean smoothed RMS over ``[k*bin_sec,(k+1)*bin_sec)``.
+
+    Uses the SAME ~1s smoothing as ``_rms_sections`` so the envelope and the
+    coarse sections agree, then re-bins to a fixed ``bin_sec`` grid (0.1s → ~10
+    values/second) so the stored array is tiny and independent of the source
+    sample rate / HOP. Empty/degenerate audio yields a single 0.0 bin."""
+    import librosa
+
+    rms = librosa.feature.rms(y=y, hop_length=HOP)[0]
+    if rms.size == 0:
+        return {"hop_sec": bin_sec, "values": [0.0]}
+    win = max(1, int(round(sr / HOP)))  # ~1s smoothing (matches _rms_sections)
+    kernel = np.ones(win) / win
+    smooth = np.convolve(rms, kernel, mode="same")
+    times = librosa.frames_to_time(np.arange(len(smooth)), sr=sr, hop_length=HOP)
+    nb = max(1, int(math.ceil(duration / bin_sec)))
+    values = []
+    fi = 0
+    n = len(smooth)
+    for b in range(nb):
+        t1 = (b + 1) * bin_sec
+        j = fi
+        acc = 0.0
+        cnt = 0
+        while j < n and times[j] < t1:
+            acc += float(smooth[j])
+            cnt += 1
+            j += 1
+        if cnt:
+            values.append(round(acc / cnt, 5))
+            fi = j
+        else:
+            # bin fell past the last frame — carry the last known value.
+            values.append(values[-1] if values else 0.0)
+    return {"hop_sec": bin_sec, "values": values}
+
+
 # ---------------------------------------------------------------------------
 # Whisper transcription
 # ---------------------------------------------------------------------------
@@ -338,6 +385,171 @@ def _try_stable_ts(audio_path, model_size, lyrics_text, language):
     except Exception as e:  # noqa: BLE001
         _log("stable-ts failed (%s: %s)" % (e.__class__.__name__, e))
         return None
+
+
+# ---------------------------------------------------------------------------
+# FORCED ALIGNMENT (Jul-15/16 — PRIMARY timing path when lyrics are provided)
+#
+# Transcription structurally fails stutter-chant kids songs (whisper large-v3 =
+# 80.8% approx on W02-sound "T-T-Turtle"). Forced alignment sidesteps this: the
+# lyric text is GROUND TRUTH and stable_whisper.align() only TIMES it (DTW over
+# cross-attention — never guesses text), landing every word monotonic + on-pin.
+#
+# torch/stable-ts live in a dedicated venv (the daemon's Homebrew python has
+# faster-whisper + librosa but NOT torch), so alignment runs as a subprocess via
+# ``align_worker.py`` with JSON file I/O. Falls back to the faster-whisper
+# transcription tier (``build_aligned_words``) when the venv/worker is missing,
+# the align call fails, or ``MVGEN_ALIGN=off``.
+# ---------------------------------------------------------------------------
+
+_ALIGN_VENV_DEFAULT_DIR = os.path.expanduser("~/mvgen-models/align-venv")
+_ALIGN_VENV_DEFAULT = os.path.join(_ALIGN_VENV_DEFAULT_DIR, "bin", "python")
+_ALIGN_WORKER = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             "align_worker.py")
+
+
+def _align_enabled():
+    """Forced alignment is ON unless ``MVGEN_ALIGN`` is off/0/false/no."""
+    return os.environ.get("MVGEN_ALIGN", "on").strip().lower() not in (
+        "off", "0", "false", "no")
+
+
+def _align_model():
+    """Alignment model size (default ``base`` — the proven feasibility model)."""
+    return os.environ.get("MVGEN_ALIGN_MODEL", "base").strip() or "base"
+
+
+def _align_python():
+    """Path to the align venv's python interpreter, or None if absent (the caller
+    then degrades to the transcription tier). Resolution order:
+
+      1. ``MVGEN_ALIGN_PYTHON`` — explicit interpreter path (wins if set);
+      2. ``MVGEN_ALIGN_VENV``   — venv DIRECTORY (per the contract); the
+         interpreter is ``<venv>/bin/python``;
+      3. the default venv ``~/mvgen-models/align-venv``.
+    """
+    explicit = os.environ.get("MVGEN_ALIGN_PYTHON", "").strip()
+    if explicit:
+        return explicit if os.path.exists(explicit) else None
+    venv = (os.environ.get("MVGEN_ALIGN_VENV", "").strip()
+            or _ALIGN_VENV_DEFAULT_DIR)
+    cand = os.path.join(venv, "bin", "python")
+    return cand if os.path.exists(cand) else None
+
+
+def _align_signature():
+    """Compact string describing the alignment config, folded into the inputs
+    fingerprint so a cached timeline auto-re-analyzes when the mode/model flips.
+    ``align:<model>`` when enabled, ``off`` otherwise."""
+    return ("align:%s" % _align_model()) if _align_enabled() else "off"
+
+
+# Pure ``[section]`` header line (a whole line that is ONLY a bracketed tag) —
+# mirrors build-capcut-packages.SECTION_RE so alignment tokenizes the exact same
+# sung text the batch-proven 115/115 path used.
+_ALIGN_SECTION_RE = re.compile(r"^\s*\[[^\]]*\]\s*$")
+
+
+def _clean_lyrics_for_align(lyrics_text):
+    """Real sung/spoken lines only, joined into ONE space-separated alignment
+    string — mirrors ``build-capcut-packages.split_lyric_lines`` + ``' '.join``
+    (the batch-proven 115/115 invocation). Drops blank lines and pure
+    ``[section]`` tags (a line that merely STARTS with '[' but carries sung text
+    is KEPT — only a whole-line bracket tag is dropped)."""
+    out = []
+    for raw in (lyrics_text or "").replace("\r\n", "\n").split("\n"):
+        s = raw.strip()
+        if not s or _ALIGN_SECTION_RE.match(s):
+            continue
+        out.append(s)
+    return " ".join(out)
+
+
+def _forced_align_words(audio_path, lyrics_text, language="en"):
+    """Run stable-ts forced alignment in the align venv (subprocess, JSON I/O).
+
+    Returns ``[{word,start,end}, ...]`` (text = the provided lyrics, timed) or
+    None on any failure (missing venv/worker, non-zero exit, bad JSON, empty
+    output) — every failure logs loudly so the fallback is visible in the log."""
+    if not _align_enabled():
+        return None
+    py = _align_python()
+    if py is None:
+        _log("FORCED-ALIGN: align venv python not found (looked at %r / "
+             "$MVGEN_ALIGN_PYTHON) -> transcription fallback"
+             % _ALIGN_VENV_DEFAULT)
+        return None
+    if not os.path.exists(_ALIGN_WORKER):
+        _log("FORCED-ALIGN: worker missing at %r -> transcription fallback"
+             % _ALIGN_WORKER)
+        return None
+    clean = _clean_lyrics_for_align(lyrics_text)
+    if not clean.strip():
+        _log("FORCED-ALIGN: lyrics had no sung lines -> transcription fallback")
+        return None
+
+    import subprocess
+    import tempfile
+    model = _align_model()
+    tmpd = tempfile.mkdtemp(prefix="mvgen_align_")
+    lyr_path = os.path.join(tmpd, "lyrics_clean.txt")
+    out_path = os.path.join(tmpd, "aligned_words.json")
+    try:
+        with open(lyr_path, "w", encoding="utf-8") as fh:
+            fh.write(clean)
+        _log("FORCED-ALIGN: %s (model=%s) aligning %d lyric words ..."
+             % (os.path.basename(py), model, len(clean.split())))
+        proc = subprocess.run(
+            [py, _ALIGN_WORKER, audio_path, lyr_path, model, language,
+             out_path],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            timeout=1800)
+        tail = (proc.stderr or b"").decode("utf-8", "replace").strip()
+        tail = tail.splitlines()[-1] if tail else ""
+        if proc.returncode != 0:
+            _log("FORCED-ALIGN: worker exit %d (%s) -> transcription fallback"
+                 % (proc.returncode, tail or "no stderr"))
+            return None
+        if not os.path.exists(out_path):
+            _log("FORCED-ALIGN: no output json -> transcription fallback")
+            return None
+        with open(out_path, encoding="utf-8") as fh:
+            payload = json.load(fh)
+        words = payload.get("words") or []
+        if not words:
+            _log("FORCED-ALIGN: worker produced 0 words (%s) -> transcription "
+                 "fallback" % (tail or "?"))
+            return None
+        _log("FORCED-ALIGN: %d aligned words (%s)" % (len(words), tail))
+        return words
+    except subprocess.TimeoutExpired:
+        _log("FORCED-ALIGN: worker timed out -> transcription fallback")
+        return None
+    except (OSError, ValueError) as e:  # noqa: BLE001
+        _log("FORCED-ALIGN: %s: %s -> transcription fallback"
+             % (e.__class__.__name__, e))
+        return None
+    finally:
+        import shutil
+        shutil.rmtree(tmpd, ignore_errors=True)
+
+
+def build_forced_aligned_words(audio_path, lyrics_text, duration,
+                               language="en"):
+    """PRIMARY lyric-timing path: stable-ts forced alignment. Every word carries
+    real start/end and ``approx: False`` (no key) — approx collapses to ~0%, so
+    the approx-run suppression / neighbor-hold rules find nothing to suppress and
+    the certified anchor path handles scheduling. Returns the timeline word list
+    (via ``_finalize`` for monotonic non-overlap) or None to fall back."""
+    raw = _forced_align_words(audio_path, lyrics_text, language=language)
+    if raw is None:
+        return None
+    timed = [{"word": w["word"], "start": w.get("start"), "end": w.get("end")}
+             for w in raw if _clean(w.get("word", ""))]
+    if not timed:
+        _log("FORCED-ALIGN: all tokens empty after clean -> fallback")
+        return None
+    return _finalize(timed, duration)
 
 
 def transcribe_words(audio_path, model_size="base", lyrics_text=None,
@@ -921,6 +1133,10 @@ def compute_inputs_fingerprint(lyrics_path=None, subs_path=None,
     h.update(b"\x00")
     # FIX 1: the audio itself — the load-bearing addition for regenerated takes.
     _hash_file_bytes(h, audio_path)
+    h.update(b"\x00")
+    # FORCED-ALIGN: the timing path config (mode + align model) so toggling
+    # MVGEN_ALIGN / MVGEN_ALIGN_MODEL invalidates a cached timeline.
+    h.update(_align_signature().encode("utf-8"))
     return h.hexdigest()
 
 
@@ -948,18 +1164,39 @@ def build_timeline(audio_path, lyrics_path=None, no_lyrics=False,
                  % e)
             subs_words = None
 
+    # ``timing_source`` records which tier actually produced the word timings so
+    # the shot report can show it ("align" | "transcribe" | "subs" | "none").
+    timing_source = "transcribe"
     if no_lyrics:
         _log("--no-lyrics: skipping transcription")
         words = []
+        timing_source = "none"
     elif subs_words is not None:
+        # An explicit --subs file wins over everything (unchanged): whisper /
+        # forced alignment are NOT called; the sub cues supply the timing.
+        timing_source = "subs"
         if lyrics_text:
             words = align_lyrics_to_subs(lyrics_text, subs_words, dur, aux)
         else:
             _log("subs without lyrics -> subtitle text IS the display text")
             words = subs_words
     elif lyrics_text:
-        words = build_aligned_words(audio_path, lyrics_text, dur, aux,
-                                    model_size)
+        # PRIMARY (lyrics = ground truth): stable-ts forced alignment DTW-times
+        # the KNOWN lyric text (never guesses it) -> every word carries real
+        # start/end + approx False, so approx collapses to ~0% and the certified
+        # anchor path handles scheduling. Falls back to the whisper
+        # transcription+NW-align tier when the align venv/worker is missing, the
+        # align call fails, or MVGEN_ALIGN=off.
+        words = build_forced_aligned_words(audio_path, lyrics_text, dur,
+                                           language="en")
+        if words is not None:
+            timing_source = "align"
+        else:
+            _log("FORCED-ALIGN: unavailable/failed -> whisper transcription "
+                 "fallback (build_aligned_words)")
+            words = build_aligned_words(audio_path, lyrics_text, dur, aux,
+                                        model_size)
+            timing_source = "transcribe"
     else:
         _log("no lyrics provided -> transcription-only fallback")
         raw = transcribe_words(audio_path, model_size=model_size)
@@ -967,6 +1204,7 @@ def build_timeline(audio_path, lyrics_path=None, no_lyrics=False,
             w["start"] = max(0.0, min(w["start"], dur))
             w["end"] = max(w["start"], min(w["end"], dur))
         words = _filter_degenerate(raw, dur)
+        timing_source = "transcribe"
 
     return {
         "audio": {
@@ -980,8 +1218,14 @@ def build_timeline(audio_path, lyrics_path=None, no_lyrics=False,
         "downbeats": info["downbeats"],
         "onsets": info["onsets"],
         "sections": info["sections"],
+        "rms_envelope": info["rms_envelope"],
         "grid": info["grid"],
         "words": words,
+        # Which timing tier produced ``words`` — surfaced in the shot report so
+        # a batch sweep can tell alignment-timed songs from transcription-timed
+        # ones at a glance. Old cached timelines lack this key (downstream
+        # defaults to "transcribe").
+        "timing_source": timing_source,
         # Fingerprint of the alignment inputs (lyrics text + subs bytes + model
         # + AUDIO bytes) so a cached timeline is invalidated when ANY of them
         # change — including a regenerated take that kept the mp3 filename+
