@@ -104,6 +104,33 @@ NEW = {
   "clown":  P("one single silly cartoon clown with a red nose, wild rainbow hair, a polka-dot suit and huge white googly eyes, clapping with both hands, big comic clap lines, large and central"),
 }
 
+# ── Scene cards ("snake IN the sock" — the catchphrase combo, Tredoux Jul 18) ──
+# L5–31: the per-lesson dark-phonics picture IS the catchphrase scene → reuse local file.
+# L32–53 (19 songs with cards): fresh MJ renders, prompts authored here.
+DP_DIR = os.path.expanduser("~/Desktop/English Curriculum 2026/Dark Phonics")
+SCENE_REUSE = {n: f"{DP_DIR}/lesson-{n:02d}.png" for n in SONGS if 5 <= n <= 31}
+SCENE_NEW = {
+  32: P("one grey cat, one pink pig and one brown dog standing together in a happy row, the dog mid-bark with an open mouth"),
+  35: P("one fat round grey cat proudly wearing a tall black top hat, sitting upright"),
+  36: P("one big round pink pig dancing a happy jig on its hind legs, comic motion lines"),
+  37: P("one small green frog mid-hop landing on a big brown log, comic hop lines"),
+  38: P("one small dripping-wet puppy sitting sheepishly in the middle of a child's bed with a patchwork quilt"),
+  39: P("one giant round red ladybug giving a gentle hug to a small happy cartoon child"),
+  40: P("one grey cat curled up asleep on a folding camp cot with striped canvas"),
+  41: P("one round fuzzy yellow-and-black bee buzzing in a loop around an annoyed cartoon child who waves it away"),
+  42: P("two plump woolly white cartoon sheep side by side bleating happily with open mouths"),
+  43: P("one tiny fluffy yellow chick winking with a big cheeky grin, one wing raised"),
+  44: P("one brown moth fluttering just above a white bathtub full of bubbles, a surprised cartoon child peeking over the tub edge"),
+  45: P("one big fat blue whale leaping joyfully, the water drawn as thin ink lines and droplets with only light blue watercolor accents"),
+  47: P("one happy cartoon child mid-jump with both hands raised high, comic speed lines"),
+  48: P("one bright pink sock lying in a white kitchen sink, the water drawn as thin ink lines and droplets with only light blue watercolor accents"),
+  49: P("one smiling cartoon snail sliding fast along a glossy slime trail, comic speed lines"),
+  50: P("one silly cartoon clown with wild rainbow hair clapping both hands, big comic clap lines"),
+  51: P("one green frog sitting proudly on top of a colorful toy drum holding two drumsticks"),
+  52: P("two identical twin cartoon children side by side doing the twist dance, comic motion lines"),
+  53: P("one single soggy cat making a big splash in a round wooden washtub, the water drawn as thin ink lines and droplets with only light blue watercolor accents"),
+}
+
 vocab = json.load(open(os.path.join(SPEC, 'dark-phonics-vocab-prompts.json')))
 ALIAS = {"twins": "twin"}
 
@@ -126,6 +153,9 @@ out = {
   "skipped_lessons": SKIPPED,
   "reuse_images": REUSE,
   "render_prompts": prompts,
+  "_scene_note": "Scene card = the catchphrase combo (snake IN the sock). Front = scene image, back = the catchphrase. Images at Dark Phonics/Vocab/scenes/lesson-NN.png; scene_reuse paths are copied there by the composer if missing.",
+  "scene_reuse": {str(k): v for k, v in sorted(SCENE_REUSE.items())},
+  "scene_render_prompts": {str(k): v for k, v in sorted(SCENE_NEW.items())},
 }
 dest = os.path.join(SPEC, 'dark-phonics-hardcards.json')
 json.dump(out, open(dest, 'w'), indent=1, ensure_ascii=False)
