@@ -2,6 +2,31 @@
 
 **⚠️ STANDING RULE (Tredoux, Jul 10 2026 — PERMANENT): MODEL DELEGATION.** Fable is the DIRECTOR and second brain — it plans, decides, writes the critical copy, and reviews. It does NOT do grunt work. **Sonnet** (preferred over Haiku — more reliable) does all fetching, sweeping, scouting, data-gathering, and auditing via sub-agents. **Opus** builds where appropriate. Never let Fable burn half its context on mechanical work another model can do — spawn agents instead.
 
+## 🃏 SESSION — Jul 18, 2026 pt3 (same Cowork session) — DARK PHONICS VOCAB CARD PACKS: 46 per-song packs + 27-card deck LIVE
+
+**Canonical: `lib/montree/english-curriculum/spec/dark-phonics-hardcards.json` (46 songs → catchphrase
+concrete-noun cards, 51 unique words, locked style, all prompts). Commit `35fd5054` PUSHED.**
+Tredoux's ask: per-song "hard card" vocab packs (e.g. "snake in my sock" → snake + sock cards).
+Scope ruling: catchphrase CONCRETE NOUNS only; lessons 33/34/46 skipped (no concrete noun). 6 words
+reuse Easy-Reader art (cat/fox/pup/chick/frog/moth); 45 rendered fresh in MJ (2 submit waves + 2
+pick waves, picking delegated — agents caught artist SIGNATURES bottom-right on ~8 grids, sprouted
+clock-faces/numerals, blue-wash water; clock rule: face must be BLANK). All 51 filed to
+`Dark Phonics/Vocab/<word>.png`. Composer `docs/curriculum/tools/build_hardcard_packs.py` (Opus,
+easy-readers Chrome machinery, 19cm sq, picture-front/word-back short-edge duplex, skip-on-missing-art
+guard) → 46/46 packs → published via `scripts/curriculum/publish-vocab-packs.mjs` to
+`dark-phonics/vocab-packs/lesson-NN.pdf` → `public/dark-phonics-songs.html` gained 46 "🃏 Vocab Cards"
+buttons (+deck button; scripted edit `docs/curriculum/tools/add_vocab_buttons.py`, tag-balance verified).
+**Deck truth:** per-lesson letter-flashcards exist ONLY for L5–31 (spec range) — 5 never-uploaded ones
+(14/17/18/20/31) recovered from pack-v2 → bucket now 27/27 → `flashcards/deck-all-lessons.pdf` (12.5MB)
+rebuilt+published. ⚠️ L32–53 have SONGS but NO letter-flashcards — authoring 22 new cards = Tredoux
+decision, not a recovery task. 🚨 Mid-session the disk hit 0 BYTES free (ENOSPC broke Write + killed
+Chrome/extension); cache purge → ~1GB, Tredoux cleared more → 5.9GB. Chrome relaunch via plain
+`open -a` reconnected the extension (no dialog needed). ⏳ OWED: Tredoux eyeball packs live post-deploy
+(don't hammer proxy links early — 7-day edge-cache poison rule; vocab-packs links ship `&v=1`) ·
+baby.png cheeks a bit odd (best of 4) — swap if disliked · decide L32–53 flashcard build.
+
+---
+
 ## 📖 SESSION — Jul 18, 2026 pt2 (Cowork/Fable directing Sonnet+Opus) — ✅ ALL 11 DARK PHONICS EASY READERS RENDERED, COMPOSED + PUBLISHED (same day, M1→M2 migration ran in parallel)
 
 **Canonical: `docs/handoffs/PLAN_EASY_READERS_DARK_PHONICS_JUL18.md` +
