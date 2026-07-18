@@ -1,15 +1,21 @@
 /**
  * builders/flashcards.ts — big picture-word flashcards (the #1 teacher ask).
  *
- * Two cards per A4 portrait page: a LARGE picture on top (~68% of the card) and
- * the word big beneath, in the house green frame (#2D5A27) with white inner
- * panels + rounded corners — the same frame technique as the three-part cards.
+ * 🔄 DUPLEX DESIGN (Tredoux, Jul 18 2026 — supersedes the single-face card):
+ * TRUE two-sided flashcards for LONG-EDGE duplex (every printer's default flip).
+ * Pages come in FRONT/BACK pairs: front page = two picture-only cards stacked;
+ * the very next page = the SAME two cards' text sides (big word / letter) in the
+ * SAME top/bottom order. Long-edge flip on portrait mirrors left↔right but keeps
+ * top card on top — and card content is centred/full-width — so the backs land
+ * on their fronts automatically with zero printer settings. Do NOT reorder pages
+ * or switch to short-edge: short-edge flip would print every back upside-down.
  *
- * The deck opens with a letter/sound card: the week's letter (Level 1, both
- * cases — "Aa") or the pattern (Level 2/3 — patternDisplay ?? sound, e.g.
- * "a_e", "-tion"), printed big and trace-clean. Then one card per vocabulary
- * word — the SAME list the three-part cards use (spec.materials.threePartCards),
- * so the flashcards and the 3-part cards always drill the identical words.
+ * The deck opens with a letter/sound card: front = the week's letter (Level 1,
+ * both cases — "Aa") or pattern (Level 2/3 — patternDisplay ?? sound), back =
+ * the sound kicker ("/a/"). Then one card per vocabulary word — the SAME list
+ * the three-part cards use (spec.materials.threePartCards): picture front, the
+ * word big on the back. An odd final card shares its sheet with a blank slot so
+ * front/back positions always line up.
  *
  * 🚨 Card heights are FIXED (not flex), exactly as three-part-cards does: an
  * `<img height:100%>` only resolves to a real height inside a fixed-height flex
@@ -48,41 +54,49 @@ export function buildFlashcards(spec: WeekSpec, assets: AssetMap, opts: BuildOpt
   const warnings: string[] = [];
   const words = (spec.materials?.threePartCards ?? []).map((w) => w.toLowerCase());
 
-  // The word panel is ~full-card-width by ~4cm tall — size the label to fit it.
+  // Back-of-card word: near-full-card white panel — let the word go BIG.
   const wordWidthCm = A4_WIDTH_CM - 1.8 /* page padding */ - WHITE_BORDER_CM * 2;
-  const labelPt = (w: string) => adaptiveLabelFontSize(w, 54, wordWidthCm, 4);
+  const labelPt = (w: string) => adaptiveLabelFontSize(w, 110, wordWidthCm - 1, 9);
 
   const css = `
 .fsheet{height:100%;box-sizing:border-box;padding:9mm;display:flex;flex-direction:column;gap:9mm;}
 .fcard{height:${CARD_H_MM}mm;background:${FRAME_COLOR};padding:${WHITE_BORDER_CM}cm;border-radius:${CARD_BORDER_RADIUS_CM}cm;display:flex;flex-direction:column;gap:${WHITE_BORDER_CM}cm;overflow:hidden;}
+.fblank{height:${CARD_H_MM}mm;}
 .fc-img{flex:1;min-height:0;background:white;border-radius:${CARD_BORDER_RADIUS_CM}cm;display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .fc-img img{width:100%;height:100%;object-fit:cover;display:block;}
-.fc-word{flex:0 0 34mm;background:white;border-radius:${CARD_BORDER_RADIUS_CM}cm;display:flex;align-items:center;justify-content:center;font-family:${KIDS_FONT};font-weight:bold;color:${INK};text-align:center;padding:0.2cm 0.4cm;line-height:1.1;word-break:break-word;overflow-wrap:anywhere;}
-/* Letter / pattern card — no picture; the glyph fills the white panel. */
+/* Text face (the card BACK) — one white panel filling the card. */
+.fc-back{flex:1;min-height:0;background:white;border-radius:${CARD_BORDER_RADIUS_CM}cm;display:flex;align-items:center;justify-content:center;font-family:${KIDS_FONT};font-weight:bold;color:${INK};text-align:center;padding:0.2cm 0.5cm;line-height:1.05;word-break:break-word;overflow-wrap:anywhere;}
+/* Letter / pattern card front — the glyph fills the white panel. */
 .fc-glyph{flex:1;min-height:0;background:white;border-radius:${CARD_BORDER_RADIUS_CM}cm;display:flex;align-items:center;justify-content:center;font-family:${KIDS_FONT};font-weight:bold;color:${FRAME_COLOR};line-height:1;}
-.fc-kicker{flex:0 0 26mm;background:white;border-radius:${CARD_BORDER_RADIUS_CM}cm;display:flex;align-items:center;justify-content:center;font-family:${KIDS_FONT};font-weight:bold;color:${INK};font-size:20pt;}
 `;
 
   // The opening letter/pattern card. Level 1 → the letter both cases ("Aa");
-  // Level 2/3 → the pattern (patternDisplay ?? sound). Kicker names the sound.
+  // Level 2/3 → the pattern (patternDisplay ?? sound). Back = the sound kicker.
   const glyph = escapeHtml(spec.letterDisplay || spec.patternDisplay || spec.sound);
   const glyphPt = glyph.replace(/&[a-z]+;/g, 'x').length <= 3 ? 200 : 120;
   const kicker = escapeHtml(spec.patternDisplay || `/${spec.sound}/`);
-  const letterCard =
-    `<div class="fcard"><div class="fc-glyph" style="font-size:${glyphPt}pt;">${glyph}</div>` +
-    `<div class="fc-kicker">${kicker}</div></div>`;
 
-  const wordCard = (w: string) =>
-    `<div class="fcard"><div class="fc-img">${picture(w, assets, warnings)}</div>` +
-    `<div class="fc-word" style="font-size:${labelPt(w)}pt;">${escapeHtml(w)}</div></div>`;
+  // front/back HTML per card, same index = same physical card.
+  const fronts: string[] = [
+    `<div class="fcard"><div class="fc-glyph" style="font-size:${glyphPt}pt;">${glyph}</div></div>`,
+    ...words.map((w) => `<div class="fcard"><div class="fc-img">${picture(w, assets, warnings)}</div></div>`),
+  ];
+  const backs: string[] = [
+    `<div class="fcard"><div class="fc-back" style="font-size:90pt;color:${FRAME_COLOR};">${kicker}</div></div>`,
+    ...words.map((w) => `<div class="fcard"><div class="fc-back" style="font-size:${labelPt(w)}pt;">${escapeHtml(w)}</div></div>`),
+  ];
 
-  const cards = [letterCard, ...words.map(wordCard)];
-
+  // Sheet pairs: FRONT page (2 picture cards) immediately followed by its BACK
+  // page (same 2 cards' text sides, same top/bottom order). Long-edge duplex
+  // lines them up automatically. Odd remainder keeps its slot via a blank spacer.
   const pages: string[] = [];
-  for (let i = 0; i < cards.length; i += 2) {
-    pages.push(`<div class="page fsheet">${cards.slice(i, i + 2).join('')}</div>`);
+  for (let i = 0; i < fronts.length; i += 2) {
+    const f = [fronts[i], fronts[i + 1] ?? '<div class="fblank"></div>'];
+    const b = [backs[i], backs[i + 1] ?? '<div class="fblank"></div>'];
+    pages.push(`<div class="page fsheet">${f.join('')}</div>`);
+    pages.push(`<div class="page fsheet">${b.join('')}</div>`);
   }
-  if (cards.length === 0) {
+  if (fronts.length === 0) {
     pages.push(`<div class="page"><div class="page-title">No flashcard words for this week.</div></div>`);
   }
 
