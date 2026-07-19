@@ -3,6 +3,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dark Phonics</title>
+<script>
+/* 🥔 On teacherpotato this hub shows a potato favicon, never the Montree M. */
+(function(){if(location.hostname.indexOf('teacherpotato')===-1)return;
+document.querySelectorAll('link[rel~="icon"],link[rel="shortcut icon"],link[rel="apple-touch-icon"]').forEach(function(l){l.parentNode.removeChild(l);});
+var l=document.createElement('link');l.rel='icon';l.type='image/png';l.href='/potato/icon-192.png';document.head.appendChild(l);})();
+</script>
 <style>
 :root{--bg:#0b0b12;--bar:#12121c;--card:#15151f;--ink:#ececf2;--mut:#9a9ab0;--ac:#7c5cff;--ac2:#16d39a;--y:#f0b85a;--line:#23233a;}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.5}
