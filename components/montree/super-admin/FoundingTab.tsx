@@ -136,6 +136,22 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
     }
   };
 
+  // Hard-delete a waitlist row (test/junk entries). Confirmed first; deleting
+  // an admitted row frees its seat on the public counter. A redeemed row's
+  // SCHOOL is not touched — this only removes the waitlist entry.
+  const deleteRow = async (id: string, name: string) => {
+    if (!window.confirm(`Delete "${name}" from the waitlist permanently? (The school account itself, if one was created, is not deleted.)`)) return;
+    setBusyId(id);
+    try {
+      await patch({ action: 'delete_row', id });
+      await load();
+    } catch {
+      setError('Could not delete that row. Try again.');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   // Mint (or reveal the existing) FND- signup code for an admitted row, then
   // reload so the copyable link shows. Idempotent server-side — safe to click
   // again (it returns the same code, never rotates).
@@ -633,6 +649,14 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
                       Reset
                     </button>
                   )}
+                  <button
+                    style={btn('transparent', '#f87171')}
+                    title="Delete this row permanently"
+                    disabled={busyId === r.id}
+                    onClick={() => deleteRow(r.id, r.school_name)}
+                  >
+                    🗑 Delete
+                  </button>
                 </div>
               </div>
 
