@@ -39,32 +39,40 @@ interface LetterDef {
 }
 
 // Bowls / arcs used repeatedly.
-const oFull = 'M50 43 A21 21 0 1 0 50 85 A21 21 0 1 0 50 43';
+// Circle letters START at ~2 o'clock (up-right, like a 'c' start) and travel
+// COUNTER-CLOCKWISE (sweep 0) the full way around. Start/opposite points sit at
+// ±45° up-right / down-left on the circle.
+const oFull = 'M64.8 49.2 A21 21 0 1 0 35.2 78.8 A21 21 0 1 0 64.8 49.2';
 
 const LETTERS: Record<string, LetterDef> = {
   a: {
     strokes: [
-      { d: 'M44 47 A19 19 0 1 0 44 85 A19 19 0 1 0 44 47', num: [30, 40] },
+      { d: 'M57.4 52.6 A19 19 0 1 0 30.6 79.4 A19 19 0 1 0 57.4 52.6', num: [30, 40] },
       { d: 'M64 44 L64 88', num: [70, 40] },
     ],
   },
   b: {
     strokes: [
       { d: 'M32 15 L32 88', num: [22, 20] },
-      { d: 'M52 50 A18 18 0 1 1 52 86 A18 18 0 1 1 52 50', num: [72, 50] },
+      // Bowl STARTS on the stem (upper-left of bowl) and travels CLOCKWISE
+      // (sweep 1) up over the top, around the right, ending back on the stem
+      // below bowl-middle — an open ~330° arc, not a closed circle.
+      { d: 'M35 62 A18 18 0 1 1 35 74', num: [72, 50] },
     ],
   },
   c: { strokes: [{ d: 'M66 50 A21 21 0 1 0 66 78', num: [70, 42] }] },
   d: {
     strokes: [
-      { d: 'M48 50 A18 18 0 1 0 48 86 A18 18 0 1 0 48 50', num: [30, 44] },
+      { d: 'M60.7 55.3 A18 18 0 1 0 35.3 80.7 A18 18 0 1 0 60.7 55.3', num: [30, 44] },
       { d: 'M66 15 L66 88', num: [72, 20] },
     ],
   },
   e: {
     strokes: [
       { d: 'M31 64 L69 64', num: [24, 60] },
-      { d: 'M69 64 A21 21 0 1 1 60 83', num: [74, 48] },
+      // From the bar's RIGHT end, UP OVER THE TOP (counter-clockwise, sweep 0),
+      // around the left and under, finishing at ~4:30 like a 'c' ending.
+      { d: 'M69 64 A19 19 0 1 0 64 77', num: [74, 48] },
     ],
   },
   f: {
@@ -75,7 +83,7 @@ const LETTERS: Record<string, LetterDef> = {
   },
   g: {
     strokes: [
-      { d: 'M46 41 A17 17 0 1 0 46 75 A17 17 0 1 0 46 41', num: [30, 38] },
+      { d: 'M58 46 A17 17 0 1 0 34 70 A17 17 0 1 0 58 46', num: [30, 38] },
       { d: 'M63 42 L63 104 Q63 112 52 110', num: [70, 40] },
     ],
   },
@@ -115,12 +123,14 @@ const LETTERS: Record<string, LetterDef> = {
   p: {
     strokes: [
       { d: 'M32 40 L32 110', num: [22, 44] },
-      { d: 'M52 41 A17 17 0 1 1 52 75 A17 17 0 1 1 52 41', num: [70, 42] },
+      // Bowl STARTS on the stem, CLOCKWISE (sweep 1) up over the top, around the
+      // right, ending back on the stem below bowl-middle — open ~330° arc.
+      { d: 'M37 50 A17 17 0 1 1 37 66', num: [70, 42] },
     ],
   },
   q: {
     strokes: [
-      { d: 'M48 41 A17 17 0 1 0 48 75 A17 17 0 1 0 48 41', num: [30, 38] },
+      { d: 'M60 46 A17 17 0 1 0 36 70 A17 17 0 1 0 60 46', num: [30, 38] },
       { d: 'M66 40 L66 106 Q66 112 74 108', num: [72, 44] },
     ],
   },
@@ -140,7 +150,7 @@ const LETTERS: Record<string, LetterDef> = {
   u: {
     strokes: [
       { d: 'M32 40 L32 78 C32 86 42 88 50 88 C58 88 68 86 68 78 L68 40', num: [22, 44] },
-      { d: 'M68 78 L68 88', num: [74, 84] },
+      { d: 'M68 40 L68 88', num: [74, 46] },
     ],
   },
   v: { strokes: [{ d: 'M32 40 L50 88 L68 40', num: [26, 44] }] },
