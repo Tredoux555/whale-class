@@ -53,7 +53,7 @@
     "backCoverWords": ["this", "that", "then", "with", "moth", "bath", "path", "thin", "the", "is"]
   },
   "materials": {
-    "threePartCards": ["moth", "bath", "path", "thin", "math", "this", "that", "then"],
+    "threePartCards": ["moth", "bath", "path", "thin", "math", "this", "that", "then", "thumb", "three"],
     "sentences": ["The moth is in the bath.", "This moth is thin.", "Then the moth is on the path.", "The moth is with Chick."],
     "matching": ["moth", "bath", "path", "thin", "this", "that"],
     "bingoPool": ["moth", "bath", "path", "thin", "math", "this", "that", "then", "chick", "ship", "fish", "cat", "duck", "potato"],

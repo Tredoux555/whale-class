@@ -52,7 +52,7 @@
     "backCoverWords": ["mat", "am", "at", "a"]
   },
   "materials": {
-    "threePartCards": ["mat", "moon", "mouse", "monkey", "mop", "mango", "mask", "map"],
+    "threePartCards": ["mat", "moon", "mouse", "monkey", "mop", "mango", "mask", "map", "milk"],
     "sentences": ["The moon is on the mat.", "The mouse is on the mat.", "The monkey is on the mat.", "Segina is on the mat."],
     "matching": ["mat", "moon", "mouse", "monkey", "mop", "mask"],
     "bingoPool": ["mat", "moon", "mouse", "monkey", "mop", "mango", "mask", "map", "milk", "apple", "ant", "turtle", "tomato", "table"],

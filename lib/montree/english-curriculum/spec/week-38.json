@@ -53,7 +53,7 @@
     "backCoverWords": ["cake", "name", "gate", "snake", "ate", "at", "in", "went", "the", "is"]
   },
   "materials": {
-    "threePartCards": ["cake", "gate", "snake", "plane", "grape", "whale", "tape", "wave"],
+    "threePartCards": ["cake", "gate", "snake", "plane", "grape", "whale", "tape", "wave", "cape"],
     "sentences": ["The snake is at the gate.", "In went the snake.", "The snake ate the cake.", "The name on the gate is SNAKE."],
     "matching": ["cake", "gate", "snake", "name", "tape", "wave"],
     "bingoPool": ["cake", "gate", "snake", "plane", "grape", "whale", "tape", "wave", "ship", "fish", "king", "flag", "frog", "potato"],

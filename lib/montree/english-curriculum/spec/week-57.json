@@ -53,7 +53,7 @@
     "backCoverWords": ["jumping", "played", "wishes", "running", "singing", "reading", "swimming", "resting", "the", "is"]
   },
   "materials": {
-    "threePartCards": ["running", "jumping", "swimming", "singing", "reading", "digging"],
+    "threePartCards": ["running", "jumping", "swimming", "singing", "reading", "digging", "jumped", "boxes"],
     "sentences": ["The dog is running.", "The cat is jumping.", "Sam played and played.", "The fish wishes."],
     "matching": ["running", "jumping", "swimming", "singing", "reading", "digging"],
     "bingoPool": ["running", "jumping", "swimming", "singing", "reading", "played", "jumped", "looked", "fishes", "boxes", "potato"],

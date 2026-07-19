@@ -53,7 +53,7 @@
     "backCoverWords": ["see", "tree", "eat", "sea", "bee", "read", "Sheep", "the", "is", "can"]
   },
   "materials": {
-    "threePartCards": ["bee", "tree", "feet", "leaf", "sea", "read", "beach", "queen"],
+    "threePartCards": ["bee", "tree", "feet", "leaf", "sea", "read", "beach", "queen", "see"],
     "sentences": ["The bee is in the tree.", "Sheep can see the bee.", "Sheep can read!", "Sheep and Bee eat at the sea."],
     "matching": ["bee", "tree", "feet", "leaf", "sea", "read"],
     "bingoPool": ["bee", "tree", "feet", "leaf", "sea", "read", "beach", "queen", "rain", "train", "cake", "snake", "potato"],

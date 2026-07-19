@@ -53,7 +53,7 @@
     "backCoverWords": ["star", "car", "park", "farm", "dark", "see", "in", "on", "the", "is"]
   },
   "materials": {
-    "threePartCards": ["star", "car", "park", "farm", "barn", "cart", "shark", "arm"],
+    "threePartCards": ["star", "car", "park", "farm", "barn", "cart", "shark", "arm", "dark"],
     "sentences": ["The star is in the dark.", "The car is in the park.", "Sheep can see the star.", "The star is on the farm."],
     "matching": ["star", "car", "park", "farm", "barn", "cart"],
     "bingoPool": ["star", "car", "park", "farm", "barn", "dark", "cart", "shark", "tree", "bee", "boat", "cake", "potato"],
