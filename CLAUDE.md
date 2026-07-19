@@ -30,7 +30,10 @@ all 58 weeks' matching.pdf re-rendered. (3) **Weekly flashcards TRUE DUPLEX** (`
 single-face picture+word; now front/back page PAIRS aligned for LONG-EDGE flip (printer default) —
 picture fronts, big word backs, letter card front Aa / back /a/, blank-slot padding for odd counts;
 all 58 weeks re-rendered. 🚨 RULE: duplex card PDFs are authored for LONG-edge flip — short-edge
-prints backs upside-down. (4) **Hub content-first reorg** (`9720a45f`, Opus): tabs = Songs · 🃏
+prints backs upside-down. **🚨🚨 FLASHCARD HARD RULE (Tredoux, Jul 19 2026, PERMANENT): 1 card = 1
+full A4 page; anything on the back gets its OWN following page, comfortably sized, aligned for
+default long-edge duplex. No multi-card sheets, ever** (`bababf0f` — phonics deck + intro rule cards
+converted; vocab packs already complied). (4) **Hub content-first reorg** (`9720a45f`, Opus): tabs = Songs · 🃏
 Flashcards (NEW dark-phonics-flashcards.html: deck + 27 letter-card + 46 vocab-pack buttons) · Picture
 Books · Easy Readers · Sing-Along; Creation + Original links tucked in a muted 🛠 Workshop dropdown;
 readers page leads with the book, prompts collapsed in <details>. (5) **Deck style unified**
