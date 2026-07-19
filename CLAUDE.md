@@ -1,5 +1,33 @@
 # Whale-Class / Montree - Developer Brain
 
+## ✏️ SESSION — Jul 19, 2026 (same Cowork session cont.) — LIVE-REVIEW ROUND 2: founding delete · print-alls · TEACHERPOTATO TEACHERS DOOR · TRACING ARROWS CORRECTED
+
+Tredoux walked the live product again; all fixes shipped+deployed same day:
+- **Founding tab 🗑 Delete** (`804ed5ee`): per-row confirmed hard-delete of waitlist entries (new
+  `delete_row` PATCH action). Deleting an admitted row frees its public-counter seat; a redeemed row's
+  school is NOT touched.
+- **Print-alls** (`79262f6e`): `scripts/curriculum/build-print-alls.mjs` merges 11 readers (77pp) →
+  `readers/all-readers.pdf` + 46 vocab packs (220pp) → `vocab-packs/all-vocab-packs.pdf` (🚨 duplex
+  guard: asserts every pack has EVEN page count before merging — parity spot-checked across lesson
+  boundaries). Buttons on readers + flashcards pages.
+- **🥔 TEACHERPOTATO TEACHERS DOOR** (`393cb2d6`): Tredoux's school teachers must never be pointed at
+  montree. Facts: apex teacherpotato.xyz = DEAD parking (404s); **www.teacherpotato.xyz serves the same
+  Railway app** (middleware host-split; dark-phonics pages + media proxy verified 200 there). Built:
+  👩‍🏫 Teachers button on the Whale Class video-platform header (`app/page.tsx`) → `/dark-phonics.html`,
+  and ALL dark-phonics*.html media links converted absolute→RELATIVE (`/api/montree/media/proxy/...`)
+  so teachers stay on teacherpotato end-to-end. ⚠️ Known crossover: the per-song "Printable lesson
+  pack" button targets `/montree/library/lesson/N`, which middleware redirects OFF teacherpotato →
+  lands on montree.xyz (Tredoux to rule: hide on teacherpotato vs allow).
+- **✏️ TRACING STROKE ARROWS CORRECTED** (`f452d3a1`, Opus w/ visual verification loop): circle letters
+  a/d/g/o/q started at 12 o'clock — WRONG formation (children follow arrows literally). Now: circles
+  start ~2 o'clock CCW (like c, at the circle↔stem intersection); b/p bowls start ON the stem, CW
+  over-the-top ~330°; e goes over-the-top from the bar's right end; u stroke 2 = full retrace
+  (M68 40→88). All 26 letters raster-verified by eye; 58/58 weeks' tracing.pdf re-rendered. 🚨 RULE:
+  letter-strokes.ts edits REQUIRE the render-all-26-and-eyeball loop — arrows are pedagogy, not art.
+  (Pattern-mode cards reuse the same glyphs → also fixed.)
+
+---
+
 **⚠️ STANDING RULE (Tredoux, Jul 10 2026 — PERMANENT): MODEL DELEGATION.** Fable is the DIRECTOR and second brain — it plans, decides, writes the critical copy, and reviews. It does NOT do grunt work. **Sonnet** (preferred over Haiku — more reliable) does all fetching, sweeping, scouting, data-gathering, and auditing via sub-agents. **Opus** builds where appropriate. Never let Fable burn half its context on mechanical work another model can do — spawn agents instead.
 
 ## 🃏 SESSION — Jul 18, 2026 pt3 (same Cowork session) — DARK PHONICS VOCAB CARD PACKS: 46 per-song packs + 27-card deck LIVE
