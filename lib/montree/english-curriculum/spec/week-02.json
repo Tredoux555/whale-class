@@ -52,13 +52,13 @@
     "backCoverWords": ["at", "park", "school", "mall", "police station", "zoo", "bus stop", "supermarket", "home"]
   },
   "materials": {
-    "threePartCards": ["park", "school", "mall", "police", "zoo", "bus stop", "supermarket", "home"],
+    "threePartCards": ["park", "school", "mall", "police", "zoo", "bus stop", "supermarket", "home", "turtle", "tiger", "tomato", "taxi", "teddy", "towel", "toothbrush", "table"],
     "sentences": ["She's at the park.", "She's at school.", "She's at the mall.", "She's at the police station.", "She's at the zoo.", "She's at the bus stop.", "She's at the supermarket.", "She's at home."],
-    "matching": ["park", "school", "mall", "police", "zoo", "bus stop", "supermarket", "home"],
-    "bingoPool": ["park", "school", "mall", "police", "zoo", "bus stop", "supermarket", "home", "turtle", "tiger", "tomato", "taxi", "teddy", "towel", "toothbrush", "potato"],
+    "matching": ["park", "school", "mall", "police", "zoo", "bus stop", "supermarket", "home", "turtle", "tiger", "tomato", "taxi", "teddy", "towel", "toothbrush", "table"],
+    "bingoPool": ["park", "school", "mall", "police", "zoo", "bus stop", "supermarket", "home", "turtle", "tiger", "tomato", "taxi", "teddy", "towel", "toothbrush", "potato", "table"],
     "tracing": { "letter": "t", "words": ["t", "at", "turtle", "tiger"] },
     "coloring": ["turtle", "tiger", "tomato", "taxi", "teddy", "home", "toothbrush"],
-    "dictionary": ["at", "park", "school", "mall", "zoo", "home", "taxi", "tiger", "turtle"],
+    "dictionary": ["at", "park", "school", "mall", "zoo", "home", "taxi", "tiger", "turtle", "tomato", "teddy", "towel", "toothbrush", "table"],
     "extras": ["Big Map A3 (illustrated town: park, school, mall, police station, zoo, bus stop, supermarket, houses, roads — laminated)", "Segina wooden peg doll + 3-4 figures basket", "song QR cards (sound + word)"]
   },
   "assets": [

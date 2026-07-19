@@ -52,7 +52,7 @@
     "backCoverWords": ["wet", "web", "wig", "win", "on", "the", "is", "and"]
   },
   "materials": {
-    "threePartCards": ["web", "wig", "watch", "wagon", "worm", "well", "wing", "wolf"],
+    "threePartCards": ["web", "wig", "watch", "wagon", "worm", "well", "wing", "wolf", "water"],
     "sentences": ["The web is wet.", "The wig is wet.", "The bug is on the web.", "Sam is wet."],
     "matching": ["web", "wig", "watch", "wagon", "worm", "well"],
     "bingoPool": ["web", "wig", "watch", "wagon", "worm", "well", "wing", "wolf", "bug", "dog", "cat", "rat", "fig", "potato"],

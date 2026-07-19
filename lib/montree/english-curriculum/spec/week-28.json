@@ -53,7 +53,7 @@
     "backCoverWords": ["chick", "chin", "chop", "chat", "much", "chip", "can", "and", "the", "is"]
   },
   "materials": {
-    "threePartCards": ["chick", "chin", "chop", "chat", "chip", "cheese", "chair", "fish"],
+    "threePartCards": ["chick", "chin", "chop", "chat", "chip", "cheese", "chair", "fish", "cherry"],
     "sentences": ["The chick can chat.", "Chick can chat a lot.", "Sheep can nap.", "Chick can chat much."],
     "matching": ["chick", "chin", "chop", "chat", "chip", "cheese"],
     "bingoPool": ["chick", "chin", "chop", "chat", "chip", "cheese", "chair", "fish", "ship", "cat", "duck", "cup", "sun", "potato"],
