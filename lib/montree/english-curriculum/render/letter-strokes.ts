@@ -30,6 +30,15 @@ interface Stroke {
   d: string;
   /** Position for the stroke-order number. */
   num: [number, number];
+  /**
+   * EARLY direction arrow [x, y, angleDeg] drawn ON the path near the start,
+   * replacing the end-marker for this stroke. Needed on closed/near-closed
+   * strokes (circles, bowls): their path END sits back at the start dot, so an
+   * end-arrow gives no usable cue — the child must see "go LEFT and around"
+   * (Tredoux, Jul 19 2026) right where the pen leaves the dot. Angle = tangent
+   * direction of travel (180 = travelling left, 0 = travelling right).
+   */
+  arrow?: [number, number, number];
 }
 
 interface LetterDef {
@@ -47,7 +56,7 @@ const oFull = 'M64.8 49.2 A21 21 0 1 0 35.2 78.8 A21 21 0 1 0 64.8 49.2';
 const LETTERS: Record<string, LetterDef> = {
   a: {
     strokes: [
-      { d: 'M57.4 52.6 A19 19 0 1 0 30.6 79.4 A19 19 0 1 0 57.4 52.6', num: [30, 40] },
+      { d: 'M57.4 52.6 A19 19 0 1 0 30.6 79.4 A19 19 0 1 0 57.4 52.6', num: [30, 40], arrow: [44, 47, 180] },
       { d: 'M64 44 L64 88', num: [70, 40] },
     ],
   },
@@ -57,13 +66,13 @@ const LETTERS: Record<string, LetterDef> = {
       // Bowl STARTS on the stem (upper-left of bowl) and travels CLOCKWISE
       // (sweep 1) up over the top, around the right, ending back on the stem
       // below bowl-middle — an open ~330° arc, not a closed circle.
-      { d: 'M35 62 A18 18 0 1 1 35 74', num: [72, 50] },
+      { d: 'M35 62 A18 18 0 1 1 35 74', num: [72, 50], arrow: [52, 50, 0] },
     ],
   },
   c: { strokes: [{ d: 'M66 50 A21 21 0 1 0 66 78', num: [70, 42] }] },
   d: {
     strokes: [
-      { d: 'M60.7 55.3 A18 18 0 1 0 35.3 80.7 A18 18 0 1 0 60.7 55.3', num: [30, 44] },
+      { d: 'M60.7 55.3 A18 18 0 1 0 35.3 80.7 A18 18 0 1 0 60.7 55.3', num: [30, 44], arrow: [48, 50, 180] },
       { d: 'M66 15 L66 88', num: [72, 20] },
     ],
   },
@@ -83,7 +92,7 @@ const LETTERS: Record<string, LetterDef> = {
   },
   g: {
     strokes: [
-      { d: 'M58 46 A17 17 0 1 0 34 70 A17 17 0 1 0 58 46', num: [30, 38] },
+      { d: 'M58 46 A17 17 0 1 0 34 70 A17 17 0 1 0 58 46', num: [30, 38], arrow: [46, 41, 180] },
       { d: 'M63 42 L63 104 Q63 112 52 110', num: [70, 40] },
     ],
   },
@@ -119,18 +128,18 @@ const LETTERS: Record<string, LetterDef> = {
       { d: 'M32 52 C32 42 68 42 68 56 L68 88', num: [70, 46] },
     ],
   },
-  o: { strokes: [{ d: oFull, num: [36, 40] }] },
+  o: { strokes: [{ d: oFull, num: [36, 40], arrow: [50, 43, 180] }] },
   p: {
     strokes: [
       { d: 'M32 40 L32 110', num: [22, 44] },
       // Bowl STARTS on the stem, CLOCKWISE (sweep 1) up over the top, around the
       // right, ending back on the stem below bowl-middle — open ~330° arc.
-      { d: 'M37 50 A17 17 0 1 1 37 66', num: [70, 42] },
+      { d: 'M37 50 A17 17 0 1 1 37 66', num: [70, 42], arrow: [52, 41, 0] },
     ],
   },
   q: {
     strokes: [
-      { d: 'M60 46 A17 17 0 1 0 36 70 A17 17 0 1 0 60 46', num: [30, 38] },
+      { d: 'M60 46 A17 17 0 1 0 36 70 A17 17 0 1 0 60 46', num: [30, 38], arrow: [48, 41, 180] },
       { d: 'M66 40 L66 106 Q66 112 74 108', num: [72, 44] },
     ],
   },
@@ -219,9 +228,19 @@ function renderGlyph(letter: string, opts: LetterStrokeOpts): { inner: string } 
       `<defs><marker id="lsah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4.6" markerHeight="4.6" ` +
       `orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="${guide}"/></marker></defs>`;
     def.strokes.forEach((s, i) => {
+      // Closed/near-closed strokes carry an explicit EARLY direction arrow on
+      // the path (s.arrow) — their end-marker would land back on the start dot
+      // and read as no cue (or the wrong one). Open strokes keep the end-marker.
+      const marker = s.arrow ? '' : ` marker-end="url(#lsah)"`;
       inner +=
         `<path d="${s.d}" fill="none" stroke="${guide}" stroke-width="${LETTER_GUIDE_WIDTH}" ` +
-        `stroke-linecap="round" marker-end="url(#lsah)"/>`;
+        `stroke-linecap="round"${marker}/>`;
+      if (s.arrow) {
+        const [ax, ay, deg] = s.arrow;
+        inner +=
+          `<g transform="translate(${ax} ${ay}) rotate(${deg})">` +
+          `<path d="M-6 -4.5 L5 0 L-6 4.5 z" fill="${guide}"/></g>`;
+      }
       inner +=
         `<text x="${s.num[0]}" y="${s.num[1]}" font-size="11" font-weight="bold" fill="${guide}" ` +
         `font-family="system-ui">${i + 1}</text>`;
