@@ -80,16 +80,15 @@ export async function generateMetadata(): Promise<Metadata> {
         index: true,
         follow: true,
       },
+      // 🥔 teacherpotato uses a potato favicon, never the Montree gold M.
       icons: {
         icon: [
-          { url: "/favicon.ico", sizes: "any" },
-          { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
-          { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
-          { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
+          { url: "/potato/icon-32.png", type: "image/png", sizes: "32x32" },
+          { url: "/potato/icon-192.png", type: "image/png", sizes: "192x192" },
         ],
-        shortcut: ["/favicon.ico"],
+        shortcut: ["/potato/icon-192.png"],
         apple: [
-          { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+          { url: "/potato/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
         ],
       },
     };
