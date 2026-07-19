@@ -149,6 +149,23 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
+    // Hard-delete a waitlist row (Tredoux, Jul 19 2026 — for test/junk entries).
+    // Deleting an ADMITTED row frees its seat (counter = cap − admitted, so the
+    // public counter goes back up). If the code was already redeemed, the school
+    // itself is NOT touched — this only removes the waitlist entry.
+    if (action === 'delete_row') {
+      const { id } = body;
+      if (!id || typeof id !== 'string') {
+        return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+      }
+      const { error } = await supabase
+        .from('montree_founding_waitlist')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      return NextResponse.json({ success: true });
+    }
+
     if (action === 'update_config') {
       const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
       if (Number.isFinite(Number(body.cap))) patch.cap = Math.max(0, Math.round(Number(body.cap)));
