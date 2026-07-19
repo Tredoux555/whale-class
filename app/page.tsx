@@ -223,8 +223,11 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {/* Teachers door: the FULL Library (Dark Phonics, Curriculum
+                  Studio, generators…) — middleware exempts /montree/library
+                  on this host so teachers never land on montree.xyz. */}
               <a
-                href="/dark-phonics.html"
+                href="/montree/library"
                 className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl font-medium transition-all backdrop-blur-sm"
               >
                 <span>👩‍🏫</span>

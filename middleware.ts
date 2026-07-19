@@ -75,8 +75,17 @@ export async function middleware(req: NextRequest) {
     (p) => pathname === p || pathname.startsWith(p + '/'),
   );
 
-  // Block Montree routes on teacherpotato.xyz
-  if (isTeacherPotato && pathname.startsWith('/montree')) {
+  // Block Montree routes on teacherpotato.xyz — EXCEPT the public Library
+  // (Tredoux, Jul 19 2026: his school's teachers get FULL Library access on
+  // teacherpotato — Dark Phonics, Curriculum Studio, lesson launcher,
+  // generators, photo bank — without ever being sent to montree.xyz. Product
+  // routes like /montree/try, /montree/dashboard, marketing pages stay
+  // blocked and bounce to montree.xyz as before.)
+  if (
+    isTeacherPotato &&
+    pathname.startsWith('/montree') &&
+    !pathname.startsWith('/montree/library')
+  ) {
     return NextResponse.redirect(new URL(pathname, 'https://montree.xyz'));
   }
 
