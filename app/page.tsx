@@ -223,6 +223,13 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <a
+                href="/dark-phonics.html"
+                className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl font-medium transition-all backdrop-blur-sm"
+              >
+                <span>👩‍🏫</span>
+                <span className="hidden sm:inline">Teachers</span>
+              </a>
               <Link 
                 href="/games"
                 className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl font-medium transition-all backdrop-blur-sm"
