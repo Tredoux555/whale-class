@@ -1,5 +1,32 @@
 # Whale-Class / Montree - Developer Brain
 
+## 🃏 SESSION — Jul 19, 2026 (same Cowork session cont.) — MAIN CURRICULUM FLASHCARD VOCAB GAP: sound-song words wired into flashcards/three-part-cards (12 weeks, commit `a3a4a2d1`)
+
+Tredoux: "for a song for letter t there should be a picture of a tiger, a taxi, a turtle but there is
+nothing" — this is the MAIN 58-week curriculum (not Dark Phonics). **Root cause found: every phonics
+week has TWO songs — a sound song (initial-sound vocab, e.g. Week 2's "T-T-Turtle": turtle/tiger/
+tomato/taxi/teddy/towel/toothbrush/table, spec field `soundBasket`) and a word song (sentence-frame
+vocab, e.g. "Where Is Segina?": park/school/mall/zoo…, spec field `materials.threePartCards`, which
+DRIVES both the Flashcards and Three-Part Cards print materials). Week 2's threePartCards only ever
+held the word-song list — the ENTIRE sound-song vocabulary had generated images (used in the song
+video itself) but was never wired into any print material at all. A teacher playing the T sound-song
+had zero flashcards to review it with.** Audited all 58 weeks for the same class of bug (soundBasket
+word with a published image missing from threePartCards) — found 24 weeks with gaps; fixed the 12
+where the image already exists (2 — full 8/8 rewrite incl. matching/dictionary/bingoPool, since NONE
+of its sound words were wired anywhere; 3, 19, 25, 28, 29, 38, 44, 47, 49, 57, 58 — 1-3 word additions
+each). Left the words with no generated image untouched (adding them would only show a placeholder
+tile) — full list in the commit message, Tredoux's call whether to generate art for them later.
+Rebuilt + verified all 12 weeks' `pack-v2/three_part_cards.pdf` + `flashcards.pdf` (+ `matching.pdf`
+for week 2) on the Mac via `build-week.mjs`; Week 2's flashcards.pdf raster-verified by eye (turtle
+picture front / "turtle" word back, one card per page). **These print materials are NOT pre-uploaded
+to Supabase like Dark Phonics — Curriculum Studio (`/montree/library/curriculum-studio`) renders them
+LIVE in-browser from the same spec JSON + published `imageUrls`, so the fix goes live automatically
+on Railway's next auto-deploy from this push — no separate publish step exists for this content type.**
+🚨 RULE: `materials.threePartCards` is the single word list behind BOTH Flashcards and Three-Part
+Cards. On any week where the sound-song and word-song teach DIFFERENT vocab (i.e. threePartCards ≠
+soundBasket), the sound-song words must be explicitly merged in or they silently never appear in any
+printable — grep `soundBasket` vs `materials.threePartCards` for future weeks/song rewrites.
+
 ## ✏️ SESSION — Jul 19, 2026 (same Cowork session cont.) — LIVE-REVIEW ROUND 2: founding delete · print-alls · TEACHERPOTATO TEACHERS DOOR · TRACING ARROWS CORRECTED
 
 Tredoux walked the live product again; all fixes shipped+deployed same day:
