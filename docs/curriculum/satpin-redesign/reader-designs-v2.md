@@ -242,3 +242,22 @@ Delivers the Rule-2 promise concretely: every target word's in-book decodes **pl
 
 ### Ah-moment pass (every book, checked)
 Each book: text sets up / art pays off (Rule 3) ✔ · a page-turn reason every spread (escalation + rule of three) ✔ · a laugh, gasp, or shout per page ✔ · hardest decode on the biggest beat (SPAT, SNAP, the SOCK drop) ✔ · a cast member drives every page ✔ · potato ritual closes every book ✔.
+
+---
+
+# ADDENDUM — Potato Cameo Rule (author decision, 2026-07-20)
+
+The potato-shout final page is REMOVED from all readers. The ritual survives as a
+WORDLESS CAMEO: Teacher Potato hides in each book's final illustration (a find-it
+game — the class still spots him and shouts, but no page pretends "potato" is a
+decode). Decodable books end their PRINTED text on their strongest decoded line:
+
+- wk6 "Nap, Ant, Nap!": final page text = "An ant naps." (full-circle) over the
+  ant-asleep-on-Potato art. 7 spreads unchanged otherwise.
+- wk4 "SPAT!": text ends p8 "Sat! Sap! Tap!"; wordless closing art = Sam lifts to
+  reveal squashed Potato beneath him.
+- wk5 "Sit! Sit! Sit!": text ends p8 "It sits! It is!"; wordless closing art = Cat
+  lifts off the mat revealing squashed Potato.
+- wk1-3 (readAloud/soundHunt/hybrid): drop the "…a…?!" shout page from the printed
+  script; hide Potato in the final art; teacher may still cue the shout orally.
+This supersedes the "sacred potato ritual page" language earlier in this document.
