@@ -121,3 +121,21 @@ Browser work costs context: every MJ screenshot is an image in the session. Disc
 | i | "Sit! Sit! Sit!" (art done) | ☐ | strips from Sit! text |
 | n | "Nap, Ant, Nap!" (COMPLETE) | ☐ | strips from Nap text |
 | m→qu | not designed | ☐ | design via reader-designs-v2 system, batch of 4-5 letters/session |
+
+---
+# CORRECTION (2026-07-21, from Tredoux's feedback — RULE OVERRIDES §4 ABOVE)
+
+**For reader letters, shelf vocabulary MUST flow from the Dark Phonics book — never from
+generic initial-sound lists.** The first p/i/n packs used pig/panda/igloo-style vocab from the
+old week files and were rejected ("incredibly weak"). The corrected rule:
+
+- Shelf 1 flashcards = the book's DECODABLE words, illustrated with the book's OWN pen-and-ink
+  page art (word→page mapping in `scripts/curriculum/build_reader_packs.py`-style configs).
+- Shelf 2 = word-card-to-picture-card matching (same words, same art).
+- Shelf 3 = three-part cards, same words, same art.
+- Shelf 4 = verbatim sentence strips + matching pages + the book.
+- The whole shelf is ONE visual chain that ends in the child reading the book. If a picture on
+  the shelf does not appear in the book, it does not belong on a reader letter's shelf.
+- Pre-reader letters (s, a) keep the SONG vocabulary (snake/sock/seal…) because their circle
+  flashcards ARE the song vocab — that was Tredoux's explicit instruction.
+- 't' pack: decodable pool is only at/sat; full pack ships WITH "Segina Sat!" art (Thursday).
