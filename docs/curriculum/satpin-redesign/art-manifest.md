@@ -37,3 +37,34 @@ Rejected first-pass p4/p5 (black cat + text scribbles): 36b85ce9, 3b8ad70b.
 NOTE: Sam renders as a soft-illustrated boy (his chosen sheet B propagates that look + occasional
 "Sam" signatures needing patches). Consistent across pages; flag to Tredoux whether to re-lock Sam
 with a cleaned/peg-doll sheet before the alphabet run.
+
+## Picture bank
+Assets in this manifest have been organized into `phonics-images/satpin-v2/`
+for ingestion into the shared Montree Picture Bank (`montree_photo_bank`
+table + `photo-bank` Supabase storage bucket, browsed at
+`/montree/library/photo-bank`):
+- `phonics-images/satpin-v2/books/spat/` — Week 4 "SPAT!" page art (8 files;
+  p1,p2,p3,p5,p7,p8,p9 full-res from Midjourney CDN; p4 kept as the
+  web-res, signature-patched JPG since the full-res CDN original still
+  shows Sam's drawn signature)
+- `phonics-images/satpin-v2/books/sit/` — Week 5 "Sit! Sit! Sit!" page art
+  (9 files, web-res only — this manifest only recorded 8-char UUID
+  prefixes for week 5, not full UUIDs, so full-res CDN download wasn't
+  possible; capture full UUIDs if full-res is needed later)
+- `phonics-images/satpin-v2/books/nap/` — Week 6 "Nap, Ant, Nap!" page art
+  (7 files, all full-res from Midjourney CDN)
+- `phonics-images/satpin-v2/cast/` — the 5 canonical cast sheets (sam is
+  signature-scrubbed)
+- `phonics-images/satpin-v2/posters/` — the 6 letter wall posters (s a t p
+  i n), rendered from the shelf-pack PDFs at 300dpi
+
+The Picture Bank is JPEG-only (see the 🚨 JPEG-ONLY note in
+`app/api/montree/photo-bank/route.ts`), so PNGs in the set above are
+converted to JPEG (quality 90, transparency flattened to white) at upload
+time — source PNGs in the repo are never modified.
+
+To push this set into the bank, run (locally, with `.env.local` present):
+```
+DRY_RUN=1 node --env-file=.env.local scripts/curriculum/upload-satpin-to-picture-bank.mjs
+node --env-file=.env.local scripts/curriculum/upload-satpin-to-picture-bank.mjs
+```
