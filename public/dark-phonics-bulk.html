@@ -24,7 +24,7 @@ details.box>summary{outline:none}details.box>summary::-webkit-details-marker{dis
 <p class="sub">Grab a whole set in one click. ZIPs are built right in your browser — no waiting on a server.</p>
 <div class="song"><div class="hd"><span class="ti">🃏 All flashcards (PDF)</span></div>
 <p class="sub" style="margin:2px 0 12px">All 22 letter cards in one print-ready PDF — picture front, sound &amp; catch on the back.</p>
-<a href="https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/dark-phonics/flashcards/dark-phonics-flashcards-master.pdf?download=Dark-Phonics-Flashcards.pdf" download style="display:inline-block;background:#34d399;color:#06281a;border-radius:10px;padding:11px 18px;font-size:14px;font-weight:700;text-decoration:none">⬇ Download PDF</a></div>
+<a href="/api/montree/media/proxy/flashcards/dark-phonics-flashcards-master.pdf?bucket=dark-phonics" download style="display:inline-block;background:#34d399;color:#06281a;border-radius:10px;padding:11px 18px;font-size:14px;font-weight:700;text-decoration:none">⬇ Download PDF</a></div>
 <div class="song"><div class="hd"><span class="ti">🖼 All pictures (ZIP)</span></div>
 <p class="sub" style="margin:2px 0 12px">Every flashcard picture as a high-res PNG.</p>
 <button id="zip-pics" style="background:#5eead4;color:#06281a;border:none;border-radius:10px;padding:11px 18px;font-size:14px;font-weight:700;cursor:pointer">⬇ Build &amp; download ZIP</button>
@@ -36,7 +36,7 @@ details.box>summary{outline:none}details.box>summary::-webkit-details-marker{dis
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
-var BASE="https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/dark-phonics";
+var BASE="/api/montree/media/proxy";
 function pad(n){return String(n).padStart(2,"0");}
 async function buildZip(files,zipName,btn,prog){
   if(typeof JSZip==="undefined"){prog.textContent="Could not load the zip tool — check your connection.";return;}
@@ -45,7 +45,7 @@ async function buildZip(files,zipName,btn,prog){
     var zip=new JSZip(), done=0, ok=0;
     for(var i=0;i<files.length;i++){
       done++; prog.textContent="Downloading "+done+" of "+files.length+"…";
-      try{ var r=await fetch(BASE+"/"+files[i].path,{cache:"no-store"}); if(r.ok){ zip.file(files[i].name, await r.blob()); ok++; } }catch(e){}
+      try{ var r=await fetch(BASE+"/"+files[i].path+"?bucket=dark-phonics",{cache:"no-store"}); if(r.ok){ zip.file(files[i].name, await r.blob()); ok++; } }catch(e){}
     }
     if(!ok){ prog.textContent="Nothing downloaded — check your connection."; return; }
     prog.textContent="Zipping "+ok+" files…";
