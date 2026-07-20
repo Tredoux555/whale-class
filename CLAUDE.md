@@ -2511,3 +2511,45 @@ Backfills NULL-pct agents to the new 20% default introduced in commit `cd33058a`
 ## Session History
 
 Detailed session-by-session history (Feb–Apr 2026) is archived in `docs/CLAUDE_MD_HISTORY.md`. Consult that file for historical context on specific features or decisions.
+
+---
+
+## Dark Phonics — locked Midjourney art style (do not deviate)
+
+All Dark Phonics illustrations (readers, flashcards, lesson art) use ONE house
+style: colored hand-drawn pen-and-ink, whimsical Dr. Seuss children's-book
+illustration — NOT photorealism. This was mixed up once (2026-07-20 SATPIN
+pilot reader art was generated as ultra-realistic photography by mistake and
+had to be fully regenerated) — the locked reference prompt below is the
+source of truth going forward.
+
+Reference prompt (confirmed correct by Tredoux, built from an existing asset —
+soggy cat splashing in a washtub):
+
+> one single soggy cat making a big splash in a round wooden washtub, the
+> water drawn as thin ink lines and droplets with only light blue watercolor
+> accents, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr.
+> Seuss children's-book style, big googly eyes, plain white background. no
+> text, no words, no letters, no numbers, no captions, no speech bubbles, no
+> border, no watermark.
+
+Locked suffix to append to every Dark Phonics image prompt (subject
+description goes first):
+
+> , colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss
+> children's-book style, big googly eyes, plain white background. no text,
+> no words, no letters, no numbers, no captions, no speech bubbles, no
+> border, no watermark.
+
+Notes:
+- Plain white background, not the forest-green photo-studio backdrop used
+  elsewhere in this repo for other (non-Dark-Phonics) asset types — don't
+  confuse the two style systems.
+- "big googly eyes" applies even to inanimate objects/subjects (taps,
+  cushions, cups) — Seussian anthropomorphism is part of the house style.
+- For any liquid/drip/splash element (water, sap, drool, etc.), explicitly
+  describe it as "thin ink lines and droplets with only <color> watercolor
+  accents" — don't let it default to realistic rendering.
+- Always include the full negative list verbatim (no text/words/letters/
+  numbers/captions/speech bubbles/border/watermark) — Midjourney otherwise
+  sometimes hallucinates stray text into children's illustrations.
