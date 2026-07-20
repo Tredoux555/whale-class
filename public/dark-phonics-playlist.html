@@ -1,0 +1,181 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dark Phonics — Full Playlist</title>
+<script>
+/* 🥔 On teacherpotato this hub shows a potato favicon, never the Montree M. */
+(function(){if(location.hostname.indexOf('teacherpotato')===-1)return;
+document.querySelectorAll('link[rel~="icon"],link[rel="shortcut icon"],link[rel="apple-touch-icon"]').forEach(function(l){l.parentNode.removeChild(l);});
+var l=document.createElement('link');l.rel='icon';l.type='image/png';l.href='/potato/icon-192.png';document.head.appendChild(l);})();
+</script>
+<style>
+:root{--bg:#0b0b12;--bar:#12121c;--card:#15151f;--ink:#ececf2;--mut:#9a9ab0;--ac:#7c5cff;--ac2:#16d39a;--y:#f0b85a;--line:#23233a;}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.5}
+header{position:sticky;top:0;z-index:5;background:var(--bar);border-bottom:1px solid var(--line);padding:14px 16px}
+.brandrow{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.brand{font-size:20px;font-weight:700;letter-spacing:.5px}.brand .d{color:var(--ac)}
+.back{color:var(--mut);font-size:13px;text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:6px 12px;white-space:nowrap}
+.back:hover{color:var(--ink);border-color:var(--ac)}
+#wrap{max-width:1000px;margin:0 auto;padding:20px 16px 80px;display:grid;grid-template-columns:1fr;gap:20px}
+@media(min-width:860px){#wrap{grid-template-columns:2fr 1fr;align-items:start}}
+.player-card{background:var(--card);border:1px solid #232333;border-radius:16px;padding:18px}
+.now-lesson{display:inline-block;background:var(--ac);color:#fff;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;margin-bottom:8px}
+.now-sound{color:var(--mut);font-size:13px;margin:0 0 2px}
+.now-title{color:var(--y);font-size:20px;font-weight:700;margin:0 0 4px}
+.now-catch{color:var(--ink);font-size:15px;opacity:.85;margin:0 0 14px}
+video{width:100%;border-radius:12px;background:#000;display:block;max-height:420px}
+.controls{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+.ctl-btn{background:#23233a;color:var(--ink);border:1px solid #34344e;border-radius:9px;font-size:14px;font-weight:600;padding:9px 16px;cursor:pointer}
+.ctl-btn:hover{background:#2d2d4a}
+.ctl-btn:disabled{opacity:.4;cursor:default}
+.ctl-btn.play{background:var(--ac2);color:#022;border-color:var(--ac2)}
+.progress{color:var(--mut);font-size:13px;margin-left:auto}
+.autonext{display:flex;align-items:center;gap:6px;color:var(--mut);font-size:13px;margin-top:10px}
+.upnext{color:var(--mut);font-size:12.5px;margin-top:10px}
+.upnext b{color:var(--ink)}
+#list{background:var(--card);border:1px solid #232333;border-radius:16px;padding:10px;max-height:78vh;overflow-y:auto}
+.li{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;cursor:pointer;border:1px solid transparent}
+.li:hover{background:#1c1c2c}
+.li.on{background:#1f1a3a;border-color:var(--ac)}
+.li .num{flex:none;width:26px;height:26px;border-radius:50%;background:#23233a;color:var(--mut);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.li.on .num{background:var(--ac);color:#fff}
+.li.missing .num{background:#2a1f1f;color:#7a5a5a}
+.li .meta{min-width:0}
+.li .t1{font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .t2{font-size:11.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li.missing{opacity:.45;cursor:default}
+.li.missing:hover{background:transparent}
+.section-hd{color:var(--ac2);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding:10px 10px 4px}
+.hint{color:var(--mut);font-size:13px;padding:0 0 4px}
+</style></head>
+<body>
+<header>
+  <div class="brandrow">
+    <div class="brand"><span class="d">Dark</span> Phonics — Full Playlist</div>
+    <a class="back" href="/dark-phonics.html">← Back to Dark Phonics</a>
+  </div>
+</header>
+<div id="wrap">
+  <div class="player-card">
+    <div id="now-lesson" class="now-lesson">Lesson —</div>
+    <p id="now-sound" class="now-sound">&nbsp;</p>
+    <h1 id="now-title" class="now-title">Loading…</h1>
+    <p id="now-catch" class="now-catch">&nbsp;</p>
+    <video id="player" controls playsinline></video>
+    <div class="controls">
+      <button id="prev" class="ctl-btn" type="button">⏮ Prev</button>
+      <button id="playpause" class="ctl-btn play" type="button">▶ Play</button>
+      <button id="next" class="ctl-btn" type="button">Next ⏭</button>
+      <span id="progress" class="progress">– / –</span>
+    </div>
+    <label class="autonext"><input id="autonext" type="checkbox" checked> Auto-play the next song when this one ends</label>
+    <div id="upnext" class="upnext"></div>
+  </div>
+  <div id="list"><div class="hint">Loading playlist…</div></div>
+</div>
+<script>
+// Full Dark Phonics teaching-order catalog (lessons 5–53). Video files are
+// served through the same proxy the Songs page uses; the /api/montree/phonics-videos
+// existence check greys out any lesson whose file hasn't been uploaded yet
+// instead of guessing.
+var LESSONS = [{"n": 5, "sound": "s", "title": "The Snake Says Ssss", "catch": "“snake in my sock!”"}, {"n": 6, "sound": "a", "title": "A Is for Apple", "catch": "“ant on my apple!”"}, {"n": 7, "sound": "t", "title": "Tick-Tock, T!", "catch": "“tick-tock, stinky sock!”"}, {"n": 8, "sound": "p", "title": "Pop, Pop, P!", "catch": "“pop, pop, puppy poop!”"}, {"n": 9, "sound": "i", "title": "I, I, Itsy I", "catch": "“icky, sticky pig!”"}, {"n": 10, "sound": "n", "title": "N for the Nose", "catch": "“no-no, nanny goat!”"}, {"n": 11, "sound": "m", "title": "Mmm, That's Good!", "catch": "“mmm, muddy monkey!”"}, {"n": 12, "sound": "d", "title": "D for the Dog", "catch": "“dirty dog, dig dig dig!”"}, {"n": 13, "sound": "g", "title": "G for the Goat", "catch": "“goat got my gum!”"}, {"n": 14, "sound": "o", "title": "O for the Octopus", "catch": "“hot dog on a log!”"}, {"n": 15, "sound": "c", "title": "C for the Cat", "catch": "“cat ate my cookie!”"}, {"n": 16, "sound": "k", "title": "K Says It Too", "catch": "“kooky king kicks!”"}, {"n": 17, "sound": "ck", "title": "Two Letters, One Kick", "catch": "“kick the stinky sock!”"}, {"n": 18, "sound": "e", "title": "Crack the Egg, E!", "catch": "“ten messy hens!”"}, {"n": 19, "sound": "u", "title": "Up Goes the Umbrella", "catch": "“yummy bug in my cup!”"}, {"n": 20, "sound": "r", "title": "Rrr Goes the Engine", "catch": "“run, run, red rat!”"}, {"n": 21, "sound": "h", "title": "H, the Panting Pup", "catch": "“ha-ha, hairy hippo!”"}, {"n": 22, "sound": "b", "title": "B for the Bobbing Boat", "catch": "“big baby burp!”"}, {"n": 23, "sound": "f", "title": "Ffff Like a Fan", "catch": "“funny fox in my fan!”"}, {"n": 24, "sound": "l", "title": "La-La-La Goes L", "catch": "“lazy lion licks!”"}, {"n": 25, "sound": "j", "title": "Jump for J", "catch": "“jump in the jelly jam!”"}, {"n": 26, "sound": "v", "title": "Vvvv Goes the Van", "catch": "“vroom-vroom van!”"}, {"n": 27, "sound": "w", "title": "W for the Windy Day", "catch": "“wiggly wet worm!”"}, {"n": 28, "sound": "x", "title": "X Marks the Box", "catch": "“six fox in a box!”"}, {"n": 29, "sound": "y", "title": "Yes! Yum! Y!", "catch": "“yummy yellow yo-yo!”"}, {"n": 30, "sound": "z", "title": "Zzz Like a Buzzing Bee", "catch": "“zippy zebra, zzz!”"}, {"n": 31, "sound": "qu", "title": "The Queen Says Qu", "catch": "“quick quacky duck!”"}, {"n": 32, "sound": "review", "title": "All Our Sounds", "catch": "“cat, pig, dog - woof!”"}, {"n": 33, "sound": "review", "title": "The Five Little Vowels", "catch": "“a, e, i, o, u... achoo!”"}, {"n": 34, "sound": "review", "title": "We Know the Alphabet", "catch": "“a to z, easy-peasy!”"}, {"n": 35, "sound": "short A", "title": "Fast A!", "catch": "“fat cat in a hat!”"}, {"n": 36, "sound": "short I", "title": "Quick Little I", "catch": "“big pig did a jig!”"}, {"n": 37, "sound": "short O", "title": "Round and Fast, O!", "catch": "“hop on a hot log!”"}, {"n": 38, "sound": "short E", "title": "Steady E", "catch": "“wet pet in my bed!”"}, {"n": 39, "sound": "short U", "title": "Sunny Fast U", "catch": "“big bug hug!”"}, {"n": 40, "sound": "minimal pairs", "title": "Cat? Cot? Cut?", "catch": "“cat? cot? cut? - which one!”"}, {"n": 41, "sound": "FLSZ doubling", "title": "Two at the End", "catch": "“buzz off, fuzzy bee!”"}, {"n": 42, "sound": "sh", "title": "Sh! Be Still", "catch": "“sheep go baba!”"}, {"n": 43, "sound": "ch", "title": "Ch-Ch Goes the Train", "catch": "“cheeky little chick!”"}, {"n": 44, "sound": "th (voiceless)", "title": "Tongue Peeks Out", "catch": "“moth in my bath!”"}, {"n": 45, "sound": "wh", "title": "the Asking Sound", "catch": "“wheee, big fat whale!”"}, {"n": 46, "sound": "th (voiced)", "title": "Now It Buzzes", "catch": "“this, that, this, that, BOO!”"}, {"n": 47, "sound": "ending blends", "title": "Snap It at the End", "catch": "“jump, jump, fast hands!”"}, {"n": 48, "sound": "ending blends", "title": "Pink, Tent, Belt", "catch": "“pink sock in the sink!”"}, {"n": 49, "sound": "s-blends", "title": "S Blends Off We Go", "catch": "“slip, slip, slimy snail!”"}, {"n": 50, "sound": "l-blends", "title": "L Blends Hold On", "catch": "“clap, clap, silly clown!”"}, {"n": 51, "sound": "r-blends", "title": "R Blends, Strong and True", "catch": "“green frog on a drum!”"}, {"n": 52, "sound": "tw / dw blends", "title": "Twist and Twirl", "catch": "“two twins twist!”"}, {"n": 53, "sound": "triple blends", "title": "Three Sounds Strong", "catch": "“big splash, scrub-a-dub!”"}];
+
+function pad(n){ return String(n).padStart(2,'0'); }
+function videoUrl(n){ return '/api/montree/media/proxy/videos/lesson-'+pad(n)+'.mp4?bucket=dark-phonics'; }
+
+var player=document.getElementById('player');
+var nowLesson=document.getElementById('now-lesson');
+var nowSound=document.getElementById('now-sound');
+var nowTitle=document.getElementById('now-title');
+var nowCatch=document.getElementById('now-catch');
+var listEl=document.getElementById('list');
+var prevBtn=document.getElementById('prev');
+var nextBtn=document.getElementById('next');
+var playBtn=document.getElementById('playpause');
+var progressEl=document.getElementById('progress');
+var autonext=document.getElementById('autonext');
+var upnextEl=document.getElementById('upnext');
+
+var uploaded=null; // Set of lesson numbers confirmed to have a video, or null = unknown yet
+var order=[]; // indices into LESSONS that are playable, in order
+var pos=0;
+
+function isPlayable(n){ return uploaded===null || uploaded.indexOf(n)>=0; }
+
+function buildOrder(){
+  order = LESSONS.map(function(l,i){return i;}).filter(function(i){ return isPlayable(LESSONS[i].n); });
+}
+
+function renderList(){
+  buildOrder();
+  var html='';
+  var lastGroup='';
+  LESSONS.forEach(function(l,i){
+    var group = l.n<=31 ? 'Letters & sounds' : (l.n<=34 ? 'Review' : (l.n<=41 ? 'Short-vowel drills' : (l.n<=46 ? 'Digraphs' : 'Blends')));
+    if(group!==lastGroup){ html+='<div class="section-hd">'+group+'</div>'; lastGroup=group; }
+    var playable=isPlayable(l.n);
+    html+='<div class="li'+(playable?'':' missing')+'" data-i="'+i+'">'+
+      '<div class="num">'+l.n+'</div>'+
+      '<div class="meta"><div class="t1">'+escapeHtml(l.title)+'</div>'+
+      '<div class="t2">'+escapeHtml(l.sound)+(playable?'':' · coming soon')+'</div></div>'+
+    '</div>';
+  });
+  listEl.innerHTML=html;
+  listEl.querySelectorAll('.li:not(.missing)').forEach(function(el){
+    el.addEventListener('click',function(){
+      var i=parseInt(el.getAttribute('data-i'),10);
+      var op=order.indexOf(i);
+      if(op>=0){ pos=op; loadCurrent(true); }
+    });
+  });
+}
+
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+
+function highlightCurrent(){
+  var i=order[pos];
+  listEl.querySelectorAll('.li').forEach(function(el){
+    el.classList.toggle('on', parseInt(el.getAttribute('data-i'),10)===i);
+  });
+  var onEl=listEl.querySelector('.li.on');
+  if(onEl) onEl.scrollIntoView({block:'nearest'});
+}
+
+function loadCurrent(autoplay){
+  if(!order.length) return;
+  var l=LESSONS[order[pos]];
+  nowLesson.textContent='Lesson '+l.n;
+  nowSound.textContent=l.sound;
+  nowTitle.textContent=l.title;
+  nowCatch.textContent=l.catch;
+  player.src=videoUrl(l.n);
+  progressEl.textContent=(pos+1)+' / '+order.length;
+  prevBtn.disabled = pos<=0;
+  nextBtn.disabled = pos>=order.length-1;
+  var nx=LESSONS[order[pos+1]];
+  upnextEl.innerHTML = nx ? ('Up next: <b>Lesson '+nx.n+' — '+escapeHtml(nx.title)+'</b>') : 'Last song in the playlist — nice work! 🎉';
+  highlightCurrent();
+  if(autoplay){ player.play().catch(function(){}); }
+}
+
+player.addEventListener('play',function(){ playBtn.textContent='⏸ Pause'; });
+player.addEventListener('pause',function(){ playBtn.textContent='▶ Play'; });
+playBtn.addEventListener('click',function(){ if(player.paused) player.play().catch(function(){}); else player.pause(); });
+prevBtn.addEventListener('click',function(){ if(pos>0){ pos--; loadCurrent(true); } });
+nextBtn.addEventListener('click',function(){ if(pos<order.length-1){ pos++; loadCurrent(true); } });
+player.addEventListener('ended',function(){
+  if(autonext.checked && pos<order.length-1){ pos++; loadCurrent(true); }
+});
+
+// Existence check — same endpoint the Songs page uses — so the playlist never
+// tries to play a lesson whose file hasn't been uploaded yet.
+fetch('/api/montree/phonics-videos',{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
+  uploaded=(j&&j.uploaded)||[];
+  renderList();
+  loadCurrent(false);
+}).catch(function(){
+  uploaded=null; // unknown — assume everything is playable rather than blocking the whole page
+  renderList();
+  loadCurrent(false);
+});
+</script>
+</body></html>
