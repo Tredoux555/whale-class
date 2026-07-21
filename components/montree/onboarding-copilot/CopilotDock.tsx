@@ -461,6 +461,231 @@ export default function CopilotDock({
     postProgress(journey, '__dismissed__');
   }, [journey, postProgress, t]);
 
+  // ── Drag-to-move (2026-07-21) ───────────────────────────────────────────────
+  // Teachers demo / live-teach with the Guru card open and it sits on top of the
+  // page; until now the only escape was close/dismiss. Now the expanded card AND
+  // the collapsed pill can be dragged out of the way. Design:
+  //   • Position is a PURELY VISUAL transform — an {x,y} px `offset` applied as
+  //     translate3d on the dock's OUTERMOST fixed container. Transform beats
+  //     re-anchoring: no layout thrash, and it composes with whatever left/top
+  //     anchoring the funnel-handover logic already computed (dockLeft/dockTop,
+  //     the mobile bottom-sheet, the admin-sidebar clearance) — we never touch
+  //     that. Default {0,0} == today's exact position. Zero interaction with the
+  //     step engine / watermark / overlays; drag state is not persisted server-
+  //     side and every path degrades to "no movement" (contract §7 spirit).
+  //   • Pointer Events + setPointerCapture → ONE code path for mouse AND touch
+  //     (teachers live on iPads/phones). The drag HANDLE is the expanded card's
+  //     header row only (Guru avatar + title + dots + ✕) and the whole collapsed
+  //     pill — never the scrolling body or the ask-input. touchAction:'none' is
+  //     scoped to the handle so the body still scrolls natively.
+  //   • A >4px move threshold "arms" the drag; below it a press is a plain tap/
+  //     click, so the ✕ close, the pill's expand, and the header double-tap all
+  //     keep working with no stopPropagation gymnastics.
+  //   • Clamp keeps ≥48px of the header on-screen on every edge, re-run on
+  //     resize / rotation so a stale offset (e.g. saved on a larger monitor)
+  //     snaps back into view instead of stranding the card off-screen.
+  //   • Persisted to localStorage on drag END (never mid-move); read lazily on
+  //     mount behind a typeof-window guard and re-clamped after paint.
+  //   • Reset: double-click (mouse) or double-tap <300ms (touch) on the handle
+  //     → offset {0,0} + clears the key.
+  const DOCK_OFFSET_KEY = 'montree_copilot_dock_offset';
+  const MIN_VISIBLE = 48; // px of the header that must stay on-screen per edge
+  const DRAG_THRESHOLD = 4; // px of travel before a press becomes a drag
+
+  const dockRef = useRef<HTMLElement | null>(null); // outermost fixed container
+  const handleRef = useRef<HTMLElement | null>(null); // the header row (expanded)
+  const [offset, setOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [dragging, setDragging] = useState(false);
+  const dragRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    baseLeft: number; // anchored left WITHOUT this drag's offset
+    baseTop: number;
+    width: number;
+    headerH: number;
+    startOffX: number;
+    startOffY: number;
+    armed: boolean;
+  } | null>(null);
+  const lastTapRef = useRef(0); // for touch double-tap detection
+
+  // Clamp an offset so ≥MIN_VISIBLE px of the header stays inside the viewport
+  // on every edge. `baseLeft/baseTop` are the anchored position with the offset
+  // removed, so the bounds are stable regardless of the current offset.
+  const clampOffset = useCallback(
+    (
+      offX: number,
+      offY: number,
+      baseLeft: number,
+      baseTop: number,
+      width: number,
+      headerH: number
+    ) => {
+      if (typeof window === 'undefined') return { x: offX, y: offY };
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const minX = MIN_VISIBLE - width - baseLeft; // dragged left: keep right edge
+      const maxX = vw - MIN_VISIBLE - baseLeft; // dragged right: keep left edge
+      const minY = MIN_VISIBLE - headerH - baseTop; // dragged up: keep header
+      const maxY = vh - MIN_VISIBLE - baseTop; // dragged down: keep header
+      return {
+        x: Math.min(Math.max(offX, minX), maxX),
+        y: Math.min(Math.max(offY, minY), maxY),
+      };
+    },
+    []
+  );
+
+  // Re-clamp the CURRENT offset against the live container rect (resize / restore).
+  const reclamp = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    const el = dockRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const headerH = handleRef.current
+      ? handleRef.current.getBoundingClientRect().height
+      : rect.height; // collapsed pill: the whole pill is the "header"
+    setOffset((cur) => {
+      const baseLeft = rect.left - cur.x;
+      const baseTop = rect.top - cur.y;
+      const c = clampOffset(cur.x, cur.y, baseLeft, baseTop, rect.width, headerH);
+      return c.x === cur.x && c.y === cur.y ? cur : c;
+    });
+  }, [clampOffset]);
+
+  const resetOffset = useCallback(() => {
+    setOffset({ x: 0, y: 0 });
+    setDragging(false);
+    dragRef.current = null;
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.removeItem(DOCK_OFFSET_KEY);
+      } catch {
+        /* localStorage unavailable (private mode / quota) — ignore */
+      }
+    }
+  }, []);
+
+  const onDockPointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (e.button != null && e.button !== 0) return; // primary pointer only
+      const el = dockRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const headerH = handleRef.current
+        ? handleRef.current.getBoundingClientRect().height
+        : rect.height;
+      dragRef.current = {
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+        baseLeft: rect.left - offset.x,
+        baseTop: rect.top - offset.y,
+        width: rect.width,
+        headerH,
+        startOffX: offset.x,
+        startOffY: offset.y,
+        armed: false,
+      };
+      try {
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+      } catch {
+        /* pointer may already be gone — capture is best-effort */
+      }
+    },
+    [offset.x, offset.y]
+  );
+
+  const onDockPointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      const d = dragRef.current;
+      if (!d || d.pointerId !== e.pointerId) return;
+      const dx = e.clientX - d.startX;
+      const dy = e.clientY - d.startY;
+      if (!d.armed) {
+        if (Math.hypot(dx, dy) < DRAG_THRESHOLD) return; // still a tap
+        d.armed = true;
+        setDragging(true); // disables the container transition (tracks 1:1)
+      }
+      setOffset(
+        clampOffset(
+          d.startOffX + dx,
+          d.startOffY + dy,
+          d.baseLeft,
+          d.baseTop,
+          d.width,
+          d.headerH
+        )
+      );
+    },
+    [clampOffset]
+  );
+
+  const onDockPointerUp = useCallback(
+    (e: React.PointerEvent) => {
+      const d = dragRef.current;
+      if (!d || d.pointerId !== e.pointerId) return;
+      dragRef.current = null;
+      try {
+        (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+      } catch {
+        /* ignore */
+      }
+      if (d.armed) {
+        setDragging(false); // re-enable the transition
+        if (typeof window !== 'undefined') {
+          try {
+            window.localStorage.setItem(DOCK_OFFSET_KEY, JSON.stringify(offset));
+          } catch {
+            /* ignore */
+          }
+        }
+      } else {
+        // No travel → a tap. Two taps <300ms apart == double-tap reset (touch).
+        const now = Date.now();
+        if (now - lastTapRef.current < 300) {
+          lastTapRef.current = 0;
+          resetOffset();
+        } else {
+          lastTapRef.current = now;
+        }
+      }
+    },
+    [offset, resetOffset]
+  );
+
+  // Restore a persisted offset on mount (client-only; SSR always renders {0,0}).
+  // The reclamp effect below snaps a stale offset back into view after paint.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = window.localStorage.getItem(DOCK_OFFSET_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed.x === 'number' && typeof parsed.y === 'number') {
+        setOffset({ x: parsed.x, y: parsed.y });
+      }
+    } catch {
+      /* corrupt / unavailable → keep {0,0} */
+    }
+  }, []);
+
+  // Re-clamp on window resize / rotation so the dock can't be stranded.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.addEventListener('resize', reclamp);
+    return () => window.removeEventListener('resize', reclamp);
+  }, [reclamp]);
+
+  // Re-clamp after a restore or a layout-mode change (mobile ↔ desktop, expand,
+  // anchor move), on the next frame so the container has painted at its anchor.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const id = window.requestAnimationFrame(reclamp);
+    return () => window.cancelAnimationFrame(id);
+  }, [reclamp, offset.x, offset.y, expanded, isMobile, dockTop, dockLeft]);
+
   // ── Render gate ─────────────────────────────────────────────────────────────
   const excluded = EXCLUDED_ROUTES.has(pathname);
   const currentStep = derived?.currentStep ?? null;
@@ -511,13 +736,26 @@ export default function CopilotDock({
         <button
           type="button"
           onClick={() => setExpanded(true)}
+          onDoubleClick={resetOffset}
+          onPointerDown={onDockPointerDown}
+          onPointerMove={onDockPointerMove}
+          onPointerUp={onDockPointerUp}
+          onPointerCancel={onDockPointerUp}
+          ref={(el) => {
+            dockRef.current = el;
+          }}
           className="copilot-root"
+          title="Drag to move · double-tap to reset"
           aria-label={t('copilot.pill.next', { title: t(currentStep.titleKey as TranslationKey) })}
           style={{
             position: 'fixed',
             left: dockLeft,
             top: dockTop,
             zIndex: 9000,
+            // 2026-07-21: drag transform on the pill's fixed container.
+            transform: `translate3d(${offset.x}px, ${offset.y}px, 0)`,
+            transition: dragging ? 'none' : undefined,
+            touchAction: 'none',
             display: 'flex',
             alignItems: 'center',
             gap: 10,
@@ -529,7 +767,7 @@ export default function CopilotDock({
             backdropFilter: T.blur,
             WebkitBackdropFilter: T.blur,
             boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
-            cursor: 'pointer',
+            cursor: dragging ? 'grabbing' : 'grab',
             fontFamily: T.sans,
             color: T.textPrimary,
           }}
@@ -578,9 +816,18 @@ export default function CopilotDock({
           role="dialog"
           aria-label={personaName}
           className="copilot-root"
+          ref={(el) => {
+            dockRef.current = el;
+          }}
           style={{
             position: 'fixed',
             zIndex: 9000,
+            // 2026-07-21: drag transform on the card's outermost fixed container.
+            // No touchAction here — the body must keep scrolling; only the header
+            // handle sets touchAction:'none'. Transition off while dragging so the
+            // card tracks the finger 1:1.
+            transform: `translate3d(${offset.x}px, ${offset.y}px, 0)`,
+            transition: dragging ? 'none' : undefined,
             background: 'rgba(8,20,12,0.96)',
             border: `1px solid ${T.cardBorder}`,
             backdropFilter: 'blur(22px)',
@@ -594,8 +841,20 @@ export default function CopilotDock({
             ...panelPositioning,
           }}
         >
-          {/* Header — avatar + persona name + progress dots + collapse */}
+          {/* Header — avatar + persona name + progress dots + collapse.
+              2026-07-21: this row is the ONLY drag handle for the expanded card.
+              The >4px threshold in the pointer handlers keeps the ✕ (and any
+              future clickable) working as a normal tap. */}
           <div
+            ref={(el) => {
+              handleRef.current = el;
+            }}
+            onPointerDown={onDockPointerDown}
+            onPointerMove={onDockPointerMove}
+            onPointerUp={onDockPointerUp}
+            onPointerCancel={onDockPointerUp}
+            onDoubleClick={resetOffset}
+            title="Drag to move · double-tap to reset"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -603,6 +862,9 @@ export default function CopilotDock({
               padding: '12px 14px',
               borderBottom: `1px solid ${T.cardBorder}`,
               background: 'rgba(0,0,0,0.18)',
+              touchAction: 'none',
+              userSelect: 'none',
+              cursor: dragging ? 'grabbing' : 'grab',
             }}
           >
             <span
