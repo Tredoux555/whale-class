@@ -131,6 +131,11 @@ export default function CopilotDock({
   const [asking, setAsking] = useState(false);
   const askScrollRef = useRef<HTMLDivElement>(null);
 
+  // 2026-07-21: explicit "I did it — what's next?" affordance. The dock already
+  // auto-detects completion; this just lets the user ask for a re-check now.
+  const [checking, setChecking] = useState(false);
+  const [notYet, setNotYet] = useState(false);
+
   // Refs that async fetch closures read (kept fresh across renders).
   const doneWatermarkRef = useRef<Set<string>>(new Set());
   const prevCurrentStepIdRef = useRef<string | null>(null);
@@ -380,7 +385,30 @@ export default function CopilotDock({
   useEffect(() => {
     setAskThread([]);
     setAskInput('');
+    setNotYet(false); // the step moved on — clear any "not yet" line.
   }, [currentStepId]);
+
+  // ── "I did it — what's next?" — manual re-check via the single-flight fetch ──
+  const handleDidIt = useCallback(async () => {
+    if (checking) return;
+    // prevCurrentStepIdRef is updated synchronously inside processRef.current,
+    // so it reflects the post-refetch step id the instant doFetch resolves.
+    const before = prevCurrentStepIdRef.current;
+    setNotYet(false);
+    setChecking(true);
+    try {
+      await refetchRef.current?.();
+    } catch (err) {
+      console.error('[Copilot] did-it refetch failed:', err);
+    } finally {
+      setChecking(false);
+    }
+    // Step unchanged → still incomplete. If it advanced, the celebrate/flip
+    // logic already took over and this line stays hidden.
+    if (before && prevCurrentStepIdRef.current === before) {
+      setNotYet(true);
+    }
+  }, [checking]);
 
   // Keep the ask thread scrolled to the newest turn.
   useEffect(() => {
@@ -436,8 +464,19 @@ export default function CopilotDock({
   // ── Render gate ─────────────────────────────────────────────────────────────
   const excluded = EXCLUDED_ROUTES.has(pathname);
   const currentStep = derived?.currentStep ?? null;
+  // 2026-07-21: fallback pulse. On the step's own route we pulse step.anchor as
+  // before. OFF the route, if the step declares a fallbackAnchor (e.g.
+  // 'more-menu' — the ⋯ menu is the path to most teacher routes) we pulse THAT
+  // instead, so "Open ≡ More → Parents" lights the three-dot menu wherever the
+  // teacher is. With no fallbackAnchor we keep pulsing step.anchor (e.g. the
+  // camera, which lives in the header on every page) — no principal change.
+  const pulseAnchor = currentStep
+    ? pathname === currentStep.route
+      ? currentStep.anchor
+      : currentStep.fallbackAnchor ?? currentStep.anchor
+    : undefined;
   const showPulse =
-    !!currentStep?.anchor && !overlay && !excluded && mounted && !hidden;
+    !!pulseAnchor && !overlay && !excluded && mounted && !hidden;
 
   if (!mounted || hidden || excluded) return null;
   if (!data || !data.enabled || data.dismissed || data.completed_celebrated) return null;
@@ -465,7 +504,7 @@ export default function CopilotDock({
 
   return (
     <>
-      {showPulse && currentStep?.anchor && <AnchorPulse anchor={currentStep.anchor} />}
+      {showPulse && pulseAnchor && <AnchorPulse anchor={pulseAnchor} />}
 
       {/* ── Collapsed pill ── */}
       {!expanded && currentStep && (
@@ -837,6 +876,54 @@ export default function CopilotDock({
                     <ArrowRight size={15} strokeWidth={2} />
                   </button>
                 )}
+
+                {/* 2026-07-21: "I did it" — a quiet manual re-check. The dock
+                    auto-detects completion, but this reassures the user and
+                    reuses the single-flight doFetch. If the step completes, the
+                    celebrate/flip logic takes over and this whole block unmounts. */}
+                <div style={{ marginTop: 12 }}>
+                  <div
+                    style={{
+                      fontSize: 11.5,
+                      lineHeight: 1.5,
+                      color: T.textMuted,
+                      fontFamily: T.sans,
+                      marginBottom: 5,
+                    }}
+                  >
+                    {t('copilot.dock.tellMeDone')}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void handleDidIt()}
+                    disabled={checking}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: checking ? T.textMuted : T.emerald,
+                      fontSize: 12.5,
+                      textDecoration: 'underline',
+                      cursor: checking ? 'default' : 'pointer',
+                      padding: 0,
+                      fontFamily: T.sans,
+                    }}
+                  >
+                    {checking ? t('copilot.dock.checking') : t('copilot.dock.didIt')}
+                  </button>
+                  {notYet && (
+                    <div
+                      style={{
+                        marginTop: 6,
+                        fontSize: 12,
+                        lineHeight: 1.5,
+                        color: T.textMuted,
+                        fontFamily: T.sans,
+                      }}
+                    >
+                      {t('copilot.dock.notYet')}
+                    </div>
+                  )}
+                </div>
 
                 {/* Skip (optional steps) */}
                 {currentStep.optional && (

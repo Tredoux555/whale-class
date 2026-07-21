@@ -40,6 +40,9 @@ export interface CopilotStep {
   whyKey: string;
   instructionKeys: string[];              // ordered numbered instructions (each an i18n key)
   anchor?: string;                        // data-copilot value to pulse on step.route
+  fallbackAnchor?: string;                // data-copilot value to pulse when the teacher is NOT on
+                                          // step.route (e.g. 'more-menu' — the ⋯ menu is the path to
+                                          // most step routes)
   waitState?: boolean;                    // true = user is waiting on someone else
   optional?: boolean;                     // skippable
   celebrateKey: string;                   // the line shown when this step flips done
@@ -128,6 +131,7 @@ const TEACHER_STEPS: CopilotStep[] = [
     id: 'students',
     route: '/montree/dashboard/students',
     anchor: 'add-students',
+    fallbackAnchor: 'more-menu',
     titleKey: 'copilot.t1.title',
     whyKey: 'copilot.t1.why',
     instructionKeys: ['copilot.t1.instruction1', 'copilot.t1.instruction2', 'copilot.t1.instruction3'],
@@ -158,6 +162,7 @@ const TEACHER_STEPS: CopilotStep[] = [
     id: 'confirm',
     route: '/montree/dashboard/photo-audit',
     anchor: 'confirm-tab',
+    fallbackAnchor: 'more-menu',
     titleKey: 'copilot.t4.title',
     whyKey: 'copilot.t4.why',
     instructionKeys: ['copilot.t4.instruction1', 'copilot.t4.instruction2', 'copilot.t4.instruction3'],
@@ -168,6 +173,7 @@ const TEACHER_STEPS: CopilotStep[] = [
     id: 'parents',
     route: '/montree/dashboard/parent-codes',
     anchor: 'parent-codes',
+    fallbackAnchor: 'more-menu',
     titleKey: 'copilot.t5.title',
     whyKey: 'copilot.t5.why',
     instructionKeys: ['copilot.t5.instruction1', 'copilot.t5.instruction2', 'copilot.t5.instruction3'],
@@ -178,6 +184,7 @@ const TEACHER_STEPS: CopilotStep[] = [
     id: 'report',
     route: '/montree/dashboard/parent-codes',
     anchor: 'reports-pill',
+    fallbackAnchor: 'more-menu',
     titleKey: 'copilot.t6.title',
     whyKey: 'copilot.t6.why',
     instructionKeys: ['copilot.t6.instruction1', 'copilot.t6.instruction2', 'copilot.t6.instruction3'],
