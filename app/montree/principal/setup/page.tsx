@@ -333,7 +333,17 @@ export default function PrincipalSetupPage() {
 
       <div className="fn-hall">
         {/* The narrator — top-left, every screen (authed Astra, hands over at /admin) */}
-        <AstraNarrator screenKey={screenKey} journey="principal" authed={true} />
+        <AstraNarrator
+          screenKey={screenKey}
+          journey="principal"
+          authed={true}
+          sayKeyOverride={
+            screenKey === 'handoff' && classrooms.length === 1
+              ? 'copilot.funnel.say.handoffOne'
+              : undefined
+          }
+          sayParams={screenKey === 'handoff' ? { count: classrooms.length } : undefined}
+        />
 
         {/* The stage */}
         <div className="fn-stage-wrap">

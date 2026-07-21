@@ -32,11 +32,20 @@ export default function AstraNarrator({
   journey,
   authed,
   extra,
+  sayKeyOverride,
+  sayParams,
 }: {
   screenKey: string;
   journey: 'principal' | 'teacher';
   authed: boolean;
   extra?: ReactNode;
+  // 2026-07-21: screenKey still drives every other lookup (mood/avatar/thread/ask
+  // screen). Only the say-line needs to vary by real state — e.g. the handoff
+  // screen must speak the actual classroom count (singular vs plural) instead of a
+  // hardcoded "Two". sayKeyOverride swaps just the say-key (singular variant) and
+  // sayParams feeds {count}-style interpolation, leaving screenKey untouched.
+  sayKeyOverride?: string;
+  sayParams?: Record<string, string | number>;
 }) {
   const { t, locale } = useI18n();
   const [open, setOpen] = useState(false);
@@ -48,8 +57,8 @@ export default function AstraNarrator({
   const name = isAstra ? t('copilot.funnel.astra.name') : t('copilot.funnel.guru.name');
   const role = isAstra ? t('copilot.funnel.astra.role') : t('copilot.funnel.guru.role');
 
-  const sayKey = `copilot.funnel.say.${screenKey}` as TranslationKey;
-  const say = t(sayKey);
+  const sayKey = (sayKeyOverride ?? `copilot.funnel.say.${screenKey}`) as TranslationKey;
+  const say = t(sayKey, sayParams);
 
   const send = async () => {
     const q = input.trim();
