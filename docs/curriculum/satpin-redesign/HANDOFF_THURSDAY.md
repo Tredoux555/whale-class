@@ -62,3 +62,10 @@ first; both live in this folder. Tredoux's goal Thursday: "knock the entire thin
 - device_bash has NO network. Cloud Bash HAS network (MJ CDN + montree.xyz fetch fine).
 - Chrome bridge drops when Tredoux's VPN blips; MJ jobs keep rendering server-side regardless.
 - Midjourney account: V8.1 default — `--oref` REQUIRES `--v 7` appended.
+media-packs: teacher hub + nav linked; HANDOFF updated below
+- ADDED Tue 07-21: per-letter MEDIA PACKS at public/media-packs/{index,s,a,t,p,i,n}.html
+  (Song / Pictures / Vocab / Reader per letter; relative proxy URLs, verified live via
+  /tmp/media-pack-manifest.json flow). Linked from satpin-teacher.html and dark-phonics nav.
+  Tredoux considers the printable shelf packs SECONDARY to these ("printables no good anyway") —
+  future letters should ship a media pack FIRST, printables second. When wk1-3 readers land,
+  replace the s/a/t reader placeholder cards with real book links.
