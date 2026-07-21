@@ -5649,6 +5649,10 @@ export const zh = {
   'copilot.card.askError': '我这会儿没能答上来——不过上面的步骤已经足够了。',
   'copilot.card.stepDone': '完成',
   'copilot.card.waiting': '等待中…',
+  'copilot.dock.tellMeDone': '完成了？点下面的按钮，我来确认。',
+  'copilot.dock.didIt': '我做好了——接下来呢？',
+  'copilot.dock.checking': '正在确认…',
+  'copilot.dock.notYet': '我还没有看到——再试试上面的步骤，或者在下面问我。',
   'copilot.skipStep': '暂时跳过',
   'copilot.p3.someone': '您的老师',
   // 园长旅程（您）
