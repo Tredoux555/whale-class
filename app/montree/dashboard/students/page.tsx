@@ -4,6 +4,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { getSession, isHomeschoolParent, setSession as saveSession, type MontreeSession } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
@@ -13,6 +14,9 @@ import ProfilePhotoCapture from '@/components/montree/student/ProfilePhotoCaptur
 import StudentFormGuide from '@/components/montree/onboarding/StudentFormGuide';
 import { AREA_CONFIG, AREA_ORDER } from '@/lib/montree/types';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
+
+// Paste-based class-list import — same surface the dashboard empty state uses.
+const BulkPasteImport = dynamic(() => import('@/components/montree/BulkPasteImport'), { ssr: false });
 
 
 // Dark-register serif for headings (Jul 16 2026 sweep).
@@ -282,6 +286,7 @@ export default function StudentsPage() {
 
   // Add/Edit form state
   const [showForm, setShowForm] = useState(false);
+  const [showBulkImport, setShowBulkImport] = useState(false);
   const [bulkMode, setBulkMode] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [formData, setFormData] = useState({
@@ -367,6 +372,20 @@ export default function StudentsPage() {
     } catch (err) {
       console.error('Failed to load curriculum:', err);
     }
+  };
+
+  // First-intake fix (Jul 21 2026): an empty classroom means the teacher is
+  // still setting up their class, so "+ Add Student" / "Add Your First
+  // Student" go straight to the paste-based Bulk Import — the same surface
+  // the dashboard empty state offers. The detailed per-child form (below)
+  // is for adding a new child to an already-running class. Homeschool
+  // parents keep the single-child form: they have no class list to paste.
+  const openAddFlow = () => {
+    if (students.length === 0 && !isHomeschoolParent(session)) {
+      setShowBulkImport(true);
+      return;
+    }
+    openAddForm();
   };
 
   const openAddForm = () => {
@@ -619,7 +638,7 @@ export default function StudentsPage() {
           <button
             data-tutorial="add-student-button"
             data-copilot="add-students"
-            onClick={openAddForm}
+            onClick={openAddFlow}
             className="px-3 py-1.5 bg-[#1D6B48] text-white rounded-lg text-sm font-medium hover:bg-[#236B4C]"
           >
             + {isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}
@@ -636,7 +655,7 @@ export default function StudentsPage() {
               {isHomeschoolParent(session) ? t('students.noChildren') : t('students.noStudents')}
             </p>
             <button
-              onClick={openAddForm}
+              onClick={openAddFlow}
               className="px-4 py-2 bg-[#1D6B48] text-white rounded-lg font-medium hover:bg-[#236B4C]"
             >
               {isHomeschoolParent(session) ? t('students.addFirstChild') : t('students.addFirst')}
@@ -712,6 +731,39 @@ export default function StudentsPage() {
           {students.length} {isHomeschoolParent(session) ? t('students.children') : t('students.title')} {t('students.in')} {session.classroom?.name}
         </p>
       </main>
+
+      {/* Bulk Paste Import Modal — first-intake path */}
+      {showBulkImport && session?.classroom?.id && (
+        <BulkPasteImport
+          classroomId={session.classroom.id}
+          existingCount={students.length}
+          onImported={async (imported) => {
+            setShowBulkImport(false);
+            // Mirror handleBulkSave's post-save behaviour: mark the tutorial
+            // complete for first-time teachers, refresh the list, then send
+            // them to the dashboard where Guru picks up "Tell me about them".
+            const wasFirstTime = session?.teacher && !session.teacher.has_completed_tutorial;
+            if (wasFirstTime) {
+              try {
+                await fetch('/api/montree/tutorial/complete', { method: 'POST' });
+                const updatedSession = {
+                  ...session,
+                  teacher: { ...session.teacher, has_completed_tutorial: true }
+                };
+                saveSession(updatedSession);
+                setSession(updatedSession);
+              } catch (err) {
+                console.error('Failed to mark tutorial complete:', err);
+              }
+            }
+            loadStudents(session.classroom?.id);
+            if (wasFirstTime && imported.length > 0) {
+              setTimeout(() => router.push('/montree/dashboard?onboarded=1'), 800);
+            }
+          }}
+          onClose={() => setShowBulkImport(false)}
+        />
+      )}
 
       {/* Add/Edit Form Modal */}
       {showForm && !bulkMode && (
