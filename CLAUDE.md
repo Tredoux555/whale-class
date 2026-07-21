@@ -2553,3 +2553,10 @@ Notes:
 - Always include the full negative list verbatim (no text/words/letters/
   numbers/captions/speech bubbles/border/watermark) — Midjourney otherwise
   sometimes hallucinates stray text into children's illustrations.
+
+## Dark Phonics overnight art run (2026-07-21)
+The full-alphabet Midjourney art run is specced and ready: prompt pack at
+docs/curriculum/satpin-redesign/MJ_PROMPT_PACK_ALL.md (235 prompts, submission rules embedded),
+protocol in HANDOFF_THURSDAY.md section "OVERNIGHT ART RUN". Submission-only; Tredoux picks
+winners; books compile afterward. All durable state for the SATPIN/alphabet project lives in
+docs/curriculum/satpin-redesign/ — start there in any new session.
