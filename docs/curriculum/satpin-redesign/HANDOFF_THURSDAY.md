@@ -69,3 +69,27 @@ media-packs: teacher hub + nav linked; HANDOFF updated below
   Tredoux considers the printable shelf packs SECONDARY to these ("printables no good anyway") —
   future letters should ship a media pack FIRST, printables second. When wk1-3 readers land,
   replace the s/a/t reader placeholder cards with real book links.
+
+---
+# OVERNIGHT ART RUN (added Tue 07-21 evening — THE priority task for the next session)
+
+Tredoux's instruction, verbatim intent: generate ALL artwork for EVERYTHING overnight via the
+browser on his Midjourney unlimited window. He will pick winners himself; books compile later.
+DO NOT evaluate or harvest images — submission only. Conserve context ruthlessly.
+
+- PROMPT PACK: docs/curriculum/satpin-redesign/MJ_PROMPT_PACK_ALL.md — 235 prompts, paste-verbatim,
+  submission rules at the top (batch 5 / wait 6 min / log every 25 to OVERNIGHT_RUN_LOG.md / never
+  poll with screenshots / retry once then skip).
+- RUNNER: a Sonnet (or Haiku) agent drives midjourney.com/imagine in Tredoux's Chrome
+  (claude-in-chrome tools; check tabs_context_mcp first; the prompt box sits top-center; type,
+  Enter, next). V8.1 lacks --oref, which is why every prompt carries --v 7.
+- OVERSEER: keep the session alive with ScheduleWakeup/send_later heartbeats (~30 min), each time
+  reading OVERNIGHT_RUN_LOG.md (cheap device cat) and nudging/respawning the runner agent from the
+  last logged ID if it stalled or the bridge blipped. Do NOT look at images.
+- RESUME RULE: the log file is the single source of truth for progress. Bridge/browser drops are
+  routine — resume, don't restart.
+- MORNING AFTER: report submitted/skipped counts only. Harvest happens in a LATER session by
+  crawling the MJ feed for UUIDs (art-manifest patterns) AFTER Tredoux picks winners on
+  midjourney.com himself (he can heart/organize there; his picks guide the harvest).
+- PUSH: still pending; media packs etc. only appear at teacherpotato.xyz URLs after Tredoux runs
+  `git push origin main`. Nothing the runner does depends on the push.
