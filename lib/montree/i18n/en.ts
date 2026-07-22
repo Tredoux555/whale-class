@@ -4062,6 +4062,10 @@ export const en = {
   'parentDashboard.firstReportOnWay': "Your child's first report is on its way",
   'parentDashboard.checkBackSoon': 'Check back soon',
   'parentDashboard.pastReports': 'Past Reports ({count})',
+  'parentReports.title': 'All Reports',
+  'parentReports.empty': 'Reports will appear here after your teacher sends the first one.',
+  'parentReports.loadMore': 'Load more',
+  'parentDashboard.viewAllReports': 'All reports',
 
   // Tell Guru (onboarding)
   'tellGuru.noSpeechDetected': 'No speech detected. Please try again.',

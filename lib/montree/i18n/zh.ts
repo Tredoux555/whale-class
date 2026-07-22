@@ -4022,6 +4022,10 @@ export const zh = {
   'parentDashboard.firstReportOnWay': '老师正在准备第一份周报',
   'parentDashboard.checkBackSoon': '请稍后再来查看',
   'parentDashboard.pastReports': '以往周报 ({count})',
+  'parentReports.title': '全部报告',
+  'parentReports.empty': '老师发送第一份报告后，这里会显示所有报告。',
+  'parentReports.loadMore': '加载更多',
+  'parentDashboard.viewAllReports': '全部报告',
 
   // Tell Guru (onboarding)
   'tellGuru.noSpeechDetected': '没有检测到语音，请再试一次',

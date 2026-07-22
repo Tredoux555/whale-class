@@ -50,19 +50,32 @@ export default function InstallBanner() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg p-4 z-50 animate-slide-up">
+    <div
+      className="fixed bottom-0 left-0 right-0 z-50 animate-slide-up"
+      style={{
+        background: 'rgba(10,26,15,0.92)',
+        backdropFilter: 'blur(18px) saturate(140%)',
+        WebkitBackdropFilter: 'blur(18px) saturate(140%)',
+        borderTop: '1px solid rgba(52,211,153,0.20)',
+        padding: '16px',
+        paddingBottom: 'calc(16px + env(safe-area-inset-bottom))',
+      }}
+    >
       <div className="max-w-lg mx-auto flex items-center gap-4">
         {/* Icon */}
-        <div className="flex-shrink-0 w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+        <div
+          className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center"
+          style={{ background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.20)' }}
+        >
           <span className="text-2xl">🌳</span>
         </div>
         
         {/* Text */}
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-gray-800 text-sm">
+          <p className="font-semibold text-sm" style={{ color: 'rgba(255,255,255,0.95)' }}>
             {t('installBanner.title')}
           </p>
-          <p className="text-xs text-gray-500 truncate">
+          <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.55)' }}>
             {t('installBanner.subtitle')}
           </p>
         </div>
@@ -71,7 +84,8 @@ export default function InstallBanner() {
         <div className="flex-shrink-0 flex gap-2">
           <button
             onClick={handleDismiss}
-            className="text-gray-400 hover:text-gray-600 text-sm px-2"
+            className="text-sm px-2"
+            style={{ color: 'rgba(255,255,255,0.45)' }}
           >
             {t('installBanner.later')}
           </button>
