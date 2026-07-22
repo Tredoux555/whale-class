@@ -1,0 +1,300 @@
+{
+  "generated": "2026-07-22",
+  "last_updated": "2026-07-22 (round 2: 9 new Suno takes submitted to fix naptime/warm-acoustic and re-audition tender-strings, plus 3 extras)",
+  "loudness_target": "I=-18 LUFS, TP=-2 dBTP (ffmpeg loudnorm, single-pass dynamic)",
+  "stability_gate": "Round 2 gate (as specified for this pass): STEADY <6% deviant intervals, ACCEPTABLE 6-15%, REJECT >=15% deviant (deviant = inter-beat-interval BPM differing from median BPM by more than 6%). NOTE: round 1 slots (flagship-felt-piano, bright-week, morning-light, term-end, wildcard-warmth) were graded under a slightly looser round-1 gate (STEADY <=8%) and were not re-graded this round; their stored pct_deviant_intervals values are unchanged and still accurate, only the STEADY/ACCEPTABLE label boundary shifted for this round's new measurements. flagship-felt-piano (6.12%) would now read as ACCEPTABLE rather than STEADY under the round-2 gate if strictly reapplied -- flagged here for awareness, not changed.",
+  "slots": {
+    "flagship-felt-piano": {
+      "status": "FILLED",
+      "target_bpm": 76,
+      "source_file": "Felt Moon Motif.mp3",
+      "measured_bpm": 76.0,
+      "tempo_interpretation": "orig (direct detection)",
+      "duration_sec": 231.0,
+      "stability_verdict": "STEADY",
+      "pct_deviant_intervals": 6.12,
+      "iqr_bpm": 2.3,
+      "output_files": [
+        "flagship-felt-piano.mp3",
+        "flagship-felt-piano.beats.json"
+      ],
+      "round": 1
+    },
+    "warm-acoustic": {
+      "status": "FILLED",
+      "target_bpm": 84,
+      "source_file": "Porchlight Memory (1).mp3",
+      "measured_bpm": 83.35,
+      "tempo_interpretation": "orig (direct detection) -- this take's raw beat tracker locked onto the musical pulse correctly on the first pass, no half/double correction needed",
+      "duration_sec": 219.865,
+      "stability_verdict": "STEADY",
+      "pct_deviant_intervals": 1.31,
+      "iqr_bpm": 2.78,
+      "trim_applied_sec": 0.095,
+      "output_files": [
+        "warm-acoustic.mp3",
+        "warm-acoustic.beats.json"
+      ],
+      "round": 2,
+      "note": "Round 1 was UNFILLED (Porchlight Album.mp3 rejected at 17.8%+ deviant under every tempo interpretation). Round 2 delivered two new takes both titled 'Porchlight Memory'; the (1) take is excellent (STEADY, 1.31% deviant, 83.35 vs target 84 -- 0.8% off) and is the clear winner over its sibling take (see takes log)."
+    },
+    "tender-strings": {
+      "status": "FILLED",
+      "target_bpm": 72,
+      "source_file": "Paper Boats Home.mp3",
+      "measured_bpm": 73.83,
+      "tempo_interpretation": "half-time correction applied (raw beat tracker locked onto a doubled pulse at 143.55 BPM; decimating every 2nd beat from that track, offset=1, recovers a clean 73.83 BPM grid)",
+      "duration_sec": 242.76,
+      "stability_verdict": "STEADY",
+      "pct_deviant_intervals": 1.41,
+      "iqr_bpm": 2.05,
+      "trim_applied_sec": 0.0,
+      "output_files": [
+        "tender-strings.mp3",
+        "tender-strings.beats.json"
+      ],
+      "round": 2,
+      "replacement_note": "REPLACED round-1 holder 'Home Between Us.mp3' (measured 69.84 BPM, REJECT at 16.0% deviant, borderline-kept-and-flagged last round). Replacement criterion was 'meaningfully steadier (<12%)' -- Paper Boats Home.mp3 measures 1.41% deviant, an order of magnitude steadier than both the 16.0% reject and the 12% bar, and 73.83 BPM is closer to the 72 target than the old take's 69.84 BPM (2.5% off vs 3.0% off). Home Between Us.mp3 is retired from the slot; see takes log and superseded_round1_holders below.",
+      "human_review_flag": null
+    },
+    "bright-week": {
+      "status": "FILLED",
+      "target_bpm": 92,
+      "source_file": "Picnic Under Magnolia (1).mp3",
+      "measured_bpm": 92.29,
+      "tempo_interpretation": "orig (direct detection)",
+      "duration_sec": 128.76,
+      "stability_verdict": "STEADY",
+      "pct_deviant_intervals": 0.51,
+      "iqr_bpm": 0.0,
+      "output_files": [
+        "bright-week.mp3",
+        "bright-week.beats.json"
+      ],
+      "round": 1
+    },
+    "morning-light": {
+      "status": "FILLED",
+      "target_bpm": 88,
+      "source_file": "Morning in Cedar.mp3",
+      "measured_bpm": 89.1,
+      "tempo_interpretation": "orig (direct detection)",
+      "duration_sec": 226.705,
+      "stability_verdict": "STEADY",
+      "pct_deviant_intervals": 3.96,
+      "iqr_bpm": 3.18,
+      "output_files": [
+        "morning-light.mp3",
+        "morning-light.beats.json"
+      ],
+      "round": 1
+    },
+    "naptime": {
+      "status": "FILLED",
+      "target_bpm": 68,
+      "source_file": "Glass Moon Lullaby (1).mp3",
+      "measured_bpm": 69.84,
+      "tempo_interpretation": "half-time correction applied (raw beat tracker locked onto a doubled pulse at 143.55 BPM; decimating every 2nd beat, offset=0, recovers a clean 69.84 BPM grid)",
+      "duration_sec": 240.0,
+      "stability_verdict": "STEADY",
+      "pct_deviant_intervals": 1.11,
+      "iqr_bpm": 1.94,
+      "trim_applied_sec": 0.0,
+      "output_files": [
+        "naptime.mp3",
+        "naptime.beats.json"
+      ],
+      "round": 2,
+      "note": "Round 1 was UNFILLED (Glass Snowglobe.mp3 rejected at 19.3% deviant, half-time interpretation was WORSE than raw). Round 2 delivered two new takes both titled 'Glass Moon Lullaby'; both are excellent (both STEADY once half-time corrected), the (1) take is marginally steadier and is the winner -- see takes log."
+    },
+    "term-end": {
+      "status": "FILLED",
+      "target_bpm": 70,
+      "source_file": "December Ledger.mp3",
+      "measured_bpm": 68.0,
+      "tempo_interpretation": "half-time correction applied (raw beat tracker locked onto a faster pulse)",
+      "duration_sec": 228.08,
+      "stability_verdict": "ACCEPTABLE",
+      "pct_deviant_intervals": 11.9,
+      "iqr_bpm": 3.58,
+      "output_files": [
+        "term-end.mp3",
+        "term-end.beats.json"
+      ],
+      "round": 1
+    },
+    "wildcard-warmth": {
+      "status": "FILLED",
+      "target_bpm": 80,
+      "source_file": "Golden Afternoon (1).mp3",
+      "measured_bpm": 78.3,
+      "tempo_interpretation": "orig (direct detection)",
+      "duration_sec": 316.2,
+      "stability_verdict": "STEADY",
+      "pct_deviant_intervals": 2.18,
+      "iqr_bpm": 2.45,
+      "output_files": [
+        "wildcard-warmth.mp3",
+        "wildcard-warmth.beats.json"
+      ],
+      "round": 1
+    }
+  },
+  "bonus_tracks": {
+    "bonus-piano-keys": {
+      "status": "ADDED",
+      "target_bpm": null,
+      "source_file": "Little Hands on Keys (1).mp3",
+      "measured_bpm": 71.78,
+      "tempo_interpretation": "half-time correction applied (raw beat tracker locked onto a doubled pulse at 143.55 BPM; decimating every 2nd beat, offset=1, recovers a clean 71.78 BPM grid)",
+      "duration_sec": 225.52,
+      "stability_verdict": "STEADY",
+      "pct_deviant_intervals": 0.75,
+      "iqr_bpm": 0.0,
+      "trim_applied_sec": 0.0,
+      "output_files": [
+        "bonus-piano-keys.mp3",
+        "bonus-piano-keys.beats.json"
+      ],
+      "note": "Not a defined slot; measured per instructions as an 'extra'. Both 'Little Hands on Keys' takes are STEADY and land in-range (71.78 BPM, 60-100 window) so this qualifies as a bonus track. (1) take is marginally steadier than the plain take (0.75% vs 0.96% deviant) and wins -- see takes log."
+    },
+    "bonus-lanterns": {
+      "status": "ADDED",
+      "target_bpm": null,
+      "source_file": "Paper Lanterns.mp3",
+      "measured_bpm": 71.78,
+      "tempo_interpretation": "half-time correction applied (raw beat tracker locked onto a doubled pulse at 143.55 BPM; decimating every 2nd beat, offset=1, recovers a clean 71.78 BPM grid)",
+      "duration_sec": 248.48,
+      "stability_verdict": "STEADY",
+      "pct_deviant_intervals": 2.08,
+      "iqr_bpm": 2.05,
+      "trim_applied_sec": 0.0,
+      "output_files": [
+        "bonus-lanterns.mp3",
+        "bonus-lanterns.beats.json"
+      ],
+      "note": "Single take, no pairing. STEADY and in-range (71.78 BPM, 60-100 window), so qualifies as a bonus track per instructions."
+    }
+  },
+  "takes": {
+    "wildcard-warmth (Golden Afternoon prompt)": {
+      "winner": "Golden Afternoon (1).mp3",
+      "winner_bpm": 78.3,
+      "winner_pct_deviant": 2.18,
+      "loser": "Golden Afternoon.mp3",
+      "loser_note": "Same underlying tempo (78.3 BPM) but raw beat tracker locks onto double-time (161.5 BPM, artificially 'STEADY' at 1.9% because it's tracking 16th-note subdivisions, not the musical pulse). At the correct half-time interpretation it measures 78.30 BPM, 2.7% deviant -- still decent but slightly less steady than the (1) take, and its loudness profile (LRA 8.7 LU vs 3.7 LU) suggests more dynamic swells. (1) wins.",
+      "loser_kept": false,
+      "round": 1
+    },
+    "bright-week (Picnic Under Magnolia prompt)": {
+      "winner": "Picnic Under Magnolia (1).mp3",
+      "winner_bpm": 92.29,
+      "winner_pct_deviant": 0.51,
+      "loser": "Picnic Under Magnolia.mp3",
+      "loser_note": "Same tempo (92.29 BPM), also STEADY, but 2.8% deviant vs winner's 0.51% -- winner is materially steadier. Loser is a fine backup if bright-week ever needs a B-side/variant.",
+      "loser_kept": false,
+      "round": 1
+    },
+    "naptime (Glass Moon Lullaby prompt, round 2 fix)": {
+      "winner": "Glass Moon Lullaby (1).mp3",
+      "winner_bpm": 69.84,
+      "winner_pct_deviant": 1.11,
+      "loser": "Glass Moon Lullaby.mp3",
+      "loser_note": "Both takes have the raw tracker lock onto a doubled pulse and both recover to clean, STEADY half-time grids once decimated: this take -> 66.26 BPM at 1.28% deviant (best offset), (1) take -> 69.84 BPM at 1.11% deviant (best offset). Both would have comfortably filled the slot; (1) wins narrowly on stability AND lands closer to the 68 BPM target (69.84 vs 66.26, 2.7% off vs 2.6% off -- essentially a wash on target proximity, so stability is the deciding factor). Loser is a strong backup/B-side candidate if naptime ever needs a variant.",
+      "loser_kept": false,
+      "round": 2
+    },
+    "warm-acoustic (Porchlight Memory prompt, round 2 fix)": {
+      "winner": "Porchlight Memory (1).mp3",
+      "winner_bpm": 83.35,
+      "winner_pct_deviant": 1.31,
+      "loser": "Porchlight Memory.mp3",
+      "loser_note": "Very different character between the two takes: the plain take's raw tracker locks onto a doubled pulse (161.5 BPM) and only reaches ACCEPTABLE-adjacent stability (4.29-5.43% deviant depending on decimation offset) after half-time correction. The (1) take's raw tracker found the true 83.35 BPM pulse directly on the first pass with no correction needed, and is far steadier (1.31% deviant). (1) wins clearly.",
+      "loser_kept": false,
+      "round": 2
+    },
+    "tender-strings (Paper Boats Home prompt, round 2 replacement candidate)": {
+      "winner": "Paper Boats Home.mp3",
+      "winner_bpm": 73.83,
+      "winner_pct_deviant": 1.41,
+      "loser": "Paper Boats Home (1).mp3",
+      "loser_note": "Both takes' raw trackers lock onto the same doubled pulse (143.55 BPM) and both recover to a clean 73.83 BPM half-time grid. This take is steadier at its best decimation offset (1.41% deviant, offset=1) vs the (1) take (2.68% deviant, offset=0). Both handily clear the <12% replacement bar and both would have been fine; the plain take wins on stability. Loser is a strong backup for tender-strings if a variant is ever needed.",
+      "loser_kept": false,
+      "round": 2
+    },
+    "bonus-piano-keys (Little Hands on Keys prompt, extra)": {
+      "winner": "Little Hands on Keys (1).mp3",
+      "winner_bpm": 71.78,
+      "winner_pct_deviant": 0.75,
+      "loser": "Little Hands on Keys.mp3",
+      "loser_note": "Both takes are essentially identical in character: raw tracker locks onto a doubled 143.55 BPM pulse, both recover to a very clean 71.78 BPM half-time grid (iqr_bpm 0.0 on both). This take is marginally steadier (0.75% vs 0.96% deviant at best offsets). Both are excellent and interchangeable; loser is a strong backup/B-side.",
+      "loser_kept": false,
+      "round": 2
+    }
+  },
+  "unassigned_or_rejected": [
+    {
+      "file": "Untitled.mp3",
+      "candidate_slot": "no title hint; nearest targets are warm-acoustic (84) or naptime (68) by leftover-slot logic",
+      "measured": "Raw beat track locks onto 152 BPM (very steady, 1.1% deviant) but that's too fast for any slot (all targets 68-92). Half-time gives 76.0 BPM, which IS in-range and close to flagship-felt-piano/warm-acoustic territory, but stability degrades to 15.6% deviant -- just barely over the 15% REJECT line.",
+      "duration_sec": 182.8,
+      "verdict": "AMBIGUOUS - left unassigned rather than guessed",
+      "human_note": "Two open problems stack here: (1) genuine half/double-time ambiguity (152 vs 76 -- both are 'clean' integer-ish readings so I can't disambiguate from tempo alone), and (2) the in-range interpretation is borderline-unstable (15.6% vs 15% cutoff). No title hint to break the tie either. I deliberately did NOT force this into naptime or warm-acoustic since both calls (which tempo is 'real', and whether the file is even steady enough) require a human ear. STILL UNRESOLVED as of round 2 -- no new take was submitted to address this file specifically, and it is now moot for naptime/warm-acoustic since both slots are filled, but it remains available as a fallback/spare if either slot's current take is ever rejected on listen."
+    }
+  ],
+  "superseded_round1_holders": [
+    {
+      "file": "Home Between Us.mp3",
+      "was_slot": "tender-strings",
+      "was_measured": "69.84 BPM, REJECT at 16.0% deviant (round-1 gate borderline, kept-and-flagged pending human review)",
+      "status": "RETIRED -- replaced by Paper Boats Home.mp3 in round 2 (1.41% deviant, meaningfully steadier than the <12% replacement bar). No longer used for tender-strings.mp3/.beats.json, which have been overwritten with the new source.",
+      "action": "Not deleted from scratch/ in case Tredoux wants to compare by ear, but no longer referenced by any slot output."
+    },
+    {
+      "file": "Glass Snowglobe.mp3",
+      "was_slot": "naptime (rejected, slot left unfilled in round 1)",
+      "was_measured": "Raw 129.2 BPM (12.9% deviant); half-time 63.0 BPM WORSE at 19.3% deviant -> REJECT both ways",
+      "status": "SUPERSEDED -- naptime slot now filled by Glass Moon Lullaby (1).mp3 in round 2. This file was not re-tested this round (new takes were submitted specifically to replace it) and remains a REJECT / not used."
+    },
+    {
+      "file": "Porchlight Album.mp3",
+      "was_slot": "warm-acoustic (rejected, slot left unfilled in round 1)",
+      "was_measured": "17.8%+ deviant under every tempo interpretation tried -> REJECT",
+      "status": "SUPERSEDED -- warm-acoustic slot now filled by Porchlight Memory (1).mp3 in round 2. This file was not re-tested this round and remains a REJECT / not used."
+    }
+  ],
+  "all_files_accounted_for": {
+    "round_1_kept_and_processed": [
+      "Felt Moon Motif.mp3 -> flagship-felt-piano",
+      "Golden Afternoon (1).mp3 -> wildcard-warmth",
+      "Picnic Under Magnolia (1).mp3 -> bright-week",
+      "Morning in Cedar.mp3 -> morning-light",
+      "December Ledger.mp3 -> term-end"
+    ],
+    "round_1_loser_takes_not_processed": [
+      "Golden Afternoon.mp3 (lost to Golden Afternoon (1).mp3)",
+      "Picnic Under Magnolia.mp3 (lost to Picnic Under Magnolia (1).mp3)"
+    ],
+    "round_1_retired_or_superseded": [
+      "Home Between Us.mp3 (was tender-strings holder, REJECT-borderline; retired, replaced in round 2)",
+      "Glass Snowglobe.mp3 (REJECT stability round 1, naptime slot now filled by a round-2 take)",
+      "Porchlight Album.mp3 (REJECT stability round 1, warm-acoustic slot now filled by a round-2 take)"
+    ],
+    "round_1_still_unresolved": [
+      "Untitled.mp3 (ambiguous tempo + borderline stability, no title hint -- kept as a spare, not currently used)"
+    ],
+    "round_2_kept_and_processed": [
+      "Glass Moon Lullaby (1).mp3 -> naptime",
+      "Porchlight Memory (1).mp3 -> warm-acoustic",
+      "Paper Boats Home.mp3 -> tender-strings (replaced Home Between Us.mp3)",
+      "Little Hands on Keys (1).mp3 -> bonus-piano-keys",
+      "Paper Lanterns.mp3 -> bonus-lanterns"
+    ],
+    "round_2_loser_takes_not_processed": [
+      "Glass Moon Lullaby.mp3 (lost to Glass Moon Lullaby (1).mp3; strong backup, STEADY 66.26 BPM)",
+      "Porchlight Memory.mp3 (lost to Porchlight Memory (1).mp3; usable backup but less steady, 4.29-5.43% deviant)",
+      "Paper Boats Home (1).mp3 (lost to Paper Boats Home.mp3; strong backup, STEADY 73.83 BPM 2.68% deviant)",
+      "Little Hands on Keys.mp3 (lost to Little Hands on Keys (1).mp3; near-identical strong backup)"
+    ]
+  }
+}

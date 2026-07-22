@@ -1,0 +1,36 @@
+{
+  "name": "montree-montage-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Montree weekly-montage render worker (Remotion + ffmpeg). Standalone Railway service.",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "once": "tsx src/index.ts --once",
+    "plan": "tsx src/index.ts --plan",
+    "typecheck": "tsc --noEmit",
+    "studio": "remotion studio remotion/src/index.ts"
+  },
+  "dependencies": {
+    "@remotion/bundler": "4.0.496",
+    "@remotion/cli": "4.0.496",
+    "@remotion/renderer": "4.0.496",
+    "@supabase/supabase-js": "^2.45.4",
+    "pg": "^8.13.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "remotion": "4.0.496",
+    "sharp": "^0.33.5",
+    "tsx": "^4.19.2"
+  },
+  "optionalDependencies": {
+    "ffmpeg-static": "^5.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/pg": "^8.11.10",
+    "@types/react": "^19.0.1",
+    "@types/react-dom": "^19.0.2",
+    "typescript": "^5.7.2"
+  }
+}

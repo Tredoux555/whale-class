@@ -14,6 +14,7 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getLocaleFromRequest, getIntlLocale } from '@/lib/montree/i18n/server';
 import type { Locale } from '@/lib/montree/i18n/locales';
 import { isValidLocale } from '@/lib/montree/i18n/locales';
+import { maybeEnqueueMontageJobs } from '@/lib/montree/montage/enqueue';
 
 // TYPE A: Inline email label strings (locale-keyed)
 const EMAIL_LABELS: Record<Locale, Record<string, string>> = {
@@ -135,6 +136,9 @@ export async function POST(request: NextRequest) {
     let emailsSent = 0;
     const errors: Array<{ child_id: string; error: string }> = [];
     const publishedChildIds: string[] = [];
+    // Montage jobs are queued for every successfully published report (best-effort,
+    // gated by montage_enabled + >= 8 eligible photos inside maybeEnqueueMontageJobs).
+    const montageReports: Array<{ reportId: string; childId: string; classroomId: string }> = [];
 
     // Process each draft
     for (const draft of drafts) {
@@ -156,6 +160,7 @@ export async function POST(request: NextRequest) {
         }
         published++;
         publishedChildIds.push(draft.child_id);
+        montageReports.push({ reportId: draft.id, childId: draft.child_id, classroomId: classroom_id });
 
         // Also mark teacher report for this child as approved
         const { error: teacherUpdateErr } = await supabase
@@ -260,6 +265,16 @@ export async function POST(request: NextRequest) {
       } catch (e) {
         console.error('[weekly-wrap/send] push dispatch error:', e);
       }
+    }
+
+    // Weekly-montage feature: queue a beat-synced photo montage render for each
+    // published report. Fire-and-forget — a render that can't be queued must
+    // never affect the send response (the helper self-gates + swallows errors).
+    if (montageReports.length > 0) {
+      void maybeEnqueueMontageJobs(supabase, {
+        schoolId: auth.schoolId,
+        reports: montageReports,
+      }).catch((e) => console.error('[weekly-wrap/send] montage enqueue error:', e));
     }
 
     return NextResponse.json({

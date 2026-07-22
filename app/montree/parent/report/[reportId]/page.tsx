@@ -12,6 +12,7 @@ import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 import HomePracticeCard from '@/components/montree/parent/HomePracticeCard';
+import { getVideoProxyUrl } from '@/lib/montree/media/proxy-url';
 
 // Dark forest tokens
 const T = {
@@ -104,6 +105,9 @@ interface ReportData {
     nickname: string | null;
   };
   works_completed: WorkItem[];
+  // Bucket-relative path to the rendered weekly montage MP4 (montree-media),
+  // or null when no montage has been rendered for this report.
+  montage_path?: string | null;
   all_photos?: {
     id: string;
     url: string;
@@ -341,6 +345,26 @@ export default function ParentReportPage() {
       </header>
 
       <main style={{ maxWidth: "32rem", marginLeft: "auto", marginRight: "auto" }}>
+
+        {/* ═══ Week in Film — beat-synced montage (top of report) ═══ */}
+        {report.montage_path && (
+          <div style={{ margin: "1.25rem 1.25rem 0.25rem", borderRadius: 16, border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)", overflow: "hidden" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0.75rem 1rem 0.5rem" }}>
+              <Sparkles size={15} strokeWidth={2} style={{ color: T.emerald }} />
+              <span style={{ color: T.textSecondary, fontSize: "0.8rem", fontWeight: 600, letterSpacing: 0.2 }}>
+                {t('parentReport.weekInFilm')}
+              </span>
+            </div>
+            <video
+              controls
+              playsInline
+              preload="metadata"
+              poster={photoWorks[0]?.photo_url || report.all_photos?.[0]?.url || undefined}
+              src={`${getVideoProxyUrl(report.montage_path)}?v=1`}
+              style={{ width: "100%", height: "auto", display: "block", background: "#000" }}
+            />
+          </div>
+        )}
 
         {/* ═══ Hero Section ═══ */}
         <div style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem", paddingTop: "2rem", paddingBottom: "1.5rem" }}>
