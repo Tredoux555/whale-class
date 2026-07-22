@@ -740,6 +740,25 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
 
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  // Per-report montage regenerate state, keyed by report_id.
+  const [montageState, setMontageState] = useState<Record<string, 'queuing' | 'queued' | 'error'>>({});
+
+  const handleRegenMontage = async (reportId: string) => {
+    if (!reportId) return;
+    setMontageState(prev => ({ ...prev, [reportId]: 'queuing' }));
+    try {
+      const res = await montreeApi('/api/montree/reports/weekly-wrap/montage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ report_id: reportId }),
+      });
+      if (!res.ok) throw new Error('queue failed');
+      setMontageState(prev => ({ ...prev, [reportId]: 'queued' }));
+    } catch (err) {
+      console.error('[WeeklyWrap] Failed to queue montage:', err);
+      setMontageState(prev => ({ ...prev, [reportId]: 'error' }));
+    }
+  };
 
   const handleSendAll = async () => {
     if (sending) return;
@@ -2077,6 +2096,42 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                     getAreaLabel={getAreaLabel}
                     handleRemovePhoto={handleRemovePhoto}
                   />
+
+                  {/* Regenerate the weekly montage film — sent reports only */}
+                  {r.parent_status === 'sent' && r.report_id && (() => {
+                    const ms = montageState[r.report_id];
+                    const busy = ms === 'queuing' || ms === 'queued';
+                    return (
+                      <div style={{ padding: '0 20px 20px' }}>
+                        <button
+                          onClick={() => handleRegenMontage(r.report_id!)}
+                          disabled={busy}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            padding: '8px 14px',
+                            borderRadius: 999,
+                            background: 'rgba(52,211,153,0.08)',
+                            border: '1px solid rgba(52,211,153,0.25)',
+                            color: '#34d399',
+                            fontFamily: '"Inter", sans-serif',
+                            fontSize: 12,
+                            fontWeight: 600,
+                            cursor: busy ? 'default' : 'pointer',
+                            opacity: ms === 'queuing' ? 0.7 : 1,
+                          }}
+                        >
+                          🎬 {ms === 'queued' ? `${t('weeklyWrap.montageQueued')} ✓` : t('weeklyWrap.montageRegen')}
+                        </button>
+                        {ms === 'error' && (
+                          <p style={{ margin: '6px 0 0', color: '#f87171', fontFamily: '"Inter", sans-serif', fontSize: 11 }}>
+                            {t('weeklyWrap.montageError')}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })()

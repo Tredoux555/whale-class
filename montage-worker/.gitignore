@@ -1,0 +1,7 @@
+node_modules
+dist
+*.tsbuildinfo
+remotion/public/photos/
+.env
+.env.local
+.DS_Store

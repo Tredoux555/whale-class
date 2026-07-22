@@ -1,0 +1,16 @@
+{
+  "name": "yoyo-montage",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "render": "remotion render"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.496",
+    "@remotion/google-fonts": "^4.0.496",
+    "@remotion/renderer": "^4.0.496",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "remotion": "^4.0.496"
+  }
+}

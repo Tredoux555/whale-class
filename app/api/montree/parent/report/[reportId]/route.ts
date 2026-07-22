@@ -182,6 +182,21 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    // Montage MP4 pointer (migration 301). Kept as a SEPARATE query so a
+    // pre-migration deploy (42703 — column absent) can never break the whole
+    // report load; the main report select above intentionally omits it.
+    let montagePath: string | null = null;
+    try {
+      const { data: montageRow } = await supabase
+        .from('montree_weekly_reports')
+        .select('montage_path')
+        .eq('id', reportId)
+        .maybeSingle();
+      montagePath = (montageRow as { montage_path?: string | null } | null)?.montage_path ?? null;
+    } catch (mErr) {
+      console.error('[parent report] montage_path lookup failed (non-fatal):', mErr);
+    }
+
     // Build D2 (read receipt): stamp first_opened_at the FIRST time an authorized
     // parent opens this sent report. `.is('first_opened_at', null)` guard means we
     // never overwrite the first-open moment. Fire-and-forget — a failure here must
@@ -383,6 +398,7 @@ export async function GET(
           english_progress: englishProgress,
           works_completed: worksCompleted,
           all_photos: allPhotos,
+          montage_path: montagePath,
         }
       });
     }
@@ -547,6 +563,7 @@ export async function GET(
         english_progress: englishProgress,
         works_completed: worksCompleted,
         all_photos: allPhotos, // Include ALL photos from the week
+        montage_path: montagePath,
       }
     });
   } catch (error: unknown) {

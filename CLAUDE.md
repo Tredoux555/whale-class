@@ -1,5 +1,33 @@
 # Whale-Class / Montree - Developer Brain
 
+## 🎞 SESSION — Jul 22, 2026 (Cowork/Fable directing Opus+Sonnet) — WEEKLY MONTAGE FEATURE: PHASES 1–3 BUILT + E2E-CERTIFIED (Apple-Memories-style week-in-film for parents)
+
+**Canonical: `docs/handoffs/SESSION_MONTAGE_BUILD_JUL22.md` + `montage-kit/BUILD_SPEC.md`.
+Migration 301 ALREADY RUN on prod (Supabase SQL editor — pooler was GFW-blocked from the Mac
+AND blocked from the cloud sandbox; HTTPS is the only reliable prod-DB path right now).
+`montage_enabled=true` for Whale Class ONLY (default off).** On weekly-report publish, a job
+queues in `montree_montage_jobs`; a NEW separate Railway worker (`montage-worker/`, own
+Dockerfile) renders a beat-synced Ken-Burns photo montage (Remotion image-sequence → ffmpeg,
+1080×1920, downbeat cuts from precomputed beats.json — zero audio analysis at render time),
+uploads to `montree-media/<school>/<child>/montages/<report_id>.mp4`, stamps
+`montree_weekly_reports.montage_path`, and calls `/api/montree/internal/montage-complete`
+(x-worker-secret) → parent push. Parent report page pins the video player at top. Teacher 🎬
+regenerate button in WeeklyWrapTab preview. Render failure NEVER touches report delivery
+(enqueue helper can't throw; all reads 42703-safe). **🚨 DATA RULE LEARNED:
+`montree_report_media` is DEAD for parent reports (2 rows repo-wide, teacher drafts only) —
+the curated photo set is `montree_weekly_reports.content->'photos'`; both worker SQL and
+`lib/montree/montage/enqueue.ts` source from it with `child_id = r.child_id` +
+photo/confirmed/parent_visible filters (a cross-child group photo in Austin's report was
+correctly excluded in E2E).** All 5 verification gates passed: real Austin render (50.3s,
+frames eyeballed), kill -9 → stale-recovery requeue clean, flag-off zero side effects, <8
+photos → skipped_insufficient_photos, live proxy 200+Range 206 (test MP4 live in bucket at
+`…/montages/50a5086e….mp4`, prod montage_path unset). E2E bug fixed: node-pg returns Date
+objects → pg type parsers force strings; render concurrency clamped cores−1. ⏳ OWED Tredoux:
+create Railway worker service (root dir `montage-worker`, 4vCPU/4GB, env DATABASE_URL +
+SUPABASE keys + MONTAGE_WORKER_SECRET) + set MONTAGE_WORKER_SECRET on the MAIN app too + live
+verify after deploy. Music: 5 usable tracks ship in the worker; naptime/warm-acoustic takes now
+exist beat-mapped in montage-kit/music — add slugs to `src/music.ts` USABLE_TRACKS if keepers.
+
 ## 🃏 SESSION — Jul 19, 2026 (same Cowork session cont.) — MAIN CURRICULUM FLASHCARD VOCAB GAP: sound-song words wired into flashcards/three-part-cards (12 weeks, commit `a3a4a2d1`)
 
 Tredoux: "for a song for letter t there should be a picture of a tiger, a taxi, a turtle but there is

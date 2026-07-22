@@ -13,6 +13,7 @@ import { getLocaleFromRequest, getTranslator, getTranslatedStatus, getTranslated
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 import { getChineseDescriptionsMap } from '@/lib/curriculum/comprehensive-guides/parent-descriptions-zh';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
+import { maybeEnqueueMontageJobs } from '@/lib/montree/montage/enqueue';
 
 export async function POST(request: NextRequest) {
   try {
@@ -551,8 +552,10 @@ export async function POST(request: NextRequest) {
     const daysSinceStart = Math.floor((weekStart.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000));
     const weekNumber = Math.ceil((daysSinceStart + startOfYear.getDay() + 1) / 7);
 
-    // Save report to mark as sent (upsert to handle duplicate week)
-    const { error: insertError } = await supabase
+    // Save report to mark as sent (upsert to handle duplicate week).
+    // .select('id') returns the upserted row so we can queue a montage render
+    // for this exact report id below (montage feature — Phase 3).
+    const { data: upsertedReport, error: insertError } = await supabase
       .from('montree_weekly_reports')
       .upsert({
         school_id: classroom.school_id,
@@ -569,7 +572,9 @@ export async function POST(request: NextRequest) {
         published_at: now,
         generated_at: now,
         sent_at: now,
-      }, { onConflict: 'child_id,week_number,report_year' });
+      }, { onConflict: 'child_id,week_number,report_year' })
+      .select('id')
+      .maybeSingle();
 
     if (insertError) {
       console.error('Report insert error:', insertError);
@@ -708,6 +713,16 @@ export async function POST(request: NextRequest) {
       );
     } catch (e) {
       console.error('[reports/send] push dispatch error:', e);
+    }
+
+    // Weekly-montage feature: queue a beat-synced photo montage render for this
+    // report. Fire-and-forget — self-gated (montage_enabled + >= 8 eligible
+    // photos) and swallows all errors, so it can never affect the send response.
+    if (upsertedReport?.id) {
+      void maybeEnqueueMontageJobs(supabase, {
+        schoolId: classroom.school_id,
+        reports: [{ reportId: upsertedReport.id, childId: child.id, classroomId: child.classroom_id }],
+      }).catch((e) => console.error('[reports/send] montage enqueue error:', e));
     }
 
     return NextResponse.json({
