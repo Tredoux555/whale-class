@@ -146,3 +146,25 @@ e u r h b f l j v w x y z qu), batch by batch, Opus checking artwork before each
   OR extend to one alphabet deck at the end — Tredoux said "batch by batch"; ship per batch and
   link each from satpin-teacher.html print section. Commit after every batch. PUSH: Tredoux only,
   from his own Terminal (the VM cannot reach GitHub - verified again today).
+
+ADDED Wed night: all 27 song pictures (lessons 05-31) are now IN THE REPO at
+phonics-images/dark-phonics-song-cards/lesson-NN.png — no folder grant needed for the
+alphabet flashcard run. Song titles remain in spec/dark-phonics.json. For the OVERNIGHT
+REALISTIC-PHOTO RUN (Tredoux, Wed night): generate ultra-realistic photo versions of ALL
+curriculum vocab (SATPIN song words + L11-31 V-words, nouns only) for true Montessori
+materials (three-part cards, bingo). Locked realistic suffix: "ultra-realistic professional
+studio photograph of a single real <word>, centered, soft even studio lighting, plain pure
+white seamless background, no props, no people, no text, no words, no letters, no numbers,
+no watermark --ar 3:2" (NO --v 7, NO --oref — plain V8.1 photo mode; isolation hard gate
+applies). Submit via the established runner protocol (batch 5 / wait ~6 min / log every 25
+to OVERNIGHT_RUN_LOG.md / retry once then skip / resume from log). Harvest + Opus-curate
+after render; organize picks into phonics-images/montessori-real/<letter>/<word>.png.
+PHOTOBANK: after curation, write scripts/curriculum/upload-dark-phonics-bank.mjs (extend the
+upload-satpin-to-picture-bank.mjs pattern, JPEG-only rule) covering: book pages (sock/apple/
+sat + spat p6), vocab-iso, letter plates used in decks, cast, song cards, montessori-real.
+The upload itself runs ONLY on Tredoux's Mac in the morning (needs .env.local + network):
+  DRY_RUN=1 node --env-file=.env.local scripts/curriculum/upload-dark-phonics-bank.mjs
+  node --env-file=.env.local scripts/curriculum/upload-dark-phonics-bank.mjs
+Chrome for the MJ runner: Browser 1 (macOS), deviceId 7d422c1a-16c6-440f-8660-bd73adfec31e
+(Tredoux pre-authorized in chat). MJ concurrency: 8 jobs; queue rejects the 9th silently —
+verify each batch landed before moving on.
