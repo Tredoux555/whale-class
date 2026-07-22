@@ -194,6 +194,15 @@ with a cleaned/peg-doll sheet before the alphabet run.
 
 Source of picks: ART_PICKS_2026-07-22.md (8-char prefixes resolved to full UUIDs from the MJ archive 2026-07-22). CURATION CLOSED.
 
+
+## Isolated vocab plates — flashcard deck (generated 2026-07-22 evening)
+- sock a3ff76f1-4e42-41bb-b0fd-bc3aa3dfd64b tile 2 | ax f1c562de-11f7-488d-aa35-85229c6b759e tile 2
+- sap 16bd0e0f-8eae-4b49-a229-9d9c70e1cac8 tile 2 | pit 7fca2ec0-6ae9-41ea-ac57-27df16894d8d tile 1
+- pan 17745f02-bb5d-4804-ac70-6fb1e87680d3 tile 3 | tin b3196037-941a-4e6a-a84c-78fb25e833c0 tile 3
+- pat 5bb6aec3-70ba-4b5e-a8af-5b323b62a9db tile 1 | tap d8d396f6-03fb-48cf-ab8c-44086fcc07a9 tile 3 (re-roll; first job d148ffaf rejected — human hands)
+Reused isolated picks for the deck: sun=SAT-p4 · apple=SAT-p3 · sit=SAT-p1 · sat=SAT-p6 · sip=Sit-p6 · nap=Nap-p1 · snake=BK1-p1 · ant=BK2-p1 · at=word-only card.
+Files: phonics-images/satpin-v2/vocab-iso/ (white-balanced picks).
+
 ## Picture bank
 Assets in this manifest have been organized into `phonics-images/satpin-v2/`
 for ingestion into the shared Montree Picture Bank (`montree_photo_bank`
