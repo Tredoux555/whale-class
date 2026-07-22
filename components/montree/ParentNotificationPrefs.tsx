@@ -35,7 +35,11 @@ const ROWS = [
 type PrefKey = (typeof ROWS)[number]['key'];
 type Prefs = Record<PrefKey, boolean>;
 
-export default function ParentNotificationPrefs() {
+/**
+ * @param dark Dark-glass register for the parent portal (matches the rest of
+ *   the parent surfaces). Defaults to false so any other mount is untouched.
+ */
+export default function ParentNotificationPrefs({ dark = false }: { dark?: boolean } = {}) {
   const [prefs, setPrefs] = useState<Prefs | null>(null);
   const [hidden, setHidden] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
@@ -97,6 +101,67 @@ export default function ParentNotificationPrefs() {
   }
 
   if (hidden) return null;
+
+  if (dark) {
+    return (
+      <div
+        className="rounded-xl p-5"
+        style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 14 }}
+      >
+        <h3 className="font-semibold mb-1" style={{ color: 'rgba(255,255,255,0.95)', fontFamily: 'var(--font-lora), Georgia, serif' }}>
+          Push notifications
+        </h3>
+        <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.55)', fontFamily: '"Inter", sans-serif' }}>
+          Choose which notifications you receive on your phone.
+        </p>
+
+        {error && <p className="text-sm mb-3" style={{ color: '#f87171' }}>{error}</p>}
+        {unavailable && (
+          <p className="text-sm mb-3" style={{ color: '#fbbf24' }}>
+            Notification settings aren&apos;t available yet — please check back soon.
+          </p>
+        )}
+
+        {!prefs && !error ? (
+          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.40)' }}>Loading…</p>
+        ) : prefs ? (
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {ROWS.map((row, i) => {
+              const on = prefs[row.key];
+              return (
+                <div
+                  key={row.key}
+                  className="flex items-center justify-between gap-3 py-3"
+                  style={i > 0 ? { borderTop: '1px solid rgba(255,255,255,0.06)' } : undefined}
+                >
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.95)', fontFamily: '"Inter", sans-serif' }}>{row.label}</p>
+                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.40)', fontFamily: '"Inter", sans-serif' }}>{row.description}</p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={on}
+                    aria-label={`${row.label} notifications`}
+                    onClick={() => toggle(row.key)}
+                    disabled={savingKey === row.key || unavailable}
+                    className="relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:opacity-50"
+                    style={{ background: on ? '#10b981' : 'rgba(255,255,255,0.18)' }}
+                  >
+                    <span
+                      className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                        on ? 'translate-x-5' : 'translate-x-0.5'
+                      }`}
+                    />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-5">

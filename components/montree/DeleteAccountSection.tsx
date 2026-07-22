@@ -35,9 +35,9 @@ interface Props {
   /** Extra cleanup (e.g. clear localStorage) before redirect. */
   onDeleted?: () => void;
   /**
-   * Dark-glass register for teacher/principal surfaces (dashboard/settings,
-   * admin/settings). Defaults to false so the parent portal — which stays on
-   * its own light theme — is untouched.
+   * Dark-glass register for the in-app surfaces (teacher/principal
+   * dashboard/settings + the parent portal, which is now dark too as of
+   * Jul 2026). Defaults to false so any remaining light mount is untouched.
    */
   dark?: boolean;
 }

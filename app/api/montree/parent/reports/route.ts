@@ -13,6 +13,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Child ID required' }, { status: 400 });
   }
 
+  // Pagination (backward compatible: no params → 20 newest, same as before).
+  const offsetRaw = parseInt(searchParams.get('offset') || '0', 10);
+  const limitRaw = parseInt(searchParams.get('limit') || '20', 10);
+  const offset = Number.isFinite(offsetRaw) ? Math.min(Math.max(offsetRaw, 0), 5000) : 0;
+  const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(limitRaw, 1), 50) : 20;
+
   try {
     const supabase = getSupabase();
 
@@ -43,13 +49,13 @@ export async function GET(request: NextRequest) {
     //
     // If a teacher wants a report to be visible, they MUST send it. The
     // canonical action is /api/montree/reports/send.
-    const { data: reports, error } = await supabase
+    const { data: reports, error, count } = await supabase
       .from('montree_weekly_reports')
-      .select('id, status, created_at, week_start, week_end, week_number, report_year, parent_summary, content, generated_at, sent_at')
+      .select('id, status, created_at, week_start, week_end, week_number, report_year, parent_summary, content, generated_at, sent_at', { count: 'exact' })
       .eq('child_id', childId)
       .eq('status', 'sent')
       .order('created_at', { ascending: false })
-      .limit(20);
+      .range(offset, offset + limit - 1);
 
     if (error) {
       console.error('Reports query error:', error);
@@ -58,7 +64,10 @@ export async function GET(request: NextRequest) {
       }, { status: 500 });
     }
 
-    const response = NextResponse.json({ reports: reports || [] });
+    const total = count ?? (reports?.length || 0);
+    const returned = reports?.length || 0;
+    const has_more = offset + returned < total;
+    const response = NextResponse.json({ reports: reports || [], total, has_more });
     response.headers.set('Cache-Control', 'private, no-store');
     return response;
   } catch (error: unknown) {

@@ -27,6 +27,16 @@ create Railway worker service (root dir `montage-worker`, 4vCPU/4GB, env DATABAS
 SUPABASE keys + MONTAGE_WORKER_SECRET) + set MONTAGE_WORKER_SECRET on the MAIN app too + live
 verify after deploy. Music: 5 usable tracks ship in the worker; naptime/warm-acoustic takes now
 exist beat-mapped in montage-kit/music — add slugs to `src/music.ts` USABLE_TRACKS if keepers.
+**LATER SAME SESSION — Railway worker service CREATED via Chrome agent + live-verified (2m27s
+render; 🚨 root railway.json healthcheck applies to ALL services and the Settings field can't
+override — worker uses a `sh -c` start-command stub; see handoff) + PARENT PORTAL ROUND:
+(1) full report history — `/montree/parent/reports` page (dark, safe-area, paginated), reports
+API gained offset/limit/total/has_more (sent-only filter untouched), dashboard "All reports →"
+links (incl. the single-report case where Past Reports used to hide entirely); (2) dark-forest
+unification of the LAST light parent surfaces: account page rewritten dark (safe-area added),
+ParentNotificationPrefs gained a `dark` prop, DeleteAccountSection now passed dark (parent
+portal is NO LONGER "stays light" — comment updated), InstallBanner (single mount: parent
+layout) restyled dark-glass. Audit: SHIP 0 findings; i18n 12/12.**
 
 ## 🃏 SESSION — Jul 19, 2026 (same Cowork session cont.) — MAIN CURRICULUM FLASHCARD VOCAB GAP: sound-song words wired into flashcards/three-part-cards (12 weeks, commit `a3a4a2d1`)
 

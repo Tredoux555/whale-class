@@ -1424,13 +1424,36 @@ export default function ParentDashboardPage() {
               </div>
             ) : null}
 
+            {/* Compact "all reports" link when there's exactly one report
+                (the collapsible Past Reports section only shows for 2+). */}
+            {reports.length > 0 && pastReports.length === 0 && (
+              <div style={{
+                padding: '20px',
+                borderTop: '1px solid rgba(255,255,255,0.05)',
+                textAlign: 'center',
+              }}>
+                <Link
+                  href={`/montree/parent/reports?childId=${selectedChild?.id || ''}`}
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: T.emerald,
+                    textDecoration: 'none',
+                  }}
+                >
+                  {t('parentDashboard.viewAllReports')} →
+                </Link>
+              </div>
+            )}
+
             {/* ═══ Past Reports — Collapsed ═══ */}
             {pastReports.length > 0 && (
               <div style={{ padding: '24px 20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <button
                   onClick={() => setPastReportsOpen(!pastReportsOpen)}
                   style={{
-                    width: '100%',
+                    flex: 1,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
@@ -1459,6 +1482,20 @@ export default function ParentDashboardPage() {
                     }}
                   />
                 </button>
+                <Link
+                  href={`/montree/parent/reports?childId=${selectedChild?.id || ''}`}
+                  style={{
+                    flexShrink: 0,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: T.emerald,
+                    textDecoration: 'none',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {t('parentDashboard.viewAllReports')} →
+                </Link>
+                </div>
                 {pastReportsOpen && (
                   <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {pastReports.map(report => (
