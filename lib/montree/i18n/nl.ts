@@ -3534,6 +3534,8 @@ export const nl: Record<string, string> = {
   'photoAudit.sync': 'Synchroniseren',
   'photoAudit.todayFilterTitle': 'Alleen foto\'s van vandaag weergeven',
   'photoAudit.today': 'Vandaag',
+  'parentDashboard.prevWeek': 'Previous week',
+  'parentDashboard.nextWeek': 'Next week',
   'parentDashboard.weekLabel': 'Week {week}, {year}',
   'parentDashboard.weekOnly': 'Week {week}',
   'parentDashboard.mastered': 'beheerst',

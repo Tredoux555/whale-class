@@ -4047,6 +4047,8 @@ export const en = {
   'photoAudit.today': 'Today',
 
   // Parent Dashboard
+  'parentDashboard.prevWeek': 'Previous week',
+  'parentDashboard.nextWeek': 'Next week',
   'parentDashboard.weekLabel': 'Week {week}, {year}',
   'parentDashboard.weekOnly': 'Week {week}',
   'parentDashboard.mastered': 'mastered',

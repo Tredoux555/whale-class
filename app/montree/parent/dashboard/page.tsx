@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
-import { LogOut, ChevronDown, MessageSquare, Calendar } from 'lucide-react';
+import { LogOut, ChevronDown, ChevronLeft, ChevronRight, MessageSquare, Calendar } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import { rememberLaunchSurface, clearLaunchSurface } from '@/lib/montree/launch-surface';
@@ -120,6 +120,9 @@ export default function ParentDashboardPage() {
   const [latestReport, setLatestReport] = useState<FullReport | null>(null);
   const [loadingReport, setLoadingReport] = useState(false);
   const [pastReportsOpen, setPastReportsOpen] = useState(false);
+  // Inline prev/next navigation between weekly reports (newest-first array;
+  // index 0 = newest). Drives which report the header date + main view show.
+  const [currentReportIndex, setCurrentReportIndex] = useState(0);
 
   // Lightbox
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -389,10 +392,12 @@ export default function ParentDashboardPage() {
       const data = await res.json();
       if (data.reports && data.reports.length > 0) {
         setReports(data.reports);
-        // Auto-load the latest report
+        // Auto-load the latest report and point the inline nav at it.
+        setCurrentReportIndex(0);
         loadFullReport(data.reports[0].id);
       } else {
         setReports([]);
+        setCurrentReportIndex(0);
       }
     } catch (err) {
       console.error('Failed to load reports:', err);
@@ -416,10 +421,20 @@ export default function ParentDashboardPage() {
     }
   }, [locale]);
 
+  // Navigate the inline prev/next control between weekly reports. Reports are
+  // newest-first: a higher index is an OLDER week. Guards keep the index in
+  // range; loadFullReport swaps the main view + header date to match.
+  const goToReport = (newIndex: number) => {
+    if (newIndex < 0 || newIndex >= reports.length) return;
+    setCurrentReportIndex(newIndex);
+    loadFullReport(reports[newIndex].id);
+  };
+
   const handleSelectChild = (child: Child) => {
     setSelectedChild(child);
     setLatestReport(null);
     setPastReportsOpen(false);
+    setCurrentReportIndex(0);
     localStorage.setItem('montree_selected_child', JSON.stringify({ id: child.id, name: child.nickname || child.name }));
     loadReports(child.id);
   };
@@ -1013,11 +1028,69 @@ export default function ParentDashboardPage() {
                   }}>
                     {firstName}
                   </h1>
-                  {latestReport && (
-                    <p style={{ fontSize: 13, color: T.textMuted, marginTop: 8 }}>
-                      {formatWeekRange(latestReport)}
-                    </p>
-                  )}
+                  {latestReport && reports.length >= 1 && (() => {
+                    // Newest-first array: LEFT (‹) steps to an OLDER week
+                    // (index+1); RIGHT (›) steps to a NEWER week (index-1).
+                    const olderDisabled = currentReportIndex >= reports.length - 1;
+                    const newerDisabled = currentReportIndex <= 0;
+                    return (
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 10,
+                        marginTop: 8,
+                      }}>
+                        <button
+                          type="button"
+                          onClick={olderDisabled ? undefined : () => goToReport(currentReportIndex + 1)}
+                          disabled={olderDisabled}
+                          aria-label={t('parentDashboard.prevWeek')}
+                          title={t('parentDashboard.prevWeek')}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: 34,
+                            height: 34,
+                            borderRadius: 10,
+                            background: 'rgba(255,255,255,0.06)',
+                            border: 'none',
+                            padding: 0,
+                            color: olderDisabled ? 'rgba(255,255,255,0.20)' : '#34d399',
+                            cursor: olderDisabled ? 'default' : 'pointer',
+                          }}
+                        >
+                          <ChevronLeft size={18} />
+                        </button>
+                        <p style={{ fontSize: 13, color: T.textMuted, margin: 0 }}>
+                          {formatWeekRange(latestReport)}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={newerDisabled ? undefined : () => goToReport(currentReportIndex - 1)}
+                          disabled={newerDisabled}
+                          aria-label={t('parentDashboard.nextWeek')}
+                          title={t('parentDashboard.nextWeek')}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: 34,
+                            height: 34,
+                            borderRadius: 10,
+                            background: 'rgba(255,255,255,0.06)',
+                            border: 'none',
+                            padding: 0,
+                            color: newerDisabled ? 'rgba(255,255,255,0.20)' : '#34d399',
+                            cursor: newerDisabled ? 'default' : 'pointer',
+                          }}
+                        >
+                          <ChevronRight size={18} />
+                        </button>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             </div>

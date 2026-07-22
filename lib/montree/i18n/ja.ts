@@ -3534,6 +3534,8 @@ export const ja: Record<string, string> = {
   'photoAudit.sync': '同期',
   'photoAudit.todayFilterTitle': '今日の写真のみを表示',
   'photoAudit.today': '今日',
+  'parentDashboard.prevWeek': 'Previous week',
+  'parentDashboard.nextWeek': 'Next week',
   'parentDashboard.weekLabel': '第{week}週 {year}年',
   'parentDashboard.weekOnly': '第{week}週',
   'parentDashboard.mastered': '習得した',
