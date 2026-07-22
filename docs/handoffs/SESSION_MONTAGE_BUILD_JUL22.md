@@ -77,6 +77,21 @@ Bugs caught & fixed during E2E: node-postgres returns Date objects where code ex
 (`--plan` crashed; fixed with pg type parsers at the driver boundary) · render concurrency now
 clamped to `cores−1` (a 2-vCPU stall at concurrency=2 burned a timeout once).
 
+## ✅ UPDATE (same session, later): RAILWAY WORKER SERVICE CREATED + LIVE-VERIFIED
+A Sonnet agent drove Tredoux's Chrome and created the `montage-worker` service in the existing
+Railway project (root dir `montage-worker`, EU West, no public domain), set all 5 env vars, and
+added `MONTAGE_WORKER_SECRET` to the main whale-class service (redeployed clean). **Live proof:
+the Austin staging job re-rendered ON RAILWAY in 2m27s claim→done** (1509 frames in ~1m47s —
+much faster than the 2-vCPU estimate), status=done, duration 50.3s, upload verified.
+🚨 GOTCHA (durable): the repo-root `railway.json` sets `healthcheckPath: /api/health` and
+applies to EVERY service in the project — the per-service Settings field CANNOT override it, and
+the worker has no HTTP server, so deploys failed at healthcheck. Settings-only workaround in
+place: Custom Start Command `sh -c '<one-line 200-OK node stub> & exec npx tsx src/index.ts'`
+(the `sh -c` wrapper is REQUIRED — bare `&`/`exec` in the field is not shell-interpreted and
+silently runs only the stub; "Online" + empty deploy logs + "No running instances" is the tell).
+Cleaner future fix: commit a `montage-worker/railway.json` overriding the healthcheck, or add a
+tiny /health listener to the worker. The items below are now DONE except live-verify item 3.
+
 ## ⏳ OWED — Tredoux
 1. **Create the Railway worker service** (dashboard): same project, root directory
    `montage-worker`, 4 vCPU/4GB. Env: `DATABASE_URL` (pooler URL), `SUPABASE_SERVICE_ROLE_KEY`,
