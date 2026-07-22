@@ -93,3 +93,56 @@ DO NOT evaluate or harvest images — submission only. Conserve context ruthless
   midjourney.com himself (he can heart/organize there; his picks guide the harvest).
 - PUSH: still pending; media packs etc. only appear at teacherpotato.xyz URLs after Tredoux runs
   `git push origin main`. Nothing the runner does depends on the push.
+
+---
+# ALPHABET FLASHCARD RUN — handoff (written Wed 2026-07-22 night, after the SATPIN deck shipped)
+
+The SATPIN flashcard deck (v4, public/shelf-packs/dark-phonics-satpin-flashcards.pdf) is the
+LOCKED TEMPLATE. Tredoux approved it ("legit"). Next job: same deck for L11-L31 (m d g o c k ck
+e u r h b f l j v w x y z qu), batch by batch, Opus checking artwork before each batch ships.
+
+## The card architecture (do not redesign)
+- Per letter: LETTER card (front: giant red letter + mouth-cue; back: SONG picture + song title
+  + LESSON N) then 2-3 VOCAB word cards (front: ONE isolated picture + word with target letter
+  red; back: small red letter + DARK PHONICS + song title). Cast cards only in the SATPIN deck.
+- Print: A4 duplex, flip on LONG edge. Builder: scripts/curriculum/flashcards/build_flashcards.py
+  (fonts from the canvas-design skill; Outfit-Bold for words, YoungSerif titles, Lora italics).
+- ISOLATION RULE (Tredoux, emphatic): every vocab picture = ONE clear subject of the target word,
+  white background, nothing else. The overnight run's V1-V6 plates already satisfy this.
+- Card images get downscaled to ~1400px JPEG q86 inside the builder (20MB commit cap).
+
+## Ingredients, all ready
+- V-slot picks with FULL UUIDs: art-manifest.md sections L11-L31 (cdn.midjourney.com/<uuid>/0_<t>.png).
+- Song titles: lib/montree/english-curriculum/spec/dark-phonics.json lessons 11-31.
+- Song pictures: ~/Desktop/English Curriculum 2026/Dark Phonics/lesson-NN.png — OUTSIDE the
+  repo folder; each session must device_request_folder_access that folder again (granted once
+  Jul 22, per-session grant).
+- Known blemishes to patch/avoid: L13-S2 + L18-C1 were watermark-patched (patched copies in
+  phonics-images/satpin-v2/letters/); L15-C2 + L24-S2 have sigs (unpatched, S/C slots — the
+  flashcards use V slots, so mostly irrelevant); L17-C2 has NO art.
+- Suggested batches: [11-14 m d g o] [15-18 c k ck e] [19-22 u r h b] [23-26 f l j v] [27-31 w x y z qu].
+- Vocab: pick 2-3 clearest words per letter from the V1-V6 plates (word lists = the "A single
+  <word>" prompts in MJ_PROMPT_PACK_ALL.md). Watch duplicates across letters (cup in c+u,
+  fox in f+x, sock in ck, rock in ck+r) — fine pedagogically, but never reuse the same TILE
+  in two letters if avoidable.
+- Mouth-cues: write sound-true cues per letter (never letter-name, never schwa) in the style
+  of the SATPIN deck: "mmm — lips together, hum", "k-k-k — a quiet back click", etc.
+  x = "ks — a hiss at the end", qu = "kw — q and u stick together", ck = "k-k-k — same sound,
+  two letters".
+- OPUS CHECK (Tredoux asked for this): before shipping each batch, have an Opus agent review a
+  contact sheet of the chosen tiles. ISOLATION IS A HARD GATE (Tredoux, twice, emphatic):
+  reject ANY tile with a second object, a second character, a prop, background scenery, or
+  ground clutter beyond a simple shadow — one subject, white page, full stop. Then: correct
+  subject a 4-year-old names instantly, style-true, no text/sigs/watermarks. Do NOT assume the
+  overnight V-plates pass — verify every tile individually (some V winners include props, e.g.
+  milk-with-straw-and-mouse style compositions). Swap rejected tiles for another tile of the
+  same job or another V-slot; if none passes, RE-ROLL with the isolation phrasing below;
+  re-check after every swap.
+- If a word needs NEW art: locked style suffix + "nothing else" + isolation phrasing; for any
+  hands/people: "smooth wooden peg-doll arm, simple rounded wooden mitten hand, matte painted
+  toy wood" + no-list additions "no human hands, no skin, no fingers, no fingernails"
+  (this beat the human-hand problem for 'tap': d8d396f6 t3).
+- Output: ONE PDF per batch (public/shelf-packs/dark-phonics-alphabet-flashcards-<letters>.pdf)
+  OR extend to one alphabet deck at the end — Tredoux said "batch by batch"; ship per batch and
+  link each from satpin-teacher.html print section. Commit after every batch. PUSH: Tredoux only,
+  from his own Terminal (the VM cannot reach GitHub - verified again today).
