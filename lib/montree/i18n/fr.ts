@@ -3534,6 +3534,8 @@ export const fr: Record<string, string> = {
   'photoAudit.sync': 'Synchroniser',
   'photoAudit.todayFilterTitle': 'Afficher uniquement les photos d\'aujourd\'hui',
   'photoAudit.today': 'Aujourd\'hui',
+  'parentDashboard.prevWeek': 'Previous week',
+  'parentDashboard.nextWeek': 'Next week',
   'parentDashboard.weekLabel': 'Semaine {week}, {year}',
   'parentDashboard.weekOnly': 'Semaine {week}',
   'parentDashboard.mastered': 'maîtrisé',

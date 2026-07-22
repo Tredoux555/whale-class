@@ -3534,6 +3534,8 @@ export const ko: Record<string, string> = {
   'photoAudit.sync': '동기화',
   'photoAudit.todayFilterTitle': '오늘 사진만 보기',
   'photoAudit.today': '오늘',
+  'parentDashboard.prevWeek': 'Previous week',
+  'parentDashboard.nextWeek': 'Next week',
   'parentDashboard.weekLabel': '{week}주, {year}년',
   'parentDashboard.weekOnly': '{week}주',
   'parentDashboard.mastered': '숙달함',

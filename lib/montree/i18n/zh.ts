@@ -4007,6 +4007,8 @@ export const zh = {
   'photoAudit.today': '今日',
 
   // Parent Dashboard
+  'parentDashboard.prevWeek': '上一周',
+  'parentDashboard.nextWeek': '下一周',
   'parentDashboard.weekLabel': '{year}年 第{week}周',
   'parentDashboard.weekOnly': '第{week}周',
   'parentDashboard.mastered': '掌握',

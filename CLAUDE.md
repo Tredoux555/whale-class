@@ -37,6 +37,11 @@ unification of the LAST light parent surfaces: account page rewritten dark (safe
 ParentNotificationPrefs gained a `dark` prop, DeleteAccountSection now passed dark (parent
 portal is NO LONGER "stays light" — comment updated), InstallBanner (single mount: parent
 layout) restyled dark-glass. Audit: SHIP 0 findings; i18n 12/12.**
+**(3) dashboard inline ‹ › prev/next week nav flanking the report date (pages through the
+child's SENT reports via loadFullReport; both chevrons greyed when only 1 sent report). NOTE:
+Austin has only 1 SENT parent report (wk11) — 4 real-content drafts (wk14/15/16/19) sit unsent,
+so the arrows are inert until more weeks are sent/published. Data oddity: wk15 (50a5086e, the
+montage E2E report) has sent_at set but status still 'draft'.**
 
 ## 🃏 SESSION — Jul 19, 2026 (same Cowork session cont.) — MAIN CURRICULUM FLASHCARD VOCAB GAP: sound-song words wired into flashcards/three-part-cards (12 weeks, commit `a3a4a2d1`)
 
