@@ -1,5 +1,28 @@
 # Whale / Montree — Latest Handoff
 
+## 🗂️ Jul 23 — Dark Phonics tidy-up + Montessori Picture Bank (Cowork)
+
+**Full pickup: `docs/picture-bank/HANDOFF_PICTURE_BANK_Jul23.md`.**
+
+All deployed: media packs completed (Flashcards + Books & Readers on all 10
+letter pages); **middleware `pdf` allow-list bug fixed** (public `/satpin-books/**.pdf`
+were serving the app shell — Print-booklet links had been broken); **new tidy
+SATPIN page LIVE at teacherpotato.xyz/satpin.html** — two print-once bundles
+(All Flashcards, All Books). Shelf packs dropped per user (quality).
+
+**NEW — Montessori Picture Bank** (separate photoreal shelf / 3-part-card track,
+NOT the googly-eye circle set). Deliverables in `docs/picture-bank/`:
+`MJ-PROMPTS-A-Z.md` (156 copy-paste Midjourney prompts) and
+`Montessori-Object-Picture-Bank-A-Z.xlsx` (searchable; STL-search terms +
+print/buy tags; hard letters I/U/X/Z flagged).
+
+**NEXT:** user runs the MJ prompts → Claude builds the 3-part cards → host as a
+tab in the same place → finish wiring `satpin.html` into the hub + remove old
+duplicate pages (nothing deleted yet).
+
+---
+
+
 ## ☀️ MORNING REPORT — Jun 12→13 overnight marathon (Cowork session)
 
 **Everything is on branch `burn-jun12-night2` (12 commits). NOTHING merged or
