@@ -162,7 +162,7 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith('/images/') ||
     pathname === '/sitemap.xml' ||
     pathname === '/robots.txt' ||
-    /\.(svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf|eot|mp3|mp4|html|avif|json|webmanifest)$/i.test(pathname)
+    /\.(svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf|eot|mp3|mp4|pdf|html|avif|json|webmanifest)$/i.test(pathname)
   ) {
     return NextResponse.next();
   }
