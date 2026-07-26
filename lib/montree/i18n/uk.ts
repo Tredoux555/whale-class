@@ -5250,6 +5250,8 @@ export const uk: Record<string, string> = {
   'copilot.dock.didIt': 'I did it — what’s next?',
   'copilot.dock.checking': 'Checking…',
   'copilot.dock.notYet': 'I don’t see it yet — give the steps above another try, or ask me below if you’re stuck.',
+  'copilot.dock.minimize': 'Згорнути',
+  'copilot.dock.reopen': 'Відкрити помічника',
   'copilot.skipStep': 'Skip for now',
   'copilot.p3.someone': 'Your teacher',
   'copilot.p1.title': 'Open your first classroom',

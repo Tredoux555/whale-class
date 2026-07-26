@@ -5663,6 +5663,8 @@ export const zh = {
   'copilot.dock.didIt': '我做好了——接下来呢？',
   'copilot.dock.checking': '正在确认…',
   'copilot.dock.notYet': '我还没有看到——再试试上面的步骤，或者在下面问我。',
+  'copilot.dock.minimize': '最小化',
+  'copilot.dock.reopen': '打开向导',
   'copilot.skipStep': '暂时跳过',
   'copilot.p3.someone': '您的老师',
   // 园长旅程（您）
