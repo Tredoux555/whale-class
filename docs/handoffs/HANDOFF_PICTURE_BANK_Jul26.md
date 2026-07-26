@@ -142,3 +142,51 @@ part of the SATPIN document. `red` was filed (reused `apple.jpg`, since apple is
 `ran` and `rip` were deliberately left ungenerated, flagged for Tredoux to decide, matching the
 precedent in `docs/handoffs/HANDOFF_PICTURE_BANK_RUN_Jul25.md` that excluded `running` as "not
 photographable as a holdable object." Still open — ask before generating.
+
+## 7. Round 3 (later the same day) — the Round 2 "fix" hadn't actually worked
+
+Tredoux came back frustrated: "I just looked at a taxi we generated and this penguin and its
+just not in the picture bank." Investigation didn't find a caching or UI bug this time — it found
+that **Round 2's fix never actually fixed anything.** Pulling `ambulance.jpg`, `taxi.jpg`,
+`panda.jpg`, `penguin.jpg` and `infant.jpg` straight from live Storage (cache-busted URL, fresh
+screenshot, not trusting the earlier "upload OK" script output) showed:
+
+- `ambulance` — still an unmistakable glossy die-cast toy truck
+- `taxi` — still a toy-proportioned model car
+- `panda` — still a plush stuffed animal
+- `penguin` — still a vinyl/resin figurine
+- `infant` — had reverted to a photoreal human baby (the exact problem the doll rule exists to
+  prevent)
+
+Two full rounds of Midjourney regeneration with explicit "not a toy" prompt language had failed to
+overcome the model's bias toward cute/toy-styled output for these five specific subjects. The
+Round 2 handoff entry above was written after generating and filing the images but evidently
+without opening the final published file and looking hard at it — audit-script "PASS" and a script
+"upload OK" message were mistaken for verification.
+
+**Fix:** abandoned AI generation for these five words. Sourced real photographs from Wikimedia
+Commons instead (all public domain / CC-licensed, confirmed genuine — not AI output — via EXIF
+camera data or an explicit "toy producer" caption):
+
+- `ambulance` → "Ford Transit (2013) AMR Ambulance 2.jpg", CC BY-SA 3.0 (real iPhone photo, EXIF-verified)
+- `taxi` → "Hackney Carriage Black Cab Digital Advertising TaxiTop Eyetease.jpg", CC0 (real iPhone photo, EXIF-verified)
+- `panda` → "Giant Panda Ling Ling (1985) by Jessie Cohen... Smithsonian's National Zoo", CC BY 4.0
+- `penguin` → "Portrait of an African penguin on beach.jpg", CC0
+- `infant` → "Baby doll-Calineczka-original-2006.jpg", a real product photo of a Simba Toys doll, CC BY-SA 3.0 — unambiguously a toy (simple molded plastic face, product-photo context), which is exactly the failure mode Round 1/2 kept sliding back into
+
+Each file was resized (auto-orient, max 1600px, ~85% quality) and published to **both** storage
+systems the same way as Round 2 — `docs/picture-bank/photos/<word>/<word>.jpg` in git, the
+`dark-phonics` bucket at `picture-bank/<word>.jpg`, and the exact existing `photo-bank` bucket
+`storage_path`(s) for each `montree_photo_bank` row (both `infant` rows) so no duplicates were
+created. **Every one of the 5 was re-verified after publishing** by navigating directly to the live
+Storage URL with a cache-busting query param and taking a fresh screenshot — not by re-running the
+publish script and trusting its exit code.
+
+### Why this matters for next time
+
+If a subject can't be photographed as a clean studio object on white (an ambulance, a live panda,
+a taxi, a penguin, a baby), don't fight Midjourney's toy bias with prompt tweaks — go straight to a
+real, licensed photograph (Wikimedia Commons is fast and has usable EXIF/caption evidence of
+authenticity) and skip the AI-generation step entirely. And **always** open the final file with a
+fresh, cache-busted view before calling a picture-bank fix done — a script succeeding is not the
+same as the image being correct.
