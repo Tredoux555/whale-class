@@ -117,6 +117,11 @@ export default function CopilotDock({
   const [expanded, setExpanded] = useState(false);
   const [overlay, setOverlay] = useState<Overlay>(null);
   const [hidden, setHidden] = useState(false);
+  // 2026-07-26: the ✕ on the card header no longer just collapses to the pill —
+  // it MINIMIZES the whole dock to a ~40px tab, persisted to localStorage so it
+  // stays minimized across navigations. Tapping the tab brings the pill back.
+  // The permanent dismiss ("I'll find my own way") is untouched.
+  const [minimized, setMinimized] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   // Anchor geometry (contract §2 — dock lives TOP-LEFT so it hands over from
   // the funnel narrator). Measured from the surface's own header so the pill
@@ -489,6 +494,7 @@ export default function CopilotDock({
   //   • Reset: double-click (mouse) or double-tap <300ms (touch) on the handle
   //     → offset {0,0} + clears the key.
   const DOCK_OFFSET_KEY = 'montree_copilot_dock_offset';
+  const DOCK_MINIMIZED_KEY = 'montree_copilot_dock_minimized';
   const MIN_VISIBLE = 48; // px of the header that must stay on-screen per edge
   const DRAG_THRESHOLD = 4; // px of travel before a press becomes a drag
 
@@ -509,6 +515,7 @@ export default function CopilotDock({
     armed: boolean;
   } | null>(null);
   const lastTapRef = useRef(0); // for touch double-tap detection
+  const draggedAtRef = useRef(0); // ts of the last ARMED drag end (click suppression)
 
   // Clamp an offset so ≥MIN_VISIBLE px of the header stays inside the viewport
   // on every edge. `baseLeft/baseTop` are the anchored position with the offset
@@ -567,9 +574,50 @@ export default function CopilotDock({
     }
   }, []);
 
+  // ── Minimize / restore (2026-07-26) ─────────────────────────────────────────
+  // ✕ on the card header → tiny tab. Persisted, so it survives navigations. This
+  // is NOT the permanent dismiss (that stays the "I'll find my own way" link and
+  // its server write) — nothing here touches the step engine or the /state route.
+  const handleMinimize = useCallback(() => {
+    setMinimized(true);
+    setExpanded(false); // so one tap on the tab comes back to the pill
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(DOCK_MINIMIZED_KEY, '1');
+      } catch {
+        /* localStorage unavailable — minimize still works for this mount */
+      }
+    }
+  }, []);
+
+  const handleRestore = useCallback(() => {
+    setMinimized(false);
+    setExpanded(false); // restore to the pill; a second tap opens the card
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.removeItem(DOCK_MINIMIZED_KEY);
+      } catch {
+        /* ignore */
+      }
+    }
+  }, []);
+
   const onDockPointerDown = useCallback(
     (e: React.PointerEvent) => {
       if (e.button != null && e.button !== 0) return; // primary pointer only
+      // 2026-07-26 BUGFIX (dead ✕): the card header row is the drag handle, and
+      // this handler used to setPointerCapture on it for EVERY pointerdown —
+      // including a press that landed on the header's ✕ button. Pointer capture
+      // retargets all later pointer events to the capturing element, so the
+      // synthesized click never reached the ✕ and the button looked dead. Two
+      // belts: (1) never arm a drag from a nested control, (2) capture lazily,
+      // only once the 4px threshold turns the press into a real drag (below).
+      // The collapsed pill / minimized tab ARE <button>s and must stay
+      // draggable, hence the `!== e.currentTarget` check.
+      const interactive = (e.target as HTMLElement | null)?.closest?.(
+        'button, a, input, textarea, select, [data-no-drag]'
+      );
+      if (interactive && interactive !== e.currentTarget) return;
       const el = dockRef.current;
       if (!el) return;
       const rect = el.getBoundingClientRect();
@@ -588,11 +636,8 @@ export default function CopilotDock({
         startOffY: offset.y,
         armed: false,
       };
-      try {
-        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-      } catch {
-        /* pointer may already be gone — capture is best-effort */
-      }
+      // Deliberately NO setPointerCapture here — see the note above. Capture is
+      // taken in the move handler at the moment the drag arms.
     },
     [offset.x, offset.y]
   );
@@ -606,6 +651,13 @@ export default function CopilotDock({
       if (!d.armed) {
         if (Math.hypot(dx, dy) < DRAG_THRESHOLD) return; // still a tap
         d.armed = true;
+        // Capture NOW (not on pointerdown) so the drag keeps tracking even if the
+        // pointer leaves the handle, while plain taps never get retargeted.
+        try {
+          (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+        } catch {
+          /* pointer may already be gone — capture is best-effort */
+        }
         setDragging(true); // disables the container transition (tracks 1:1)
       }
       setOffset(
@@ -633,6 +685,7 @@ export default function CopilotDock({
         /* ignore */
       }
       if (d.armed) {
+        draggedAtRef.current = Date.now(); // so the tab's onClick can ignore a drag
         setDragging(false); // re-enable the transition
         if (typeof window !== 'undefined') {
           try {
@@ -671,6 +724,18 @@ export default function CopilotDock({
     }
   }, []);
 
+  // Restore the minimized-to-tab flag on mount (client-only, same lazy pattern as
+  // the offset above — ssr:false, but the typeof-window guard stays for parity).
+  // This is what makes ✕ stick across page navigations.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      if (window.localStorage.getItem(DOCK_MINIMIZED_KEY) === '1') setMinimized(true);
+    } catch {
+      /* unavailable → start un-minimized; no harm */
+    }
+  }, []);
+
   // Re-clamp on window resize / rotation so the dock can't be stranded.
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -684,7 +749,7 @@ export default function CopilotDock({
     if (typeof window === 'undefined') return;
     const id = window.requestAnimationFrame(reclamp);
     return () => window.cancelAnimationFrame(id);
-  }, [reclamp, offset.x, offset.y, expanded, isMobile, dockTop, dockLeft]);
+  }, [reclamp, offset.x, offset.y, expanded, minimized, isMobile, dockTop, dockLeft]);
 
   // ── Render gate ─────────────────────────────────────────────────────────────
   const excluded = EXCLUDED_ROUTES.has(pathname);
@@ -731,8 +796,62 @@ export default function CopilotDock({
     <>
       {showPulse && pulseAnchor && <AnchorPulse anchor={pulseAnchor} />}
 
+      {/* ── Minimized tab (2026-07-26) ──
+          Where the ✕ lands: a ~40px glassy sparkle chip on the dock's own anchor
+          (dockLeft/dockTop) and z-layer, carrying the same drag offset, so it sits
+          exactly where the pill did but takes almost no room. One tap → the pill
+          is back (a second tap opens the card, as always). */}
+      {minimized && (
+        <button
+          type="button"
+          onClick={() => {
+            // Ignore the click that a just-finished drag synthesizes.
+            if (Date.now() - draggedAtRef.current < 250) return;
+            handleRestore();
+          }}
+          onPointerDown={onDockPointerDown}
+          onPointerMove={onDockPointerMove}
+          onPointerUp={onDockPointerUp}
+          onPointerCancel={onDockPointerUp}
+          ref={(el) => {
+            dockRef.current = el;
+          }}
+          className="copilot-root"
+          aria-label={t('copilot.dock.reopen')}
+          title={t('copilot.dock.reopen')}
+          style={{
+            position: 'fixed',
+            left: dockLeft,
+            top: dockTop,
+            zIndex: 9000,
+            transform: `translate3d(${offset.x}px, ${offset.y}px, 0)`,
+            transition: dragging ? 'none' : undefined,
+            touchAction: 'none',
+            width: 40,
+            height: 40,
+            padding: 0,
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '50%',
+            background: 'rgba(8,20,12,0.85)',
+            border: `1px solid ${T.cardBorder}`,
+            backdropFilter: T.blur,
+            WebkitBackdropFilter: T.blur,
+            boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
+            cursor: dragging ? 'grabbing' : 'pointer',
+            color: T.emerald,
+            opacity: 0.75,
+            fontFamily: T.sans,
+          }}
+        >
+          <Sparkles size={16} strokeWidth={1.75} />
+        </button>
+      )}
+
       {/* ── Collapsed pill ── */}
-      {!expanded && currentStep && (
+      {!minimized && !expanded && currentStep && (
         <button
           type="button"
           onClick={() => setExpanded(true)}
@@ -811,7 +930,7 @@ export default function CopilotDock({
       )}
 
       {/* ── Expanded card ── */}
-      {expanded && (
+      {!minimized && expanded && (
         <div
           role="dialog"
           aria-label={personaName}
@@ -915,8 +1034,9 @@ export default function CopilotDock({
             </div>
             <button
               type="button"
-              onClick={() => setExpanded(false)}
-              aria-label={t('common.cancel')}
+              onClick={handleMinimize}
+              aria-label={t('copilot.dock.minimize')}
+              title={t('copilot.dock.minimize')}
               style={{
                 background: 'transparent',
                 border: 'none',
