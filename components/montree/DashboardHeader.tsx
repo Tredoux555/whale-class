@@ -10,7 +10,7 @@ import {
   FileText, Target, Search, Sparkles, BookOpen,
   LayoutGrid, CalendarDays, Images, FolderOpen, TrendingUp,
   Users, BookMarked, Globe, BarChart2, Settings2, LogOut,
-  MessageSquare, KeyRound, Calendar,
+  MessageSquare, KeyRound, Calendar, UploadCloud,
   // UserPlus removed Jul 3 2026 — the "Invite your principal" menu row was
   // hidden. Re-add UserPlus here if that row is ever uncommented.
 } from 'lucide-react';
@@ -237,6 +237,7 @@ function DashboardHeader() {
     if (pathname === '/montree/dashboard/language-semester')  return 'language-semester';
     if (pathname?.includes('/language-presentation'))        return 'language-presentation';
     if (pathname === '/montree/dashboard/menu-setup')        return 'menu-setup';
+    if (pathname === '/montree/dashboard/uploads')           return 'uploads';
     return null;
   }, [pathname]);
 
@@ -673,6 +674,19 @@ function DashboardHeader() {
 
               {showMoreMenu && (
                 <div role="menu" style={MENU_PANEL_STYLE}>
+                  {/* Uploads — pinned at the TOP of the menu, OUTSIDE the
+                      config/legacy branch below, so it shows for every teacher
+                      regardless of which menu mode they're in (legacy flag-gated
+                      OR saved config-driven). School-wide drag-and-drop drop
+                      zone for any file type — see /montree/dashboard/uploads. */}
+                  <MenuRow
+                    icon={UploadCloud}
+                    label="Uploads"
+                    active={activePage === 'uploads'}
+                    onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/uploads'); }}
+                  />
+                  <Divider />
+
                   {/* Customizable section. When the teacher has a saved menu
                       config (settings.menu), render from it — order + visibility,
                       config is the source of truth. Otherwise fall back to the

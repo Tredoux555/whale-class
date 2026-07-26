@@ -1,0 +1,22 @@
+{
+  "_LOCKED": "Printed Montessori materials use the Montessori Picture Bank and NOTHING ELSE: docs/picture-bank/photos/<word>/<word>.jpg — photoreal studio photographs of one concrete holdable object on WHITE. Decided Jul 2026. Rules and the selection criteria live in docs/picture-bank/HANDOFF_PICTURE_BANK_Jul23.md.",
+
+  "imageSource": "picturebank",
+  "pictureBankDir": "docs/picture-bank/photos",
+  "fit": "contain-white",
+
+  "_fit": "These photos are shown object-fit:contain on white, never cover. A 1344x896 saw cropped to a square loses the ends of the saw. Matches swap-picture-bank-images.py, which already swaps the packs to object-fit:contain;background:#fff.",
+
+  "_twoTracks": "Shelf / 3-part cards = photoreal object on white. Circle + lesson Dark Phonics = googly-eye characters and forest-green spotlit art. NEVER MIX THEM. The Dark Phonics art is not lower quality, it is for a different job; a 3-part card has to answer a child's 'what is this?' about an object they can hold.",
+
+  "_noToys": "Added Jul 26 2026 after ambulance/taxi/panda/penguin were caught rendered as a die-cast toy car, a die-cast toy car, a plush stuffed animal, and a vinyl figurine respectively — the audit script only checks background/size/contrast, never subject material, so these passed --audit and shipped. Rule: real objects and real animals only, even for subjects that can't literally be held (a full-size ambulance, a live panda) — use a realistic full-size photograph or a true-to-life scale-model photograph, never anything styled as a children's toy (no die-cast cars, no plush/stuffed animals, no vinyl or resin figurines). The one sanctioned exception is infant, which uses a doll by design (see HANDOFF_PICTURE_BANK_Jul23.md — photographing a real, identifiable child isn't appropriate picture-bank content) — but that doll must read unambiguously as a toy doll, not a hyperrealistic 'reborn' doll indistinguishable from an actual baby. Full incident writeup: docs/handoffs/HANDOFF_PICTURE_BANK_Jul26.md.",
+
+  "_rejectedSources": {
+    "curriculum-art": "~/Desktop/English Curriculum 2026/Week NN/images/ — spotlit on deep forest green. This is the DARK PHONICS look. 1,141 files, and the reason swap-picture-bank-images.py had to exist. Only via --image-source curriculum-art.",
+    "phonics": "phonics-images/ — satpin-v2 googly-eye characters, illustrated alphabet-v1 plates, and assorted stock photos in the pink/blue/green banks. Three naming conventions. Only via --image-source phonics.",
+    "published": "spec imageUrls on montree.xyz — the Week NN curriculum art downscaled to 900px webp, so the same Dark Phonics look."
+  },
+
+  "requireSource": true,
+  "_requireSource": "Fail loudly when the picture bank cannot be found, rather than quietly substituting another set. Silent fallback is what put a computer mouse, a forest path and cartoon characters on a printed letter-s pack."
+}

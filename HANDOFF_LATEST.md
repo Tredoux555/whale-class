@@ -1,24 +1,122 @@
 # Whale / Montree — Latest Handoff
 
-## 🗂️ Jul 23 — Dark Phonics tidy-up + Montessori Picture Bank (Cowork)
+## 🧸 Jul 26 — SATPIN basket verified + 5 TOY RENDERS CAUGHT AND FIXED + Picture Library search bug fixed (NOT DEPLOYED, NOT COMMITTED)
+
+**Full pickup: `docs/handoffs/HANDOFF_PICTURE_BANK_Jul26.md`.** All 30 `SATPINObjectBaskets.docx`
+words + `ring` verified present, correctly named, and audit-passing at
+`docs/picture-bank/photos/<word>/<word>.jpg`. Visual re-inspection (the audit script only checks
+background/size/contrast, never subject material) caught **5 toy-styled renders that had shipped
+anyway**: `ambulance` + `taxi` were die-cast toy cars, `panda` was a plush stuffed animal,
+`penguin` was a vinyl figurine, `infant` had reverted to a real human baby photo (violates the
+doc's own doll-exception rule). All 5 regenerated as genuine photorealistic real objects/animals
+and re-published, overwriting the same Supabase Storage paths in place (no duplicate rows). **New
+rule added to `scripts/curriculum/materials.config.json` (`_noToys`)** — no die-cast/plush/vinyl
+substitutes, ever, even for non-holdable subjects.
+
+Separately: Tredoux's "ring isn't in the bank" complaint was a **search bug, not missing data** —
+`label ilike '%term%'` matched "ring" inside "colo**ring**" and buried the real 155-vs-7 result
+under the coloring-page flood. Fixed in `app/api/montree/photo-bank/route.ts` (relevance ranking:
+exact > prefix > word-boundary > substring) and `components/montree/PhotoBankPicker.tsx` (the old
+10-tab category bar replaced with two tabs, **Pictures** / **Coloring Pictures**, via a new `kind`
+query param). Verified directly against the live DB before shipping.
+
+🚨 **NOT deployed, NOT committed.** Files are written to disk on Tredoux's Mac only — dev
+server/build has not picked them up, and `git status` shows 40 modified files (this session's 2
+files mixed in with unrelated in-progress work) ahead of `origin/main` by 1 commit. Ask before
+committing — don't assume scope. Push can't happen from a Cowork session (`device_bash` has no
+network) even after a commit.
+
+---
+
+
+## 🖼️ Jul 25 — Picture Bank generation run READY TO RUN
+
+127 Midjourney prompts are queued and ready to fire, one per missing or defective picture-bank
+word, in `docs/picture-bank/MJ-BATCH-OVERNIGHT.md` (19 replace existing defective photos, 108
+fill genuine gaps). **Full pickup for a fresh session: `docs/handoffs/HANDOFF_PICTURE_BANK_RUN_Jul25.md`**
+— it has the exact Midjourney/Chrome steps, the judgement criteria for each generated image, the
+environment traps (Chrome bridge drops, no network in `device_bash`, stale staged-uploads mount),
+and the order to work through the list in.
+
+The only sanctioned way a photo enters the bank is `scripts/curriculum/picture-bank-add.mjs`
+(`--sweep <folder> --force` to file and convert, `--audit` to check, `--publish` to push to
+Supabase) — never copy files into `docs/picture-bank/photos/` by hand.
+
+One line to remember before generating anything: the picture bank is a **real photograph of one
+holdable object on a plain white background**; the forest-green spotlit look under
+`English Curriculum 2026/Week NN/images/` and the googly-eyed `phonics-images/satpin-v2/`
+characters are the separate **Dark Phonics** track and must never be mixed into picture-bank work.
+
+Also worth knowing: `scripts/curriculum/make-material.mjs`, driven by
+`scripts/curriculum/materials.config.json`, now generates printable materials and is locked to
+read only from the picture bank — so once the 127 photos above are filed, printable materials
+for those words follow automatically.
+
+---
+
+
+## 📚 Jul 24 (Cowork) — DARK PHONICS READERS: full alphabet authored, ready to render
+
+**Full pickup: `docs/curriculum/dark-phonics-readers/HANDOFF_DARK_PHONICS_READERS_Jul24.md`
+(includes a paste-to-resume kickoff prompt at the top).**
+
+Authored the **Dark Phonics reader track** (SATPIN, s-first — the song library, NOT the
+a-first English curriculum) across the **whole alphabet**, aligned to canon. Extends the
+6 live readers (`public/satpin-books/` weeks 1–6) through weeks 7–27.
+
+**Source of truth:** `docs/curriculum/dark-phonics-readers/Dark_Phonics_Readers_Books_7-27_ALIGNED.docx`
+— per book: header line, hybrid set-up + decodable target word, **potato-shout finale on
+every book**, gate labels, the week's **song mascot**, and a googly-ink MJ art prompt per
+page. Locked the full **27-mascot roster** from the song cards (m=monkey, d=muddy dog,
+g=gum goat, o=octopus, c=cookie cat, k=crowned king, e=hatching chick, u=cup-monster,
+r=red rat, h=laughing hippo, b=baby-in-boat, f=fox-at-fan, l=lazy lion, j=boy-in-jam,
+v=van, w=wet worm, x=box of foxes, y=yo-yo boy, z=zebra, qu=duck).
+
+**State: authoring only — NO art generated, NO book assembled.** Week 5 (`sit-sit-sit.html`)
+is already fully illustrated (don't redo); `pig/pig.jpg` already in the picture bank.
+
+**NEXT (deferred to a fresh context, MJ has ~unlimited credits):** render Books 7–27
+end-to-end — start with **Book 7 (m, “Sam and the Monkey”)**. Drive **Midjourney in
+Chrome** (Relax mode; watch the silent queue-cap bug), download the page images to
+`phonics-images/dark-phonics-readers/w07/`, and assemble a reader HTML matching
+`sit-sit-sit.html`. Open decision to confirm first: whether book scene art also goes into
+the (photoreal, single-object) picture bank — recommend NOT mixing tracks. Full steps,
+per-page prompts, and the art-style suffix are in the pickup doc.
+
+---
+
+
+
+## 🖼️ Jul 23 (Cowork, later same day) — MONTESSORI PICTURE BANK: ALL 154 PHOTOS DONE
 
 **Full pickup: `docs/picture-bank/HANDOFF_PICTURE_BANK_Jul23.md`.**
 
-All deployed: media packs completed (Flashcards + Books & Readers on all 10
-letter pages); **middleware `pdf` allow-list bug fixed** (public `/satpin-books/**.pdf`
-were serving the app shell — Print-booklet links had been broken); **new tidy
-SATPIN page LIVE at teacherpotato.xyz/satpin.html** — two print-once bundles
-(All Flashcards, All Books). Shelf packs dropped per user (quality).
+**✅ Photo generation complete.** All 154 unique A–Z words now have a real photoreal
+studio photo at `docs/picture-bank/photos/{word}/{word}.jpg` on the Mac — verified
+folder-by-folder (154 folders, 154 non-empty jpgs, 0 missing, 0 zero-byte) via a
+direct shell check, not just a listing. Driven via Claude-in-Chrome browser automation
+against Midjourney (user approved screen access + "get it done - all of them"; ran
+mostly in Relax mode after a Fast-hours paywall was hit and declined without
+purchasing — user chose to keep grinding in Relax rather than buy Fast hours).
+`dice` and `fox` are intentionally shared between their home letter and the X page
+(X-uses-ending-sound convention).
 
-**NEW — Montessori Picture Bank** (separate photoreal shelf / 3-part-card track,
-NOT the googly-eye circle set). Deliverables in `docs/picture-bank/`:
-`MJ-PROMPTS-A-Z.md` (156 copy-paste Midjourney prompts) and
-`Montessori-Object-Picture-Bank-A-Z.xlsx` (searchable; STL-search terms +
-print/buy tags; hard letters I/U/X/Z flagged).
+Two words needed a prompt fix mid-run: **heart** first rendered as a bloody anatomical
+organ — fixed with an explicit "NOT an anatomical organ, no veins" prompt, now a clean
+valentine-heart shape. **insect** never got a dedicated successful render across two
+attempts; it's currently standing in with the "beetle insect" photo — flagged for
+Tredoux to eyeball, not silently swapped in as gospel.
 
-**NEXT:** user runs the MJ prompts → Claude builds the 3-part cards → host as a
-tab in the same place → finish wiring `satpin.html` into the hub + remove old
-duplicate pages (nothing deleted yet).
+Also hit and fixed mid-run: a **silent MJ queue-cap bug** — submissions beyond ~4-5
+queued jobs were silently rejected with no error surfaced unless the page text was
+checked for "Too many queued prompts"; ~80 words had to be diffed against the intended
+list and resubmitted one-by-one with a verify-before/after pattern (queue-count check,
+then confirm the textarea actually cleared on submit).
+
+**NEXT: user is building the 3-part cards (picture + label + control card) themselves**
+— Claude is not doing this step. Still open after that: host as a tab in the same place
+as Dark Phonics, finish wiring `satpin.html` into the hub + remove old duplicate pages
+(nothing deleted yet).
 
 ---
 

@@ -48,12 +48,6 @@ function photoToProxyUrl(photo: PhotoBankPhoto): string {
   return getProxyUrl(photo.storage_path, 'photo-bank');
 }
 
-interface PhotoBankCategory {
-  name: string;
-  display_name: string;
-  icon: string;
-}
-
 interface PhotoBankPickerProps {
   /** Called when user clicks a photo to select it. Receives the photo data URL and label. */
   onSelectPhoto: (dataUrl: string, label: string, filename: string) => void;
@@ -63,7 +57,12 @@ interface PhotoBankPickerProps {
   selectedIds?: Set<string>;
   /** Max height for the gallery grid (default: 400px) */
   maxHeight?: number;
-  /** Whether to show the category filter bar */
+  /**
+   * Whether to show the Pictures / Coloring Pictures tab bar. (Prop name
+   * kept from the old multi-category bar for back-compat with existing
+   * callers — it now toggles the simplified two-tab bar, not a dynamic
+   * category list. See route.ts `kind` param for the Jul 2026 rationale.)
+   */
   showCategories?: boolean;
   /** Whether to allow multiple selections */
   multiSelect?: boolean;
@@ -108,9 +107,11 @@ export default function PhotoBankPicker({
     ? `${searchPlaceholder}\n${t('photoBank.searchPlaceholderBulk')}`
     : `${t('photoBank.searchPlaceholder')}\n${t('photoBank.searchPlaceholderBulk')}`;
   const [photos, setPhotos] = useState<PhotoBankPhoto[]>([]);
-  const [categories, setCategories] = useState<PhotoBankCategory[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  // Two-tab filter: 'pictures' (real photos, default) or 'coloring'
+  // (printable line-art coloring pages). Replaces the old ten-tab category
+  // bar — see route.ts `kind` param.
+  const [kind, setKind] = useState<'pictures' | 'coloring'>('pictures');
   const [loading, setLoading] = useState(false);
   const [loadingPhoto, setLoadingPhoto] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
@@ -121,15 +122,15 @@ export default function PhotoBankPicker({
   const [isMultiWord, setIsMultiWord] = useState(false);
 
   // Fetch photos from API (single query)
-  const fetchPhotos = useCallback(async (query: string, category: string, pageNum: number) => {
+  const fetchPhotos = useCallback(async (query: string, kindFilter: 'pictures' | 'coloring', pageNum: number) => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
         page: String(pageNum),
         limit: '50',
+        kind: kindFilter,
       });
       if (query) params.set('q', query);
-      if (category && category !== 'all') params.set('category', category);
       if (sort === 'recent') params.set('sort', 'recent');
 
       const res = await fetch(`/api/montree/photo-bank?${params}`);
@@ -141,7 +142,6 @@ export default function PhotoBankPicker({
       } else {
         setPhotos((prev: PhotoBankPhoto[]) => [...prev, ...data.photos]);
       }
-      setCategories(data.categories || []);
       setTotal(data.total || 0);
     } catch (err) {
       console.error('PhotoBankPicker fetch error:', err);
@@ -151,14 +151,13 @@ export default function PhotoBankPicker({
   }, [sort]);
 
   // Fetch photos for multiple words in parallel
-  const fetchMultiWord = useCallback(async (words: string[], category: string) => {
+  const fetchMultiWord = useCallback(async (words: string[], kindFilter: 'pictures' | 'coloring') => {
     setLoading(true);
     try {
       const results = await Promise.all(
         words.map(async (word) => {
-          const params = new URLSearchParams({ page: '1', limit: '20' });
+          const params = new URLSearchParams({ page: '1', limit: '20', kind: kindFilter });
           params.set('q', word);
-          if (category && category !== 'all') params.set('category', category);
           const res = await fetch(`/api/montree/photo-bank?${params}`);
           if (!res.ok) return { word, photos: [] };
           const data = await res.json();
@@ -166,19 +165,9 @@ export default function PhotoBankPicker({
         })
       );
       setMultiWordResults(results);
-      // Also set flat photos + total for category loading
       const allPhotos = results.flatMap(r => r.photos);
       setPhotos(allPhotos);
       setTotal(allPhotos.length);
-      // Load categories from first result that has them
-      for (const r of results) {
-        const res = await fetch(`/api/montree/photo-bank?page=1&limit=1`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.categories) setCategories(data.categories);
-        }
-        break;
-      }
     } catch (err) {
       console.error('PhotoBankPicker multi-word fetch error:', err);
     } finally {
@@ -188,7 +177,7 @@ export default function PhotoBankPicker({
 
   // Initial load
   useEffect(() => {
-    fetchPhotos('', 'all', 1);
+    fetchPhotos('', 'pictures', 1);
   }, [fetchPhotos]);
 
   // Debounced search — detect multi-word (newline-separated)
@@ -201,18 +190,18 @@ export default function PhotoBankPicker({
       const lines = searchQuery.split('\n').map(l => l.trim()).filter(Boolean);
       if (lines.length > 1) {
         setIsMultiWord(true);
-        fetchMultiWord(lines, selectedCategory);
+        fetchMultiWord(lines, kind);
       } else {
         setIsMultiWord(false);
         setMultiWordResults([]);
-        fetchPhotos(searchQuery.trim(), selectedCategory, 1);
+        fetchPhotos(searchQuery.trim(), kind, 1);
       }
     }, 300);
 
     return () => {
       if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     };
-  }, [searchQuery, selectedCategory, fetchPhotos, fetchMultiWord]);
+  }, [searchQuery, kind, fetchPhotos, fetchMultiWord]);
 
   // Handle photo selection — if onRawSelect is provided, call it directly (no data URL conversion)
   const handleSelectPhoto = async (photo: PhotoBankPhoto) => {
@@ -267,7 +256,7 @@ export default function PhotoBankPicker({
   const handleLoadMore = () => {
     const nextPage = page + 1;
     setPage(nextPage);
-    fetchPhotos(searchQuery, selectedCategory, nextPage);
+    fetchPhotos(searchQuery, kind, nextPage);
   };
 
   // Filter deleted IDs out of any visible array. Caller bumps deletedIds on
@@ -318,53 +307,49 @@ export default function PhotoBankPicker({
         </div>
       </div>
 
-      {/* Category Filter Bar */}
-      {showCategories && categories.length > 0 && (
+      {/* Pictures / Coloring Pictures tab bar. Replaces the old ten-tab
+          category bar (Animals, Food, Objects, …) — see route.ts `kind`
+          param for the Jul 2026 rationale. */}
+      {showCategories && (
         <div style={{
           display: 'flex',
           gap: '6px',
           marginBottom: '12px',
-          overflowX: 'auto',
-          paddingBottom: '4px',
-          WebkitOverflowScrolling: 'touch',
         }}>
           <button
-            onClick={() => setSelectedCategory('all')}
+            onClick={() => setKind('pictures')}
             style={{
-              padding: '6px 12px',
+              padding: '6px 14px',
               borderRadius: '16px',
               border: 'none',
               fontSize: '12px',
-              fontWeight: selectedCategory === 'all' ? '700' : '500',
+              fontWeight: kind === 'pictures' ? '700' : '500',
               cursor: 'pointer',
               whiteSpace: 'nowrap',
-              backgroundColor: selectedCategory === 'all' ? '#10b981' : '#f0f0f0',
-              color: selectedCategory === 'all' ? '#fff' : '#555',
+              backgroundColor: kind === 'pictures' ? '#10b981' : '#f0f0f0',
+              color: kind === 'pictures' ? '#fff' : '#555',
               transition: 'all 0.2s',
             }}
           >
-            📸 All
+            📸 Pictures
           </button>
-          {categories.filter(c => c.name !== 'general').map((cat) => (
-            <button
-              key={cat.name}
-              onClick={() => setSelectedCategory(cat.name)}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '16px',
-                border: 'none',
-                fontSize: '12px',
-                fontWeight: selectedCategory === cat.name ? '700' : '500',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                backgroundColor: selectedCategory === cat.name ? '#10b981' : '#f0f0f0',
-                color: selectedCategory === cat.name ? '#fff' : '#555',
-                transition: 'all 0.2s',
-              }}
-            >
-              {cat.icon} {cat.display_name}
-            </button>
-          ))}
+          <button
+            onClick={() => setKind('coloring')}
+            style={{
+              padding: '6px 14px',
+              borderRadius: '16px',
+              border: 'none',
+              fontSize: '12px',
+              fontWeight: kind === 'coloring' ? '700' : '500',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              backgroundColor: kind === 'coloring' ? '#10b981' : '#f0f0f0',
+              color: kind === 'coloring' ? '#fff' : '#555',
+              transition: 'all 0.2s',
+            }}
+          >
+            🎨 Coloring Pictures
+          </button>
         </div>
       )}
 

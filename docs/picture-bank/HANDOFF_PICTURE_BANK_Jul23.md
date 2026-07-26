@@ -46,13 +46,15 @@ answer a child's "what is this?" and correspond to an object they can hold.
   objects (the "ultra-realistic single real fox/banana on white" style the user
   is generating in Midjourney).
 
-## 3. Montessori Picture Bank — deliverables produced (this session)
+## 3. Montessori Picture Bank — deliverables produced
 
 Separate track from Dark Phonics, but will live in the same place (a new
 tab/section — ⏳ NEXT, not built yet). Saved under `docs/picture-bank/`:
 
 - **`MJ-PROMPTS-A-Z.md`** — 156 copy-paste Midjourney prompts, 6 holdable
   objects per letter (A–Z), in the user's exact photoreal studio style.
+  (154 unique words — `dice` and `fox` are each used twice, once under their
+  home letter and once under X, per the X-uses-ending-sound convention.)
 - **`Montessori-Object-Picture-Bank-A-Z.xlsx`** — the same 156 as a searchable/
   filterable sheet: Letter · Sound · Object · Get (🖨️ print / 🛒 buy / ⚖️ both) ·
   **STL search term** (for finding 3D models later) · MJ prompt · reader tie ·
@@ -67,15 +69,48 @@ readers where possible (sock/snake→book1, apple/ant→book2, pan→SPAT, etc.)
 **I, U, X** (X uses words ending in x — fox/box/ox/six — by Montessori
 convention), **Z**.
 
-## 4. ⏳ NEXT STEPS (for the new chat)
+### ✅ 3a. Photo generation — DONE (Jul 23, later same day, Cowork)
 
-1. **Generate the photos:** user runs `MJ-PROMPTS-A-Z.md` through Midjourney,
-   keeps the cleanest of each, drops them in per-word folders. (Claude can't
-   generate photoreal images — MJ does this.)
-2. **Curation review:** sanity-check the word picks, especially I/U/X/Z, before
-   or as images come in. (User floated using **Fable** for careful curation.)
-3. **Build the 3-part cards** from the chosen photos (picture card + label card +
-   control card, print-ready) — Claude does this once images exist.
+All 154 unique words now have a real photo at
+`docs/picture-bank/photos/{word}/{word}.jpg` on the Mac. Verified directly via
+shell (not just a directory listing): 154 folders, 154 non-empty `.jpg` files,
+0 missing, 0 zero-byte.
+
+Driven end-to-end via Claude-in-Chrome browser automation against Midjourney
+(user approved screen access, "get it done - all of them"). Ran mostly in
+Relax mode — a mid-run switch to Fast mode hit an out-of-Fast-hours purchase
+paywall; Claude declined to buy Fast hours without explicit sign-off and
+surfaced the choice, user chose to keep grinding in Relax rather than pay.
+
+**Two words needed a prompt fix:**
+- **heart** — first render came out as a bloody anatomical organ (wrong for a
+  Montessori card). Fixed with an explicit "NOT an anatomical organ, no veins,
+  no blood" prompt — now a clean valentine-heart shape.
+- **insect** — never produced its own successful render across two attempts.
+  Currently standing in with the "beetle insect" photo generated for the same
+  slot. **Flagged for Tredoux to eyeball** — not a guaranteed-good substitute,
+  just the least-bad option so the set wasn't left incomplete.
+
+**Bug hit and fixed mid-run:** Midjourney's Relax queue silently rejects
+submissions past a ~4-5 job cap — no visible error unless you check the page
+text for "Too many queued prompts... your prompt was not submitted." ~80 words
+were affected; found by diffing the intended word list against what actually
+completed, then resubmitted one-by-one with a verify pattern (check queue
+count before submitting, confirm the textarea actually cleared after Enter).
+
+The 6-word S-letter pilot (sock, snake, seal, soap, spoon, star) was already
+on the Mac from earlier the same session, confirmed via folder listing rather
+than assumed.
+
+## 4. ⏳ NEXT STEPS
+
+1. ~~Generate the photos~~ — ✅ DONE, see 3a above.
+2. **Curation spot-check:** Tredoux to eyeball the set, especially **heart**
+   (re-rendered, should look fine now) and **insect** (standing in as a
+   beetle — may want a proper re-render).
+3. **Build the 3-part cards** (picture card + label card + control card,
+   print-ready) from the chosen photos — **Tredoux is doing this step
+   themselves**, not Claude (as of Jul 23 check-in).
 4. **Host it:** add a "Picture Bank / 3-Part Cards" tab in the same place as
    Dark Phonics.
 5. **STL sourcing (later):** use the `STL search term` column to find printable
