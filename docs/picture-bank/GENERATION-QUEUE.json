@@ -1,0 +1,910 @@
+{
+ "_README": "Generation queue for the Montessori Picture Bank. kind=regenerate replaces a bad existing photo; kind=new fills a gap. Every word here passed the shelf rule: a 3-4yo names it on sight, a real one can be held (bought as a mini or 3D-printed), and it photographs clean as one object on white. stl_term is the 3D-model search term.",
+ "counts": {
+  "regenerate": 19,
+  "new": 108,
+  "total": 127,
+  "aliases": 7
+ },
+ "aliases": {
+  "axe": "ax",
+  "boxes": "box",
+  "bunny": "rabbit",
+  "fishes": "fish",
+  "grape": "grapes",
+  "mice": "mouse",
+  "socks": "sock"
+ },
+ "_aliases_note": "Plural/variant spellings that need NO new photo \u2014 resolve them to the existing bank word.",
+ "queue": [
+  {
+   "word": "astronaut",
+   "kind": "regenerate",
+   "stl_term": "astronaut figurine",
+   "prompt": "ultra-realistic professional studio photograph of a single real astronaut figurine in a white spacesuit with a gold visor helmet, standing, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no abstract metallic blob silver melted illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "comb",
+   "kind": "regenerate",
+   "stl_term": "hair comb model",
+   "prompt": "ultra-realistic professional studio photograph of a single real black plastic hair comb with fine teeth, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no transparent clear white illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "door",
+   "kind": "regenerate",
+   "stl_term": "door model",
+   "prompt": "ultra-realistic professional studio photograph of a single real white panelled wooden door standing upright, isolated, no wall, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no wall floor room frame hallway illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "eel",
+   "kind": "regenerate",
+   "stl_term": "eel model",
+   "prompt": "ultra-realistic professional studio photograph of a single real dark green moray eel, one single eel, elongated body, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no two eels multiple pair illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "fin",
+   "kind": "regenerate",
+   "stl_term": "shark fin model",
+   "prompt": "ultra-realistic professional studio photograph of a single real grey shark dorsal fin, curved triangular shape, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no abstract black sculpture flipper illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "gate",
+   "kind": "regenerate",
+   "stl_term": "garden gate model",
+   "prompt": "ultra-realistic professional studio photograph of a single real dark wrought-iron garden gate standing isolated, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no white baby safety gate wall fence illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "house",
+   "kind": "regenerate",
+   "stl_term": "house model",
+   "prompt": "ultra-realistic professional studio photograph of a single real small model house with a red roof and white walls, isolated, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no lawn garden grass landscaping trees street illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "jewel",
+   "kind": "regenerate",
+   "stl_term": "gemstone model",
+   "prompt": "ultra-realistic professional studio photograph of a single real faceted deep blue sapphire gemstone, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no crumpled foil silver ball illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "moon",
+   "kind": "regenerate",
+   "stl_term": "moon model",
+   "prompt": "ultra-realistic professional studio photograph of a single real grey cratered moon globe model, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no black background night sky space dark illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "napkin",
+   "kind": "regenerate",
+   "stl_term": "cloth napkin model",
+   "prompt": "ultra-realistic professional studio photograph of a single real folded deep red cloth napkin, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no white cream pale paper illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "needle",
+   "kind": "regenerate",
+   "stl_term": "sewing needle model",
+   "prompt": "ultra-realistic professional studio photograph of a single real steel sewing needle threaded with bright red thread, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no bare needle syringe knitting illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "pin",
+   "kind": "regenerate",
+   "stl_term": "safety pin model",
+   "prompt": "ultra-realistic professional studio photograph of a single real silver metal safety pin, closed, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no bowling pin rolling pin pushpin illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "quilt",
+   "kind": "regenerate",
+   "stl_term": "patchwork quilt model",
+   "prompt": "ultra-realistic professional studio photograph of a single real folded patchwork quilt with colorful red blue and yellow squares, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no white cream plain illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "satin",
+   "kind": "regenerate",
+   "stl_term": "satin ribbon model",
+   "prompt": "ultra-realistic professional studio photograph of a single real deep red satin ribbon coiled, glossy sheen, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no white cream pale fabric illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "snake",
+   "kind": "regenerate",
+   "stl_term": "garden snake model",
+   "prompt": "ultra-realistic professional studio photograph of a single real green garden snake with natural brown and green scale markings, coiled, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no albino white silver metallic toy plastic illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "star",
+   "kind": "regenerate",
+   "stl_term": "star shape model",
+   "prompt": "ultra-realistic professional studio photograph of a single real bright golden-yellow five-pointed star ornament with a matte painted surface, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no silver metallic chrome celestial night sky illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "sun",
+   "kind": "regenerate",
+   "stl_term": "sun model",
+   "prompt": "ultra-realistic professional studio photograph of a single real bright orange-yellow sun sculpture with radiating rays, matte painted surface, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no blue sky background photograph of the real sun lens flare illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "towel",
+   "kind": "regenerate",
+   "stl_term": "towel model",
+   "prompt": "ultra-realistic professional studio photograph of a single real folded turquoise blue bath towel, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no white cream pale illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "yoyo",
+   "kind": "regenerate",
+   "stl_term": "yoyo toy model",
+   "prompt": "ultra-realistic professional studio photograph of a single real red wooden yoyo with a white string wound around its axle, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no abstract green blob illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "bat",
+   "kind": "new",
+   "stl_term": "bat animal figurine model",
+   "prompt": "ultra-realistic professional studio photograph of a single real small brown bat with folded leathery wings and large ears, perched, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no baseball bat cricket bat sports equipment illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "bee",
+   "kind": "new",
+   "stl_term": "honey bee insect model",
+   "prompt": "ultra-realistic professional studio photograph of a single real honey bee with black and yellow striped body and transparent wings, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no wasp hornet illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "belt",
+   "kind": "new",
+   "stl_term": "leather belt with buckle model",
+   "prompt": "ultra-realistic professional studio photograph of a single real brown leather belt coiled with a silver buckle, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "bike",
+   "kind": "new",
+   "stl_term": "bicycle miniature model",
+   "prompt": "ultra-realistic professional studio photograph of a single real small red children's bicycle with two wheels, handlebars and a bell, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no motorcycle tricycle illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "bone",
+   "kind": "new",
+   "stl_term": "dog bone treat model",
+   "prompt": "ultra-realistic professional studio photograph of a single real off-white dog bone chew treat, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no skeleton human bone illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "book",
+   "kind": "new",
+   "stl_term": "hardcover book model",
+   "prompt": "ultra-realistic professional studio photograph of a single real closed hardcover book with a blue cover and no visible text, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no open pages visible text illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "boot",
+   "kind": "new",
+   "stl_term": "rubber rain boot model",
+   "prompt": "ultra-realistic professional studio photograph of a single real yellow rubber rain boot, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no cowboy boot high heel illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "brick",
+   "kind": "new",
+   "stl_term": "red clay brick model",
+   "prompt": "ultra-realistic professional studio photograph of a single real red clay brick, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no gray concrete block lego illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "broom",
+   "kind": "new",
+   "stl_term": "broom with straw bristles model",
+   "prompt": "ultra-realistic professional studio photograph of a single real broom with a long wooden handle and straw bristles, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no witch broomstick illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "cage",
+   "kind": "new",
+   "stl_term": "birdcage model",
+   "prompt": "ultra-realistic professional studio photograph of a single real small golden metal birdcage with a domed top, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no bird inside prison cell illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "candle",
+   "kind": "new",
+   "stl_term": "wax candle model",
+   "prompt": "ultra-realistic professional studio photograph of a single real red cylindrical wax candle with a dark unlit wick, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no white candle flame lit illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "candy",
+   "kind": "new",
+   "stl_term": "wrapped hard candy model",
+   "prompt": "ultra-realistic professional studio photograph of a single real red and white wrapped peppermint hard candy with twisted ends, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no candy pile multiple pieces illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "cap",
+   "kind": "new",
+   "stl_term": "baseball cap model",
+   "prompt": "ultra-realistic professional studio photograph of a single real red baseball cap with a curved brim, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no bottle cap winter hat illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "cape",
+   "kind": "new",
+   "stl_term": "superhero cape model",
+   "prompt": "ultra-realistic professional studio photograph of a single real red fabric superhero cape with a gold clasp, laid flat, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no worn on person geographic headland illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "cart",
+   "kind": "new",
+   "stl_term": "shopping cart miniature model",
+   "prompt": "ultra-realistic professional studio photograph of a single real small metal shopping cart with four wheels and a handle, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no wagon golf cart horse cart illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "chair",
+   "kind": "new",
+   "stl_term": "wooden chair miniature model",
+   "prompt": "ultra-realistic professional studio photograph of a single real small wooden chair with four legs and a backrest, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no armchair sofa illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "cheese",
+   "kind": "new",
+   "stl_term": "cheese wedge model",
+   "prompt": "ultra-realistic professional studio photograph of a single real wedge of yellow Swiss cheese with visible holes, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no white cheese round wheel illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "cherry",
+   "kind": "new",
+   "stl_term": "cherry fruit model",
+   "prompt": "ultra-realistic professional studio photograph of a single real red cherry with a green stem, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no cherry pair pit illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "chick",
+   "kind": "new",
+   "stl_term": "baby chick figurine model",
+   "prompt": "ultra-realistic professional studio photograph of a single real fluffy yellow baby chick, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no adult hen rooster egg illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "chip",
+   "kind": "new",
+   "stl_term": "potato chip model",
+   "prompt": "ultra-realistic professional studio photograph of a single real golden-brown crinkle-cut potato chip, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no computer chip poker chip wood chip circuit board illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "clock",
+   "kind": "new",
+   "stl_term": "analog alarm clock model",
+   "prompt": "ultra-realistic professional studio photograph of a single real round analog alarm clock with two bells on top and metal hands, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no digital clock wristwatch illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "coat",
+   "kind": "new",
+   "stl_term": "winter coat model",
+   "prompt": "ultra-realistic professional studio photograph of a single real navy blue winter coat with buttons, laid flat, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no jacket vest worn on person illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "coil",
+   "kind": "new",
+   "stl_term": "metal spring coil model",
+   "prompt": "ultra-realistic professional studio photograph of a single real coiled metal spring, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no snake rope illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "coin",
+   "kind": "new",
+   "stl_term": "gold coin model",
+   "prompt": "ultra-realistic professional studio photograph of a single real round gold coin, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no pile of coins paper bill illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "cone",
+   "kind": "new",
+   "stl_term": "traffic cone model",
+   "prompt": "ultra-realistic professional studio photograph of a single real orange plastic traffic cone with a white reflective stripe, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no ice cream waffle cone pine cone illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "corn",
+   "kind": "new",
+   "stl_term": "corn cob model",
+   "prompt": "ultra-realistic professional studio photograph of a single real yellow corn cob with husk peeled back, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no popcorn illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "crab",
+   "kind": "new",
+   "stl_term": "crab animal model",
+   "prompt": "ultra-realistic professional studio photograph of a single real red crab with two large claws and eight legs, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no lobster cooked plate illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "crow",
+   "kind": "new",
+   "stl_term": "crow bird figurine model",
+   "prompt": "ultra-realistic professional studio photograph of a single real black crow with glossy black feathers, standing, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no raven eagle illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "crown",
+   "kind": "new",
+   "stl_term": "gold crown model",
+   "prompt": "ultra-realistic professional studio photograph of a single real gold crown with colored jewels, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no worn on head tiara illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "cube",
+   "kind": "new",
+   "stl_term": "wooden cube block model",
+   "prompt": "ultra-realistic professional studio photograph of a single real natural wood cube building block, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no dice with pips ice cube illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "deer",
+   "kind": "new",
+   "stl_term": "deer animal figurine model",
+   "prompt": "ultra-realistic professional studio photograph of a single real brown deer with antlers, standing, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no reindeer sleigh moose illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "desk",
+   "kind": "new",
+   "stl_term": "school desk miniature model",
+   "prompt": "ultra-realistic professional studio photograph of a single real small wooden school desk with a drawer and slanted top, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no dining table office desk illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "dish",
+   "kind": "new",
+   "stl_term": "ceramic dish model",
+   "prompt": "ultra-realistic professional studio photograph of a single real light blue shallow ceramic dish, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no white plate satellite dish illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "dolphin",
+   "kind": "new",
+   "stl_term": "dolphin animal figurine model",
+   "prompt": "ultra-realistic professional studio photograph of a single real grey bottlenose dolphin, curved leaping pose, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no shark whale illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "donut",
+   "kind": "new",
+   "stl_term": "glazed donut model",
+   "prompt": "ultra-realistic professional studio photograph of a single real pink glazed donut with rainbow sprinkles, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no bagel plain white donut illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "dress",
+   "kind": "new",
+   "stl_term": "children's dress model",
+   "prompt": "ultra-realistic professional studio photograph of a single real red children's dress with short sleeves, laid flat, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no worn on person skirt illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "eggplant",
+   "kind": "new",
+   "stl_term": "eggplant aubergine model",
+   "prompt": "ultra-realistic professional studio photograph of a single real eggplant with glossy deep-purple skin and a small green calyx stem, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no sliced cut-open unripe green white pale illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "engine",
+   "kind": "new",
+   "stl_term": "toy train locomotive engine model",
+   "prompt": "ultra-realistic professional studio photograph of a single real toy steam locomotive train engine, red and black metal body with black smokestack, on four wheels, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no multiple train cars tracks diesel car engine block illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "fern",
+   "kind": "new",
+   "stl_term": "fern frond model",
+   "prompt": "ultra-realistic professional studio photograph of a single real fresh green fern frond with feathery pinnate leaflets, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no dried brown potted palm leaf illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "fig",
+   "kind": "new",
+   "stl_term": "fig fruit model",
+   "prompt": "ultra-realistic professional studio photograph of a single real ripe fig with purplish-brown skin and a small stem, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no sliced cut-open green unripe dried illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "flag",
+   "kind": "new",
+   "stl_term": "pennant flag model",
+   "prompt": "ultra-realistic professional studio photograph of a single real small triangular pennant flag on a short wooden dowel, plain red and white striped fabric, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no national emblem text logo writing illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "flower",
+   "kind": "new",
+   "stl_term": "tulip flower model",
+   "prompt": "ultra-realistic professional studio photograph of a single real red tulip flower on a straight green stem with one leaf, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no rose daisy white wilted illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "flute",
+   "kind": "new",
+   "stl_term": "flute instrument model",
+   "prompt": "ultra-realistic professional studio photograph of a single real silver metal concert flute lying horizontally with visible keys, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no recorder clarinet gold brass illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "fly",
+   "kind": "new",
+   "stl_term": "housefly insect model",
+   "prompt": "ultra-realistic professional studio photograph of a single real housefly with dark grey-black segmented body and translucent veined wings, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no butterfly bee oversized illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "glue",
+   "kind": "new",
+   "stl_term": "glue bottle model",
+   "prompt": "ultra-realistic professional studio photograph of a single real bottle of white school glue with an orange pointed cap, blank unlabeled, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no label text brand logo glue stick illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "gong",
+   "kind": "new",
+   "stl_term": "small gong model",
+   "prompt": "ultra-realistic professional studio photograph of a single real small tabletop brass gong, golden-bronze disc in a wooden frame stand, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no cymbal bell mallet person illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "gorilla",
+   "kind": "new",
+   "stl_term": "gorilla figurine model",
+   "prompt": "ultra-realistic professional studio photograph of a single real western lowland gorilla with black-grey fur, seated, knuckles on ground, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no chimpanzee orangutan illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "hawk",
+   "kind": "new",
+   "stl_term": "hawk bird model",
+   "prompt": "ultra-realistic professional studio photograph of a single real red-tailed hawk with brown mottled feathers, perched, wings folded, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no eagle owl white albino illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "helicopter",
+   "kind": "new",
+   "stl_term": "helicopter model",
+   "prompt": "ultra-realistic professional studio photograph of a single real small helicopter with grey metal body, main and tail rotor, black skids, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no bright primary colors airplane jet illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "hippo",
+   "kind": "new",
+   "stl_term": "hippo figurine model",
+   "prompt": "ultra-realistic professional studio photograph of a single real hippopotamus with thick grey skin, standing on four short legs, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no rhino pink illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "hive",
+   "kind": "new",
+   "stl_term": "beehive model",
+   "prompt": "ultra-realistic professional studio photograph of a single real beehive, oval dome-shaped papery nest with layered grey-tan texture, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no wooden box honeycomb frame bees illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "horn",
+   "kind": "new",
+   "stl_term": "french horn instrument model",
+   "prompt": "ultra-realistic professional studio photograph of a single real brass French horn with coiled tubing and a wide bell, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no animal horn car horn trumpet illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "hose",
+   "kind": "new",
+   "stl_term": "garden hose model",
+   "prompt": "ultra-realistic professional studio photograph of a single real green rubber garden hose coiled in a loose circle with a brass nozzle, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no red fire hose reel illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "hut",
+   "kind": "new",
+   "stl_term": "thatched hut model",
+   "prompt": "ultra-realistic professional studio photograph of a single real small thatched-roof hut with round mud-brick walls and a conical straw roof, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no house cabin tent illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "jeep",
+   "kind": "new",
+   "stl_term": "jeep vehicle model",
+   "prompt": "ultra-realistic professional studio photograph of a single real green open-top jeep with four wheels and a spare tire on the back, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no car truck convertible illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "knife",
+   "kind": "new",
+   "stl_term": "table knife model",
+   "prompt": "ultra-realistic professional studio photograph of a single real stainless steel table knife with a black handle, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no pocket knife weapon serrated illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "knot",
+   "kind": "new",
+   "stl_term": "rope knot model",
+   "prompt": "ultra-realistic professional studio photograph of a single real overhand knot tied in thick beige natural fiber rope, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no shoelace string thin illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "lamb",
+   "kind": "new",
+   "stl_term": "lamb figurine model",
+   "prompt": "ultra-realistic professional studio photograph of a single real baby lamb with cream curly wool fleece and pink face, standing, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no adult sheep goat illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "lock",
+   "kind": "new",
+   "stl_term": "padlock model",
+   "prompt": "ultra-realistic professional studio photograph of a single real brass padlock, closed, with an oval shackle and a keyhole, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no combination digital lock illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "lollipop",
+   "kind": "new",
+   "stl_term": "lollipop candy model",
+   "prompt": "ultra-realistic professional studio photograph of a single real round swirl lollipop on a white paper stick, red and white spiral, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no wrapper visible text logo illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "mask",
+   "kind": "new",
+   "stl_term": "masquerade mask model",
+   "prompt": "ultra-realistic professional studio photograph of a single real black masquerade eye mask with two eye holes and an elastic band, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no surgical gas mask ornate glitter illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "mat",
+   "kind": "new",
+   "stl_term": "floor mat model",
+   "prompt": "ultra-realistic professional studio photograph of a single real small rectangular woven floor mat in solid tan natural fiber, flat lay, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no yoga mat blue text door mat with words illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "match",
+   "kind": "new",
+   "stl_term": "matchstick model",
+   "prompt": "ultra-realistic professional studio photograph of a single real wooden matchstick with a red phosphorus tip, unused, lying diagonally, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no matchbox lit flame smoke illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "moth",
+   "kind": "new",
+   "stl_term": "moth figurine",
+   "prompt": "ultra-realistic professional studio photograph of a single real brown moth with patterned wings spread flat and feathery antennae, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no butterfly colorful monarch illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "mule",
+   "kind": "new",
+   "stl_term": "mule animal figurine",
+   "prompt": "ultra-realistic professional studio photograph of a single real mule with grey-brown coat and long ears, standing, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no horse donkey zebra illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "octagon",
+   "kind": "new",
+   "stl_term": "octagon shape block",
+   "prompt": "ultra-realistic professional studio photograph of a single real red wooden octagon shape block, flat eight-sided geometric tile, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no stop sign hexagon circle illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "omelette",
+   "kind": "new",
+   "stl_term": "omelette food prop",
+   "prompt": "ultra-realistic professional studio photograph of a single real folded cooked omelette, golden-yellow egg, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no scrambled eggs fried egg pancake crepe illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "pie",
+   "kind": "new",
+   "stl_term": "pie food model",
+   "prompt": "ultra-realistic professional studio photograph of a single real whole baked pie with a golden-brown lattice crust, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no slice cake tart illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "plane",
+   "kind": "new",
+   "stl_term": "commercial airplane model",
+   "prompt": "ultra-realistic professional studio photograph of a single real commercial passenger airplane with white fuselage, blue stripe, wings and tail fin, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no carpenter's plane woodworking tool fighter jet rocket illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "plum",
+   "kind": "new",
+   "stl_term": "plum fruit model",
+   "prompt": "ultra-realistic professional studio photograph of a single real ripe purple plum, whole, with smooth glossy skin, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no prune dried wrinkled illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "potato",
+   "kind": "new",
+   "stl_term": "potato model",
+   "prompt": "ultra-realistic professional studio photograph of a single real whole brown potato with rustic skin and small eyes, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no fries mashed sweet potato illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "prune",
+   "kind": "new",
+   "stl_term": "prune food model",
+   "prompt": "ultra-realistic professional studio photograph of a single real dried prune with wrinkled dark purple-black skin, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no fresh plum grape raisin illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "pup",
+   "kind": "new",
+   "stl_term": "puppy figurine",
+   "prompt": "ultra-realistic professional studio photograph of a single real small fluffy puppy with floppy ears and brown and white fur, sitting, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no adult dog cat wolf illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "puppy",
+   "kind": "new",
+   "stl_term": "puppy figurine",
+   "prompt": "ultra-realistic professional studio photograph of a single real small fluffy golden puppy with floppy ears, sitting, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no adult dog cat wolf illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "purse",
+   "kind": "new",
+   "stl_term": "handbag purse model",
+   "prompt": "ultra-realistic professional studio photograph of a single real brown leather handbag purse, closed, with a shoulder strap, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no wallet backpack coin purse illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "quiver",
+   "kind": "new",
+   "stl_term": "archery quiver model",
+   "prompt": "ultra-realistic professional studio photograph of a single real brown leather archery quiver holding several arrows with feathered fletching, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no trembling shaking illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "radio",
+   "kind": "new",
+   "stl_term": "portable radio model",
+   "prompt": "ultra-realistic professional studio photograph of a single real vintage portable radio with black and silver body, antenna and tuning dial, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no smartphone speaker television illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "rat",
+   "kind": "new",
+   "stl_term": "rat figurine",
+   "prompt": "ultra-realistic professional studio photograph of a single real brown rat with a long tail and whiskers, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no mouse hamster white albino illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "rock",
+   "kind": "new",
+   "stl_term": "rock stone model",
+   "prompt": "ultra-realistic professional studio photograph of a single real grey natural stone rock with smooth rounded texture, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no gem crystal jewel diamond illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "rope",
+   "kind": "new",
+   "stl_term": "coiled rope model",
+   "prompt": "ultra-realistic professional studio photograph of a single real coiled thick brown natural fiber rope, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no snake cable wire illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "screw",
+   "kind": "new",
+   "stl_term": "screw fastener model",
+   "prompt": "ultra-realistic professional studio photograph of a single real silver metal screw with a phillips cross head and threaded shaft, upright, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no nail bolt nut illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "shark",
+   "kind": "new",
+   "stl_term": "shark figurine",
+   "prompt": "ultra-realistic professional studio photograph of a single real grey shark with streamlined body and tall dorsal fin, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no whale dolphin illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "sheep",
+   "kind": "new",
+   "stl_term": "sheep figurine",
+   "prompt": "ultra-realistic professional studio photograph of a single real sheep with fluffy white wool, black face and legs, standing, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no goat lamb llama illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "shell",
+   "kind": "new",
+   "stl_term": "seashell model",
+   "prompt": "ultra-realistic professional studio photograph of a single real spiral seashell with cream and brown natural patterns, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no starfish coral pearl illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "ship",
+   "kind": "new",
+   "stl_term": "sailing ship model",
+   "prompt": "ultra-realistic professional studio photograph of a single real wooden sailing ship with brown hull, tall white sails and masts, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no rowboat canoe raft illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "shirt",
+   "kind": "new",
+   "stl_term": "folded shirt model",
+   "prompt": "ultra-realistic professional studio photograph of a single real folded blue collared button-up shirt, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no jacket sweater t-shirt illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "shoe",
+   "kind": "new",
+   "stl_term": "sneaker shoe model",
+   "prompt": "ultra-realistic professional studio photograph of a single real red and white child's sneaker, single shoe, laces tied, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no boot sandal slipper pair illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "skunk",
+   "kind": "new",
+   "stl_term": "skunk figurine",
+   "prompt": "ultra-realistic professional studio photograph of a single real black and white skunk with a bushy striped tail raised, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no cat raccoon badger illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "sled",
+   "kind": "new",
+   "stl_term": "kids wooden sled model",
+   "prompt": "ultra-realistic professional studio photograph of a single real wooden sled with red metal runners, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no snow toboggan sledgehammer illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "slug",
+   "kind": "new",
+   "stl_term": "garden slug model",
+   "prompt": "ultra-realistic professional studio photograph of a single real brown garden slug with an elongated soft body and no shell, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no snail shell white albino illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "snail",
+   "kind": "new",
+   "stl_term": "garden snail model",
+   "prompt": "ultra-realistic professional studio photograph of a single real brown and tan garden snail with a spiral shell, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no slug shell-less illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "spider",
+   "kind": "new",
+   "stl_term": "garden spider model",
+   "prompt": "ultra-realistic professional studio photograph of a single real black and brown garden spider with eight legs and hairy texture, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no rubber fake ant illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "stamp",
+   "kind": "new",
+   "stl_term": "rubber stamp model",
+   "prompt": "ultra-realistic professional studio photograph of a single real wooden-handled rubber ink stamp, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no postage stamp envelope illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "straw",
+   "kind": "new",
+   "stl_term": "striped drinking straw model",
+   "prompt": "ultra-realistic professional studio photograph of a single real red and white striped bendy drinking straw, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no clear transparent hay wheat broom illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "swan",
+   "kind": "new",
+   "stl_term": "swan bird figurine model",
+   "prompt": "ultra-realistic professional studio photograph of a single real white swan with a graceful curved neck and bright orange beak, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no goose duck grey illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "tank",
+   "kind": "new",
+   "stl_term": "toy military tank model",
+   "prompt": "ultra-realistic professional studio photograph of a single real green military tank with treads and a rotating turret, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no fish tank water tank truck car illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "tape",
+   "kind": "new",
+   "stl_term": "washi tape roll model",
+   "prompt": "ultra-realistic professional studio photograph of a single real roll of colorful patterned washi tape, cylindrical roll, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no clear transparent cassette measuring tape wheel illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "tent",
+   "kind": "new",
+   "stl_term": "small camping tent model",
+   "prompt": "ultra-realistic professional studio photograph of a single real small orange camping tent pitched in a dome shape, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no circus tent illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "thorn",
+   "kind": "new",
+   "stl_term": "rose thorn model",
+   "prompt": "ultra-realistic professional studio photograph of a single real brown rose thorn on a short stem segment with a sharp spiked point, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no whole rose leaf flower illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "tie",
+   "kind": "new",
+   "stl_term": "necktie model",
+   "prompt": "ultra-realistic professional studio photograph of a single real red silk necktie hanging straight, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no bow tie clip-on shoelace illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "toad",
+   "kind": "new",
+   "stl_term": "warty toad model",
+   "prompt": "ultra-realistic professional studio photograph of a single real brown warty toad with a squat rounded body and dry bumpy skin, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no frog smooth green glossy illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "tooth",
+   "kind": "new",
+   "stl_term": "molar tooth model",
+   "prompt": "ultra-realistic professional studio photograph of a single real human molar tooth, off-white ivory with visible roots, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no transparent glowing illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "tray",
+   "kind": "new",
+   "stl_term": "wooden serving tray model",
+   "prompt": "ultra-realistic professional studio photograph of a single real small rectangular wooden serving tray with raised edges, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no plate bowl illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "tree",
+   "kind": "new",
+   "stl_term": "miniature pine tree model",
+   "prompt": "ultra-realistic professional studio photograph of a single real miniature model pine tree with green foliage and a brown trunk, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no full size tree forest illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "vacuum",
+   "kind": "new",
+   "stl_term": "toy vacuum cleaner model",
+   "prompt": "ultra-realistic professional studio photograph of a single real small upright toy vacuum cleaner with a colorful body and hose, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no full-size industrial illustration cartoon",
+   "status": "pending"
+  },
+  {
+   "word": "whip",
+   "kind": "new",
+   "stl_term": "leather bullwhip model",
+   "prompt": "ultra-realistic professional studio photograph of a single real brown leather bullwhip, coiled, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no rope whisk illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "whisk",
+   "kind": "new",
+   "stl_term": "kitchen balloon whisk model",
+   "prompt": "ultra-realistic professional studio photograph of a single real stainless steel kitchen balloon whisk with wire loops, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no whip illustration cartoon toy plastic",
+   "status": "pending"
+  },
+  {
+   "word": "wren",
+   "kind": "new",
+   "stl_term": "wren bird figurine model",
+   "prompt": "ultra-realistic professional studio photograph of a single real small brown wren perched, realistic feather texture, centered, soft even studio lighting, plain pure white seamless background, sharp focus, no props, no people, no text, no words, no letters, no numbers, no watermark --ar 3:2 --no sparrow robin illustration cartoon toy plastic",
+   "status": "pending"
+  }
+ ]
+}

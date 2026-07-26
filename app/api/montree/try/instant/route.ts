@@ -8,6 +8,7 @@ import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curri
 import { createMontreeToken, setMontreeAuthCookie } from '@/lib/montree/server-auth';
 import { getLocationFromRequest } from '@/lib/ip-geolocation';
 import { stampSchoolAttribution } from '@/lib/montree/outreach/stamp-attribution';
+import { checkBlacklistTripwire } from '@/lib/montree/outreach/blacklist-tripwire';
 import { applyGlobalTranslations } from '@/lib/montree/curriculum/apply-global-translations';
 import { isValidLocale, DEFAULT_LOCALE, type Locale } from '@/lib/montree/i18n/locales';
 import { DEFAULTS } from '@/lib/montree/constants';
@@ -713,6 +714,17 @@ export async function POST(req: NextRequest) {
       }, { status: 500 });
     }
     steps.push('2-school-ok:' + school.id);
+
+    // ── Blacklist signup tripwire (fire-and-forget observation) ──
+    // If this signup's email / domain matches a [BLACKLIST]-marked outreach
+    // contact, email Tredoux. NEVER awaited into the response; the helper
+    // swallows every error — it can never block or fail the signup.
+    void checkBlacklistTripwire(supabase, {
+      email: email?.trim() || null,
+      schoolName: userSchoolName,
+      schoolId: school.id,
+      source: 'try_instant',
+    }).catch((err) => console.error('[Trial] blacklist tripwire failed:', err));
 
     // ── Step 1b: Capture signup location (non-blocking analytics) ──
     try {

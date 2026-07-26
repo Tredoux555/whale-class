@@ -189,3 +189,6 @@ tsconfig.darkphonics.tmp.tsbuildinfo
 # temp scoped tsconfig from Jul-18 partner-banner fix build verification (sandbox rm blocked — delete via Desktop Commander)
 tsconfig.partnerfix.tmp.json
 tsconfig.partnerfix.tmp.tsbuildinfo
+
+# Generated printable materials (make-material.mjs)
+materials-out/

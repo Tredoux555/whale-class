@@ -8,6 +8,7 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import { getClientIP } from '@/lib/montree/audit-logger';
 import { createMontreeToken, setMontreeAuthCookie } from '@/lib/montree/server-auth';
 import { redeemOutreachCode } from '@/lib/montree/outreach/redeem';
+import { checkBlacklistTripwire } from '@/lib/montree/outreach/blacklist-tripwire';
 import { stampSchoolAttribution } from '@/lib/montree/outreach/stamp-attribution';
 import { getLocationFromRequest } from '@/lib/ip-geolocation';
 import { DEFAULTS } from '@/lib/montree/constants';
@@ -141,6 +142,16 @@ export async function POST(request: NextRequest) {
         console.error('[register] outreach redeem failed:', err)
       );
     }
+
+    // Blacklist signup tripwire (fire-and-forget observation): if this signup's
+    // email / domain matches a [BLACKLIST]-marked outreach contact, email
+    // Tredoux. NEVER blocks registration — the helper swallows every error.
+    void checkBlacklistTripwire(supabase, {
+      email: email.trim(),
+      schoolName: schoolName.trim(),
+      schoolId: school.id,
+      source: 'principal_register',
+    }).catch((err) => console.error('[register] blacklist tripwire failed:', err));
 
     // Ad-geo attribution (Jul 7 2026): stamp the school with its first-touch
     // acquisition source from the montree_attrib cookie. Fire-and-forget — NEVER

@@ -1,5 +1,72 @@
 # Whale-Class / Montree - Developer Brain
 
+## 🧸 SESSION — Jul 26, 2026 (Cowork) — SATPIN BASKET VERIFIED + 5 TOY RENDERS CAUGHT/FIXED + PICTURE LIBRARY SEARCH BUG FIXED (NOT COMMITTED, NOT DEPLOYED)
+
+**Canonical: `docs/handoffs/HANDOFF_PICTURE_BANK_Jul26.md`.** Verified all 30 words from
+`SATPINObjectBaskets.docx` + `ring` are correctly filed and audit-passing in the picture bank.
+The audit script (`picture-bank-add.mjs --audit`) only checks background/size/contrast, never
+subject material — visual re-inspection caught **5 toy-styled renders that had shipped anyway**:
+`ambulance` + `taxi` were die-cast toy cars, `panda` a plush stuffed animal, `penguin` a vinyl
+figurine, `infant` had silently reverted to a real human baby photo (violates the doc's own
+doll-exception rule — a doll is required specifically because photographing a real child isn't
+appropriate). All 5 regenerated as genuine photoreal real objects/animals with explicit anti-toy
+prompt language and re-published, **overwriting the same Supabase Storage paths in place** so no
+duplicate rows exist. 🚨 **New rule locked into `scripts/curriculum/materials.config.json`
+(`_noToys`)**: no die-cast/plush/vinyl-figurine substitutes, ever, even for subjects that can't
+literally be held — use a real full-size photo or a true-to-life scale-model photo instead.
+
+Separately, Tredoux's "ring isn't in the bank" complaint turned out to be a **search bug, not
+missing data** (direct Supabase checks confirmed the file, the Storage object, and 3 live DB rows
+all existed). `app/api/montree/photo-bank/route.ts` did `label.ilike.%term%`, which matched "ring"
+inside "colo**ring**" — with ~155 "X coloring" labels in the library and default alphabetical
+sort + 50-row page size, the real `ring` entries never made it onto page 1. **Two fixes shipped**
+(files written to disk, verified against the live DB, but see NOT DONE below):
+(1) relevance ranking — exact > prefix > word-boundary > substring — replaces pure alphabetical
+sort whenever a search term is present; (2) the old 10-tab category bar (Animals/Food/Objects/…,
+sourced from `montree_photo_categories`) replaced with two tabs, **Pictures** / **Coloring
+Pictures**, via a new `?kind=pictures|coloring` param (`components/montree/PhotoBankPicker.tsx`).
+`montree_photo_categories` / the per-row `category` column are untouched, just no longer queried.
+
+🚨 **NOT COMMITTED, NOT DEPLOYED.** The route.ts + PhotoBankPicker.tsx changes are written to
+disk on Tredoux's Mac only (delivered via the Cowork device bridge — no git access from that
+tool). `git status` at session end showed 40 modified files ahead of `origin/main` by 1 commit,
+mixing this session's 2 files with unrelated in-progress work (`.gitignore`, this file,
+`HANDOFF_LATEST.md`, `principal/register/route.ts`, `try/instant/route.ts`, `DashboardHeader.tsx`,
+several docs) — **ask before running `git commit`**, scope wasn't confirmed. `device_bash` (the
+Cowork↔Mac bridge) has no network access, so even a local commit can't be pushed from a Cowork
+session — that has to happen from Tredoux's own terminal. The 5 toy-render photo fixes themselves
+ARE live (published straight to Supabase Storage, no deploy needed) — only the search/UI code
+changes are pending a restart/rebuild + commit + push.
+
+---
+
+## 🖼️ SESSION — Jul 23, 2026 (Cowork, browser automation) — MONTESSORI PICTURE BANK: ALL 154 A–Z PHOTOS GENERATED + VERIFIED
+
+**Canonical: `docs/picture-bank/HANDOFF_PICTURE_BANK_Jul23.md`.** Separate track from
+Dark Phonics — photoreal shelf/3-part-card photos (NOT the googly-eye circle-lesson
+style). All 154 unique words (`dice`/`fox` intentionally shared with the X page) now
+have a photo at `docs/picture-bank/photos/{word}/{word}.jpg` on the Mac — **verified via
+direct shell check** (154 folders, 154 non-empty jpgs, 0 missing, 0 zero-byte), not just
+a listing. Generated end-to-end via Claude-in-Chrome browser automation driving
+Midjourney (user pre-approved screen access, "get it done - all of them"); ran mostly in
+Relax mode after a mid-run Fast-mode switch hit an out-of-Fast-hours purchase paywall —
+Claude declined to spend money without sign-off and asked; user chose to keep grinding
+in Relax rather than pay. **heart** needed a prompt fix (first render was a bloody
+anatomical organ — fixed with an explicit "NOT an anatomical organ, no veins" clause).
+**insect** never got its own successful render across two attempts and is currently
+standing in with a "beetle insect" photo — flagged for Tredoux to eyeball, not treated
+as a safe substitute. 🚨 **BUG LEARNED: Midjourney's Relax queue silently rejects
+submissions past a ~4-5 job cap** with no visible error unless the page text is checked
+for "Too many queued prompts" — cost ~80 resubmissions this session; going forward,
+verify every MJ submission by checking the queue count first and confirming the prompt
+textarea actually cleared after Enter, don't trust the bare return value.
+**NEXT: Tredoux is building the 3-part cards (picture + label + control card) themselves**
+— not a Claude task right now. Still open after that: host as a tab next to Dark Phonics,
+and finish wiring `satpin.html` into the hub + remove old duplicate pages (deferred until
+final sign-off, nothing deleted).
+
+---
+
 ## 🎞 SESSION — Jul 22, 2026 (Cowork/Fable directing Opus+Sonnet) — WEEKLY MONTAGE FEATURE: PHASES 1–3 BUILT + E2E-CERTIFIED (Apple-Memories-style week-in-film for parents)
 
 **Canonical: `docs/handoffs/SESSION_MONTAGE_BUILD_JUL22.md` + `montage-kit/BUILD_SPEC.md`.
