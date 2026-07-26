@@ -80,12 +80,12 @@ const GROUNDING: Record<JourneyId, Record<string, { title: string; instructions:
     voice_intro: {
       title: 'Tell me about them',
       instructions:
-        'Right after adding students, tap "Tell me about them" on screen, then speak naturally about each child — I build their profile and starter shelf. A few now, the rest whenever.',
+        'OPTIONAL, and never a prerequisite for anything. Tap "Tell me about them" on screen, then speak naturally about each child — I build their profile and starter shelf from what you say. Do a few now, do the rest whenever, or skip it with "Skip for now" on my card: the photos you take will start building each child\'s picture too.',
     },
     first_photo: {
       title: 'Catch one moment',
       instructions:
-        'Tap the camera at the top of the screen, photograph one child at any work, tap the child\'s face to tag them, then Save.',
+        'Tap the camera at the top of the screen, photograph one child at any work, tap the child\'s face to tag them, then Save. This works the moment the class list is in — no profiles or introductions needed first.',
     },
     confirm: {
       title: 'Check my work',
@@ -142,7 +142,11 @@ function buildAskSystemPrompt(
 
   const map = derived.steps
     .map((s, i) => {
-      const status = s.done || s.skipped ? 'DONE' : s.current ? 'CURRENT STEP' : 'not yet';
+      const base = s.done || s.skipped ? 'DONE' : s.current ? 'CURRENT STEP' : 'not yet';
+      // 2026-07-26: the step's `optional` flag never reached the prompt, so Haiku
+      // treated every step as a gate (a teacher asking "can I skip the intros and
+      // just take pictures?" was told to pause and do the intros first). Surface it.
+      const status = s.optional && !(s.done || s.skipped) ? `${base} — OPTIONAL` : base;
       const g = GROUNDING[journey][s.id];
       const title = g?.title ?? s.id;
       const instructions = g?.instructions ?? '';
@@ -158,12 +162,24 @@ function buildAskSystemPrompt(
     `parent codes generated ${state.parent_codes}, reports sent ${state.reports_sent}.`,
   ].join(' ');
 
-  const rule =
-    'Only reference screens, buttons and click-paths that appear in the journey map above. ' +
-    'If asked about anything outside onboarding, answer briefly and steer back to the current step. ' +
-    'Never invent UI.';
+  // 2026-07-26: these rules exist because Haiku invented a prerequisite. Asked
+  // "can I skip the introductions and just start taking pictures?", Guru replied
+  // "I'd gently ask you to pause here… a photo wouldn't know who it belongs to".
+  // That is factually false — the camera button, the capture page and the upload
+  // route need nothing but a child on the roster; montree_child_mental_profiles
+  // (what the voice intros build) is never read on any capture/tagging path. The
+  // old "steer back to the current step" line is now softened to an offer, so it
+  // can't fight the no-gates rules below.
+  const rules = [
+    'Only reference screens, buttons and click-paths that appear in the journey map above. Never invent UI.',
+    'No step in this journey blocks any other step. Steps marked OPTIONAL are genuinely optional: the user may do them now, do them later, or skip them for good.',
+    'Taking photos works as soon as there are students on the roster. Every photo is tagged to a child and builds that child\'s picture over time. The voice intros ("Tell me about them") are NOT needed before photos.',
+    'When the user asks to skip an optional step, or to do it later, agree warmly and at once. Tell them they can tap "Skip for now" on my card, then point them straight at what they want to do (for photos: the camera button at the top of the dashboard).',
+    'Never ask the user to pause, wait, or finish a step before using the app, and never say a photo needs a profile or an introduction first.',
+    'If asked about something outside onboarding, answer briefly, then offer the current step as a suggestion rather than an instruction.',
+  ].join(' ');
 
-  return `${persona}\n\n${voice}\n\nONBOARDING JOURNEY MAP:\n${map}\n\n${numbers}\n\n${rule}`;
+  return `${persona}\n\n${voice}\n\nONBOARDING JOURNEY MAP:\n${map}\n\n${numbers}\n\n${rules}`;
 }
 
 export async function POST(request: NextRequest) {
