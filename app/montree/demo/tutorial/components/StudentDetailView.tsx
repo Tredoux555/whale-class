@@ -27,7 +27,7 @@ export function StudentDetailView({
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
       {/* Header */}
-      <header className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white sticky top-0 z-40">
+      <header className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white sticky top-0 z-40" style={{ paddingTop: 'var(--safe-top)' }}>
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <button
@@ -60,7 +60,7 @@ export function StudentDetailView({
       </header>
 
       {/* Tab Navigation */}
-      <div className="bg-white border-b shadow-sm sticky top-[88px] z-30">
+      <div className="bg-white border-b shadow-sm sticky top-[88px] z-30" style={{ top: 'calc(88px + var(--safe-top))' }}>
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex gap-1 py-2">
             {[

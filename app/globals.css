@@ -226,6 +226,45 @@ body, html {
    NOTE: Do NOT add safe-area padding to body — it doubles up with
    component-level safe-area padding (DashboardHeader, CameraCapture, etc).
    Each full-screen component handles its own safe area insets. */
+
+/* ============================================================================
+   🚨 THE SAFE-AREA CONTRACT FOR TOP BARS — READ THIS BEFORE TOUCHING A HEADER
+   ============================================================================
+   RULE: every position:sticky / position:fixed top:0 header that can ever be
+   the TOPMOST element in the viewport MUST reserve the status-bar inset, or the
+   iPhone clock lands on top of its buttons. app/layout.tsx sets
+   viewportFit:"cover", so nothing reserves it for you.
+
+   USE var(--safe-top). Not a bare env(), not .safe-top (its max(1rem,…) floor
+   is too thick for tight bars). Examples:
+       paddingTop: 'var(--safe-top)'                    // the header itself
+       top: 'calc(57px + var(--safe-top))'              // anything sticking below it
+
+   WHY A VARIABLE INSTEAD OF A BARE env(): this bug has regressed three times
+   (fc348eda added the inset → 945825d9 removed it → 2a52240c / 588365ab never
+   restored it) because the honest answer is CONDITIONAL. The shared
+   DashboardHeader is sticky top:0 and already pads itself, so a sub-header
+   below it must NOT pad again (that was the dead-space regression that got the
+   padding deleted) — BUT DashboardHeader holds its session in useState and
+   returns null until a teacher session resolves, so on first paint (and on any
+   route or role where it renders nothing) the sub-header IS topmost and DOES
+   need the inset. That is why binary fixes keep flip-flopping.
+
+   --safe-top resolves that automatically: it is the real inset, and collapses
+   to 0 exactly when a DashboardHeader (which owns the inset itself) is in the
+   DOM above. No JS, no timing races, self-correcting when the header appears.
+   If :has() is ever unsupported the value stays padded — the safe direction.
+
+   Canonical example: components/montree/DashboardHeader.tsx (:498) and
+   app/montree/dashboard/[childId]/layout.tsx.
+   ========================================================================= */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+body:has(header[data-dashboard-header]) {
+  --safe-top: 0px;
+}
+
 @supports (padding: env(safe-area-inset-top)) {
   /* Fixed headers should account for notch */
   .safe-top {

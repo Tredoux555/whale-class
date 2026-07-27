@@ -381,7 +381,7 @@ export default function PhonicsDictionaryPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-gradient-to-r from-teal-800 to-teal-700 text-white shadow-lg">
+      <div className="sticky top-0 z-50 bg-gradient-to-r from-teal-800 to-teal-700 text-white shadow-lg" style={{ paddingTop: 'var(--safe-top)' }}>
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-3">
             <Link href="/montree/library" className="flex items-center gap-2 group">
@@ -465,7 +465,7 @@ export default function PhonicsDictionaryPage() {
       {!isPrintMode && (
         <>
           {/* Alphabet Navigation Bar */}
-          <div className="sticky top-20 z-40 bg-white border-b-2 border-teal-200 shadow-sm">
+          <div className="sticky top-20 z-40 bg-white border-b-2 border-teal-200 shadow-sm" style={{ top: 'calc(5rem + var(--safe-top))' }}>
             <div className="max-w-6xl mx-auto px-4 py-3">
               <div className="flex flex-wrap gap-1 justify-center">
                 {ALPHABET.map(letter => {

@@ -223,7 +223,7 @@ export default function ClassroomBuilderPage() {
       style={{ backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(39,129,90,0.32), transparent 60%)' }}
     >
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[rgba(7,18,12,0.9)] border-b border-[rgba(52,211,153,0.15)] px-4 py-3">
+      <div className="sticky top-0 z-10 bg-[rgba(7,18,12,0.9)] border-b border-[rgba(52,211,153,0.15)] px-4 py-3" style={{ paddingTop: 'calc(0.75rem + var(--safe-top))' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button

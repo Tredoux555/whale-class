@@ -1323,7 +1323,7 @@ export default function WeeklyWrapPage() {
       style={{ backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(39,129,90,0.32), transparent 60%)' }}
     >
       {/* Header */}
-      <header className="bg-[rgba(7,18,12,0.9)] border-b border-[rgba(52,211,153,0.15)] sticky top-0 z-10">
+      <header className="bg-[rgba(7,18,12,0.9)] border-b border-[rgba(52,211,153,0.15)] sticky top-0 z-10" style={{ paddingTop: 'var(--safe-top)' }}>
         <div className="max-w-3xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">

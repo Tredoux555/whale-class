@@ -90,13 +90,19 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
         background: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.32), rgba(39,129,90,0.12) 30%, transparent 60%)',
       }} />
 
-      {/* Child sub-header */}
+      {/* Child sub-header
+          SAFE AREA: var(--safe-top) is required — see the safe-area contract in
+          app/globals.css. It is the status-bar inset, and collapses to 0 when the
+          shared DashboardHeader (which pads itself) is in the DOM above us. Do NOT
+          swap it for a bare env() (dead space under DashboardHeader) or delete it
+          (the iPhone clock lands on the back arrow — this has regressed 3×). */}
       <header style={{
         background: 'linear-gradient(180deg, rgba(7,18,12,0.96) 0%, rgba(7,18,12,0.90) 100%)',
         borderBottom: `1px solid ${C.border}`,
         backdropFilter: 'blur(20px) saturate(140%)',
         WebkitBackdropFilter: 'blur(20px) saturate(140%)',
         position: 'sticky', top: 0, zIndex: 40,
+        paddingTop: 'var(--safe-top)',
         fontFamily: SANS,
       }}>
         <div style={{ maxWidth: 896, margin: '0 auto', padding: '10px 16px' }}>
@@ -153,14 +159,16 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
         </div>
       </header>
 
-      {/* Tab bar — only when multiple tabs */}
+      {/* Tab bar — only when multiple tabs.
+          SAFE AREA: the 57px is the sub-header's height, so this offset must carry
+          the same inset the sub-header does or the tabs slide under it. */}
       {tabs.length > 1 && (
         <div style={{
           background: 'rgba(8,20,12,0.90)',
           borderBottom: `1px solid ${C.border}`,
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
-          position: 'sticky', top: 57, zIndex: 30,
+          position: 'sticky', top: 'calc(57px + var(--safe-top))', zIndex: 30,
         }}>
           <div style={{ display: 'flex', width: '100%' }}>
             {tabs.map(tab => (

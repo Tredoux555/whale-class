@@ -224,7 +224,7 @@ export default function CurriculumPage() {
       )}
 
       {/* Page sub-header — main nav is in DashboardHeader */}
-      <div style={{ background: 'rgba(7,18,12,0.95)', borderBottom: '1px solid rgba(52,211,153,0.12)', padding: '12px 16px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
+      <div style={{ background: 'rgba(7,18,12,0.95)', borderBottom: '1px solid rgba(52,211,153,0.12)', padding: '12px 16px', paddingTop: 'calc(12px + var(--safe-top))', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div>
             <h1 style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontSize: 20, fontWeight: 500, color: 'rgba(255,255,255,0.95)', margin: 0, letterSpacing: -0.3 }}>{t('curriculum.title')}</h1>

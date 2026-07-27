@@ -244,7 +244,7 @@ export default function CurriculumBrowsePage() {
   return (
     <div className={`min-h-screen ${isParent ? HOME_THEME.pageBg : 'bg-[#0a1a0f]'}`}>
       {/* Header */}
-      <div className={`border-b sticky top-0 z-20 ${isParent ? 'bg-[#0D3330] border-[#0D3330]' : 'bg-[rgba(7,18,12,0.9)] border-[rgba(52,211,153,0.15)]'}`}>
+      <div style={{ paddingTop: 'var(--safe-top)' }} className={`border-b sticky top-0 z-20 ${isParent ? 'bg-[#0D3330] border-[#0D3330]' : 'bg-[rgba(7,18,12,0.9)] border-[rgba(52,211,153,0.15)]'}`}>
         <div className="max-w-4xl mx-auto px-4 py-3">
           <div className="flex items-center gap-3">
             <button
@@ -268,7 +268,7 @@ export default function CurriculumBrowsePage() {
       </div>
 
       {/* Area Tabs — horizontal scroll */}
-      <div className={`border-b sticky top-[57px] z-10 ${isParent ? 'bg-[#FFFDF8] border-[#0D3330]/10' : 'bg-[rgba(7,18,12,0.75)] border-[rgba(52,211,153,0.1)]'}`}>
+      <div style={{ top: 'calc(57px + var(--safe-top))' }} className={`border-b sticky top-[57px] z-10 ${isParent ? 'bg-[#FFFDF8] border-[#0D3330]/10' : 'bg-[rgba(7,18,12,0.75)] border-[rgba(52,211,153,0.1)]'}`}>
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex gap-1 overflow-x-auto py-2 -mx-1 scrollbar-hide">
             {AREA_ORDER.map(areaId => {
