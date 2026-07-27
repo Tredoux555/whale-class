@@ -1,5 +1,5 @@
 // /montree/library/satpin/page.tsx
-// Montree Library — the full initial-sound series (26 weeks, A–Z).
+// Montree Library — the full initial-sound series (27 weeks, A–Z).
 //
 // A content bucket, not a print shop: one block per letter/week holding the
 // canonical basket words, the live basket pictures out of the Picture Bank,
@@ -7,7 +7,9 @@
 // builds the materials. Hardcoded English, same as language-area/page.tsx.
 //
 // The route keeps its /satpin slug — SATPIN is the opening stretch of the
-// series, not the whole of it (S/A/T/P/I/N land in weeks 1–8).
+// series, not the whole of it: S A T P I N are weeks 1–6, then weeks 7–27
+// follow the in-house readers order (M D G O C K ck E U R H B F L J V W X Y
+// Z Qu). Week 13 (ck) is a digraph — a sound-only week with no basket.
 //
 // Word lists: S/A/T/P/I/N come from docs/picture-bank/SATPIN-Object-Baskets.docx
 // (30 words), the other twenty letters from docs/picture-bank/AZ-Object-Baskets.docx
@@ -61,7 +63,12 @@ type WeekBlock = {
   week: number;
   letter: string;
   slug: string;
-  words: WeekWord[];
+  /** Omit (or leave empty) for a sound-only week — a digraph like `ck` that is
+   *  taught without an object basket. Those render as a slim, muted row: no
+   *  words, no pictures, no printables, no book slot. */
+  words?: WeekWord[];
+  /** Sub-line for a sound-only week. Ignored when `words` is present. */
+  note?: string;
   /** rgb triple — 400-level accent: the big letter, icons, borders */
   accent: string;
   /** rgb triple — 200-level tint: secondary text */
@@ -72,44 +79,33 @@ type WeekBlock = {
 };
 
 /**
- * The master 26-week series, in curriculum order — the same order and words as
- * the SERIES manifest in scripts/curriculum/upload-satpin-basket-photos.mjs.
+ * The established 27-week series, in curriculum order: SATPIN takes weeks 1–6
+ * in its original order, then weeks 7–27 follow the in-house readers order —
+ * docs/curriculum/dark-phonics-readers/HANDOFF_DARK_PHONICS_READERS_Jul25.md.
+ * Same order and words as the SERIES manifest in
+ * scripts/curriculum/upload-satpin-basket-photos.mjs — keep the two in step.
+ *
  * Accents are Tailwind 400-level / tints 200-level, rotated round the hue wheel
  * so no two neighbouring weeks share a colour.
  */
 const WEEKS: WeekBlock[] = [
   {
-    week: 1, letter: 'A', slug: 'a',
-    words: ['apple', 'ant', 'anchor', 'alligator', 'ambulance'],
-    accent: '244,114,182', tint: '251,207,232',
-  },
-  {
-    week: 2, letter: 'T', slug: 't',
-    words: ['turtle', 'tiger', 'toothbrush', 'tomato', 'taxi'],
-    accent: '167,139,250', tint: '221,214,254',
-  },
-  {
-    week: 3, letter: 'M', slug: 'm',
-    words: ['mug', 'mouse', 'mushroom', 'magnet', 'monkey'],
-    accent: '45,212,191', tint: '153,246,228',
-  },
-  {
-    week: 4, letter: 'C', slug: 'c',
-    words: ['cat', 'cup', 'car', 'comb', 'cow'],
-    accent: '251,146,60', tint: '254,215,170',
-  },
-  {
-    week: 5, letter: 'S', slug: 's',
+    week: 1, letter: 'S', slug: 's',
     words: ['sock', 'snake', 'star', 'soap', 'seal'],
     accent: '52,211,153', tint: '167,243,208',
   },
   {
-    week: 6, letter: 'N', slug: 'n',
-    words: ['nut', 'nest', 'net', 'napkin', 'nail'],
-    accent: '74,222,128', tint: '187,247,208',
+    week: 2, letter: 'A', slug: 'a',
+    words: ['apple', 'ant', 'anchor', 'alligator', 'ambulance'],
+    accent: '244,114,182', tint: '251,207,232',
   },
   {
-    week: 7, letter: 'P', slug: 'p',
+    week: 3, letter: 'T', slug: 't',
+    words: ['turtle', 'tiger', 'toothbrush', 'tomato', 'taxi'],
+    accent: '167,139,250', tint: '221,214,254',
+  },
+  {
+    week: 4, letter: 'P', slug: 'p',
     words: ['pig', 'pen', 'penguin', 'pumpkin', 'panda'],
     accent: '252,211,77', tint: '253,230,138',
     book: {
@@ -123,34 +119,51 @@ const WEEKS: WeekBlock[] = [
     },
   },
   {
-    week: 8, letter: 'I', slug: 'i',
+    week: 5, letter: 'I', slug: 'i',
     words: ['igloo', 'iguana', 'inchworm', 'insect', 'infant'],
     accent: '96,165,250', tint: '191,219,254',
   },
   {
-    week: 9, letter: 'H', slug: 'h',
-    words: ['hat', 'horse', 'hammer', 'hen', 'heart'],
-    accent: '251,113,133', tint: '254,205,211',
+    week: 6, letter: 'N', slug: 'n',
+    words: ['nut', 'nest', 'net', 'napkin', 'nail'],
+    accent: '74,222,128', tint: '187,247,208',
   },
   {
-    week: 10, letter: 'D', slug: 'd',
+    week: 7, letter: 'M', slug: 'm',
+    words: ['mug', 'mouse', 'mushroom', 'magnet', 'monkey'],
+    accent: '192,132,252', tint: '233,213,255',
+  },
+  {
+    week: 8, letter: 'D', slug: 'd',
     words: ['dog', 'duck', 'doll', 'drum', 'dinosaur'],
     accent: '56,189,248', tint: '186,230,253',
   },
   {
-    week: 11, letter: 'O', slug: 'o',
-    words: ['octopus', 'orange', 'owl', 'otter', 'ostrich'],
-    accent: '232,121,249', tint: '245,208,254',
-  },
-  {
-    week: 12, letter: 'G', slug: 'g',
+    week: 9, letter: 'G', slug: 'g',
     words: ['goat', 'guitar', 'glove', 'grapes', 'gift'],
     accent: '163,230,53', tint: '217,249,157',
   },
   {
-    week: 13, letter: 'B', slug: 'b',
-    words: ['ball', 'banana', 'bell', 'boat', 'bear'],
-    accent: '129,140,248', tint: '199,210,254',
+    week: 10, letter: 'O', slug: 'o',
+    words: ['octopus', 'orange', 'owl', 'otter', 'ostrich'],
+    accent: '232,121,249', tint: '245,208,254',
+  },
+  {
+    week: 11, letter: 'C', slug: 'c',
+    words: ['cat', 'cup', 'car', 'comb', 'cow'],
+    accent: '251,146,60', tint: '254,215,170',
+  },
+  {
+    week: 12, letter: 'K', slug: 'k',
+    words: ['key', 'kite', 'koala', 'kangaroo', 'kettle'],
+    accent: '56,189,248', tint: '186,230,253',
+  },
+  {
+    // Digraph week: the sound is taught, there is no object basket. No words
+    // ⇒ the block renders slim and muted. Do not invent five 'ck' objects.
+    week: 13, letter: 'ck', slug: 'ck',
+    note: 'Digraph week · no object basket',
+    accent: '148,163,184', tint: '203,213,225',
   },
   {
     week: 14, letter: 'E', slug: 'e',
@@ -158,39 +171,39 @@ const WEEKS: WeekBlock[] = [
     accent: '250,204,21', tint: '254,240,138',
   },
   {
-    week: 15, letter: 'R', slug: 'r',
-    words: ['ring', 'rabbit', 'rocket', 'robot', 'rose'],
-    accent: '192,132,252', tint: '233,213,255',
-  },
-  {
-    week: 16, letter: 'U', slug: 'u',
+    week: 15, letter: 'U', slug: 'u',
     words: ['umbrella', 'unicorn', 'ukulele', 'unicycle', 'sea urchin'],
     accent: '34,211,238', tint: '165,243,252',
   },
   {
-    week: 17, letter: 'F', slug: 'f',
+    week: 16, letter: 'R', slug: 'r',
+    words: ['ring', 'rabbit', 'rocket', 'robot', 'rose'],
+    accent: '192,132,252', tint: '233,213,255',
+  },
+  {
+    week: 17, letter: 'H', slug: 'h',
+    words: ['hat', 'horse', 'hammer', 'hen', 'heart'],
+    accent: '251,113,133', tint: '254,205,211',
+  },
+  {
+    week: 18, letter: 'B', slug: 'b',
+    words: ['ball', 'banana', 'bell', 'boat', 'bear'],
+    accent: '129,140,248', tint: '199,210,254',
+  },
+  {
+    week: 19, letter: 'F', slug: 'f',
     words: ['fish', 'fork', 'frog', 'feather', 'fan'],
     accent: '248,113,113', tint: '254,202,202',
   },
   {
-    week: 18, letter: 'L', slug: 'l',
+    week: 20, letter: 'L', slug: 'l',
     words: ['leaf', 'lion', 'ladder', 'lemon', 'lizard'],
     accent: '45,212,191', tint: '153,246,228',
   },
   {
-    week: 19, letter: 'W', slug: 'w',
-    words: ['watch', 'whale', 'wagon', 'worm', 'wolf'],
-    accent: '251,146,60', tint: '254,215,170',
-  },
-  {
-    week: 20, letter: 'J', slug: 'j',
+    week: 21, letter: 'J', slug: 'j',
     words: ['jar', 'jet', 'jug', 'jacket', 'jellyfish'],
     accent: '244,114,182', tint: '251,207,232',
-  },
-  {
-    week: 21, letter: 'K', slug: 'k',
-    words: ['key', 'kite', 'koala', 'kangaroo', 'kettle'],
-    accent: '56,189,248', tint: '186,230,253',
   },
   {
     week: 22, letter: 'V', slug: 'v',
@@ -198,9 +211,9 @@ const WEEKS: WeekBlock[] = [
     accent: '251,191,36', tint: '253,230,138',
   },
   {
-    week: 23, letter: 'Y', slug: 'y',
-    words: ['yo-yo', 'yak', 'yarn', 'yacht', 'yam'],
-    accent: '232,121,249', tint: '245,208,254',
+    week: 23, letter: 'W', slug: 'w',
+    words: ['watch', 'whale', 'wagon', 'worm', 'wolf'],
+    accent: '96,165,250', tint: '191,219,254',
   },
   {
     // "six" is the letter-X word the child says; the picture of it is filed
@@ -210,22 +223,27 @@ const WEEKS: WeekBlock[] = [
     accent: '52,211,153', tint: '167,243,208',
   },
   {
-    week: 25, letter: 'Qu', slug: 'qu',
-    words: ['queen', 'quill', 'quilt', 'quarter', 'quail'],
-    accent: '129,140,248', tint: '199,210,254',
+    week: 25, letter: 'Y', slug: 'y',
+    words: ['yo-yo', 'yak', 'yarn', 'yacht', 'yam'],
+    accent: '232,121,249', tint: '245,208,254',
   },
   {
     week: 26, letter: 'Z', slug: 'z',
     words: ['zebra', 'zipper', 'zucchini', 'zero', 'zeppelin'],
-    accent: '251,113,133', tint: '254,205,211',
+    accent: '163,230,53', tint: '217,249,157',
+  },
+  {
+    week: 27, letter: 'Qu', slug: 'qu',
+    words: ['queen', 'quill', 'quilt', 'quarter', 'quail'],
+    accent: '129,140,248', tint: '199,210,254',
   },
 ];
 
 /**
  * Letters whose ready-made three-part-card sheets actually exist on disk under
- * public/satpin-materials/<slug>/. Only SATPIN has them so far — the other
- * twenty weeks hide the row rather than link to 404s. Drop a slug in here the
- * moment its PDFs land.
+ * public/satpin-materials/<slug>/. Only SATPIN has them so far — every later
+ * week hides the row rather than link to a 404. Drop a slug in here the moment
+ * its PDFs land.
  */
 const PRINTABLE_SLUGS = new Set(['s', 'a', 't', 'p', 'i', 'n']);
 
@@ -286,14 +304,14 @@ function photoSrc(photo: BankPhoto, width: number): string {
 export default function SatpinPage() {
   const router = useRouter();
   // Photo-bank rows keyed by lowercase label. Every basket label and every book
-  // scene label is unique across the 26 weeks, so one flat map is enough.
+  // scene label is unique across the 27 weeks, so one flat map is enough.
   const [pictures, setPictures] = useState<Record<string, BankPhoto>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     const labels = [
-      ...WEEKS.flatMap(w => w.words.map(wordPhotoLabel)),
+      ...WEEKS.flatMap(w => (w.words ?? []).map(wordPhotoLabel)),
       ...WEEKS.flatMap(w => w.book?.pictureLabels ?? []),
     ];
     (async () => {
@@ -437,7 +455,7 @@ export default function SatpinPage() {
           </h1>
 
           <p className="text-white/40 mt-5 text-lg max-w-lg mx-auto leading-relaxed">
-            The full initial-sound series — 26 weeks, every letter A–Z. Object baskets,
+            The full initial-sound series — 27 weeks, every letter A–Z. Object baskets,
             pictures and books, week by week, starting with SATPIN.
           </p>
 
@@ -497,7 +515,7 @@ export default function SatpinPage() {
               <div className="relative z-10 flex-1 text-left">
                 <div className="text-white font-semibold text-lg">A–Z Object Baskets</div>
                 <div className="text-sm mt-0.5" style={{ color: 'rgba(130,217,174,0.55)' }}>
-                  Full-series word list &middot; 26 weeks &middot; 130 words &middot; 5 per letter
+                  Full-series word list &middot; 27 weeks &middot; 130 words &middot; 5 per letter
                 </div>
               </div>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 group-hover:translate-x-1 transition-all shrink-0" style={{ color: 'rgba(130,217,174,0.4)' }}>
@@ -508,7 +526,43 @@ export default function SatpinPage() {
 
           {/* One block per week */}
           <div className="mt-4 space-y-4">
-            {WEEKS.map((block) => (
+            {WEEKS.map((block) => {
+              const words = block.words ?? [];
+
+              // Sound-only week (a digraph such as ck): nothing to put in a
+              // basket, so no words, pictures, printables or book slot — just a
+              // slim muted marker keeping the week numbering visibly intact.
+              if (words.length === 0) {
+                return (
+                  <div
+                    key={block.slug}
+                    className="rounded-2xl border border-dashed px-5 py-4 flex items-center gap-4"
+                    style={{
+                      background: `linear-gradient(135deg, rgba(${block.accent},0.05), rgba(${block.accent},0.015))`,
+                      borderColor: `rgba(${block.accent},0.14)`,
+                    }}
+                  >
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                      style={{ background: `rgba(${block.accent},0.10)` }}
+                    >
+                      <span className="text-xl font-bold leading-none" style={{ color: `rgba(${block.accent},0.7)` }}>
+                        {block.letter}
+                      </span>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <div className="text-white/55 font-medium text-sm">
+                        Week {block.week} — {block.letter}
+                      </div>
+                      <div className="text-xs mt-0.5" style={{ color: `rgba(${block.tint},0.35)` }}>
+                        {block.note ?? 'Sound-only week · no object basket'}
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
               <div
                 key={block.slug}
                 className="rounded-2xl border p-6"
@@ -539,7 +593,7 @@ export default function SatpinPage() {
 
                 {/* Word chips */}
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {block.words.map((w) => (
+                  {words.map((w) => (
                     <span
                       key={wordText(w)}
                       className="px-3 py-1.5 rounded-full text-sm"
@@ -556,7 +610,7 @@ export default function SatpinPage() {
 
                 {/* Basket pictures + hand-off */}
                 <PictureRow
-                  items={block.words.map(w => ({ label: wordPhotoLabel(w), display: wordText(w) }))}
+                  items={words.map(w => ({ label: wordPhotoLabel(w), display: wordText(w) }))}
                   accent={block.accent}
                 />
 
@@ -627,7 +681,8 @@ export default function SatpinPage() {
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
           </div>
 
           <p className="text-white/30 mt-12 text-sm leading-relaxed max-w-md mx-auto">

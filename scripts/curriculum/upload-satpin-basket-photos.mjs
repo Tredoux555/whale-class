@@ -1,13 +1,20 @@
 #!/usr/bin/env node
 /**
- * Ingest the clean object-basket photos of the FULL 26-week initial-sound
+ * Ingest the clean object-basket photos of the FULL 27-week initial-sound
  * series into the LIVE picture bank.
  *
  * SCOPE — this script owns every basket photo behind /montree/library/satpin.
  * It started as the SATPIN-only ingest (30 words) and now carries the whole
- * master curriculum order, 26 letters x 5 words = 130 photos:
+ * ESTABLISHED curriculum: 27 weeks, 26 letter baskets x 5 words = 130 photos.
  *
- *   A T M C S N P I H D O G B E R U F L W J K V Y X Qu Z
+ *   weeks 1–6    S A T P I N            — the SATPIN block, original order
+ *   weeks 7–27   M D G O C K ck E U R H B F L J V W X Y Z Qu
+ *                — the in-house readers order, per
+ *                  docs/curriculum/dark-phonics-readers/HANDOFF_DARK_PHONICS_READERS_Jul25.md
+ *
+ * 🚨 Week 13 (ck) is a DIGRAPH week with no object basket: it holds no words
+ * and no photos and appears below only so the week numbers stay honest. Do
+ * not "fill it in".
  *
  * The six SATPIN letters (S A T P I N) keep their canonical words from
  * `docs/picture-bank/SATPIN-Object-Baskets.docx`; the other twenty letters
@@ -48,8 +55,9 @@
  *
  * IDEMPOTENT: a row already carrying `storage_path = picture-bank/<x>.jpg`
  * is UPDATED in place rather than duplicated; identical rows are left alone.
- * The 30 SATPIN rows from the first run are marked `legacy` below and keep
- * their original tag set, so widening the series does not churn live rows.
+ * All 130 rows carry one tag scheme — the 30 SATPIN rows first ingested under
+ * the older scheme were re-tagged in place when the established week numbering
+ * landed, so nothing in the bank is tagged two different ways.
  *
  * Run:
  *   DRY_RUN=1 node --env-file=.env.local scripts/curriculum/upload-satpin-basket-photos.mjs
@@ -71,13 +79,8 @@ const CATEGORY = 'picture-bank';
 const SOURCE_ROOT = path.join(process.cwd(), 'docs', 'picture-bank', 'photos');
 
 /**
- * The master 26-week series, in curriculum order. Mirrors the WEEKS manifest
- * in app/montree/library/satpin/page.tsx — keep the two in step.
- *
- * `legacy: true` marks the six SATPIN letters ingested by the first version of
- * this script: their rows already exist and keep their original tag set, so a
- * rerun reports them unchanged instead of churning 30 live rows for cosmetic
- * tag drift.
+ * The established 27-week series, in curriculum order. Mirrors the WEEKS
+ * manifest in app/montree/library/satpin/page.tsx — keep the two in step.
  *
  * A word is either a plain string (source photos/<word>/<word>.jpg, bank label
  * <word>) or an override object:
@@ -92,32 +95,34 @@ const SOURCE_ROOT = path.join(process.cwd(), 'docs', 'picture-bank', 'photos');
  * pictured, filed and labelled as 'dice'.
  */
 const SERIES = [
-  { week: 1,  letter: 'A',  legacy: true, words: ['apple', 'ant', 'anchor', 'alligator', 'ambulance'] },
-  { week: 2,  letter: 'T',  legacy: true, words: ['turtle', 'tiger', 'toothbrush', 'tomato', 'taxi'] },
-  { week: 3,  letter: 'M',  words: ['mug', 'mouse', 'mushroom', 'magnet', 'monkey'] },
-  { week: 4,  letter: 'C',  words: ['cat', 'cup', 'car', 'comb', 'cow'] },
-  { week: 5,  letter: 'S',  legacy: true, words: ['sock', 'snake', 'star', 'soap', 'seal'] },
-  { week: 6,  letter: 'N',  legacy: true, words: ['nut', 'nest', 'net', 'napkin', 'nail'] },
-  { week: 7,  letter: 'P',  legacy: true, words: ['pig', 'pen', 'penguin', 'pumpkin', 'panda'] },
-  { week: 8,  letter: 'I',  legacy: true, words: ['igloo', 'iguana', 'inchworm', 'insect', 'infant'] },
-  { week: 9,  letter: 'H',  words: ['hat', 'horse', 'hammer', 'hen', 'heart'] },
-  { week: 10, letter: 'D',  words: ['dog', 'duck', 'doll', 'drum', 'dinosaur'] },
-  { week: 11, letter: 'O',  words: ['octopus', 'orange', 'owl', 'otter', 'ostrich'] },
-  { week: 12, letter: 'G',  words: ['goat', 'guitar', 'glove', 'grapes', 'gift'] },
-  { week: 13, letter: 'B',  words: ['ball', 'banana', 'bell', 'boat', 'bear'] },
+  { week: 1,  letter: 'S',  words: ['sock', 'snake', 'star', 'soap', 'seal'] },
+  { week: 2,  letter: 'A',  words: ['apple', 'ant', 'anchor', 'alligator', 'ambulance'] },
+  { week: 3,  letter: 'T',  words: ['turtle', 'tiger', 'toothbrush', 'tomato', 'taxi'] },
+  { week: 4,  letter: 'P',  words: ['pig', 'pen', 'penguin', 'pumpkin', 'panda'] },
+  { week: 5,  letter: 'I',  words: ['igloo', 'iguana', 'inchworm', 'insect', 'infant'] },
+  { week: 6,  letter: 'N',  words: ['nut', 'nest', 'net', 'napkin', 'nail'] },
+  { week: 7,  letter: 'M',  words: ['mug', 'mouse', 'mushroom', 'magnet', 'monkey'] },
+  { week: 8,  letter: 'D',  words: ['dog', 'duck', 'doll', 'drum', 'dinosaur'] },
+  { week: 9,  letter: 'G',  words: ['goat', 'guitar', 'glove', 'grapes', 'gift'] },
+  { week: 10, letter: 'O',  words: ['octopus', 'orange', 'owl', 'otter', 'ostrich'] },
+  { week: 11, letter: 'C',  words: ['cat', 'cup', 'car', 'comb', 'cow'] },
+  { week: 12, letter: 'K',  words: ['key', 'kite', 'koala', 'kangaroo', 'kettle'] },
+  // Digraph week — no object basket, so nothing to ingest. Here for the count.
+  { week: 13, letter: 'ck', words: [] },
   { week: 14, letter: 'E',  words: ['egg', 'elephant', 'envelope', 'eraser', 'eagle'] },
-  { week: 15, letter: 'R',  words: ['ring', 'rabbit', 'rocket', 'robot', 'rose'] },
-  { week: 16, letter: 'U',  words: ['umbrella', 'unicorn', 'ukulele', 'unicycle', { word: 'sea urchin', sourceFile: 'seaurchin' }] },
-  { week: 17, letter: 'F',  words: ['fish', 'fork', 'frog', 'feather', 'fan'] },
-  { week: 18, letter: 'L',  words: ['leaf', 'lion', 'ladder', 'lemon', 'lizard'] },
-  { week: 19, letter: 'W',  words: ['watch', 'whale', 'wagon', 'worm', 'wolf'] },
-  { week: 20, letter: 'J',  words: ['jar', 'jet', 'jug', 'jacket', 'jellyfish'] },
-  { week: 21, letter: 'K',  words: ['key', 'kite', 'koala', 'kangaroo', 'kettle'] },
+  { week: 15, letter: 'U',  words: ['umbrella', 'unicorn', 'ukulele', 'unicycle', { word: 'sea urchin', sourceFile: 'seaurchin' }] },
+  { week: 16, letter: 'R',  words: ['ring', 'rabbit', 'rocket', 'robot', 'rose'] },
+  { week: 17, letter: 'H',  words: ['hat', 'horse', 'hammer', 'hen', 'heart'] },
+  { week: 18, letter: 'B',  words: ['ball', 'banana', 'bell', 'boat', 'bear'] },
+  { week: 19, letter: 'F',  words: ['fish', 'fork', 'frog', 'feather', 'fan'] },
+  { week: 20, letter: 'L',  words: ['leaf', 'lion', 'ladder', 'lemon', 'lizard'] },
+  { week: 21, letter: 'J',  words: ['jar', 'jet', 'jug', 'jacket', 'jellyfish'] },
   { week: 22, letter: 'V',  words: ['van', 'violin', 'vase', 'volcano', 'vest'] },
-  { week: 23, letter: 'Y',  words: [{ word: 'yo-yo', sourceFile: 'yoyo' }, 'yak', 'yarn', 'yacht', 'yam'] },
+  { week: 23, letter: 'W',  words: ['watch', 'whale', 'wagon', 'worm', 'wolf'] },
   { week: 24, letter: 'X',  words: ['xylophone', 'fox', 'box', 'ox', { word: 'six', label: 'dice' }] },
-  { week: 25, letter: 'Qu', words: ['queen', 'quill', 'quilt', 'quarter', 'quail'] },
+  { week: 25, letter: 'Y',  words: [{ word: 'yo-yo', sourceFile: 'yoyo' }, 'yak', 'yarn', 'yacht', 'yam'] },
   { week: 26, letter: 'Z',  words: ['zebra', 'zipper', 'zucchini', 'zero', 'zeppelin'] },
+  { week: 27, letter: 'Qu', words: ['queen', 'quill', 'quilt', 'quarter', 'quail'] },
 ];
 
 /** Normalise a manifest word (string | override object) into a full entry. */
@@ -130,7 +135,6 @@ function toEntry(block, raw) {
     sourceFile: spec.sourceFile ?? label,
     week: block.week,
     letter: block.letter,
-    legacy: block.legacy === true,
   };
 }
 
@@ -146,15 +150,13 @@ const sb = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
-/** Tag set the original SATPIN-only run wrote — preserved for those 30 rows. */
-const legacyTags = (label) => [label, 'picture-bank', 'satpin-basket', 'montessori', 'white-background'];
-
 /**
  * Full-series tag set: the label plus its component words (so 'sea urchin' is
  * findable as 'sea' or 'urchin'), then the bank/series/letter/week markers.
+ * Applied to all 130 rows — SATPIN included, so every row's `week-<NN>` agrees
+ * with the established numbering.
  */
 function tagsFor(entry) {
-  if (entry.legacy) return legacyTags(entry.label);
   const parts = entry.label.split(/[\s-]+/).filter(Boolean);
   const labelWords = [entry.label, ...parts].filter((v, i, a) => a.indexOf(v) === i);
   return [
@@ -176,7 +178,7 @@ function sameTags(a, b) {
 }
 
 async function main() {
-  console.log('=== A–Z basket photos -> photo-bank (26-week series) ===');
+  console.log('=== A–Z basket photos -> photo-bank (27-week established series) ===');
   if (DRY_RUN) console.log('🟡 DRY RUN — no uploads, no DB writes.\n');
 
   // One storage path per entry: a collision would silently overwrite a photo.

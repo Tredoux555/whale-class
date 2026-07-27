@@ -89,13 +89,21 @@ that's by design for other Dark Phonics pipelines, don't "fix" it. Separately, `
 `frame-ancestors 'self'` (blanket CSP stays `'none'`) so the hub can iframe Picture Bingo.
 
 **(6) The series now runs all 26 letters, not just SATPIN.** `/montree/library/satpin` (route slug
-unchanged) carries the master 26-week order — A T M C S N P I H D O G B E R U F L W J K V Y X Qu Z —
-and the twenty non-SATPIN letters take their five words from `docs/picture-bank/AZ-Object-Baskets.docx`,
+unchanged) carries the **ESTABLISHED 27-week curriculum order**: weeks 1–6 are SATPIN in its original
+order (S A T P I N — P keeps week 4 and its book), then weeks 7–27 follow the in-house readers order
+from `docs/curriculum/dark-phonics-readers/HANDOFF_DARK_PHONICS_READERS_Jul25.md` — M D G O C K **ck**
+E U R H B F L J V W X Y Z Qu. 🚨 Week 13 (`ck`) is a digraph: sound-only, **no object basket**, so its
+manifest entry has no `words` and it renders as a slim muted row (the `words?:` field is optional
+precisely so future digraph weeks stay one line). An earlier pass on this same day shipped a
+different "master 26-week" order (A T M C S N P I …) — **Tredoux corrected it the same afternoon**;
+if you find that ordering anywhere, it is stale.
+The twenty non-SATPIN letters take their five words from `docs/picture-bank/AZ-Object-Baskets.docx`,
 **now adopted for those letters ONLY**: S/A/T/P/I/N keep their `SATPIN-Object-Baskets.docx` words, so the
 "AZ was NOT adopted" ruling in (3) still stands for exactly those six. All 130 clean photos are now live in
 the photo bank under `picture-bank/*` tagged `satpin-basket` — `upload-satpin-basket-photos.mjs` was widened
-to the whole series (the 100 new rows also carry `az-basket`, `letter-<x>`, `week-<NN>`; the original 30 keep
-their first-run tags so reruns leave them untouched). 🚨 The letter-X word is displayed as **six** but served
+to the whole series, and **all 130 rows** (SATPIN included) now carry one tag scheme: `az-basket`,
+`letter-<x>` and `week-<NN>` per the established numbering, so a week tag is a reliable filter.
+🚨 The letter-X word is displayed as **six** but served
 by the **`dice`** photo through a `photoLabel` override in the page's WEEKS manifest, and the three-part-card
 link row renders only for the six letters whose PDFs exist under `public/satpin-materials/<slug>/`.
 
