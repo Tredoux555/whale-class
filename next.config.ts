@@ -50,7 +50,7 @@ const nextConfig: NextConfig = {
   // Middleware also enforces domain isolation as a secondary check.
   // Security headers — applied to all responses
   async headers() {
-    return [
+    const entries = [
       // Cache static assets aggressively (JS, CSS, images, fonts)
       {
         source: '/_next/static/(.*)',
@@ -203,6 +203,38 @@ const nextConfig: NextConfig = {
         ],
       },
     ];
+
+    // ────────────────────────────────────────────────────────────────────
+    // /tools/* FRAMING OVERRIDE (Jul 27, 2026)
+    // The blanket '/(.*)' entry above sends `frame-ancestors 'none'`, and per
+    // CSP spec frame-ancestors SUPERSEDES the X-Frame-Options: SAMEORIGIN sent
+    // alongside it. That silently blocked the Picture Library hub from
+    // same-origin-iframing the static Picture Bingo generator at
+    // /tools/picture-bingo-generator.html.
+    //
+    // Next.js applies EVERY matching headers() entry in source order and, for a
+    // duplicated header key, the LAST matching entry wins — so this must be
+    // pushed AFTER the blanket entry. It reuses the blanket CSP value verbatim
+    // and flips ONLY the frame-ancestors directive to 'self'; every other
+    // directive, and the global 'none' on every non-/tools path, is unchanged.
+    const blanketCsp = entries
+      .find((e) => e.source === '/(.*)')
+      ?.headers.find((h) => h.key === 'Content-Security-Policy')?.value;
+
+    if (blanketCsp) {
+      entries.push({
+        source: '/tools/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: blanketCsp.replace("frame-ancestors 'none'", "frame-ancestors 'self'"),
+          },
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+        ],
+      });
+    }
+
+    return entries;
   },
 
   async redirects() {

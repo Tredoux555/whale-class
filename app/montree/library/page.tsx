@@ -61,6 +61,65 @@ export default function LibraryWelcomePage() {
           {/* Two paths */}
           <div className="mt-14 space-y-4">
 
+            {/* Picture Bank — blue accent */}
+            <Link
+              href="/montree/library/photo-bank"
+              className="group relative flex items-center gap-5 w-full p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(96, 165, 250, 0.08), rgba(59, 130, 246, 0.04))',
+                borderColor: 'rgba(96, 165, 250, 0.15)',
+              }}
+            >
+              {/* Hover glow */}
+              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'linear-gradient(135deg, rgba(96, 165, 250, 0.12), rgba(59, 130, 246, 0.06))' }} />
+
+              <div className="relative z-10 w-14 h-14 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300" style={{ background: 'rgba(96, 165, 250, 0.15)' }}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <polyline points="21 15 16 10 5 21" />
+                </svg>
+              </div>
+              <div className="relative z-10 flex-1 text-left">
+                <div className="text-white font-semibold text-lg">Picture Bank</div>
+                <div className="text-blue-200/40 text-sm mt-0.5">
+                  Search, browse &amp; contribute English teaching pictures
+                </div>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 text-blue-400/30 group-hover:text-blue-400 group-hover:translate-x-1 transition-all shrink-0">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
+
+            {/* SATPIN — rose accent (initial-sound materials, one block per letter) */}
+            <Link
+              href="/montree/library/satpin"
+              className="group relative flex items-center gap-5 w-full p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(251,113,133,0.10), rgba(225,29,72,0.04))',
+                borderColor: 'rgba(251,113,133,0.18)',
+              }}
+            >
+              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'linear-gradient(135deg, rgba(251,113,133,0.14), rgba(225,29,72,0.06))' }} />
+
+              <div className="relative z-10 w-14 h-14 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300" style={{ background: 'rgba(251,113,133,0.18)' }}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-rose-400">
+                  <polyline points="4 7 4 4 20 4 20 7" />
+                  <line x1="9" y1="20" x2="15" y2="20" />
+                  <line x1="12" y1="4" x2="12" y2="20" />
+                </svg>
+              </div>
+              <div className="relative z-10 flex-1 text-left">
+                <div className="text-white font-semibold text-lg">SATPIN</div>
+                <div className="text-rose-200/40 text-sm mt-0.5">
+                  Initial-sound materials &middot; object baskets, three-part cards, sentence strips &amp; books &mdash; one block per letter
+                </div>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 text-rose-400/30 group-hover:text-rose-400 group-hover:translate-x-1 transition-all shrink-0">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
+
             {/* Dark Phonics — violet accent, TOP CARD (the flagship phonics program) */}
             <a
               href="/dark-phonics.html"
@@ -146,36 +205,6 @@ export default function LibraryWelcomePage() {
               </svg>
             </Link>
 
-            {/* Picture Bank — blue accent */}
-            <Link
-              href="/montree/library/photo-bank"
-              className="group relative flex items-center gap-5 w-full p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
-              style={{
-                background: 'linear-gradient(135deg, rgba(96, 165, 250, 0.08), rgba(59, 130, 246, 0.04))',
-                borderColor: 'rgba(96, 165, 250, 0.15)',
-              }}
-            >
-              {/* Hover glow */}
-              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'linear-gradient(135deg, rgba(96, 165, 250, 0.12), rgba(59, 130, 246, 0.06))' }} />
-
-              <div className="relative z-10 w-14 h-14 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300" style={{ background: 'rgba(96, 165, 250, 0.15)' }}>
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                  <circle cx="8.5" cy="8.5" r="1.5" />
-                  <polyline points="21 15 16 10 5 21" />
-                </svg>
-              </div>
-              <div className="relative z-10 flex-1 text-left">
-                <div className="text-white font-semibold text-lg">Picture Bank</div>
-                <div className="text-blue-200/40 text-sm mt-0.5">
-                  Search, browse &amp; contribute English teaching pictures
-                </div>
-              </div>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 text-blue-400/30 group-hover:text-blue-400 group-hover:translate-x-1 transition-all shrink-0">
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </Link>
-
             {/* The Complete Language Area — emerald accent */}
             <Link
               href="/montree/library/language-area"
@@ -200,35 +229,6 @@ export default function LibraryWelcomePage() {
                 </div>
               </div>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 text-emerald-400/30 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all shrink-0">
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </Link>
-
-            {/* SATPIN — rose accent (initial-sound materials, one block per letter) */}
-            <Link
-              href="/montree/library/satpin"
-              className="group relative flex items-center gap-5 w-full p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
-              style={{
-                background: 'linear-gradient(135deg, rgba(251,113,133,0.10), rgba(225,29,72,0.04))',
-                borderColor: 'rgba(251,113,133,0.18)',
-              }}
-            >
-              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'linear-gradient(135deg, rgba(251,113,133,0.14), rgba(225,29,72,0.06))' }} />
-
-              <div className="relative z-10 w-14 h-14 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300" style={{ background: 'rgba(251,113,133,0.18)' }}>
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-rose-400">
-                  <polyline points="4 7 4 4 20 4 20 7" />
-                  <line x1="9" y1="20" x2="15" y2="20" />
-                  <line x1="12" y1="4" x2="12" y2="20" />
-                </svg>
-              </div>
-              <div className="relative z-10 flex-1 text-left">
-                <div className="text-white font-semibold text-lg">SATPIN</div>
-                <div className="text-rose-200/40 text-sm mt-0.5">
-                  Initial-sound materials &middot; object baskets, three-part cards, sentence strips &amp; books &mdash; one block per letter
-                </div>
-              </div>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 text-rose-400/30 group-hover:text-rose-400 group-hover:translate-x-1 transition-all shrink-0">
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </Link>
