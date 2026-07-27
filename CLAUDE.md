@@ -77,6 +77,16 @@ exact label, and a *Create materials with these pictures →* button per block t
 **`photoBankPreselect`** key and jumps to the hub. That key is deliberately distinct from
 `photoBankExport`, which the tools consume-and-delete on mount. Word list unchanged from (3).
 
+**(5) SATPIN basket words are now served from the clean white-background set.** New
+`scripts/curriculum/upload-satpin-basket-photos.mjs` ingests all 30 `docs/picture-bank/photos/<word>/<word>.jpg`
+into bucket `photo-bank` at `picture-bank/<word>.jpg` (upsert, idempotent by storage_path) with a
+`montree_photo_bank` row tagged `satpin-basket`; the SATPIN page now prefers that row among exact-label
+matches and only falls back to the first exact match when it's absent. 🚨 Root cause of the "clean photos
+aren't in the bank" puzzle: `picture-bank-add.mjs --publish` uploads to the **`dark-phonics`** bucket and
+inserts **no** `montree_photo_bank` row, so nothing it publishes is ever visible to the photo-bank API —
+that's by design for other Dark Phonics pipelines, don't "fix" it. Separately, `/tools/*` now sends
+`frame-ancestors 'self'` (blanket CSP stays `'none'`) so the hub can iframe Picture Bingo.
+
 ---
 
 ## 🧸 SESSION — Jul 26, 2026 (Cowork) — SATPIN BASKET VERIFIED + 5 TOY RENDERS CAUGHT/FIXED + PICTURE LIBRARY SEARCH BUG FIXED (NOT COMMITTED, NOT DEPLOYED)

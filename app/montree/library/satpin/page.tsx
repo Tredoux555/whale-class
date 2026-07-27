@@ -23,6 +23,8 @@ interface BankPhoto {
   filename: string;
   storage_path: string;
   public_url: string;
+  /** Present on every row the photo-bank API returns; used to spot the clean basket set. */
+  tags?: string[] | null;
 }
 
 type LetterBook = {
@@ -97,19 +99,42 @@ const printables = (slug: string) => [
 ];
 
 /**
- * Look one word up in the Picture Bank and return the first photo whose label
- * matches exactly. Duplicate labels exist (7 socks, 5 nails) — first exact
- * match is the intended pick.
+ * Is this row from the clean Montessori basket set — one object, plain white
+ * background — ingested by scripts/curriculum/upload-satpin-basket-photos.mjs?
+ * Those rows are tagged 'satpin-basket' and live at `picture-bank/<word>.jpg`
+ * in the photo-bank bucket; the storage-path check is the belt-and-braces
+ * fallback in case a row's tags were edited away in the picker UI.
+ */
+function isBasketPhoto(photo: BankPhoto): boolean {
+  const tagged = (photo.tags || []).some(
+    t => String(t || '').trim().toLowerCase() === 'satpin-basket'
+  );
+  return tagged || (photo.storage_path || '').startsWith('picture-bank/');
+}
+
+/**
+ * Look one word up in the Picture Bank and return the best photo whose label
+ * matches exactly. Duplicate labels exist (several socks, nails, tomatoes), so
+ * among the exact matches we PREFER the clean basket photo; if the word has no
+ * basket row we fall back to the first exact match, exactly as before.
+ *
+ * 🚨 The book scene pictures ('pig ate a …', 'pig was sick') carry no
+ * 'satpin-basket' tag and are NOT part of that set — they resolve through the
+ * unchanged fallback path and are deliberately left alone.
  */
 async function fetchByLabel(word: string): Promise<BankPhoto | null> {
   try {
-    const params = new URLSearchParams({ page: '1', limit: '5', kind: 'pictures', q: word });
+    // limit 20 (was 5): some basket words have more than five exact-label
+    // duplicates, and the preferred basket row is not guaranteed to sort first
+    // among them — it has to be inside the fetched window to be selectable.
+    const params = new URLSearchParams({ page: '1', limit: '20', kind: 'pictures', q: word });
     const res = await fetch(`/api/montree/photo-bank?${params}`);
     if (!res.ok) return null;
     const data = await res.json();
     const photos: BankPhoto[] = data.photos || [];
     const target = word.trim().toLowerCase();
-    return photos.find(p => (p.label || '').trim().toLowerCase() === target) || null;
+    const exact = photos.filter(p => (p.label || '').trim().toLowerCase() === target);
+    return exact.find(isBasketPhoto) || exact[0] || null;
   } catch {
     return null;
   }
