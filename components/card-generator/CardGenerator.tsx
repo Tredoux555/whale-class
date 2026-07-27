@@ -60,11 +60,67 @@ export interface TextConfig {
  */
 export type LayoutMode = 'square' | 'strip';
 
+/**
+ * A Picture Bank selection handed to the generator as a prop. Same shape the
+ * photo-bank page puts on the `photoBankExport` sessionStorage pipe —
+ * `public_url` holds the Cloudflare-cached proxy URL, not the raw Supabase one.
+ */
+export interface ImportPhoto {
+  id: string;
+  label: string;
+  public_url: string;
+  filename: string;
+}
+
+/**
+ * Fetch one Picture Bank photo through its proxy URL and turn it into a Card.
+ * Shared by the sessionStorage intake (standalone routes) and the
+ * `importPhotos` prop (embedded in the Picture Library hub) so both paths
+ * produce identical cards.
+ */
+async function photoToCard(photo: ImportPhoto): Promise<Card> {
+  const res = await fetch(photo.public_url);
+  const blob = await res.blob();
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error('Failed to read image blob'));
+    reader.readAsDataURL(blob);
+  });
+  const size = await new Promise<{ width: number; height: number }>((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve({ width: img.width, height: img.height });
+    img.onerror = () => reject(new Error('Failed to decode image'));
+    img.src = dataUrl;
+  });
+  return {
+    id: Date.now() + Math.random(),
+    originalImage: dataUrl,
+    croppedImage: dataUrl,
+    label: photo.label || photo.filename?.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ') || 'Photo',
+    width: size.width,
+    height: size.height,
+  };
+}
+
 interface CardGeneratorProps {
   headerConfig?: HeaderConfig;
   textConfig?: TextConfig;
   layoutMode?: LayoutMode;
   initialCards?: Card[];
+  /**
+   * Pictures pushed in from a parent that owns the selection (the Picture
+   * Library hub). New ids are appended as cards; ids already imported are
+   * skipped, so re-renders and tab switches never duplicate a card. The
+   * standalone routes leave this undefined and use the sessionStorage pipe.
+   */
+  importPhotos?: ImportPhoto[];
+  /**
+   * Render for embedding inside another page: drops the gradient header and
+   * the full-page background/min-height chrome so the generator sits flush
+   * inside a host layout. Standalone routes leave this off.
+   */
+  embedded?: boolean;
 }
 
 const CardGenerator: React.FC<CardGeneratorProps> = ({
@@ -72,6 +128,8 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({
   textConfig = {},
   layoutMode = 'square',
   initialCards,
+  importPhotos,
+  embedded = false,
 }) => {
   const isStrip = layoutMode === 'strip';
   const {
@@ -121,43 +179,49 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({
     }
   }, [initialCards]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Import photos exported from Picture Bank via sessionStorage
+  // Photo bank ids already turned into cards. Guards the `importPhotos` prop
+  // against duplicating a card every time the hub re-renders or the user flips
+  // back to this tab. A ref (not state) so it survives re-render without
+  // triggering one.
+  const importedPhotoIdsRef = useRef<Set<string>>(new Set());
+
+  // Import photos exported from Picture Bank via sessionStorage.
+  // One-shot cross-page pipe — still the path used by the standalone
+  // /montree/library/tools/* routes.
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem('photoBankExport');
       if (!raw) return;
       sessionStorage.removeItem('photoBankExport');
-      const { photos } = JSON.parse(raw) as { photos: Array<{ id: string; label: string; public_url: string; filename: string }> };
+      const { photos } = JSON.parse(raw) as { photos: ImportPhoto[] };
       if (!photos || photos.length === 0) return;
 
       photos.forEach((photo) => {
-        fetch(photo.public_url)
-          .then(res => res.blob())
-          .then(blob => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              const dataUrl = reader.result as string;
-              const img = new Image();
-              img.onload = () => {
-                setCards(prev => [...prev, {
-                  id: Date.now() + Math.random(),
-                  originalImage: dataUrl,
-                  croppedImage: dataUrl,
-                  label: photo.label || photo.filename?.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ') || 'Photo',
-                  width: img.width,
-                  height: img.height,
-                }]);
-              };
-              img.src = dataUrl;
-            };
-            reader.readAsDataURL(blob);
-          })
+        if (photo.id) importedPhotoIdsRef.current.add(photo.id);
+        photoToCard(photo)
+          .then(card => setCards(prev => [...prev, card]))
           .catch(err => console.error('Failed to import photo bank image:', err));
       });
     } catch (err) {
       console.error('Failed to parse photoBankExport:', err);
     }
   }, []);
+
+  // Import photos pushed in by a parent that owns the selection (Picture
+  // Library hub). Appends only ids not already imported, so flipping tabs or
+  // re-selecting a picture never duplicates a card.
+  useEffect(() => {
+    if (!importPhotos || importPhotos.length === 0) return;
+    const fresh = importPhotos.filter(p => p.id && !importedPhotoIdsRef.current.has(p.id));
+    if (fresh.length === 0) return;
+    // Mark before awaiting so a second effect run can't race in duplicates.
+    fresh.forEach(p => importedPhotoIdsRef.current.add(p.id));
+    fresh.forEach((photo) => {
+      photoToCard(photo)
+        .then(card => setCards(prev => [...prev, card]))
+        .catch(err => console.error('Failed to import photo bank image:', err));
+    });
+  }, [importPhotos]);
 
   // Card dimensions in pixels (assuming 96 DPI for screen)
   // image + 0.5cm border on each side = total width
@@ -831,11 +895,14 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({
       fontFamily: 'system-ui, -apple-system, sans-serif',
       maxWidth: '1200px',
       margin: '0 auto',
-      padding: '20px',
-      backgroundColor: '#f8f9fa',
-      minHeight: '100vh'
+      // Embedded: the host page owns the background and page height, so drop
+      // the full-page chrome and sit flush inside it.
+      padding: embedded ? '0' : '20px',
+      backgroundColor: embedded ? 'transparent' : '#f8f9fa',
+      ...(embedded ? {} : { minHeight: '100vh' }),
     }}>
-      {/* Header */}
+      {/* Header — suppressed when embedded; the host renders its own */}
+      {!embedded && (
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -890,6 +957,7 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({
           <LanguageToggle />
         </div>
       </div>
+      )}
 
       {/* Settings Panel */}
       <div style={{

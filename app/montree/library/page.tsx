@@ -204,6 +204,35 @@ export default function LibraryWelcomePage() {
               </svg>
             </Link>
 
+            {/* SATPIN — rose accent (initial-sound materials, one block per letter) */}
+            <Link
+              href="/montree/library/satpin"
+              className="group relative flex items-center gap-5 w-full p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(251,113,133,0.10), rgba(225,29,72,0.04))',
+                borderColor: 'rgba(251,113,133,0.18)',
+              }}
+            >
+              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'linear-gradient(135deg, rgba(251,113,133,0.14), rgba(225,29,72,0.06))' }} />
+
+              <div className="relative z-10 w-14 h-14 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300" style={{ background: 'rgba(251,113,133,0.18)' }}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-rose-400">
+                  <polyline points="4 7 4 4 20 4 20 7" />
+                  <line x1="9" y1="20" x2="15" y2="20" />
+                  <line x1="12" y1="4" x2="12" y2="20" />
+                </svg>
+              </div>
+              <div className="relative z-10 flex-1 text-left">
+                <div className="text-white font-semibold text-lg">SATPIN</div>
+                <div className="text-rose-200/40 text-sm mt-0.5">
+                  Initial-sound materials &middot; object baskets, three-part cards, sentence strips &amp; books &mdash; one block per letter
+                </div>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 text-rose-400/30 group-hover:text-rose-400 group-hover:translate-x-1 transition-all shrink-0">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
+
           </div>
         </div>
       </div>

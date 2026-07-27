@@ -1397,6 +1397,46 @@ function generateBankCallingCards() {
   }
 }
 
+// Core import: turn a list of Picture Bank photos into bank items.
+// Fed from two places — the sessionStorage pipe (when this page is opened
+// directly from the Picture Bank "Export to…" menu) and postMessage (when it
+// runs inside the Picture Library hub's Picture Bingo tab iframe).
+var importedPhotoIds = {};
+
+function importPhotoBankPhotos(photos) {
+  if (!photos || photos.length === 0) return;
+
+  // Switch to Picture Bank tab so user sees the imported items
+  switchMode('bank');
+
+  photos.forEach(function(photo) {
+    // Skip duplicates — by photo id first (the hub re-sends its whole
+    // selection on every change), then by label+url for legacy payloads.
+    if (photo.id) {
+      if (importedPhotoIds[photo.id]) return;
+      importedPhotoIds[photo.id] = true;
+    }
+    if (bankItems.some(function(item) { return item._bankLabel === photo.label && item._bankUrl === photo.public_url; })) return;
+
+    fetch(photo.public_url)
+      .then(function(res) { return res.blob(); })
+      .then(function(blob) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          bankItems.push({
+            word: photo.label,
+            imgData: e.target.result,
+            _bankLabel: photo.label,
+            _bankUrl: photo.public_url
+          });
+          renderBankItems();
+        };
+        reader.readAsDataURL(blob);
+      })
+      .catch(function(err) { console.error('Failed to import photo bank image:', err); });
+  });
+}
+
 // Import photos exported from Picture Bank page via sessionStorage
 function importFromPhotoBankExport() {
   try {
@@ -1404,37 +1444,20 @@ function importFromPhotoBankExport() {
     if (!raw) return;
     sessionStorage.removeItem('photoBankExport');
     var data = JSON.parse(raw);
-    var photos = data && data.photos;
-    if (!photos || photos.length === 0) return;
-
-    // Switch to Picture Bank tab so user sees the imported items
-    switchMode('bank');
-
-    photos.forEach(function(photo) {
-      // Skip duplicates
-      if (bankItems.some(function(item) { return item._bankLabel === photo.label && item._bankUrl === photo.public_url; })) return;
-
-      fetch(photo.public_url)
-        .then(function(res) { return res.blob(); })
-        .then(function(blob) {
-          var reader = new FileReader();
-          reader.onload = function(e) {
-            bankItems.push({
-              word: photo.label,
-              imgData: e.target.result,
-              _bankLabel: photo.label,
-              _bankUrl: photo.public_url
-            });
-            renderBankItems();
-          };
-          reader.readAsDataURL(blob);
-        })
-        .catch(function(err) { console.error('Failed to import photo bank image:', err); });
-    });
+    importPhotoBankPhotos(data && data.photos);
   } catch (err) {
     console.error('Failed to parse photoBankExport:', err);
   }
 }
+
+// Embedded mode: the Picture Library hub hosts this page in an iframe and
+// pushes its live selection across with postMessage. Same-origin only.
+window.addEventListener('message', function(event) {
+  if (event.origin !== window.location.origin) return;
+  var data = event.data;
+  if (!data || data.type !== 'montree:photo-bank-selection') return;
+  importPhotoBankPhotos(data.photos);
+});
 
 // ===== CIRCLE TIME CALLING CARDS (2×2 large, single-sided) =====
 function generateCircleTimeCardsCore(wordPool, title, borderColor, borderW, radius, imgFn) {
@@ -1504,6 +1527,13 @@ function generateCircleTimeCardsCore(wordPool, title, borderColor, borderW, radi
 window.addEventListener('DOMContentLoaded', function() {
   generate();
   importFromPhotoBankExport();
+  // Tell a hosting hub we're ready to receive its selection. Harmless no-op
+  // when this page is opened directly (window.parent === window).
+  if (window.parent && window.parent !== window) {
+    try {
+      window.parent.postMessage({ type: 'montree:bingo-ready' }, window.location.origin);
+    } catch (err) { /* cross-origin host — nothing to do */ }
+  }
 });
 </script>
 </body>
