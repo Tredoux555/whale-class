@@ -187,10 +187,14 @@ export async function POST(request: NextRequest) {
         console.error('Group photo link error:', linkError.message, linkError.code);
         // Don't fail the whole upload — media is saved, just links failed
         // Return success but flag the issue
+        // NOTE: this branch used to return `ai_deferred: aiDeferred` — an
+        // identifier that exists nowhere in this file. It threw a ReferenceError
+        // straight into the outer catch, so a group photo whose child links
+        // failed answered 500 "Server error" even though the photo (and its
+        // event_id) were already saved. Dropped the phantom field.
         return NextResponse.json({
           success: true,
           media,
-          ai_deferred: aiDeferred,
           warning: 'Photo saved but group tagging partially failed'
         });
       }

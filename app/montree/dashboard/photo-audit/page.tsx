@@ -4,7 +4,7 @@
 // page is classroom-wide. If needed later, could render one popup per visible child.
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo, memo, CSSProperties } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo, memo, CSSProperties, ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
 import { useI18n } from '@/lib/montree/i18n';
@@ -770,6 +770,9 @@ export default function PhotoAuditPage() {
   }, [zone]);
   const [page, setPage] = useState(0);
   const [curriculum, setCurriculum] = useState<Record<string, any[]>>({});
+  // "What is this work?" sheet — the curriculum entry behind an AI tag, so a
+  // teacher new to Montessori can check the auto-match BEFORE pressing ✓ Correct.
+  const [workInfo, setWorkInfo] = useState<{ name: string; area: string | null; work: any | null } | null>(null);
 
   // Correction state
   const [correctingPhoto, setCorrectingPhoto] = useState<AuditPhoto | null>(null);
@@ -1511,6 +1514,19 @@ export default function PhotoAuditPage() {
     }
     return null;
   }, [curriculum]);
+
+  // Open the "What is this work?" sheet for a work NAME coming off an AI card
+  // (auto-match, draft, or an alternative-candidate chip). Resolution is local:
+  // `curriculum` already holds every classroom work row (name, description,
+  // quick_guide, aims, materials, video_search_terms) because the work picker
+  // needs it — so there is no extra fetch and it works offline. When the name
+  // has no curriculum row (custom / not-yet-seeded work) the sheet still opens
+  // with the YouTube demo search so she is never left with nothing.
+  const openWorkInfo = useCallback((rawName: string, area?: string | null) => {
+    if (!rawName) return;
+    const hit = findWorkByName(rawName, area || undefined);
+    setWorkInfo({ name: rawName, area: hit?.areaKey || area || null, work: hit?.work || null });
+  }, [findWorkByName]);
 
   // OPTIMISTIC pattern. Photo vanishes immediately, API runs in the background,
   // photo restored only on failure. Used by Tier 1 auto-attach path AND the
@@ -2783,6 +2799,7 @@ export default function PhotoAuditPage() {
               onConfirmDraft={() => handleConfirmHaikuDraft(photo)}
               onConfirmCandidate={(cand) => handleConfirmCandidate(photo, cand)}
               onTellAI={() => setTellAiPhoto(photo)}
+              onExplainWork={openWorkInfo}
               onReidentify={() => handleReidentify(photo)}
               onPhotoTap={() => photo.url && setLightboxUrl(photo.url)}
               onSaveNote={(caption) => handleSaveNote(photo.id, caption)}
@@ -2972,7 +2989,10 @@ export default function PhotoAuditPage() {
           onClick={() => setLightboxUrl(null)}
         >
           <button
-            className="absolute top-4 right-4 text-white/70 hover:text-white text-3xl font-light z-10"
+            className="absolute right-4 text-white/70 hover:text-white text-3xl font-light z-10"
+            /* Full-screen overlay sits ABOVE DashboardHeader, so --safe-top is 0 here —
+               use the raw inset (CameraCapture pattern) or the ✕ hides under the notch. */
+            style={{ top: 'max(16px, env(safe-area-inset-top, 16px))' }}
             onClick={() => setLightboxUrl(null)}
             aria-label="Close"
           >
@@ -3195,7 +3215,123 @@ export default function PhotoAuditPage() {
           </div>
         </div>
       )}
+      {/* "What is this work?" — curriculum entry + demo video for the work an
+          AI card is proposing. Read-only; never mutates the photo. */}
+      {workInfo && (
+        <WorkInfoSheet info={workInfo} onClose={() => setWorkInfo(null)} t={t} />
+      )}
     </div>
+  );
+}
+
+// One labelled paragraph inside WorkInfoSheet. Module-level (not created inside
+// the sheet's render) so React keeps the same component identity across renders.
+function WorkInfoBlock({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <label style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.40)', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 4 }}>{label}</label>
+      <p style={{ fontSize: 12, margin: 0, background: 'rgba(0,0,0,0.20)', borderRadius: 8, padding: '8px 10px', color: 'rgba(255,255,255,0.80)', lineHeight: 1.5 }}>{children}</p>
+    </div>
+  );
+}
+
+// ─── WorkInfoSheet ───
+// Read-only curriculum entry for one work, opened from the 📖 affordance on the
+// AI-tag cards. Everything it shows comes from the curriculum row already in
+// page state (montree_classroom_curriculum_works — description, quick_guide,
+// aims, materials, control_of_error, video_search_terms), so it opens instantly.
+// The demo link mirrors WorkDetailModal / the Curriculum Browser: a YouTube
+// search on the work's own search terms, falling back to "<work> Montessori
+// presentation" when the row has none.
+function WorkInfoSheet({ info, onClose, t }: {
+  info: { name: string; area: string | null; work: any | null };
+  onClose: () => void;
+  t: (key: string) => string;
+}) {
+  const work = info.work;
+  const displayName = work?.name || info.name;
+  const areaKey = info.area || work?.area?.area_key || null;
+  const asList = (v: any): string[] =>
+    Array.isArray(v) ? v.filter((x) => typeof x === 'string' && x.trim().length > 0) : [];
+  const materials = asList(work?.materials);
+  const directAims = asList(work?.direct_aims);
+  const videoQuery = String(work?.video_search_terms || `${displayName} Montessori presentation`).trim();
+  const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(videoQuery)}`;
+  const browseUrl = `/montree/dashboard/curriculum/browse?q=${encodeURIComponent(displayName)}${areaKey ? `&area=${encodeURIComponent(areaKey)}` : ''}`;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={onClose}>
+      <div
+        style={{ background: 'rgba(7,18,12,0.95)', backdropFilter: 'blur(20px)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: 18, maxWidth: 460, width: '100%', maxHeight: '85vh', overflowY: 'auto', padding: 16 }}
+        onClick={e => e.stopPropagation()}
+      >
+        <h3 style={{ fontFamily: "var(--font-lora), Georgia, serif", fontSize: 17, fontWeight: 500, color: 'rgba(255,255,255,0.95)', margin: '0 0 4px' }}>
+          📖 {displayName}
+        </h3>
+        {work?.name_chinese && (
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', margin: '0 0 4px' }}>{work.name_chinese}</p>
+        )}
+        {areaKey && (
+          <p style={{ fontSize: 10, color: 'rgba(52,211,153,0.75)', textTransform: 'capitalize', margin: '0 0 12px' }}>{String(areaKey).replace(/_/g, ' ')}</p>
+        )}
+
+        {!work && (
+          <p style={{ fontSize: 12, color: 'rgba(253,230,138,0.80)', lineHeight: 1.5, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 8, padding: '8px 10px', margin: '0 0 12px' }}>
+            {t('audit.workNotInCurriculum')}
+          </p>
+        )}
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {(work?.description || work?.parent_description) && (
+            <WorkInfoBlock label={t('audit.workDescription')}>{work.description || work.parent_description}</WorkInfoBlock>
+          )}
+          {work?.quick_guide && <WorkInfoBlock label={t('curriculum.quickGuide')}>{work.quick_guide}</WorkInfoBlock>}
+          {work?.why_it_matters && <WorkInfoBlock label={t('audit.whyItMatters')}>{work.why_it_matters}</WorkInfoBlock>}
+          {materials.length > 0 && <WorkInfoBlock label={t('curriculum.materials')}>{materials.join(', ')}</WorkInfoBlock>}
+          {directAims.length > 0 && <WorkInfoBlock label={t('curriculum.directAims')}>{directAims.join(', ')}</WorkInfoBlock>}
+          {work?.control_of_error && <WorkInfoBlock label={t('curriculum.controlOfError')}>{work.control_of_error}</WorkInfoBlock>}
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+          <a
+            href={youtubeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ flex: 1, textAlign: 'center', padding: '10px 0', borderRadius: 10, background: 'rgba(239,68,68,0.16)', border: '1px solid rgba(239,68,68,0.38)', color: 'rgba(254,202,202,0.95)', fontSize: 13, fontWeight: 500, textDecoration: 'none' }}
+          >
+            ▶ {t('curriculum.watchDemo')}
+          </a>
+          <a
+            href={browseUrl}
+            style={{ flex: 1, textAlign: 'center', padding: '10px 0', borderRadius: 10, background: 'rgba(52,211,153,0.14)', border: '1px solid rgba(52,211,153,0.35)', color: 'rgba(167,243,208,0.95)', fontSize: 13, fontWeight: 500, textDecoration: 'none' }}
+          >
+            {t('audit.openInCurriculum')}
+          </a>
+        </div>
+        <button
+          onClick={onClose}
+          style={{ width: '100%', padding: '8px 0', fontSize: 13, color: 'rgba(255,255,255,0.35)', background: 'none', border: 'none', cursor: 'pointer', marginTop: 10 }}
+        >
+          {t('common.close')}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Small "📖 What is this work?" pill shown on the AI-tag cards. Tone-coloured
+// per card (teal = Haiku draft, amber = auto-match, violet = AI draft) so it
+// reads as part of the card instead of another action button.
+function WhatIsThisButton({ onClick, bg, border, color, label }: {
+  onClick: () => void; bg: string; border: string; color: string; label: string;
+}) {
+  return (
+    <button
+      onClick={(e) => { e.stopPropagation(); onClick(); }}
+      style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 6, fontSize: 9, padding: '4px 9px', borderRadius: 999, background: bg, border: `1px solid ${border}`, color, fontWeight: 500, cursor: 'pointer' }}
+    >
+      📖 {label}
+    </button>
   );
 }
 
@@ -3227,7 +3363,7 @@ const iconTooltipStyle: CSSProperties = {
 // cascade re-renders into every card. Critical when 200-500 photos are
 // loaded on one page. The custom comparator on memo skips re-render unless
 // the photo data, selection state, processing flag, or workStatus changed.
-function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onMarkAsPaperwork, onToggleDiscussion, rerunResult, onAcceptResult, onAcceptDraft, onConfirmDraft, onConfirmCandidate, onTellAI, onReidentify, onPhotoTap, onSaveNote, processing, workStatus, onSetStatus, unifiedTagger, discussionEnabled, sonnetTierEnabled, nowTs, t }: {
+function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onMarkAsPaperwork, onToggleDiscussion, rerunResult, onAcceptResult, onAcceptDraft, onConfirmDraft, onConfirmCandidate, onTellAI, onExplainWork, onReidentify, onPhotoTap, onSaveNote, processing, workStatus, onSetStatus, unifiedTagger, discussionEnabled, sonnetTierEnabled, nowTs, t }: {
   photo: AuditPhoto;
   selected: boolean;
   onToggle: () => void;
@@ -3246,6 +3382,12 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
    *  matchToCurriculumV2. Resolves to a curriculum work + attaches the photo. */
   onConfirmCandidate: (candidate: { workName: string; workKey: string | null; area: string | null }) => void;
   onTellAI: () => void;
+  /** 📖 "What is this work?" — opens the read-only curriculum entry (+ demo
+   *  video) for a work NAME so the teacher can verify an AI tag before
+   *  confirming it. Takes a name, not an id: draft/candidate names may not be
+   *  attached to a work row yet, and the parent resolves them against the
+   *  already-loaded curriculum. */
+  onExplainWork: (workName: string, area?: string | null) => void;
   onReidentify: () => void;
   onPhotoTap: () => void;
   onSaveNote: (caption: string) => void;
@@ -3373,6 +3515,15 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
           {photo.sonnet_draft.suggested_area && (
             <p style={{ fontSize: 9, color: 'rgba(196,181,253,0.70)', textTransform: 'capitalize', margin: 0 }}>{photo.sonnet_draft.suggested_area.replace(/_/g, ' ')}</p>
           )}
+          {photo.sonnet_draft.proposed_name && (
+            <div>
+              <WhatIsThisButton
+                onClick={() => onExplainWork(photo.sonnet_draft?.proposed_name || '', photo.sonnet_draft?.suggested_area || null)}
+                bg="rgba(139,92,246,0.10)" border="rgba(139,92,246,0.32)" color="rgba(233,213,255,0.85)"
+                label={t('audit.whatIsThisWork')}
+              />
+            </div>
+          )}
           {photo.sonnet_draft.visual_description && (
             <p style={{ fontSize: 9, color: 'rgba(233,213,255,0.75)', lineHeight: 1.4, marginTop: 5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>{photo.sonnet_draft.visual_description}</p>
           )}
@@ -3415,21 +3566,34 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
                 <span style={{ fontSize: 9, color: 'rgba(196,181,253,0.55)', alignSelf: 'center', marginRight: 2 }}>{t('audit.orPick')}:</span>
                 {siblings.map((cand) => (
-                  <button
-                    key={cand.workKey || cand.workName}
-                    onClick={() => onConfirmCandidate(cand)}
-                    disabled={processing}
-                    style={{
-                      fontSize: 10, padding: '4px 10px', borderRadius: 999,
-                      background: 'rgba(139,92,246,0.10)', border: '1px solid rgba(139,92,246,0.32)',
-                      color: 'rgba(233,213,255,0.92)', fontWeight: 500,
-                      cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1,
-                      maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    }}
-                    title={`${cand.workName} (${Math.round((cand.score || 0) * 100)}%)`}
-                  >
-                    {cand.workName}
-                  </button>
+                  <span key={cand.workKey || cand.workName} style={{ display: 'inline-flex', alignItems: 'center', gap: 2, maxWidth: '100%' }}>
+                    <button
+                      onClick={() => onConfirmCandidate(cand)}
+                      disabled={processing}
+                      style={{
+                        fontSize: 10, padding: '4px 10px', borderRadius: 999,
+                        background: 'rgba(139,92,246,0.10)', border: '1px solid rgba(139,92,246,0.32)',
+                        color: 'rgba(233,213,255,0.92)', fontWeight: 500,
+                        cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1,
+                        maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}
+                      title={`${cand.workName} (${Math.round((cand.score || 0) * 100)}%)`}
+                    >
+                      {cand.workName}
+                    </button>
+                    {/* 📖 — read the alternative's curriculum entry before switching to it */}
+                    <button
+                      onClick={() => onExplainWork(cand.workName, cand.area)}
+                      style={{
+                        fontSize: 9, padding: '4px 6px', borderRadius: 999, lineHeight: 1, flexShrink: 0,
+                        background: 'rgba(139,92,246,0.10)', border: '1px solid rgba(139,92,246,0.32)', color: 'rgba(233,213,255,0.92)', cursor: 'pointer',
+                      }}
+                      title={t('audit.whatIsThisWork')}
+                      aria-label={t('audit.whatIsThisWork')}
+                    >
+                      📖
+                    </button>
+                  </span>
                 ))}
               </div>
             );
@@ -3478,6 +3642,15 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
             <p style={{ fontSize: 9, color: 'rgba(94,234,212,0.65)', textTransform: 'capitalize', margin: 0 }}>{photo.sonnet_draft.suggested_area.replace(/_/g, ' ')}</p>
           )}
           <p style={{ fontSize: 9, color: 'rgba(94,234,212,0.65)', marginTop: 4, fontStyle: 'italic' }}>{sonnetTierEnabled ? 'Haiku identified this, but has low confidence — ask Sonnet for deeper analysis.' : 'Haiku identified this, but has low confidence — confirm it, pick a suggestion, or tag it.'}</p>
+          {(photo.work_name || photo.sonnet_draft?.proposed_name) && (
+            <div>
+              <WhatIsThisButton
+                onClick={() => onExplainWork(photo.work_name || photo.sonnet_draft?.proposed_name || '', photo.area || photo.sonnet_draft?.suggested_area || null)}
+                bg="rgba(20,184,166,0.10)" border="rgba(20,184,166,0.32)" color="rgba(204,251,241,0.85)"
+                label={t('audit.whatIsThisWork')}
+              />
+            </div>
+          )}
           {photo.sonnet_draft?.visual_description && (
             <p style={{ fontSize: 9, color: 'rgba(204,251,241,0.72)', lineHeight: 1.4, marginTop: 5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>👁 {photo.sonnet_draft.visual_description}</p>
           )}
@@ -3492,21 +3665,34 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
                 <span style={{ fontSize: 9, color: 'rgba(94,234,212,0.55)', alignSelf: 'center', marginRight: 2 }}>{t('audit.orPick')}:</span>
                 {siblings.map((cand) => (
-                  <button
-                    key={cand.workKey || cand.workName}
-                    onClick={() => onConfirmCandidate(cand)}
-                    disabled={processing}
-                    style={{
-                      fontSize: 10, padding: '4px 10px', borderRadius: 999,
-                      background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.30)',
-                      color: 'rgba(204,251,241,0.92)', fontWeight: 500,
-                      cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1,
-                      maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    }}
-                    title={`${cand.workName} (${Math.round((cand.score || 0) * 100)}%)`}
-                  >
-                    {cand.workName}
-                  </button>
+                  <span key={cand.workKey || cand.workName} style={{ display: 'inline-flex', alignItems: 'center', gap: 2, maxWidth: '100%' }}>
+                    <button
+                      onClick={() => onConfirmCandidate(cand)}
+                      disabled={processing}
+                      style={{
+                        fontSize: 10, padding: '4px 10px', borderRadius: 999,
+                        background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.30)',
+                        color: 'rgba(204,251,241,0.92)', fontWeight: 500,
+                        cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1,
+                        maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}
+                      title={`${cand.workName} (${Math.round((cand.score || 0) * 100)}%)`}
+                    >
+                      {cand.workName}
+                    </button>
+                    {/* 📖 — read the alternative's curriculum entry before switching to it */}
+                    <button
+                      onClick={() => onExplainWork(cand.workName, cand.area)}
+                      style={{
+                        fontSize: 9, padding: '4px 6px', borderRadius: 999, lineHeight: 1, flexShrink: 0,
+                        background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.30)', color: 'rgba(204,251,241,0.92)', cursor: 'pointer',
+                      }}
+                      title={t('audit.whatIsThisWork')}
+                      aria-label={t('audit.whatIsThisWork')}
+                    >
+                      📖
+                    </button>
+                  </span>
                 ))}
               </div>
             );
@@ -3571,6 +3757,13 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
           </div>
           <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(254,243,199,0.95)', lineHeight: 1.3, margin: '0 0 4px' }}>{photo.work_name}</p>
           <p style={{ fontSize: 9, color: 'rgba(253,230,138,0.65)', fontStyle: 'italic', margin: 0 }}>{t('audit.autoTaggedHint')}</p>
+          <div>
+            <WhatIsThisButton
+              onClick={() => onExplainWork(photo.work_name || '', photo.area || photo.sonnet_draft?.suggested_area || null)}
+              bg="rgba(245,158,11,0.10)" border="rgba(245,158,11,0.32)" color="rgba(254,243,199,0.88)"
+              label={t('audit.whatIsThisWork')}
+            />
+          </div>
           {photo.sonnet_draft?.visual_description && (
             <p style={{ fontSize: 9, color: 'rgba(254,243,199,0.72)', lineHeight: 1.4, marginTop: 5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>👁 {photo.sonnet_draft.visual_description}</p>
           )}
@@ -3587,21 +3780,34 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
                 <span style={{ fontSize: 9, color: 'rgba(253,230,138,0.55)', alignSelf: 'center', marginRight: 2 }}>{t('audit.orPick')}:</span>
                 {siblings.map((cand) => (
-                  <button
-                    key={cand.workKey || cand.workName}
-                    onClick={() => onConfirmCandidate(cand)}
-                    disabled={processing}
-                    style={{
-                      fontSize: 10, padding: '4px 10px', borderRadius: 999,
-                      background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.30)',
-                      color: 'rgba(254,243,199,0.92)', fontWeight: 500,
-                      cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1,
-                      maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    }}
-                    title={`${cand.workName} (${Math.round((cand.score || 0) * 100)}%)`}
-                  >
-                    {cand.workName}
-                  </button>
+                  <span key={cand.workKey || cand.workName} style={{ display: 'inline-flex', alignItems: 'center', gap: 2, maxWidth: '100%' }}>
+                    <button
+                      onClick={() => onConfirmCandidate(cand)}
+                      disabled={processing}
+                      style={{
+                        fontSize: 10, padding: '4px 10px', borderRadius: 999,
+                        background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.30)',
+                        color: 'rgba(254,243,199,0.92)', fontWeight: 500,
+                        cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1,
+                        maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}
+                      title={`${cand.workName} (${Math.round((cand.score || 0) * 100)}%)`}
+                    >
+                      {cand.workName}
+                    </button>
+                    {/* 📖 — read the alternative's curriculum entry before switching to it */}
+                    <button
+                      onClick={() => onExplainWork(cand.workName, cand.area)}
+                      style={{
+                        fontSize: 9, padding: '4px 6px', borderRadius: 999, lineHeight: 1, flexShrink: 0,
+                        background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.30)', color: 'rgba(254,243,199,0.92)', cursor: 'pointer',
+                      }}
+                      title={t('audit.whatIsThisWork')}
+                      aria-label={t('audit.whatIsThisWork')}
+                    >
+                      📖
+                    </button>
+                  </span>
                 ))}
               </div>
             );
@@ -3743,15 +3949,25 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
                   <div style={{ fontSize: 9, color: 'rgba(94,234,212,0.65)', marginBottom: 4, fontWeight: 600 }}>🧠 Looks like — tap to tag:</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                     {fallbackCands.map((cand) => (
-                      <button
-                        key={cand.workKey || cand.workName}
-                        onClick={() => onConfirmCandidate(cand)}
-                        disabled={processing}
-                        style={{ fontSize: 10, padding: '4px 10px', borderRadius: 999, background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.30)', color: 'rgba(204,251,241,0.92)', fontWeight: 500, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-                        title={`${cand.workName} (${Math.round((cand.score || 0) * 100)}%)`}
-                      >
-                        {cand.workName}
-                      </button>
+                      <span key={cand.workKey || cand.workName} style={{ display: 'inline-flex', alignItems: 'center', gap: 2, maxWidth: '100%' }}>
+                        <button
+                          onClick={() => onConfirmCandidate(cand)}
+                          disabled={processing}
+                          style={{ fontSize: 10, padding: '4px 10px', borderRadius: 999, background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.30)', color: 'rgba(204,251,241,0.92)', fontWeight: 500, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                          title={`${cand.workName} (${Math.round((cand.score || 0) * 100)}%)`}
+                        >
+                          {cand.workName}
+                        </button>
+                        {/* 📖 — read the guess's curriculum entry before tagging with it */}
+                        <button
+                          onClick={() => onExplainWork(cand.workName, cand.area)}
+                          style={{ fontSize: 9, padding: '4px 6px', borderRadius: 999, lineHeight: 1, flexShrink: 0, background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.30)', color: 'rgba(204,251,241,0.92)', cursor: 'pointer' }}
+                          title={t('audit.whatIsThisWork')}
+                          aria-label={t('audit.whatIsThisWork')}
+                        >
+                          📖
+                        </button>
+                      </span>
                     ))}
                   </div>
                 </div>

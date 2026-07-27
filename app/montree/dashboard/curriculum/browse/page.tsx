@@ -128,10 +128,34 @@ export default function CurriculumBrowsePage() {
         .catch(() => {});
     }
 
-    // Auto-expand first category
-    const firstArea = AREA_DATA[AREA_ORDER[0]];
-    if (firstArea?.categories?.[0]) {
-      setExpandedCategory(firstArea.categories[0].id);
+    // Deep link: /curriculum/browse?q=<work name>&area=<area key>. Used by the
+    // 📖 "What is this work?" sheet on the photo-audit cards so a teacher lands
+    // on the work she was just asked to confirm instead of the top of the list.
+    // Read off window.location (not useSearchParams) — this is a client-only
+    // read inside an effect, so it needs no Suspense boundary at build time.
+    const params = new URLSearchParams(window.location.search);
+    const areaParam = params.get('area') || '';
+    // The rest of the app uses a few aliases for two of the area keys.
+    const areaKey = ({ math: 'mathematics', culture: 'cultural' } as Record<string, string>)[areaParam] || areaParam;
+    const startArea = AREA_DATA[areaKey] ? areaKey : AREA_ORDER[0];
+    if (startArea !== AREA_ORDER[0]) setSelectedArea(startArea);
+    const q = params.get('q');
+    if (q) setSearchQuery(q);
+
+    // Auto-expand: the deep-linked work if we can find it (so the teacher lands
+    // straight on the entry she was reading about), else the first category.
+    const areaCats = AREA_DATA[startArea]?.categories || [];
+    const needle = (q || '').trim().toLowerCase();
+    const hit = needle
+      ? areaCats
+          .map(cat => ({ cat, work: cat.works.find(w => w.name.trim().toLowerCase() === needle) }))
+          .find(x => !!x.work)
+      : undefined;
+    if (hit?.work) {
+      setExpandedCategory(hit.cat.id);
+      setExpandedWork(hit.work.id);
+    } else if (areaCats[0]) {
+      setExpandedCategory(areaCats[0].id);
     }
   }, [router]);
 

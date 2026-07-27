@@ -4,12 +4,13 @@
 
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useI18n } from '@/lib/montree/i18n';
 import MediaGallery from '@/components/montree/media/MediaGallery';
 import MediaDetailModal from '@/components/montree/media/MediaDetailModal';
-import type { MontreeMedia, MontreeChild } from '@/lib/montree/media/types';
+import type { MontreeMedia, MontreeChild, MontreeEvent } from '@/lib/montree/media/types';
 
 // ============================================
 // TYPES
@@ -31,7 +32,7 @@ const AREA_LABELS: Record<AreaFilter, string> = {
 // COMPONENT
 // ============================================
 
-export default function MediaPage() {
+function MediaPageContent() {
   const { t } = useI18n();
   const [media, setMedia] = useState<MontreeMedia[]>([]);
   const [children, setChildren] = useState<MontreeChild[]>([]);
@@ -45,6 +46,18 @@ export default function MediaPage() {
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  // ── Special-event filter ──────────────────────────────────────────────────
+  // A teacher who captured a morning of "Art Camp" photos had nowhere to go and
+  // confirm they landed on the event. The list API already supports ?event_id=,
+  // so the gallery just exposes it as a chip row. Deep-linkable via ?event=<id>
+  // so any surface holding an event id can hand the teacher straight here.
+  const searchParams = useSearchParams();
+  const [events, setEvents] = useState<MontreeEvent[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(searchParams.get('event'));
+  // Server-side exact count — survives the page limit, so the header can say
+  // "12 photos" even when we only rendered the first page.
+  const [totalCount, setTotalCount] = useState(0);
+
   // ============================================
   // FETCH DATA
   // ============================================
@@ -55,7 +68,9 @@ export default function MediaPage() {
 
       // Build query params
       const params = new URLSearchParams();
-      params.set('limit', '50');
+      // An event album is meant to be seen whole, not paged — pull a big page
+      // when one is selected, keep the cheap default otherwise.
+      params.set('limit', selectedEventId ? '200' : '50');
 
       if (activeTab === 'untagged') {
         params.set('untagged_only', 'true');
@@ -70,6 +85,10 @@ export default function MediaPage() {
         params.set('area', selectedArea);
       }
 
+      if (selectedEventId) {
+        params.set('event_id', selectedEventId);
+      }
+
       const response = await fetch(`/api/montree/media?${params}`);
       if (!response.ok) {
         throw new Error('Failed to fetch media');
@@ -78,13 +97,14 @@ export default function MediaPage() {
 
       if (data.success) {
         setMedia(data.media || []);
+        setTotalCount(typeof data.total === 'number' ? data.total : (data.media?.length || 0));
       }
     } catch (err) {
       console.error('Failed to fetch media:', err);
     } finally {
       setLoading(false);
     }
-  }, [activeTab, selectedChildId, selectedArea]);
+  }, [activeTab, selectedChildId, selectedArea, selectedEventId]);
 
   const fetchChildren = useCallback(async () => {
     try {
@@ -99,9 +119,24 @@ export default function MediaPage() {
     }
   }, []);
 
+  const fetchEvents = useCallback(async () => {
+    try {
+      const response = await fetch('/api/montree/events');
+      if (!response.ok) return;
+      const data = await response.json();
+      setEvents(data.events || []);
+    } catch (err) {
+      console.error('Failed to fetch events:', err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchChildren();
   }, [fetchChildren]);
+
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
 
   useEffect(() => {
     fetchMedia();
@@ -110,6 +145,17 @@ export default function MediaPage() {
   // ============================================
   // HANDLERS
   // ============================================
+
+  // Event and child filters are mutually exclusive: the list API's child branch
+  // ignores event_id entirely, so letting both be active would show a set the
+  // chips don't describe.
+  const selectEvent = (eventId: string | null) => {
+    setSelectedEventId(eventId);
+    if (eventId) {
+      setSelectedChildId(null);
+      setActiveTab('all');
+    }
+  };
 
   const handleMediaClick = (item: MontreeMedia) => {
     setSelectedMedia(item);
@@ -190,6 +236,12 @@ export default function MediaPage() {
   // RENDER
   // ============================================
 
+  const selectedEvent = events.find(e => e.id === selectedEventId) || null;
+  // `total` is the server's exact count for the event. The area filter is
+  // applied client-side, so fall back to the rendered length whenever an area
+  // is narrowing the set — otherwise the count would overstate.
+  const photoCount = selectedEventId && selectedArea === 'all' ? totalCount : media.length;
+
   return (
     <div
       className="min-h-screen bg-[#0a1a0f] flex flex-col"
@@ -223,9 +275,11 @@ export default function MediaPage() {
             <div className="flex items-center gap-2">
               <span className="text-xl">🖼️</span>
               <div>
-                <h1 className="font-bold text-white/90">{t('media.photo_gallery')}</h1>
+                <h1 className="font-bold text-white/90">
+                  {selectedEvent ? selectedEvent.name : t('media.photo_gallery')}
+                </h1>
                 <p className="text-xs text-white/40">
-                  {media.length} {media.length === 1 ? t('media.photo_singular') : t('media.photo_plural')} • {t('media.tap_to_edit')}
+                  {photoCount} {photoCount === 1 ? t('media.photo_singular') : t('media.photo_plural')} • {selectedEvent ? selectedEvent.event_date : t('media.tap_to_edit')}
                 </p>
               </div>
             </div>
@@ -265,10 +319,42 @@ export default function MediaPage() {
         </div>
       </div>
 
+      {/* Event filter — hidden entirely for schools with no events */}
+      {events.length > 0 && (
+        <div className="bg-[rgba(7,18,12,0.75)] border-b border-[rgba(52,211,153,0.1)] px-4 py-3 flex gap-2 overflow-x-auto">
+          <span className="text-xs font-semibold text-white/50 whitespace-nowrap flex items-center pr-1">
+            🎉 {t('events.filterByEvent')}
+          </span>
+          <button
+            onClick={() => selectEvent(null)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+              !selectedEventId
+                ? 'bg-amber-500 text-[#04150c] shadow-md'
+                : 'bg-white/[0.06] text-white/60 border border-[rgba(245,158,11,0.20)] hover:bg-white/[0.1]'
+            }`}
+          >
+            {t('media.all_events')}
+          </button>
+          {events.map(event => (
+            <button
+              key={event.id}
+              onClick={() => selectEvent(event.id)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                selectedEventId === event.id
+                  ? 'bg-amber-500 text-[#04150c] shadow-md'
+                  : 'bg-white/[0.06] text-white/60 border border-[rgba(245,158,11,0.20)] hover:bg-white/[0.1]'
+              }`}
+            >
+              {event.name}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Filter tabs */}
       <div className="bg-[rgba(7,18,12,0.75)] border-b border-[rgba(52,211,153,0.1)] px-4 py-2 flex gap-2 overflow-x-auto">
         <button
-          onClick={() => { setActiveTab('recent'); setSelectedChildId(null); }}
+          onClick={() => { setActiveTab('recent'); setSelectedChildId(null); setSelectedEventId(null); }}
           className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
             activeTab === 'recent' && !selectedChildId
               ? 'bg-[rgba(52,211,153,0.15)] text-emerald-300'
@@ -278,7 +364,7 @@ export default function MediaPage() {
           🕐 {t('media.recent')}
         </button>
         <button
-          onClick={() => { setActiveTab('untagged'); setSelectedChildId(null); }}
+          onClick={() => { setActiveTab('untagged'); setSelectedChildId(null); setSelectedEventId(null); }}
           className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
             activeTab === 'untagged'
               ? 'bg-amber-500/15 text-amber-300'
@@ -295,7 +381,7 @@ export default function MediaPage() {
         {children.slice(0, 5).map(child => (
           <button
             key={child.id}
-            onClick={() => { setActiveTab('all'); setSelectedChildId(child.id); }}
+            onClick={() => { setActiveTab('all'); setSelectedChildId(child.id); setSelectedEventId(null); }}
             className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
               selectedChildId === child.id
                 ? 'bg-[rgba(52,211,153,0.15)] text-emerald-300'
@@ -343,13 +429,15 @@ export default function MediaPage() {
           loading={loading}
           onMediaClick={selectionMode ? undefined : handleMediaClick}
           emptyMessage={
-            activeTab === 'untagged'
-              ? t('media.no_untagged')
-              : selectedChildId
-                ? t('media.no_photos_child')
-                : t('media.no_photos_start')
+            selectedEventId
+              ? t('media.no_photos_event')
+              : activeTab === 'untagged'
+                ? t('media.no_untagged')
+                : selectedChildId
+                  ? t('media.no_photos_child')
+                  : t('media.no_photos_start')
           }
-          emptyIcon={activeTab === 'untagged' ? '✅' : '📷'}
+          emptyIcon={selectedEventId ? '🎉' : activeTab === 'untagged' ? '✅' : '📷'}
           selectedIds={selectedIds}
           onSelectionChange={handleSelectionChange}
           selectionMode={selectionMode}
@@ -418,5 +506,19 @@ export default function MediaPage() {
         />
       )}
     </div>
+  );
+}
+
+// ============================================
+// PAGE EXPORT WITH SUSPENSE
+// ============================================
+// useSearchParams() (the ?event=<id> deep link) requires a Suspense boundary
+// in the app router — same pattern as the capture page.
+
+export default function MediaPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0a1a0f]" />}>
+      <MediaPageContent />
+    </Suspense>
   );
 }

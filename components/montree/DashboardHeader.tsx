@@ -222,6 +222,7 @@ function DashboardHeader() {
     if (pathname === '/montree/dashboard/focus')              return 'focus-list';
     if (pathname?.startsWith('/montree/dashboard/photo-audit')) return 'photo-audit';
     if (pathname === '/montree/dashboard/guru')               return 'guru';
+    if (pathname?.startsWith('/montree/dashboard/curriculum/browse')) return 'curriculum-browse';
     if (pathname === '/montree/dashboard/curriculum')         return 'curriculum';
     if (pathname === '/montree/dashboard/classroom-overview') return 'class-overview';
     if (pathname?.startsWith('/montree/calendar')) return 'calendar';
@@ -238,6 +239,7 @@ function DashboardHeader() {
     if (pathname?.includes('/language-presentation'))        return 'language-presentation';
     if (pathname === '/montree/dashboard/menu-setup')        return 'menu-setup';
     if (pathname === '/montree/dashboard/uploads')           return 'uploads';
+    if (pathname?.startsWith('/montree/dashboard/media'))     return 'media';
     return null;
   }, [pathname]);
 
@@ -684,6 +686,30 @@ function DashboardHeader() {
                     label="Uploads"
                     active={activePage === 'uploads'}
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/uploads'); }}
+                  />
+                  {/* Photo Gallery — pinned here for the same reason as Uploads:
+                      it's the only surface where a teacher can pull up every
+                      photo captured for a special event ("Art Camp") and confirm
+                      they saved. It was previously reachable only via Settings. */}
+                  <MenuRow
+                    icon={Images}
+                    label={t('settings.mediaGallery')}
+                    active={activePage === 'media'}
+                    onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/media'); }}
+                  />
+                  {/* Curriculum Browser — pinned OUTSIDE the config/legacy branch
+                      for the same reason as the two rows above. The only other
+                      route in was the Curriculum page, which is flag-gated
+                      (menu_curriculum) / config-dependent, so teachers on schools
+                      without that flag had NO way to look a work up. This is the
+                      reference guide (descriptions, aims, materials, demo videos)
+                      a teacher new to Montessori needs when verifying an AI photo
+                      tag — the 📖 links on the photo-audit cards land here too. */}
+                  <MenuRow
+                    icon={BookOpen}
+                    label={t('curriculum.browseTitle')}
+                    active={activePage === 'curriculum-browse'}
+                    onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/curriculum/browse'); }}
                   />
                   <Divider />
 

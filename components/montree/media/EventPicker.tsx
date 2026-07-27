@@ -77,7 +77,11 @@ export default function EventPicker({
   return (
     <div className="fixed inset-0 bg-black/80 z-50 flex flex-col">
       {/* Header */}
-      <div className="px-4 pt-12 pb-4 flex items-center justify-between">
+      <div
+        className="px-4 pb-4 flex items-center justify-between"
+        /* Full-screen overlay: reserve the status-bar inset, never below the old pt-12 look. */
+        style={{ paddingTop: 'max(48px, calc(env(safe-area-inset-top, 0px) + 12px))' }}
+      >
         <h2 className="text-white text-xl font-bold">
           {t('events.selectEvent')}
         </h2>

@@ -5401,4 +5401,18 @@ export const uk: Record<string, string> = {
   'copilot.funnel.handoff.groupCta': '📋 Copy message for your teachers’ group chat',
   'copilot.funnel.handoff.walkin': 'Walk me in, Astra',
 
+
+  // Session additions (event gallery, work info sheet, guru dismiss)
+  'media.all_events': 'Усі заходи',
+  'media.no_photos_event': 'Для цього заходу ще немає фото',
+  'capture.savedToEvent': 'Збережено до {eventName}',
+  'audit.whatIsThisWork': 'Що це за робота?',
+  'audit.workDescription': 'Про цю роботу',
+  'audit.workNotInCurriculum': 'Цієї роботи ще немає в програмі вашого класу — демо-пошук нижче все одно покаже, як вона виглядає.',
+  'audit.openInCurriculum': 'Огляд програми',
+  'copilot.pill.close': 'Сховати помічника',
+  'copilot.dismiss.title': 'Сховати {name} назавжди?',
+  'copilot.dismiss.note': 'Він більше не з’являтиметься на цьому пристрої.',
+  'copilot.dismiss.hideForever': 'Сховати назавжди',
+  'copilot.dismiss.justMinimize': 'Лише згорнути',
 };
