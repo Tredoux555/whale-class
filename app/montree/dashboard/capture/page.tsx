@@ -231,6 +231,11 @@ function CaptureContent() {
     const idsToTag = isClassMode ? children.map(c => c.id) : childIds;
     const isVideo = media.type === 'video';
     const label = isVideo ? 'Video' : 'Photo';
+    // Name the event in the save confirmation. "Photo saved!" left teachers
+    // unable to tell whether the shot actually landed on the event they picked.
+    const savedMessage = selectedEvent
+      ? t('capture.savedToEvent').replace('{eventName}', selectedEvent.name)
+      : (t('offline.photoSaved') || `${label} saved!`);
 
     // Guard: school_id is required for upload — if missing, session is broken
     if (!schoolId) {
@@ -245,7 +250,7 @@ function CaptureContent() {
         ? (media.data as CapturedVideo).blob
         : media.data as Blob;
 
-      toast.success(t('offline.photoSaved') || `${label} saved!`, { duration: 2000 });
+      toast.success(savedMessage, { duration: 2000 });
       navigateAfterCapture(childIds);
 
       const taskId = addTask({
@@ -347,7 +352,7 @@ function CaptureContent() {
     }
 
     console.log('[CAPTURE] Photo enqueued successfully, showing toast and navigating');
-    toast.success(t('offline.photoSaved') || `${label} saved!`, { duration: 2000 });
+    toast.success(savedMessage, { duration: 2000 });
     navigateAfterCapture(childIds);
 
     syncQueue().catch(e => console.error('[CAPTURE] Background sync failed:', e));

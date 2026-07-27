@@ -5404,4 +5404,18 @@ export const ko: Record<string, string> = {
   'copilot.funnel.handoff.groupCta': '📋 Copy message for your teachers’ group chat',
   'copilot.funnel.handoff.walkin': 'Walk me in, Astra',
 
+
+  // Session additions (event gallery, work info sheet, guru dismiss)
+  'media.all_events': '모든 행사',
+  'media.no_photos_event': '이 행사의 사진이 아직 없습니다',
+  'capture.savedToEvent': '{eventName}에 저장되었습니다',
+  'audit.whatIsThisWork': '이 작업은 무엇인가요?',
+  'audit.workDescription': '이 작업에 대하여',
+  'audit.workNotInCurriculum': '이 작업은 아직 학급 커리큘럼에 없습니다. 아래 데모 검색으로 어떤 작업인지 확인할 수 있습니다.',
+  'audit.openInCurriculum': '커리큘럼 브라우저',
+  'copilot.pill.close': '가이드 숨기기',
+  'copilot.dismiss.title': '{name}을(를) 영구히 숨길까요?',
+  'copilot.dismiss.note': '이 기기에서 다시 표시되지 않습니다.',
+  'copilot.dismiss.hideForever': '영구히 숨기기',
+  'copilot.dismiss.justMinimize': '최소화만 하기',
 };

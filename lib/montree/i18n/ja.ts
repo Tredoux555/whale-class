@@ -5404,4 +5404,18 @@ export const ja: Record<string, string> = {
   'copilot.funnel.handoff.groupCta': '📋 Copy message for your teachers’ group chat',
   'copilot.funnel.handoff.walkin': 'Walk me in, Astra',
 
+
+  // Session additions (event gallery, work info sheet, guru dismiss)
+  'media.all_events': 'すべてのイベント',
+  'media.no_photos_event': 'このイベントの写真はまだありません',
+  'capture.savedToEvent': '{eventName}に保存しました',
+  'audit.whatIsThisWork': 'このお仕事とは？',
+  'audit.workDescription': 'このお仕事の内容',
+  'audit.workNotInCurriculum': 'このお仕事はまだクラスのカリキュラムにありません。下のデモ検索でどのようなものか確認できます。',
+  'audit.openInCurriculum': 'カリキュラムブラウザ',
+  'copilot.pill.close': 'ガイドを非表示にする',
+  'copilot.dismiss.title': '{name}を完全に非表示にしますか？',
+  'copilot.dismiss.note': 'このデバイスでは再び表示されません。',
+  'copilot.dismiss.hideForever': 'ずっと非表示にする',
+  'copilot.dismiss.justMinimize': '最小化だけする',
 };

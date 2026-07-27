@@ -42,6 +42,40 @@ const T = {
   sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
 };
 
+// ── Permanent-dismiss fast path (2026-07-27) ────────────────────────────────
+// The server row (montree_onboarding_progress → '__dismissed__') stays the
+// SOURCE OF TRUTH, but /state is only fetched after mount — offline, or on a
+// slow connection, the pill flashed back onto the teacher's screen on every
+// page load even though she had hidden it for good. So a permanent dismissal
+// is ALSO cached in localStorage and read synchronously in the `hidden`
+// initialiser: before the first paint, before any fetch.
+//   '1'       → dismissed AND the server write was acknowledged.
+//   'pending' → dismissed locally but the POST failed (offline); retried once
+//               on the next mount. Either value hides the dock immediately.
+// This cache can only ever HIDE. A device that never dismissed has no key and
+// falls through to the server state exactly as before (so a fresh device for
+// the same teacher still shows the pill until the server says otherwise).
+const COPILOT_DISMISSED_KEY = 'montree_copilot_dismissed';
+
+function readDismissedFlag(): '1' | 'pending' | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const v = window.localStorage.getItem(COPILOT_DISMISSED_KEY);
+    return v === '1' || v === 'pending' ? v : null;
+  } catch {
+    return null; // private mode / quota → server state decides, as before
+  }
+}
+
+function writeDismissedFlag(v: '1' | 'pending') {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(COPILOT_DISMISSED_KEY, v);
+  } catch {
+    /* unavailable — the server write is still the source of truth */
+  }
+}
+
 // Routes where the copilot must NOT appear — the two teacher focus modes.
 const EXCLUDED_ROUTES = new Set([
   '/montree/dashboard/capture',
@@ -116,7 +150,14 @@ export default function CopilotDock({
   const [derived, setDerived] = useState<DerivedJourney | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [overlay, setOverlay] = useState<Overlay>(null);
-  const [hidden, setHidden] = useState(false);
+  // Read the localStorage dismissal cache SYNCHRONOUSLY so a dock she hid for
+  // good never paints again — not even for the frame before /state resolves.
+  // (ssr:false + the `mounted` gate below ⇒ no hydration mismatch.)
+  const [hidden, setHidden] = useState(() => readDismissedFlag() !== null);
+  // Inline two-tap confirm for the permanent dismiss — replaces window.confirm(),
+  // which is blocking, unstyled and ugly inside the Capacitor iOS webview.
+  // Opened from the ✕ on the collapsed pill AND from the card's dismiss link.
+  const [confirmingDismiss, setConfirmingDismiss] = useState(false);
   // 2026-07-26: the ✕ on the card header no longer just collapses to the pill —
   // it MINIMIZES the whole dock to a ~40px tab, persisted to localStorage so it
   // stays minimized across navigations. Tapping the tab brings the pill back.
@@ -458,13 +499,34 @@ export default function CopilotDock({
     [journey, postProgress]
   );
 
+  // ── Permanent dismissal ("hide for good") ──────────────────────────────────
+  // Same server write as before — POST '__dismissed__' to the progress route —
+  // but done directly rather than through postProgress() so we can tell whether
+  // it landed and mark the localStorage cache '1' (synced) vs 'pending' (retry
+  // on next mount). No refetch afterwards: the dock is gone for this mount.
+  const persistDismissal = useCallback((jrny: JourneyId) => {
+    writeDismissedFlag('pending');
+    montreeApi('/api/montree/onboarding-copilot/progress', {
+      method: 'POST',
+      body: JSON.stringify({ journey: jrny, step_key: '__dismissed__' }),
+    })
+      .then((res) => {
+        if (res.ok) writeDismissedFlag('1');
+      })
+      .catch((err) => {
+        // Offline / 500 → stays 'pending'; still hidden here, retried later.
+        console.error('[Copilot] dismiss POST failed:', err);
+      });
+  }, []);
+
+  // Confirmed from the inline choice (pill ✕ bubble or the card's link).
+  // NOTE: no window.confirm() any more — see `confirmingDismiss`.
   const handleDismiss = useCallback(() => {
-    if (typeof window !== 'undefined' && !window.confirm(t('copilot.card.dismissConfirm'))) {
-      return;
-    }
+    setConfirmingDismiss(false);
+    setExpanded(false);
     setHidden(true);
-    postProgress(journey, '__dismissed__');
-  }, [journey, postProgress, t]);
+    persistDismissal(journey);
+  }, [journey, persistDismissal]);
 
   // ── Drag-to-move (2026-07-21) ───────────────────────────────────────────────
   // Teachers demo / live-teach with the Guru card open and it sits on top of the
@@ -581,6 +643,7 @@ export default function CopilotDock({
   const handleMinimize = useCallback(() => {
     setMinimized(true);
     setExpanded(false); // so one tap on the tab comes back to the pill
+    setConfirmingDismiss(false); // "Just minimize" is the confirm's escape hatch
     if (typeof window !== 'undefined') {
       try {
         window.localStorage.setItem(DOCK_MINIMIZED_KEY, '1');
@@ -612,8 +675,10 @@ export default function CopilotDock({
       // synthesized click never reached the ✕ and the button looked dead. Two
       // belts: (1) never arm a drag from a nested control, (2) capture lazily,
       // only once the 4px threshold turns the press into a real drag (below).
-      // The collapsed pill / minimized tab ARE <button>s and must stay
-      // draggable, hence the `!== e.currentTarget` check.
+      // The minimized tab IS a <button> and must stay draggable, hence the
+      // `!== e.currentTarget` check. (2026-07-27: the collapsed pill became a
+      // <div role="button"> so it can host a real ✕ <button> without nesting
+      // buttons — closest() returns null on its body, the ✕ on the ✕.)
       const interactive = (e.target as HTMLElement | null)?.closest?.(
         'button, a, input, textarea, select, [data-no-drag]'
       );
@@ -736,6 +801,16 @@ export default function CopilotDock({
     }
   }, []);
 
+  // Reconcile a dismissal whose server write never landed (she hid the dock
+  // while offline). The dock is already hidden locally from the cache; this
+  // just catches the server up so her other devices agree. Once per mount,
+  // best-effort, and a no-op for everyone who never dismissed.
+  useEffect(() => {
+    if (!mounted) return;
+    if (readDismissedFlag() !== 'pending') return;
+    persistDismissal(journey);
+  }, [mounted, journey, persistDismissal]);
+
   // Re-clamp on window resize / rotation so the dock can't be stranded.
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -791,6 +866,78 @@ export default function CopilotDock({
         maxHeight: `calc(100dvh - ${dockTop + 24}px)`,
         borderRadius: 18,
       };
+
+  // ── Inline "hide for good?" choice (2026-07-27) ────────────────────────────
+  // Two taps, no blocking window.confirm(): the same content is rendered twice —
+  // anchored under the collapsed pill (fixed, carries the drag offset) and inline
+  // at the foot of the expanded card. Mirrors the two-tap delete confirm already
+  // used in MediaDetailModal.
+  const dismissChoiceBody = (
+    <>
+      <div
+        style={{
+          fontSize: 12.5,
+          fontWeight: 600,
+          color: T.textPrimary,
+          lineHeight: 1.35,
+          fontFamily: T.sans,
+        }}
+      >
+        {t('copilot.dismiss.title', { name: personaName })}
+      </div>
+      <div
+        style={{
+          fontSize: 11,
+          color: T.textMuted,
+          marginTop: 3,
+          lineHeight: 1.35,
+          fontFamily: T.sans,
+        }}
+      >
+        {t('copilot.dismiss.note')}
+      </div>
+      <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+        <button
+          type="button"
+          onClick={handleMinimize}
+          style={{
+            flex: 1,
+            minHeight: 34,
+            padding: '8px 8px',
+            borderRadius: 10,
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.10)',
+            color: T.textPrimary,
+            fontFamily: T.sans,
+            fontSize: 11.5,
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          {t('copilot.dismiss.justMinimize')}
+        </button>
+        <button
+          type="button"
+          onClick={handleDismiss}
+          style={{
+            flex: 1,
+            minHeight: 34,
+            padding: '8px 8px',
+            borderRadius: 10,
+            background: T.emeraldStrong,
+            border: `1px solid ${T.cardBorder}`,
+            color: T.emerald,
+            fontFamily: T.sans,
+            fontSize: 11.5,
+            fontWeight: 700,
+            cursor: 'pointer',
+          }}
+        >
+          {t('copilot.dismiss.hideForever')}
+        </button>
+      </div>
+    </>
+  );
 
   return (
     <>
@@ -851,10 +998,29 @@ export default function CopilotDock({
       )}
 
       {/* ── Collapsed pill ── */}
+      {/* 2026-07-27: a <div role="button"> rather than a <button>, purely so the
+          ✕ below can be a real <button> without nesting one inside another.
+          Click / Enter / Space / drag / double-tap-reset all behave as before. */}
       {!minimized && !expanded && currentStep && (
-        <button
-          type="button"
-          onClick={() => setExpanded(true)}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => {
+            // While the hide-for-good choice is open, a tap on the pill is the
+            // "never mind" — it closes the choice instead of expanding.
+            if (confirmingDismiss) {
+              setConfirmingDismiss(false);
+              return;
+            }
+            setExpanded(true);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setConfirmingDismiss(false);
+              setExpanded(true);
+            }
+          }}
           onDoubleClick={resetOffset}
           onPointerDown={onDockPointerDown}
           onPointerMove={onDockPointerMove}
@@ -926,7 +1092,75 @@ export default function CopilotDock({
               {t('copilot.pill.of', { done: derived.doneCount, total: derived.totalVisible })}
             </span>
           </span>
-        </button>
+
+          {/* ── Close (2026-07-27) ──
+              The pill used to have NO escape at all: tapping it only expanded,
+              and the real "hide for good" was buried at the foot of the card.
+              This ✕ opens the two-tap choice below. 32px tap target; stops the
+              click from reaching the pill's expand handler, and the pointerdown
+              drag guard already skips presses that land on a nested <button>. */}
+          <button
+            type="button"
+            data-no-drag
+            onClick={(e) => {
+              e.stopPropagation();
+              setConfirmingDismiss((v) => !v);
+            }}
+            onDoubleClick={(e) => e.stopPropagation()}
+            aria-label={t('copilot.pill.close')}
+            aria-expanded={confirmingDismiss}
+            title={t('copilot.pill.close')}
+            style={{
+              flexShrink: 0,
+              width: 32,
+              height: 32,
+              marginLeft: 2,
+              marginRight: -8,
+              padding: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'transparent',
+              border: 'none',
+              borderRadius: '50%',
+              color: T.textMuted,
+              cursor: 'pointer',
+            }}
+          >
+            <X size={15} strokeWidth={1.75} />
+          </button>
+        </div>
+      )}
+
+      {/* ── "Hide for good?" choice, anchored under the pill ──
+          A sibling of the pill (not a child) so no interactive element nests
+          inside the pill's role="button". Same anchor + drag offset, so it
+          travels with the dock wherever she has dragged it. */}
+      {!minimized && !expanded && currentStep && confirmingDismiss && (
+        <div
+          role="dialog"
+          aria-label={t('copilot.dismiss.title', { name: personaName })}
+          className="copilot-root"
+          style={{
+            position: 'fixed',
+            left: dockLeft,
+            top: dockTop + 54,
+            zIndex: 9001,
+            transform: `translate3d(${offset.x}px, ${offset.y}px, 0)`,
+            transition: dragging ? 'none' : undefined,
+            width: 'min(252px, calc(100vw - 32px))',
+            padding: '11px 12px 12px',
+            background: 'rgba(8,20,12,0.96)',
+            border: `1px solid ${T.cardBorder}`,
+            borderRadius: 14,
+            backdropFilter: T.blur,
+            WebkitBackdropFilter: T.blur,
+            boxShadow: '0 10px 32px rgba(0,0,0,0.50)',
+            fontFamily: T.sans,
+          }}
+        >
+          {dismissChoiceBody}
+        </div>
       )}
 
       {/* ── Expanded card ── */}
@@ -1474,23 +1708,38 @@ export default function CopilotDock({
                   </div>
                 </div>
 
-                {/* Dismiss */}
+                {/* Dismiss — 2026-07-27: opens the same inline two-tap choice
+                    as the pill's ✕ instead of a blocking window.confirm(). */}
                 <div style={{ marginTop: 14, textAlign: 'center' }}>
-                  <button
-                    type="button"
-                    onClick={handleDismiss}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: T.textMuted,
-                      fontSize: 11.5,
-                      cursor: 'pointer',
-                      padding: 0,
-                      fontFamily: T.sans,
-                    }}
-                  >
-                    {t('copilot.card.dismiss')}
-                  </button>
+                  {confirmingDismiss ? (
+                    <div
+                      style={{
+                        textAlign: 'left',
+                        padding: '11px 12px 12px',
+                        borderRadius: 14,
+                        background: 'rgba(255,255,255,0.04)',
+                        border: `1px solid ${T.cardBorder}`,
+                      }}
+                    >
+                      {dismissChoiceBody}
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmingDismiss(true)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: T.textMuted,
+                        fontSize: 11.5,
+                        cursor: 'pointer',
+                        padding: 0,
+                        fontFamily: T.sans,
+                      }}
+                    >
+                      {t('copilot.card.dismiss')}
+                    </button>
+                  )}
                 </div>
               </>
             ) : null}

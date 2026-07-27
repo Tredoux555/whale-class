@@ -5404,4 +5404,18 @@ export const it: Record<string, string> = {
   'copilot.funnel.handoff.groupCta': '📋 Copy message for your teachers’ group chat',
   'copilot.funnel.handoff.walkin': 'Walk me in, Astra',
 
+
+  // Session additions (event gallery, work info sheet, guru dismiss)
+  'media.all_events': 'Tutti gli Eventi',
+  'media.no_photos_event': 'Ancora nessuna foto per questo evento',
+  'capture.savedToEvent': 'Salvato in {eventName}',
+  'audit.whatIsThisWork': 'Che cos’è questo lavoro?',
+  'audit.workDescription': 'In cosa consiste questo lavoro',
+  'audit.workNotInCurriculum': 'Questo lavoro non è ancora nel curricolo della tua classe — la ricerca demo qui sotto ti mostra comunque com’è.',
+  'audit.openInCurriculum': 'Esplora Curricolo',
+  'copilot.pill.close': 'Nascondi la guida',
+  'copilot.dismiss.title': 'Nascondere {name} per sempre?',
+  'copilot.dismiss.note': 'Non riapparirà su questo dispositivo.',
+  'copilot.dismiss.hideForever': 'Nascondi per sempre',
+  'copilot.dismiss.justMinimize': 'Riduci soltanto',
 };
