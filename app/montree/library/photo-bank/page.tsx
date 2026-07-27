@@ -10,6 +10,7 @@ import type { PhotoBankPhoto } from '@/components/montree/PhotoBankPicker';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import { useI18n } from '@/lib/montree/i18n';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
+import { downloadPhotos } from '@/lib/montree/media/download-photos';
 
 interface SelectedPhoto {
   id: string;
@@ -46,48 +47,13 @@ export default function PhotoBankPage() {
   const [selectedPhotos, setSelectedPhotos] = useState<Map<string, SelectedPhoto>>(new Map());
   const [showExportMenu, setShowExportMenu] = useState(false);
   const selectedIds = React.useMemo(() => new Set(selectedPhotos.keys()), [selectedPhotos]);
-  // Per-session deletion log so the grid hides removed rows immediately
-  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
-  // Sort + bulk-delete state. Sort is forwarded to PhotoBankPicker via the new
-  // `sort` prop and lands at /api/montree/photo-bank as ?sort=…
+  // Sort is forwarded to PhotoBankPicker via the `sort` prop and lands at
+  // /api/montree/photo-bank as ?sort=…
   const [sort, setSort] = useState<'label' | 'recent'>('label');
-  const [bulkDeleting, setBulkDeleting] = useState(false);
-
-  const handleDeletePhoto = useCallback(async (photo: PhotoBankPhoto) => {
-    if (typeof window !== 'undefined') {
-      const confirmed = window.confirm(t('photoBank.deleteConfirm'));
-      if (!confirmed) return;
-    }
-    try {
-      const res = await fetch(`/api/montree/photo-bank?id=${encodeURIComponent(photo.id)}`, {
-        method: 'DELETE',
-      });
-      if (!res.ok) {
-        let message = t('photoBank.deleteFailed');
-        try {
-          const data = await res.json();
-          if (data?.error) message = data.error;
-        } catch { /* ignore */ }
-        if (typeof window !== 'undefined') window.alert(message);
-        return;
-      }
-      // Hide the deleted row + clear from selection (if it was selected)
-      setDeletedIds((prev) => {
-        const next = new Set(prev);
-        next.add(photo.id);
-        return next;
-      });
-      setSelectedPhotos((prev) => {
-        if (!prev.has(photo.id)) return prev;
-        const next = new Map(prev);
-        next.delete(photo.id);
-        return next;
-      });
-    } catch (err) {
-      console.error('Photo delete error:', err);
-      if (typeof window !== 'undefined') window.alert(t('photoBank.deleteFailed'));
-    }
-  }, [t]);
+  // Download-to-device state. `downloadStatus` drives the button label so the
+  // user gets "3/12" feedback on big batches instead of a frozen button.
+  const [downloading, setDownloading] = useState(false);
+  const [downloadStatus, setDownloadStatus] = useState('');
 
   const handleRawSelect = useCallback((photo: PhotoBankPhoto) => {
     setSelectedPhotos(prev => {
@@ -137,47 +103,43 @@ export default function PhotoBankPage() {
     setShowExportMenu(false);
   }, []);
 
-  // Bulk delete the currently-selected photos. Confirms with the count,
-  // then POSTs the ids array to /api/montree/photo-bank in one round-trip.
-  // On success, all selected ids are added to deletedIds so the grid hides
-  // them immediately, and the selection is cleared.
-  const handleBulkDelete = useCallback(async () => {
-    const ids = Array.from(selectedPhotos.keys());
-    if (ids.length === 0) return;
-    if (typeof window !== 'undefined') {
-      const confirmed = window.confirm(
-        t('photoBank.bulkDeleteConfirm', { count: String(ids.length) })
-      );
-      if (!confirmed) return;
-    }
-    setBulkDeleting(true);
+  // Save the currently-selected pictures to the user's device.
+  // One picture downloads as a plain image; several are zipped in the browser
+  // so the whole batch arrives as a single file — handy for dropping into
+  // Midjourney or any other tool that wants local reference images.
+  const handleDownloadSelected = useCallback(async () => {
+    const photos = Array.from(selectedPhotos.values());
+    if (photos.length === 0 || downloading) return;
+    setDownloading(true);
+    setShowExportMenu(false);
+    setDownloadStatus(photos.length > 1 ? `0/${photos.length}` : '');
     try {
-      const res = await fetch('/api/montree/photo-bank', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids }),
+      const result = await downloadPhotos(photos, {
+        zipName: 'montree-pictures',
+        onProgress: ({ done, total, phase }) => {
+          setDownloadStatus(
+            phase === 'zipping' ? t('photoBank.zipping') : (total > 1 ? `${done}/${total}` : '')
+          );
+        },
       });
-      if (!res.ok) {
-        let msg = t('photoBank.deleteFailed');
-        try { const d = await res.json(); if (d?.error) msg = d.error; } catch { /* ignore */ }
-        if (typeof window !== 'undefined') window.alert(msg);
-        return;
+      if (result.saved === 0) {
+        if (typeof window !== 'undefined') window.alert(t('photoBank.downloadFailed'));
+      } else if (result.failed.length > 0 && typeof window !== 'undefined') {
+        window.alert(
+          t('photoBank.downloadPartial', {
+            saved: String(result.saved),
+            failed: String(result.failed.length),
+          })
+        );
       }
-      // Optimistically hide every deleted id + clear selection.
-      setDeletedIds((prev) => {
-        const next = new Set(prev);
-        ids.forEach((id) => next.add(id));
-        return next;
-      });
-      setSelectedPhotos(new Map());
-      setShowExportMenu(false);
     } catch (err) {
-      console.error('Bulk delete error:', err);
-      if (typeof window !== 'undefined') window.alert(t('photoBank.deleteFailed'));
+      console.error('Picture download error:', err);
+      if (typeof window !== 'undefined') window.alert(t('photoBank.downloadFailed'));
     } finally {
-      setBulkDeleting(false);
+      setDownloading(false);
+      setDownloadStatus('');
     }
-  }, [selectedPhotos, t]);
+  }, [selectedPhotos, downloading, t]);
 
   // CRITICAL: Prevent browser from opening dropped files as new tabs
   // This must be on the window level to catch ALL drag events on the page
@@ -450,8 +412,6 @@ export default function PhotoBankPage() {
               }}
               onRawSelect={handleRawSelect}
               selectedIds={selectedIds}
-              deletedIds={deletedIds}
-              onDeletePhoto={handleDeletePhoto}
               showCategories={true}
               sort={sort}
               maxHeight={600}
@@ -510,29 +470,31 @@ export default function PhotoBankPage() {
               </button>
             </div>
 
-            {/* Bulk delete button — sits next to Export-to so common destructive
-                action is reachable from the same floating bar. */}
+            {/* Download to device — saves the selection as image files.
+                One picture comes down as-is; several are zipped client-side. */}
             <button
-              onClick={handleBulkDelete}
-              disabled={bulkDeleting}
+              onClick={handleDownloadSelected}
+              disabled={downloading}
               style={{
                 padding: '8px 16px',
                 borderRadius: '10px',
-                border: '1px solid rgba(220,38,38,0.4)',
-                backgroundColor: 'rgba(220,38,38,0.15)',
-                color: '#fca5a5',
+                border: '1px solid rgba(96,165,250,0.4)',
+                backgroundColor: 'rgba(96,165,250,0.15)',
+                color: '#bfdbfe',
                 fontSize: '13px',
                 fontWeight: '600',
-                cursor: bulkDeleting ? 'wait' : 'pointer',
-                opacity: bulkDeleting ? 0.6 : 1,
+                cursor: downloading ? 'wait' : 'pointer',
+                opacity: downloading ? 0.6 : 1,
+                marginLeft: 'auto',
                 marginRight: '8px',
+                whiteSpace: 'nowrap',
                 transition: 'all 0.15s',
               }}
-              title={t('photoBank.bulkDeleteTitle')}
+              title={t('photoBank.downloadTitle')}
             >
-              {bulkDeleting
-                ? `${t('photoBank.deleting')}…`
-                : `🗑 ${t('photoBank.bulkDeleteButton', { count: String(selectedPhotos.size) })}`}
+              {downloading
+                ? `${t('photoBank.downloading')}${downloadStatus ? ` ${downloadStatus}` : ''}…`
+                : `⬇ ${t('photoBank.download', { count: String(selectedPhotos.size) })}`}
             </button>
 
             {/* Export-to button + dropdown */}
