@@ -14,6 +14,33 @@
 
 set -e
 
+# ── Safe-area advisory — WARN ONLY, never blocks ─────────────────────────────
+# Every position:sticky / position:fixed top:0 header that can be the TOPMOST
+# element in the viewport must reserve the status-bar inset, or the iPhone clock
+# lands on its buttons (app/layout.tsx sets viewportFit:"cover"). The contract
+# and the var(--safe-top) pattern are documented at the top of app/globals.css.
+# This is a cheap heuristic and DOES produce false positives — a sticky top-0
+# header inside a modal or its own scroll container is perfectly fine. Hence
+# advisory only: it prints and moves on.
+STAGED_TSX=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.tsx$' || true)
+SAFE_AREA_SUSPECTS=""
+for f in $STAGED_TSX; do
+  [ -f "$f" ] || continue
+  if grep -qE "sticky top-0|fixed top-0|position: *'sticky', *top: *0|position: *'fixed', *top: *0" "$f"; then
+    if ! grep -q "safe-top\|safe-area-inset-top" "$f"; then
+      SAFE_AREA_SUSPECTS="$SAFE_AREA_SUSPECTS $f"
+    fi
+  fi
+done
+if [ -n "$SAFE_AREA_SUSPECTS" ]; then
+  echo "[pre-commit] ⚠ safe-area advisory — sticky/fixed top:0 with no safe-area mention:"
+  for f in $SAFE_AREA_SUSPECTS; do echo "      $f"; done
+  echo "      If such a bar can be the topmost thing on screen, give it"
+  echo "      paddingTop: 'var(--safe-top)' — contract at the top of app/globals.css."
+  echo "      Bars inside modals / their own scroll container are fine, ignore those."
+  echo "[pre-commit] (advisory only — not blocking)"
+fi
+
 # Only fire if i18n files are touching this commit.
 if ! git diff --cached --name-only | grep -qE '^lib/montree/i18n/'; then
   exit 0

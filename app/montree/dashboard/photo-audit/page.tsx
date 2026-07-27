@@ -2609,7 +2609,7 @@ export default function PhotoAuditPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#0a1a0f', backgroundImage: 'radial-gradient(ellipse 1100px 900px at 88% 8%, rgba(39,129,90,0.48), transparent 60%)', paddingBottom: 96, color: 'rgba(255,255,255,0.95)', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif" }}>
       {/* Header */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'linear-gradient(180deg, rgba(7,18,12,0.97), rgba(7,18,12,0.92))', borderBottom: '1px solid rgba(52,211,153,0.12)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', padding: '12px 16px' }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'linear-gradient(180deg, rgba(7,18,12,0.97), rgba(7,18,12,0.92))', borderBottom: '1px solid rgba(52,211,153,0.12)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', padding: '12px 16px', paddingTop: 'calc(12px + var(--safe-top))' }}>
         <div className="flex items-center justify-between gap-2">
           <h1 style={{ fontFamily: "var(--font-lora), Georgia, serif", fontSize: 20, fontWeight: 500, color: 'rgba(255,255,255,0.95)', margin: 0, letterSpacing: -0.3 }}>{t('photoAudit.wrapUpHeader')}</h1>
           <div className="flex items-center gap-2">

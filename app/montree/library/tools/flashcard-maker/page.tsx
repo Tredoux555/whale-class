@@ -270,7 +270,7 @@ const VideoFlashcardMaker = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-cyan-50">
       {/* Sticky header */}
-      <div className="bg-white border-b border-cyan-200 px-6 py-4 sticky top-0 z-10">
+      <div className="bg-white border-b border-cyan-200 px-6 py-4 sticky top-0 z-10" style={{ paddingTop: 'calc(1rem + var(--safe-top))' }}>
         <div className="max-w-5xl mx-auto flex items-center justify-between mb-3">
           <Link href="/montree/library" className="flex items-center gap-2 group">
             <MontreeLogo size={26} />

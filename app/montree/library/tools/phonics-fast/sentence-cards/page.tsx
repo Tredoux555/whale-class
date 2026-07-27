@@ -627,7 +627,7 @@ export default function SentenceCardsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-emerald-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-teal-800 to-teal-700 text-white shadow-lg sticky top-0 z-10">
+      <div className="bg-gradient-to-r from-teal-800 to-teal-700 text-white shadow-lg sticky top-0 z-10" style={{ paddingTop: 'var(--safe-top)' }}>
         <div className="max-w-7xl mx-auto px-6 pt-3 flex items-center justify-between">
           <Link href="/montree/library" className="flex items-center gap-2 group">
             <MontreeLogo size={26} />

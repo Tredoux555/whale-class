@@ -500,7 +500,7 @@ export default function SnapIdentifyPage() {
       }} />
       <div className="relative" style={{ zIndex: 1 }}>
       {/* Header */}
-      <div className="text-white px-4 py-3 flex items-center justify-between sticky top-0 z-40 border-b border-[rgba(52,211,153,0.15)]" style={{ background: 'rgba(8,20,12,0.92)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
+      <div className="text-white px-4 py-3 flex items-center justify-between sticky top-0 z-40 border-b border-[rgba(52,211,153,0.15)]" style={{ paddingTop: 'calc(0.75rem + var(--safe-top))', /* SAFE AREA: status-bar inset — see the safe-area contract in app/globals.css */ background: 'rgba(8,20,12,0.92)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
         <button onClick={() => { stopCamera(); router.back(); }} className="text-white/60 hover:text-white">
           ← {t('common.back')}
         </button>
