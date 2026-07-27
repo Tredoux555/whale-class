@@ -58,7 +58,8 @@ fills by adding one manifest entry. **It is a new section, not Dark Phonics-bran
 list = `docs/picture-bank/SATPIN-Object-Baskets.docx` (30 words, 5 per letter, all photographed and
 audit-passing), copied to `public/satpin-materials/` so the doc is downloadable.
 🚨 `docs/picture-bank/AZ-Object-Baskets.docx` **diverges on T/P/I/N and was NOT adopted** — decided by
-Tredoux 2026-07-27. Don't reconcile the two; SATPIN's list wins.
+Tredoux 2026-07-27. Don't reconcile the two; SATPIN's list wins. (Scope narrowed later that day — see
+(6): the AZ doc IS the source for the twenty letters outside SATPIN, just never for S/A/T/P/I/N.)
 
 **(4) Picture Library is now a tabbed creation hub, and SATPIN is a content bucket.**
 `/montree/library/photo-bank` grew a tab bar — Library (browse/select, default), Three-Part Cards,
@@ -86,6 +87,17 @@ aren't in the bank" puzzle: `picture-bank-add.mjs --publish` uploads to the **`d
 inserts **no** `montree_photo_bank` row, so nothing it publishes is ever visible to the photo-bank API —
 that's by design for other Dark Phonics pipelines, don't "fix" it. Separately, `/tools/*` now sends
 `frame-ancestors 'self'` (blanket CSP stays `'none'`) so the hub can iframe Picture Bingo.
+
+**(6) The series now runs all 26 letters, not just SATPIN.** `/montree/library/satpin` (route slug
+unchanged) carries the master 26-week order — A T M C S N P I H D O G B E R U F L W J K V Y X Qu Z —
+and the twenty non-SATPIN letters take their five words from `docs/picture-bank/AZ-Object-Baskets.docx`,
+**now adopted for those letters ONLY**: S/A/T/P/I/N keep their `SATPIN-Object-Baskets.docx` words, so the
+"AZ was NOT adopted" ruling in (3) still stands for exactly those six. All 130 clean photos are now live in
+the photo bank under `picture-bank/*` tagged `satpin-basket` — `upload-satpin-basket-photos.mjs` was widened
+to the whole series (the 100 new rows also carry `az-basket`, `letter-<x>`, `week-<NN>`; the original 30 keep
+their first-run tags so reruns leave them untouched). 🚨 The letter-X word is displayed as **six** but served
+by the **`dice`** photo through a `photoLabel` override in the page's WEEKS manifest, and the three-part-card
+link row renders only for the six letters whose PDFs exist under `public/satpin-materials/<slug>/`.
 
 ---
 
