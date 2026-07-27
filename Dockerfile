@@ -30,7 +30,34 @@ RUN echo "Build timestamp: $REBUILD_TS"
 COPY package*.json ./
 
 # Install npm dependencies
-RUN rm -f package-lock.json && npm install --force
+# --include=optional is required: several deps (sharp, lightningcss, @tailwindcss/oxide)
+# ship prebuilt native binaries as optionalDependencies that npm resolves for the
+# current platform (linux-x64 in this image). The explicit reinstall of sharp below
+# is a safety net per https://sharp.pixelplumbing.com/install#cross-platform in case
+# a stale/hoisted arch-specific package elsewhere in the tree confuses npm's optional
+# dependency resolution when installing without a lockfile.
+RUN rm -f package-lock.json && npm install --force --include=optional
+# 🚨 PIN THE VERSION ON THIS LINE. It must match package.json exactly.
+# 2026-07-27 build failure: this line used to be a bare `npm install sharp`, i.e.
+# sharp@latest, while package.json asked for ^0.34.5. That was harmless while
+# latest WAS 0.34.5. Then sharp 0.35.x shipped and the two installs could
+# disagree, and the two lines need DIFFERENT native sidecars:
+#   sharp 0.34.5 -> @img/sharp-libvips-linux-x64@1.2.4 -> libvips-cpp.so.8.17.3
+#   sharp 0.35.x -> @img/sharp-libvips-linux-x64@1.3.2 -> libvips-cpp.so.8.18.3
+# The image ended up with the 0.34.5 binding but no 8.17.3 sidecar, so `next
+# build` died collecting page data for the routes importing sharp
+# (story/admin/vault/{finalize,upload}):
+#   ERR_DLOPEN_FAILED: libvips-cpp.so.8.17.3: cannot open shared object file
+# The precise npm resolution that dropped the sidecar was NOT reproducible
+# outside this image (a minimal repro of these two lines resolves fine) — the
+# point is that unpinned + --force + no lockfile made the sharp<->libvips
+# pairing non-deterministic. Pinning both sides removes the variable: exactly
+# one sharp and its matching libvips. The verification line below is the guard.
+RUN npm install --no-save --include=optional --os=linux --cpu=x64 sharp@0.34.5
+# Fail LOUDLY and EARLY if the native binding is broken. Without this the first
+# symptom is `next build` dying deep inside "Collecting page data" for an
+# unrelated-looking route, which is what made the 2026-07-27 failure confusing.
+RUN node -e "const s=require('sharp'); console.log('sharp OK', s.versions.sharp, 'libvips', s.versions.vips);"
 
 # Cache bust - change this to force rebuild
 ARG CACHEBUST=20260216-CURRICULUM-V3
