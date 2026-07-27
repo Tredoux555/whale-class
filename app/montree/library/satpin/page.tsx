@@ -1,13 +1,22 @@
 // /montree/library/satpin/page.tsx
-// Montree Library — SATPIN initial-sound materials.
+// Montree Library — the full initial-sound series (26 weeks, A–Z).
 //
 // A content bucket, not a print shop: one block per letter/week holding the
 // canonical basket words, the live basket pictures out of the Picture Bank,
 // and a hand-off into the Picture Library hub where the teacher actually
 // builds the materials. Hardcoded English, same as language-area/page.tsx.
 //
-// Canonical word list = docs/picture-bank/SATPIN-Object-Baskets.docx
-// (30 words, 5 per letter), served from /satpin-materials/.
+// The route keeps its /satpin slug — SATPIN is the opening stretch of the
+// series, not the whole of it (S/A/T/P/I/N land in weeks 1–8).
+//
+// Word lists: S/A/T/P/I/N come from docs/picture-bank/SATPIN-Object-Baskets.docx
+// (30 words), the other twenty letters from docs/picture-bank/AZ-Object-Baskets.docx
+// — adopted for THOSE LETTERS ONLY; where the two disagree, SATPIN's list wins.
+// Both docs are served from /satpin-materials/.
+//
+// Photos: all 130 basket pictures are ingested by
+// scripts/curriculum/upload-satpin-basket-photos.mjs — keep WEEKS below in
+// step with that script's SERIES manifest.
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -35,11 +44,24 @@ type LetterBook = {
   pictureLabels: string[];
 };
 
+/**
+ * A basket word. Usually the displayed word IS the photo-bank label, so a
+ * plain string is enough. The object form is for the handful where the two
+ * come apart — letter X is taught with "six", but the picture is filed and
+ * labelled 'dice'.
+ */
+type WeekWord = string | { word: string; photoLabel: string };
+
+/** What the child sees on the chip. */
+const wordText = (w: WeekWord): string => (typeof w === 'string' ? w : w.word);
+/** What we look the picture up by in the photo bank. */
+const wordPhotoLabel = (w: WeekWord): string => (typeof w === 'string' ? w : w.photoLabel);
+
 type WeekBlock = {
   week: number;
   letter: string;
   slug: string;
-  words: string[];
+  words: WeekWord[];
   /** rgb triple — 400-level accent: the big letter, icons, borders */
   accent: string;
   /** rgb triple — 200-level tint: secondary text */
@@ -49,24 +71,45 @@ type WeekBlock = {
   book?: LetterBook;
 };
 
+/**
+ * The master 26-week series, in curriculum order — the same order and words as
+ * the SERIES manifest in scripts/curriculum/upload-satpin-basket-photos.mjs.
+ * Accents are Tailwind 400-level / tints 200-level, rotated round the hue wheel
+ * so no two neighbouring weeks share a colour.
+ */
 const WEEKS: WeekBlock[] = [
   {
-    week: 1, letter: 'S', slug: 's',
-    words: ['sock', 'snake', 'star', 'soap', 'seal'],
-    accent: '52,211,153', tint: '167,243,208',
-  },
-  {
-    week: 2, letter: 'A', slug: 'a',
+    week: 1, letter: 'A', slug: 'a',
     words: ['apple', 'ant', 'anchor', 'alligator', 'ambulance'],
     accent: '244,114,182', tint: '251,207,232',
   },
   {
-    week: 3, letter: 'T', slug: 't',
+    week: 2, letter: 'T', slug: 't',
     words: ['turtle', 'tiger', 'toothbrush', 'tomato', 'taxi'],
     accent: '167,139,250', tint: '221,214,254',
   },
   {
-    week: 4, letter: 'P', slug: 'p',
+    week: 3, letter: 'M', slug: 'm',
+    words: ['mug', 'mouse', 'mushroom', 'magnet', 'monkey'],
+    accent: '45,212,191', tint: '153,246,228',
+  },
+  {
+    week: 4, letter: 'C', slug: 'c',
+    words: ['cat', 'cup', 'car', 'comb', 'cow'],
+    accent: '251,146,60', tint: '254,215,170',
+  },
+  {
+    week: 5, letter: 'S', slug: 's',
+    words: ['sock', 'snake', 'star', 'soap', 'seal'],
+    accent: '52,211,153', tint: '167,243,208',
+  },
+  {
+    week: 6, letter: 'N', slug: 'n',
+    words: ['nut', 'nest', 'net', 'napkin', 'nail'],
+    accent: '74,222,128', tint: '187,247,208',
+  },
+  {
+    week: 7, letter: 'P', slug: 'p',
     words: ['pig', 'pen', 'penguin', 'pumpkin', 'panda'],
     accent: '252,211,77', tint: '253,230,138',
     book: {
@@ -80,18 +123,112 @@ const WEEKS: WeekBlock[] = [
     },
   },
   {
-    week: 5, letter: 'I', slug: 'i',
+    week: 8, letter: 'I', slug: 'i',
     words: ['igloo', 'iguana', 'inchworm', 'insect', 'infant'],
     accent: '96,165,250', tint: '191,219,254',
   },
   {
-    week: 6, letter: 'N', slug: 'n',
-    words: ['nut', 'nest', 'net', 'napkin', 'nail'],
-    accent: '74,222,128', tint: '187,247,208',
+    week: 9, letter: 'H', slug: 'h',
+    words: ['hat', 'horse', 'hammer', 'hen', 'heart'],
+    accent: '251,113,133', tint: '254,205,211',
+  },
+  {
+    week: 10, letter: 'D', slug: 'd',
+    words: ['dog', 'duck', 'doll', 'drum', 'dinosaur'],
+    accent: '56,189,248', tint: '186,230,253',
+  },
+  {
+    week: 11, letter: 'O', slug: 'o',
+    words: ['octopus', 'orange', 'owl', 'otter', 'ostrich'],
+    accent: '232,121,249', tint: '245,208,254',
+  },
+  {
+    week: 12, letter: 'G', slug: 'g',
+    words: ['goat', 'guitar', 'glove', 'grapes', 'gift'],
+    accent: '163,230,53', tint: '217,249,157',
+  },
+  {
+    week: 13, letter: 'B', slug: 'b',
+    words: ['ball', 'banana', 'bell', 'boat', 'bear'],
+    accent: '129,140,248', tint: '199,210,254',
+  },
+  {
+    week: 14, letter: 'E', slug: 'e',
+    words: ['egg', 'elephant', 'envelope', 'eraser', 'eagle'],
+    accent: '250,204,21', tint: '254,240,138',
+  },
+  {
+    week: 15, letter: 'R', slug: 'r',
+    words: ['ring', 'rabbit', 'rocket', 'robot', 'rose'],
+    accent: '192,132,252', tint: '233,213,255',
+  },
+  {
+    week: 16, letter: 'U', slug: 'u',
+    words: ['umbrella', 'unicorn', 'ukulele', 'unicycle', 'sea urchin'],
+    accent: '34,211,238', tint: '165,243,252',
+  },
+  {
+    week: 17, letter: 'F', slug: 'f',
+    words: ['fish', 'fork', 'frog', 'feather', 'fan'],
+    accent: '248,113,113', tint: '254,202,202',
+  },
+  {
+    week: 18, letter: 'L', slug: 'l',
+    words: ['leaf', 'lion', 'ladder', 'lemon', 'lizard'],
+    accent: '45,212,191', tint: '153,246,228',
+  },
+  {
+    week: 19, letter: 'W', slug: 'w',
+    words: ['watch', 'whale', 'wagon', 'worm', 'wolf'],
+    accent: '251,146,60', tint: '254,215,170',
+  },
+  {
+    week: 20, letter: 'J', slug: 'j',
+    words: ['jar', 'jet', 'jug', 'jacket', 'jellyfish'],
+    accent: '244,114,182', tint: '251,207,232',
+  },
+  {
+    week: 21, letter: 'K', slug: 'k',
+    words: ['key', 'kite', 'koala', 'kangaroo', 'kettle'],
+    accent: '56,189,248', tint: '186,230,253',
+  },
+  {
+    week: 22, letter: 'V', slug: 'v',
+    words: ['van', 'violin', 'vase', 'volcano', 'vest'],
+    accent: '251,191,36', tint: '253,230,138',
+  },
+  {
+    week: 23, letter: 'Y', slug: 'y',
+    words: ['yo-yo', 'yak', 'yarn', 'yacht', 'yam'],
+    accent: '232,121,249', tint: '245,208,254',
+  },
+  {
+    // "six" is the letter-X word the child says; the picture of it is filed
+    // and labelled 'dice' in the bank, hence the photoLabel override.
+    week: 24, letter: 'X', slug: 'x',
+    words: ['xylophone', 'fox', 'box', 'ox', { word: 'six', photoLabel: 'dice' }],
+    accent: '52,211,153', tint: '167,243,208',
+  },
+  {
+    week: 25, letter: 'Qu', slug: 'qu',
+    words: ['queen', 'quill', 'quilt', 'quarter', 'quail'],
+    accent: '129,140,248', tint: '199,210,254',
+  },
+  {
+    week: 26, letter: 'Z', slug: 'z',
+    words: ['zebra', 'zipper', 'zucchini', 'zero', 'zeppelin'],
+    accent: '251,113,133', tint: '254,205,211',
   },
 ];
 
-/** Every letter also has ready-made three-part-card sheets on disk. */
+/**
+ * Letters whose ready-made three-part-card sheets actually exist on disk under
+ * public/satpin-materials/<slug>/. Only SATPIN has them so far — the other
+ * twenty weeks hide the row rather than link to 404s. Drop a slug in here the
+ * moment its PDFs land.
+ */
+const PRINTABLE_SLUGS = new Set(['s', 'a', 't', 'p', 'i', 'n']);
+
 const printables = (slug: string) => [
   { href: `/satpin-materials/${slug}/three-part-cards-control.pdf`, label: 'Control' },
   { href: `/satpin-materials/${slug}/three-part-cards-pictures.pdf`, label: 'Pictures' },
@@ -148,15 +285,15 @@ function photoSrc(photo: BankPhoto, width: number): string {
 
 export default function SatpinPage() {
   const router = useRouter();
-  // Photo-bank rows keyed by lowercase label. Every basket word and every book
-  // scene label is unique across the six weeks, so one flat map is enough.
+  // Photo-bank rows keyed by lowercase label. Every basket label and every book
+  // scene label is unique across the 26 weeks, so one flat map is enough.
   const [pictures, setPictures] = useState<Record<string, BankPhoto>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     const labels = [
-      ...WEEKS.flatMap(w => w.words),
+      ...WEEKS.flatMap(w => w.words.map(wordPhotoLabel)),
       ...WEEKS.flatMap(w => w.book?.pictureLabels ?? []),
     ];
     (async () => {
@@ -200,23 +337,32 @@ export default function SatpinPage() {
     router.push('/montree/library/photo-bank');
   }, [router]);
 
-  /** Thumbnail strip + the hand-off button. Shared by baskets and book scenes. */
-  const PictureRow = ({ labels, accent, caption }: { labels: string[]; accent: string; caption?: string }) => {
-    const photos = photosFor(labels);
+  /**
+   * Thumbnail strip + the hand-off button. Shared by baskets and book scenes.
+   * `label` is what we fetched the photo by, `display` is what the teacher
+   * reads — the two differ only where a word is pictured under another name
+   * (X week: the word is "six", the picture is labelled 'dice').
+   */
+  const PictureRow = ({ items, accent, caption }: {
+    items: Array<{ label: string; display: string }>;
+    accent: string;
+    caption?: string;
+  }) => {
+    const photos = photosFor(items.map(i => i.label));
     return (
       <div className="mt-4">
         {caption && (
           <div className="text-white/30 text-xs mb-2 text-left">{caption}</div>
         )}
         <div className="grid grid-cols-5 gap-2">
-          {labels.map((label) => {
-            const photo = pictures[label.toLowerCase()];
+          {items.map((item) => {
+            const photo = pictures[item.label.toLowerCase()];
             return (
               <div
-                key={label}
+                key={item.display}
                 className="rounded-lg overflow-hidden border"
                 style={{ borderColor: `rgba(${accent},0.16)`, background: 'rgba(255,255,255,0.04)' }}
-                title={label}
+                title={item.display}
               >
                 <div className="aspect-square flex items-center justify-center">
                   {photo ? (
@@ -224,7 +370,7 @@ export default function SatpinPage() {
                       src={photoSrc(photo, 240)}
                       srcSet={photo.storage_path ? getThumbnailSrcSet(photo.storage_path, 120, 70, 'photo-bank') : undefined}
                       sizes="(max-width: 640px) 18vw, 120px"
-                      alt={label}
+                      alt={item.display}
                       loading="lazy"
                       className="w-full h-full object-cover"
                     />
@@ -291,11 +437,12 @@ export default function SatpinPage() {
           </h1>
 
           <p className="text-white/40 mt-5 text-lg max-w-lg mx-auto leading-relaxed">
-            Initial-sound materials — object baskets, pictures, books, week by week.
+            The full initial-sound series — 26 weeks, every letter A–Z. Object baskets,
+            pictures and books, week by week, starting with SATPIN.
           </p>
 
-          {/* Canonical word list */}
-          <div className="mt-12">
+          {/* Canonical word lists */}
+          <div className="mt-12 space-y-3">
             <a
               href="/satpin-materials/SATPIN-Object-Baskets.docx"
               download
@@ -316,12 +463,44 @@ export default function SatpinPage() {
                 </svg>
               </div>
               <div className="relative z-10 flex-1 text-left">
-                <div className="text-white font-semibold text-lg">Object Baskets</div>
+                <div className="text-white font-semibold text-lg">SATPIN Object Baskets</div>
                 <div className="text-sm mt-0.5" style={{ color: 'rgba(232,201,106,0.55)' }}>
                   Canonical word list, sizing &amp; buy notes &middot; 30 words &middot; 5 per letter
                 </div>
               </div>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 group-hover:translate-x-1 transition-all shrink-0" style={{ color: 'rgba(232,201,106,0.4)' }}>
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </a>
+
+            {/* Full-series list. Adopted for the twenty non-SATPIN letters only —
+                S/A/T/P/I/N keep the words in the SATPIN doc above. */}
+            <a
+              href="/satpin-materials/AZ-Object-Baskets.docx"
+              download
+              className="group relative flex items-center gap-5 w-full p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(130,217,174,0.10), rgba(39,129,90,0.04))',
+                borderColor: 'rgba(130,217,174,0.20)',
+              }}
+            >
+              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'linear-gradient(135deg, rgba(130,217,174,0.14), rgba(39,129,90,0.06))' }} />
+
+              <div className="relative z-10 w-14 h-14 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(130,217,174,0.16)' }}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#82D9AE' }}>
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+              </div>
+              <div className="relative z-10 flex-1 text-left">
+                <div className="text-white font-semibold text-lg">A–Z Object Baskets</div>
+                <div className="text-sm mt-0.5" style={{ color: 'rgba(130,217,174,0.55)' }}>
+                  Full-series word list &middot; 26 weeks &middot; 130 words &middot; 5 per letter
+                </div>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 group-hover:translate-x-1 transition-all shrink-0" style={{ color: 'rgba(130,217,174,0.4)' }}>
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </a>
@@ -360,9 +539,9 @@ export default function SatpinPage() {
 
                 {/* Word chips */}
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {block.words.map((word) => (
+                  {block.words.map((w) => (
                     <span
-                      key={word}
+                      key={wordText(w)}
                       className="px-3 py-1.5 rounded-full text-sm"
                       style={{
                         background: `rgba(${block.accent},0.12)`,
@@ -370,29 +549,34 @@ export default function SatpinPage() {
                         color: `rgba(${block.tint},0.85)`,
                       }}
                     >
-                      {word}
+                      {wordText(w)}
                     </span>
                   ))}
                 </div>
 
                 {/* Basket pictures + hand-off */}
-                <PictureRow labels={block.words} accent={block.accent} />
+                <PictureRow
+                  items={block.words.map(w => ({ label: wordPhotoLabel(w), display: wordText(w) }))}
+                  accent={block.accent}
+                />
 
-                {/* Ready-made three-part-card sheets already on disk */}
-                <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-left">
-                  <span className="text-white/25 text-xs">Ready-made three-part cards:</span>
-                  {printables(block.slug).map((p) => (
-                    <a
-                      key={p.href}
-                      href={p.href}
-                      download
-                      className="text-xs underline underline-offset-2 transition-colors hover:text-white/80"
-                      style={{ color: `rgba(${block.tint},0.55)` }}
-                    >
-                      {p.label}
-                    </a>
-                  ))}
-                </div>
+                {/* Ready-made three-part-card sheets — only where the PDFs exist */}
+                {PRINTABLE_SLUGS.has(block.slug) && (
+                  <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-left">
+                    <span className="text-white/25 text-xs">Ready-made three-part cards:</span>
+                    {printables(block.slug).map((p) => (
+                      <a
+                        key={p.href}
+                        href={p.href}
+                        download
+                        className="text-xs underline underline-offset-2 transition-colors hover:text-white/80"
+                        style={{ color: `rgba(${block.tint},0.55)` }}
+                      >
+                        {p.label}
+                      </a>
+                    ))}
+                  </div>
+                )}
 
                 {/* Book */}
                 {block.book ? (
@@ -432,7 +616,7 @@ export default function SatpinPage() {
 
                     {/* Book scene pictures + their own hand-off */}
                     <PictureRow
-                      labels={block.book.pictureLabels}
+                      items={block.book.pictureLabels.map(l => ({ label: l, display: l }))}
                       accent={block.accent}
                       caption="Sentence pictures — from the book"
                     />
