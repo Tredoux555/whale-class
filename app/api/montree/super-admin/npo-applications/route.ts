@@ -126,6 +126,8 @@ export async function PATCH(request: NextRequest) {
             organization_name: application.organization_name,
             created_at: now,
             updated_at: now,
+            // Montage on by default — see migrations/302_montage_default_on.sql.
+            montage_enabled: true,
           })
           .select()
           .single();

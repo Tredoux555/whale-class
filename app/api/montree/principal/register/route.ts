@@ -101,6 +101,10 @@ export async function POST(request: NextRequest) {
         plan_type: 'school',
         subscription_tier: 'free',
         is_active: true,
+        // Montage on by default for new schools (Jul 27 2026). Mirrors the DB
+        // default flipped in migrations/302_montage_default_on.sql — set here too
+        // so the flag is correct even on a database where 302 has not been run.
+        montage_enabled: true,
       })
       .select()
       .single();
