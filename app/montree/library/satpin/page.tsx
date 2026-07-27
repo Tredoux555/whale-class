@@ -19,6 +19,10 @@
 // Photos: all 130 basket pictures are ingested by
 // scripts/curriculum/upload-satpin-basket-photos.mjs — keep WEEKS below in
 // step with that script's SERIES manifest.
+//
+// Songs and readers are DROP-INS, not code: put song.mp3 / reader.pdf /
+// reader-booklet.pdf into public/satpin-materials/<slug>/ and the slot fills
+// itself on the next load (HEAD probe on mount). See `mediaPaths` below.
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -76,6 +80,10 @@ type WeekBlock = {
   /** One book per letter. Omit for the "coming soon" slot — adding a future
    *  book is a single entry here, nothing else changes. */
   book?: LetterBook;
+  /** Reader override for readers that do NOT live at the drop-in convention
+   *  path (/satpin-materials/<slug>/reader.pdf). Takes precedence over the
+   *  probe — set this and the HEAD result for the block is ignored. */
+  reader?: { title: string; downloads: Array<{ href: string; label: string }> };
 };
 
 /**
@@ -122,6 +130,15 @@ const WEEKS: WeekBlock[] = [
     week: 5, letter: 'I', slug: 'i',
     words: ['igloo', 'iguana', 'inchworm', 'insect', 'infant'],
     accent: '96,165,250', tint: '191,219,254',
+    // Original-set reader — predates the /satpin-materials/<slug>/reader.pdf
+    // convention, so it is wired by hand rather than probed.
+    reader: {
+      title: 'Sit, Sit, Sit',
+      downloads: [
+        { href: '/satpin-books/print/sit-sit-sit-A5-reading.pdf', label: 'Read-along' },
+        { href: '/satpin-books/print/sit-sit-sit-A5-booklet-print.pdf', label: 'Print booklet A5' },
+      ],
+    },
   },
   {
     week: 6, letter: 'N', slug: 'n',
@@ -247,6 +264,39 @@ const WEEKS: WeekBlock[] = [
  */
 const PRINTABLE_SLUGS = new Set(['s', 'a', 't', 'p', 'i', 'n']);
 
+/**
+ * Drop-in media convention. Songs and readers are produced outside this repo
+ * and dropped straight into `public/satpin-materials/<slug>/` — no code edit
+ * per drop. Every slug folder already exists (with a .gitkeep), so a drop is
+ * literally copying a file in:
+ *
+ *   song.mp3           → the week's song, rendered as an inline player
+ *   reader.pdf         → read-along reader
+ *   reader-booklet.pdf → optional print-booklet version of the same reader
+ *
+ * Presence is probed client-side with a HEAD request per path on mount; a
+ * non-2xx (404 for a folder holding only .gitkeep) means "not dropped yet" and
+ * the slot shows its muted placeholder. A reader wired into the WEEKS manifest
+ * wins over the probe — see WeekBlock.reader.
+ */
+const mediaPaths = (slug: string) => ({
+  song: `/satpin-materials/${slug}/song.mp3`,
+  reader: `/satpin-materials/${slug}/reader.pdf`,
+  readerBooklet: `/satpin-materials/${slug}/reader-booklet.pdf`,
+});
+
+type MediaFlags = { song: boolean; reader: boolean; readerBooklet: boolean };
+
+/** HEAD probe — 2xx means the file is on disk. Network errors read as absent. */
+async function fileExists(url: string): Promise<boolean> {
+  try {
+    const res = await fetch(url, { method: 'HEAD' });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 const printables = (slug: string) => [
   { href: `/satpin-materials/${slug}/three-part-cards-control.pdf`, label: 'Control' },
   { href: `/satpin-materials/${slug}/three-part-cards-pictures.pdf`, label: 'Pictures' },
@@ -307,6 +357,27 @@ export default function SatpinPage() {
   // scene label is unique across the 27 weeks, so one flat map is enough.
   const [pictures, setPictures] = useState<Record<string, BankPhoto>>({});
   const [loading, setLoading] = useState(true);
+  /** Which drop-in files exist, keyed by slug. Empty until the probe returns. */
+  const [media, setMedia] = useState<Record<string, MediaFlags>>({});
+
+  // Probe the drop-in song/reader files for all 27 weeks in one batch. Cheap
+  // (HEAD only) and re-runs on every mount, so a freshly dropped file appears
+  // on the next page load with no deploy and no code change.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const found = await Promise.all(WEEKS.map(async (w) => {
+        const p = mediaPaths(w.slug);
+        const [song, reader, readerBooklet] = await Promise.all([
+          fileExists(p.song), fileExists(p.reader), fileExists(p.readerBooklet),
+        ]);
+        return [w.slug, { song, reader, readerBooklet }] as const;
+      }));
+      if (cancelled) return;
+      setMedia(Object.fromEntries(found));
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -414,6 +485,79 @@ export default function SatpinPage() {
         >
           Create materials with these pictures →
         </button>
+      </div>
+    );
+  };
+
+  /** Slim dashed row used by both empty slots. */
+  const EmptySlot = ({ children }: { children: React.ReactNode }) => (
+    <div className="mt-3 rounded-xl border border-dashed border-white/[0.06] px-4 py-2.5 text-center">
+      <span className="text-white/20 text-xs">{children}</span>
+    </div>
+  );
+
+  /** Week song — inline player once song.mp3 is dropped in. */
+  const SongRow = ({ block }: { block: WeekBlock }) => {
+    if (!media[block.slug]?.song) {
+      return (
+        <EmptySlot>
+          Song — drop <span className="font-mono">song.mp3</span> into satpin-materials/{block.slug}/
+        </EmptySlot>
+      );
+    }
+    return (
+      <div
+        className="mt-3 rounded-xl border px-4 py-3 text-left"
+        style={{ background: 'rgba(255,255,255,0.03)', borderColor: `rgba(${block.accent},0.16)` }}
+      >
+        <div className="text-white/25 text-[10px] tracking-wider uppercase mb-2">Song</div>
+        <audio
+          controls
+          preload="none"
+          src={mediaPaths(block.slug).song}
+          className="w-full h-9"
+          style={{ colorScheme: 'dark' }}
+        />
+      </div>
+    );
+  };
+
+  /**
+   * Week reader. A manifest `reader` wins outright; otherwise the drop-in
+   * reader.pdf (+ optional reader-booklet.pdf) is offered as it appears.
+   */
+  const ReaderRow = ({ block }: { block: WeekBlock }) => {
+    const flags = media[block.slug];
+    const paths = mediaPaths(block.slug);
+    const downloads = block.reader?.downloads ?? [
+      ...(flags?.reader ? [{ href: paths.reader, label: 'Read-along' }] : []),
+      ...(flags?.readerBooklet ? [{ href: paths.readerBooklet, label: 'Print booklet A5' }] : []),
+    ];
+
+    if (downloads.length === 0) return <EmptySlot>Reader — coming soon</EmptySlot>;
+
+    return (
+      <div
+        className="mt-3 rounded-xl border px-4 py-3 text-left"
+        style={{ background: 'rgba(255,255,255,0.03)', borderColor: `rgba(${block.accent},0.16)` }}
+      >
+        <div className="text-white/25 text-[10px] tracking-wider uppercase mb-1">Reader</div>
+        {block.reader?.title && (
+          <div className="text-white/90 font-medium text-sm">{block.reader.title}</div>
+        )}
+        <div className="mt-2 flex flex-wrap gap-2">
+          {downloads.map((d) => (
+            <a
+              key={d.href}
+              href={d.href}
+              download
+              className="px-3 py-2 rounded-lg border text-xs transition-all hover:bg-white/[0.06]"
+              style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)' }}
+            >
+              {d.label}
+            </a>
+          ))}
+        </div>
       </div>
     );
   };
@@ -530,34 +674,38 @@ export default function SatpinPage() {
               const words = block.words ?? [];
 
               // Sound-only week (a digraph such as ck): nothing to put in a
-              // basket, so no words, pictures, printables or book slot — just a
-              // slim muted marker keeping the week numbering visibly intact.
+              // basket, so no words, pictures, printables or reader/book slots
+              // — just a slim muted marker keeping the week numbering visibly
+              // intact. It still gets a song slot: a digraph can have a song.
               if (words.length === 0) {
                 return (
                   <div
                     key={block.slug}
-                    className="rounded-2xl border border-dashed px-5 py-4 flex items-center gap-4"
+                    className="rounded-2xl border border-dashed px-5 py-4"
                     style={{
                       background: `linear-gradient(135deg, rgba(${block.accent},0.05), rgba(${block.accent},0.015))`,
                       borderColor: `rgba(${block.accent},0.14)`,
                     }}
                   >
-                    <div
-                      className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                      style={{ background: `rgba(${block.accent},0.10)` }}
-                    >
-                      <span className="text-xl font-bold leading-none" style={{ color: `rgba(${block.accent},0.7)` }}>
-                        {block.letter}
-                      </span>
-                    </div>
-                    <div className="flex-1 text-left">
-                      <div className="text-white/55 font-medium text-sm">
-                        Week {block.week} — {block.letter}
+                    <div className="flex items-center gap-4">
+                      <div
+                        className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                        style={{ background: `rgba(${block.accent},0.10)` }}
+                      >
+                        <span className="text-xl font-bold leading-none" style={{ color: `rgba(${block.accent},0.7)` }}>
+                          {block.letter}
+                        </span>
                       </div>
-                      <div className="text-xs mt-0.5" style={{ color: `rgba(${block.tint},0.35)` }}>
-                        {block.note ?? 'Sound-only week · no object basket'}
+                      <div className="flex-1 text-left">
+                        <div className="text-white/55 font-medium text-sm">
+                          Week {block.week} — {block.letter}
+                        </div>
+                        <div className="text-xs mt-0.5" style={{ color: `rgba(${block.tint},0.35)` }}>
+                          {block.note ?? 'Sound-only week · no object basket'}
+                        </div>
                       </div>
                     </div>
+                    <SongRow block={block} />
                   </div>
                 );
               }
@@ -631,6 +779,10 @@ export default function SatpinPage() {
                     ))}
                   </div>
                 )}
+
+                {/* Song → Reader → Book, three slim rows */}
+                <SongRow block={block} />
+                <ReaderRow block={block} />
 
                 {/* Book */}
                 {block.book ? (

@@ -106,6 +106,12 @@ to the whole series, and **all 130 rows** (SATPIN included) now carry one tag sc
 🚨 The letter-X word is displayed as **six** but served
 by the **`dice`** photo through a `photoLabel` override in the page's WEEKS manifest, and the three-part-card
 link row renders only for the six letters whose PDFs exist under `public/satpin-materials/<slug>/`.
+Every week block also carries **drop-in Song and Reader slots**: put `song.mp3`, `reader.pdf` and/or
+`reader-booklet.pdf` into `public/satpin-materials/<slug>/` (all 27 slug folders exist, each with a
+`.gitkeep`) and the page fills the slot by itself — presence is a client-side HEAD probe on mount, so
+a drop needs **no code edit**, only a deploy; a `reader` entry in the WEEKS manifest overrides the
+probe for off-convention paths. Week 5 — I is wired that way to the original-set reader *Sit, Sit,
+Sit*; every other week shows a muted placeholder until its files land (ck gets a song slot only).
 
 ---
 
