@@ -1,13 +1,28 @@
 // /montree/library/photo-bank/page.tsx
-// Montree Picture Bank — Full page for browsing, searching, uploading, and managing pictures
+// Montree Picture Library — tabbed creation hub.
+//
+// The page owns ONE selection (a Map keyed by photo id). The Library tab
+// browses and selects; the tool tabs (Three-Part Cards, Sentence Match,
+// Flashcards, Picture Bingo) receive that selection live via props/postMessage
+// instead of the old one-shot sessionStorage pipe.
+//
+// 🚨 Tool tab panels stay MOUNTED once visited and are hidden with CSS. Never
+// switch them to conditional rendering — unmounting throws away the teacher's
+// work-in-progress (cropped cards, bulk labels, bingo grid) on every tab flip.
+//
+// The standalone /montree/library/tools/* routes and the static
+// /tools/*.html pages still work exactly as before: they keep their own
+// sessionStorage `photoBankExport` intake, fed by the "Export to…" menu.
 'use client';
 
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import PhotoBankPicker from '@/components/montree/PhotoBankPicker';
 import type { PhotoBankPhoto } from '@/components/montree/PhotoBankPicker';
 import LanguageToggle from '@/components/montree/LanguageToggle';
+import CardGenerator from '@/components/card-generator/CardGenerator';
+import VocabularyFlashcards from '@/components/vocabulary-flashcards/VocabularyFlashcards';
 import { useI18n } from '@/lib/montree/i18n';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import { downloadPhotos } from '@/lib/montree/media/download-photos';
@@ -26,13 +41,29 @@ interface SelectedPhoto {
   filename: string;
 }
 
+/**
+ * Tools that stay OUTSIDE the hub and still take the selection through the
+ * one-shot sessionStorage pipe.
+ * - phonics-fast is a nav hub with its own internal tabs; it ignores photo
+ *   selections entirely (banner only), so it is deliberately not a tab here.
+ * - dictionary is a standalone static page.
+ */
 const EXPORT_TARGETS = [
-  { key: 'card-generator', label: '🃏 Three-Part Cards', href: '/montree/library/tools/card-generator' },
-  { key: 'vocabulary-flashcards', label: '📸 Vocabulary Flashcards', href: '/montree/library/tools/vocabulary-flashcards' },
-  { key: 'picture-bingo', label: '🖼️ Picture Bingo', href: '/tools/picture-bingo-generator.html' },
   { key: 'phonics-fast', label: '📚 Phonics Fast', href: '/montree/library/tools/phonics-fast' },
   { key: 'dictionary', label: '📖 Dictionary', href: '/tools/my-first-dictionary.html' },
 ] as const;
+
+type TabKey = 'library' | 'three-part-cards' | 'sentence-match' | 'flashcards' | 'picture-bingo';
+
+const TABS: Array<{ key: TabKey; label: string }> = [
+  { key: 'library', label: '🖼️ Library' },
+  { key: 'three-part-cards', label: '🃏 Three-Part Cards' },
+  { key: 'sentence-match', label: '📖 Sentence Match' },
+  { key: 'flashcards', label: '📸 Flashcards' },
+  { key: 'picture-bingo', label: '🎲 Picture Bingo' },
+];
+
+const BINGO_SRC = '/tools/picture-bingo-generator.html';
 
 export default function PhotoBankPage() {
   const router = useRouter();
@@ -43,10 +74,26 @@ export default function PhotoBankPage() {
   const [uploadResults, setUploadResults] = useState<Array<{ success: boolean; filename: string; error?: string }>>([]);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  // Selection state for Export-to feature
+  // Selection state — shared by every tab. Lives here so switching tabs never
+  // loses it.
   const [selectedPhotos, setSelectedPhotos] = useState<Map<string, SelectedPhoto>>(new Map());
   const [showExportMenu, setShowExportMenu] = useState(false);
   const selectedIds = React.useMemo(() => new Set(selectedPhotos.keys()), [selectedPhotos]);
+  // Array form handed to the embedded tools as `importPhotos`. Each tool
+  // dedupes by photo id, so re-sending the whole selection is safe.
+  const selectedPhotoList = useMemo(() => Array.from(selectedPhotos.values()), [selectedPhotos]);
+
+  const [activeTab, setActiveTab] = useState<TabKey>('library');
+  // Tabs are mounted lazily on first visit, then kept mounted forever and
+  // hidden with CSS so work-in-progress inside a tool survives tab flips.
+  const [mountedTabs, setMountedTabs] = useState<Set<TabKey>>(() => new Set<TabKey>(['library']));
+
+  const selectTab = useCallback((key: TabKey) => {
+    setActiveTab(key);
+    setMountedTabs(prev => (prev.has(key) ? prev : new Set(prev).add(key)));
+    setShowExportMenu(false);
+  }, []);
+
   // Sort is forwarded to PhotoBankPicker via the `sort` prop and lands at
   // /api/montree/photo-bank as ?sort=…
   const [sort, setSort] = useState<'label' | 'recent'>('label');
@@ -54,6 +101,29 @@ export default function PhotoBankPage() {
   // user gets "3/12" feedback on big batches instead of a frozen button.
   const [downloading, setDownloading] = useState(false);
   const [downloadStatus, setDownloadStatus] = useState('');
+
+  /**
+   * Pre-selection handed over from another page (the SATPIN page's
+   * "Create materials with these pictures →" buttons). Deliberately a
+   * DIFFERENT sessionStorage key from `photoBankExport` — the tools all
+   * consume-and-delete that one on mount, so reusing it would race them.
+   */
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('photoBankPreselect');
+      if (!raw) return;
+      sessionStorage.removeItem('photoBankPreselect');
+      const { photos } = JSON.parse(raw) as { photos: SelectedPhoto[] };
+      if (!photos || photos.length === 0) return;
+      setSelectedPhotos(prev => {
+        const next = new Map(prev);
+        photos.forEach(p => { if (p && p.id) next.set(p.id, p); });
+        return next;
+      });
+    } catch (err) {
+      console.error('Failed to read photoBankPreselect:', err);
+    }
+  }, []);
 
   const handleRawSelect = useCallback((photo: PhotoBankPhoto) => {
     setSelectedPhotos(prev => {
@@ -90,7 +160,7 @@ export default function PhotoBankPage() {
       return;
     }
     setShowExportMenu(false);
-    // For static HTML pages (picture bingo), use window.location; for Next.js pages, use router
+    // For static HTML pages, use window.location; for Next.js pages, use router
     if (href.startsWith('/tools/')) {
       window.location.href = href;
     } else {
@@ -102,6 +172,44 @@ export default function PhotoBankPage() {
     setSelectedPhotos(new Map());
     setShowExportMenu(false);
   }, []);
+
+  // ---- Picture Bingo iframe bridge -------------------------------------
+  // The real bingo UI is the static vanilla-JS page. It can't read React
+  // state, so the hub posts the selection across. The static page dedupes by
+  // photo id, so re-sending the full selection on every change is safe.
+  const bingoFrameRef = useRef<HTMLIFrameElement>(null);
+  const bingoReadyRef = useRef(false);
+
+  const sendSelectionToBingo = useCallback(() => {
+    const frame = bingoFrameRef.current;
+    if (!frame || !frame.contentWindow || selectedPhotoList.length === 0) return;
+    try {
+      frame.contentWindow.postMessage(
+        { type: 'montree:photo-bank-selection', photos: selectedPhotoList },
+        window.location.origin
+      );
+    } catch (err) {
+      console.error('Failed to post selection to Picture Bingo:', err);
+    }
+  }, [selectedPhotoList]);
+
+  // The iframe announces itself once its own DOMContentLoaded has run.
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      if (!event.data || event.data.type !== 'montree:bingo-ready') return;
+      bingoReadyRef.current = true;
+      sendSelectionToBingo();
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, [sendSelectionToBingo]);
+
+  // Push on tab activation and on every selection change while the tab is open.
+  useEffect(() => {
+    if (activeTab !== 'picture-bingo' || !bingoReadyRef.current) return;
+    sendSelectionToBingo();
+  }, [activeTab, sendSelectionToBingo]);
 
   // Save the currently-selected pictures to the user's device.
   // One picture downloads as a plain image; several are zipped in the browser
@@ -244,6 +352,17 @@ export default function PhotoBankPage() {
     setDragOver(false);
   }, []);
 
+  /** Tool panels are hidden, not unmounted — see the file header note. */
+  const panelStyle = (key: TabKey): React.CSSProperties => ({
+    display: activeTab === key ? 'block' : 'none',
+  });
+
+  /** White card the light-themed tools sit in, against the dark page. */
+  const toolCardStyle: React.CSSProperties = {
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+  };
+
   return (
     <div
       className="min-h-screen relative overflow-hidden"
@@ -298,6 +417,52 @@ export default function PhotoBankPage() {
           {t('photoBank.subtitle')}
         </p>
       </div>
+
+      {/* Tab bar — pick pictures in Library, then build with them in any tool.
+          Labels are hardcoded English to match the export-menu labels already
+          hardcoded in this file. */}
+      <div className="relative z-10 px-6 pb-6">
+        <div className="max-w-5xl mx-auto flex flex-wrap justify-center gap-2">
+          {TABS.map((tab) => {
+            const active = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => selectTab(tab.key)}
+                style={{
+                  padding: '9px 18px',
+                  borderRadius: '12px',
+                  fontSize: '13px',
+                  fontWeight: active ? 700 : 500,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.15s',
+                  border: `1px solid ${active ? 'rgba(16,185,129,0.45)' : 'rgba(255,255,255,0.08)'}`,
+                  backgroundColor: active ? 'rgba(16,185,129,0.20)' : 'rgba(255,255,255,0.04)',
+                  color: active ? '#6ee7b7' : 'rgba(255,255,255,0.5)',
+                }}
+              >
+                {tab.label}
+                {tab.key !== 'library' && selectedPhotos.size > 0 && (
+                  <span style={{ opacity: 0.6, marginLeft: '6px', fontWeight: 500 }}>
+                    {selectedPhotos.size}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+        {activeTab !== 'library' && (
+          <p className="text-white/30 text-xs text-center mt-3">
+            {selectedPhotos.size > 0
+              ? `${selectedPhotos.size} picture${selectedPhotos.size === 1 ? '' : 's'} from the Library loaded into this tool. Go back to Library to add more.`
+              : 'No pictures selected yet — open the Library tab and pick some.'}
+          </p>
+        )}
+      </div>
+
+      {/* ================= LIBRARY TAB ================= */}
+      <div style={panelStyle('library')}>
 
       {/* Upload Zone (when active) */}
       {uploadMode && (
@@ -368,13 +533,7 @@ export default function PhotoBankPage() {
       {/* Main Picture Bank Browser */}
       <div className="relative z-10 px-6 pb-12">
         <div className="max-w-5xl mx-auto">
-          <div
-            className="rounded-2xl p-6"
-            style={{
-              backgroundColor: 'rgba(255,255,255,0.95)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-            }}
-          >
+          <div className="rounded-2xl p-6" style={toolCardStyle}>
             {/* Sort toggle — sits above the picker. Keeps the picker
                 component generic; the photo-bank page is the only consumer
                 that wants this row visible. */}
@@ -427,8 +586,112 @@ export default function PhotoBankPage() {
         </p>
       </div>
 
-      {/* Floating Export-to bar — shown when photos are selected */}
-      {selectedPhotos.size > 0 && (
+      </div>
+      {/* =============== END LIBRARY TAB =============== */}
+
+      {/* ================= TOOL TABS =================
+          Each panel mounts on first visit and then stays mounted — hidden
+          with display:none — so the teacher's in-progress work survives. */}
+
+      {mountedTabs.has('three-part-cards') && (
+        <div style={panelStyle('three-part-cards')} className="relative z-10 px-6 pb-16">
+          <div className="max-w-5xl mx-auto rounded-2xl p-6" style={toolCardStyle}>
+            <CardGenerator
+              embedded
+              layoutMode="square"
+              importPhotos={selectedPhotoList}
+              headerConfig={{ showBackButton: false }}
+            />
+          </div>
+        </div>
+      )}
+
+      {mountedTabs.has('sentence-match') && (
+        <div style={panelStyle('sentence-match')} className="relative z-10 px-6 pb-16">
+          <div className="max-w-5xl mx-auto rounded-2xl p-6" style={toolCardStyle}>
+            <CardGenerator
+              embedded
+              layoutMode="strip"
+              importPhotos={selectedPhotoList}
+              headerConfig={{ showBackButton: false }}
+              textConfig={{
+                bulkTabLabel: '📝 Bulk Sentences',
+                bulkInstructions: 'Enter one sentence per line. Sentences will be applied to cards in order.',
+                bulkPlaceholder: 'The cat sits on the mat.\nI see a big red dog.\nA bird flies in the sky.\n...',
+                bulkButtonLabel: 'Apply Sentences to Cards',
+                emptyStateText: 'Pick pictures in the Library tab to get started!',
+                infoSectionTitle: 'ℹ️ About Sentence Match Cards',
+                infoSectionLead: 'Sentence match cards work the same way as Montessori three-part cards — only the label is a full sentence instead of a single word:',
+                infoSectionItems: [
+                  { strong: 'Control Card:', body: 'Picture + sentence together (used for self-checking)' },
+                  { strong: 'Picture Card:', body: 'Image only (for matching)' },
+                  { strong: 'Sentence Card:', body: 'Sentence only (for reading practice)' },
+                ],
+                infoSectionFooter: 'Children match picture cards and sentence cards, then use the control cards to verify their work. This self-correcting format builds reading fluency, comprehension, and confidence with longer text.',
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {mountedTabs.has('flashcards') && (
+        <div style={panelStyle('flashcards')} className="relative z-10 px-6 pb-16">
+          <div className="max-w-5xl mx-auto rounded-2xl p-6" style={toolCardStyle}>
+            <VocabularyFlashcards embedded importPhotos={selectedPhotoList} />
+          </div>
+        </div>
+      )}
+
+      {mountedTabs.has('picture-bingo') && (
+        <div style={panelStyle('picture-bingo')} className="relative z-10 px-6 pb-16">
+          <div className="max-w-5xl mx-auto rounded-2xl p-4" style={toolCardStyle}>
+            {/* The bingo generator is a standalone vanilla-JS page. It's
+                embedded here and fed the live selection over postMessage; the
+                button below is the escape hatch to the full-window version. */}
+            <div className="flex items-center justify-between gap-3 px-2 pb-3">
+              <span style={{ fontSize: '12px', color: '#666' }}>
+                Picture Bingo runs inside this page. Your Library selection is sent across automatically.
+              </span>
+              <button
+                onClick={() => handleExport(BINGO_SRC)}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(16,185,129,0.4)',
+                  backgroundColor: 'rgba(16,185,129,0.12)',
+                  color: '#047857',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Open full screen ↗
+              </button>
+            </div>
+            <iframe
+              ref={bingoFrameRef}
+              src={BINGO_SRC}
+              title="Picture Bingo Generator"
+              onLoad={sendSelectionToBingo}
+              style={{
+                width: '100%',
+                height: '80vh',
+                minHeight: '600px',
+                border: 'none',
+                borderRadius: '12px',
+                background: '#fff',
+              }}
+            />
+          </div>
+        </div>
+      )}
+      {/* =============== END TOOL TABS =============== */}
+
+      {/* Floating selection bar — Library tab only. On the tool tabs the
+          selection is already in the tool, and a fixed bar would sit on top
+          of the generator's own controls. */}
+      {activeTab === 'library' && selectedPhotos.size > 0 && (
         <div
           style={{
             position: 'fixed',
@@ -497,7 +760,9 @@ export default function PhotoBankPage() {
                 : `⬇ ${t('photoBank.download', { count: String(selectedPhotos.size) })}`}
             </button>
 
-            {/* Export-to button + dropdown */}
+            {/* Export-to button + dropdown — the tools that stay external.
+                Three-Part Cards, Sentence Match, Flashcards and Picture Bingo
+                are tabs above; they read the selection directly. */}
             <div style={{ position: 'relative' }}>
               <button
                 onClick={() => setShowExportMenu(!showExportMenu)}

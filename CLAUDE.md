@@ -49,6 +49,34 @@ that one is single holdable objects on WHITE, and these are two-object scenes on
 against `picture-bank-add.mjs`'s own thresholds they fail on border luminance: 100–140 vs the
 required ≥225. They were never filed there and shouldn't be.
 
+**(3) SATPIN library tab.** New section at `/montree/library/satpin` (card added to
+`app/montree/library/page.tsx`, rose accent) — hardcoded English like the `language-area` page, so no
+i18n keys were touched and the pre-commit hook gains nothing new. Six letter blocks S/A/T/P/I/N, each
+with its five words and three-part cards from `public/satpin-materials/<letter>/`; P also carries the
+sentence strips and *The Pig Ate a Pineapple*, the other five show a "Book — coming soon" slot that
+fills by adding one manifest entry. **It is a new section, not Dark Phonics-branded.** Canonical word
+list = `docs/picture-bank/SATPIN-Object-Baskets.docx` (30 words, 5 per letter, all photographed and
+audit-passing), copied to `public/satpin-materials/` so the doc is downloadable.
+🚨 `docs/picture-bank/AZ-Object-Baskets.docx` **diverges on T/P/I/N and was NOT adopted** — decided by
+Tredoux 2026-07-27. Don't reconcile the two; SATPIN's list wins.
+
+**(4) Picture Library is now a tabbed creation hub, and SATPIN is a content bucket.**
+`/montree/library/photo-bank` grew a tab bar — Library (browse/select, default), Three-Part Cards,
+Sentence Match, Flashcards, Picture Bingo — with **one selection Map owned by the page** and pushed
+into each tool live. Three-Part Cards and Sentence Match are the same `<CardGenerator>` (new
+`importPhotos` prop, deduped by photo id in a ref; new `embedded` prop drops the page chrome);
+Flashcards was extracted to `components/vocabulary-flashcards/VocabularyFlashcards.tsx` and the old
+route is a thin wrapper; Picture Bingo is the static generator in an iframe fed by `postMessage`.
+🚨 Tool panels are hidden with `display:none`, never unmounted — unmounting throws away the
+teacher's cropped cards and bulk labels on every tab flip. The standalone `/tools/*` routes keep
+their own one-shot `photoBankExport` sessionStorage intake and are unchanged; the "Export to…" menu
+now lists only what stays external (Phonics Fast — a nav hub that ignores selections — and
+Dictionary). The SATPIN page was reworked from a PDF index into **week-by-week buckets** ("Week 1 —
+S" … "Week 6 — N"): word chips plus the five basket pictures fetched live from the photo-bank API by
+exact label, and a *Create materials with these pictures →* button per block that stages them on the
+**`photoBankPreselect`** key and jumps to the hub. That key is deliberately distinct from
+`photoBankExport`, which the tools consume-and-delete on mount. Word list unchanged from (3).
+
 ---
 
 ## 🧸 SESSION — Jul 26, 2026 (Cowork) — SATPIN BASKET VERIFIED + 5 TOY RENDERS CAUGHT/FIXED + PICTURE LIBRARY SEARCH BUG FIXED (NOT COMMITTED, NOT DEPLOYED)
