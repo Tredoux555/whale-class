@@ -2097,8 +2097,11 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                     handleRemovePhoto={handleRemovePhoto}
                   />
 
-                  {/* Regenerate the weekly montage film — sent reports only */}
-                  {r.parent_status === 'sent' && r.report_id && (() => {
+                  {/* Week in Film — a standard part of every weekly report. The
+                      montage is queued automatically when the report is generated
+                      and travels to parents with it, so the control is available
+                      for drafts too (photo edits make the film stale). */}
+                  {r.report_id && (() => {
                     const ms = montageState[r.report_id];
                     const busy = ms === 'queuing' || ms === 'queued';
                     return (
@@ -2124,6 +2127,9 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                         >
                           🎬 {ms === 'queued' ? `${t('weeklyWrap.montageQueued')} ✓` : t('weeklyWrap.montageRegen')}
                         </button>
+                        <p style={{ margin: '6px 0 0', color: 'rgba(255,255,255,0.40)', fontFamily: '"Inter", sans-serif', fontSize: 11 }}>
+                          {t('weeklyWrap.montageAuto')}
+                        </p>
                         {ms === 'error' && (
                           <p style={{ margin: '6px 0 0', color: '#f87171', fontFamily: '"Inter", sans-serif', fontSize: 11 }}>
                             {t('weeklyWrap.montageError')}

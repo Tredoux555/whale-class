@@ -27,6 +27,7 @@ import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 import { getChineseDescriptionsMap } from '@/lib/curriculum/comprehensive-guides/parent-descriptions-zh';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage';
+import { maybeEnqueueMontageJobs } from '@/lib/montree/montage/enqueue';
 import type { Locale } from '@/lib/montree/i18n/locales';
 import { isValidLocale } from '@/lib/montree/i18n/locales';
 
@@ -35,6 +36,52 @@ export const maxDuration = 300; // 5 minutes — full classroom run
 // Concurrency tuned for Haiku (default tier). Sonnet runs through the same path
 // but Haiku has more rate-limit headroom, so 5 in flight is comfortable.
 const MAX_CONCURRENT = 5;
+
+/**
+ * "Week in Film" is a STANDARD part of every weekly parent report, so the
+ * montage render is queued as soon as the parent drafts exist — not only at
+ * send time — and travels to parents with the report.
+ *
+ * The parent report writes above are onConflict upserts that don't return ids,
+ * so we re-read the week's parent reports and hand them to the self-gating
+ * enqueue helper (>= 8 eligible confirmed, parent-visible photos). Duplicate
+ * report_ids are ignored by the upsert, so the send route's existing call stays
+ * a harmless idempotent safety net.
+ *
+ * Best-effort — every failure is swallowed; a montage must never affect report
+ * generation.
+ */
+async function enqueueMontagesForWeek(
+  supabase: ReturnType<typeof getSupabase>,
+  args: { schoolId: string; classroomId: string; weekStart: string; childIds: string[] }
+): Promise<void> {
+  try {
+    if (args.childIds.length === 0) return;
+
+    const { data: rows, error } = await supabase
+      .from('montree_weekly_reports')
+      .select('id, child_id')
+      .eq('classroom_id', args.classroomId)
+      .eq('week_start', args.weekStart)
+      .eq('report_type', 'parent')
+      .in('child_id', args.childIds);
+
+    if (error) {
+      console.error('[WeeklyWrap] montage report lookup failed (non-fatal):', error.message);
+      return;
+    }
+
+    const reports = ((rows || []) as Array<{ id: string; child_id: string }>).map(r => ({
+      reportId: r.id,
+      childId: r.child_id,
+      classroomId: args.classroomId,
+    }));
+
+    await maybeEnqueueMontageJobs(supabase, { schoolId: args.schoolId, reports });
+  } catch (err) {
+    console.error('[WeeklyWrap] montage enqueue error (non-fatal):', err);
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -863,6 +910,16 @@ export async function POST(request: NextRequest) {
             generateAndSaveEnglishSchedule(classroom_id, classroom.school_id)
               .catch(err => console.error('[WeeklyWrap] English schedule generation failed:', err));
 
+            // Fire-and-forget: queue each child's "Week in Film" montage so it
+            // is ready to travel with the report when the teacher sends it.
+            void enqueueMontagesForWeek(supabase, {
+              schoolId: classroom.school_id,
+              classroomId: classroom_id,
+              weekStart: week_start,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              childIds: results.filter(r => r.success).map(r => (r as any).child_id).filter(Boolean),
+            });
+
             controller.close();
           } catch (err) {
             console.error('Weekly wrap stream error:', err);
@@ -898,6 +955,15 @@ export async function POST(request: NextRequest) {
     // Fire-and-forget: generate next week's English schedule
     generateAndSaveEnglishSchedule(classroom_id, classroom.school_id)
       .catch(err => console.error('[WeeklyWrap] English schedule generation failed:', err));
+
+    // Fire-and-forget: queue each child's "Week in Film" montage so it is ready
+    // to travel with the report when the teacher sends it.
+    void enqueueMontagesForWeek(supabase, {
+      schoolId: classroom.school_id,
+      classroomId: classroom_id,
+      weekStart: week_start,
+      childIds: results.filter(r => r.success).map(r => r.child_id).filter(Boolean),
+    });
 
     return NextResponse.json({ ...buildSummary(results), results });
   } catch (error) {

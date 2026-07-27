@@ -3,6 +3,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { requeueMontageJob } from '@/lib/montree/montage/enqueue';
+
+// Stable identity of a report's curated photo set — order matters (the montage
+// plays the photos in array order), so this is a join, not a set.
+function photoSetKey(photos: unknown): string {
+  return (Array.isArray(photos) ? photos : [])
+    .map(p => (p as { id?: unknown } | null)?.id)
+    .filter((id): id is string => typeof id === 'string')
+    .join(',');
+}
 
 export async function PATCH(request: NextRequest) {
   try {
@@ -40,7 +50,7 @@ export async function PATCH(request: NextRequest) {
     // Get existing report
     const { data: existing } = await supabase
       .from('montree_weekly_reports')
-      .select('id, content, school_id')
+      .select('id, content, school_id, child_id, classroom_id')
       .eq('id', report_id)
       .eq('school_id', auth.schoolId)
       .maybeSingle();
@@ -50,6 +60,9 @@ export async function PATCH(request: NextRequest) {
     }
 
     const content = existing.content as Record<string, unknown>;
+    // Snapshot before mutation — a changed photo set makes any existing
+    // "Week in Film" montage stale and it has to be re-rendered.
+    const photosBefore = photoSetKey(content.photos);
 
     // Update narrative if provided
     if (narrative !== undefined) {
@@ -83,6 +96,22 @@ export async function PATCH(request: NextRequest) {
     if (updateErr) {
       console.error('Edit report error:', updateErr);
       return NextResponse.json({ error: 'Failed to update report' }, { status: 500 });
+    }
+
+    // The teacher changed the curated photo set, so the montage that was queued
+    // when the report was generated no longer matches it — re-queue the render.
+    // Fire-and-forget: the helper self-gates (>= 8 eligible photos, never
+    // interrupts a render in flight) and swallows every error.
+    if (photos !== undefined && photoSetKey(photos) !== photosBefore) {
+      const report = existing as unknown as {
+        child_id: string; school_id: string; classroom_id: string | null;
+      };
+      void requeueMontageJob(supabase, {
+        reportId: report_id,
+        childId: report.child_id,
+        schoolId: report.school_id,
+        classroomId: report.classroom_id,
+      });
     }
 
     return NextResponse.json({ success: true });

@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     // Load the report — must exist, must have a montage_path, must match child.
     const { data: report } = await supabase
       .from('montree_weekly_reports')
-      .select('id, child_id, school_id, montage_path')
+      .select('id, child_id, school_id, montage_path, status')
       .eq('id', reportId)
       .maybeSingle();
 
@@ -56,6 +56,16 @@ export async function POST(request: NextRequest) {
     }
     if (!report.montage_path) {
       return NextResponse.json({ error: 'montage_path not set' }, { status: 409 });
+    }
+
+    // 🚨 Montages are now queued when the report is GENERATED (Jul 2026), so a
+    // render can finish while the report is still a teacher draft. The parent
+    // report API hard-gates on status='sent', so a push here would deep-link
+    // parents into a 404 — and tip them off about an unsent report. Skip it:
+    // the film ships with the report, and the send flow does its own push.
+    // 200 so the worker treats the job as complete (it is — the file is up).
+    if ((report as { status?: string | null }).status !== 'sent') {
+      return NextResponse.json({ ok: true, push: 'skipped_unsent' });
     }
 
     // Child display name for the push copy.

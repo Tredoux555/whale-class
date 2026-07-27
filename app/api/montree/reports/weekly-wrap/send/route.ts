@@ -23,18 +23,21 @@ const EMAIL_LABELS: Record<Locale, Record<string, string>> = {
     titleNoNarrative: "'s Weekly Update",
     photosCount: 'photos to explore',
     viewReport: 'View Full Report',
+    montageNote: "Includes this week's Week in Film — a short photo montage video of your child's week, inside the report.",
   },
   zh: {
     title: '的每周学习报告',
     titleNoNarrative: '的学习报告',
     photosCount: '张照片等您查看',
     viewReport: '查看完整报告',
+    montageNote: '本周报告内附「影像周记」——孩子这一周的照片短片。',
   },
   es: {
     title: "'s Weekly Update",
     titleNoNarrative: "'s Weekly Update",
     photosCount: 'photos to explore',
     viewReport: 'View Full Report',
+    montageNote: 'Incluye el "Week in Film" de esta semana: un breve video con las fotos de la semana de su hijo/a, dentro del informe.',
   },
 };
 
@@ -131,13 +134,40 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // "Week in Film" is standard now and is queued when the report is GENERATED,
+    // so by send time most reports already have a montage job (rendered or in
+    // flight). Reports with one get an extra line in the parent email telling
+    // them the video travels with the report. 42P01 pre-migration → no line.
+    const montageReportIds = new Set<string>();
+    {
+      const { data: jobRows, error: jobErr } = await supabase
+        .from('montree_montage_jobs')
+        .select('report_id, status')
+        .in('report_id', drafts.map(d => d.id));
+
+      if (jobErr) {
+        if (jobErr.code !== '42P01') {
+          console.error('[weekly-wrap/send] montage job lookup failed (non-fatal):', jobErr.message);
+        }
+      } else {
+        for (const j of (jobRows || []) as Array<{ report_id: string; status: string }>) {
+          // Anything that isn't a dead end means a film is coming (or is here).
+          if (j.status !== 'failed' && j.status !== 'skipped_insufficient_photos') {
+            montageReportIds.add(j.report_id);
+          }
+        }
+      }
+    }
+
     const now = new Date().toISOString();
     let published = 0;
     let emailsSent = 0;
     const errors: Array<{ child_id: string; error: string }> = [];
     const publishedChildIds: string[] = [];
     // Montage jobs are queued for every successfully published report (best-effort,
-    // gated by montage_enabled + >= 8 eligible photos inside maybeEnqueueMontageJobs).
+    // gated only by >= 8 eligible photos inside maybeEnqueueMontageJobs). These are
+    // normally already queued at generation time — this is the idempotent safety net
+    // (the upsert ignores duplicate report_ids).
     const montageReports: Array<{ reportId: string; childId: string; classroomId: string }> = [];
 
     // Process each draft
@@ -192,6 +222,9 @@ export async function POST(request: NextRequest) {
           const weekDisplay = startFmt && endFmt ? `${startFmt} – ${endFmt}` : week_start;
 
           const labels = EMAIL_LABELS[locale] || EMAIL_LABELS.en;
+          const montageLine = montageReportIds.has(draft.id)
+            ? `<p style="color: #666; font-size: 14px;">🎬 ${labels.montageNote}</p>`
+            : '';
           const html = narrative
             ? `
             <div style="font-family: -apple-system, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;">
@@ -201,6 +234,7 @@ export async function POST(request: NextRequest) {
                 <p style="color: #333; line-height: 1.7; font-size: 15px; margin: 0;">${narrative}</p>
               </div>
               ${photosCount > 0 ? `<p style="color: #666; font-size: 14px;">📸 ${photosCount} ${labels.photosCount}</p>` : ''}
+              ${montageLine}
               <div style="text-align: center; margin: 24px 0;">
                 <a href="${reportLink}" style="display: inline-block; background: #059669; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
                   ${labels.viewReport} →
@@ -213,6 +247,7 @@ export async function POST(request: NextRequest) {
             <div style="font-family: -apple-system, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;">
               <h2 style="color: #059669;">🌳 ${firstName}${labels.titleNoNarrative}</h2>
               <p style="color: #666;">${classroomName} · ${weekDisplay}</p>
+              ${montageLine}
               <div style="text-align: center; margin: 24px 0;">
                 <a href="${reportLink}" style="display: inline-block; background: #059669; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
                   ${labels.viewReport} →

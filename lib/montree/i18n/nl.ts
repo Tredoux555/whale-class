@@ -3181,6 +3181,7 @@ export const nl: Record<string, string> = {
   'weeklyWrap.montageRegen': 'Regenerate film',
   'weeklyWrap.montageQueued': 'Film queued',
   'weeklyWrap.montageError': 'Could not queue the film',
+  'weeklyWrap.montageAuto': 'Week in Film zit bij elk ouderrapport — genereer de film opnieuw als je de foto’s wijzigt.',
   'parentReport.weekInFilm': 'This week in film',
   'weeklyWrap.inviteParent': 'Ouder uitnodigen',
   'weeklyWrap.backToList': 'Terug naar lijst',

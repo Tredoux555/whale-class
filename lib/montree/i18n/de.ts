@@ -3181,6 +3181,7 @@ export const de: Record<string, string> = {
   'weeklyWrap.montageRegen': 'Regenerate film',
   'weeklyWrap.montageQueued': 'Film queued',
   'weeklyWrap.montageError': 'Could not queue the film',
+  'weeklyWrap.montageAuto': 'Week in Film ist in jedem Elternbericht enthalten – erstellen Sie den Film neu, wenn Sie die Fotos ändern.',
   'parentReport.weekInFilm': 'This week in film',
   'weeklyWrap.inviteParent': 'Eltern einladen',
   'weeklyWrap.backToList': 'Zurück zur Liste',
