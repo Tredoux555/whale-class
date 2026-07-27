@@ -259,10 +259,19 @@ body, html {
    app/montree/dashboard/[childId]/layout.tsx.
    ========================================================================= */
 :root {
-  --safe-top: env(safe-area-inset-top, 0px);
-}
-body:has(header[data-dashboard-header]) {
+  /* Plain fallback FIRST, outside @supports: a var() holding an unsupported
+     env() would be invalid at computed-value time, which turns
+     top: calc(57px + var(--safe-top)) into top: auto and breaks the sticky
+     offset entirely. With this, --safe-top is always a valid length. */
   --safe-top: 0px;
+}
+@supports (padding: env(safe-area-inset-top)) {
+  :root {
+    --safe-top: env(safe-area-inset-top, 0px);
+  }
+  body:has(header[data-dashboard-header]) {
+    --safe-top: 0px;
+  }
 }
 
 @supports (padding: env(safe-area-inset-top)) {
