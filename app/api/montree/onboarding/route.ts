@@ -101,6 +101,8 @@ export async function POST(request: NextRequest) {
         signup_region: location.region,
         signup_timezone: location.timezone,
         signup_ip: location.ip,
+        // Montage on by default — see migrations/302_montage_default_on.sql.
+        montage_enabled: true,
       })
       .select()
       .single();

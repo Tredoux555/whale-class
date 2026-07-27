@@ -703,6 +703,8 @@ export async function POST(req: NextRequest) {
         trial_ends_at: trialEndsAt.toISOString(),
         max_students: role === 'homeschool_parent' ? 10 : 30,
         primary_locale: primaryLocale,
+        // Montage on by default — see migrations/302_montage_default_on.sql.
+        montage_enabled: true,
       })
       .select()
       .single();

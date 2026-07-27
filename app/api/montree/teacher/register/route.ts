@@ -94,6 +94,8 @@ export async function POST(request: NextRequest) {
         trial_ends_at: trialEndsAt.toISOString(),
         max_students: 30,
         is_active: true,
+        // Montage on by default — see migrations/302_montage_default_on.sql.
+        montage_enabled: true,
       })
       .select()
       .single();
