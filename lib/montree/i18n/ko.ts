@@ -3181,6 +3181,7 @@ export const ko: Record<string, string> = {
   'weeklyWrap.montageRegen': 'Regenerate film',
   'weeklyWrap.montageQueued': 'Film queued',
   'weeklyWrap.montageError': 'Could not queue the film',
+  'weeklyWrap.montageAuto': 'Week in Film은 모든 학부모 리포트에 포함됩니다. 사진을 변경한 경우 다시 생성하세요.',
   'parentReport.weekInFilm': 'This week in film',
   'weeklyWrap.inviteParent': '학부모 초대',
   'weeklyWrap.backToList': '목록으로 돌아가기',

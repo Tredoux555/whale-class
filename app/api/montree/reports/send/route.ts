@@ -716,8 +716,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Weekly-montage feature: queue a beat-synced photo montage render for this
-    // report. Fire-and-forget — self-gated (montage_enabled + >= 8 eligible
-    // photos) and swallows all errors, so it can never affect the send response.
+    // report. Fire-and-forget — self-gated (>= 8 eligible photos; standard for
+    // every school) and swallows all errors, so it can never affect the send
+    // response.
     if (upsertedReport?.id) {
       void maybeEnqueueMontageJobs(supabase, {
         schoolId: classroom.school_id,

@@ -3628,6 +3628,7 @@ export const zh = {
   'weeklyWrap.montageRegen': '重新生成影片',
   'weeklyWrap.montageQueued': '影片已排队',
   'weeklyWrap.montageError': '影片排队失败',
+  'weeklyWrap.montageAuto': '「影像周记」随每份家长报告一同发送——更换照片后请重新生成。',
   'parentReport.weekInFilm': '本周影片',
   'weeklyWrap.inviteParent': '邀请家长',
   'weeklyWrap.backToList': '返回列表',

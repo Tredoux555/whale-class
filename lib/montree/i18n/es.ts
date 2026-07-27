@@ -3263,6 +3263,7 @@ export const es: Record<string, string> = {
   'weeklyWrap.montageRegen': 'Regenerate film',
   'weeklyWrap.montageQueued': 'Film queued',
   'weeklyWrap.montageError': 'Could not queue the film',
+  'weeklyWrap.montageAuto': 'Week in Film se incluye en cada informe para padres: vuelva a generarlo si cambia las fotos.',
   'parentReport.weekInFilm': 'This week in film',
   'weeklyWrap.inviteParent': 'Invitar padre/madre',
   'weeklyWrap.backToList': 'Volver a la lista',

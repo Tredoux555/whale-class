@@ -23,6 +23,7 @@ import { getChineseDescriptionsMap } from '@/lib/curriculum/comprehensive-guides
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import type { Locale } from '@/lib/montree/i18n/locales';
 import { isValidLocale } from '@/lib/montree/i18n/locales';
+import { maybeEnqueueMontageJobs } from '@/lib/montree/montage/enqueue';
 
 // Max concurrent Sonnet calls to avoid rate limiting
 const MAX_CONCURRENT = 5;
@@ -496,6 +497,43 @@ export async function POST(request: NextRequest) {
     const totalOutputTokens = results.reduce((sum, r) => sum + (r.tokens_used?.output || 0), 0);
     // Sonnet pricing: $3/M input, $15/M output
     const estimatedCost = (totalInputTokens * 3 + totalOutputTokens * 15) / 1_000_000;
+
+    // "Week in Film" is a standard part of every weekly parent report, so the
+    // montage render is queued as soon as the drafts exist (this route also
+    // serves the single-child path) rather than only at send time. The upserts
+    // above don't return ids, so we re-read the week's parent reports and hand
+    // them to the self-gating helper (>= 8 eligible photos; duplicate report_ids
+    // are ignored). Fire-and-forget — never affects narrative generation.
+    void (async () => {
+      try {
+        const generatedChildIds = results.filter(r => r.success && !r.skipped).map(r => r.child_id);
+        if (generatedChildIds.length === 0) return;
+
+        const { data: reportRows, error: reportErr } = await supabase
+          .from('montree_weekly_reports')
+          .select('id, child_id')
+          .eq('classroom_id', classroom_id)
+          .eq('week_start', week_start)
+          .eq('report_type', 'parent')
+          .in('child_id', generatedChildIds);
+
+        if (reportErr) {
+          console.error('[BatchNarratives] montage report lookup failed (non-fatal):', reportErr.message);
+          return;
+        }
+
+        await maybeEnqueueMontageJobs(supabase, {
+          schoolId: classroom.school_id,
+          reports: ((reportRows || []) as Array<{ id: string; child_id: string }>).map(r => ({
+            reportId: r.id,
+            childId: r.child_id,
+            classroomId: classroom_id,
+          })),
+        });
+      } catch (err) {
+        console.error('[BatchNarratives] montage enqueue error (non-fatal):', err);
+      }
+    })();
 
     return NextResponse.json({
       success: true,

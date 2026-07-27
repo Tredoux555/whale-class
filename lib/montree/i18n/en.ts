@@ -3667,6 +3667,7 @@ export const en = {
   'weeklyWrap.montageRegen': 'Regenerate film',
   'weeklyWrap.montageQueued': 'Film queued',
   'weeklyWrap.montageError': 'Could not queue the film',
+  'weeklyWrap.montageAuto': 'Week in Film is included with every parent report — regenerate it if you change the photos.',
   'parentReport.weekInFilm': 'This week in film',
   'weeklyWrap.inviteParent': 'Invite Parent',
   'weeklyWrap.backToList': 'Back to list',

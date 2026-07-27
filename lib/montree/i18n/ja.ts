@@ -3181,6 +3181,7 @@ export const ja: Record<string, string> = {
   'weeklyWrap.montageRegen': 'Regenerate film',
   'weeklyWrap.montageQueued': 'Film queued',
   'weeklyWrap.montageError': 'Could not queue the film',
+  'weeklyWrap.montageAuto': '「Week in Film」はすべての保護者向けレポートに含まれます。写真を変更した場合は再生成してください。',
   'parentReport.weekInFilm': 'This week in film',
   'weeklyWrap.inviteParent': '保護者を招待',
   'weeklyWrap.backToList': 'リストに戻る',

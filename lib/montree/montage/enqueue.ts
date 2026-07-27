@@ -5,13 +5,16 @@
 //
 // 🚨 This is an ENHANCEMENT, never a blocker. Every failure is swallowed and
 // logged — a montage that can't be queued must never affect report delivery.
-// Pre-migration (301 not yet run) the montage_enabled column / jobs table are
-// absent → every path 42703/42P01s → we catch and return silently.
+// Pre-migration (301 not yet run) the jobs table is absent → every path
+// 42P01s → we catch and return silently.
 //
 // Rules:
-//   - School-level gate: montree_schools.montage_enabled must be truthy.
+//   - NO school-level gate (Jul 2026): "Week in Film" is a STANDARD feature of
+//     every classroom's weekly report, not an admin-toggled extra. The legacy
+//     montree_schools.montage_enabled column is deprecated and no longer read
+//     anywhere (see migrations/303_montage_always_on.sql).
 //   - A report needs >= 8 eligible photos (confirmed, parent-visible photos
-//     linked to the report) or no job is queued.
+//     linked to the report) or no job is queued. This is the ONLY gate.
 //   - The job upsert IGNORES duplicates on report_id, so a re-send never
 //     resets an already-queued/rendering/done job (regenerate has its own route).
 
@@ -84,8 +87,8 @@ async function countEligiblePhotos(
 }
 
 /**
- * Best-effort: queue montage jobs for reports whose school has montages
- * enabled and that have enough eligible photos. Never throws to the caller.
+ * Best-effort: queue montage jobs for every passed report that has enough
+ * eligible photos. Standard for all schools — no opt-in. Never throws.
  */
 export async function maybeEnqueueMontageJobs(
   supabase: SupabaseClient,
@@ -93,21 +96,6 @@ export async function maybeEnqueueMontageJobs(
 ): Promise<void> {
   try {
     if (!schoolId || !reports || reports.length === 0) return;
-
-    // School gate. 42703 (column missing pre-migration) -> maybeSingle returns
-    // an error we simply treat as "not enabled".
-    const { data: school, error: schoolErr } = await supabase
-      .from('montree_schools')
-      .select('montage_enabled')
-      .eq('id', schoolId)
-      .maybeSingle();
-
-    if (schoolErr) {
-      // Silent pre-migration / lookup failure — never a blocker.
-      console.error('[montage/enqueue] school gate lookup failed (non-fatal):', schoolErr.message);
-      return;
-    }
-    if (!school || !(school as { montage_enabled?: boolean }).montage_enabled) return;
 
     for (const report of reports) {
       try {
@@ -139,5 +127,70 @@ export async function maybeEnqueueMontageJobs(
   } catch (err) {
     // The whole function is decorative — never let it surface.
     console.error('[montage/enqueue] unexpected error (non-fatal):', err);
+  }
+}
+
+interface RequeueArgs {
+  reportId: string;
+  childId: string;
+  schoolId: string;
+  classroomId?: string | null;
+}
+
+/**
+ * Best-effort: the report's curated photo set changed, so any montage already
+ * queued/rendered for it is stale — reset the job to a fresh 'queued' state so
+ * the worker re-renders it (same reset shape as POST
+ * /api/montree/reports/weekly-wrap/montage). A job that is mid-render is left
+ * alone; the teacher's explicit "regenerate film" button covers that case.
+ * Still honours the >= 8 eligible photos rule. Never throws to the caller.
+ */
+export async function requeueMontageJob(
+  supabase: SupabaseClient,
+  { reportId, childId, schoolId, classroomId }: RequeueArgs
+): Promise<void> {
+  try {
+    if (!reportId || !childId || !schoolId) return;
+
+    const eligibleCount = await countEligiblePhotos(supabase, reportId);
+    if (eligibleCount < MIN_ELIGIBLE_PHOTOS) return;
+
+    // Don't disturb a render in flight.
+    const { data: existing, error: existErr } = await supabase
+      .from('montree_montage_jobs')
+      .select('status')
+      .eq('report_id', reportId)
+      .maybeSingle();
+
+    if (existErr) {
+      // 42P01 pre-migration and any other lookup failure — never a blocker.
+      console.error('[montage/enqueue] requeue job lookup failed (non-fatal):', existErr.message);
+      return;
+    }
+    if ((existing as { status?: string } | null)?.status === 'rendering') return;
+
+    const { error: upsertErr } = await supabase
+      .from('montree_montage_jobs')
+      .upsert(
+        {
+          report_id: reportId,
+          child_id: childId,
+          school_id: schoolId,
+          classroom_id: classroomId ?? null,
+          status: 'queued',
+          attempts: 0,
+          error: null,
+          next_attempt_at: null,
+          output_path: null,
+          finished_at: null,
+        },
+        { onConflict: 'report_id' }
+      );
+
+    if (upsertErr) {
+      console.error('[montage/enqueue] requeue upsert failed:', upsertErr.message);
+    }
+  } catch (err) {
+    console.error('[montage/enqueue] requeue unexpected error (non-fatal):', err);
   }
 }

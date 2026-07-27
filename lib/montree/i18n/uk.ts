@@ -3181,6 +3181,7 @@ export const uk: Record<string, string> = {
   'weeklyWrap.montageRegen': 'Regenerate film',
   'weeklyWrap.montageQueued': 'Film queued',
   'weeklyWrap.montageError': 'Could not queue the film',
+  'weeklyWrap.montageAuto': 'Week in Film додається до кожного звіту для батьків — перегенеруйте фільм, якщо змінили фото.',
   'parentReport.weekInFilm': 'This week in film',
   'weeklyWrap.inviteParent': 'Запросити батька/матір',
   'weeklyWrap.backToList': 'Повернутися до списку',
