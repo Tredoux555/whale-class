@@ -12,7 +12,14 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.utils import ImageReader
 import os
 
-F = '/root/.claude/skills/canvas-design/canvas-fonts/'
+# Default is the Cowork cloud container's canvas-design skill folder. Set
+# MONTREE_CANVAS_FONTS to a local copy of the same fonts to build elsewhere
+# (e.g. on a Mac, where the skill folder lives under
+# ~/Library/Application Support/Claude/.../skills/canvas-design/canvas-fonts/).
+F = os.environ.get('MONTREE_CANVAS_FONTS',
+                   '/root/.claude/skills/canvas-design/canvas-fonts/')
+if not F.endswith('/'):
+    F += '/'
 pdfmetrics.registerFont(TTFont('Title',  F+'YoungSerif-Regular.ttf'))
 pdfmetrics.registerFont(TTFont('Word',   F+'Outfit-Bold.ttf'))
 pdfmetrics.registerFont(TTFont('WordRg', F+'Outfit-Regular.ttf'))
@@ -51,7 +58,7 @@ def page_blank(c, book): pass
 
 def page_cover(c, book):
     c.setFillColorRGB(*GREY); 
-    draw_tracked(c, PW/2, PH-M-8, 'D A R K   P H O N I C S', 'Label', 8.5, 0.28, GREY)
+    draw_tracked(c, PW/2, PH-M-8, 'M O N T R E E   P H O N I C S', 'Label', 8.5, 0.28, GREY)
     draw_tracked(c, PW/2, PH-M-22, book['band'], 'Label', 7.5, 0.22, FAINT)
     # title
     lines = book['title_lines']
@@ -197,7 +204,7 @@ def page_halftitle(c, book):
     c.setFillColorRGB(*RED); c.circle(PW/2, PH*0.62-9*mm, 1.1*mm, stroke=0, fill=1)
 
 def page_back(c, book):
-    draw_tracked(c, PW/2, PH*0.60, 'D A R K   P H O N I C S', 'Label', 9, 0.3, GREY)
+    draw_tracked(c, PW/2, PH*0.60, 'M O N T R E E   P H O N I C S', 'Label', 9, 0.3, GREY)
     c.setFont('Nar', 11); c.setFillColorRGB(*INK)
     c.drawCentredString(PW/2, PH*0.60-9*mm, 'decodable readers')
     c.setFont('Label', 8); c.setFillColorRGB(*FAINT)

@@ -38,14 +38,16 @@ const CARD_H_MM = 250; // (297 − 2×23.5 top/bottom margin) — centred on A4
 export function buildDarkPhonicsCard(spec: WeekSpec, _assets: AssetMap, opts: BuildOpts = {}): BuildResult {
   const warnings: string[] = [];
   const dp = opts.darkPhonics;
-  const title = `${spec.displayName || `Week ${spec.week}`} — Dark Phonics`;
+  // User-facing program name is MONTREE PHONICS (renamed from Dark Phonics, Jul 28
+  // 2026). Internal ids/keys/paths (dark_phonics_card, dark-phonics.json) unchanged.
+  const title = `${spec.displayName || `Week ${spec.week}`} — Montree Phonics`;
 
   if (!dp) {
     return {
       html: docShell({
         title,
         css: '',
-        body: `<div class="page"><div class="page-title">No Dark Phonics card for this week.</div></div>`,
+        body: `<div class="page"><div class="page-title">No Montree Phonics card for this week.</div></div>`,
         fontBaseUrl: opts.fontBaseUrl,
         autoPrint: opts.autoPrint,
       }),
