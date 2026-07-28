@@ -3,9 +3,20 @@
 
 import type { WorkerConfig } from './config';
 
+export interface CompletePayload {
+  school_id: string;
+  // Report jobs (unchanged): these drive the parent push.
+  report_id?: string;
+  child_id?: string;
+  // Scoped jobs (migration 304): the route 200s without any report lookup
+  // or parent push — the job row already carries status + output_path.
+  job_id?: string;
+  scope_type?: string;
+}
+
 export async function notifyComplete(
   cfg: WorkerConfig,
-  payload: { report_id: string; child_id: string; school_id: string }
+  payload: CompletePayload
 ): Promise<void> {
   if (!cfg.workerSecret) {
     console.log('[callback] MONTAGE_WORKER_SECRET unset — skipping callback');

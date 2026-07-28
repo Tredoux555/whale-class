@@ -9,12 +9,12 @@ import { makeCancelSignal } from '@remotion/renderer';
 import type { WorkerConfig } from './config';
 import { JOB_PHOTOS_DIR } from './config';
 import type { MontageJob } from './db';
-import { getReportMeta, markDone, markSkipped } from './db';
-import { fetchEligiblePhotos, downloadPhotos } from './media';
+import { getReportMeta, getScopedJobMeta, isReportJob, markDone, markSkipped } from './db';
+import { fetchEligiblePhotos, fetchScopedEligiblePhotos, downloadPhotos } from './media';
 import { runHygiene, MIN_PHOTOS, PhotoDecision } from './hygiene';
 import { trackForReport } from './music';
 import { renderMontage, killActiveFfmpeg } from './render';
-import { uploadMontage } from './upload';
+import { uploadMontage, uploadScopedMontage } from './upload';
 import { notifyComplete } from './callback';
 import type { MontageProps } from '../remotion/src/timing';
 
@@ -44,6 +44,52 @@ export function formatSubtitle(
     }
   }
   return 'This Week';
+}
+
+// --- scoped montage helpers (migration 304) ------------------------------
+
+// An event is a single occasion, often a couple of hours of one afternoon —
+// demanding 8 keepers there would make the feature unusable. Everything else
+// keeps the report montage's floor untouched.
+export const MIN_EVENT_PHOTOS = 4;
+
+export function minPhotosForJob(job: MontageJob): number {
+  return job.scope_type === 'event' ? MIN_EVENT_PHOTOS : MIN_PHOTOS;
+}
+
+function prettyDate(date: string): string {
+  const d = new Date(`${date}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) return date;
+  return `${MONTH[d.getUTCMonth()]} ${d.getUTCDate()}`;
+}
+
+/** "July 28" for a single day, "July 22 – July 28" for a range. */
+export function formatScopedSubtitle(
+  dateStart: string | null,
+  dateEnd: string | null,
+  fallback: string
+): string {
+  if (dateStart && dateEnd) {
+    return dateStart === dateEnd
+      ? prettyDate(dateStart)
+      : `${prettyDate(dateStart)} – ${prettyDate(dateEnd)}`;
+  }
+  if (dateStart) return prettyDate(dateStart);
+  if (dateEnd) return prettyDate(dateEnd);
+  return fallback;
+}
+
+export function eyebrowForJob(job: MontageJob): string {
+  if (job.montage_kind === 'daily') return 'Daily Montage';
+  if (job.montage_kind === 'weekly') return 'Weekly Montage';
+  return 'Montage';
+}
+
+/** The entity a scoped montage's storage path is keyed on. */
+function scopeIdForJob(job: MontageJob): string {
+  if (job.scope_type === 'event') return job.event_id ?? job.id;
+  if (job.scope_type === 'child') return job.child_id ?? job.id;
+  return job.classroom_id ?? job.school_id;
 }
 
 function jobWorkDir(jobId: string): string {
@@ -114,16 +160,26 @@ export async function processJob(
     return await withTimeout(
       cfg.jobTimeoutMs,
       async () => {
-        // --- report metadata (title/subtitle + music rotation) ---
-        const meta = await getReportMeta(job.report_id, job.child_id);
+        // Migration 304: 'report' keeps the exact pre-304 path; every other
+        // scope reads its photos straight off montree_media.
+        const reportJob = isReportJob(job);
+        const minPhotos = reportJob ? MIN_PHOTOS : minPhotosForJob(job);
+
+        // --- metadata (title/subtitle + music rotation) ---
+        const meta = reportJob
+          ? await getReportMeta(job.report_id as string, job.child_id as string)
+          : null;
+        const scopedMeta = reportJob ? null : await getScopedJobMeta(job);
 
         // --- eligible photos (parent-visible re-asserted in media layer) ---
-        const eligible = await fetchEligiblePhotos(job.report_id);
-        if (eligible.length < MIN_PHOTOS) {
+        const eligible = reportJob
+          ? await fetchEligiblePhotos(job.report_id as string)
+          : await fetchScopedEligiblePhotos(job);
+        if (eligible.length < minPhotos) {
           await markSkipped(job.id);
           return {
             outcome: 'skipped',
-            reason: `only ${eligible.length} eligible photos (< ${MIN_PHOTOS})`,
+            reason: `only ${eligible.length} eligible photos (< ${minPhotos})`,
           } as JobOutcome;
         }
 
@@ -131,11 +187,11 @@ export async function processJob(
         const { photos, decisions } = await runHygiene(downloaded);
         logDecisions(decisions);
 
-        if (photos.length < MIN_PHOTOS) {
+        if (photos.length < minPhotos) {
           await markSkipped(job.id);
           return {
             outcome: 'skipped',
-            reason: `only ${photos.length} photos after hygiene (< ${MIN_PHOTOS})`,
+            reason: `only ${photos.length} photos after hygiene (< ${minPhotos})`,
           } as JobOutcome;
         }
 
@@ -148,16 +204,31 @@ export async function processJob(
         }
 
         // --- music track (rotates by ISO week) ---
-        const { track, mp3 } = trackForReport(meta.week_start);
+        // Report jobs rotate on the report's week_start; scoped jobs rotate on
+        // their range start (falls back to "now" inside trackForReport).
+        const rotationAnchor = reportJob ? meta!.week_start : job.date_start;
+        const { track, mp3 } = trackForReport(rotationAnchor);
 
         const firstCapturedAt = photos[0]?.capturedAt ?? null;
-        const props: MontageProps = {
-          childName: (meta.child_name ?? '').trim() || 'This Week',
-          subtitle: formatSubtitle(meta.week_start, firstCapturedAt),
-          eyebrow: 'Weekly Moments',
-          photos: propPhotos,
-          track,
-        };
+        const props: MontageProps = reportJob
+          ? {
+              childName: (meta!.child_name ?? '').trim() || 'This Week',
+              subtitle: formatSubtitle(meta!.week_start, firstCapturedAt),
+              eyebrow: 'Weekly Moments',
+              photos: propPhotos,
+              track,
+            }
+          : {
+              childName: scopedMeta!.title,
+              subtitle: formatScopedSubtitle(
+                job.date_start,
+                job.date_end,
+                formatSubtitle(null, firstCapturedAt)
+              ),
+              eyebrow: eyebrowForJob(job),
+              photos: propPhotos,
+              track,
+            };
 
         // --- render ---
         const render = await renderMontage({
@@ -169,23 +240,42 @@ export async function processJob(
           cancelSignal,
         });
 
-        // --- upload + stamp report ---
-        const storagePath = await uploadMontage(cfg, {
-          schoolId: job.school_id,
-          childId: job.child_id,
-          reportId: job.report_id,
-          mp4Path: render.mp4Path,
-        });
+        // --- upload + stamp the pointer row ---
+        const storagePath = reportJob
+          ? await uploadMontage(cfg, {
+              schoolId: job.school_id,
+              childId: job.child_id as string,
+              reportId: job.report_id as string,
+              mp4Path: render.mp4Path,
+            })
+          : await uploadScopedMontage(cfg, {
+              schoolId: job.school_id,
+              scopeType: job.scope_type,
+              scopeId: scopeIdForJob(job),
+              jobId: job.id,
+              mp4Path: render.mp4Path,
+            });
 
         await markDone(job.id, storagePath, render.durationSec);
 
         // --- completion callback (skipped for staging jobs) ---
+        // Report jobs drive the parent push. Scoped jobs just acknowledge —
+        // the route 200s without any report lookup or push.
         if (!job.is_staging) {
-          await notifyComplete(cfg, {
-            report_id: job.report_id,
-            child_id: job.child_id,
-            school_id: job.school_id,
-          });
+          await notifyComplete(
+            cfg,
+            reportJob
+              ? {
+                  report_id: job.report_id as string,
+                  child_id: job.child_id as string,
+                  school_id: job.school_id,
+                }
+              : {
+                  job_id: job.id,
+                  scope_type: job.scope_type,
+                  school_id: job.school_id,
+                }
+          );
         }
 
         return {

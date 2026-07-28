@@ -2873,3 +2873,7 @@ Full handoff: `docs/curriculum/montree-phonics/HANDOFF_MONTREE_PHONICS_Jul28.md`
   letter), not R&D.
 - Harmless leftover: `tsconfig.satpin-check.tmp.json` in repo root
   (scoped typecheck, device bridge couldn't delete it) — delete anytime.
+
+## HARD RULE — Git commit & push (set 2026-07-28, per Tredoux)
+
+EVERY TIME files in this repo are changed by a Claude cloud/Cowork session, the git commit and push MUST be done by a Sonnet subagent using the Desktop Commander MCP (mcp__remote-devices__Desktop_Commander__start_process) running git directly on the Mac at /Users/tredouxwillemse/Desktop/Master\ Brain/ACTIVE/montree. Never run git through device_bash on the VM mount (index.lock cannot be unlinked there — commits fail). Stage only the files changed by the task, use a descriptive commit message, and push to origin. No exceptions.

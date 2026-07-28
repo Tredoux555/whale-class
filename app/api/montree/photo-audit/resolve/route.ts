@@ -87,7 +87,18 @@ type Resolution =
   // Session 117+: optional `category` narrows what kind of moment it is —
   // 'behavioral_observation' | 'outdoor_play' | 'special_event'. Stored
   // on sonnet_draft.other_category so reports / galleries can group.
-  | { type: 'other'; category?: 'behavioral_observation' | 'outdoor_play' | 'special_event'; note?: string };
+  //
+  // Session 130: `event_id` is the REAL photo↔event link. Previously the
+  // 'special_event' category only ever wrote sonnet_draft.other_category,
+  // so a teacher saving to her own event got a 200 and no link — it read
+  // as broken. When present (and owned by the caller's school) we write
+  // montree_media.event_id; null explicitly clears it.
+  | {
+      type: 'other';
+      category?: 'behavioral_observation' | 'outdoor_play' | 'special_event';
+      note?: string;
+      event_id?: string | null;
+    };
 
 export async function POST(request: NextRequest) {
   const startedAt = Date.now();
@@ -454,14 +465,38 @@ export async function POST(request: NextRequest) {
         other_classified_at: new Date().toISOString(),
       };
 
+      // Session 130: the real link. `event_id` is only honoured when the
+      // event exists AND belongs to the caller's school — a mismatch is a
+      // hard 403, never a silent no-op (silent no-ops are exactly what made
+      // this feature look broken before). `null` explicitly clears the link;
+      // `undefined` (field absent) leaves whatever was there untouched.
+      const updatePayload: Record<string, unknown> = {
+        work_id: null,
+        teacher_confirmed: true,
+        identification_status: 'confirmed',
+        sonnet_draft: newDraft,
+      };
+      if (resolution.event_id !== undefined) {
+        const rawEventId = resolution.event_id;
+        if (typeof rawEventId === 'string' && rawEventId) {
+          const { data: eventRow } = await supabase
+            .from('montree_events')
+            .select('id')
+            .eq('id', rawEventId)
+            .eq('school_id', auth.schoolId)
+            .maybeSingle();
+          if (!eventRow?.id) {
+            return NextResponse.json({ success: false, error: 'Event not found' }, { status: 404 });
+          }
+          updatePayload.event_id = rawEventId;
+        } else if (rawEventId === null) {
+          updatePayload.event_id = null;
+        }
+      }
+
       const { error: otherUpdErr } = await supabase
         .from('montree_media')
-        .update({
-          work_id: null,
-          teacher_confirmed: true,
-          identification_status: 'confirmed',
-          sonnet_draft: newDraft,
-        })
+        .update(updatePayload)
         .eq('id', media_id)
         .eq('school_id', auth.schoolId);
 
@@ -476,6 +511,7 @@ export async function POST(request: NextRequest) {
         success: true,
         path: 'other',
         media_id,
+        event_id: updatePayload.event_id ?? null,
       });
     }
 

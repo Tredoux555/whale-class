@@ -15,10 +15,17 @@ pg.types.setTypeParser(1082, (v) => v);
 pg.types.setTypeParser(1114, (v) => v);
 pg.types.setTypeParser(1184, (v) => v);
 
+// Migration 304 generalised the queue: a job is either the original
+// per-weekly-report montage (scope_type='report', report_id + child_id set)
+// or a teacher-initiated Montage Studio job (scope_type classroom/child/event,
+// report_id NULL). Everything below branches on scope_type; the 'report' path
+// is byte-identical to what shipped with 301.
+export type MontageScopeType = 'report' | 'classroom' | 'child' | 'event';
+
 export interface MontageJob {
   id: string;
-  report_id: string;
-  child_id: string;
+  report_id: string | null;
+  child_id: string | null;
   school_id: string;
   classroom_id: string | null;
   status: string;
@@ -31,6 +38,18 @@ export interface MontageJob {
   created_at: string;
   started_at: string | null;
   finished_at: string | null;
+  // --- migration 304 ---
+  scope_type: MontageScopeType;
+  montage_kind: string;
+  date_start: string | null;
+  date_end: string | null;
+  event_id: string | null;
+  title: string | null;
+}
+
+/** True for the original weekly-report montage path. */
+export function isReportJob(job: MontageJob): boolean {
+  return job.scope_type !== 'classroom' && job.scope_type !== 'child' && job.scope_type !== 'event';
 }
 
 export interface EligiblePhoto {
@@ -255,5 +274,120 @@ export async function setReportMontagePath(
   await getPool().query(
     `UPDATE montree_weekly_reports SET montage_path=$2 WHERE id=$1`,
     [reportId, montagePath]
+  );
+}
+
+// =========================================================================
+// Scoped montages (migration 304) — classroom / child / event
+// =========================================================================
+
+export interface ScopedJobMeta {
+  /** Display title for the film's title card. */
+  title: string;
+  /** Human-readable subtitle, derived from the job's date range. */
+  scopeName: string | null;
+}
+
+// Name for the scope when the job row carries no explicit title (older rows,
+// or a title the teacher never set). One cheap lookup per job.
+export async function getScopedJobMeta(job: MontageJob): Promise<ScopedJobMeta> {
+  let scopeName: string | null = null;
+  try {
+    if (job.scope_type === 'child' && job.child_id) {
+      const { rows } = await getPool().query(
+        `SELECT name FROM montree_children WHERE id=$1`,
+        [job.child_id]
+      );
+      scopeName = rows[0]?.name ?? null;
+    } else if (job.scope_type === 'event' && job.event_id) {
+      const { rows } = await getPool().query(
+        `SELECT name FROM montree_events WHERE id=$1`,
+        [job.event_id]
+      );
+      scopeName = rows[0]?.name ?? null;
+    } else if (job.classroom_id) {
+      const { rows } = await getPool().query(
+        `SELECT name FROM montree_classrooms WHERE id=$1`,
+        [job.classroom_id]
+      );
+      scopeName = rows[0]?.name ?? null;
+    }
+  } catch (err) {
+    console.warn('[db] scoped meta lookup failed:', (err as Error).message);
+  }
+  return {
+    title: (job.title ?? '').trim() || scopeName || 'Our Classroom',
+    scopeName,
+  };
+}
+
+// --- eligible photos for a scoped montage --------------------------------
+// Read straight off montree_media. The SAME three safety filters as the
+// report query (media_type / teacher_confirmed / parent_visible) — never
+// relax these — plus the scope filter and (for classroom/child) the
+// inclusive calendar date range.
+//
+// 🚨 parent_visible is SELECTED and re-asserted downstream (media.ts).
+export async function getScopedEligiblePhotos(
+  job: MontageJob
+): Promise<EligiblePhoto[]> {
+  const where: string[] = [
+    `m.media_type = 'photo'`,
+    `m.teacher_confirmed = true`,
+    `m.parent_visible = true`,
+    `m.school_id = $1`,
+  ];
+  const params: unknown[] = [job.school_id];
+
+  if (job.scope_type === 'event') {
+    params.push(job.event_id);
+    where.push(`m.event_id = $${params.length}::uuid`);
+  } else if (job.scope_type === 'child') {
+    params.push(job.child_id);
+    where.push(`m.child_id = $${params.length}::uuid`);
+  } else {
+    params.push(job.classroom_id);
+    where.push(`m.classroom_id = $${params.length}::uuid`);
+  }
+
+  // Inclusive calendar range, expressed half-open so the end day is fully
+  // covered. Dates are the teacher's local calendar days (see the API route).
+  if (job.date_start) {
+    params.push(job.date_start);
+    where.push(`m.captured_at >= $${params.length}::date`);
+  }
+  if (job.date_end) {
+    params.push(job.date_end);
+    where.push(`m.captured_at < ($${params.length}::date + INTERVAL '1 day')`);
+  }
+
+  const { rows } = await getPool().query<EligiblePhoto>(
+    `SELECT m.id, m.storage_path, m.captured_at, m.parent_visible
+       FROM montree_media m
+      WHERE ${where.join('\n        AND ')}
+      ORDER BY m.captured_at ASC NULLS LAST`,
+    params
+  );
+
+  const seen = new Set<string>();
+  const deduped: EligiblePhoto[] = [];
+  for (const r of rows) {
+    if (seen.has(r.id)) continue;
+    seen.add(r.id);
+    deduped.push(r);
+  }
+  return deduped;
+}
+
+// Scoped jobs have no report row to stamp — the job row IS the pointer the
+// teacher UI reads. markDone() already writes output_path; this exists for
+// the upload step so the path is durable even if markDone is delayed.
+export async function setJobOutputPath(
+  jobId: string,
+  outputPath: string
+): Promise<void> {
+  await getPool().query(
+    `UPDATE montree_montage_jobs SET output_path=$2 WHERE id=$1`,
+    [jobId, outputPath]
   );
 }

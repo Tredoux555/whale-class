@@ -2,7 +2,12 @@
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import type { WorkerConfig } from './config';
-import { getEligiblePhotos, EligiblePhoto } from './db';
+import {
+  getEligiblePhotos,
+  getScopedEligiblePhotos,
+  EligiblePhoto,
+  MontageJob,
+} from './db';
 
 export interface DownloadedPhoto {
   id: string;
@@ -27,12 +32,10 @@ export function getSupabase(cfg: WorkerConfig): SupabaseClient {
   return supabase;
 }
 
-export async function fetchEligiblePhotos(
-  reportId: string
-): Promise<EligiblePhoto[]> {
-  const rows = await getEligiblePhotos(reportId);
-  // Belt and braces: the query filters parent_visible=true, but re-assert here
-  // so no downstream refactor can ever leak a non-parent-visible photo.
+// Belt and braces: every query already filters parent_visible=true, but this
+// re-assert means no downstream refactor can ever leak a non-parent-visible
+// photo into a rendered film.
+function assertAllParentVisible(rows: EligiblePhoto[]): EligiblePhoto[] {
   for (const r of rows) {
     if (r.parent_visible !== true) {
       throw new Error(
@@ -41,6 +44,19 @@ export async function fetchEligiblePhotos(
     }
   }
   return rows;
+}
+
+export async function fetchEligiblePhotos(
+  reportId: string
+): Promise<EligiblePhoto[]> {
+  return assertAllParentVisible(await getEligiblePhotos(reportId));
+}
+
+// Scoped (classroom / child / event) montages — migration 304.
+export async function fetchScopedEligiblePhotos(
+  job: MontageJob
+): Promise<EligiblePhoto[]> {
+  return assertAllParentVisible(await getScopedEligiblePhotos(job));
 }
 
 export async function downloadPhotos(

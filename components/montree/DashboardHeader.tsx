@@ -10,13 +10,14 @@ import {
   FileText, Target, Search, Sparkles, BookOpen,
   LayoutGrid, CalendarDays, Images, FolderOpen, TrendingUp,
   Users, BookMarked, Globe, BarChart2, Settings2, LogOut,
-  MessageSquare, KeyRound, Calendar, UploadCloud,
+  MessageSquare, KeyRound, Calendar, UploadCloud, Clapperboard,
   // UserPlus removed Jul 3 2026 — the "Invite your principal" menu row was
   // hidden. Re-add UserPlus here if that row is ever uncommented.
 } from 'lucide-react';
 import { getSession, clearSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { HOME_THEME } from '@/lib/montree/home-theme';
 import { useI18n } from '@/lib/montree/i18n';
+import type { TranslationKey } from '@/lib/montree/i18n/en';
 import { montreeApi } from '@/lib/montree/api';
 import { useMontreeData } from '@/lib/montree/cache';
 // InboxButton — Tredoux-DM channel. Currently hidden from the More menu
@@ -228,6 +229,7 @@ function DashboardHeader() {
     if (pathname?.startsWith('/montree/calendar')) return 'calendar';
     if (pathname === '/montree/dashboard/weekly-admin-docs')  return 'weekly-plan';
     if (pathname === '/montree/dashboard/albums')             return 'albums';
+    if (pathname === '/montree/dashboard/montage')            return 'montage';
     if (pathname?.startsWith('/montree/library'))             return 'library';
     if (pathname === '/montree/dashboard/earnings')           return 'earnings';
     if (pathname === '/montree/dashboard/students')           return 'manage-students';
@@ -711,6 +713,18 @@ function DashboardHeader() {
                     active={activePage === 'curriculum-browse'}
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/curriculum/browse'); }}
                   />
+
+                  {/* Montage Studio (Session 130) — pinned OUTSIDE the
+                      config/legacy branch for the same reason as the rows
+                      above: it's a brand-new surface, so no existing teacher's
+                      saved menu config contains it and it would be invisible
+                      to every school that has one. */}
+                  <MenuRow
+                    icon={Clapperboard}
+                    label={t('montage.title')}
+                    active={activePage === 'montage'}
+                    onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/montage'); }}
+                  />
                   <Divider />
 
                   {/* Customizable section. When the teacher has a saved menu
@@ -724,7 +738,7 @@ function DashboardHeader() {
                     menuConfig.items.filter((i) => i.visible).map((i) => {
                       const def = MENU_REGISTRY[i.id];
                       if (!def) return null;
-                      const label = def.labelKey ? t(def.labelKey) : def.label;
+                      const label = def.labelKey ? t(def.labelKey as TranslationKey) : def.label;
                       const route = def.id === 'guru' && childIdFromPath
                         ? `/montree/dashboard/guru?child=${childIdFromPath}`
                         : def.route;

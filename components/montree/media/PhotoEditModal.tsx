@@ -34,6 +34,17 @@ interface EditFormData {
   work_id: string | null;
   tags: string[];
   child_id: string | null;
+  // Session 130: the photo↔special-event link (montree_media.event_id).
+  // '' in the <select> means "no event" and saves as null (clearing it).
+  event_id: string | null;
+}
+
+/** Minimal montree_events shape from GET /api/montree/events. */
+interface AvailableEvent {
+  id: string;
+  name: string;
+  event_date: string;
+  classroom_id?: string | null;
 }
 
 // Track original Guru identification for correction recording
@@ -57,11 +68,13 @@ export default function PhotoEditModal({
   const [isSaving, setIsSaving] = useState(false);
   const [availableChildren, setAvailableChildren] = useState<Array<{ id: string; name: string }>>([]);
   const [availableWorks, setAvailableWorks] = useState<AvailableWork[]>([]);
+  const [availableEvents, setAvailableEvents] = useState<AvailableEvent[]>([]);
   const [formData, setFormData] = useState<EditFormData>({
     caption: '',
     work_id: null,
     tags: [],
     child_id: null,
+    event_id: null,
   });
   const [tagInput, setTagInput] = useState('');
 
@@ -102,6 +115,7 @@ export default function PhotoEditModal({
       work_id: media.work_id || null,
       tags: media.tags || [],
       child_id: media.child_id || null,
+      event_id: (media as unknown as { event_id?: string | null }).event_id || null,
     });
 
     // Track original identification for self-learning corrections
@@ -128,6 +142,14 @@ export default function PhotoEditModal({
         if (worksRes.ok) {
           const worksData = await worksRes.json();
           setAvailableWorks(Array.isArray(worksData?.works) ? worksData.works : []);
+        }
+
+        // Special events (school-scoped). Used by the event assign control —
+        // saving writes montree_media.event_id via the existing PATCH.
+        const eventsRes = await montreeApi('/api/montree/events');
+        if (eventsRes.ok) {
+          const eventsData = await eventsRes.json();
+          setAvailableEvents(Array.isArray(eventsData?.events) ? eventsData.events : []);
         }
       } catch (err) {
         console.error('Failed to fetch available data:', err);
@@ -234,6 +256,9 @@ export default function PhotoEditModal({
           work_id: formData.work_id || null,
           tags: formData.tags,
           child_id: formData.child_id || null,
+          // Always sent (never undefined) so clearing the event actually
+          // nulls the column — PATCH only writes keys that are present.
+          event_id: formData.event_id || null,
         })
       });
 
@@ -252,7 +277,7 @@ export default function PhotoEditModal({
         const selectedWork = availableWorks.find(w => w.id === result.media.work_id);
         const enhancedMedia = {
           ...result.media,
-          area: selectedWork?.area ?? (media as Record<string, unknown>).area ?? null,
+          area: selectedWork?.area ?? (media as unknown as Record<string, unknown>).area ?? null,
           work_name: selectedWork?.name ?? null,
         };
         onSave?.(enhancedMedia);
@@ -348,6 +373,32 @@ export default function PhotoEditModal({
             )}
             {selectedChild && (
               <p className="text-xs text-gray-600 mt-1">{t('photoEdit.selected', { name: selectedChild.name })}</p>
+            )}
+          </div>
+
+          {/* Special event — the montree_media.event_id link. Selecting "no
+              event" clears it. Saves through the existing PATCH /api/montree/media. */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              🎉 {t('events.selectEvent') || 'Special event'}
+            </label>
+            {availableEvents.length > 0 ? (
+              <select
+                value={formData.event_id || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, event_id: e.target.value || null }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              >
+                <option value="">{t('events.noEvent') || 'No event'}</option>
+                {availableEvents.map(ev => (
+                  <option key={ev.id} value={ev.id}>
+                    {ev.name} ({ev.event_date})
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <div className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 bg-gray-50">
+                {t('events.noEvent') || 'No event'}
+              </div>
             )}
           </div>
 
