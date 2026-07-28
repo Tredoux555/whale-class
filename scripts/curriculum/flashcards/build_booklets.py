@@ -95,6 +95,25 @@ def page_words(c, book):
         y -= 8*mm
         c.setFont('Label', 7.5); c.setFillColorRGB(*FAINT)
         c.drawCentredString(PW/2, y, 'picture words — shouted, not read')
+        # Cumulative decodable list for sound-mode books that sit INSIDE the
+        # decodable sequence (e.g. letter P: s a t p are all taught by now).
+        # 'decodable' is a string or list of lines; 'heart' renders under it.
+        # Requested by Tredoux 2026-07-28: every book ends with the words the
+        # child can actually read at this point in the sequence.
+        if book.get('decodable'):
+            y -= 20*mm
+            c.setFont('LabelB', 8); c.setFillColorRGB(*RED)
+            c.drawCentredString(PW/2, y, 'YOU CAN NOW READ')
+            dlines = book['decodable'] if isinstance(book['decodable'], list) else [book['decodable']]
+            yy = y - 9*mm
+            for ln in dlines:
+                dsz = min(fit(c, ln, 'WordRg', 19, PW-2*M), 19)
+                c.setFont('WordRg', dsz); c.setFillColorRGB(*INK)
+                c.drawCentredString(PW/2, yy, ln)
+                yy -= 7.5*mm
+            if book.get('heart'):
+                c.setFont('Nar', 14); c.setFillColorRGB(*RED)
+                c.drawCentredString(PW/2, yy - 2*mm, book['heart'])
     else:
         if book.get('new'):
             c.setFont('LabelB', 8); c.setFillColorRGB(*RED)

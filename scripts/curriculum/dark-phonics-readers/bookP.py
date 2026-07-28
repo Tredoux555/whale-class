@@ -27,6 +27,10 @@ BOOK = dict(
     sound='p',
     sound_note='p says /p/ — every picture starts with it',
     oral_words='pineapple · pen · pencil · pan · pig',
+    # Cumulative decodable gate at letter p (s a t p learnt) — mirrors the
+    # NEW/REVIEW lists of book four ('spat') plus week 3's 'at · sat'.
+    decodable='at · sat · pat · tap · sap · spat',
+    heart='heart word — a',
     oral_note='the teacher reads the grey line — the child shouts the picture word',
     spreads=[
         dict(nar='The pig ate a…', text='pineapple!', size=92,
