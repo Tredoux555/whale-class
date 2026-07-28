@@ -17,21 +17,23 @@
    "run migrations/NNN_x.sql" — Tredoux applies migrations by copy-pasting from the chat into
    the Supabase SQL editor. Paste the complete runnable SQL in a code block, every time.
 
-## 🎬 SESSION — Jul 28, 2026 (Cowork) — MONTAGE TRACKER (MM) SHIPPED
+## 🎬 SESSION — Jul 28, 2026 (Cowork) — MONTAGE TRACKER (MM) SHIPPED AND LIVE
 
-Commit `dbb99645` (pushed via Desktop Commander). New feature: **Montage Tracker** at
+Commit `dbb99645` (pushed via Desktop Commander), plus follow-ups `73b5957b` (this
+`CLAUDE.md` permanent-rules update + session log) and `8767ce33` (permanent rule #4:
+paste SQL in chat). New feature: **Montage Tracker** at
 `/montree/dashboard/montage-tracker` — daily coverage board (every child ≥1 tagged photo/day,
 school-wide, grouped by classroom), weekly board (8 photos/child, Mon–Sun, worst-first), and a
 minimal montage creator (Child/Class × Day/Week/Month/Custom). Counts ALL child-tagged photos
 (`montree_media` + `montree_media_children` junction, deduped) — **no teacher_confirmed filter,
 zero AI**. Confirmation-bypass montages ride the existing job system via new
-`montree_montage_jobs.require_confirmed` column (migration `305_montage_tracker.sql` — ⚠️ still
-needs to run on Supabase; until then tracker-montage creation 503s `not_migrated`). Worker
-(`montage-worker/src/db.ts`) uses junction-union SQL for bypass child scopes; `parent_visible=true`
-still enforced everywhere as safety gate; confirmed/Studio/report paths byte-identical. Module
-isolated in `lib/montree/montage-tracker/` (see its README) for future extraction into a
-standalone app. i18n `montageTracker.*` in all 12 locales. ⚠️ montage-worker Railway service
-needs redeploy too (db.ts/media.ts changed).
+`montree_montage_jobs.require_confirmed` column (migration `305_montage_tracker.sql`).
+Worker (`montage-worker/src/db.ts`) uses junction-union SQL for bypass child scopes;
+`parent_visible=true` still enforced everywhere as safety gate; confirmed/Studio/report paths
+byte-identical. Module isolated in `lib/montree/montage-tracker/` (see its README) for future
+extraction into a standalone app. i18n `montageTracker.*` in all 12 locales. **Migration 305
+has been RUN on Supabase and the `montage-worker` Railway service has been redeployed — the
+feature is fully live, nothing pending.** Full pickup: `docs/handoffs/HANDOFF_MONTAGE_TRACKER_Jul28.md`.
 
 ## 🐷 SESSION — Jul 27, 2026 (Cowork) — LETTER P INITIAL-SOUND BOOK (PHOTO-ILLUSTRATED, DELIBERATE EXCEPTION) + PICTURE LIBRARY DOWNLOAD BUTTON
 

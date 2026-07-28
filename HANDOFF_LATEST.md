@@ -1,5 +1,30 @@
 # Whale / Montree — Latest Handoff
 
+## 🎬 Jul 28 — Montage Tracker (MM) SHIPPED and LIVE (migration 305 run, worker redeployed)
+
+**Full pickup: `docs/handoffs/HANDOFF_MONTAGE_TRACKER_Jul28.md`.** New teacher-facing,
+**zero-AI** tool at `/montree/dashboard/montage-tracker`: a daily coverage board (every
+child ≥1 tagged photo, school-wide across classrooms), a weekly board (8 photos/child
+Mon–Sun, worst-first, shared team-wide "needs more photos" view), and a minimal montage
+creator (Child or Class × Day/Week/Month/Custom). It counts **every tagged photo the
+instant it's tagged** — no `teacher_confirmed`, no `parent_visible` filter on the
+BOARDS — while the existing AI identification/confirmation pipeline keeps running
+untouched in parallel. Tracker montages ride the existing `montree_montage_jobs` system
+via new `require_confirmed=false` (migration **305**); `parent_visible=true` is still
+enforced everywhere a film is actually rendered (enqueue + worker + the worker's final
+`assertAllParentVisible` re-assert) — confirmed/Studio/report paths are byte-identical
+to before. Junction-aware: boards and the bypass child-montage path both union
+`montree_media_children` group-photo tags with `montree_media.child_id`. Module isolated
+in `lib/montree/montage-tracker/` (own README) for a planned future extraction into a
+standalone app. i18n `montageTracker.*` + `teacherTools.montageTracker*` in all 12
+locales. **Known intended quirk:** board counts ignore `parent_visible`, so a child can
+show 8/8 yet still get "insufficient photos" if those photos are parent-hidden.
+Commits `dbb99645` (feature), `73b5957b` (CLAUDE.md rules + session log), `8767ce33`
+(SQL-in-chat rule), pushed via Desktop Commander. **Migration 305 has been run on
+Supabase and `montage-worker` redeployed — feature is fully live, nothing pending.**
+
+---
+
 ## 🐷 Jul 27 — Letter P photo-illustrated book (deliberate exception) + Picture Library download button
 
 **Full pickup: `docs/handoffs/HANDOFF_LETTER_P_BOOK_Jul27.md`.** Two things shipped. (1) The
