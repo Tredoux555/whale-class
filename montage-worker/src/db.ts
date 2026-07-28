@@ -45,6 +45,11 @@ export interface MontageJob {
   date_end: string | null;
   event_id: string | null;
   title: string | null;
+  // --- migration 305 (Montage Tracker) ---
+  // FALSE only on tracker jobs: draw from every tagged photo, confirmed or
+  // not. parent_visible is enforced regardless. Undefined on a worker still
+  // talking to a pre-305 database — treated as true everywhere.
+  require_confirmed?: boolean | null;
 }
 
 /** True for the original weekly-report montage path. */
@@ -322,21 +327,27 @@ export async function getScopedJobMeta(job: MontageJob): Promise<ScopedJobMeta> 
 }
 
 // --- eligible photos for a scoped montage --------------------------------
-// Read straight off montree_media. The SAME three safety filters as the
-// report query (media_type / teacher_confirmed / parent_visible) — never
-// relax these — plus the scope filter and (for classroom/child) the
-// inclusive calendar date range.
+// Read straight off montree_media: media_type / parent_visible + the scope
+// filter and (for classroom/child) the inclusive calendar date range.
 //
-// 🚨 parent_visible is SELECTED and re-asserted downstream (media.ts).
+// 🚨 parent_visible = true is NON-NEGOTIABLE — never relax it. It is SELECTED
+// and re-asserted downstream (media.ts assertAllParentVisible).
+//
+// teacher_confirmed = true applies to every job EXCEPT a Montage Tracker one
+// (require_confirmed === false, migration 305), which is explicitly built
+// from all tagged photos whether or not the teacher has reviewed them yet.
+// A pre-305 row has no column (undefined) → confirmed-only, as before.
 export async function getScopedEligiblePhotos(
   job: MontageJob
 ): Promise<EligiblePhoto[]> {
   const where: string[] = [
     `m.media_type = 'photo'`,
-    `m.teacher_confirmed = true`,
     `m.parent_visible = true`,
     `m.school_id = $1`,
   ];
+  if (job.require_confirmed !== false) {
+    where.push(`m.teacher_confirmed = true`);
+  }
   const params: unknown[] = [job.school_id];
 
   if (job.scope_type === 'event') {
@@ -344,7 +355,20 @@ export async function getScopedEligiblePhotos(
     where.push(`m.event_id = $${params.length}::uuid`);
   } else if (job.scope_type === 'child') {
     params.push(job.child_id);
-    where.push(`m.child_id = $${params.length}::uuid`);
+    const childParam = `$${params.length}::uuid`;
+    // Montage Tracker child job (require_confirmed=false): the tracker's
+    // boards count a child's photos from BOTH tag sources, so the film must
+    // draw from the same union — child_id OR a montree_media_children row —
+    // otherwise the board and the montage disagree on how many photos exist.
+    // The confirmed path keeps the plain equality it has always used.
+    where.push(
+      job.require_confirmed === false
+        ? `(m.child_id = ${childParam} OR EXISTS (
+             SELECT 1 FROM montree_media_children mc
+              WHERE mc.media_id = m.id AND mc.child_id = ${childParam}
+           ))`
+        : `m.child_id = ${childParam}`
+    );
   } else {
     params.push(job.classroom_id);
     where.push(`m.classroom_id = $${params.length}::uuid`);

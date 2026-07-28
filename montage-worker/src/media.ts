@@ -53,6 +53,11 @@ export async function fetchEligiblePhotos(
 }
 
 // Scoped (classroom / child / event) montages — migration 304.
+//
+// Migration 305: a Montage Tracker job (job.require_confirmed === false) skips
+// the teacher_confirmed filter inside getScopedEligiblePhotos — it is built
+// from every tagged photo. assertAllParentVisible stays UNCONDITIONAL: the
+// parent-visibility gate applies to every job, always.
 export async function fetchScopedEligiblePhotos(
   job: MontageJob
 ): Promise<EligiblePhoto[]> {
