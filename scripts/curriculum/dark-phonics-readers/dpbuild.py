@@ -44,11 +44,16 @@ def make_text_page(spec):
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.pdfgen import canvas as rl_canvas
 
-BOOKS_ROOT = '/mnt/user-data/uploads/montree/phonics-images/satpin-v2/books'
+# Default is the Cowork container's staged tree (device_stage_files lands the
+# repo's phonics-images/ there). Set MONTREE_BOOKS_ROOT to the repo's own
+# phonics-images/satpin-v2/books to build on a Mac instead.
+BOOKS_ROOT = os.environ.get(
+    'MONTREE_BOOKS_ROOT',
+    '/mnt/user-data/uploads/montree/phonics-images/satpin-v2/books')
 
 
 def page_back(c, book):
-    draw_tracked(c, PW/2, PH*0.60, 'D A R K   P H O N I C S', 'Label', 9, 0.3, GREY)
+    draw_tracked(c, PW/2, PH*0.60, 'M O N T R E E   P H O N I C S', 'Label', 9, 0.3, GREY)
     c.setFont('Nar', 11); c.setFillColorRGB(*INK)
     c.drawCentredString(PW/2, PH*0.60-9*mm, 'decodable readers')
     c.setFont('Label', 8); c.setFillColorRGB(*FAINT)
