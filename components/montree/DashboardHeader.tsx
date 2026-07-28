@@ -690,16 +690,19 @@ function DashboardHeader() {
                     active={activePage === 'uploads'}
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/uploads'); }}
                   />
-                  {/* Photo Gallery — pinned here for the same reason as Uploads:
-                      it's the only surface where a teacher can pull up every
-                      photo captured for a special event ("Art Camp") and confirm
-                      they saved. It was previously reachable only via Settings. */}
+                  {/* Photo Gallery — Hidden per Tredoux 2026-07-28 — route stays
+                      on disk (/montree/dashboard/media) and the i18n key is
+                      untouched, so this is one uncomment away from returning.
+                      Was pinned here for the same reason as Uploads: it's the
+                      only surface where a teacher can pull up every photo
+                      captured for a special event ("Art Camp") and confirm they
+                      saved.
                   <MenuRow
                     icon={Images}
                     label={t('settings.mediaGallery')}
                     active={activePage === 'media'}
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/media'); }}
-                  />
+                  /> */}
                   {/* Curriculum Browser — pinned OUTSIDE the config/legacy branch
                       for the same reason as the two rows above. The only other
                       route in was the Curriculum page, which is flag-gated

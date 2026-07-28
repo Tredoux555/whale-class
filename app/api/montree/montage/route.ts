@@ -5,8 +5,11 @@
 // (daily / weekly / custom range).
 //
 //   POST { scope_type, kind, child_id?, event_id?, date_start?, date_end?,
-//          classroom_id?, bypass_confirmation? }
+//          classroom_id?, bypass_confirmation?, media_ids? }
 //        → queues a montree_montage_jobs row for the Railway worker.
+//          media_ids (migration 306, Montage Manager only, requires
+//          bypass_confirmation) is an EXPLICIT teacher-curated photo set —
+//          re-verified server-side, then rendered verbatim by the worker.
 //   GET  ?limit=20
 //        → the teacher's recent SCOPED montages (report montages excluded —
 //          those live on the Weekly Wrap tab).
@@ -29,11 +32,19 @@ import {
   enqueueScopedMontage,
   type MontageScopeType,
   type MontageKind,
+  minPhotosForScope,
 } from '@/lib/montree/montage/enqueue';
+import {
+  verifyMediaIds,
+  MAX_PICKER_PHOTOS,
+} from '@/lib/montree/montage-tracker/media';
 
 const SCOPE_TYPES: MontageScopeType[] = ['classroom', 'child', 'event'];
 const KINDS: MontageKind[] = ['daily', 'weekly', 'custom'];
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** Mirrors MAX_PICKER_PHOTOS — the picker can never hand us more than it shows. */
+const MAX_MEDIA_IDS = MAX_PICKER_PHOTOS;
 
 function isMissingSchema(code?: string): boolean {
   return code === '42P01' || code === '42703';
@@ -104,12 +115,41 @@ export async function POST(request: NextRequest) {
   // montages must be allowed to draw from unconfirmed photos too. Only the
   // two tracker scopes may ask for it; parent_visible stays enforced in the
   // enqueue query, in the worker query and in the worker's re-assert.
+  //
+  // Montage Manager (Jul 28) widened this to the EVENT scope too — the
+  // Manager's "Special event" path is the same confirmation-free workflow, and
+  // an event's photos are just as unreviewed the afternoon they were taken.
   const bypassConfirmation = body.bypass_confirmation === true;
-  if (bypassConfirmation && scopeType !== 'child' && scopeType !== 'classroom') {
-    return NextResponse.json(
-      { error: 'bypass_confirmation is only valid for child or classroom montages' },
-      { status: 400 }
+
+  // --- Montage Manager explicit selection (migration 306) ------------------
+  // The teacher curated the photo set in the picker grid. The list is
+  // RE-VERIFIED server-side below (school + photo + parent_visible) — the
+  // client is never trusted with the safety gate. Only legal on the
+  // confirmation-free Manager path; a Studio job still describes its scope.
+  let mediaIds: string[] | null = null;
+  if (body.media_ids !== undefined && body.media_ids !== null) {
+    if (!bypassConfirmation) {
+      return NextResponse.json(
+        { error: 'media_ids requires bypass_confirmation' },
+        { status: 400 }
+      );
+    }
+    if (!Array.isArray(body.media_ids)) {
+      return NextResponse.json({ error: 'media_ids must be an array' }, { status: 400 });
+    }
+    if (body.media_ids.length > MAX_MEDIA_IDS) {
+      return NextResponse.json(
+        { error: `media_ids may not exceed ${MAX_MEDIA_IDS} entries` },
+        { status: 400 }
+      );
+    }
+    const ids = body.media_ids.filter(
+      (v): v is string => typeof v === 'string' && UUID_RE.test(v)
     );
+    if (ids.length !== body.media_ids.length) {
+      return NextResponse.json({ error: 'media_ids must all be uuids' }, { status: 400 });
+    }
+    mediaIds = [...new Set(ids)];
   }
 
   try {
@@ -196,6 +236,37 @@ export async function POST(request: NextRequest) {
       title = (room as { name?: string } | null)?.name || 'Our classroom';
     }
 
+    // --- explicit selection: re-verify + enforce the floor (migration 306) --
+    // 🚨 The picker's list is a CLIENT payload. Re-read every id and keep only
+    // this school's parent-visible photos, then enforce the scope's minimum
+    // against the SURVIVORS — never against what the client claimed. The
+    // verified list is what the dup lookup compares and what the job stores.
+    if (mediaIds) {
+      try {
+        mediaIds = await verifyMediaIds(supabase, {
+          schoolId: auth.schoolId,
+          mediaIds,
+        });
+      } catch (verifyErr) {
+        const code = (verifyErr as { code?: string } | null)?.code;
+        if (isMissingSchema(code)) {
+          return NextResponse.json({ error: 'montage system not migrated' }, { status: 503 });
+        }
+        console.error('[montage] media_ids verification failed:', verifyErr);
+        return NextResponse.json({ error: 'Failed to queue montage' }, { status: 500 });
+      }
+
+      const minPhotos = minPhotosForScope(scopeType);
+      if (mediaIds.length < minPhotos) {
+        return NextResponse.json({
+          ok: false,
+          reason: 'insufficient_photos',
+          photo_count: mediaIds.length,
+          min_photos: minPhotos,
+        });
+      }
+    }
+
     // --- duplicate suppression -------------------------------------------
     // Same scope + kind + range already queued or rendering? Hand back that
     // job rather than making the worker render the identical film twice.
@@ -204,17 +275,35 @@ export async function POST(request: NextRequest) {
     // (confirmed only) over the same scope + kind + range are DIFFERENT
     // films, so require_confirmed is part of the identity — the lookup is
     // constrained on BOTH paths, never one.
+    //
+    // 🚨 Migration 306: two Manager jobs over the SAME scope + kind + range
+    // can be different films if the teacher curated different photo sets, so
+    // when the incoming request carries media_ids a candidate only counts as
+    // a duplicate if its own media_ids is the SAME SET. With no media_ids the
+    // lookup behaves exactly as it always has (first active match wins).
     const DUP_COLUMNS = 'id, status, title, output_path';
+    // With a curated selection we must inspect several candidates, not just
+    // the first — an earlier job for this scope may hold a different set.
+    const DUP_LIMIT = mediaIds ? 20 : 1;
 
-    const dupQuery = (withRequireConfirmed: boolean) => {
+    type DupTier = 'full' | 'require_confirmed' | 'base';
+    const dupColumnsFor = (tier: DupTier) =>
+      tier === 'full'
+        ? `${DUP_COLUMNS}, require_confirmed, media_ids`
+        : tier === 'require_confirmed'
+          ? `${DUP_COLUMNS}, require_confirmed`
+          : DUP_COLUMNS;
+
+    const dupQuery = (tier: DupTier) => {
+      const withRequireConfirmed = tier !== 'base';
       let q = supabase
         .from('montree_montage_jobs')
-        .select(withRequireConfirmed ? `${DUP_COLUMNS}, require_confirmed` : DUP_COLUMNS)
+        .select(dupColumnsFor(tier))
         .eq('school_id', auth.schoolId)
         .eq('scope_type', scopeType)
         .eq('montage_kind', kind)
         .in('status', ['queued', 'rendering'])
-        .limit(1);
+        .limit(DUP_LIMIT);
 
       if (scopeType === 'child') q = q.eq('child_id', childId as string);
       else if (scopeType === 'event') q = q.eq('event_id', eventId as string);
@@ -227,13 +316,19 @@ export async function POST(request: NextRequest) {
       return q;
     };
 
-    let { data: existingRows, error: existErr } = await dupQuery(true);
+    // Selected optimistically and retried on a narrower column set, so a
+    // school that has not run 306 (or 305) yet never sees a 42703 turn into
+    // a 500 — it just loses the extra identity dimension it has no column for.
+    let { data: existingRows, error: existErr } = await dupQuery('full');
+    if (existErr && isMissingSchema(existErr.code)) {
+      ({ data: existingRows, error: existErr } = await dupQuery('require_confirmed'));
+    }
     if (existErr && isMissingSchema(existErr.code) && !bypassConfirmation) {
       // Pre-305 school: the column doesn't exist yet, so no tracker job can
       // exist either — the unfiltered lookup IS the historical behaviour.
       // A bypass request falls through to the 503 below instead: without the
       // column its job can't be inserted anyway.
-      ({ data: existingRows, error: existErr } = await dupQuery(false));
+      ({ data: existingRows, error: existErr } = await dupQuery('base'));
     }
     if (existErr) {
       if (isMissingSchema(existErr.code)) {
@@ -242,13 +337,32 @@ export async function POST(request: NextRequest) {
       console.error('[montage] duplicate lookup failed:', existErr.message);
       return NextResponse.json({ error: 'Failed to queue montage' }, { status: 500 });
     }
-    const existing = (((existingRows || []) as unknown) as Array<{
+    const candidates = ((existingRows || []) as unknown) as Array<{
       id: string;
       status: string;
       title: string | null;
       output_path: string | null;
       require_confirmed?: boolean;
-    }>)[0];
+      media_ids?: string[] | null;
+    }>;
+
+    // No curated selection → historical behaviour: the first active job over
+    // this scope + kind + range IS the duplicate. With a selection, only an
+    // identical SET counts; a different pick deserves its own film. A pre-306
+    // row (media_ids undefined/null) is a whole-scope job, never the same
+    // thing as a hand-curated one.
+    const wantedSet = mediaIds ? new Set(mediaIds) : null;
+    const sameSelection = (rowIds: unknown): boolean => {
+      if (!Array.isArray(rowIds)) return false;
+      const rowSet = new Set(rowIds.filter((v): v is string => typeof v === 'string'));
+      if (rowSet.size !== wantedSet!.size) return false;
+      for (const id of rowSet) if (!wantedSet!.has(id)) return false;
+      return true;
+    };
+    const existing = wantedSet
+      ? candidates.find((row) => sameSelection(row.media_ids))
+      : candidates[0];
+
     if (existing) {
       return NextResponse.json({
         ok: true,
@@ -280,6 +394,7 @@ export async function POST(request: NextRequest) {
       dateEnd,
       title,
       requireConfirmed: !bypassConfirmation,
+      mediaIds,
     });
 
     if (!result.ok) {

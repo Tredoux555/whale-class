@@ -5,6 +5,7 @@ import type { WorkerConfig } from './config';
 import {
   getEligiblePhotos,
   getScopedEligiblePhotos,
+  getExplicitEligiblePhotos,
   EligiblePhoto,
   MontageJob,
 } from './db';
@@ -62,6 +63,20 @@ export async function fetchScopedEligiblePhotos(
   job: MontageJob
 ): Promise<EligiblePhoto[]> {
   return assertAllParentVisible(await getScopedEligiblePhotos(job));
+}
+
+// Explicit teacher-curated selection — migration 306 (Montage Manager).
+//
+// The photo set came from the picker grid, but the safety gate is re-applied
+// in getExplicitEligiblePhotos (school + photo + parent_visible) and then
+// asserted here for the third and final time. assertAllParentVisible is
+// UNCONDITIONAL on every path, this one included.
+export async function fetchExplicitEligiblePhotos(
+  job: MontageJob
+): Promise<EligiblePhoto[]> {
+  return assertAllParentVisible(
+    await getExplicitEligiblePhotos(job.media_ids ?? [], job.school_id)
+  );
 }
 
 export async function downloadPhotos(

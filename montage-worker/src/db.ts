@@ -50,6 +50,16 @@ export interface MontageJob {
   // not. parent_visible is enforced regardless. Undefined on a worker still
   // talking to a pre-305 database — treated as true everywhere.
   require_confirmed?: boolean | null;
+  // --- migration 306 (Montage Manager) ---
+  // An EXPLICIT teacher-curated photo set. When present and non-empty the
+  // worker renders exactly these photos instead of re-querying the scope.
+  // NULL / undefined (every legacy row, every pre-306 database) = the
+  // historical scope-query behaviour, byte-for-byte.
+  //
+  // 🚨 parent_visible is STILL enforced on this path — in the API's
+  // re-verification, in getExplicitEligiblePhotos() below, and in the
+  // worker's unconditional assertAllParentVisible().
+  media_ids?: string[] | null;
 }
 
 /** True for the original weekly-report montage path. */
@@ -94,6 +104,10 @@ export async function closePool(): Promise<void> {
 }
 
 // --- claim: one queued job, skip-locked, atomically flipped to rendering ---
+// 🚨 RETURNING * (not an explicit column list) is load-bearing for forward-
+// compatibility: a worker running against a pre-305 / pre-306 database simply
+// gets a row without require_confirmed / media_ids (both optional, both
+// treated as their legacy defaults) instead of a 42703. Don't enumerate.
 export async function claimNextJob(): Promise<MontageJob | null> {
   const { rows } = await getPool().query<MontageJob>(
     `UPDATE montree_montage_jobs
@@ -391,6 +405,53 @@ export async function getScopedEligiblePhotos(
       WHERE ${where.join('\n        AND ')}
       ORDER BY m.captured_at ASC NULLS LAST`,
     params
+  );
+
+  const seen = new Set<string>();
+  const deduped: EligiblePhoto[] = [];
+  for (const r of rows) {
+    if (seen.has(r.id)) continue;
+    seen.add(r.id);
+    deduped.push(r);
+  }
+  return deduped;
+}
+
+// =========================================================================
+// Explicit selection (migration 306) — Montage Manager
+// =========================================================================
+
+/** True when the job carries a teacher-curated photo set to render verbatim. */
+export function hasExplicitSelection(job: MontageJob): boolean {
+  return Array.isArray(job.media_ids) && job.media_ids.length > 0;
+}
+
+// --- eligible photos for an EXPLICIT selection ---------------------------
+// The teacher picked these photos by hand in the Montage Manager grid, so
+// there is no scope query to run — but the safety filters are NOT optional.
+//
+// 🚨 parent_visible = true is re-applied here (never trust the stored list),
+// alongside school_id (tenant boundary) and media_type='photo'. It is then
+// re-asserted a third time downstream by assertAllParentVisible().
+//
+// An id that has since been deleted, hidden from parents or moved to another
+// school simply drops out — the caller's min-photo check then decides whether
+// what's left is still a film.
+export async function getExplicitEligiblePhotos(
+  mediaIds: string[],
+  schoolId: string
+): Promise<EligiblePhoto[]> {
+  if (!mediaIds || mediaIds.length === 0) return [];
+
+  const { rows } = await getPool().query<EligiblePhoto>(
+    `SELECT m.id, m.storage_path, m.captured_at, m.parent_visible
+       FROM montree_media m
+      WHERE m.id = ANY($1::uuid[])
+        AND m.school_id = $2::uuid
+        AND m.media_type = 'photo'
+        AND m.parent_visible = true
+      ORDER BY m.captured_at ASC NULLS LAST`,
+    [mediaIds, schoolId]
   );
 
   const seen = new Set<string>();
