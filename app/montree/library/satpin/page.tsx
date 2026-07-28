@@ -147,13 +147,14 @@ const WEEKS: WeekBlock[] = [
     decodable: ['sit', 'it', 'is', 'sip', 'pit', 'spit'],
     words: ['igloo', 'iguana', 'inchworm', 'insect', 'infant'],
     accent: '96,165,250', tint: '191,219,254',
-    // Original-set reader — predates the /satpin-materials/<slug>/reader.pdf
-    // convention, so it is wired by hand rather than probed.
+    // Reader slot wired by hand — same book-print convention as the letter-P
+    // book (see WeekBlock.reader doc). Was the legacy "Sit, Sit, Sit" reader;
+    // do not delete public/satpin-books/print/sit-sit-sit-* — just unwired here.
     reader: {
-      title: 'Sit, Sit, Sit',
+      title: 'Into the Igloo',
       downloads: [
-        { href: '/satpin-books/print/sit-sit-sit-A5-reading.pdf', label: 'Read-along' },
-        { href: '/satpin-books/print/sit-sit-sit-A5-booklet-print.pdf', label: 'Print booklet A5' },
+        { href: '/satpin-books/print/into-the-igloo-A5-reading.pdf', label: 'Read-along' },
+        { href: '/satpin-books/print/into-the-igloo-A5-booklet-print.pdf', label: 'Print booklet A5' },
       ],
     },
   },
