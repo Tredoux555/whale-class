@@ -1,5 +1,35 @@
 # Whale-Class / Montree - Developer Brain
 
+## ⛔ PERMANENT OPERATING RULES — READ FIRST, EVERY SESSION
+
+1. **GIT PUSH / NETWORK / CREDENTIALS ON THE MAC → DESKTOP COMMANDER. ALWAYS. NO EXCEPTIONS.**
+   The Cowork device bridge (`device_bash`) has NO network — `git push` fails there every time
+   (`socat E CONNECT github.com:22: Forbidden`). This drama has happened repeatedly. The fix is
+   permanent: use the Desktop Commander MCP (`start_process`) for `git push`, anything needing
+   network, or anything needing `.env.local` credentials on the Mac. Commit can happen via either;
+   PUSH ONLY via Desktop Commander: `cd "/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree" && rm -f .git/index.lock .git/HEAD.lock && git push origin main`.
+   Railway auto-redeploys montree.xyz on push to main.
+2. The bridge also can't delete files (`rm` → Operation not permitted) — move to `_to_delete/` instead,
+   or use Desktop Commander which has full local rights.
+3. Pre-commit i18n hook is strict across all 12 locales — new UI keys must be added to
+   en/zh/es/de/fr/pt/nl/it/ja/ko/uk/ru before committing (or the commit is rejected).
+
+## 🎬 SESSION — Jul 28, 2026 (Cowork) — MONTAGE TRACKER (MM) SHIPPED
+
+Commit `dbb99645` (pushed via Desktop Commander). New feature: **Montage Tracker** at
+`/montree/dashboard/montage-tracker` — daily coverage board (every child ≥1 tagged photo/day,
+school-wide, grouped by classroom), weekly board (8 photos/child, Mon–Sun, worst-first), and a
+minimal montage creator (Child/Class × Day/Week/Month/Custom). Counts ALL child-tagged photos
+(`montree_media` + `montree_media_children` junction, deduped) — **no teacher_confirmed filter,
+zero AI**. Confirmation-bypass montages ride the existing job system via new
+`montree_montage_jobs.require_confirmed` column (migration `305_montage_tracker.sql` — ⚠️ still
+needs to run on Supabase; until then tracker-montage creation 503s `not_migrated`). Worker
+(`montage-worker/src/db.ts`) uses junction-union SQL for bypass child scopes; `parent_visible=true`
+still enforced everywhere as safety gate; confirmed/Studio/report paths byte-identical. Module
+isolated in `lib/montree/montage-tracker/` (see its README) for future extraction into a
+standalone app. i18n `montageTracker.*` in all 12 locales. ⚠️ montage-worker Railway service
+needs redeploy too (db.ts/media.ts changed).
+
 ## 🐷 SESSION — Jul 27, 2026 (Cowork) — LETTER P INITIAL-SOUND BOOK (PHOTO-ILLUSTRATED, DELIBERATE EXCEPTION) + PICTURE LIBRARY DOWNLOAD BUTTON
 
 Two things shipped. **(1) Picture Library download.** The public photo-bank page had trash
