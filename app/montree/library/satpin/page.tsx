@@ -20,9 +20,15 @@
 // scripts/curriculum/upload-satpin-basket-photos.mjs — keep WEEKS below in
 // step with that script's SERIES manifest.
 //
-// Songs and readers are DROP-INS, not code: put song.mp3 / reader.pdf /
-// reader-booklet.pdf into public/satpin-materials/<slug>/ and the slot fills
-// itself on the next load (HEAD probe on mount). See `mediaPaths` below.
+// Songs: uploaded straight from the page — every empty song slot is a drop
+// zone (drag an mp3 on, or click). Files land in the public `dark-phonics`
+// Supabase bucket via /api/montree/satpin-media; no deploy, no repo copy.
+// The old public/satpin-materials/<slug>/song.mp3 drop-in still plays if
+// present, but an uploaded song wins.
+//
+// Readers are DROP-INS, not code: put reader.pdf / reader-booklet.pdf into
+// public/satpin-materials/<slug>/ and the slot fills itself on the next load
+// (HEAD probe on mount). See `mediaPaths` below.
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -84,6 +90,14 @@ type WeekBlock = {
    *  path (/satpin-materials/<slug>/reader.pdf). Takes precedence over the
    *  probe — set this and the HEAD result for the block is ignored. */
   reader?: { title: string; downloads: Array<{ href: string; label: string }> };
+  /** Decodable words INTRODUCED by this week's reader — mirrors the NEW list
+   *  at the back of the book (books_def.py weeks 3–6, book07–27.py weeks
+   *  7–27). The crux of the decodable series: the cumulative "so far" list a
+   *  child can actually read at this point is computed at render from every
+   *  earlier week's entry. Weeks 1–2 have none — sounds only. */
+  decodable?: string[];
+  /** Heart words introduced this week (read by sight, not decoded). */
+  heartWords?: string[];
 };
 
 /**
@@ -109,11 +123,13 @@ const WEEKS: WeekBlock[] = [
   },
   {
     week: 3, letter: 'T', slug: 't',
+    decodable: ['sat', 'at'], heartWords: ['a'],
     words: ['turtle', 'tiger', 'toothbrush', 'tomato', 'taxi'],
     accent: '167,139,250', tint: '221,214,254',
   },
   {
     week: 4, letter: 'P', slug: 'p',
+    decodable: ['sap', 'pat', 'tap', 'spat'],
     words: ['pig', 'pen', 'penguin', 'pumpkin', 'panda'],
     accent: '252,211,77', tint: '253,230,138',
     book: {
@@ -128,6 +144,7 @@ const WEEKS: WeekBlock[] = [
   },
   {
     week: 5, letter: 'I', slug: 'i',
+    decodable: ['sit', 'it', 'is', 'sip', 'pit', 'spit'],
     words: ['igloo', 'iguana', 'inchworm', 'insect', 'infant'],
     accent: '96,165,250', tint: '191,219,254',
     // Original-set reader — predates the /satpin-materials/<slug>/reader.pdf
@@ -142,36 +159,43 @@ const WEEKS: WeekBlock[] = [
   },
   {
     week: 6, letter: 'N', slug: 'n',
+    decodable: ['an', 'ant', 'in', 'nap', 'naps', 'pan', 'tin', 'nip', 'snap'], heartWords: ['I'],
     words: ['nut', 'nest', 'net', 'napkin', 'nail'],
     accent: '74,222,128', tint: '187,247,208',
   },
   {
     week: 7, letter: 'M', slug: 'm',
+    decodable: ['mat', 'Sam'],
     words: ['mug', 'mouse', 'mushroom', 'magnet', 'monkey'],
     accent: '192,132,252', tint: '233,213,255',
   },
   {
     week: 8, letter: 'D', slug: 'd',
+    decodable: ['pad'],
     words: ['dog', 'duck', 'doll', 'drum', 'dinosaur'],
     accent: '56,189,248', tint: '186,230,253',
   },
   {
     week: 9, letter: 'G', slug: 'g',
+    decodable: ['pig'],
     words: ['goat', 'guitar', 'glove', 'grapes', 'gift'],
     accent: '163,230,53', tint: '217,249,157',
   },
   {
     week: 10, letter: 'O', slug: 'o',
+    decodable: ['pot', 'dog'],
     words: ['octopus', 'orange', 'owl', 'otter', 'ostrich'],
     accent: '232,121,249', tint: '245,208,254',
   },
   {
     week: 11, letter: 'C', slug: 'c',
+    decodable: ['cot', 'cat'],
     words: ['cat', 'cup', 'car', 'comb', 'cow'],
     accent: '251,146,60', tint: '254,215,170',
   },
   {
     week: 12, letter: 'K', slug: 'k',
+    decodable: ['kit', 'Kim'],
     words: ['key', 'kite', 'koala', 'kangaroo', 'kettle'],
     accent: '56,189,248', tint: '186,230,253',
   },
@@ -179,56 +203,67 @@ const WEEKS: WeekBlock[] = [
     // Digraph week: the sound is taught, there is no object basket. No words
     // ⇒ the block renders slim and muted. Do not invent five 'ck' objects.
     week: 13, letter: 'ck', slug: 'ck',
+    decodable: ['sock', 'sick'], heartWords: ['ate'],
     note: 'Digraph week · no object basket',
     accent: '148,163,184', tint: '203,213,225',
   },
   {
     week: 14, letter: 'E', slug: 'e',
+    decodable: ['egg'],
     words: ['egg', 'elephant', 'envelope', 'eraser', 'eagle'],
     accent: '250,204,21', tint: '254,240,138',
   },
   {
     week: 15, letter: 'U', slug: 'u',
+    decodable: ['duck', 'mud', 'stuck'],
     words: ['umbrella', 'unicorn', 'ukulele', 'unicycle', 'sea urchin'],
     accent: '34,211,238', tint: '165,243,252',
   },
   {
     week: 16, letter: 'R', slug: 'r',
+    decodable: ['rug', 'rat', 'under'],
     words: ['ring', 'rabbit', 'rocket', 'robot', 'rose'],
     accent: '192,132,252', tint: '233,213,255',
   },
   {
     week: 17, letter: 'H', slug: 'h',
+    decodable: ['hat', 'hen'],
     words: ['hat', 'horse', 'hammer', 'hen', 'heart'],
     accent: '251,113,133', tint: '254,205,211',
   },
   {
     week: 18, letter: 'B', slug: 'b',
+    decodable: ['bed', 'bug'],
     words: ['ball', 'banana', 'bell', 'boat', 'bear'],
     accent: '129,140,248', tint: '199,210,254',
   },
   {
     week: 19, letter: 'F', slug: 'f',
+    decodable: ['fan', 'off'],
     words: ['fish', 'fork', 'frog', 'feather', 'fan'],
     accent: '248,113,113', tint: '254,202,202',
   },
   {
     week: 20, letter: 'L', slug: 'l',
+    decodable: ['log', 'run', 'croc'],
     words: ['leaf', 'lion', 'ladder', 'lemon', 'lizard'],
     accent: '45,212,191', tint: '153,246,228',
   },
   {
     week: 21, letter: 'J', slug: 'j',
+    decodable: ['jug', 'jam'],
     words: ['jar', 'jet', 'jug', 'jacket', 'jellyfish'],
     accent: '244,114,182', tint: '251,207,232',
   },
   {
     week: 22, letter: 'V', slug: 'v',
+    decodable: ['van'],
     words: ['van', 'violin', 'vase', 'volcano', 'vest'],
     accent: '251,191,36', tint: '253,230,138',
   },
   {
     week: 23, letter: 'W', slug: 'w',
+    decodable: ['wig'],
     words: ['watch', 'whale', 'wagon', 'worm', 'wolf'],
     accent: '96,165,250', tint: '191,219,254',
   },
@@ -236,21 +271,25 @@ const WEEKS: WeekBlock[] = [
     // "six" is the letter-X word the child says; the picture of it is filed
     // and labelled 'dice' in the bank, hence the photoLabel override.
     week: 24, letter: 'X', slug: 'x',
+    decodable: ['box', 'fox'],
     words: ['xylophone', 'fox', 'box', 'ox', { word: 'six', photoLabel: 'dice' }],
     accent: '52,211,153', tint: '167,243,208',
   },
   {
     week: 25, letter: 'Y', slug: 'y',
+    decodable: ['yam', 'big'],
     words: ['yo-yo', 'yak', 'yarn', 'yacht', 'yam'],
     accent: '232,121,249', tint: '245,208,254',
   },
   {
     week: 26, letter: 'Z', slug: 'z',
+    decodable: ['zip', 'bag'],
     words: ['zebra', 'zipper', 'zucchini', 'zero', 'zeppelin'],
     accent: '163,230,53', tint: '217,249,157',
   },
   {
     week: 27, letter: 'Qu', slug: 'qu',
+    decodable: ['quilt', 'squid'],
     words: ['queen', 'quill', 'quilt', 'quarter', 'quail'],
     accent: '129,140,248', tint: '199,210,254',
   },
@@ -359,6 +398,50 @@ export default function SatpinPage() {
   const [loading, setLoading] = useState(true);
   /** Which drop-in files exist, keyed by slug. Empty until the probe returns. */
   const [media, setMedia] = useState<Record<string, MediaFlags>>({});
+  /** Uploaded songs (Supabase-stored, via /api/montree/satpin-media), keyed by
+   *  slug. These win over a legacy /satpin-materials/<slug>/song.mp3 drop-in. */
+  const [songs, setSongs] = useState<Record<string, string>>({});
+  /** Music videos (mvgen pipeline output, satpin-videos/ in the bucket). */
+  const [videos, setVideos] = useState<Record<string, string>>({});
+  const [songUploading, setSongUploading] = useState<Record<string, boolean>>({});
+  const [songErrors, setSongErrors] = useState<Record<string, string>>({});
+
+  // Uploaded songs + videos — one fetch on mount, same freshness model as the probe.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/montree/satpin-media');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        if (data?.songs) setSongs(data.songs);
+        if (data?.videos) setVideos(data.videos);
+      } catch { /* endpoint unreachable — slots just show the drop zone */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const uploadSong = useCallback(async (slug: string, file: File) => {
+    setSongErrors(prev => ({ ...prev, [slug]: '' }));
+    setSongUploading(prev => ({ ...prev, [slug]: true }));
+    try {
+      const fd = new FormData();
+      fd.append('slug', slug);
+      fd.append('file', file);
+      const res = await fetch('/api/montree/satpin-media', { method: 'POST', body: fd });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.url) throw new Error(data?.error || 'Upload failed');
+      setSongs(prev => ({ ...prev, [slug]: data.url }));
+    } catch (err) {
+      setSongErrors(prev => ({
+        ...prev,
+        [slug]: err instanceof Error ? err.message : 'Upload failed',
+      }));
+    } finally {
+      setSongUploading(prev => ({ ...prev, [slug]: false }));
+    }
+  }, []);
 
   // Probe the drop-in song/reader files for all 27 weeks in one batch. Cheap
   // (HEAD only) and re-runs on every mount, so a freshly dropped file appears
@@ -496,27 +579,160 @@ export default function SatpinPage() {
     </div>
   );
 
-  /** Week song — inline player once song.mp3 is dropped in. */
-  const SongRow = ({ block }: { block: WeekBlock }) => {
-    if (!media[block.slug]?.song) {
+  /**
+   * The decodable ledger — the crux of the reader series, surfaced in the
+   * sequence so it can be scanned week by week. NEW words (this week's book)
+   * are highlighted in the reader red; everything decodable from earlier
+   * weeks follows muted, newest first (same order as the book REVIEW lists).
+   * Weeks before the first decode (1–2) state that plainly.
+   */
+  const DecodableRow = ({ block, index }: { block: WeekBlock; index: number }) => {
+    const newWords = block.decodable ?? [];
+    // Newest-first, mirroring how the books stack their REVIEW lines.
+    const prior = WEEKS.slice(0, index).reverse().flatMap(w => w.decodable ?? []);
+    const hearts = WEEKS.slice(0, index + 1).flatMap(w => w.heartWords ?? []);
+    const total = newWords.length + prior.length;
+
+    if (total === 0) {
       return (
-        <EmptySlot>
-          Song — drop <span className="font-mono">song.mp3</span> into satpin-materials/{block.slug}/
-        </EmptySlot>
+        <div className="mt-3 text-left text-[11px] text-white/20">
+          Decodable words — none yet · sounds only
+        </div>
       );
     }
+
+    return (
+      <div
+        className="mt-3 rounded-xl border px-4 py-3 text-left"
+        style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.06)' }}
+      >
+        <div className="text-white/25 text-[10px] tracking-wider uppercase mb-1.5">
+          Decodable so far · {total} {total === 1 ? 'word' : 'words'}
+        </div>
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1.5">
+          {newWords.map((w) => (
+            <span
+              key={w}
+              className="px-2 py-0.5 rounded-md text-sm font-semibold"
+              style={{
+                background: 'rgba(198,40,40,0.16)',
+                border: '1px solid rgba(248,113,113,0.35)',
+                color: 'rgb(252,165,165)',
+              }}
+            >
+              {w}
+            </span>
+          ))}
+          {prior.length > 0 && (
+            <span className="text-sm text-white/45 leading-relaxed">{prior.join(' · ')}</span>
+          )}
+        </div>
+        {hearts.length > 0 && (
+          <div className="mt-1.5 text-xs" style={{ color: 'rgba(252,165,165,0.55)' }}>
+            ♥ heart {hearts.length === 1 ? 'word' : 'words'} — {hearts.join(' · ')}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  /**
+   * Week song. Upload-first: an empty slot IS the drop zone — drag a file on,
+   * or click to pick. Uploads land in Supabase storage via
+   * /api/montree/satpin-media (no deploy, no repo copy). A legacy
+   * public/satpin-materials/<slug>/song.mp3 drop-in still plays, but an
+   * uploaded song wins over it.
+   */
+  const SongRow = ({ block }: { block: WeekBlock }) => {
+    const uploaded = songs[block.slug];
+    const legacy = media[block.slug]?.song ? mediaPaths(block.slug).song : null;
+    const src = uploaded || legacy;
+    const busy = !!songUploading[block.slug];
+    const err = songErrors[block.slug];
+
+    const onFiles = (files: FileList | null) => {
+      const file = files?.[0];
+      if (file && !busy) uploadSong(block.slug, file);
+    };
+
+    if (!src) {
+      return (
+        <label
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => { e.preventDefault(); onFiles(e.dataTransfer.files); }}
+          className="mt-3 block rounded-xl border border-dashed px-4 py-3 text-center cursor-pointer transition-colors hover:bg-white/[0.03]"
+          style={{ borderColor: 'rgba(255,255,255,0.10)' }}
+        >
+          <input
+            type="file"
+            accept="audio/*,.mp3,.m4a,.wav,.ogg"
+            className="hidden"
+            disabled={busy}
+            onChange={(e) => { onFiles(e.target.files); e.currentTarget.value = ''; }}
+          />
+          <span className="text-white/25 text-xs">
+            {busy ? 'Uploading song…' : (
+              <>Song — drop an <span className="font-mono">mp3</span> here, or click to choose</>
+            )}
+          </span>
+          {err && <div className="text-red-300/70 text-[11px] mt-1">{err}</div>}
+        </label>
+      );
+    }
+
     return (
       <div
         className="mt-3 rounded-xl border px-4 py-3 text-left"
         style={{ background: 'rgba(255,255,255,0.03)', borderColor: `rgba(${block.accent},0.16)` }}
       >
-        <div className="text-white/25 text-[10px] tracking-wider uppercase mb-2">Song</div>
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-white/25 text-[10px] tracking-wider uppercase">Song</div>
+          <label className="text-white/25 text-[10px] cursor-pointer underline underline-offset-2 transition-colors hover:text-white/60">
+            {busy ? 'uploading…' : 'replace'}
+            <input
+              type="file"
+              accept="audio/*,.mp3,.m4a,.wav,.ogg"
+              className="hidden"
+              disabled={busy}
+              onChange={(e) => { onFiles(e.target.files); e.currentTarget.value = ''; }}
+            />
+          </label>
+        </div>
         <audio
           controls
           preload="none"
-          src={mediaPaths(block.slug).song}
+          src={src}
           className="w-full h-9"
           style={{ colorScheme: 'dark' }}
+        />
+        {err && <div className="text-red-300/70 text-[11px] mt-1">{err}</div>}
+      </div>
+    );
+  };
+
+  /**
+   * Week music video — the mvgen lyric-synced video, discovered from the
+   * bucket's satpin-videos/ prefix. Poster is the week's Montree Phonics
+   * letter card (the video's own opening frame), served via the media proxy.
+   */
+  const VideoRow = ({ block }: { block: WeekBlock }) => {
+    const src = videos[block.slug];
+    if (!src) return <EmptySlot>Music video — coming soon</EmptySlot>;
+    const poster = `/api/montree/media/proxy/letter-cards/letter-card-${String(block.week).padStart(2, '0')}-${block.slug}.png?bucket=dark-phonics`;
+    return (
+      <div
+        className="mt-3 rounded-xl border px-4 py-3 text-left"
+        style={{ background: 'rgba(255,255,255,0.03)', borderColor: `rgba(${block.accent},0.16)` }}
+      >
+        <div className="text-white/25 text-[10px] tracking-wider uppercase mb-2">Music video</div>
+        <video
+          controls
+          preload="none"
+          playsInline
+          src={src}
+          poster={poster}
+          className="w-full rounded-lg"
+          style={{ aspectRatio: '16 / 9', background: '#000' }}
         />
       </div>
     );
@@ -670,7 +886,7 @@ export default function SatpinPage() {
 
           {/* One block per week */}
           <div className="mt-4 space-y-4">
-            {WEEKS.map((block) => {
+            {WEEKS.map((block, index) => {
               const words = block.words ?? [];
 
               // Sound-only week (a digraph such as ck): nothing to put in a
@@ -705,7 +921,11 @@ export default function SatpinPage() {
                         </div>
                       </div>
                     </div>
+                    {/* A sound-only week still moves the decode gate — ck
+                        unlocks sock/sick — so the ledger renders here too. */}
+                    <DecodableRow block={block} index={index} />
                     <SongRow block={block} />
+                    <VideoRow block={block} />
                   </div>
                 );
               }
@@ -756,6 +976,9 @@ export default function SatpinPage() {
                   ))}
                 </div>
 
+                {/* Decodable ledger — what the child can READ by this week */}
+                <DecodableRow block={block} index={index} />
+
                 {/* Basket pictures + hand-off */}
                 <PictureRow
                   items={words.map(w => ({ label: wordPhotoLabel(w), display: wordText(w) }))}
@@ -780,8 +1003,9 @@ export default function SatpinPage() {
                   </div>
                 )}
 
-                {/* Song → Reader → Book, three slim rows */}
+                {/* Song → Music video → Reader → Book, slim rows */}
                 <SongRow block={block} />
+                <VideoRow block={block} />
                 <ReaderRow block={block} />
 
                 {/* Book */}

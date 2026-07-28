@@ -1,0 +1,303 @@
+# Handoff — Montree Phonics (rename, decodable ledger, song uploads, letter cards, video pipeline)
+
+Date: 2026-07-28
+
+## Branding: the program is now Montree Phonics
+
+Tredoux renamed the phonics program from "Dark Phonics" to **MONTREE
+PHONICS** today. Every new user-facing surface — the letter-card masthead,
+the SATPIN library page, this handoff — uses the new name.
+
+One thing does **not** change: the Supabase storage bucket is still named
+`dark-phonics`. That's infra plumbing (bucket name, folder paths inside it)
+and renaming it is a bigger, riskier migration than this session needed. Do
+not rename the bucket as a "cleanup" pass — treat `dark-phonics` as a fixed
+infra identifier from here on, distinct from the product name.
+
+## What was built
+
+### 1. SATPIN library page — the "Decodable so far" ledger
+
+`app/montree/library/satpin/page.tsx` now renders a running ledger under
+every week block: which words a child can decode by that point in the
+series, and which heart (sight) words they've met.
+
+- The WEEKS manifest gained two fields per week, for weeks 3–27:
+  `decodable` (new words that week — mirrors the "NEW" word list printed
+  at the back of that week's reader) and `heartWords`.
+- At render time the page computes the **cumulative** list up through the
+  current week: this week's new words render as red chips, everything
+  earlier renders muted, newest-first. The heart-words line reads as a
+  short chain, e.g. `a → I → ate`.
+- Weeks 1 and 2 show `none yet · sounds only` — there's no decodable word
+  yet, only isolated sounds.
+- The ck sound-only block (between weeks 12 and 14) also got a ledger
+  entry — it's the block that unlocks `sock`/`sick`.
+
+Data source discipline: weeks 3–6 pull their NEW lists from
+`scripts/curriculum/flashcards/books_def.py`; weeks 7–27 pull from
+`scripts/curriculum/dark-phonics-readers/book07.py` through `book27.py`.
+**The books are the source of truth.** If a future session edits a book's
+word list, the page's `decodable`/`heartWords` arrays for that week need
+to be updated in step, or the ledger will silently drift from what the
+reader actually teaches.
+
+### 2. Song upload — real drop-zones + a new public API
+
+The song slots on the SATPIN page used to be static placeholders. They are
+now real drag-and-drop / click-to-upload zones, wired to a brand-new API
+route: `app/api/montree/satpin-media/route.ts`.
+
+- `GET` returns `{ songs: { slug: publicUrl } }` — one call discovers every
+  uploaded song across all 27 slugs.
+- `POST` (multipart, fields `slug` + `file`) stores the upload to the
+  `dark-phonics` bucket at `satpin-songs/<slug>-<timestamp>.<ext>`. The
+  layout is deliberately flat — no per-slug subfolders — so the `GET` can
+  discover everything in one bucket listing. The **latest timestamp wins**;
+  older copies for the same slug are deleted best-effort (not guaranteed,
+  so don't rely on the bucket only ever holding one file per slug).
+- Guardrails: IP rate limit 10 uploads / 15 minutes, 25MB cap, audio
+  MIME-types only, and a slug allow-list restricted to the 27 series
+  slugs (s, a, t, p, i, n, m, d, g, o, c, k, ck, e, u, r, h, b, f, l, j,
+  v, w, x, y, z, qu).
+- Legacy drop-in songs at `public/satpin-materials/<slug>/song.mp3` still
+  play if present, but an uploaded song takes priority over the legacy
+  file for that slug.
+- The letter-P song has already been uploaded:
+  `dark-phonics/satpin-songs/p-1785199000235.mp3`. It will appear in the
+  week-4 slot automatically the moment the page + API are deployed — no
+  further action needed for that one song.
+
+### 3. Letter-P book gets a decodable closing page
+
+The book `the-pig-ate-a-pineapple` (letter P) now ends its words page with
+a decodable section:
+
+```
+YOU CAN NOW READ: at · sat · pat · tap · sap · spat
+heart word — a
+```
+
+This is the s-a-t-p "gate" — the same word set that book four's `spat`
+and week 3's `the-sat` reader use. It's implemented generically: the
+sound-mode branch of `page_words` in
+`scripts/curriculum/flashcards/build_booklets.py` now accepts an optional
+`decodable` field alongside the existing `heart` field, so any future
+initial-sound book (not just letter P) can carry the same closing section
+by just adding the field to its book script. `bookP.py` was updated to
+pass it, and both PDFs were rebuilt and committed to
+`public/satpin-books/print/`.
+
+Nothing else needed rebuilding — every book for weeks 3–27 already had its
+own NEW/REVIEW word lists; only the letter-P book was missing this
+closing-decodable treatment.
+
+### 4. Letter cards — 27 cards, one house style
+
+A full set of 27 letter cards was generated, one per sound in series order:
+`s a t p i n m d g o c k ck e u r h b f l j v w x y z qu`.
+
+Each card is 1920×1080 PNG in the "Inked Hush" house style:
+
+- warm cream background
+- a monumental lowercase letter in house red (`#c62828`)
+- a Lora-Italic aside, e.g. "p says /p/"
+- a tracked **MONTREE PHONICS** masthead
+- a small red printer's dot
+- a `WEEK N` foot line
+
+Generated by `make_cards.py` (PIL), using the fonts from the
+canvas-design skill's font folder,
+`/root/.claude/skills/canvas-design/canvas-fonts/` — the same folder
+`build_booklets.py` already draws on, so the card typography matches the
+book typography. That skill folder is available in Cowork cloud sessions;
+if you run the generator somewhere else, point it at a local copy of the
+same fonts first.
+
+Baselines (letter position, aside position, masthead position, foot
+position) are fixed across the whole series — only the letter glyph and
+the `WEEK N` number change from card to card. This is what makes the
+cards feel like one deck rather than 27 one-offs.
+
+Card assets:
+
+- Uploaded to the bucket at
+  `dark-phonics/letter-cards/letter-card-NN-<slug>.png` (NN zero-padded,
+  slug = the sound, e.g. `letter-card-04-p.png`).
+- A zip of the full set (all 27 PNGs, the generator script, and a short
+  design-philosophy note) is saved in the repo at
+  `phonics-images/satpin-v2/letter-cards.zip`.
+
+These cards are the standard **opening shot** of every phonics song video
+(see the `00-puh.png` convention below).
+
+### 5. Letter-P music video, force-aligned
+
+`letter-p-pig-pen-pencil-v3.mp4`, in the bucket at `dark-phonics/videos/`
+(public), is the finished letter-P song video. It opens on the Montree
+Phonics P card and is 196/196 force-aligned — every sung word has a real,
+trusted timestamp, not an estimate. The chorus images land exactly on
+`pig`, `pen`, `pencil`, `pineapple`, `pan` as they're sung.
+
+Two earlier versions were deleted from the bucket once v3 shipped: an
+out-of-sync v1 (see the forced-align lesson below — this is the render
+that motivated fixing the pipeline) and a v2 that still carried the old
+"dark-phonics" masthead instead of the new branding.
+
+`videos/lesson-08.mp4` — the original, unrelated letter-P **lesson**
+video (not the song) — was deliberately left untouched. Different
+material, not part of this work.
+
+## How to run the video pipeline (mvgen) anywhere
+
+`scripts/mvgen` was run in the Cowork cloud container this session. The
+pipeline needs a specific virtualenv to do word-level forced alignment
+correctly; without it, it still runs and still produces a video, but the
+sync quality silently degrades. Set it up like this on a fresh box:
+
+```bash
+pip install librosa soundfile faster-whisper --break-system-packages
+# ffmpeg is preinstalled in the Cowork cloud container; install it
+# yourself if you're running somewhere else.
+
+python3 -m venv /root/mvgen-models/align-venv
+
+# CRITICAL: install a MATCHING torch/torchaudio pair from the CPU index
+# before installing stable-ts. Do this BEFORE `pip install stable-ts`,
+# not after — see the hard-won lesson below for why.
+/root/mvgen-models/align-venv/bin/pip install torch==2.11.0 torchaudio==2.11.0 \
+  --index-url https://download.pytorch.org/whl/cpu
+
+/root/mvgen-models/align-venv/bin/pip install stable-ts
+```
+
+`align_worker.py` must sit in the same directory as `analyze.py` — stage
+it alongside the rest of `scripts/mvgen`, don't leave it in a separate
+folder.
+
+`analyze.py` looks for the align venv's Python at
+`~/mvgen-models/align-venv/bin/python`, or at `$MVGEN_ALIGN_PYTHON` /
+`$MVGEN_ALIGN_VENV` if you set those env vars to point somewhere else.
+
+**Always check the render log for this line before shipping a video:**
+
+```
+FORCED-ALIGN: <N> aligned words
+```
+
+If instead you see:
+
+```
+FORCED-ALIGN: align venv python not found -> transcription fallback
+```
+
+the align venv wasn't found, and the pipeline silently fell back to raw
+whisper-transcription timing for word placement. That fallback is what
+produced this session's first letter-P render: only 62 of 196 lyric words
+got trusted timings, and the rest were evenly distributed across their
+segment as a guess — the video was badly out of sync. The failure mode is
+silent (no error, no crash, just a worse-looking video), so this log line
+is the one thing to check, every time, before calling a render done.
+
+### Render conventions for phonics songs
+
+- The lyrics `.txt` file is ground truth — only the sung lines belong in
+  it, no `[section]`/`[chorus]`-style tags mixed in.
+- Images are named after the keyword they illustrate, matched to the sung
+  word: `05-pig.png` is on screen at the moment "pig" is sung, and so on.
+  Naming images after the target word (not a scene description or a
+  sequence-only number) is what lets the pipeline line images up with the
+  force-aligned timestamps automatically.
+- The opening letter card is named `00-puh.png` — named after the
+  **phoneme**, not the letter name — so it anchors on the opening "Puh"
+  sound at the very start of the song and holds through the intro until
+  the beat drops. This convention should be reused for every future
+  letter video: `00-<phoneme>.png` as the first image, one per letter.
+- Theme: kids. Output: 1920×1080.
+
+## Where things live
+
+- SATPIN library page: `app/montree/library/satpin/page.tsx`
+- Song upload API: `app/api/montree/satpin-media/route.ts`
+- Word-list source of truth: `scripts/curriculum/flashcards/books_def.py`
+  (weeks 3–6) and `scripts/curriculum/dark-phonics-readers/book07.py`
+  through `book27.py` (weeks 7–27)
+- House print engine (now also carries the `decodable` field for
+  sound-mode word pages): `scripts/curriculum/flashcards/build_booklets.py`
+- Letter-P book script: `scripts/curriculum/dark-phonics-readers/bookP.py`
+- Book PDFs: `public/satpin-books/print/`
+- Letter-card generator: `make_cards.py` (this session's Cowork cloud
+  container); packaged output at
+  `phonics-images/satpin-v2/letter-cards.zip`
+- Fonts shared by the card generator and the print engine:
+  `/root/.claude/skills/canvas-design/canvas-fonts/`
+- Video pipeline: `scripts/mvgen`
+- Bucket (`dark-phonics`, name unchanged) layout:
+  - `satpin-songs/<slug>-<timestamp>.<ext>` — uploaded songs
+  - `letter-cards/letter-card-NN-<slug>.png` — the 27 letter cards
+  - `videos/` — finished song videos, e.g.
+    `letter-p-pig-pen-pencil-v3.mp4`, plus the pre-existing, unrelated
+    `lesson-08.mp4`
+
+## Hard-won lessons
+
+These explain most of the time spent this session, and are the most
+valuable part of this document for whoever runs the pipeline next.
+
+1. **The forced-align fallback is silent and looks like a normal render.**
+   mvgen doesn't error or warn loudly when the align venv is missing — it
+   logs one line and produces a video that plays fine but is out of sync.
+   The only way to know which timing mode you got is to grep the log for
+   `FORCED-ALIGN:` and check whether it says "N aligned words" (good) or
+   "transcription fallback" (bad). Build this check into any future
+   render script rather than trusting the video looks right on a quick
+   watch — 62/196 real timings still produces something that superficially
+   resembles a synced video.
+2. **Install torch and torchaudio as a matched pair, before stable-ts,
+   or the venv is broken in a confusing way.** A plain `pip install
+   stable-ts` pulls in `torch==2.13.0+cpu` as a dependency but leaves
+   whatever `torchaudio` was already there (2.11.0 in this session's
+   base image) — the version skew breaks torchaudio's compiled `.so` at
+   import time with an error that doesn't obviously point at a version
+   mismatch. Installing the matching CPU-index pair
+   (`torch==2.11.0 torchaudio==2.11.0` from
+   `https://download.pytorch.org/whl/cpu`) *before* `stable-ts` avoids the
+   problem entirely, because pip then sees torch already satisfied and
+   doesn't try to upgrade it out from under torchaudio.
+3. **Name images after the word they illustrate, not after their
+   position.** `05-pig.png` rather than `05.png` or `pig-scene.png` — the
+   pipeline's image-to-lyric matching depends on the filename containing
+   the keyword that's actually sung at that point.
+4. **The `00-puh.png` opening-card trick.** Naming the first image after
+   the phoneme sound rather than the letter name means it naturally
+   anchors on the song's opening vocalization ("Puh...") and rides through
+   the instrumental intro until the beat drops, without needing manual
+   timing overrides. Reuse this filename pattern (`00-<phoneme>.png`) for
+   every future letter video.
+5. **Bucket name is not product name.** The `dark-phonics` bucket kept its
+   name through the rename to Montree Phonics. Don't let a future session
+   "fix" this as inconsistent — it's an intentional infra/product-name
+   split, documented here specifically so nobody spends time on a bucket
+   migration that wasn't asked for.
+
+## Open threads
+
+- **Deploy pending.** `app/montree/library/satpin/page.tsx`,
+  `app/api/montree/satpin-media/route.ts`, and the rebuilt letter-P PDFs
+  are sitting in the working tree on the Mac only — none of it is
+  git-committed or deployed. The decodable ledger, the song upload zones,
+  and the P-song appearing in its slot are all **invisible on
+  montree.xyz** until the next commit, push, and deploy. This is the
+  single most important thing for the next session to check first.
+- **26 more letter videos are now unblocked.** With the align-venv recipe
+  verified working and the `00-<phoneme>.png` / keyword-image / letter-card
+  conventions all nailed down from the letter-P run, the remaining 26
+  letters (s, a, t, i, n, m, d, g, o, c, k, ck, e, u, r, h, b, f, l, j, v,
+  w, x, y, z, qu) can be batch-produced with the same recipe: song +
+  lyrics `.txt` + keyword images per line + the matching letter card from
+  `phonics-images/satpin-v2/letter-cards.zip` as `00-<phoneme>.png`. This
+  is now a production run, not an R&D problem.
+- **Housekeeping**: `tsconfig.satpin-check.tmp.json` was left in the repo
+  root (a scoped typecheck config used while iterating on the page — the
+  device bridge used this session couldn't delete files). It's harmless
+  and safe to delete whenever someone is next in the repo root.
