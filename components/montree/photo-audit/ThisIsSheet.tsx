@@ -60,6 +60,15 @@ const SHEET_LABELS: Record<string, Record<string, string>> = {
  *  sonnet_draft.other_category so reports / galleries can group by it. */
 export type OtherCategory = 'behavioral_observation' | 'outdoor_play' | 'special_event';
 
+/** Minimal shape of a montree_events row as returned by GET /api/montree/events.
+ *  Only the fields the picker renders / sorts on. */
+interface SheetEvent {
+  id: string;
+  name: string;
+  event_date: string;
+  classroom_id?: string | null;
+}
+
 export type Resolution =
   | { type: 'existing'; work_id: string; work_name: string; area_key: string }
   // new_custom optionally carries the teacher-reviewed work definition
@@ -74,13 +83,25 @@ export type Resolution =
       parent_description?: string;
       why_it_matters?: string;
       materials?: string[];
+      // Full teacher-reviewed guide fields, present when the teacher used
+      // the "Generate full teaching guide" step in the addMode review screen.
+      description?: string;
+      quick_guide?: string;
+      direct_aims?: string[];
+      presentation_steps?: string[];
       reviewed?: boolean;
     }
   | { type: 'confirm_ai'; work_id?: string; work_name: string; area_key: string }
   // Saved to the child's profile but NOT tagged against the Montessori
   // curriculum. work_id stays null, sonnet_draft.is_other = true acts as
   // the discriminator. Optional category narrows what kind of moment it is.
-  | { type: 'other'; category?: OtherCategory; note?: string };
+  //
+  // `event_id` is the REAL link into montree_events — set only on the
+  // 'special_event' category when the teacher picks a specific event. The
+  // resolve route writes it to montree_media.event_id (the sole photo↔event
+  // link). Omitted / null = "no specific event", which preserves the legacy
+  // behaviour (category recorded, no event row touched).
+  | { type: 'other'; category?: OtherCategory; note?: string; event_id?: string | null };
 
 export interface ThisIsSheetPhoto {
   id: string;
@@ -162,6 +183,21 @@ export default function ThisIsSheet({
   // category populated. Defaults to 'curriculum' each open.
   const [activeTab, setActiveTab] = useState<'curriculum' | 'others'>('curriculum');
 
+  // --- Special-event picker (Others tab) ---
+  // Tapping "Special event" used to fire the resolution immediately with only
+  // sonnet_draft.other_category='special_event' — the photo never got linked
+  // to a montree_events row, so "save to my custom event" read as broken.
+  // Now the card opens a real event picker; the chosen event id rides along
+  // on the resolution and the resolve route writes montree_media.event_id.
+  const [eventPickerOpen, setEventPickerOpen] = useState(false);
+  const [sheetEvents, setSheetEvents] = useState<SheetEvent[]>([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
+  const [eventsError, setEventsError] = useState<string | null>(null);
+  const [showCreateEvent, setShowCreateEvent] = useState(false);
+  const [newEventName, setNewEventName] = useState('');
+  const [newEventDate, setNewEventDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [creatingEvent, setCreatingEvent] = useState(false);
+
   // --- Merge mode state ---
   const [mergeMode, setMergeMode] = useState(false);
   const [mergeSelected, setMergeSelected] = useState<Set<string>>(new Set());
@@ -222,6 +258,11 @@ export default function ThisIsSheet({
       setMergeResult(null);
       setMergedLoserIds(new Set());
       setActiveTab('curriculum');
+      setEventPickerOpen(false);
+      setShowCreateEvent(false);
+      setNewEventName('');
+      setCreatingEvent(false);
+      setEventsError(null);
     } else {
       // Pre-seed the search bar with the AI's proposed_name (editable).
       //
@@ -538,9 +579,75 @@ export default function ThisIsSheet({
   //
   // Session 117+: optional `category` narrows what kind of moment it is.
   // Persisted to sonnet_draft.other_category for future report grouping.
-  const handleSaveAsOther = (category?: OtherCategory) => {
+  const handleSaveAsOther = (category?: OtherCategory, eventId?: string | null) => {
     if (submitting) return;
-    fireAndClose({ type: 'other', category });
+    // event_id only makes sense (and is only ever passed) for special_event —
+    // omit it entirely for the other categories so the resolve route's
+    // "undefined = leave untouched" path applies, instead of explicitly
+    // nulling out an event link on a behavioral_observation / outdoor_play
+    // save.
+    fireAndClose({
+      type: 'other',
+      category,
+      event_id: category === 'special_event' ? eventId ?? null : undefined,
+    });
+  };
+
+  // --- Special-event picker ---------------------------------------------
+  // Loads the school's events lazily (only when the teacher actually opens
+  // the picker). Events for THIS classroom and school-wide events
+  // (classroom_id IS NULL) float to the top; everything else still shows so
+  // a teacher can attach to another room's event if that's what happened.
+  const loadSheetEvents = useCallback(async () => {
+    setEventsLoading(true);
+    setEventsError(null);
+    try {
+      const res = await fetch('/api/montree/events', { credentials: 'include' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || 'Could not load events');
+      const list: SheetEvent[] = Array.isArray(data?.events) ? data.events : [];
+      const rank = (e: SheetEvent) =>
+        classroomId && e.classroom_id === classroomId ? 0 : !e.classroom_id ? 1 : 2;
+      list.sort((a, b) => rank(a) - rank(b) || (b.event_date || '').localeCompare(a.event_date || ''));
+      setSheetEvents(list);
+    } catch (err) {
+      setEventsError(err instanceof Error ? err.message : 'Could not load events');
+    } finally {
+      setEventsLoading(false);
+    }
+  }, [classroomId]);
+
+  const handleOpenEventPicker = () => {
+    if (submitting) return;
+    setEventPickerOpen(true);
+    if (sheetEvents.length === 0 && !eventsLoading) loadSheetEvents();
+  };
+
+  const handleCreateEvent = async () => {
+    const name = newEventName.trim();
+    if (!name || creatingEvent) return;
+    setCreatingEvent(true);
+    setEventsError(null);
+    try {
+      const res = await fetch('/api/montree/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          name,
+          event_date: newEventDate,
+          classroom_id: classroomId || undefined,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.event?.id) throw new Error(data?.error || 'Could not create event');
+      // Straight through: creating an event from here means "this photo
+      // belongs to it" — attach and close.
+      handleSaveAsOther('special_event', data.event.id as string);
+    } catch (err) {
+      setEventsError(err instanceof Error ? err.message : 'Could not create event');
+      setCreatingEvent(false);
+    }
   };
 
   // --- Merge handlers ---
@@ -901,7 +1008,7 @@ export default function ThisIsSheet({
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleSaveAsOther('special_event')}
+                    onClick={handleOpenEventPicker}
                     disabled={submitting}
                     style={{
                       display: 'flex',
@@ -910,7 +1017,7 @@ export default function ThisIsSheet({
                       width: '100%',
                       padding: '14px 16px',
                       background: '#fdf4ff',
-                      border: '1.5px solid #d8b4fe',
+                      border: `1.5px solid ${eventPickerOpen ? '#a855f7' : '#d8b4fe'}`,
                       borderRadius: 12,
                       cursor: submitting ? 'wait' : 'pointer',
                       textAlign: 'left',
@@ -925,7 +1032,151 @@ export default function ThisIsSheet({
                         Birthday, performance, field trip, holiday celebration.
                       </div>
                     </div>
+                    <div style={{ fontSize: 14, color: '#a855f7' }}>{eventPickerOpen ? '▾' : '▸'}</div>
                   </button>
+
+                  {/* Event picker — the actual montree_events link. Choosing a
+                      row attaches the photo to that event (montree_media.event_id);
+                      "No specific event" preserves the pre-Session-130 behaviour. */}
+                  {eventPickerOpen && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 8,
+                        padding: 12,
+                        background: '#faf5ff',
+                        border: '1px solid #e9d5ff',
+                        borderRadius: 12,
+                      }}
+                    >
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#6b21a8' }}>
+                        Which event is this photo from?
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleSaveAsOther('special_event', null)}
+                        disabled={submitting}
+                        style={{
+                          width: '100%',
+                          padding: '10px 12px',
+                          background: '#fff',
+                          border: '1px solid #e9d5ff',
+                          borderRadius: 10,
+                          textAlign: 'left',
+                          fontSize: 14,
+                          color: '#4b5563',
+                          cursor: submitting ? 'wait' : 'pointer',
+                        }}
+                      >
+                        No specific event
+                      </button>
+
+                      {eventsLoading && (
+                        <div style={{ fontSize: 12, color: '#7e22ce', padding: '6px 2px' }}>Loading events…</div>
+                      )}
+                      {eventsError && (
+                        <div style={{ fontSize: 12, color: '#b91c1c', padding: '6px 2px' }}>{eventsError}</div>
+                      )}
+                      {!eventsLoading && !eventsError && sheetEvents.length === 0 && (
+                        <div style={{ fontSize: 12, color: '#7e22ce', padding: '6px 2px' }}>
+                          No events yet — create one below.
+                        </div>
+                      )}
+
+                      {sheetEvents.map(ev => (
+                        <button
+                          key={ev.id}
+                          type="button"
+                          onClick={() => handleSaveAsOther('special_event', ev.id)}
+                          disabled={submitting}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                            width: '100%',
+                            padding: '10px 12px',
+                            background: '#fff',
+                            border: '1px solid #e9d5ff',
+                            borderRadius: 10,
+                            textAlign: 'left',
+                            cursor: submitting ? 'wait' : 'pointer',
+                          }}
+                        >
+                          <span style={{ fontSize: 16 }}>🎉</span>
+                          <span style={{ flex: 1, minWidth: 0 }}>
+                            <span style={{ display: 'block', fontSize: 14, fontWeight: 600, color: '#111827' }}>
+                              {ev.name}
+                            </span>
+                            <span style={{ display: 'block', fontSize: 11, color: '#6b7280' }}>
+                              {ev.event_date}{!ev.classroom_id ? ' · school-wide' : ''}
+                            </span>
+                          </span>
+                        </button>
+                      ))}
+
+                      {showCreateEvent ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 2 }}>
+                          <input
+                            type="text"
+                            value={newEventName}
+                            onChange={e => setNewEventName(e.target.value)}
+                            placeholder="Event name (e.g. Art Camp)"
+                            style={{
+                              width: '100%', padding: '9px 11px', fontSize: 14,
+                              border: '1px solid #d8b4fe', borderRadius: 10, outline: 'none',
+                            }}
+                          />
+                          <input
+                            type="date"
+                            value={newEventDate}
+                            onChange={e => setNewEventDate(e.target.value)}
+                            style={{
+                              width: '100%', padding: '9px 11px', fontSize: 14,
+                              border: '1px solid #d8b4fe', borderRadius: 10, outline: 'none',
+                            }}
+                          />
+                          <div style={{ display: 'flex', gap: 8 }}>
+                            <button
+                              type="button"
+                              onClick={() => setShowCreateEvent(false)}
+                              style={{
+                                flex: 1, padding: '9px 0', borderRadius: 10, fontSize: 14,
+                                background: '#f3f4f6', border: '1px solid #e5e7eb', color: '#6b7280', cursor: 'pointer',
+                              }}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleCreateEvent}
+                              disabled={!newEventName.trim() || creatingEvent}
+                              style={{
+                                flex: 1, padding: '9px 0', borderRadius: 10, fontSize: 14, fontWeight: 600,
+                                background: '#a855f7', border: '1px solid #a855f7', color: '#fff',
+                                opacity: !newEventName.trim() || creatingEvent ? 0.5 : 1,
+                                cursor: creatingEvent ? 'wait' : 'pointer',
+                              }}
+                            >
+                              {creatingEvent ? 'Saving…' : 'Create + attach'}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setShowCreateEvent(true)}
+                          style={{
+                            width: '100%', padding: '9px 0', borderRadius: 10, fontSize: 13, fontWeight: 600,
+                            background: '#f5f3ff', border: '1px dashed #c4b5fd', color: '#6b21a8', cursor: 'pointer',
+                          }}
+                        >
+                          + New event
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 

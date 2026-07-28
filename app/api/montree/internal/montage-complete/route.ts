@@ -26,12 +26,22 @@ export async function POST(request: NextRequest) {
   }
 
   // --- Body ---
-  let body: { report_id?: unknown; child_id?: unknown };
+  let body: { report_id?: unknown; child_id?: unknown; scope_type?: unknown; job_id?: unknown };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: 'invalid json' }, { status: 400 });
   }
+
+  // Migration 304: Montage Studio jobs (classroom / child / event scopes) have
+  // no report and no parent audience — the teacher watches them in the app.
+  // There is nothing to look up and nobody to push, so acknowledge and stop.
+  // Report jobs fall through to the identical pre-304 behaviour below.
+  const scopeType = body?.scope_type;
+  if (typeof scopeType === 'string' && scopeType !== 'report') {
+    return NextResponse.json({ ok: true, push: 'skipped_scoped' });
+  }
+
   const reportId = body?.report_id;
   const childId = body?.child_id;
   if (typeof reportId !== 'string' || !reportId || typeof childId !== 'string' || !childId) {

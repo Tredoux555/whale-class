@@ -22,6 +22,22 @@ import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
 const MIN_ELIGIBLE_PHOTOS = 8;
 
+// --- Scoped montage thresholds (Montage Studio, migration 304) -----------
+// A classroom / child montage covers a date range and should feel like a
+// proper little film — same 8-photo floor as the weekly report montage.
+// An EVENT is by nature a smaller, denser set (one afternoon of art camp),
+// so it gets a lower floor. Both are exported so the API route can tell the
+// teacher exactly how many more photos she needs.
+export const MIN_SCOPED_PHOTOS = 8;
+export const MIN_EVENT_PHOTOS = 4;
+
+export type MontageScopeType = 'classroom' | 'child' | 'event';
+export type MontageKind = 'daily' | 'weekly' | 'custom';
+
+export function minPhotosForScope(scopeType: MontageScopeType): number {
+  return scopeType === 'event' ? MIN_EVENT_PHOTOS : MIN_SCOPED_PHOTOS;
+}
+
 interface MontageReportInput {
   reportId: string;
   childId: string;
@@ -192,5 +208,142 @@ export async function requeueMontageJob(
     }
   } catch (err) {
     console.error('[montage/enqueue] requeue unexpected error (non-fatal):', err);
+  }
+}
+
+// =========================================================================
+// Scoped montages (Montage Studio — migration 304)
+// =========================================================================
+// Unlike the report montage, a scoped montage has NO curated photo list: the
+// eligible set is read straight off montree_media with the same three safety
+// filters the worker re-asserts (media_type='photo', teacher_confirmed=true,
+// parent_visible=true) plus the scope filter.
+//
+// Unlike maybeEnqueueMontageJobs(), this one is teacher-initiated and its
+// result is SHOWN to her, so it returns a structured outcome instead of
+// swallowing everything: she needs to know "found 3, need 8".
+
+export interface EnqueueScopedArgs {
+  schoolId: string;
+  classroomId: string | null;
+  scopeType: MontageScopeType;
+  childId?: string | null;
+  eventId?: string | null;
+  kind: MontageKind;
+  /** Inclusive YYYY-MM-DD. Required for classroom/child, optional for event. */
+  dateStart?: string | null;
+  /** Inclusive YYYY-MM-DD. Required for classroom/child, optional for event. */
+  dateEnd?: string | null;
+  title: string;
+}
+
+export interface EnqueueScopedResult {
+  ok: boolean;
+  jobId?: string;
+  photoCount: number;
+  minPhotos: number;
+  reason?: string;
+}
+
+/**
+ * Count the photos a scoped montage would draw from.
+ *
+ * 🚨 The three safety filters are NON-NEGOTIABLE and are re-asserted again in
+ * the worker (montage-worker/src/media.ts). A photo that is not confirmed or
+ * not parent-visible must never reach a rendered film.
+ *
+ * Date range: `captured_at` is a timestamptz, `dateStart`/`dateEnd` are plain
+ * calendar dates supplied by the CLIENT in the teacher's own local timezone
+ * (see the route for why). We bound with >= dateStart and < dateEnd+1day so
+ * the end date is inclusive without needing a timezone-aware cast.
+ */
+async function countScopedPhotos(
+  supabase: SupabaseClient,
+  args: EnqueueScopedArgs
+): Promise<number> {
+  let query = supabase
+    .from('montree_media')
+    .select('id', { count: 'exact', head: true })
+    .eq('school_id', args.schoolId)
+    .eq('media_type', 'photo')
+    .eq('teacher_confirmed', true)
+    .eq('parent_visible', true);
+
+  if (args.scopeType === 'event') {
+    query = query.eq('event_id', args.eventId as string);
+  } else if (args.scopeType === 'child') {
+    query = query.eq('child_id', args.childId as string);
+  } else {
+    query = query.eq('classroom_id', args.classroomId as string);
+  }
+
+  if (args.dateStart) query = query.gte('captured_at', `${args.dateStart}T00:00:00`);
+  if (args.dateEnd) query = query.lt('captured_at', `${exclusiveEnd(args.dateEnd)}T00:00:00`);
+
+  const { count, error } = await query;
+  if (error) {
+    console.error('[montage/enqueue] scoped photo count failed:', error.message);
+    return 0;
+  }
+  return count ?? 0;
+}
+
+/** YYYY-MM-DD -> the next calendar day, so an inclusive end date can be
+ *  expressed as a half-open `< end+1` bound. */
+function exclusiveEnd(dateEnd: string): string {
+  const d = new Date(`${dateEnd}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) return dateEnd;
+  d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
+}
+
+/**
+ * Queue a classroom / child / event montage. Inserts a fresh row (scoped jobs
+ * have no natural unique key — the API route handles duplicate suppression by
+ * looking for an identical active job first).
+ */
+export async function enqueueScopedMontage(
+  supabase: SupabaseClient,
+  args: EnqueueScopedArgs
+): Promise<EnqueueScopedResult> {
+  const minPhotos = minPhotosForScope(args.scopeType);
+  try {
+    const photoCount = await countScopedPhotos(supabase, args);
+    if (photoCount < minPhotos) {
+      return { ok: false, photoCount, minPhotos, reason: 'insufficient_photos' };
+    }
+
+    const { data, error } = await supabase
+      .from('montree_montage_jobs')
+      .insert({
+        report_id: null,
+        child_id: args.scopeType === 'child' ? args.childId ?? null : null,
+        school_id: args.schoolId,
+        classroom_id: args.classroomId ?? null,
+        event_id: args.scopeType === 'event' ? args.eventId ?? null : null,
+        scope_type: args.scopeType,
+        montage_kind: args.kind,
+        date_start: args.dateStart ?? null,
+        date_end: args.dateEnd ?? null,
+        title: args.title,
+        status: 'queued',
+      })
+      .select('id')
+      .single();
+
+    if (error || !data?.id) {
+      console.error('[montage/enqueue] scoped insert failed:', error?.message);
+      return {
+        ok: false,
+        photoCount,
+        minPhotos,
+        reason: error?.code === '42P01' || error?.code === '42703' ? 'not_migrated' : 'insert_failed',
+      };
+    }
+
+    return { ok: true, jobId: data.id as string, photoCount, minPhotos };
+  } catch (err) {
+    console.error('[montage/enqueue] scoped unexpected error:', err);
+    return { ok: false, photoCount: 0, minPhotos, reason: 'insert_failed' };
   }
 }

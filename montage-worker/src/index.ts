@@ -13,11 +13,13 @@ import {
   markFailure,
   getJobById,
   getReportMeta,
+  getScopedJobMeta,
+  isReportJob,
 } from './db';
-import { fetchEligiblePhotos, downloadPhotos } from './media';
+import { fetchEligiblePhotos, fetchScopedEligiblePhotos, downloadPhotos } from './media';
 import { runHygiene } from './hygiene';
 import { validateMusicAssets, trackForReport } from './music';
-import { processJob, cleanupOrphanTemp } from './pipeline';
+import { processJob, cleanupOrphanTemp, minPhotosForJob } from './pipeline';
 
 let shuttingDown = false;
 let processing = false;
@@ -74,7 +76,9 @@ async function handleOneJob(cfg: WorkerConfig): Promise<boolean> {
   if (!job) return false;
   processing = true;
   console.log(
-    `[worker] claimed job ${job.id} (report ${job.report_id}, attempt ${job.attempts})`
+    `[worker] claimed job ${job.id} (${job.scope_type ?? 'report'} ${
+      job.report_id ?? job.event_id ?? job.child_id ?? job.classroom_id
+    }, attempt ${job.attempts})`
   );
   try {
     const result = await processJob(cfg, job);
@@ -132,10 +136,22 @@ async function runPlan(cfg: WorkerConfig, jobId: string) {
     await shutdown(1);
     return;
   }
-  const meta = await getReportMeta(job.report_id, job.child_id);
-  const eligible = await fetchEligiblePhotos(job.report_id);
+  const reportJob = isReportJob(job);
+  const meta = reportJob
+    ? await getReportMeta(job.report_id as string, job.child_id as string)
+    : null;
+  const scopedMeta = reportJob ? null : await getScopedJobMeta(job);
+  const eligible = reportJob
+    ? await fetchEligiblePhotos(job.report_id as string)
+    : await fetchScopedEligiblePhotos(job);
   console.log(`\n=== PLAN for job ${jobId} ===`);
-  console.log(`report ${job.report_id} · child ${meta.child_name ?? job.child_id}`);
+  if (reportJob) {
+    console.log(`report ${job.report_id} · child ${meta!.child_name ?? job.child_id}`);
+  } else {
+    console.log(
+      `${job.scope_type} "${scopedMeta!.title}" · ${job.montage_kind} · ${job.date_start ?? '—'} → ${job.date_end ?? '—'}`
+    );
+  }
   console.log(`eligible photos: ${eligible.length}`);
 
   const downloaded = await downloadPhotos(cfg, eligible);
@@ -157,11 +173,11 @@ async function runPlan(cfg: WorkerConfig, jobId: string) {
     );
   }
 
-  const { slug, track } = trackForReport(meta.week_start);
+  const { slug, track } = trackForReport(reportJob ? meta!.week_start : job.date_start);
   console.log(
     `\nfinal photos: ${photos.length}   chosen track: ${slug} (${track.bpm} bpm, ${track.durationSec}s, ${track.downbeats.length} downbeats)`
   );
-  if (photos.length < 8) {
+  if (photos.length < minPhotosForJob(job)) {
     console.log('=> would SKIP (insufficient photos)');
   }
   await shutdown(0);
