@@ -229,3 +229,82 @@ Nothing is currently blocking or pending from this session. If a future
 session wants to extend it: the weekly board's "needs more photos" list
 currently has no notification/reminder hook (it's pull, not push) — that
 would be a natural next increment if Tredoux asks for it.
+
+---
+
+## Jul 28 evening — Montage Manager rebuild
+
+The Montage Tracker that shipped this morning became the **Montage Manager**:
+same boards, a rebuilt creator with a real photo picker, and a third path for
+special events.
+
+**🚨 `migrations/306_montage_manager.sql` MUST BE RUN before explicit-selection
+creates work.** It adds one nullable column:
+
+```sql
+BEGIN;
+ALTER TABLE montree_montage_jobs
+  ADD COLUMN IF NOT EXISTS media_ids UUID[];
+COMMIT;
+```
+
+Until it runs, every new path degrades to a clean 503 — the boards, the Studio
+and the report montages are unaffected. Rollback:
+`ALTER TABLE montree_montage_jobs DROP COLUMN IF EXISTS media_ids;`
+
+### What changed
+
+- **Rename → "Montage Manager"** (labels only, all 12 locales). The route slug
+  `/montree/dashboard/montage-tracker`, the `montageTracker.*` key namespace,
+  the lib folder and the API paths are all **unchanged** on purpose.
+- **Photo Gallery hidden** from the More menu (`DashboardHeader.tsx`) —
+  commented out, route + i18n key untouched, one uncomment from returning.
+- **New endpoint** `GET /api/montree/montage-tracker/media`:
+  `?scope=child|classroom|event` (+ optional `start`/`end`) → the photo list the
+  picker renders; `?mode=totals` → per-child all-time photo counts for the
+  child-grid badges. Query logic lives in `lib/montree/montage-tracker/media.ts`
+  (module isolation preserved).
+- **Explicit selection.** `POST /api/montree/montage` accepts `media_ids`
+  (requires `bypass_confirmation`, max 500 uuids). The server **re-verifies**
+  every id (`school_id` + `media_type='photo'` + `parent_visible=true`) and
+  enforces the scope floor against the *survivors*, never against the client's
+  claim. `bypass_confirmation` is now also legal for `scope_type:'event'`.
+- **Worker** gained a third branch: a job with a non-empty `media_ids` renders
+  exactly those photos (`getExplicitEligiblePhotos`), skipping the scope query.
+  `claimNextJob` already used `RETURNING *`, so the new column arrives for free
+  and a pre-306 database simply yields a row without it.
+- **Page rebuilt**: path pills (Whole class / One child / Special event); the
+  child dropdown replaced by an **avatar grid** with a green all-time count pill
+  (top-left) and an amber "+N still needed" pill (top-right, hidden at ≥8);
+  a child montage defaults to the **All** range (her whole story); every path
+  then shows a **thumbnail grid** — tap to drop a photo, "restore all" to undo.
+  The kept ids are what gets posted. Boards, jobs list and player unchanged.
+
+### Rules worth keeping
+
+- **WYSIWYG:** the picker grid and the child-tile totals are `parent_visible`-only
+  so the grid, the badge and the film always agree. The **coverage boards
+  deliberately are not** — they answer "was this child photographed?", not "what
+  can go in a film?". Do not align them.
+- `parent_visible = true` is now gated **four** times on the explicit path
+  (media list → create-time re-verify → worker SQL → `assertAllParentVisible`).
+- Removing a thumbnail is **selection only** — no media row, confirmation state
+  or anything else is mutated.
+- **Duplicate suppression:** with `media_ids` present, an active job counts as a
+  duplicate only when its own `media_ids` is the **same set** (up to 20
+  candidates are inspected); a different pick gets its own film. With no
+  `media_ids` the behaviour is byte-identical to before (first active match on
+  scope + kind + range + `require_confirmed`).
+- **Events always post `kind:'custom'`** — they carry no date range, and
+  daily/weekly would stamp a wrong eyebrow on the film. Events are sourced from
+  the existing `GET /api/montree/events` (same source Montage Studio uses).
+- The **All** range derives the job's `date_start`/`date_end` from the kept
+  photos' min/max `captured_at` via `formatLocalDate` — never `toISOString()`.
+
+### Verified
+
+- ESLint: **0 errors, 0 warnings** on all 6 touched TS/TSX files.
+- Scoped `tsc`: exit 0 (714 files).
+- `montage-worker` `tsc --noEmit`: exit 0.
+- `npm run i18n:check:strict`: **12/12 locales at 100%**, no residual failures.
+- Not committed, not pushed; no SQL was executed.

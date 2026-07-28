@@ -9,8 +9,20 @@ import { makeCancelSignal } from '@remotion/renderer';
 import type { WorkerConfig } from './config';
 import { JOB_PHOTOS_DIR } from './config';
 import type { MontageJob } from './db';
-import { getReportMeta, getScopedJobMeta, isReportJob, markDone, markSkipped } from './db';
-import { fetchEligiblePhotos, fetchScopedEligiblePhotos, downloadPhotos } from './media';
+import {
+  getReportMeta,
+  getScopedJobMeta,
+  hasExplicitSelection,
+  isReportJob,
+  markDone,
+  markSkipped,
+} from './db';
+import {
+  fetchEligiblePhotos,
+  fetchScopedEligiblePhotos,
+  fetchExplicitEligiblePhotos,
+  downloadPhotos,
+} from './media';
 import { runHygiene, MIN_PHOTOS, PhotoDecision } from './hygiene';
 import { trackForReport } from './music';
 import { renderMontage, killActiveFfmpeg } from './render';
@@ -172,9 +184,16 @@ export async function processJob(
         const scopedMeta = reportJob ? null : await getScopedJobMeta(job);
 
         // --- eligible photos (parent-visible re-asserted in media layer) ---
+        // Migration 306: a Montage Manager job carries the teacher's own
+        // curated photo list, so the scope query is skipped entirely and
+        // those exact photos are rendered. Every other job (report montage,
+        // Montage Studio, a Manager create with no picker edits) takes the
+        // byte-identical pre-306 path below.
         const eligible = reportJob
           ? await fetchEligiblePhotos(job.report_id as string)
-          : await fetchScopedEligiblePhotos(job);
+          : hasExplicitSelection(job)
+            ? await fetchExplicitEligiblePhotos(job)
+            : await fetchScopedEligiblePhotos(job);
         if (eligible.length < minPhotos) {
           await markSkipped(job.id);
           return {

@@ -5933,7 +5933,7 @@ export const en = {
 
   // Montage Tracker — photo-coverage boards + confirmation-free montages.
   // No AI in this feature: a photo counts the moment it is tagged.
-  'montageTracker.title': 'Montage Tracker',
+  'montageTracker.title': 'Montage Manager',
   'montageTracker.subtitle': 'Every photo counts the moment you tag it.',
   'montageTracker.tab.daily': 'Today',
   'montageTracker.tab.weekly': 'This week',
@@ -5973,8 +5973,26 @@ export const en = {
   'montageTracker.dateTo': 'To',
   'montageTracker.jobs.title': 'Tracker montages',
   'montageTracker.jobs.empty': 'No tracker montages yet.',
-  'teacherTools.montageTracker': 'Montage Tracker',
-  'teacherTools.montageTrackerDesc': 'See who still needs photos today and this week',
+  'montageTracker.create.event': 'Special event',
+  'montageTracker.create.selectEvent': 'Choose an event',
+  'montageTracker.create.pickEvent': 'Pick an event first.',
+  'montageTracker.create.noEvents': 'No events yet — add one when you tag photos to an event.',
+  'montageTracker.create.eventIsRange': 'Every photo linked to this event.',
+  'montageTracker.create.backToChildren': 'Change child',
+  'montageTracker.create.needMoreShort': '{count} of {min} photos',
+  'montageTracker.range.all': 'All',
+  'montageTracker.range.allHint': 'Every photo, all time',
+  'montageTracker.picker.loading': 'Loading photos…',
+  'montageTracker.picker.loadFailed': 'Could not load the photos.',
+  'montageTracker.picker.empty': 'No photos here yet.',
+  'montageTracker.picker.kept': 'Keeping {kept} of {total}',
+  'montageTracker.picker.restoreAll': 'Restore all',
+  'montageTracker.picker.tapToRemove': 'Tap a photo to leave it out.',
+  'montageTracker.picker.truncated': 'Showing the first {shown} of {total} photos.',
+  'montageTracker.picker.remove': 'Leave this photo out',
+  'montageTracker.picker.restore': 'Put this photo back',
+  'teacherTools.montageTracker': 'Montage Manager',
+  'teacherTools.montageTrackerDesc': 'See who still needs photos, then build the film',
 
 } as const;
 

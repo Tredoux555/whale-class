@@ -242,6 +242,18 @@ export interface EnqueueScopedArgs {
    * in the worker. Defaults to true, so every existing caller is unchanged.
    */
   requireConfirmed?: boolean;
+  /**
+   * Montage Manager only (migration 306). An EXPLICIT, already-verified list
+   * of montree_media ids the teacher curated in the picker. When present:
+   *   - the scope pre-count is SKIPPED (this list IS the truth; the caller
+   *     has already re-verified school_id + media_type + parent_visible and
+   *     enforced the minimum), and
+   *   - `media_ids` is written onto the job so the worker renders exactly
+   *     these photos instead of re-querying the scope.
+   * When absent the insert is byte-identical to the pre-306 shape — the key
+   * is not added at all, so a pre-migration database is unaffected.
+   */
+  mediaIds?: string[] | null;
 }
 
 export interface EnqueueScopedResult {
@@ -443,8 +455,16 @@ export async function enqueueScopedMontage(
   args: EnqueueScopedArgs
 ): Promise<EnqueueScopedResult> {
   const minPhotos = minPhotosForScope(args.scopeType);
+  const explicitIds =
+    args.mediaIds && args.mediaIds.length > 0 ? args.mediaIds : null;
   try {
-    const photoCount = await countScopedPhotos(supabase, args);
+    // An explicit, pre-verified selection IS the photo set — re-counting the
+    // scope would only disagree with it (that's the whole point of the
+    // picker: the teacher removed some). The caller enforces the minimum
+    // against the VERIFIED list before it gets here.
+    const photoCount = explicitIds
+      ? explicitIds.length
+      : await countScopedPhotos(supabase, args);
     if (photoCount < minPhotos) {
       return { ok: false, photoCount, minPhotos, reason: 'insufficient_photos' };
     }
@@ -456,6 +476,12 @@ export async function enqueueScopedMontage(
     // the usual clean 'not_migrated' 503.
     const requireConfirmedPatch =
       args.requireConfirmed === false ? { require_confirmed: false } : {};
+
+    // Migration 306, same discipline: the key is added ONLY when the caller
+    // curated a selection, so every pre-306 caller's insert object is
+    // byte-identical to what it has always been (report montages, Montage
+    // Studio, and a Manager create with no picker edits all unaffected).
+    const mediaIdsPatch = explicitIds ? { media_ids: explicitIds } : {};
 
     const { data, error } = await supabase
       .from('montree_montage_jobs')
@@ -472,6 +498,7 @@ export async function enqueueScopedMontage(
         title: args.title,
         status: 'queued',
         ...requireConfirmedPatch,
+        ...mediaIdsPatch,
       })
       .select('id')
       .single();
