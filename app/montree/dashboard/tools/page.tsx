@@ -23,6 +23,12 @@ export default function ToolsPage() {
       descKey: 'teacherTools.weeklyVideosDesc' as TranslationKey,
     },
     {
+      href: '/montree/dashboard/montage-tracker',
+      icon: '📸',
+      titleKey: 'teacherTools.montageTracker' as TranslationKey,
+      descKey: 'teacherTools.montageTrackerDesc' as TranslationKey,
+    },
+    {
       href: '/montree/dashboard/weekly-wrap',
       icon: '📊',
       titleKey: 'teacherTools.weeklyReports' as TranslationKey,

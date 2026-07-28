@@ -4,7 +4,8 @@
 // (whole classroom / one child / one special event) in three flavours
 // (daily / weekly / custom range).
 //
-//   POST { scope_type, kind, child_id?, event_id?, date_start?, date_end?, classroom_id? }
+//   POST { scope_type, kind, child_id?, event_id?, date_start?, date_end?,
+//          classroom_id?, bypass_confirmation? }
 //        → queues a montree_montage_jobs row for the Railway worker.
 //   GET  ?limit=20
 //        → the teacher's recent SCOPED montages (report montages excluded —
@@ -98,6 +99,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'date_start must be on or before date_end' }, { status: 400 });
   }
 
+  // --- Montage Tracker bypass (migration 305) ------------------------------
+  // The tracker counts every tagged photo the moment it is captured, so its
+  // montages must be allowed to draw from unconfirmed photos too. Only the
+  // two tracker scopes may ask for it; parent_visible stays enforced in the
+  // enqueue query, in the worker query and in the worker's re-assert.
+  const bypassConfirmation = body.bypass_confirmation === true;
+  if (bypassConfirmation && scopeType !== 'child' && scopeType !== 'classroom') {
+    return NextResponse.json(
+      { error: 'bypass_confirmation is only valid for child or classroom montages' },
+      { status: 400 }
+    );
+  }
+
   try {
     const supabase = getSupabase();
 
@@ -185,23 +199,42 @@ export async function POST(request: NextRequest) {
     // --- duplicate suppression -------------------------------------------
     // Same scope + kind + range already queued or rendering? Hand back that
     // job rather than making the worker render the identical film twice.
-    let existingQuery = supabase
-      .from('montree_montage_jobs')
-      .select('id, status, title, output_path')
-      .eq('school_id', auth.schoolId)
-      .eq('scope_type', scopeType)
-      .eq('montage_kind', kind)
-      .in('status', ['queued', 'rendering'])
-      .limit(1);
+    //
+    // 🚨 A tracker montage (every tagged photo) and a Studio montage
+    // (confirmed only) over the same scope + kind + range are DIFFERENT
+    // films, so require_confirmed is part of the identity — the lookup is
+    // constrained on BOTH paths, never one.
+    const DUP_COLUMNS = 'id, status, title, output_path';
 
-    if (scopeType === 'child') existingQuery = existingQuery.eq('child_id', childId as string);
-    else if (scopeType === 'event') existingQuery = existingQuery.eq('event_id', eventId as string);
-    else existingQuery = existingQuery.eq('classroom_id', classroomId as string);
+    const dupQuery = (withRequireConfirmed: boolean) => {
+      let q = supabase
+        .from('montree_montage_jobs')
+        .select(withRequireConfirmed ? `${DUP_COLUMNS}, require_confirmed` : DUP_COLUMNS)
+        .eq('school_id', auth.schoolId)
+        .eq('scope_type', scopeType)
+        .eq('montage_kind', kind)
+        .in('status', ['queued', 'rendering'])
+        .limit(1);
 
-    existingQuery = dateStart ? existingQuery.eq('date_start', dateStart) : existingQuery.is('date_start', null);
-    existingQuery = dateEnd ? existingQuery.eq('date_end', dateEnd) : existingQuery.is('date_end', null);
+      if (scopeType === 'child') q = q.eq('child_id', childId as string);
+      else if (scopeType === 'event') q = q.eq('event_id', eventId as string);
+      else q = q.eq('classroom_id', classroomId as string);
 
-    const { data: existingRows, error: existErr } = await existingQuery;
+      q = dateStart ? q.eq('date_start', dateStart) : q.is('date_start', null);
+      q = dateEnd ? q.eq('date_end', dateEnd) : q.is('date_end', null);
+
+      if (withRequireConfirmed) q = q.eq('require_confirmed', !bypassConfirmation);
+      return q;
+    };
+
+    let { data: existingRows, error: existErr } = await dupQuery(true);
+    if (existErr && isMissingSchema(existErr.code) && !bypassConfirmation) {
+      // Pre-305 school: the column doesn't exist yet, so no tracker job can
+      // exist either — the unfiltered lookup IS the historical behaviour.
+      // A bypass request falls through to the 503 below instead: without the
+      // column its job can't be inserted anyway.
+      ({ data: existingRows, error: existErr } = await dupQuery(false));
+    }
     if (existErr) {
       if (isMissingSchema(existErr.code)) {
         return NextResponse.json({ error: 'montage system not migrated' }, { status: 503 });
@@ -209,9 +242,13 @@ export async function POST(request: NextRequest) {
       console.error('[montage] duplicate lookup failed:', existErr.message);
       return NextResponse.json({ error: 'Failed to queue montage' }, { status: 500 });
     }
-    const existing = (existingRows || [])[0] as
-      | { id: string; status: string; title: string | null; output_path: string | null }
-      | undefined;
+    const existing = (((existingRows || []) as unknown) as Array<{
+      id: string;
+      status: string;
+      title: string | null;
+      output_path: string | null;
+      require_confirmed?: boolean;
+    }>)[0];
     if (existing) {
       return NextResponse.json({
         ok: true,
@@ -224,6 +261,9 @@ export async function POST(request: NextRequest) {
           montage_kind: kind,
           date_start: dateStart,
           date_end: dateEnd,
+          // The row's own value — pre-305 rows have no column at all, which
+          // means the historical confirmed-only default.
+          require_confirmed: existing.require_confirmed === false ? false : true,
         },
       });
     }
@@ -239,6 +279,7 @@ export async function POST(request: NextRequest) {
       dateStart,
       dateEnd,
       title,
+      requireConfirmed: !bypassConfirmation,
     });
 
     if (!result.ok) {
@@ -268,6 +309,7 @@ export async function POST(request: NextRequest) {
         montage_kind: kind,
         date_start: dateStart,
         date_end: dateEnd,
+        require_confirmed: !bypassConfirmation,
       },
     });
   } catch (error) {
@@ -292,19 +334,29 @@ export async function GET(request: NextRequest) {
 
     // Teacher → her classroom's montages. Principal (no classroom on token)
     // → the whole school's.
-    let query = supabase
-      .from('montree_montage_jobs')
-      .select(
-        'id, scope_type, montage_kind, status, title, output_path, date_start, date_end, created_at, finished_at, error, child_id, event_id, classroom_id'
-      )
-      .eq('school_id', auth.schoolId)
-      .neq('scope_type', 'report')
-      .order('created_at', { ascending: false })
-      .limit(limit);
+    const BASE_COLUMNS =
+      'id, scope_type, montage_kind, status, title, output_path, date_start, date_end, created_at, finished_at, error, child_id, event_id, classroom_id';
 
-    if (auth.classroomId) query = query.eq('classroom_id', auth.classroomId);
+    // require_confirmed (migration 305) lets a client tell Montage Tracker
+    // jobs apart from Montage Studio ones. Selected optimistically and
+    // retried without it pre-migration, so a school that hasn't run 305 keeps
+    // seeing its list instead of an empty one.
+    const runQuery = (columns: string) => {
+      let q = supabase
+        .from('montree_montage_jobs')
+        .select(columns)
+        .eq('school_id', auth.schoolId)
+        .neq('scope_type', 'report')
+        .order('created_at', { ascending: false })
+        .limit(limit);
+      if (auth.classroomId) q = q.eq('classroom_id', auth.classroomId);
+      return q;
+    };
 
-    const { data: jobs, error } = await query;
+    let { data: jobs, error } = await runQuery(`${BASE_COLUMNS}, require_confirmed`);
+    if (error && isMissingSchema(error.code)) {
+      ({ data: jobs, error } = await runQuery(BASE_COLUMNS));
+    }
     if (error) {
       if (isMissingSchema(error.code)) {
         return NextResponse.json({ success: true, montages: [] });
@@ -313,7 +365,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch montages' }, { status: 500 });
     }
 
-    const rows = (jobs || []) as Array<Record<string, unknown>>;
+    const rows = ((jobs || []) as unknown) as Array<Record<string, unknown>>;
 
     // Resolve display names for child / event scoped rows in two batched reads.
     const childIds = [...new Set(rows.map(r => r.child_id).filter((v): v is string => typeof v === 'string'))];
@@ -351,6 +403,8 @@ export async function GET(request: NextRequest) {
       created_at: (r.created_at as string | null) ?? null,
       finished_at: (r.finished_at as string | null) ?? null,
       error: (r.error as string | null) ?? null,
+      // Pre-305 rows have no column at all → treat as the historical default.
+      require_confirmed: r.require_confirmed === false ? false : true,
     }));
 
     return NextResponse.json({ success: true, montages });

@@ -235,6 +235,13 @@ export interface EnqueueScopedArgs {
   /** Inclusive YYYY-MM-DD. Required for classroom/child, optional for event. */
   dateEnd?: string | null;
   title: string;
+  /**
+   * Montage Tracker only (migration 305). When false, the teacher_confirmed
+   * filter is DROPPED — the tracker counts every tagged photo the moment it
+   * is captured. parent_visible=true is still enforced here AND re-asserted
+   * in the worker. Defaults to true, so every existing caller is unchanged.
+   */
+  requireConfirmed?: boolean;
 }
 
 export interface EnqueueScopedResult {
@@ -248,9 +255,14 @@ export interface EnqueueScopedResult {
 /**
  * Count the photos a scoped montage would draw from.
  *
- * 🚨 The three safety filters are NON-NEGOTIABLE and are re-asserted again in
- * the worker (montage-worker/src/media.ts). A photo that is not confirmed or
- * not parent-visible must never reach a rendered film.
+ * 🚨 parent_visible=true is NON-NEGOTIABLE and is re-asserted again in the
+ * worker (montage-worker/src/media.ts). A photo that is not parent-visible
+ * must never reach a rendered film.
+ *
+ * teacher_confirmed=true is the default and applies to every existing caller.
+ * ONLY the Montage Tracker (args.requireConfirmed === false, migration 305)
+ * drops it, because a tracker montage is explicitly built from all tagged
+ * photos regardless of whether the teacher has reviewed them yet.
  *
  * Date range: `captured_at` is a timestamptz, `dateStart`/`dateEnd` are plain
  * calendar dates supplied by the CLIENT in the teacher's own local timezone
@@ -261,13 +273,22 @@ async function countScopedPhotos(
   supabase: SupabaseClient,
   args: EnqueueScopedArgs
 ): Promise<number> {
+  // Montage Tracker child montages count group shots too — see
+  // countTrackerChildPhotos(). Every other path is untouched.
+  if (args.requireConfirmed === false && args.scopeType === 'child' && args.childId) {
+    return countTrackerChildPhotos(supabase, args, args.childId);
+  }
+
   let query = supabase
     .from('montree_media')
     .select('id', { count: 'exact', head: true })
     .eq('school_id', args.schoolId)
     .eq('media_type', 'photo')
-    .eq('teacher_confirmed', true)
     .eq('parent_visible', true);
+
+  if (args.requireConfirmed !== false) {
+    query = query.eq('teacher_confirmed', true);
+  }
 
   if (args.scopeType === 'event') {
     query = query.eq('event_id', args.eventId as string);
@@ -286,6 +307,121 @@ async function countScopedPhotos(
     return 0;
   }
   return count ?? 0;
+}
+
+// --- Montage Tracker child counting --------------------------------------
+// The tracker's boards count a child's photos from BOTH tag sources — the
+// montree_media_children junction (group shots) and montree_media.child_id
+// (the first tagged child) — so a child montage built from the tracker has to
+// draw from the same union, or the board says "8 photos" while the montage
+// says "found 3". The worker's scoped query mirrors this exact union for
+// require_confirmed=false child jobs (montage-worker/src/db.ts).
+//
+// 🚨 Bypass path ONLY (requireConfirmed === false + scope 'child'). Every
+// other caller keeps the plain child_id equality it has always used.
+// parent_visible=true is still applied here and re-asserted in the worker.
+
+/** Supabase caps a plain select at 1000 rows — page every unbounded read. */
+const MEDIA_PAGE_SIZE = 1000;
+/** Hard safety cap so a runaway loop can never hammer the DB (20k rows). */
+const MEDIA_MAX_PAGES = 20;
+/** Keep `in(...)` lists short enough to stay well inside the URL limit. */
+const MEDIA_ID_CHUNK = 200;
+
+function chunkIds(ids: string[], size: number): string[][] {
+  const out: string[][] = [];
+  for (let i = 0; i < ids.length; i += size) out.push(ids.slice(i, i + size));
+  return out;
+}
+
+/**
+ * Count DISTINCT photos a tracker child montage would draw from:
+ * photos whose child_id is this child, UNION photos tagged with her through
+ * montree_media_children. Deduped by media id.
+ * Returns 0 on any lookup failure (same contract as countScopedPhotos).
+ */
+async function countTrackerChildPhotos(
+  supabase: SupabaseClient,
+  args: EnqueueScopedArgs,
+  childId: string
+): Promise<number> {
+  // Same filters as the non-bypass query minus teacher_confirmed, applied to
+  // BOTH halves of the union so the two agree on scope and date range.
+  const baseQuery = () => {
+    let q = supabase
+      .from('montree_media')
+      .select('id')
+      .eq('school_id', args.schoolId)
+      .eq('media_type', 'photo')
+      .eq('parent_visible', true);
+    if (args.dateStart) q = q.gte('captured_at', `${args.dateStart}T00:00:00`);
+    if (args.dateEnd) q = q.lt('captured_at', `${exclusiveEnd(args.dateEnd)}T00:00:00`);
+    return q;
+  };
+
+  const mediaIds = new Set<string>();
+
+  try {
+    // 1) Photos where she is the primary (first-tagged) child.
+    //    🚨 .order() on a UNIQUE key is required for correct .range() paging —
+    //    without a stable sort, page boundaries are undefined and rows are
+    //    skipped or duplicated.
+    for (let page = 0; page < MEDIA_MAX_PAGES; page++) {
+      const from = page * MEDIA_PAGE_SIZE;
+      const { data, error } = await baseQuery()
+        .eq('child_id', childId)
+        .order('id', { ascending: true })
+        .range(from, from + MEDIA_PAGE_SIZE - 1);
+      if (error) {
+        console.error('[montage/enqueue] tracker child count failed:', error.message);
+        return 0;
+      }
+      const pageRows = (data || []) as Array<{ id: string }>;
+      for (const row of pageRows) mediaIds.add(row.id);
+      if (pageRows.length < MEDIA_PAGE_SIZE) break;
+    }
+
+    // 2) Photos she is tagged in via the junction (group shots). The junction
+    //    carries no date/scope columns, so its media ids are re-filtered
+    //    against montree_media with the identical predicates above.
+    //    Ordered on (child_id, media_id): child_id is fixed by the filter, so
+    //    media_id is the unique tiebreaker within this child's rows — the same
+    //    composite-order rule as the class-progress junction pagination.
+    const taggedIds: string[] = [];
+    for (let page = 0; page < MEDIA_MAX_PAGES; page++) {
+      const from = page * MEDIA_PAGE_SIZE;
+      const { data, error } = await supabase
+        .from('montree_media_children')
+        .select('media_id, child_id')
+        .eq('child_id', childId)
+        .order('child_id', { ascending: true })
+        .order('media_id', { ascending: true })
+        .range(from, from + MEDIA_PAGE_SIZE - 1);
+      if (error) {
+        console.error('[montage/enqueue] tracker junction lookup failed:', error.message);
+        return 0;
+      }
+      const pageRows = (data || []) as Array<{ media_id: string }>;
+      for (const row of pageRows) {
+        if (!mediaIds.has(row.media_id)) taggedIds.push(row.media_id);
+      }
+      if (pageRows.length < MEDIA_PAGE_SIZE) break;
+    }
+
+    for (const ids of chunkIds(taggedIds, MEDIA_ID_CHUNK)) {
+      const { data, error } = await baseQuery().in('id', ids);
+      if (error) {
+        console.error('[montage/enqueue] tracker tagged-media filter failed:', error.message);
+        return 0;
+      }
+      for (const row of (data || []) as Array<{ id: string }>) mediaIds.add(row.id);
+    }
+
+    return mediaIds.size;
+  } catch (err) {
+    console.error('[montage/enqueue] tracker child count unexpected error:', err);
+    return 0;
+  }
 }
 
 /** YYYY-MM-DD -> the next calendar day, so an inclusive end date can be
@@ -313,6 +449,14 @@ export async function enqueueScopedMontage(
       return { ok: false, photoCount, minPhotos, reason: 'insufficient_photos' };
     }
 
+    // Migration 305. The column is only written when it differs from the
+    // DB default (true), so a school that has not run 305 yet keeps the
+    // existing Montage Studio path working byte-for-byte — only a TRACKER
+    // job (requireConfirmed=false) hits the missing column and degrades to
+    // the usual clean 'not_migrated' 503.
+    const requireConfirmedPatch =
+      args.requireConfirmed === false ? { require_confirmed: false } : {};
+
     const { data, error } = await supabase
       .from('montree_montage_jobs')
       .insert({
@@ -327,6 +471,7 @@ export async function enqueueScopedMontage(
         date_end: args.dateEnd ?? null,
         title: args.title,
         status: 'queued',
+        ...requireConfirmedPatch,
       })
       .select('id')
       .single();

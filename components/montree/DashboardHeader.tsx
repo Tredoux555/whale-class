@@ -10,7 +10,7 @@ import {
   FileText, Target, Search, Sparkles, BookOpen,
   LayoutGrid, CalendarDays, Images, FolderOpen, TrendingUp,
   Users, BookMarked, Globe, BarChart2, Settings2, LogOut,
-  MessageSquare, KeyRound, Calendar, UploadCloud, Clapperboard,
+  MessageSquare, KeyRound, Calendar, UploadCloud, Clapperboard, ListChecks,
   // UserPlus removed Jul 3 2026 — the "Invite your principal" menu row was
   // hidden. Re-add UserPlus here if that row is ever uncommented.
 } from 'lucide-react';
@@ -230,6 +230,7 @@ function DashboardHeader() {
     if (pathname === '/montree/dashboard/weekly-admin-docs')  return 'weekly-plan';
     if (pathname === '/montree/dashboard/albums')             return 'albums';
     if (pathname === '/montree/dashboard/montage')            return 'montage';
+    if (pathname === '/montree/dashboard/montage-tracker')    return 'montage-tracker';
     if (pathname?.startsWith('/montree/library'))             return 'library';
     if (pathname === '/montree/dashboard/earnings')           return 'earnings';
     if (pathname === '/montree/dashboard/students')           return 'manage-students';
@@ -724,6 +725,17 @@ function DashboardHeader() {
                     label={t('montage.title')}
                     active={activePage === 'montage'}
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/montage'); }}
+                  />
+
+                  {/* Montage Tracker — pinned OUTSIDE the config/legacy branch
+                      for the same reason as the Montage Studio row above: a
+                      brand-new surface is in no teacher's saved menu config,
+                      so it would be invisible to every school that has one. */}
+                  <MenuRow
+                    icon={ListChecks}
+                    label={t('montageTracker.title')}
+                    active={activePage === 'montage-tracker'}
+                    onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/montage-tracker'); }}
                   />
                   <Divider />
 
