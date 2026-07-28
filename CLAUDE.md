@@ -13,6 +13,9 @@
    or use Desktop Commander which has full local rights.
 3. Pre-commit i18n hook is strict across all 12 locales — new UI keys must be added to
    en/zh/es/de/fr/pt/nl/it/ja/ko/uk/ru before committing (or the commit is rejected).
+4. **EVERY SQL MIGRATION MUST BE PASTED IN FULL, DIRECTLY IN THE CHAT.** Never just say
+   "run migrations/NNN_x.sql" — Tredoux applies migrations by copy-pasting from the chat into
+   the Supabase SQL editor. Paste the complete runnable SQL in a code block, every time.
 
 ## 🎬 SESSION — Jul 28, 2026 (Cowork) — MONTAGE TRACKER (MM) SHIPPED
 
