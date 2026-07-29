@@ -1,5 +1,54 @@
 # Whale / Montree — Latest Handoff
 
+## 🔒 Jul 29 (Cowork) — SATPIN PAPERWORK PIPELINE LOCKED IN as approved convention (do not redesign)
+
+Tredoux's verdict on the new SATPIN paperwork pack + tracing workbook: "couldn't be any more
+perfect… Lock that in as the pipeline and the templates. When I tell you to do a letter — I want
+all of this." The rule now lives in `CLAUDE.md` (🔒 SATPIN Paperwork Pipeline — LOCKED section) —
+read that before touching layout, fonts, or the stroke rule.
+
+**Everything lives in `scripts/curriculum/satpin-paperwork/`, one JSON per letter driving both
+PDFs.** `letters/<slug>.json` (p.json, i.json exist): sentences import live from the dark-phonics-
+readers book script (`bookP.py`/`bookI.py`) — story text is never duplicated — plus
+`sequencingDisplayOrder`/`matchDisplayOrder` (fixed derangements, deterministic), 10 yes/no items
+(5 yes from the book, 5 no from prior-week vocab via picture-bank photos, chosen to avoid anything
+the animal could plausibly eat/do), and `artDir`. `build_paperwork.py` renders the **approved** A4
+portrait `paperwork-pack.pdf`, 4pp: story order (5 pics, fixed shuffle, 24mm write-in boxes 1–5) ·
+match (sentences left, pics right, draw a line) · yes-or-no ×2pp (10 questions, small photo, ✓/✗
+20mm boxes) — house fonts only (YoungSerif/Outfit/Lora/WorkSans) via `MONTREE_CANVAS_FONTS`.
+`build_tracing.py` renders the **approved** A4 LANDSCAPE `tracing-workbook.pdf`, modeled on
+Tredoux's classroom velcro material photo: cover ("written by ___") + 5 pages, each READ IT (solid
+manuscript model sentence) · art 58×38mm top-right · BUILD IT (dashed 20mm velcro slots sized to
+word cards) · TRACE IT (full sentence in dotted skeleton letters on 3-line guides — dotted
+headline/dashed midline/solid baseline, 12.5mm x-height — red/blue stroke-order arrows auto-
+derived per stroke) · blank NOW YOU line, plus a companion `sentence-strips.pdf` (cut-out word
+cards, sized exactly = slots). `stroke_font.py` is the single-stroke manuscript engine (69 glyphs,
+hand-defined stroke order/starts, locked rule: circle letters a/c/d/e/g/o/q/s start ~2 o'clock
+counter-clockwise, stems draw down, arches draw up) — the model sentence and the word cards render
+from the same skeleton, no school-print TTF, single-storey 'a', so the child reads/builds/traces
+identical letterforms; warns on undefined characters. Outputs land in
+`public/satpin-materials/<slug>/`; old A5 tracing editions retired to
+`_to_delete/satpin-old-a5-tracing/`.
+
+**UI:** `app/montree/library/satpin/page.tsx` gained a `PaperworkRow` (sits between ReaderRow and
+the Book box, probes-and-renders like ReaderRow; labels "Worksheet pack · A4" / "Tracing workbook ·
+A4" / "Sentence strips · cut-outs", descriptor "Story order · matching · yes/no · trace & build").
+New letters appear automatically once the three files exist — no code change per letter.
+
+**The recipe, when Tredoux says "do letter X":** 1) write `letters/<slug>.json` (needs `bookX.py`
+to already exist), 2) `python3 build_paperwork.py --letter <slug>` and `python3 build_tracing.py
+--letter <slug>` (default output = `public/satpin-materials/<slug>/`), 3) rasterize and eyeball
+every page, 4) commit. Fonts come from `MONTREE_CANVAS_FONTS` on the Mac.
+
+**Status:** letters P ✅ and I ✅ shipped (P wrong-answers: tiger/sock/taxi/snake/alligator; I
+wrong-visitors: pig/tiger/taxi/sock/alligator — I's `artDir` still points at
+`_incoming-week5-i/book-scenes/` and must be updated once those scenes move to
+`phonics-images/satpin-v2/books/igloo/`). Letters S/A/T (weeks 1–3) have **no paperwork yet**, and
+their book scripts may not exist in `bookX.py` form — check before promising a date. All committed
+to `main`, typecheck clean, as of this 2026-07-29 Cowork session.
+
+---
+
 ## 🎬 Jul 28 — Montage Tracker (MM) SHIPPED and LIVE (migration 305 run, worker redeployed)
 
 **Full pickup: `docs/handoffs/HANDOFF_MONTAGE_TRACKER_Jul28.md`.** New teacher-facing,

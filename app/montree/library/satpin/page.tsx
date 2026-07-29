@@ -326,9 +326,19 @@ const mediaPaths = (slug: string) => ({
   song: `/satpin-materials/${slug}/song.mp3`,
   reader: `/satpin-materials/${slug}/reader.pdf`,
   readerBooklet: `/satpin-materials/${slug}/reader-booklet.pdf`,
+  paperworkPack: `/satpin-materials/${slug}/paperwork-pack.pdf`,
+  tracingWorkbook: `/satpin-materials/${slug}/tracing-workbook.pdf`,
+  sentenceStrips: `/satpin-materials/${slug}/sentence-strips.pdf`,
 });
 
-type MediaFlags = { song: boolean; reader: boolean; readerBooklet: boolean };
+type MediaFlags = {
+  song: boolean;
+  reader: boolean;
+  readerBooklet: boolean;
+  paperworkPack: boolean;
+  tracingWorkbook: boolean;
+  sentenceStrips: boolean;
+};
 
 /** HEAD probe — 2xx means the file is on disk. Network errors read as absent. */
 async function fileExists(url: string): Promise<boolean> {
@@ -455,10 +465,11 @@ export default function SatpinPage() {
     (async () => {
       const found = await Promise.all(WEEKS.map(async (w) => {
         const p = mediaPaths(w.slug);
-        const [song, reader, readerBooklet] = await Promise.all([
+        const [song, reader, readerBooklet, paperworkPack, tracingWorkbook, sentenceStrips] = await Promise.all([
           fileExists(p.song), fileExists(p.reader), fileExists(p.readerBooklet),
+          fileExists(p.paperworkPack), fileExists(p.tracingWorkbook), fileExists(p.sentenceStrips),
         ]);
-        return [w.slug, { song, reader, readerBooklet }] as const;
+        return [w.slug, { song, reader, readerBooklet, paperworkPack, tracingWorkbook, sentenceStrips }] as const;
       }));
       if (cancelled) return;
       setMedia(Object.fromEntries(found));
@@ -723,12 +734,30 @@ export default function SatpinPage() {
     const src = videos[block.slug];
     if (!src) return <EmptySlot>Music video — coming soon</EmptySlot>;
     const poster = `/api/montree/media/proxy/letter-cards/letter-card-${String(block.week).padStart(2, '0')}-${block.slug}.png?bucket=dark-phonics`;
+    // `src` is a Supabase Storage public object URL (satpin-media's GET hands
+    // back `getPublicUrl()` output). Supabase honours a `download` query
+    // param on those URLs by setting Content-Disposition: attachment on the
+    // response — a plain cross-origin `<a download>` would be ignored by the
+    // browser and just play the video, so the param is what actually
+    // triggers Save-as. Zero new server code: same public URL the <video>
+    // tag already streams, just with one query param appended.
+    const downloadHref = `${src}${src.includes('?') ? '&' : '?'}download=satpin-${block.slug}-music-video.mp4`;
     return (
       <div
         className="mt-3 rounded-xl border px-4 py-3 text-left"
         style={{ background: 'rgba(255,255,255,0.03)', borderColor: `rgba(${block.accent},0.16)` }}
       >
-        <div className="text-white/25 text-[10px] tracking-wider uppercase mb-2">Music video</div>
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-white/25 text-[10px] tracking-wider uppercase">Music video</div>
+          <a
+            href={downloadHref}
+            download
+            className="px-2 py-1 rounded-md border text-[10px] transition-all hover:bg-white/[0.06]"
+            style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)' }}
+          >
+            Download
+          </a>
+        </div>
         <video
           controls
           preload="none"
@@ -766,6 +795,48 @@ export default function SatpinPage() {
           <div className="text-white/90 font-medium text-sm">{block.reader.title}</div>
         )}
         <div className="mt-2 flex flex-wrap gap-2">
+          {downloads.map((d) => (
+            <a
+              key={d.href}
+              href={d.href}
+              download
+              className="px-3 py-2 rounded-lg border text-xs transition-all hover:bg-white/[0.06]"
+              style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)' }}
+            >
+              {d.label}
+            </a>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  /**
+   * Week paperwork. Same drop-in convention as ReaderRow — no manifest
+   * override, just a HEAD probe per path — but always at the fixed paths
+   * below (worksheet pack + two tracing-book variants). Only ever invoked
+   * for a full basket week; sound-only weeks skip it entirely, the same way
+   * they skip ReaderRow.
+   */
+  const PaperworkRow = ({ block }: { block: WeekBlock }) => {
+    const flags = media[block.slug];
+    const paths = mediaPaths(block.slug);
+    const downloads = [
+      ...(flags?.paperworkPack ? [{ href: paths.paperworkPack, label: 'Worksheet pack · A4' }] : []),
+      ...(flags?.tracingWorkbook ? [{ href: paths.tracingWorkbook, label: 'Tracing workbook · A4' }] : []),
+      ...(flags?.sentenceStrips ? [{ href: paths.sentenceStrips, label: 'Sentence strips · cut-outs' }] : []),
+    ];
+
+    if (downloads.length === 0) return <EmptySlot>Workbook material — coming soon</EmptySlot>;
+
+    return (
+      <div
+        className="mt-3 rounded-xl border px-4 py-3 text-left"
+        style={{ background: 'rgba(255,255,255,0.03)', borderColor: `rgba(${block.accent},0.16)` }}
+      >
+        <div className="text-white/25 text-[10px] tracking-wider uppercase mb-1">Workbook material</div>
+        <div className="text-white/35 text-xs mb-2">Story order &middot; matching &middot; yes/no &middot; trace &amp; build</div>
+        <div className="flex flex-wrap gap-2">
           {downloads.map((d) => (
             <a
               key={d.href}
@@ -1060,6 +1131,9 @@ export default function SatpinPage() {
                     <span className="text-white/20 text-xs">Book — coming soon</span>
                   </div>
                 )}
+
+                {/* Workbook material — last row in the card */}
+                <PaperworkRow block={block} />
               </div>
               );
             })}
