@@ -147,15 +147,18 @@ const WEEKS: WeekBlock[] = [
     decodable: ['sit', 'it', 'is', 'sip', 'pit', 'spit'],
     words: ['igloo', 'iguana', 'inchworm', 'insect', 'infant'],
     accent: '96,165,250', tint: '191,219,254',
-    // Reader slot wired by hand — same book-print convention as the letter-P
-    // book (see WeekBlock.reader doc). Was the legacy "Sit, Sit, Sit" reader;
-    // do not delete public/satpin-books/print/sit-sit-sit-* — just unwired here.
-    reader: {
+    // Book slot, same shape as the letter-P book. Was wired as a hand-set
+    // `reader` while the scene pictures were missing; the legacy "Sit, Sit,
+    // Sit" reader is unwired but kept — do not delete
+    // public/satpin-books/print/sit-sit-sit-*.
+    book: {
       title: 'Into the Igloo',
+      blurb: 'Initial-sound book — the child shouts the picture word, it is not decoded.',
       downloads: [
         { href: '/satpin-books/print/into-the-igloo-A5-reading.pdf', label: 'Read-along' },
         { href: '/satpin-books/print/into-the-igloo-A5-booklet-print.pdf', label: 'Print booklet A5' },
       ],
+      pictureLabels: ['iguana went into the igloo', 'inchworm went into the igloo', 'infant went into the igloo', 'insect went into the igloo', 'warm inside the igloo'],
     },
   },
   {
