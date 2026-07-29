@@ -1178,6 +1178,13 @@ export const pt: Record<string, string> = {
   'parentMilestones.loading': 'Carregando marcos...',
   'parentMilestones.growingTitle': 'Crescendo a Cada Dia',
   'parentMilestones.noMilestonesYet': 'Os marcos aparecerão aqui conforme {childName} domina novas habilidades',
+
+  // Parent Montages
+  'parentMontages.title': 'Pequenos filmes',
+  'parentMontages.empty': 'Ainda não há filmes. Quando um professor compartilhar um, ele aparecerá aqui.',
+  'parentMontages.errorLoad': 'Não foi possível carregar os filmes',
+  'parentMontages.download': 'Baixar',
+
   'parentMessages.errorLoad': 'Falha ao carregar mensagens',
   'parentMessages.loading': 'Carregando mensagens...',
   'parentMessages.filterAll': 'Todas as Mensagens',
@@ -5464,7 +5471,7 @@ export const pt: Record<string, string> = {
   'montage.noEvents': 'Ainda não há eventos especiais — crie um na tela de revisão de fotos.',
 
   // Acompanhamento de fotos — sem IA: a foto conta assim que é marcada.
-  'montageTracker.title': 'Gestor de Montagem',
+  'montageTracker.title': 'Estúdio de Montagem',
   'montageTracker.subtitle': 'Cada foto conta assim que você a marca.',
   'montageTracker.tab.daily': 'Hoje',
   'montageTracker.tab.weekly': 'Esta semana',

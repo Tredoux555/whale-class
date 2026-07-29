@@ -12,7 +12,12 @@
 //          re-verified server-side, then rendered verbatim by the worker.
 //   GET  ?limit=20
 //        → the teacher's recent SCOPED montages (report montages excluded —
-//          those live on the Weekly Wrap tab).
+//          those live on the Weekly Wrap tab). Each row carries a resolved
+//          `label` (child / class / event name), a `video_url` (plain media
+//          proxy URL, null until the worker stamps output_path) and `sent_at`
+//          — the parent-delivery stamp from migration 307. sent_at is READ
+//          ONLY here and is null on any school that has not run 307; the
+//          write lives in /api/montree/montage/send.
 //
 // 🚨 TIMEZONE. Teachers are in Asia/Shanghai but schools vary and the app
 // stores no per-school timezone. So the CLIENT computes date_start/date_end
@@ -38,6 +43,7 @@ import {
   verifyMediaIds,
   MAX_PICKER_PHOTOS,
 } from '@/lib/montree/montage-tracker/media';
+import { getVideoProxyUrl } from '@/lib/montree/media/proxy-url';
 
 const SCOPE_TYPES: MontageScopeType[] = ['classroom', 'child', 'event'];
 const KINDS: MontageKind[] = ['daily', 'weekly', 'custom'];
@@ -48,6 +54,29 @@ const MAX_MEDIA_IDS = MAX_PICKER_PHOTOS;
 
 function isMissingSchema(code?: string): boolean {
   return code === '42P01' || code === '42703';
+}
+
+/**
+ * The one human string that names what a montage covers: the child's name, the
+ * class's name, or the event's name. Resolved from the scope's own table (the
+ * maps are pre-batched in GET) and only falling back to the row's stored
+ * `title`, which is a snapshot taken at queue time and goes stale if the child
+ * or room is later renamed.
+ */
+function scopeLabel(
+  row: Record<string, unknown>,
+  childNames: Map<string, string>,
+  eventNames: Map<string, string>,
+  roomNames: Map<string, string>
+): string {
+  const scope = row.scope_type as string | null;
+  const byScope =
+    scope === 'child'
+      ? (typeof row.child_id === 'string' ? childNames.get(row.child_id) : null)
+      : scope === 'event'
+        ? (typeof row.event_id === 'string' ? eventNames.get(row.event_id) : null)
+        : (typeof row.classroom_id === 'string' ? roomNames.get(row.classroom_id) : null);
+  return byScope || (row.title as string | null) || 'Montage';
 }
 
 /** UTC-based fallback only — see the timezone note at the top of the file. */
@@ -452,10 +481,23 @@ export async function GET(request: NextRequest) {
     const BASE_COLUMNS =
       'id, scope_type, montage_kind, status, title, output_path, date_start, date_end, created_at, finished_at, error, child_id, event_id, classroom_id';
 
-    // require_confirmed (migration 305) lets a client tell Montage Tracker
-    // jobs apart from Montage Studio ones. Selected optimistically and
-    // retried without it pre-migration, so a school that hasn't run 305 keeps
-    // seeing its list instead of an empty one.
+    // Two OPTIONAL columns ride on top of the base set:
+    //   require_confirmed (migration 305) — tells a Montage Manager job apart
+    //                                       from a Montage Studio one.
+    //   sent_at           (migration 307) — when this film was sent to parents.
+    //                                       WRITTEN ONLY by /montage/send; this
+    //                                       route never touches it.
+    // Migrations are applied per-school and 307 MAY NOT BE RUN, so the select
+    // walks a ladder from richest to poorest and drops one optional column per
+    // 42703/42P01 rather than turning a missing column into a 500 (or, worse,
+    // an empty list). A school missing a column simply gets null for it.
+    const COLUMN_TIERS = [
+      `${BASE_COLUMNS}, require_confirmed, sent_at`,
+      `${BASE_COLUMNS}, require_confirmed`,
+      `${BASE_COLUMNS}, sent_at`,
+      BASE_COLUMNS,
+    ];
+
     const runQuery = (columns: string) => {
       let q = supabase
         .from('montree_montage_jobs')
@@ -468,9 +510,9 @@ export async function GET(request: NextRequest) {
       return q;
     };
 
-    let { data: jobs, error } = await runQuery(`${BASE_COLUMNS}, require_confirmed`);
-    if (error && isMissingSchema(error.code)) {
-      ({ data: jobs, error } = await runQuery(BASE_COLUMNS));
+    let { data: jobs, error } = await runQuery(COLUMN_TIERS[0]);
+    for (let tier = 1; tier < COLUMN_TIERS.length && error && isMissingSchema(error.code); tier++) {
+      ({ data: jobs, error } = await runQuery(COLUMN_TIERS[tier]));
     }
     if (error) {
       if (isMissingSchema(error.code)) {
@@ -482,16 +524,21 @@ export async function GET(request: NextRequest) {
 
     const rows = ((jobs || []) as unknown) as Array<Record<string, unknown>>;
 
-    // Resolve display names for child / event scoped rows in two batched reads.
+    // Resolve display names for child / event / classroom scoped rows in three
+    // batched reads (ids only, so each is a single indexed `in` lookup).
     const childIds = [...new Set(rows.map(r => r.child_id).filter((v): v is string => typeof v === 'string'))];
     const eventIds = [...new Set(rows.map(r => r.event_id).filter((v): v is string => typeof v === 'string'))];
+    const roomIds = [...new Set(rows.map(r => r.classroom_id).filter((v): v is string => typeof v === 'string'))];
 
-    const [childRes, eventRes] = await Promise.all([
+    const [childRes, eventRes, roomRes] = await Promise.all([
       childIds.length
         ? supabase.from('montree_children').select('id, name').in('id', childIds)
         : Promise.resolve({ data: [] as Array<{ id: string; name: string }> }),
       eventIds.length
         ? supabase.from('montree_events').select('id, name').in('id', eventIds)
+        : Promise.resolve({ data: [] as Array<{ id: string; name: string }> }),
+      roomIds.length
+        ? supabase.from('montree_classrooms').select('id, name').in('id', roomIds)
         : Promise.resolve({ data: [] as Array<{ id: string; name: string }> }),
     ]);
 
@@ -499,6 +546,8 @@ export async function GET(request: NextRequest) {
     for (const c of (childRes.data || []) as Array<{ id: string; name: string }>) childNames.set(c.id, c.name);
     const eventNames = new Map<string, string>();
     for (const e of (eventRes.data || []) as Array<{ id: string; name: string }>) eventNames.set(e.id, e.name);
+    const roomNames = new Map<string, string>();
+    for (const r of (roomRes.data || []) as Array<{ id: string; name: string }>) roomNames.set(r.id, r.name);
 
     const montages = rows.map(r => ({
       id: r.id as string,
@@ -512,7 +561,16 @@ export async function GET(request: NextRequest) {
         'Montage',
       child_name: typeof r.child_id === 'string' ? childNames.get(r.child_id) ?? null : null,
       event_name: typeof r.event_id === 'string' ? eventNames.get(r.event_id) ?? null : null,
+      classroom_name: typeof r.classroom_id === 'string' ? roomNames.get(r.classroom_id) ?? null : null,
+      // One human string per row, resolved from the scope's own table so the
+      // client never has to guess which of the three names to show.
+      label: scopeLabel(r, childNames, eventNames, roomNames),
       output_path: (r.output_path as string | null) ?? null,
+      // Same plain proxy URL the parent report player uses. Null until the
+      // worker stamps output_path; append ?download=1 for a "Save as".
+      video_url: typeof r.output_path === 'string' && r.output_path
+        ? getVideoProxyUrl(r.output_path)
+        : null,
       date_start: (r.date_start as string | null) ?? null,
       date_end: (r.date_end as string | null) ?? null,
       created_at: (r.created_at as string | null) ?? null,
@@ -520,6 +578,10 @@ export async function GET(request: NextRequest) {
       error: (r.error as string | null) ?? null,
       // Pre-305 rows have no column at all → treat as the historical default.
       require_confirmed: r.require_confirmed === false ? false : true,
+      // Pre-307 schools have no column at all — the row object simply has no
+      // such key, and `undefined ?? null` gives the client a clean "never
+      // sent" instead of a missing field.
+      sent_at: (r.sent_at as string | null | undefined) ?? null,
     }));
 
     return NextResponse.json({ success: true, montages });

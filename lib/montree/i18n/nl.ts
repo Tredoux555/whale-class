@@ -1178,6 +1178,13 @@ export const nl: Record<string, string> = {
   'parentMilestones.loading': 'Mijlpalen laden...',
   'parentMilestones.growingTitle': 'Elke Dag Groeiend',
   'parentMilestones.noMilestonesYet': 'Mijlpalen verschijnen hier wanneer {childName} nieuwe vaardigheden beheerst',
+
+  // Parent Montages
+  'parentMontages.title': 'Kleine filmpjes',
+  'parentMontages.empty': 'Nog geen filmpjes. Zodra een leerkracht er een deelt, verschijnt het hier.',
+  'parentMontages.errorLoad': 'Kan de filmpjes niet laden',
+  'parentMontages.download': 'Downloaden',
+
   'parentMessages.errorLoad': 'Berichten konden niet worden geladen',
   'parentMessages.loading': 'Berichten laden...',
   'parentMessages.filterAll': 'Alle Berichten',
@@ -5464,7 +5471,7 @@ export const nl: Record<string, string> = {
   'montage.noEvents': 'Nog geen bijzondere gebeurtenissen — maak er een aan vanaf het foto-beoordelingsscherm.',
 
   // Fototracker — geen AI: een foto telt zodra deze getagd is.
-  'montageTracker.title': 'Montagebeheer',
+  'montageTracker.title': 'Montagestudio',
   'montageTracker.subtitle': 'Elke foto telt zodra u hem tagt.',
   'montageTracker.tab.daily': 'Vandaag',
   'montageTracker.tab.weekly': 'Deze week',

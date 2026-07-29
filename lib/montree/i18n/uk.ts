@@ -1178,6 +1178,13 @@ export const uk: Record<string, string> = {
   'parentMilestones.loading': 'Завантаження етапів розвитку...',
   'parentMilestones.growingTitle': 'Зростає кожен день',
   'parentMilestones.noMilestonesYet': 'Етапи розвитку з\'являтимуться тут, коли ваша дитина оволодіє новими навичками {childName}',
+
+  // Parent Montages
+  'parentMontages.title': 'Маленькі фільми',
+  'parentMontages.empty': 'Поки що немає фільмів. Коли вчитель поділиться, він з\'явиться тут.',
+  'parentMontages.errorLoad': 'Не вдалося завантажити фільми',
+  'parentMontages.download': 'Завантажити',
+
   'parentMessages.errorLoad': 'Не вдалося завантажити повідомлення',
   'parentMessages.loading': 'Завантаження повідомлень...',
   'parentMessages.filterAll': 'Усі повідомлення',
@@ -5461,7 +5468,7 @@ export const uk: Record<string, string> = {
   'montage.noEvents': 'Особливих подій поки немає — створіть їх на екрані перевірки фото.',
 
   // Відстеження фотографій — без ШІ: фото зараховується одразу після позначення.
-  'montageTracker.title': 'Менеджер монтажу',
+  'montageTracker.title': 'Студія монтажу',
   'montageTracker.subtitle': 'Кожне фото зараховується одразу, як тільки ви його позначите.',
   'montageTracker.tab.daily': 'Сьогодні',
   'montageTracker.tab.weekly': 'Цього тижня',

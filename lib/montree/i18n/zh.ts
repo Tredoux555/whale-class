@@ -1369,6 +1369,12 @@ export const zh = {
   'parentMilestones.growingTitle': '每天都在成长',
   'parentMilestones.noMilestonesYet': '当{childName}掌握新技能时，里程碑将显示在此处',
 
+  // Parent Montages
+  'parentMontages.title': '小影片',
+  'parentMontages.empty': '还没有影片。老师分享后会显示在这里。',
+  'parentMontages.errorLoad': '影片加载失败',
+  'parentMontages.download': '下载',
+
   // Phase 8 — Parent Messages
   'parentMessages.errorLoad': '加载消息失败',
   'parentMessages.loading': '加载消息中...',
@@ -5874,7 +5880,7 @@ export const zh = {
   'montage.noEvents': '还没有特别活动——可在照片审核页面创建一个。',
 
   // 照片追踪器（Montage Tracker）——无 AI，标记即计数。
-  'montageTracker.title': '蒙太奇管理器',
+  'montageTracker.title': '蒙太奇工作室',
   'montageTracker.subtitle': '只要标记了孩子，照片立即计入。',
   'montageTracker.tab.daily': '今天',
   'montageTracker.tab.weekly': '本周',

@@ -36,6 +36,12 @@
 // require_confirmed filter), so nothing was lost. The API and lib are
 // untouched.
 //
+// It came back Jul 2026 as the 🎬 header button → MontagesSheet, and it is
+// deliberately NOT the old inline list: a slide-over, dynamically imported,
+// mounted only while open, that exists for the three things you do with a
+// FINISHED film — play it, download it, send it to parents. The creator and
+// the coverage boards below are untouched by it.
+//
 // 🚨 TIMEZONE: every date here is the BROWSER's local calendar date, via
 // lib/montree/montage-tracker/weekRange (never toISOString — that would shift
 // the day in Asia/Shanghai). Same rule as MontageStudio.
@@ -66,9 +72,12 @@ import {
   type TrackerClassroom,
 } from '@/lib/montree/montage-tracker/coverage';
 
-// Code-split the two modals — neither is needed on first paint.
+// Code-split the overlays — none is needed on first paint. MontagesSheet is
+// additionally gated behind its own open flag below, so its chunk (and the
+// <video> elements inside it) only downloads when a teacher taps 🎬.
 const PhotoLightbox = dynamic(() => import('@/components/montree/media/PhotoLightbox'), { ssr: false });
 const DeleteConfirmDialog = dynamic(() => import('@/components/montree/media/DeleteConfirmDialog'), { ssr: false });
+const MontagesSheet = dynamic(() => import('@/components/montree/montage/MontagesSheet'), { ssr: false });
 
 // Dark-forest tokens, inline per component (house style — see MontageStudio).
 const T = {
@@ -419,6 +428,10 @@ export default function MontageManagerPage() {
   // cleared by choosePath.
   const [cropUrlOverrides, setCropUrlOverrides] = useState<Record<string, string>>({});
   const [isSavingCrop, setIsSavingCrop] = useState(false);
+
+  // --- finished-montages sheet -------------------------------------------
+  // Closed = unmounted = zero requests. See MontagesSheet's polling note.
+  const [montagesOpen, setMontagesOpen] = useState(false);
 
   useEffect(() => {
     const session = getSession();
@@ -932,12 +945,28 @@ export default function MontageManagerPage() {
       {/* Header */}
       <div className="relative bg-[rgba(7,18,12,0.9)] border-b border-[rgba(52,211,153,0.15)] px-4 py-4 flex items-center gap-3">
         <button onClick={() => router.back()} className="text-white/50 text-xl" aria-label="Back">←</button>
-        <div>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <h1 className="text-lg font-bold text-white/95" style={{ fontFamily: T.serif }}>
             📸 {t('montageTracker.title')}
           </h1>
           <p className="text-xs text-white/40">{t('montageTracker.subtitle')}</p>
         </div>
+        {/* Finished films — play / download / send to parents. */}
+        <button
+          type="button"
+          onClick={() => setMontagesOpen(true)}
+          aria-label={t('montageTracker.jobs.title')}
+          title={t('montageTracker.jobs.title')}
+          style={{
+            flexShrink: 0,
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            width: 38, height: 38, borderRadius: 12, fontSize: 17, lineHeight: 1,
+            background: T.emeraldSoft, border: `1px solid ${T.emeraldBorder}`,
+            color: T.emerald, cursor: 'pointer',
+          }}
+        >
+          🎬
+        </button>
       </div>
 
       <div className="relative px-4 py-4" style={{ maxWidth: 640, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -1392,6 +1421,11 @@ export default function MontageManagerPage() {
         primaryActionLabel={`🎬 ${t('montageTracker.create.button')}`}
         primaryActionDisabled={creating || photosLoading || keptPhotos.length < minPhotos}
       />
+
+      {/* --- finished montages: play / download / send to parents ---
+          Rendered only while open so the dynamic chunk (and its <video>
+          elements) never load for a teacher who does not ask for them. */}
+      {montagesOpen && <MontagesSheet onClose={() => setMontagesOpen(false)} />}
 
       {/* --- delete confirmation ---
           DeleteConfirmDialog is z-50 and the lightbox is z-[100]; the bin lives
