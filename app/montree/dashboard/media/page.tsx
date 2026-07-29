@@ -4,7 +4,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useI18n } from '@/lib/montree/i18n';
@@ -62,9 +62,16 @@ function MediaPageContent() {
   // FETCH DATA
   // ============================================
 
-  const fetchMedia = useCallback(async () => {
+  // Guards against out-of-order responses now that a visibility/focus refetch can
+  // overlap the filter-driven one — only the newest request may write state.
+  const mediaRequestSeqRef = useRef(0);
+
+  const fetchMedia = useCallback(async (opts?: { silent?: boolean }) => {
+    const seq = ++mediaRequestSeqRef.current;
     try {
-      setLoading(true);
+      // silent: background refetch (visibility/focus) must NOT flip the gallery
+      // skeleton, or returning to the tab flashes the whole grid every time.
+      if (!opts?.silent) setLoading(true);
 
       // Build query params
       const params = new URLSearchParams();
@@ -89,11 +96,19 @@ function MediaPageContent() {
         params.set('event_id', selectedEventId);
       }
 
-      const response = await fetch(`/api/montree/media?${params}`);
+      // no-store: the media API sends `max-age=60, stale-while-revalidate=120`, so
+      // without this the browser can serve a pre-capture "0 photos" snapshot for up
+      // to ~3 min — exactly the "I shot for the event and nothing landed" report,
+      // because the event URL (?limit=200&event_id=X) is stable and gets cached the
+      // moment the teacher opens the empty album. Fix at the fetch site only: the
+      // API's Cache-Control header stays put, other callers rely on it.
+      const response = await fetch(`/api/montree/media?${params}`, { cache: 'no-store' });
       if (!response.ok) {
         throw new Error('Failed to fetch media');
       }
       const data = await response.json();
+
+      if (seq !== mediaRequestSeqRef.current) return;  // superseded — drop stale body
 
       if (data.success) {
         setMedia(data.media || []);
@@ -102,7 +117,7 @@ function MediaPageContent() {
     } catch (err) {
       console.error('Failed to fetch media:', err);
     } finally {
-      setLoading(false);
+      if (seq === mediaRequestSeqRef.current) setLoading(false);
     }
   }, [activeTab, selectedChildId, selectedArea, selectedEventId]);
 
@@ -140,6 +155,20 @@ function MediaPageContent() {
 
   useEffect(() => {
     fetchMedia();
+  }, [fetchMedia]);
+
+  // Refetch when the page becomes visible / regains focus — e.g. returning from
+  // the capture screen. Guarantees freshly-captured photos appear without a
+  // manual pull-to-refresh, even if the component stayed mounted (the PWA keeps
+  // this page alive across a router.push to /capture and back).
+  useEffect(() => {
+    const refresh = () => { if (document.visibilityState === 'visible') fetchMedia({ silent: true }); };
+    document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('focus', refresh);
+    return () => {
+      document.removeEventListener('visibilitychange', refresh);
+      window.removeEventListener('focus', refresh);
+    };
   }, [fetchMedia]);
 
   // ============================================

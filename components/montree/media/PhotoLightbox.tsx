@@ -3,6 +3,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useI18n } from '@/lib/montree/i18n';
 
+/** A rectangle in ORIGINAL (natural) image pixels — integers, inside bounds. */
+export interface PhotoCropRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 interface PhotoLightboxProps {
   isOpen: boolean;
   onClose: () => void;
@@ -32,6 +40,17 @@ interface PhotoLightboxProps {
   primaryActionLabel?: string;
   /** Greys the pill out and blocks the click (e.g. below the montage floor). */
   primaryActionDisabled?: boolean;
+
+  /** Present ⇒ a ✂ pill renders BOTTOM-LEFT over the image, but only while the
+   *  teacher is zoomed in (at 1× the whole photo is visible — nothing to crop).
+   *  The lightbox NEVER crops anything itself: it reports the index and the
+   *  CURRENTLY VISIBLE viewport in original-image pixels, and the parent owns
+   *  the API call. Pinch/pan to frame, tap ✂ — what you see is the crop. */
+  onCrop?: (index: number, crop: PhotoCropRect) => void;
+  /** Pill text. Parent passes t('gallery.cropPhoto'). */
+  cropLabel?: string;
+  /** Parent is mid-save: pill shows a busy state and is disabled. */
+  cropping?: boolean;
 }
 
 export default function PhotoLightbox({
@@ -48,6 +67,9 @@ export default function PhotoLightbox({
   onPrimaryAction,
   primaryActionLabel,
   primaryActionDisabled = false,
+  onCrop,
+  cropLabel,
+  cropping = false,
 }: PhotoLightboxProps) {
   const { t } = useI18n();
   const [scale, setScale] = useState(1);
@@ -57,6 +79,7 @@ export default function PhotoLightbox({
   const [downloading, setDownloading] = useState(false);
   const [swipeDx, setSwipeDx] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
   const lastTouchDistance = useRef<number | null>(null);
   const lastTouchCenter = useRef<{ x: number; y: number } | null>(null);
   const swipeRef = useRef<{ x: number; y: number; dx: number; dy: number } | null>(null);
@@ -246,6 +269,79 @@ export default function PhotoLightbox({
     setPosition({ x: 0, y: 0 });
   };
 
+  // ── viewport → ORIGINAL-pixel mapping ────────────────────────────────────
+  // Layout: the <img> is centred in the container by flex and carries
+  // `object-contain` inside its own layout box; on top of that sits
+  // `transform: translate(tx,ty) scale(s)` with the DEFAULT transform-origin
+  // (the element's centre). For a point p measured from that centre the matrix
+  // T·S gives p' = t + s·p — so scaling never moves the centre, only t does.
+  //
+  //   LW,LH = img.offsetWidth/Height   layout box, unaffected by the transform
+  //   nW,nH = img.naturalWidth/Height  the original pixels we must report
+  //   CW,CH = the container box        = exactly what the teacher can see
+  //
+  //   contentScale = min(LW/nW, LH/nH)   css px per natural px at s = 1
+  //   q            = contentScale · s    css px per natural px on screen
+  //   centre on screen:  cx = CW/2 + tx ,  cy = CH/2 + ty
+  //   object-position defaults to 50% 50%, so the letterboxed CONTENT box is
+  //   concentric with the element box — its centre is (cx,cy) too, and the
+  //   letterbox offsets cancel out. Its top-left is therefore
+  //     contentLeft = cx − nW·q/2 ,  contentTop = cy − nH·q/2
+  //   The visible region, in natural pixels, is the container box expressed in
+  //   that space:  x0 = −contentLeft/q ,  y0 = −contentTop/q ,
+  //                x1 = (CW − contentLeft)/q ,  y1 = (CH − contentTop)/q
+  //   …then clamped to [0,nW]×[0,nH], because when zoomed the viewport usually
+  //   spills past the image edges (and at low zoom it always does).
+  //
+  // Deliberately computed from STATE, not getBoundingClientRect(): the image
+  // carries a 0.2s transform transition, so a rect read right after a pinch
+  // would be a mid-animation lie.
+  /** The visible viewport in original image pixels, or null if unmeasurable. */
+  const computeVisibleCrop = (): PhotoCropRect | null => {
+    const container = containerRef.current;
+    const img = imgRef.current;
+    if (!container || !img) return null;
+
+    const nW = img.naturalWidth;
+    const nH = img.naturalHeight;
+    const LW = img.offsetWidth;
+    const LH = img.offsetHeight;
+    const box = container.getBoundingClientRect();
+    const CW = box.width;
+    const CH = box.height;
+    if (!nW || !nH || !LW || !LH || !CW || !CH || !(scale > 0)) return null;
+
+    const q = Math.min(LW / nW, LH / nH) * scale;
+    if (!(q > 0)) return null;
+
+    const tx = position.x + swipeDx * 0.4;
+    const ty = position.y;
+    const contentLeft = CW / 2 + tx - (nW * q) / 2;
+    const contentTop = CH / 2 + ty - (nH * q) / 2;
+
+    const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi);
+    const x = Math.round(clamp(-contentLeft / q, 0, nW));
+    const y = Math.round(clamp(-contentTop / q, 0, nH));
+    const right = Math.round(clamp((CW - contentLeft) / q, 0, nW));
+    const bottom = Math.round(clamp((CH - contentTop) / q, 0, nH));
+
+    const width = Math.min(right - x, nW - x);
+    const height = Math.min(bottom - y, nH - y);
+    if (width < 1 || height < 1) return null;
+    return { x, y, width, height };
+  };
+
+  const handleCropClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (cropping || !onCrop) return;
+    const rect = computeVisibleCrop();
+    if (!rect) {
+      console.warn('[PhotoLightbox] crop skipped — viewport not measurable yet');
+      return;
+    }
+    onCrop(currentIndex, rect);
+  };
+
   if (!isOpen) return null;
 
   const currentPhoto = photos?.[currentIndex];
@@ -335,6 +431,7 @@ export default function PhotoLightbox({
         style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in', touchAction: 'none' }}
       >
         <img
+          ref={imgRef}
           src={src}
           alt={alt || currentPhoto?.caption || 'Photo'}
           className="max-w-full max-h-full object-contain select-none pointer-events-none"
@@ -383,6 +480,33 @@ export default function PhotoLightbox({
             }}
           >
             {primaryActionLabel || 'Create'}
+          </button>
+        )}
+
+        {/* Crop pill — BOTTOM-LEFT, the only free corner (✕ top-left in the
+            toolbar, 🗑 at the toolbar's right end, the primary pill
+            bottom-right). Hidden at 1× on purpose: the whole photo is visible
+            there, so a "crop to what you see" would be a no-op. It lives INSIDE
+            the image container exactly like the Create pill, so the swipe
+            handlers keep working around it; e.stopPropagation() in the handler
+            is required because the container carries onDoubleClick zoom. */}
+        {onCrop && scale > 1 && (
+          <button
+            onClick={handleCropClick}
+            disabled={cropping}
+            className="absolute z-10 px-4 py-2 rounded-full text-sm font-semibold transition-colors"
+            style={{
+              left: 16,
+              bottom: 'calc(16px + env(safe-area-inset-bottom))',
+              backgroundColor: 'rgba(255,255,255,0.14)',
+              color: '#fff',
+              opacity: cropping ? 0.6 : 1,
+              pointerEvents: cropping ? 'none' : 'auto',
+            }}
+            aria-label={cropLabel || 'Crop'}
+            title={cropLabel || 'Crop'}
+          >
+            {cropping ? '…' : `✂ ${cropLabel || 'Crop'}`}
           </button>
         )}
       </div>

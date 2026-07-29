@@ -36,7 +36,12 @@ export async function GET(request: NextRequest) {
         { data: groupLinks, error: linkError },
       ] = await Promise.all([
         supabase.from('montree_children').select('classroom_id').eq('id', childId).maybeSingle(),
-        supabase.from('montree_media').select('id, storage_path, thumbnail_path, media_type, caption, captured_at, child_id, work_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags, sonnet_draft, identification_status').eq('child_id', childId).or('identification_status.is.null,identification_status.neq.pending_review').order('captured_at', { ascending: false }).limit(500),
+        // `event_id` is selected on every branch: without it no surface can show a
+        // photo's event, AND any editor seeded from these rows (PhotoEditModal)
+        // would read `undefined` and null the link on an unrelated save.
+        // Safe to select — the column is written by this file's PATCH (:221) and
+        // filtered on below (:139), so it provably exists (no 42703 risk).
+        supabase.from('montree_media').select('id, storage_path, thumbnail_path, media_type, caption, captured_at, child_id, work_id, event_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags, sonnet_draft, identification_status').eq('child_id', childId).or('identification_status.is.null,identification_status.neq.pending_review').order('captured_at', { ascending: false }).limit(500),
         supabase.from('montree_media_children').select('media_id').eq('child_id', childId).limit(500),
       ]);
 
@@ -60,7 +65,7 @@ export async function GET(request: NextRequest) {
           : Promise.resolve({ data: null }),
         groupMediaIds.length > 0
           ? supabase.from('montree_media')
-              .select('id, storage_path, thumbnail_path, media_type, caption, captured_at, child_id, work_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags')
+              .select('id, storage_path, thumbnail_path, media_type, caption, captured_at, child_id, work_id, event_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags')
               .in('id', groupMediaIds)
               .or('identification_status.is.null,identification_status.neq.pending_review')
               .order('captured_at', { ascending: false })
@@ -124,7 +129,7 @@ export async function GET(request: NextRequest) {
     // Always scope to the authenticated school (Health Check #14 — multi-tenancy)
     let query = supabase
       .from('montree_media')
-      .select('id, storage_path, thumbnail_path, media_type, caption, captured_at, child_id, work_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags', { count: 'exact' })
+      .select('id, storage_path, thumbnail_path, media_type, caption, captured_at, child_id, work_id, event_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags', { count: 'exact' })
       .eq('school_id', schoolId || auth.schoolId)
       .order('captured_at', { ascending: false });
 
