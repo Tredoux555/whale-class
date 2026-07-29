@@ -2916,3 +2916,44 @@ Full handoff: `docs/curriculum/montree-phonics/HANDOFF_MONTREE_PHONICS_Jul28.md`
 ## HARD RULE — Git commit & push (set 2026-07-28, per Tredoux)
 
 EVERY TIME files in this repo are changed by a Claude cloud/Cowork session, the git commit and push MUST be done by a Sonnet subagent using the Desktop Commander MCP (mcp__remote-devices__Desktop_Commander__start_process) running git directly on the Mac at /Users/tredouxwillemse/Desktop/Master\ Brain/ACTIVE/montree. Never run git through device_bash on the VM mount (index.lock cannot be unlinked there — commits fail). Stage only the files changed by the task, use a descriptive commit message, and push to origin. No exceptions.
+
+## 🔒 SATPIN Paperwork Pipeline — LOCKED (2026-07-29, per Tredoux)
+
+Tredoux's verdict, verbatim: "couldn't be any more perfect… Lock that in as the pipeline and the
+templates. When I tell you to do a letter — I want all of this." The paperwork pack + tracing
+workbook pipeline in `scripts/curriculum/satpin-paperwork/` is now an **approved convention — do
+not redesign the layout, font set, or stroke rule without Tredoux's explicit say-so.**
+
+**Locked:**
+- **Data model**: one JSON per letter, `letters/<slug>.json`. Sentences import live from the
+  dark-phonics-readers book script (e.g. `bookP.py`) — never duplicate story text. Also holds
+  `sequencingDisplayOrder`/`matchDisplayOrder` (fixed derangements), 10 yes/no items (5 yes from
+  the book, 5 no from prior-week vocab via picture-bank photos, avoiding anything the animal could
+  plausibly eat/do), and `artDir`.
+- **Paperwork pack layout** (`build_paperwork.py`, A4 portrait, `paperwork-pack.pdf`, 4pp): story
+  order (5 pics, fixed shuffle, 24mm write-in boxes 1–5) · match (sentences left, pics right, draw
+  a line) · yes-or-no ×2pp (10 questions, small photo, ✓/✗ 20mm boxes). House fonts only, via
+  `MONTREE_CANVAS_FONTS` (default `/root/.claude/skills/canvas-design/canvas-fonts/`):
+  YoungSerif/Outfit/Lora/WorkSans.
+- **Tracing workbook format** (`build_tracing.py`, A4 LANDSCAPE, `tracing-workbook.pdf`, modeled
+  on Tredoux's classroom velcro material photo): cover ("written by ___") + 5 pages, each READ IT
+  (solid manuscript model sentence) · art 58×38mm top-right · BUILD IT (dashed 20mm velcro slots
+  sized to word cards) · TRACE IT (full sentence in dotted skeleton letters on 3-line guides —
+  dotted headline / dashed midline / solid baseline, 12.5mm x-height — red/blue stroke-order
+  arrows auto-derived per stroke) · blank NOW YOU line. Emits a companion `sentence-strips.pdf`
+  (cut-out word cards, sized exactly = slots).
+- **Stroke rule** (`stroke_font.py`, single-stroke manuscript engine, 69 glyphs): circle letters
+  a/c/d/e/g/o/q/s start ~2 o'clock counter-clockwise, stems draw down, arches draw up. The model
+  sentence and the word cards render from the same skeleton — no school-print TTF, single-storey
+  'a' required — so the child reads/builds/traces identical letterforms.
+- **The recipe** when Tredoux says "do letter X": 1) write `letters/<slug>.json` (needs `bookX.py`
+  to already exist), 2) `build_paperwork.py --letter <slug>` + `build_tracing.py --letter <slug>`
+  → `public/satpin-materials/<slug>/`, 3) rasterize and eyeball every page, 4) commit.
+
+Outputs (`paperwork-pack.pdf`, `tracing-workbook.pdf`, `sentence-strips.pdf` in
+`public/satpin-materials/<slug>/`) surface automatically via `PaperworkRow` on
+`app/montree/library/satpin/page.tsx` — no per-letter code change needed. Old A5 tracing editions
+are retired to `_to_delete/satpin-old-a5-tracing/`, superseded by this pipeline.
+
+Status: P ✅, I ✅ shipped. S/A/T (weeks 1–3) not yet built — verify `bookX.py` exists before
+promising a letter. Full narrative: `HANDOFF_LATEST.md`'s Jul 29 entry.
