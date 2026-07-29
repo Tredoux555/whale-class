@@ -15,6 +15,23 @@ interface PhotoLightboxProps {
   currentIndex?: number;
   /** Called when user navigates to a different photo */
   onNavigate?: (index: number) => void;
+
+  // ── NEW, all optional ──
+  /** Present ⇒ a 🗑 button renders at the RIGHT end of the top toolbar.
+   *  The lightbox NEVER deletes anything itself — it just reports the index.
+   *  The parent owns confirmation and the API call. */
+  onDelete?: (index: number) => void;
+  /** Accessible name / title for the bin. Parent passes t('gallery.deletePhoto'). */
+  deleteLabel?: string;
+  /** Parent is mid-delete: bin shows a spinner and is disabled. */
+  deleting?: boolean;
+
+  /** Present ⇒ a pill renders BOTTOM-RIGHT over the image. */
+  onPrimaryAction?: () => void;
+  /** Pill text. Parent passes `🎬 ${t('montageTracker.create.button')}`. */
+  primaryActionLabel?: string;
+  /** Greys the pill out and blocks the click (e.g. below the montage floor). */
+  primaryActionDisabled?: boolean;
 }
 
 export default function PhotoLightbox({
@@ -25,6 +42,12 @@ export default function PhotoLightbox({
   photos,
   currentIndex = 0,
   onNavigate,
+  onDelete,
+  deleteLabel,
+  deleting = false,
+  onPrimaryAction,
+  primaryActionLabel,
+  primaryActionDisabled = false,
 }: PhotoLightboxProps) {
   const { t } = useI18n();
   const [scale, setScale] = useState(1);
@@ -32,14 +55,18 @@ export default function PhotoLightbox({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [downloading, setDownloading] = useState(false);
+  const [swipeDx, setSwipeDx] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const lastTouchDistance = useRef<number | null>(null);
   const lastTouchCenter = useRef<{ x: number; y: number } | null>(null);
+  const swipeRef = useRef<{ x: number; y: number; dx: number; dy: number } | null>(null);
 
   // Reset zoom/position when photo changes or lightbox opens
   useEffect(() => {
     setScale(1);
     setPosition({ x: 0, y: 0 });
+    setSwipeDx(0);
+    swipeRef.current = null;
   }, [src, isOpen]);
 
   // Close on Escape key
@@ -87,6 +114,13 @@ export default function PhotoLightbox({
         x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
         y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
       };
+      // A second finger promotes the gesture to a pinch — abandon any swipe
+      // already in progress, or its stale dx offsets the image for the whole
+      // zoom and could still commit a navigation on release.
+      if (swipeRef.current) {
+        swipeRef.current = null;
+        setSwipeDx(0);
+      }
     } else if (e.touches.length === 1 && scale > 1) {
       // Single finger drag when zoomed in
       setIsDragging(true);
@@ -94,6 +128,14 @@ export default function PhotoLightbox({
         x: e.touches[0].clientX - position.x,
         y: e.touches[0].clientY - position.y,
       });
+    } else if (e.touches.length === 1 && scale === 1) {
+      // Single finger swipe to navigate (only when not zoomed)
+      swipeRef.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+        dx: 0,
+        dy: 0,
+      };
     }
   }, [scale, position]);
 
@@ -111,6 +153,12 @@ export default function PhotoLightbox({
         x: e.touches[0].clientX - dragStart.x,
         y: e.touches[0].clientY - dragStart.y,
       });
+    } else if (e.touches.length === 1 && swipeRef.current) {
+      const dx = e.touches[0].clientX - swipeRef.current.x;
+      const dy = e.touches[0].clientY - swipeRef.current.y;
+      swipeRef.current.dx = dx;
+      swipeRef.current.dy = dy;
+      setSwipeDx(dx);
     }
   }, [isDragging, dragStart]);
 
@@ -118,7 +166,18 @@ export default function PhotoLightbox({
     lastTouchDistance.current = null;
     lastTouchCenter.current = null;
     setIsDragging(false);
-  }, []);
+
+    const swipe = swipeRef.current;
+    swipeRef.current = null;
+    setSwipeDx(0);
+    if (swipe && Math.abs(swipe.dx) > 60 && Math.abs(swipe.dx) > Math.abs(swipe.dy) * 1.5) {
+      if (swipe.dx < 0 && photos && currentIndex < photos.length - 1) {
+        onNavigate?.(currentIndex + 1);
+      } else if (swipe.dx > 0 && photos && currentIndex > 0) {
+        onNavigate?.(currentIndex - 1);
+      }
+    }
+  }, [photos, currentIndex, onNavigate]);
 
   // Mouse drag when zoomed
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -245,6 +304,18 @@ export default function PhotoLightbox({
           >
             {downloading ? '...' : '⬇'}
           </button>
+          {/* Delete button — only when the parent wants a bin here */}
+          {onDelete && (
+            <button
+              onClick={() => onDelete(currentIndex)}
+              disabled={deleting}
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-red-500/80 text-white text-lg transition-colors disabled:opacity-50"
+              aria-label={deleteLabel || 'Delete'}
+              title={deleteLabel || 'Delete'}
+            >
+              {deleting ? '...' : '🗑'}
+            </button>
+          )}
         </div>
       </div>
 
@@ -268,8 +339,8 @@ export default function PhotoLightbox({
           alt={alt || currentPhoto?.caption || 'Photo'}
           className="max-w-full max-h-full object-contain select-none pointer-events-none"
           style={{
-            transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-            transition: isDragging ? 'none' : 'transform 0.2s ease-out',
+            transform: `translate(${position.x + swipeDx * 0.4}px, ${position.y}px) scale(${scale})`,
+            transition: isDragging || swipeDx !== 0 ? 'none' : 'transform 0.2s ease-out',
           }}
           draggable={false}
         />
@@ -291,6 +362,27 @@ export default function PhotoLightbox({
             aria-label="Next photo"
           >
             ›
+          </button>
+        )}
+
+        {/* Primary action pill — only when the parent wants one (e.g. "Create montage") */}
+        {onPrimaryAction && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!primaryActionDisabled) onPrimaryAction();
+            }}
+            disabled={primaryActionDisabled}
+            className="absolute z-10 px-4 py-2 rounded-full text-sm font-semibold transition-colors"
+            style={{
+              right: 16,
+              bottom: 'calc(16px + env(safe-area-inset-bottom))',
+              backgroundColor: primaryActionDisabled ? 'rgba(52,211,153,0.30)' : '#34d399',
+              color: '#062015',
+              pointerEvents: primaryActionDisabled ? 'none' : 'auto',
+            }}
+          >
+            {primaryActionLabel || 'Create'}
           </button>
         )}
       </div>

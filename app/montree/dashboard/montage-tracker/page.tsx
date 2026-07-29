@@ -1,44 +1,56 @@
 // app/montree/dashboard/montage-tracker/page.tsx
 //
-// Montage Manager — "who has been photographed?" boards + a three-path
-// montage creator with a photo picker. ZERO AI: a photo counts for a child the
-// moment it is captured and tagged, with no teacher-confirmation step. The AI
-// identification / confirmation pipeline runs untouched in parallel and is not
-// referenced here.
+// Montage Manager — a three-path montage creator with a photo picker, above
+// the "who has been photographed?" coverage boards. ZERO AI: a photo counts
+// for a child the moment it is captured and tagged, with no teacher-
+// confirmation step. The AI identification / confirmation pipeline runs
+// untouched in parallel and is not referenced here.
 //
+//   Creator       — Children / Class / Events tabs (FIRST thing on the page),
+//                   then a range, then a THUMBNAIL GRID of the photos that
+//                   montage would use. Tap a thumb to OPEN IT BIG; the corner
+//                   ✕ badge drops it from the film. Posts the kept ids as
+//                   `media_ids` (with bypass_confirmation) so the worker
+//                   renders exactly what the teacher saw — WYSIWYG.
 //   Daily board   — today, school-wide, grouped by classroom. Covered = tagged
 //                   in >= 1 photo captured today.
 //   Weekly board  — current calendar week Mon–Sun against an 8-photos-per-child
 //                   target, children needing the most photos first, plus a
 //                   team-wide "needs more photos" list.
-//   Creator       — Whole class / One child / Special event, then a range, then
-//                   a THUMBNAIL GRID of the photos that montage would use. Tap
-//                   a thumb to drop it. Posts the kept ids as `media_ids` (with
-//                   bypass_confirmation) so the worker renders exactly what the
-//                   teacher saw — WYSIWYG.
 //
 // 🚨 The picker grid and the child-tile counts are parent_visible-only, on
 // purpose: the grid, the badge and the finished film must agree. The COVERAGE
-// BOARDS above them deliberately ignore parent_visible — they answer "did
+// BOARDS below them deliberately ignore parent_visible — they answer "did
 // anyone photograph this child?", not "what can go in a film?". Do not align
 // them; the divergence is the design.
 //
-// 🚨 Removing a thumbnail is SELECTION ONLY. Nothing here mutates a media row,
-// a confirmation state, or anything else — it just shortens the list posted.
+// 🚨 Removing a thumbnail (the corner ✕ badge) is SELECTION ONLY. Nothing
+// there mutates a media row, a confirmation state, or anything else — it just
+// shortens the list posted. The ONE real delete on this page is the 🗑 inside
+// the full-screen lightbox, and it is behind DeleteConfirmDialog. Do not add a
+// delete affordance anywhere else.
+//
+// 🚨 The "tracker montages" job list + its player used to live at the bottom
+// of this page. Removed Jul 2026 — Montage Studio (/montree/dashboard/montage)
+// already lists every job including the manager's (it applies no
+// require_confirmed filter), so nothing was lost. The API and lib are
+// untouched.
 //
 // 🚨 TIMEZONE: every date here is the BROWSER's local calendar date, via
 // lib/montree/montage-tracker/weekRange (never toISOString — that would shift
 // the day in Asia/Shanghai). Same rule as MontageStudio.
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
+import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Toaster, toast } from 'sonner';
 import { getSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
-import { getProxyUrl, getVideoProxyUrl } from '@/lib/montree/media/proxy-url';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import {
   currentMonthRange,
   currentWeekRange,
@@ -53,6 +65,10 @@ import {
   type TrackerChild,
   type TrackerClassroom,
 } from '@/lib/montree/montage-tracker/coverage';
+
+// Code-split the two modals — neither is needed on first paint.
+const PhotoLightbox = dynamic(() => import('@/components/montree/media/PhotoLightbox'), { ssr: false });
+const DeleteConfirmDialog = dynamic(() => import('@/components/montree/media/DeleteConfirmDialog'), { ssr: false });
 
 // Dark-forest tokens, inline per component (house style — see MontageStudio).
 const T = {
@@ -103,21 +119,6 @@ interface EventOption {
   event_date: string | null;
 }
 
-interface MontageRow {
-  id: string;
-  scope_type: string;
-  montage_kind: string;
-  status: string;
-  title: string;
-  output_path: string | null;
-  date_start: string | null;
-  date_end: string | null;
-  error: string | null;
-  require_confirmed?: boolean;
-}
-
-const ACTIVE_STATUSES = new Set(['queued', 'rendering']);
-
 function ChildAvatar({ name, photoUrl, size = 26 }: { name: string; photoUrl: string | null; size?: number }) {
   const [failed, setFailed] = useState(false);
   if (photoUrl && !failed) {
@@ -146,26 +147,47 @@ function ChildAvatar({ name, photoUrl, size = 26 }: { name: string; photoUrl: st
   );
 }
 
-/** Avatar chip — green when covered, amber when still waiting. */
-function ChildChip({ child, tone, suffix }: { child: TrackerChild; tone: 'ok' | 'warn'; suffix?: string }) {
+/**
+ * Avatar chip — green when covered, amber when still waiting.
+ *
+ * With `onSelect` it becomes a button: tapping a child on a coverage board
+ * jumps straight to her picker grid in the Children tab. Without it the chip
+ * stays a plain, non-interactive span (unchanged behaviour).
+ */
+function ChildChip({
+  child, tone, suffix, onSelect,
+}: {
+  child: TrackerChild;
+  tone: 'ok' | 'warn';
+  suffix?: string;
+  onSelect?: () => void;
+}) {
   const fg = tone === 'ok' ? T.emerald : T.amber;
   const bg = tone === 'ok' ? T.emeraldSoft : T.amberSoft;
   const border = tone === 'ok' ? T.emeraldBorder : T.amberBorder;
-  return (
-    <span
-      style={{
-        display: 'inline-flex', alignItems: 'center', gap: 7,
-        padding: '5px 10px 5px 5px', borderRadius: 999,
-        background: bg, border: `1px solid ${border}`, maxWidth: '100%',
-      }}
-    >
+  const shell: CSSProperties = {
+    display: 'inline-flex', alignItems: 'center', gap: 7,
+    padding: '5px 10px 5px 5px', borderRadius: 999,
+    background: bg, border: `1px solid ${border}`, maxWidth: '100%',
+  };
+  const inner = (
+    <>
       <ChildAvatar name={child.name} photoUrl={child.photo_url} />
       <span style={{ fontSize: 12.5, color: T.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {child.name}
       </span>
       {suffix && <span style={{ fontSize: 11.5, fontWeight: 700, color: fg, whiteSpace: 'nowrap' }}>{suffix}</span>}
-    </span>
+    </>
   );
+
+  if (onSelect) {
+    return (
+      <button type="button" onClick={onSelect} style={{ ...shell, cursor: 'pointer', textAlign: 'left' }}>
+        {inner}
+      </button>
+    );
+  }
+  return <span style={shell}>{inner}</span>;
 }
 
 function ProgressBar({ value, max, tone = 'ok' }: { value: number; max: number; tone?: 'ok' | 'warn' }) {
@@ -189,6 +211,8 @@ function ProgressBar({ value, max, tone = 'ok' }: { value: number; max: number; 
  *   top-LEFT  green  — total parent-visible photos she appears in (all-time)
  *   top-RIGHT amber  — how many MORE she needs to reach the montage floor,
  *                      hidden once she's there.
+ * The whole tile (avatar + name) is one button, so tapping the NAME opens her
+ * grid just as tapping the face does.
  */
 function ChildTile({
   child, total, selected, onSelect,
@@ -258,60 +282,87 @@ function ChildTile({
 }
 
 /**
- * One square thumbnail in the picker grid. "Removed" is purely a local
- * selection state — no media row is ever touched.
+ * One square thumbnail in the picker grid. TWO gestures, deliberately split:
+ *   • tile body  → onOpen   — opens the full-screen viewer at this index
+ *   • corner ✕   → onToggle — drops it from / restores it to the film
+ * "Removed" is purely a local selection state — no media row is ever touched
+ * here. (The only real delete lives inside the lightbox, behind a confirm.)
  */
 function PhotoThumb({
-  photo, removed, onToggle, removeLabel, restoreLabel,
+  photo, removed, onOpen, onToggle, removeLabel, restoreLabel, openLabel,
 }: {
   photo: PickerPhoto;
   removed: boolean;
+  onOpen: () => void;
   onToggle: () => void;
   removeLabel: string;
   restoreLabel: string;
+  /** Locale-derived capture date — no i18n key. Empty string ⇒ no label. */
+  openLabel: string;
 }) {
   const [failed, setFailed] = useState(false);
   return (
-    <button
-      type="button"
-      onClick={onToggle}
-      aria-pressed={removed}
-      aria-label={removed ? restoreLabel : removeLabel}
-      title={removed ? restoreLabel : removeLabel}
-      style={{
-        position: 'relative', width: '100%', aspectRatio: '1 / 1',
-        borderRadius: 10, overflow: 'hidden', padding: 0,
-        border: `1px solid ${removed ? T.cardBorder : T.emeraldBorder}`,
-        background: 'rgba(0,0,0,0.30)', cursor: 'pointer',
-        opacity: removed ? 0.35 : 1, transition: 'opacity 120ms ease',
-      }}
-    >
-      {!failed ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={getProxyUrl(photo.storage_path)}
-          alt=""
-          loading="lazy"
-          onError={() => setFailed(true)}
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-        />
-      ) : (
-        <span style={{ fontSize: 20, color: T.textMuted }}>🖼</span>
-      )}
-      {removed && (
-        <span
-          aria-hidden
-          style={{
-            position: 'absolute', inset: 0, display: 'flex',
-            alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(2,8,5,0.45)', color: '#fff',
-            fontSize: 22, fontWeight: 700,
-          }}
-        >
-          ✕
-        </span>
-      )}
-    </button>
+    <div style={{ position: 'relative', width: '100%' }}>
+      <button
+        type="button"
+        onClick={onOpen}
+        aria-label={openLabel || undefined}
+        title={openLabel || undefined}
+        style={{
+          position: 'relative', display: 'block', width: '100%', aspectRatio: '1 / 1',
+          borderRadius: 10, overflow: 'hidden', padding: 0,
+          border: `1px solid ${removed ? T.cardBorder : T.emeraldBorder}`,
+          background: 'rgba(0,0,0,0.30)', cursor: 'pointer',
+          opacity: removed ? 0.35 : 1, transition: 'opacity 120ms ease',
+        }}
+      >
+        {!failed ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={getProxyUrl(photo.storage_path)}
+            alt=""
+            loading="lazy"
+            onError={() => setFailed(true)}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
+        ) : (
+          <span style={{ fontSize: 20, color: T.textMuted }}>🖼</span>
+        )}
+        {removed && (
+          <span
+            aria-hidden
+            style={{
+              position: 'absolute', inset: 0, display: 'flex',
+              alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(2,8,5,0.45)', color: '#fff',
+              fontSize: 22, fontWeight: 700,
+            }}
+          >
+            ✕
+          </span>
+        )}
+      </button>
+
+      {/* selection-only exclude badge — never calls an API */}
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onToggle(); }}
+        aria-pressed={removed}
+        aria-label={removed ? restoreLabel : removeLabel}
+        title={removed ? restoreLabel : removeLabel}
+        style={{
+          position: 'absolute', top: 4, right: 4, zIndex: 2,
+          width: 22, height: 22, borderRadius: 999, padding: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: removed ? T.emerald : 'rgba(2,8,5,0.78)',
+          border: `1px solid ${removed ? T.emeraldBorder : 'rgba(255,255,255,0.55)'}`,
+          color: removed ? '#062015' : '#fff',
+          fontSize: 12, fontWeight: 700, lineHeight: 1, cursor: 'pointer',
+        }}
+      >
+        {removed ? '↺' : '✕'}
+      </button>
+    </div>
   );
 }
 
@@ -328,8 +379,10 @@ export default function MontageManagerPage() {
   const [loadError, setLoadError] = useState(false);
 
   // --- creator state ------------------------------------------------------
-  const [path, setPath] = useState<CreatePath>('class');
-  const [preset, setPreset] = useState<RangePreset>('week');
+  // Children is the default tab, so the default preset must be the child
+  // default ('all') that choosePath would have set.
+  const [path, setPath] = useState<CreatePath>('child');
+  const [preset, setPreset] = useState<RangePreset>('all');
   const [customStart, setCustomStart] = useState(() => localDate(-6));
   const [customEnd, setCustomEnd] = useState(() => localDate(0));
   const [childId, setChildId] = useState('');
@@ -348,9 +401,11 @@ export default function MontageManagerPage() {
   const [removed, setRemoved] = useState<Set<string>>(new Set());
   const [childTotals, setChildTotals] = useState<Record<string, number> | null>(null);
 
-  const [jobs, setJobs] = useState<MontageRow[]>([]);
-  const [jobsLoading, setJobsLoading] = useState(true);
-  const [watching, setWatching] = useState<MontageRow | null>(null);
+  // --- viewer / delete state ---------------------------------------------
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [photoToDelete, setPhotoToDelete] = useState<PickerPhoto | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const session = getSession();
@@ -391,39 +446,6 @@ export default function MontageManagerPage() {
   useEffect(() => {
     if (ready) loadCoverage();
   }, [ready, loadCoverage]);
-
-  // --- tracker montage jobs (poll like MontageStudio) ---------------------
-  const loadJobs = useCallback(async () => {
-    try {
-      const res = await montreeApi('/api/montree/montage?limit=20');
-      if (!res.ok) return;
-      const data = await res.json();
-      const rows = Array.isArray(data?.montages) ? (data.montages as MontageRow[]) : [];
-      // Manager jobs only — Montage Studio's own films stay on its page.
-      setJobs(rows.filter((m) => m.require_confirmed === false));
-    } catch {
-      /* transient — the next poll picks it up */
-    } finally {
-      setJobsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (ready) loadJobs();
-  }, [ready, loadJobs]);
-
-  const hasActiveJob = useMemo(() => jobs.some((j) => ACTIVE_STATUSES.has(j.status)), [jobs]);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  useEffect(() => {
-    if (!hasActiveJob) {
-      if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
-      return;
-    }
-    pollRef.current = setInterval(loadJobs, 10000);
-    return () => {
-      if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
-    };
-  }, [hasActiveJob, loadJobs]);
 
   // --- events (same source Montage Studio uses) ---------------------------
   useEffect(() => {
@@ -612,9 +634,75 @@ export default function MontageManagerPage() {
     setPhotos([]);
     setPhotoTotal(0);
     setPhotoTruncated(false);
+    setLightboxOpen(false);
+    setLightboxIndex(0);
     // A child montage defaults to her whole story; the others to this week.
     setPreset(next === 'child' ? 'all' : 'week');
   }, []);
+
+  /** A coverage-board chip jumps to that child's grid at the top of the page. */
+  const selectChildFromBoard = useCallback((id: string) => {
+    choosePath('child');
+    setChildId(id);
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [choosePath]);
+
+  // --- viewer -------------------------------------------------------------
+  const openLightbox = useCallback((index: number) => {
+    setLightboxIndex(index);
+    setLightboxOpen(true);
+  }, []);
+
+  /** Keep the index inside the (possibly just-shortened) list. */
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    if (photos.length === 0) {
+      setLightboxOpen(false);
+      setLightboxIndex(0);
+    } else if (lightboxIndex >= photos.length) {
+      setLightboxIndex(photos.length - 1);
+    }
+  }, [lightboxOpen, lightboxIndex, photos.length]);
+
+  const lightboxPhotos = useMemo(
+    () => photos.map((p) => ({
+      url: getProxyUrl(p.storage_path),
+      caption: null,
+      date: p.captured_at ?? undefined,
+    })),
+    [photos]
+  );
+
+  /**
+   * The ONLY destructive action on this page. Permanent: the endpoint removes
+   * the storage object, the montree_media_children junction rows and the media
+   * row. Always behind DeleteConfirmDialog (whose copy warns it can't be
+   * undone) — same call the child gallery makes.
+   */
+  const confirmDelete = async () => {
+    if (!photoToDelete || isDeleting) return;
+    const id = photoToDelete.id;
+    setIsDeleting(true);
+    try {
+      const res = await montreeApi(`/api/montree/media?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setPhotos((prev) => prev.filter((p) => p.id !== id));
+      setRemoved((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      setPhotoTotal((prev) => Math.max(0, prev - 1));
+      setShortfall(null);
+      toast.success(t('gallery.photoDeletedSuccessfully'));
+    } catch (err) {
+      console.error('[MontageManager] delete failed:', err);
+      toast.error(t('gallery.deletePhotoError'));
+    } finally {
+      setPhotoToDelete(null);
+      setIsDeleting(false);
+    }
+  };
 
   /**
    * The job's date_start / date_end for an ALL-range child montage: the span
@@ -707,31 +795,12 @@ export default function MontageManagerPage() {
       if (!data?.ok) { toast.error(data?.error || t('montageTracker.create.failed')); return; }
 
       toast.success(data?.duplicate ? t('montageTracker.create.duplicate') : t('montageTracker.create.queued'));
-      loadJobs();
     } catch (err) {
       console.error('[MontageManager] create failed:', err);
       toast.error(t('montageTracker.create.failed'));
     } finally {
       setCreating(false);
     }
-  };
-
-  const statusLabel = (status: string): string => {
-    switch (status) {
-      case 'queued': return t('montage.status.queued');
-      case 'rendering': return t('montage.status.rendering');
-      case 'done': return t('montage.status.done');
-      case 'failed': return t('montage.status.failed');
-      case 'skipped_insufficient_photos': return t('montage.status.skipped_insufficient_photos');
-      default: return status;
-    }
-  };
-
-  const statusColor = (status: string): { fg: string; bg: string } => {
-    if (status === 'done') return { fg: T.emerald, bg: T.emeraldSoft };
-    if (status === 'failed') return { fg: T.red, bg: T.redSoft };
-    if (status === 'skipped_insufficient_photos') return { fg: T.textMuted, bg: 'rgba(255,255,255,0.05)' };
-    return { fg: T.amber, bg: T.amberSoft };
   };
 
   const selectStyle: CSSProperties = {
@@ -778,9 +847,10 @@ export default function MontageManagerPage() {
   }
 
   const totals = coverage?.totals ?? { children: 0, covered: 0, total_photos: 0 };
-  const watchingPath = watching?.output_path || '';
   const scopeChosen =
     path === 'event' ? !!eventId : path === 'child' ? !!childId : !!classroomId;
+  const safeLightboxIndex = Math.min(lightboxIndex, Math.max(photos.length - 1, 0));
+  const lightboxCurrent = photos[safeLightboxIndex];
 
   return (
     <div className="min-h-screen bg-[#0a1a0f] pb-24 relative" style={{ fontFamily: T.sans }}>
@@ -803,159 +873,18 @@ export default function MontageManagerPage() {
       </div>
 
       <div className="relative px-4 py-4" style={{ maxWidth: 640, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {/* --- view toggle --- */}
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button type="button" onClick={() => setView('daily')} style={pill(view === 'daily')} aria-pressed={view === 'daily'}>
-            {t('montageTracker.tab.daily')}
+        {/* =================== TABS — first thing on the page =============== */}
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button type="button" onClick={() => choosePath('child')} style={pill(path === 'child')} aria-pressed={path === 'child'}>
+            🧒 {t('montageTracker.create.child')}
           </button>
-          <button type="button" onClick={() => setView('weekly')} style={pill(view === 'weekly')} aria-pressed={view === 'weekly'}>
-            {t('montageTracker.tab.weekly')}
+          <button type="button" onClick={() => choosePath('class')} style={pill(path === 'class')} aria-pressed={path === 'class'}>
+            🏫 {t('montageTracker.create.class')}
           </button>
-          <div style={{ flex: 1 }} />
-          <button
-            type="button"
-            onClick={loadCoverage}
-            style={{ ...pill(false), padding: '7px 12px' }}
-            aria-label={t('montageTracker.refresh')}
-          >
-            ↻
+          <button type="button" onClick={() => choosePath('event')} style={pill(path === 'event')} aria-pressed={path === 'event'}>
+            🎉 {t('montageTracker.create.event')}
           </button>
         </div>
-
-        {/* --- school-wide summary --- */}
-        <div style={sectionCard}>
-          <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 4 }}>
-            {shortRangeLabel(boardRange)}
-            {totals.total_photos > 0 && ` · ${t('montageTracker.photosInRange', { count: totals.total_photos })}`}
-          </div>
-          <div style={{ fontFamily: T.serif, fontSize: 18, color: T.textPrimary, marginBottom: 10 }}>
-            {view === 'daily'
-              ? t('montageTracker.summaryDaily', { covered: totals.covered, total: totals.children })
-              : t('montageTracker.summaryWeekly', { covered: weeklyDone, total: totals.children, target: WEEKLY_PHOTO_TARGET })}
-          </div>
-          <ProgressBar
-            value={view === 'daily' ? totals.covered : weeklyDone}
-            max={totals.children}
-          />
-        </div>
-
-        {loading && !coverage && (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: 32 }}>
-            <div className="animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent" />
-          </div>
-        )}
-
-        {loadError && (
-          <div style={{ ...sectionCard, borderColor: 'rgba(239,68,68,0.3)', background: T.redSoft, textAlign: 'center' }}>
-            <div style={{ color: T.red, fontSize: 13, marginBottom: 8 }}>{t('montageTracker.loadFailed')}</div>
-            <button type="button" onClick={loadCoverage} style={{ ...pill(false), border: 'none', background: 'transparent', color: T.red, textDecoration: 'underline' }}>
-              {t('montageTracker.retry')}
-            </button>
-          </div>
-        )}
-
-        {/* --- WEEKLY: needs-more, team-wide --- */}
-        {view === 'weekly' && coverage && needsMore.length > 0 && (
-          <div style={{ ...sectionCard, borderColor: T.amberBorder, background: T.amberSoft }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.amber, marginBottom: 4 }}>
-              ⚠ {t('montageTracker.needsMore')} ({needsMore.length})
-            </div>
-            <div style={{ fontSize: 12, color: T.textSecondary, marginBottom: 10 }}>
-              {t('montageTracker.needsMoreHint', { target: WEEKLY_PHOTO_TARGET })}
-            </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-              {needsMore.map((c) => (
-                <ChildChip
-                  key={c.id}
-                  child={c}
-                  tone="warn"
-                  suffix={`${c.photo_count}/${WEEKLY_PHOTO_TARGET}`}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* --- per-classroom boards --- */}
-        {coverage?.classrooms.map((room) => {
-          const covered = room.children.filter((c) => c.photo_count > 0);
-          const notYet = room.children.filter((c) => c.photo_count === 0);
-          const sortedWeekly = [...room.children].sort(
-            (a, b) => a.photo_count - b.photo_count || a.name.localeCompare(b.name)
-          );
-          return (
-            <div key={room.id} style={sectionCard}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10 }}>
-                <div style={{ fontFamily: T.serif, fontSize: 16, color: T.textPrimary }}>{room.name}</div>
-                <div style={{ fontSize: 12, color: T.textMuted }}>
-                  {view === 'daily'
-                    ? `${covered.length}/${room.children.length}`
-                    : `${room.children.filter((c) => c.photo_count >= WEEKLY_PHOTO_TARGET).length}/${room.children.length}`}
-                </div>
-              </div>
-
-              {room.children.length === 0 && (
-                <div style={{ fontSize: 13, color: T.textMuted }}>{t('montageTracker.noChildren')}</div>
-              )}
-
-              {/* DAILY — covered vs not-yet chips */}
-              {view === 'daily' && room.children.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {notYet.length > 0 && (
-                    <div>
-                      <div style={{ fontSize: 11.5, fontWeight: 700, color: T.amber, textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 7 }}>
-                        {t('montageTracker.notYet')} ({notYet.length})
-                      </div>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-                        {notYet.map((c) => <ChildChip key={c.id} child={c} tone="warn" />)}
-                      </div>
-                    </div>
-                  )}
-                  {covered.length > 0 && (
-                    <div>
-                      <div style={{ fontSize: 11.5, fontWeight: 700, color: T.emerald, textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 7 }}>
-                        {t('montageTracker.covered')} ({covered.length})
-                      </div>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-                        {covered.map((c) => (
-                          <ChildChip key={c.id} child={c} tone="ok" suffix={`×${c.photo_count}`} />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {notYet.length === 0 && covered.length > 0 && (
-                    <div style={{ fontSize: 12.5, color: T.emerald }}>🎉 {t('montageTracker.allCovered')}</div>
-                  )}
-                </div>
-              )}
-
-              {/* WEEKLY — per child progress toward the 8-photo target */}
-              {view === 'weekly' && room.children.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-                  {sortedWeekly.map((c) => {
-                    const done = c.photo_count >= WEEKLY_PHOTO_TARGET;
-                    return (
-                      <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <ChildAvatar name={c.name} photoUrl={c.photo_url} size={28} />
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 13, color: T.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {c.name}
-                          </div>
-                          <div style={{ marginTop: 4 }}>
-                            <ProgressBar value={c.photo_count} max={WEEKLY_PHOTO_TARGET} tone={done ? 'ok' : 'warn'} />
-                          </div>
-                        </div>
-                        <div style={{ fontSize: 12.5, fontWeight: 700, color: done ? T.emerald : T.amber, whiteSpace: 'nowrap' }}>
-                          {c.photo_count}/{WEEKLY_PHOTO_TARGET}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          );
-        })}
 
         {/* =================== CREATOR =================== */}
         <div style={{ ...sectionCard, display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -966,19 +895,6 @@ export default function MontageManagerPage() {
             <div style={{ fontSize: 12, color: T.textMuted, marginTop: 3 }}>
               {t('montageTracker.create.hint')}
             </div>
-          </div>
-
-          {/* three paths: whole class, one child, special event */}
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button type="button" onClick={() => choosePath('class')} style={pill(path === 'class')} aria-pressed={path === 'class'}>
-              🏫 {t('montageTracker.create.class')}
-            </button>
-            <button type="button" onClick={() => choosePath('child')} style={pill(path === 'child')} aria-pressed={path === 'child'}>
-              🧒 {t('montageTracker.create.child')}
-            </button>
-            <button type="button" onClick={() => choosePath('event')} style={pill(path === 'event')} aria-pressed={path === 'event'}>
-              🎉 {t('montageTracker.create.event')}
-            </button>
           </div>
 
           {/* ---------------- WHOLE CLASS: classroom select ---------------- */}
@@ -1029,6 +945,21 @@ export default function MontageManagerPage() {
 
           {path === 'child' && selectedChild && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {/* easy exit — straight back to the child list for the next one */}
+              <button
+                type="button"
+                onClick={() => { setChildId(''); setShortfall(null); setLightboxOpen(false); }}
+                aria-label={t('montageTracker.create.backToChildren')}
+                title={t('montageTracker.create.backToChildren')}
+                style={{
+                  width: 30, height: 30, borderRadius: 999, flexShrink: 0, padding: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'rgba(255,255,255,0.06)', border: `1px solid ${T.cardBorder}`,
+                  color: T.textPrimary, fontSize: 14, cursor: 'pointer',
+                }}
+              >
+                ✕
+              </button>
               <ChildAvatar name={selectedChild.name} photoUrl={selectedChild.photo_url} size={36} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 14, color: T.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -1038,7 +969,7 @@ export default function MontageManagerPage() {
               </div>
               <button
                 type="button"
-                onClick={() => { setChildId(''); setShortfall(null); }}
+                onClick={() => { setChildId(''); setShortfall(null); setLightboxOpen(false); }}
                 style={linkButton}
               >
                 {t('montageTracker.create.backToChildren')}
@@ -1071,6 +1002,19 @@ export default function MontageManagerPage() {
               <div style={{ fontSize: 11.5, color: T.textMuted, marginTop: 6 }}>
                 {t('montageTracker.create.eventIsRange')}
               </div>
+              {/* "Did my Art Camp photos land?" — the media page is the only
+                  surface that shows EVERY photo on an event (parent_visible
+                  -blind) with the server's honest total. */}
+              {eventId && (
+                <div style={{ marginTop: 8 }}>
+                  <Link
+                    href={`/montree/dashboard/media?event=${eventId}`}
+                    style={{ ...linkButton, display: 'inline-block' }}
+                  >
+                    🖼️ {t('media.photo_gallery')} →
+                  </Link>
+                </div>
+              )}
             </div>
           )}
 
@@ -1142,10 +1086,6 @@ export default function MontageManagerPage() {
                     )}
                   </div>
 
-                  <div style={{ fontSize: 11.5, color: T.textMuted, marginTop: -4 }}>
-                    {t('montageTracker.picker.tapToRemove')}
-                  </div>
-
                   {photoTruncated && (
                     <div style={{ fontSize: 11.5, color: T.amber }}>
                       {t('montageTracker.picker.truncated', { shown: photos.length, total: photoTotal })}
@@ -1153,14 +1093,16 @@ export default function MontageManagerPage() {
                   )}
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(74px, 1fr))', gap: 6 }}>
-                    {photos.map((p) => (
+                    {photos.map((p, i) => (
                       <PhotoThumb
                         key={p.id}
                         photo={p}
                         removed={removed.has(p.id)}
+                        onOpen={() => openLightbox(i)}
                         onToggle={() => toggleRemoved(p.id)}
                         removeLabel={t('montageTracker.picker.remove')}
                         restoreLabel={t('montageTracker.picker.restore')}
+                        openLabel={p.captured_at ? new Date(p.captured_at).toLocaleDateString() : ''}
                       />
                     ))}
                   </div>
@@ -1197,110 +1139,202 @@ export default function MontageManagerPage() {
           </button>
         </div>
 
-        {/* --- manager montage jobs --- */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{ fontFamily: T.serif, fontSize: 16, color: T.textPrimary }}>
-            {t('montageTracker.jobs.title')}
-          </div>
+        {/* =================== COVERAGE BOARDS (secondary) ================== */}
+        <div aria-hidden style={{ height: 1, background: T.cardBorder, marginTop: 4 }} />
 
-          {jobsLoading && jobs.length === 0 && (
-            <div style={{ fontSize: 13, color: T.textMuted }}>{t('common.loading')}</div>
-          )}
-
-          {!jobsLoading && jobs.length === 0 && (
-            <div style={{ ...sectionCard, textAlign: 'center', color: T.textMuted, fontSize: 13 }}>
-              {t('montageTracker.jobs.empty')}
-            </div>
-          )}
-
-          {jobs.map((m) => {
-            const c = statusColor(m.status);
-            const range =
-              m.date_start && m.date_end
-                ? (m.date_start === m.date_end ? m.date_start : `${m.date_start} → ${m.date_end}`)
-                : '';
-            return (
-              <div key={m.id} style={{ ...sectionCard, display: 'flex', alignItems: 'center', gap: 12, padding: 12 }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: T.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {m.title}
-                  </div>
-                  <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2 }}>{range}</div>
-                  {m.status === 'failed' && m.error && (
-                    <div style={{ fontSize: 11, color: T.red, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {m.error}
-                    </div>
-                  )}
-                </div>
-                <span style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 5,
-                  padding: '4px 10px', borderRadius: 999,
-                  background: c.bg, border: `1px solid ${c.fg}40`,
-                  color: c.fg, fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
-                }}>
-                  {ACTIVE_STATUSES.has(m.status) && (
-                    <span
-                      className="animate-spin"
-                      style={{ width: 10, height: 10, borderRadius: '50%', border: `2px solid ${c.fg}`, borderTopColor: 'transparent', display: 'inline-block' }}
-                    />
-                  )}
-                  {statusLabel(m.status)}
-                </span>
-                {m.status === 'done' && m.output_path && (
-                  <button
-                    type="button"
-                    onClick={() => setWatching(m)}
-                    style={{
-                      padding: '7px 12px', borderRadius: 10,
-                      background: T.emeraldSoft, border: `1px solid ${T.emeraldBorder}`,
-                      color: T.emerald, fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap',
-                    }}
-                  >
-                    ▶ {t('montage.watch')}
-                  </button>
-                )}
-              </div>
-            );
-          })}
+        {/* --- view toggle --- */}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button type="button" onClick={() => setView('daily')} style={pill(view === 'daily')} aria-pressed={view === 'daily'}>
+            {t('montageTracker.tab.daily')}
+          </button>
+          <button type="button" onClick={() => setView('weekly')} style={pill(view === 'weekly')} aria-pressed={view === 'weekly'}>
+            {t('montageTracker.tab.weekly')}
+          </button>
+          <div style={{ flex: 1 }} />
+          <button
+            type="button"
+            onClick={loadCoverage}
+            style={{ ...pill(false), padding: '7px 12px' }}
+            aria-label={t('montageTracker.refresh')}
+          >
+            ↻
+          </button>
         </div>
-      </div>
 
-      {/* --- player --- */}
-      {watchingPath && watching && (
-        <div
-          onClick={() => setWatching(null)}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 9999,
-            background: 'rgba(2,8,5,0.90)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
-          }}
-        >
-          <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 460 }}>
-            <div style={{ fontSize: 14, color: T.textSecondary, marginBottom: 10, textAlign: 'center' }}>
-              {watching.title}
-            </div>
-            <video
-              src={getVideoProxyUrl(watchingPath)}
-              controls
-              autoPlay
-              playsInline
-              preload="metadata"
-              style={{ width: '100%', borderRadius: 14, background: '#000' }}
-            />
-            <button
-              type="button"
-              onClick={() => setWatching(null)}
-              style={{
-                width: '100%', marginTop: 12, padding: '11px 0', borderRadius: 12,
-                background: 'rgba(255,255,255,0.08)', border: `1px solid ${T.cardBorder}`,
-                color: T.textPrimary, fontSize: 14, cursor: 'pointer',
-              }}
-            >
-              {t('montage.close')}
+        {/* --- school-wide summary --- */}
+        <div style={sectionCard}>
+          <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 4 }}>
+            {shortRangeLabel(boardRange)}
+            {totals.total_photos > 0 && ` · ${t('montageTracker.photosInRange', { count: totals.total_photos })}`}
+          </div>
+          <div style={{ fontFamily: T.serif, fontSize: 18, color: T.textPrimary, marginBottom: 10 }}>
+            {view === 'daily'
+              ? t('montageTracker.summaryDaily', { covered: totals.covered, total: totals.children })
+              : t('montageTracker.summaryWeekly', { covered: weeklyDone, total: totals.children, target: WEEKLY_PHOTO_TARGET })}
+          </div>
+          <ProgressBar
+            value={view === 'daily' ? totals.covered : weeklyDone}
+            max={totals.children}
+          />
+        </div>
+
+        {loading && !coverage && (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: 32 }}>
+            <div className="animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent" />
+          </div>
+        )}
+
+        {loadError && (
+          <div style={{ ...sectionCard, borderColor: 'rgba(239,68,68,0.3)', background: T.redSoft, textAlign: 'center' }}>
+            <div style={{ color: T.red, fontSize: 13, marginBottom: 8 }}>{t('montageTracker.loadFailed')}</div>
+            <button type="button" onClick={loadCoverage} style={{ ...pill(false), border: 'none', background: 'transparent', color: T.red, textDecoration: 'underline' }}>
+              {t('montageTracker.retry')}
             </button>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* --- WEEKLY: needs-more, team-wide --- */}
+        {view === 'weekly' && coverage && needsMore.length > 0 && (
+          <div style={{ ...sectionCard, borderColor: T.amberBorder, background: T.amberSoft }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.amber, marginBottom: 4 }}>
+              ⚠ {t('montageTracker.needsMore')} ({needsMore.length})
+            </div>
+            <div style={{ fontSize: 12, color: T.textSecondary, marginBottom: 10 }}>
+              {t('montageTracker.needsMoreHint', { target: WEEKLY_PHOTO_TARGET })}
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+              {needsMore.map((c) => (
+                <ChildChip
+                  key={c.id}
+                  child={c}
+                  tone="warn"
+                  suffix={`${c.photo_count}/${WEEKLY_PHOTO_TARGET}`}
+                  onSelect={() => selectChildFromBoard(c.id)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* --- per-classroom boards --- */}
+        {coverage?.classrooms.map((room) => {
+          const covered = room.children.filter((c) => c.photo_count > 0);
+          const notYet = room.children.filter((c) => c.photo_count === 0);
+          const sortedWeekly = [...room.children].sort(
+            (a, b) => a.photo_count - b.photo_count || a.name.localeCompare(b.name)
+          );
+          return (
+            <div key={room.id} style={sectionCard}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10 }}>
+                <div style={{ fontFamily: T.serif, fontSize: 16, color: T.textPrimary }}>{room.name}</div>
+                <div style={{ fontSize: 12, color: T.textMuted }}>
+                  {view === 'daily'
+                    ? `${covered.length}/${room.children.length}`
+                    : `${room.children.filter((c) => c.photo_count >= WEEKLY_PHOTO_TARGET).length}/${room.children.length}`}
+                </div>
+              </div>
+
+              {room.children.length === 0 && (
+                <div style={{ fontSize: 13, color: T.textMuted }}>{t('montageTracker.noChildren')}</div>
+              )}
+
+              {/* DAILY — covered vs not-yet chips */}
+              {view === 'daily' && room.children.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {notYet.length > 0 && (
+                    <div>
+                      <div style={{ fontSize: 11.5, fontWeight: 700, color: T.amber, textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 7 }}>
+                        {t('montageTracker.notYet')} ({notYet.length})
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                        {notYet.map((c) => (
+                          <ChildChip key={c.id} child={c} tone="warn" onSelect={() => selectChildFromBoard(c.id)} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {covered.length > 0 && (
+                    <div>
+                      <div style={{ fontSize: 11.5, fontWeight: 700, color: T.emerald, textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 7 }}>
+                        {t('montageTracker.covered')} ({covered.length})
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                        {covered.map((c) => (
+                          <ChildChip
+                            key={c.id}
+                            child={c}
+                            tone="ok"
+                            suffix={`×${c.photo_count}`}
+                            onSelect={() => selectChildFromBoard(c.id)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {notYet.length === 0 && covered.length > 0 && (
+                    <div style={{ fontSize: 12.5, color: T.emerald }}>🎉 {t('montageTracker.allCovered')}</div>
+                  )}
+                </div>
+              )}
+
+              {/* WEEKLY — per child progress toward the 8-photo target */}
+              {view === 'weekly' && room.children.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                  {sortedWeekly.map((c) => {
+                    const done = c.photo_count >= WEEKLY_PHOTO_TARGET;
+                    return (
+                      <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <ChildAvatar name={c.name} photoUrl={c.photo_url} size={28} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, color: T.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {c.name}
+                          </div>
+                          <div style={{ marginTop: 4 }}>
+                            <ProgressBar value={c.photo_count} max={WEEKLY_PHOTO_TARGET} tone={done ? 'ok' : 'warn'} />
+                          </div>
+                        </div>
+                        <div style={{ fontSize: 12.5, fontWeight: 700, color: done ? T.emerald : T.amber, whiteSpace: 'nowrap' }}>
+                          {c.photo_count}/{WEEKLY_PHOTO_TARGET}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* --- full-screen viewer --- */}
+      <PhotoLightbox
+        isOpen={lightboxOpen && photos.length > 0}
+        onClose={() => setLightboxOpen(false)}
+        src={lightboxCurrent ? getProxyUrl(lightboxCurrent.storage_path) : ''}
+        photos={lightboxPhotos}
+        currentIndex={safeLightboxIndex}
+        onNavigate={(idx) => setLightboxIndex(idx)}
+        onDelete={(idx) => setPhotoToDelete(photos[idx] ?? null)}
+        deleteLabel={t('gallery.deletePhoto')}
+        deleting={isDeleting}
+        onPrimaryAction={() => { setLightboxOpen(false); handleCreate(); }}
+        primaryActionLabel={`🎬 ${t('montageTracker.create.button')}`}
+        primaryActionDisabled={creating || photosLoading || keptPhotos.length < minPhotos}
+      />
+
+      {/* --- delete confirmation ---
+          DeleteConfirmDialog is z-50 and the lightbox is z-[100]; the bin lives
+          INSIDE the lightbox, so the dialog needs its own stacking context
+          above it or it would confirm invisibly behind the viewer. */}
+      <div style={{ position: 'relative', zIndex: 200 }}>
+        <DeleteConfirmDialog
+          isOpen={!!photoToDelete}
+          count={1}
+          onConfirm={confirmDelete}
+          onCancel={() => { if (!isDeleting) setPhotoToDelete(null); }}
+          isDeleting={isDeleting}
+        />
+      </div>
     </div>
   );
 }
