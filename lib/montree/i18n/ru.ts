@@ -1178,6 +1178,13 @@ export const ru: Record<string, string> = {
   'parentMilestones.loading': 'Загрузка достижений...',
   'parentMilestones.growingTitle': 'Растёт каждый день',
   'parentMilestones.noMilestonesYet': 'Достижения будут отображаться здесь, когда {childName} освоит новые навыки',
+
+  // Parent Montages
+  'parentMontages.title': 'Маленькие фильмы',
+  'parentMontages.empty': 'Пока нет фильмов. Когда воспитатель поделится, он появится здесь.',
+  'parentMontages.errorLoad': 'Не удалось загрузить фильмы',
+  'parentMontages.download': 'Скачать',
+
   'parentMessages.errorLoad': 'Не удалось загрузить сообщения',
   'parentMessages.loading': 'Загрузка сообщений...',
   'parentMessages.filterAll': 'Все сообщения',
@@ -5461,7 +5468,7 @@ export const ru: Record<string, string> = {
   'montage.noEvents': 'Особых событий пока нет — создайте одно на экране проверки фото.',
 
   // Отслеживание фотографий — без ИИ: фото засчитывается сразу после отметки.
-  'montageTracker.title': 'Менеджер монтажа',
+  'montageTracker.title': 'Студия монтажа',
   'montageTracker.subtitle': 'Каждое фото засчитывается сразу, как только вы его отметите.',
   'montageTracker.tab.daily': 'Сегодня',
   'montageTracker.tab.weekly': 'На этой неделе',

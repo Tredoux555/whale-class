@@ -1178,6 +1178,13 @@ export const ko: Record<string, string> = {
   'parentMilestones.loading': '이정표 로드 중...',
   'parentMilestones.growingTitle': '매일 성장하고 있습니다',
   'parentMilestones.noMilestonesYet': '{childName}이(가) 새로운 기술을 습득하면 이정표가 여기에 나타납니다',
+
+  // Parent Montages
+  'parentMontages.title': '작은 영상',
+  'parentMontages.empty': '아직 영상이 없습니다. 선생님이 공유하면 여기에 표시됩니다.',
+  'parentMontages.errorLoad': '영상을 불러오지 못했습니다',
+  'parentMontages.download': '다운로드',
+
   'parentMessages.errorLoad': '메시지를 불러올 수 없습니다',
   'parentMessages.loading': '메시지 로드 중...',
   'parentMessages.filterAll': '모든 메시지',
@@ -5464,7 +5471,7 @@ export const ko: Record<string, string> = {
   'montage.noEvents': '아직 특별 행사가 없습니다 — 사진 검토 화면에서 만들어보세요.',
 
   // 사진 트래커 — AI 없이, 태그하는 순간 사진이 집계됩니다.
-  'montageTracker.title': '몽타주 매니저',
+  'montageTracker.title': '몽타주 스튜디오',
   'montageTracker.subtitle': '태그하는 순간 모든 사진이 집계됩니다.',
   'montageTracker.tab.daily': '오늘',
   'montageTracker.tab.weekly': '이번 주',

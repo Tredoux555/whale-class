@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
-import { LogOut, ChevronDown, ChevronLeft, ChevronRight, MessageSquare, Calendar } from 'lucide-react';
+import { LogOut, ChevronDown, ChevronLeft, ChevronRight, MessageSquare, Calendar, Film } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import { rememberLaunchSurface, clearLaunchSurface } from '@/lib/montree/launch-surface';
@@ -711,6 +711,33 @@ export default function ParentDashboardPage() {
                 )}
               </Link>
             )}
+            {/* Montage feed — same header icon-link pattern as Appointments /
+                Messages above. Carries the selected child so multi-child
+                parents land on the right feed (mirrors the reports links
+                below); the page re-resolves the child when the param is
+                absent. Unconditional: the feed renders its own empty state. */}
+            <Link
+              href={`/montree/parent/montages${selectedChild?.id ? `?child=${selectedChild.id}` : ''}`}
+              aria-label={t('parentMontages.title')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 40,
+                height: 40,
+                borderRadius: 10,
+                color: T.emerald,
+                background: 'transparent',
+                textDecoration: 'none',
+                transition: 'background 140ms ease',
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.background = T.emeraldSoft)
+              }
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            >
+              <Film size={20} strokeWidth={1.75} />
+            </Link>
             <LanguageToggle />
             <Link
               href="/montree/parent/account"

@@ -5,6 +5,8 @@
 //
 // Supports HTTP Range requests (required for video seek/resume on iOS Safari + all browsers).
 // Supports multiple public buckets via ?bucket= query param (allowlisted).
+// Supports ?download=1 — same stream, plus Content-Disposition: attachment, so
+// a montage can be saved to disk instead of played inline.
 // Video streams are NOT timeout-capped on body (only initial response), so long downloads finish.
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -39,6 +41,24 @@ function resolveBucket(raw: string | null): string {
   return ALLOWED_BUCKETS.has(raw) ? raw : DEFAULT_BUCKET;
 }
 
+/**
+ * Content-Disposition value for `?download=1`, built from the LAST segment of
+ * the storage path.
+ *
+ * 🚨 The path comes straight off the URL, so it is never interpolated raw:
+ * the `filename=` token is reduced to a safe ASCII subset (quotes, backslashes,
+ * control characters and CR/LF can all break out of — or inject into — a
+ * header, and a non-Latin-1 byte makes the Response constructor throw), and the
+ * original unicode name rides along in the RFC 5987 `filename*` token, which
+ * every modern browser prefers.
+ */
+function attachmentDisposition(storagePath: string): string {
+  const last = (storagePath.split('/').pop() || '').trim().slice(0, 120);
+  // Leading dots would make it a hidden file on unix, so they become '_'.
+  const ascii = (last.replace(/[^A-Za-z0-9._-]/g, '_') || 'download').replace(/^\.+/, '_');
+  return `attachment; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(last || ascii)}`;
+}
+
 async function handleRequest(
   request: NextRequest,
   path: string[],
@@ -65,6 +85,16 @@ async function handleRequest(
     const w = searchParams.get('w');
     const q = searchParams.get('q');
     const wantTransform = !!(w || q);
+
+    // ?download=1 → hand the browser a "Save as" instead of inline playback.
+    // Used by Montage Manager's Download button so a finished film lands in
+    // the teacher's Downloads folder rather than opening in a tab (and without
+    // buffering the whole video into a client-side blob).
+    //
+    // 🚨 This changes ONE response header. Range passthrough, the 206 status,
+    // the bucket allowlist, the transform fallback and the cache headers are
+    // all deliberately untouched — a download is the same stream, labelled.
+    const wantDownload = searchParams.get('download') === '1';
 
     const rawUrl = `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${storagePath}`;
     const renderParams = new URLSearchParams();
@@ -137,6 +167,11 @@ async function handleRequest(
     // but keep the long CDN cache so China POPs still serve hot.
     if (isVideo) {
       headers['Cache-Control'] = 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800';
+    }
+
+    // Set last so it applies to GET and HEAD alike, and to 200s and 206s alike.
+    if (wantDownload) {
+      headers['Content-Disposition'] = attachmentDisposition(storagePath);
     }
 
     // HEAD: return headers only

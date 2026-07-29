@@ -1178,6 +1178,13 @@ export const ja: Record<string, string> = {
   'parentMilestones.loading': 'マイルストーンを読み込み中...',
   'parentMilestones.growingTitle': '毎日成長しています',
   'parentMilestones.noMilestonesYet': '{childName}が新しいスキルを習得すると、マイルストーンがここに表示されます',
+
+  // Parent Montages
+  'parentMontages.title': 'ちいさなムービー',
+  'parentMontages.empty': 'まだムービーはありません。先生が共有するとここに表示されます。',
+  'parentMontages.errorLoad': 'ムービーを読み込めませんでした',
+  'parentMontages.download': 'ダウンロード',
+
   'parentMessages.errorLoad': 'メッセージの読み込みに失敗しました',
   'parentMessages.loading': 'メッセージを読み込み中...',
   'parentMessages.filterAll': 'すべてのメッセージ',
@@ -5464,7 +5471,7 @@ export const ja: Record<string, string> = {
   'montage.noEvents': '特別なイベントはまだありません — 写真確認画面から作成してください。',
 
   // 写真トラッカー — AIなし。タグ付けした瞬間に写真がカウントされます。
-  'montageTracker.title': 'モンタージュマネージャー',
+  'montageTracker.title': 'モンタージュスタジオ',
   'montageTracker.subtitle': 'タグを付けた瞬間に、すべての写真がカウントされます。',
   'montageTracker.tab.daily': '今日',
   'montageTracker.tab.weekly': '今週',

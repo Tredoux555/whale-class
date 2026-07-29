@@ -1396,6 +1396,12 @@ export const en = {
   'parentMilestones.growingTitle': 'Growing Every Day',
   'parentMilestones.noMilestonesYet': 'Milestones will appear here as {childName} masters new skills',
 
+  // Parent Montages
+  'parentMontages.title': 'Little Films',
+  'parentMontages.empty': 'No films yet. When a teacher shares one, it will appear here.',
+  'parentMontages.errorLoad': 'Failed to load films',
+  'parentMontages.download': 'Download',
+
   // Phase 8 — Parent Messages
   'parentMessages.errorLoad': 'Failed to load messages',
   'parentMessages.loading': 'Loading messages...',
@@ -5933,7 +5939,7 @@ export const en = {
 
   // Montage Tracker — photo-coverage boards + confirmation-free montages.
   // No AI in this feature: a photo counts the moment it is tagged.
-  'montageTracker.title': 'Montage Manager',
+  'montageTracker.title': 'Montage Studio',
   'montageTracker.subtitle': 'Every photo counts the moment you tag it.',
   'montageTracker.tab.daily': 'Today',
   'montageTracker.tab.weekly': 'This week',

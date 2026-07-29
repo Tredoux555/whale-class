@@ -1178,6 +1178,13 @@ export const de: Record<string, string> = {
   'parentMilestones.loading': 'Meilensteine werden geladen...',
   'parentMilestones.growingTitle': 'Wächst jeden Tag',
   'parentMilestones.noMilestonesYet': 'Meilensteine werden hier angezeigt, wenn {childName} neue Fähigkeiten meistert',
+
+  // Parent Montages
+  'parentMontages.title': 'Kleine Filme',
+  'parentMontages.empty': 'Noch keine Filme. Sobald eine Lehrkraft einen teilt, erscheint er hier.',
+  'parentMontages.errorLoad': 'Filme konnten nicht geladen werden',
+  'parentMontages.download': 'Herunterladen',
+
   'parentMessages.errorLoad': 'Nachrichten konnten nicht geladen werden',
   'parentMessages.loading': 'Nachrichten werden geladen...',
   'parentMessages.filterAll': 'Alle Nachrichten',
@@ -5464,7 +5471,7 @@ export const de: Record<string, string> = {
   'montage.noEvents': 'Noch keine besonderen Veranstaltungen — erstellen Sie eine auf dem Foto-Überprüfungsbildschirm.',
 
   // Montage Tracker — kein KI: ein Foto zählt, sobald es markiert wird.
-  'montageTracker.title': 'Montage-Manager',
+  'montageTracker.title': 'Montage-Studio',
   'montageTracker.subtitle': 'Jedes Foto zählt, sobald Sie es markieren.',
   'montageTracker.tab.daily': 'Heute',
   'montageTracker.tab.weekly': 'Diese Woche',
