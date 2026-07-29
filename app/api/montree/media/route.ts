@@ -228,6 +228,27 @@ export async function PATCH(request: NextRequest) {
     if (typeof parent_visible === 'boolean') updateData.parent_visible = parent_visible;
     if (typeof discussion_flag === 'boolean') updateData.discussion_flag = discussion_flag;
 
+    // 🚨 TWO CLEAN PATHS (2026-07-29) — the EDIT path. A row is EITHER an event
+    // photo (event_id set, no child_id, ZERO montree_media_children rows) OR a
+    // child photo (child tags, event_id null). Capture/enqueue/upload/AI already
+    // enforce this; PhotoEditModal can send `child_id` and `event_id` in the SAME
+    // body, so the invariant has to be re-applied here or an edit re-creates the
+    // hybrid rows every downstream guard assumes cannot exist.
+    //
+    // Precedence mirrors the photo-audit resolve route: assigning an event is a
+    // deliberate PATH A → PATH B conversion, so the event wins and the child link
+    // goes with it. Clearing (event_id: null) does NOT restore child tags.
+    // Absent fields (`undefined`) change nothing — a caption-only PATCH is
+    // byte-identical to before.
+    let convertedToEvent = false;
+    if (typeof event_id === 'string' && event_id) {
+      updateData.child_id = null;
+      convertedToEvent = true;
+    } else if (child_id !== undefined && child_id !== null) {
+      // Tagging/re-tagging a child makes this a child photo: drop any event link.
+      updateData.event_id = null;
+    }
+
     // Scope to authenticated user's school to prevent cross-school updates
     const schoolId = typeof auth === 'object' && 'schoolId' in auth ? auth.schoolId : null;
     let updateQuery = supabase
@@ -248,6 +269,19 @@ export async function PATCH(request: NextRequest) {
 
     if (!media) {
       return NextResponse.json({ error: 'Media not found' }, { status: 404 });
+    }
+
+    // Second half of the conversion: drop the junction rows. Non-fatal — the
+    // media row is already stamped, and a stale junction row only ever
+    // over-shows the photo in a child scope, never under-shows the event.
+    if (convertedToEvent) {
+      const { error: unlinkErr } = await supabase
+        .from('montree_media_children')
+        .delete()
+        .eq('media_id', id);
+      if (unlinkErr) {
+        console.warn('Media update: event conversion child unlink failed (non-fatal):', unlinkErr.message);
+      }
     }
 
     return NextResponse.json({ success: true, media });

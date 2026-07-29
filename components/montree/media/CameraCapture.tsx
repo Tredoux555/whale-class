@@ -19,6 +19,12 @@ interface CameraCaptureProps {
   onCancel: () => void;
   facingMode?: 'user' | 'environment';
   allowVideo?: boolean;
+  // PATH B (event session) remounts this component after every shot to get a
+  // live viewfinder back. A remount resets ALL local state, which would wipe the
+  // teacher's zoom between consecutive frames of the same scene — exactly what
+  // SPEC2 §2.2 rules out. The parent keeps the last level and hands it back.
+  initialZoom?: number;
+  onZoomChange?: (zoom: number) => void;
 }
 
 type CameraState = 'initializing' | 'ready' | 'recording' | 'captured' | 'error';
@@ -55,7 +61,16 @@ export default function CameraCapture({
   onCancel,
   facingMode = 'environment',
   allowVideo = true,
+  initialZoom = 1,
+  onZoomChange,
 }: CameraCaptureProps) {
+  // Never trust the restored value blindly: floor at 1×. The per-stream
+  // capability probe in startCamera clamps it to what THIS track supports
+  // before the preview ever becomes visible (zoomEnabled is false while
+  // cameraState === 'initializing', so no transform is applied until then).
+  const startZoomRef = useRef(
+    Number.isFinite(initialZoom) ? Math.max(1, initialZoom) : 1
+  );
   const { t } = useI18n();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -84,13 +99,13 @@ export default function CameraCapture({
   //                not expose `zoom` on iOS): CSS scale on the preview + a
   //                matching centred crop at capture time, so the saved JPEG is
   //                exactly what the teacher framed.
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(startZoomRef.current);
   const [zoomMode, setZoomMode] = useState<'native' | 'digital'>('digital');
   const [zoomMax, setZoomMax] = useState(MAX_DIGITAL_ZOOM);
   // Fresh-value refs. Touch handlers fire far faster than React re-renders and
   // capturePhoto() must read the CURRENT zoom without taking `zoom` as a dep
   // (same pattern as PhotoCropModal's `v.current`).
-  const zoomRef = useRef(1);
+  const zoomRef = useRef(startZoomRef.current);
   const zoomMinRef = useRef(1);
   const zoomStepRef = useRef(0);            // native step; 0 ⇒ continuous
   const zoomModeRef = useRef<'native' | 'digital'>('digital');
@@ -111,6 +126,18 @@ export default function CameraCapture({
 
   zoomModeRef.current = zoomMode;
   zoomEnabledRef.current = zoomEnabled;
+
+  // Report the live level up so a parent that remounts us (PATH B event
+  // sessions bump a key on this component after every shot) can hand the same
+  // zoom straight back. One effect on `zoom` covers EVERY writer — pinch,
+  // reset, the blocked-mode reset, the per-stream clamp and the native→digital
+  // demotion — so no write path can silently drift. Read through a ref so an
+  // inline arrow prop can't churn the dep array.
+  const onZoomChangeRef = useRef(onZoomChange);
+  onZoomChangeRef.current = onZoomChange;
+  useEffect(() => {
+    onZoomChangeRef.current?.(zoom);
+  }, [zoom]);
 
   // Reset only on the DURABLE off-conditions. 'captured' and 'initializing'
   // are transient (every shot, every retake, every camera switch passes through

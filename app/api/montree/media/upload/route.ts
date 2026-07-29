@@ -40,7 +40,22 @@ export async function POST(request: NextRequest) {
       };
     }
 
-    const { school_id, classroom_id, child_id, child_ids, work_id, event_id, caption, tags, width, height, media_type, duration } = metadata;
+    const { school_id, classroom_id, child_id: rawChildId, child_ids: rawChildIds, work_id, event_id, caption, tags, width, height, media_type, duration } = metadata;
+
+    // 🚨 TWO CLEAN PATHS — server-side invariant.
+    // A photo is EITHER an event photo (event_id set, ZERO montree_media_children
+    // rows, never seen by the AI/Wrap-Up pipeline) OR a child photo (child tags,
+    // no event_id). Event wins when both arrive: the offline queue on a device
+    // running an older build can still hold mixed entries, and refusing them
+    // (400) would strand those photos forever. So we accept the upload and drop
+    // the child links, loudly. `parent_visible` is untouched — it stays true, the
+    // montage event picker depends on it.
+    const hasEvent = !!event_id;
+    const child_id = hasEvent ? null : rawChildId;
+    const child_ids = hasEvent ? null : rawChildIds;
+    if (hasEvent && (rawChildId || (Array.isArray(rawChildIds) && rawChildIds.length > 0))) {
+      console.warn('[MediaUpload] event_id present — dropping child tags for event photo. event_id:', event_id);
+    }
 
     // JPEG-only gate for PHOTOS into montree_media (Session 100).
     // PNG/HEIC/WebP/GIF/AVIF do not render reliably across our proxy + thumbnail

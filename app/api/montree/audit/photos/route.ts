@@ -4,6 +4,14 @@ import { getSupabase } from '@/lib/supabase-client';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 // GET /api/montree/audit/photos — Fetch photos with confidence data for audit view
+//
+// 🚨 TWO CLEAN PATHS: this is the Wrap Up ("Photo Audit") review queue. Event
+// photos (montree_media.event_id NOT NULL) are NEVER listed here. An event
+// capture is a group/party shot with nothing to do with academics — it lands in
+// its event bucket and stops there, so it must never appear in a review queue
+// whose entire purpose is curriculum attribution. Matching guards live in
+// photo-identification/process (hard skip), photo-identification/sweep
+// (candidate query) and sync-manager.ts (client-side trigger).
 export async function GET(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
@@ -47,9 +55,12 @@ export async function GET(request: NextRequest) {
     // Step 3: Query media — by default exclude teacher_confirmed photos
     let mediaQuery = supabase
       .from('montree_media')
-      .select('id, child_id, work_id, storage_path, thumbnail_path, captured_at, created_at, caption, auto_crop, classroom_id, tags, identification_status, identification_confidence, identification_attempted_at, sonnet_draft, teacher_confirmed, discussion_flag', { count: 'exact' })
+      .select('id, child_id, work_id, event_id, storage_path, thumbnail_path, captured_at, created_at, caption, auto_crop, classroom_id, tags, identification_status, identification_confidence, identification_attempted_at, sonnet_draft, teacher_confirmed, discussion_flag', { count: 'exact' })
       .eq('school_id', auth.schoolId)
       .eq('media_type', 'photo')
+      // 🚨 Event photos never enter Wrap Up. include_confirmed=1 does NOT
+      // override this — it widens the confirmation filter, not the path filter.
+      .is('event_id', null)
       .gte('captured_at', dateFrom)
       .lte('captured_at', dateTo)
       .order('captured_at', { ascending: false })
@@ -84,7 +95,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch photos' }, { status: 500 });
     }
     // Filter out reference photos in JS (PostgREST .or() has issues with JSONB array syntax)
+    // Belt-and-braces on the event guard too: a row that somehow arrives with an
+    // event_id is dropped here as well, so the review queue can never show one.
     const mediaRows = (rawMediaRows || []).filter((m: any) => {
+      if (m.event_id) return false;
       if (!m.tags) return true;
       if (Array.isArray(m.tags) && m.tags.includes('reference_photo')) return false;
       return true;

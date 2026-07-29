@@ -3,7 +3,7 @@
 // Dark forest visual treatment — all wiring intact
 'use client';
 
-import React, { useState, useEffect, Suspense, CSSProperties } from 'react';
+import React, { useState, useEffect, useRef, Suspense, CSSProperties } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
@@ -175,6 +175,18 @@ function CaptureContent() {
   const [workId, setWorkId] = useState<string | null>(workIdFromUrl);
   const [selectedEvent, setSelectedEvent] = useState<MontreeEvent | null>(null);
   const [showEventPicker, setShowEventPicker] = useState(false);
+  // PATH B (event session) never leaves the camera, so CameraCapture has to be
+  // handed back a live viewfinder after each shot. Bumping this key remounts it.
+  const [cameraKey, setCameraKey] = useState(0);
+  // ...but a remount also wipes CameraCapture's internal zoom, and SPEC2 §2.2
+  // requires the zoom to SURVIVE consecutive shots (the teacher stands back and
+  // takes several frames of the same scene). Hold the last level here and hand
+  // it back to the fresh instance. A ref, not state: it must not re-render the
+  // page on every pinch frame.
+  const cameraZoomRef = useRef(1);
+  // Class-mode race (ANALYSIS3 §4): a shot taken before the roster resolves is
+  // parked here instead of enqueueing with an empty child list.
+  const [pendingClassMedia, setPendingClassMedia] = useState<CapturedMedia | null>(null);
 
   // ============================================
   // INIT: Session + Children + Work lookup
@@ -334,15 +346,37 @@ function CaptureContent() {
   // UPLOAD + SMART CAPTURE
   // ============================================
 
-  const doUploadAndAnalyze = async (media: CapturedMedia, childIds: string[]) => {
-    const idsToTag = isClassMode ? children.map(c => c.id) : childIds;
+  // ── TWO CLEAN PHOTO PATHS ───────────────────────────────────────────────
+  // The child/event decision is made HERE and nowhere else, from the EXPLICIT
+  // `eventForShot` argument — never from `selectedEvent` state. Every caller
+  // states its intent, so a late-arriving/stale event pick can never silently
+  // convert a child save (or the reverse).
+  //
+  //   eventForShot != null → PATH B (event photo): ZERO child ids, event_id set,
+  //     lands in the event bucket, permanently outside the AI/Wrap-Up pipeline.
+  //   eventForShot == null → PATH A (child photo): child ids only, NO event_id
+  //     under any circumstance, eligible for AI Wrap Up.
+  // ─────────────────────────────────────────────────────────────────────────
+  const doUploadAndAnalyze = async (
+    media: CapturedMedia,
+    childIds: string[],
+    eventForShot: MontreeEvent | null,
+  ) => {
+    const isEventShot = !!eventForShot;
+    // Mutual exclusivity, enforcement point #1: an event shot carries no
+    // children at all — not the class roster, not a preselected child.
+    const idsToTag = isEventShot ? [] : (isClassMode ? children.map(c => c.id) : childIds);
     const isVideo = media.type === 'video';
     const label = isVideo ? 'Video' : 'Photo';
     // Name the event in the save confirmation. "Photo saved!" left teachers
     // unable to tell whether the shot actually landed on the event they picked.
-    const savedMessage = selectedEvent
-      ? t('capture.savedToEvent').replace('{eventName}', selectedEvent.name)
-      : (t('offline.photoSaved') || `${label} saved!`);
+    // ZERO new i18n keys (SPEC2 hard rule): the event name is appended to the
+    // EXISTING saved toast rather than introducing a `capture.savedToEvent`
+    // string that no locale file defines (that renders the raw key).
+    const baseSaved = t('offline.photoSaved') || `${label} saved!`;
+    const savedMessage = isEventShot
+      ? `${baseSaved} · ${eventForShot!.name}`
+      : baseSaved;
 
     // Guard: school_id is required for upload — if missing, session is broken
     if (!schoolId) {
@@ -358,7 +392,7 @@ function CaptureContent() {
         : media.data as Blob;
 
       toast.success(savedMessage, { duration: 2000 });
-      navigateAfterCapture(childIds);
+      finishShot(isEventShot, childIds);
 
       const taskId = addTask({
         type: 'video_upload',
@@ -374,11 +408,13 @@ function CaptureContent() {
             classroom_id: classroomId || undefined,
             child_id: idsToTag.length === 1 ? idsToTag[0] : undefined,
             child_ids: idsToTag.length > 1 ? idsToTag : undefined,
-            is_class_photo: isClassMode,
+            is_class_photo: isEventShot ? false : isClassMode,
             work_id: workId || undefined,
             caption: workName || undefined,
             tags: workArea ? [workArea] : undefined,
-            event_id: selectedEvent?.id || undefined,
+            // Enforcement point #2: event_id only ever rides along on a PATH B
+            // shot, and PATH B has already emptied idsToTag above.
+            event_id: isEventShot ? eventForShot!.id : undefined,
           });
 
           if (signal?.aborted) return;
@@ -424,7 +460,7 @@ function CaptureContent() {
     // P1-3: the event id is the whole point of the "photo never landed on the
     // event" investigation — log what we actually enqueue, and the queue entry
     // id it lands under, so a device log can be walked end to end.
-    console.log('[CAPTURE] Enqueueing photo. child_id:', idsToTag[0] || '(none)', 'school_id:', schoolId, 'event_id:', selectedEvent?.id ?? '(none)', 'blob size:', compressedBlob.size);
+    console.log('[CAPTURE] Enqueueing photo. path:', isEventShot ? 'EVENT' : 'CHILD', 'child_id:', idsToTag[0] || '(none)', 'school_id:', schoolId, 'event_id:', eventForShot?.id ?? '(none)', 'blob size:', compressedBlob.size);
     try {
       const entry = await enqueuePhoto(compressedBlob, {
         child_id: idsToTag[0] || '',
@@ -434,8 +470,10 @@ function CaptureContent() {
         work_id: workId || undefined,
         work_name: workName || undefined,
         work_area: workArea || undefined,
-        is_class_photo: isClassMode,
-        event_id: selectedEvent?.id || undefined,
+        // Enforcement point #2 (photo queue): a PATH A entry NEVER carries
+        // event_id, even if a sticky event pick lingers in state/sessionStorage.
+        is_class_photo: isEventShot ? false : isClassMode,
+        event_id: isEventShot ? eventForShot!.id : undefined,
         width: compressedWidth,
         height: compressedHeight,
       });
@@ -464,7 +502,7 @@ function CaptureContent() {
 
     console.log('[CAPTURE] Photo enqueued successfully, showing toast and navigating');
     toast.success(savedMessage, { duration: 2000 });
-    navigateAfterCapture(childIds);
+    finishShot(isEventShot, childIds);
 
     syncQueue().catch(e => console.error('[CAPTURE] Background sync failed:', e));
   };
@@ -479,14 +517,63 @@ function CaptureContent() {
     }
   };
 
+  // PATH B is a shooting session: the toast IS the whole wrap-up and the
+  // teacher goes straight back to the viewfinder for the next shot. PATH A
+  // keeps the existing navigate-to-the-child behaviour untouched.
+  const finishShot = (isEventShot: boolean, childIds: string[]) => {
+    if (!isEventShot) {
+      navigateAfterCapture(childIds);
+      return;
+    }
+    setCapturedMedia(null);
+    setSelectedChildIds(preSelectedChildId ? [preSelectedChildId] : []);
+    setStep('camera');
+    // CameraCapture sits on its captured-preview state after onCapture (web)
+    // and has already dismissed the OS sheet (native). Remounting it restarts
+    // a live camera immediately.
+    setCameraKey(k => k + 1);
+  };
+
+  // Class-mode race guard (ANALYSIS3 §4): fire the parked shot the moment the
+  // roster resolves. If the roster fetch failed, `children` stays empty and the
+  // photo is still saved (untagged) rather than lost.
+  useEffect(() => {
+    if (!pendingClassMedia || loadingChildren) return;
+    const media = pendingClassMedia;
+    setPendingClassMedia(null);
+    doUploadAndAnalyze(media, [], selectedEvent);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingClassMedia, loadingChildren]);
+
   // ============================================
   // CAMERA HANDLERS
   // ============================================
 
   const handleMediaCapture = (media: CapturedMedia) => {
     console.log('[CAPTURE] handleMediaCapture called. type:', media.type, 'preSelectedChildId:', preSelectedChildId, 'isClassMode:', isClassMode, 'children:', children.length);
-    if (preSelectedChildId || isClassMode) {
-      doUploadAndAnalyze(media, preSelectedChildId ? [preSelectedChildId] : []);
+    // PATH B short-circuit. MUST be first so EVERY capture entry path
+    // (preselected child, class mode, single child, multi-child) honours the
+    // event session: while the sticky chip is set there is no child tagging at
+    // all — the shot saves straight to the event bucket.
+    if (selectedEvent) {
+      doUploadAndAnalyze(media, [], selectedEvent);
+      return;
+    }
+
+    if (preSelectedChildId) {
+      doUploadAndAnalyze(media, [preSelectedChildId], null);
+      return;
+    }
+
+    // Class mode tags the WHOLE roster. Taken before `fetchChildren` resolved,
+    // the first shot of a class session used to enqueue with zero children
+    // (ANALYSIS3 §4). Park it and let the effect above fire it once loaded.
+    if (isClassMode) {
+      if (loadingChildren) {
+        setPendingClassMedia(media);
+        return;
+      }
+      doUploadAndAnalyze(media, [], null);
       return;
     }
 
@@ -497,7 +584,7 @@ function CaptureContent() {
     }
 
     if (children.length === 1) {
-      doUploadAndAnalyze(media, [children[0].id]);
+      doUploadAndAnalyze(media, [children[0].id], null);
       return;
     }
 
@@ -534,15 +621,25 @@ function CaptureContent() {
   // remount. "No event" (EventPicker's onSelect(null)) clears the key.
   const handleEventSelect = (event: MontreeEvent | null) => {
     setSelectedEvent(event);
-    if (typeof window === 'undefined') return;
-    try {
-      if (event) {
-        sessionStorage.setItem(CAPTURE_EVENT_STORAGE_KEY, JSON.stringify({ id: event.id, name: event.name }));
-      } else {
-        sessionStorage.removeItem(CAPTURE_EVENT_STORAGE_KEY);
+    if (typeof window !== 'undefined') {
+      try {
+        if (event) {
+          sessionStorage.setItem(CAPTURE_EVENT_STORAGE_KEY, JSON.stringify({ id: event.id, name: event.name }));
+        } else {
+          sessionStorage.removeItem(CAPTURE_EVENT_STORAGE_KEY);
+        }
+      } catch (err) {
+        console.error('[CAPTURE] Failed to persist sticky event:', err);
       }
-    } catch (err) {
-      console.error('[CAPTURE] Failed to persist sticky event:', err);
+    }
+
+    // "Event INSTEAD of child": picking an event from the tag-child step is not
+    // a modifier on a child save — it converts the pending shot into an event
+    // photo and drops the tagging step entirely. The event is passed explicitly
+    // because `selectedEvent` has not re-rendered yet in this tick.
+    if (event && step === 'tag-child' && capturedMedia) {
+      setShowEventPicker(false);
+      doUploadAndAnalyze(capturedMedia, [], event);
     }
   };
 
@@ -554,14 +651,17 @@ function CaptureContent() {
     );
   };
 
+  // Enforcement point #3: saves that come out of the tag-child step are PATH A
+  // by definition — `null` is passed literally so no lingering/late sticky event
+  // pick can stamp event_id onto a child-tagged photo.
   const handleSaveWithTags = () => {
     if (!capturedMedia || selectedChildIds.length === 0) return;
-    doUploadAndAnalyze(capturedMedia, selectedChildIds);
+    doUploadAndAnalyze(capturedMedia, selectedChildIds, null);
   };
 
   const handleSkipTagging = () => {
     if (!capturedMedia) return;
-    doUploadAndAnalyze(capturedMedia, []);
+    doUploadAndAnalyze(capturedMedia, [], null);
   };
 
   // ============================================
@@ -652,9 +752,12 @@ function CaptureContent() {
         )}
 
         <CameraCapture
+          key={cameraKey}
           onCapture={handleMediaCapture}
           onCancel={handleCameraCancel}
           allowVideo={true}
+          initialZoom={cameraZoomRef.current}
+          onZoomChange={(z) => { cameraZoomRef.current = z; }}
         />
         {showEventPicker && (
           <EventPicker
@@ -716,55 +819,20 @@ function CaptureContent() {
         </div>
       )}
 
-      {/* Event banner */}
-      {selectedEvent && (
-        <div style={{
-          position: 'relative',
-          zIndex: 10,
-          margin: '48px 16px 8px',
-          padding: '12px 14px',
-          borderRadius: 14,
-          background: T.amberSoft,
-          border: `1px solid ${T.amberBorder}`,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-        }}>
-          <PartyPopper size={18} strokeWidth={1.75} color={T.amber} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <span style={{
-              color: '#fbbf24',
-              fontSize: 13,
-              fontWeight: 500,
-              fontFamily: T.sans,
-            }}>
-              {t('capture.eventBanner').replace('{eventName}', selectedEvent.name)}
-            </span>
-          </div>
-          <button
-            onClick={() => setShowEventPicker(true)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: T.amber,
-              fontFamily: T.sans,
-              fontSize: 12,
-              fontWeight: 600,
-              textDecoration: 'underline',
-              cursor: 'pointer',
-            }}
-          >
-            {t('common.change') || 'Change'}
-          </button>
-        </div>
-      )}
+      {/* NOTE: the "Capturing for: <event>" banner used to live here. It can no
+          longer be true on this step — reaching the tag-child step means the shot
+          is a CHILD photo (an active event session short-circuits straight to an
+          event save in handleMediaCapture), so a banner claiming otherwise was
+          the exact ambiguity this round removes. The "Select event" affordance
+          below stays, and now means "save this shot to an event INSTEAD of
+          tagging children". */}
 
       {/* Header */}
       <div style={{
         position: 'relative',
         zIndex: 10,
-        padding: selectedEvent ? '0 16px 8px' : '40px 16px 8px',
-        paddingTop: `calc(${selectedEvent ? '0px' : '40px'} + env(safe-area-inset-top, 0px))`,
+        padding: '40px 16px 8px',
+        paddingTop: 'calc(40px + env(safe-area-inset-top, 0px))',
       }}>
         <button
           onClick={safeExit}
@@ -772,7 +840,7 @@ function CaptureContent() {
           style={{
             position: 'absolute',
             left: 12,
-            top: selectedEvent ? -2 : 38,
+            top: 38,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -850,27 +918,29 @@ function CaptureContent() {
         >
           {allSelected ? t('capture.deselectAll') : t('capture.selectAll')}
         </button>
-        {!selectedEvent && (
-          <button
-            onClick={() => setShowEventPicker(true)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: T.amber,
-              fontFamily: T.sans,
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 5,
-              padding: 0,
-            }}
-          >
-            <PartyPopper size={13} strokeWidth={1.75} />
-            {t('events.selectEvent')}
-          </button>
-        )}
+        {/* "Event INSTEAD of child": picking an event here saves THIS shot to
+            the event bucket and skips tagging altogether (handleEventSelect).
+            Always available — it is the escape hatch from child mode, so it must
+            not be conditioned on the (now always-null-here) sticky event. */}
+        <button
+          onClick={() => setShowEventPicker(true)}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: T.amber,
+            fontFamily: T.sans,
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 5,
+            padding: 0,
+          }}
+        >
+          <PartyPopper size={13} strokeWidth={1.75} />
+          {t('events.selectEvent')}
+        </button>
       </div>
 
       {/* Today's Focus strip */}

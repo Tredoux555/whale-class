@@ -48,6 +48,13 @@
 // This route writes ONLY to montree_media. It does NOT update progress, P/P/M,
 // or visual memory contents — those happen in Photo Audit when the teacher
 // confirms or actions a draft.
+//
+// 🚨 ANALYST NOTE (2026-07-29 photo-pipeline architecture review): this file
+// contains ZERO references to `event_id`. It runs identification/AI-Wrap-Up
+// on every eligible photo regardless of whether montree_media.event_id is
+// set. Per the product owner's stated model, event photos should NEVER go
+// through AI wrap-up — that is currently NOT true. See ANALYSIS3.md root
+// cause #1.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, getPublicUrl } from '@/lib/supabase-client';
@@ -170,7 +177,7 @@ export async function POST(request: NextRequest) {
   // ----- Load media row + verify access -----
   const { data: media, error: mediaErr } = await supabase
     .from('montree_media')
-    .select('id, school_id, classroom_id, child_id, storage_path, identification_status, identification_attempted_at')
+    .select('id, school_id, classroom_id, child_id, event_id, storage_path, identification_status, identification_attempted_at')
     .eq('id', mediaId)
     .maybeSingle();
 
@@ -179,6 +186,22 @@ export async function POST(request: NextRequest) {
   }
   if (media.school_id !== auth.schoolId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  // 🚨 TWO CLEAN PATHS — event photos NEVER enter the AI identification /
+  // Wrap-Up pipeline. An event capture is a group/party shot with nothing to do
+  // with academics; it lives in its event bucket and stops there. This is the
+  // server-side backstop for the client guard in sync-manager.ts, and it holds
+  // for every entry point (fire-and-forget upload trigger, sweep, batch,
+  // requeue, force=true) because it sits above the force branch.
+  if (media.event_id) {
+    return NextResponse.json({
+      success: true,
+      skipped: true,
+      outcome: 'skipped_event_photo',
+      reason: 'event photos are excluded from AI identification',
+      media_id: mediaId,
+    });
   }
 
   // Idempotency: skip if already processed (unless force=true, used to re-run
