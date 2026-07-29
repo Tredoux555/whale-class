@@ -11,6 +11,13 @@
 // "Stuck" = identification_status IS NULL / 'pending' / 'failed'
 //           AND (identification_attempted_at IS NULL OR older than 5 min).
 //
+// 🚨 TWO CLEAN PATHS: event photos (event_id NOT NULL) are NEVER candidates.
+// An event capture is a group/party shot with nothing to do with academics —
+// it belongs to its event bucket and must never reach the AI identification /
+// Wrap-Up pipeline. Excluded here in SQL as well as in
+// photo-identification/process (hard skip) and sync-manager.ts (client
+// trigger guard), so no entry point can route one in.
+//
 // The attempted_at freshness gate is applied in JS after the initial query
 // because chaining multiple .or() filters in PostgREST is not reliably ANDed
 // across versions — safer to do one .or() in SQL and filter in memory.
@@ -36,10 +43,12 @@ export async function GET(request: NextRequest) {
 
   const { data: candidates, error } = await supabase
     .from('montree_media')
-    .select('id, identification_status, identification_attempted_at')
+    .select('id, event_id, identification_status, identification_attempted_at')
     .eq('school_id', auth.schoolId)
     .eq('classroom_id', auth.classroomId)
     .eq('media_type', 'photo')
+    // Event photos are permanently out of the identification pipeline.
+    .is('event_id', null)
     .or('identification_status.is.null,identification_status.eq.pending,identification_status.eq.failed')
     .order('created_at', { ascending: false })
     .limit(OVERSCAN);
@@ -53,9 +62,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: true, media_ids: [] });
   }
 
-  // JS filter: keep only rows where attempted_at is null or stale
+  // JS filter: keep only rows where attempted_at is null or stale.
+  // The event_id check is repeated here as a belt-and-braces guard — if the
+  // SQL filter ever has to be relaxed (e.g. a deploy against a schema without
+  // the column), an event photo still cannot slip into the sweep result.
   const stuckIds: string[] = [];
   for (const row of candidates) {
+    if (row.event_id) continue;
     const attempted = row.identification_attempted_at
       ? Date.parse(row.identification_attempted_at)
       : 0;

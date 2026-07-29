@@ -57,11 +57,20 @@ export async function POST(request: NextRequest) {
       }
 
       // Always scope to authenticated school — prevents cross-school access
+      // 🚨 TWO CLEAN PATHS (2026-07-29). This route only ever writes `work_id`
+      // (a curriculum work = the CHILD photo path); it has no event mode, so
+      // there are never child rows to clear here. The one hole was the reverse:
+      // an event photo swept into a bulk work re-tag would become a hybrid /
+      // orphan (work_id + event_id, invisible to both surfaces). `.is('event_id',
+      // null)` skips event photos outright — safer than nulling their event,
+      // which would silently delete a teacher's album link. `updated` therefore
+      // reports rows actually changed and may be < media_ids.length.
       const { data, error } = await supabase
         .from('montree_media')
         .update({ work_id: new_work_id, updated_at: new Date().toISOString() })
         .in('id', media_ids)
         .eq('school_id', schoolId)
+        .is('event_id', null)
         .select('id');
 
       if (error) {
@@ -129,7 +138,11 @@ export async function POST(request: NextRequest) {
         .from('montree_media')
         .select('id')
         .in('child_id', childIds)
-        .eq('school_id', schoolId);
+        .eq('school_id', schoolId)
+        // Same invariant as Mode 1: event photos stay out of the work path.
+        // (Belt-and-braces — an event photo has child_id null, so it cannot
+        // match the .in() above; this also skips legacy hybrid rows.)
+        .is('event_id', null);
 
       if (sourceWorkIds.length > 0) {
         // Match by work_id in curriculum

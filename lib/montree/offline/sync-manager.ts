@@ -123,8 +123,20 @@ export interface EnqueueOptions {
 
 export async function enqueuePhoto(
   blob: Blob,
-  opts: EnqueueOptions
+  rawOpts: EnqueueOptions
 ): Promise<PhotoQueueEntry> {
+  // 🚨 TWO CLEAN PATHS — the invariant, enforced at the queue door.
+  // A photo is EITHER an event photo (event_id, zero children, no AI) OR a
+  // child photo (children, no event_id). Nothing downstream has to cope with
+  // the mixed case because it can never be written. Callers already decide
+  // this explicitly; this is the belt-and-braces backstop.
+  const opts: EnqueueOptions = rawOpts.event_id
+    ? { ...rawOpts, child_id: '', child_ids: undefined, is_class_photo: false }
+    : { ...rawOpts, event_id: undefined };
+  if (rawOpts.event_id && (rawOpts.child_id || (rawOpts.child_ids && rawOpts.child_ids.length > 0))) {
+    console.warn('[PHOTO_QUEUE] Event photo arrived with child tags — dropping the child tags (event photos carry none).');
+  }
+
   // Check queue capacity
   if (await isQueueFull()) {
     // First try: purge entries from OTHER accounts (they can never upload
@@ -494,7 +506,14 @@ async function uploadEntry(entry: PhotoQueueEntry): Promise<void> {
     // The /process route runs two-pass Haiku → Sonnet draft fallback, writes results
     // to montree_media (identification_status, work_id or sonnet_draft). Photo Audit
     // surfaces the outcomes. `keepalive: true` so the request survives page navigation.
-    if (result.media?.id && !entry.work_id) {
+    //
+    // 🚨 TWO CLEAN PATHS: an EVENT photo is never identified. Event captures are
+    // group/party shots with nothing to do with academics — they live in the
+    // event bucket only and must never reach Wrap Up. `entry.event_id` is the
+    // capture-time marker for PATH B, so it hard-gates this trigger. (The
+    // /process and /sweep routes carry the same guard server-side, so an entry
+    // queued by an older build is still excluded.)
+    if (result.media?.id && !entry.work_id && !entry.event_id) {
       const stored = typeof localStorage !== 'undefined'
         ? localStorage.getItem('montree_lang') || 'en'
         : 'en';

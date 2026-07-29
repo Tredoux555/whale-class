@@ -25,6 +25,19 @@
 // (already paid for, richer than a fresh Haiku call) and fires off
 // enrichCustomWorkInBackground() for Sonnet-grade parent_description /
 // why_it_matters / key_materials enrichment.
+//
+// 🚨 ANALYST NOTE (2026-07-29 photo-pipeline architecture review): this is
+// THE ONLY place montree_media.teacher_confirmed flips from false to true
+// (aside from the guru/corrections route it delegates to, and the group-photo
+// auto-mark in sync-manager.ts which touches montree_daily_focus, not this
+// flag). teacher_confirmed is what Montage Studio (/api/montree/montage,
+// lib/montree/montage/enqueue.ts countScopedPhotos) gates a child/classroom
+// montage on by default — i.e. it is the literal "Wrap Up" gate the product
+// owner says should NEVER block a child's Montage Manager portfolio. Note
+// also (Path D / 'other' below) this route is the ONLY server-side place
+// that can SET montree_media.event_id after capture — via the
+// 'special_event' Other category — a second, AI-adjacent path onto an event
+// gallery, distinct from the capture-time EventPicker chip.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
@@ -476,6 +489,22 @@ export async function POST(request: NextRequest) {
         identification_status: 'confirmed',
         sonnet_draft: newDraft,
       };
+      // 🚨 TWO CLEAN PATHS (2026-07-29). A photo is EITHER an event photo
+      // (event_id set, ZERO montree_media_children rows, no child_id, outside
+      // the AI/Wrap-Up pipeline) OR a child photo (child tags, no event_id).
+      //
+      // Why this write survives at all rather than being deleted outright:
+      // ThisIsSheet.tsx's "Special event" card is a REAL, load-bearing UI — a
+      // lazy-loaded event list, a "No specific event" option and an inline
+      // create-event form, all of which route through this field. Deleting the
+      // write would silently re-break exactly what Session 130 fixed ("saved to
+      // my event" → 200, no link). So we keep the affordance and instead make it
+      // a genuine PATH A → PATH B **conversion**: picking an event here means
+      // "this is an event photo", so the child links go with it. That keeps the
+      // invariant absolute — no row can ever hold event_id AND child rows —
+      // which is what every downstream guard now relies on.
+      // Clearing (event_id: null) does NOT restore child tags; it just unlinks.
+      let convertedToEvent = false;
       if (resolution.event_id !== undefined) {
         const rawEventId = resolution.event_id;
         if (typeof rawEventId === 'string' && rawEventId) {
@@ -489,6 +518,10 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ success: false, error: 'Event not found' }, { status: 404 });
           }
           updatePayload.event_id = rawEventId;
+          // Event photos carry no child. parent_visible is deliberately NOT
+          // touched — it must stay true or the montage event picker loses the row.
+          updatePayload.child_id = null;
+          convertedToEvent = true;
         } else if (rawEventId === null) {
           updatePayload.event_id = null;
         }
@@ -505,6 +538,21 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: 'Failed to save as Other' }, { status: 500 });
       }
 
+      // Second half of the conversion: drop the junction rows. Non-fatal —
+      // the media row is already stamped, and a stale junction row only ever
+      // over-shows the photo in a child scope, never under-shows the event.
+      if (convertedToEvent) {
+        const { error: unlinkErr } = await supabase
+          .from('montree_media_children')
+          .delete()
+          .eq('media_id', media_id);
+        if (unlinkErr) {
+          console.error('[PhotoAuditResolve] event conversion: child unlink failed (non-fatal):', unlinkErr);
+        } else {
+          console.log(`[PhotoAuditResolve] media=${media_id} converted to event photo — child links removed`);
+        }
+      }
+
       const elapsed = Date.now() - startedAt;
       console.log(`[PhotoAuditResolve] other OK: media=${media_id} (${elapsed}ms)`);
       return NextResponse.json({
@@ -512,6 +560,7 @@ export async function POST(request: NextRequest) {
         path: 'other',
         media_id,
         event_id: updatePayload.event_id ?? null,
+        converted_to_event: convertedToEvent,
       });
     }
 

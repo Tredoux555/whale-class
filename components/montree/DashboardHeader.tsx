@@ -10,9 +10,11 @@ import {
   FileText, Target, Search, Sparkles, BookOpen,
   LayoutGrid, CalendarDays, Images, FolderOpen, TrendingUp,
   Users, BookMarked, Globe, BarChart2, Settings2, LogOut,
-  MessageSquare, KeyRound, Calendar, UploadCloud, Clapperboard, ListChecks,
+  MessageSquare, KeyRound, Calendar, UploadCloud, ListChecks,
   // UserPlus removed Jul 3 2026 — the "Invite your principal" menu row was
   // hidden. Re-add UserPlus here if that row is ever uncommented.
+  // Clapperboard removed — was the Montage Studio menu-row icon; that row
+  // was removed (see the "More menu" block below) when Studio was retired.
 } from 'lucide-react';
 import { getSession, clearSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { HOME_THEME } from '@/lib/montree/home-theme';
@@ -718,17 +720,15 @@ function DashboardHeader() {
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/curriculum/browse'); }}
                   />
 
-                  {/* Montage Studio (Session 130) — pinned OUTSIDE the
-                      config/legacy branch for the same reason as the rows
-                      above: it's a brand-new surface, so no existing teacher's
-                      saved menu config contains it and it would be invisible
-                      to every school that has one. */}
-                  <MenuRow
-                    icon={Clapperboard}
-                    label={t('montage.title')}
-                    active={activePage === 'montage'}
-                    onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/montage'); }}
-                  />
+                  {/* Montage Studio (Session 130) — REMOVED from the menu per
+                      ANALYSIS3.md: it gated photos on teacher_confirmed and
+                      was the recurring "my photos don't show up" confusion
+                      against Montage Manager below, which has no such gate.
+                      Was a MenuRow with icon={Clapperboard}, label={t('montage.title')},
+                      active={activePage === 'montage'}, routing to
+                      /montree/dashboard/montage. The route + label key stay on
+                      disk (hide-don't-delete) — that page now redirects
+                      straight to Montage Manager — but this menu entry does not. */}
 
                   {/* Montage Tracker — pinned OUTSIDE the config/legacy branch
                       for the same reason as the Montage Studio row above: a
