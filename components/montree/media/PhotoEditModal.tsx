@@ -78,6 +78,16 @@ export default function PhotoEditModal({
   });
   const [tagInput, setTagInput] = useState('');
 
+  // Whether this modal is entitled to WRITE event_id on save.
+  // The PATCH only writes keys that are present, so omitting the key preserves the
+  // link — that is the safe default whenever the row we were seeded from didn't
+  // carry `event_id` (an older/leaner list payload). Sending
+  // `event_id: formData.event_id || null` unconditionally silently stripped the
+  // event on every unrelated caption/child/work edit. We send it only when we
+  // actually know the current value, or when the teacher touched the picker.
+  const [eventKnown, setEventKnown] = useState(false);
+  const [eventDirty, setEventDirty] = useState(false);
+
   // Searchable work picker state
   const [workSearch, setWorkSearch] = useState('');
   const [workPickerOpen, setWorkPickerOpen] = useState(false);
@@ -110,13 +120,17 @@ export default function PhotoEditModal({
     };
 
     // Initialize form with current media data
+    const seededEvent = media as unknown as { event_id?: string | null };
     setFormData({
       caption: media.caption || '',
       work_id: media.work_id || null,
       tags: media.tags || [],
       child_id: media.child_id || null,
-      event_id: (media as unknown as { event_id?: string | null }).event_id || null,
+      event_id: seededEvent.event_id || null,
     });
+    // `event_id` present on the row (even as null) ⇒ we hold the truth and may write it.
+    setEventKnown('event_id' in seededEvent && seededEvent.event_id !== undefined);
+    setEventDirty(false);
 
     // Track original identification for self-learning corrections
     // work_name is looked up from availableWorks at correction time (line 188)
@@ -256,9 +270,11 @@ export default function PhotoEditModal({
           work_id: formData.work_id || null,
           tags: formData.tags,
           child_id: formData.child_id || null,
-          // Always sent (never undefined) so clearing the event actually
-          // nulls the column — PATCH only writes keys that are present.
-          event_id: formData.event_id || null,
+          // Sent ONLY when we know the current link or the teacher changed it —
+          // then `|| null` still clears it on purpose. Omitted otherwise, because
+          // PATCH skips absent keys and the existing link must survive an edit
+          // that never touched the event.
+          ...(eventKnown || eventDirty ? { event_id: formData.event_id || null } : {}),
         })
       });
 
@@ -385,7 +401,7 @@ export default function PhotoEditModal({
             {availableEvents.length > 0 ? (
               <select
                 value={formData.event_id || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, event_id: e.target.value || null }))}
+                onChange={(e) => { setEventDirty(true); setFormData(prev => ({ ...prev, event_id: e.target.value || null })); }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               >
                 <option value="">{t('events.noEvent') || 'No event'}</option>

@@ -26,6 +26,26 @@ type CaptureMode = 'photo' | 'video';
 
 const MAX_VIDEO_DURATION = 30; // seconds
 
+// ── Zoom ─────────────────────────────────────────────────────────────────
+// Digital zoom is a real crop of the sensor frame, so it costs resolution:
+// at 3× a 1920×1080 feed yields 640×360. That is the floor we accept —
+// do NOT raise this without a call (SPEC2 §2.2 / §6 risk 4).
+const MAX_DIGITAL_ZOOM = 3;
+// Ignore sub-2% pinch jitter so a resting two-finger hold doesn't crawl.
+const PINCH_MIN_DELTA = 0.02;
+
+const clampZoom = (z: number, min: number, max: number) => Math.min(Math.max(z, min), max);
+
+// Distance between the first two touch points — the pinch metric.
+// Typed against React's synthetic TouchList (this is only ever called from
+// React.TouchEvent handlers), not the DOM lib's TouchList, which requires an
+// iterator React's type doesn't declare.
+const touchDistance = (touches: React.TouchList) => {
+  const a = touches[0];
+  const b = touches[1];
+  return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+};
+
 // ============================================
 // COMPONENT
 // ============================================
@@ -53,6 +73,156 @@ export default function CameraCapture({
   const [currentFacing, setCurrentFacing] = useState(facingMode);
   const [recordingTime, setRecordingTime] = useState(0);
   const albumInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Zoom state ──────────────────────────────────────────────────────────
+  // Two modes, decided once per stream by the capability probe in startCamera:
+  //  • 'native'  — the TRACK zooms (getCapabilities().zoom + applyConstraints).
+  //                videoWidth/Height are unchanged, so the preview needs no CSS
+  //                transform and capturePhoto() needs no crop. Video records
+  //                genuinely zoomed.
+  //  • 'digital' — mandatory fallback and the real path on iPhone (WebKit does
+  //                not expose `zoom` on iOS): CSS scale on the preview + a
+  //                matching centred crop at capture time, so the saved JPEG is
+  //                exactly what the teacher framed.
+  const [zoom, setZoom] = useState(1);
+  const [zoomMode, setZoomMode] = useState<'native' | 'digital'>('digital');
+  const [zoomMax, setZoomMax] = useState(MAX_DIGITAL_ZOOM);
+  // Fresh-value refs. Touch handlers fire far faster than React re-renders and
+  // capturePhoto() must read the CURRENT zoom without taking `zoom` as a dep
+  // (same pattern as PhotoCropModal's `v.current`).
+  const zoomRef = useRef(1);
+  const zoomMinRef = useRef(1);
+  const zoomStepRef = useRef(0);            // native step; 0 ⇒ continuous
+  const zoomModeRef = useRef<'native' | 'digital'>('digital');
+  const zoomEnabledRef = useRef(false);
+  const lastNativeZoomRef = useRef<number | null>(null);
+  const pinchStartRef = useRef<{ dist: number; zoom: number } | null>(null);
+  const viewfinderRef = useRef<HTMLDivElement>(null);
+
+  // Zoom is available only when there is a live feed to zoom, and — in digital
+  // mode — only for photos. MediaRecorder records the RAW track, so a CSS-only
+  // zoom during video would show the teacher a close-up and record a wide shot.
+  // Native zoom is real, so it is allowed while recording. (SPEC2 §6 risk 3.)
+  const zoomEnabled =
+    cameraState !== 'captured' &&
+    cameraState !== 'initializing' &&
+    cameraState !== 'error' &&
+    (zoomMode === 'native' || captureMode === 'photo');
+
+  zoomModeRef.current = zoomMode;
+  zoomEnabledRef.current = zoomEnabled;
+
+  // Reset only on the DURABLE off-conditions. 'captured' and 'initializing'
+  // are transient (every shot, every retake, every camera switch passes through
+  // them) — resetting there would wipe the zoom between shots, which is exactly
+  // the behaviour SPEC2 §2.2 rules out: the teacher stands back from a child at
+  // work and takes several frames of the same scene.
+  const zoomBlocked = cameraState === 'error' || (zoomMode === 'digital' && captureMode === 'video');
+  useEffect(() => {
+    if (!zoomBlocked) return;
+    pinchStartRef.current = null;
+    if (zoomRef.current === zoomMinRef.current) return;
+    zoomRef.current = zoomMinRef.current;
+    setZoom(zoomMinRef.current);
+  }, [zoomBlocked]);
+
+  const applyNativeZoom = useCallback((track: MediaStreamTrack, z: number) => {
+    if (lastNativeZoomRef.current === z) return;
+    lastNativeZoomRef.current = z;
+    track
+      // `zoom` is not in TS's MediaTrackConstraintSet — cast at the call site
+      // rather than augmenting the DOM lib globally.
+      .applyConstraints({ advanced: [{ zoom: z } as unknown as MediaTrackConstraintSet] })
+      .catch((err) => {
+        // Some drivers advertise `zoom` in getCapabilities() and then refuse it.
+        // Demote to digital for the rest of this stream or the teacher pinches
+        // and nothing moves. (SPEC2 §6 risk 2.)
+        console.warn('[CameraCapture] native zoom rejected, falling back to digital:', err);
+        lastNativeZoomRef.current = null;
+        zoomModeRef.current = 'digital';
+        zoomMinRef.current = 1;
+        zoomStepRef.current = 0;
+        setZoomMode('digital');
+        setZoomMax(MAX_DIGITAL_ZOOM);
+        const clamped = clampZoom(zoomRef.current, 1, MAX_DIGITAL_ZOOM);
+        zoomRef.current = clamped;
+        setZoom(clamped);
+      });
+  }, []);
+
+  // Snap to the driver's advertised step, if it publishes one.
+  const quantizeZoom = useCallback((z: number) => {
+    const step = zoomStepRef.current;
+    if (!step || step <= 0) return z;
+    const min = zoomMinRef.current;
+    return min + Math.round((z - min) / step) * step;
+  }, []);
+
+  const setZoomTo = useCallback((next: number) => {
+    // Callers clamp to the live range; this is the belt-and-braces ceiling that
+    // survives the one-render window after a native→digital demotion, when the
+    // `zoomMax` the pinch handler closed over may still be the track's (much
+    // larger) native max. Digital can therefore NEVER exceed MAX_DIGITAL_ZOOM,
+    // which is also what keeps the capture crop inside its resolution budget.
+    const capped = zoomModeRef.current === 'digital'
+      ? clampZoom(next, zoomMinRef.current, MAX_DIGITAL_ZOOM)
+      : Math.max(next, zoomMinRef.current);
+    if (capped === zoomRef.current) return;
+    zoomRef.current = capped;
+    setZoom(capped);
+    if (zoomModeRef.current === 'native') {
+      const track = streamRef.current?.getVideoTracks()[0];
+      if (track) applyNativeZoom(track, quantizeZoom(capped));
+    }
+  }, [applyNativeZoom, quantizeZoom]);
+
+  const resetZoom = useCallback(() => {
+    pinchStartRef.current = null;
+    setZoomTo(zoomMinRef.current);
+  }, [setZoomTo]);
+
+  // ── Pinch gesture (viewfinder only — never the controls region) ──────────
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (!zoomEnabled) return;
+    // A single touch does nothing on the viewfinder today; leave it alone so
+    // nothing existing changes behaviour.
+    if (e.touches.length !== 2) return;
+    pinchStartRef.current = { dist: touchDistance(e.touches), zoom: zoomRef.current };
+  }, [zoomEnabled]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    const start = pinchStartRef.current;
+    if (!start || e.touches.length !== 2) return;
+    // Read through the ref, not the closure: a pinch in flight when the shutter
+    // fires (or the feed errors) must stop moving the zoom immediately.
+    if (!zoomEnabledRef.current) return;
+    const dist = touchDistance(e.touches);
+    if (!start.dist) return;
+    const ratio = dist / start.dist;
+    if (Math.abs(ratio - 1) < PINCH_MIN_DELTA) return;
+    setZoomTo(clampZoom(start.zoom * ratio, zoomMinRef.current, zoomMax));
+  }, [setZoomTo, zoomMax]);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length < 2) pinchStartRef.current = null;
+  }, []);
+
+  // Safari's proprietary page-pinch events fire alongside touch events in a
+  // browser tab (harmless in the standalone PWA). React's root touch listeners
+  // are passive, so preventDefault() inside onTouchMove is unreliable — this
+  // non-passive listener plus touchAction:'none' on the container is what
+  // actually stops the page from zooming under the camera.
+  useEffect(() => {
+    const el = viewfinderRef.current;
+    if (!el) return;
+    const stop = (e: Event) => e.preventDefault();
+    el.addEventListener('gesturestart', stop, { passive: false });
+    el.addEventListener('gesturechange', stop, { passive: false });
+    return () => {
+      el.removeEventListener('gesturestart', stop);
+      el.removeEventListener('gesturechange', stop);
+    };
+  }, []);
 
   // Orientation drives Apple-style control placement. Portrait → bottom bar.
   // Landscape → a vertical rail on the physical (right) edge with labels
@@ -307,6 +477,47 @@ export default function CameraCapture({
 
       streamRef.current = stream;
 
+      // ── Zoom capability probe — once per stream ──────────────────────────
+      // Every startCamera() (facing change, mode change, retake) produces a NEW
+      // track, so the mode/range must be re-derived and the teacher's zoom
+      // re-applied to it, clamped to what THIS track supports.
+      {
+        const track = stream.getVideoTracks()[0];
+        let mode: 'native' | 'digital' = 'digital';
+        let min = 1;
+        let max = MAX_DIGITAL_ZOOM;
+        let step = 0;
+        try {
+          // `zoom` is absent from TS's MediaTrackCapabilities; getCapabilities
+          // itself is optional-chained because WebKit has shipped without it.
+          const caps = track?.getCapabilities?.() as
+            | (MediaTrackCapabilities & { zoom?: { min: number; max: number; step?: number } })
+            | undefined;
+          if (caps?.zoom && typeof caps.zoom.max === 'number' && caps.zoom.max > caps.zoom.min) {
+            mode = 'native';
+            min = caps.zoom.min;
+            max = caps.zoom.max;
+            step = caps.zoom.step ?? 0;
+          }
+        } catch {
+          // Safari can throw here — the digital fallback is the correct answer.
+        }
+
+        lastNativeZoomRef.current = null;
+        zoomModeRef.current = mode;
+        zoomMinRef.current = min;
+        zoomStepRef.current = step;
+        setZoomMode(mode);
+        setZoomMax(max);
+
+        const restored = clampZoom(zoomRef.current, min, max);
+        zoomRef.current = restored;
+        setZoom(restored);
+        if (mode === 'native' && track && restored !== min) {
+          applyNativeZoom(track, restored);
+        }
+      }
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         // play() can hang indefinitely on iOS Safari / the installed PWA when
@@ -339,7 +550,7 @@ export default function CameraCapture({
       setError(errorMessage);
       setCameraState('error');
     }
-  }, [t]);
+  }, [t, applyNativeZoom]);
 
   useEffect(() => {
     startCamera(facingMode, captureMode === 'video');
@@ -383,10 +594,32 @@ export default function CameraCapture({
       canvas.height = video.clientHeight || 1440;
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     } else {
-      // Capture full native resolution from the video feed
-      canvas.width = vw;
-      canvas.height = vh;
-      ctx.drawImage(video, 0, 0, vw, vh);
+      // Capture full native resolution from the video feed, cropped to match a
+      // DIGITAL zoom so the saved JPEG is exactly what the preview framed.
+      //
+      // Why this is WYSIWYG: CSS scale(z) about the centre of an object-cover
+      // video shows the central 1/z of what was visible; cropping the central
+      // 1/z of the source frame is the same region. sw/sh === vw/vh, so the
+      // frame's aspect ratio — and therefore the pre-existing object-cover
+      // relationship between the preview box and the sensor frame — is
+      // unchanged. That slight object-cover crop predates zoom and is neither
+      // introduced nor widened here; don't "correct" it.
+      //
+      // In native mode the TRACK is already zoomed (no CSS transform is applied),
+      // so z stays 1 and this is byte-identical to the old full-frame draw —
+      // as it is at z = 1 in digital mode (sx=sy=0, sw=vw, sh=vh).
+      // Read through refs: capturePhoto must see the CURRENT zoom, not the
+      // value captured when this callback was last created.
+      const z = zoomModeRef.current === 'digital' && zoomEnabledRef.current
+        ? Math.max(1, zoomRef.current)
+        : 1;
+      const sw = vw / z;
+      const sh = vh / z;
+      const sx = (vw - sw) / 2;   // centred — matches transformOrigin: center
+      const sy = (vh - sh) / 2;
+      canvas.width = Math.round(sw);
+      canvas.height = Math.round(sh);
+      ctx.drawImage(video, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
     }
 
     canvas.toBlob(
@@ -602,7 +835,18 @@ export default function CameraCapture({
            what gets captured (object-cover fills this box = the capture frame);
            the controls never overlay it. The preview reorients with the device;
            the controls below never move. ═══ */}
-      <div className="flex-1 relative overflow-hidden bg-black">
+      <div
+        ref={viewfinderRef}
+        className="flex-1 relative overflow-hidden bg-black"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
+        // touchAction:'none' is what actually stops Safari's page zoom (same
+        // technique as PhotoLightbox). Scoped to the viewfinder ONLY — on the
+        // root it would kill the controls region's own touch behaviour.
+        style={{ touchAction: 'none' }}
+      >
         {cameraState === 'error' ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-white">
             <div className="text-6xl mb-4">📷</div>
@@ -629,6 +873,14 @@ export default function CameraCapture({
               playsInline
               muted
               className="absolute inset-0 w-full h-full object-cover"
+              // Digital zoom only. In native mode the track is already zoomed —
+              // applying the transform too would double-zoom the preview and
+              // break WYSIWYG against the (uncropped) capture.
+              style={
+                zoomEnabled && zoomMode === 'digital' && zoom > 1
+                  ? { transform: `scale(${zoom})`, transformOrigin: 'center center', willChange: 'transform' }
+                  : undefined
+              }
             />
 
             {/* Loading spinner — only shown during initialization */}
@@ -666,6 +918,22 @@ export default function CameraCapture({
             <span className="font-mono font-bold text-sm">{formatTime(recordingTime)}</span>
             <span className="text-white/60 text-xs">/ {formatTime(MAX_VIDEO_DURATION)}</span>
           </div>
+        )}
+
+        {/* Zoom indicator / reset — bottom-centre of the VIEWFINDER, clear of
+            the switch-camera button (top-right) and of the capture page's event
+            chip (top-left). Its text content IS its accessible name, so this
+            needs no aria-label and no i18n key: the level is numeric and the
+            × is U+00D7. Tapping it returns to 1.0×. Hidden at rest so the
+            viewfinder stays clean. */}
+        {zoomEnabled && zoom > 1.02 && (
+          <button
+            onClick={resetZoom}
+            className="absolute z-30 px-3 h-8 rounded-full bg-black/45 backdrop-blur-sm text-white text-xs font-semibold tabular-nums active:scale-95 transition-transform"
+            style={{ left: '50%', transform: 'translateX(-50%)', bottom: 16 }}
+          >
+            {zoom.toFixed(1)}×
+          </button>
         )}
       </div>
 

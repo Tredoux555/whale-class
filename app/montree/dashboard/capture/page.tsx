@@ -12,6 +12,7 @@ import { getSession } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import CameraCapture from '@/components/montree/media/CameraCapture';
+import PhotoQueueBanner from '@/components/montree/media/PhotoQueueBanner';
 import { compressImage } from '@/lib/montree/media/compression';
 import { uploadVideo } from '@/lib/montree/media/upload';
 import { enqueuePhoto, syncQueue } from '@/lib/montree/offline';
@@ -217,6 +218,78 @@ function CaptureContent() {
     }
   }, []);
 
+  // P1-1/P1-2 (SPEC2 §1.2-D4): validate the restored sticky event against the
+  // server, once, on mount.
+  //  • D4 — an event deleted in another surface leaves a dead id in
+  //    sessionStorage. Every subsequent shot then carries an event_id that no
+  //    longer resolves, and the teacher shoots all morning into nothing while
+  //    the chip cheerfully names the dead event. If the id is gone, clear both
+  //    the chip and the stored key.
+  //  • P1-2 — the hydration effect above can only rebuild a two-field stub
+  //    (id + name) with a fabricated `event_date: ''`. When the fetch resolves,
+  //    swap in the REAL row so the chip and every downstream consumer hold a
+  //    truthful record.
+  // Non-fatal by design: a network failure KEEPS the optimistic pick. An
+  // offline teacher must never be punished by losing their event.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const readStoredId = (): string | null => {
+      try {
+        const raw = sessionStorage.getItem(CAPTURE_EVENT_STORAGE_KEY);
+        if (!raw) return null;
+        return (JSON.parse(raw) as { id?: string }).id ?? null;
+      } catch {
+        return null;
+      }
+    };
+
+    const storedId = readStoredId();
+    if (!storedId) return;
+
+    const controller = new AbortController();
+
+    (async () => {
+      try {
+        const res = await fetch('/api/montree/events', { signal: controller.signal });
+        if (!res.ok) {
+          console.warn('[CAPTURE] Could not validate sticky event (HTTP', res.status, ') — keeping the pick');
+          return;
+        }
+        const data = await res.json();
+        if (controller.signal.aborted) return;
+
+        const events: MontreeEvent[] = Array.isArray(data?.events) ? data.events : [];
+
+        // Never clobber a pick the teacher made while this was in flight.
+        if (readStoredId() !== storedId) return;
+
+        const match = events.find(e => e.id === storedId);
+        if (match) {
+          setSelectedEvent(match);
+          // Refresh the cached name too — the event may have been renamed.
+          try {
+            sessionStorage.setItem(
+              CAPTURE_EVENT_STORAGE_KEY,
+              JSON.stringify({ id: match.id, name: match.name })
+            );
+          } catch { /* non-fatal — the in-memory pick still works */ }
+        } else {
+          console.warn('[CAPTURE] Sticky event', storedId, 'no longer exists — clearing it');
+          setSelectedEvent(null);
+          try {
+            sessionStorage.removeItem(CAPTURE_EVENT_STORAGE_KEY);
+          } catch { /* non-fatal */ }
+        }
+      } catch (err) {
+        if ((err as Error)?.name === 'AbortError') return;
+        console.warn('[CAPTURE] Sticky event validation failed — keeping the pick:', err);
+      }
+    })();
+
+    return () => controller.abort();
+  }, []);
+
   useEffect(() => {
     const fetchChildren = async () => {
       try {
@@ -348,9 +421,12 @@ function CaptureContent() {
       compressedBlob = photo.blob;
     }
 
-    console.log('[CAPTURE] Enqueueing photo. child_id:', idsToTag[0] || '(none)', 'school_id:', schoolId, 'blob size:', compressedBlob.size);
+    // P1-3: the event id is the whole point of the "photo never landed on the
+    // event" investigation — log what we actually enqueue, and the queue entry
+    // id it lands under, so a device log can be walked end to end.
+    console.log('[CAPTURE] Enqueueing photo. child_id:', idsToTag[0] || '(none)', 'school_id:', schoolId, 'event_id:', selectedEvent?.id ?? '(none)', 'blob size:', compressedBlob.size);
     try {
-      await enqueuePhoto(compressedBlob, {
+      const entry = await enqueuePhoto(compressedBlob, {
         child_id: idsToTag[0] || '',
         child_ids: idsToTag.length > 1 ? idsToTag : undefined,
         classroom_id: classroomId,
@@ -363,6 +439,7 @@ function CaptureContent() {
         width: compressedWidth,
         height: compressedHeight,
       });
+      console.log('[CAPTURE] Enqueued as queue entry:', entry.id, 'event_id:', entry.event_id ?? '(none)');
     } catch (err) {
       console.error('Failed to enqueue photo:', err);
       // DIAGNOSABILITY: only show "queue full" when the queue is actually full.
@@ -551,6 +628,29 @@ function CaptureContent() {
             </span>
           </button>
         </div>
+
+        {/* P1: photos that exhaust their 5 upload retries become
+            'permanent_failure' — syncQueue() never retries those, and until now
+            NOTHING in the capture flow said so, which is how a morning's photos
+            died silently. PhotoQueueBanner shows pending/failed counts and its
+            "Retry all" covers permanent_failure entries. It renders null on an
+            empty queue, so mounting it unconditionally is free.
+            Position: a band UNDER the event chip — it never reaches the
+            shutter, the mode toggle, the album/cancel row (all bottom in
+            portrait) and the landscape rule keeps it clear of CameraCapture's
+            140px right-edge control rail. Hidden while the EventPicker modal is
+            open (that overlay is z-50; this band is above it). */}
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `.capture-queue-band{position:fixed;left:0;right:0;top:calc(64px + env(safe-area-inset-top, 0px));z-index:60}@media (orientation: landscape){.capture-queue-band{right:148px}}`,
+          }}
+        />
+        {!showEventPicker && (
+          <div className="capture-queue-band">
+            <PhotoQueueBanner />
+          </div>
+        )}
+
         <CameraCapture
           onCapture={handleMediaCapture}
           onCancel={handleCameraCancel}
@@ -709,6 +809,15 @@ function CaptureContent() {
         }}>
           {t('capture.tagChildHint')}
         </p>
+      </div>
+
+      {/* P1: same queue banner on the tagging step — the surface a teacher
+          lands on right after a shot. Normal flow (below the event banner and
+          the header, above Select All), so it can't cover any control;
+          relative + zIndex 10 matches its siblings so it sits above the dimmed
+          photo-preview backdrop. Self-hides when the queue is empty. */}
+      <div style={{ position: 'relative', zIndex: 10 }}>
+        <PhotoQueueBanner />
       </div>
 
       {/* Select All + Event picker row */}

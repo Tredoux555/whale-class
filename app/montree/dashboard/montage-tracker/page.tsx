@@ -289,9 +289,11 @@ function ChildTile({
  * here. (The only real delete lives inside the lightbox, behind a confirm.)
  */
 function PhotoThumb({
-  photo, removed, onOpen, onToggle, removeLabel, restoreLabel, openLabel,
+  src, removed, onOpen, onToggle, removeLabel, restoreLabel, openLabel,
 }: {
-  photo: PickerPhoto;
+  /** Display URL, resolved by the page's photoUrl() so the grid and the
+   *  lightbox can never disagree after a crop. */
+  src: string;
   removed: boolean;
   onOpen: () => void;
   onToggle: () => void;
@@ -301,6 +303,9 @@ function PhotoThumb({
   openLabel: string;
 }) {
   const [failed, setFailed] = useState(false);
+  // A crop swaps this tile's URL while the component stays mounted (the key is
+  // the media id), so a stale failure must not outlive the old URL.
+  useEffect(() => { setFailed(false); }, [src]);
   return (
     <div style={{ position: 'relative', width: '100%' }}>
       <button
@@ -319,7 +324,7 @@ function PhotoThumb({
         {!failed ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={getProxyUrl(photo.storage_path)}
+            src={src}
             alt=""
             loading="lazy"
             onError={() => setFailed(true)}
@@ -406,6 +411,14 @@ export default function MontageManagerPage() {
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [photoToDelete, setPhotoToDelete] = useState<PickerPhoto | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // --- crop state ---------------------------------------------------------
+  // The crop route repoints the row (replace_original), so the URL it hands
+  // back is the truth from here on. Keyed by media id, so it stays correct if
+  // the same photo turns up under another path/range — deliberately NOT
+  // cleared by choosePath.
+  const [cropUrlOverrides, setCropUrlOverrides] = useState<Record<string, string>>({});
+  const [isSavingCrop, setIsSavingCrop] = useState(false);
 
   useEffect(() => {
     const session = getSession();
@@ -648,6 +661,13 @@ export default function MontageManagerPage() {
   }, [choosePath]);
 
   // --- viewer -------------------------------------------------------------
+  /** The ONE place a picker photo becomes a URL — grid and lightbox both read
+   *  it, so a fresh crop can never show in one and not the other. */
+  const photoUrl = useCallback(
+    (p: PickerPhoto) => cropUrlOverrides[p.id] || getProxyUrl(p.storage_path),
+    [cropUrlOverrides]
+  );
+
   const openLightbox = useCallback((index: number) => {
     setLightboxIndex(index);
     setLightboxOpen(true);
@@ -666,11 +686,11 @@ export default function MontageManagerPage() {
 
   const lightboxPhotos = useMemo(
     () => photos.map((p) => ({
-      url: getProxyUrl(p.storage_path),
+      url: photoUrl(p),
       caption: null,
       date: p.captured_at ?? undefined,
     })),
-    [photos]
+    [photos, photoUrl]
   );
 
   /**
@@ -701,6 +721,54 @@ export default function MontageManagerPage() {
     } finally {
       setPhotoToDelete(null);
       setIsDeleting(false);
+    }
+  };
+
+  /**
+   * Crop-to-viewport, straight from the lightbox: the teacher pinch-zooms and
+   * pans until the frame holds what she wants, taps ✂, and the rectangle she
+   * is looking at (already in ORIGINAL image pixels) becomes the photo.
+   *
+   * 🚨 A crop is NOT a curation act: photos.length, `removed` and `keptPhotos`
+   * are all untouched, so `media_ids` and the kept-count are unaffected. The
+   * picker is deliberately NOT reloaded either — that would reset `removed`
+   * via the pickerKey effect and throw away her exclusions.
+   *
+   * The route replaces the original (replace_original), so the row now points
+   * at the cropped object and a reload — plus the rendered film — shows the
+   * crop. Only the display URL is patched here; `storage_path` in memory stays
+   * the pre-crop path, which is harmless because every remaining consumer
+   * (create, delete) works off the media id.
+   */
+  const handleCrop = async (index: number, crop: { x: number; y: number; width: number; height: number }) => {
+    const target = photos[index];
+    if (!target || isSavingCrop) return;
+    setIsSavingCrop(true);
+    try {
+      const res = await montreeApi('/api/montree/media/crop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ media_id: target.id, crop, replace_original: true }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data?.success !== true || !data?.media?.url) {
+        throw new Error(data?.error || `HTTP ${res.status}`);
+      }
+      // New storage path ⇒ a new URL, so no cache-busting is needed. The
+      // lightbox resets to 1× by itself: its src prop changes.
+      setCropUrlOverrides((prev) => ({ ...prev, [target.id]: data.media.url }));
+      // Belt-and-braces: if the route also reports the row's post-crop path,
+      // keep the in-memory row honest so the override and storage_path agree.
+      const newPath = data?.media?.storage_path;
+      if (typeof newPath === 'string' && newPath) {
+        setPhotos((prev) => prev.map((p) => (p.id === target.id ? { ...p, storage_path: newPath } : p)));
+      }
+      toast.success(t('gallery.crop'));
+    } catch (err) {
+      console.error('[MontageManager] crop failed:', err);
+      toast.error(t('common.error'));
+    } finally {
+      setIsSavingCrop(false);
     }
   };
 
@@ -1096,7 +1164,7 @@ export default function MontageManagerPage() {
                     {photos.map((p, i) => (
                       <PhotoThumb
                         key={p.id}
-                        photo={p}
+                        src={photoUrl(p)}
                         removed={removed.has(p.id)}
                         onOpen={() => openLightbox(i)}
                         onToggle={() => toggleRemoved(p.id)}
@@ -1310,13 +1378,16 @@ export default function MontageManagerPage() {
       <PhotoLightbox
         isOpen={lightboxOpen && photos.length > 0}
         onClose={() => setLightboxOpen(false)}
-        src={lightboxCurrent ? getProxyUrl(lightboxCurrent.storage_path) : ''}
+        src={lightboxCurrent ? photoUrl(lightboxCurrent) : ''}
         photos={lightboxPhotos}
         currentIndex={safeLightboxIndex}
         onNavigate={(idx) => setLightboxIndex(idx)}
         onDelete={(idx) => setPhotoToDelete(photos[idx] ?? null)}
         deleteLabel={t('gallery.deletePhoto')}
         deleting={isDeleting}
+        onCrop={handleCrop}
+        cropLabel={t('gallery.cropPhoto')}
+        cropping={isSavingCrop}
         onPrimaryAction={() => { setLightboxOpen(false); handleCreate(); }}
         primaryActionLabel={`🎬 ${t('montageTracker.create.button')}`}
         primaryActionDisabled={creating || photosLoading || keptPhotos.length < minPhotos}
