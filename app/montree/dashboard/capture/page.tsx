@@ -54,6 +54,10 @@ const T = {
 
 type FlowStep = 'camera' | 'tag-child';
 
+// C2: sessionStorage key for the sticky selected-event pick. Session-scoped
+// (not localStorage) so it clears itself when the teacher closes the tab.
+const CAPTURE_EVENT_STORAGE_KEY = 'montree_capture_event';
+
 // ============================================
 // AVATAR BUTTON COMPONENT
 // ============================================
@@ -180,6 +184,36 @@ function CaptureContent() {
     if (session) {
       if (session.school?.id) setSchoolId(session.school.id);
       if (session.classroom?.id) setClassroomId(session.classroom.id);
+    }
+  }, []);
+
+  // C2: sticky event across shots. navigateAfterCapture() router.pushes after
+  // EVERY saved photo, which unmounts this page and resets `selectedEvent` to
+  // null — the teacher had to re-pick "Art Camp" before every single shot.
+  // Persist the pick to sessionStorage (survives the per-shot remount, cleared
+  // on tab close) and restore it here on mount.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = sessionStorage.getItem(CAPTURE_EVENT_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { id?: string; name?: string };
+      if (parsed && parsed.id && parsed.name) {
+        setSelectedEvent({
+          id: parsed.id,
+          name: parsed.name,
+          school_id: '',
+          classroom_id: null,
+          description: null,
+          event_date: '',
+          event_type: '',
+          created_by: null,
+          created_at: '',
+          updated_at: '',
+        });
+      }
+    } catch (err) {
+      console.error('[CAPTURE] Failed to restore sticky event:', err);
     }
   }, []);
 
@@ -419,6 +453,22 @@ function CaptureContent() {
   // TAG CHILD HANDLERS
   // ============================================
 
+  // C2: writes through to sessionStorage so the pick survives the per-shot
+  // remount. "No event" (EventPicker's onSelect(null)) clears the key.
+  const handleEventSelect = (event: MontreeEvent | null) => {
+    setSelectedEvent(event);
+    if (typeof window === 'undefined') return;
+    try {
+      if (event) {
+        sessionStorage.setItem(CAPTURE_EVENT_STORAGE_KEY, JSON.stringify({ id: event.id, name: event.name }));
+      } else {
+        sessionStorage.removeItem(CAPTURE_EVENT_STORAGE_KEY);
+      }
+    } catch (err) {
+      console.error('[CAPTURE] Failed to persist sticky event:', err);
+    }
+  };
+
   const toggleChild = (childId: string) => {
     setSelectedChildIds(prev =>
       prev.includes(childId)
@@ -446,11 +496,74 @@ function CaptureContent() {
     return (
       <>
         <Toaster position="top-center" />
+        {/* C3: event selector reachable from the camera step itself. The
+            preselected-child / class-mode / single-child flows call
+            doUploadAndAnalyze directly from handleMediaCapture and never
+            reach the tag-child step, so without this chip there was no way
+            to attach an event on those paths at all. `pointerEvents: none`
+            on the row keeps the rest of the camera surface (and the shutter)
+            fully tappable — only the chip itself is interactive. */}
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 60,
+            // 🚨 order matters: the shorthand must come FIRST or it wipes the
+            // safe-area inset and the chip lands under the notch.
+            padding: '12px',
+            paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))',
+            display: 'flex',
+            justifyContent: 'flex-start',
+            pointerEvents: 'none',
+          }}
+        >
+          <button
+            onClick={() => setShowEventPicker(true)}
+            style={{
+              pointerEvents: 'auto',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              // leave the top-RIGHT clear: CameraCapture's own back/close
+              // button sits at right:16 (44px wide) inside a lower stacking
+              // context, so a long event name would swallow its taps.
+              maxWidth: 'calc(100vw - 96px)',
+              padding: '8px 12px',
+              borderRadius: 999,
+              background: selectedEvent ? T.amberSoft : 'rgba(0,0,0,0.45)',
+              border: `1px solid ${selectedEvent ? T.amberBorder : 'rgba(255,255,255,0.20)'}`,
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              color: selectedEvent ? '#fbbf24' : 'rgba(255,255,255,0.85)',
+              fontFamily: T.sans,
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            <PartyPopper size={13} strokeWidth={1.75} />
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {selectedEvent
+                ? t('capture.eventBanner').replace('{eventName}', selectedEvent.name)
+                : t('events.selectEvent')}
+            </span>
+          </button>
+        </div>
         <CameraCapture
           onCapture={handleMediaCapture}
           onCancel={handleCameraCancel}
           allowVideo={true}
         />
+        {showEventPicker && (
+          <EventPicker
+            schoolId={schoolId}
+            selectedEventId={selectedEvent?.id || null}
+            onSelect={handleEventSelect}
+            onClose={() => setShowEventPicker(false)}
+          />
+        )}
       </>
     );
   }
@@ -819,7 +932,7 @@ function CaptureContent() {
         <EventPicker
           schoolId={schoolId}
           selectedEventId={selectedEvent?.id || null}
-          onSelect={(event) => setSelectedEvent(event)}
+          onSelect={handleEventSelect}
           onClose={() => setShowEventPicker(false)}
         />
       )}
