@@ -128,7 +128,7 @@ export default function FullDetailsModal({
             position: 'absolute',
             top: 16,
             right: 16,
-            zIndex: 10,
+            zIndex: 20,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -152,12 +152,18 @@ export default function FullDetailsModal({
             overflowY: 'auto',
             display: 'flex',
             flexDirection: 'column',
+            minHeight: 0,
           }}
         >
           {/* Header */}
           <div style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 5,
             padding: '24px 24px 22px',
             background: 'linear-gradient(135deg, rgba(52,211,153,0.22), rgba(52,211,153,0.10))',
+            backdropFilter: 'blur(24px) saturate(140%)',
+            WebkitBackdropFilter: 'blur(24px) saturate(140%)',
             borderBottom: `1px solid ${T.sheetBorder}`,
           }}>
             <h2 style={{
