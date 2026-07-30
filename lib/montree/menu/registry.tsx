@@ -25,6 +25,7 @@ import {
   TrendingUp,
   BookMarked,
   Settings2,
+  ScanLine,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { MENU_ITEM_IDS, type MenuItemId } from './config';
@@ -38,6 +39,7 @@ export interface MenuItemDef {
 }
 
 export const MENU_REGISTRY: Record<MenuItemId, MenuItemDef> = {
+  paper_scan: { id: 'paper_scan', labelKey: 'paperScan.menuLabel', label: 'Paper Scan', route: '/montree/dashboard/paper-scan', icon: ScanLine },
   guru: { id: 'guru', labelKey: 'nav.guru', label: 'Guru', route: '/montree/dashboard/guru', icon: Sparkles },
   curriculum: { id: 'curriculum', labelKey: 'nav.curriculum', label: 'Curriculum', route: '/montree/dashboard/curriculum', icon: BookOpen },
   // Labels "Students" / "Parents" (Tredoux, Jul 4 2026 — shortened from
