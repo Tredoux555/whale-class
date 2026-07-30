@@ -2782,7 +2782,7 @@ Detailed session-by-session history (Feb–Apr 2026) is archived in `docs/CLAUDE
 
 All Dark Phonics illustrations (readers, flashcards, lesson art) use ONE house
 style: colored hand-drawn pen-and-ink, whimsical Dr. Seuss children's-book
-illustration — NOT photorealism. **One sanctioned exception exists:**
+illustration — NOT photorealism. **Three sanctioned exceptions exist — the SATPIN initial-sound books: "The Pig Ate a Pineapple" (P), "Into the Igloo" (I, 2026-07-28), and "The Nest is in the Nest" (N, 2026-07-30, Tredoux-approved). The first:**
 "The Pig Ate a Pineapple" (Letter P initial-sound book, 2026-07-27) is
 photo-illustrated on purpose — see the Jul 27 session entry before assuming
 its photoreal art is a mistake and regenerating it. This was mixed up once (2026-07-20 SATPIN

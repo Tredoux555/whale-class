@@ -1,5 +1,37 @@
 # Whale / Montree — Latest Handoff
 
+## 🪺 Jul 30 (Cowork) — LETTER N SHIPPED end-to-end (book + paperwork + music video)
+
+Week 6 / letter N, "The Nest is in the Nest" (song hook: nut/net/napkin/nail in the nest,
+finale "The NEST is in the nest!"). Art = photo-real Midjourney scenes, the THIRD sanctioned
+photo exception (Tredoux-approved this session; CLAUDE.md locked-style section updated).
+Scenes filed at `phonics-images/satpin-v2/books/nest/` (permanent, gitignored — Mac only) and
+`_incoming-week6-n/book-scenes/`; prompts at `_incoming-week6-n/MJ-PROMPTS-N.md`.
+
+- **Book**: `scripts/curriculum/dark-phonics-readers/bookN.py` (sound mode, mirrors bookI;
+  title_size=40; decodable ledger through wk6 = 21 words, heart a · I). PDFs (16pp/4 sheets,
+  every page rasterized + eyeballed) → `public/satpin-books/print/the-nest-is-in-the-nest-A5-{reading,booklet-print}.pdf`.
+- **Paperwork (locked pipeline)**: `letters/n.json` — seq derangement [3,5,1,2,4], match
+  [4,3,5,1,2]; yes/no wrong answers alligator/tiger/taxi/pig/igloo (nothing nest-plausible);
+  artDir points at the PERMANENT `phonics-images/satpin-v2/books/nest` (no incoming-tray debt,
+  unlike I). Outputs → `public/satpin-materials/n/{paperwork-pack,tracing-workbook,sentence-strips}.pdf`,
+  all pages eyeballed clean.
+- **Music video**: `~/Downloads/letter-n-the-nest-is-in-the-nest-v1.mp4` (17.1MB, 128s,
+  1920x1080, kids theme, crf 32 to fit the 20MB bridge cap). FORCED-ALIGN: 189/189 words, 0
+  approx. All 6 images anchored; 10 frame spot-checks passed. ⚠️ Lyric-file lesson: the opening
+  letter-card anchor only fires if the phoneme is SPELLED in the lyrics txt — "N... n... n..."
+  tokenizes to 1-char tokens the matcher drops, so the txt uses "Nnn... nnn... nnn..." to anchor
+  `00-nnn.png` (same mechanism as P's `00-puh.png`/"Puh..."). Follow this for all future letters.
+- **satpin page**: N WeekBlock gained a `book:` entry (same shape as P/I, downloads point at the
+  two print PDFs, pictureLabels per I convention). Typecheck NOT run this session (shape-identical
+  manifest edit).
+- **Owed / not done**: book-scene ingest into the Picture Library (P/I had upload scripts — N
+  does not yet); music-video slot on the satpin page still "coming soon" (video uploaded to
+  bucket `dark-phonics/videos/` by this session's git agent — check its report below/in git log);
+  N song mp3 assumed already uploaded by Tredoux via the page drop-zone (player showed a take).
+
+---
+
 ## 🔒 Jul 29 (Cowork) — SATPIN PAPERWORK PIPELINE LOCKED IN as approved convention (do not redesign)
 
 Tredoux's verdict on the new SATPIN paperwork pack + tracing workbook: "couldn't be any more

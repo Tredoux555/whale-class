@@ -166,6 +166,16 @@ const WEEKS: WeekBlock[] = [
     decodable: ['an', 'ant', 'in', 'nap', 'naps', 'pan', 'tin', 'nip', 'snap'], heartWords: ['I'],
     words: ['nut', 'nest', 'net', 'napkin', 'nail'],
     accent: '74,222,128', tint: '187,247,208',
+    // Book slot, same shape as the letter-P and letter-I books.
+    book: {
+      title: 'The Nest is in the Nest',
+      blurb: 'Initial-sound book — the child shouts the picture word, it is not decoded.',
+      downloads: [
+        { href: '/satpin-books/print/the-nest-is-in-the-nest-A5-reading.pdf', label: 'Read-along' },
+        { href: '/satpin-books/print/the-nest-is-in-the-nest-A5-booklet-print.pdf', label: 'Print booklet A5' },
+      ],
+      pictureLabels: ['nut is in the nest', 'net is in the nest', 'napkin is in the nest', 'nail is in the nest', 'nest is in the nest'],
+    },
   },
   {
     week: 7, letter: 'M', slug: 'm',
