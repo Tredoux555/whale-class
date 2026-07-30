@@ -45,6 +45,14 @@ Picture Library (`montree_photo_bank`, filenames `the-nest-is-in-the-nest-p1..p5
 labels, cover excluded per I convention) via `_incoming-week6-n/upload-letter-n-book-to-picture-bank.mjs`
 (untracked, like week 5's).
 
+**Evening fixes (same session):** build-it sheet rows now carry their scene art (45×30mm top-right
+per row, art reused from n.json — still 2pp landscape). The "no picture" sentence strip was a
+LABEL CONVENTION violation: photo-bank labels must be lowercase with the leading article dropped
+("nut is in the nest"), exactly matching page.tsx pictureLabels — fetchByLabel exact-matches after
+the fuzzy query. N's 5 rows relabeled in Supabase (fix-letter-n-labels.mjs, untracked); P/I were
+already correct. 🔒 Rule for future letter ingests: label = the page's pictureLabels string,
+verbatim.
+
 ---
 
 ## 🔒 Jul 29 (Cowork) — SATPIN PAPERWORK PIPELINE LOCKED IN as approved convention (do not redesign)
