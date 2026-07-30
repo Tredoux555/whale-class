@@ -12,7 +12,12 @@ stick, and rebuild vs. sit down and write) don't compete for the same sheet:
                            on one): every sentence's solid READ IT model with
                            its dashed BUILD IT card slots directly beneath —
                            slots are exactly the sentence-strips word-card
-                           size, unchanged. Nothing else on the sheet.
+                           size, unchanged. The spread's scene art sits top
+                           right of each row (2026-07-30 addendum: the sheet
+                           went out without it and Tredoux caught the gap),
+                           same picture the tracing book uses for that
+                           sentence, boxed 3:2 and never wider than the old
+                           58×38mm thumbnail reference.
 
     tracing-workbook.pdf   the book the child writes themselves, "as if they
                            were writing the book". Cover ("written by ___"),
@@ -120,6 +125,17 @@ BS_LABEL_GAP   = 2.5 * mm               # 'build it' label -> slot top
 BS_CONTENT_TOP = RULE_Y - 4 * mm
 BS_CONTENT_BOT = FOOT_RULE + 4 * mm
 BS_ROW_AIR     = 3.0 * mm               # minimum breathing space between rows
+
+# each row's scene art, top right — sized so 5-sentence books (the common
+# case) still pack 3 + 2 across two pages; 45mm is the bottom of the brief's
+# 45-58mm range, chosen deliberately to keep the auto-packer at 2 pages
+BS_ART_GAP = 8.0 * mm                   # air between the text column and the art
+BS_ART_W   = 45.0 * mm                  # thumbnail width — 3:2, matches the
+BS_ART_H   = BS_ART_W * 2 / 3           # scene photos' own aspect exactly
+BS_TEXT_R  = PW - MG - BS_ART_W - BS_ART_GAP   # right edge of the text column
+BS_TEXT_CX = (MG + BS_TEXT_R) / 2              # model sentence centres here,
+                                                # not PW / 2, now that art
+                                                # owns the right of the row
 
 
 # --------------------------------------------------------- repo plumbing ---
@@ -275,28 +291,40 @@ def footer(c, left_text, right_text):
 
 
 # --------------------------------------------------- (A) build-it sheet ---
+def row_art_zone(sentence):
+    """Height of the read-it/build-it-label column above the slots — grown to
+    fit the scene art (BS_ART_H) beside it when the text alone needs less."""
+    size, rows = sf.fit_wrap(sentence, BS_TEXT_R - MG - 4 * mm, BS_MODEL_U_MAX,
+                             maxlines=2, tracking=0.09)
+    pitch = 2.6 * size
+    block = pitch * (len(rows) - 1) + 3 * size
+    label_zone = BS_TOP_GAP + block + BS_MODEL_GAP + BS_LABEL_GAP
+    return max(label_zone, BS_ART_H)
+
+
 def row_height(sentence):
     """Read-it + build-it footprint this sentence needs (no inter-row air)."""
-    size, rows = sf.fit_wrap(sentence, CW - 4 * mm, BS_MODEL_U_MAX,
-                             maxlines=2, tracking=0.09)
-    pitch = 2.6 * size
-    block = pitch * (len(rows) - 1) + 3 * size
-    return BS_TOP_GAP + block + BS_MODEL_GAP + BS_LABEL_GAP + SLOT_H
+    return row_art_zone(sentence) + SLOT_H
 
 
-def build_row(c, band_top, band_bottom, sentence, card_u):
+def build_row(c, band_top, band_bottom, sentence, card_u, art_path):
     """One sentence: solid READ IT model, dashed BUILD IT slots beneath,
-    centred vertically inside [band_bottom, band_top]."""
-    size, rows = sf.fit_wrap(sentence, CW - 4 * mm, BS_MODEL_U_MAX,
+    centred vertically inside [band_bottom, band_top]. The scene art sits top
+    right of the row, spanning the same zone as the model + 'build it' label
+    so it never reaches down as far as the (full-width) slots."""
+    size, rows = sf.fit_wrap(sentence, BS_TEXT_R - MG - 4 * mm, BS_MODEL_U_MAX,
                              maxlines=2, tracking=0.09)
     pitch = 2.6 * size
     block = pitch * (len(rows) - 1) + 3 * size
+    label_zone = BS_TOP_GAP + block + BS_MODEL_GAP + BS_LABEL_GAP
+    art_zone = max(label_zone, BS_ART_H)
+    extra = art_zone - label_zone          # slack the art forces open, if any
 
     words = sentence.split(' ')
     widths = [card_width(w, card_u) for w in words]
     total_w = sum(widths) + SLOT_GAP * (len(words) - 1)
 
-    row_total = BS_TOP_GAP + block + BS_MODEL_GAP + BS_LABEL_GAP + SLOT_H
+    row_total = art_zone + SLOT_H
     band_h = band_top - band_bottom
     row_top = band_top - (band_h - row_total) / 2   # centred in its band
 
@@ -304,14 +332,21 @@ def build_row(c, band_top, band_bottom, sentence, card_u):
     model_top = row_top - BS_TOP_GAP
     for i, row in enumerate(rows):
         w = sf.text_width(row, size, 0.09)
-        sf.draw_solid(c, row, PW / 2 - w / 2, model_top - 2 * size - i * pitch,
+        sf.draw_solid(c, row, BS_TEXT_CX - w / 2,
+                      model_top - 2 * size - i * pitch,
                       size, tracking=0.09, weight=0.115, color=INK)
     model_bottom = model_top - block
 
-    build_label_y = model_bottom - BS_MODEL_GAP
+    # scene art: right-aligned, spans row_top -> slot_top (the model +
+    # 'build it' label zone) — draw_image_contained centres the actual
+    # (3:2, same ratio as the box) image inside whatever slack that leaves
+    art_x = PW - MG - BS_ART_W
+    slot_top = row_top - art_zone
+    draw_image_contained(c, art_path, art_x, slot_top, BS_ART_W, art_zone)
+
+    build_label_y = model_bottom - BS_MODEL_GAP - extra
     section_label(c, MG, build_label_y, 'build it')
 
-    slot_top = build_label_y - BS_LABEL_GAP
     x = PW / 2 - total_w / 2
     for w, cw in zip(words, widths):
         c.setStrokeColorRGB(*SLOT)
@@ -322,19 +357,19 @@ def build_row(c, band_top, band_bottom, sentence, card_u):
         x += cw + SLOT_GAP
 
 
-def build_sheet_page(c, cfg, sentences, page_no, total_pages, card_u):
+def build_sheet_page(c, cfg, sentences, arts, page_no, total_pages, card_u):
     chrome(c, cfg, '%s  ·  build it  ·  sheet %d of %d'
            % (cfg['bookTitle'], page_no, total_pages))
     n = len(sentences)
     band_h = (BS_CONTENT_TOP - BS_CONTENT_BOT) / n
-    for i, sentence in enumerate(sentences):
+    for i, (sentence, art_path) in enumerate(zip(sentences, arts)):
         top = BS_CONTENT_TOP - i * band_h
-        build_row(c, top, top - band_h, sentence, card_u)
+        build_row(c, top, top - band_h, sentence, card_u, art_path)
     footer(c, 'Montree Phonics  ·  build it  ·  letter %s' % cfg['letter'],
           'sheet %d / %d' % (page_no, total_pages))
 
 
-def build_sheet_pdf(cfg, sentences, card_u, out):
+def build_sheet_pdf(cfg, sentences, arts, card_u, out):
     content_h = BS_CONTENT_TOP - BS_CONTENT_BOT
     worst_row = max(row_height(s) for s in sentences) + BS_ROW_AIR
     rows_per_page = max(1, int(content_h // worst_row))
@@ -345,7 +380,8 @@ def build_sheet_pdf(cfg, sentences, card_u, out):
     c.setTitle('%s — build it sheet' % cfg['bookTitle'])
     for p in range(n_pages):
         chunk = sentences[p * per_page:(p + 1) * per_page]
-        build_sheet_page(c, cfg, chunk, p + 1, n_pages, card_u)
+        arts_chunk = arts[p * per_page:(p + 1) * per_page]
+        build_sheet_page(c, cfg, chunk, arts_chunk, p + 1, n_pages, card_u)
         c.showPage()
     c.save()
     return out, n_pages
@@ -552,7 +588,7 @@ def build(cfg, repo_root, outdir):
     card_u = card_metrics(sentences)
 
     # ---- (A) build-it sheet -------------------------------------------
-    bs, bs_pages = build_sheet_pdf(cfg, sentences, card_u,
+    bs, bs_pages = build_sheet_pdf(cfg, sentences, arts, card_u,
                                    os.path.join(outdir, 'build-it-sheet.pdf'))
 
     # ---- (B) tracing book — cover + one page per sentence, trace-it only
