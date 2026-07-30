@@ -2930,18 +2930,24 @@ not redesign the layout, font set, or stroke rule without Tredoux's explicit say
   `sequencingDisplayOrder`/`matchDisplayOrder` (fixed derangements), 10 yes/no items (5 yes from
   the book, 5 no from prior-week vocab via picture-bank photos, avoiding anything the animal could
   plausibly eat/do), and `artDir`.
-- **Paperwork pack layout** (`build_paperwork.py`, A4 portrait, `paperwork-pack.pdf`, 4pp): story
-  order (5 pics, fixed shuffle, 24mm write-in boxes 1–5) · match (sentences left, pics right, draw
-  a line) · yes-or-no ×2pp (10 questions, small photo, ✓/✗ 20mm boxes). House fonts only, via
-  `MONTREE_CANVAS_FONTS` (default `/root/.claude/skills/canvas-design/canvas-fonts/`):
-  YoungSerif/Outfit/Lora/WorkSans.
-- **Tracing workbook format** (`build_tracing.py`, A4 LANDSCAPE, `tracing-workbook.pdf`, modeled
-  on Tredoux's classroom velcro material photo): cover ("written by ___") + 5 pages, each READ IT
-  (solid manuscript model sentence) · art 58×38mm top-right · BUILD IT (dashed 20mm velcro slots
-  sized to word cards) · TRACE IT (full sentence in dotted skeleton letters on 3-line guides —
-  dotted headline / dashed midline / solid baseline, 12.5mm x-height — red/blue stroke-order
-  arrows auto-derived per stroke) · blank NOW YOU line. Emits a companion `sentence-strips.pdf`
-  (cut-out word cards, sized exactly = slots).
+- **Paperwork pack layout** (`build_paperwork.py`, A4 portrait, `paperwork-pack.pdf`, 3pp as of
+  2026-07-30, shrunk from 4pp): story order (5 pics, fixed shuffle, 24mm write-in boxes 1–5) ·
+  match (sentences left, pics right, draw a line) · yes-or-no ×1pp (shrunk from 2pp/10q — 5
+  questions, small photo, ✓/✗ 20mm boxes). Selection rule: the JSON still keeps all 10 yes/no
+  items; the builder deterministically picks yes[0], no[0], yes[1], no[1], yes[2] (3 yes/2 no) for
+  the single page. House fonts only, via `MONTREE_CANVAS_FONTS` (default
+  `/root/.claude/skills/canvas-design/canvas-fonts/`): YoungSerif/Outfit/Lora/WorkSans.
+- **Tracing outputs** (`build_tracing.py`, format split 2026-07-30 per Tredoux — supersedes the
+  original single combined `tracing-workbook.pdf`): now emits **`build-it-sheet.pdf`** (A4
+  LANDSCAPE, auto-packed onto however many pages the sentence rows need) — READ IT (solid
+  manuscript model sentence) · BUILD IT (dashed 20mm velcro slots sized to word cards) · 45×30mm
+  scene art per row (reused from the letter's `artDir`) — plus **`tracing-workbook.pdf`**, now the
+  CHILD-WRITTEN TRACE BOOK: cover ("written by ___") + one page per sentence, each with prominent
+  scene art (~66×99mm) and the unchanged TRACE IT block (full sentence in dotted skeleton letters
+  on 3-line guides — dotted headline / dashed midline / solid baseline, 12.5mm x-height —
+  red/blue stroke-order arrows auto-derived per stroke — blank NOW YOU line; no READ IT/BUILD IT
+  on trace pages). Emits a companion `sentence-strips.pdf` (cut-out word cards, sized exactly =
+  slots) — unchanged, pixel-diffed across the format split.
 - **Stroke rule** (`stroke_font.py`, single-stroke manuscript engine, 69 glyphs): circle letters
   a/c/d/e/g/o/q/s start ~2 o'clock counter-clockwise, stems draw down, arches draw up. The model
   sentence and the word cards render from the same skeleton — no school-print TTF, single-storey
@@ -2950,10 +2956,19 @@ not redesign the layout, font set, or stroke rule without Tredoux's explicit say
   to already exist), 2) `build_paperwork.py --letter <slug>` + `build_tracing.py --letter <slug>`
   → `public/satpin-materials/<slug>/`, 3) rasterize and eyeball every page, 4) commit.
 
-Outputs (`paperwork-pack.pdf`, `tracing-workbook.pdf`, `sentence-strips.pdf` in
-`public/satpin-materials/<slug>/`) surface automatically via `PaperworkRow` on
+Outputs (`paperwork-pack.pdf`, `build-it-sheet.pdf`, `tracing-workbook.pdf`, `sentence-strips.pdf`
+in `public/satpin-materials/<slug>/`) surface automatically via `PaperworkRow` on
 `app/montree/library/satpin/page.tsx` — no per-letter code change needed. Old A5 tracing editions
 are retired to `_to_delete/satpin-old-a5-tracing/`, superseded by this pipeline.
 
-Status: P ✅, I ✅ shipped. S/A/T (weeks 1–3) not yet built — verify `bookX.py` exists before
-promising a letter. Full narrative: `HANDOFF_LATEST.md`'s Jul 29 entry.
+🔒 Photo-bank ingest labels for book scenes must equal the page's `pictureLabels` string verbatim
+(lowercase, leading article dropped, e.g. "nut is in the nest") — `fetchByLabel` exact-matches
+after the fuzzy query, so a mismatched label silently shows "no picture."
+
+⚠️ `device_stage_files` can silently return a stale cached copy even with correct-looking
+metadata — always md5/byte-check a staged file against the Mac original before editing it.
+
+Status (as of 2026-07-30): P ✅, I ✅, N ✅ — all three shipped/backfilled onto the current split
+format (3pp paperwork pack + build-it-sheet + tracing-workbook + sentence-strips). S/A/T (weeks
+1–3) still need `bookX.py` written first — verify it exists before promising a letter. Full
+narrative: `HANDOFF_LATEST.md`'s Jul 29 and Jul 30 entries.

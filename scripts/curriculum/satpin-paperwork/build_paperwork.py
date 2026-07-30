@@ -1,11 +1,17 @@
 # -*- coding: utf-8 -*-
 """Montree Phonics — printable paperwork pack (A4 portrait).
 
+FORMAT CHANGE per Tredoux 2026-07-30: yes/no shrinks from 2 pages / 10
+questions to ONE page / 5 questions, so the whole pack is a clean 3-pager.
+The 5 questions are a deterministic alternating pick from the letter JSON's
+still-10-item `yesno` list (unchanged on disk): yes[0], no[0], yes[1],
+no[1], yes[2] — 3 yes / 2 no, same order every rebuild.
+
 One letter JSON in, one `paperwork-pack.pdf` out, containing three works:
 
-    p1     Story order  — the five illustrations shuffled, a write-in box each
-    p2     Match        — five sentences, five pictures, draw the line
-    p3-p4  Yes or no?   — ten questions, tick or cross
+    p1   Story order  — the five illustrations shuffled, a write-in box each
+    p2   Match        — five sentences, five pictures, draw the line
+    p3   Yes or no?   — five questions (yes/no/yes/no/yes), tick or cross
 
 House chrome ("Inked Hush"): three inks, tracked labels, YoungSerif titles,
 Outfit for anything the child reads, Lora italic for the teacher's voice.
@@ -295,6 +301,15 @@ def page_yesno(c, cfg, art, photos, items, page_no, page_total):
             mark(c, x + 3.4 * mm, ymid + bs / 2 - 3.4 * mm, 1.7 * mm, FAINT, 0.7)
 
 
+def pick_yesno(yesno):
+    """Deterministic 5-question alternating pick from the stored 10-item
+    list: yes[0], no[0], yes[1], no[1], yes[2] — 3 yes / 2 no. The JSON
+    file itself is never trimmed; this selection happens at build time."""
+    yeses = [it for it in yesno if it['answer']]
+    noes = [it for it in yesno if not it['answer']]
+    return [yeses[0], noes[0], yeses[1], noes[1], yeses[2]]
+
+
 # ----------------------------------------------------------------- build ---
 def build(cfg, repo_root, outdir):
     os.makedirs(outdir, exist_ok=True)
@@ -315,14 +330,12 @@ def build(cfg, repo_root, outdir):
     c = rl_canvas.Canvas(out, pagesize=A4)
     c.setTitle('%s — paperwork pack' % cfg['bookTitle'])
 
-    total = 4
+    total = 3
     page_sequencing(c, cfg, art, 1, total)
     c.showPage()
     page_match(c, cfg, art, 2, total)
     c.showPage()
-    page_yesno(c, cfg, art, photos, cfg['yesno'][:5], 3, total)
-    c.showPage()
-    page_yesno(c, cfg, art, photos, cfg['yesno'][5:], 4, total)
+    page_yesno(c, cfg, art, photos, pick_yesno(cfg['yesno']), 3, total)
     c.showPage()
     c.save()
     print('paperwork-pack.pdf', total, 'pages ->', out)

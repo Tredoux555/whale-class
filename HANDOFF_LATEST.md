@@ -53,6 +53,49 @@ the fuzzy query. N's 5 rows relabeled in Supabase (fix-letter-n-labels.mjs, untr
 already correct. 🔒 Rule for future letter ingests: label = the page's pictureLabels string,
 verbatim.
 
+**Backfill + close-out:**
+
+1. **`build_paperwork.py` shrunk**: yes/no went 2pp/10q → 1pp/5q; the pack is now a clean 3pp
+   (story order · match · yes/no). Selection is deterministic — the JSON keeps all 10 items, the
+   builder picks yes[0], no[0], yes[1], no[1], yes[2] (3 yes/2 no). `paperwork-pack.pdf` rebuilt
+   for p, i, and n.
+2. **P + I backfilled** onto the split tracing format (current `build_tracing.py`, no layout
+   changes needed): p gets a 2pp build-it-sheet, i gets a 3pp build-it-sheet, both trace books are
+   6pp (cover + 5). `sentence-strips.pdf` verified pixel-identical for both and was NOT
+   overwritten. Every page rasterized and eyeballed clean.
+3. **I's art debt cleared**: the 5 igloo scenes are now copied to the permanent
+   `phonics-images/satpin-v2/books/igloo/` (originals stay in `_incoming-week5-i/`, undeletable via
+   the device bridge); `i.json`'s `artDir` now points there. `p.json` was already permanent
+   (`books/pig`) — no change needed.
+4. **Audit matrix** (live-verified across S/A/T/P/I/N):
+
+   | Asset | S | A | T | P | I | N |
+   |---|---|---|---|---|---|---|
+   | Three-part cards | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+   | Object-basket photos | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+   | Songs | ❌ | ❌ | — | ✅ | ✅ | ✅ |
+   | Videos | — | — | — | ✅* | ✅** | ✅*** |
+   | Books | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
+   | Paperwork (new format) | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
+   | Sentence pictures | — | — | — | ✅ | ✅ | ✅ |
+
+   \* P: manifest `videos/letter-p-pig-pen-pencil-v3.mp4` PLUS a distinct API-discovered
+   `satpin-videos/p-1785206955599.mp4` (two separate assets).
+   \*\* I: API-discovered `satpin-videos/i-1785228567368.mp4` only, no manifest field needed.
+   \*\*\* N: manifest only (`videos/` prefix — invisible to the satpin-videos API scan by design).
+   S/A/T have no `letters/*.json` at all yet, hence the paperwork ❌.
+5. **S/A/T completion recipe** (dependency order): song (Suno, Tredoux picks the take) → MJ scenes
+   (photo-real is now the standing style for SATPIN initial-sound books — P/I/N precedent,
+   Tredoux-approved) → `bookX.py` (sound mode, mirrors `bookN.py`) + `letters/X.json` →
+   `build_paperwork.py` + `build_tracing.py` → mvgen video (lyrics txt must SPELL the phoneme for
+   the `00-card` anchor, e.g. "Nnn...", "Puh...") → ingest scenes to the Picture Library with
+   labels EXACTLY equal to `page.tsx`'s `pictureLabels` (lowercase, leading article dropped) →
+   wire the `book:` entry in `page.tsx`.
+
+**Process gotchas learned today** (worth remembering): `device_stage_files` can silently return a
+stale cached copy even with correct-looking metadata — always md5/byte-check staged files against
+the Mac before editing them; the device bridge can drop for ~2–20 min and self-recover.
+
 ---
 
 ## 🔒 Jul 29 (Cowork) — SATPIN PAPERWORK PIPELINE LOCKED IN as approved convention (do not redesign)

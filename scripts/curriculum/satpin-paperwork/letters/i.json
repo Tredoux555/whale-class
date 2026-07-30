@@ -5,7 +5,7 @@
   "bookSlug": "into-the-igloo",
   "bookTitle": "Into the Igloo",
   "bookScript": "scripts/curriculum/dark-phonics-readers/bookI.py",
-  "artDir": "_incoming-week5-i/book-scenes",
+  "artDir": "phonics-images/satpin-v2/books/igloo",
   "photoDir": "docs/picture-bank/photos",
   "band": "LETTER I  ·  INITIAL SOUND  ·  listen for /i/",
 
@@ -43,7 +43,7 @@
   },
 
   "_notes": {
-    "artDir": "Week 5 art still sits in the incoming tray on both the Mac and in Cowork; when the scenes are filed to phonics-images/satpin-v2/books/igloo/ change this one line.",
+    "artDir": "Filed permanently at phonics-images/satpin-v2/books/igloo/ (2026-07-30, Tredoux-ordered backfill) — copied from _incoming-week5-i/book-scenes/, sizes verified byte-identical. The incoming tray copy is left in place as the original source; this is now the path builds read from.",
     "sequencingDisplayOrder": "Fixed derangement (no page shown in its own place) so output is deterministic across rebuilds. Values are page `order` numbers.",
     "matchDisplayOrder": "Second fixed derangement for the picture column on the match sheet — deliberately different from sequencingDisplayOrder.",
     "yesno": "5 true (from the book) / 5 false (weeks 1-4 s/a/t/p vocabulary: pig w4, tiger w3, taxi w3, sock w1, alligator w2), alternating. `imageArt` resolves under artDir; `imageWord` resolves to photoDir/<word>/<word>.jpg.",
