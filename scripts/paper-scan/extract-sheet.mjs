@@ -24,7 +24,7 @@ import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 
-const SCRIPT_VERSION = '0.1.0';
+const SCRIPT_VERSION = '0.1.1';
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 // Script lives at <repoRoot>/scripts/paper-scan/ — repo root is two levels up.
@@ -157,8 +157,11 @@ function resolveModelId(tier, flagValue) {
   // Repo conventions: HAIKU_MODEL is the haiku pin, AI_MODEL the sonnet/default pin.
   const identifier = tier === 'haiku' ? 'HAIKU_MODEL' : 'AI_MODEL';
   const candidates = [
+    // The real home of the constants (verified Jul 30, 2026): lib/ai/anthropic.ts
+    path.join(REPO_ROOT, 'lib/ai/anthropic.ts'),
     path.join(REPO_ROOT, 'lib/montree/ai.ts'),
     path.join(REPO_ROOT, 'lib/montree/billing/resolve-model.ts'),
+    path.join(REPO_ROOT, 'lib/montree/reports/resolve-model.ts'),
   ];
   // Shallow scan of lib/montree/*.ts as a last resort (no recursion).
   const libDir = path.join(REPO_ROOT, 'lib/montree');
