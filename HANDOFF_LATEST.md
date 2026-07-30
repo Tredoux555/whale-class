@@ -30,6 +30,21 @@ Scenes filed at `phonics-images/satpin-v2/books/nest/` (permanent, gitignored �
   bucket `dark-phonics/videos/` by this session's git agent — check its report below/in git log);
   N song mp3 assumed already uploaded by Tredoux via the page drop-zone (player showed a take).
 
+**Second wave (same session, Tredoux-ordered):** (1) 🔒 FORMAT CHANGE to the tracing pipeline —
+`build_tracing.py` now emits a separate `build-it-sheet.pdf` (READ IT model + dashed card slots
+per sentence, landscape A4, auto-packed — N needed 2pp because slot rows run 264mm) and
+`tracing-workbook.pdf` is now the CHILD-WRITTEN TRACE BOOK (cover + 5pp: big scene art ~66×99mm +
+the unchanged dotted/arrowed TRACE IT block; no READ IT/BUILD IT on trace pages). Old combined
+`workbook_page()` removed; sentence-strips unchanged (pixel-diffed). This supersedes the Jul-29
+combined page for all FUTURE letters; P and I are still on the old format — regenerate when
+Tredoux approves the new look. (2) satpin page: `WeekBlock.video?` manifest field (wins over the
+satpin-media API discovery, which only sees `satpin-videos/<slug>-<ts>.mp4`) — P + N videos wired
+from `dark-phonics/videos/`; PaperworkRow gained probed "Build-it sheet · A4"; descriptor now
+"Story order · matching · yes/no · build · trace". (3) The 5 N book scenes ingested into the
+Picture Library (`montree_photo_bank`, filenames `the-nest-is-in-the-nest-p1..p5-*.jpg`, sentence
+labels, cover excluded per I convention) via `_incoming-week6-n/upload-letter-n-book-to-picture-bank.mjs`
+(untracked, like week 5's).
+
 ---
 
 ## 🔒 Jul 29 (Cowork) — SATPIN PAPERWORK PIPELINE LOCKED IN as approved convention (do not redesign)
