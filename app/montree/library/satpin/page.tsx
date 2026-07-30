@@ -90,6 +90,12 @@ type WeekBlock = {
    *  path (/satpin-materials/<slug>/reader.pdf). Takes precedence over the
    *  probe — set this and the HEAD result for the block is ignored. */
   reader?: { title: string; downloads: Array<{ href: string; label: string }> };
+  /** Direct URL to a finished music video, for a video that does NOT live at
+   *  the satpin-media convention (satpin-videos/<slug>-<timestamp>.mp4 in the
+   *  `dark-phonics` bucket — see /api/montree/satpin-media). Set this for a
+   *  one-off delivered straight to a differently-named object in the same
+   *  public bucket; it wins outright over the API-discovered video. */
+  video?: string;
   /** Decodable words INTRODUCED by this week's reader — mirrors the NEW list
    *  at the back of the book (books_def.py weeks 3–6, book07–27.py weeks
    *  7–27). The crux of the decodable series: the cumulative "so far" list a
@@ -132,6 +138,7 @@ const WEEKS: WeekBlock[] = [
     decodable: ['sap', 'pat', 'tap', 'spat'],
     words: ['pig', 'pen', 'penguin', 'pumpkin', 'panda'],
     accent: '252,211,77', tint: '253,230,138',
+    video: 'https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/dark-phonics/videos/letter-p-pig-pen-pencil-v3.mp4',
     book: {
       title: 'The Pig Ate a Pineapple',
       blurb: 'Initial-sound book — the child shouts the picture word, it is not decoded.',
@@ -166,6 +173,7 @@ const WEEKS: WeekBlock[] = [
     decodable: ['an', 'ant', 'in', 'nap', 'naps', 'pan', 'tin', 'nip', 'snap'], heartWords: ['I'],
     words: ['nut', 'nest', 'net', 'napkin', 'nail'],
     accent: '74,222,128', tint: '187,247,208',
+    video: 'https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/dark-phonics/videos/letter-n-the-nest-is-in-the-nest-v1.mp4',
     // Book slot, same shape as the letter-P and letter-I books.
     book: {
       title: 'The Nest is in the Nest',
@@ -337,6 +345,7 @@ const mediaPaths = (slug: string) => ({
   reader: `/satpin-materials/${slug}/reader.pdf`,
   readerBooklet: `/satpin-materials/${slug}/reader-booklet.pdf`,
   paperworkPack: `/satpin-materials/${slug}/paperwork-pack.pdf`,
+  buildItSheet: `/satpin-materials/${slug}/build-it-sheet.pdf`,
   tracingWorkbook: `/satpin-materials/${slug}/tracing-workbook.pdf`,
   sentenceStrips: `/satpin-materials/${slug}/sentence-strips.pdf`,
 });
@@ -346,6 +355,7 @@ type MediaFlags = {
   reader: boolean;
   readerBooklet: boolean;
   paperworkPack: boolean;
+  buildItSheet: boolean;
   tracingWorkbook: boolean;
   sentenceStrips: boolean;
 };
@@ -475,11 +485,11 @@ export default function SatpinPage() {
     (async () => {
       const found = await Promise.all(WEEKS.map(async (w) => {
         const p = mediaPaths(w.slug);
-        const [song, reader, readerBooklet, paperworkPack, tracingWorkbook, sentenceStrips] = await Promise.all([
+        const [song, reader, readerBooklet, paperworkPack, buildItSheet, tracingWorkbook, sentenceStrips] = await Promise.all([
           fileExists(p.song), fileExists(p.reader), fileExists(p.readerBooklet),
-          fileExists(p.paperworkPack), fileExists(p.tracingWorkbook), fileExists(p.sentenceStrips),
+          fileExists(p.paperworkPack), fileExists(p.buildItSheet), fileExists(p.tracingWorkbook), fileExists(p.sentenceStrips),
         ]);
-        return [w.slug, { song, reader, readerBooklet, paperworkPack, tracingWorkbook, sentenceStrips }] as const;
+        return [w.slug, { song, reader, readerBooklet, paperworkPack, buildItSheet, tracingWorkbook, sentenceStrips }] as const;
       }));
       if (cancelled) return;
       setMedia(Object.fromEntries(found));
@@ -737,11 +747,14 @@ export default function SatpinPage() {
 
   /**
    * Week music video — the mvgen lyric-synced video, discovered from the
-   * bucket's satpin-videos/ prefix. Poster is the week's Montree Phonics
-   * letter card (the video's own opening frame), served via the media proxy.
+   * bucket's satpin-videos/ prefix, OR a direct `block.video` URL for a
+   * one-off delivered to a differently-named object in the same public
+   * bucket (wins outright over the API-discovered video). Poster is the
+   * week's Montree Phonics letter card (the video's own opening frame),
+   * served via the media proxy.
    */
   const VideoRow = ({ block }: { block: WeekBlock }) => {
-    const src = videos[block.slug];
+    const src = block.video || videos[block.slug];
     if (!src) return <EmptySlot>Music video — coming soon</EmptySlot>;
     const poster = `/api/montree/media/proxy/letter-cards/letter-card-${String(block.week).padStart(2, '0')}-${block.slug}.png?bucket=dark-phonics`;
     // `src` is a Supabase Storage public object URL (satpin-media's GET hands
@@ -833,6 +846,7 @@ export default function SatpinPage() {
     const paths = mediaPaths(block.slug);
     const downloads = [
       ...(flags?.paperworkPack ? [{ href: paths.paperworkPack, label: 'Worksheet pack · A4' }] : []),
+      ...(flags?.buildItSheet ? [{ href: paths.buildItSheet, label: 'Build-it sheet · A4' }] : []),
       ...(flags?.tracingWorkbook ? [{ href: paths.tracingWorkbook, label: 'Tracing workbook · A4' }] : []),
       ...(flags?.sentenceStrips ? [{ href: paths.sentenceStrips, label: 'Sentence strips · cut-outs' }] : []),
     ];
@@ -845,7 +859,7 @@ export default function SatpinPage() {
         style={{ background: 'rgba(255,255,255,0.03)', borderColor: `rgba(${block.accent},0.16)` }}
       >
         <div className="text-white/25 text-[10px] tracking-wider uppercase mb-1">Workbook material</div>
-        <div className="text-white/35 text-xs mb-2">Story order &middot; matching &middot; yes/no &middot; trace &amp; build</div>
+        <div className="text-white/35 text-xs mb-2">Story order &middot; matching &middot; yes/no &middot; build &middot; trace</div>
         <div className="flex flex-wrap gap-2">
           {downloads.map((d) => (
             <a

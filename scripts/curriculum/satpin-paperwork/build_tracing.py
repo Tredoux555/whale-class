@@ -1,28 +1,43 @@
 # -*- coding: utf-8 -*-
-"""Montree Phonics — trace-and-build workbook (A4 landscape) + sentence strips.
+"""Montree Phonics — build-it sheet + child-written tracing book + sentence
+strips.
 
-One page per book spread. Each page carries the same sentence three ways, in
-the order the child meets it:
+FORMAT CHANGE per Tredoux 2026-07-30 (supersedes part of the 2026-07-29
+locked format): READ IT + BUILD IT + TRACE IT used to share one page. They
+are now split onto two different deliverables so the two activities (cut,
+stick, and rebuild vs. sit down and write) don't compete for the same sheet:
 
-    read it    the model sentence in solid manuscript print, the spread's
-               picture beside it, top right
-    build it   one empty dashed card slot per word — the child rebuilds the
-               sentence with the velcro'd word cards cut from sentence-strips
-    trace it   the whole sentence in dotted skeleton letters on three-line
-               writing guides, with a coloured arrow at the start of every
-               stroke showing which way the pencil goes
+    build-it-sheet.pdf     the cut-out-and-stick work. One page (two if a
+                           book's sentences are too long to sit comfortably
+                           on one): every sentence's solid READ IT model with
+                           its dashed BUILD IT card slots directly beneath —
+                           slots are exactly the sentence-strips word-card
+                           size, unchanged. Nothing else on the sheet.
 
-Model, cards and tracing all come from `stroke_font` — one single-stroke
-alphabet, so the shapes the child reads, builds and traces are the same shapes.
+    tracing-workbook.pdf   the book the child writes themselves, "as if they
+                           were writing the book". Cover ("written by ___"),
+                           then one page per sentence: the scene art, big —
+                           a proper book-page illustration, not a thumbnail —
+                           and the whole sentence in the exact TRACE IT
+                           format (dotted skeleton on the same three-line
+                           guide, same x-height, auto-derived red/blue
+                           stroke-order arrows). No model line, no slots.
 
-The story is never duplicated here: the spreads are imported live from the
-book's own build script (`bookScript` in the letter JSON) and the sentence is
-`nar` (minus its trailing ellipsis) joined to the shouted word.
+    sentence-strips.pdf    unchanged: the word cards the build-it sheet's
+                           slots are sized to.
 
-    python3 build_tracing.py --letter p
+Model, cards and tracing all still come from `stroke_font` — one
+single-stroke alphabet, so the shapes the child reads, builds and traces are
+the same shapes. The story is never duplicated here: spreads are imported
+live from the book's own build script (`bookScript` in the letter JSON) and
+the sentence is `nar` (minus its trailing ellipsis) joined to the shouted
+word.
+
+    python3 build_tracing.py --letter n
     python3 build_tracing.py --letter i --repo-root /path/to/montree --out /tmp/out
 
-Outputs (fixed names): tracing-workbook.pdf
+Outputs (fixed names): build-it-sheet.pdf
+                       tracing-workbook.pdf
                        sentence-strips.pdf
 """
 import argparse
@@ -68,7 +83,9 @@ CW = PW - 2 * MG
 HEAD_Y   = PH - MG - 4.2 * mm          # masthead baseline
 RULE_Y   = PH - MG - 9.0 * mm
 ART_TOP  = PH - MG - 12.0 * mm         # top of the picture, 185 mm
-ART_W, ART_H = 58 * mm, 38 * mm
+ART_W, ART_H = 58 * mm, 38 * mm        # legacy thumbnail size (unused by the
+                                        # tracing book now — kept only as the
+                                        # historical reference the brief cites)
 MODEL_L, MODEL_R = MG, PW - MG - ART_W - 8 * mm
 MODEL_TOP, MODEL_BOT = ART_TOP - 4 * mm, 147 * mm
 MODEL_U  = 6.6 * mm                    # x-height of the model sentence
@@ -78,12 +95,31 @@ SLOT_TOP = 136 * mm
 SLOT_GAP = 4.5 * mm
 
 TRACE_TOP = 104 * mm                   # headline of the first writing line
-TRACE_U   = 12.5 * mm                    # x-height of the tracing letters
+TRACE_U   = 12.5 * mm                    # x-height of the tracing letters —
+                                        # unchanged: same x-height rule as
+                                        # the locked format
 TRACE_GAP = 5 * mm                     # air between the two writing lines
 FOOT_RULE = MG + 6 * mm
 
 CARD_PAD   = 7 * mm                    # card padding either side of the word
 CARD_U_MAX = 5.6 * mm                  # card x-height ceiling
+
+# ---- book-page illustration (tracing book) --------------------------------
+# Freed up by dropping the model sentence + slots from this page: the picture
+# now fills the whole band between the header and the (unchanged) trace-it
+# block, instead of a small thumbnail squeezed in beside the model line.
+BOOKART_BOT = TRACE_TOP + 9.5 * mm + 5.5 * mm   # a hair above the trace-it label
+BOOKART_H   = ART_TOP - BOOKART_BOT             # ~66 mm — a proper book page
+BOOKART_BOX_W = 200 * mm                        # wide box; aspect-fit centres it
+
+# ---- build-it sheet ---------------------------------------------------
+BS_MODEL_U_MAX = 6.0 * mm               # model text ceiling on the build sheet
+BS_TOP_GAP     = 4.0 * mm               # 'read it' label + air -> model top
+BS_MODEL_GAP   = 3.0 * mm               # model bottom -> 'build it' label
+BS_LABEL_GAP   = 2.5 * mm               # 'build it' label -> slot top
+BS_CONTENT_TOP = RULE_Y - 4 * mm
+BS_CONTENT_BOT = FOOT_RULE + 4 * mm
+BS_ROW_AIR     = 3.0 * mm               # minimum breathing space between rows
 
 
 # --------------------------------------------------------- repo plumbing ---
@@ -231,48 +267,99 @@ def section_label(c, x, y, text):
     tracked(c, x, y, ' '.join(text.upper()), 'LabelB', 6.6, 0.10, FAINT)
 
 
-def workbook_page(c, cfg, idx, total, sentence, art_path, card_u):
-    chrome(c, cfg, '%s  ·  page %d of %d' % (cfg['bookTitle'], idx, total))
+def footer(c, left_text, right_text):
+    c.setFont('Label', 7)
+    c.setFillColorRGB(*FAINT)
+    c.drawString(MG, MG + 1.6 * mm, left_text)
+    c.drawRightString(PW - MG, MG + 1.6 * mm, right_text)
 
-    # ---- read it -----------------------------------------------------------
-    draw_image_contained(c, art_path, PW - MG - ART_W, ART_TOP - ART_H,
-                         ART_W, ART_H)
-    section_label(c, MG, ART_TOP - 1 * mm, 'read it')
 
-    # size for BOTH the column width and the band height — the block is
-    # ascenders + line pitch + one descender, or a two-liner drops into the
-    # 'build it' label below it.
-    band = MODEL_TOP - MODEL_BOT
-    size = MODEL_U
-    while size > 3 * mm:
-        size, rows = sf.fit_wrap(sentence, MODEL_R - MODEL_L, size,
-                                 maxlines=2, tracking=0.09)
-        block = 2.6 * size * (len(rows) - 1) + 3 * size
-        if block <= band:
-            break
-        size -= 0.2 * mm
+# --------------------------------------------------- (A) build-it sheet ---
+def row_height(sentence):
+    """Read-it + build-it footprint this sentence needs (no inter-row air)."""
+    size, rows = sf.fit_wrap(sentence, CW - 4 * mm, BS_MODEL_U_MAX,
+                             maxlines=2, tracking=0.09)
     pitch = 2.6 * size
     block = pitch * (len(rows) - 1) + 3 * size
-    top = MODEL_TOP - (band - block) / 2
-    for i, row in enumerate(rows):
-        sf.draw_solid(c, row, MODEL_L, top - 2 * size - i * pitch, size,
-                      tracking=0.09, weight=0.115, color=INK)
+    return BS_TOP_GAP + block + BS_MODEL_GAP + BS_LABEL_GAP + SLOT_H
 
-    # ---- build it ----------------------------------------------------------
-    section_label(c, MG, SLOT_TOP + 5.0 * mm, 'build it')
+
+def build_row(c, band_top, band_bottom, sentence, card_u):
+    """One sentence: solid READ IT model, dashed BUILD IT slots beneath,
+    centred vertically inside [band_bottom, band_top]."""
+    size, rows = sf.fit_wrap(sentence, CW - 4 * mm, BS_MODEL_U_MAX,
+                             maxlines=2, tracking=0.09)
+    pitch = 2.6 * size
+    block = pitch * (len(rows) - 1) + 3 * size
+
     words = sentence.split(' ')
     widths = [card_width(w, card_u) for w in words]
     total_w = sum(widths) + SLOT_GAP * (len(words) - 1)
-    x = MG + (CW - total_w) / 2
+
+    row_total = BS_TOP_GAP + block + BS_MODEL_GAP + BS_LABEL_GAP + SLOT_H
+    band_h = band_top - band_bottom
+    row_top = band_top - (band_h - row_total) / 2   # centred in its band
+
+    section_label(c, MG, row_top, 'read it')
+    model_top = row_top - BS_TOP_GAP
+    for i, row in enumerate(rows):
+        w = sf.text_width(row, size, 0.09)
+        sf.draw_solid(c, row, PW / 2 - w / 2, model_top - 2 * size - i * pitch,
+                      size, tracking=0.09, weight=0.115, color=INK)
+    model_bottom = model_top - block
+
+    build_label_y = model_bottom - BS_MODEL_GAP
+    section_label(c, MG, build_label_y, 'build it')
+
+    slot_top = build_label_y - BS_LABEL_GAP
+    x = PW / 2 - total_w / 2
     for w, cw in zip(words, widths):
         c.setStrokeColorRGB(*SLOT)
         c.setLineWidth(0.9)
         c.setDash(2.4, 2.4)
-        c.roundRect(x, SLOT_TOP - SLOT_H, cw, SLOT_H, 2.0 * mm, stroke=1, fill=0)
+        c.roundRect(x, slot_top - SLOT_H, cw, SLOT_H, 2.0 * mm, stroke=1, fill=0)
         c.setDash()
         x += cw + SLOT_GAP
 
-    # ---- trace it ----------------------------------------------------------
+
+def build_sheet_page(c, cfg, sentences, page_no, total_pages, card_u):
+    chrome(c, cfg, '%s  ·  build it  ·  sheet %d of %d'
+           % (cfg['bookTitle'], page_no, total_pages))
+    n = len(sentences)
+    band_h = (BS_CONTENT_TOP - BS_CONTENT_BOT) / n
+    for i, sentence in enumerate(sentences):
+        top = BS_CONTENT_TOP - i * band_h
+        build_row(c, top, top - band_h, sentence, card_u)
+    footer(c, 'Montree Phonics  ·  build it  ·  letter %s' % cfg['letter'],
+          'sheet %d / %d' % (page_no, total_pages))
+
+
+def build_sheet_pdf(cfg, sentences, card_u, out):
+    content_h = BS_CONTENT_TOP - BS_CONTENT_BOT
+    worst_row = max(row_height(s) for s in sentences) + BS_ROW_AIR
+    rows_per_page = max(1, int(content_h // worst_row))
+    n_pages = -(-len(sentences) // rows_per_page)          # ceil
+    per_page = -(-len(sentences) // n_pages)                # even split
+
+    c = rl_canvas.Canvas(out, pagesize=landscape(A4))
+    c.setTitle('%s — build it sheet' % cfg['bookTitle'])
+    for p in range(n_pages):
+        chunk = sentences[p * per_page:(p + 1) * per_page]
+        build_sheet_page(c, cfg, chunk, p + 1, n_pages, card_u)
+        c.showPage()
+    c.save()
+    return out, n_pages
+
+
+# --------------------------------------------------- (B) tracing book -----
+def trace_page(c, cfg, idx, total, sentence, art_path):
+    chrome(c, cfg, '%s  ·  page %d of %d' % (cfg['bookTitle'], idx, total))
+
+    # ---- the scene art, prominent: a proper book-page illustration --------
+    draw_image_contained(c, art_path, PW / 2 - BOOKART_BOX_W / 2, BOOKART_BOT,
+                         BOOKART_BOX_W, BOOKART_H)
+
+    # ---- trace it — exact existing format, untouched ----------------------
     section_label(c, MG, TRACE_TOP + 9.5 * mm, 'trace it')
     u, rows = sf.fit_wrap(sentence, CW - 4 * mm, TRACE_U, maxlines=2,
                           tracking=0.12)
@@ -288,10 +375,7 @@ def workbook_page(c, cfg, idx, total, sentence, art_path, card_u):
             tracked(c, PW - MG, b + u * 0.5, 'N O W   Y O U', 'LabelB', 6.6,
                     0.10, FAINT, align='right')
 
-    c.setFont('Label', 7)
-    c.setFillColorRGB(*FAINT)
-    c.drawString(MG, MG + 1.6 * mm, 'Montree Phonics  ·  trace and build')
-    c.drawRightString(PW - MG, MG + 1.6 * mm, '%d / %d' % (idx, total))
+    footer(c, 'Montree Phonics  ·  trace and build', '%d / %d' % (idx, total))
 
 
 def cover_page(c, cfg, art_path):
@@ -467,27 +551,36 @@ def build(cfg, repo_root, outdir):
 
     card_u = card_metrics(sentences)
 
+    # ---- (A) build-it sheet -------------------------------------------
+    bs, bs_pages = build_sheet_pdf(cfg, sentences, card_u,
+                                   os.path.join(outdir, 'build-it-sheet.pdf'))
+
+    # ---- (B) tracing book — cover + one page per sentence, trace-it only
     wb = os.path.join(outdir, 'tracing-workbook.pdf')
     c = rl_canvas.Canvas(wb, pagesize=landscape(A4))
     c.setTitle('%s — trace and build workbook' % cfg['bookTitle'])
     cover_page(c, cfg, cover_art)
     c.showPage()
     for i, (s, a) in enumerate(zip(sentences, arts), 1):
-        workbook_page(c, cfg, i, len(sentences), s, a, card_u)
+        trace_page(c, cfg, i, len(sentences), s, a)
         c.showPage()
     c.save()
 
+    # ---- sentence strips (unchanged) -----------------------------------
     st = strips_pdf(cfg, sentences, card_u,
                     os.path.join(outdir, 'sentence-strips.pdf'))
+
     if sf.MISSING:
         print('WARNING unmapped characters:', sorted(sf.MISSING))
+    print('build-it-sheet.pdf   ->', bs, '(%d page%s)'
+          % (bs_pages, '' if bs_pages == 1 else 's'))
     print('tracing-workbook.pdf ->', wb, '(%d pages)' % (len(sentences) + 1))
     print('sentence-strips.pdf  ->', st)
     print('card x-height %.2f mm, card height %.0f mm'
           % (card_u / mm, SLOT_H / mm))
     for i, s in enumerate(sentences, 1):
         print('  p%d  %s' % (i, s))
-    return wb, st
+    return bs, wb, st
 
 
 def main():
