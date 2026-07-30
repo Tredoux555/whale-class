@@ -9,6 +9,10 @@
 // to its legacy flag-gated render — so existing schools are untouched.
 
 export const MENU_ITEM_IDS = [
+  // Paper Scan (Cellphoneless Classrooms) — photograph the handwritten record
+  // sheet after class; Claude reads it, the teacher reviews, it lands on the
+  // children's profiles. Gated by the 'paper_scan' feature flag (migration 308).
+  'paper_scan',
   'guru',
   'curriculum',
   'manage_students',
@@ -60,7 +64,10 @@ function isMenuItemId(x: unknown): x is MenuItemId {
 // Calendar, Meeting Notes, Messages, Curriculum, Classroom Overview + all extras).
 // Menu Management is hidden, so this order is the fixed teacher experience.
 // Wrap Up leads — it's the daily photo review/confirm loop and the ONLY path to it.
+// Paper Scan joins the core five (Jul 2026) — for a cellphoneless classroom it
+// is the daily entry point, so it leads the list ahead of Wrap Up.
 const CORE_VISIBLE: MenuItemId[] = [
+  'paper_scan',
   'photo_audit',
   'parent_manager',
   'manage_students',

@@ -2,6 +2,12 @@
 // Feature flag type definitions
 
 export type FeatureKey =
+  // Paper Scan (Cellphoneless Classrooms) — teachers handwrite observations on a
+  // paper record sheet during class, then photograph the sheet in the PWA after
+  // class. Claude vision extracts per-child records, the teacher reviews every
+  // read, and only approved rows reach the children's profiles. Migration 308.
+  // Default OFF — enable per school via montree_school_features until Phase-0 accuracy is proven.
+  | 'paper_scan'
   | 'voice_observations'
   | 'raz_reading_tracker'
   | 'weekly_plan_upload'
