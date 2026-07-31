@@ -126,6 +126,22 @@ covered by The ___ Sat!. Three pen-and-ink MJ prompts are queued in the doc for 
 the sheet template build is next session; art will file at
 `phonics-images/satpin-v2/cvc/<week>/`.
 
+**CVC line complete + alphabet series + MJ run:** The per-week CVC sentence line
+specced above is now fully authored and machine-verified end to end: one funny
+100%-decodable sentence per week, w4-w27 (w3 stays covered by "The ___ Sat!").
+Highlights: w7 "sam naps in a tin" ... w16 "a rat runs up dad" ... w27 "a quick
+duck quits a quiz". Also new: a 5-sentence alphabet mini-series (23 words,
+machine-verified, covers all 26 letters): a pig in a wig - a fox in a box - a
+duck licks jam - a vet hugs a yak - a quick rat zips. `CVC_SENTENCE_LINE.md` now
+holds the full w3-w27 table, the alphabet series + coverage proof, and 26 new
+pen-and-ink MJ prompts with IDs (CVC-W07...W27, ABC-1...5) alongside the existing
+w4-w6 three -- 29 prompts total. "CVC Phonics New.docx" was delivered to
+Tredoux's Desktop + Downloads (not in the repo, do not commit it). A browser
+worker was submitting all 29 prompts into Midjourney in Tredoux's Chrome as this
+was written -- results will land in Tredoux's MJ feed; picks are owed, then next
+session builds the trace/read/match sheet template (art filing:
+`phonics-images/satpin-v2/cvc/<week>/`).
+
 ---
 
 ## 🔒 Jul 29 (Cowork) — SATPIN PAPERWORK PIPELINE LOCKED IN as approved convention (do not redesign)

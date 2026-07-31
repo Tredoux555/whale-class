@@ -2964,10 +2964,12 @@ not redesign the layout, font set, or stroke rule without Tredoux's explicit say
   pig/tiger/taxi/sock/alligator, n → tiger/taxi/alligator/pig/igloo. (Tredoux tried a
   prev-letter-vocab rule — p←t/i←p/n←i — on 2026-07-30 and reversed it the same night; do
   not reintroduce that rule.)
-- **NEW material line specced (not yet built)**: a per-week funny 100%-decodable CVC sentence
-  (child traces, reads, matches picture; feeds a personal dictionary) — see
-  `docs/curriculum/montree-phonics/CVC_SENTENCE_LINE.md` (sentences machine-verified, MJ prompts
-  queued for Tredoux to run, sheet template build owed next session).
+- **CVC sentence line — fully authored & machine-verified**: a per-week funny 100%-decodable
+  CVC sentence (child traces, reads, matches picture; feeds a personal dictionary), now complete
+  w4–w27 (w3 covered by "The ___ Sat!"), plus a 5-sentence all-alphabet mini-series (23 words,
+  covers all 26 letters) — see `docs/curriculum/montree-phonics/CVC_SENTENCE_LINE.md`. 29
+  pen-and-ink MJ prompts (CVC-W07…W27, ABC-1…5, plus the original W4–6 three) were submitted to
+  Midjourney 2026-07-30. Owed: art picks (Tredoux), then the trace/read/match sheet template.
 - **Tracing outputs** (`build_tracing.py`, format split 2026-07-30 per Tredoux — supersedes the
   original single combined `tracing-workbook.pdf`): now emits **`build-it-sheet.pdf`** (A4
   LANDSCAPE, auto-packed onto however many pages the sentence rows need) — READ IT (solid
