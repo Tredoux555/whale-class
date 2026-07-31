@@ -108,6 +108,24 @@ iguana, inchworm, insect, infant — "is the X in the nest?"). `letters/{p,i,n}.
 the Song and Music video rows — computed URL `letter-cards/letter-card-NN-<slug>.png` with
 the `?download=` convention, no probe needed (all 27 verified 200).
 
+**Night wave — funny yes/no restored + pack reorder + CVC line:** (A) Tredoux reversed his own
+prev-letter-vocab 'no'-item rule from earlier tonight — 'no' items are common FUNNY words
+chosen for giggle factor ("is the taxi in the nest?"), NOT restricted to prior-week vocab.
+Restored sets: p → tiger/sock/taxi/snake/alligator, i → pig/tiger/taxi/sock/alligator,
+n → tiger/taxi/alligator/pig/igloo. (B) Pack page ORDER changed per Tredoux's classroom
+pedagogy: yes/no ×2pp FIRST (warm-up, becomes the stapled cover) → story order (engage) →
+match (challenge) — the pack is reinforcement/"I can do it," not a learning exercise; children
+learn through repetition. Still 4pp/10q. `letters/{p,i,n}.json` + `build_paperwork.py` updated,
+`paperwork-pack.pdf` rebuilt for p/i/n and eyeballed. (C) Week 3 gained a `reader:` entry in
+`page.tsx`: "The ___ Sat!" (slug `the-sat`, `books_def.py`) — Read-along + Print booklet A5,
+both PDFs already live (200 verified). (D) NEW material line specced:
+`docs/curriculum/montree-phonics/CVC_SENTENCE_LINE.md` — a per-week funny 100%-decodable CVC
+sentence (child traces, reads, matches picture; personal dictionary). Machine-verified
+sentences: W4 "pat spat at a tap" · W5 "pat spat a pip" · W6 "an ant naps in a pan"; W3 is
+covered by The ___ Sat!. Three pen-and-ink MJ prompts are queued in the doc for Tredoux to run;
+the sheet template build is next session; art will file at
+`phonics-images/satpin-v2/cvc/<week>/`.
+
 ---
 
 ## 🔒 Jul 29 (Cowork) — SATPIN PAPERWORK PIPELINE LOCKED IN as approved convention (do not redesign)

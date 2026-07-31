@@ -2949,15 +2949,25 @@ not redesign the layout, font set, or stroke rule without Tredoux's explicit say
   the book, 5 no from prior-week vocab via picture-bank photos, avoiding anything the animal could
   plausibly eat/do), and `artDir`.
 - **Paperwork pack layout** (`build_paperwork.py`, A4 portrait, `paperwork-pack.pdf`, 4pp):
-  story order (5 pics, fixed shuffle, 24mm write-in boxes 1–5) · match (sentences left, pics
-  right, draw a line) · yes-or-no ×2pp (10 questions, small photo, ✓/✗ 20mm boxes). House fonts
-  only, via `MONTREE_CANVAS_FONTS` (default `/root/.claude/skills/canvas-design/canvas-fonts/`):
-  YoungSerif/Outfit/Lora/WorkSans. (3pp/5q variant tried and REVERTED same day, 2026-07-30 —
-  duplex prints the 4pp pack neatly on 2 sheets; do not shrink again.)
-- **'No' item rule** (locked): the 5 'no' items in each letter's JSON are the PREVIOUS letter's
-  five object-basket words, question phrasing per that letter's template — p←t (turtle tiger
-  toothbrush tomato taxi, "did the pig eat a X?"), i←p (pig pen penguin pumpkin panda, "did the X
-  go into the igloo?"), n←i (igloo iguana inchworm insect infant, "is the X in the nest?").
+  page order is **yes-or-no ×2pp FIRST** (warm-up, becomes the stapled cover; 10 questions,
+  small photo, ✓/✗ 20mm boxes) · story order (5 pics, fixed shuffle, 24mm write-in boxes 1–5,
+  engage) · match (sentences left, pics right, draw a line, challenge) — **order locked per
+  Tredoux** (2026-07-30, reversing the previous order): warm-up → engage → challenge; the pack
+  is reinforcement/"I can do it," not a learning exercise — children learn through repetition,
+  so easiest-first beats a teaching sequence. House fonts only, via `MONTREE_CANVAS_FONTS`
+  (default `/root/.claude/skills/canvas-design/canvas-fonts/`): YoungSerif/Outfit/Lora/WorkSans.
+  (3pp/5q variant tried and REVERTED same day, 2026-07-30 — duplex prints the 4pp pack neatly
+  on 2 sheets; do not shrink again.)
+- **'No' item rule** (locked): the 5 'no' items in each letter's JSON are common **FUNNY** words
+  chosen for giggle factor (e.g. "is the taxi in the nest?") — **NOT** restricted to the
+  previous letter's vocabulary. Current sets: p → tiger/sock/taxi/snake/alligator, i →
+  pig/tiger/taxi/sock/alligator, n → tiger/taxi/alligator/pig/igloo. (Tredoux tried a
+  prev-letter-vocab rule — p←t/i←p/n←i — on 2026-07-30 and reversed it the same night; do
+  not reintroduce that rule.)
+- **NEW material line specced (not yet built)**: a per-week funny 100%-decodable CVC sentence
+  (child traces, reads, matches picture; feeds a personal dictionary) — see
+  `docs/curriculum/montree-phonics/CVC_SENTENCE_LINE.md` (sentences machine-verified, MJ prompts
+  queued for Tredoux to run, sheet template build owed next session).
 - **Tracing outputs** (`build_tracing.py`, format split 2026-07-30 per Tredoux — supersedes the
   original single combined `tracing-workbook.pdf`): now emits **`build-it-sheet.pdf`** (A4
   LANDSCAPE, auto-packed onto however many pages the sentence rows need) — READ IT (solid
