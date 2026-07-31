@@ -488,3 +488,284 @@ Once Tredoux has generated and picked the art for these scenes:
 5. The full 27-week CVC sentence set (w3–w27) and the 5-sentence Alphabet
    Series are now both fully approved and machine-verified as of 2026-07-31
    — no further sentence work is needed; remaining work is art + layout.
+
+
+## Photo-real variants (course change, Tredoux 2026-07-30 night — hyper-real photos are the production pick; pen-and-ink set remains above for reference)
+
+Course change: Tredoux needs HYPER-REALISTIC PHOTOS instead of pen-and-ink for
+these 29 scenes — "disturbingly real looking." Each prompt below enacts the
+same sentence literally as ONE comic photographic scene, with real animals
+(never toys/plush, per house rule) and real children/adults standing in for
+Pat, Sam, dad, the kid, and the vet. Style template (adapted per scene, core
+kept intact): "ultra-realistic professional photograph of `<scene>`,
+hyper-detailed, shot on a full-frame camera with a sharp prime lens, natural
+cinematic lighting, shallow depth of field, unsettlingly lifelike detail, no
+text, no words, no letters, no numbers, no watermark --ar 3:2".
+
+#### [ABC-1-REAL|wig] — "a pig in a wig"
+
+> ultra-realistic professional photograph of a real pink pig wearing an
+> enormous curly powdered white wig, strutting proudly across a rustic
+> farmyard with its snout tilted up in comic pride, hyper-detailed, shot on a
+> full-frame camera with a sharp prime lens, natural cinematic lighting,
+> shallow depth of field, unsettlingly lifelike detail, no text, no words, no
+> letters, no numbers, no watermark --ar 3:2
+
+#### [ABC-2-REAL|box] — "a fox in a box"
+
+> ultra-realistic professional photograph of a real red fox curled up snugly
+> inside a plain cardboard box, peeking over the box's edge with an alert,
+> sly expression, hyper-detailed, shot on a full-frame camera with a sharp
+> prime lens, natural cinematic lighting, shallow depth of field,
+> unsettlingly lifelike detail, no text, no words, no letters, no numbers, no
+> watermark --ar 3:2
+
+#### [ABC-3-REAL|jam] — "a duck licks jam"
+
+> ultra-realistic professional photograph of a real white duck with a glossy
+> bill, a smear of red jam dripping off its bill as its tongue reaches to
+> lick it clean, close-up macro detail on water droplets and feathers,
+> hyper-detailed, shot on a full-frame camera with a sharp prime lens,
+> natural cinematic lighting, shallow depth of field, unsettlingly lifelike
+> detail, no text, no words, no letters, no numbers, no watermark --ar 3:2
+
+#### [ABC-4-REAL|yak] — "a vet hugs a yak"
+
+> ultra-realistic professional photograph of a real veterinarian in blue
+> scrubs wrapping both arms around the neck of a huge shaggy yak in a warm
+> hug, both looking content, outdoors on a mountain pasture, hyper-detailed,
+> shot on a full-frame camera with a sharp prime lens, natural cinematic
+> lighting, shallow depth of field, unsettlingly lifelike detail, no text, no
+> words, no letters, no numbers, no watermark --ar 3:2
+
+#### [ABC-5-REAL|zips] — "a quick rat zips"
+
+> ultra-realistic professional photograph of a real brown rat mid-sprint
+> across a wooden floor, motion-frozen with legs blurred in speed, cheeks
+> puffed with effort, captured in sharp focus against a softly blurred
+> background, hyper-detailed, shot on a full-frame camera with a sharp prime
+> lens, natural cinematic lighting, shallow depth of field, unsettlingly
+> lifelike detail, no text, no words, no letters, no numbers, no watermark
+> --ar 3:2
+
+#### [W04-REAL|tap] — "pat spat at a tap"
+
+> ultra-realistic professional photograph of a real cheeky young boy
+> standing on tiptoes at a bathroom sink, cheeks puffed out, spitting a
+> comic jet of water in a wide arc toward the wall-mounted tap in front of
+> him, water droplets frozen mid-air, hyper-detailed, shot on a full-frame
+> camera with a sharp prime lens, natural cinematic lighting, shallow depth
+> of field, unsettlingly lifelike detail, no text, no words, no letters, no
+> numbers, no watermark --ar 3:2
+
+#### [W05-REAL|pip] — "pat spat a pip"
+
+> ultra-realistic professional photograph of the same real young boy, mouth
+> puckered, spitting a single small fruit pip in a comic arc through the air
+> in front of him, the pip frozen mid-flight in sharp focus, hyper-detailed,
+> shot on a full-frame camera with a sharp prime lens, natural cinematic
+> lighting, shallow depth of field, unsettlingly lifelike detail, no text, no
+> words, no letters, no numbers, no watermark --ar 3:2
+
+#### [W06-REAL|pan] — "an ant naps in a pan"
+
+> ultra-realistic macro photograph of a real ant fast asleep, curled up
+> snugly inside a large metal frying pan that dwarfs it, one tiny leg
+> dangling over the pan's rim, extreme macro detail on the ant's exoskeleton
+> and the pan's brushed metal texture, hyper-detailed, shot on a full-frame
+> camera with a sharp macro prime lens, natural cinematic lighting, shallow
+> depth of field, unsettlingly lifelike detail, no text, no words, no
+> letters, no numbers, no watermark --ar 3:2
+
+#### [CVC-W07-REAL|tin] — "sam naps in a tin"
+
+> ultra-realistic professional photograph of a real young boy named Sam
+> curled up fast asleep inside a large open metal tin can, one arm dangling
+> comfortably over the rim, a soft sleepy smile on his face, hyper-detailed,
+> shot on a full-frame camera with a sharp prime lens, natural cinematic
+> lighting, shallow depth of field, unsettlingly lifelike detail, no text, no
+> words, no letters, no numbers, no watermark --ar 3:2
+
+#### [CVC-W08-REAL|sand] — "a sad dad sat in sand"
+
+> ultra-realistic professional photograph of a real sad-looking dad sitting
+> cross-legged in a large mounded pile of sand on a beach, a single real
+> tear rolling down his cheek, arms crossed grumpily, sand heaped around
+> him, hyper-detailed, shot on a full-frame camera with a sharp prime lens,
+> natural cinematic lighting, shallow depth of field, unsettlingly lifelike
+> detail, no text, no words, no letters, no numbers, no watermark --ar 3:2
+
+#### [CVC-W09-REAL|pit] — "a pig digs a pit"
+
+> ultra-realistic professional photograph of a real chubby pig energetically
+> digging a deep pit in the dirt with its front hooves, clumps of soil
+> flying up behind it, only its curly tail and rear end visible above the
+> ground, hyper-detailed, shot on a full-frame camera with a sharp prime
+> lens, natural cinematic lighting, shallow depth of field, unsettlingly
+> lifelike detail, no text, no words, no letters, no numbers, no watermark
+> --ar 3:2
+
+#### [CVC-W10-REAL|pot] — "a dog sits on a pot"
+
+> ultra-realistic professional photograph of a real dog sitting proudly on
+> top of a large upside-down metal cooking pot like a throne, chest puffed
+> out, tail wagging mid-motion, hyper-detailed, shot on a full-frame camera
+> with a sharp prime lens, natural cinematic lighting, shallow depth of
+> field, unsettlingly lifelike detail, no text, no words, no letters, no
+> numbers, no watermark --ar 3:2
+
+#### [CVC-W11-REAL|tips] — "a cat tips a pot"
+
+> ultra-realistic professional photograph of a real mischievous cat pushing
+> a large cooking pot over with one paw, the pot caught mid-tip about to
+> topple on a kitchen floor, the cat's eyes fixed on it with a sly
+> expression, hyper-detailed, shot on a full-frame camera with a sharp prime
+> lens, natural cinematic lighting, shallow depth of field, unsettlingly
+> lifelike detail, no text, no words, no letters, no numbers, no watermark
+> --ar 3:2
+
+#### [CVC-W12-REAL|dips] — "a kid dips a dog"
+
+> ultra-realistic professional photograph of a real small child dunking a
+> wriggling dog into a large washtub of sudsy water in a backyard, the dog
+> mid-splash with a startled expression, water droplets frozen in the air,
+> hyper-detailed, shot on a full-frame camera with a sharp prime lens,
+> natural cinematic lighting, shallow depth of field, unsettlingly lifelike
+> detail, no text, no words, no letters, no numbers, no watermark --ar 3:2
+
+#### [CVC-W13-REAL|sock] — "a pig kicks a sock"
+
+> ultra-realistic professional photograph of a real pig mid comic
+> karate-kick, one hoof raised high, sending a single sock flying through
+> the air in front of it, motion-frozen action shot, hyper-detailed, shot on
+> a full-frame camera with a sharp prime lens, natural cinematic lighting,
+> shallow depth of field, unsettlingly lifelike detail, no text, no words,
+> no letters, no numbers, no watermark --ar 3:2
+
+#### [CVC-W14-REAL|egg] — "a pig sits on an egg"
+
+> ultra-realistic professional photograph of a real plump pig perched
+> awkwardly on top of one giant egg, legs splayed wide for balance, caught
+> mid-wobble, hyper-detailed, shot on a full-frame camera with a sharp prime
+> lens, natural cinematic lighting, shallow depth of field, unsettlingly
+> lifelike detail, no text, no words, no letters, no numbers, no watermark
+> --ar 3:2
+
+#### [CVC-W15-REAL|cup] — "a pup sat in a cup"
+
+> ultra-realistic macro photograph of a real tiny puppy sitting scrunched up
+> snugly inside an oversized teacup, ears drooping over the rim, looking
+> cozy and squished, hyper-detailed, shot on a full-frame camera with a
+> sharp prime lens, natural cinematic lighting, shallow depth of field,
+> unsettlingly lifelike detail, no text, no words, no letters, no numbers,
+> no watermark --ar 3:2
+
+#### [CVC-W16-REAL|runs] — "a rat runs up dad"
+
+> ultra-realistic professional photograph of a real small rat scurrying up
+> a startled dad's leg and torso, dad's arms flailing and hair standing on
+> end in surprise, the rat mid-climb near his shoulder, hyper-detailed, shot
+> on a full-frame camera with a sharp prime lens, natural cinematic
+> lighting, shallow depth of field, unsettlingly lifelike detail, no text,
+> no words, no letters, no numbers, no watermark --ar 3:2
+
+#### [CVC-W17-REAL|pan] — "a hen sat on a hot pan"
+
+> ultra-realistic professional photograph of a real hen sitting on top of a
+> metal frying pan over a stove flame, feathers puffed up and eyes wide, one
+> foot lifted mid-hop from the heat, hyper-detailed, shot on a full-frame
+> camera with a sharp prime lens, natural cinematic lighting, shallow depth
+> of field, unsettlingly lifelike detail, no text, no words, no letters, no
+> numbers, no watermark --ar 3:2
+
+#### [CVC-W18-REAL|bun] — "a bug naps in a bun"
+
+> ultra-realistic macro photograph of a round little bug fast asleep tucked
+> snugly inside a split hamburger bun, extreme macro detail on the bug's
+> texture and the bun's crumb, hyper-detailed, shot on a full-frame camera
+> with a sharp macro prime lens, natural cinematic lighting, shallow depth
+> of field, unsettlingly lifelike detail, no text, no words, no letters, no
+> numbers, no watermark --ar 3:2
+
+#### [CVC-W19-REAL|fan] — "a fat cat sits on a fan"
+
+> ultra-realistic professional photograph of a real round, chubby cat
+> sitting directly on top of a spinning electric fan, fur comically blown
+> back and whiskers flapping in the breeze, hyper-detailed, shot on a
+> full-frame camera with a sharp prime lens, natural cinematic lighting,
+> shallow depth of field, unsettlingly lifelike detail, no text, no words,
+> no letters, no numbers, no watermark --ar 3:2
+
+#### [CVC-W20-REAL|leg] — "a dog licks a leg"
+
+> ultra-realistic professional photograph of a real dog with its tongue
+> out, enthusiastically licking a person's bare leg/shin, the person's face
+> showing ticklish surprise, saliva droplets frozen in sharp detail,
+> hyper-detailed, shot on a full-frame camera with a sharp prime lens,
+> natural cinematic lighting, shallow depth of field, unsettlingly lifelike
+> detail, no text, no words, no letters, no numbers, no watermark --ar 3:2
+
+#### [CVC-W21-REAL|jam] — "a pig jogs in jam"
+
+> ultra-realistic professional photograph of a real pig jogging
+> determinedly through a wide puddle of red jam on a kitchen floor, jam
+> splashes and footprints trailing behind it, sticky droplets frozen
+> mid-splash, hyper-detailed, shot on a full-frame camera with a sharp prime
+> lens, natural cinematic lighting, shallow depth of field, unsettlingly
+> lifelike detail, no text, no words, no letters, no numbers, no watermark
+> --ar 3:2
+
+#### [CVC-W22-REAL|vet] — "a vet hugs a big pig"
+
+> ultra-realistic professional photograph of a real kind veterinarian in a
+> white coat wrapping both arms around an enormous pig in a big warm hug,
+> the pig's front hooves lifted off the ground, both looking happy,
+> hyper-detailed, shot on a full-frame camera with a sharp prime lens,
+> natural cinematic lighting, shallow depth of field, unsettlingly lifelike
+> detail, no text, no words, no letters, no numbers, no watermark --ar 3:2
+
+#### [CVC-W23-REAL|wig] — "a pig wins a wet wig"
+
+> ultra-realistic professional photograph of a real pig standing on a small
+> winner's podium wearing a dripping-wet curly wig, holding a ribbon trophy
+> in its mouth with a proud expression, water dripping visibly off the wig,
+> hyper-detailed, shot on a full-frame camera with a sharp prime lens,
+> natural cinematic lighting, shallow depth of field, unsettlingly lifelike
+> detail, no text, no words, no letters, no numbers, no watermark --ar 3:2
+
+#### [CVC-W24-REAL|box] — "a fox sits in a box"
+
+> ultra-realistic professional photograph of a real fox curled up neatly
+> inside a small cardboard box, ears poking over the edges, tail wrapped
+> around itself, content expression, hyper-detailed, shot on a full-frame
+> camera with a sharp prime lens, natural cinematic lighting, shallow depth
+> of field, unsettlingly lifelike detail, no text, no words, no letters, no
+> numbers, no watermark --ar 3:2
+
+#### [CVC-W25-REAL|yam] — "a yak licks a yam"
+
+> ultra-realistic professional photograph of a real shaggy yak with its
+> huge tongue out, licking a giant yam held between its front hooves, eyes
+> crossed in concentration, hyper-detailed, shot on a full-frame camera with
+> a sharp prime lens, natural cinematic lighting, shallow depth of field,
+> unsettlingly lifelike detail, no text, no words, no letters, no numbers,
+> no watermark --ar 3:2
+
+#### [CVC-W26-REAL|zips] — "a bug zips up a yak"
+
+> ultra-realistic macro photograph of a tiny bug zooming rapidly up the
+> back of a tall shaggy yak, motion blur trailing behind the bug, the yak
+> glancing back over its shoulder in surprise, hyper-detailed, shot on a
+> full-frame camera with a sharp prime lens, natural cinematic lighting,
+> shallow depth of field, unsettlingly lifelike detail, no text, no words,
+> no letters, no numbers, no watermark --ar 3:2
+
+#### [CVC-W27-REAL|quiz] — "a quick duck quits a quiz"
+
+> ultra-realistic professional photograph of a real duck mid-sprint away
+> from a small school desk with a quiz paper and pencil left behind,
+> feathers ruffled and captured mid-motion with a blurred wing-flap,
+> motion-frozen action shot, hyper-detailed, shot on a full-frame camera
+> with a sharp prime lens, natural cinematic lighting, shallow depth of
+> field, unsettlingly lifelike detail, no text, no words, no letters, no
+> numbers, no watermark --ar 3:2

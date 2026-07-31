@@ -2969,7 +2969,12 @@ not redesign the layout, font set, or stroke rule without Tredoux's explicit say
   w4–w27 (w3 covered by "The ___ Sat!"), plus a 5-sentence all-alphabet mini-series (23 words,
   covers all 26 letters) — see `docs/curriculum/montree-phonics/CVC_SENTENCE_LINE.md`. 29
   pen-and-ink MJ prompts (CVC-W07…W27, ABC-1…5, plus the original W4–6 three) were submitted to
-  Midjourney 2026-07-30. Owed: art picks (Tredoux), then the trace/read/match sheet template.
+  Midjourney 2026-07-30. 🔒 **Course change, same night, per Tredoux**: production art style for
+  the CVC sentence line is now HYPER-REAL PHOTOGRAPHY, not pen-and-ink — both prompt sets live in
+  `CVC_SENTENCE_LINE.md`, the `-REAL` variants are the pick. This extends the photo-real precedent
+  from the P/I/N initial-sound books to the CVC line; the pen-and-ink house style still governs
+  the week-7+ decodable readers. Owed: art picks (Tredoux, photo-real set), then the
+  trace/read/match sheet template.
 - **Tracing outputs** (`build_tracing.py`, format split 2026-07-30 per Tredoux — supersedes the
   original single combined `tracing-workbook.pdf`): now emits **`build-it-sheet.pdf`** (A4
   LANDSCAPE, auto-packed onto however many pages the sentence rows need) — READ IT (solid
