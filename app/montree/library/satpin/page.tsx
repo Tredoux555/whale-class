@@ -358,6 +358,7 @@ const mediaPaths = (slug: string) => ({
   buildItSheet: `/satpin-materials/${slug}/build-it-sheet.pdf`,
   tracingWorkbook: `/satpin-materials/${slug}/tracing-workbook.pdf`,
   sentenceStrips: `/satpin-materials/${slug}/sentence-strips.pdf`,
+  cvcSheet: `/satpin-materials/${slug}/cvc-sheet.pdf`,
 });
 
 type MediaFlags = {
@@ -368,6 +369,7 @@ type MediaFlags = {
   buildItSheet: boolean;
   tracingWorkbook: boolean;
   sentenceStrips: boolean;
+  cvcSheet: boolean;
 };
 
 /** HEAD probe — 2xx means the file is on disk. Network errors read as absent. */
@@ -506,11 +508,12 @@ export default function SatpinPage() {
     (async () => {
       const found = await Promise.all(WEEKS.map(async (w) => {
         const p = mediaPaths(w.slug);
-        const [song, reader, readerBooklet, paperworkPack, buildItSheet, tracingWorkbook, sentenceStrips] = await Promise.all([
+        const [song, reader, readerBooklet, paperworkPack, buildItSheet, tracingWorkbook, sentenceStrips, cvcSheet] = await Promise.all([
           fileExists(p.song), fileExists(p.reader), fileExists(p.readerBooklet),
           fileExists(p.paperworkPack), fileExists(p.buildItSheet), fileExists(p.tracingWorkbook), fileExists(p.sentenceStrips),
+          fileExists(p.cvcSheet),
         ]);
-        return [w.slug, { song, reader, readerBooklet, paperworkPack, buildItSheet, tracingWorkbook, sentenceStrips }] as const;
+        return [w.slug, { song, reader, readerBooklet, paperworkPack, buildItSheet, tracingWorkbook, sentenceStrips, cvcSheet }] as const;
       }));
       if (cancelled) return;
       setMedia(Object.fromEntries(found));
@@ -891,6 +894,7 @@ export default function SatpinPage() {
       ...(flags?.buildItSheet ? [{ href: paths.buildItSheet, label: 'Build-it sheet · A4' }] : []),
       ...(flags?.tracingWorkbook ? [{ href: paths.tracingWorkbook, label: 'Tracing workbook · A4' }] : []),
       ...(flags?.sentenceStrips ? [{ href: paths.sentenceStrips, label: 'Sentence strips · cut-outs' }] : []),
+      ...(flags?.cvcSheet ? [{ href: paths.cvcSheet, label: 'CVC sentence sheet · A4' }] : []),
     ];
 
     if (downloads.length === 0) return <EmptySlot>Workbook material — coming soon</EmptySlot>;
