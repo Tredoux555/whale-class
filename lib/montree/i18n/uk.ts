@@ -5594,4 +5594,20 @@ export const uk: Record<string, string> = {
   'paperScan.commitFailed': 'Не вдалося зберегти у профілі. Спробуйте ще раз.',
   'paperScan.commitSuccess': 'Збережено у профілі дітей.',
 
+  // ── School Features (self-serve Feature Switchboard) ──────────────────
+  'schoolFeatures.menuLabel': 'Функції школи',
+  'schoolFeatures.title': 'Функції школи',
+  'schoolFeatures.subtitle': 'Вмикайте та вимикайте інструменти для всієї школи.',
+  'schoolFeatures.appliesToAll': 'Зміни діють для всіх педагогів школи.',
+  'schoolFeatures.loading': 'Завантаження функцій…',
+  'schoolFeatures.loadFailed': 'Не вдалося завантажити функції.',
+  'schoolFeatures.empty': 'Поки немає функцій для показу.',
+  'schoolFeatures.lockedTitle': 'Налаштування школи закриті',
+  'schoolFeatures.lockedBody': 'Попросіть Montree відкрити налаштування школи — після цього ви зможете самі вмикати й вимикати інструменти.',
+  'schoolFeatures.enabledToast': '{name} увімкнено',
+  'schoolFeatures.disabledToast': '{name} вимкнено',
+  'schoolFeatures.toggleFailed': 'Не вдалося зберегти зміну.',
+  'schoolFeatures.menuUpdated': 'Меню оновлено для {count} педагогів.',
+  'schoolFeatures.menuBadge': 'Меню',
+  'schoolFeatures.premiumBadge': 'PRO',
 };

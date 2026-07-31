@@ -5597,4 +5597,20 @@ export const de: Record<string, string> = {
   'paperScan.commitFailed': 'Speichern in den Profilen fehlgeschlagen. Bitte erneut versuchen.',
   'paperScan.commitSuccess': 'In den Profilen der Kinder gespeichert.',
 
+  // ── School Features (self-serve Feature Switchboard) ──────────────────
+  'schoolFeatures.menuLabel': 'Schulfunktionen',
+  'schoolFeatures.title': 'Schulfunktionen',
+  'schoolFeatures.subtitle': 'Schalten Sie Werkzeuge für Ihre Schule ein oder aus.',
+  'schoolFeatures.appliesToAll': 'Änderungen gelten für alle Lehrkräfte Ihrer Schule.',
+  'schoolFeatures.loading': 'Funktionen werden geladen…',
+  'schoolFeatures.loadFailed': 'Die Funktionen konnten nicht geladen werden.',
+  'schoolFeatures.empty': 'Noch keine Funktionen vorhanden.',
+  'schoolFeatures.lockedTitle': 'Die Schulsteuerung ist gesperrt',
+  'schoolFeatures.lockedBody': 'Bitten Sie Montree, die Schulsteuerung freizuschalten — danach können Sie Werkzeuge selbst ein- und ausschalten.',
+  'schoolFeatures.enabledToast': '{name} ist eingeschaltet',
+  'schoolFeatures.disabledToast': '{name} ist ausgeschaltet',
+  'schoolFeatures.toggleFailed': 'Die Änderung konnte nicht gespeichert werden.',
+  'schoolFeatures.menuUpdated': 'Menüs für {count} Lehrkräfte aktualisiert.',
+  'schoolFeatures.menuBadge': 'Menü',
+  'schoolFeatures.premiumBadge': 'PRO',
 };

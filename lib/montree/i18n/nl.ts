@@ -5597,4 +5597,20 @@ export const nl: Record<string, string> = {
   'paperScan.commitFailed': 'Opslaan in de profielen is mislukt. Probeer het opnieuw.',
   'paperScan.commitSuccess': 'Opgeslagen in de profielen van de kinderen.',
 
+  // ── School Features (self-serve Feature Switchboard) ──────────────────
+  'schoolFeatures.menuLabel': 'Schoolfuncties',
+  'schoolFeatures.title': 'Schoolfuncties',
+  'schoolFeatures.subtitle': 'Zet hulpmiddelen aan of uit voor de hele school.',
+  'schoolFeatures.appliesToAll': 'Wijzigingen gelden voor alle leerkrachten van de school.',
+  'schoolFeatures.loading': 'Functies worden geladen…',
+  'schoolFeatures.loadFailed': 'De functies konden niet worden geladen.',
+  'schoolFeatures.empty': 'Nog geen functies om te tonen.',
+  'schoolFeatures.lockedTitle': 'De schoolinstellingen zijn vergrendeld',
+  'schoolFeatures.lockedBody': 'Vraag Montree om de schoolinstellingen te ontgrendelen; daarna kunt u hulpmiddelen zelf aan- of uitzetten.',
+  'schoolFeatures.enabledToast': '{name} staat aan',
+  'schoolFeatures.disabledToast': '{name} staat uit',
+  'schoolFeatures.toggleFailed': 'De wijziging kon niet worden opgeslagen.',
+  'schoolFeatures.menuUpdated': 'Menu’s bijgewerkt voor {count} leerkrachten.',
+  'schoolFeatures.menuBadge': 'Menu',
+  'schoolFeatures.premiumBadge': 'PRO',
 };

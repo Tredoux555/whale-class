@@ -5597,4 +5597,20 @@ export const ja: Record<string, string> = {
   'paperScan.commitFailed': 'プロフィールに保存できませんでした。もう一度お試しください。',
   'paperScan.commitSuccess': 'お子さまのプロフィールに保存しました。',
 
+  // ── School Features (self-serve Feature Switchboard) ──────────────────
+  'schoolFeatures.menuLabel': '学校の機能',
+  'schoolFeatures.title': '学校の機能',
+  'schoolFeatures.subtitle': '学校全体で使う機能をオン・オフできます。',
+  'schoolFeatures.appliesToAll': '変更は学校のすべての先生に適用されます。',
+  'schoolFeatures.loading': '機能を読み込んでいます…',
+  'schoolFeatures.loadFailed': '機能を読み込めませんでした。',
+  'schoolFeatures.empty': '表示できる機能はまだありません。',
+  'schoolFeatures.lockedTitle': '学校の設定はロックされています',
+  'schoolFeatures.lockedBody': 'Montree に学校の設定の解除をご依頼ください。解除されると、ご自身で機能のオン・オフができます。',
+  'schoolFeatures.enabledToast': '{name} をオンにしました',
+  'schoolFeatures.disabledToast': '{name} をオフにしました',
+  'schoolFeatures.toggleFailed': '変更を保存できませんでした。',
+  'schoolFeatures.menuUpdated': '{count} 名の先生のメニューを更新しました。',
+  'schoolFeatures.menuBadge': 'メニュー',
+  'schoolFeatures.premiumBadge': 'PRO',
 };

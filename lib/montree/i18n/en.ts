@@ -6066,6 +6066,22 @@ export const en = {
   'paperScan.commitFailed': 'Could not save to profiles. Please try again.',
   'paperScan.commitSuccess': 'Saved to the children’s profiles.',
 
+  // ── School Features (self-serve Feature Switchboard) ──────────────────
+  'schoolFeatures.menuLabel': 'School Features',
+  'schoolFeatures.title': 'School Features',
+  'schoolFeatures.subtitle': 'Turn tools on or off for your school.',
+  'schoolFeatures.appliesToAll': 'Changes apply to every teacher in your school.',
+  'schoolFeatures.loading': 'Loading features…',
+  'schoolFeatures.loadFailed': 'Could not load your features.',
+  'schoolFeatures.empty': 'No features to show yet.',
+  'schoolFeatures.lockedTitle': 'School controls are locked',
+  'schoolFeatures.lockedBody': 'Ask Montree to unlock school controls, then you can turn tools on and off yourself.',
+  'schoolFeatures.enabledToast': '{name} is on',
+  'schoolFeatures.disabledToast': '{name} is off',
+  'schoolFeatures.toggleFailed': 'Could not save that change.',
+  'schoolFeatures.menuUpdated': 'Menus updated for {count} teachers.',
+  'schoolFeatures.menuBadge': 'Menu',
+  'schoolFeatures.premiumBadge': 'PRO',
 } as const;
 
 export type TranslationKey = keyof typeof en;
