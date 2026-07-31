@@ -151,6 +151,23 @@ earlier pen-and-ink run, his feed now holds both sets. Owed: Tredoux picks winne
 the production set), art gets filed to `phonics-images/satpin-v2/cvc/<week>/`, then the
 trace/read/match sheet template next session.
 
+**Session close — cartoon restored, pickup workflow set:** Tredoux retired the photo-real CVC
+experiment the same night — "the realistic versions don't give me a good feeling" — so production
+art for the CVC sentence line is back to the locked Dark Phonics pen-and-ink Seuss style. The
+`-REAL` prompt section in `CVC_SENTENCE_LINE.md` stays for reference only; it is retired and
+should not be resubmitted. All 29 pen-and-ink prompts were re-delivered to Tredoux in chat, and he
+is running/rerolling them himself in Midjourney. New pickup workflow agreed for next session:
+Tredoux saves his winning renders directly to `~/Downloads` with raw, unrenamed Midjourney
+filenames — next session must identify each Downloads PNG by vision against the sentences in
+`CVC_SENTENCE_LINE.md`, file them to `phonics-images/satpin-v2/cvc/<week>/` (weekly, w04–w27) and
+`phonics-images/satpin-v2/cvc/abc/` (the 5 alphabet-series picks), then build the CVC trace/read/match
+sheet template (READ IT solid + TRACE IT dotted/arrows via the satpin-paperwork `stroke_font`
+engine + picture-match cut-outs) and generate sheets for every week that has art — the same
+identify-and-file approach used for the letter-N book scenes earlier today. **Session tally:**
+letter N shipped end-to-end; P/I backfilled; pack format iterated to final (4pp, yes/no-first,
+funny noes); letter-card downloads shipped; CVC line authored w4–w27 + alphabet series; both MJ
+prompt sets (pen-and-ink and photo-real) rendered, pen-and-ink chosen as the production style.
+
 ---
 
 ## 🔒 Jul 29 (Cowork) — SATPIN PAPERWORK PIPELINE LOCKED IN as approved convention (do not redesign)
