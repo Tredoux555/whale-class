@@ -1,5 +1,51 @@
 # Whale / Montree — Latest Handoff
 
+## ✏️ Jul 31 (Cowork) — CVC PICKUP: art filed, trace/read/match sheet built, 21 sheets shipped
+
+Picked up the Downloads pickup workflow set at last session's close. 26 pen-and-ink art picks
+(Tredoux's Midjourney renders, saved raw to `~/Downloads`) were identified by vision against
+`CVC_SENTENCE_LINE.md` and filed to `phonics-images/satpin-v2/cvc/<week>/<week>-<keyword>.png`
+for w04–w19, w22–w23, w25–w27 (21 weeks) plus `phonics-images/satpin-v2/cvc/abc/abc-1..5-*.png`
+(the 5 alphabet-series picks) — every transferred file md5-verified against the Mac originals.
+**Gaps**: w20, w21, w24 have no art yet — rerolls pending, do not build sheets for these until
+art lands. Also flagged, not yet acted on: the ABC-3 "jam" render came back blue, not the locked
+jam color from the reference art — may want a reroll.
+
+Built the CVC trace/read/match sheet template: `scripts/curriculum/satpin-paperwork/build_cvc.py`
++ `cvc_weeks.json`, one A4 page per week — READ IT (solid sentence) + TRACE IT (dotted
+skeleton-font sentence with numbered stroke arrows, same `stroke_font` engine as the tracing
+workbook) + PICTURE MATCH (cut-out strip of the week's art plus 2 distractors, a paste box, and a
+rotating correct-slot position so kids can't just memorize the position). Generated all 21 sheets
+to `public/satpin-materials/<slug>/cvc-sheet.pdf` (week→slug: w04→p, w05→i, w06→n, w07→m, w08→d,
+w09→g, w10→o, w11→c, w12→k, w13→ck, w14→e, w15→u, w16→r, w17→h, w18→b, w19→f, w22→v, w23→w,
+w25→y, w26→z, w27→qu) — every page rasterized and eyeballed clean.
+
+Wired onto `app/montree/library/satpin/page.tsx`: `cvcSheet` added to `mediaPaths()` and the
+`MediaFlags` type, a HEAD-probe `useEffect` added for it, and a new `PaperworkRow` downloads
+entry labeled "CVC sentence sheet · A4" — new weeks will surface automatically once their PDF
+exists, no further code change per week. Scoped `tsc` + `eslint` on the touched file were already
+clean going into this session.
+
+**Commits** (Desktop Commander git, scoped adds only — a large amount of unrelated dirty/
+untracked material in the working tree from other in-flight work was left untouched):
+`82f3cd55` — "CVC sentence line: file 26 art picks, add trace/read/match sheet builder + 21
+weekly sheets, wire onto satpin library page" (50 files: 26 art PNGs force-added past the
+`phonics-images/` gitignore rule — same precedent as the existing tracked
+`phonics-images/alphabet-v1/plates/` — plus 21 `cvc-sheet.pdf`s, `build_cvc.py`, `cvc_weeks.json`,
+and the `page.tsx` diff). Pushed to `origin/main` (`whale-class.git`) clean, no conflicts.
+
+**Live-verified on montree.xyz** after the Railway auto-deploy (roughly 6 minutes from push to
+first 200): `/montree/library/satpin` → 200; `/satpin-materials/p/cvc-sheet.pdf`,
+`/satpin-materials/qu/cvc-sheet.pdf`, `/satpin-materials/y/cvc-sheet.pdf` → all 200,
+`content-type: application/pdf`; a full sweep of all 21 shipped slugs (p, i, n, m, d, g, o, c, k,
+ck, e, u, r, h, b, f, v, w, y, z, qu) → all 200; gap-check `/satpin-materials/l/cvc-sheet.pdf`
+(letter L has no CVC sheet, was never in scope) → 404 as expected.
+
+**Owed next session**: w20/w21/w24 art rerolls (then their 3 sheets), and a decision on the
+ABC-3 "jam" blue-render reroll.
+
+---
+
 ## 🪺 Jul 30 (Cowork) — LETTER N SHIPPED end-to-end (book + paperwork + music video)
 
 Week 6 / letter N, "The Nest is in the Nest" (song hook: nut/net/napkin/nail in the nest,

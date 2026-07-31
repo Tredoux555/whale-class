@@ -2976,14 +2976,20 @@ not redesign the layout, font set, or stroke rule without Tredoux's explicit say
   sentence line**, same as the week-7+ decodable readers. The `-REAL` prompt section stays in
   `CVC_SENTENCE_LINE.md` for reference only — **do not resubmit it**. All 29 pen-and-ink prompts
   were re-delivered to Tredoux in chat; he is running/rerolling them himself in Midjourney.
-  **Pickup workflow (next session)**: Tredoux saves his winning renders directly to `~/Downloads`
-  with raw, unrenamed Midjourney filenames. Identify each Downloads PNG by vision against the
-  sentences in `CVC_SENTENCE_LINE.md`, file weekly picks to `phonics-images/satpin-v2/cvc/<week>/`
-  (w04–w27) and the 5 alphabet-series picks to `phonics-images/satpin-v2/cvc/abc/`, then build the
-  CVC trace/read/match sheet template (READ IT solid + TRACE IT dotted/arrows via the
-  satpin-paperwork `stroke_font` engine + picture-match cut-outs) and generate sheets for every
-  week that has art. (Precedent: the letter-N book scenes were identified-and-filed the same way
-  earlier the same day.)
+  **Shipped (2026-07-31)**: the Downloads pickup ran — 26 art picks identified by vision against
+  `CVC_SENTENCE_LINE.md` and filed to `phonics-images/satpin-v2/cvc/<week>/` (21 weeks: w04–w19,
+  w22–w23, w25–w27) and `phonics-images/satpin-v2/cvc/abc/` (5 alphabet-series picks), all
+  md5-verified against the Mac Downloads originals. **Gaps**: w20, w21, w24 have no art yet
+  (rerolls pending — do not build sheets for these until art lands); ABC-3 "jam" render came back
+  blue rather than the locked jam color — flagged as a possible reroll candidate, not yet redone.
+  The CVC trace/read/match sheet template is built and locked:
+  `scripts/curriculum/satpin-paperwork/build_cvc.py` + `cvc_weeks.json` (one A4 page per week —
+  READ IT solid sentence, TRACE IT dotted skeleton letters with numbered stroke arrows via
+  `stroke_font`, PICTURE MATCH cut-out strip with the week's art plus 2 distractors, paste box,
+  rotating correct-slot). 21 sheets generated to `public/satpin-materials/<slug>/cvc-sheet.pdf`
+  (w04→p … w27→qu), every page rasterized and eyeballed clean. Wired onto
+  `app/montree/library/satpin/page.tsx` (`PaperworkRow` gained a probed "CVC sentence sheet · A4"
+  download; new weeks appear automatically once their PDF exists, no per-letter code change).
 - **Tracing outputs** (`build_tracing.py`, format split 2026-07-30 per Tredoux — supersedes the
   original single combined `tracing-workbook.pdf`): now emits **`build-it-sheet.pdf`** (A4
   LANDSCAPE, auto-packed onto however many pages the sentence rows need) — READ IT (solid
@@ -3015,7 +3021,9 @@ after the fuzzy query, so a mismatched label silently shows "no picture."
 ⚠️ `device_stage_files` can silently return a stale cached copy even with correct-looking
 metadata — always md5/byte-check a staged file against the Mac original before editing it.
 
-Status (as of 2026-07-30): P ✅, I ✅, N ✅ — all three shipped/backfilled onto the current split
+Status (as of 2026-07-31): P ✅, I ✅, N ✅ — all three shipped/backfilled onto the current split
 format (4pp paperwork pack + build-it-sheet + tracing-workbook + sentence-strips). S/A/T (weeks
-1–3) still need `bookX.py` written first — verify it exists before promising a letter. Full
-narrative: `HANDOFF_LATEST.md`'s Jul 29 and Jul 30 entries.
+1–3) still need `bookX.py` written first — verify it exists before promising a letter. **CVC
+sentence sheet**: 21/24 weeks shipped (w04–w19, w22–w23, w25–w27; weeks 1–3 intentionally have no
+CVC sheet, covered by "The ___ Sat!"); w20/w21/w24 blocked on art rerolls — do not build those
+sheets until art lands. Full narrative: `HANDOFF_LATEST.md`'s Jul 29, Jul 30, and Jul 31 entries.
