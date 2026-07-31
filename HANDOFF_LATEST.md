@@ -11,6 +11,26 @@ for w04–w19, w22–w23, w25–w27 (21 weeks) plus `phonics-images/satpin-v2/cv
 art lands. Also flagged, not yet acted on: the ABC-3 "jam" render came back blue, not the locked
 jam color from the reference art — may want a reroll.
 
+**UPDATE (same day, later Cowork session)**: Tredoux saved a fresh Midjourney reroll batch to
+`~/Downloads`. Vision-matched against the 3 gap scenes: w20 "a dog licks a leg" and w24 "a fox
+sits in a box" both landed clean. w21 "a pig jogs in jam" and the hoped-for ABC-3
+red-jam duck did NOT land — the only pig-jog reroll found has blue/blueberry splashes (md5
+confirms the currently-filed `abc-3-jam.png` is literally the same blue-jam duck render from the
+morning batch, byte-for-byte), and no red-jam duck reroll exists in Downloads at all. Per
+"don't force," those two were left unfiled rather than shipping the wrong color again.
+w20 → `phonics-images/satpin-v2/cvc/w20/w20-leg.png`, w24 →
+`phonics-images/satpin-v2/cvc/w24/w24-box.png`, both md5-verified Mac↔container. `cvc_weeks.json`
+gained rows for week 20 (slug `l`) and week 24 (slug `x`) — week 21 (slug `j`) stays absent per
+the file's own "never fabricate a row" convention. Built + rasterized + eyeballed
+`public/satpin-materials/l/cvc-sheet.pdf` and `.../x/cvc-sheet.pdf` (sentence, dotted trace +
+arrows, art, cut/paste boxes, distractor rotation all clean; distractors: l→pip,tips;
+x→sand,egg — picked automatically by `build_cvc.py`'s fixed-offset rule once the new rows
+existed). Committed `48212a0b` ("CVC sentence line: fill w20/w21/w24 with reroll art + sheets
+(ABC-3 red-jam reroll if applicable)"), scoped add only (w20/w24 art, the 2 new PDFs,
+`cvc_weeks.json` — the ~100 unrelated dirty files in the tree were left alone), pushed to
+`origin/main` clean. Live-verified after Railway deploy: `/satpin-materials/l/cvc-sheet.pdf` and
+`/satpin-materials/x/cvc-sheet.pdf` both 200 `application/pdf`.
+
 Built the CVC trace/read/match sheet template: `scripts/curriculum/satpin-paperwork/build_cvc.py`
 + `cvc_weeks.json`, one A4 page per week — READ IT (solid sentence) + TRACE IT (dotted
 skeleton-font sentence with numbered stroke arrows, same `stroke_font` engine as the tracing
@@ -41,8 +61,10 @@ first 200): `/montree/library/satpin` → 200; `/satpin-materials/p/cvc-sheet.pd
 ck, e, u, r, h, b, f, v, w, y, z, qu) → all 200; gap-check `/satpin-materials/l/cvc-sheet.pdf`
 (letter L has no CVC sheet, was never in scope) → 404 as expected.
 
-**Owed next session**: w20/w21/w24 art rerolls (then their 3 sheets), and a decision on the
-ABC-3 "jam" blue-render reroll.
+**Owed next session** (superseded by the same-day update above for w20/w24 — now shipped):
+w21 "a pig jogs in jam" still needs a proper red-jam reroll (the only candidate saved so far is
+blue/blueberry), and the ABC-3 duck-licks-jam art is still blue — no red-jam reroll has landed
+for either yet.
 
 ---
 
