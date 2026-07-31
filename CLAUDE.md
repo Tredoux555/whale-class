@@ -2979,15 +2979,18 @@ not redesign the layout, font set, or stroke rule without Tredoux's explicit say
   **Shipped (2026-07-31)**: the Downloads pickup ran — 26 art picks identified by vision against
   `CVC_SENTENCE_LINE.md` and filed to `phonics-images/satpin-v2/cvc/<week>/` (21 weeks: w04–w19,
   w22–w23, w25–w27) and `phonics-images/satpin-v2/cvc/abc/` (5 alphabet-series picks), all
-  md5-verified against the Mac Downloads originals. **Gaps**: w20, w21, w24 have no art yet
-  (rerolls pending — do not build sheets for these until art lands); ABC-3 "jam" render came back
-  blue rather than the locked jam color — flagged as a possible reroll candidate, not yet redone.
+  md5-verified against the Mac Downloads originals. **Gaps (UPDATED same day)**: a later reroll
+  batch filled w20 (l, "a dog licks a leg") and w24 (x, "a fox sits in a box") cleanly — art
+  filed, `cvc_weeks.json` rows added, sheets built/eyeballed/shipped, commit `48212a0b`. w21
+  ("a pig jogs in jam") is still blocked: the only reroll candidate has blue/blueberry splashes,
+  not the required red jam, so it was left unfiled. ABC-3 "jam" render is also still blue (no
+  red-jam duck reroll has landed) — `abc-3-jam.png` is unchanged.
   The CVC trace/read/match sheet template is built and locked:
   `scripts/curriculum/satpin-paperwork/build_cvc.py` + `cvc_weeks.json` (one A4 page per week —
   READ IT solid sentence, TRACE IT dotted skeleton letters with numbered stroke arrows via
   `stroke_font`, PICTURE MATCH cut-out strip with the week's art plus 2 distractors, paste box,
-  rotating correct-slot). 21 sheets generated to `public/satpin-materials/<slug>/cvc-sheet.pdf`
-  (w04→p … w27→qu), every page rasterized and eyeballed clean. Wired onto
+  rotating correct-slot). 23 sheets generated to `public/satpin-materials/<slug>/cvc-sheet.pdf`
+  (w04→p … w27→qu, plus w20→l and w24→x), every page rasterized and eyeballed clean. Wired onto
   `app/montree/library/satpin/page.tsx` (`PaperworkRow` gained a probed "CVC sentence sheet · A4"
   download; new weeks appear automatically once their PDF exists, no per-letter code change).
 - **Tracing outputs** (`build_tracing.py`, format split 2026-07-30 per Tredoux — supersedes the
@@ -3024,6 +3027,9 @@ metadata — always md5/byte-check a staged file against the Mac original before
 Status (as of 2026-07-31): P ✅, I ✅, N ✅ — all three shipped/backfilled onto the current split
 format (4pp paperwork pack + build-it-sheet + tracing-workbook + sentence-strips). S/A/T (weeks
 1–3) still need `bookX.py` written first — verify it exists before promising a letter. **CVC
-sentence sheet**: 21/24 weeks shipped (w04–w19, w22–w23, w25–w27; weeks 1–3 intentionally have no
-CVC sheet, covered by "The ___ Sat!"); w20/w21/w24 blocked on art rerolls — do not build those
-sheets until art lands. Full narrative: `HANDOFF_LATEST.md`'s Jul 29, Jul 30, and Jul 31 entries.
+sentence sheet**: 23/24 weeks shipped (w04–w19, w22–w23, w25–w27, plus w20→l and w24→x shipped
+same day via a reroll pickup, commit `48212a0b`; weeks 1–3 intentionally have no CVC sheet,
+covered by "The ___ Sat!"); w21 still blocked — the only pig-jog reroll found has blue/blueberry
+splashes, not the required red jam, so no sheet has been built for it. ABC-3's duck-licks-jam
+art is also still blue (no red-jam reroll has landed yet). Full narrative: `HANDOFF_LATEST.md`'s
+Jul 29, Jul 30, and Jul 31 entries.
