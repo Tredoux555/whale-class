@@ -14,7 +14,8 @@
 // Word lists: S/A/T/P/I/N come from docs/picture-bank/SATPIN-Object-Baskets.docx
 // (30 words), the other twenty letters from docs/picture-bank/AZ-Object-Baskets.docx
 // — adopted for THOSE LETTERS ONLY; where the two disagree, SATPIN's list wins.
-// Both docs are served from /satpin-materials/.
+// Both docs still live in public/satpin-materials/ as source-of-truth reference
+// material, but are no longer linked as download cards on this page.
 //
 // Photos: all 130 basket pictures are ingested by
 // scripts/curriculum/upload-satpin-basket-photos.mjs — keep WEEKS below in
@@ -358,7 +359,6 @@ const mediaPaths = (slug: string) => ({
   buildItSheet: `/satpin-materials/${slug}/build-it-sheet.pdf`,
   tracingWorkbook: `/satpin-materials/${slug}/tracing-workbook.pdf`,
   sentenceStrips: `/satpin-materials/${slug}/sentence-strips.pdf`,
-  cvcSheet: `/satpin-materials/${slug}/cvc-sheet.pdf`,
 });
 
 type MediaFlags = {
@@ -369,7 +369,6 @@ type MediaFlags = {
   buildItSheet: boolean;
   tracingWorkbook: boolean;
   sentenceStrips: boolean;
-  cvcSheet: boolean;
 };
 
 /** HEAD probe — 2xx means the file is on disk. Network errors read as absent. */
@@ -508,12 +507,11 @@ export default function SatpinPage() {
     (async () => {
       const found = await Promise.all(WEEKS.map(async (w) => {
         const p = mediaPaths(w.slug);
-        const [song, reader, readerBooklet, paperworkPack, buildItSheet, tracingWorkbook, sentenceStrips, cvcSheet] = await Promise.all([
+        const [song, reader, readerBooklet, paperworkPack, buildItSheet, tracingWorkbook, sentenceStrips] = await Promise.all([
           fileExists(p.song), fileExists(p.reader), fileExists(p.readerBooklet),
           fileExists(p.paperworkPack), fileExists(p.buildItSheet), fileExists(p.tracingWorkbook), fileExists(p.sentenceStrips),
-          fileExists(p.cvcSheet),
         ]);
-        return [w.slug, { song, reader, readerBooklet, paperworkPack, buildItSheet, tracingWorkbook, sentenceStrips, cvcSheet }] as const;
+        return [w.slug, { song, reader, readerBooklet, paperworkPack, buildItSheet, tracingWorkbook, sentenceStrips }] as const;
       }));
       if (cancelled) return;
       setMedia(Object.fromEntries(found));
@@ -894,7 +892,6 @@ export default function SatpinPage() {
       ...(flags?.buildItSheet ? [{ href: paths.buildItSheet, label: 'Build-it sheet · A4' }] : []),
       ...(flags?.tracingWorkbook ? [{ href: paths.tracingWorkbook, label: 'Tracing workbook · A4' }] : []),
       ...(flags?.sentenceStrips ? [{ href: paths.sentenceStrips, label: 'Sentence strips · cut-outs' }] : []),
-      ...(flags?.cvcSheet ? [{ href: paths.cvcSheet, label: 'CVC sentence sheet · A4' }] : []),
     ];
 
     if (downloads.length === 0) return <EmptySlot>Workbook material — coming soon</EmptySlot>;
@@ -963,71 +960,6 @@ export default function SatpinPage() {
             The full initial-sound series — 27 weeks, every letter A–Z. Object baskets,
             pictures and books, week by week, starting with SATPIN.
           </p>
-
-          {/* Canonical word lists */}
-          <div className="mt-12 space-y-3">
-            <a
-              href="/satpin-materials/SATPIN-Object-Baskets.docx"
-              download
-              className="group relative flex items-center gap-5 w-full p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
-              style={{
-                background: 'linear-gradient(135deg, rgba(232,201,106,0.10), rgba(180,140,40,0.04))',
-                borderColor: 'rgba(232,201,106,0.20)',
-              }}
-            >
-              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'linear-gradient(135deg, rgba(232,201,106,0.14), rgba(180,140,40,0.06))' }} />
-
-              <div className="relative z-10 w-14 h-14 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(232,201,106,0.16)' }}>
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#E8C96A' }}>
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                  <line x1="16" y1="13" x2="8" y2="13" />
-                  <line x1="16" y1="17" x2="8" y2="17" />
-                </svg>
-              </div>
-              <div className="relative z-10 flex-1 text-left">
-                <div className="text-white font-semibold text-lg">SATPIN Object Baskets</div>
-                <div className="text-sm mt-0.5" style={{ color: 'rgba(232,201,106,0.55)' }}>
-                  Canonical word list, sizing &amp; buy notes &middot; 30 words &middot; 5 per letter
-                </div>
-              </div>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 group-hover:translate-x-1 transition-all shrink-0" style={{ color: 'rgba(232,201,106,0.4)' }}>
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </a>
-
-            {/* Full-series list. Adopted for the twenty non-SATPIN letters only —
-                S/A/T/P/I/N keep the words in the SATPIN doc above. */}
-            <a
-              href="/satpin-materials/AZ-Object-Baskets.docx"
-              download
-              className="group relative flex items-center gap-5 w-full p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
-              style={{
-                background: 'linear-gradient(135deg, rgba(130,217,174,0.10), rgba(39,129,90,0.04))',
-                borderColor: 'rgba(130,217,174,0.20)',
-              }}
-            >
-              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'linear-gradient(135deg, rgba(130,217,174,0.14), rgba(39,129,90,0.06))' }} />
-
-              <div className="relative z-10 w-14 h-14 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(130,217,174,0.16)' }}>
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#82D9AE' }}>
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                  <line x1="16" y1="13" x2="8" y2="13" />
-                  <line x1="16" y1="17" x2="8" y2="17" />
-                </svg>
-              </div>
-              <div className="relative z-10 flex-1 text-left">
-                <div className="text-white font-semibold text-lg">A–Z Object Baskets</div>
-                <div className="text-sm mt-0.5" style={{ color: 'rgba(130,217,174,0.55)' }}>
-                  Full-series word list &middot; 27 weeks &middot; 130 words &middot; 5 per letter
-                </div>
-              </div>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 group-hover:translate-x-1 transition-all shrink-0" style={{ color: 'rgba(130,217,174,0.4)' }}>
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </a>
-          </div>
 
           {/* One block per week */}
           <div className="mt-4 space-y-4">
