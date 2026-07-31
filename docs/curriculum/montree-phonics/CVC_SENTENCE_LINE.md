@@ -185,8 +185,13 @@ every prompt below (per `HANDOFF_DARK_PHONICS_READERS_Jul25.md`):
 Any liquid (spit, water) is described per the locked rule as "thin ink lines
 and droplets with only light blue watercolor accents" — never a solid wash,
 and never red (red liquid reads as blood in this style, per the Dark Phonics
-handoff's lesson #7), **except** goo/jam scenes, which use amber/red per the
-scene-specific direction noted at each prompt below.
+handoff's lesson #7). The prompts below for goo/jam scenes (CVC-W21, ABC-3)
+originally called for amber/red as a scene-specific exception — **that
+exception is REVOKED per Tredoux, 2026-07-31**: red jam reads as though the
+animal has massacred something, so jam now follows the same rule as every
+other liquid — light blue watercolor accents, never red. The shipped art for
+both scenes (blue/blueberry-style jam splashes) is correct and canonical; do
+not reroll to red.
 
 **Note on character consistency:** "Pat" (the boy in weeks 4–5) and the ant
 (week 6) are new to this sentence line and do not yet have a locked
