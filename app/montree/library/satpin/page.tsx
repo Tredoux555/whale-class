@@ -377,6 +377,17 @@ const printables = (slug: string) => [
 ];
 
 /**
+ * Public URL for a week's letter card — the "Inked Hush" 1920×1080 opening
+ * shot of every phonics song video, pre-rendered for all 27 weeks (digraph
+ * week 13/ck included) in the `dark-phonics` bucket's letter-cards/ prefix.
+ * No probe needed: every week's card already exists.
+ */
+function letterCardUrl(block: WeekBlock): string {
+  const nn = String(block.week).padStart(2, '0');
+  return `https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/dark-phonics/letter-cards/letter-card-${nn}-${block.slug}.png`;
+}
+
+/**
  * Is this row from the clean Montessori basket set — one object, plain white
  * background — ingested by scripts/curriculum/upload-satpin-basket-photos.mjs?
  * Those rows are tagged 'satpin-basket' and live at `picture-bank/<word>.jpg`
@@ -746,6 +757,27 @@ export default function SatpinPage() {
   };
 
   /**
+   * Week letter card — a single-file download of the week's "Inked Hush"
+   * card straight from the public bucket. Same `?download=` trick as
+   * VideoRow: the cross-origin anchor's `download` attribute is ignored by
+   * the browser, so the query param is what actually makes Supabase send
+   * Content-Disposition: attachment.
+   */
+  const LetterCardRow = ({ block }: { block: WeekBlock }) => {
+    const downloadHref = `${letterCardUrl(block)}?download=satpin-${block.slug}-letter-card.png`;
+    return (
+      <a
+        href={downloadHref}
+        download
+        className="mt-3 inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-xs transition-all hover:bg-white/[0.06]"
+        style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)' }}
+      >
+        Letter card &middot; PNG
+      </a>
+    );
+  };
+
+  /**
    * Week music video — the mvgen lyric-synced video, discovered from the
    * bucket's satpin-videos/ prefix, OR a direct `block.video` URL for a
    * one-off delivered to a differently-named object in the same public
@@ -1024,6 +1056,7 @@ export default function SatpinPage() {
                         unlocks sock/sick — so the ledger renders here too. */}
                     <DecodableRow block={block} index={index} />
                     <SongRow block={block} />
+                    <LetterCardRow block={block} />
                     <VideoRow block={block} />
                   </div>
                 );
@@ -1102,8 +1135,9 @@ export default function SatpinPage() {
                   </div>
                 )}
 
-                {/* Song → Music video → Reader → Book, slim rows */}
+                {/* Song → Letter card → Music video → Reader → Book, slim rows */}
                 <SongRow block={block} />
+                <LetterCardRow block={block} />
                 <VideoRow block={block} />
                 <ReaderRow block={block} />
 

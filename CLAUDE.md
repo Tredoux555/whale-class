@@ -2886,6 +2886,8 @@ Full handoff: `docs/curriculum/montree-phonics/HANDOFF_MONTREE_PHONICS_Jul28.md`
   full zip (PNGs + generator + design notes) at
   `phonics-images/satpin-v2/letter-cards.zip`. These are the standard
   opening shot of every phonics song video.
+  Letter cards are now downloadable per-week on the satpin page (`LetterCardRow`,
+  computed bucket URL, all 27 weeks).
 - **mvgen forced-alignment (critical)**: word-sync quality depends on the
   stable-ts align venv at `~/mvgen-models/align-venv/bin/python` (or
   `$MVGEN_ALIGN_PYTHON` / `$MVGEN_ALIGN_VENV`). If missing, `analyze.py`
@@ -2946,13 +2948,16 @@ not redesign the layout, font set, or stroke rule without Tredoux's explicit say
   `sequencingDisplayOrder`/`matchDisplayOrder` (fixed derangements), 10 yes/no items (5 yes from
   the book, 5 no from prior-week vocab via picture-bank photos, avoiding anything the animal could
   plausibly eat/do), and `artDir`.
-- **Paperwork pack layout** (`build_paperwork.py`, A4 portrait, `paperwork-pack.pdf`, 3pp as of
-  2026-07-30, shrunk from 4pp): story order (5 pics, fixed shuffle, 24mm write-in boxes 1–5) ·
-  match (sentences left, pics right, draw a line) · yes-or-no ×1pp (shrunk from 2pp/10q — 5
-  questions, small photo, ✓/✗ 20mm boxes). Selection rule: the JSON still keeps all 10 yes/no
-  items; the builder deterministically picks yes[0], no[0], yes[1], no[1], yes[2] (3 yes/2 no) for
-  the single page. House fonts only, via `MONTREE_CANVAS_FONTS` (default
-  `/root/.claude/skills/canvas-design/canvas-fonts/`): YoungSerif/Outfit/Lora/WorkSans.
+- **Paperwork pack layout** (`build_paperwork.py`, A4 portrait, `paperwork-pack.pdf`, 4pp):
+  story order (5 pics, fixed shuffle, 24mm write-in boxes 1–5) · match (sentences left, pics
+  right, draw a line) · yes-or-no ×2pp (10 questions, small photo, ✓/✗ 20mm boxes). House fonts
+  only, via `MONTREE_CANVAS_FONTS` (default `/root/.claude/skills/canvas-design/canvas-fonts/`):
+  YoungSerif/Outfit/Lora/WorkSans. (3pp/5q variant tried and REVERTED same day, 2026-07-30 —
+  duplex prints the 4pp pack neatly on 2 sheets; do not shrink again.)
+- **'No' item rule** (locked): the 5 'no' items in each letter's JSON are the PREVIOUS letter's
+  five object-basket words, question phrasing per that letter's template — p←t (turtle tiger
+  toothbrush tomato taxi, "did the pig eat a X?"), i←p (pig pen penguin pumpkin panda, "did the X
+  go into the igloo?"), n←i (igloo iguana inchworm insect infant, "is the X in the nest?").
 - **Tracing outputs** (`build_tracing.py`, format split 2026-07-30 per Tredoux — supersedes the
   original single combined `tracing-workbook.pdf`): now emits **`build-it-sheet.pdf`** (A4
   LANDSCAPE, auto-packed onto however many pages the sentence rows need) — READ IT (solid
@@ -2985,6 +2990,6 @@ after the fuzzy query, so a mismatched label silently shows "no picture."
 metadata — always md5/byte-check a staged file against the Mac original before editing it.
 
 Status (as of 2026-07-30): P ✅, I ✅, N ✅ — all three shipped/backfilled onto the current split
-format (3pp paperwork pack + build-it-sheet + tracing-workbook + sentence-strips). S/A/T (weeks
+format (4pp paperwork pack + build-it-sheet + tracing-workbook + sentence-strips). S/A/T (weeks
 1–3) still need `bookX.py` written first — verify it exists before promising a letter. Full
 narrative: `HANDOFF_LATEST.md`'s Jul 29 and Jul 30 entries.

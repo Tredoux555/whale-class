@@ -27,20 +27,20 @@
 
   "yesno": [
     { "question": "did the pig eat a pineapple?", "answer": true,  "imageArt": "the-pig-ate-a-pineapple-p1-pineapple-v1.png" },
-    { "question": "did the pig eat a tiger?",     "answer": false, "imageWord": "tiger" },
+    { "question": "did the pig eat a turtle?",     "answer": false, "imageWord": "turtle" },
     { "question": "did the pig eat a pen?",       "answer": true,  "imageArt": "the-pig-ate-a-pineapple-p2-pen-v1.png" },
-    { "question": "did the pig eat a sock?",      "answer": false, "imageWord": "sock" },
+    { "question": "did the pig eat a tiger?",     "answer": false, "imageWord": "tiger" },
     { "question": "did the pig eat a pencil?",    "answer": true,  "imageArt": "the-pig-ate-a-pineapple-p3-pencil-v1.png" },
-    { "question": "did the pig eat a taxi?",      "answer": false, "imageWord": "taxi" },
+    { "question": "did the pig eat a toothbrush?","answer": false, "imageWord": "toothbrush" },
     { "question": "did the pig eat a pan?",       "answer": true,  "imageArt": "the-pig-ate-a-pineapple-p4-pan-v1.png" },
-    { "question": "did the pig eat a snake?",     "answer": false, "imageWord": "snake" },
+    { "question": "did the pig eat a tomato?",    "answer": false, "imageWord": "tomato" },
     { "question": "was the pig sick?",            "answer": true,  "imageArt": "the-pig-ate-a-pineapple-p5-pig-sick-v1.png" },
-    { "question": "did the pig eat an alligator?","answer": false, "imageWord": "alligator" }
+    { "question": "did the pig eat a taxi?",      "answer": false, "imageWord": "taxi" }
   ],
 
   "_notes": {
     "sequencingDisplayOrder": "Fixed shuffle (a derangement) so output is deterministic across rebuilds. Values are page `order` numbers.",
     "matchDisplayOrder": "Second fixed shuffle for the picture column on the match sheet — deliberately different from sequencingDisplayOrder.",
-    "yesno": "5 true (from the book) / 5 false (weeks 1-3 s/a/t vocabulary), alternating. `imageArt` resolves under artDir; `imageWord` resolves to photoDir/<word>/<word>.jpg."
+    "yesno": "5 true (from the book) / 5 false, alternating. False items are the PREVIOUS letter's (T) object-basket vocabulary: turtle, tiger, toothbrush, tomato, taxi (rule set 2026-07-30 evening, per Tredoux). `imageArt` resolves under artDir; `imageWord` resolves to photoDir/<word>/<word>.jpg."
   }
 }
