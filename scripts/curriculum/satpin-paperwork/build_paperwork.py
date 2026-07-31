@@ -2,14 +2,19 @@
 """Montree Phonics — printable paperwork pack (A4 portrait).
 
 2026-07-30 evening — reverted to 4pp/10q per Tredoux (duplex = 2 sheets);
-NEW rule: the 5 'no' yes/no items come from the previous letter's basket
-vocab.
+the 5 'no' yes/no items are common FUNNY words for maximum giggle factor,
+not restricted to prior-week vocab.
+
+2026-07-30 late — page order changed per Tredoux: warm-up (yes/no) ->
+engage (story order) -> challenge (match). This pack is reinforcement /
+"I can do it", not a learning exercise, so it opens on the easy win —
+yes/no becomes the stapled cover.
 
 One letter JSON in, one `paperwork-pack.pdf` out, containing three works:
 
-    p1     Story order  — the five illustrations shuffled, a write-in box each
-    p2     Match        — five sentences, five pictures, draw the line
-    p3-p4  Yes or no?   — ten questions, tick or cross
+    p1-p2  Yes or no?   — ten questions, tick or cross (warm-up; cover)
+    p3     Story order  — the five illustrations shuffled, a write-in box each
+    p4     Match        — five sentences, five pictures, draw the line
 
 House chrome ("Inked Hush"): three inks, tracked labels, YoungSerif titles,
 Outfit for anything the child reads, Lora italic for the teacher's voice.
@@ -320,13 +325,13 @@ def build(cfg, repo_root, outdir):
     c.setTitle('%s — paperwork pack' % cfg['bookTitle'])
 
     total = 4
-    page_sequencing(c, cfg, art, 1, total)
+    page_yesno(c, cfg, art, photos, cfg['yesno'][:5], 1, total)
     c.showPage()
-    page_match(c, cfg, art, 2, total)
+    page_yesno(c, cfg, art, photos, cfg['yesno'][5:], 2, total)
     c.showPage()
-    page_yesno(c, cfg, art, photos, cfg['yesno'][:5], 3, total)
+    page_sequencing(c, cfg, art, 3, total)
     c.showPage()
-    page_yesno(c, cfg, art, photos, cfg['yesno'][5:], 4, total)
+    page_match(c, cfg, art, 4, total)
     c.showPage()
     c.save()
     print('paperwork-pack.pdf', total, 'pages ->', out)

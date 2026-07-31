@@ -132,6 +132,16 @@ const WEEKS: WeekBlock[] = [
     decodable: ['sat', 'at'], heartWords: ['a'],
     words: ['turtle', 'tiger', 'toothbrush', 'tomato', 'taxi'],
     accent: '167,139,250', tint: '221,214,254',
+    // Reader override, same shape as the weeks-1–6 SATPIN set: this is
+    // books_def.py's slug 'the-sat' ("The ___ Sat!") — the cat is the
+    // final-page reveal, hence Tredoux calling it "the cat sat" book.
+    reader: {
+      title: 'The ___ Sat!',
+      downloads: [
+        { href: '/satpin-books/print/the-sat-A5-reading.pdf', label: 'Read-along' },
+        { href: '/satpin-books/print/the-sat-A5-booklet-print.pdf', label: 'Print booklet A5' },
+      ],
+    },
   },
   {
     week: 4, letter: 'P', slug: 'p',
