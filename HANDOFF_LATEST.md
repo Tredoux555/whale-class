@@ -142,6 +142,15 @@ was written -- results will land in Tredoux's MJ feed; picks are owed, then next
 session builds the trace/read/match sheet template (art filing:
 `phonics-images/satpin-v2/cvc/<week>/`).
 
+**Course change — CVC art goes photo-real:** Tredoux course-changed the CVC sentence-line art from
+pen-and-ink to HYPER-REAL PHOTOS ("disturbingly real"). `docs/curriculum/montree-phonics/CVC_SENTENCE_LINE.md`
+gained a "Photo-real variants" section: 29 `-REAL` prompts (ABC-1…5 first, then W04…CVC-W27),
+photo-real is the production pick, the pen-and-ink set stays above for reference. All 29 were
+submitted to Midjourney in Tredoux's Chrome and rendered — zero rejections; combined with the
+earlier pen-and-ink run, his feed now holds both sets. Owed: Tredoux picks winners (photo-real is
+the production set), art gets filed to `phonics-images/satpin-v2/cvc/<week>/`, then the
+trace/read/match sheet template next session.
+
 ---
 
 ## 🔒 Jul 29 (Cowork) — SATPIN PAPERWORK PIPELINE LOCKED IN as approved convention (do not redesign)
