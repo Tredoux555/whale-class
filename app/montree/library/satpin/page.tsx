@@ -19,7 +19,10 @@
 //
 // Photos: all 130 basket pictures are ingested by
 // scripts/curriculum/upload-satpin-basket-photos.mjs — keep WEEKS below in
-// step with that script's SERIES manifest.
+// step with that script's SERIES manifest. The decodable-ledger word photos
+// (real photo per CVC word, for three-part cards / matching work) are
+// ingested by scripts/curriculum/upload-cvc-photos.mjs, tagged 'cvc-photo' —
+// keep that script's WORDS list in step with the `decodable` arrays below.
 //
 // Songs: uploaded straight from the page — every empty song slot is a drop
 // zone (drag an mp3 on, or click). Files land in the public `dark-phonics`
@@ -69,6 +72,22 @@ type WeekWord = string | { word: string; photoLabel: string };
 const wordText = (w: WeekWord): string => (typeof w === 'string' ? w : w.word);
 /** What we look the picture up by in the photo bank. */
 const wordPhotoLabel = (w: WeekWord): string => (typeof w === 'string' ? w : w.photoLabel);
+
+/**
+ * Decodable-ledger words that never get a picture card: grammar words that
+ * only live inside sentences (at/it/is/an/in + the 'naps' plural) and the
+ * reader cast names (Sam, Kim). Ruled by Tredoux 2026-08-01 — everything else
+ * in a week's `decodable` list resolves to a real photo in the bank, ingested
+ * by scripts/curriculum/upload-cvc-photos.mjs (tag 'cvc-photo') or already
+ * there as a clean basket photo where the word doubles as a basket word.
+ */
+const CVC_UNPICTURED = new Set(['at', 'it', 'is', 'an', 'in', 'naps', 'sam', 'kim']);
+
+/** CVC words pictured under another bank label ('zip' is the basket 'zipper'). */
+const CVC_PHOTO_LABEL: Record<string, string> = { zip: 'zipper' };
+
+/** Photo-bank label for a decodable-ledger word. */
+const cvcPhotoLabel = (w: string): string => CVC_PHOTO_LABEL[w.toLowerCase()] ?? w.toLowerCase();
 
 type WeekBlock = {
   week: number;
@@ -413,6 +432,19 @@ function isBasketPhoto(photo: BankPhoto): boolean {
 }
 
 /**
+ * Is this row from the CVC decodable-word photo set — one real photo per
+ * ledger word, ingested by scripts/curriculum/upload-cvc-photos.mjs? Same
+ * belt-and-braces shape as isBasketPhoto: the tag, with the storage-path
+ * prefix as fallback.
+ */
+function isCvcPhoto(photo: BankPhoto): boolean {
+  const tagged = (photo.tags || []).some(
+    t => String(t || '').trim().toLowerCase() === 'cvc-photo'
+  );
+  return tagged || (photo.storage_path || '').startsWith('cvc-photos/');
+}
+
+/**
  * Look one word up in the Picture Bank and return the best photo whose label
  * matches exactly. Duplicate labels exist (several socks, nails, tomatoes), so
  * among the exact matches we PREFER the clean basket photo; if the word has no
@@ -434,7 +466,10 @@ async function fetchByLabel(word: string): Promise<BankPhoto | null> {
     const photos: BankPhoto[] = data.photos || [];
     const target = word.trim().toLowerCase();
     const exact = photos.filter(p => (p.label || '').trim().toLowerCase() === target);
-    return exact.find(isBasketPhoto) || exact[0] || null;
+    // Preference among exact-label duplicates: clean basket photo first, then
+    // the CVC word-photo set, then whatever sorts first — a label only ever
+    // belongs to one of the two curated sets, so the order never fights.
+    return exact.find(isBasketPhoto) || exact.find(isCvcPhoto) || exact[0] || null;
   } catch {
     return null;
   }
@@ -521,10 +556,15 @@ export default function SatpinPage() {
 
   useEffect(() => {
     let cancelled = false;
-    const labels = [
+    // De-duped: a decodable word that doubles as a basket word ('dog', 'cat')
+    // is fetched once and lands under the same lowercase key either way.
+    const labels = Array.from(new Set([
       ...WEEKS.flatMap(w => (w.words ?? []).map(wordPhotoLabel)),
       ...WEEKS.flatMap(w => w.book?.pictureLabels ?? []),
-    ];
+      ...WEEKS.flatMap(w => (w.decodable ?? [])
+        .filter(d => !CVC_UNPICTURED.has(d.toLowerCase()))
+        .map(cvcPhotoLabel)),
+    ].map(l => l.toLowerCase())));
     (async () => {
       const found = await Promise.all(labels.map(async (label) => [label, await fetchByLabel(label)] as const));
       if (cancelled) return;
@@ -649,6 +689,13 @@ export default function SatpinPage() {
     const prior = WEEKS.slice(0, index).reverse().flatMap(w => w.decodable ?? []);
     const hearts = WEEKS.slice(0, index + 1).flatMap(w => w.heartWords ?? []);
     const total = newWords.length + prior.length;
+    // Real photo per NEW word — the card picture the word is matched to.
+    // Grammar words / cast names (CVC_UNPICTURED) simply don't appear, and a
+    // word whose photo hasn't reached the bank yet is skipped, not stubbed.
+    const wordPictures = newWords
+      .filter(w => !CVC_UNPICTURED.has(w.toLowerCase()))
+      .map(w => ({ word: w, photo: pictures[cvcPhotoLabel(w)] }))
+      .filter((x): x is { word: string; photo: BankPhoto } => !!x.photo);
 
     if (total === 0) {
       return (
@@ -687,6 +734,52 @@ export default function SatpinPage() {
         {hearts.length > 0 && (
           <div className="mt-1.5 text-xs" style={{ color: 'rgba(252,165,165,0.55)' }}>
             ♥ heart {hearts.length === 1 ? 'word' : 'words'} — {hearts.join(' · ')}
+          </div>
+        )}
+        {/* Word pictures — one real photo per NEW decodable word, in the same
+            reader red as the word chips, with its own hand-off into the hub
+            (three-part cards, matching, whatever the teacher builds). */}
+        {wordPictures.length > 0 && (
+          <div className="mt-3">
+            <div className="text-white/25 text-[10px] tracking-wider uppercase mb-1.5">
+              Word pictures
+            </div>
+            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+              {wordPictures.map(({ word, photo }) => (
+                <div key={word} className="text-center">
+                  <div
+                    className="rounded-lg overflow-hidden border"
+                    style={{ borderColor: 'rgba(248,113,113,0.25)', background: 'rgba(255,255,255,0.04)' }}
+                    title={word}
+                  >
+                    <div className="aspect-square">
+                      <img
+                        src={photoSrc(photo, 240)}
+                        srcSet={photo.storage_path ? getThumbnailSrcSet(photo.storage_path, 120, 70, 'photo-bank') : undefined}
+                        sizes="(max-width: 640px) 22vw, 110px"
+                        alt={word}
+                        loading="lazy"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-1 text-xs font-semibold" style={{ color: 'rgb(252,165,165)' }}>
+                    {word}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => createMaterials(wordPictures.map(i => i.photo))}
+              className="mt-3 w-full px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all hover:bg-white/[0.06]"
+              style={{
+                borderColor: 'rgba(248,113,113,0.35)',
+                background: 'rgba(198,40,40,0.10)',
+                color: 'rgb(252,165,165)',
+              }}
+            >
+              Create materials with these word pictures →
+            </button>
           </div>
         )}
       </div>
