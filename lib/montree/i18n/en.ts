@@ -6082,6 +6082,24 @@ export const en = {
   'schoolFeatures.menuUpdated': 'Menus updated for {count} teachers.',
   'schoolFeatures.menuBadge': 'Menu',
   'schoolFeatures.premiumBadge': 'PRO',
+  // ── Work Rhythm (per-child area-time bars) ─────────────────────────────
+  'workRhythm.menuLabel': 'Work Rhythm',
+  'workRhythm.title': 'Work Rhythm',
+  'workRhythm.subtitle': 'Where each child spent their time across the five areas.',
+  'workRhythm.periodWeek': 'This week',
+  'workRhythm.periodMonth': 'This month',
+  'workRhythm.topArea': 'Most time in',
+  'workRhythm.minutesShort': '{n} min',
+  'workRhythm.events': '{n} moments',
+  'workRhythm.share': 'Share',
+  'workRhythm.detailNote': 'These minutes combine time written on paper record sheets with an estimate for each confirmed photo. Read them as the balance of a child\'s week, not an exact measurement.',
+  'workRhythm.emptyChild': 'Nothing recorded yet',
+  'workRhythm.emptyClassroomTitle': 'No rhythm to show yet',
+  'workRhythm.emptyClassroomBody': 'Work Rhythm builds from two things: records you approve in Paper Scan, and classroom photos you confirm. As soon as either arrives, the bars appear here.',
+  'workRhythm.disabledTitle': 'Work Rhythm is not enabled',
+  'workRhythm.disabledBody': 'Work Rhythm has not been turned on for your school yet.',
+  'workRhythm.contactAdmin': 'Contact your school administrator to enable this feature.',
+  'workRhythm.loadFailed': 'Could not load the work rhythm.',
 } as const;
 
 export type TranslationKey = keyof typeof en;

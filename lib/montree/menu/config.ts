@@ -13,6 +13,11 @@ export const MENU_ITEM_IDS = [
   // sheet after class; Claude reads it, the teacher reviews, it lands on the
   // children's profiles. Gated by the 'paper_scan' feature flag (migration 308).
   'paper_scan',
+  // Work Rhythm — per-child vertical band of where classroom time actually went
+  // across the five Montessori areas, over a week or a month. Sits directly
+  // under Paper Scan because it reads what Paper Scan (and confirmed photos)
+  // recorded. Gated by the 'work_rhythm' feature flag.
+  'work_rhythm',
   'guru',
   'curriculum',
   'manage_students',
@@ -68,6 +73,7 @@ function isMenuItemId(x: unknown): x is MenuItemId {
 // is the daily entry point, so it leads the list ahead of Wrap Up.
 const CORE_VISIBLE: MenuItemId[] = [
   'paper_scan',
+  'work_rhythm',
   'photo_audit',
   'parent_manager',
   'manage_students',

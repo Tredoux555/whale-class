@@ -12,6 +12,11 @@ export type FeatureKey =
   // (/montree/dashboard/school-features + three-dot menu row).
   // No migration — montree_school_features override row only, default OFF.
   | 'feature_self_serve'
+  // Work Rhythm: per-child, per-area time distribution over a week or a month
+  // (/montree/dashboard/work-rhythm). Reads approved Paper Scan rows + confirmed
+  // photos; writes nothing. NO MIGRATION FILE — one run-once INSERT into
+  // montree_feature_definitions (see below), default OFF.
+  | 'work_rhythm'
   | 'voice_observations'
   | 'raz_reading_tracker'
   | 'weekly_plan_upload'

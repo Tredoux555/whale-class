@@ -38,6 +38,7 @@ import { MENU_CONFIG_VERSION, type MenuItemId } from '../menu/config';
  */
 export const FEATURE_MENU_MAP: Partial<Record<FeatureKey, MenuItemId>> = {
   paper_scan: 'paper_scan',                  // /montree/dashboard/paper-scan (identity pair; menu id added with the feature, Jul 30 2026)
+  work_rhythm: 'work_rhythm',                // /montree/dashboard/work-rhythm (identity pair; menu id added with the feature)
   menu_notes: 'notes',                       // /montree/dashboard/notes
   menu_curriculum: 'curriculum',             // /montree/dashboard/curriculum
   menu_guru: 'guru',                         // /montree/dashboard/guru
