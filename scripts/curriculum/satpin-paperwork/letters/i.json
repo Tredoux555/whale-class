@@ -29,13 +29,13 @@
     { "question": "did the iguana go into the igloo?",   "answer": true,  "imageArt": "iguana-scene.png" },
     { "question": "did the pig go into the igloo?",      "answer": false, "imageWord": "pig" },
     { "question": "did the inchworm go into the igloo?", "answer": true,  "imageArt": "inchworm-scene.png" },
-    { "question": "did the tiger go into the igloo?",    "answer": false, "imageWord": "tiger" },
+    { "question": "did the pen go into the igloo?",      "answer": false, "imageWord": "pen" },
     { "question": "did the infant go into the igloo?",   "answer": true,  "imageArt": "infant-scene.png" },
-    { "question": "did the taxi go into the igloo?",     "answer": false, "imageWord": "taxi" },
+    { "question": "did the penguin go into the igloo?",  "answer": false, "imageWord": "penguin" },
     { "question": "did the insect go into the igloo?",   "answer": true,  "imageArt": "insect-scene.png" },
-    { "question": "did the sock go into the igloo?",     "answer": false, "imageWord": "sock" },
+    { "question": "did the pumpkin go into the igloo?",  "answer": false, "imageWord": "pumpkin" },
     { "question": "is it warm inside the igloo?",        "answer": true,  "imageArt": "warm-inside-scene.png" },
-    { "question": "did the alligator go into the igloo?","answer": false, "imageWord": "alligator" }
+    { "question": "did the panda go into the igloo?",    "answer": false, "imageWord": "panda" }
   ],
 
   "workbook": {
@@ -46,7 +46,7 @@
     "artDir": "Filed permanently at phonics-images/satpin-v2/books/igloo/ (2026-07-30, Tredoux-ordered backfill) — copied from _incoming-week5-i/book-scenes/, sizes verified byte-identical. The incoming tray copy is left in place as the original source; this is now the path builds read from.",
     "sequencingDisplayOrder": "Fixed derangement (no page shown in its own place) so output is deterministic across rebuilds. Values are page `order` numbers.",
     "matchDisplayOrder": "Second fixed derangement for the picture column on the match sheet — deliberately different from sequencingDisplayOrder.",
-    "yesno": "5 true (from the book) / 5 false (weeks 1-4 s/a/t/p vocabulary: pig w4, tiger w3, taxi w3, sock w1, alligator w2), alternating. `imageArt` resolves under artDir; `imageWord` resolves to photoDir/<word>/<word>.jpg.",
+    "yesno": "5 true (from the book) / 5 false, alternating. False items are the PREVIOUS letter's (P) object-basket vocabulary: pig, pen, penguin, pumpkin, panda (rule set 2026-07-30 evening, per Tredoux). `imageArt` resolves under artDir; `imageWord` resolves to photoDir/<word>/<word>.jpg.",
     "workbook.coverArt": "Optional. Defaults to the reader's own cover art when omitted."
   }
 }

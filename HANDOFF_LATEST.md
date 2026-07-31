@@ -96,6 +96,18 @@ verbatim.
 stale cached copy even with correct-looking metadata — always md5/byte-check staged files against
 the Mac before editing them; the device bridge can drop for ~2–20 min and self-recover.
 
+**Late-evening revert + letter cards:** (A) The 3pp/5q paperwork-pack shrink was reverted
+the same evening — `build_paperwork.py` is back to 4pp/10q (yes-or-no ×2pp; duplex prints
+the 4pp pack neatly on 2 sheets, and 10 questions review more prior vocab). New locked rule:
+the 5 'no' items now come from the PREVIOUS letter's object-basket vocab, question phrasing
+per that letter's template — p←t (turtle, tiger, toothbrush, tomato, taxi — "did the pig eat
+a X?"), i←p (pig, pen, penguin, pumpkin, panda — "did the X go into the igloo?"), n←i (igloo,
+iguana, inchworm, insect, infant — "is the X in the nest?"). `letters/{p,i,n}.json` updated,
+`paperwork-pack.pdf` rebuilt 4pp for all three and eyeballed. (B) `page.tsx` now renders a
+"Letter card · PNG" chip on every week block (all 27, digraph ck included), placed between
+the Song and Music video rows — computed URL `letter-cards/letter-card-NN-<slug>.png` with
+the `?download=` convention, no probe needed (all 27 verified 200).
+
 ---
 
 ## 🔒 Jul 29 (Cowork) — SATPIN PAPERWORK PIPELINE LOCKED IN as approved convention (do not redesign)
