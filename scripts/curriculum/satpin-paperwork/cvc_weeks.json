@@ -1,6 +1,6 @@
 {
   "_notes": {
-    "purpose": "One row per SATPIN week that has a CVC sentence AND filed art (see docs/curriculum/montree-phonics/CVC_SENTENCE_LINE.md for the canonical sentence table). Weeks with a sentence but no art yet (l/w20, j/w21, x/w24) are simply absent from this list -- build_cvc.py only ever builds what is here, it never fabricates a row.",
+    "purpose": "One row per SATPIN week that has a CVC sentence AND filed art (see docs/curriculum/montree-phonics/CVC_SENTENCE_LINE.md for the canonical sentence table). Weeks with a sentence but no art yet (j/w21 -- reroll batch only produced blue-jam/blueberry art, not the required red jam) are simply absent from this list -- build_cvc.py only ever builds what is here, it never fabricates a row.",
     "slug": "Matches the per-letter slug used everywhere else in the pipeline (app/montree/library/satpin/page.tsx WEEKS[]) so the sheet can drop into the existing public/satpin-materials/<slug>/ folder alongside that letter's paperwork-pack.pdf / tracing-workbook.pdf / etc.",
     "art": "Filename only, resolved under phonics-images/satpin-v2/cvc/w<NN>/ (zero-padded week number).",
     "keyword": "The scene's own decodable word, read straight off its art filename (w04-tap.png -> 'tap') -- used as the caption under its picture box and, for other weeks, as a distractor caption. Never invented."
@@ -22,8 +22,10 @@
     { "week": 17, "slug": "h",  "letter": "H",  "sentence": "a hen sat on a hot pan",     "art": "w17-pan.png" },
     { "week": 18, "slug": "b",  "letter": "B",  "sentence": "a bug naps in a bun",        "art": "w18-bun.png" },
     { "week": 19, "slug": "f",  "letter": "F",  "sentence": "a fat cat sits on a fan",    "art": "w19-fan.png" },
+    { "week": 20, "slug": "l",  "letter": "L",  "sentence": "a dog licks a leg",          "art": "w20-leg.png" },
     { "week": 22, "slug": "v",  "letter": "V",  "sentence": "a vet hugs a big pig",       "art": "w22-vet.png" },
     { "week": 23, "slug": "w",  "letter": "W",  "sentence": "a pig wins a wet wig",       "art": "w23-wig.png" },
+    { "week": 24, "slug": "x",  "letter": "X",  "sentence": "a fox sits in a box",        "art": "w24-box.png" },
     { "week": 25, "slug": "y",  "letter": "Y",  "sentence": "a yak licks a yam",          "art": "w25-yam.png" },
     { "week": 26, "slug": "z",  "letter": "Z",  "sentence": "a bug zips up a yak",        "art": "w26-zips.png" },
     { "week": 27, "slug": "qu", "letter": "Qu", "sentence": "a quick duck quits a quiz",  "art": "w27-quiz.png" }
