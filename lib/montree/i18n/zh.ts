@@ -6007,4 +6007,20 @@ export const zh = {
   'paperScan.commitFailed': '无法保存到档案，请重试。',
   'paperScan.commitSuccess': '已保存到孩子的档案。',
 
+  // ── School Features (self-serve Feature Switchboard) ──────────────────
+  'schoolFeatures.menuLabel': '学校功能',
+  'schoolFeatures.title': '学校功能',
+  'schoolFeatures.subtitle': '为全校开启或关闭各项工具。',
+  'schoolFeatures.appliesToAll': '更改将应用于学校的每一位老师。',
+  'schoolFeatures.loading': '正在加载功能…',
+  'schoolFeatures.loadFailed': '无法加载学校功能。',
+  'schoolFeatures.empty': '暂无可显示的功能。',
+  'schoolFeatures.lockedTitle': '学校设置权限未开放',
+  'schoolFeatures.lockedBody': '请联系 Montree 开放学校设置权限，之后您就可以自行开启或关闭工具。',
+  'schoolFeatures.enabledToast': '{name} 已开启',
+  'schoolFeatures.disabledToast': '{name} 已关闭',
+  'schoolFeatures.toggleFailed': '无法保存此更改。',
+  'schoolFeatures.menuUpdated': '已为 {count} 位老师更新菜单。',
+  'schoolFeatures.menuBadge': '菜单',
+  'schoolFeatures.premiumBadge': '高级',
 } as const;

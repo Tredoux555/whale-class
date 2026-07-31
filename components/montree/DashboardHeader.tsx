@@ -941,6 +941,14 @@ function DashboardHeader() {
                       stays on disk (hide-don't-delete). To restore:
                   <MenuRow icon={Settings2} label="Menu Management" active={activePage === 'menu-setup'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/menu-setup'); }} />
                   */}
+                  {/* School Features — the self-serve Feature Switchboard. Only
+                      appears once Montree flips Give Control ('feature_self_serve')
+                      for this school from the super-admin panel. Active state is
+                      read from pathname directly: activePage has no branch for
+                      this route (adding one is outside this surgical change). */}
+                  {isEnabled('feature_self_serve') && (
+                    <MenuRow icon={Settings2} label={t('schoolFeatures.menuLabel')} active={pathname === '/montree/dashboard/school-features'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/school-features'); }} />
+                  )}
                   <MenuRow icon={LogOut} label={t('auth.logout')} danger onClick={() => { setShowMoreMenu(false); clearSession(); router.push('/montree/login'); }} />
                 </div>
               )}

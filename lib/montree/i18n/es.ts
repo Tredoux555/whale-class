@@ -5594,4 +5594,20 @@ export const es: Record<string, string> = {
   'paperScan.commitFailed': 'No se pudo guardar en los perfiles. Probá de nuevo.',
   'paperScan.commitSuccess': '¡Guardado en los perfiles de los niños!',
 
+  // ── School Features (self-serve Feature Switchboard) ──────────────────
+  'schoolFeatures.menuLabel': 'Funciones de la escuela',
+  'schoolFeatures.title': 'Funciones de la escuela',
+  'schoolFeatures.subtitle': 'Activá o desactivá herramientas para toda la escuela.',
+  'schoolFeatures.appliesToAll': 'Los cambios se aplican a todos los docentes de la escuela.',
+  'schoolFeatures.loading': 'Cargando funciones…',
+  'schoolFeatures.loadFailed': 'No se pudieron cargar las funciones.',
+  'schoolFeatures.empty': 'Todavía no hay funciones para mostrar.',
+  'schoolFeatures.lockedTitle': 'Los controles de la escuela están bloqueados',
+  'schoolFeatures.lockedBody': 'Pedile a Montree que desbloquee los controles de la escuela y vas a poder activar o desactivar las herramientas vos mismo.',
+  'schoolFeatures.enabledToast': '{name} está activada',
+  'schoolFeatures.disabledToast': '{name} está desactivada',
+  'schoolFeatures.toggleFailed': 'No se pudo guardar el cambio.',
+  'schoolFeatures.menuUpdated': 'Menús actualizados para {count} docentes.',
+  'schoolFeatures.menuBadge': 'Menú',
+  'schoolFeatures.premiumBadge': 'PRO',
 };

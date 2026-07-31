@@ -5597,4 +5597,20 @@ export const ko: Record<string, string> = {
   'paperScan.commitFailed': '프로필에 저장하지 못했습니다. 다시 시도해 주세요.',
   'paperScan.commitSuccess': '아이들의 프로필에 저장했습니다.',
 
+  // ── School Features (self-serve Feature Switchboard) ──────────────────
+  'schoolFeatures.menuLabel': '학교 기능',
+  'schoolFeatures.title': '학교 기능',
+  'schoolFeatures.subtitle': '학교 전체에서 사용할 기능을 켜거나 끕니다.',
+  'schoolFeatures.appliesToAll': '변경 사항은 학교의 모든 교사에게 적용됩니다.',
+  'schoolFeatures.loading': '기능을 불러오는 중…',
+  'schoolFeatures.loadFailed': '기능을 불러오지 못했습니다.',
+  'schoolFeatures.empty': '표시할 기능이 아직 없습니다.',
+  'schoolFeatures.lockedTitle': '학교 설정이 잠겨 있습니다',
+  'schoolFeatures.lockedBody': 'Montree에 학교 설정 잠금 해제를 요청하세요. 해제되면 직접 기능을 켜고 끌 수 있습니다.',
+  'schoolFeatures.enabledToast': '{name} 켜짐',
+  'schoolFeatures.disabledToast': '{name} 꺼짐',
+  'schoolFeatures.toggleFailed': '변경 사항을 저장하지 못했습니다.',
+  'schoolFeatures.menuUpdated': '교사 {count}명의 메뉴가 업데이트되었습니다.',
+  'schoolFeatures.menuBadge': '메뉴',
+  'schoolFeatures.premiumBadge': 'PRO',
 };

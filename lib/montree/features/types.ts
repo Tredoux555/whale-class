@@ -8,6 +8,10 @@ export type FeatureKey =
   // read, and only approved rows reach the children's profiles. Migration 308.
   // Default OFF — enable per school via montree_school_features until Phase-0 accuracy is proven.
   | 'paper_scan'
+  // Give Control: school manages its own features from the dashboard
+  // (/montree/dashboard/school-features + three-dot menu row).
+  // No migration — montree_school_features override row only, default OFF.
+  | 'feature_self_serve'
   | 'voice_observations'
   | 'raz_reading_tracker'
   | 'weekly_plan_upload'
