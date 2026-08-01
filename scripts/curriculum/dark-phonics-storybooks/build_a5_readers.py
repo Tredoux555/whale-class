@@ -18,11 +18,20 @@ are composed on top (both monkeypatched onto dpbuild so build() picks them up):
   * page_back   -> house back cover with a strapline that fits these
                    picture-word books ("one sound, one shouted word").
 
-EDITORIAL RULE (locked).  Every manifest sentence is split into
-`nar` (grey italic, the teacher reads) + `text` (big bold, the child shouts).
-The shout is ALWAYS the swap word; the frame is only ever reordered, never
-reworded.  On the recap page the list becomes the narration and the frame
-becomes the shout.
+EDITORIAL RULE (locked, rev. 2026-08-01).  Straight natural word order,
+exactly as manifest.json's page `text` reads -- never inverted, never
+reordered ("A snake in my sock!", not "In my sock... a snake!").
+
+  * ONLY when a sentence naturally ENDS with its swap word does it get the
+    nar/text split: `nar` (grey italic, "The pig ate a...") + `text` (big
+    bold shout, "pineapple!").  This applies to pig-ate-a-pineapple (every
+    page) and the first four pages of oh-no-goat / oh-no-lion.
+  * Every other page: the full manifest sentence is the big shout, `nar`
+    empty, auto-shrunk by the house painter to fit on 1-2 lines.
+  * Recap pages: the full recap sentence, verbatim punctuation, is the big
+    shout, hand-broken into up to 3 lines so it shrinks to a legible size.
+    Goat/lion recaps are the short manifest text alone: "Oh no, goat..." /
+    "Oh no, lion..." with no list line.
 
 Env overrides (all optional):
   MONTREE_CANVAS_FONTS  font dir (default: repo copy, then the canvas-design skill)
@@ -147,29 +156,35 @@ COVERS = {
 # Books whose target sound sits at the END of the picture words.
 END_SOUND = {'on-a-rock', 'fox-in-a-box'}
 
-# Page splits, in manifest page order.  (nar, shout, max_size)
-# nar may be a list of lines (dpbuild.make_text_page stacks them).
+# Page splits, in manifest page order.  (nar, text, size)
+# nar/text may be a list of lines (dpbuild.make_text_page stacks them).
+# Default case: nar='' (the house painter skips it cleanly), text = the
+# manifest sentence VERBATIM in natural word order, size=100 is just a
+# generous seed -- bb.fit()/dpbuild's fit() always shrinks to the true
+# width-based size regardless of the seed, so 100 is safe everywhere.
+# The only nar/text splits left are the three books whose manifest
+# sentences already end on the swap word (pig, goat pp.1-4, lion pp.1-4).
 SPLITS = {
     'snake-in-my-sock': [
-        ('In my sock…', 'a snake!', 92),
-        ('In my sock…', 'a star!', 92),
-        ('In my sock…', 'a soap!', 92),
-        ('In my sock…', 'a seal!', 92),
-        (['A snake, a star, a soap,', 'and a seal…'], 'in my sock?!', 66),
+        ('', 'A snake in my sock!', 100),
+        ('', 'A star in my sock!', 100),
+        ('', 'A soap in my sock!', 100),
+        ('', 'A seal in my sock!', 100),
+        ('', ['A snake, a star,', 'a soap, and a seal', 'in my sock?!'], 100),
     ],
     'ant-on-my-apple': [
-        ('On my apple…', 'an ant!', 92),
-        ('On my apple…', 'an anchor!', 92),
-        ('On my apple…', 'an alligator!', 92),
-        ('On my apple…', 'an ambulance!', 92),
-        (['An ant, an anchor, an alligator,', 'and an ambulance…'], 'on my apple?!', 62),
+        ('', 'An ant on my apple!', 100),
+        ('', 'An anchor on my apple!', 100),
+        ('', 'An alligator on my apple!', 100),
+        ('', 'An ambulance on my apple!', 100),
+        ('', ['An ant, an anchor, an alligator,', 'and an ambulance', 'on my apple?!'], 100),
     ],
     'tiger-in-the-taxi': [
-        ('In the taxi…', 'a turtle!', 92),
-        ('In the taxi…', 'a tomato!', 92),
-        ('In the taxi…', 'a toothbrush!', 92),
-        ('In the taxi…', 'a tiger!', 92),
-        (['A turtle, a tomato, a toothbrush,', 'and a tiger…'], 'in the taxi?!', 62),
+        ('', 'A turtle in the taxi!', 100),
+        ('', 'A tomato in the taxi!', 100),
+        ('', 'A toothbrush in the taxi!', 100),
+        ('', 'A tiger in the taxi!', 100),
+        ('', ['A turtle, a tomato,', 'a toothbrush, and a tiger', 'in the taxi?!'], 100),
     ],
     'pig-ate-a-pineapple': [
         ('The pig ate a…', 'pineapple!', 92),
@@ -179,163 +194,163 @@ SPLITS = {
         ('And now the pig is…', 'sick!', 92),
     ],
     'in-the-igloo': [
-        ('In the igloo…', 'an iguana!', 92),
-        ('In the igloo…', 'an insect!', 92),
-        ('In the igloo…', 'an inchworm!', 92),
-        ('In the igloo…', 'an infant!', 92),
-        (['An iguana, an insect, an inchworm,', 'and an infant…'], 'in the igloo?!', 62),
+        ('', 'An iguana in the igloo!', 100),
+        ('', 'An insect in the igloo!', 100),
+        ('', 'An inchworm in the igloo!', 100),
+        ('', 'An infant in the igloo!', 100),
+        ('', ['An iguana, an insect,', 'an inchworm,', 'and an infant in the igloo?!'], 100),
     ],
     'not-in-my-nest': [
-        ('In the nest…', 'a nut!', 92),
-        ('In the nest…', 'a net!', 92),
-        ('In the nest…', 'a nail!', 92),
-        ('In the nest…', 'a napkin!', 92),
-        (['A nut, a net, a nail,', 'and a napkin…'], 'in the nest?!', 66),
+        ('', 'A nut in the nest!', 100),
+        ('', 'A net in the nest!', 100),
+        ('', 'A nail in the nest!', 100),
+        ('', 'A napkin in the nest!', 100),
+        ('', ['A nut, a net,', 'a nail, and a napkin', 'in the nest?!'], 100),
     ],
     'monkey-in-my-mug': [
-        ('In my mug…', 'a mouse!', 92),
-        ('In my mug…', 'a mushroom!', 92),
-        ('In my mug…', 'a magnet!', 92),
-        ('In my mug…', 'a monkey!', 92),
-        (['A mouse, a mushroom, a magnet,', 'and a monkey…'], 'in my mug???', 66),
+        ('', 'A mouse in my mug!', 100),
+        ('', 'A mushroom in my mug!', 100),
+        ('', 'A magnet in my mug!', 100),
+        ('', 'A monkey in my mug!', 100),
+        ('', ['A mouse, a mushroom,', 'a magnet, and a monkey', 'in my mug???'], 100),
     ],
     'dinosaur-on-a-drum': [
-        ('On a drum…', 'a dog!', 92),
-        ('On a drum…', 'a doll!', 92),
-        ('On a drum…', 'a duck!', 92),
-        ('On a drum…', 'a dinosaur?!', 92),
-        (['A dog, a doll, a duck,', 'and a dinosaur…'], 'on a drum?????', 62),
+        ('', 'A dog on a drum!', 100),
+        ('', 'A doll on a drum!', 100),
+        ('', 'A duck on a drum!', 100),
+        ('', 'A dinosaur on a drum?!', 100),
+        ('', ['A dog, a doll,', 'a duck, and a dinosaur', 'on a drum?????'], 100),
     ],
     'oh-no-goat': [
         ('The goat ate my…', 'grapes!', 92),
         ('The goat ate my…', 'gloves!', 92),
         ('The goat ate my…', 'gift!', 92),
         ('The goat plays my…', 'guitar?!', 92),
-        (['My grapes, my gloves, my gift,', 'and my guitar…'], 'Oh no, goat…', 62),
+        ('', 'Oh no, goat…', 100),
     ],
     'owl-ate-an-orange': [
-        ('Ate an orange…', 'an owl!', 92),
-        ('Ate an orange…', 'an otter!', 92),
-        ('Ate an orange…', 'an ostrich!', 92),
-        ('Ate an orange…', 'an octopus!', 92),
-        (['An owl, an otter, an ostrich,', 'and an octopus…'], 'ate my oranges?!', 60),
+        ('', 'An owl ate an orange!', 100),
+        ('', 'An otter ate an orange!', 100),
+        ('', 'An ostrich ate an orange!', 100),
+        ('', 'An octopus ate an orange!', 100),
+        ('', ['An owl, an otter,', 'an ostrich, and an octopus', 'ate my oranges?!'], 100),
     ],
     'cow-on-the-car': [
-        ('On the car…', 'a cat!', 92),
-        ('On the car…', 'a cup!', 92),
-        ('On the car…', 'a comb!', 92),
-        ('On the car…', 'a cow!', 92),
-        (['A cat, a cup, a comb,', 'and a cow…'], 'on the car?!', 66),
+        ('', 'A cat on the car!', 100),
+        ('', 'A cup on the car!', 100),
+        ('', 'A comb on the car!', 100),
+        ('', 'A cow on the car!', 100),
+        ('', ['A cat, a cup,', 'a comb, and a cow', 'on the car?!'], 100),
     ],
     'koala-in-the-pocket': [
-        ('In the pocket…', 'a key!', 92),
-        ('In the pocket…', 'a kite!', 92),
-        ('In the pocket…', 'a kettle!', 92),
-        ('In the pocket…', 'a koala!', 92),
-        (['A key, a kite, a kettle,', 'and a koala…'], "in the kangaroo's pocket?!", 52),
+        ('', 'A key in the pocket!', 100),
+        ('', 'A kite in the pocket!', 100),
+        ('', 'A kettle in the pocket!', 100),
+        ('', 'A koala in the pocket!', 100),
+        ('', ['A key, a kite, a kettle,', 'and a koala', "in the kangaroo's pocket?!"], 100),
     ],
     'on-a-rock': [
-        ('On a rock…', 'a duck!', 92),
-        ('On a rock…', 'a chick!', 92),
-        ('On a rock…', 'a clock!', 92),
-        ('On a rock…', 'a sock!', 92),
-        (['A duck, a chick, a clock,', 'and a sock…'], 'on a rock?!', 66),
+        ('', 'A duck on a rock!', 100),
+        ('', 'A chick on a rock!', 100),
+        ('', 'A clock on a rock!', 100),
+        ('', 'A sock on a rock!', 100),
+        ('', ['A duck, a chick,', 'a clock, and a sock', 'on a rock?!'], 100),
     ],
     'elephant-sat-on-the-egg': [
-        ('On the egg sat…', 'a hen!', 92),
-        ('On the egg sat…', 'an eagle!', 92),
-        ('On the egg sat…', 'an elephant!', 92),
-        (['A hen, an eagle,', 'and an elephant…'], 'sat on the egg?!', 60),
+        ('', 'The hen sat on the egg.', 100),
+        ('', 'The eagle sat on the egg.', 100),
+        ('', 'The elephant sat on the egg.', 100),
+        ('', ['A hen, an eagle,', 'and an elephant', 'sat on the egg?!'], 100),
     ],
     'under-my-umbrella': [
-        ('Under my umbrella…', 'a unicorn!', 92),
-        ('Under my umbrella…', 'a ukulele!', 92),
-        ('Under my umbrella…', 'a unicycle!', 92),
-        ('Under my umbrella…', 'an urchin!', 92),
-        (['A unicorn, a ukulele, a unicycle,', 'and an urchin…'], 'under my umbrella?!', 56),
+        ('', 'A unicorn under my umbrella!', 100),
+        ('', 'A ukulele under my umbrella!', 100),
+        ('', 'A unicycle under my umbrella!', 100),
+        ('', 'An urchin under my umbrella!', 100),
+        ('', ['A unicorn, a ukulele,', 'a unicycle, and an urchin', 'under my umbrella?!'], 100),
     ],
     'rabbit-in-the-rocket': [
-        ('In the rocket…', 'a rabbit!', 92),
-        ('In the rocket…', 'a robot!', 92),
-        ('In the rocket…', 'a rose!', 92),
-        ('In the rocket…', 'a ring!', 92),
-        (['A rabbit, a robot, a rose,', 'and a ring…'], 'in the rocket?!', 62),
+        ('', 'A rabbit in the rocket!', 100),
+        ('', 'A robot in the rocket!', 100),
+        ('', 'A rose in the rocket!', 100),
+        ('', 'A ring in the rocket!', 100),
+        ('', ['A rabbit, a robot,', 'a rose, and a ring', 'in the rocket?!'], 100),
     ],
     'horse-in-my-hat': [
-        ('In my hat…', 'a hen!', 92),
-        ('In my hat…', 'a hammer!', 92),
-        ('In my hat…', 'a heart!', 92),
-        ('In my hat…', 'a horse!', 92),
-        (['A hen, a hammer, a heart,', 'and a horse…'], 'in my hat?!', 66),
+        ('', 'A hen in my hat!', 100),
+        ('', 'A hammer in my hat!', 100),
+        ('', 'A heart in my hat!', 100),
+        ('', 'A horse in my hat!', 100),
+        ('', ['A hen, a hammer,', 'a heart, and a horse', 'in my hat?!'], 100),
     ],
     'bear-in-the-boat': [
-        ('In the boat…', 'a ball!', 92),
-        ('In the boat…', 'a banana!', 92),
-        ('In the boat…', 'a bell!', 92),
-        ('In the boat…', 'a bear!', 92),
-        (['A ball, a banana, a bell,', 'and a bear…'], 'in the boat?!', 66),
+        ('', 'A ball in the boat!', 100),
+        ('', 'A banana in the boat!', 100),
+        ('', 'A bell in the boat!', 100),
+        ('', 'A bear in the boat!', 100),
+        ('', ['A ball, a banana,', 'a bell, and a bear', 'in the boat?!'], 100),
     ],
     'frog-on-the-fan': [
-        ('On the fan…', 'a frog!', 92),
-        ('On the fan…', 'a fish!', 92),
-        ('On the fan…', 'a feather!', 92),
-        ('On the fan…', 'a fork!', 92),
-        (['A frog, a fish, a feather,', 'and a fork…'], 'on the fan?!', 66),
+        ('', 'A frog on the fan!', 100),
+        ('', 'A fish on the fan!', 100),
+        ('', 'A feather on the fan!', 100),
+        ('', 'A fork on the fan!', 100),
+        ('', ['A frog, a fish,', 'a feather, and a fork', 'on the fan?!'], 100),
     ],
     'oh-no-lion': [
         ('The lion licks a…', 'lemon!', 92),
         ('The lion licks a…', 'leaf!', 92),
         ('The lion licks a…', 'ladder!', 92),
         ('The lion licks a…', 'lizard!', 92),
-        (['A lemon, a leaf, a ladder,', 'and a lizard…'], 'Oh no, lion…', 62),
+        ('', 'Oh no, lion…', 100),
     ],
     'jellyfish-in-the-jar': [
-        ('In the jar…', 'a jug!', 92),
-        ('In the jar…', 'a jacket!', 92),
-        ('In the jar…', 'a jet!', 92),
-        ('In the jar…', 'a jellyfish!', 92),
-        (['A jug, a jacket, a jet,', 'and a jellyfish…'], 'in the jar?!', 66),
+        ('', 'A jug in the jar!', 100),
+        ('', 'A jacket in the jar!', 100),
+        ('', 'A jet in the jar!', 100),
+        ('', 'A jellyfish in the jar!', 100),
+        ('', ['A jug, a jacket,', 'a jet, and a jellyfish', 'in the jar?!'], 100),
     ],
     'volcano-in-the-van': [
-        ('In the van…', 'a violin!', 92),
-        ('In the van…', 'a vase!', 92),
-        ('In the van…', 'a vest!', 92),
-        ('In the van…', 'a volcano!', 92),
-        (['A violin, a vase, a vest,', 'and a volcano…'], 'in the van?!', 66),
+        ('', 'A violin in the van!', 100),
+        ('', 'A vase in the van!', 100),
+        ('', 'A vest in the van!', 100),
+        ('', 'A volcano in the van!', 100),
+        ('', ['A violin, a vase,', 'a vest, and a volcano', 'in the van?!'], 100),
     ],
     'whale-in-the-wagon': [
-        ('In the wagon…', 'a worm!', 92),
-        ('In the wagon…', 'a watch!', 92),
-        ('In the wagon…', 'a wolf!', 92),
-        ('In the wagon…', 'a whale!', 92),
-        (['A worm, a watch, a wolf,', 'and a whale…'], 'in the wagon?!', 62),
+        ('', 'A worm in the wagon!', 100),
+        ('', 'A watch in the wagon!', 100),
+        ('', 'A wolf in the wagon!', 100),
+        ('', 'A whale in the wagon!', 100),
+        ('', ['A worm, a watch,', 'a wolf, and a whale', 'in the wagon?!'], 100),
     ],
     'fox-in-a-box': [
-        ('In a box…', 'a fox!', 92),
-        ('In a box…', 'an ox!', 92),
-        ('In a box…', 'a xylophone!', 92),
-        (['A fox, an ox,', 'and a xylophone…'], 'in a box?!', 70),
+        ('', 'A fox in a box!', 100),
+        ('', 'An ox in a box!', 100),
+        ('', 'A xylophone in a box!', 100),
+        ('', ['A fox, an ox,', 'and a xylophone', 'in a box?!'], 100),
     ],
     'yak-on-the-yacht': [
-        ('On the yacht…', 'a yak!', 92),
-        ('On the yacht…', 'a yam!', 92),
-        ('On the yacht…', 'a yo-yo!', 92),
-        ('On the yacht…', 'yarn!', 92),
-        (['A yak, a yam, a yo-yo,', 'and yarn…'], 'on the yacht?!', 62),
+        ('', 'A yak on the yacht!', 100),
+        ('', 'A yam on the yacht!', 100),
+        ('', 'A yo-yo on the yacht!', 100),
+        ('', 'Yarn on the yacht!', 100),
+        ('', ['A yak, a yam,', 'a yo-yo, and yarn', 'on the yacht?!'], 100),
     ],
     'zzz-at-the-zoo': [
-        ('At the zoo…', 'a zebra!', 92),
-        ('At the zoo…', 'a zipper!', 92),
-        ('At the zoo…', 'a zucchini!', 92),
-        ('At the zoo…', 'a zeppelin!', 92),
-        (['A zebra, a zipper, a zucchini,', 'and a zeppelin…'], 'at the zoo?!', 62),
+        ('', 'A zebra at the zoo!', 100),
+        ('', 'A zipper at the zoo!', 100),
+        ('', 'A zucchini at the zoo!', 100),
+        ('', 'A zeppelin at the zoo!', 100),
+        ('', ['A zebra,', 'a zipper, a zucchini,', 'and a zeppelin at the zoo?!'], 100),
     ],
     'queen-on-the-quilt': [
-        ('On the quilt…', 'a quill!', 92),
-        ('On the quilt…', 'a quarter!', 92),
-        ('On the quilt…', 'a quail!', 92),
-        ('On the quilt…', 'a queen!', 92),
-        (['A quill, a quarter, a quail,', 'and a queen…'], 'on the quilt?!', 62),
+        ('', 'A quill on the quilt!', 100),
+        ('', 'A quarter on the quilt!', 100),
+        ('', 'A quail on the quilt!', 100),
+        ('', 'A queen on the quilt!', 100),
+        ('', ['A quill, a quarter,', 'a quail, and a queen', 'on the quilt?!'], 100),
     ],
 }
 
