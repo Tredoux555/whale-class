@@ -496,6 +496,10 @@ export default function SatpinPage() {
   const [videos, setVideos] = useState<Record<string, string>>({});
   const [songUploading, setSongUploading] = useState<Record<string, boolean>>({});
   const [songErrors, setSongErrors] = useState<Record<string, string>>({});
+  /** Does the standalone Alphabet Series PDF exist? Same drop-in HEAD-probe
+   *  convention as every other material on this page — it just isn't filed
+   *  under any week's slug, so it gets its own flag. */
+  const [alphabetSeriesPdf, setAlphabetSeriesPdf] = useState(false);
 
   // Uploaded songs + videos — one fetch on mount, same freshness model as the probe.
   useEffect(() => {
@@ -550,6 +554,18 @@ export default function SatpinPage() {
       }));
       if (cancelled) return;
       setMedia(Object.fromEntries(found));
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Probe the standalone Alphabet Series PDF — it is not filed under any
+  // week's slug, so it gets its own one-path HEAD probe rather than folding
+  // into the WEEKS batch above.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const exists = await fileExists('/satpin-materials/alphabet-series/alphabet-series.pdf');
+      if (!cancelled) setAlphabetSeriesPdf(exists);
     })();
     return () => { cancelled = true; };
   }, []);
@@ -1234,6 +1250,48 @@ export default function SatpinPage() {
               </div>
               );
             })}
+          </div>
+
+          {/* The Alphabet Series — a standalone Montessori material, NOT a
+              week and NOT a single letter, so it gets its own clearly-marked
+              block rather than sitting under any week/slug above. Five
+              decodable sentences that between them cover the whole alphabet,
+              each with its own real photo. */}
+          <div
+            className="mt-8 rounded-2xl border p-6 text-left"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.015))',
+              borderColor: 'rgba(255,255,255,0.16)',
+            }}
+          >
+            <div className="flex items-center gap-5">
+              <div
+                className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: 'rgba(255,255,255,0.10)' }}
+              >
+                <span className="text-2xl font-bold leading-none text-white/80">abc</span>
+              </div>
+              <div className="flex-1">
+                <div className="text-white font-semibold text-lg">The Alphabet Series</div>
+                <div className="text-sm mt-0.5 text-white/50">
+                  Five sentences, every letter a&ndash;z &mdash; build, trace, cut.
+                </div>
+              </div>
+            </div>
+            {alphabetSeriesPdf ? (
+              <div className="mt-4">
+                <a
+                  href="/satpin-materials/alphabet-series/alphabet-series.pdf"
+                  download
+                  className="inline-block px-3 py-2 rounded-lg border text-xs transition-all hover:bg-white/[0.06]"
+                  style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)' }}
+                >
+                  Alphabet series &middot; build + trace + cut-outs &middot; A4
+                </a>
+              </div>
+            ) : (
+              <EmptySlot>Alphabet series &mdash; coming soon</EmptySlot>
+            )}
           </div>
 
           <p className="text-white/30 mt-12 text-sm leading-relaxed max-w-md mx-auto">
