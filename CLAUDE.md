@@ -16,6 +16,14 @@
 4. **EVERY SQL MIGRATION MUST BE PASTED IN FULL, DIRECTLY IN THE CHAT.** Never just say
    "run migrations/NNN_x.sql" — Tredoux applies migrations by copy-pasting from the chat into
    the Supabase SQL editor. Paste the complete runnable SQL in a code block, every time.
+5. **MODEL DELEGATION IS ABSOLUTE (Tredoux, Aug 1 2026 — re-issued angrily).** Fable NEVER does
+   grunt work — never reads big files, never scrapes, never drives the browser, never builds.
+   Sonnet subagents do ALL work; Fable only directs, decides, writes critical copy, and reviews.
+   Burning Fable context on mechanical work is a violation, not a style choice.
+
+## 📚 SESSION — Aug 1, 2026 (Cowork/Fable directing Sonnet fleet) — DARK PHONICS STORY BOOKS: ALL 27 BOOKS SHIPPED LIVE
+
+**27 toddler pattern books matching the Dark Phonics songs — written, illustrated, built, published, live in one session.** Formula locked by Tredoux: one target sound · one baby-world frame (in/on/eating/sitting) · one page per basket word ("A snake in my sock!") · ending = the cumulative recap page ("A snake, a star, a soap, and a seal in my sock?!") · the funny lives in the PICTURE (progression gag: sock bulges, drum collapses, car flattens), NEVER written. Variants: bk9/bk20 end "Oh no, goat…/lion…"; bk14 (egg) + bk24 (fox-in-a-box) are 3-worders. Words = Montree phonics baskets where they fit; joke wins over coverage. MJ prompts must be SIMPLE (Tredoux mid-run correction) — one sentence + one gag detail + the locked pen-and-ink suffix; over-detailed prompts make MJ chase the wrong things. Art: 133 images via the Haiku/Sonnet-submits→Sonnet-judges Chrome pipeline in 5 waves, all filed to `phonics-images/dark-phonics-books/<slug>/<key>.png` (gitignored by design — bucket is the deployed source). Known compromise: `oh-no-goat/p4-guitar` — MJ refuses goat-EATING-guitar (always renders playing) across 3 attempts incl. result-state phrasing; least-bad tile filed, reroll candidate. Builder `scripts/curriculum/dark-phonics-storybooks/build_storybooks.py` (+ manifest.json, source of truth for texts/prompts) clones the build_easy_readers.py Chrome print pipeline: 19cm sq, dark cover + gold title + recap-art tile, white interiors, Andika line, finale letter page; 27 PDFs → `~/Desktop/English Curriculum 2026/Dark Phonics/Story Books/<slug>/book.pdf`. Published via new `scripts/curriculum/publish-storybooks.mjs` → bucket `books/<slug>.pdf` + `books/covers/<slug>.png` (54/54). NEW page `public/dark-phonics-storybooks.html` (27 cards, proxy links `?bucket=dark-phonics&v=1`) + 📘 Story Books tab in the hub. Commit `d509ad35`, deployed, live-verified 200s. ⏳ OWED: Tredoux eyeballs all 27 books (grids still in MJ for re-picks; art run was fully agent-judged per his 'I'll go through it later'); goat-guitar decision; optional cover-art swaps.
 
 ## 📝 SESSION — Jul 31, 2026 pt2 (Cowork/Fable) — WORK RHYTHM SHIPPED (run-once SQL pending)
 
