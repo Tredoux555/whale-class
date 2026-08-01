@@ -60,6 +60,14 @@ interface Material {
 
 type AuthView = 'signIn' | 'join' | 'joined' | 'forgot' | 'forgotSent' | 'reset';
 
+/**
+ * Whether the sign-in view offers self-serve password reset. Off while the
+ * app has no verified outbound email sender (Tredoux's 2026-08-01 ruling:
+ * open signup, no Resend) — a reset link that never arrives is worse than no
+ * link. Flip to true together with COMMUNITY_REQUIRE_EMAIL_CONFIRMATION=1.
+ */
+const SHOW_FORGOT_PASSWORD = false;
+
 // ============================================
 // FETCH
 // ============================================
@@ -303,18 +311,33 @@ function AuthModal({
     setError('');
     setBusy(true);
     try {
-      await api('/auth/signup', {
+      const data = await api<{ user?: Me }>('/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, displayName, website }),
       });
+      // Open mode (server default): the account is live and the cookie is
+      // already set — straight in, no inbox detour. Strict mode returns no
+      // user and we fall through to the check-your-inbox view.
+      if (data.user) {
+        onSignedIn(data.user);
+        return;
+      }
       setView('joined');
     } catch (err) {
+      // Friendly, not fatal: the address is already registered — put them on
+      // the sign-in view with the email kept, one field from done.
+      if (err instanceof ApiError && err.code === 'account_exists') {
+        setView('signIn');
+        setError('');
+        setNote('account_exists');
+        return;
+      }
       handle(err);
     } finally {
       setBusy(false);
     }
-  }, [email, password, displayName, website, handle, setView]);
+  }, [email, password, displayName, website, handle, setView, onSignedIn]);
 
   const submitSignIn = useCallback(async () => {
     setError('');
@@ -439,6 +462,11 @@ function AuthModal({
           <form
             onSubmit={(e) => { e.preventDefault(); if (!busy) submitSignIn(); }}
           >
+            {note === 'account_exists' && (
+              <div className="text-emerald-300/70 text-xs mb-3 text-left">
+                That email already has an account &mdash; sign in below.
+              </div>
+            )}
             {note === 'reset_done' && (
               <div className="text-emerald-300/70 text-xs mb-3 text-left">
                 Password changed — sign in with it now.
@@ -466,7 +494,14 @@ function AuthModal({
             </div>
             <div className="mt-4 flex items-center justify-between">
               <TextLink onClick={() => go('join')}>Create an account</TextLink>
-              <TextLink onClick={() => go('forgot')}>Forgot password</TextLink>
+              {/* Self-serve reset needs a working outbound email sender; with
+                  confirmation mode off (no verified Resend domain yet) the
+                  link would dead-end, so it stays hidden. The forgot/reset
+                  views and routes are wired and ready — restore this link
+                  when COMMUNITY_REQUIRE_EMAIL_CONFIRMATION goes on. */}
+              {SHOW_FORGOT_PASSWORD && (
+                <TextLink onClick={() => go('forgot')}>Forgot password</TextLink>
+              )}
             </div>
           </form>
         )}
@@ -506,8 +541,8 @@ function AuthModal({
               </PrimaryButton>
             </div>
             <p className="text-white/25 text-[11px] mt-3 leading-relaxed text-left">
-              We&rsquo;ll email you a link to confirm the address. Nothing is shared
-              with your school &mdash; this account only signs your messages here.
+              Nothing is shared with your school &mdash; this account only signs
+              your messages and materials here.
             </p>
             <div className="mt-4">
               <TextLink onClick={() => go('signIn')}>I already have an account</TextLink>

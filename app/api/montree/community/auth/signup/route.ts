@@ -13,9 +13,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { getClientIP } from '@/lib/montree/audit-logger';
-import { hashCommunityPassword, makeToken } from '@/lib/montree/community/auth';
+import {
+  createCommunityToken,
+  hashCommunityPassword,
+  makeToken,
+  setCommunityCookie,
+} from '@/lib/montree/community/auth';
 import { sendCommunityConfirmEmail } from '@/lib/montree/community/emails';
 import {
+  REQUIRE_EMAIL_CONFIRMATION,
   badRequest,
   isMissingTable,
   isValidDisplayName,
@@ -83,6 +89,70 @@ export async function POST(request: NextRequest) {
       if (isMissingTable(lookupError)) return migrationPending();
       return serverError('signup', lookupError);
     }
+
+    // ---------------------------------------------------------------------
+    // OPEN MODE (default — see REQUIRE_EMAIL_CONFIRMATION in http.ts):
+    // no confirmation mail, no token dance. The email is recorded, the row is
+    // marked confirmed at creation, and the teacher is signed straight in.
+    // An existing address gets an honest "sign in instead" — friendlier than
+    // the strict mode's enumeration-proof silence, and acceptable here
+    // because in open mode registration is not a secret-revealing act.
+    // ---------------------------------------------------------------------
+    if (!REQUIRE_EMAIL_CONFIRMATION) {
+      if (existing) {
+        return NextResponse.json(
+          {
+            error: 'That email already has an account — sign in instead.',
+            code: 'account_exists',
+          },
+          { status: 409 }
+        );
+      }
+
+      const passwordHash = await hashCommunityPassword(password);
+      const { data: created, error: insertError } = await supabase
+        .from('montree_community_users')
+        .insert({
+          email,
+          password_hash: passwordHash,
+          display_name: displayName,
+          email_confirmed_at: new Date().toISOString(),
+          last_login_at: new Date().toISOString(),
+        })
+        .select('id, email, display_name')
+        .maybeSingle();
+
+      if (insertError || !created) {
+        if (insertError && isMissingTable(insertError)) return migrationPending();
+        if ((insertError as { code?: string } | null)?.code === '23505') {
+          return NextResponse.json(
+            {
+              error: 'That email already has an account — sign in instead.',
+              code: 'account_exists',
+            },
+            { status: 409 }
+          );
+        }
+        return serverError('signup', insertError ?? new Error('insert returned no row'));
+      }
+
+      const sessionToken = await createCommunityToken(created.id as string);
+      const response = NextResponse.json({
+        ok: true,
+        user: {
+          displayName: created.display_name as string,
+          email: created.email as string,
+          confirmed: true,
+        },
+      });
+      setCommunityCookie(response, sessionToken);
+      return response;
+    }
+
+    // ---------------------------------------------------------------------
+    // STRICT MODE (COMMUNITY_REQUIRE_EMAIL_CONFIRMATION=1) — the original
+    // confirm-by-email flow, enumeration-proof throughout.
+    // ---------------------------------------------------------------------
 
     // Already confirmed: say nothing, send nothing. (They can sign in, or use
     // "forgot password" — both are one tap away in the same modal.)
