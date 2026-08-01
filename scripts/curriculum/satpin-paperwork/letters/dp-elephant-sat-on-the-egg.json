@@ -1,0 +1,67 @@
+{
+  "letter": "e",
+  "week": 14,
+  "slug": "dp-elephant-sat-on-the-egg",
+  "bookSlug": "elephant-sat-on-the-egg",
+  "bookTitle": "The Elephant Sat on the Egg",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-elephant-sat-on-the-egg.py",
+  "artDir": "phonics-images/dark-phonics-books/elephant-sat-on-the-egg",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "hen",
+      "sentence": "The hen sat on the egg.",
+      "art": "p1-hen.png"
+    },
+    {
+      "order": 2,
+      "word": "eagle",
+      "sentence": "The eagle sat on the egg.",
+      "art": "p2-eagle.png"
+    },
+    {
+      "order": 3,
+      "word": "elephant",
+      "sentence": "The elephant sat on the egg.",
+      "art": "p3-elephant.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    2,
+    3,
+    1
+  ],
+  "matchDisplayOrder": [
+    3,
+    1,
+    2
+  ],
+  "yesno": [
+    {
+      "question": "did hen sit on the egg?",
+      "answer": true,
+      "imageArt": "p1-hen.png"
+    },
+    {
+      "question": "did a fox sit on the egg?",
+      "answer": false,
+      "imageArt": "../fox-in-a-box/p1-fox.png"
+    },
+    {
+      "question": "did eagle sit on the egg?",
+      "answer": true,
+      "imageArt": "p2-eagle.png"
+    },
+    {
+      "question": "did a frog sit on the egg?",
+      "answer": false,
+      "imageArt": "../frog-on-the-fan/p1-frog.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py \u2014 do not hand-edit; regenerate instead.",
+    "recap": "p4-recap excluded from pages[] \u2014 it lists all swap words in one summary sentence, not a single \"word\" the satpin pages[] format expects (see p.json convention, five single-topic pages).",
+    "yesno": "2 true from the book's own first two pages; 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, in this book's own question frame."
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "letter": "u",
+  "week": 15,
+  "slug": "dp-under-my-umbrella",
+  "bookSlug": "under-my-umbrella",
+  "bookTitle": "Under My Umbrella",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-under-my-umbrella.py",
+  "artDir": "phonics-images/dark-phonics-books/under-my-umbrella",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "unicorn",
+      "sentence": "A unicorn under my umbrella!",
+      "art": "p1-unicorn.png"
+    },
+    {
+      "order": 2,
+      "word": "ukulele",
+      "sentence": "A ukulele under my umbrella!",
+      "art": "p2-ukulele.png"
+    },
+    {
+      "order": 3,
+      "word": "unicycle",
+      "sentence": "A unicycle under my umbrella!",
+      "art": "p3-unicycle.png"
+    },
+    {
+      "order": 4,
+      "word": "urchin",
+      "sentence": "An urchin under my umbrella!",
+      "art": "p4-urchin.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    2,
+    1,
+    4,
+    3
+  ],
+  "matchDisplayOrder": [
+    3,
+    4,
+    1,
+    2
+  ],
+  "yesno": [
+    {
+      "question": "is a unicorn under my umbrella?",
+      "answer": true,
+      "imageArt": "p1-unicorn.png"
+    },
+    {
+      "question": "is a violin under my umbrella?",
+      "answer": false,
+      "imageArt": "../volcano-in-the-van/p1-violin.png"
+    },
+    {
+      "question": "is a ukulele under my umbrella?",
+      "answer": true,
+      "imageArt": "p2-ukulele.png"
+    },
+    {
+      "question": "is a worm under my umbrella?",
+      "answer": false,
+      "imageArt": "../whale-in-the-wagon/p1-worm.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py \u2014 do not hand-edit; regenerate instead.",
+    "recap": "p5-recap excluded from pages[] \u2014 it lists all swap words in one summary sentence, not a single \"word\" the satpin pages[] format expects (see p.json convention, five single-topic pages).",
+    "yesno": "2 true from the book's own first two pages; 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, in this book's own question frame."
+  }
+}

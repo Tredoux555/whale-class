@@ -1,0 +1,75 @@
+{
+  "letter": "s",
+  "week": 1,
+  "slug": "dp-snake-in-my-sock",
+  "bookSlug": "snake-in-my-sock",
+  "bookTitle": "Snake in My Sock",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-snake-in-my-sock.py",
+  "artDir": "phonics-images/dark-phonics-books/snake-in-my-sock",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "snake",
+      "sentence": "A snake in my sock!",
+      "art": "p1-snake.png"
+    },
+    {
+      "order": 2,
+      "word": "star",
+      "sentence": "A star in my sock!",
+      "art": "p2-star.png"
+    },
+    {
+      "order": 3,
+      "word": "soap",
+      "sentence": "A soap in my sock!",
+      "art": "p3-soap.png"
+    },
+    {
+      "order": 4,
+      "word": "seal",
+      "sentence": "A seal in my sock!",
+      "art": "p4-seal.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    2,
+    1,
+    4,
+    3
+  ],
+  "matchDisplayOrder": [
+    3,
+    4,
+    1,
+    2
+  ],
+  "yesno": [
+    {
+      "question": "is a snake in my sock?",
+      "answer": true,
+      "imageArt": "p1-snake.png"
+    },
+    {
+      "question": "is a dinosaur in my sock?",
+      "answer": false,
+      "imageArt": "../dinosaur-on-a-drum/p4-dinosaur.png"
+    },
+    {
+      "question": "is a star in my sock?",
+      "answer": true,
+      "imageArt": "p2-star.png"
+    },
+    {
+      "question": "is an octopus in my sock?",
+      "answer": false,
+      "imageArt": "../owl-ate-an-orange/p4-octopus.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py \u2014 do not hand-edit; regenerate instead.",
+    "recap": "p5-recap excluded from pages[] \u2014 it lists all swap words in one summary sentence, not a single \"word\" the satpin pages[] format expects (see p.json convention, five single-topic pages).",
+    "yesno": "2 true from the book's own first two pages; 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, in this book's own question frame."
+  }
+}

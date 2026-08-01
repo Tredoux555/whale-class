@@ -1,0 +1,75 @@
+{
+  "letter": "ck",
+  "week": 13,
+  "slug": "dp-on-a-rock",
+  "bookSlug": "on-a-rock",
+  "bookTitle": "On a Rock",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-on-a-rock.py",
+  "artDir": "phonics-images/dark-phonics-books/on-a-rock",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "duck",
+      "sentence": "A duck on a rock!",
+      "art": "p1-duck.png"
+    },
+    {
+      "order": 2,
+      "word": "chick",
+      "sentence": "A chick on a rock!",
+      "art": "p2-chick.png"
+    },
+    {
+      "order": 3,
+      "word": "clock",
+      "sentence": "A clock on a rock!",
+      "art": "p3-clock.png"
+    },
+    {
+      "order": 4,
+      "word": "sock",
+      "sentence": "A sock on a rock!",
+      "art": "p4-sock.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    2,
+    1,
+    4,
+    3
+  ],
+  "matchDisplayOrder": [
+    3,
+    4,
+    1,
+    2
+  ],
+  "yesno": [
+    {
+      "question": "is a duck on a rock?",
+      "answer": true,
+      "imageArt": "p1-duck.png"
+    },
+    {
+      "question": "is an owl on a rock?",
+      "answer": false,
+      "imageArt": "../owl-ate-an-orange/p1-owl.png"
+    },
+    {
+      "question": "is a chick on a rock?",
+      "answer": true,
+      "imageArt": "p2-chick.png"
+    },
+    {
+      "question": "is a pineapple on a rock?",
+      "answer": false,
+      "imageArt": "../pig-ate-a-pineapple/p1-pineapple.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py \u2014 do not hand-edit; regenerate instead.",
+    "recap": "p5-recap excluded from pages[] \u2014 it lists all swap words in one summary sentence, not a single \"word\" the satpin pages[] format expects (see p.json convention, five single-topic pages).",
+    "yesno": "2 true from the book's own first two pages; 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, in this book's own question frame."
+  }
+}

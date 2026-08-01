@@ -1,0 +1,75 @@
+{
+  "letter": "g",
+  "week": 9,
+  "slug": "dp-oh-no-goat",
+  "bookSlug": "oh-no-goat",
+  "bookTitle": "Oh No, Goat\u2026",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-oh-no-goat.py",
+  "artDir": "phonics-images/dark-phonics-books/oh-no-goat",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "grapes",
+      "sentence": "The goat ate my grapes!",
+      "art": "p1-grapes.png"
+    },
+    {
+      "order": 2,
+      "word": "gloves",
+      "sentence": "The goat ate my gloves!",
+      "art": "p2-gloves.png"
+    },
+    {
+      "order": 3,
+      "word": "gift",
+      "sentence": "The goat ate my gift!",
+      "art": "p3-gift.png"
+    },
+    {
+      "order": 4,
+      "word": "guitar",
+      "sentence": "The goat plays my guitar?!",
+      "art": "p4-guitar.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    2,
+    1,
+    4,
+    3
+  ],
+  "matchDisplayOrder": [
+    3,
+    4,
+    1,
+    2
+  ],
+  "yesno": [
+    {
+      "question": "did the goat eat grapes?",
+      "answer": true,
+      "imageArt": "p1-grapes.png"
+    },
+    {
+      "question": "did the goat eat a lemon?",
+      "answer": false,
+      "imageArt": "../oh-no-lion/p1-lemon.png"
+    },
+    {
+      "question": "did the goat eat gloves?",
+      "answer": true,
+      "imageArt": "p2-gloves.png"
+    },
+    {
+      "question": "did the goat eat a duck?",
+      "answer": false,
+      "imageArt": "../on-a-rock/p1-duck.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py \u2014 do not hand-edit; regenerate instead.",
+    "recap": "p5-recap excluded from pages[] \u2014 it lists all swap words in one summary sentence, not a single \"word\" the satpin pages[] format expects (see p.json convention, five single-topic pages).",
+    "yesno": "2 true from the book's own first two pages; 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, in this book's own question frame."
+  }
+}

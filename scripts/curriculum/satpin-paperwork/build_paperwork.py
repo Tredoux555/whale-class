@@ -188,8 +188,10 @@ def page_chrome(c, cfg, work_title, instruction, page_no, page_total):
 
 # ------------------------------------------------------------ work pages ---
 def page_sequencing(c, cfg, art, page_no, page_total):
+    n = len(cfg['pages'])                          # locked satpin books: 5;
+                                                    # Dark Phonics books: 3-4
     page_chrome(c, cfg, 'Story order',
-                'What happened first? Write 1 to 5 in the boxes.',
+                'What happened first? Write 1 to %d in the boxes.' % n,
                 page_no, page_total)
 
     order = cfg['sequencingDisplayOrder']
@@ -203,13 +205,22 @@ def page_sequencing(c, cfg, art, page_no, page_total):
     imh = 45 * mm
     cellh = max(box, imh)
 
+    nrows = -(-n // 2)                             # ceil(n / 2)
     pitch = 64 * mm
-    block = 2 * pitch + cellh
+    block = (nrows - 1) * pitch + cellh
     top = TOP_CONTENT - (USABLE - block) / 2
 
-    slots = [(M, 0), (M + cellw + gutter, 0),
-             (M, 1), (M + cellw + gutter, 1),
-             (M + (CW - cellw) / 2, 2)]
+    # 2-up rows of slots; an odd final slot (n odd) is centred alone on its
+    # own row — for n=5 this reproduces the original fixed 2+2+1 layout
+    # exactly.
+    slots = []
+    for k in range(n):
+        row, col = divmod(k, 2)
+        if n % 2 == 1 and k == n - 1:
+            x = M + (CW - cellw) / 2
+        else:
+            x = M if col == 0 else M + cellw + gutter
+        slots.append((x, row))
 
     for k, (x, row) in enumerate(slots):
         page = by_order[order[k]]
@@ -228,16 +239,18 @@ def page_match(c, cfg, art, page_no, page_total):
     by_order = {p['order']: p for p in cfg['pages']}
     right_order = cfg['matchDisplayOrder']
 
+    n = len(cfg['pages'])                          # locked satpin books: 5;
+                                                    # Dark Phonics books: 3-4
     imw, imh = 49.3 * mm, 37 * mm                  # 6.5 mm of air between rows
     img_x = PW - M - imw
     dot_l = M + 66 * mm
     dot_r = img_x - 7 * mm
 
     pitch = 43.5 * mm
-    block = 4 * pitch + imh
+    block = (n - 1) * pitch + imh
     top = TOP_CONTENT - (USABLE - block) / 2
 
-    for i in range(5):
+    for i in range(n):
         ytop = top - i * pitch
         ymid = ytop - imh / 2
 
@@ -280,7 +293,7 @@ def page_yesno(c, cfg, art, photos, items, page_no, page_total):
 
     head = 13 * mm
     pitch = 38 * mm
-    block = 4 * pitch + imh
+    block = max(0, len(items) - 1) * pitch + imh
     top = (TOP_CONTENT - head) - (USABLE - head - block) / 2
 
     for i, item in enumerate(items):
@@ -324,14 +337,22 @@ def build(cfg, repo_root, outdir):
     c = rl_canvas.Canvas(out, pagesize=A4)
     c.setTitle('%s — paperwork pack' % cfg['bookTitle'])
 
-    total = 4
-    page_yesno(c, cfg, art, photos, cfg['yesno'][:5], 1, total)
+    # Locked satpin books always pass 10 yes/no items -> two 5-item pages,
+    # four pages total (unchanged). Dark Phonics books pass 4 -> one page,
+    # three pages total. Chunk size stays 5 either way.
+    yn = cfg['yesno']
+    yn_chunks = [yn[i:i + 5] for i in range(0, len(yn), 5)] or [[]]
+    total = len(yn_chunks) + 2
+
+    page_no = 1
+    for chunk in yn_chunks:
+        page_yesno(c, cfg, art, photos, chunk, page_no, total)
+        c.showPage()
+        page_no += 1
+    page_sequencing(c, cfg, art, page_no, total)
     c.showPage()
-    page_yesno(c, cfg, art, photos, cfg['yesno'][5:], 2, total)
-    c.showPage()
-    page_sequencing(c, cfg, art, 3, total)
-    c.showPage()
-    page_match(c, cfg, art, 4, total)
+    page_no += 1
+    page_match(c, cfg, art, page_no, total)
     c.showPage()
     c.save()
     print('paperwork-pack.pdf', total, 'pages ->', out)

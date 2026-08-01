@@ -1,0 +1,75 @@
+{
+  "letter": "w",
+  "week": 23,
+  "slug": "dp-whale-in-the-wagon",
+  "bookSlug": "whale-in-the-wagon",
+  "bookTitle": "A Whale in the Wagon",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-whale-in-the-wagon.py",
+  "artDir": "phonics-images/dark-phonics-books/whale-in-the-wagon",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "worm",
+      "sentence": "A worm in the wagon!",
+      "art": "p1-worm.png"
+    },
+    {
+      "order": 2,
+      "word": "watch",
+      "sentence": "A watch in the wagon!",
+      "art": "p2-watch.png"
+    },
+    {
+      "order": 3,
+      "word": "wolf",
+      "sentence": "A wolf in the wagon!",
+      "art": "p3-wolf.png"
+    },
+    {
+      "order": 4,
+      "word": "whale",
+      "sentence": "A whale in the wagon!",
+      "art": "p4-whale.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    2,
+    1,
+    4,
+    3
+  ],
+  "matchDisplayOrder": [
+    3,
+    4,
+    1,
+    2
+  ],
+  "yesno": [
+    {
+      "question": "is a worm in the wagon?",
+      "answer": true,
+      "imageArt": "p1-worm.png"
+    },
+    {
+      "question": "is a yak in the wagon?",
+      "answer": false,
+      "imageArt": "../yak-on-the-yacht/p1-yak.png"
+    },
+    {
+      "question": "is a watch in the wagon?",
+      "answer": true,
+      "imageArt": "p2-watch.png"
+    },
+    {
+      "question": "is a zebra in the wagon?",
+      "answer": false,
+      "imageArt": "../zzz-at-the-zoo/p1-zebra.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py \u2014 do not hand-edit; regenerate instead.",
+    "recap": "p5-recap excluded from pages[] \u2014 it lists all swap words in one summary sentence, not a single \"word\" the satpin pages[] format expects (see p.json convention, five single-topic pages).",
+    "yesno": "2 true from the book's own first two pages; 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, in this book's own question frame."
+  }
+}

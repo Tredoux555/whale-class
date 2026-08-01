@@ -1,0 +1,75 @@
+{
+  "letter": "k",
+  "week": 12,
+  "slug": "dp-koala-in-the-pocket",
+  "bookSlug": "koala-in-the-pocket",
+  "bookTitle": "A Koala in the Pocket",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-koala-in-the-pocket.py",
+  "artDir": "phonics-images/dark-phonics-books/koala-in-the-pocket",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "key",
+      "sentence": "A key in the pocket!",
+      "art": "p1-key.png"
+    },
+    {
+      "order": 2,
+      "word": "kite",
+      "sentence": "A kite in the pocket!",
+      "art": "p2-kite.png"
+    },
+    {
+      "order": 3,
+      "word": "kettle",
+      "sentence": "A kettle in the pocket!",
+      "art": "p3-kettle.png"
+    },
+    {
+      "order": 4,
+      "word": "koala",
+      "sentence": "A koala in the pocket!",
+      "art": "p4-koala.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    2,
+    1,
+    4,
+    3
+  ],
+  "matchDisplayOrder": [
+    3,
+    4,
+    1,
+    2
+  ],
+  "yesno": [
+    {
+      "question": "is a key in the pocket?",
+      "answer": true,
+      "imageArt": "p1-key.png"
+    },
+    {
+      "question": "is a mouse in the pocket?",
+      "answer": false,
+      "imageArt": "../monkey-in-my-mug/p1-mouse.png"
+    },
+    {
+      "question": "is a kite in the pocket?",
+      "answer": true,
+      "imageArt": "p2-kite.png"
+    },
+    {
+      "question": "is a nut in the pocket?",
+      "answer": false,
+      "imageArt": "../not-in-my-nest/p1-nut.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py \u2014 do not hand-edit; regenerate instead.",
+    "recap": "p5-recap excluded from pages[] \u2014 it lists all swap words in one summary sentence, not a single \"word\" the satpin pages[] format expects (see p.json convention, five single-topic pages).",
+    "yesno": "2 true from the book's own first two pages; 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, in this book's own question frame."
+  }
+}

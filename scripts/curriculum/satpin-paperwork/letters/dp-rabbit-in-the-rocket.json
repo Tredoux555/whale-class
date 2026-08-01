@@ -1,0 +1,75 @@
+{
+  "letter": "r",
+  "week": 16,
+  "slug": "dp-rabbit-in-the-rocket",
+  "bookSlug": "rabbit-in-the-rocket",
+  "bookTitle": "A Rabbit in the Rocket",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-rabbit-in-the-rocket.py",
+  "artDir": "phonics-images/dark-phonics-books/rabbit-in-the-rocket",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "rabbit",
+      "sentence": "A rabbit in the rocket!",
+      "art": "p1-rabbit.png"
+    },
+    {
+      "order": 2,
+      "word": "robot",
+      "sentence": "A robot in the rocket!",
+      "art": "p2-robot.png"
+    },
+    {
+      "order": 3,
+      "word": "rose",
+      "sentence": "A rose in the rocket!",
+      "art": "p3-rose.png"
+    },
+    {
+      "order": 4,
+      "word": "ring",
+      "sentence": "A ring in the rocket!",
+      "art": "p4-ring.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    2,
+    1,
+    4,
+    3
+  ],
+  "matchDisplayOrder": [
+    3,
+    4,
+    1,
+    2
+  ],
+  "yesno": [
+    {
+      "question": "is a rabbit in the rocket?",
+      "answer": true,
+      "imageArt": "p1-rabbit.png"
+    },
+    {
+      "question": "is a snake in the rocket?",
+      "answer": false,
+      "imageArt": "../snake-in-my-sock/p1-snake.png"
+    },
+    {
+      "question": "is a robot in the rocket?",
+      "answer": true,
+      "imageArt": "p2-robot.png"
+    },
+    {
+      "question": "is a turtle in the rocket?",
+      "answer": false,
+      "imageArt": "../tiger-in-the-taxi/p1-turtle.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py \u2014 do not hand-edit; regenerate instead.",
+    "recap": "p5-recap excluded from pages[] \u2014 it lists all swap words in one summary sentence, not a single \"word\" the satpin pages[] format expects (see p.json convention, five single-topic pages).",
+    "yesno": "2 true from the book's own first two pages; 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, in this book's own question frame."
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "letter": "n",
+  "week": 6,
+  "slug": "dp-not-in-my-nest",
+  "bookSlug": "not-in-my-nest",
+  "bookTitle": "Not in My Nest!",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-not-in-my-nest.py",
+  "artDir": "phonics-images/dark-phonics-books/not-in-my-nest",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "nut",
+      "sentence": "A nut in the nest!",
+      "art": "p1-nut.png"
+    },
+    {
+      "order": 2,
+      "word": "net",
+      "sentence": "A net in the nest!",
+      "art": "p2-net.png"
+    },
+    {
+      "order": 3,
+      "word": "nail",
+      "sentence": "A nail in the nest!",
+      "art": "p3-nail.png"
+    },
+    {
+      "order": 4,
+      "word": "napkin",
+      "sentence": "A napkin in the nest!",
+      "art": "p4-napkin.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    2,
+    1,
+    4,
+    3
+  ],
+  "matchDisplayOrder": [
+    3,
+    4,
+    1,
+    2
+  ],
+  "yesno": [
+    {
+      "question": "is a nut in the nest?",
+      "answer": true,
+      "imageArt": "p1-nut.png"
+    },
+    {
+      "question": "is grapes in the nest?",
+      "answer": false,
+      "imageArt": "../oh-no-goat/p1-grapes.png"
+    },
+    {
+      "question": "is a net in the nest?",
+      "answer": true,
+      "imageArt": "p2-net.png"
+    },
+    {
+      "question": "is a lemon in the nest?",
+      "answer": false,
+      "imageArt": "../oh-no-lion/p1-lemon.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py \u2014 do not hand-edit; regenerate instead.",
+    "recap": "p5-recap excluded from pages[] \u2014 it lists all swap words in one summary sentence, not a single \"word\" the satpin pages[] format expects (see p.json convention, five single-topic pages).",
+    "yesno": "2 true from the book's own first two pages; 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, in this book's own question frame."
+  }
+}
