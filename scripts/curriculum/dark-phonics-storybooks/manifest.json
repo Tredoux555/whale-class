@@ -1,0 +1,885 @@
+{
+  "books": [
+    {
+      "num": 1,
+      "letter": "s",
+      "slug": "snake-in-my-sock",
+      "title": "Snake in My Sock",
+      "pages": [
+        {
+          "key": "p1-snake",
+          "text": "A snake in my sock!",
+          "mj_prompt": "one single green snake coiled snugly inside a large grey knitted sock, the sock lightly bulging around its shape, sock resting beside one bare child's foot, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-star",
+          "text": "A star in my sock!",
+          "mj_prompt": "one large yellow star shape stuffed inside a grey knitted sock, the sock bulging more than before, sock resting beside one bare child's foot, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-soap",
+          "text": "A soap in my sock!",
+          "mj_prompt": "one round white bar of soap stuffed inside a grey knitted sock, the sock bulging even bigger and lumpier than before, sock resting beside one bare child's foot, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-seal",
+          "text": "A seal in my sock!",
+          "mj_prompt": "one plump grey seal poking its head out of a grey knitted sock, the sock stretched enormous and lumpy, sock resting beside one bare child's foot, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "A snake, a star, a soap, and a seal in my sock?!",
+          "mj_prompt": "one enormous lumpy grey knitted sock stuffed absolutely full, with a snake, a star shape, a bar of soap, and a seal all peeking out of the stretched opening, one bare child's foot waiting patiently beside it, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 2,
+      "letter": "a",
+      "slug": "ant-on-my-apple",
+      "title": "Ant on My Apple",
+      "pages": [
+        {
+          "key": "p1-ant",
+          "text": "An ant on my apple!",
+          "mj_prompt": "one tiny red ant standing on top of one plump round red apple, apple still perfectly round, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-anchor",
+          "text": "An anchor on my apple!",
+          "mj_prompt": "one small grey ship anchor balanced on top of one round red apple, the apple slightly squashed flatter than before, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-alligator",
+          "text": "An alligator on my apple!",
+          "mj_prompt": "one green alligator lying on top of one round red apple, the apple squashed noticeably flatter and wider than before, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-ambulance",
+          "text": "An ambulance on my apple!",
+          "mj_prompt": "one white and red rescue van with a round siren light on its roof balanced on top of one red apple, the apple squashed almost completely flat like a pancake, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "An ant, an anchor, an alligator, and an ambulance on my apple?!",
+          "mj_prompt": "one red apple squashed completely flat like a pancake, with a tiny ant, a grey anchor, a green alligator, and a white and red rescue van all teetering together in a wobbly pile on top of it, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 3,
+      "letter": "t",
+      "slug": "tiger-in-the-taxi",
+      "title": "A Tiger in the Taxi",
+      "pages": [
+        {
+          "key": "p1-turtle",
+          "text": "A turtle in the taxi!",
+          "mj_prompt": "one small yellow taxi cab with a little roof light, one green turtle sitting in the driver's seat visible through the window, taxi riding normally on its wheels, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-tomato",
+          "text": "A tomato in the taxi!",
+          "mj_prompt": "one small yellow taxi cab with a little roof light, one large red tomato riding in the back seat visible through the window, taxi sagging slightly lower on its wheels than before, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-toothbrush",
+          "text": "A toothbrush in the taxi!",
+          "mj_prompt": "one small yellow taxi cab with a little roof light, one giant toothbrush sticking out of the back window, taxi sagging lower on its wheels and tilting slightly, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-tiger",
+          "text": "A tiger in the taxi!",
+          "mj_prompt": "one small yellow taxi cab with a little roof light, one orange and black striped tiger squeezed into the back seat with its tail hanging out the window, taxi sagging very low, wheels almost flat, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "A turtle, a tomato, a toothbrush, and a tiger in the taxi?!",
+          "mj_prompt": "one small yellow taxi cab completely flat on the road on its deflated wheels, a tiger's striped tail hanging out one window, a green turtle sitting proudly in the driver's seat, a red tomato and a giant toothbrush wedged into the back, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 4,
+      "letter": "p",
+      "slug": "pig-ate-a-pineapple",
+      "title": "The Pig Ate a Pineapple",
+      "pages": [
+        {
+          "key": "p1-pineapple",
+          "text": "The pig ate a pineapple.",
+          "mj_prompt": "one round pink pig happily eating a large yellow pineapple, pig's belly still small and normal, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-pen",
+          "text": "The pig ate a pen.",
+          "mj_prompt": "one round pink pig happily eating a blue ink pen, pig's belly slightly rounder than before, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-pencil",
+          "text": "The pig ate a pencil.",
+          "mj_prompt": "one round pink pig happily eating a yellow wooden pencil, pig's belly rounder still, faint lumpy shapes just visible beneath the skin, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-pan",
+          "text": "The pig ate a pan.",
+          "mj_prompt": "one round pink pig eating a black frying pan with the handle sticking out of its mouth, pig's belly huge and lumpy with shapes pressing out from inside, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "And now the pig is\u2026 sick!",
+          "mj_prompt": "one round pink pig with a gigantic lumpy belly, the shapes of a pineapple, a pen, a pencil, and a frying pan handle all visible pressing out from inside, pig looking green and queasy with dizzy swirl eyes, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 5,
+      "letter": "i",
+      "slug": "in-the-igloo",
+      "title": "In the Igloo",
+      "pages": [
+        {
+          "key": "p1-iguana",
+          "text": "An iguana in the igloo!",
+          "mj_prompt": "one green iguana peeking out of the round doorway of a white igloo made of ice blocks, igloo neat and intact, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-insect",
+          "text": "An insect in the igloo!",
+          "mj_prompt": "one large friendly cartoon insect with big antennae peeking out of the round doorway of a white igloo, one small ice block popped loose and tumbling off the igloo's side, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-inchworm",
+          "text": "An inchworm in the igloo!",
+          "mj_prompt": "one fuzzy green inchworm curled in the round doorway of a white igloo, two ice blocks popped loose and tumbling off the igloo, igloo looking more crowded, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-infant",
+          "text": "An infant in the igloo!",
+          "mj_prompt": "one chubby happy cartoon human baby in a onesie peeking out of the round doorway of a white igloo, several ice blocks popped loose and flying off, igloo bulging and crowded, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "An iguana, an insect, an inchworm, and an infant in the igloo?!",
+          "mj_prompt": "one white igloo bulging at the seams with an iguana, a big insect, an inchworm, and a chubby cartoon baby in a onesie all crammed into the round doorway together, one ice block flying off the very top, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 6,
+      "letter": "n",
+      "slug": "not-in-my-nest",
+      "title": "Not in My Nest!",
+      "pages": [
+        {
+          "key": "p1-nut",
+          "text": "A nut in the nest!",
+          "mj_prompt": "one round brown nut sitting inside a bird's nest, one small bird looking mildly surprised, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-net",
+          "text": "A net in the nest!",
+          "mj_prompt": "a tangled fishing net stuffed inside a bird's nest, the bird looking annoyed, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-nail",
+          "text": "A nail in the nest!",
+          "mj_prompt": "a large silver nail sticking out of a bird's nest, the bird looking cross, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-napkin",
+          "text": "A napkin in the nest!",
+          "mj_prompt": "a crumpled napkin stuffed inside a bird's nest, the bird glaring furiously, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "A nut, a net, a nail, and a napkin in the nest?!",
+          "mj_prompt": "a bird's nest piled high with a nut, a net, a nail and a napkin, one bird glaring furiously, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 7,
+      "letter": "m",
+      "slug": "monkey-in-my-mug",
+      "title": "A Monkey in My Mug",
+      "pages": [
+        {
+          "key": "p1-mouse",
+          "text": "A mouse in my mug!",
+          "mj_prompt": "one small grey mouse sitting inside a big striped mug, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-mushroom",
+          "text": "A mushroom in my mug!",
+          "mj_prompt": "a large red-spotted mushroom sitting inside a big striped mug, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-magnet",
+          "text": "A magnet in my mug!",
+          "mj_prompt": "a grey horseshoe magnet sitting inside a big striped mug, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-monkey",
+          "text": "A monkey in my mug!",
+          "mj_prompt": "a brown monkey squeezed inside a big striped mug, arms hanging over the rim, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "A mouse, a mushroom, a magnet, and a monkey in my mug???",
+          "mj_prompt": "a brown monkey wearing a striped mug like a hat, a mouse on its head, milk splashing as thin ink lines and light blue watercolor accents, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 8,
+      "letter": "d",
+      "slug": "dinosaur-on-a-drum",
+      "title": "A Dinosaur on a Drum",
+      "pages": [
+        {
+          "key": "p1-dog",
+          "text": "A dog on a drum!",
+          "mj_prompt": "one small brown dog standing on top of a large round drum, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-doll",
+          "text": "A doll on a drum!",
+          "mj_prompt": "a cloth rag doll sitting on top of a large drum with one small dent, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-duck",
+          "text": "A duck on a drum!",
+          "mj_prompt": "a yellow duck standing on top of a dented, wobbling drum, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-dinosaur",
+          "text": "A dinosaur on a drum?!",
+          "mj_prompt": "a green dinosaur balancing on top of a cracked, tilting drum, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "A dog, a doll, a duck, and a dinosaur on a drum?????",
+          "mj_prompt": "a drum collapsed flat, a dog, a doll, a duck and a dinosaur tumbled on top, two drumsticks flying, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 9,
+      "letter": "g",
+      "slug": "oh-no-goat",
+      "title": "Oh No, Goat\u2026",
+      "pages": [
+        {
+          "key": "p1-grapes",
+          "text": "The goat ate my grapes!",
+          "mj_prompt": "one white goat eating a bunch of purple grapes, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-gloves",
+          "text": "The goat ate my gloves!",
+          "mj_prompt": "a white goat eating a pair of knitted gloves, its belly showing two finger-shaped bumps, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-gift",
+          "text": "The goat ate my gift!",
+          "mj_prompt": "a white goat eating a wrapped gift box, a ribbon dangling from its mouth, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-guitar",
+          "text": "The goat ate my guitar!",
+          "mj_prompt": "a white goat eating an acoustic guitar tail-first, its belly curving into a guitar shape, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "Oh no, goat\u2026",
+          "mj_prompt": "a white goat with a belly shaped exactly like a guitar, a tiny burp cloud above its head, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 10,
+      "letter": "o",
+      "slug": "owl-ate-an-orange",
+      "title": "An Owl Ate an Orange",
+      "pages": [
+        {
+          "key": "p1-owl",
+          "text": "An owl ate an orange!",
+          "mj_prompt": "one brown owl eating an orange beside a large bowl full of oranges, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-otter",
+          "text": "An otter ate an orange!",
+          "mj_prompt": "a brown otter eating an orange beside a bowl of oranges, the bowl emptier than before, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-ostrich",
+          "text": "An ostrich ate an orange!",
+          "mj_prompt": "a tall ostrich eating an orange beside a bowl with just one or two oranges left, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-octopus",
+          "text": "An octopus ate an orange!",
+          "mj_prompt": "a purple octopus eating an orange with several arms beside a completely empty bowl, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "An owl, an otter, an ostrich, and an octopus ate my oranges?!",
+          "mj_prompt": "an owl, an otter, an ostrich and a purple octopus each with a round orange-shaped belly around an empty bowl, peels scattered, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 11,
+      "letter": "c",
+      "slug": "cow-on-the-car",
+      "title": "A Cow on the Car",
+      "pages": [
+        {
+          "key": "p1-cat",
+          "text": "A cat on the car!",
+          "mj_prompt": "one grey cat sitting on the roof of a small round car, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-cup",
+          "text": "A cup on the car!",
+          "mj_prompt": "a grey cat balancing a teacup on the roof of a small dented car, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-comb",
+          "text": "A comb on the car!",
+          "mj_prompt": "a large comb resting on the roof of a small car next to a grey cat, the roof sagging deeper, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-cow",
+          "text": "A cow on the car!",
+          "mj_prompt": "a black and white cow standing on the roof of a small car, the roof bowed downward, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "A cat, a cup, a comb, and a cow on the car?!",
+          "mj_prompt": "a small car squashed flat under a cow standing on top, a grey cat still balancing a teacup, a comb wedged nearby, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 12,
+      "letter": "k",
+      "slug": "koala-in-the-pocket",
+      "title": "A Koala in the Pocket",
+      "pages": [
+        {
+          "key": "p1-key",
+          "text": "A key in the pocket!",
+          "mj_prompt": "one brown kangaroo standing upright with a silver key poking out of its belly pouch, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-kite",
+          "text": "A kite in the pocket!",
+          "mj_prompt": "a brown kangaroo with a colorful kite sticking out of its sagging belly pouch, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-kettle",
+          "text": "A kettle in the pocket!",
+          "mj_prompt": "a brown kangaroo with a metal kettle bulging out of its low-hanging belly pouch, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-koala",
+          "text": "A koala in the pocket!",
+          "mj_prompt": "a brown kangaroo with a grey koala's face poking out of its pouch, stretched almost to the ground, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "A key, a kite, a kettle, and a koala in the kangaroo's pocket?!",
+          "mj_prompt": "a brown kangaroo mid-hop, its pouch dragging the ground with a key, a kite, a kettle and a koala's face poking out, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 13,
+      "letter": "ck",
+      "slug": "on-a-rock",
+      "title": "On a Rock",
+      "pages": [
+        {
+          "key": "p1-duck",
+          "text": "A duck on a rock!",
+          "mj_prompt": "one yellow duck standing balanced on top of a small round rock, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-chick",
+          "text": "A chick on a rock!",
+          "mj_prompt": "a yellow duck with a fluffy chick balanced on its back, on top of a small rock, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-clock",
+          "text": "A clock on a rock!",
+          "mj_prompt": "a round clock with a blank face, no numerals, balanced atop a chick on a duck on a rock, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-sock",
+          "text": "A sock on a rock!",
+          "mj_prompt": "a grey sock balanced atop a wobbly tower of a clock, a chick and a duck on a small rock, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "A duck, a chick, a clock, and a sock on a rock?!",
+          "mj_prompt": "a tall wobbly tower on one tiny rock: a duck, a chick, a blank-faced clock and a sock, all tilting, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 14,
+      "letter": "e",
+      "slug": "elephant-sat-on-the-egg",
+      "title": "The Elephant Sat on the Egg",
+      "pages": [
+        {
+          "key": "p1-hen",
+          "text": "The hen sat on the egg.",
+          "mj_prompt": "one small brown hen sitting on top of a large white egg, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-eagle",
+          "text": "The eagle sat on the egg.",
+          "mj_prompt": "a bald eagle sitting on top of a hen which sits on a large white egg, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-elephant",
+          "text": "The elephant sat on the egg.",
+          "mj_prompt": "a grey elephant sitting on top of an eagle and a hen on a large white egg, a hairline crack showing, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-recap",
+          "text": "A hen, an eagle, and an elephant sat on the egg?!",
+          "mj_prompt": "a large egg cracked open with yolk splashing as thin ink lines and pale yellow watercolor accents, a sheepish elephant, a furious hen, an awkward eagle, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 15,
+      "letter": "u",
+      "slug": "under-my-umbrella",
+      "title": "Under My Umbrella",
+      "pages": [
+        {
+          "key": "p1-unicorn",
+          "text": "A unicorn under my umbrella!",
+          "mj_prompt": "one white unicorn with a spiral horn standing under a large umbrella held by a small child, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-ukulele",
+          "text": "A ukulele under my umbrella!",
+          "mj_prompt": "a unicorn and a ukulele under an umbrella, the child holding it pushed to the edge, getting rained on, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-unicycle",
+          "text": "A unicycle under my umbrella!",
+          "mj_prompt": "a unicorn, a ukulele and a unicycle crowded under an umbrella, the child pushed nearly out into the rain, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-urchin",
+          "text": "An urchin under my umbrella!",
+          "mj_prompt": "a spiky purple sea urchin squeezed under a crowded umbrella, the child holding it standing outside in the rain, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "A unicorn, a ukulele, a unicycle, and an urchin under my umbrella?!",
+          "mj_prompt": "a unicorn, a ukulele, a unicycle and a sea urchin dry under an umbrella, the child holding it soaked outside, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 16,
+      "letter": "r",
+      "slug": "rabbit-in-the-rocket",
+      "title": "A Rabbit in the Rocket",
+      "pages": [
+        {
+          "key": "p1-rabbit",
+          "text": "A rabbit in the rocket!",
+          "mj_prompt": "one white rabbit looking out of a porthole of a tall red and white rocket ship, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-robot",
+          "text": "A robot in the rocket!",
+          "mj_prompt": "a white rabbit and a silver robot looking out of the portholes of a rocket ship, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-rose",
+          "text": "A rose in the rocket!",
+          "mj_prompt": "a rabbit, a robot and a large pink rose crowded in the portholes of a bulging rocket ship, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-ring",
+          "text": "A ring in the rocket!",
+          "mj_prompt": "a rabbit, a robot, a rose and a gold ring crammed into a rocket ship straining at its rivets, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "A rabbit, a robot, a rose, and a ring in the rocket?!",
+          "mj_prompt": "a rocket ship blasting off with flames, straining at every rivet, a rabbit, a robot, a rose and a ring peeking from every porthole, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 17,
+      "letter": "h",
+      "slug": "horse-in-my-hat",
+      "title": "A Horse in My Hat",
+      "pages": [
+        {
+          "key": "p1-hen",
+          "text": "A hen in my hat!",
+          "mj_prompt": "one small brown hen sitting inside a tall black top hat, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-hammer",
+          "text": "A hammer in my hat!",
+          "mj_prompt": "a silver hammer sticking out of a top hat with a hen nested in the brim, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-heart",
+          "text": "A heart in my hat!",
+          "mj_prompt": "a big red heart shape bulging out of a top hat stretched much taller, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-horse",
+          "text": "A horse in my hat!",
+          "mj_prompt": "a brown horse's head poking out of the top of an enormously tall top hat, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "A hen, a hammer, a heart, and a horse in my hat?!",
+          "mj_prompt": "a giant top hat as tall as a tent, a horse's head on top, a hen nesting in the brim, a hammer and a heart bulging out the sides, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 18,
+      "letter": "b",
+      "slug": "bear-in-the-boat",
+      "title": "A Bear in the Boat",
+      "pages": [
+        {
+          "key": "p1-ball",
+          "text": "A ball in the boat!",
+          "mj_prompt": "one round red ball sitting inside a small wooden rowboat floating on calm water, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-banana",
+          "text": "A banana in the boat!",
+          "mj_prompt": "a large yellow banana lying inside a rowboat riding lower in the water, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-bell",
+          "text": "A bell in the boat!",
+          "mj_prompt": "a brass bell sitting inside a rowboat with water almost at the rim, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-bear",
+          "text": "A bear in the boat!",
+          "mj_prompt": "a brown bear sitting inside a rowboat, water about to spill over the edge, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "A ball, a banana, a bell, and a bear in the boat?!",
+          "mj_prompt": "a rowboat almost underwater, a brown bear floating happily half-submerged, a brass bell bobbing nearby as thin ink lines and light blue watercolor accents, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 19,
+      "letter": "f",
+      "slug": "frog-on-the-fan",
+      "title": "A Frog on the Fan",
+      "pages": [
+        {
+          "key": "p1-frog",
+          "text": "A frog on the fan!",
+          "mj_prompt": "one green frog sitting on top of the round cage of an electric fan, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-fish",
+          "text": "A fish on the fan!",
+          "mj_prompt": "an orange fish flopping on a fan's cage beside a green frog, the fan starting to spin, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-feather",
+          "text": "A feather on the fan!",
+          "mj_prompt": "a frog, a fish and a long feather balanced on a spinning fan's cage, tilted more, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-fork",
+          "text": "A fork on the fan!",
+          "mj_prompt": "a silver fork stuck on a fast-spinning fan's cage along with a frog, fish and feather, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "A frog, a fish, a feather, and a fork on the fan?!",
+          "mj_prompt": "an electric fan spinning fast and tilted sideways, a frog, a fish, a feather and a fork swirling in a dizzy spiral above it, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 20,
+      "letter": "l",
+      "slug": "oh-no-lion",
+      "title": "Oh No, Lion\u2026",
+      "pages": [
+        {
+          "key": "p1-lemon",
+          "text": "The lion licks a lemon!",
+          "mj_prompt": "one golden lion with a fluffy mane licking a yellow lemon, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-leaf",
+          "text": "The lion licks a leaf!",
+          "mj_prompt": "a golden lion licking a green leaf, its tongue longer and curlier, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-ladder",
+          "text": "The lion licks a ladder!",
+          "mj_prompt": "a golden lion licking a tall wooden ladder, its tongue wrapped around one rung, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-lizard",
+          "text": "The lion licks a lizard!",
+          "mj_prompt": "a golden lion licking a small green lizard, its tongue enormous and looped, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "Oh no, lion\u2026",
+          "mj_prompt": "a golden lion with its giant silly tongue stuck fast to a wooden ladder, a small green lizard patting its nose, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 21,
+      "letter": "j",
+      "slug": "jellyfish-in-the-jar",
+      "title": "A Jellyfish in the Jar",
+      "pages": [
+        {
+          "key": "p1-jug",
+          "text": "A jug in the jar!",
+          "mj_prompt": "one small ceramic jug sitting inside a large clear glass jar, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-jacket",
+          "text": "A jacket in the jar!",
+          "mj_prompt": "a folded jacket stuffed inside a glass jar bulging slightly like rubber, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-jet",
+          "text": "A jet in the jar!",
+          "mj_prompt": "a small toy jet plane squeezed inside a glass jar stretched and wobbly, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-jellyfish",
+          "text": "A jellyfish in the jar!",
+          "mj_prompt": "a pink jellyfish squeezed inside a glass jar stretched into a wobbly balloon shape, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "A jug, a jacket, a jet, and a jellyfish in the jar?!",
+          "mj_prompt": "a glass jar stretched into a wobbly balloon shape, a jug, a jacket and a toy jet crammed inside, a pink jellyfish jiggling on top, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 22,
+      "letter": "v",
+      "slug": "volcano-in-the-van",
+      "title": "A Volcano in the Van",
+      "pages": [
+        {
+          "key": "p1-violin",
+          "text": "A violin in the van!",
+          "mj_prompt": "one brown violin resting on the back seat of a small van, visible through the window, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-vase",
+          "text": "A vase in the van!",
+          "mj_prompt": "a violin and a tall vase on the back seat of a van, one puff of smoke drifting from the window, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-vest",
+          "text": "A vest in the van!",
+          "mj_prompt": "a violin, a vase and a folded vest on a van's back seat, two puffs of smoke drifting out, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-volcano",
+          "text": "A volcano in the van!",
+          "mj_prompt": "a small smoking volcano sitting on a van's back seat, thick puffs of smoke pouring from the window, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "A violin, a vase, a vest, and a volcano in the van?!",
+          "mj_prompt": "a small van driving fast, a volcano smoking heavily out the back window, a violin, a vase and a vest bouncing on the seat, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 23,
+      "letter": "w",
+      "slug": "whale-in-the-wagon",
+      "title": "A Whale in the Wagon",
+      "pages": [
+        {
+          "key": "p1-worm",
+          "text": "A worm in the wagon!",
+          "mj_prompt": "one pink worm curled inside a small red wooden wagon, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-watch",
+          "text": "A watch in the wagon!",
+          "mj_prompt": "a round wristwatch with a blank face inside a wagon, its wheels splaying slightly, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-wolf",
+          "text": "A wolf in the wagon!",
+          "mj_prompt": "a grey wolf sitting inside a wagon, its wheels splayed wide and bent, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-whale",
+          "text": "A whale in the wagon!",
+          "mj_prompt": "a blue whale squeezed inside a wagon, its wheels splayed flat under the weight, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "A worm, a watch, a wolf, and a whale in the wagon?!",
+          "mj_prompt": "a flattened wagon with bent wheels, a blue whale sitting in a puddle as thin ink lines and light blue watercolor accents, a worm pulling the handle, a wolf and a watch tumbled nearby, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 24,
+      "letter": "x",
+      "slug": "fox-in-a-box",
+      "title": "A Fox in a Box",
+      "pages": [
+        {
+          "key": "p1-fox",
+          "text": "A fox in a box!",
+          "mj_prompt": "one orange fox curled up inside a plain cardboard box, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-ox",
+          "text": "An ox in a box!",
+          "mj_prompt": "a brown ox squeezed inside a cardboard box with a fox, one corner splitting open, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-xylophone",
+          "text": "A xylophone in a box!",
+          "mj_prompt": "a colorful xylophone squeezed into a sagging cardboard box with a fox and an ox, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-recap",
+          "text": "A fox, an ox, and a xylophone in a box?!",
+          "mj_prompt": "a cardboard box burst open flat, a fox, an ox and a xylophone sitting on the flaps, a musical note flying up, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 25,
+      "letter": "y",
+      "slug": "yak-on-the-yacht",
+      "title": "A Yak on the Yacht",
+      "pages": [
+        {
+          "key": "p1-yak",
+          "text": "A yak on the yacht!",
+          "mj_prompt": "one shaggy brown yak standing at the wheel of a small white yacht, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-yam",
+          "text": "A yam on the yacht!",
+          "mj_prompt": "an orange yam resting on the deck of a yacht tipping slightly, a yak at the wheel, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-yoyo",
+          "text": "A yo-yo on the yacht!",
+          "mj_prompt": "a round yo-yo rolling across the tilted deck of a yacht, a yak calmly steering, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-yarn",
+          "text": "Yarn on the yacht!",
+          "mj_prompt": "a tangled ball of colorful yarn caught in the sail of a yacht tipped even further, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "A yak, a yam, a yo-yo, and yarn on the yacht?!",
+          "mj_prompt": "a small yacht tipped at a dramatic tilt, a yak calmly steering, a yam sliding, a yo-yo rolling, yarn caught in the sail, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 26,
+      "letter": "z",
+      "slug": "zzz-at-the-zoo",
+      "title": "Zzz at the Zoo",
+      "pages": [
+        {
+          "key": "p1-zebra",
+          "text": "A zebra at the zoo!",
+          "mj_prompt": "one black and white zebra standing inside a simple zoo cage with bars, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-zipper",
+          "text": "A zipper at the zoo!",
+          "mj_prompt": "a large silver zipper standing upright inside its own zoo cage next to the zebra's, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-zucchini",
+          "text": "A zucchini at the zoo!",
+          "mj_prompt": "a green zucchini sitting inside its own zoo cage next to the zipper and the zebra, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-zeppelin",
+          "text": "A zeppelin at the zoo!",
+          "mj_prompt": "a blimp-shaped zeppelin floating inside an oversized zoo cage beside the other cages, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "A zebra, a zipper, a zucchini, and a zeppelin at the zoo?!",
+          "mj_prompt": "a row of zoo cages at night, a zebra, a zipper and a zucchini asleep, a zeppelin floating above, a cloud of Zzz shapes in the sky, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 27,
+      "letter": "qu",
+      "slug": "queen-on-the-quilt",
+      "title": "A Queen on the Quilt",
+      "pages": [
+        {
+          "key": "p1-quill",
+          "text": "A quill on the quilt!",
+          "mj_prompt": "one long feather quill pen lying on top of a colorful patchwork quilt, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-quarter",
+          "text": "A quarter on the quilt!",
+          "mj_prompt": "a large plain round silver coin, blank face, resting on a patchwork quilt with a quill, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p3-quail",
+          "text": "A quail on the quilt!",
+          "mj_prompt": "a round quail bird resting on a patchwork quilt with a quill and a silver coin, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p4-queen",
+          "text": "A queen on the quilt!",
+          "mj_prompt": "a queen wearing a golden crown lying across a patchwork quilt with a quill, a coin and a quail nearby, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p5-recap",
+          "text": "A quill, a quarter, a quail, and a queen on the quilt?!",
+          "mj_prompt": "a queen wearing a golden crown asleep on a patchwork quilt, a quail tucked under her crown, a quill and a silver coin nearby, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    }
+  ]
+}
