@@ -2937,6 +2937,17 @@ EVERY TIME files in this repo are changed by a Claude cloud/Cowork session, the 
 
 ## 🔒 SATPIN Paperwork Pipeline — LOCKED (2026-07-29, per Tredoux)
 
+🔒 **PRODUCT SEPARATION RULING (2026-08-01, per Tredoux, binding — do not relitigate):** the
+montree SATPIN library page (`/montree/library/satpin`) is the **Montessori side** and carries
+**REAL PHOTOS ONLY**. The pen-and-ink Seuss cartoon art (the locked Dark Phonics / Easy Readers
+house style) is **Dark Phonics-exclusive**. The two must never mix on the same page. **Corollary
+ruled the same session:** hyper-real photos of surreal/impossible scenes read as creepy — so for
+montree, the underlying CONTENT must be designed to be photographable in the first place (real
+animals/kids doing plausible things), never a surreal sentence rendered as a photo after the fact.
+This is what forced the 24 cartoon CVC sentence sheets (shipped 2026-07-31) off the montree
+SATPIN page — see the CVC bullet below — and shaped the content design of the new Alphabet
+Series (also below).
+
 Tredoux's verdict, verbatim: "couldn't be any more perfect… Lock that in as the pipeline and the
 templates. When I tell you to do a letter — I want all of this." The paperwork pack + tracing
 workbook pipeline in `scripts/curriculum/satpin-paperwork/` is now an **approved convention — do
@@ -2997,6 +3008,44 @@ not redesign the layout, font set, or stroke rule without Tredoux's explicit say
   Wired onto
   `app/montree/library/satpin/page.tsx` (`PaperworkRow` gained a probed "CVC sentence sheet · A4"
   download; new weeks appear automatically once their PDF exists, no per-letter code change).
+  🔒 **PULLED OFF montree, 2026-08-01** (commit `4614b754`, live-verified) per the Product
+  Separation Ruling above — pen-and-ink cartoon art has no place on the real-photos SATPIN page.
+  The `cvcSheet` wiring was removed from `page.tsx`, and all 24 PDFs were `git mv`'d from
+  `public/satpin-materials/<slug>/cvc-sheet.pdf` to
+  `public/dark-phonics-materials/cvc-sentence-sheets/cvc-sheet-<slug>.pdf` (24 slugs). They are
+  **live but currently ORPHANED** — not yet linked from any Dark Phonics hub page. **Owed**: (1)
+  wire them into a Dark Phonics hub page, (2) repoint `build_cvc.py`'s output dir (still hardcoded
+  to the old `public/satpin-materials/<slug>/` path — fix before any future rebuild/reroll of this
+  line, or it will write back into montree territory by mistake). Same commit also removed the two
+  "Canonical word lists" cards (SATPIN Object Baskets + A–Z Object Baskets docx) from the top of
+  the SATPIN page — Tredoux wants the page starting clean at week S; the source `.docx` files
+  remain in `public/satpin-materials/`, just unlinked now.
+- **The Alphabet Series — SHIPPED (2026-08-01, commit `729a9710`, live-verified, montree side)**:
+  replaces the old surreal alphabet mini-series (now Dark-Phonics-exclusive) with a
+  Tredoux-approved "Set B" of 5 decodable sentences designed to be photographable per the
+  Separation Ruling above — union covers all 26 letters (machine-verified): 1 "a hen naps on an
+  egg", 2 "a fox digs up a yam", 3 "a vet pets a big cat", 4 "a kid zips a wet bag", 5 "a quick rat
+  jogs on a log" (decodable under the CVC letter-gate rules — CVC/CVCC + ck/qu, heart words a/an
+  only). Art = 5 real photos via Midjourney, `-REAL` prompt template voice **minus** the
+  "unsettlingly lifelike" phrase (de-creepified per the corollary above), filed
+  `phonics-images/satpin-v2/alphabet-series/abc-{1-hen,2-fox,3-vet,4-bag,5-rat}.png`
+  (md5-verified). 🔧 **Repeatable browser workflow, proven end-to-end**: a Haiku agent submits
+  prompts into midjourney.com via Tredoux's Chrome; a Sonnet agent judges the 4-grids, downloads
+  winners, and files them (md5-verified) — when two Chromes are connected, pick the one with the
+  MJ tab open; the MJ download button sometimes opens a new tab before the real download fires, a
+  second click works. Builder: `scripts/curriculum/satpin-paperwork/build_alphabet.py` +
+  `alphabet_series.json` (Opus-designed) — one A4 page per sentence: BUILD IT (empty dashed word
+  boxes, reading order) + TRACE IT (dotted stroke-font, numbered arrows, unified 12.22mm x-height
+  across the series) + CUT IT OUT band (60×40mm photo tab + scrambled solid-type word tiles
+  34×15mm; deterministic scrambles stored in the JSON with validation — non-identity, non-reverse,
+  no same-visible-word-in-slot, a–z coverage). Page 5 handles 7 words via 4/3 boxes + 3/2/2 tiles.
+  Run `python3 scripts/curriculum/satpin-paperwork/build_alphabet.py --all` →
+  `public/satpin-materials/alphabet-series/alphabet-series.pdf`; all 5 pages rasterized +
+  eyeballed with final art, zero defects. Wired as a standalone card section "The Alphabet Series"
+  on `app/montree/library/satpin/page.tsx`, placed after the week-27 block (NOT nested under any
+  single letter), HEAD-probe-gated link "Alphabet series · build + trace + cut-outs · A4"; `tsc` +
+  `eslint` clean. Live: `montree.xyz/satpin-materials/alphabet-series/alphabet-series.pdf` → 200
+  `application/pdf`.
 - **Tracing outputs** (`build_tracing.py`, format split 2026-07-30 per Tredoux — supersedes the
   original single combined `tracing-workbook.pdf`): now emits **`build-it-sheet.pdf`** (A4
   LANDSCAPE, auto-packed onto however many pages the sentence rows need) — READ IT (solid
@@ -3028,11 +3077,24 @@ after the fuzzy query, so a mismatched label silently shows "no picture."
 ⚠️ `device_stage_files` can silently return a stale cached copy even with correct-looking
 metadata — always md5/byte-check a staged file against the Mac original before editing it.
 
-Status (as of 2026-07-31): P ✅, I ✅, N ✅ — all three shipped/backfilled onto the current split
+Status (as of 2026-08-01): P ✅, I ✅, N ✅ — all three shipped/backfilled onto the current split
 format (4pp paperwork pack + build-it-sheet + tracing-workbook + sentence-strips). S/A/T (weeks
 1–3) still need `bookX.py` written first — verify it exists before promising a letter. **CVC
-sentence sheet**: 24/24 weeks shipped (w04–w19, w22–w23, w25–w27, plus w20→l, w21→j, and w24→x
-shipped same day via a reroll pickup, commits `48212a0b` and `8f79b483`; weeks 1–3 intentionally
-have no CVC sheet, covered by "The ___ Sat!"). Blue jam (w21's pig-jogs-in-jam and ABC-3's
-duck-licks-jam) is CONFIRMED INTENTIONAL/CANONICAL per Tredoux (2026-07-31) — not a defect, do
-not reroll to red. Full narrative: `HANDOFF_LATEST.md`'s Jul 29, Jul 30, and Jul 31 entries.
+sentence sheet**: all 24 pen-and-ink sheets built (w04–w19, w22–w23, w25–w27, plus w20→l, w21→j,
+and w24→x), but as of 2026-08-01 they are **PULLED OFF montree** and live only under
+`/dark-phonics-materials/cvc-sentence-sheets/cvc-sheet-<slug>.pdf`, orphaned pending a Dark
+Phonics hub link — see the CVC bullet above for the full ruling and owed tasks. Weeks 1–3
+intentionally have no CVC sheet, covered by "The ___ Sat!". Blue jam (w21's pig-jogs-in-jam and
+ABC-3's duck-licks-jam) is CONFIRMED INTENTIONAL/CANONICAL per Tredoux (2026-07-31) — not a
+defect, do not reroll to red. **The Alphabet Series** (montree-side, real photos, shipped
+2026-08-01) supersedes the old cartoon alphabet mini-series for montree — see its bullet above.
+Full narrative: `HANDOFF_LATEST.md`'s Jul 29, Jul 30, Jul 31, and Aug 1 entries.
+
+⚙️ **Operational notes (2026-08-01):** the Haiku-submits→Sonnet-judges Midjourney browser
+pipeline (see the Alphabet Series bullet above) works end-to-end via `claude-in-chrome` tools and
+is repeatable for future art batches. A stale `.git/index.lock` appeared twice this session — once
+from a git call made through `device_bash`, reconfirming the HARD RULE above (git only via Desktop
+Commander, never `device_bash`, on this repo). The device bridge still can't `rm` files (per
+Permanent Operating Rule 2) — move to `_to_delete/` instead; e.g. a scout's stray
+`_tmp_scout_raster` dir was moved to `_to_delete/_tmp_scout_raster_jul31` — Tredoux can empty
+`_to_delete/` whenever convenient.
