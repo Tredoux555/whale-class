@@ -21,6 +21,30 @@
    Sonnet subagents do ALL work; Fable only directs, decides, writes critical copy, and reviews.
    Burning Fable context on mechanical work is a violation, not a style choice.
 
+## 📌 ONGOING PROJECT — DARK PHONICS CURATED BOOK REBUILD (Aug 1, 2026, handoff from Fable → Sonnet; Tredoux out of Fable credit)
+
+**Mission: re-do all 27 Dark Phonics pattern books to Tredoux's CURATED standard, book by book, until the series catches satpin (satpin just finished 'n'). Tredoux runs all MJ prompts HIMSELF (v8.2) — Claude writes prompts in chat, Tredoux generates, drops winners, Claude rebuilds.**
+
+**LOCKED RULES (Tredoux-issued, do not relitigate):**
+1. Language: STRAIGHT NATURAL ORDER exactly as the song sings — 'A snake in my sock!'. Never inverted, never clever. Simple is the absolute rule.
+2. 3 words per book is IDEAL (The Cat Sat tier). Structure: 'A sock.' → one page per word (SINGLE character per page — one creature + the container, nothing else) → recap page where they ALL come together ('A snake, a star, and a sloth in my sock?!').
+3. Art formula = the curated Easy Reader formula (see dark-phonics-readers.html 🛠 Creation prompts, e.g. the-cat-sat): scene clause with character descriptions REPEATED VERBATIM in every prompt + fixed boilerplate 'colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 1:1'. Mostly-monochrome crosshatch with selective color is the look — MATCH THE EXISTING REFERENCE ART (song cards at phonics-images/dark-phonics-song-cards/lesson-NN.png + satpin-v2/books/<object>/) before describing any character. The snake-in-my-sock sock is TALL RED-AND-WHITE STRIPED with fluffy white cuff (lesson-05 song card) — Fable got burned describing a grey sock from imagination.
+4. MJ v8.2: NO --cref/--oref/--ow (removed; V7-only). Consistency = verbatim-repeated descriptors (+ optional --sref code from a good tile). No character sheets. Tredoux runs each prompt 3× and picks.
+5. Claude NEVER runs the prompts — deliver them IN CHAT, Tredoux generates. Test-run-first discipline for any batch build. Sonnet does all work; director conserves context.
+
+**BOOK 1 STATE (snake-in-my-sock): text LOCKED (soap+seal OUT, sloth IN): 'A sock. / A snake in my sock! / A star in my sock! / A sloth in my sock! / A snake, a star, and a sloth in my sock?!' — 6-prompt pack (cover + 5 pages) delivered in chat Aug 1; Tredoux generating. Characters: red/white striped sock (fluffy white cuff, rounded white toe), friendly green snake (slim curving neck, big round googly eyes, wide happy smile), smiling golden five-pointed star, sleepy brown sloth (shaggy fur, googly eyes).**
+
+**WHEN WINNERS ARRIVE (per book, the rebuild checklist):**
+1. File winners → phonics-images/dark-phonics-books/<slug>/ with new keys (p0-sock cover-establish naming: p1-sock, p2-snake, p3-star, p4-sloth, p5-recap + cover.png) — replace old art.
+2. Update scripts/curriculum/dark-phonics-storybooks/manifest.json (texts + page keys for the new 5-page structure).
+3. Rebuild A5 pair: python3 scripts/curriculum/dark-phonics-storybooks/build_a5_readers.py --books <slug> (natural-order SPLITS already correct) → public/dark-phonics-books/print/. A5 is the canon format.
+4. Refresh materials: paperwork family (satpin-paperwork letters/dp-<slug>.json — update words/pages/yesno, rerun build_paperwork.py + build_tracing.py --outdir public/dark-phonics-materials/<slug>/), three-part cards (make-material.mjs words for new word list + split_three_part.py; sloth needs a bank photo check — likely missing like gloves/urchin/zoo), photo-bank re-ingestion of new art (upload-dark-phonics-book-art.mjs is idempotent — new labels ride in).
+5. Update BOOK_VOCAB chips for that lesson in app/montree/library/dark-phonics/page.tsx if words changed.
+6. Republish square-book bucket copy only if keeping that page current (secondary; A5 is canon). Cache-bump ?v= on any changed bucket URL.
+7. Commit each step via Desktop Commander git only; pull --rebase --autostash first (multiple live sessions push this repo).
+
+**CADENCE: book 2 = ant-on-my-apple (PULL TREDOUX'S REFERENCE ART FIRST — song card lesson-06 + any satpin apple/ant art — before writing any prompt). Then t, p, i, n… in book order. Prompt pack per book: cover + 'A <object>.' page + 3 single-character pages + recap, all with verbatim-repeated descriptors, delivered in chat for Tredoux to run.**
+
 ## 🧺 SESSION — Aug 1, 2026 pt3 (Fable directing, Sonnet fleet) — NATURAL-ORDER FIX + FULL DARK PHONICS MATERIALS SUITE
 
 **Tredoux language ruling (LOCKED for all Dark Phonics books): STRAIGHT NATURAL ORDER, exactly as the song sings it — 'A snake in my sock!' — never inverted, never clever. nar/text split allowed ONLY when the sentence naturally ends on the swap word (pig/goat/lion). Test-run-first is now mandatory: build 3, eyeball every page, then scale.** All 54 A5 PDFs rebuilt (commit b7cc6942, only the SPLITS dict changed). Art pass deferred — some MJ art below Tredoux's song-card standard; fix individually later (his call).
