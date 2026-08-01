@@ -1,0 +1,45 @@
+{
+  "_notes": {
+    "purpose": "The Alphabet Series -- five short decodable sentences that between them use every letter of the alphabet (a-z, all 26; build_alphabet.py asserts the coverage at build time). It is a standalone Montessori material, NOT a SATPIN week and NOT a single letter, so unlike cvc_weeks.json / letters/<slug>.json there is no week or slug column and the whole set builds into ONE combined PDF rather than one sheet per letter folder.",
+    "schema": "One row per page, in printing order. `seq` is the 1-based page number (also the --page N selector). `sentence` is the model sentence, lowercase, single-spaced -- its word count drives both the number of build-strip boxes and the number of cut-out word tiles. `art` is a filename only, resolved under `art_dir` (or under --art-dir when proofing with placeholder photos). `scramble` is a FIXED permutation of 0-based word indices giving the printed left-to-right order of the cut-out word tiles: it is stored, never generated, so a reprint always cuts out identically -- there is no randomness anywhere at runtime.",
+    "scramble_rule": "Each `scramble` is validated at build time: it must be a true permutation of range(len(words)), it must not equal the sentence order, it must not be the plain reverse, and no tile position may show the same word the sentence has in that position (checked on the visible word, so a repeated 'a' cannot silently sit in its own slot).",
+    "art_dir": "Repo-relative folder the Alphabet Series photographs are filed in. build_alphabet.py resolves <repo-root>/<art_dir>/<art>; --art-dir overrides it wholesale. Photos are 3:2 landscape real photographs; draw_image_contained aspect-fits whatever it is given, so a slightly off ratio still prints centred and un-stretched.",
+    "output": "public/satpin-materials/alphabet-series/alphabet-series.pdf -- one combined 5-page A4 portrait PDF in its own folder, the same drop-in convention as every other SATPIN paperwork PDF except that this material is not filed under a letter slug.",
+    "layout": "Per page, top to bottom: BUILD IT (one empty box per word, in reading order), TRACE IT (dotted stroke-font sentence with numbered stroke arrows on the locked 3-line guide), then a dashed cut line and CUT IT OUT (the scene photo as its own tab on the left, the word tiles printed solid in `scramble` order to its right)."
+  },
+  "art_dir": "phonics-images/satpin-v2/alphabet-series",
+  "out_dir": "public/satpin-materials/alphabet-series",
+  "out_name": "alphabet-series.pdf",
+  "pages": [
+    {
+      "seq": 1,
+      "sentence": "a hen naps on an egg",
+      "art": "abc-1-hen.png",
+      "scramble": [2, 4, 5, 0, 1, 3]
+    },
+    {
+      "seq": 2,
+      "sentence": "a fox digs up a yam",
+      "art": "abc-2-fox.png",
+      "scramble": [2, 4, 5, 1, 3, 0]
+    },
+    {
+      "seq": 3,
+      "sentence": "a vet pets a big cat",
+      "art": "abc-3-vet.png",
+      "scramble": [4, 3, 1, 5, 0, 2]
+    },
+    {
+      "seq": 4,
+      "sentence": "a kid zips a wet bag",
+      "art": "abc-4-bag.png",
+      "scramble": [2, 0, 5, 4, 1, 3]
+    },
+    {
+      "seq": 5,
+      "sentence": "a quick rat jogs on a log",
+      "art": "abc-5-rat.png",
+      "scramble": [3, 5, 1, 6, 0, 2, 4]
+    }
+  ]
+}
