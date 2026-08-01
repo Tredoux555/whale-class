@@ -1,5 +1,68 @@
 # Whale / Montree — Latest Handoff
 
+## 🔒 Aug 1 (Cowork) — SEPARATION + ALPHABET SERIES
+
+**PRODUCT SEPARATION RULING (Tredoux, binding, do not relitigate)**: the montree SATPIN library
+page is the Montessori side and carries **REAL PHOTOS ONLY**; the pen-and-ink Seuss cartoon art is
+**Dark Phonics-exclusive**. The two must never mix. Corollary ruled the same session: hyper-real
+photos of surreal scenes look creepy — so for montree, the CONTENT itself must be designed
+photographable (real animals/kids doing plausible things), not a surreal sentence rendered as a
+photo after the fact.
+
+**Consequence executed (commit `4614b754`, live-verified)**: the 24 cartoon CVC sentence sheets
+shipped Jul 31 were pulled OFF the montree SATPIN page — `cvcSheet` wiring removed from
+`page.tsx` — and their PDFs `git mv`'d from `public/satpin-materials/<slug>/cvc-sheet.pdf` to
+`public/dark-phonics-materials/cvc-sentence-sheets/cvc-sheet-<slug>.pdf` (24 slugs). They are live
+but **NOT yet wired into any Dark Phonics hub page** — owed next session. The builder
+(`build_cvc.py` + `cvc_weeks.json`) still outputs to the OLD `satpin-materials` path — needs
+repointing before any rebuild. Same commit also removed the two "Canonical word lists" cards
+(SATPIN Object Baskets + A–Z Object Baskets docx) from the top of the SATPIN page (Tredoux: the
+page should start clean at week S); the `.docx` files remain in `public/satpin-materials/`,
+unlinked.
+
+**NEW MATERIAL SHIPPED — "The Alphabet Series" (montree side, commit `729a9710`, live-verified)**:
+
+- **Content** (Tredoux-approved "Set B"): 5 decodable sentences, union = all 26 letters
+  (machine-verified), designed to photograph naturally: 1 "a hen naps on an egg", 2 "a fox digs up
+  a yam", 3 "a vet pets a big cat", 4 "a kid zips a wet bag", 5 "a quick rat jogs on a log".
+  Decodable under the CVC letter-gate rules (CVC/CVCC + ck/qu, heart words a/an only). The old
+  surreal alphabet series (pig in a wig etc.) is now Dark-Phonics-exclusive.
+- **Art**: 5 real photos generated via Midjourney using the `-REAL` prompt template voice MINUS
+  the "unsettlingly lifelike" phrase (de-creepified). Workflow: a Haiku agent submitted the 5
+  prompts into midjourney.com via Tredoux's Chrome, a Sonnet agent judged the 4-grids, downloaded
+  winners, and filed them to
+  `phonics-images/satpin-v2/alphabet-series/abc-{1-hen,2-fox,3-vet,4-bag,5-rat}.png`
+  (md5-verified). This browser workflow WORKS and is repeatable.
+- **Builder**: `scripts/curriculum/satpin-paperwork/build_alphabet.py` + `alphabet_series.json`
+  (Opus-designed). One A4 page per sentence: BUILD IT (empty dashed word boxes, reading order) +
+  TRACE IT (dotted stroke-font, numbered arrows, unified 12.22mm x-height across the series) + CUT
+  IT OUT band (60×40mm photo tab + scrambled solid-type word tiles 34×15mm; deterministic
+  scrambles stored in the JSON with validation: non-identity, non-reverse, no
+  same-visible-word-in-slot, a–z coverage). Page 5 handles 7 words via 4/3 boxes + 3/2/2 tiles.
+  Run `python3 scripts/curriculum/satpin-paperwork/build_alphabet.py --all` →
+  `public/satpin-materials/alphabet-series/alphabet-series.pdf`. All 5 pages rasterized +
+  eyeballed with final art, zero defects.
+- **Page wiring**: standalone card section "The Alphabet Series" after the week-27 block on
+  `app/montree/library/satpin/page.tsx` (NOT under any letter), HEAD-probe-gated link "Alphabet
+  series · build + trace + cut-outs · A4". `tsc` + `eslint` clean.
+- **Live**: `montree.xyz/satpin-materials/alphabet-series/alphabet-series.pdf` → 200
+  `application/pdf`; the SATPIN page shows the section.
+
+**Operational notes**: (a) the Haiku-submits→Sonnet-judges Midjourney browser pipeline works
+end-to-end via `claude-in-chrome` tools — two Chromes may be connected, pick the one with the MJ
+tab; the MJ download button sometimes opens a new tab first, second click works. (b) a stale
+`.git/index.lock` appeared twice today (once from a `device_bash` git call — never run git via
+`device_bash`, Desktop Commander only). (c) the device bridge still can't `rm` files — move to
+`_to_delete/` instead; a scout's `_tmp_scout_raster` was moved to
+`_to_delete/_tmp_scout_raster_jul31` — Tredoux can empty `_to_delete/` whenever convenient.
+
+**Owed next session**: (1) wire the cartoon CVC sheets into a Dark Phonics hub page — they're
+orphaned at `/dark-phonics-materials/cvc-sentence-sheets/`, live but unlinked; (2) repoint
+`build_cvc.py`'s output dir off the old `satpin-materials` path; (3) empty `_to_delete/` when
+convenient.
+
+---
+
 ## ✏️ Jul 31 (Cowork) — CVC PICKUP: art filed, trace/read/match sheet built, 21 sheets shipped
 
 Picked up the Downloads pickup workflow set at last session's close. 26 pen-and-ink art picks
