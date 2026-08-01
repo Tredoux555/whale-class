@@ -287,13 +287,13 @@
         },
         {
           "key": "p4-guitar",
-          "text": "The goat ate my guitar!",
-          "mj_prompt": "a white goat eating an acoustic guitar tail-first, its belly curving into a guitar shape, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+          "text": "The goat plays my guitar?!",
+          "mj_prompt": "one happy goat with a round belly strumming a guitar, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         },
         {
           "key": "p5-recap",
           "text": "Oh no, goat\u2026",
-          "mj_prompt": "a white goat with a belly shaped exactly like a guitar, a tiny burp cloud above its head, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+          "mj_prompt": "one goat with a huge lumpy bulging belly happily playing a guitar, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         }
       ]
     },
