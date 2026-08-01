@@ -34,6 +34,9 @@ const FoundingTab = dynamic(() => import('@/components/montree/super-admin/Found
 const GlobalOutreachTab = dynamic(() => import('@/components/montree/super-admin/GlobalOutreachTab'), { ssr: false });
 // 🧭 Command — one-glance business tab (Jul 17). Reads existing endpoints only.
 const CommandTab = dynamic(() => import('@/components/montree/super-admin/CommandTab'), { ssr: false });
+// 📮 Creator inbox — direct messages from the Teachers' Room on the public
+// SATPIN page. Same montree_dm pipe as the lead DMs, its own sender card.
+const CreatorInboxTab = dynamic(() => import('@/components/montree/super-admin/CreatorInboxTab'), { ssr: false });
 
 
 interface DmMessage {
@@ -44,7 +47,7 @@ interface DmMessage {
   created_at: string;
 }
 
-type TabType = 'command' | 'schools' | 'feedback' | 'leads' | 'visitors' | 'agents' | 'agent-inbox' | 'money' | 'campaign' | 'playbook' | 'health' | 'dlq' | 'errors' | 'outreach' | 'founding' | 'global-outreach';
+type TabType = 'command' | 'schools' | 'feedback' | 'creator-inbox' | 'leads' | 'visitors' | 'agents' | 'agent-inbox' | 'money' | 'campaign' | 'playbook' | 'health' | 'dlq' | 'errors' | 'outreach' | 'founding' | 'global-outreach';
 
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -372,7 +375,7 @@ export default function SuperAdminPage() {
     if (typeof window === 'undefined') return;
     const sp = new URLSearchParams(window.location.search);
     const tab = sp.get('tab');
-    const valid: TabType[] = ['command', 'schools', 'feedback', 'leads', 'visitors', 'agents', 'agent-inbox', 'money', 'campaign', 'playbook', 'health', 'dlq', 'errors', 'outreach', 'founding', 'global-outreach'];
+    const valid: TabType[] = ['command', 'schools', 'feedback', 'creator-inbox', 'leads', 'visitors', 'agents', 'agent-inbox', 'money', 'campaign', 'playbook', 'health', 'dlq', 'errors', 'outreach', 'founding', 'global-outreach'];
     if (tab && (valid as string[]).includes(tab)) {
       setActiveTab(tab as TabType);
     }
@@ -603,6 +606,14 @@ export default function SuperAdminPage() {
     }
   };
 
+  // Creator-inbox badge. Teachers'-Room messages ride the same montree_dm
+  // pipe as lead DMs, so the unread map the panel already loads counts them
+  // too — filter it by the 'community-' conversation prefix rather than
+  // polling a second endpoint for a number we've already got.
+  const creatorUnread = Object.entries(adminData.dmUnreadPerConvo)
+    .filter(([conversationId]) => conversationId.startsWith('community-'))
+    .reduce((sum, [, entry]) => sum + (entry?.count || 0), 0);
+
   // Stats
   const trialSchools = adminData.schools.filter(s => s.subscription_tier === 'trial' || s.subscription_status === 'trialing');
   const freeSchools = adminData.schools.filter(s => s.subscription_tier === 'free');
@@ -817,6 +828,13 @@ export default function SuperAdminPage() {
             label="Feedback"
             badge={adminData.unreadCount > 0 ? { text: String(adminData.unreadCount), color: 'red' } : null}
           />
+          <SuperAdminTab
+            active={activeTab === 'creator-inbox'}
+            onClick={() => setActiveTab('creator-inbox')}
+            icon="📮"
+            label="Creator inbox"
+            badge={creatorUnread > 0 ? { text: String(creatorUnread), color: 'red' } : null}
+          />
           <SuperAdminTab active={activeTab === 'money'} onClick={() => setActiveTab('money')} icon="💰" label="Money" />
           <SuperAdminTab active={activeTab === 'visitors'} onClick={() => setActiveTab('visitors')} icon="📍" label="Visitors" />
           <SuperAdminTab active={activeTab === 'agents'} onClick={() => setActiveTab('agents')} icon="🤝" label="Agents" />
@@ -886,6 +904,26 @@ export default function SuperAdminPage() {
             loadingFeedback={adminData.loadingFeedback}
             onFetchFeedback={adminData.fetchFeedback}
             onMarkRead={markFeedbackRead}
+          />
+        )}
+
+        {activeTab === 'creator-inbox' && (
+          <CreatorInboxTab
+            saToken={saToken}
+            // The tab marks its own threads read; without this the page-level
+            // badge would keep counting them. Same bookkeeping as openDm.
+            onRead={(cid) => {
+              adminData.setDmUnreadPerConvo(prev => {
+                const convoUnread = prev[cid]?.count || 0;
+                if (convoUnread > 0) {
+                  adminData.setDmUnreadTotal(t => Math.max(0, t - convoUnread));
+                  const updated = { ...prev };
+                  delete updated[cid];
+                  return updated;
+                }
+                return prev;
+              });
+            }}
           />
         )}
 
