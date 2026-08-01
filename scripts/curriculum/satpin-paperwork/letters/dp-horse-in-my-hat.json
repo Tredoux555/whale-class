@@ -1,0 +1,75 @@
+{
+  "letter": "h",
+  "week": 17,
+  "slug": "dp-horse-in-my-hat",
+  "bookSlug": "horse-in-my-hat",
+  "bookTitle": "A Horse in My Hat",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-horse-in-my-hat.py",
+  "artDir": "phonics-images/dark-phonics-books/horse-in-my-hat",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "hen",
+      "sentence": "A hen in my hat!",
+      "art": "p1-hen.png"
+    },
+    {
+      "order": 2,
+      "word": "hammer",
+      "sentence": "A hammer in my hat!",
+      "art": "p2-hammer.png"
+    },
+    {
+      "order": 3,
+      "word": "heart",
+      "sentence": "A heart in my hat!",
+      "art": "p3-heart.png"
+    },
+    {
+      "order": 4,
+      "word": "horse",
+      "sentence": "A horse in my hat!",
+      "art": "p4-horse.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    2,
+    1,
+    4,
+    3
+  ],
+  "matchDisplayOrder": [
+    3,
+    4,
+    1,
+    2
+  ],
+  "yesno": [
+    {
+      "question": "is a hen in my hat?",
+      "answer": true,
+      "imageArt": "p1-hen.png"
+    },
+    {
+      "question": "is an iguana in my hat?",
+      "answer": false,
+      "imageArt": "../in-the-igloo/p1-iguana.png"
+    },
+    {
+      "question": "is a hammer in my hat?",
+      "answer": true,
+      "imageArt": "p2-hammer.png"
+    },
+    {
+      "question": "is a jug in my hat?",
+      "answer": false,
+      "imageArt": "../jellyfish-in-the-jar/p1-jug.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py \u2014 do not hand-edit; regenerate instead.",
+    "recap": "p5-recap excluded from pages[] \u2014 it lists all swap words in one summary sentence, not a single \"word\" the satpin pages[] format expects (see p.json convention, five single-topic pages).",
+    "yesno": "2 true from the book's own first two pages; 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, in this book's own question frame."
+  }
+}

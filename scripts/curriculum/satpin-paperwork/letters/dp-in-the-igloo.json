@@ -1,0 +1,75 @@
+{
+  "letter": "i",
+  "week": 5,
+  "slug": "dp-in-the-igloo",
+  "bookSlug": "in-the-igloo",
+  "bookTitle": "In the Igloo",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-in-the-igloo.py",
+  "artDir": "phonics-images/dark-phonics-books/in-the-igloo",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "iguana",
+      "sentence": "An iguana in the igloo!",
+      "art": "p1-iguana.png"
+    },
+    {
+      "order": 2,
+      "word": "insect",
+      "sentence": "An insect in the igloo!",
+      "art": "p2-insect.png"
+    },
+    {
+      "order": 3,
+      "word": "inchworm",
+      "sentence": "An inchworm in the igloo!",
+      "art": "p3-inchworm.png"
+    },
+    {
+      "order": 4,
+      "word": "infant",
+      "sentence": "An infant in the igloo!",
+      "art": "p4-infant.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    2,
+    1,
+    4,
+    3
+  ],
+  "matchDisplayOrder": [
+    3,
+    4,
+    1,
+    2
+  ],
+  "yesno": [
+    {
+      "question": "is an iguana in the igloo?",
+      "answer": true,
+      "imageArt": "p1-iguana.png"
+    },
+    {
+      "question": "is a jug in the igloo?",
+      "answer": false,
+      "imageArt": "../jellyfish-in-the-jar/p1-jug.png"
+    },
+    {
+      "question": "is an insect in the igloo?",
+      "answer": true,
+      "imageArt": "p2-insect.png"
+    },
+    {
+      "question": "is a key in the igloo?",
+      "answer": false,
+      "imageArt": "../koala-in-the-pocket/p1-key.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py \u2014 do not hand-edit; regenerate instead.",
+    "recap": "p5-recap excluded from pages[] \u2014 it lists all swap words in one summary sentence, not a single \"word\" the satpin pages[] format expects (see p.json convention, five single-topic pages).",
+    "yesno": "2 true from the book's own first two pages; 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, in this book's own question frame."
+  }
+}

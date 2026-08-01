@@ -1,0 +1,75 @@
+{
+  "letter": "l",
+  "week": 20,
+  "slug": "dp-oh-no-lion",
+  "bookSlug": "oh-no-lion",
+  "bookTitle": "Oh No, Lion\u2026",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-oh-no-lion.py",
+  "artDir": "phonics-images/dark-phonics-books/oh-no-lion",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "lemon",
+      "sentence": "The lion licks a lemon!",
+      "art": "p1-lemon.png"
+    },
+    {
+      "order": 2,
+      "word": "leaf",
+      "sentence": "The lion licks a leaf!",
+      "art": "p2-leaf.png"
+    },
+    {
+      "order": 3,
+      "word": "ladder",
+      "sentence": "The lion licks a ladder!",
+      "art": "p3-ladder.png"
+    },
+    {
+      "order": 4,
+      "word": "lizard",
+      "sentence": "The lion licks a lizard!",
+      "art": "p4-lizard.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    2,
+    1,
+    4,
+    3
+  ],
+  "matchDisplayOrder": [
+    3,
+    4,
+    1,
+    2
+  ],
+  "yesno": [
+    {
+      "question": "does the lion lick a lemon?",
+      "answer": true,
+      "imageArt": "p1-lemon.png"
+    },
+    {
+      "question": "does the lion lick a duck?",
+      "answer": false,
+      "imageArt": "../on-a-rock/p1-duck.png"
+    },
+    {
+      "question": "does the lion lick a leaf?",
+      "answer": true,
+      "imageArt": "p2-leaf.png"
+    },
+    {
+      "question": "does the lion lick an owl?",
+      "answer": false,
+      "imageArt": "../owl-ate-an-orange/p1-owl.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py \u2014 do not hand-edit; regenerate instead.",
+    "recap": "p5-recap excluded from pages[] \u2014 it lists all swap words in one summary sentence, not a single \"word\" the satpin pages[] format expects (see p.json convention, five single-topic pages).",
+    "yesno": "2 true from the book's own first two pages; 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, in this book's own question frame."
+  }
+}

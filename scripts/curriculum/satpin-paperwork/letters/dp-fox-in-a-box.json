@@ -1,0 +1,67 @@
+{
+  "letter": "x",
+  "week": 24,
+  "slug": "dp-fox-in-a-box",
+  "bookSlug": "fox-in-a-box",
+  "bookTitle": "A Fox in a Box",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-fox-in-a-box.py",
+  "artDir": "phonics-images/dark-phonics-books/fox-in-a-box",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "fox",
+      "sentence": "A fox in a box!",
+      "art": "p1-fox.png"
+    },
+    {
+      "order": 2,
+      "word": "ox",
+      "sentence": "An ox in a box!",
+      "art": "p2-ox.png"
+    },
+    {
+      "order": 3,
+      "word": "xylophone",
+      "sentence": "A xylophone in a box!",
+      "art": "p3-xylophone.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    2,
+    3,
+    1
+  ],
+  "matchDisplayOrder": [
+    3,
+    1,
+    2
+  ],
+  "yesno": [
+    {
+      "question": "is a fox in a box?",
+      "answer": true,
+      "imageArt": "p1-fox.png"
+    },
+    {
+      "question": "is a frog in a box?",
+      "answer": false,
+      "imageArt": "../frog-on-the-fan/p1-frog.png"
+    },
+    {
+      "question": "is an ox in a box?",
+      "answer": true,
+      "imageArt": "p2-ox.png"
+    },
+    {
+      "question": "is a hen in a box?",
+      "answer": false,
+      "imageArt": "../horse-in-my-hat/p1-hen.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py \u2014 do not hand-edit; regenerate instead.",
+    "recap": "p4-recap excluded from pages[] \u2014 it lists all swap words in one summary sentence, not a single \"word\" the satpin pages[] format expects (see p.json convention, five single-topic pages).",
+    "yesno": "2 true from the book's own first two pages; 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, in this book's own question frame."
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "letter": "d",
+  "week": 8,
+  "slug": "dp-dinosaur-on-a-drum",
+  "bookSlug": "dinosaur-on-a-drum",
+  "bookTitle": "A Dinosaur on a Drum",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-dinosaur-on-a-drum.py",
+  "artDir": "phonics-images/dark-phonics-books/dinosaur-on-a-drum",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "dog",
+      "sentence": "A dog on a drum!",
+      "art": "p1-dog.png"
+    },
+    {
+      "order": 2,
+      "word": "doll",
+      "sentence": "A doll on a drum!",
+      "art": "p2-doll.png"
+    },
+    {
+      "order": 3,
+      "word": "duck",
+      "sentence": "A duck on a drum!",
+      "art": "p3-duck.png"
+    },
+    {
+      "order": 4,
+      "word": "dinosaur",
+      "sentence": "A dinosaur on a drum?!",
+      "art": "p4-dinosaur.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    2,
+    1,
+    4,
+    3
+  ],
+  "matchDisplayOrder": [
+    3,
+    4,
+    1,
+    2
+  ],
+  "yesno": [
+    {
+      "question": "is a dog on a drum?",
+      "answer": true,
+      "imageArt": "p1-dog.png"
+    },
+    {
+      "question": "is hen on a drum?",
+      "answer": false,
+      "imageArt": "../elephant-sat-on-the-egg/p1-hen.png"
+    },
+    {
+      "question": "is a doll on a drum?",
+      "answer": true,
+      "imageArt": "p2-doll.png"
+    },
+    {
+      "question": "is a fox on a drum?",
+      "answer": false,
+      "imageArt": "../fox-in-a-box/p1-fox.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py \u2014 do not hand-edit; regenerate instead.",
+    "recap": "p5-recap excluded from pages[] \u2014 it lists all swap words in one summary sentence, not a single \"word\" the satpin pages[] format expects (see p.json convention, five single-topic pages).",
+    "yesno": "2 true from the book's own first two pages; 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, in this book's own question frame."
+  }
+}

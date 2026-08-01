@@ -1,0 +1,75 @@
+{
+  "letter": "b",
+  "week": 18,
+  "slug": "dp-bear-in-the-boat",
+  "bookSlug": "bear-in-the-boat",
+  "bookTitle": "A Bear in the Boat",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-bear-in-the-boat.py",
+  "artDir": "phonics-images/dark-phonics-books/bear-in-the-boat",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "ball",
+      "sentence": "A ball in the boat!",
+      "art": "p1-ball.png"
+    },
+    {
+      "order": 2,
+      "word": "banana",
+      "sentence": "A banana in the boat!",
+      "art": "p2-banana.png"
+    },
+    {
+      "order": 3,
+      "word": "bell",
+      "sentence": "A bell in the boat!",
+      "art": "p3-bell.png"
+    },
+    {
+      "order": 4,
+      "word": "bear",
+      "sentence": "A bear in the boat!",
+      "art": "p4-bear.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    2,
+    1,
+    4,
+    3
+  ],
+  "matchDisplayOrder": [
+    3,
+    4,
+    1,
+    2
+  ],
+  "yesno": [
+    {
+      "question": "is a ball in the boat?",
+      "answer": true,
+      "imageArt": "p1-ball.png"
+    },
+    {
+      "question": "is a cat in the boat?",
+      "answer": false,
+      "imageArt": "../cow-on-the-car/p1-cat.png"
+    },
+    {
+      "question": "is a banana in the boat?",
+      "answer": true,
+      "imageArt": "p2-banana.png"
+    },
+    {
+      "question": "is a dog in the boat?",
+      "answer": false,
+      "imageArt": "../dinosaur-on-a-drum/p1-dog.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py \u2014 do not hand-edit; regenerate instead.",
+    "recap": "p5-recap excluded from pages[] \u2014 it lists all swap words in one summary sentence, not a single \"word\" the satpin pages[] format expects (see p.json convention, five single-topic pages).",
+    "yesno": "2 true from the book's own first two pages; 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, in this book's own question frame."
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "letter": "a",
+  "week": 2,
+  "slug": "dp-ant-on-my-apple",
+  "bookSlug": "ant-on-my-apple",
+  "bookTitle": "Ant on My Apple",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-ant-on-my-apple.py",
+  "artDir": "phonics-images/dark-phonics-books/ant-on-my-apple",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "ant",
+      "sentence": "An ant on my apple!",
+      "art": "p1-ant.png"
+    },
+    {
+      "order": 2,
+      "word": "anchor",
+      "sentence": "An anchor on my apple!",
+      "art": "p2-anchor.png"
+    },
+    {
+      "order": 3,
+      "word": "alligator",
+      "sentence": "An alligator on my apple!",
+      "art": "p3-alligator.png"
+    },
+    {
+      "order": 4,
+      "word": "ambulance",
+      "sentence": "An ambulance on my apple!",
+      "art": "p4-ambulance.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    2,
+    1,
+    4,
+    3
+  ],
+  "matchDisplayOrder": [
+    3,
+    4,
+    1,
+    2
+  ],
+  "yesno": [
+    {
+      "question": "is an ant on my apple?",
+      "answer": true,
+      "imageArt": "p1-ant.png"
+    },
+    {
+      "question": "is a ball on my apple?",
+      "answer": false,
+      "imageArt": "../bear-in-the-boat/p1-ball.png"
+    },
+    {
+      "question": "is an anchor on my apple?",
+      "answer": true,
+      "imageArt": "p2-anchor.png"
+    },
+    {
+      "question": "is a cat on my apple?",
+      "answer": false,
+      "imageArt": "../cow-on-the-car/p1-cat.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py \u2014 do not hand-edit; regenerate instead.",
+    "recap": "p5-recap excluded from pages[] \u2014 it lists all swap words in one summary sentence, not a single \"word\" the satpin pages[] format expects (see p.json convention, five single-topic pages).",
+    "yesno": "2 true from the book's own first two pages; 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, in this book's own question frame."
+  }
+}

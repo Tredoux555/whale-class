@@ -1,0 +1,75 @@
+{
+  "letter": "qu",
+  "week": 27,
+  "slug": "dp-queen-on-the-quilt",
+  "bookSlug": "queen-on-the-quilt",
+  "bookTitle": "A Queen on the Quilt",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-queen-on-the-quilt.py",
+  "artDir": "phonics-images/dark-phonics-books/queen-on-the-quilt",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "quill",
+      "sentence": "A quill on the quilt!",
+      "art": "p1-quill.png"
+    },
+    {
+      "order": 2,
+      "word": "quarter",
+      "sentence": "A quarter on the quilt!",
+      "art": "p2-quarter.png"
+    },
+    {
+      "order": 3,
+      "word": "quail",
+      "sentence": "A quail on the quilt!",
+      "art": "p3-quail.png"
+    },
+    {
+      "order": 4,
+      "word": "queen",
+      "sentence": "A queen on the quilt!",
+      "art": "p4-queen.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    2,
+    1,
+    4,
+    3
+  ],
+  "matchDisplayOrder": [
+    3,
+    4,
+    1,
+    2
+  ],
+  "yesno": [
+    {
+      "question": "is a quill on the quilt?",
+      "answer": true,
+      "imageArt": "p1-quill.png"
+    },
+    {
+      "question": "is a rabbit on the quilt?",
+      "answer": false,
+      "imageArt": "../rabbit-in-the-rocket/p1-rabbit.png"
+    },
+    {
+      "question": "is a quarter on the quilt?",
+      "answer": true,
+      "imageArt": "p2-quarter.png"
+    },
+    {
+      "question": "is a snake on the quilt?",
+      "answer": false,
+      "imageArt": "../snake-in-my-sock/p1-snake.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py \u2014 do not hand-edit; regenerate instead.",
+    "recap": "p5-recap excluded from pages[] \u2014 it lists all swap words in one summary sentence, not a single \"word\" the satpin pages[] format expects (see p.json convention, five single-topic pages).",
+    "yesno": "2 true from the book's own first two pages; 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, in this book's own question frame."
+  }
+}

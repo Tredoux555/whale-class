@@ -1,0 +1,75 @@
+{
+  "letter": "f",
+  "week": 19,
+  "slug": "dp-frog-on-the-fan",
+  "bookSlug": "frog-on-the-fan",
+  "bookTitle": "A Frog on the Fan",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-frog-on-the-fan.py",
+  "artDir": "phonics-images/dark-phonics-books/frog-on-the-fan",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "frog",
+      "sentence": "A frog on the fan!",
+      "art": "p1-frog.png"
+    },
+    {
+      "order": 2,
+      "word": "fish",
+      "sentence": "A fish on the fan!",
+      "art": "p2-fish.png"
+    },
+    {
+      "order": 3,
+      "word": "feather",
+      "sentence": "A feather on the fan!",
+      "art": "p3-feather.png"
+    },
+    {
+      "order": 4,
+      "word": "fork",
+      "sentence": "A fork on the fan!",
+      "art": "p4-fork.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    2,
+    1,
+    4,
+    3
+  ],
+  "matchDisplayOrder": [
+    3,
+    4,
+    1,
+    2
+  ],
+  "yesno": [
+    {
+      "question": "is a frog on the fan?",
+      "answer": true,
+      "imageArt": "p1-frog.png"
+    },
+    {
+      "question": "is a hen on the fan?",
+      "answer": false,
+      "imageArt": "../horse-in-my-hat/p1-hen.png"
+    },
+    {
+      "question": "is a fish on the fan?",
+      "answer": true,
+      "imageArt": "p2-fish.png"
+    },
+    {
+      "question": "is an iguana on the fan?",
+      "answer": false,
+      "imageArt": "../in-the-igloo/p1-iguana.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py \u2014 do not hand-edit; regenerate instead.",
+    "recap": "p5-recap excluded from pages[] \u2014 it lists all swap words in one summary sentence, not a single \"word\" the satpin pages[] format expects (see p.json convention, five single-topic pages).",
+    "yesno": "2 true from the book's own first two pages; 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, in this book's own question frame."
+  }
+}
