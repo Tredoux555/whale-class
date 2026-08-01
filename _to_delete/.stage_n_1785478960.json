@@ -1,0 +1,52 @@
+{
+  "letter": "n",
+  "week": 6,
+  "slug": "n",
+  "bookSlug": "the-nest-is-in-the-nest",
+  "bookTitle": "The Nest is in the Nest",
+  "bookScript": "scripts/curriculum/dark-phonics-readers/bookN.py",
+  "artDir": "phonics-images/satpin-v2/books/nest",
+  "photoDir": "docs/picture-bank/photos",
+  "band": "LETTER N  ·  INITIAL SOUND  ·  listen for /n/",
+
+  "pages": [
+    { "order": 1, "word": "nut",    "sentence": "the nut is in the nest",
+      "art": "nut-scene.png" },
+    { "order": 2, "word": "net",    "sentence": "the net is in the nest",
+      "art": "net-scene.png" },
+    { "order": 3, "word": "napkin", "sentence": "the napkin is in the nest",
+      "art": "napkin-scene.png" },
+    { "order": 4, "word": "nail",   "sentence": "the nail is in the nest",
+      "art": "nail-scene.png" },
+    { "order": 5, "word": "nest",   "sentence": "the nest is in the nest",
+      "art": "nest-in-nest-scene.png" }
+  ],
+
+  "sequencingDisplayOrder": [3, 5, 1, 2, 4],
+  "matchDisplayOrder": [4, 3, 5, 1, 2],
+
+  "yesno": [
+    { "question": "is the nut in the nest?",       "answer": true,  "imageArt": "nut-scene.png" },
+    { "question": "is the tiger in the nest?",     "answer": false, "imageWord": "tiger" },
+    { "question": "is the net in the nest?",       "answer": true,  "imageArt": "net-scene.png" },
+    { "question": "is the taxi in the nest?",      "answer": false, "imageWord": "taxi" },
+    { "question": "is the napkin in the nest?",    "answer": true,  "imageArt": "napkin-scene.png" },
+    { "question": "is the alligator in the nest?", "answer": false, "imageWord": "alligator" },
+    { "question": "is the nail in the nest?",      "answer": true,  "imageArt": "nail-scene.png" },
+    { "question": "is the pig in the nest?",       "answer": false, "imageWord": "pig" },
+    { "question": "is the nest in the nest?",      "answer": true,  "imageArt": "nest-in-nest-scene.png" },
+    { "question": "is the igloo in the nest?",     "answer": false, "imageWord": "igloo" }
+  ],
+
+  "workbook": {
+    "coverArt": "cover-scene.png"
+  },
+
+  "_notes": {
+    "artDir": "Art is filed permanently at phonics-images/satpin-v2/books/nest/ (also staged for this week's build at _incoming-week6-n/book-scenes/) — the THIRD sanctioned photo-illustrated exception, approved by Tredoux 2026-07-30. Unlike letter I, there is no incoming-tray debt to fix later: this path is already the permanent home.",
+    "sequencingDisplayOrder": "Fixed derangement (no page shown in its own place) so output is deterministic across rebuilds. Values are page `order` numbers.",
+    "matchDisplayOrder": "Second fixed derangement for the picture column on the match sheet — deliberately different from sequencingDisplayOrder.",
+    "yesno": "5 true (from the book) / 5 false, alternating. False items are common FUNNY words chosen for maximum giggle factor — not restricted to prior-week vocabulary (Tredoux 2026-07-30 late). `imageArt` resolves under artDir; `imageWord` resolves to photoDir/<word>/<word>.jpg.",
+    "workbook.coverArt": "Explicit: the book's own cover (cover-scene.png) is a dedicated establishing shot, distinct from the final spread's art (nest-in-nest-scene.png) — unlike P/I, where the cover reuses the last spread's picture."
+  }
+}

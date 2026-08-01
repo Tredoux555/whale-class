@@ -10,6 +10,10 @@ import { WHALE_CLASSROOM_ID } from '@/lib/curriculum/classroom';
 // route enough headroom while still bounded.
 export const maxDuration = 120;
 
+// Weekly plans are .docx files — a real one is well under a megabyte.
+const MAX_UPLOAD_MB = 15;
+const MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024;
+
 function getAnthropic(): Anthropic {
   if (!process.env.ANTHROPIC_API_KEY) throw new Error('Anthropic API key not configured');
   return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -45,6 +49,15 @@ export async function POST(request: NextRequest) {
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    }
+
+    // Cap the upload before it is buffered into memory and shipped to Claude —
+    // an oversized doc is a guaranteed Sonnet burn plus a container OOM risk.
+    if (file.size > MAX_UPLOAD_BYTES) {
+      return NextResponse.json(
+        { error: `File too large — the limit is ${MAX_UPLOAD_MB}MB.` },
+        { status: 413 }
+      );
     }
 
     // Read file content

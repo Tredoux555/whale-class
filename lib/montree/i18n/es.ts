@@ -2422,6 +2422,7 @@ export const es: Record<string, string> = {
   'voiceObs.selectLanguage': 'Idioma de grabación',
   'voiceObs.confidence': 'confianza',
   'voiceObs.commitSuccess': '¡Observaciones registradas en los registros del alumno!',
+  'voiceObs.progressFailed': 'No se pudieron guardar {count} actualizaciones de progreso: revisa a esos niños y vuelve a registrarlas.',
   'voiceObs.commitWarning': 'Algunas observaciones tienen alumnos sin asignar. Asignálas antes de confirmar.',
   'voiceObs.statsApproved': 'Aprobadas',
   'voiceObs.statsRejected': 'Rechazadas',
@@ -5536,6 +5537,7 @@ export const es: Record<string, string> = {
   'paperScan.scanCta': 'Escanear una hoja de registro',
   'paperScan.takePhoto': 'Sacar una foto',
   'paperScan.chooseFromGallery': 'Elegir de la galería',
+  'paperScan.desktopHint': 'En un ordenador esto abre un selector de archivos: usa un teléfono para fotografiar las hojas.',
   'paperScan.sheetDate': 'Fecha de la hoja',
   'paperScan.recentScans': 'Escaneos recientes',
   'paperScan.noScans': 'Todavía no hay escaneos. Sacale una foto a tu primera hoja.',
@@ -5593,6 +5595,7 @@ export const es: Record<string, string> = {
   'paperScan.saveFailed': 'No se pudo guardar el cambio.',
   'paperScan.commitFailed': 'No se pudo guardar en los perfiles. Probá de nuevo.',
   'paperScan.commitSuccess': '¡Guardado en los perfiles de los niños!',
+  'paperScan.progressFailed': 'No se pudieron guardar {count} actualizaciones de progreso: revisa a esos niños y vuelve a aprobarlas.',
 
   // ── School Features (self-serve Feature Switchboard) ──────────────────
   'schoolFeatures.menuLabel': 'Funciones de la escuela',

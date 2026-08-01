@@ -27,6 +27,52 @@ async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return Promise.race([promise, createTimeout(ms)]) as Promise<T>;
 }
 
+// Does this request carry a verified Supabase session holding one of the roles
+// the /admin PAGE gate accepts (admin / super_admin / teacher)?
+//
+// The /api/* branch below returns before the page-level session logic ever
+// runs, so an API route gated on the admin-token cookie ALONE would 401 the
+// half of admin users who are signed in via Supabase rather than the legacy
+// admin-token. Same token sources, same timeouts, same role list as the page
+// gate further down — kept in step deliberately.
+async function hasSupabaseAdminRole(req: NextRequest): Promise<boolean> {
+  if (!supabaseUrl || !supabaseAnonKey) return false;
+
+  const authHeader = req.headers.get('authorization');
+  const accessToken = authHeader?.replace('Bearer ', '') ||
+    req.cookies.get('sb-access-token')?.value ||
+    req.cookies.get('supabase-auth-token')?.value;
+  if (!accessToken) return false;
+
+  try {
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+
+    await withTimeout(
+      supabase.auth.setSession({ access_token: accessToken, refresh_token: '' }),
+      3000
+    );
+    const sessionResult = await withTimeout(supabase.auth.getSession(), 3000);
+    const session = sessionResult?.data?.session || null;
+    if (!session) return false;
+
+    const userRolesResult = await withTimeout(
+      Promise.resolve(
+        supabase.from('user_roles').select('role_name').eq('user_id', session.user.id)
+      ),
+      3000
+    );
+    const roles = userRolesResult?.data?.map(r => r.role_name) || [];
+    return roles.some(
+      role => role === 'admin' || role === 'super_admin' || role === 'teacher'
+    );
+  } catch (error) {
+    console.error('[MIDDLEWARE] Supabase admin-role check failed:', error);
+    return false;
+  }
+}
+
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
   const hostname = req.headers.get('host') || '';
@@ -240,6 +286,12 @@ export async function middleware(req: NextRequest) {
     // Exception: /api/auth/* is the auth entrypoint suite (login, logout).
     // Exception: /api/health, /api/warm, /api/public, /api/stripe,
     // /api/guides — public-by-design.
+    // 🚨 Session 113 V3 audit HIGH — /api/media was a fully open mutation
+    // surface (POST upload, PATCH parent-visibility, DELETE). Every caller is
+    // an /app/admin/* page (child-media, classroom/[childId],
+    // classroom/student/[id], hub). NOTE: the exact path '/api/media' has no
+    // trailing slash, so it needs its own comparison.
+    const isMediaApi = pathname === '/api/media' || pathname.startsWith('/api/media/');
     const requiresAdminJWT =
       (pathname.startsWith('/api/admin/') && !pathname.startsWith('/api/admin/login')) ||
       (
@@ -251,14 +303,23 @@ export async function middleware(req: NextRequest) {
       pathname.startsWith('/api/curriculum-import/') ||
       pathname.startsWith('/api/students/') ||
       pathname.startsWith('/api/classroom/') ||
-      pathname.startsWith('/api/onboard/');
+      pathname.startsWith('/api/onboard/') ||
+      isMediaApi;
     if (requiresAdminJWT) {
       const whaleAdminToken = req.cookies.get('admin-token')?.value;
       if (!whaleAdminToken || !(await verifyAdminToken(whaleAdminToken))) {
-        return new NextResponse(
-          JSON.stringify({ error: 'Unauthorized' }),
-          { status: 401, headers: { 'Content-Type': 'application/json' } }
-        );
+        // /api/media's callers are /app/admin/* pages, and that page gate
+        // admits EITHER the admin-token cookie OR a verified Supabase session
+        // holding admin / super_admin / teacher. Gating the API on the cookie
+        // alone would 401 every Supabase-session admin mid-page. Only
+        // /api/media gets this second door — the other groups above keep the
+        // strict admin-token-only check they shipped with.
+        if (!isMediaApi || !(await hasSupabaseAdminRole(req))) {
+          return new NextResponse(
+            JSON.stringify({ error: 'Unauthorized' }),
+            { status: 401, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
       }
     }
     return NextResponse.next();
@@ -486,5 +547,9 @@ export const config = {
     '/api/students/:path*',
     '/api/classroom/:path*',
     '/api/onboard/:path*',
+    // 🚨 Session 113 V3 audit HIGH — /api/media had no auth of its own and was
+    // never in this matcher: anyone could upload, retitle or delete child media.
+    '/api/media',
+    '/api/media/:path*',
   ],
 };

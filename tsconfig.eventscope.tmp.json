@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "noEmit": true, "incremental": false },
+  "include": [
+    "next-env.d.ts",
+    "app/montree/dashboard/capture/page.tsx",
+    "components/montree/DashboardHeader.tsx",
+    "app/api/montree/media/upload/route.ts"
+  ]
+}

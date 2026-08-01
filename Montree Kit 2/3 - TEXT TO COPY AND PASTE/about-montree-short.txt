@@ -1,0 +1,12 @@
+SHORT TEXT ABOUT MONTREE
+=========================
+Use this anywhere you need one short paragraph -
+for example under our logo on your partners page.
+----------------------------------------------------------------
+
+
+Montree is a new tool for Montessori classrooms, built by
+a Montessori teacher. A teacher takes a photo of a child
+working, and Montree records the observation, tracks the
+child's progress, and writes weekly reports for parents.
+Learn more at montree.xyz

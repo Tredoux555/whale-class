@@ -2348,6 +2348,7 @@ export const uk: Record<string, string> = {
   'voiceObs.selectLanguage': 'Мова запису',
   'voiceObs.confidence': 'впевненість',
   'voiceObs.commitSuccess': 'Спостереження додані до записів учня!',
+  'voiceObs.progressFailed': '{count} оновлень прогресу не вдалося зберегти — перевірте цих дітей і введіть їх знову.',
   'voiceObs.commitWarning': 'Деякі спостереження не мають визначеної дитини. Призначте їм дитину перед збереженням.',
   'voiceObs.statsApproved': 'Затверджено',
   'voiceObs.statsRejected': 'Відхилено',
@@ -5536,6 +5537,7 @@ export const uk: Record<string, string> = {
   'paperScan.scanCta': 'Сканувати аркуш спостережень',
   'paperScan.takePhoto': 'Зробити фото',
   'paperScan.chooseFromGallery': 'Вибрати з галереї',
+  'paperScan.desktopHint': 'На комп\'ютері це відкриє вибір файлів — фотографуйте аркуші телефоном.',
   'paperScan.sheetDate': 'Дата аркуша',
   'paperScan.recentScans': 'Останні сканування',
   'paperScan.noScans': 'Сканувань ще немає. Сфотографуйте свій перший аркуш.',
@@ -5593,6 +5595,7 @@ export const uk: Record<string, string> = {
   'paperScan.saveFailed': 'Не вдалося зберегти цю зміну.',
   'paperScan.commitFailed': 'Не вдалося зберегти у профілі. Спробуйте ще раз.',
   'paperScan.commitSuccess': 'Збережено у профілі дітей.',
+  'paperScan.progressFailed': '{count} оновлень прогресу не вдалося зберегти — перевірте цих дітей і підтвердьте знову.',
 
   // ── School Features (self-serve Feature Switchboard) ──────────────────
   'schoolFeatures.menuLabel': 'Функції школи',

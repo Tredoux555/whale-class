@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "noEmit": true, "incremental": false, "skipLibCheck": true },
+  "include": [
+    "app/layout.tsx",
+    "lib/story/personal-theme.ts",
+    "lib/story/coach/documents.ts",
+    "lib/story/coach/tool-definitions.ts",
+    "lib/story/coach/tool-executor.ts",
+    "lib/story/coach/system-prompt.ts",
+    "app/api/story/coach/route.ts",
+    "lib/sanctuary-e2e/libsodium-wrappers-sumo.d.ts",
+    "next-env.d.ts"
+  ]
+}

@@ -13,6 +13,8 @@ import {
   StudentInfo
 } from '@/lib/curriculum/import-ai';
 
+const MAX_FILES_PER_UPLOAD = 40;
+
 // ============================================
 // GET: List work imports for classroom
 // ============================================
@@ -96,6 +98,16 @@ export async function POST(request: NextRequest) {
 
     if (!files || files.length === 0) {
       return NextResponse.json({ error: 'No files provided' }, { status: 400 });
+    }
+
+    // Each file costs two AI matching calls plus a storage upload, all inside a
+    // single request — cap the batch so one upload can't run away with the
+    // request timeout (and the Anthropic bill).
+    if (files.length > MAX_FILES_PER_UPLOAD) {
+      return NextResponse.json(
+        { error: `Too many files — upload at most ${MAX_FILES_PER_UPLOAD} at a time.` },
+        { status: 400 }
+      );
     }
 
     // Check classroom is in works phase

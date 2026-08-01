@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "noEmit": true, "skipLibCheck": true, "incremental": false },
+  "include": [
+    "app/montree/library/satpin/page.tsx",
+    "app/api/montree/satpin-media/route.ts",
+    "types/**/*.d.ts",
+    "next-env.d.ts"
+  ]
+}

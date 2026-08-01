@@ -23,6 +23,7 @@ import {
   CalendarDays,
   Users,
   Sparkles,
+  Sliders,
 } from 'lucide-react';
 // 🚨 Perf Tier 2.4 (PERF_HEALTH_CHECK.md) — Astra panel is 1,200 lines and
 // mounted on every /montree/admin/* page. Loading it eagerly added ~30-50 KB
@@ -300,6 +301,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [principalId, setPrincipalId] = useState<string | null>(null);
   // Migration 292 — Founding-member schools get the "Message Tredoux" nav link.
   const [foundingMember, setFoundingMember] = useState(false);
+  // Give Control — when Montree flips 'feature_self_serve' ON for this school,
+  // the principal gets the School Features switchboard in the sidebar.
+  const [selfServe, setSelfServe] = useState(false);
   const [authState, setAuthState] = useState<AuthState>('checking');
 
   useEffect(() => {
@@ -430,6 +434,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return () => window.removeEventListener('storage', onStorage);
   }, [router]);
 
+  // Give Control gate for the "School Features" sidebar row.
+  //
+  // Deliberately NOT /api/montree/features (nor hooks/useFeatures, which wraps
+  // it): that endpoint builds its response by mapping over
+  // montree_feature_definitions, and 'feature_self_serve' has NO definition row
+  // — it is a bare montree_school_features override (see the header comment on
+  // app/api/montree/super-admin/school-features/route.ts). It would therefore
+  // never appear in that payload and the gate would be permanently false.
+  // /api/montree/school-features IS the existing gate: it 403s
+  // 'self_serve_disabled' when Give Control is off and 200s when it's on, using
+  // the same isFeatureEnabled() check the switchboard itself enforces. The
+  // school is derived from the auth cookie, so no school_id plumbing is needed.
+  // Fails closed — any error leaves the row hidden.
+  useEffect(() => {
+    if (authState !== 'authed') return;
+    let cancelled = false;
+    fetch('/api/montree/school-features', { credentials: 'include' })
+      .then((res) => { if (!cancelled) setSelfServe(res.ok); })
+      .catch(() => { /* fail closed — row stays hidden */ });
+    return () => { cancelled = true; };
+  }, [authState]);
+
   // Two distinct meeting-notes surfaces for the principal:
   //   - "Parent Meetings" (/montree/admin/meeting-notes) — plaintext meeting
   //     notes mirroring the teacher's, optionally shareable into the parent
@@ -474,6 +500,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           icon: Lock,
           match: (p) => p.startsWith('/montree/admin/conversations'),
         },
+        // Give Control — the self-serve Feature Switchboard. Same page the
+        // teacher More-menu row points at (/montree/dashboard/school-features);
+        // it is school-scoped, not classroom-scoped, so the principal is its
+        // natural owner. Only rendered once Montree flips 'feature_self_serve'
+        // ON for this school. NOTE the legacy /montree/admin/features page is
+        // NOT this — that one writes classroom-level flags with no menu sync.
+        ...(selfServe
+          ? [
+              {
+                href: '/montree/dashboard/school-features',
+                label: 'schoolFeatures.menuLabel',
+                icon: Sliders,
+                match: (p: string) => p.startsWith('/montree/dashboard/school-features'),
+              },
+            ]
+          : []),
         // Migration 292 — Founding-member perk: a direct line to Tredoux.
         // Hardcoded English label (renders via t()'s key-fallback) so no
         // i18n parity churn. Only present when the school is a Founding member.

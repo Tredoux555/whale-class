@@ -143,6 +143,19 @@ export default function VoiceObservationReview({ sessionId, onCommitted }: Props
       });
       const data = await resp.json();
       if (data.success) {
+        // progressFailed = approved observations whose progress upsert errored.
+        // The route still marks the session committed and deletes the audio +
+        // transcript, so if we don't say this now the teacher has no way left to
+        // discover the loss. Warn BEFORE onCommitted() — the parent fires its own
+        // success toast, and sonner stacks, so the warning must already be up.
+        const progressFailed = Number(data.progressFailed ?? 0) || 0;
+        if (progressFailed > 0) {
+          toast.warning(
+            (t('voiceObs.progressFailed') || '{count} progress updates could not be saved — check those children and re-enter them.')
+              .replace('{count}', String(progressFailed)),
+            { duration: 10000 },
+          );
+        }
         onCommitted(data.committedCount);
       } else {
         toast.error(data.error || 'Commit failed');
@@ -152,7 +165,7 @@ export default function VoiceObservationReview({ sessionId, onCommitted }: Props
     } finally {
       setCommitting(false);
     }
-  }, [extractions, sessionId, onCommitted]);
+  }, [extractions, sessionId, onCommitted, t]);
 
   if (loading) {
     return (

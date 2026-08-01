@@ -49,6 +49,21 @@ interface Outcome {
   message_id?: string;
 }
 
+/** Resend surfaces throttling/quota exhaustion as a message string — once it
+ *  says this, every remaining send in the batch will fail the same way. */
+function isProviderCapacityError(error?: string): boolean {
+  if (!error) return false;
+  const e = error.toLowerCase();
+  return (
+    e.includes('rate_limit') ||
+    e.includes('rate limit') ||
+    e.includes('too many requests') ||
+    e.includes('quota') ||
+    e.includes('daily limit') ||
+    e.includes('429')
+  );
+}
+
 export async function POST(req: NextRequest) {
   const { valid } = await verifySuperAdminAuth(req.headers);
   if (!valid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -109,8 +124,25 @@ export async function POST(req: NextRequest) {
   let sent = 0;
   let failed = 0;
   let skipped = 0;
+  // Set when Resend reports a rate-limit / quota error. Hammering the provider
+  // after that just burns the remaining leads as failures (and can get the
+  // sending domain throttled harder), so we stop the loop and report what was
+  // left untouched — the founder can re-run the batch later.
+  let abortedReason: string | null = null;
+  let notAttempted = 0;
 
   for (const lead of leads) {
+    if (abortedReason) {
+      outcomes.push({
+        lead_id: lead.id,
+        ok: false,
+        skipped: true,
+        reason: `not attempted — batch stopped (${abortedReason})`,
+      });
+      notAttempted++;
+      continue;
+    }
+
     // Skip leads not in a contactable state. Re-sending a trial link to someone
     // who already declined is a footgun — better to surface it than ignore it.
     if (lead.status !== 'demo_requested') {
@@ -153,6 +185,12 @@ export async function POST(req: NextRequest) {
         action: 'bulk_reply_trial_link_failed',
         notes: result.error?.slice(0, 500) || 'send failed',
       });
+      // ...unless the provider says it's out of capacity, in which case every
+      // remaining send is doomed. Stop here rather than burning the batch.
+      if (isProviderCapacityError(result.error)) {
+        abortedReason = result.error?.slice(0, 200) || 'provider rate limit / quota';
+        console.error('[bulk-reply] provider capacity error — stopping batch:', abortedReason);
+      }
       continue;
     }
 
@@ -192,6 +230,8 @@ export async function POST(req: NextRequest) {
       sent,
       failed,
       skipped,
+      not_attempted: notAttempted,
+      aborted_reason: abortedReason,
       outcomes,
     },
     { headers: { 'Cache-Control': 'no-store' } },

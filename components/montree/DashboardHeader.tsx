@@ -7,10 +7,14 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
   Camera, Mic, Square, MoreHorizontal, ChevronDown,
-  FileText, Target, Search, Sparkles, BookOpen,
-  LayoutGrid, CalendarDays, Images, FolderOpen, TrendingUp,
-  Users, BookMarked, Globe, BarChart2, Settings2, LogOut,
+  FileText, Search, BookOpen,
+  LayoutGrid, CalendarDays,
+  BookMarked, Globe, Settings2, LogOut,
   MessageSquare, KeyRound, Calendar, UploadCloud, ListChecks,
+  // Target / Sparkles / FolderOpen / TrendingUp / Users / BarChart2 removed with
+  // the twelve dead menu_* rows (see the 🪦 note in the More menu). Images went
+  // with them — its only other reference is the commented-out Photo Gallery row.
+  // Re-add any of these here when uncommenting the row that used it.
   // UserPlus removed Jul 3 2026 — the "Invite your principal" menu row was
   // hidden. Re-add UserPlus here if that row is ever uncommented.
   // Clapperboard removed — was the Montage Studio menu-row icon; that row
@@ -50,6 +54,8 @@ const C = {
   textDanger:   'rgba(239,100,100,0.8)',
   menuBg:       'rgba(8,20,12,0.95)',
 };
+// Minimum gap between two teacher-menu refetches triggered by focus/visibility.
+const MENU_REVALIDATE_MS = 10_000;
 const SERIF = "var(--font-lora), 'Iowan Old Style', Georgia, serif";
 const SANS  = "'Inter', -apple-system, system-ui, sans-serif";
 
@@ -181,6 +187,9 @@ function DashboardHeader() {
   // config → render the legacy flag-gated menu below (existing schools
   // untouched). New signups are seeded with the minimal default at signup.
   const [menuConfig, setMenuConfig] = useState<MenuConfig | null>(null);
+  // Bumped by the focus/visibility revalidator below to re-run the menu fetch.
+  const [menuReloadNonce, setMenuReloadNonce] = useState(0);
+  const lastMenuFetchRef = useRef(0);
 
   // Voice note state
   const [isRecording,      setIsRecording]      = useState(false);
@@ -250,15 +259,41 @@ function DashboardHeader() {
 
   // Load this teacher's custom menu config (if any). Only sets state when a
   // config exists — otherwise menuConfig stays null and the legacy menu renders.
+  //
+  // 🚨 Menu freshness: the saved config (settings.menu) is rewritten SERVER-side
+  // whenever a feature that owns a menu item is toggled (see
+  // lib/montree/features/menu-sync.ts). This fetch used to run once on mount, so
+  // a teacher with the app already open kept the stale menu until a full reload —
+  // which is exactly what "I enabled everything and nothing changed" looks like.
+  // The nonce below is bumped on window focus / tab visibility, mirroring the
+  // stale-while-revalidate pattern in lib/montree/features/context.tsx.
   useEffect(() => {
     const tid = session?.teacher?.id;
     if (!tid) return;
     let cancelled = false;
+    lastMenuFetchRef.current = Date.now();
     montreeApi('/api/montree/teacher/menu')
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => { if (!cancelled && d && d.menu) setMenuConfig(d.menu as MenuConfig); })
       .catch(() => { /* no config / offline → legacy menu */ });
     return () => { cancelled = true; };
+  }, [session?.teacher?.id, menuReloadNonce]);
+
+  // Revalidate the menu on focus / tab return. Throttled to one refetch per
+  // MENU_REVALIDATE_MS so alt-tabbing can't spam /api/montree/teacher/menu.
+  useEffect(() => {
+    if (!session?.teacher?.id) return;
+    const revalidate = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+      if (Date.now() - lastMenuFetchRef.current < MENU_REVALIDATE_MS) return;
+      setMenuReloadNonce((n) => n + 1);
+    };
+    window.addEventListener('focus', revalidate);
+    document.addEventListener('visibilitychange', revalidate);
+    return () => {
+      window.removeEventListener('focus', revalidate);
+      document.removeEventListener('visibilitychange', revalidate);
+    };
   }, [session?.teacher?.id]);
 
   useEffect(() => {
@@ -867,50 +902,29 @@ function DashboardHeader() {
                   */}
                   <Divider />
 
-                  {/* Essentials — Notes, Curriculum, Guru, Wrap Up, Manage Students */}
-                  {isEnabled('menu_notes') && (
-                    <MenuRow icon={FileText}  label={t('nav.notes')}          active={activePage === 'notes'}       onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/notes'); }} />
-                  )}
-                  {isEnabled('menu_curriculum') && (
-                    <MenuRow icon={BookOpen}    label={t('nav.curriculum')}        active={activePage === 'curriculum'}    onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/curriculum'); }} />
-                  )}
-                  {isEnabled('menu_guru') && (
-                    <MenuRow icon={Sparkles}  label={t('nav.guru')}            active={activePage === 'guru'}        onClick={() => { setShowMoreMenu(false); router.push(childIdFromPath ? `/montree/dashboard/guru?child=${childIdFromPath}` : '/montree/dashboard/guru'); }} />
-                  )}
-                  {isEnabled('menu_photo_audit') && (
-                    <MenuRow icon={Search}    label={t('audit.title')}         active={activePage === 'photo-audit'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/photo-audit'); }} />
-                  )}
-                  {isEnabled('menu_manage_students') && (
-                    <MenuRow icon={Users}       label={t('students.manageStudents') || 'Manage Students'} active={activePage === 'manage-students'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/students'); }} />
-                  )}
-
-                  {/* Extras — all gated, off by default for new schools.
-                      Note: Classroom Overview was here behind menu_classroom_overview;
-                      Session 119 promoted it to the TOP of the menu (always
-                      visible) per Tredoux's ask. Don't re-add it here. */}
-                  {isEnabled('menu_focus_list') && (
-                    <MenuRow icon={Target}    label={t('dashboard.focusList')} active={activePage === 'focus-list'}  onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/focus'); }} />
-                  )}
+                  {/* 🪦 REMOVED (menu-freshness sweep): twelve flag-gated rows —
+                      menu_notes, menu_curriculum, menu_guru, menu_photo_audit,
+                      menu_manage_students, menu_focus_list, menu_photo_albums,
+                      menu_library, menu_class_progress, menu_language_semester,
+                      menu_earnings, menu_classroom_setup.
+                      NONE of those keys has a row in montree_feature_definitions
+                      (grep the migrations — they were never registered), and
+                      GET /api/montree/features builds its response by mapping over
+                      the DEFINITIONS table, so isEnabled('menu_*') was hardcoded
+                      false for every school on earth. The rows could never render.
+                      The real bridge from a feature flag to a menu row is
+                      FEATURE_MENU_MAP in lib/montree/features/menu-sync.ts, which
+                      rewrites each teacher's saved settings.menu — that is where a
+                      new flag→menu pair belongs, NOT here.
+                      The rows below survive because their keys ARE registered
+                      (weekly_admin_docs, raz_reading_tracker, english_corner,
+                      paperwork_tracker) and this branch still renders for a teacher
+                      whose /api/montree/teacher/menu fetch fails. */}
                   {isEnabled('weekly_admin_docs') && (
                     <MenuRow icon={CalendarDays} label={t('dashboard.weeklyPlan')} active={activePage === 'weekly-plan'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/weekly-admin-docs'); }} />
                   )}
-                  {isEnabled('menu_photo_albums') && (
-                    <MenuRow icon={Images}      label={t('albums.title')}           active={activePage === 'albums'}   onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/albums'); }} />
-                  )}
-                  {isEnabled('menu_library') && (
-                    <MenuRow icon={FolderOpen}  label={t('nav.library') || 'Library'} active={activePage === 'library'} onClick={() => { setShowMoreMenu(false); router.push('/montree/library'); }} />
-                  )}
-                  {isEnabled('menu_class_progress') && (
-                    <MenuRow icon={BarChart2}   label={locale === 'zh' ? '班级进度总览' : 'Class Progress'} active={activePage === 'class-progress'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/progress-overview'); }} />
-                  )}
-                  {isEnabled('menu_language_semester') && (
-                    <MenuRow icon={CalendarDays} label={t('dashboard.languageSemester')} active={activePage === 'language-semester'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/language-semester'); }} />
-                  )}
                   {isEnabled('language_presentation') && childIdFromPath && (
                     <MenuRow icon={Mic} label={t('childPage.present')} active={activePage === 'language-presentation'} onClick={() => { setShowMoreMenu(false); router.push(`/montree/dashboard/${childIdFromPath}/language-presentation`); }} />
-                  )}
-                  {isEnabled('menu_earnings') && (
-                    <MenuRow icon={TrendingUp}  label="My Earnings"                           active={activePage === 'earnings'}         onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/earnings'); }} />
                   )}
                   {isEnabled('raz_reading_tracker') && (
                     <MenuRow icon={BookMarked} label={t('nav.razReadingTracker')} active={activePage === 'raz-reading'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/raz'); }} />
@@ -920,9 +934,6 @@ function DashboardHeader() {
                   )}
                   {isEnabled('paperwork_tracker') && (
                     <MenuRow icon={FileText} label={t('dashboard.paperworkTracker')} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/paperwork'); }} />
-                  )}
-                  {isEnabled('menu_classroom_setup') && (
-                    <MenuRow icon={Settings2} label={t('nav.classroomBuilder') || 'Classroom Setup'} active={activePage === 'classroom-setup'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/classroom-builder'); }} />
                   )}
                   </>
                   )}
@@ -945,7 +956,21 @@ function DashboardHeader() {
                       appears once Montree flips Give Control ('feature_self_serve')
                       for this school from the super-admin panel. Active state is
                       read from pathname directly: activePage has no branch for
-                      this route (adding one is outside this surgical change). */}
+                      this route (adding one is outside this surgical change).
+
+                      ⚠️ KNOWN DEAD, same root cause as the twelve rows removed
+                      above: 'feature_self_serve' has NO row in
+                      montree_feature_definitions (it is a bare
+                      montree_school_features override — see the header comment on
+                      app/api/montree/super-admin/school-features/route.ts), and
+                      GET /api/montree/features maps over the definitions table,
+                      so isEnabled('feature_self_serve') is always false here.
+                      LEFT AS-IS deliberately: the principal now reaches the same
+                      page from the cockpit sidebar (app/montree/admin/layout.tsx),
+                      which probes GET /api/montree/school-features — the endpoint
+                      that actually knows. Fixing the teacher-side row the same way
+                      means a new fetch in the most-mounted component in the app;
+                      the cheaper real fix is a definition row for the key. */}
                   {isEnabled('feature_self_serve') && (
                     <MenuRow icon={Settings2} label={t('schoolFeatures.menuLabel')} active={pathname === '/montree/dashboard/school-features'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/school-features'); }} />
                   )}

@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "lib/montree/week-key.ts",
+    "components/montree/reports/WeeklyWrapTab.tsx",
+    "components/montree/reports/WeeklyAdminTab.tsx",
+    "components/montree/reports/BatchNarrativesCard.tsx",
+    "components/montree/reports/WeeklyWrapCard.tsx",
+    "app/montree/dashboard/weekly-admin-docs/page.tsx",
+    "app/montree/dashboard/weekly-wrap/page.tsx"
+  ]
+}

@@ -317,7 +317,17 @@ export default function AdminSettingsPage() {
           <ManageLink href="/montree/admin/pulse" icon={<Activity size={14} strokeWidth={1.75} />} label="Pulse" />
           <ManageLink href="/montree/admin/activity" icon={<Activity size={14} strokeWidth={1.75} />} label="Activity" />
           <ManageLink href="/montree/admin/reports" icon={<BarChart3 size={14} strokeWidth={1.75} />} label="Reports" />
+          {/* Feature flags — HIDDEN (hide-don't-delete, rule #56). The page at
+              /montree/admin/features writes CLASSROOM-level overrides and runs
+              NO teacher-menu sync, so toggling a menu-owning feature there
+              silently does nothing to the More menu (the saved settings.menu
+              outranks the flag). The supported surface is School Features
+              (/montree/dashboard/school-features), which is school-scoped and
+              syncs menus — it appears in the sidebar once Montree flips Give
+              Control. The route + page stay on disk; the page now enforces the
+              same feature_self_serve gate as the API. To restore:
           <ManageLink href="/montree/admin/features" icon={<Sliders size={14} strokeWidth={1.75} />} label="Feature flags" />
+          */}
           <ManageLink href="/montree/admin/import" icon={<Upload size={14} strokeWidth={1.75} />} label="Bulk import" />
         </div>
 

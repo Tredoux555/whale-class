@@ -1,0 +1,46 @@
+{
+  "letter": "p",
+  "week": 4,
+  "slug": "p",
+  "bookSlug": "the-pig-ate-a-pineapple",
+  "bookTitle": "The Pig Ate a Pineapple",
+  "bookScript": "scripts/curriculum/dark-phonics-readers/bookP.py",
+  "artDir": "phonics-images/satpin-v2/books/pig",
+  "photoDir": "docs/picture-bank/photos",
+  "band": "LETTER P  ·  INITIAL SOUND  ·  listen for /p/",
+
+  "pages": [
+    { "order": 1, "word": "pineapple", "sentence": "the pig ate a pineapple",
+      "art": "the-pig-ate-a-pineapple-p1-pineapple-v1.png" },
+    { "order": 2, "word": "pen", "sentence": "the pig ate a pen",
+      "art": "the-pig-ate-a-pineapple-p2-pen-v1.png" },
+    { "order": 3, "word": "pencil", "sentence": "the pig ate a pencil",
+      "art": "the-pig-ate-a-pineapple-p3-pencil-v1.png" },
+    { "order": 4, "word": "pan", "sentence": "the pig ate a pan",
+      "art": "the-pig-ate-a-pineapple-p4-pan-v1.png" },
+    { "order": 5, "word": "sick", "sentence": "the pig was sick",
+      "art": "the-pig-ate-a-pineapple-p5-pig-sick-v1.png" }
+  ],
+
+  "sequencingDisplayOrder": [3, 1, 5, 2, 4],
+  "matchDisplayOrder": [4, 5, 2, 3, 1],
+
+  "yesno": [
+    { "question": "did the pig eat a pineapple?", "answer": true,  "imageArt": "the-pig-ate-a-pineapple-p1-pineapple-v1.png" },
+    { "question": "did the pig eat a tiger?",     "answer": false, "imageWord": "tiger" },
+    { "question": "did the pig eat a pen?",       "answer": true,  "imageArt": "the-pig-ate-a-pineapple-p2-pen-v1.png" },
+    { "question": "did the pig eat a sock?",      "answer": false, "imageWord": "sock" },
+    { "question": "did the pig eat a pencil?",    "answer": true,  "imageArt": "the-pig-ate-a-pineapple-p3-pencil-v1.png" },
+    { "question": "did the pig eat a taxi?",      "answer": false, "imageWord": "taxi" },
+    { "question": "did the pig eat a pan?",       "answer": true,  "imageArt": "the-pig-ate-a-pineapple-p4-pan-v1.png" },
+    { "question": "did the pig eat a snake?",     "answer": false, "imageWord": "snake" },
+    { "question": "was the pig sick?",            "answer": true,  "imageArt": "the-pig-ate-a-pineapple-p5-pig-sick-v1.png" },
+    { "question": "did the pig eat an alligator?","answer": false, "imageWord": "alligator" }
+  ],
+
+  "_notes": {
+    "sequencingDisplayOrder": "Fixed shuffle (a derangement) so output is deterministic across rebuilds. Values are page `order` numbers.",
+    "matchDisplayOrder": "Second fixed shuffle for the picture column on the match sheet — deliberately different from sequencingDisplayOrder.",
+    "yesno": "5 true (from the book) / 5 false, alternating. False items are common FUNNY words chosen for maximum giggle factor — not restricted to prior-week vocabulary (Tredoux 2026-07-30 late). `imageArt` resolves under artDir; `imageWord` resolves to photoDir/<word>/<word>.jpg."
+  }
+}

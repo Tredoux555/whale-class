@@ -1,5 +1,17 @@
 // /montree/admin/features/page.tsx
 // Feature Toggle Admin - Switch features on/off per classroom
+//
+// ⚠️ LEGACY SURFACE — hidden, not deleted (rule #56). Its nav entry on
+// /montree/admin/settings is commented out. Two reasons it is no longer the
+// supported way to change features:
+//   1. It writes CLASSROOM-level overrides (montree_classroom_features), while
+//      the switchboards work school-wide.
+//   2. It runs NO teacher-menu sync. A teacher's saved settings.menu outranks
+//      the flag in DashboardHeader, so flipping a menu-owning feature here
+//      changes nothing a teacher can see (see lib/montree/features/menu-sync.ts).
+// The supported surfaces are the super-admin switchboard and the school's own
+// /montree/dashboard/school-features. This page now enforces the SAME
+// feature_self_serve gate those school-facing toggles run through server-side.
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -28,6 +40,22 @@ export default function FeaturesAdminPage() {
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [features, setFeatures] = useState<Feature[]>([]);
   const [loading, setLoading] = useState(true);
+  // Give Control gate. Mirrors app/api/montree/school-features/route.ts, which
+  // 403s { error: 'self_serve_disabled' } unless Montree has flipped
+  // 'feature_self_serve' ON for the school. That endpoint IS the check (it
+  // calls isFeatureEnabled server-side), so a plain res.ok is the answer — no
+  // need to plumb a school_id or duplicate the rule. Client-side only: this is
+  // a visibility gate, and the authoritative enforcement for school-wide
+  // toggles stays in the API. Fails CLOSED.
+  const [selfServe, setSelfServe] = useState<'checking' | 'on' | 'off'>('checking');
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/montree/school-features', { credentials: 'include' })
+      .then((res) => { if (!cancelled) setSelfServe(res.ok ? 'on' : 'off'); })
+      .catch(() => { if (!cancelled) setSelfServe('off'); });
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     // This page lives inside /montree/admin/* — the admin layout already
@@ -96,10 +124,34 @@ export default function FeaturesAdminPage() {
     }
   }
 
-  if (loading) {
+  if (loading || selfServe === 'checking') {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#0f172a' }}>
         <div style={{ color: '#94a3b8', fontSize: 18 }}>{t('features.loading' as TranslationKey)}</div>
+      </div>
+    );
+  }
+
+  // Give Control is off for this school → the same locked state the self-serve
+  // switchboard shows, plus a pointer to the surface that actually syncs menus.
+  if (selfServe === 'off') {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#0f172a', padding: 24 }}>
+        <div style={{ maxWidth: 420, textAlign: 'center' }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>🔒</div>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#e2e8f0', margin: '0 0 8px' }}>
+            {t('schoolFeatures.lockedTitle')}
+          </h1>
+          <p style={{ fontSize: 14, color: '#94a3b8', lineHeight: 1.6, margin: '0 0 20px' }}>
+            {t('schoolFeatures.lockedBody')}
+          </p>
+          <button
+            onClick={() => router.push('/montree/admin')}
+            style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 10, padding: '10px 18px', color: '#94a3b8', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+          >
+            ← {t('common.back' as TranslationKey)}
+          </button>
+        </div>
       </div>
     );
   }

@@ -2348,6 +2348,7 @@ export const ko: Record<string, string> = {
   'voiceObs.selectLanguage': '녹음 언어',
   'voiceObs.confidence': '신뢰도',
   'voiceObs.commitSuccess': '관찰 기록이 학생 기록에 저장되었습니다!',
+  'voiceObs.progressFailed': '{count}건의 진도 업데이트를 저장하지 못했습니다. 해당 아동을 확인하고 다시 입력해 주세요.',
   'voiceObs.commitWarning': '일부 관찰 기록의 학생이 일치하지 않습니다. 저장하기 전에 지정하세요.',
   'voiceObs.statsApproved': '승인됨',
   'voiceObs.statsRejected': '반려됨',
@@ -5539,6 +5540,7 @@ export const ko: Record<string, string> = {
   'paperScan.scanCta': '기록지 스캔하기',
   'paperScan.takePhoto': '사진 찍기',
   'paperScan.chooseFromGallery': '갤러리에서 선택',
+  'paperScan.desktopHint': '컴퓨터에서는 파일 선택 창이 열립니다. 기록지는 휴대폰으로 촬영하세요.',
   'paperScan.sheetDate': '기록지 날짜',
   'paperScan.recentScans': '최근 스캔',
   'paperScan.noScans': '아직 스캔이 없습니다. 첫 기록지를 촬영해 보세요.',
@@ -5596,6 +5598,7 @@ export const ko: Record<string, string> = {
   'paperScan.saveFailed': '변경 사항을 저장하지 못했습니다.',
   'paperScan.commitFailed': '프로필에 저장하지 못했습니다. 다시 시도해 주세요.',
   'paperScan.commitSuccess': '아이들의 프로필에 저장했습니다.',
+  'paperScan.progressFailed': '{count}건의 진도 업데이트를 저장하지 못했습니다. 해당 아동을 확인하고 다시 승인해 주세요.',
 
   // ── School Features (self-serve Feature Switchboard) ──────────────────
   'schoolFeatures.menuLabel': '학교 기능',

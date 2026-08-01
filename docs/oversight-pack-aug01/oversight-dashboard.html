@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Montree Oversight — Bright Path Montessori Group</title>
+<style>
+:root{
+  color-scheme: light;
+  --page:#F4F6F9;
+  --surface:#FFFFFF;
+  --surface-2:#FAFBFC;
+  --ink:#1A4D6B;
+  --text-primary:#173A50;
+  --text-secondary:#4A5F6E;
+  --text-muted:#66798A;
+  --grid:#E6EBF0;
+  --axis:#C7D2DB;
+  --border:rgba(26,77,107,0.13);
+  --border-strong:rgba(26,77,107,0.22);
+
+  --primary:#2F6FBF;
+  --primary-soft:#E8F0FB;
+  --accent:#FFB84D;
+
+  --area-practical_life:#0e9f6e;
+  --area-sensorial:#dd5c07;
+  --area-mathematics:#2563eb;
+  --area-language:#db2777;
+  --area-cultural:#7c3aed;
+
+  --st-good:#0ca30c;
+  --st-warn:#B4740B;
+  --st-crit:#d03b3b;
+  --st-unknown:#8b8a85;
+
+  --st-good-tint:#E7F6E7;
+  --st-warn-tint:#FDF1DC;
+  --st-crit-tint:#FBE9E9;
+  --st-unknown-tint:#EFEFEE;
+
+  --radius:10px;
+  --shadow:0 1px 2px rgba(23,58,80,0.06), 0 1px 1px rgba(23,58,80,0.04);
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--page);
+  font-family:var(--font);
+  color:var(--text-primary);
+  font-size:14px;
+  line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+.app{max-width:1280px;margin:0 auto;padding:0 24px 64px}
+
+/* ---------- top bar ---------- */
+.topbar{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:24px;
+  padding:22px 0 16px;
+}
+.brandwrap{display:flex;align-items:center;gap:12px}
+.brandmark{
+  width:36px;height:36px;border-radius:9px;background:var(--ink);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:700;font-size:17px;letter-spacing:-0.5px;flex:none;
+}
+.brandmark span{display:block;transform:translateY(-1px)}
+h1{font-size:19px;line-height:1.2;margin:0;font-weight:650;color:var(--ink);letter-spacing:-0.2px}
+.sub{font-size:12.5px;color:var(--text-muted);margin-top:2px}
+.sub b{color:var(--text-secondary);font-weight:600}
+.who{text-align:right;font-size:12.5px;color:var(--text-muted)}
+.who .name{display:block;font-size:13.5px;color:var(--text-primary);font-weight:600}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.tab{
+  appearance:none;background:none;border:0;cursor:pointer;font:inherit;
+  padding:9px 14px 10px;color:var(--text-secondary);font-size:13.5px;font-weight:530;
+  border-bottom:2px solid transparent;margin-bottom:-1px;border-radius:6px 6px 0 0;
+}
+.tab:hover{background:#EEF2F6;color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);font-weight:640;border-bottom-color:var(--primary)}
+.tab .cnt{
+  display:inline-block;margin-left:6px;font-size:11px;font-weight:650;
+  background:#E9EEF3;color:var(--text-secondary);border-radius:9px;padding:1px 6px;
+  font-variant-numeric:tabular-nums;
+}
+.tab[aria-selected="true"] .cnt{background:var(--primary-soft);color:var(--primary)}
+
+/* ---------- filter row ---------- */
+.filters{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.filters label{font-size:12px;color:var(--text-muted);margin-right:-4px}
+.ctrl{
+  appearance:none;font:inherit;font-size:13px;color:var(--text-primary);
+  background:var(--surface);border:1px solid var(--border-strong);border-radius:8px;
+  padding:6px 26px 6px 10px;cursor:pointer;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='7'><path d='M1 1l4 4 4-4' fill='none' stroke='%2366798A' stroke-width='1.6' stroke-linecap='round'/></svg>");
+  background-repeat:no-repeat;background-position:right 9px center;
+}
+.ctrl:focus-visible,.search:focus-visible,.tab:focus-visible,.btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.search{
+  font:inherit;font-size:13px;padding:6px 10px;border-radius:8px;
+  border:1px solid var(--border-strong);background:var(--surface);min-width:210px;color:var(--text-primary);
+}
+.search::placeholder{color:#93A2AF}
+.filters .spacer{flex:1}
+.reset{
+  appearance:none;background:none;border:0;font:inherit;font-size:12.5px;color:var(--primary);
+  cursor:pointer;padding:6px 4px;border-radius:6px;
+}
+.reset:hover{text-decoration:underline}
+.scopenote{font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums}
+
+/* ---------- cards ---------- */
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);
+}
+.card + .card{margin-top:16px}
+.card-head{padding:14px 18px 0}
+.card-head.pb{padding-bottom:12px}
+.card-title{font-size:14.5px;font-weight:640;color:var(--ink);margin:0}
+.card-sub{font-size:12.5px;color:var(--text-muted);margin-top:3px;max-width:74ch}
+
+/* ---------- KPI row ---------- */
+.kpis{display:grid;grid-template-columns:1.35fr 1fr 1fr 1fr 1fr;gap:12px;margin-bottom:16px}
+.kpis.even{grid-template-columns:repeat(5,1fr)}
+.kpi{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 16px 15px;box-shadow:var(--shadow);
+}
+.kpi .lab{font-size:12px;color:var(--text-muted);font-weight:520}
+.kpi .val{font-size:27px;font-weight:640;color:var(--ink);letter-spacing:-0.6px;margin-top:5px;line-height:1.05}
+.kpi.hero .val{font-size:48px;letter-spacing:-1.6px;margin-top:2px}
+.kpi .val small{font-size:0.44em;font-weight:600;color:var(--text-muted);letter-spacing:0;margin-left:2px}
+.kpi.hero .val small{font-size:0.30em}
+.kpi .foot{font-size:12px;color:var(--text-muted);margin-top:6px;display:flex;align-items:center;gap:6px}
+.kpi .foot .up{color:#0a7d0a;font-weight:600}
+.kpi .foot .down{color:var(--st-crit);font-weight:600}
+
+/* ---------- table ---------- */
+.tablewrap{padding:4px 6px 8px}
+table.grid{width:100%;border-collapse:collapse;font-size:13px}
+table.grid th{
+  text-align:left;font-weight:600;font-size:11.5px;letter-spacing:0.03em;text-transform:uppercase;
+  color:var(--text-muted);padding:10px 10px 8px;border-bottom:1px solid var(--grid);white-space:nowrap;
+}
+table.grid th.sortable{cursor:pointer;user-select:none}
+table.grid th.sortable:hover{color:var(--ink)}
+table.grid th .arrow{opacity:0;margin-left:3px;font-size:10px}
+table.grid th[data-active="1"]{color:var(--ink)}
+table.grid th[data-active="1"] .arrow{opacity:1}
+table.grid td{padding:9px 10px;border-bottom:1px solid var(--grid);vertical-align:middle}
+table.grid tbody tr:last-child td{border-bottom:0}
+table.grid tbody tr{cursor:pointer}
+table.grid tbody tr:hover{background:#F3F7FB}
+table.grid tbody tr:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.schoolcell{display:flex;flex-direction:column;gap:1px;min-width:0}
+.schoolcell .nm{font-weight:590;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.schoolcell .ct{font-size:11.5px;color:var(--text-muted)}
+
+/* inline SPI bar */
+.spicell{display:flex;align-items:center;gap:9px;justify-content:flex-end}
+.spival{font-variant-numeric:tabular-nums;font-weight:620;color:var(--ink);min-width:34px;text-align:right}
+.spitrack{display:block;width:84px;height:8px;border-radius:4px;background:#EAEFF4;overflow:hidden;flex:none}
+.spifill{display:block;height:8px;border-radius:4px;min-width:3px}
+
+.mom{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.momval{font-variant-numeric:tabular-nums;font-weight:600;min-width:38px;text-align:right}
+.momval.up{color:#0a7d0a}
+.momval.down{color:var(--st-crit)}
+.momval.flat{color:var(--text-muted)}
+
+/* badges + chips */
+.badge{
+  display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:2px 9px 2px 7px;
+  font-size:11.5px;font-weight:600;white-space:nowrap;line-height:1.5;
+}
+.badge .ic{font-size:10px;line-height:1;font-weight:700}
+.b-good{background:var(--st-good-tint);color:#0a6b0a}
+.b-warn{background:var(--st-warn-tint);color:#8A5807}
+.b-crit{background:var(--st-crit-tint);color:#A32A2A}
+.b-unknown{background:var(--st-unknown-tint);color:#5D5C58}
+.b-info{background:#E9F0F8;color:#2B5D8C}
+.flagcount{display:inline-flex;align-items:center;gap:5px;font-variant-numeric:tabular-nums;font-weight:600}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex:none}
+.muted{color:var(--text-muted)}
+.legendrow{
+  display:flex;flex-wrap:wrap;gap:16px;align-items:center;
+  padding:10px 18px 14px;border-top:1px solid var(--grid);font-size:12px;color:var(--text-muted);
+}
+.legendrow .item{display:flex;align-items:center;gap:6px}
+.legendrow b{color:var(--text-secondary);font-weight:600}
+
+/* ---------- heatmap ---------- */
+.hm{padding:6px 18px 4px;overflow-x:auto}
+.hmgrid{display:grid;grid-template-columns:300px repeat(5,1fr) 80px;gap:2px;min-width:860px}
+.hmh{
+  font-size:11.5px;font-weight:640;color:var(--text-secondary);padding:6px 8px 8px;
+  display:flex;align-items:center;gap:6px;
+}
+.hmh.rt{justify-content:flex-end}
+.hmcell{
+  height:30px;border-radius:4px;display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-variant-numeric:tabular-nums;font-weight:600;cursor:pointer;position:relative;
+}
+.hmcell:hover{outline:2px solid var(--ink);outline-offset:-2px}
+.hmcell:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+.hmname{
+  display:flex;align-items:center;gap:8px;padding:0 8px;height:30px;cursor:pointer;
+  font-size:12.5px;overflow:hidden;border-radius:4px;
+}
+.hmname:hover{background:#F3F7FB}
+.hmname .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:560;color:var(--ink)}
+.hmname .c{color:var(--text-muted);font-size:11.5px;white-space:nowrap}
+.hmname .t.faded{color:var(--text-secondary)}
+.hmmean .hmcell{border:1px solid var(--border-strong);font-weight:680}
+.hmmean .hmname{font-weight:660;color:var(--ink);font-size:12.5px}
+.hmspi{height:30px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;
+  font-variant-numeric:tabular-nums;font-size:12.5px;color:var(--text-secondary);font-weight:560}
+.scalelegend{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-muted)}
+.scalebar{display:flex;gap:2px}
+.scalebar i{width:26px;height:10px;border-radius:2px;display:block}
+
+/* ---------- flags ---------- */
+.flaggroup{margin-top:18px}
+.flaggroup:first-child{margin-top:0}
+.grouphead{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.grouphead h3{margin:0;font-size:13.5px;font-weight:650;color:var(--ink)}
+.grouphead .rule{flex:1;height:1px;background:var(--grid)}
+.flaggrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.flagcard{
+  background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--st-unknown);
+  border-radius:var(--radius);padding:13px 15px 13px 14px;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;gap:7px;
+}
+.flagcard.sev-action{border-left-color:var(--st-crit)}
+.flagcard.sev-watch{border-left-color:var(--st-warn)}
+.flagcard.sev-info{border-left-color:var(--primary)}
+.flagcard .fhead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.flagcard .fschool{font-weight:620;color:var(--ink);font-size:13.5px}
+.flagcard .fschool span{font-weight:450;color:var(--text-muted);font-size:12px}
+.flagcard .ftype{font-size:12px;font-weight:620;color:var(--text-secondary)}
+.flagcard .fev{font-size:12.8px;color:var(--text-secondary);line-height:1.5}
+.flagcard .fnext{
+  font-size:12.5px;color:var(--text-secondary);background:var(--surface-2);
+  border:1px solid var(--grid);border-radius:7px;padding:8px 10px;line-height:1.45;
+}
+.flagcard .fnext b{color:var(--ink);font-weight:620}
+.flagcard .fopen{
+  align-self:flex-start;margin-top:auto;appearance:none;background:none;border:0;font:inherit;font-size:12.5px;
+  color:var(--primary);font-weight:600;cursor:pointer;padding:2px 0;border-radius:4px;
+}
+.flagcard .fopen:hover{text-decoration:underline}
+.empty{
+  text-align:center;padding:44px 20px;color:var(--text-muted);font-size:13.5px;
+}
+.empty .big{display:block;font-size:15px;color:var(--text-secondary);font-weight:600;margin-bottom:5px}
+
+/* ---------- drilldown ---------- */
+.back{
+  appearance:none;background:none;border:0;font:inherit;font-size:13px;color:var(--primary);
+  cursor:pointer;padding:4px 6px 4px 0;font-weight:590;border-radius:6px;
+}
+.back:hover{text-decoration:underline}
+.dhead{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin:6px 0 16px}
+.dhead h2{margin:0;font-size:22px;font-weight:650;color:var(--ink);letter-spacing:-0.4px}
+.dhead .meta{font-size:13px;color:var(--text-muted);margin-top:3px}
+.callout{
+  display:flex;gap:11px;align-items:flex-start;border-radius:var(--radius);
+  padding:12px 15px;font-size:13px;line-height:1.5;margin-bottom:16px;border:1px solid;
+}
+.callout .ci{font-weight:700;flex:none;width:18px;height:18px;border-radius:50%;display:flex;
+  align-items:center;justify-content:center;font-size:11px;color:#fff;margin-top:1px}
+.callout.warn{background:var(--st-warn-tint);border-color:#EBD3A6;color:#7A4E06}
+.callout.warn .ci{background:var(--st-warn)}
+.callout.crit{background:var(--st-crit-tint);border-color:#EFC7C7;color:#8E2626}
+.callout.crit .ci{background:var(--st-crit)}
+.callout.info{background:#EAF1F9;border-color:#C9DBEE;color:#245B87}
+.callout.info .ci{background:var(--primary)}
+.callout b{font-weight:660}
+.cols{display:grid;grid-template-columns:1.15fr 1fr;gap:16px}
+.chartpad{padding:8px 18px 16px}
+.vals{
+  width:100%;border-collapse:collapse;font-size:11.5px;margin-top:6px;
+  font-variant-numeric:tabular-nums;
+}
+.vals th{color:var(--text-muted);font-weight:560;text-align:right;padding:3px 4px;border-bottom:1px solid var(--grid)}
+.vals th:first-child{text-align:left}
+.vals td{text-align:right;padding:3px 4px;color:var(--text-secondary)}
+.vals td:first-child{text-align:left;color:var(--text-muted)}
+
+.arearow{display:grid;grid-template-columns:104px 1fr 52px;gap:10px;align-items:center;margin-bottom:11px}
+.arearow .an{font-size:12.5px;color:var(--text-secondary);display:flex;align-items:center;gap:7px}
+.arearow .av{font-size:12.5px;font-weight:620;color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
+
+.clsgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:4px 18px 18px}
+.clscard{border:1px solid var(--grid);border-radius:9px;padding:12px 13px;background:var(--surface-2)}
+.clscard .ch{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:2px}
+.clscard .cn{font-weight:620;color:var(--ink);font-size:13px}
+.clscard .cm{font-size:11.5px;color:var(--text-muted);font-variant-numeric:tabular-nums}
+.minibars{display:flex;gap:4px;align-items:flex-end;margin-top:11px}
+.minibar{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:default;padding:2px 0}
+.minibar .track{width:16px;height:56px;background:#EDF1F5;border-radius:3px;display:flex;align-items:flex-end;overflow:hidden}
+.minibar .fill{width:16px;border-radius:3px 3px 0 0}
+.minibar .mv{font-size:10.5px;color:var(--text-secondary);font-variant-numeric:tabular-nums;font-weight:560}
+.minibar .ml{font-size:9.5px;color:var(--text-muted);letter-spacing:0.02em}
+.minibar:hover .track{background:#E3E9EF}
+.arealegend{display:flex;flex-wrap:wrap;gap:14px;padding:0 18px 12px;font-size:12px;color:var(--text-secondary)}
+.arealegend .item{display:flex;align-items:center;gap:6px}
+.swatch{width:10px;height:10px;border-radius:2px;display:inline-block;flex:none}
+
+.tooltip{
+  position:fixed;z-index:99;pointer-events:none;display:none;
+  background:#12303F;color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;
+  box-shadow:0 6px 20px rgba(12,38,54,0.24);max-width:280px;line-height:1.45;
+}
+.tooltip .tt{font-weight:650;font-size:12.5px;margin-bottom:5px;color:#fff}
+.tooltip .ts{color:#B9CBD7;font-size:11.5px;margin-bottom:5px}
+.tooltip .tr{display:flex;align-items:center;gap:7px;margin-top:3px;white-space:nowrap}
+.tooltip .tr .k{width:12px;height:2px;border-radius:1px;flex:none}
+.tooltip .tr .kv{font-weight:650;font-variant-numeric:tabular-nums;min-width:38px}
+.tooltip .tr .kl{color:#B9CBD7}
+.hidden{display:none !important}
+.view{display:none}
+.view.active{display:block}
+</style>
+</head>
+<body data-palette="#0e9f6e,#dd5c07,#2563eb,#db2777,#7c3aed">
+<div class="app">
+
+  <header class="topbar">
+    <div class="brandwrap">
+      <div class="brandmark"><span>M</span></div>
+      <div>
+        <h1>Montree Oversight — Bright Path Montessori Group</h1>
+        <div class="sub">Regional supervisor view · <b>32 schools</b> · data through <b>31 Jul 2026</b></div>
+      </div>
+    </div>
+    <div class="who">
+      <span class="name">Mei-Lin Ho</span>
+      Regional Director, Asia–Pacific
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" id="tabs">
+    <button class="tab" role="tab" data-view="overview" aria-selected="true">Overview</button>
+    <button class="tab" role="tab" data-view="heatmap" aria-selected="false">Area heatmap</button>
+    <button class="tab" role="tab" data-view="rankings" aria-selected="false">Rankings</button>
+    <button class="tab" role="tab" data-view="flags" aria-selected="false">Flags inbox <span class="cnt" id="tabFlagCount">0</span></button>
+  </nav>
+
+  <div class="filters" id="filterRow">
+    <label for="fRegion">Region</label>
+    <select class="ctrl" id="fRegion"></select>
+    <label for="fStatus">Status</label>
+    <select class="ctrl" id="fStatus">
+      <option value="all">All statuses</option>
+      <option value="healthy">Healthy</option>
+      <option value="watch">Watch</option>
+      <option value="action">Action</option>
+      <option value="unknown">Unknown (low data)</option>
+    </select>
+    <label for="fCov">Data coverage</label>
+    <select class="ctrl" id="fCov">
+      <option value="all">All tiers</option>
+      <option value="reliable">Reliable (≥80%)</option>
+      <option value="partial">Partial (50–79%)</option>
+      <option value="low">Low (&lt;50%)</option>
+    </select>
+    <input class="search" id="fSearch" type="search" placeholder="Search school or city…" aria-label="Search school or city">
+    <button class="reset" id="fReset" type="button">Reset</button>
+    <div class="spacer"></div>
+    <div class="scopenote" id="scopeNote"></div>
+  </div>
+
+  <main id="views">
+    <section class="view active" id="view-overview"></section>
+    <section class="view" id="view-heatmap"></section>
+    <section class="view" id="view-rankings"></section>
+    <section class="view" id="view-flags"></section>
+    <section class="view" id="view-school"></section>
+  </main>
+</div>
+<div class="tooltip" id="tip" role="tooltip"></div>
+
+<script>
+/* ============================================================
+   Montree Oversight — prototype with deterministic simulated data
+   ============================================================ */
+
+/* ---------- deterministic PRNG (mulberry32) ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const rng = mulberry32(20260731);
+const rnd = ()=>rng();
+const rint=(a,b)=>a+Math.floor(rng()*(b-a+1));
+const runif=(a,b)=>a+rng()*(b-a);
+function rnorm(){let u=0,v=0;while(u===0)u=rng();while(v===0)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const pickFrom=(arr)=>arr[Math.floor(rng()*arr.length)];
+function median(a){const s=[...a].sort((x,y)=>x-y);const n=s.length;if(!n)return 0;return n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2;}
+const mean=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:0;
+const r1=v=>Math.round(v*10)/10;
+
+/* ---------- design tokens used by JS-drawn charts ---------- */
+const AREAS=[
+  {key:'practical_life',label:'Practical Life',abbr:'PL', color:'#0e9f6e'},
+  {key:'sensorial',     label:'Sensorial',     abbr:'Sen',color:'#dd5c07'},
+  {key:'mathematics',   label:'Mathematics',   abbr:'Mat',color:'#2563eb'},
+  {key:'language',      label:'Language',      abbr:'Lan',color:'#db2777'},
+  {key:'cultural',      label:'Cultural',      abbr:'Cul',color:'#7c3aed'}
+];
+const AREA_BY_KEY=Object.fromEntries(AREAS.map(a=>[a.key,a]));
+/* sequential ramp — one hue (blue), light → dark */
+const SEQ=['#E8F0FB','#C6DCF6','#9CC2EF','#6BA1E4','#4285D2','#2A64A8','#1B4373'];
+const INK='#173A50', MUTED='#66798A', GRID='#E6EBF0', AXIS='#C7D2DB', SURFACE='#FFFFFF';
+const STATUS={
+  healthy:{label:'Healthy', color:'#0ca30c', cls:'b-good',    icon:'✓'},
+  watch:  {label:'Watch',   color:'#B4740B', cls:'b-warn',    icon:'!'},
+  action: {label:'Action',  color:'#d03b3b', cls:'b-crit',    icon:'!'},
+  unknown:{label:'Unknown', color:'#8b8a85', cls:'b-unknown', icon:'?'}
+};
+const COV_TIER={
+  reliable:{label:'Reliable', cls:'b-good',    icon:'●'},
+  partial: {label:'Partial',  cls:'b-warn',    icon:'◐'},
+  low:     {label:'Low',      cls:'b-crit',    icon:'○'}
+};
+
+/* ---------- school blueprints ---------- */
+const BLUEPRINTS=[
+  ['Jing’an Children’s House','Shanghai','China East','star'],
+  ['Pudong Riverside Montessori','Shanghai','China East','mid'],
+  ['Xuhui Garden Casa dei Bambini','Shanghai','China East','mid'],
+  ['West Lake Montessori','Hangzhou','China East','star'],
+  ['Pingjiang Children’s House','Suzhou','China East','mid'],
+  ['Xuanwu Montessori','Nanjing','China East','struggle'],
+  ['Ningbo Harbour Montessori','Ningbo','China East','unknown'],
+  ['Chaoyang Park Montessori','Beijing','China North','star'],
+  ['Shunyi International Children’s House','Beijing','China North','mid'],
+  ['Haidian Bilingual Montessori','Beijing','China North','mid'],
+  ['Binhai Montessori','Tianjin','China North','struggle'],
+  ['Qingdao Seaside Children’s House','Qingdao','China North','mid'],
+  ['Nanshan Bay Montessori','Shenzhen','China South','star'],
+  ['Futian Children’s House','Shenzhen','China South','mid'],
+  ['Tianhe Montessori','Guangzhou','China South','mid'],
+  ['Chengdu Blossom Montessori','Chengdu','China South','mid'],
+  ['Riverbend Children’s House','Chongqing','China South','struggle'],
+  ['Gulangyu Montessori','Xiamen','China South','new'],
+  ['Bukit Timah Children’s House','Singapore','Southeast Asia','star'],
+  ['Katong Montessori','Singapore','Southeast Asia','mid'],
+  ['Bangsar Montessori','Kuala Lumpur','Southeast Asia','mid'],
+  ['Sukhumvit Children’s House','Bangkok','Southeast Asia','mid'],
+  ['Thonglor Montessori Academy','Bangkok','Southeast Asia','unknown'],
+  ['Saigon Riverside Montessori','Ho Chi Minh City','Southeast Asia','mid'],
+  ['Menteng Montessori','Jakarta','Southeast Asia','struggle'],
+  ['Cebu Bayfront Children’s House','Cebu','Southeast Asia','new'],
+  ['Setagaya Children’s House','Tokyo','East Asia','mid'],
+  ['Kita-Aoyama Montessori','Tokyo','East Asia','mid'],
+  ['Gangnam Children’s House','Seoul','East Asia','mid'],
+  ['Da’an Montessori','Taipei','East Asia','mid'],
+  ['Kowloon Tong Casa dei Bambini','Hong Kong','East Asia','unknown'],
+  ['Ponsonby Children’s House','Auckland','Oceania','mid']
+];
+const TYPE={
+  star:    {q:[0.80,0.87], cov:[0.88,0.97], mom:[ 0.4, 3.6], n:[70,150], stall:[0.02,0.05]},
+  mid:     {q:[0.62,0.75], cov:[0.71,0.96], mom:[-2.4, 2.8], n:[38,165], stall:[0.04,0.11]},
+  struggle:{q:[0.46,0.56], cov:[0.58,0.84], mom:[-7.4,-0.6], n:[45,120], stall:[0.15,0.24]},
+  unknown: {q:[0.55,0.72], cov:[0.22,0.47], mom:[-3.0, 2.0], n:[52,140], stall:[0.09,0.17]},
+  new:     {q:[0.40,0.48], cov:[0.62,0.80], mom:[ 3.2, 6.8], n:[30,58],  stall:[0.01,0.03]}
+};
+/* group-wide curriculum bias — Cultural is the systemically weak area */
+const AREA_BIAS={practical_life:7,sensorial:2,mathematics:-2,language:0,cultural:-7};
+/* regional overlay: the China North region under-runs Cultural badly */
+const REGION_BIAS={'China North':{cultural:-9},'Oceania':{language:3},'East Asia':{mathematics:3}};
+/* schools with a single weak shelf (index → [area, points below the school's other areas]).
+   A drop past roughly a third of the school's own mean is what trips the neglect rule. */
+const AREA_COLLAPSE={9:['cultural',36],14:['language',34],2:['cultural',15],21:['mathematics',13],27:['cultural',16],30:['sensorial',12]};
+
+const GIVEN=['Amy','Austin','Bo','Chen-Xi','Daniel','Elena','Feiyu','Grace','Hana','Isla','Jia-Le','Kenji',
+  'Lin','Mateo','Niamh','Oliver','Ping-An','Qiu-Yue','Rina','Sofia','Tao','Uma','Viktor','Wen-Wen','Xin-Yi',
+  'Yuki','Zara','Haoran','Meili','Jun-Hao','Aarav','Noor','Théo','Emma','Kai','Siyu','Ravi','Mina','Lucas',
+  'Yara','Ling','Owen','Suri','Nikhil','Clara','Jiro','Anya','Marcus','Peiqi','Tomas'];
+const FAMILY=['Chen','Li','Wang','Zhang','Liu','Tan','Ng','Nguyen','Kim','Sato','Park','Lim','Wong','O’Connor',
+  'Silva','Müller','Rossi','Okafor','Sharma','Ahmed','Dubois','Novák','Reyes','Brown','Yamada','Hsu','Goh',
+  'Pereira','Fischer','Marchetti'];
+const CLASSNAMES=['Nido','Casa 1','Casa 2','Casa 3','Casa 4','Casa 5'];
+
+/* week-ending dates for the 8-week trend, ending 31 Jul 2026 */
+const WEEKS=['12 Jun','19 Jun','26 Jun','3 Jul','10 Jul','17 Jul','24 Jul','31 Jul'];
+const DAY=86400000, ASOF=new Date(Date.UTC(2026,6,31));
+function dateMinus(days){
+  const d=new Date(ASOF.getTime()-days*DAY);
+  return d.getUTCDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getUTCMonth()]+' '+d.getUTCFullYear();
+}
+
+/* ---------- generate ---------- */
+function buildSchools(){
+  const schools=[];
+  BLUEPRINTS.forEach(([name,city,region,type],idx)=>{
+    const t=TYPE[type];
+    const q=runif(t.q[0],t.q[1]);
+    const covTarget=runif(t.cov[0],t.cov[1]);
+    const momTarget=runif(t.mom[0],t.mom[1]);
+    const nChildren=rint(t.n[0],t.n[1]);
+    const stallRate=runif(t.stall[0],t.stall[1]);
+    const weeksOpen = type==='new' ? rint(5,7) : 8;
+    const nClass=clamp(Math.round(nChildren/27),2,6);
+
+    /* per-area school means */
+    const rb=REGION_BIAS[region]||{};
+    const collapse=AREA_COLLAPSE[idx];
+    const areaMean={};
+    AREAS.forEach(a=>{
+      let m=q*100 + AREA_BIAS[a.key] + (rb[a.key]||0) + rnorm()*3.2;
+      if(collapse&&collapse[0]===a.key) m-=collapse[1];
+      areaMean[a.key]=clamp(m,8,96);
+    });
+
+    /* classrooms */
+    const classrooms=[];
+    for(let c=0;c<nClass;c++){
+      classrooms.push({name:CLASSNAMES[c],children:[],offset:rnorm()*3.4,covOffset:rnorm()*0.07,stallMul:1});
+    }
+    /* one weak classroom in schools that will be flagged */
+    if(type==='struggle'||type==='unknown'||collapse){
+      const weak=classrooms[rint(0,classrooms.length-1)];
+      weak.offset-=6; weak.stallMul=1.9; weak.covOffset-=0.10;
+    }
+
+    /* children */
+    const children=[];
+    for(let i=0;i<nChildren;i++){
+      const cls=classrooms[i%classrooms.length];
+      const ageMonths=rint(31,77);
+      const maturity=(ageMonths-31)/46;
+      const ageAdj=(maturity-0.5)*20;
+      const childAbility=rnorm()*5.5;
+      const areas={};
+      AREAS.forEach(a=>{
+        areas[a.key]=clamp(areaMean[a.key]+cls.offset+ageAdj+childAbility+rnorm()*5.0,3,99);
+      });
+      const overall=mean(AREAS.map(a=>areas[a.key]));
+      const isStalled=rng()<clamp(stallRate*cls.stallMul,0,0.6);
+      const daysStalled=isStalled?rint(45,112):rint(2,42);
+      const observed=rng()<clamp(covTarget+cls.covOffset,0.05,0.99);
+      const daysSinceObs=observed?rint(0,13):rint(15,74);
+      const weakest=AREAS.reduce((w,a)=>areas[a.key]<areas[w.key]?a:w,AREAS[0]).key;
+      const child={
+        id:'c'+idx+'_'+i,
+        name:pickFrom(GIVEN)+' '+pickFrom(FAMILY),
+        ageMonths, areas, overall, daysStalled, observed, daysSinceObs, weakest,
+        classroom:cls.name
+      };
+      children.push(child); cls.children.push(child);
+    }
+
+    /* roll-ups computed from the children */
+    const spi=r1(median(children.map(c=>c.overall)));
+    const coverage=Math.round(100*children.filter(c=>c.observed).length/children.length);
+    const areaAvg={};
+    AREAS.forEach(a=>{areaAvg[a.key]=r1(mean(children.map(c=>c.areas[a.key])));});
+    classrooms.forEach(cl=>{
+      cl.count=cl.children.length;
+      cl.spi=r1(median(cl.children.map(c=>c.overall)));
+      cl.coverage=Math.round(100*cl.children.filter(c=>c.observed).length/Math.max(1,cl.children.length));
+      cl.areaAvg={}; AREAS.forEach(a=>{cl.areaAvg[a.key]=r1(mean(cl.children.map(c=>c.areas[a.key])));});
+      cl.stalled=cl.children.filter(c=>c.daysStalled>=45).length;
+    });
+
+    /* 8-week SPI series, consistent with the 30-day momentum */
+    const series=new Array(8).fill(null);
+    series[7]=spi;
+    const past=clamp(spi-momTarget,5,98);
+    series[3]=r1(past);
+    for(let i=4;i<7;i++){const f=(i-3)/4;series[i]=r1(clamp(past+(spi-past)*f+rnorm()*0.55,5,98));}
+    const backSlope=(spi-past)/4*0.55;
+    for(let i=2;i>=0;i--){series[i]=r1(clamp(series[i+1]-backSlope+rnorm()*0.7,5,98));}
+    if(weeksOpen<8){for(let i=0;i<8-weeksOpen;i++)series[i]=null;}
+    const momentum=r1(series[7]-series[3]);
+
+    const stalledTotal=children.filter(c=>c.daysStalled>=45).length;
+    const worstClass=[...classrooms].sort((a,b)=>b.stalled-a.stalled)[0];
+
+    schools.push({
+      idx, id:'s'+idx, name, city, region, type, spi, momentum, coverage,
+      children, classrooms, areaAvg, series, weeksOpen, stalledTotal, worstClass,
+      childCount:children.length,
+      covTier: coverage>=80?'reliable':coverage>=50?'partial':'low',
+      flags:[]
+    });
+  });
+  return schools;
+}
+
+const SCHOOLS=buildSchools();
+const ORG_AREA_AVG={}; AREAS.forEach(a=>{ORG_AREA_AVG[a.key]=r1(mean(SCHOOLS.map(s=>s.areaAvg[a.key])));});
+const ALL_CHILDREN=SCHOOLS.flatMap(s=>s.children);
+
+/* ---------- status ---------- */
+function statusOf(s){
+  if(s.coverage<50) return 'unknown';
+  /* a school in its first weeks has no comparable baseline — it is watched through
+     onboarding, never actioned on a sequence-position score it cannot yet have */
+  if(s.type==='new') return 'watch';
+  if(s.spi<58||s.momentum<=-5) return 'action';
+  if(s.spi<70||s.momentum<=-2) return 'watch';
+  return 'healthy';
+}
+SCHOOLS.forEach(s=>{s.status=statusOf(s);});
+
+/* ---------- flag rules ---------- */
+function buildFlags(){
+  SCHOOLS.forEach(s=>{
+    const f=[];
+    /* 1 — low observation coverage */
+    if(s.coverage<50){
+      f.push({type:'Observation coverage',severity:s.coverage<38?'action':'watch',
+        evidence:`Only ${s.coverage}% of ${s.childCount} children have a logged observation in the last 14 days. Progress readings for this school are not reliable — treat its SPI of ${s.spi} as unverified, not as underperformance.`,
+        next:'Call the head of school to establish whether observations are happening but not being logged, then re-check coverage in 7 days.'});
+    }
+    /* 2 — stalled children */
+    const stalledPct=Math.round(100*s.stalledTotal/s.childCount);
+    if(s.stalledTotal>=6&&stalledPct>=12){
+      f.push({type:'Stalled children',severity:stalledPct>=22?'action':'watch',
+        evidence:`${s.stalledTotal} of ${s.childCount} children (${stalledPct}%) have had no status change for 45+ days — ${s.worstClass.stalled} of them in ${s.worstClass.name}.`,
+        next:`Schedule a shelf-and-observation review with the lead guide for ${s.worstClass.name} this week.`});
+    }
+    /* 3 — area neglect */
+    const areaVals=AREAS.map(a=>s.areaAvg[a.key]);
+    const schoolAreaMean=mean(areaVals);
+    AREAS.forEach(a=>{
+      if(s.areaAvg[a.key] < 0.60*schoolAreaMean && s.coverage>=50){
+        f.push({type:`${a.label} neglected`,severity:s.areaAvg[a.key]<0.5*schoolAreaMean?'action':'watch',
+          evidence:`${a.label} averages ${s.areaAvg[a.key].toFixed(1)}% here, against this school's own ${r1(schoolAreaMean).toFixed(1)}% across the five areas — the widest gap between areas in the school. The group average for ${a.label} is ${ORG_AREA_AVG[a.key].toFixed(1)}%.`,
+          next:`Audit the ${a.label} shelf for material gaps and check whether presentations are being given but not recorded.`});
+      }
+    });
+    /* 4 — declining momentum */
+    if(s.momentum<-3&&s.coverage>=50){
+      f.push({type:'Declining momentum',severity:s.momentum<-6?'action':'watch',
+        evidence:`SPI fell ${Math.abs(s.momentum).toFixed(1)} points over the last 30 days, from ${s.series[3].toFixed(1)} to ${s.series[7].toFixed(1)}. ${AREAS.filter(a=>s.areaAvg[a.key]<ORG_AREA_AVG[a.key]).length} of the 5 areas now sit below the group average.`,
+        next:'Check for staff changes, roll churn and attendance in the last month before reading this as a practice problem.'});
+    }
+    /* 5 — new school onboarding (informational) */
+    if(s.type==='new'){
+      f.push({type:'New school onboarding',severity:'info',
+        evidence:`Opened ${s.weeksOpen} weeks ago with ${s.childCount} children. Baseline SPI of ${s.spi} reflects early sequence position, not underperformance — momentum is +${s.momentum} over 30 days.`,
+        next:'Book the 8-week onboarding check-in and confirm all guides have completed observation training.'});
+    }
+    s.flags=f;
+  });
+}
+buildFlags();
+const ALL_FLAGS=SCHOOLS.flatMap(s=>s.flags.map(f=>({...f,school:s})));
+
+/* ============================================================
+   small DOM + SVG helpers
+   ============================================================ */
+const NS='http://www.w3.org/2000/svg';
+function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e;}
+function sv(tag,attrs){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);return e;}
+function svText(x,y,text,opts={}){
+  const t=sv('text',{x,y,fill:opts.fill||MUTED,'font-size':opts.size||11,'text-anchor':opts.anchor||'start',
+    'dominant-baseline':opts.baseline||'auto','font-weight':opts.weight||400,
+    'font-family':'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif'});
+  if(opts.tabular)t.setAttribute('style','font-variant-numeric:tabular-nums');
+  t.textContent=text; return t;
+}
+function hBar(x,y,w,h,r){r=Math.max(0,Math.min(r,w));return `M${x},${y} H${x+w-r} Q${x+w},${y} ${x+w},${y+r} V${y+h-r} Q${x+w},${y+h} ${x+w-r},${y+h} H${x} Z`;}
+function vBar(x,y,w,h,r){r=Math.max(0,Math.min(r,h));return `M${x},${y+h} V${y+r} Q${x},${y} ${x+r},${y} H${x+w-r} Q${x+w},${y} ${x+w},${y+r} V${y+h} Z`;}
+const SEQ_LO=38, SEQ_HI=92;
+function seqColor(v){
+  const t=clamp((v-SEQ_LO)/(SEQ_HI-SEQ_LO),0,0.999);
+  return SEQ[Math.floor(t*SEQ.length)];
+}
+function seqInk(v){const t=clamp((v-SEQ_LO)/(SEQ_HI-SEQ_LO),0,1);return t>0.57?'#FFFFFF':INK;}
+/* fade a fill toward the surface without dropping the label's contrast with it */
+function fade(hex,t){
+  const n=parseInt(hex.slice(1),16),r=n>>16,g=(n>>8)&255,b=n&255;
+  const m=c=>Math.round(c+(255-c)*t);
+  return '#'+[m(r),m(g),m(b)].map(c=>c.toString(16).padStart(2,'0')).join('');
+}
+/* accurate text measurement, for truncating labels drawn in SVG */
+const _mc=document.createElement('canvas').getContext('2d');
+function textW(s,px,weight){_mc.font=(weight||400)+' '+px+'px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif';return _mc.measureText(s).width;}
+function fitText(s,maxPx,px,weight){
+  if(textW(s,px,weight)<=maxPx)return s;
+  let lo=0,hi=s.length;
+  while(lo<hi){const mid=(lo+hi+1)>>1;if(textW(s.slice(0,mid)+'…',px,weight)<=maxPx)lo=mid;else hi=mid-1;}
+  return s.slice(0,Math.max(1,lo)).trimEnd()+'…';
+}
+
+/* ---------- tooltip ---------- */
+const tipEl=document.getElementById('tip');
+function tipTitle(text,sub){
+  const f=document.createDocumentFragment();
+  const t=el('div','tt',text); f.appendChild(t);
+  if(sub)f.appendChild(el('div','ts',sub));
+  return f;
+}
+function tipRow(value,label,color){
+  const r=el('div','tr');
+  if(color){const k=el('span','k');k.style.background=color;r.appendChild(k);}
+  const v=el('span','kv',value); const l=el('span','kl',label);
+  r.appendChild(v);r.appendChild(l);return r;
+}
+function showTip(frag,ev){
+  tipEl.textContent='';tipEl.appendChild(frag);tipEl.style.display='block';moveTip(ev);
+}
+function moveTip(ev){
+  const pad=14,r=tipEl.getBoundingClientRect();
+  let x=ev.clientX+pad,y=ev.clientY+pad;
+  if(x+r.width>window.innerWidth-8)x=ev.clientX-r.width-pad;
+  if(y+r.height>window.innerHeight-8)y=ev.clientY-r.height-pad;
+  tipEl.style.left=Math.max(8,x)+'px';tipEl.style.top=Math.max(8,y)+'px';
+}
+function hideTip(){tipEl.style.display='none';}
+function bindTip(node,builder){
+  node.addEventListener('pointerenter',e=>showTip(builder(),e));
+  node.addEventListener('pointermove',e=>{if(tipEl.style.display==='block')moveTip(e);});
+  node.addEventListener('pointerleave',hideTip);
+  node.addEventListener('focus',e=>{
+    const b=node.getBoundingClientRect();
+    showTip(builder(),{clientX:b.left+b.width/2,clientY:b.top+b.height});
+  });
+  node.addEventListener('blur',hideTip);
+}
+
+/* ---------- chips / badges ---------- */
+function statusChip(status){
+  const st=STATUS[status];
+  const b=el('span','badge '+st.cls);
+  b.appendChild(el('span','ic',st.icon));
+  b.appendChild(document.createTextNode(st.label));
+  return b;
+}
+function coverageBadge(s){
+  const t=COV_TIER[s.covTier];
+  const b=el('span','badge '+t.cls);
+  b.appendChild(el('span','ic',t.icon));
+  b.appendChild(document.createTextNode(s.coverage+'% · '+t.label));
+  return b;
+}
+
+/* ============================================================
+   state + filtering
+   ============================================================ */
+const state={view:'overview',school:null,sort:{key:'spi',dir:'desc'},
+  filters:{region:'all',status:'all',cov:'all',q:''}};
+
+function filtered(){
+  const f=state.filters,q=f.q.trim().toLowerCase();
+  return SCHOOLS.filter(s=>{
+    if(f.region!=='all'&&s.region!==f.region)return false;
+    if(f.status!=='all'&&s.status!==f.status)return false;
+    if(f.cov!=='all'&&s.covTier!==f.cov)return false;
+    if(q&&!(s.name.toLowerCase().includes(q)||s.city.toLowerCase().includes(q)))return false;
+    return true;
+  });
+}
+
+/* ============================================================
+   KPI row
+   ============================================================ */
+function kpiRow(list){
+  const wrap=el('div','kpis');
+  const kids=list.reduce((a,s)=>a+s.childCount,0);
+  const medSpi=list.length?r1(median(list.map(s=>s.spi))):0;
+  const cov=list.length?Math.round(list.reduce((a,s)=>a+s.coverage*s.childCount,0)/kids):0;
+  const flags=list.reduce((a,s)=>a+s.flags.length,0);
+  const actionFlags=list.reduce((a,s)=>a+s.flags.filter(f=>f.severity==='action').length,0);
+  const unknowns=list.filter(s=>s.status==='unknown').length;
+  const rising=list.filter(s=>s.momentum>0).length;
+
+  function tile(label,value,unit,footNode,hero){
+    const c=el('div','kpi'+(hero?' hero':''));
+    c.appendChild(el('div','lab',label));
+    const v=el('div','val');v.appendChild(document.createTextNode(value));
+    if(unit){const u=el('small',null,unit);v.appendChild(u);}
+    c.appendChild(v);
+    if(footNode){const f=el('div','foot');f.appendChild(footNode);c.appendChild(f);}
+    return c;
+  }
+  const medFoot=el('span');
+  medFoot.appendChild(document.createTextNode('Median child progress across '));
+  const b=el('b',null,kids.toLocaleString());b.style.color='var(--text-secondary)';
+  medFoot.appendChild(b);medFoot.appendChild(document.createTextNode(' children'));
+  wrap.appendChild(tile('School Progress Index — group median',medSpi.toFixed(1),'%',medFoot,true));
+
+  wrap.appendChild(tile('Schools in scope',String(list.length),null,
+    (()=>{const s=el('span');s.textContent=unknowns?`${unknowns} unreadable (low coverage)`:'all reporting reliably';return s;})()));
+
+  wrap.appendChild(tile('Children enrolled',kids.toLocaleString(),null,
+    (()=>{const s=el('span');s.textContent=`${list.reduce((a,x)=>a+x.classrooms.length,0)} classrooms`;return s;})()));
+
+  wrap.appendChild(tile('Observation coverage',cov+'%',null,
+    (()=>{const s=el('span');s.textContent=`${list.filter(x=>x.covTier==='reliable').length} of ${list.length} schools reliable`;return s;})()));
+
+  wrap.appendChild(tile('Open flags',String(flags),null,
+    (()=>{const s=el('span');
+      const dot=el('span','dot');dot.style.background=STATUS.action.color;
+      s.appendChild(dot);s.appendChild(document.createTextNode(`${actionFlags} need action now`));
+      s.style.display='flex';s.style.alignItems='center';s.style.gap='6px';
+      return s;})()));
+  return wrap;
+}
+
+/* ============================================================
+   sparkline (table cell)
+   ============================================================ */
+function sparkline(s,w=64,h=22){
+  const pts=s.series;
+  const vals=pts.filter(v=>v!=null);
+  const svg=sv('svg',{width:w,height:h,viewBox:`0 0 ${w} ${h}`,role:'img',
+    'aria-label':`8-week SPI trend, ending ${s.series[7]}`});
+  if(vals.length<2)return svg;
+  const min=Math.min(...vals)-1.2,max=Math.max(...vals)+1.2;
+  const X=i=>2+(i/(pts.length-1))*(w-4);
+  const Y=v=>h-3-((v-min)/Math.max(0.001,max-min))*(h-6);
+  let d='',started=false;
+  pts.forEach((v,i)=>{if(v==null){started=false;return;}d+=(started?' L':' M')+X(i).toFixed(1)+','+Y(v).toFixed(1);started=true;});
+  const col=s.momentum>=1?'#0a7d0a':s.momentum<=-1?STATUS.action.color:'#9AA9B4';
+  svg.appendChild(sv('path',{d:d.trim(),fill:'none',stroke:col,'stroke-width':1.8,'stroke-linecap':'round','stroke-linejoin':'round'}));
+  svg.appendChild(sv('circle',{cx:X(7),cy:Y(pts[7]),r:2.6,fill:col,stroke:SURFACE,'stroke-width':1.6}));
+  return svg;
+}
+
+/* ============================================================
+   VIEW — overview
+   ============================================================ */
+const COLS=[
+  {key:'name',   label:'School',            sort:s=>s.name},
+  {key:'city',   label:'City',              sort:s=>s.city},
+  {key:'children',label:'Children',         sort:s=>s.childCount, num:true},
+  {key:'spi',    label:'SPI',               sort:s=>s.spi,        num:true},
+  {key:'momentum',label:'30-day momentum',  sort:s=>s.momentum,   num:true},
+  {key:'coverage',label:'Data coverage',    sort:s=>s.coverage,   num:true},
+  {key:'flags',  label:'Flags',             sort:s=>s.flags.filter(f=>f.severity==='action').length*100+s.flags.length, num:true},
+  {key:'status', label:'Status',            sort:s=>['action','unknown','watch','healthy'].indexOf(s.status)}
+];
+
+function renderOverview(){
+  const root=document.getElementById('view-overview');
+  root.textContent='';
+  const list=filtered();
+  root.appendChild(kpiRow(list));
+
+  const card=el('div','card');
+  const head=el('div','card-head pb');
+  head.appendChild(el('h2','card-title','Schools'));
+  head.appendChild(el('p','card-sub','Sorted by School Progress Index — the median child progress in each school. A low SPI on Low coverage is an unknown, not a failing school: the reading is based on too few observations to trust. Select any row to open the school.'));
+  card.appendChild(head);
+
+  if(!list.length){
+    const e=el('div','empty');
+    e.appendChild(el('span','big','No schools match these filters'));
+    e.appendChild(document.createTextNode('Widen the region, status or coverage filter to see schools again.'));
+    card.appendChild(e);root.appendChild(card);return;
+  }
+
+  const wrap=el('div','tablewrap');
+  const table=el('table','grid');
+  const thead=el('thead');const trh=el('tr');
+  COLS.forEach(c=>{
+    const th=el('th','sortable'+(c.num?' num':''));
+    th.appendChild(document.createTextNode(c.label));
+    const ar=el('span','arrow',state.sort.key===c.key?(state.sort.dir==='desc'?'▼':'▲'):'▼');
+    th.appendChild(ar);
+    if(state.sort.key===c.key)th.setAttribute('data-active','1');
+    th.tabIndex=0;
+    const doSort=()=>{
+      if(state.sort.key===c.key)state.sort.dir=state.sort.dir==='desc'?'asc':'desc';
+      else{state.sort.key=c.key;state.sort.dir=(c.key==='name'||c.key==='city')?'asc':'desc';}
+      renderOverview();
+    };
+    th.addEventListener('click',doSort);
+    th.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();doSort();}});
+    trh.appendChild(th);
+  });
+  thead.appendChild(trh);table.appendChild(thead);
+
+  const col=COLS.find(c=>c.key===state.sort.key)||COLS[3];
+  const sorted=[...list].sort((a,b)=>{
+    const va=col.sort(a),vb=col.sort(b);
+    const cmp=typeof va==='string'?va.localeCompare(vb):va-vb;
+    return state.sort.dir==='desc'?-cmp:cmp;
+  });
+
+  const tbody=el('tbody');
+  sorted.forEach(s=>{
+    const tr=el('tr');tr.tabIndex=0;
+    tr.addEventListener('click',()=>openSchool(s));
+    tr.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();openSchool(s);}});
+
+    const tdN=el('td');const sc=el('div','schoolcell');
+    sc.appendChild(el('span','nm',s.name));
+    const meta=el('span','ct',s.classrooms.length+' classrooms · '+s.region);
+    sc.appendChild(meta);tdN.appendChild(sc);tr.appendChild(tdN);
+
+    tr.appendChild(el('td',null,s.city));
+
+    const tdC=el('td','num');tdC.textContent=s.childCount;tr.appendChild(tdC);
+
+    /* SPI + inline bar */
+    const tdS=el('td');const sp=el('div','spicell');
+    sp.appendChild(el('span','spival',s.spi.toFixed(1)));
+    const track=el('span','spitrack');const fill=el('span','spifill');
+    fill.style.width=clamp(s.spi,0,100)+'%';
+    fill.style.background=s.status==='unknown'?'#B9C4CC':'#2F6FBF';
+    track.appendChild(fill);sp.appendChild(track);tdS.appendChild(sp);
+    bindTip(tdS,()=>{
+      const f=tipTitle(s.name,'School Progress Index');
+      f.appendChild(tipRow(s.spi.toFixed(1)+'%','median child progress',STATUS[s.status].color));
+      f.appendChild(tipRow(r1(mean(s.children.map(c=>c.overall))).toFixed(1)+'%','mean child progress','#9AA9B4'));
+      return f;});
+    tr.appendChild(tdS);
+
+    /* momentum */
+    const tdM=el('td');const mm=el('div','mom');
+    mm.appendChild(sparkline(s));
+    const cls=s.momentum>=1?'up':s.momentum<=-1?'down':'flat';
+    mm.appendChild(el('span','momval '+cls,(s.momentum>0?'+':'')+s.momentum.toFixed(1)));
+    tdM.appendChild(mm);
+    bindTip(tdM,()=>{
+      const f=tipTitle(s.name,'SPI, last 8 weeks');
+      s.series.forEach((v,i)=>{if(v!=null)f.appendChild(tipRow(v.toFixed(1),WEEKS[i],i===7?STATUS[s.status].color:'#7C93A3'));});
+      return f;});
+    tr.appendChild(tdM);
+
+    const tdCov=el('td','num');tdCov.appendChild(coverageBadge(s));tr.appendChild(tdCov);
+
+    const tdF=el('td','num');
+    const nAction=s.flags.filter(f=>f.severity==='action').length;
+    if(s.flags.length){
+      const fc=el('span','flagcount');
+      const d=el('span','dot');
+      d.style.background=nAction?STATUS.action.color:s.flags.some(f=>f.severity==='watch')?STATUS.watch.color:'#4A90E2';
+      fc.appendChild(d);fc.appendChild(document.createTextNode(String(s.flags.length)));
+      tdF.appendChild(fc);
+      bindTip(tdF,()=>{const f=tipTitle(s.name,s.flags.length+' open flag'+(s.flags.length>1?'s':''));
+        s.flags.forEach(fl=>f.appendChild(tipRow(fl.severity==='action'?'Action':fl.severity==='watch'?'Watch':'Info',fl.type,
+          fl.severity==='action'?STATUS.action.color:fl.severity==='watch'?STATUS.watch.color:'#4A90E2')));
+        return f;});
+    }else{
+      const none=el('span','muted','—');tdF.appendChild(none);
+    }
+    tr.appendChild(tdF);
+
+    const tdSt=el('td');tdSt.appendChild(statusChip(s.status));tr.appendChild(tdSt);
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);wrap.appendChild(table);card.appendChild(wrap);
+
+  /* legend */
+  const lg=el('div','legendrow');
+  const items=[
+    ['Healthy','healthy','SPI ≥ 70 and holding'],
+    ['Watch','watch','SPI 58–69, or falling 2–5 pts'],
+    ['Action','action','SPI < 58, or falling 5+ pts'],
+    ['Unknown','unknown','coverage < 50% — not enough observations to judge']
+  ];
+  items.forEach(([lab,key,desc])=>{
+    const i=el('span','item');
+    i.appendChild(statusChip(key));
+    i.appendChild(el('span',null,desc));
+    lg.appendChild(i);
+  });
+  card.appendChild(lg);
+  root.appendChild(card);
+}
+
+/* ============================================================
+   VIEW — area heatmap
+   ============================================================ */
+function renderHeatmap(){
+  const root=document.getElementById('view-heatmap');
+  root.textContent='';
+  const list=filtered();
+
+  const card=el('div','card');
+  const head=el('div','card-head pb');
+  head.appendChild(el('h2','card-title','Curriculum area performance'));
+  head.appendChild(el('p','card-sub','Average child progress per area, school by school. Read down a column to find an area the whole group is neglecting; read across a row to find a school with one collapsed shelf. Values are printed in every cell — colour is a second reading of the same number.'));
+  card.appendChild(head);
+
+  if(!list.length){
+    const e=el('div','empty');
+    e.appendChild(el('span','big','No schools match these filters'));
+    e.appendChild(document.createTextNode('Widen the filters above to rebuild the matrix.'));
+    card.appendChild(e);root.appendChild(card);return;
+  }
+
+  const wrap=el('div','hm');
+  const grid=el('div','hmgrid');
+
+  /* header */
+  grid.appendChild(el('div','hmh','School'));
+  AREAS.forEach(a=>{
+    const h=el('div','hmh');
+    const sw=el('span','swatch');sw.style.background=a.color;
+    h.appendChild(sw);h.appendChild(document.createTextNode(a.label));
+    grid.appendChild(h);
+  });
+  grid.appendChild(el('div','hmh rt','SPI'));
+
+  /* column means row */
+  const meansRow=[];
+  AREAS.forEach(a=>meansRow.push(r1(mean(list.map(s=>s.areaAvg[a.key])))));
+  const mn=el('div','hmname');
+  mn.appendChild(el('span','t','Group average'));
+  mn.appendChild(el('span','c','('+list.length+' schools)'));
+  mn.style.cursor='default';
+  grid.appendChild(mn);
+  const sortedMeans=[...meansRow].sort((x,y)=>y-x);
+  AREAS.forEach((a,i)=>{
+    const c=el('div','hmcell');
+    c.style.background=seqColor(meansRow[i]);c.style.color=seqInk(meansRow[i]);
+    c.style.border='1px solid rgba(26,77,107,0.22)';c.style.fontWeight='680';
+    c.textContent=meansRow[i].toFixed(1);
+    bindTip(c,()=>{const f=tipTitle('Group average — '+a.label,list.length+' schools in scope');
+      f.appendChild(tipRow(meansRow[i].toFixed(1)+'%','average child progress',a.color));
+      f.appendChild(tipRow('#'+(sortedMeans.indexOf(meansRow[i])+1)+' of 5','area rank in the group','#7C93A3'));
+      return f;});
+    grid.appendChild(c);
+  });
+  const mspi=el('div','hmspi');mspi.textContent=r1(median(list.map(s=>s.spi))).toFixed(1);
+  mspi.style.color=INK;mspi.style.fontWeight='660';
+  grid.appendChild(mspi);
+
+  /* school rows */
+  const sorted=[...list].sort((a,b)=>b.spi-a.spi);
+  sorted.forEach(s=>{
+    const dim=s.covTier==='low';
+    const nameCell=el('div','hmname');
+    const t=el('span',dim?'t faded':'t',s.name);
+    const c2=el('span','c',s.city);
+    nameCell.appendChild(t);nameCell.appendChild(c2);
+    if(dim){const q=el('span','badge b-crit');q.appendChild(el('span','ic','○'));q.appendChild(document.createTextNode('low data'));
+      q.style.transform='scale(0.9)';nameCell.appendChild(q);}
+    nameCell.addEventListener('click',()=>openSchool(s));
+    nameCell.tabIndex=0;
+    nameCell.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();openSchool(s);}});
+    grid.appendChild(nameCell);
+
+    AREAS.forEach(a=>{
+      const v=s.areaAvg[a.key];
+      const cell=el('div','hmcell');
+      if(dim){cell.style.background=fade(seqColor(v),0.62);cell.style.color='#5B6E7C';}
+      else{cell.style.background=seqColor(v);cell.style.color=seqInk(v);}
+      cell.textContent=v.toFixed(0);
+      cell.tabIndex=0;
+      cell.addEventListener('click',()=>openSchool(s));
+      cell.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();openSchool(s);}});
+      bindTip(cell,()=>{
+        const f=tipTitle(s.name,a.label+' · '+s.city);
+        f.appendChild(tipRow(v.toFixed(1)+'%','school average',a.color));
+        f.appendChild(tipRow(ORG_AREA_AVG[a.key].toFixed(1)+'%','group average','#7C93A3'));
+        const d=r1(v-ORG_AREA_AVG[a.key]);
+        f.appendChild(tipRow((d>0?'+':'')+d.toFixed(1),'vs group',d>=0?'#5BD75B':'#F09A9A'));
+        if(dim)f.appendChild(tipRow(s.coverage+'%','coverage — reading unreliable','#E8B44A'));
+        return f;});
+      grid.appendChild(cell);
+    });
+    const spiCell=el('div','hmspi');spiCell.textContent=s.spi.toFixed(1);
+    if(dim)spiCell.style.color='#9AA9B4';
+    grid.appendChild(spiCell);
+  });
+
+  wrap.appendChild(grid);card.appendChild(wrap);
+
+  /* scale legend */
+  const lg=el('div','legendrow');
+  const sc=el('span','scalelegend');
+  sc.appendChild(el('b',null,'Average child progress'));
+  sc.appendChild(el('span',null,SEQ_LO+'% or less'));
+  const bar=el('span','scalebar');
+  SEQ.forEach(c=>{const i=el('i');i.style.background=c;bar.appendChild(i);});
+  sc.appendChild(bar);sc.appendChild(el('span',null,SEQ_HI+'%+'));
+  lg.appendChild(sc);
+  if(sorted.some(s=>s.covTier==='low')){
+    const note=el('span','item');
+    const q=el('span','badge b-crit');q.appendChild(el('span','ic','○'));q.appendChild(document.createTextNode('low data'));
+    note.appendChild(q);
+    note.appendChild(el('span',null,'Rows faded — coverage under 50%. Their cells are estimates from too few observations; do not act on them without checking logging first.'));
+    lg.appendChild(note);
+  }
+  card.appendChild(lg);
+  root.appendChild(card);
+}
+
+/* ============================================================
+   VIEW — rankings
+   ============================================================ */
+function renderRankings(){
+  const root=document.getElementById('view-rankings');
+  root.textContent='';
+  const list=filtered();
+
+  const card=el('div','card');
+  const head=el('div','card-head pb');
+  head.appendChild(el('h2','card-title','Schools by School Progress Index'));
+  head.appendChild(el('p','card-sub','Every school in scope, ranked on median child progress and coloured by supervision status. Hatched bars are schools whose observation coverage is below 50% — their position on this ranking is a guess, not a result.'));
+  card.appendChild(head);
+
+  if(!list.length){
+    const e=el('div','empty');
+    e.appendChild(el('span','big','Nothing to rank'));
+    e.appendChild(document.createTextNode('No schools match the current filters.'));
+    card.appendChild(e);root.appendChild(card);
+  } else {
+    const sorted=[...list].sort((a,b)=>b.spi-a.spi);
+    const rowH=22, padT=34, padB=14, gutter=340, valW=52;
+    const W=1180, H=padT+sorted.length*rowH+padB;
+    const plotX=gutter, plotW=W-gutter-valW;
+    const X=v=>plotX+(clamp(v,0,100)/100)*plotW;
+
+    const svg=sv('svg',{width:'100%',height:H,viewBox:`0 0 ${W} ${H}`,role:'img',
+      'aria-label':'Schools ranked by School Progress Index'});
+    const defs=sv('defs');
+    const pat=sv('pattern',{id:'hatch',width:6,height:6,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'});
+    pat.appendChild(sv('rect',{width:6,height:6,fill:'#DDE3E8'}));
+    pat.appendChild(sv('rect',{width:2.4,height:6,fill:'#A9B5BF'}));
+    defs.appendChild(pat);svg.appendChild(defs);
+
+    /* gridlines + top axis */
+    [0,20,40,60,80,100].forEach(v=>{
+      svg.appendChild(sv('line',{x1:X(v),y1:padT-10,x2:X(v),y2:H-padB+2,stroke:v===0?AXIS:GRID,'stroke-width':1}));
+      svg.appendChild(svText(X(v),padT-16,v+(v===100?'%':''),{anchor:'middle',size:10.5,fill:MUTED,tabular:true}));
+    });
+
+    sorted.forEach((s,i)=>{
+      const y=padT+i*rowH;
+      const barH=12, by=y+(rowH-barH)/2;
+      const unknown=s.status==='unknown';
+
+      /* row hit area */
+      const hit=sv('rect',{x:0,y:y,width:W,height:rowH,fill:'transparent',style:'cursor:pointer'});
+      hit.setAttribute('tabindex','0');
+      hit.addEventListener('click',()=>openSchool(s));
+      hit.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();openSchool(s);}});
+      bindTip(hit,()=>{
+        const f=tipTitle(s.name,s.city+' · '+s.region);
+        f.appendChild(tipRow(s.spi.toFixed(1)+'%','School Progress Index',STATUS[s.status].color));
+        f.appendChild(tipRow((s.momentum>0?'+':'')+s.momentum.toFixed(1),'30-day momentum',s.momentum>=0?'#5BD75B':'#F09A9A'));
+        f.appendChild(tipRow(s.coverage+'%','observation coverage',unknown?'#E8B44A':'#7C93A3'));
+        f.appendChild(tipRow(String(s.childCount),'children','#7C93A3'));
+        if(unknown)f.appendChild(tipRow('Unknown','ranking unreliable','#E8B44A'));
+        return f;});
+
+      /* rank + name + city — measured so they can never overlap */
+      svg.appendChild(svText(26,y+rowH/2+1,String(i+1),{anchor:'end',size:10.5,fill:'#93A2AF',baseline:'middle',tabular:true}));
+      const cityW=Math.min(92,textW(s.city,10.5,400));
+      const nameMax=gutter-36-cityW-26;
+      svg.appendChild(svText(36,y+rowH/2+1,fitText(s.name,nameMax,12,560),
+        {size:12,fill:unknown?'#5B6E7C':INK,baseline:'middle',weight:560}));
+      svg.appendChild(svText(gutter-16,y+rowH/2+1,fitText(s.city,92,10.5,400),
+        {anchor:'end',size:10.5,fill:MUTED,baseline:'middle'}));
+
+      /* bar */
+      const w=X(s.spi)-plotX;
+      svg.appendChild(sv('path',{d:hBar(plotX,by,Math.max(2,w),barH,4),
+        fill:unknown?'url(#hatch)':STATUS[s.status].color}));
+      svg.appendChild(svText(X(s.spi)+8,y+rowH/2+1,s.spi.toFixed(1),
+        {size:11.5,fill:unknown?MUTED:INK,baseline:'middle',weight:620,tabular:true}));
+      svg.appendChild(hit);
+    });
+    const holder=el('div','chartpad');holder.appendChild(svg);card.appendChild(holder);
+
+    const lg=el('div','legendrow');
+    ['healthy','watch','action'].forEach(k=>{
+      const it=el('span','item');
+      const sw=el('span','swatch');sw.style.background=STATUS[k].color;
+      it.appendChild(sw);it.appendChild(el('span',null,STATUS[k].label));lg.appendChild(it);
+    });
+    const it=el('span','item');
+    const sw=el('span','swatch');
+    sw.style.background='repeating-linear-gradient(45deg,#A9B5BF 0 2px,#DDE3E8 2px 4px)';
+    it.appendChild(sw);it.appendChild(el('span',null,'Unknown — coverage < 50%, rank not trustworthy'));
+    lg.appendChild(it);
+    card.appendChild(lg);
+    root.appendChild(card);
+  }
+
+  /* histogram of child-level progress */
+  const hcard=el('div','card');
+  const hh=el('div','card-head pb');
+  hh.appendChild(el('h2','card-title','Where the children actually are'));
+  const kidsN=list.reduce((a,s)=>a+s.childCount,0);
+  hh.appendChild(el('p','card-sub','Every child in scope, binned by overall progress across the five areas. A group in good health leans right with a thin left tail; a long left tail means children are stuck early in the sequence somewhere.'));
+  hcard.appendChild(hh);
+
+  const kids=list.flatMap(s=>s.children.map(c=>c.overall));
+  if(!kids.length){
+    const e=el('div','empty');e.appendChild(el('span','big','No children in scope'));
+    hcard.appendChild(e);root.appendChild(hcard);return;
+  }
+  const bins=new Array(10).fill(0);
+  kids.forEach(v=>{bins[clamp(Math.floor(v/10),0,9)]++;});
+  const rawMax=Math.max(...bins);
+  const stepBin=Math.pow(10,Math.floor(Math.log10(rawMax)))/2;
+  const maxBin=Math.ceil(rawMax/stepBin)*stepBin;
+  const W2=1180,H2=214,pl=46,pr=16,pt=22,pb=42;
+  const bw=(W2-pl-pr)/10;
+  const svg2=sv('svg',{width:'100%',height:H2,viewBox:`0 0 ${W2} ${H2}`,role:'img',
+    'aria-label':'Distribution of child progress'});
+  const Y2=v=>H2-pb-(v/maxBin)*(H2-pt-pb);
+  [0,0.5,1].forEach(f=>{
+    const v=Math.round(maxBin*f), y=Y2(v);
+    svg2.appendChild(sv('line',{x1:pl,y1:y,x2:W2-pr,y2:y,stroke:f===0?AXIS:GRID,'stroke-width':1}));
+    svg2.appendChild(svText(pl-8,y+3.5,v.toLocaleString(),{anchor:'end',size:10.5,fill:MUTED,tabular:true}));
+  });
+  const medKid=r1(median(kids));
+  bins.forEach((n,i)=>{
+    const w=Math.min(bw-8,56), x=pl+i*bw+(bw-w)/2, y=Y2(n), h=H2-pb-y;
+    const rect=sv('path',{d:vBar(x,y,w,Math.max(1.5,h),4),fill:'#2F6FBF',style:'cursor:default'});
+    svg2.appendChild(rect);
+    svg2.appendChild(svText(x+w/2,y-6,n.toLocaleString(),{anchor:'middle',size:10.5,fill:INK,weight:620,tabular:true}));
+    svg2.appendChild(svText(x+w/2,H2-pb+15,(i*10)+'–'+(i*10+10)+'%',{anchor:'middle',size:10.5,fill:MUTED,tabular:true}));
+    const hit=sv('rect',{x:pl+i*bw,y:pt,width:bw,height:H2-pt-pb,fill:'transparent'});
+    hit.setAttribute('tabindex','0');
+    bindTip(hit,()=>{const f=tipTitle((i*10)+'–'+(i*10+10)+'% overall progress');
+      f.appendChild(tipRow(n.toLocaleString(),'children','#4A90E2'));
+      f.appendChild(tipRow(Math.round(1000*n/kids.length)/10+'%','of children in scope','#7C93A3'));return f;});
+    svg2.appendChild(hit);
+  });
+  svg2.appendChild(svText(pl,H2-8,'Median child sits at '+medKid.toFixed(1)+'% · '+kidsN.toLocaleString()+' children across '+list.length+' schools',
+    {size:11.5,fill:MUTED}));
+  const holder2=el('div','chartpad');holder2.appendChild(svg2);hcard.appendChild(holder2);
+  root.appendChild(hcard);
+}
+
+/* ============================================================
+   VIEW — flags inbox
+   ============================================================ */
+function renderFlags(){
+  const root=document.getElementById('view-flags');
+  root.textContent='';
+  const list=filtered();
+  const ids=new Set(list.map(s=>s.id));
+  const flags=ALL_FLAGS.filter(f=>ids.has(f.school.id));
+
+  const intro=el('div','card');
+  const ih=el('div','card-head pb');
+  ih.appendChild(el('h2','card-title','Flags inbox'));
+  ih.appendChild(el('p','card-sub','Rules run nightly across every school in the group. Action items are things that will get worse if left a fortnight; Watch items need a look before the next visit; Info items are context so a low number is not mistaken for a problem.'));
+  intro.appendChild(ih);
+  const lg=el('div','legendrow');
+  [['action','Action','will worsen if left'],['watch','Watch','check before next visit'],['info','Info','context, no action needed']].forEach(([k,l,d])=>{
+    const it=el('span','item');
+    const b=el('span','badge '+(k==='action'?'b-crit':k==='watch'?'b-warn':'b-info'));
+    b.appendChild(el('span','ic',k==='info'?'i':'!'));b.appendChild(document.createTextNode(l));
+    it.appendChild(b);it.appendChild(el('span',null,d));lg.appendChild(it);
+  });
+  intro.appendChild(lg);
+  root.appendChild(intro);
+
+  if(!flags.length){
+    const c=el('div','card');
+    const e=el('div','empty');
+    e.appendChild(el('span','big','No open flags in this scope'));
+    e.appendChild(document.createTextNode('Either every school in scope is running clean, or the filters have narrowed too far.'));
+    c.appendChild(e);root.appendChild(c);return;
+  }
+
+  [['action','Needs action'],['watch','Watch'],['info','Informational']].forEach(([sev,label])=>{
+    const grp=flags.filter(f=>f.severity===sev);
+    if(!grp.length)return;
+    const g=el('div','flaggroup');
+    const gh=el('div','grouphead');
+    const b=el('span','badge '+(sev==='action'?'b-crit':sev==='watch'?'b-warn':'b-info'));
+    b.appendChild(el('span','ic',sev==='info'?'i':'!'));
+    b.appendChild(document.createTextNode(grp.length+' '+(grp.length===1?'item':'items')));
+    gh.appendChild(el('h3',null,label));gh.appendChild(b);gh.appendChild(el('span','rule'));
+    g.appendChild(gh);
+
+    const grid=el('div','flaggrid');
+    grp.sort((a,b2)=>a.school.name.localeCompare(b2.school.name)).forEach(f=>{
+      const c=el('div','flagcard sev-'+f.severity);
+      const fh=el('div','fhead');
+      const nm=el('div','fschool');
+      nm.appendChild(document.createTextNode(f.school.name+' '));
+      nm.appendChild(el('span',null,'· '+f.school.city));
+      fh.appendChild(nm);
+      fh.appendChild(el('div','ftype',f.type));
+      c.appendChild(fh);
+      c.appendChild(el('div','fev',f.evidence));
+      const nx=el('div','fnext');
+      nx.appendChild(el('b',null,'Next step: '));
+      nx.appendChild(document.createTextNode(f.next));
+      c.appendChild(nx);
+      const btn=el('button','fopen','Open '+f.school.name+' →');
+      btn.type='button';
+      btn.addEventListener('click',()=>openSchool(f.school));
+      c.appendChild(btn);
+      grid.appendChild(c);
+    });
+    g.appendChild(grid);root.appendChild(g);
+  });
+}
+
+/* ============================================================
+   VIEW — school drill-down
+   ============================================================ */
+function openSchool(s){state.school=s;setView('school');}
+
+function renderSchool(){
+  const root=document.getElementById('view-school');
+  root.textContent='';
+  const s=state.school;
+  if(!s)return;
+
+  const back=el('button','back','← All schools');
+  back.type='button';
+  back.addEventListener('click',()=>setView(state.prevView||'overview'));
+  root.appendChild(back);
+
+  const dh=el('div','dhead');
+  const left=el('div');
+  left.appendChild(el('h2',null,s.name));
+  left.appendChild(el('div','meta',s.city+' · '+s.region+' · '+s.classrooms.length+' classrooms · '+s.childCount+' children'));
+  dh.appendChild(left);
+  const right=el('div');right.style.display='flex';right.style.gap='8px';right.style.alignItems='center';
+  right.appendChild(coverageBadge(s));right.appendChild(statusChip(s.status));
+  dh.appendChild(right);
+  root.appendChild(dh);
+
+  /* coverage callout */
+  if(s.covTier!=='reliable'){
+    const crit=s.covTier==='low';
+    const co=el('div','callout '+(crit?'crit':'warn'));
+    const ci=el('div','ci',crit?'○':'◐');co.appendChild(ci);
+    const body=el('div');
+    const b=el('b',null,crit?'Readings below are not reliable. ':'Readings below are partial. ');
+    body.appendChild(b);
+    body.appendChild(document.createTextNode(
+      `Only ${s.coverage}% of children here have an observation logged in the last 14 days (${s.children.filter(c=>c.observed).length} of ${s.childCount}). `+
+      (crit
+        ? `An SPI of ${s.spi} on this little evidence tells you the school is not recording, not that the children are behind. Establish the logging habit before drawing any conclusion about practice.`
+        : `Treat the numbers as indicative. The gaps are concentrated in ${[...s.classrooms].sort((a,b)=>a.coverage-b.coverage)[0].name} at ${[...s.classrooms].sort((a,b)=>a.coverage-b.coverage)[0].coverage}% coverage.`)));
+    co.appendChild(body);root.appendChild(co);
+  }
+  if(s.type==='new'){
+    const co=el('div','callout info');
+    co.appendChild(el('div','ci','i'));
+    const body=el('div');
+    body.appendChild(el('b',null,'New school. '));
+    body.appendChild(document.createTextNode(`Opened ${s.weeksOpen} weeks ago. A low SPI here is expected — children are early in the sequence, and momentum of +${s.momentum} shows the shelves are moving.`));
+    co.appendChild(body);root.appendChild(co);
+  }
+
+  /* KPI row */
+  const k=el('div','kpis even');
+  function tile(lab,val,unit,foot){
+    const c=el('div','kpi');c.appendChild(el('div','lab',lab));
+    const v=el('div','val');v.appendChild(document.createTextNode(val));
+    if(unit)v.appendChild(el('small',null,unit));
+    c.appendChild(v);
+    if(foot){const f=el('div','foot');f.appendChild(foot);c.appendChild(f);}
+    return c;
+  }
+  const orgMed=r1(median(SCHOOLS.map(x=>x.spi)));
+  const dSpi=r1(s.spi-orgMed);
+  const spiFoot=el('span');
+  const sp=el('span',dSpi>=0?'up':'down',(dSpi>0?'+':'')+dSpi.toFixed(1));
+  spiFoot.appendChild(sp);spiFoot.appendChild(document.createTextNode(' vs group median '+orgMed.toFixed(1)));
+  k.appendChild(tile('School Progress Index',s.spi.toFixed(1),'%',spiFoot));
+
+  const momFoot=el('span');momFoot.textContent='from '+s.series[3].toFixed(1)+' on 3 Jul';
+  const momTile=tile('30-day momentum',(s.momentum>0?'+':'')+s.momentum.toFixed(1),'pts',momFoot);
+  momTile.querySelector('.val').style.color=s.momentum>=0?'#0a7d0a':STATUS.action.color;
+  k.appendChild(momTile);
+
+  k.appendChild(tile('Observation coverage',s.coverage,'%',
+    (()=>{const e2=el('span');e2.textContent=s.children.filter(c=>c.observed).length+' of '+s.childCount+' children, last 14 days';return e2;})()));
+  k.appendChild(tile('Children stalled 45+ days',String(s.stalledTotal),null,
+    (()=>{const e2=el('span');e2.textContent=Math.round(100*s.stalledTotal/s.childCount)+'% of the roll';return e2;})()));
+  k.appendChild(tile('Open flags',String(s.flags.length),null,
+    (()=>{const e2=el('span');const n=s.flags.filter(f=>f.severity==='action').length;
+      e2.textContent=n?n+' need action':'nothing urgent';return e2;})()));
+  root.appendChild(k);
+
+  /* two columns: trend + areas */
+  const cols=el('div','cols');
+
+  /* --- trend --- */
+  const tc=el('div','card');
+  const th=el('div','card-head');
+  th.appendChild(el('h2','card-title','School Progress Index, last 8 weeks'));
+  th.appendChild(el('p','card-sub','Median child progress, measured weekly. The flat line is the group median for the same period.'));
+  tc.appendChild(th);
+
+  const W=560,H=250,pl=38,pr=46,pt=26,pb=34;
+  const pts=s.series;
+  const vals=pts.filter(v=>v!=null);
+  const lo=Math.min(...vals,orgMed)-6, hi=Math.max(...vals,orgMed)+6;
+  const X=i=>pl+(i/(pts.length-1))*(W-pl-pr);
+  const Y=v=>H-pb-((v-lo)/(hi-lo))*(H-pt-pb);
+  const svg=sv('svg',{width:'100%',height:H,viewBox:`0 0 ${W} ${H}`,role:'img',
+    'aria-label':'8-week SPI trend for '+s.name});
+  /* gridlines */
+  const ticks=[];
+  const step=(hi-lo)>28?10:5;
+  for(let v=Math.ceil(lo/step)*step;v<=hi;v+=step)ticks.push(v);
+  ticks.forEach(v=>{
+    svg.appendChild(sv('line',{x1:pl,y1:Y(v),x2:W-pr,y2:Y(v),stroke:GRID,'stroke-width':1}));
+    svg.appendChild(svText(pl-8,Y(v)+3.5,v,{anchor:'end',size:10.5,fill:MUTED,tabular:true}));
+  });
+  /* org median reference */
+  svg.appendChild(sv('line',{x1:pl,y1:Y(orgMed),x2:W-pr,y2:Y(orgMed),stroke:'#9AA9B4','stroke-width':1}));
+  const refAbove = pts[7]!=null && pts[7] > orgMed;
+  svg.appendChild(svText(pl+4,Y(orgMed)+(refAbove?13:-6),'group median '+orgMed.toFixed(1),
+    {size:10.5,fill:MUTED,tabular:true}));
+  /* x labels */
+  WEEKS.forEach((w,i)=>{
+    if(i%2===1||i===7)svg.appendChild(svText(X(i),H-pb+16,w,{anchor:'middle',size:10.5,fill:MUTED}));
+  });
+  svg.appendChild(sv('line',{x1:pl,y1:H-pb,x2:W-pr,y2:H-pb,stroke:AXIS,'stroke-width':1}));
+  /* line */
+  const col=s.status==='unknown'?'#5B6E7C':STATUS[s.status].color;
+  let d='',started=false;
+  pts.forEach((v,i)=>{
+    if(v==null){started=false;return;}
+    d+=(started?' L':' M')+X(i)+','+Y(v);started=true;
+  });
+  const lastI=pts.length-1;
+  svg.appendChild(sv('path',{d:d.trim(),fill:'none',stroke:col,'stroke-width':2,'stroke-linecap':'round','stroke-linejoin':'round'}));
+  pts.forEach((v,i)=>{if(v==null)return;
+    svg.appendChild(sv('circle',{cx:X(i),cy:Y(v),r:i===lastI?5:3.6,fill:col,stroke:SURFACE,'stroke-width':2}));});
+  /* endpoint label only — the table below carries every other week */
+  svg.appendChild(svText(X(lastI)+9,Y(pts[lastI])+3.5,pts[lastI].toFixed(1),{size:12,fill:INK,weight:660,tabular:true}));
+  /* crosshair */
+  const cross=sv('line',{x1:0,y1:pt,x2:0,y2:H-pb,stroke:'#9AA9B4','stroke-width':1,opacity:0});
+  svg.appendChild(cross);
+  const hitRect=sv('rect',{x:pl,y:pt,width:W-pl-pr,height:H-pt-pb,fill:'transparent'});
+  svg.appendChild(hitRect);
+  hitRect.addEventListener('pointermove',e=>{
+    const box=svg.getBoundingClientRect();
+    const rel=(e.clientX-box.left)/box.width*W;
+    let bi=0,bd=1e9;
+    pts.forEach((v,i)=>{if(v==null)return;const dd=Math.abs(X(i)-rel);if(dd<bd){bd=dd;bi=i;}});
+    if(pts[bi]==null)return;
+    cross.setAttribute('x1',X(bi));cross.setAttribute('x2',X(bi));cross.setAttribute('opacity','1');
+    const f=tipTitle(s.name,'Week ending '+WEEKS[bi]+' 2026');
+    f.appendChild(tipRow(pts[bi].toFixed(1),'School Progress Index',col));
+    f.appendChild(tipRow(orgMed.toFixed(1),'group median','#9AA9B4'));
+    showTip(f,e);
+  });
+  hitRect.addEventListener('pointerleave',()=>{cross.setAttribute('opacity','0');hideTip();});
+  const tcp=el('div','chartpad');tcp.appendChild(svg);
+
+  /* table twin for the trend */
+  const vt=el('table','vals');
+  const vhead=el('tr');vhead.appendChild(el('th',null,'Week ending'));
+  WEEKS.forEach(w=>vhead.appendChild(el('th',null,w)));
+  const vbody=el('tr');vbody.appendChild(el('td',null,'SPI'));
+  pts.forEach(v=>vbody.appendChild(el('td',null,v==null?'—':v.toFixed(1))));
+  const thd=el('thead');thd.appendChild(vhead);
+  const tbd=el('tbody');tbd.appendChild(vbody);
+  vt.appendChild(thd);vt.appendChild(tbd);
+  tcp.appendChild(vt);
+  if(s.weeksOpen<8){
+    const cap=el('div',null,`No reading before ${WEEKS[8-s.weeksOpen]} — the school opened ${s.weeksOpen} weeks ago.`);
+    cap.style.cssText='font-size:11.5px;color:var(--text-muted);margin-top:8px';
+    tcp.appendChild(cap);
+  }
+  tc.appendChild(tcp);
+  cols.appendChild(tc);
+
+  /* --- areas vs group --- */
+  const ac=el('div','card');
+  const ah=el('div','card-head');
+  ah.appendChild(el('h2','card-title','Curriculum areas vs the group'));
+  ah.appendChild(el('p','card-sub','Bar = this school’s average child progress in the area. The vertical marker is the group average for the same area.'));
+  ac.appendChild(ah);
+  const ap=el('div','chartpad');
+  const schoolAreaMean=mean(AREAS.map(a=>s.areaAvg[a.key]));
+  AREAS.forEach(a=>{
+    const row=el('div','arearow');
+    const nm=el('div','an');
+    const sw=el('span','swatch');sw.style.background=a.color;
+    nm.appendChild(sw);nm.appendChild(document.createTextNode(a.label));
+    row.appendChild(nm);
+
+    const bw2=330,bh=14;
+    const svgA=sv('svg',{width:'100%',height:bh+8,viewBox:`0 0 ${bw2} ${bh+8}`,preserveAspectRatio:'none',role:'img',
+      'aria-label':`${a.label} ${s.areaAvg[a.key]} percent, group ${ORG_AREA_AVG[a.key]} percent`});
+    svgA.appendChild(sv('rect',{x:0,y:4,width:bw2,height:bh,rx:4,fill:'#EDF1F5'}));
+    const w=Math.max(3,(clamp(s.areaAvg[a.key],0,100)/100)*bw2);
+    const neglected=s.areaAvg[a.key]<0.60*schoolAreaMean;
+    svgA.appendChild(sv('path',{d:hBar(0,4,w,bh,4),fill:a.color,opacity:neglected?1:0.92}));
+    const gx=(clamp(ORG_AREA_AVG[a.key],0,100)/100)*bw2;
+    svgA.appendChild(sv('rect',{x:gx-1,y:1,width:2,height:bh+6,fill:'#42586A'}));
+    const holder=el('div');holder.style.position='relative';holder.appendChild(svgA);
+    bindTip(holder,()=>{
+      const f=tipTitle(a.label,s.name);
+      f.appendChild(tipRow(s.areaAvg[a.key].toFixed(1)+'%','this school',a.color));
+      f.appendChild(tipRow(ORG_AREA_AVG[a.key].toFixed(1)+'%','group average','#9AA9B4'));
+      const dd=r1(s.areaAvg[a.key]-ORG_AREA_AVG[a.key]);
+      f.appendChild(tipRow((dd>0?'+':'')+dd.toFixed(1),'difference',dd>=0?'#5BD75B':'#F09A9A'));
+      if(neglected)f.appendChild(tipRow('Neglected','below 60% of this school’s own area mean','#E8B44A'));
+      return f;});
+    row.appendChild(holder);
+    row.appendChild(el('div','av',s.areaAvg[a.key].toFixed(1)));
+    ap.appendChild(row);
+  });
+  const legendA=el('div');legendA.style.cssText='display:flex;gap:8px;align-items:center;font-size:11.5px;color:var(--text-muted);margin-top:2px';
+  const mk=el('span');mk.style.cssText='width:2px;height:12px;background:#42586A;display:inline-block';
+  legendA.appendChild(mk);legendA.appendChild(el('span',null,'group average across all '+SCHOOLS.length+' schools'));
+  ap.appendChild(legendA);
+  /* plain-language read of the same five numbers */
+  const ranked=[...AREAS].sort((a,b)=>s.areaAvg[b.key]-s.areaAvg[a.key]);
+  const top=ranked[0], bot=ranked[ranked.length-1];
+  const dTop=r1(s.areaAvg[top.key]-ORG_AREA_AVG[top.key]);
+  const dBot=r1(s.areaAvg[bot.key]-ORG_AREA_AVG[bot.key]);
+  const summary=el('div');
+  summary.style.cssText='margin-top:14px;padding-top:12px;border-top:1px solid var(--grid);font-size:12.5px;color:var(--text-secondary);line-height:1.55';
+  const strongB=el('b',null,top.label);strongB.style.color='var(--ink)';
+  const weakB=el('b',null,bot.label);weakB.style.color='var(--ink)';
+  summary.appendChild(document.createTextNode('Strongest here is '));
+  summary.appendChild(strongB);
+  summary.appendChild(document.createTextNode(` at ${s.areaAvg[top.key].toFixed(1)}% (${dTop>0?'+':''}${dTop.toFixed(1)} vs group). Thinnest is `));
+  summary.appendChild(weakB);
+  summary.appendChild(document.createTextNode(` at ${s.areaAvg[bot.key].toFixed(1)}% (${dBot>0?'+':''}${dBot.toFixed(1)} vs group)`));
+  summary.appendChild(document.createTextNode(
+    s.areaAvg[bot.key] < 0.60*schoolAreaMean
+      ? ' — far enough below this school’s own average to be flagged as a neglected shelf.'
+      : ' — within the normal spread for this school, so no shelf is flagged.'));
+  ap.appendChild(summary);
+  ac.appendChild(ap);
+  cols.appendChild(ac);
+  root.appendChild(cols);
+
+  /* --- classrooms --- */
+  const cc=el('div','card');
+  const ch=el('div','card-head pb');
+  ch.appendChild(el('h2','card-title','Classrooms'));
+  ch.appendChild(el('p','card-sub','Each classroom’s average child progress by area. Values are printed under every bar.'));
+  cc.appendChild(ch);
+  const al=el('div','arealegend');
+  AREAS.forEach(a=>{
+    const it=el('span','item');const sw=el('span','swatch');sw.style.background=a.color;
+    it.appendChild(sw);it.appendChild(document.createTextNode(a.label));al.appendChild(it);
+  });
+  cc.appendChild(al);
+  const cg=el('div','clsgrid');
+  s.classrooms.forEach(cl=>{
+    const card2=el('div','clscard');
+    const hrow=el('div','ch');
+    hrow.appendChild(el('span','cn',cl.name));
+    hrow.appendChild(el('span','cm',cl.count+' children'));
+    card2.appendChild(hrow);
+    const meta=el('div','cm');
+    meta.textContent='SPI '+cl.spi.toFixed(1)+' · coverage '+cl.coverage+'% · '+cl.stalled+' stalled';
+    meta.style.color=cl.coverage<50?'var(--st-crit)':'var(--text-muted)';
+    card2.appendChild(meta);
+    const mb=el('div','minibars');
+    AREAS.forEach(a=>{
+      const b=el('div','minibar');
+      const tr=el('div','track');const f=el('div','fill');
+      f.style.height=clamp(cl.areaAvg[a.key],2,100)+'%';f.style.background=a.color;
+      tr.appendChild(f);b.appendChild(tr);
+      b.appendChild(el('div','mv',cl.areaAvg[a.key].toFixed(0)));
+      b.appendChild(el('div','ml',a.abbr));
+      bindTip(b,()=>{const fr=tipTitle(cl.name+' · '+a.label,s.name);
+        fr.appendChild(tipRow(cl.areaAvg[a.key].toFixed(1)+'%','classroom average',a.color));
+        fr.appendChild(tipRow(s.areaAvg[a.key].toFixed(1)+'%','school average','#9AA9B4'));return fr;});
+      mb.appendChild(b);
+    });
+    card2.appendChild(mb);
+    cg.appendChild(card2);
+  });
+  cc.appendChild(cg);
+  root.appendChild(cc);
+
+  /* --- flagged children --- */
+  const fc=el('div','card');
+  const fh=el('div','card-head pb');
+  fh.appendChild(el('h2','card-title','Children needing attention'));
+  const stalled=s.children.filter(c=>c.daysStalled>=45).sort((a,b)=>b.daysStalled-a.daysStalled);
+  fh.appendChild(el('p','card-sub',stalled.length
+    ? `${stalled.length} ${stalled.length===1?'child has':'children have'} had no recorded status change for 45 days or more`
+      + (stalled.length>10 ? ' — the ten longest-stalled are listed here; the guide sees the full list inside the classroom app.' : '.')
+    : 'No child in this school has been stalled for 45 days or more.'));
+  fc.appendChild(fh);
+
+  if(!stalled.length){
+    const e=el('div','empty');
+    e.appendChild(el('span','big','Nothing stalled'));
+    e.appendChild(document.createTextNode('Every child here has moved on at least one work in the last six weeks.'));
+    fc.appendChild(e);
+  }else{
+    const wrap=el('div','tablewrap');
+    const t=el('table','grid');
+    const thead2=el('thead');const tr2=el('tr');
+    ['Child','Classroom','Age','Lowest area','Days stalled','Last observation'].forEach((h,i)=>{
+      const th2=el('th',i>=4?'num':null,h);tr2.appendChild(th2);
+    });
+    thead2.appendChild(tr2);t.appendChild(thead2);
+    const tb=el('tbody');
+    stalled.slice(0,10).forEach(c=>{
+      const r=el('tr');r.style.cursor='default';
+      const c1=el('td');const nm=el('span');nm.style.fontWeight='560';nm.style.color='var(--ink)';
+      nm.textContent=c.name;c1.appendChild(nm);r.appendChild(c1);
+      r.appendChild(el('td',null,c.classroom));
+      r.appendChild(el('td',null,Math.floor(c.ageMonths/12)+'y '+(c.ageMonths%12)+'m'));
+      const c4=el('td');
+      const sw=el('span','swatch');sw.style.background=AREA_BY_KEY[c.weakest].color;
+      sw.style.marginRight='7px';
+      c4.appendChild(sw);
+      c4.appendChild(document.createTextNode(AREA_BY_KEY[c.weakest].label+' · '+c.areas[c.weakest].toFixed(0)+'%'));
+      r.appendChild(c4);
+      const c5=el('td','num');c5.textContent=c.daysStalled;
+      if(c.daysStalled>=75){c5.style.color=STATUS.action.color;c5.style.fontWeight='620';}
+      r.appendChild(c5);
+      const c6=el('td','num');
+      c6.textContent=c.observed?dateMinus(c.daysSinceObs):'none in 14 days';
+      if(!c.observed)c6.style.color='var(--st-warn)';
+      r.appendChild(c6);
+      tb.appendChild(r);
+    });
+    t.appendChild(tb);wrap.appendChild(t);fc.appendChild(wrap);
+  }
+  root.appendChild(fc);
+
+  /* --- school flags --- */
+  if(s.flags.length){
+    const g=el('div','flaggroup');
+    const gh=el('div','grouphead');
+    gh.appendChild(el('h3',null,'Open flags for this school'));
+    gh.appendChild(el('span','rule'));
+    g.appendChild(gh);
+    const grid=el('div','flaggrid');
+    s.flags.forEach(f=>{
+      const c=el('div','flagcard sev-'+f.severity);
+      const fh2=el('div','fhead');
+      fh2.appendChild(el('div','fschool',f.type));
+      const b=el('span','badge '+(f.severity==='action'?'b-crit':f.severity==='watch'?'b-warn':'b-info'));
+      b.appendChild(el('span','ic',f.severity==='info'?'i':'!'));
+      b.appendChild(document.createTextNode(f.severity==='action'?'Action':f.severity==='watch'?'Watch':'Info'));
+      fh2.appendChild(b);
+      c.appendChild(fh2);
+      c.appendChild(el('div','fev',f.evidence));
+      const nx=el('div','fnext');nx.appendChild(el('b',null,'Next step: '));
+      nx.appendChild(document.createTextNode(f.next));c.appendChild(nx);
+      grid.appendChild(c);
+    });
+    g.appendChild(grid);root.appendChild(g);
+  }
+}
+
+/* ============================================================
+   view switching + filters
+   ============================================================ */
+function setView(v){
+  if(v!=='school')state.prevView=v;
+  state.view=v;
+  document.querySelectorAll('.view').forEach(n=>n.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.view===v)));
+  document.getElementById('filterRow').classList.toggle('hidden',v==='school');
+  hideTip();
+  if(v==='overview')renderOverview();
+  else if(v==='heatmap')renderHeatmap();
+  else if(v==='rankings')renderRankings();
+  else if(v==='flags')renderFlags();
+  else if(v==='school')renderSchool();
+  window.scrollTo({top:0});
+}
+
+function renderAll(){
+  const list=filtered();
+  const ids=new Set(list.map(s=>s.id));
+  document.getElementById('tabFlagCount').textContent=String(ALL_FLAGS.filter(f=>ids.has(f.school.id)).length);
+  const note=document.getElementById('scopeNote');
+  note.textContent=list.length===SCHOOLS.length
+    ? `All ${SCHOOLS.length} schools · ${list.reduce((a,s)=>a+s.childCount,0).toLocaleString()} children`
+    : `${list.length} of ${SCHOOLS.length} schools · ${list.reduce((a,s)=>a+s.childCount,0).toLocaleString()} children`;
+  if(state.view==='overview')renderOverview();
+  else if(state.view==='heatmap')renderHeatmap();
+  else if(state.view==='rankings')renderRankings();
+  else if(state.view==='flags')renderFlags();
+}
+
+/* wire up */
+document.getElementById('tabs').addEventListener('click',e=>{
+  const t=e.target.closest('.tab');if(!t)return;setView(t.dataset.view);
+});
+const regionSel=document.getElementById('fRegion');
+const regions=['all',...Array.from(new Set(SCHOOLS.map(s=>s.region)))];
+regions.forEach(r=>{
+  const o=document.createElement('option');o.value=r;o.textContent=r==='all'?'All regions':r;regionSel.appendChild(o);
+});
+regionSel.addEventListener('change',e=>{state.filters.region=e.target.value;renderAll();});
+document.getElementById('fStatus').addEventListener('change',e=>{state.filters.status=e.target.value;renderAll();});
+document.getElementById('fCov').addEventListener('change',e=>{state.filters.cov=e.target.value;renderAll();});
+document.getElementById('fSearch').addEventListener('input',e=>{state.filters.q=e.target.value;renderAll();});
+document.getElementById('fReset').addEventListener('click',()=>{
+  state.filters={region:'all',status:'all',cov:'all',q:''};
+  regionSel.value='all';document.getElementById('fStatus').value='all';
+  document.getElementById('fCov').value='all';document.getElementById('fSearch').value='';
+  renderAll();
+});
+window.addEventListener('scroll',hideTip,{passive:true});
+
+renderAll();
+setView('overview');
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "incremental": true, "tsBuildInfoFile": "./tsconfig.guru-ask.tmp.tsbuildinfo" },
+  "include": [
+    "next-env.d.ts",
+    "app/api/montree/onboarding-copilot/ask/route.ts",
+    "app/api/montree/onboarding-copilot/ask-public/route.ts",
+    "app/api/montree/onboarding-copilot/progress/route.ts",
+    "lib/montree/onboarding-copilot/journeys.ts",
+    "lib/montree/onboarding-copilot/state-loader.ts"
+  ]
+}

@@ -4,6 +4,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { getClientIP } from '@/lib/montree/audit-logger';
 
 // SQL injection defense helper for .ilike() queries
 function escapeIlike(str: string): string {
@@ -17,6 +19,25 @@ export async function POST(
   try {
     const { id: workId } = await params;
     const supabase = getSupabase();
+
+    // The only credential here is a 6-char login_code — without a limiter the
+    // whole code space is walkable in minutes. Rate limit 5 / 15 min per IP,
+    // same guard the other public community routes use.
+    const ip = getClientIP(request.headers);
+    const { allowed, retryAfterSeconds } = await checkRateLimit(
+      supabase,
+      ip,
+      '/api/montree/community/works/inject',
+      5,
+      15
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many attempts. Please try again in a little while.', retryAfterSeconds },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds ?? 900) } }
+      );
+    }
+
     const body = await request.json();
     const { teacher_code } = body;
 
