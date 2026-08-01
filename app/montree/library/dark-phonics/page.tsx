@@ -29,9 +29,11 @@
 // never pull a hundred media files on load.
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import LanguageToggle from '@/components/montree/LanguageToggle';
+import { getProxyUrl, getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
 
 /** Zero-padded lesson number — every media object is named lesson-NN.<ext>. */
 const nn = (n: number) => String(n).padStart(2, '0');
@@ -39,6 +41,154 @@ const nn = (n: number) => String(n).padStart(2, '0');
 /** Media-proxy URL for a path inside the public `dark-phonics` bucket. */
 const media = (path: string, v?: number) =>
   `/api/montree/media/proxy/${path}?bucket=dark-phonics${v ? `&v=${v}` : ''}`;
+
+/** Trimmed-down photo-bank row — only the fields this page renders/forwards. */
+interface BankPhoto {
+  id: string;
+  label: string;
+  filename: string;
+  storage_path: string;
+  public_url: string;
+  tags?: string[] | null;
+}
+
+/**
+ * The 27 storybooks' own vocabulary, straight off
+ * scripts/curriculum/dark-phonics-storybooks/manifest.json pages p1–p4 (the
+ * picture word each page introduces), plus the frame noun every page repeats
+ * — the container the word is dropped into ('sock', 'nest', 'igloo') or the
+ * constant actor/object round which the pattern turns ('pig' ate a
+ * pineapple/pen/pencil/pan; an owl/otter/ostrich/octopus ate an 'orange').
+ * Book num 1 = lesson 5 … book 27 = lesson 31 — keep this in step with the
+ * manifest. Two books (letter E, letter X) only have three picture words.
+ */
+const BOOK_VOCAB: Record<string, string[]> = {
+  'snake-in-my-sock': ['snake', 'star', 'soap', 'seal', 'sock'],
+  'ant-on-my-apple': ['ant', 'anchor', 'alligator', 'ambulance', 'apple'],
+  'tiger-in-the-taxi': ['turtle', 'tomato', 'toothbrush', 'tiger', 'taxi'],
+  'pig-ate-a-pineapple': ['pineapple', 'pen', 'pencil', 'pan', 'pig'],
+  'in-the-igloo': ['iguana', 'insect', 'inchworm', 'infant', 'igloo'],
+  'not-in-my-nest': ['nut', 'net', 'nail', 'napkin', 'nest'],
+  'monkey-in-my-mug': ['mouse', 'mushroom', 'magnet', 'monkey', 'mug'],
+  'dinosaur-on-a-drum': ['dog', 'doll', 'duck', 'dinosaur', 'drum'],
+  'oh-no-goat': ['grapes', 'gloves', 'gift', 'guitar', 'goat'],
+  'owl-ate-an-orange': ['owl', 'otter', 'ostrich', 'octopus', 'orange'],
+  'cow-on-the-car': ['cat', 'cup', 'comb', 'cow', 'car'],
+  'koala-in-the-pocket': ['key', 'kite', 'kettle', 'koala', 'pocket'],
+  'on-a-rock': ['duck', 'chick', 'clock', 'sock', 'rock'],
+  'elephant-sat-on-the-egg': ['hen', 'eagle', 'elephant', 'egg'],
+  'under-my-umbrella': ['unicorn', 'ukulele', 'unicycle', 'urchin', 'umbrella'],
+  'rabbit-in-the-rocket': ['rabbit', 'robot', 'rose', 'ring', 'rocket'],
+  'horse-in-my-hat': ['hen', 'hammer', 'heart', 'horse', 'hat'],
+  'bear-in-the-boat': ['ball', 'banana', 'bell', 'bear', 'boat'],
+  'frog-on-the-fan': ['frog', 'fish', 'feather', 'fork', 'fan'],
+  'oh-no-lion': ['lemon', 'leaf', 'ladder', 'lizard', 'lion'],
+  'jellyfish-in-the-jar': ['jug', 'jacket', 'jet', 'jellyfish', 'jar'],
+  'volcano-in-the-van': ['violin', 'vase', 'vest', 'volcano', 'van'],
+  'whale-in-the-wagon': ['worm', 'watch', 'wolf', 'whale', 'wagon'],
+  'fox-in-a-box': ['fox', 'ox', 'xylophone', 'box'],
+  'yak-on-the-yacht': ['yak', 'yam', 'yoyo', 'yarn', 'yacht'],
+  'zzz-at-the-zoo': ['zebra', 'zipper', 'zucchini', 'zeppelin', 'zoo'],
+  'queen-on-the-quilt': ['quill', 'quarter', 'quail', 'queen', 'quilt'],
+};
+
+/**
+ * Each book's page keys, in manifest order — the sort key for the Book
+ * Pictures row (label is "<slug> <key>", e.g. "snake-in-my-sock p1-snake",
+ * so pN is parsed straight off the label) and the source of BOOK_VOCAB above.
+ * scripts/curriculum/upload-dark-phonics-book-art.mjs ingests one photo per
+ * key, tagged 'dark-phonics-book' + 'dark-phonics-book-<slug>'.
+ */
+const BOOK_PAGE_KEYS: Record<string, string[]> = {
+  'snake-in-my-sock': ['p1-snake', 'p2-star', 'p3-soap', 'p4-seal', 'p5-recap'],
+  'ant-on-my-apple': ['p1-ant', 'p2-anchor', 'p3-alligator', 'p4-ambulance', 'p5-recap'],
+  'tiger-in-the-taxi': ['p1-turtle', 'p2-tomato', 'p3-toothbrush', 'p4-tiger', 'p5-recap'],
+  'pig-ate-a-pineapple': ['p1-pineapple', 'p2-pen', 'p3-pencil', 'p4-pan', 'p5-recap'],
+  'in-the-igloo': ['p1-iguana', 'p2-insect', 'p3-inchworm', 'p4-infant', 'p5-recap'],
+  'not-in-my-nest': ['p1-nut', 'p2-net', 'p3-nail', 'p4-napkin', 'p5-recap'],
+  'monkey-in-my-mug': ['p1-mouse', 'p2-mushroom', 'p3-magnet', 'p4-monkey', 'p5-recap'],
+  'dinosaur-on-a-drum': ['p1-dog', 'p2-doll', 'p3-duck', 'p4-dinosaur', 'p5-recap'],
+  'oh-no-goat': ['p1-grapes', 'p2-gloves', 'p3-gift', 'p4-guitar', 'p5-recap'],
+  'owl-ate-an-orange': ['p1-owl', 'p2-otter', 'p3-ostrich', 'p4-octopus', 'p5-recap'],
+  'cow-on-the-car': ['p1-cat', 'p2-cup', 'p3-comb', 'p4-cow', 'p5-recap'],
+  'koala-in-the-pocket': ['p1-key', 'p2-kite', 'p3-kettle', 'p4-koala', 'p5-recap'],
+  'on-a-rock': ['p1-duck', 'p2-chick', 'p3-clock', 'p4-sock', 'p5-recap'],
+  'elephant-sat-on-the-egg': ['p1-hen', 'p2-eagle', 'p3-elephant', 'p4-recap'],
+  'under-my-umbrella': ['p1-unicorn', 'p2-ukulele', 'p3-unicycle', 'p4-urchin', 'p5-recap'],
+  'rabbit-in-the-rocket': ['p1-rabbit', 'p2-robot', 'p3-rose', 'p4-ring', 'p5-recap'],
+  'horse-in-my-hat': ['p1-hen', 'p2-hammer', 'p3-heart', 'p4-horse', 'p5-recap'],
+  'bear-in-the-boat': ['p1-ball', 'p2-banana', 'p3-bell', 'p4-bear', 'p5-recap'],
+  'frog-on-the-fan': ['p1-frog', 'p2-fish', 'p3-feather', 'p4-fork', 'p5-recap'],
+  'oh-no-lion': ['p1-lemon', 'p2-leaf', 'p3-ladder', 'p4-lizard', 'p5-recap'],
+  'jellyfish-in-the-jar': ['p1-jug', 'p2-jacket', 'p3-jet', 'p4-jellyfish', 'p5-recap'],
+  'volcano-in-the-van': ['p1-violin', 'p2-vase', 'p3-vest', 'p4-volcano', 'p5-recap'],
+  'whale-in-the-wagon': ['p1-worm', 'p2-watch', 'p3-wolf', 'p4-whale', 'p5-recap'],
+  'fox-in-a-box': ['p1-fox', 'p2-ox', 'p3-xylophone', 'p4-recap'],
+  'yak-on-the-yacht': ['p1-yak', 'p2-yam', 'p3-yoyo', 'p4-yarn', 'p5-recap'],
+  'zzz-at-the-zoo': ['p1-zebra', 'p2-zipper', 'p3-zucchini', 'p4-zeppelin', 'p5-recap'],
+  'queen-on-the-quilt': ['p1-quill', 'p2-quarter', 'p3-quail', 'p4-queen', 'p5-recap'],
+};
+
+/** Photo carries the 'dark-phonics-vocab' tag — top preference for a word chip's picture. */
+function isDarkPhonicsVocabPhoto(photo: BankPhoto): boolean {
+  return (photo.tags || []).some(t => String(t || '').trim().toLowerCase() === 'dark-phonics-vocab');
+}
+
+/** Photo is from the clean SATPIN object-basket set — second preference. */
+function isSatpinBasketPhoto(photo: BankPhoto): boolean {
+  const tagged = (photo.tags || []).some(t => String(t || '').trim().toLowerCase() === 'satpin-basket');
+  return tagged || (photo.storage_path || '').startsWith('picture-bank/');
+}
+
+/**
+ * Look one vocab word up in the Picture Bank and return the best exact-label
+ * match: 'dark-phonics-vocab' first, then a SATPIN basket photo, then
+ * whatever exact match sorts first.
+ */
+async function fetchVocabByLabel(word: string): Promise<BankPhoto | null> {
+  try {
+    const params = new URLSearchParams({ page: '1', limit: '20', kind: 'pictures', q: word });
+    const res = await fetch(`/api/montree/photo-bank?${params}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const photos: BankPhoto[] = data.photos || [];
+    const target = word.trim().toLowerCase();
+    const exact = photos.filter(p => (p.label || '').trim().toLowerCase() === target);
+    return exact.find(isDarkPhonicsVocabPhoto) || exact.find(isSatpinBasketPhoto) || exact[0] || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * A book's scene pictures — searched by slug, kept if tagged
+ * 'dark-phonics-book-<slug>', sorted p1→p5 by the page number embedded in
+ * the label ("<slug> p1-snake").
+ */
+async function fetchBookPictures(slug: string): Promise<BankPhoto[]> {
+  try {
+    const params = new URLSearchParams({ page: '1', limit: '20', kind: 'pictures', q: slug });
+    const res = await fetch(`/api/montree/photo-bank?${params}`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    const photos: BankPhoto[] = data.photos || [];
+    const tag = `dark-phonics-book-${slug}`;
+    const matches = photos.filter(p => (p.tags || []).some(t => String(t || '').trim().toLowerCase() === tag));
+    const pageNum = (label: string) => {
+      const m = /p(\d+)-/.exec(label || '');
+      return m ? parseInt(m[1], 10) : 999;
+    };
+    return matches.sort((a, b) => pageNum(a.label) - pageNum(b.label));
+  } catch {
+    return [];
+  }
+}
+
+/** Photo-bank rows are rendered through the Cloudflare-cached proxy, never public_url. */
+function photoSrc(photo: BankPhoto, width: number): string {
+  if (!photo.storage_path) return photo.public_url || '';
+  return getThumbnailUrl(photo.storage_path, width, 70, 'photo-bank');
+}
 
 type Book = { slug: string; title: string };
 type Reader = { slug: string; title: string };
@@ -149,8 +299,16 @@ function soundClass(sound: string): string {
 type MediaIndex = { uploaded: number[]; pictures: number[]; flashcards: number[] };
 
 export default function DarkPhonicsPage() {
+  const router = useRouter();
   /** null until the existence check returns — nothing media-gated renders before then. */
   const [index, setIndex] = useState<MediaIndex | null>(null);
+  /** Vocab-word pictures, keyed by lowercase word — one flat map, deduped
+   *  across all 27 books' BOOK_VOCAB (a few words like 'sock' and 'hen'
+   *  repeat across books and are only ever fetched once). */
+  const [vocabPictures, setVocabPictures] = useState<Record<string, BankPhoto>>({});
+  const [picturesLoading, setPicturesLoading] = useState(true);
+  /** Book scene pictures, keyed by slug — one fetch per book. */
+  const [bookPictures, setBookPictures] = useState<Record<string, BankPhoto[]>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -171,6 +329,62 @@ export default function DarkPhonicsPage() {
     })();
     return () => { cancelled = true; };
   }, []);
+
+  // Vocab pictures — one de-duped Set of every word across all 27 books'
+  // BOOK_VOCAB, fetched in a single batched Promise.all (same shape as
+  // satpin/page.tsx's picture effect).
+  useEffect(() => {
+    let cancelled = false;
+    const labels = Array.from(new Set(Object.values(BOOK_VOCAB).flat().map(w => w.toLowerCase())));
+    (async () => {
+      const found = await Promise.all(labels.map(async (label) => [label, await fetchVocabByLabel(label)] as const));
+      if (cancelled) return;
+      const map: Record<string, BankPhoto> = {};
+      for (const [label, photo] of found) {
+        if (photo) map[label] = photo;
+      }
+      setVocabPictures(map);
+      setPicturesLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Book scene pictures — one fetch per book slug, batched.
+  useEffect(() => {
+    let cancelled = false;
+    const slugs = Object.keys(BOOK_PAGE_KEYS);
+    (async () => {
+      const found = await Promise.all(slugs.map(async (slug) => [slug, await fetchBookPictures(slug)] as const));
+      if (cancelled) return;
+      const map: Record<string, BankPhoto[]> = {};
+      for (const [slug, photos] of found) map[slug] = photos;
+      setBookPictures(map);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  /**
+   * Hand a set of pictures to the Picture Library hub. Uses the
+   * `photoBankPreselect` key — deliberately NOT `photoBankExport`, which the
+   * creation tools consume-and-delete on mount. Copied verbatim from
+   * app/montree/library/satpin/page.tsx.
+   */
+  const createMaterials = useCallback((photos: BankPhoto[]) => {
+    if (photos.length === 0) return;
+    const payload = photos.map(p => ({
+      id: p.id,
+      label: p.label,
+      public_url: p.storage_path ? getProxyUrl(p.storage_path, 'photo-bank') : p.public_url,
+      filename: p.filename,
+    }));
+    try {
+      sessionStorage.setItem('photoBankPreselect', JSON.stringify({ photos: payload }));
+    } catch (err) {
+      console.error('Failed to stage Dark Phonics pictures:', err);
+      return;
+    }
+    router.push('/montree/library/photo-bank');
+  }, [router]);
 
   const has = (kind: keyof MediaIndex, n: number) => !!index && index[kind].includes(n);
 
@@ -212,6 +426,104 @@ export default function DarkPhonicsPage() {
       {children}
     </a>
   );
+
+  /** 5-col thumbnail grid + hand-off for a book's own word chips. */
+  const VocabPictureRow = ({ words, accent }: { words: string[]; accent: string }) => {
+    const photos = words.map(w => vocabPictures[w.toLowerCase()]).filter(Boolean) as BankPhoto[];
+    return (
+      <div className="mt-4">
+        <div className="grid grid-cols-5 gap-2">
+          {words.map((w) => {
+            const photo = vocabPictures[w.toLowerCase()];
+            return (
+              <div
+                key={w}
+                className="rounded-lg overflow-hidden border"
+                style={{ borderColor: `rgba(${accent},0.16)`, background: 'rgba(255,255,255,0.04)' }}
+                title={w}
+              >
+                <div className="aspect-square flex items-center justify-center">
+                  {photo ? (
+                    <img
+                      src={photoSrc(photo, 240)}
+                      srcSet={photo.storage_path ? getThumbnailSrcSet(photo.storage_path, 120, 70, 'photo-bank') : undefined}
+                      sizes="(max-width: 640px) 18vw, 120px"
+                      alt={w}
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-white/15 text-[10px] px-1 text-center leading-tight">
+                      {picturesLoading ? '…' : 'no picture'}
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <button
+          onClick={() => createMaterials(photos)}
+          disabled={photos.length === 0}
+          className="mt-3 w-full px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all hover:bg-white/[0.06] disabled:opacity-30 disabled:cursor-not-allowed"
+          style={{
+            borderColor: `rgba(${accent},0.35)`,
+            background: `rgba(${accent},0.10)`,
+            color: `rgb(${accent})`,
+          }}
+        >
+          Create materials with these pictures →
+        </button>
+      </div>
+    );
+  };
+
+  /** 5-col thumbnail grid + hand-off for a book's scene pictures. */
+  const BookPictureRow = ({ slug, accent }: { slug: string; accent: string }) => {
+    const photos = bookPictures[slug] || [];
+    return (
+      <div className="mt-4">
+        <div className="text-white/30 text-xs mb-2 text-left">Book pictures — from the book</div>
+        <div className="grid grid-cols-5 gap-2">
+          {photos.length > 0 ? photos.map((photo) => (
+            <div
+              key={photo.id}
+              className="rounded-lg overflow-hidden border"
+              style={{ borderColor: `rgba(${accent},0.16)`, background: 'rgba(255,255,255,0.04)' }}
+              title={photo.label}
+            >
+              <div className="aspect-square flex items-center justify-center">
+                <img
+                  src={photoSrc(photo, 240)}
+                  srcSet={photo.storage_path ? getThumbnailSrcSet(photo.storage_path, 120, 70, 'photo-bank') : undefined}
+                  sizes="(max-width: 640px) 18vw, 120px"
+                  alt={photo.label}
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          )) : (
+            <span className="col-span-5 text-white/15 text-[10px] text-center py-3">
+              {picturesLoading ? '…' : 'no pictures yet'}
+            </span>
+          )}
+        </div>
+        <button
+          onClick={() => createMaterials(photos)}
+          disabled={photos.length === 0}
+          className="mt-3 w-full px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all hover:bg-white/[0.06] disabled:opacity-30 disabled:cursor-not-allowed"
+          style={{
+            borderColor: `rgba(${accent},0.35)`,
+            background: `rgba(${accent},0.10)`,
+            color: `rgb(${accent})`,
+          }}
+        >
+          Create materials with these pictures →
+        </button>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen relative overflow-hidden flex flex-col" style={{ background: '#06140e' }}>
@@ -309,28 +621,37 @@ export default function DarkPhonicsPage() {
                     </div>
                   </div>
 
-                  {/* Word chips — the lesson's hard-card vocab */}
-                  {l.words && l.words.length > 0 ? (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {l.words.map((w) => (
-                        <span
-                          key={w}
-                          className="px-3 py-1.5 rounded-full text-sm"
-                          style={{
-                            background: `rgba(${l.accent},0.12)`,
-                            border: `1px solid rgba(${l.accent},0.22)`,
-                            color: `rgba(${l.tint},0.85)`,
-                          }}
-                        >
-                          {w}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="mt-4 text-left text-[11px] text-white/20">
-                      Review lesson &middot; no new vocab words
-                    </div>
-                  )}
+                  {/* Word chips — the book's own picture words + frame noun
+                      for lessons 5–31 (BOOK_VOCAB), the hard-card vocab for
+                      every other lesson. */}
+                  {(() => {
+                    const chipWords = l.book ? (BOOK_VOCAB[l.book.slug] ?? l.words ?? []) : (l.words ?? []);
+                    return chipWords.length > 0 ? (
+                      <>
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {chipWords.map((w) => (
+                            <span
+                              key={w}
+                              className="px-3 py-1.5 rounded-full text-sm"
+                              style={{
+                                background: `rgba(${l.accent},0.12)`,
+                                border: `1px solid rgba(${l.accent},0.22)`,
+                                color: `rgba(${l.tint},0.85)`,
+                              }}
+                            >
+                              {w}
+                            </span>
+                          ))}
+                        </div>
+                        {/* Vocab pictures — only for the 27 book lessons */}
+                        {l.book && <VocabPictureRow words={chipWords} accent={l.accent} />}
+                      </>
+                    ) : (
+                      <div className="mt-4 text-left text-[11px] text-white/20">
+                        Review lesson &middot; no new vocab words
+                      </div>
+                    );
+                  })()}
 
                   {/* SONG — every lesson has one */}
                   <Row
@@ -411,6 +732,9 @@ export default function DarkPhonicsPage() {
                           </div>
                         </div>
                       </div>
+
+                      {/* Book scene pictures + their own hand-off */}
+                      <BookPictureRow slug={l.book.slug} accent={l.accent} />
                     </Row>
                   )}
 
@@ -425,8 +749,11 @@ export default function DarkPhonicsPage() {
                     </Row>
                   )}
 
-                  {/* PRINTABLES — flashcard deck + vocab card pack */}
-                  {has('flashcards', l.n) || (l.words && l.words.length > 0) ? (
+                  {/* PRINTABLES — flashcard deck + vocab card pack, plus the
+                      full paperwork/three-part-card family for the 27 book
+                      lessons (public/dark-phonics-materials/<slug>/, built
+                      by the satpin printable generators). */}
+                  {has('flashcards', l.n) || (l.words && l.words.length > 0) || l.book ? (
                     <Row accent={l.accent} label="Printables">
                       <div className="flex flex-wrap gap-2">
                         {has('flashcards', l.n) && (
@@ -434,6 +761,17 @@ export default function DarkPhonicsPage() {
                         )}
                         {l.words && l.words.length > 0 && (
                           <Pill href={media(`vocab-packs/lesson-${nn(l.n)}.pdf`)}>Vocab cards</Pill>
+                        )}
+                        {l.book && (
+                          <>
+                            <Pill href={`/dark-phonics-materials/${l.book.slug}/paperwork-pack.pdf`}>Paperwork pack</Pill>
+                            <Pill href={`/dark-phonics-materials/${l.book.slug}/build-it-sheet.pdf`}>Build-it sheet</Pill>
+                            <Pill href={`/dark-phonics-materials/${l.book.slug}/tracing-workbook.pdf`}>Tracing workbook</Pill>
+                            <Pill href={`/dark-phonics-materials/${l.book.slug}/sentence-strips.pdf`}>Sentence strips</Pill>
+                            <Pill href={`/dark-phonics-materials/${l.book.slug}/three-part-cards-control.pdf`}>Three-part cards · Control</Pill>
+                            <Pill href={`/dark-phonics-materials/${l.book.slug}/three-part-cards-pictures.pdf`}>Three-part cards · Pictures</Pill>
+                            <Pill href={`/dark-phonics-materials/${l.book.slug}/three-part-cards-labels.pdf`}>Three-part cards · Labels</Pill>
+                          </>
                         )}
                       </div>
                     </Row>
