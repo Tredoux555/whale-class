@@ -120,9 +120,12 @@ export default function LibraryWelcomePage() {
               </svg>
             </Link>
 
-            {/* Dark Phonics — violet accent, TOP CARD (the flagship phonics program) */}
-            <a
-              href="/dark-phonics.html"
+            {/* Dark Phonics — violet accent, TOP CARD (the flagship phonics program).
+                Points at the unified in-app page (one card per lesson, every asset
+                on it); the old multi-tab hub at /dark-phonics.html still exists and
+                links forward to the same place. */}
+            <Link
+              href="/montree/library/dark-phonics"
               className="group relative flex items-center gap-5 w-full p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
               style={{
                 background: 'linear-gradient(135deg, rgba(167,139,250,0.10), rgba(124,58,237,0.04))',
@@ -147,7 +150,7 @@ export default function LibraryWelcomePage() {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 text-violet-300/30 group-hover:text-violet-300 group-hover:translate-x-1 transition-all shrink-0">
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
-            </a>
+            </Link>
 
             {/* Path 1: Create — warm accent */}
             <Link
