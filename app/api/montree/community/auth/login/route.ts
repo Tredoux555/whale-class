@@ -17,6 +17,7 @@ import {
   verifyCommunityPassword,
 } from '@/lib/montree/community/auth';
 import {
+  REQUIRE_EMAIL_CONFIRMATION,
   badRequest,
   isMissingTable,
   isValidEmail,
@@ -93,7 +94,10 @@ export async function POST(request: NextRequest) {
         { status: 403 }
       );
     }
-    if (!user.email_confirmed_at) {
+    // Open mode (default): an unconfirmed row can still sign in — rows made
+    // in open mode are confirmed at creation anyway, and any strict-mode
+    // leftover shouldn't be locked out of a gate we turned off.
+    if (REQUIRE_EMAIL_CONFIRMATION && !user.email_confirmed_at) {
       return NextResponse.json(
         {
           error: 'Please confirm your email first — check your inbox.',

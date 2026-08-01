@@ -147,3 +147,14 @@ export function normalizeDisplayName(raw: unknown): string {
 export function isValidDisplayName(name: string): boolean {
   return name.length >= MIN_DISPLAY_NAME && name.length <= MAX_DISPLAY_NAME;
 }
+
+/**
+ * Email-confirmation mode. Tredoux's ruling (2026-08-01): OFF by default —
+ * joining records the email and signs the teacher straight in, because the
+ * Resend sender is still the unverified test address and confirmation mail
+ * would never arrive. Set COMMUNITY_REQUIRE_EMAIL_CONFIRMATION=1 (after
+ * verifying a sender domain in Resend) to switch the whole flow to strict
+ * confirm-by-email mode — signup, login and the UI all read this one flag.
+ */
+export const REQUIRE_EMAIL_CONFIRMATION =
+  process.env.COMMUNITY_REQUIRE_EMAIL_CONFIRMATION === '1';
