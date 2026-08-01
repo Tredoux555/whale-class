@@ -27,6 +27,16 @@ const MATERIALS_PAGE = 12;
 const MAX_BODY = 2000;
 const MAX_UPLOAD_MB = 25;
 
+/**
+ * Where an anonymous sender's conversation id is kept so they can come back
+ * and read Tredoux's reply. localStorage, like the device ids elsewhere in
+ * the product — it is a bookmark, NOT authentication: the id grants access to
+ * that one thread and nothing else, and the server refuses any id it did not
+ * mint itself. Private browsing simply loses the thread, which is why the
+ * optional email exists.
+ */
+const DM_CID_KEY = 'montree_community_dm_cid';
+
 // ============================================
 // TYPES
 // ============================================
@@ -56,6 +66,15 @@ interface Material {
   displayName: string;
   createdAt: string;
   mine: boolean;
+}
+
+/** One line of the private thread with Tredoux. 'admin' is him. */
+interface DmMessage {
+  id: string;
+  senderType: string;
+  senderName: string;
+  message: string;
+  createdAt: string;
 }
 
 type AuthView = 'signIn' | 'join' | 'joined' | 'forgot' | 'forgotSent' | 'reset';
@@ -619,6 +638,315 @@ function AuthModal({
 }
 
 // ============================================
+// MESSAGE THE CREATOR
+// ============================================
+// A private thread with Tredoux, sitting in the same section as the board.
+//
+// 🚨 It works WITHOUT an account on purpose. Half of what lands here will be
+// "I can't get in" — gating it behind the sign-in it is reporting would be
+// the one thing this modal must never do. Anonymous senders give a name and,
+// if they want a reply by email, an address; signed-in teachers give neither
+// and their account details attach server-side.
+//
+// Module level, like the other components in this file: declared inside the
+// render it would be a fresh type every keystroke and the textarea would lose
+// focus mid-sentence.
+
+function CreatorMessageModal({
+  me,
+  onClose,
+}: {
+  me: Me | null;
+  onClose: () => void;
+}) {
+  const [messages, setMessages] = useState<DmMessage[]>([]);
+  const [cid, setCid] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [draft, setDraft] = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  // Honeypot. A person never sees this; a bot fills every field it finds.
+  const [website, setWebsite] = useState('');
+  const [sending, setSending] = useState(false);
+  // Migration 310 specifically (the dm_meta sidecar), NOT migration 309 — this
+  // is scoped to the modal on purpose. Routing it through the page-level
+  // onMigrationPending would blank out the discussion board and drop box too,
+  // even though those only need 309 and work fine on their own.
+  const [dmPending, setDmPending] = useState(false);
+
+  // The thread is fetched once when the modal opens, and again after each
+  // send. Nothing polls: this is a conversation with one person, not a chat
+  // room, and a reply that arrives while the modal is open can wait for the
+  // next open.
+  const loadedRef = useRef(false);
+
+  const handle = useCallback(
+    (err: unknown) => {
+      if (err instanceof ApiError && err.code === 'migration_pending') {
+        setDmPending(true);
+        return;
+      }
+      setError(err instanceof Error ? err.message : 'Something went wrong.');
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (loadedRef.current) return;
+    loadedRef.current = true;
+
+    // Signed in: the server resolves the thread from the cookie and ignores
+    // any id we send. Anonymous: the id we were given on the first send.
+    let stored: string | null = null;
+    if (!me) {
+      try {
+        stored = window.localStorage.getItem(DM_CID_KEY);
+      } catch {
+        stored = null; // private browsing — treat it as a first message
+      }
+    }
+    setCid(stored);
+    if (!me && !stored) return; // nothing to fetch yet
+
+    setLoading(true);
+    api<{ messages: DmMessage[]; cid: string }>(
+      stored && !me ? `/dm?cid=${encodeURIComponent(stored)}` : '/dm'
+    )
+      .then((data) => {
+        setMessages(data.messages || []);
+        setCid(data.cid || stored);
+      })
+      .catch((err: unknown) => {
+        // An id the server doesn't know (thread cleared, copied between
+        // devices) isn't something the teacher can act on — drop it quietly
+        // and let them write a fresh first message.
+        if (err instanceof ApiError && err.code === 'not_found') {
+          try {
+            window.localStorage.removeItem(DM_CID_KEY);
+          } catch {
+            /* nothing to clean up */
+          }
+          setCid(null);
+          return;
+        }
+        handle(err);
+      })
+      .finally(() => setLoading(false));
+  }, [me, handle]);
+
+  const send = useCallback(async () => {
+    const message = draft.trim();
+    if (!message || sending) return;
+
+    const typedName = name.trim();
+    // Only anonymous senders need to say who they are — and only until the
+    // thread exists, after which the server already knows.
+    if (!me && !cid && (typedName.length < 2 || typedName.length > 40)) {
+      setError('Please add your name (2–40 characters) so Tredoux knows who wrote.');
+      return;
+    }
+
+    setSending(true);
+    setError('');
+    try {
+      const data = await api<{ ok: boolean; cid: string }>('/dm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message,
+          name: me ? undefined : typedName,
+          email: me ? undefined : email.trim(),
+          cid: cid || undefined,
+          website,
+        }),
+      });
+
+      const nextCid = data.cid || cid;
+      if (!me && data.cid) {
+        try {
+          window.localStorage.setItem(DM_CID_KEY, data.cid);
+        } catch {
+          // Private browsing: the message still arrived, they just won't see
+          // the reply here. The optional email is the fallback.
+        }
+      }
+      setCid(nextCid);
+      setDraft('');
+
+      // Refetch rather than append: this is also how his replies arrive.
+      const fresh = await api<{ messages: DmMessage[]; cid: string }>(
+        !me && nextCid ? `/dm?cid=${encodeURIComponent(nextCid)}` : '/dm'
+      );
+      setMessages(fresh.messages || []);
+    } catch (err) {
+      handle(err);
+    } finally {
+      setSending(false);
+    }
+  }, [draft, sending, name, email, website, me, cid, handle]);
+
+  const needsIdentity = !me && !cid;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center px-5 py-8 overflow-y-auto"
+      style={{ background: 'rgba(3,10,7,0.78)', backdropFilter: 'blur(6px)' }}
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-2xl border p-6"
+        style={{ background: '#08190f', borderColor: 'rgba(255,255,255,0.09)' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between mb-4">
+          <div className="text-left">
+            <div className="text-white/25 text-[10px] tracking-wider uppercase mb-1">
+              Direct line
+            </div>
+            <h3 className="text-white/90 text-lg font-semibold leading-tight">
+              Message the creator
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="text-white/30 text-lg leading-none px-2 py-1 transition-colors hover:text-white/70"
+          >
+            &times;
+          </button>
+        </div>
+
+        <p className="text-white/35 text-xs leading-relaxed text-left mb-4">
+          This goes straight to Tredoux &mdash; nobody else reads it. If something
+          is broken or you can&rsquo;t get in, say so here.
+        </p>
+
+        {/* Migration 310 (the dm_meta sidecar) missing — quiet placeholder
+            scoped to this modal only. The board and drop box above (309-only)
+            keep working; nothing else in the page reacts to this. */}
+        {dmPending ? (
+          <p className="text-white/25 text-xs">
+            This line is being set up &mdash; check back soon.
+          </p>
+        ) : (
+          <>
+        {/* ---- the thread ---- */}
+        {loading && <div className="text-white/25 text-xs mb-3">Loading…</div>}
+
+        {messages.length > 0 && (
+          <div className="mb-4 space-y-2 max-h-64 overflow-y-auto">
+            {messages.map((m) => {
+              const mine = m.senderType !== 'admin';
+              return (
+                <div
+                  key={m.id}
+                  className={`rounded-xl border px-3.5 py-2.5 max-w-[85%] ${mine ? 'ml-auto' : ''}`}
+                  style={{
+                    background: mine ? `rgba(${ACCENT},0.08)` : 'rgba(255,255,255,0.03)',
+                    borderColor: mine ? `rgba(${ACCENT},0.20)` : 'rgba(255,255,255,0.06)',
+                  }}
+                >
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="text-white/45 text-[11px] font-medium truncate">
+                      {mine ? 'You' : m.senderName || 'Tredoux'}
+                    </span>
+                    <span className="text-white/20 text-[10px] shrink-0">
+                      {relTime(m.createdAt)}
+                    </span>
+                  </div>
+                  {/* Plain text, never HTML. */}
+                  <p className="text-white/65 text-sm mt-1 leading-relaxed whitespace-pre-wrap break-words">
+                    {m.message}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {!loading && messages.length === 0 && (
+          <div className="text-white/20 text-xs mb-4">
+            Write the first message &mdash; he reads everything himself.
+          </div>
+        )}
+
+        {/* ---- who's writing (anonymous, first message only) ---- */}
+        {needsIdentity && (
+          <>
+            <Field
+              label="Your name"
+              value={name}
+              onChange={setName}
+              placeholder="What should he call you?"
+              autoComplete="name"
+              disabled={sending}
+            />
+            <Field
+              label="Email"
+              type="email"
+              value={email}
+              onChange={setEmail}
+              placeholder="Email (optional — so Tredoux can reply)"
+              autoComplete="email"
+              disabled={sending}
+            />
+          </>
+        )}
+
+        {/* Honeypot — off-screen, unreachable by keyboard, ignored by screen
+            readers. A filled value is silently discarded server-side. */}
+        <input
+          type="text"
+          name="website"
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', opacity: 0 }}
+        />
+
+        {/* ---- composer ---- */}
+        <div
+          className="rounded-xl border p-3"
+          style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.07)' }}
+        >
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value.slice(0, MAX_BODY))}
+            rows={4}
+            placeholder="What’s on your mind?"
+            disabled={sending}
+            className="w-full bg-transparent text-sm text-white/85 outline-none resize-y placeholder:text-white/20 disabled:opacity-40"
+          />
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-white/20 text-[11px]">
+              {draft.length}/{MAX_BODY}
+            </span>
+            <PrimaryButton onClick={send} disabled={sending || draft.trim().length === 0}>
+              {sending ? 'Sending…' : 'Send'}
+            </PrimaryButton>
+          </div>
+        </div>
+
+        <InlineError>{error}</InlineError>
+
+        {me && (
+          <p className="text-white/25 text-[11px] mt-3 leading-relaxed text-left">
+            Sending as <span className="text-white/50">{me.displayName}</span> &mdash;
+            he can reply to your account email.
+          </p>
+        )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ============================================
 // BOARD + DROP BOX PIECES
 // ============================================
 
@@ -764,6 +1092,9 @@ export default function TeachersRoom() {
 
   const [authView, setAuthView] = useState<AuthView | null>(null);
   const [resetToken, setResetToken] = useState('');
+
+  // The private line to Tredoux. Open to everyone, signed in or not.
+  const [creatorDmOpen, setCreatorDmOpen] = useState(false);
 
   // The confirm/reset links in the emails land back on this page; act on the
   // query param exactly once, whatever React's StrictMode does in dev.
@@ -1271,6 +1602,34 @@ export default function TeachersRoom() {
           </button>
         )}
       </div>
+
+      {/* ---------------- MESSAGE THE CREATOR ---------------- */}
+      {/* Third affordance in the room, after the board and the drop box. No
+          sign-in gate: the people who need it most are the ones who can't. */}
+      <div className="mt-10">
+        <SectionLabel>Direct line</SectionLabel>
+        <button
+          type="button"
+          onClick={() => setCreatorDmOpen(true)}
+          className="w-full rounded-xl border px-4 py-3.5 text-left transition-all hover:bg-white/[0.06]"
+          style={{ background: `rgba(${ACCENT},0.05)`, borderColor: `rgba(${ACCENT},0.22)` }}
+        >
+          <div className="text-sm font-semibold" style={{ color: 'rgb(110,231,183)' }}>
+            Message the creator
+          </div>
+          <div className="text-white/35 text-xs mt-1 leading-relaxed">
+            A private line to Tredoux, the person who builds this &mdash; access
+            trouble, ideas, anything.
+          </div>
+        </button>
+      </div>
+
+      {creatorDmOpen && (
+        <CreatorMessageModal
+          me={me}
+          onClose={() => setCreatorDmOpen(false)}
+        />
+      )}
 
       {authView && (
         <AuthModal
