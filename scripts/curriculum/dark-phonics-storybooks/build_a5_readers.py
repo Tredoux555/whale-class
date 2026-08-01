@@ -124,7 +124,7 @@ dpbuild.page_back = page_back
 # --- editorial: title lines / accent / oral words / page splits ------------
 # Per slug: (title_lines, title_accent, title_size, oral_words, end_sound?)
 COVERS = {
-    'snake-in-my-sock':        (['Snake in', 'My Sock'], 'Snake', 44, 'snake · star · soap · seal'),
+    'snake-in-my-sock':        (['Snake in', 'My Sock'], 'Snake', 44, 'snake · star · sloth'),
     'ant-on-my-apple':         (['Ant on', 'My Apple'], 'Ant', 44, 'ant · anchor · alligator · ambulance'),
     'tiger-in-the-taxi':       (['A Tiger in', 'the Taxi'], 'Tiger', 42, 'turtle · tomato · toothbrush · tiger'),
     'pig-ate-a-pineapple':     (['The Pig Ate', 'a Pineapple'], 'Pineapple', 40, 'pineapple · pen · pencil · pan'),
@@ -166,11 +166,11 @@ END_SOUND = {'on-a-rock', 'fox-in-a-box'}
 # sentences already end on the swap word (pig, goat pp.1-4, lion pp.1-4).
 SPLITS = {
     'snake-in-my-sock': [
+        ('', 'A sock.', 100),
         ('', 'A snake in my sock!', 100),
         ('', 'A star in my sock!', 100),
-        ('', 'A soap in my sock!', 100),
-        ('', 'A seal in my sock!', 100),
-        ('', ['A snake, a star,', 'a soap, and a seal', 'in my sock?!'], 100),
+        ('', 'A sloth in my sock!', 100),
+        ('', ['A snake, a star,', 'and a sloth', 'in my sock?!'], 100),
     ],
     'ant-on-my-apple': [
         ('', 'An ant on my apple!', 100),
