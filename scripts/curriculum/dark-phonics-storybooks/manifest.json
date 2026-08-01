@@ -7,29 +7,29 @@
       "title": "Snake in My Sock",
       "pages": [
         {
-          "key": "p1-snake",
+          "key": "p1-sock",
+          "text": "A sock.",
+          "mj_prompt": "one tall knitted sock with bold red and white horizontal stripes and a fluffy white cuff, rounded white toe, standing alone, no creature, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p2-snake",
           "text": "A snake in my sock!",
-          "mj_prompt": "one single green snake coiled snugly inside a large grey knitted sock, the sock lightly bulging around its shape, sock resting beside one bare child's foot, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+          "mj_prompt": "a friendly green snake with a slim curving neck and big round googly eyes and a wide happy smile, peeking out of a tall knitted sock with bold red and white horizontal stripes and a fluffy white cuff, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         },
         {
-          "key": "p2-star",
+          "key": "p3-star",
           "text": "A star in my sock!",
-          "mj_prompt": "one large yellow star shape stuffed inside a grey knitted sock, the sock bulging more than before, sock resting beside one bare child's foot, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+          "mj_prompt": "a smiling golden five-pointed star with big round googly eyes, peeking out of a tall knitted sock with bold red and white horizontal stripes and a fluffy white cuff, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         },
         {
-          "key": "p3-soap",
-          "text": "A soap in my sock!",
-          "mj_prompt": "one round white bar of soap stuffed inside a grey knitted sock, the sock bulging even bigger and lumpier than before, sock resting beside one bare child's foot, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
-        },
-        {
-          "key": "p4-seal",
-          "text": "A seal in my sock!",
-          "mj_prompt": "one plump grey seal poking its head out of a grey knitted sock, the sock stretched enormous and lumpy, sock resting beside one bare child's foot, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+          "key": "p4-sloth",
+          "text": "A sloth in my sock!",
+          "mj_prompt": "a sleepy brown sloth with shaggy fur and big round googly eyes, peeking out of a tall knitted sock with bold red and white horizontal stripes and a fluffy white cuff, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         },
         {
           "key": "p5-recap",
-          "text": "A snake, a star, a soap, and a seal in my sock?!",
-          "mj_prompt": "one enormous lumpy grey knitted sock stuffed absolutely full, with a snake, a star shape, a bar of soap, and a seal all peeking out of the stretched opening, one bare child's foot waiting patiently beside it, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+          "text": "A snake, a star, and a sloth in my sock?!",
+          "mj_prompt": "a friendly green snake, a smiling golden five-pointed star, and a sleepy brown sloth with shaggy fur, all peeking out together of a tall knitted sock with bold red and white horizontal stripes and a fluffy white cuff, all with big round googly eyes, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         }
       ]
     },
@@ -127,7 +127,7 @@
         },
         {
           "key": "p5-recap",
-          "text": "And now the pig is\u2026 sick!",
+          "text": "And now the pig is… sick!",
           "mj_prompt": "one round pink pig with a gigantic lumpy belly, the shapes of a pineapple, a pen, a pencil, and a frying pan handle all visible pressing out from inside, pig looking green and queasy with dizzy swirl eyes, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         }
       ]
@@ -268,7 +268,7 @@
       "num": 9,
       "letter": "g",
       "slug": "oh-no-goat",
-      "title": "Oh No, Goat\u2026",
+      "title": "Oh No, Goat…",
       "pages": [
         {
           "key": "p1-grapes",
@@ -292,7 +292,7 @@
         },
         {
           "key": "p5-recap",
-          "text": "Oh no, goat\u2026",
+          "text": "Oh no, goat…",
           "mj_prompt": "one goat with a huge lumpy bulging belly happily playing a guitar, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         }
       ]
@@ -626,7 +626,7 @@
       "num": 20,
       "letter": "l",
       "slug": "oh-no-lion",
-      "title": "Oh No, Lion\u2026",
+      "title": "Oh No, Lion…",
       "pages": [
         {
           "key": "p1-lemon",
@@ -650,7 +650,7 @@
         },
         {
           "key": "p5-recap",
-          "text": "Oh no, lion\u2026",
+          "text": "Oh no, lion…",
           "mj_prompt": "a golden lion with its giant silly tongue stuck fast to a wooden ladder, a small green lizard patting its nose, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         }
       ]

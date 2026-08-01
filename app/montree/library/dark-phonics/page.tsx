@@ -63,7 +63,7 @@ interface BankPhoto {
  * manifest. Two books (letter E, letter X) only have three picture words.
  */
 const BOOK_VOCAB: Record<string, string[]> = {
-  'snake-in-my-sock': ['snake', 'star', 'soap', 'seal', 'sock'],
+  'snake-in-my-sock': ['snake', 'star', 'sloth', 'sock'],
   'ant-on-my-apple': ['ant', 'anchor', 'alligator', 'ambulance', 'apple'],
   'tiger-in-the-taxi': ['turtle', 'tomato', 'toothbrush', 'tiger', 'taxi'],
   'pig-ate-a-pineapple': ['pineapple', 'pen', 'pencil', 'pan', 'pig'],
