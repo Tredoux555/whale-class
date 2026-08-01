@@ -20,11 +20,25 @@ import { MENU_CONFIG_VERSION, type MenuItemId } from '../menu/config';
 /**
  * FeatureKey → MenuItemId.
  *
- * GROUND TRUTH: every pair below is taken from DashboardHeader's legacy
- * flag-gated branch — a literal `isEnabled('<key>') && <MenuRow … router.push('<route>') />`
- * block — matched against the MENU_REGISTRY entry with the identical route.
- * The route that proves each pair is in the comment. Nothing here is inferred
- * from a name.
+ * ⚠️ THIS MAP IS THE ONLY BRIDGE FROM A FEATURE FLAG TO A TEACHER MENU ROW.
+ * DashboardHeader renders the "More" menu straight out of the teacher's saved
+ * settings.menu and never consults isEnabled() for those rows, so a feature key
+ * that is absent here is INERT as far as the menu is concerned — flipping it in
+ * the super-admin switchboard or the self-serve Feature Switchboard changes
+ * nothing a teacher can see. That is precisely how "I enabled 74/74 features and
+ * the menu still shows five items" happens. If you add a feature that should
+ * surface a menu row, add the pair HERE — adding an `isEnabled(...) && <MenuRow>`
+ * to DashboardHeader does nothing for the ~all teachers who have a saved config.
+ *
+ * GROUND TRUTH: every pair below is either (a) taken from DashboardHeader's
+ * legacy flag-gated branch — a literal
+ * `isEnabled('<key>') && <MenuRow … router.push('<route>') />` block — matched
+ * against the MENU_REGISTRY entry with the identical route, or (b) a feature key
+ * that genuinely EXISTS in montree_feature_definitions (verified against the
+ * migrations) and unambiguously owns the registry entry named in its comment.
+ * The route that proves each pair is in the comment. Nothing here is invented:
+ * every key on the left is either a registered definition or one of the legacy
+ * menu_* keys kept for backwards compatibility (see below).
  *
  * Deliberately ABSENT:
  *  • menu_classroom_overview — the Classroom Overview row was promoted to the
@@ -35,10 +49,42 @@ import { MENU_CONFIG_VERSION, type MenuItemId } from '../menu/config';
  *    no MENU_REGISTRY entry has that route.
  *  • parent_manager / parent_messages / calendar / meeting_notes — those rows
  *    are ungated (or commented out) in the header; no feature key owns them.
+ *    Note the near-misses that were considered and REJECTED: 'parent_messaging'
+ *    (migration 193) gates the PARENT-side surface at /montree/parent/messages —
+ *    lib/montree/parent-messaging/access.ts already enforces it — and
+ *    'school_calendar' (migration 220) gates the PARENT dashboard calendar
+ *    (app/api/montree/parent/calendar). Mapping either would let a parent-facing
+ *    toggle silently delete a teacher's menu row. 'parent_portal' likewise is a
+ *    parent-visibility flag, not the teacher's Parents (parent-codes) page.
+ *  • manage_students / focus_list / photo_albums / class_progress /
+ *    language_semester / earnings — the registry has these rows, but NO feature
+ *    key in montree_feature_definitions owns them (the legacy menu_* keys that
+ *    used to appear to were never registered — see the note below). They stay
+ *    permanently visible/hidden per the teacher's saved config until a real
+ *    definition row is added by a migration.
  */
 export const FEATURE_MENU_MAP: Partial<Record<FeatureKey, MenuItemId>> = {
   paper_scan: 'paper_scan',                  // /montree/dashboard/paper-scan (identity pair; menu id added with the feature, Jul 30 2026)
   work_rhythm: 'work_rhythm',                // /montree/dashboard/work-rhythm (identity pair; menu id added with the feature)
+
+  // ── REAL, REGISTERED definition keys that own a menu row ───────────────────
+  // Added in the menu-freshness sweep. Each key below has a row in
+  // montree_feature_definitions (migration cited) AND is otherwise UNREFERENCED
+  // in application code — i.e. the switchboard showed the school a switch that
+  // did literally nothing. Wiring them here is what makes "enable everything"
+  // actually widen the teacher's menu.
+  guru_advisor: 'guru',                      // /montree/dashboard/guru — "Guru AI Advisor" (migration 149)
+  teacher_notes: 'notes',                    // /montree/dashboard/notes — "Teacher Notes" (migration 149)
+  photo_audit: 'photo_audit',                // /montree/dashboard/photo-audit — "Photo Audit" (migration 149)
+  curriculum_browser: 'curriculum',          // /montree/dashboard/curriculum — "Curriculum Browser" (migration 149)
+  community_library: 'library',              // /montree/library — "Community Library" (migration 149)
+  classroom_setup_ai: 'classroom_setup',     // /montree/dashboard/classroom-builder — "Classroom Setup AI" (migration 149)
+
+  // ── LEGACY menu_* keys (kept, but inert) ───────────────────────────────────
+  // These have NO row in montree_feature_definitions, so GET /api/montree/features
+  // (which maps over the definitions table) never returns them and nothing can
+  // ever toggle them. Retained only so a hand-inserted definition row would keep
+  // working; the pairs above are the live ones.
   menu_notes: 'notes',                       // /montree/dashboard/notes
   menu_curriculum: 'curriculum',             // /montree/dashboard/curriculum
   menu_guru: 'guru',                         // /montree/dashboard/guru

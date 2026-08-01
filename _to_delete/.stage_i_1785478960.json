@@ -1,0 +1,52 @@
+{
+  "letter": "i",
+  "week": 5,
+  "slug": "i",
+  "bookSlug": "into-the-igloo",
+  "bookTitle": "Into the Igloo",
+  "bookScript": "scripts/curriculum/dark-phonics-readers/bookI.py",
+  "artDir": "phonics-images/satpin-v2/books/igloo",
+  "photoDir": "docs/picture-bank/photos",
+  "band": "LETTER I  ·  INITIAL SOUND  ·  listen for /i/",
+
+  "pages": [
+    { "order": 1, "word": "iguana",   "sentence": "the iguana went into the igloo",
+      "art": "iguana-scene.png" },
+    { "order": 2, "word": "inchworm", "sentence": "the inchworm went into the igloo",
+      "art": "inchworm-scene.png" },
+    { "order": 3, "word": "infant",   "sentence": "the infant went into the igloo",
+      "art": "infant-scene.png" },
+    { "order": 4, "word": "insect",   "sentence": "the insect went into the igloo",
+      "art": "insect-scene.png" },
+    { "order": 5, "word": "inside",   "sentence": "it is warm inside the igloo",
+      "art": "warm-inside-scene.png" }
+  ],
+
+  "sequencingDisplayOrder": [4, 1, 5, 3, 2],
+  "matchDisplayOrder": [2, 5, 1, 3, 4],
+
+  "yesno": [
+    { "question": "did the iguana go into the igloo?",   "answer": true,  "imageArt": "iguana-scene.png" },
+    { "question": "did the pig go into the igloo?",      "answer": false, "imageWord": "pig" },
+    { "question": "did the inchworm go into the igloo?", "answer": true,  "imageArt": "inchworm-scene.png" },
+    { "question": "did the tiger go into the igloo?",    "answer": false, "imageWord": "tiger" },
+    { "question": "did the infant go into the igloo?",   "answer": true,  "imageArt": "infant-scene.png" },
+    { "question": "did the taxi go into the igloo?",     "answer": false, "imageWord": "taxi" },
+    { "question": "did the insect go into the igloo?",   "answer": true,  "imageArt": "insect-scene.png" },
+    { "question": "did the sock go into the igloo?",     "answer": false, "imageWord": "sock" },
+    { "question": "is it warm inside the igloo?",        "answer": true,  "imageArt": "warm-inside-scene.png" },
+    { "question": "did the alligator go into the igloo?","answer": false, "imageWord": "alligator" }
+  ],
+
+  "workbook": {
+    "coverArt": "warm-inside-scene.png"
+  },
+
+  "_notes": {
+    "artDir": "Filed permanently at phonics-images/satpin-v2/books/igloo/ (2026-07-30, Tredoux-ordered backfill) — copied from _incoming-week5-i/book-scenes/, sizes verified byte-identical. The incoming tray copy is left in place as the original source; this is now the path builds read from.",
+    "sequencingDisplayOrder": "Fixed derangement (no page shown in its own place) so output is deterministic across rebuilds. Values are page `order` numbers.",
+    "matchDisplayOrder": "Second fixed derangement for the picture column on the match sheet — deliberately different from sequencingDisplayOrder.",
+    "yesno": "5 true (from the book) / 5 false, alternating. False items are common FUNNY words chosen for maximum giggle factor — not restricted to prior-week vocabulary (Tredoux 2026-07-30 late). `imageArt` resolves under artDir; `imageWord` resolves to photoDir/<word>/<word>.jpg.",
+    "workbook.coverArt": "Optional. Defaults to the reader's own cover art when omitted."
+  }
+}

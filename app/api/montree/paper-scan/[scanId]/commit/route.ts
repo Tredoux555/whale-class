@@ -63,6 +63,7 @@ export async function POST(
     const approved = (approvedRows || []) as PaperScanExtractionRow[];
 
     let progressUpdated = 0;
+    let progressFailed = 0;
     let observationsCreated = 0;
     let skipped = 0;
     const errors: string[] = [];
@@ -119,7 +120,11 @@ export async function POST(
                 });
 
               if (progressError) {
+                // audit-fix (Aug 2026): the scan is marked 'committed' below and the
+                // sheet photo is deleted regardless, so a swallowed upsert failure is
+                // unrecoverable data loss. Count it and surface it in the response.
                 console.error('[PaperScan] Progress upsert error:', progressError.message);
+                progressFailed++;
                 errors.push(`Progress update failed for extraction ${ext.id}`);
               } else {
                 progressUpdated++;
@@ -209,6 +214,7 @@ export async function POST(
     return NextResponse.json({
       success: true,
       progress_updated: progressUpdated,
+      progress_failed: progressFailed,
       observations_created: observationsCreated,
       skipped,
       unassignedIds: unassignedIds.length > 0 ? unassignedIds : undefined,

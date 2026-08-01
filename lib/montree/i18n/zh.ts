@@ -2679,6 +2679,7 @@ export const zh = {
   'voiceObs.selectLanguage': '录音语言',
   'voiceObs.confidence': '置信度',
   'voiceObs.commitSuccess': '观察记录已提交到学生档案！',
+  'voiceObs.progressFailed': '有 {count} 条进度更新未能保存 —— 请检查这些孩子并重新录入。',
   'voiceObs.commitWarning': '部分观察记录有未匹配的学生。请在提交前进行分配。',
   'voiceObs.statsApproved': '已批准',
   'voiceObs.statsRejected': '已拒绝',
@@ -5949,6 +5950,7 @@ export const zh = {
   'paperScan.scanCta': '扫描记录表',
   'paperScan.takePhoto': '拍照',
   'paperScan.chooseFromGallery': '从相册选择',
+  'paperScan.desktopHint': '在电脑上这会打开文件选择器 —— 请用手机拍摄记录表。',
   'paperScan.sheetDate': '记录表日期',
   'paperScan.recentScans': '最近的扫描',
   'paperScan.noScans': '还没有扫描记录。拍下您的第一张记录表吧。',
@@ -6006,6 +6008,7 @@ export const zh = {
   'paperScan.saveFailed': '无法保存此更改。',
   'paperScan.commitFailed': '无法保存到档案，请重试。',
   'paperScan.commitSuccess': '已保存到孩子的档案。',
+  'paperScan.progressFailed': '有 {count} 条进度更新未能保存 —— 请检查这些孩子并重新确认。',
 
   // ── School Features (self-serve Feature Switchboard) ──────────────────
   'schoolFeatures.menuLabel': '学校功能',

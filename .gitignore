@@ -192,3 +192,4 @@ tsconfig.partnerfix.tmp.tsbuildinfo
 
 # Generated printable materials (make-material.mjs)
 materials-out/
+_to_delete/

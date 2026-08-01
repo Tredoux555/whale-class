@@ -2719,6 +2719,7 @@ export const en = {
   'voiceObs.selectLanguage': 'Recording Language',
   'voiceObs.confidence': 'confidence',
   'voiceObs.commitSuccess': 'Observations committed to student records!',
+  'voiceObs.progressFailed': '{count} progress updates could not be saved — check those children and re-enter them.',
   'voiceObs.commitWarning': 'Some observations have unmatched students. Assign them before committing.',
   'voiceObs.statsApproved': 'Approved',
   'voiceObs.statsRejected': 'Rejected',
@@ -6008,6 +6009,7 @@ export const en = {
   'paperScan.scanCta': 'Scan a record sheet',
   'paperScan.takePhoto': 'Take a photo',
   'paperScan.chooseFromGallery': 'Choose from gallery',
+  'paperScan.desktopHint': 'On a computer this opens a file picker — use a phone to photograph sheets.',
   'paperScan.sheetDate': 'Sheet date',
   'paperScan.recentScans': 'Recent scans',
   'paperScan.noScans': 'No scans yet. Photograph your first record sheet.',
@@ -6065,6 +6067,7 @@ export const en = {
   'paperScan.saveFailed': 'Could not save that change.',
   'paperScan.commitFailed': 'Could not save to profiles. Please try again.',
   'paperScan.commitSuccess': 'Saved to the children’s profiles.',
+  'paperScan.progressFailed': '{count} progress updates could not be saved — check those children and re-approve.',
 
   // ── School Features (self-serve Feature Switchboard) ──────────────────
   'schoolFeatures.menuLabel': 'School Features',

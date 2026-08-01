@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Montree Institutions — Architecture Overview</title>
+<style>
+  :root{
+    --ink:#1A4D6B;
+    --ink-2:#2C6285;
+    --primary:#4A90E2;
+    --primary-soft:#E8F1FC;
+    --accent:#FFB84D;
+    --accent-deep:#B7761A;
+    --accent-soft:#FFF4E2;
+    --txt:#173A4E;
+    --txt-2:#4E6B7C;
+    --txt-3:#7C93A1;
+    --line:#E1E9EF;
+    --line-2:#EEF3F7;
+    --surface:#FFFFFF;
+    --page:#F3F7F9;
+    --good:#15803D;
+    --good-soft:#E7F6EC;
+    --warn:#B45309;
+    --warn-soft:#FDF1DF;
+    --unk:#5A7180;
+    --unk-soft:#EDF1F4;
+    --a1:#22c55e; --a2:#f97316; --a3:#ec4899; --a4:#3b82f6; --a5:#8b5cf6;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"DejaVu Sans Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--page);
+    font-family:var(--sans);
+    color:var(--txt);
+    -webkit-font-smoothing:antialiased;
+  }
+  .page{width:1280px;margin:0 auto;padding:0 20px 56px}
+
+  /* ---------- title band ---------- */
+  .band{
+    background:linear-gradient(135deg,#1A4D6B 0%,#22637F 58%,#2E7391 100%);
+    color:#fff;border-radius:0 0 18px 18px;
+    padding:34px 40px 32px;margin:0 0 26px;
+  }
+  .band .kicker{
+    font-size:13px;letter-spacing:2.2px;text-transform:uppercase;
+    color:#A9D4EC;font-weight:600;margin-bottom:12px;
+  }
+  .band h1{font-size:34px;line-height:1.2;margin:0 0 14px;font-weight:700;letter-spacing:-0.4px}
+  .band h1 .thin{color:#BCE0F2;font-weight:400}
+  .band .promise{
+    font-size:16px;line-height:1.55;max-width:1000px;color:#E4F2FA;margin:0;
+  }
+  .band .promise b{color:#FFD9A0;font-weight:600}
+  .band .meta{
+    margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.18);
+    font-size:13px;color:#A9D4EC;display:flex;gap:22px;flex-wrap:wrap;
+  }
+
+  /* ---------- section shell ---------- */
+  .card{
+    background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    padding:26px 28px 28px;margin-bottom:26px;
+  }
+  .card.flush{padding-left:0;padding-right:0}
+  .card.flush > .head{padding:0 28px}
+  .head{margin-bottom:20px}
+  .head .num{
+    display:inline-block;min-width:26px;height:26px;line-height:26px;text-align:center;
+    background:var(--ink);color:#fff;border-radius:7px;font-size:14px;font-weight:700;
+    margin-right:11px;vertical-align:2px;
+  }
+  .head h2{
+    display:inline;font-size:21px;font-weight:700;letter-spacing:-0.2px;color:var(--ink);margin:0;
+  }
+  .head .sub{margin:9px 0 0 37px;font-size:14.5px;line-height:1.5;color:var(--txt-2);max-width:1020px}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+  .grid-h{display:grid;grid-template-columns:620px 1fr;gap:30px;align-items:start}
+
+  .panel{border:1px solid var(--line);border-radius:11px;padding:16px 18px 18px;background:#FCFDFE}
+  .panel h3{
+    margin:0 0 12px;font-size:13px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;
+    color:var(--txt-3);
+  }
+  .panel.before h3{color:#A2704A}
+  .panel.after h3{color:#2E7A56}
+
+  table.mx{border-collapse:collapse;width:100%;font-size:13.5px}
+  table.mx th{
+    text-align:left;font-size:12.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--txt-3);
+    font-weight:700;padding:0 12px 9px 0;border-bottom:1px solid var(--line);
+  }
+  table.mx td{padding:11px 12px 11px 0;border-bottom:1px solid var(--line-2);vertical-align:top;line-height:1.45}
+  table.mx tr:last-child td{border-bottom:none}
+  table.mx td.role{font-weight:700;color:var(--ink);white-space:nowrap}
+  table.mx td.role small{display:block;font-weight:500;color:var(--txt-3);font-size:12.5px;margin-top:2px}
+  table.mx td.no{color:var(--txt-3)}
+
+  table.num{border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums;width:100%}
+  table.num th{
+    text-align:left;font-size:12.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--txt-3);
+    font-weight:700;padding:0 14px 8px 0;border-bottom:1px solid var(--line);
+  }
+  table.num th.r,table.num td.r{text-align:right;padding-right:14px}
+  table.num td{padding:8px 14px 8px 0;border-bottom:1px solid var(--line-2)}
+  table.num tr:last-child td{border-bottom:none}
+  table.num td.nm{font-weight:600;color:var(--txt)}
+  .swatch{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:8px;vertical-align:0px}
+
+  .note{font-size:13.5px;line-height:1.55;color:var(--txt-2)}
+  .note b{color:var(--ink)}
+  .rule-line{
+    margin-top:16px;padding-top:14px;border-top:1px solid var(--line-2);
+    font-size:13.5px;line-height:1.55;color:var(--txt-2);
+  }
+  code{font-family:var(--mono);font-size:12.5px;background:#F1F5F8;color:var(--ink);padding:1px 5px;border-radius:4px}
+
+  /* ---------- reading doctrine ---------- */
+  .bands{display:flex;flex-direction:column;gap:0}
+  .rband{display:grid;grid-template-columns:54px 1fr;gap:18px;padding:18px 0;border-bottom:1px solid var(--line-2)}
+  .rband:last-of-type{border-bottom:none}
+  .rband .bnum{
+    width:40px;height:40px;border-radius:10px;background:var(--primary-soft);color:var(--ink);
+    font-size:19px;font-weight:700;display:flex;align-items:center;justify-content:center;
+  }
+  .rband .btitle{font-size:16px;font-weight:700;color:var(--ink);margin:0 0 3px}
+  .rband .bdesc{font-size:13.5px;color:var(--txt-2);line-height:1.5;margin:0 0 14px;max-width:900px}
+  .rband .bbody{display:grid;grid-template-columns:600px 1fr;gap:34px;align-items:start}
+  .analysis{
+    background:var(--primary-soft);border-left:3px solid var(--primary);border-radius:0 8px 8px 0;
+    padding:14px 18px;font-size:14px;line-height:1.6;color:var(--ink);font-style:italic;max-width:1000px;
+  }
+  .analysis .who{
+    display:block;font-style:normal;font-size:12px;letter-spacing:1.1px;text-transform:uppercase;
+    color:var(--primary);font-weight:700;margin-bottom:6px;
+  }
+  .samelabel{
+    margin-top:20px;background:#F7FAFC;border:1px solid var(--line);border-radius:10px;
+    padding:14px 18px;font-size:14.5px;color:var(--ink);display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  }
+  .samelabel b{font-weight:700}
+  .chip{
+    display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);
+    border-radius:999px;padding:5px 13px;font-size:13px;color:var(--txt-2);font-weight:600;
+  }
+  .chip .dot{width:8px;height:8px;border-radius:50%;background:var(--primary)}
+
+  /* ---------- coverage ---------- */
+  .cov{display:grid;grid-template-columns:1fr 1fr 1fr 1.35fr;gap:16px;align-items:stretch}
+  .covcard{border:1px solid var(--line);border-radius:11px;padding:15px 17px 16px;background:#FCFDFE}
+  .covcard .badge{
+    display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:4px 12px 4px 9px;
+    font-size:13px;font-weight:700;margin-bottom:10px;
+  }
+  .covcard .badge svg{display:block}
+  .b-good{background:var(--good-soft);color:var(--good)}
+  .b-warn{background:var(--warn-soft);color:var(--warn)}
+  .b-unk{background:var(--unk-soft);color:var(--unk)}
+  .covcard .thr{font-size:13.5px;color:var(--txt-2);line-height:1.5}
+  .covcard .thr b{color:var(--ink)}
+  .covrule{
+    background:var(--ink);color:#fff;border-radius:11px;padding:16px 18px;display:flex;
+    flex-direction:column;justify-content:center;
+  }
+  .covrule .big{font-size:16.5px;font-weight:700;line-height:1.4;margin-bottom:7px}
+  .covrule .big em{color:var(--accent);font-style:normal}
+  .covrule .sm{font-size:13px;line-height:1.55;color:#C3DDEB}
+
+  /* ---------- timeline ---------- */
+  .tl{position:relative;padding-top:6px}
+  .tlrail{position:absolute;left:0;right:0;top:24px;height:2px;background:var(--line)}
+  .tlrow{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;position:relative}
+  .ph{display:flex;flex-direction:column}
+  .ph .node{
+    width:34px;height:34px;border-radius:50%;background:#fff;border:2px solid var(--line);
+    color:var(--txt-3);font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;
+    margin-bottom:14px;position:relative;z-index:2;
+  }
+  .ph.done .node{border-color:var(--primary);color:var(--primary)}
+  .ph.gate .node{background:var(--accent);border-color:var(--accent-deep);color:#5A3B08}
+  .ph .box{
+    border:1px solid var(--line);border-radius:11px;padding:13px 14px 14px;background:#FCFDFE;
+    flex:1;display:flex;flex-direction:column;
+  }
+  .ph.gate .box{border:2px solid var(--accent);background:var(--accent-soft)}
+  .ph .ttl{font-size:14.5px;font-weight:700;color:var(--ink);margin-bottom:6px;line-height:1.3}
+  .ph .scope{font-size:13px;line-height:1.5;color:var(--txt-2);flex:1}
+  .ph .out{
+    margin-top:10px;padding-top:9px;border-top:1px solid var(--line-2);
+    font-size:12.5px;color:var(--txt-3);line-height:1.45;
+  }
+  .ph .out b{color:var(--txt-2);font-weight:600}
+  .ph .gateflag{
+    display:inline-block;background:var(--accent-deep);color:#fff;font-size:11.5px;font-weight:700;
+    letter-spacing:1.1px;text-transform:uppercase;border-radius:5px;padding:3px 8px;margin-bottom:8px;
+  }
+  .p0bug{
+    margin-top:18px;border:1px solid #F0C9A0;background:#FEF7EF;border-radius:11px;
+    padding:14px 18px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;
+  }
+  .p0bug .tag{
+    background:#B4341F;color:#fff;font-size:12px;font-weight:700;letter-spacing:1px;
+    border-radius:5px;padding:4px 9px;white-space:nowrap;
+  }
+  .p0bug .txt{font-size:13.5px;line-height:1.6;color:#6B3A1E}
+  .p0bug .txt b{color:#8A2B14}
+  .p0bug code{background:#F6E4D4;color:#7A3A18}
+  .demo{
+    margin-top:16px;font-size:13.5px;color:var(--txt-2);display:flex;gap:26px;flex-wrap:wrap;
+    padding-top:14px;border-top:1px solid var(--line-2);
+  }
+  .demo b{color:var(--ink)}
+
+  .foot{
+    text-align:center;font-size:12.5px;color:var(--txt-3);padding-top:6px;line-height:1.6;
+  }
+  svg{display:block}
+  svg text{font-family:var(--sans)}
+  svg text.m{font-family:var(--mono)}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ================= 1. TITLE BAND ================= -->
+<div class="band">
+  <div class="kicker">Montree · Institutional Layer · Architecture at a glance</div>
+  <h1>Montree Institutions <span class="thin">— how data flows from a pencil mark to a network map</span></h1>
+  <p class="promise">A teacher marks a <b>triangle on paper</b>; that mark becomes a child's progress, the class's rhythm, the school's health, and the institution's map — <b>with nothing lost or distorted on the way up</b>.</p>
+  <div class="meta">
+    <span>One organisation · many schools · clean data all the way up</span>
+    <span>Companion to the Institutional Layer Master Plan</span>
+    <span>1 August 2026</span>
+  </div>
+</div>
+
+<!-- ================= 2. THE FLOW ================= -->
+<div class="card flush">
+  <div class="head">
+    <span class="num">1</span><h2>The flow — one pencil mark, seven steps, one gate</h2>
+    <p class="sub">Everything a teacher records travels the same road. The single most important thing on this page is the choke point in the middle: <b>every write to a child's progress passes through <code>writeProgress()</code></b>. Clean at the source, or not at all — aggregation never fixes dirty data, it amplifies it.</p>
+  </div>
+
+  <svg viewBox="0 0 1216 350" width="1238" height="358" style="margin-bottom:12px" role="img" aria-label="Pipeline from paper sheet through AI extraction, the writeProgress gate, progress and event tables, nightly rollup, school metrics, to the institution view.">
+    <defs>
+      <marker id="ah" viewBox="0 0 9 7" refX="8" refY="3.5" markerWidth="9" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L9,3.5 L0,7 Z" fill="#4A90E2"/>
+      </marker>
+      <marker id="ahg" viewBox="0 0 9 7" refX="8" refY="3.5" markerWidth="9" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L9,3.5 L0,7 Z" fill="#B7761A"/>
+      </marker>
+      <filter id="gsh" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#B7761A" flood-opacity="0.18"/>
+      </filter>
+    </defs>
+
+    <!-- ---------- G1 inputs 8..140 ---------- -->
+    <text x="74" y="76" text-anchor="middle" font-size="12.5" font-weight="700" letter-spacing="1.2" fill="#7C93A1">CAPTURE</text>
+
+    <g>
+      <rect x="8" y="98" width="132" height="48" rx="9" fill="#fff" stroke="#D6E2EA" stroke-width="1.5"/>
+      <!-- paper sheet with triangle marks -->
+      <g transform="translate(20,110)">
+        <rect x="0" y="0" width="18" height="24" rx="2.5" fill="#FFF9EE" stroke="#1A4D6B" stroke-width="1.4"/>
+        <path d="M4 7 L7 12 L1 12 Z" fill="#FFB84D" stroke="#B7761A" stroke-width="0.8"/>
+        <path d="M12 7 L15 12 L9 12 Z" fill="#fff" stroke="#B7761A" stroke-width="0.8"/>
+        <line x1="3" y1="17" x2="15" y2="17" stroke="#9BB3C2" stroke-width="1.2"/>
+        <line x1="3" y1="20.5" x2="12" y2="20.5" stroke="#9BB3C2" stroke-width="1.2"/>
+      </g>
+      <text x="46" y="118" font-size="13.5" font-weight="700" fill="#173A4E">Paper sheet</text>
+      <text x="46" y="134" font-size="12" fill="#5F7C8C">triangle marks</text>
+    </g>
+
+    <g>
+      <rect x="8" y="158" width="132" height="48" rx="9" fill="#fff" stroke="#D6E2EA" stroke-width="1.5"/>
+      <g transform="translate(20,171)">
+        <rect x="0" y="4" width="20" height="15" rx="3" fill="#fff" stroke="#1A4D6B" stroke-width="1.4"/>
+        <path d="M6 4 L7.5 1 L12.5 1 L14 4 Z" fill="#fff" stroke="#1A4D6B" stroke-width="1.4" stroke-linejoin="round"/>
+        <circle cx="10" cy="11.5" r="4" fill="#E8F1FC" stroke="#4A90E2" stroke-width="1.4"/>
+      </g>
+      <text x="46" y="178" font-size="13.5" font-weight="700" fill="#173A4E">Photo</text>
+      <text x="46" y="194" font-size="12" fill="#5F7C8C">of the work</text>
+    </g>
+
+    <g>
+      <rect x="8" y="218" width="132" height="48" rx="9" fill="#fff" stroke="#D6E2EA" stroke-width="1.5"/>
+      <g transform="translate(22,229)">
+        <rect x="4" y="0" width="9" height="14" rx="4.5" fill="#E8F1FC" stroke="#1A4D6B" stroke-width="1.4"/>
+        <path d="M1 10 A 7.5 7.5 0 0 0 16 10" fill="none" stroke="#1A4D6B" stroke-width="1.4"/>
+        <line x1="8.5" y1="17.5" x2="8.5" y2="22" stroke="#1A4D6B" stroke-width="1.4"/>
+      </g>
+      <text x="46" y="238" font-size="13.5" font-weight="700" fill="#173A4E">Voice</text>
+      <text x="46" y="254" font-size="12" fill="#5F7C8C">spoken note</text>
+    </g>
+
+    <!-- arrow G1 -> G2 -->
+    <line x1="144" y1="182" x2="160" y2="182" stroke="#4A90E2" stroke-width="2.2" marker-end="url(#ah)"/>
+
+    <!-- ---------- G2 AI 166..298 ---------- -->
+    <text x="232" y="76" text-anchor="middle" font-size="12.5" font-weight="700" letter-spacing="1.2" fill="#7C93A1">EXTRACT</text>
+    <rect x="166" y="134" width="132" height="96" rx="10" fill="#F6FAFE" stroke="#B9D5F1" stroke-width="1.5"/>
+    <text x="232" y="164" text-anchor="middle" font-size="14.5" font-weight="700" fill="#1A4D6B">AI extraction</text>
+    <text x="232" y="186" text-anchor="middle" font-size="12" fill="#5F7C8C">vision + speech</text>
+    <text x="232" y="203" text-anchor="middle" font-size="12" fill="#5F7C8C">work + status</text>
+    <text x="232" y="220" text-anchor="middle" font-size="12" fill="#5F7C8C">name matching</text>
+
+    <!-- "15+ other writers" chip + curve into funnel -->
+    <rect x="296" y="30" width="212" height="30" rx="15" fill="#FFF4E2" stroke="#EBCB98" stroke-width="1.3"/>
+    <text x="402" y="50" text-anchor="middle" font-size="12.5" font-weight="600" fill="#8A5F14">+ 15 other write paths today</text>
+    <path d="M310 60 C 300 82, 300 100, 306 120" fill="none" stroke="#D4A65C" stroke-width="1.6" stroke-dasharray="3 3" marker-end="url(#ahg)"/>
+
+    <!-- ---------- funnel 298..338 ---------- -->
+    <polygon points="298,110 338,152 338,212 298,254" fill="#FFF4E2" stroke="#EBCB98" stroke-width="1.3"/>
+
+    <!-- ---------- G3 GATE 338..548 ---------- -->
+    <g filter="url(#gsh)">
+      <rect x="338" y="76" width="210" height="212" rx="12" fill="#FFFFFF" stroke="#FFB84D" stroke-width="3"/>
+    </g>
+    <rect x="339.5" y="77.5" width="207" height="42" rx="10.5" fill="#FFF4E2"/>
+    <rect x="339.5" y="112" width="207" height="8" fill="#FFF4E2"/>
+    <text x="443" y="104" text-anchor="middle" font-size="12.5" font-weight="700" letter-spacing="2" fill="#8A5F14">THE ONE GATE</text>
+    <text x="443" y="146" text-anchor="middle" font-size="17" font-weight="700" fill="#1A4D6B" class="m">writeProgress()</text>
+    <line x1="356" y1="160" x2="530" y2="160" stroke="#F0DDBB" stroke-width="1"/>
+
+    <g font-size="12.5" fill="#173A4E">
+      <rect x="357" y="172" width="7" height="7" rx="1.5" fill="#FFB84D"/>
+      <text x="372" y="179">rank-gated write</text>
+      <rect x="357" y="194" width="7" height="7" rx="1.5" fill="#FFB84D"/>
+      <text x="372" y="201">stamps school + class</text>
+      <rect x="357" y="216" width="7" height="7" rx="1.5" fill="#FFB84D"/>
+      <text x="372" y="223">stamps work_id</text>
+      <rect x="357" y="238" width="7" height="7" rx="1.5" fill="#FFB84D"/>
+      <text x="372" y="245">appends an event row</text>
+      <rect x="357" y="260" width="7" height="7" rx="1.5" fill="#FFB84D"/>
+      <text x="372" y="267">normalises names</text>
+    </g>
+
+    <!-- arrow gate -> G4 -->
+    <line x1="552" y1="182" x2="568" y2="182" stroke="#4A90E2" stroke-width="2.2" marker-end="url(#ah)"/>
+
+    <!-- ---------- G4 tables 574..748 ---------- -->
+    <text x="661" y="76" text-anchor="middle" font-size="12.5" font-weight="700" letter-spacing="1.2" fill="#7C93A1">STORE</text>
+    <rect x="574" y="108" width="174" height="64" rx="10" fill="#fff" stroke="#D6E2EA" stroke-width="1.5"/>
+    <text x="661" y="132" text-anchor="middle" font-size="14" font-weight="700" fill="#173A4E">Child progress</text>
+    <text x="661" y="152" text-anchor="middle" font-size="12.5" fill="#5F7C8C">current state per work</text>
+
+    <rect x="574" y="192" width="174" height="64" rx="10" fill="#fff" stroke="#D6E2EA" stroke-width="1.5"/>
+    <text x="661" y="216" text-anchor="middle" font-size="14" font-weight="700" fill="#173A4E">Event log</text>
+    <text x="661" y="236" text-anchor="middle" font-size="12.5" fill="#5F7C8C">append-only history</text>
+
+    <!-- merge lines G4 -> rollup -->
+    <path d="M748 140 L 762 140 L 762 182" fill="none" stroke="#4A90E2" stroke-width="1.6"/>
+    <path d="M748 224 L 762 224 L 762 182" fill="none" stroke="#4A90E2" stroke-width="1.6"/>
+    <line x1="762" y1="182" x2="768" y2="182" stroke="#4A90E2" stroke-width="2.2" marker-end="url(#ah)"/>
+
+    <!-- ---------- G5 rollup 774..884 ---------- -->
+    <text x="829" y="76" text-anchor="middle" font-size="12.5" font-weight="700" letter-spacing="1.2" fill="#7C93A1">ROLL UP</text>
+    <rect x="774" y="142" width="110" height="80" rx="10" fill="#F6FAFE" stroke="#B9D5F1" stroke-width="1.5"/>
+    <g transform="translate(820,158)">
+      <path d="M9 0 A 9 9 0 1 0 18 9 A 7 7 0 0 1 9 0 Z" fill="#4A90E2"/>
+    </g>
+    <text x="829" y="199" text-anchor="middle" font-size="14" font-weight="700" fill="#1A4D6B">Nightly</text>
+    <text x="829" y="215" text-anchor="middle" font-size="13" font-weight="600" fill="#1A4D6B">rollup job</text>
+
+    <line x1="888" y1="182" x2="904" y2="182" stroke="#4A90E2" stroke-width="2.2" marker-end="url(#ah)"/>
+
+    <!-- ---------- G6 school metrics 910..1056 ---------- -->
+    <text x="983" y="76" text-anchor="middle" font-size="12.5" font-weight="700" letter-spacing="1.2" fill="#7C93A1">MEASURE</text>
+    <rect x="910" y="130" width="146" height="104" rx="10" fill="#fff" stroke="#D6E2EA" stroke-width="1.5"/>
+    <text x="983" y="158" text-anchor="middle" font-size="14" font-weight="700" fill="#173A4E">School metrics</text>
+    <text x="983" y="182" text-anchor="middle" font-size="12" fill="#5F7C8C">SPI · coverage</text>
+    <text x="983" y="199" text-anchor="middle" font-size="12" fill="#5F7C8C">momentum · flags</text>
+    <text x="983" y="220" text-anchor="middle" font-size="12" fill="#5F7C8C">one row per day</text>
+
+    <line x1="1060" y1="182" x2="1076" y2="182" stroke="#4A90E2" stroke-width="2.2" marker-end="url(#ah)"/>
+
+    <!-- ---------- G7 institution 1082..1216 ---------- -->
+    <text x="1149" y="76" text-anchor="middle" font-size="12.5" font-weight="700" letter-spacing="1.2" fill="#7C93A1">SEE</text>
+    <rect x="1082" y="126" width="134" height="112" rx="10" fill="#1A4D6B"/>
+    <g transform="translate(1136,144)" opacity="0.95">
+      <circle cx="4" cy="4" r="3.4" fill="#FFB84D"/>
+      <circle cx="22" cy="4" r="3.4" fill="#8FC5E8"/>
+      <circle cx="4" cy="20" r="3.4" fill="#8FC5E8"/>
+      <circle cx="22" cy="20" r="3.4" fill="#8FC5E8"/>
+      <line x1="4" y1="4" x2="22" y2="4" stroke="#5D8FA9" stroke-width="1.2"/>
+      <line x1="4" y1="4" x2="4" y2="20" stroke="#5D8FA9" stroke-width="1.2"/>
+      <line x1="4" y1="4" x2="22" y2="20" stroke="#5D8FA9" stroke-width="1.2"/>
+    </g>
+    <text x="1149" y="192" text-anchor="middle" font-size="13.5" font-weight="700" fill="#fff">Institution view</text>
+    <text x="1149" y="212" text-anchor="middle" font-size="12" fill="#A9D4EC">every school,</text>
+    <text x="1149" y="228" text-anchor="middle" font-size="12" fill="#A9D4EC">one map</text>
+
+    <!-- ---------- callout row ---------- -->
+    <line x1="8" y1="292" x2="1216" y2="292" stroke="#EEF3F7" stroke-width="1"/>
+    <g font-size="12.5" fill="#6E8998" text-anchor="middle">
+      <text x="74" y="314">1 sheet · 1 child</text>
+      <text x="74" y="331">each week</text>
+
+      <text x="232" y="314">paper-scan/[scanId]</text>
+      <text x="232" y="331">/commit/route.ts</text>
+
+      <text x="443" y="314" fill="#B7761A" font-weight="700">advance-on-confirm.ts</text>
+      <text x="443" y="331" fill="#B7761A" font-weight="700">→ writeProgress()</text>
+
+      <text x="661" y="314">montree_child_progress</text>
+      <text x="661" y="331">montree_progress_events</text>
+
+      <text x="829" y="314">jobs/rollup-</text>
+      <text x="829" y="331">school-metrics</text>
+
+      <text x="983" y="314">montree_school_metrics_daily</text>
+
+      <text x="1149" y="314">app/montree/org/*</text>
+      <text x="1149" y="331">dashboards</text>
+    </g>
+  </svg>
+
+  <div style="padding:0 21px">
+    <div style="background:#F7FAFC;border:1px solid var(--line);border-radius:10px;padding:15px 20px;font-size:14px;line-height:1.6;color:var(--txt-2)">
+      <b style="color:var(--ink)">Why the gate is the architectural heart:</b> 15+ independent write paths exist today — some rank-gated, some overwriting, some duplicating, some able to downgrade a mastered work back to presented. They converge into one primitive; direct upserts are deleted. Every cleanliness rule lives at the write path, never at the report layer — which is what keeps institutional data clean forever after.
+    </div>
+  </div>
+</div>
+
+<!-- ================= 3. THE HIERARCHY ================= -->
+<div class="card">
+  <div class="head">
+    <span class="num">2</span><h2>The hierarchy — and who sees what</h2>
+    <p class="sub">Four levels, two new roles (<code>org_admin</code>, <code>org_viewer</code>). Each level sees <b>one level down in detail, two levels down on demand</b>. Every org query filters by the institution's school set.</p>
+  </div>
+
+  <div class="grid-h">
+    <svg viewBox="0 0 620 300" width="620" height="300" role="img" aria-label="Tree: one institution over three schools, each with two classrooms, each with children.">
+      <!-- tier labels gutter 0..120 -->
+      <g font-size="13" text-anchor="end">
+        <text x="112" y="28" font-weight="700" fill="#1A4D6B">Institution</text>
+        <text x="112" y="45" fill="#7C93A1">org admin / viewer</text>
+
+        <text x="112" y="115" font-weight="700" fill="#1A4D6B">Schools</text>
+        <text x="112" y="132" fill="#7C93A1">principals</text>
+
+        <text x="112" y="193" font-weight="700" fill="#1A4D6B">Classrooms</text>
+        <text x="112" y="210" fill="#7C93A1">teachers</text>
+
+        <text x="112" y="258" font-weight="700" fill="#1A4D6B">Children</text>
+        <text x="112" y="275" fill="#7C93A1">the source of truth</text>
+      </g>
+      <line x1="124" y1="8" x2="124" y2="284" stroke="#EEF3F7" stroke-width="1"/>
+
+      <!-- institution -->
+      <rect x="275" y="8" width="200" height="46" rx="9" fill="#1A4D6B"/>
+      <text x="375" y="29" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">FAMM Network</text>
+      <text x="375" y="46" text-anchor="middle" font-size="12" fill="#A9D4EC">montree_organizations</text>
+
+      <!-- connectors institution -> schools -->
+      <path d="M375 54 L375 76 M199 76 L551 76 M199 76 L199 96 M375 76 L375 96 M551 76 L551 96"
+            fill="none" stroke="#C6D6E0" stroke-width="1.6"/>
+
+      <!-- schools -->
+      <g>
+        <rect x="132" y="96" width="134" height="44" rx="8" fill="#F6FAFE" stroke="#B9D5F1" stroke-width="1.5"/>
+        <text x="199" y="114" text-anchor="middle" font-size="13.5" font-weight="700" fill="#1A4D6B">Casa Verde</text>
+        <text x="199" y="130" text-anchor="middle" font-size="12" fill="#5F7C8C">principal</text>
+
+        <rect x="308" y="96" width="134" height="44" rx="8" fill="#F6FAFE" stroke="#B9D5F1" stroke-width="1.5"/>
+        <text x="375" y="114" text-anchor="middle" font-size="13.5" font-weight="700" fill="#1A4D6B">Casa Sol</text>
+        <text x="375" y="130" text-anchor="middle" font-size="12" fill="#5F7C8C">principal</text>
+
+        <rect x="484" y="96" width="134" height="44" rx="8" fill="#F6FAFE" stroke="#B9D5F1" stroke-width="1.5"/>
+        <text x="551" y="114" text-anchor="middle" font-size="13.5" font-weight="700" fill="#1A4D6B">Casa Luna</text>
+        <text x="551" y="130" text-anchor="middle" font-size="12" fill="#5F7C8C">principal</text>
+      </g>
+
+      <!-- connectors schools -> classrooms -->
+      <g fill="none" stroke="#C6D6E0" stroke-width="1.4">
+        <path d="M199 140 L199 152 M163 152 L235 152 M163 152 L163 166 M235 152 L235 166"/>
+        <path d="M375 140 L375 152 M339 152 L411 152 M339 152 L339 166 M411 152 L411 166"/>
+        <path d="M551 140 L551 152 M515 152 L587 152 M515 152 L515 166 M587 152 L587 166"/>
+      </g>
+
+      <!-- classrooms -->
+      <g font-size="12.5" fill="#173A4E" text-anchor="middle">
+        <rect x="132" y="166" width="62" height="34" rx="7" fill="#fff" stroke="#D6E2EA" stroke-width="1.4"/>
+        <text x="163" y="188">Casa 1</text>
+        <rect x="204" y="166" width="62" height="34" rx="7" fill="#fff" stroke="#D6E2EA" stroke-width="1.4"/>
+        <text x="235" y="188">Casa 2</text>
+
+        <rect x="308" y="166" width="62" height="34" rx="7" fill="#fff" stroke="#D6E2EA" stroke-width="1.4"/>
+        <text x="339" y="188">Casa 1</text>
+        <rect x="380" y="166" width="62" height="34" rx="7" fill="#fff" stroke="#D6E2EA" stroke-width="1.4"/>
+        <text x="411" y="188">Casa 2</text>
+
+        <rect x="484" y="166" width="62" height="34" rx="7" fill="#fff" stroke="#D6E2EA" stroke-width="1.4"/>
+        <text x="515" y="188">Casa 1</text>
+        <rect x="556" y="166" width="62" height="34" rx="7" fill="#fff" stroke="#D6E2EA" stroke-width="1.4"/>
+        <text x="587" y="188">Casa 2</text>
+      </g>
+
+      <!-- children dots -->
+      <g fill="#4A90E2">
+        <g><circle cx="148" cy="230" r="5"/><circle cx="163" cy="230" r="5"/><circle cx="178" cy="230" r="5"/><circle cx="148" cy="248" r="5"/><circle cx="163" cy="248" r="5"/><circle cx="178" cy="248" r="5"/></g>
+        <g><circle cx="220" cy="230" r="5"/><circle cx="235" cy="230" r="5"/><circle cx="250" cy="230" r="5"/><circle cx="220" cy="248" r="5"/><circle cx="235" cy="248" r="5"/><circle cx="250" cy="248" r="5"/></g>
+        <g><circle cx="324" cy="230" r="5"/><circle cx="339" cy="230" r="5"/><circle cx="354" cy="230" r="5"/><circle cx="324" cy="248" r="5"/><circle cx="339" cy="248" r="5"/><circle cx="354" cy="248" r="5"/></g>
+        <g><circle cx="396" cy="230" r="5"/><circle cx="411" cy="230" r="5"/><circle cx="426" cy="230" r="5"/><circle cx="396" cy="248" r="5"/><circle cx="411" cy="248" r="5"/><circle cx="426" cy="248" r="5"/></g>
+        <g><circle cx="500" cy="230" r="5"/><circle cx="515" cy="230" r="5"/><circle cx="530" cy="230" r="5"/><circle cx="500" cy="248" r="5"/><circle cx="515" cy="248" r="5"/><circle cx="530" cy="248" r="5"/></g>
+        <g><circle cx="572" cy="230" r="5"/><circle cx="587" cy="230" r="5"/><circle cx="602" cy="230" r="5"/><circle cx="572" cy="248" r="5"/><circle cx="587" cy="248" r="5"/><circle cx="602" cy="248" r="5"/></g>
+      </g>
+      <g fill="none" stroke="#C6D6E0" stroke-width="1.4">
+        <line x1="163" y1="200" x2="163" y2="218"/><line x1="235" y1="200" x2="235" y2="218"/>
+        <line x1="339" y1="200" x2="339" y2="218"/><line x1="411" y1="200" x2="411" y2="218"/>
+        <line x1="515" y1="200" x2="515" y2="218"/><line x1="587" y1="200" x2="587" y2="218"/>
+      </g>
+
+      <text x="375" y="284" text-anchor="middle" font-size="12.5" fill="#7C93A1">One institutional deal onboards 10–100 schools at once</text>
+    </svg>
+
+    <div>
+      <table class="mx">
+        <thead>
+          <tr><th style="width:150px">Level</th><th>Sees in detail</th><th>Can drill to</th><th>Never sees</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="role">Institution<small>org_admin / org_viewer</small></td>
+            <td>Every school in the institution — SPI, coverage, areas, flags</td>
+            <td>A child's <b>progress</b>, via the school drill-down</td>
+            <td class="no">Observation notes, photos, schools outside the institution</td>
+          </tr>
+          <tr>
+            <td class="role">School<small>principal</small></td>
+            <td>All classrooms and all children in the school</td>
+            <td>Work-level detail for any child</td>
+            <td class="no">Any other school</td>
+          </tr>
+          <tr>
+            <td class="role">Classroom<small>teacher</small></td>
+            <td>Own classroom's children</td>
+            <td>Every observation and work for those children</td>
+            <td class="no">Other classrooms</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="rule-line" style="display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:20px">
+    <div><b>Observation notes and photos stay school-scoped by default.</b> Institutions see progress, not surveillance — a privacy posture that matters to AMI-affiliated buyers.</div>
+    <div>Enforced in code, not in the UI: <code>verifyOrganizationRequest()</code> mirrors the existing <code>verifySchoolRequest()</code>, the JWT carries <code>organizationId</code>, and every org query filters by the institution's school set.</div>
+  </div>
+</div>
+
+<!-- ================= 4. THE CURRICULUM SPINE ================= -->
+<div class="card">
+  <div class="head">
+    <span class="num">3</span><h2>The curriculum spine — what makes School A comparable to School B</h2>
+    <p class="sub">Today every classroom owns an independent curriculum copy with its own sequence numbers. That was right for single classrooms; it makes cross-school comparison impossible. <b>The single most important structural change</b> is one master spine with stable work IDs.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="panel before">
+      <h3>Today — each classroom its own copy</h3>
+      <svg viewBox="0 0 560 168" width="100%" height="168" role="img" aria-label="Three classrooms with independent, differently-ordered curriculum lists, each reporting sixty percent.">
+        <g>
+          <rect x="4" y="6" width="172" height="152" rx="9" fill="#fff" stroke="#E1E9EF" stroke-width="1.4"/>
+          <text x="90" y="28" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1A4D6B">Casa Verde · Casa 1</text>
+          <g font-size="12.5" fill="#4E6B7C">
+            <text x="18" y="54">1. Pink Tower</text>
+            <text x="18" y="74">2. Brown Stair</text>
+            <text x="18" y="94">3. Number Rods</text>
+            <text x="18" y="114">4. Sandpaper Letters</text>
+          </g>
+          <rect x="18" y="126" width="66" height="22" rx="6" fill="#FDF1DF"/>
+          <text x="51" y="141" text-anchor="middle" font-size="12.5" font-weight="700" fill="#B45309">60%</text>
+        </g>
+        <g>
+          <rect x="194" y="6" width="172" height="152" rx="9" fill="#fff" stroke="#E1E9EF" stroke-width="1.4"/>
+          <text x="280" y="28" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1A4D6B">Casa Sol · Casa 2</text>
+          <g font-size="12.5" fill="#4E6B7C">
+            <text x="208" y="54">1. Torre Rosa</text>
+            <text x="208" y="74">2. Number Rods</text>
+            <text x="208" y="94">3. Pink Tower (dup)</text>
+            <text x="208" y="114">4. Brown Stair</text>
+          </g>
+          <rect x="208" y="126" width="66" height="22" rx="6" fill="#FDF1DF"/>
+          <text x="241" y="141" text-anchor="middle" font-size="12.5" font-weight="700" fill="#B45309">60%</text>
+        </g>
+        <g>
+          <rect x="384" y="6" width="172" height="152" rx="9" fill="#fff" stroke="#E1E9EF" stroke-width="1.4"/>
+          <text x="470" y="28" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1A4D6B">Casa Luna · Casa 1</text>
+          <g font-size="12.5" fill="#4E6B7C">
+            <text x="398" y="54">1. Sandpaper Letters</text>
+            <text x="398" y="74">2. pink tower</text>
+            <text x="398" y="94">3. 粉红塔</text>
+            <text x="398" y="114">4. Brown Stair</text>
+          </g>
+          <rect x="398" y="126" width="66" height="22" rx="6" fill="#FDF1DF"/>
+          <text x="431" y="141" text-anchor="middle" font-size="12.5" font-weight="700" fill="#B45309">60%</text>
+        </g>
+      </svg>
+      <div style="margin-top:14px;background:#FEF7EF;border:1px solid #F0C9A0;border-radius:9px;padding:13px 16px;font-size:13px;line-height:1.6;color:#6B3A1E">
+        <b style="color:#8A2B14">Three different meanings of “60%”.</b><br>
+        Progress is keyed by <b>work_name TEXT</b>, not an ID — rename a work and its history orphans; a Chinese name becomes a separate row. Cross-school joins are string matching. There is no join path at all.
+      </div>
+    </div>
+
+    <div class="panel after">
+      <h3>Tomorrow — one master spine</h3>
+      <svg viewBox="0 0 560 168" width="100%" height="168" role="img" aria-label="One global curriculum spine with stable work IDs; classroom overlays above; two children from different schools plotted as dots on the same line.">
+        <!-- area bands above the line -->
+        <g font-size="12" font-weight="700">
+          <rect x="40" y="12" width="150" height="4" rx="2" fill="#22c55e"/>
+          <text x="40" y="31" fill="#4E6B7C">Practical Life</text>
+          <rect x="196" y="12" width="150" height="4" rx="2" fill="#f97316"/>
+          <text x="196" y="31" fill="#4E6B7C">Sensorial</text>
+          <rect x="352" y="12" width="168" height="4" rx="2" fill="#3b82f6"/>
+          <text x="352" y="31" fill="#4E6B7C">Mathematics</text>
+        </g>
+
+        <!-- classroom overlays -->
+        <g>
+          <text x="115" y="49" text-anchor="middle" font-size="12" fill="#7C93A1">Casa Verde overlay</text>
+          <path d="M46 64 L46 56 L184 56 L184 64" fill="none" stroke="#C6D6E0" stroke-width="1.4"/>
+          <text x="271" y="49" text-anchor="middle" font-size="12" fill="#7C93A1">Casa Sol overlay</text>
+          <path d="M202 64 L202 56 L340 56 L340 64" fill="none" stroke="#C6D6E0" stroke-width="1.4"/>
+          <text x="436" y="49" text-anchor="middle" font-size="12" fill="#7C93A1">Casa Luna overlay</text>
+          <path d="M358 64 L358 56 L514 56 L514 64" fill="none" stroke="#C6D6E0" stroke-width="1.4"/>
+        </g>
+
+        <!-- child labels + leaders -->
+        <text x="196" y="88" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1A4D6B">Ana · Casa Verde</text>
+        <text x="404" y="88" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1A4D6B">Mei · Casa Luna</text>
+        <path d="M196 94 L196 104" stroke="#9BB3C2" stroke-width="1.2"/>
+        <path d="M404 94 L404 104" stroke="#9BB3C2" stroke-width="1.2"/>
+
+        <!-- spine -->
+        <line x1="40" y1="114" x2="520" y2="114" stroke="#1A4D6B" stroke-width="2.5" stroke-linecap="round"/>
+        <g stroke="#9BB3C2" stroke-width="1.4">
+          <line x1="60" y1="107" x2="60" y2="121"/>
+          <line x1="140" y1="107" x2="140" y2="121"/>
+          <line x1="220" y1="107" x2="220" y2="121"/>
+          <line x1="300" y1="107" x2="300" y2="121"/>
+          <line x1="380" y1="107" x2="380" y2="121"/>
+          <line x1="460" y1="107" x2="460" y2="121"/>
+        </g>
+        <g font-size="12" text-anchor="middle" fill="#7C93A1">
+          <text x="60" y="138">w_012</text>
+          <text x="140" y="138">w_017</text>
+          <text x="220" y="138">w_023</text>
+          <text x="300" y="138">w_031</text>
+          <text x="380" y="138">w_044</text>
+          <text x="460" y="138">w_058</text>
+        </g>
+
+        <!-- child dots on the spine -->
+        <circle cx="196" cy="114" r="7" fill="#1A4D6B" stroke="#fff" stroke-width="2.5"/>
+        <circle cx="404" cy="114" r="7" fill="#1A4D6B" stroke="#fff" stroke-width="2.5"/>
+
+        <text x="280" y="160" text-anchor="middle" font-size="12.5" font-weight="700" letter-spacing="1" fill="#1A4D6B">ONE GLOBAL SEQUENCE · STABLE work_id</text>
+      </svg>
+      <div style="margin-top:14px;background:#EAF7F0;border:1px solid #A8DCC2;border-radius:9px;padding:13px 16px;font-size:13px;line-height:1.6;color:#2A6350">
+        <b style="color:#1D6B47">Two children, two schools, one line — finally comparable.</b><br>
+        One row per work in <b>montree_master_works</b>; classroom rows become overlays via <b>master_work_id</b>. Backfilled by the Jaro-Winkler matcher that already exists. Custom classroom works stay local — and stay out of cross-school comparison.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 5. THE READING DOCTRINE ================= -->
+<div class="card">
+  <div class="head">
+    <span class="num">4</span><h2>The reading doctrine — visuals first, numbers second, analysis third</h2>
+    <p class="sub">Every dashboard page, at every level, is the same three stacked bands. No exotic chart types. Nothing appears in a bar that can't be verified in the table underneath.</p>
+  </div>
+
+  <div class="bands">
+    <!-- band 1 -->
+    <div class="rband">
+      <div class="bnum">1</div>
+      <div>
+        <p class="btitle">BARS — understood in three seconds</p>
+        <p class="bdesc">Simple horizontal bars. Institution: schools ranked by SPI plus an area heatmap. Principal: classes side by side. Teacher: a child's five areas.</p>
+        <div class="bbody">
+          <svg viewBox="0 0 560 216" width="100%" height="216" role="img" aria-label="Horizontal bar chart of average progress by curriculum area, ranked: Practical Life 78 percent, Language 71, Sensorial 64, Mathematics 52, Culture 45.">
+            <!-- gridlines -->
+            <g stroke="#EEF3F7" stroke-width="1">
+              <line x1="200.5" y1="10" x2="200.5" y2="184"/>
+              <line x1="283" y1="10" x2="283" y2="184"/>
+              <line x1="365.5" y1="10" x2="365.5" y2="184"/>
+              <line x1="448" y1="10" x2="448" y2="184"/>
+            </g>
+            <line x1="118" y1="10" x2="118" y2="184" stroke="#D6E2EA" stroke-width="1"/>
+
+            <g font-size="13" fill="#4E6B7C" text-anchor="end">
+              <text x="108" y="34">Practical Life</text>
+              <text x="108" y="70">Language</text>
+              <text x="108" y="106">Sensorial</text>
+              <text x="108" y="142">Mathematics</text>
+              <text x="108" y="178">Culture</text>
+            </g>
+
+            <rect x="118" y="18" width="257.4" height="22" rx="4" fill="#22c55e"/><rect x="118" y="18" width="4" height="22" fill="#22c55e"/>
+            <rect x="118" y="54" width="234.3" height="22" rx="4" fill="#ec4899"/><rect x="118" y="54" width="4" height="22" fill="#ec4899"/>
+            <rect x="118" y="90" width="211.2" height="22" rx="4" fill="#f97316"/><rect x="118" y="90" width="4" height="22" fill="#f97316"/>
+            <rect x="118" y="126" width="171.6" height="22" rx="4" fill="#3b82f6"/><rect x="118" y="126" width="4" height="22" fill="#3b82f6"/>
+            <rect x="118" y="162" width="148.5" height="22" rx="4" fill="#8b5cf6"/><rect x="118" y="162" width="4" height="22" fill="#8b5cf6"/>
+
+            <g font-size="13" font-weight="700" fill="#173A4E">
+              <text x="383" y="34">78%</text>
+              <text x="360" y="70">71%</text>
+              <text x="337" y="106">64%</text>
+              <text x="298" y="142">52%</text>
+              <text x="275" y="178">45%</text>
+            </g>
+
+            <g font-size="12" fill="#7C93A1" text-anchor="middle">
+              <text x="118" y="202">0</text>
+              <text x="200.5" y="202">25</text>
+              <text x="283" y="202">50</text>
+              <text x="365.5" y="202">75</text>
+              <text x="448" y="202">100%</text>
+            </g>
+          </svg>
+          <div class="note" style="padding-top:10px">
+            <b>Sample: Casa 2, average area progress.</b><br><br>
+            Bars are thin, the grid is a hairline, and the value rides the tip of each bar — the area name carries identity, so the colour never has to. The same five area colours are used everywhere in the product, so a reader learns them once.
+            <div style="margin-top:14px;font-size:13px;color:var(--txt-3)">Institution level swaps the subject for schools ranked by Progress Index; the shape of the page does not change.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- band 2 -->
+    <div class="rband">
+      <div class="bnum">2</div>
+      <div>
+        <p class="btitle">NUMBERS — the exact table behind the bars</p>
+        <p class="bdesc">Sortable, exportable as CSV. Raw counts, percentages, dates. Nothing shown in a bar that can't be verified here.</p>
+        <div class="bbody">
+          <table class="num">
+            <thead>
+              <tr><th>Area</th><th class="r">Avg %</th><th class="r">Children</th><th class="r">Δ 30d</th><th>Coverage</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="nm"><span class="swatch" style="background:#22c55e"></span>Practical Life</td><td class="r">78</td><td class="r">18</td><td class="r">+4</td><td>Reliable</td></tr>
+              <tr><td class="nm"><span class="swatch" style="background:#ec4899"></span>Language</td><td class="r">71</td><td class="r">18</td><td class="r">−4</td><td>Reliable</td></tr>
+              <tr><td class="nm"><span class="swatch" style="background:#f97316"></span>Sensorial</td><td class="r">64</td><td class="r">18</td><td class="r">+1</td><td>Reliable</td></tr>
+              <tr><td class="nm"><span class="swatch" style="background:#3b82f6"></span>Mathematics</td><td class="r">52</td><td class="r">17</td><td class="r">+2</td><td>Partial</td></tr>
+              <tr><td class="nm"><span class="swatch" style="background:#8b5cf6"></span>Culture</td><td class="r">45</td><td class="r">11</td><td class="r">0</td><td>Low</td></tr>
+            </tbody>
+          </table>
+          <div class="note" style="padding-top:10px">
+            Every metric definition is identical at every level — child area %, Progress Index (the <b>median</b> child, which resists outliers and new enrolees), momentum over 30 days from the event log, and coverage.
+            <div style="margin-top:14px;font-size:13px;color:var(--txt-3)">Dashboards never touch raw tables; they read the nightly rollup.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- band 3 -->
+    <div class="rband">
+      <div class="bnum">3</div>
+      <div>
+        <p class="btitle">AI ANALYSIS — Guru says what the bars mean, and what to do</p>
+        <p class="bdesc">Written to the level being read, cached nightly with the rollup, regenerated on demand.</p>
+        <div class="analysis">
+          <span class="who">Sample narrative · school level</span>
+          “Casa 2's Language average fell 4 points this month; 6 of the 9 stalled children are in the same classroom; coverage there dropped to 40% after the teacher change — <b>this is a data gap, not a performance drop</b>. Suggested action: re-establish weekly sheet capture in Casa 2 before reading these numbers again.”
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="samelabel">
+    <b>Same page shape for teacher, principal, institution — only the subject changes:</b>
+    <span class="chip"><span class="dot"></span>child</span>
+    <span style="color:var(--txt-3)">→</span>
+    <span class="chip"><span class="dot"></span>class</span>
+    <span style="color:var(--txt-3)">→</span>
+    <span class="chip"><span class="dot"></span>school</span>
+  </div>
+</div>
+
+<!-- ================= 6. COVERAGE BEFORE JUDGMENT ================= -->
+<div class="card">
+  <div class="head">
+    <span class="num">5</span><h2>Coverage before judgment</h2>
+    <p class="sub">Every metric at every level carries a coverage tier — the share of active children with at least one observation in the last 14 days. This protects trust in the numbers, and protects schools from unfair comparison while they are still adopting.</p>
+  </div>
+
+  <div class="cov">
+    <div class="covcard">
+      <span class="badge b-good">
+        <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6.2" fill="none" stroke="#15803D" stroke-width="1.6"/><path d="M4 7.2 L6.2 9.4 L10 5" fill="none" stroke="#15803D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Reliable
+      </span>
+      <div class="thr"><b>≥ 80%</b> of active children observed in the last 14 days. Read the number as written; compare freely.</div>
+    </div>
+    <div class="covcard">
+      <span class="badge b-warn">
+        <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6.2" fill="none" stroke="#B45309" stroke-width="1.6"/><line x1="7" y1="3.6" x2="7" y2="7.8" stroke="#B45309" stroke-width="1.8" stroke-linecap="round"/><circle cx="7" cy="10.2" r="1" fill="#B45309"/></svg>
+        Partial
+      </span>
+      <div class="thr"><b>50–79%</b> observed. Directional only — show the number, but never rank a school on it.</div>
+    </div>
+    <div class="covcard">
+      <span class="badge b-unk">
+        <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6.2" fill="none" stroke="#5A7180" stroke-width="1.6"/><path d="M5.1 5.3 A2 2 0 1 1 7 8.4 L7 9" fill="none" stroke="#5A7180" stroke-width="1.6" stroke-linecap="round"/><circle cx="7" cy="10.7" r="0.9" fill="#5A7180"/></svg>
+        Low
+      </span>
+      <div class="thr"><b>&lt; 50%</b> observed. The metric is suppressed and the school reads <b>Unknown</b>.</div>
+    </div>
+    <div class="covrule">
+      <div class="big">A school that isn't logging data is <em>Unknown</em> — never <em>failing</em>.</div>
+      <div class="sm">Onboarding schools carry an informational flag that suppresses judgment entirely. Every attention flag ships with an evidence sentence and a suggested action, never a bare red dot.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 7. THE ROAD ================= -->
+<div class="card">
+  <div class="head">
+    <span class="num">6</span><h2>The road — six phases from Monday</h2>
+    <p class="sub">Phases 1–2 can run partly parallel to late Phase 0. Everything else is sequential, because every later phase compounds whatever Phase 0 leaves dirty.</p>
+  </div>
+
+  <div class="tl">
+    <div class="tlrail"></div>
+    <div class="tlrow">
+
+      <div class="ph gate">
+        <div class="node">0</div>
+        <div class="box">
+          <span class="gateflag">The gate</span>
+          <div class="ttl">Foundations</div>
+          <div class="scope">Audit P0s · master curriculum spine · <code style="background:#F7EBD6">writeProgress()</code> · school timezone · stamp school &amp; classroom on every progress row.</div>
+          <div class="out"><b>Output:</b> a clean, aggregable write path — and no data loss.<br>2–3 sessions</div>
+        </div>
+      </div>
+
+      <div class="ph done">
+        <div class="node">1</div>
+        <div class="box">
+          <div class="ttl">Org layer</div>
+          <div class="scope">New tables, the two org roles, a <code>verifyOrganizationRequest()</code> guard and the org login page.</div>
+          <div class="out"><b>Output:</b> an institution exists; the org admin logs in and sees her school list.<br>1–2 sessions</div>
+        </div>
+      </div>
+
+      <div class="ph done">
+        <div class="node">2</div>
+        <div class="box">
+          <div class="ttl">Rollups + events</div>
+          <div class="scope">Event-log backfill, the nightly metrics job, coverage tiers.</div>
+          <div class="out"><b>Output:</b> <code>school_metrics_daily</code> populated for every school; trend history from day one.<br>1–2 sessions</div>
+        </div>
+      </div>
+
+      <div class="ph done">
+        <div class="node">3</div>
+        <div class="box">
+          <div class="ttl">Institution dashboard</div>
+          <div class="scope">Overview, Areas heatmap, Math &amp; English congruence, Flags inbox, school drill-down — bars → numbers → AI.</div>
+          <div class="out"><b>Output:</b> a live institutional dashboard on real data.<br>2–3 sessions</div>
+        </div>
+      </div>
+
+      <div class="ph done">
+        <div class="node">4</div>
+        <div class="box">
+          <div class="ttl">Bulk onboarding</div>
+          <div class="scope">School Blueprint, CSV provisioner with dry-run, roster import, org-level feature toggles.</div>
+          <div class="out"><b>Output:</b> 50 schools onboarded in one afternoon.<br>1–2 sessions</div>
+        </div>
+      </div>
+
+      <div class="ph done">
+        <div class="node">5</div>
+        <div class="box">
+          <div class="ttl">Polish + pilot</div>
+          <div class="scope">Guru narratives, CSV/PDF exports, the weekly org email digest, pilot with FAMM.</div>
+          <div class="out"><b>Output:</b> the first institutional customer live.<br>1–2 sessions</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="p0bug">
+      <span class="tag">P0 · CHECK FIRST</span>
+      <div class="txt">
+        <b>Possible active data loss in the Paper Scan and Voice commit routes.</b> Both upsert <code>classroom_id</code> and <code>work_key</code> into <code>montree_child_progress</code> — columns that no migration ever added to that table. If production matches the migration history, every status-carrying commit from these two AI pipelines throws <code>42703 undefined_column</code> server-side <b>while the extraction is still marked committed</b>: the teacher sees “committed”, the progress never lands. Two minutes to verify in Supabase. This is the first thing Phase 0 touches — the write path has to be fixed before anything is built on top of it.
+      </div>
+    </div>
+
+    <div class="demo">
+      <span><b>Sequencing rule:</b> Phase 0 is not skippable.</span>
+      <span><b>Demo checkpoint:</b> after Phase 3 you can sell.</span>
+      <span><b>Delivery checkpoint:</b> Phase 4 is what lets you deliver a 100-school deal without a week of manual setup.</span>
+    </div>
+  </div>
+</div>
+
+<div class="foot">
+  Montree Institutions · visual companion to the Institutional Layer Master Plan · 1 August 2026<br>
+  One canonical truth: one progress formula, one curriculum spine, one write primitive, one area colour map.
+</div>
+
+</div>
+</body>
+</html>

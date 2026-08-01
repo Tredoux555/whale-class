@@ -91,7 +91,16 @@ function DemoRequestAlert({ saToken }: { saToken: string }) {
   // seconds with 10+ leads. Buttons disabled while true.
   const [bulkSending, setBulkSending] = useState(false);
   // Surface server-returned bulk outcomes as a transient banner after each run.
-  const [lastBulk, setLastBulk] = useState<{ sent: number; failed: number; skipped: number } | null>(null);
+  // not_attempted / aborted_reason are set when the server's circuit breaker
+  // trips on a Resend rate-limit/quota error — the rest of the batch was never
+  // sent, so the operator has to know to re-run it.
+  const [lastBulk, setLastBulk] = useState<{
+    sent: number;
+    failed: number;
+    skipped: number;
+    notAttempted: number;
+    abortedReason: string | null;
+  } | null>(null);
 
   const load = useCallback(() => {
     if (!saToken) return;
@@ -154,7 +163,7 @@ function DemoRequestAlert({ saToken }: { saToken: string }) {
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         console.error('[SuperAdmin] bulk-reply failed:', data);
-        setLastBulk({ sent: 0, failed: 0, skipped: 0 });
+        setLastBulk({ sent: 0, failed: 0, skipped: 0, notAttempted: 0, abortedReason: null });
         return;
       }
       const data = await res.json();
@@ -162,6 +171,8 @@ function DemoRequestAlert({ saToken }: { saToken: string }) {
         sent: data.sent || 0,
         failed: data.failed || 0,
         skipped: data.skipped || 0,
+        notAttempted: data.not_attempted || 0,
+        abortedReason: data.aborted_reason || null,
       });
       load(); // refresh — successful sends are now status='contacted' and drop out
     } catch (err) {
@@ -245,6 +256,14 @@ function DemoRequestAlert({ saToken }: { saToken: string }) {
           Bulk reply: {lastBulk.sent} sent
           {lastBulk.failed > 0 && <span className="text-red-300">, {lastBulk.failed} failed</span>}
           {lastBulk.skipped > 0 && <span className="text-amber-300">, {lastBulk.skipped} skipped</span>}
+        </div>
+      )}
+
+      {lastBulk?.abortedReason && (
+        <div className="mb-3 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-xs text-red-200">
+          Batch stopped early — the email provider reported: {lastBulk.abortedReason}.{' '}
+          <strong>{lastBulk.notAttempted} lead{lastBulk.notAttempted === 1 ? ' was' : 's were'} not
+          attempted</strong> and are still waiting. Re-run the bulk reply once the limit resets.
         </div>
       )}
 

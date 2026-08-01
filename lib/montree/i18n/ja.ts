@@ -2348,6 +2348,7 @@ export const ja: Record<string, string> = {
   'voiceObs.selectLanguage': '記録言語',
   'voiceObs.confidence': '信頼度',
   'voiceObs.commitSuccess': '観察記録が園児の記録に保存されました！',
+  'voiceObs.progressFailed': '{count} 件の進捗の更新を保存できませんでした。該当する子どもを確認し、もう一度入力してください。',
   'voiceObs.commitWarning': 'お子さまがマッチしていない観察があります。保存する前に割り当ててください。',
   'voiceObs.statsApproved': '承認済み',
   'voiceObs.statsRejected': '却下',
@@ -5539,6 +5540,7 @@ export const ja: Record<string, string> = {
   'paperScan.scanCta': '記録用紙をスキャン',
   'paperScan.takePhoto': '写真を撮る',
   'paperScan.chooseFromGallery': 'ギャラリーから選ぶ',
+  'paperScan.desktopHint': 'パソコンではファイル選択が開きます。用紙の撮影にはスマートフォンをお使いください。',
   'paperScan.sheetDate': '記録用紙の日付',
   'paperScan.recentScans': '最近のスキャン',
   'paperScan.noScans': 'まだスキャンがありません。最初の記録用紙を撮影してください。',
@@ -5596,6 +5598,7 @@ export const ja: Record<string, string> = {
   'paperScan.saveFailed': 'この変更を保存できませんでした。',
   'paperScan.commitFailed': 'プロフィールに保存できませんでした。もう一度お試しください。',
   'paperScan.commitSuccess': 'お子さまのプロフィールに保存しました。',
+  'paperScan.progressFailed': '{count} 件の進捗の更新を保存できませんでした。該当する子どもを確認し、もう一度承認してください。',
 
   // ── School Features (self-serve Feature Switchboard) ──────────────────
   'schoolFeatures.menuLabel': '学校の機能',

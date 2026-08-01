@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Montree — Student Progress Report — Mei Lin</title>
+<style>
+  @page { size: A4 portrait; margin: 12mm; }
+
+  :root{
+    --ink:        #1F2937;
+    --ink-2:      #6B7280;
+    --line:       #E5E7EB;
+    --line-soft:  #F1F3F5;
+    --brand:      #1A4D6B;
+    --track:      #EDEFF2;
+
+    --pl:  #22c55e;
+    --se:  #f97316;
+    --ma:  #3b82f6;
+    --la:  #ec4899;
+    --cu:  #8b5cf6;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html,body{
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body{
+    font-family: Inter, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    font-size: 8.3pt;
+    line-height: 1.32;
+    width: 186mm;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .sheet{ display:flex; flex-direction:column; }
+
+  /* ─────────── shared type ─────────── */
+  .eyebrow{
+    font-size: 6.2pt;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    font-weight: 600;
+  }
+  .muted{ color: var(--ink-2); }
+  .num{ font-variant-numeric: tabular-nums; }
+
+  /* ─────────── header ─────────── */
+  .topbar{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    padding-bottom: 1.9mm;
+  }
+  .wordmark{
+    display:flex; align-items:center; gap:2mm;
+    color: var(--brand);
+  }
+  .wordmark .leaf{ display:block; }
+  .wordmark .name{
+    font-size: 14.5pt;
+    font-weight: 700;
+    letter-spacing: -.015em;
+    line-height:1;
+  }
+  .topbar .stamp{ text-align:right; line-height:1.5; }
+
+  .rule{ height:0; border-top: 0.7pt solid var(--brand); }
+  .rule-soft{ height:0; border-top: 0.6pt solid var(--line); }
+
+  .titleblock{ padding-top: 2.6mm; }
+  h1{
+    font-size: 14pt;
+    font-weight: 700;
+    letter-spacing: -.018em;
+    line-height: 1.1;
+  }
+  .identity{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    gap: 6mm;
+    margin-top: 1.7mm;
+  }
+  .identity .who{ font-size: 9.6pt; font-weight: 600; letter-spacing:-.005em; }
+  .identity .who span{ font-weight: 400; color: var(--ink-2); }
+  .identity .period{ text-align:right; }
+  .identity .period b{ font-weight:600; display:block; font-size:8.4pt; }
+
+  /* ─────────── summary row ─────────── */
+  .summary{
+    display:flex; gap: 3.2mm;
+    margin-top: 2.4mm;
+  }
+  .ringcard{
+    width: 47mm;
+    border: 0.6pt solid var(--line);
+    border-radius: 2mm;
+    padding: 2.3mm 2.6mm;
+    display:flex; align-items:center; gap: 3mm;
+    background: #FBFCFD;
+  }
+  .ringcard .meta{ padding-bottom:.4mm; }
+  .ringcard .meta .big{ font-size:7.6pt; font-weight:600; line-height:1.25; }
+  .ringcard .meta .sub{ font-size:6.8pt; color:var(--ink-2); margin-top:1mm; line-height:1.3; }
+
+  .tiles{ display:flex; gap: 3.2mm; flex:1; }
+  .tile{
+    flex:1;
+    border: 0.6pt solid var(--line);
+    border-radius: 2mm;
+    padding: 2.2mm 2.8mm;
+    display:flex; flex-direction:column; justify-content:space-between;
+  }
+  .tile .v{ font-size: 17pt; font-weight: 700; line-height:1; letter-spacing:-.03em; color: var(--brand); }
+  .tile .k{ font-size: 6.8pt; color: var(--ink-2); line-height:1.3; margin-top: 1.8mm; }
+  .tile .k b{ display:block; color: var(--ink); font-weight:600; font-size:7pt; }
+
+  /* ─────────── section heads ─────────── */
+  .sechead{
+    display:flex; align-items:baseline; justify-content:space-between;
+    margin-top: 2.3mm; margin-bottom: 1.5mm;
+  }
+  .sechead .h{ font-size: 8.2pt; font-weight: 700; letter-spacing:.02em; }
+  .sechead .note{ font-size: 6.6pt; color: var(--ink-2); }
+
+  /* ─────────── area bars ─────────── */
+  .areas{ border-top: 0.6pt solid var(--line); }
+  .arow{
+    padding: 1.1mm 0 1.2mm;
+    border-bottom: 0.6pt solid var(--line-soft);
+  }
+  .arow:last-child{ border-bottom: 0.6pt solid var(--line); }
+
+  .aline{ display:flex; align-items:center; gap: 2mm; }
+  .badge{
+    width: 4.4mm; height: 4.4mm; border-radius: 1.1mm;
+    color:#fff; font-size:6.4pt; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+    flex:none;
+  }
+  .aname{ font-size: 8.4pt; font-weight: 650; letter-spacing:-.005em; }
+  .aline .spacer{ flex:1; }
+  .acount{ font-size: 7pt; color: var(--ink-2); }
+  .apct{ font-size: 8.6pt; font-weight: 700; width: 11mm; text-align:right; letter-spacing:-.02em; }
+
+  .track{
+    position:relative;
+    height: 3.2mm;
+    background: var(--track);
+    border-radius: 1.6mm;
+    margin: 1.15mm 0 1.05mm;
+    overflow:hidden;
+  }
+  .fill{
+    position:absolute; left:0; top:0; bottom:0;
+    border-radius: 1.6mm;
+  }
+  .tick{
+    position:absolute; top:0; bottom:0; width:0;
+    border-left: 0.5pt solid #FFFFFF;
+    opacity:.85;
+  }
+
+  .bline{ display:flex; align-items:center; gap:2mm; padding-left: 6.4mm; }
+  .bline .lbl{ font-size:7pt; color: var(--ink-2); }
+  .bline .work{ font-size:7.6pt; font-weight:600; }
+  .chip{
+    display:inline-flex; align-items:center; gap:1.1mm;
+    font-size: 5.9pt; font-weight: 700; letter-spacing:.09em; text-transform:uppercase;
+    padding: .6mm 1.7mm .6mm 1.4mm; border-radius: 1mm; line-height:1.3;
+    border: 0.7pt solid #D1D5DB;
+    background:#fff;
+    color: var(--ink-2);
+    white-space:nowrap;
+  }
+  .chip .cdot{
+    width:1.5mm; height:1.5mm; border-radius:50%;
+    border: 0.7pt solid currentColor; flex:none;
+  }
+  .chip.practicing .cdot{ background: currentColor; }
+
+  /* ─────────── two panels ─────────── */
+  .panels{ display:flex; gap: 5mm; }
+  .panel .sechead{ margin-top: 2.3mm; }
+  .panel{ flex:1; }
+  .plist{ border-top: 0.6pt solid var(--line); }
+  .pitem{
+    display:flex; align-items:center; gap: 2mm;
+    padding: 1.0mm 0;
+    border-bottom: 0.6pt solid var(--line-soft);
+  }
+  .dot{ width:2.1mm; height:2.1mm; border-radius:50%; flex:none; }
+  .pitem .t{ font-size: 7.6pt; font-weight: 550; }
+  .pitem .a{ font-size: 6.6pt; color: var(--ink-2); }
+  .pitem .sp{ flex:1; }
+  .pitem .d{ font-size: 6.9pt; color: var(--ink-2); white-space:nowrap; }
+
+  /* ─────────── observations ─────────── */
+  .obsbox{
+    border: 0.6pt solid var(--line);
+    border-left: 1.6pt solid var(--brand);
+    border-radius: 0 2mm 2mm 0;
+    padding: 1.9mm 3mm 1.8mm;
+    background:#FBFCFD;
+  }
+  .obs + .obs{ margin-top: 1.5mm; padding-top: 1.5mm; border-top: 0.6pt solid var(--line); }
+  .obs .meta{ font-size:6.4pt; color:var(--ink-2); letter-spacing:.06em; text-transform:uppercase; font-weight:600; }
+  .obs .body{ font-size:7.6pt; line-height:1.38; margin-top:.7mm; }
+
+  /* ─────────── footer ─────────── */
+  .footer{ margin-top: 2.2mm; }
+  .cmt{
+    border: 0.6pt solid var(--line);
+    border-radius: 2mm;
+    padding: 2.2mm 3.2mm .8mm;
+  }
+  .cmt .lines{ margin-top: 1.3mm; }
+  .cmt .ln{ height: 4.4mm; border-bottom: 0.6pt solid var(--line); }
+  .cmt .ln:last-child{ border-bottom-color: var(--line); }
+
+  .sign{ display:flex; gap: 6mm; margin-top: 2.8mm; }
+  .sign .f{ flex:1; }
+  .sign .f.dt{ flex: 0 0 42mm; }
+  .sign .bar{ border-bottom: 0.7pt solid var(--ink); height: 5.4mm; }
+  .sign .cap{ font-size: 6.4pt; color: var(--ink-2); letter-spacing:.09em; text-transform:uppercase; margin-top:1.3mm; font-weight:600; }
+
+  .colophon{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top: 1.9mm; padding-top: 1.5mm;
+    border-top: 0.6pt solid var(--line);
+    font-size: 6.3pt; color: var(--ink-2);
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <!-- ══════════ HEADER ══════════ -->
+  <div class="topbar">
+    <div class="wordmark">
+      <svg class="leaf" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 22V9.5" stroke="#1A4D6B" stroke-width="1.9" stroke-linecap="round" fill="none"/>
+        <path d="M12.4 11.2c-.4-4.4 2.4-7.9 7.1-8.6.7 4.9-2.4 8.6-7.1 8.6Z" fill="#1A4D6B"/>
+        <path d="M11.2 16.2c-3.3.2-6-1.9-6.9-5.6 3.9-.7 6.8 1.6 6.9 5.6Z" fill="#1A4D6B" opacity=".5"/>
+      </svg>
+      <div class="name">Montree</div>
+    </div>
+    <div class="stamp">
+      <div class="eyebrow">Report date</div>
+      <div class="num" style="font-weight:600;">1 August 2026</div>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="titleblock">
+    <h1>Student Progress Report</h1>
+    <div class="identity">
+      <div class="who">Mei Lin <span>· Age 4 · Casa 1 · Sunrise Montessori</span></div>
+      <div class="period">
+        <div class="eyebrow">Reporting period</div>
+        <b class="num">1 – 31 July 2026</b>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ SUMMARY ══════════ -->
+  <div class="summary">
+    <div class="ringcard">
+      <svg width="63" height="63" viewBox="0 0 72 72" aria-hidden="true">
+        <circle cx="36" cy="36" r="29" fill="none" stroke="#E5E7EB" stroke-width="7.5"/>
+        <circle cx="36" cy="36" r="29" fill="none" stroke="#1A4D6B" stroke-width="7.5"
+                stroke-linecap="round" stroke-dasharray="83.9 98.3"
+                transform="rotate(-90 36 36)"/>
+        <text x="36" y="35.5" text-anchor="middle" font-family="Inter, Helvetica, Arial, sans-serif"
+              font-size="17" font-weight="700" fill="#1F2937" letter-spacing="-0.6">46%</text>
+        <text x="36" y="45.5" text-anchor="middle" font-family="Inter, Helvetica, Arial, sans-serif"
+              font-size="5.9" font-weight="600" fill="#6B7280" letter-spacing="0.9">COMPLETE</text>
+      </svg>
+      <div class="meta">
+        <div class="big">Overall curriculum<br>completion</div>
+        <div class="sub num">60 of 130 works<br>across five areas</div>
+      </div>
+    </div>
+
+    <div class="tiles">
+      <div class="tile">
+        <div class="v num">6</div>
+        <div class="k"><b>Works mastered</b>this reporting period</div>
+      </div>
+      <div class="tile">
+        <div class="v num">5</div>
+        <div class="k"><b>Works in progress</b>presented or practicing</div>
+      </div>
+      <div class="tile">
+        <div class="v num">23</div>
+        <div class="k"><b>Observations logged</b>voice, photo &amp; paper</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ AREAS ══════════ -->
+  <div class="sechead">
+    <div class="h">Progress by area</div>
+    <div class="note">Completion is measured to the child’s current place on the shelf sequence.</div>
+  </div>
+
+  <div class="areas">
+
+    <!-- Practical Life -->
+    <div class="arow">
+      <div class="aline">
+        <div class="badge" style="background:var(--pl)">P</div>
+        <div class="aname">Practical Life</div>
+        <div class="spacer"></div>
+        <div class="acount num">18 of 28 works</div>
+        <div class="apct num">64%</div>
+      </div>
+      <div class="track">
+        <div class="fill" style="width:64.3%;background:var(--pl)"></div>
+      </div>
+      <div class="bline">
+        <div class="lbl">Now working on</div>
+        <div class="work">Polishing Metal</div>
+        <div class="chip practicing" style="color:var(--pl);border-color:var(--pl)"><span class="cdot"></span>Practicing</div>
+      </div>
+    </div>
+
+    <!-- Sensorial -->
+    <div class="arow">
+      <div class="aline">
+        <div class="badge" style="background:var(--se)">S</div>
+        <div class="aname">Sensorial</div>
+        <div class="spacer"></div>
+        <div class="acount num">14 of 24 works</div>
+        <div class="apct num">58%</div>
+      </div>
+      <div class="track">
+        <div class="fill" style="width:58.3%;background:var(--se)"></div>
+      </div>
+      <div class="bline">
+        <div class="lbl">Now working on</div>
+        <div class="work">Colour Box 3</div>
+        <div class="chip practicing" style="color:var(--se);border-color:var(--se)"><span class="cdot"></span>Practicing</div>
+      </div>
+    </div>
+
+    <!-- Mathematics -->
+    <div class="arow">
+      <div class="aline">
+        <div class="badge" style="background:var(--ma)">M</div>
+        <div class="aname">Mathematics</div>
+        <div class="spacer"></div>
+        <div class="acount num">9 of 26 works</div>
+        <div class="apct num">35%</div>
+      </div>
+      <div class="track">
+        <div class="fill" style="width:34.6%;background:var(--ma)"></div>
+      </div>
+      <div class="bline">
+        <div class="lbl">Now working on</div>
+        <div class="work">Golden Bead Addition</div>
+        <div class="chip"><span class="cdot"></span>Presented</div>
+      </div>
+    </div>
+
+    <!-- Language -->
+    <div class="arow">
+      <div class="aline">
+        <div class="badge" style="background:var(--la)">L</div>
+        <div class="aname">Language</div>
+        <div class="spacer"></div>
+        <div class="acount num">11 of 30 works</div>
+        <div class="apct num">37%</div>
+      </div>
+      <div class="track">
+        <div class="fill" style="width:36.7%;background:var(--la)"></div>
+      </div>
+      <div class="bline">
+        <div class="lbl">Now working on</div>
+        <div class="work">Metal Insets</div>
+        <div class="chip practicing" style="color:var(--la);border-color:var(--la)"><span class="cdot"></span>Practicing</div>
+      </div>
+    </div>
+
+    <!-- Cultural -->
+    <div class="arow">
+      <div class="aline">
+        <div class="badge" style="background:var(--cu)">C</div>
+        <div class="aname">Cultural</div>
+        <div class="spacer"></div>
+        <div class="acount num">8 of 22 works</div>
+        <div class="apct num">36%</div>
+      </div>
+      <div class="track">
+        <div class="fill" style="width:36.4%;background:var(--cu)"></div>
+      </div>
+      <div class="bline">
+        <div class="lbl">Now working on</div>
+        <div class="work">Asia Puzzle Map</div>
+        <div class="chip"><span class="cdot"></span>Presented</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════ PANELS ══════════ -->
+  <div class="panels">
+
+    <div class="panel">
+      <div class="sechead">
+        <div class="h">Recently mastered</div>
+        <div class="note">This period</div>
+      </div>
+      <div class="plist">
+        <div class="pitem"><div class="dot" style="background:var(--la)"></div><div class="t">Sandpaper Letters</div><div class="sp"></div><div class="a">Language</div><div class="d num" style="width:11mm;text-align:right">3 Jul</div></div>
+        <div class="pitem"><div class="dot" style="background:var(--se)"></div><div class="t">Knobbed Cylinders</div><div class="sp"></div><div class="a">Sensorial</div><div class="d num" style="width:11mm;text-align:right">7 Jul</div></div>
+        <div class="pitem"><div class="dot" style="background:var(--pl)"></div><div class="t">Folding Cloths</div><div class="sp"></div><div class="a">Practical Life</div><div class="d num" style="width:11mm;text-align:right">10 Jul</div></div>
+        <div class="pitem"><div class="dot" style="background:var(--ma)"></div><div class="t">Number Rods</div><div class="sp"></div><div class="a">Mathematics</div><div class="d num" style="width:11mm;text-align:right">15 Jul</div></div>
+        <div class="pitem"><div class="dot" style="background:var(--cu)"></div><div class="t">Land &amp; Water Forms</div><div class="sp"></div><div class="a">Cultural</div><div class="d num" style="width:11mm;text-align:right">21 Jul</div></div>
+        <div class="pitem"><div class="dot" style="background:var(--pl)"></div><div class="t">Table Washing</div><div class="sp"></div><div class="a">Practical Life</div><div class="d num" style="width:11mm;text-align:right">28 Jul</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="sechead">
+        <div class="h">Coming next</div>
+        <div class="note">Next work in each area</div>
+      </div>
+      <div class="plist">
+        <div class="pitem"><div class="dot" style="background:var(--pl)"></div><div class="t">Table Setting</div><div class="sp"></div><div class="a">Practical Life</div></div>
+        <div class="pitem"><div class="dot" style="background:var(--se)"></div><div class="t">Geometric Solids</div><div class="sp"></div><div class="a">Sensorial</div></div>
+        <div class="pitem"><div class="dot" style="background:var(--ma)"></div><div class="t">Stamp Game</div><div class="sp"></div><div class="a">Mathematics</div></div>
+        <div class="pitem"><div class="dot" style="background:var(--la)"></div><div class="t">Moveable Alphabet</div><div class="sp"></div><div class="a">Language</div></div>
+        <div class="pitem"><div class="dot" style="background:var(--cu)"></div><div class="t">Parts of a Plant</div><div class="sp"></div><div class="a">Cultural</div></div>
+        <div class="pitem" style="border-bottom:none;padding-top:2.1mm;">
+          <div class="a" style="line-height:1.35;">Presented when the child shows readiness — never on a fixed date.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════ OBSERVATIONS ══════════ -->
+  <div class="sechead">
+    <div class="h">From the classroom</div>
+    <div class="note">Selected from 23 observations recorded this period</div>
+  </div>
+  <div class="obsbox">
+    <div class="obs">
+      <div class="meta">14 July 2026 · Sensorial</div>
+      <div class="body">Mei Lin carried the Knobbed Cylinders to her mat unassisted and worked for eighteen minutes without once looking up. She found two cylinders in the wrong sockets, corrected them herself, and returned the work to the shelf exactly where it belonged.</div>
+    </div>
+    <div class="obs">
+      <div class="meta">23 July 2026 · Practical Life</div>
+      <div class="body">After snack she invited a younger child to watch her sweep, naming each step aloud as she went. Her language is becoming the bridge between her own hands and the life of the group.</div>
+    </div>
+  </div>
+
+  <!-- ══════════ FOOTER ══════════ -->
+  <div class="footer">
+    <div class="cmt">
+      <div class="eyebrow">Teacher comment</div>
+      <div class="lines">
+        <div class="ln"></div>
+        <div class="ln"></div>
+        <div class="ln"></div>
+      </div>
+    </div>
+
+    <div class="sign">
+      <div class="f">
+        <div class="bar"></div>
+        <div class="cap">Teacher signature</div>
+      </div>
+      <div class="f dt">
+        <div class="bar"></div>
+        <div class="cap">Date</div>
+      </div>
+    </div>
+
+    <div class="colophon">
+      <div>Generated by Montree from classroom records · montree.app</div>
+      <div>Mei Lin · Casa 1 · 1 – 31 July 2026 · Page 1 of 1</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

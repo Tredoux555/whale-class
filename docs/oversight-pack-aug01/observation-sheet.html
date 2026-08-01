@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Montree — Daily Observation Sheet (A4)</title>
+<style>
+  /* ============================================================
+     MONTREE — DAILY OBSERVATION SHEET
+     Print-first A4. Page 1 = generated (pre-printed roster + shelf works)
+     Page 2 = blank universal write-in version.
+     No external resources. Near-black ink, no tints in writing zones.
+     ============================================================ */
+
+  @page { size: A4 portrait; margin: 0; }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body {
+    font-family: Inter, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: #111;
+    font-size: 8.4pt;
+    line-height: 1;
+  }
+
+  .page {
+    position: relative;
+    width: 210mm;
+    height: 297mm;
+    box-sizing: border-box;
+    overflow: hidden;
+    page-break-after: always;
+    break-after: page;
+  }
+  .page:last-of-type { page-break-after: auto; break-after: auto; }
+
+  /* ---- corner fiducials (alignment targets for the vision pipeline) ---- */
+  .fid { position: absolute; width: 6mm; height: 6mm; background: #111; }
+  .fid.tl { top: 7mm;    left: 7mm;  }
+  .fid.tr { top: 7mm;    right: 7mm; }
+  .fid.bl { bottom: 7mm; left: 7mm;  }
+  .fid.br { bottom: 7mm; right: 7mm; }
+
+  /* ---- content frame: clears the fiducial band top and bottom ---- */
+  .frame {
+    position: absolute;
+    top: 7mm; left: 7mm;
+    width: 196mm;
+    height: 274.5mm;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ============================ HEADER ============================ */
+  .head {
+    height: 19mm;
+    flex: 0 0 19mm;
+    display: flex;
+    align-items: flex-start;
+    /* horizontal inset clears the two top fiducials */
+    padding: 0 7.5mm;
+    box-sizing: border-box;
+    border-bottom: 0.8pt solid #111;
+  }
+
+  .brand { width: 44mm; flex: 0 0 44mm; padding-top: 0.4mm; }
+  .wordmark {
+    font-size: 16pt;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #1A4D6B;
+    line-height: 1;
+  }
+  .wordmark .leaf { font-weight: 400; }
+  .sheet-title {
+    margin-top: 1.4mm;
+    font-size: 8.2pt;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #111;
+  }
+  .sheet-sub {
+    margin-top: 0.9mm;
+    font-size: 5.9pt;
+    letter-spacing: 0.03em;
+    color: #444;
+  }
+
+  .fields { flex: 1 1 auto; padding: 0.6mm 3mm 0 4mm; }
+  .frow { display: flex; align-items: flex-end; gap: 4mm; height: 7.6mm; }
+  .fld { display: flex; align-items: flex-end; flex: 1 1 auto; }
+  .fld.grow2 { flex: 2 1 auto; }
+  .flabel {
+    font-size: 6.2pt; letter-spacing: 0.11em; text-transform: uppercase;
+    color: #111; font-weight: 600; padding-bottom: 0.6mm; white-space: nowrap;
+  }
+  .flabel .hint {
+    font-size: 5pt; font-weight: 400; letter-spacing: 0.08em; color: #666;
+    margin-left: 0.8mm;
+  }
+  .fline {
+    flex: 1 1 auto; border-bottom: 0.7pt solid #111;
+    height: 5.6mm; margin-left: 1.6mm;
+    font-size: 8.6pt; padding: 0 0 0.5mm 1mm;
+    display: flex; align-items: flex-end;
+  }
+
+  /* boxed date DD MM YYYY */
+  .datewrap { display: flex; align-items: flex-end; margin-left: 1.6mm; }
+  .dgroup { display: flex; margin-right: 1.8mm; }
+  .dgroup:last-child { margin-right: 0; }
+  .dbox {
+    width: 4.3mm; height: 5.8mm;
+    border: 0.7pt solid #111;
+    margin-right: -0.7pt;
+    box-sizing: border-box;
+  }
+  .qrwrap { width: 15mm; flex: 0 0 15mm; text-align: center; margin-left: 2mm; }
+  .qr { width: 14.4mm; height: 14.4mm; display: block; margin: 0 auto; }
+  .qrcap {
+    font-size: 4.6pt; letter-spacing: 0.04em; color: #444; margin-top: 0.6mm;
+    white-space: nowrap;
+  }
+
+  /* ============================ LEGEND ============================ */
+  .legend {
+    height: 7.4mm; flex: 0 0 7.4mm;
+    margin-top: 1mm;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 0.5pt solid #111;
+    font-size: 6pt;
+    white-space: nowrap;
+  }
+  .lseg { display: flex; align-items: center; white-space: nowrap; }
+  .lseg + .lseg { border-left: 0.5pt solid #999; padding-left: 3mm; }
+  .lseg { padding-right: 3mm; }
+  .lseg.tail { padding-right: 0; }
+  .ltitle {
+    font-size: 5.6pt; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: #111; margin-right: 2mm;
+  }
+  .mark-demo { display: flex; align-items: center; margin-right: 3mm; }
+  .mark-demo:last-child { margin-right: 0; }
+  .mark-demo svg { margin-right: 1.1mm; }
+  .chip { display: inline-flex; align-items: center; margin-right: 2.6mm; white-space: nowrap; }
+  .chip:last-child { margin-right: 0; }
+  .chip i {
+    width: 2.3mm; height: 2.3mm; display: inline-block;
+    margin-right: 0.9mm; border-radius: 0.4mm;
+  }
+  .mono { font-variant-numeric: tabular-nums; }
+  .dim { color: #444; }
+
+  /* ======================= COLUMN HEADER STRIP ==================== */
+  .colhead {
+    height: 4.4mm; flex: 0 0 4.4mm;
+    display: flex; align-items: center;
+    border-bottom: 0.5pt solid #111;
+    font-size: 5.5pt; font-weight: 700;
+    letter-spacing: 0.13em; text-transform: uppercase; color: #111;
+  }
+  .colhead .c { box-sizing: border-box; padding-left: 1.6mm; }
+  .colhead .c + .c { border-left: 0.5pt solid #999; }
+  .colhead .codes {
+    font-size: 5pt; font-weight: 400; letter-spacing: 0.02em;
+    text-transform: none; color: #444; margin-left: 3.5mm; white-space: nowrap;
+  }
+  .colhead .codes b { font-weight: 700; color: #111; }
+
+  /* column geometry — shared by header strip and every entry row */
+  .c-work { width: 58mm; flex: 0 0 58mm; }
+  .c-mark { width: 14mm; flex: 0 0 14mm; text-align: center; padding-left: 0 !important; }
+  .c-time { width: 38mm; flex: 0 0 38mm; }
+  .c-note { flex: 1 1 auto; }
+
+  /* ========================= CHILD BLOCKS ========================= */
+  .roster { flex: 1 1 auto; display: flex; flex-direction: column; padding-top: 1mm; }
+
+  .child {
+    flex: 1 1 0;
+    display: flex; flex-direction: column;
+    border: 0.8pt solid #111;
+    box-sizing: border-box;
+    margin-bottom: 1.1mm;
+  }
+  .child:last-child { margin-bottom: 0; }
+
+  /* name + general-note band */
+  .nameband {
+    flex: 0 0 7.4mm;
+    display: flex; align-items: flex-end;
+    border-bottom: 0.8pt solid #111;
+    box-sizing: border-box;
+    padding: 0 1.6mm 0.5mm 1.6mm;
+  }
+  .cname {
+    font-size: 10pt; font-weight: 700; letter-spacing: -0.01em;
+    color: #111; line-height: 1; white-space: nowrap;
+  }
+  .cname-blank {
+    flex: 0 0 46mm; border-bottom: 0.6pt solid #111; height: 5.4mm; margin: 0 3mm 0 1.6mm;
+  }
+  .gnote {
+    flex: 1 1 auto; display: flex; align-items: flex-end;
+    margin-left: 4mm; height: 5.6mm;
+  }
+  .gnote .glabel {
+    font-size: 5.6pt; letter-spacing: 0.12em; text-transform: uppercase;
+    color: #444; font-weight: 600; padding-bottom: 0.5mm; white-space: nowrap;
+  }
+  .gnote .gline { flex: 1 1 auto; border-bottom: 0.6pt solid #111; height: 100%; margin-left: 1.6mm; }
+
+  /* entry rows */
+  .row {
+    flex: 1 1 0;
+    display: flex; align-items: stretch;
+    border-bottom: 0.5pt solid #111;   /* doubles as the note writing baseline */
+    box-sizing: border-box;
+    min-height: 7.4mm;   /* floor only — flex distributes the true row height */
+  }
+  .row:last-child { border-bottom: 0; }
+
+  .row .c { box-sizing: border-box; display: flex; align-items: center; padding-left: 1.6mm; }
+  .row .c + .c { border-left: 0.5pt solid #999; }
+
+  .work { font-size: 8.3pt; color: #111; line-height: 1.05; }
+  .work .wname { font-weight: 500; }
+  .workchip {
+    display: inline-flex; align-items: center; margin-left: 1.6mm;
+    font-size: 6.1pt; letter-spacing: 0.07em; color: #111; white-space: nowrap;
+  }
+  .workchip i {
+    width: 2.1mm; height: 2.1mm; display: inline-block;
+    margin-right: 0.8mm; border-radius: 0.35mm;
+  }
+  /* write-in work cell: the row's own bottom hairline is the writing baseline,
+     so no second rule is drawn here — this element is a spacer that pushes the
+     area box to the right edge of the column. */
+  .work-blank { flex: 1 1 auto; height: 4.6mm; margin-right: 2mm; }
+  .chip-blank {
+    flex: 0 0 9mm; height: 4.6mm; border: 0.5pt solid #999; margin-right: 1.6mm;
+    box-sizing: border-box;
+  }
+
+  /* mark box — where the teacher draws the triangle */
+  .markbox {
+    width: 10mm; height: 6.6mm;
+    border: 0.6pt solid #111;
+    box-sizing: border-box;
+    margin: 0 auto;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* time cells */
+  .timecell { display: flex; align-items: center; }
+  .tbox {
+    width: 15mm; height: 6mm;
+    border: 0.6pt solid #111;
+    box-sizing: border-box;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 7.6pt; color: #666;
+  }
+  .tdash { padding: 0 1.6mm; font-size: 8pt; color: #111; }
+
+  /* page 2 carries five write-in rows per child; flex sizes them to match page 1 */
+</style>
+</head>
+<body>
+
+<!-- ================================================================
+     PAGE 1 — GENERATED SHEET (roster + current shelf works pre-printed)
+     ================================================================ -->
+<div class="page">
+  <div class="fid tl"></div><div class="fid tr"></div>
+  <div class="fid bl"></div><div class="fid br"></div>
+
+  <div class="frame">
+
+    <!-- HEADER -->
+    <div class="head">
+      <div class="brand">
+        <div class="wordmark">Montree</div>
+        <div class="sheet-title">Daily Observation</div>
+        <div class="sheet-sub">Mark by hand &middot; photograph at day&rsquo;s end</div>
+      </div>
+
+      <div class="fields">
+        <div class="frow">
+          <div class="fld">
+            <span class="flabel">School</span>
+            <span class="fline">Sunrise Montessori</span>
+          </div>
+          <div class="fld" style="flex:0 0 auto;">
+            <span class="flabel">Date <span class="hint">DD MM YYYY</span></span>
+            <span class="datewrap">
+              <span class="dgroup"><span class="dbox"></span><span class="dbox"></span></span>
+              <span class="dgroup"><span class="dbox"></span><span class="dbox"></span></span>
+              <span class="dgroup"><span class="dbox"></span><span class="dbox"></span><span class="dbox"></span><span class="dbox"></span></span>
+            </span>
+          </div>
+        </div>
+        <div class="frow">
+          <div class="fld">
+            <span class="flabel">Teacher</span>
+            <span class="fline"></span>
+          </div>
+          <div class="fld">
+            <span class="flabel">Class</span>
+            <span class="fline">Casa 1</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="qrwrap">
+        <svg class="qr" viewBox="0 0 29 29" shape-rendering="crispEdges">
+          <rect x="0" y="0" width="29" height="29" fill="#fff" stroke="#111" stroke-width="0.5"/>
+          <!-- finder patterns -->
+          <g fill="#111">
+            <path d="M3 3h7v7H3z"/><path d="M19 3h7v7h-7z"/><path d="M3 19h7v7H3z"/>
+          </g>
+          <g fill="#fff">
+            <path d="M4 4h5v5H4z"/><path d="M20 4h5v5h-5z"/><path d="M4 20h5v5H4z"/>
+          </g>
+          <g fill="#111">
+            <path d="M5.5 5.5h2v2h-2z"/><path d="M21.5 5.5h2v2h-2z"/><path d="M5.5 21.5h2v2h-2z"/>
+          </g>
+          <!-- placeholder modules -->
+          <g fill="#111">
+            <rect x="12" y="3" width="1" height="1"/><rect x="14" y="4" width="1" height="1"/>
+            <rect x="12" y="6" width="1" height="1"/><rect x="15" y="7" width="1" height="1"/>
+            <rect x="13" y="9" width="1" height="1"/><rect x="16" y="10" width="1" height="1"/>
+            <rect x="3" y="12" width="1" height="1"/><rect x="5" y="13" width="1" height="1"/>
+            <rect x="7" y="12" width="1" height="1"/><rect x="9" y="14" width="1" height="1"/>
+            <rect x="11" y="12" width="1" height="1"/><rect x="12" y="14" width="1" height="1"/>
+            <rect x="14" y="12" width="1" height="1"/><rect x="16" y="13" width="1" height="1"/>
+            <rect x="18" y="12" width="1" height="1"/><rect x="20" y="14" width="1" height="1"/>
+            <rect x="22" y="12" width="1" height="1"/><rect x="24" y="13" width="1" height="1"/>
+            <rect x="12" y="16" width="1" height="1"/><rect x="14" y="17" width="1" height="1"/>
+            <rect x="13" y="19" width="1" height="1"/><rect x="16" y="20" width="1" height="1"/>
+            <rect x="12" y="22" width="1" height="1"/><rect x="15" y="23" width="1" height="1"/>
+            <rect x="13" y="25" width="1" height="1"/><rect x="19" y="17" width="1" height="1"/>
+            <rect x="21" y="19" width="1" height="1"/><rect x="23" y="21" width="1" height="1"/>
+            <rect x="25" y="18" width="1" height="1"/><rect x="20" y="23" width="1" height="1"/>
+            <rect x="22" y="25" width="1" height="1"/><rect x="24" y="24" width="1" height="1"/>
+            <rect x="18" y="21" width="1" height="1"/><rect x="19" y="25" width="1" height="1"/>
+          </g>
+        </svg>
+        <div class="qrcap">class&middot;day code</div>
+      </div>
+    </div>
+
+    <!-- LEGEND -->
+    <div class="legend">
+      <div class="lseg">
+        <span class="ltitle">Mark</span>
+        <span class="mark-demo">
+          <svg width="14" height="13" viewBox="0 0 14 13"><path d="M2 11.4 L7 1.6" stroke="#111" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg>
+          <span>Presented</span>
+        </span>
+        <span class="mark-demo">
+          <svg width="14" height="13" viewBox="0 0 14 13"><path d="M2 11.4 L7 1.6 L12 11.4" stroke="#111" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Practicing</span>
+        </span>
+        <span class="mark-demo">
+          <svg width="14" height="13" viewBox="0 0 14 13"><path d="M2 11.4 L7 1.6 L12 11.4 Z" fill="#111" stroke="#111" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <span>Mastered</span>
+        </span>
+      </div>
+      <div class="lseg">
+        <span class="ltitle">Area</span>
+        <span class="chip"><i style="background:#22c55e"></i>PL</span>
+        <span class="chip"><i style="background:#f97316"></i>Sens</span>
+        <span class="chip"><i style="background:#3b82f6"></i>Math</span>
+        <span class="chip"><i style="background:#ec4899"></i>Lang</span>
+        <span class="chip"><i style="background:#8b5cf6"></i>Cult</span>
+      </div>
+      <div class="lseg tail">
+        <span class="ltitle">Time</span>
+        <span class="mono">write the clock range &mdash; start&ndash;end, e.g. 9:15&ndash;9:40</span>
+      </div>
+    </div>
+
+    <!-- COLUMN HEADER -->
+    <div class="colhead">
+      <div class="c c-work">Work &amp; Area</div>
+      <div class="c c-mark">Mark</div>
+      <div class="c c-time">Start &ndash; End</div>
+      <div class="c c-note">Note<span class="codes">optional codes &nbsp;<b>wd</b> working distracted &nbsp;<b>WC</b> working concentrated &nbsp;<b>DC</b> deep concentration</span></div>
+    </div>
+
+    <!-- ROSTER -->
+    <div class="roster">
+
+      <!-- ============ Mei Lin ============ -->
+      <div class="child">
+        <div class="nameband">
+          <span class="cname">Mei Lin</span>
+          <span class="gnote"><span class="glabel">General note</span><span class="gline"></span></span>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work"><span class="wname">Knobbed Cylinders</span><span class="workchip"><i style="background:#f97316"></i>Sens</span></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work"><span class="wname">Sandpaper Letters</span><span class="workchip"><i style="background:#ec4899"></i>Lang</span></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work"><span class="wname">Pouring Grains</span><span class="workchip"><i style="background:#22c55e"></i>PL</span></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work-blank"></span><span class="chip-blank"></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+      </div>
+
+      <!-- ============ Noah ============ -->
+      <div class="child">
+        <div class="nameband">
+          <span class="cname">Noah</span>
+          <span class="gnote"><span class="glabel">General note</span><span class="gline"></span></span>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work"><span class="wname">Pink Tower</span><span class="workchip"><i style="background:#f97316"></i>Sens</span></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work"><span class="wname">Golden Beads</span><span class="workchip"><i style="background:#3b82f6"></i>Math</span></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work"><span class="wname">Metal Insets</span><span class="workchip"><i style="background:#ec4899"></i>Lang</span></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work-blank"></span><span class="chip-blank"></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+      </div>
+
+      <!-- ============ Zi Hao ============ -->
+      <div class="child">
+        <div class="nameband">
+          <span class="cname">Zi Hao</span>
+          <span class="gnote"><span class="glabel">General note</span><span class="gline"></span></span>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work"><span class="wname">Binomial Cube</span><span class="workchip"><i style="background:#f97316"></i>Sens</span></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work"><span class="wname">Number Rods</span><span class="workchip"><i style="background:#3b82f6"></i>Math</span></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work"><span class="wname">Continent Map</span><span class="workchip"><i style="background:#8b5cf6"></i>Cult</span></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work-blank"></span><span class="chip-blank"></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+      </div>
+
+      <!-- ============ Amara ============ -->
+      <div class="child">
+        <div class="nameband">
+          <span class="cname">Amara</span>
+          <span class="gnote"><span class="glabel">General note</span><span class="gline"></span></span>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work"><span class="wname">Spooning Beans</span><span class="workchip"><i style="background:#22c55e"></i>PL</span></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work"><span class="wname">Moveable Alphabet</span><span class="workchip"><i style="background:#ec4899"></i>Lang</span></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work"><span class="wname">Land &amp; Water Forms</span><span class="workchip"><i style="background:#8b5cf6"></i>Cult</span></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work-blank"></span><span class="chip-blank"></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+      </div>
+
+      <!-- ============ Leo ============ -->
+      <div class="child">
+        <div class="nameband">
+          <span class="cname">Leo</span>
+          <span class="gnote"><span class="glabel">General note</span><span class="gline"></span></span>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work"><span class="wname">Brown Stair</span><span class="workchip"><i style="background:#f97316"></i>Sens</span></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work"><span class="wname">Sandpaper Numerals</span><span class="workchip"><i style="background:#3b82f6"></i>Math</span></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work"><span class="wname">Button Frame</span><span class="workchip"><i style="background:#22c55e"></i>PL</span></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work-blank"></span><span class="chip-blank"></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+      </div>
+
+      <!-- ============ Yara ============ -->
+      <div class="child">
+        <div class="nameband">
+          <span class="cname">Yara</span>
+          <span class="gnote"><span class="glabel">General note</span><span class="gline"></span></span>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work"><span class="wname">Red Rods</span><span class="workchip"><i style="background:#f97316"></i>Sens</span></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work"><span class="wname">Teen Boards</span><span class="workchip"><i style="background:#3b82f6"></i>Math</span></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work"><span class="wname">Parts of a Flower</span><span class="workchip"><i style="background:#8b5cf6"></i>Cult</span></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+        <div class="row">
+          <div class="c c-work"><span class="work-blank"></span><span class="chip-blank"></span></div>
+          <div class="c c-mark"><span class="markbox"><svg width="13" height="11" viewBox="0 0 13 11"><path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg></span></div>
+          <div class="c c-time"><span class="timecell"><span class="tbox">:</span><span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>
+          <div class="c c-note"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ================================================================
+     PAGE 2 — BLANK UNIVERSAL SHEET (write-in roster and works)
+     ================================================================ -->
+<div class="page page2">
+  <div class="fid tl"></div><div class="fid tr"></div>
+  <div class="fid bl"></div><div class="fid br"></div>
+
+  <div class="frame">
+
+    <!-- HEADER -->
+    <div class="head">
+      <div class="brand">
+        <div class="wordmark">Montree</div>
+        <div class="sheet-title">Daily Observation</div>
+        <div class="sheet-sub">Mark by hand &middot; photograph at day&rsquo;s end</div>
+      </div>
+
+      <div class="fields">
+        <div class="frow">
+          <div class="fld">
+            <span class="flabel">School</span>
+            <span class="fline"></span>
+          </div>
+          <div class="fld" style="flex:0 0 auto;">
+            <span class="flabel">Date <span class="hint">DD MM YYYY</span></span>
+            <span class="datewrap">
+              <span class="dgroup"><span class="dbox"></span><span class="dbox"></span></span>
+              <span class="dgroup"><span class="dbox"></span><span class="dbox"></span></span>
+              <span class="dgroup"><span class="dbox"></span><span class="dbox"></span><span class="dbox"></span><span class="dbox"></span></span>
+            </span>
+          </div>
+        </div>
+        <div class="frow">
+          <div class="fld">
+            <span class="flabel">Teacher</span>
+            <span class="fline"></span>
+          </div>
+          <div class="fld">
+            <span class="flabel">Class</span>
+            <span class="fline"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="qrwrap">
+        <svg class="qr" viewBox="0 0 29 29" shape-rendering="crispEdges">
+          <rect x="0" y="0" width="29" height="29" fill="#fff" stroke="#111" stroke-width="0.5"/>
+          <g fill="#111">
+            <path d="M3 3h7v7H3z"/><path d="M19 3h7v7h-7z"/><path d="M3 19h7v7H3z"/>
+          </g>
+          <g fill="#fff">
+            <path d="M4 4h5v5H4z"/><path d="M20 4h5v5h-5z"/><path d="M4 20h5v5H4z"/>
+          </g>
+          <g fill="#111">
+            <path d="M5.5 5.5h2v2h-2z"/><path d="M21.5 5.5h2v2h-2z"/><path d="M5.5 21.5h2v2h-2z"/>
+          </g>
+          <g fill="#111">
+            <rect x="12" y="3" width="1" height="1"/><rect x="14" y="4" width="1" height="1"/>
+            <rect x="12" y="6" width="1" height="1"/><rect x="15" y="7" width="1" height="1"/>
+            <rect x="13" y="9" width="1" height="1"/><rect x="16" y="10" width="1" height="1"/>
+            <rect x="3" y="12" width="1" height="1"/><rect x="5" y="13" width="1" height="1"/>
+            <rect x="7" y="12" width="1" height="1"/><rect x="9" y="14" width="1" height="1"/>
+            <rect x="11" y="12" width="1" height="1"/><rect x="12" y="14" width="1" height="1"/>
+            <rect x="14" y="12" width="1" height="1"/><rect x="16" y="13" width="1" height="1"/>
+            <rect x="18" y="12" width="1" height="1"/><rect x="20" y="14" width="1" height="1"/>
+            <rect x="22" y="12" width="1" height="1"/><rect x="24" y="13" width="1" height="1"/>
+            <rect x="12" y="16" width="1" height="1"/><rect x="14" y="17" width="1" height="1"/>
+            <rect x="13" y="19" width="1" height="1"/><rect x="16" y="20" width="1" height="1"/>
+            <rect x="12" y="22" width="1" height="1"/><rect x="15" y="23" width="1" height="1"/>
+            <rect x="13" y="25" width="1" height="1"/><rect x="19" y="17" width="1" height="1"/>
+            <rect x="21" y="19" width="1" height="1"/><rect x="23" y="21" width="1" height="1"/>
+            <rect x="25" y="18" width="1" height="1"/><rect x="20" y="23" width="1" height="1"/>
+            <rect x="22" y="25" width="1" height="1"/><rect x="24" y="24" width="1" height="1"/>
+            <rect x="18" y="21" width="1" height="1"/><rect x="19" y="25" width="1" height="1"/>
+          </g>
+        </svg>
+        <div class="qrcap">class&middot;day code</div>
+      </div>
+    </div>
+
+    <!-- LEGEND -->
+    <div class="legend">
+      <div class="lseg">
+        <span class="ltitle">Mark</span>
+        <span class="mark-demo">
+          <svg width="14" height="13" viewBox="0 0 14 13"><path d="M2 11.4 L7 1.6" stroke="#111" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg>
+          <span>Presented</span>
+        </span>
+        <span class="mark-demo">
+          <svg width="14" height="13" viewBox="0 0 14 13"><path d="M2 11.4 L7 1.6 L12 11.4" stroke="#111" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Practicing</span>
+        </span>
+        <span class="mark-demo">
+          <svg width="14" height="13" viewBox="0 0 14 13"><path d="M2 11.4 L7 1.6 L12 11.4 Z" fill="#111" stroke="#111" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <span>Mastered</span>
+        </span>
+      </div>
+      <div class="lseg">
+        <span class="ltitle">Area</span>
+        <span class="chip"><i style="background:#22c55e"></i>PL</span>
+        <span class="chip"><i style="background:#f97316"></i>Sens</span>
+        <span class="chip"><i style="background:#3b82f6"></i>Math</span>
+        <span class="chip"><i style="background:#ec4899"></i>Lang</span>
+        <span class="chip"><i style="background:#8b5cf6"></i>Cult</span>
+      </div>
+      <div class="lseg tail">
+        <span class="ltitle">Time</span>
+        <span class="mono">write the clock range &mdash; start&ndash;end, e.g. 9:15&ndash;9:40</span>
+      </div>
+    </div>
+
+    <!-- COLUMN HEADER -->
+    <div class="colhead">
+      <div class="c c-work">Work &amp; Area</div>
+      <div class="c c-mark">Mark</div>
+      <div class="c c-time">Start &ndash; End</div>
+      <div class="c c-note">Note<span class="codes">optional codes &nbsp;<b>wd</b> working distracted &nbsp;<b>WC</b> working concentrated &nbsp;<b>DC</b> deep concentration</span></div>
+    </div>
+
+    <!-- BLANK ROSTER — 5 child blocks, 5 write-in rows each -->
+    <div class="roster" id="blankRoster"></div>
+
+  </div>
+</div>
+
+<script>
+/* Blank page is generated so the row geometry stays identical to page 1. */
+(function () {
+  var ghost = '<svg width="13" height="11" viewBox="0 0 13 11">'
+    + '<path d="M1.6 9.6 L6.5 1.4 L11.4 9.6 Z" fill="none" stroke="#d9d9d9" '
+    + 'stroke-width="0.7" stroke-dasharray="1.4 1.2"/></svg>';
+
+  var row = '<div class="row">'
+    + '<div class="c c-work"><span class="work-blank"></span><span class="chip-blank"></span></div>'
+    + '<div class="c c-mark"><span class="markbox">' + ghost + '</span></div>'
+    + '<div class="c c-time"><span class="timecell"><span class="tbox">:</span>'
+    + '<span class="tdash">&ndash;</span><span class="tbox">:</span></span></div>'
+    + '<div class="c c-note"></div>'
+    + '</div>';
+
+  var block = '<div class="child">'
+    + '<div class="nameband">'
+    + '<span class="cname">Child</span>'
+    + '<span class="cname-blank"></span>'
+    + '<span class="gnote"><span class="glabel">General note</span><span class="gline"></span></span>'
+    + '</div>'
+    + row + row + row + row + row
+    + '</div>';
+
+  document.getElementById('blankRoster').innerHTML = block + block + block + block + block;
+})();
+</script>
+
+</body>
+</html>

@@ -6,6 +6,17 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { deleteSessionAudioAndTranscripts } from '@/lib/montree/voice';
 
+// The progress ladder, ranked. Higher never becomes lower.
+// Mirrors paper-scan/[scanId]/commit/route.ts — voice used to upsert the
+// proposed status unconditionally, so a "presented" heard on the recording
+// could downgrade a work the child had already mastered.
+const STATUS_RANK: Record<string, number> = {
+  not_started: 0,
+  presented: 1,
+  practicing: 2,
+  mastered: 3,
+};
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ sessionId: string }> }
@@ -64,6 +75,7 @@ export async function POST(
 
     // Commit each approved extraction to montree_child_progress
     let committedCount = 0;
+    let progressFailed = 0;
     const errors: string[] = [];
 
     for (const ext of approvedExtractions) {
@@ -74,25 +86,47 @@ export async function POST(
       try {
         // Upsert progress record
         if (workName && finalStatus) {
-          const { error: progressError } = await supabase
+          // Never-downgrade: read the current rung before writing. A recording
+          // that says "presented" must not undo a mastered work.
+          // EXCEPTION: an explicit teacher_final_status is a teacher decision
+          // (the review screen's status picker) and always wins.
+          const { data: existingProgress } = await supabase
             .from('montree_child_progress')
-            .upsert({
-              child_id: ext.child_id,
-              classroom_id: session.classroom_id,
-              work_name: workName,
-              work_key: ext.work_key || null,
-              area: area || 'practical_life',
-              status: finalStatus,
-              updated_at: new Date().toISOString(),
-            }, {
-              onConflict: 'child_id,work_name',
-            });
+            .select('status')
+            .eq('child_id', ext.child_id)
+            .eq('work_name', workName)
+            .maybeSingle();
 
-          if (progressError) {
-            console.error('[VoiceObs] Progress upsert error:', progressError);
-            errors.push(`Progress update failed for extraction ${ext.id}`);
-            continue;
+          const isTeacherDecision = !!ext.teacher_final_status;
+          const currentRank = STATUS_RANK[existingProgress?.status || 'not_started'] ?? 0;
+          const nextRank = STATUS_RANK[finalStatus] ?? 0;
+
+          if (isTeacherDecision || !existingProgress || nextRank > currentRank) {
+            const { error: progressError } = await supabase
+              .from('montree_child_progress')
+              .upsert({
+                child_id: ext.child_id,
+                classroom_id: session.classroom_id,
+                work_name: workName,
+                work_key: ext.work_key || null,
+                area: area || 'practical_life',
+                status: finalStatus,
+                updated_at: new Date().toISOString(),
+              }, {
+                onConflict: 'child_id,work_name',
+              });
+
+            if (progressError) {
+              // audit-fix (Aug 2026): the session is marked 'committed' below and
+              // the audio + transcripts are deleted regardless, so a swallowed
+              // upsert failure is unrecoverable. Count it and report it.
+              console.error('[VoiceObs] Progress upsert error:', progressError);
+              progressFailed++;
+              errors.push(`Progress update failed for extraction ${ext.id}`);
+              continue;
+            }
           }
+          // else: already at or above this rung — the record stands.
         }
 
         // Insert behavioral observation if notes present
@@ -148,6 +182,7 @@ export async function POST(
     return NextResponse.json({
       success: true,
       committedCount,
+      progressFailed,
       rejectedCount: rejectedCount || 0,
       errors: errors.length > 0 ? errors : undefined,
     });

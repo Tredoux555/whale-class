@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "incremental": false
+  },
+  "include": [],
+  "files": [
+    "components/montree/media/EventPicker.tsx",
+    "app/api/montree/media/upload/route.ts",
+    "app/montree/dashboard/capture/page.tsx",
+    "app/montree/dashboard/media/page.tsx",
+    "components/montree/DashboardHeader.tsx",
+    "app/montree/dashboard/curriculum/browse/page.tsx",
+    "components/montree/onboarding-copilot/CopilotDock.tsx",
+    "lib/montree/i18n/en.ts",
+    "lib/montree/i18n/zh.ts"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "incremental": true, "tsBuildInfoFile": "./tsconfig.safearea.tmp.tsbuildinfo" },
+  "include": [
+    "next-env.d.ts",
+    "app/montree/dashboard/[childId]/layout.tsx",
+    "app/montree/dashboard/snap/page.tsx",
+    "app/montree/dashboard/curriculum/page.tsx",
+    "app/montree/dashboard/curriculum/browse/page.tsx",
+    "app/montree/dashboard/classroom-builder/page.tsx",
+    "app/montree/dashboard/photo-audit/page.tsx",
+    "app/montree/dashboard/weekly-wrap/page.tsx",
+    "app/montree/library/tools/flashcard-maker/page.tsx",
+    "app/montree/library/tools/vocabulary-flashcards/page.tsx",
+    "app/montree/library/tools/phonics-fast/sentence-cards/page.tsx",
+    "app/montree/library/tools/phonics-fast/dictionary/page.tsx",
+    "app/montree/demo/tutorial/components/ClassroomView.tsx",
+    "app/montree/demo/tutorial/components/StudentDetailView.tsx",
+    "app/api/montree/principal/register/route.ts",
+    "app/api/montree/onboarding/route.ts",
+    "app/api/montree/teacher/register/route.ts",
+    "app/api/montree/try/instant/route.ts",
+    "app/api/montree/super-admin/npo-applications/route.ts"
+  ]
+}

@@ -2348,6 +2348,7 @@ export const nl: Record<string, string> = {
   'voiceObs.selectLanguage': 'Opnametaal',
   'voiceObs.confidence': 'betrouwbaarheid',
   'voiceObs.commitSuccess': 'Waarnemingen toegevoegd aan leerlingengegevens!',
+  'voiceObs.progressFailed': '{count} voortgangsupdates konden niet worden opgeslagen — controleer deze kinderen en voer ze opnieuw in.',
   'voiceObs.commitWarning': 'Sommige waarnemingen hebben niet-gematched leerlingen. Wijs ze toe voordat u doorvoert.',
   'voiceObs.statsApproved': 'Goedgekeurd',
   'voiceObs.statsRejected': 'Afgewezen',
@@ -5539,6 +5540,7 @@ export const nl: Record<string, string> = {
   'paperScan.scanCta': 'Observatieblad scannen',
   'paperScan.takePhoto': 'Foto maken',
   'paperScan.chooseFromGallery': 'Kiezen uit galerij',
+  'paperScan.desktopHint': 'Op een computer opent dit een bestandskiezer — gebruik een telefoon om de vellen te fotograferen.',
   'paperScan.sheetDate': 'Datum van het blad',
   'paperScan.recentScans': 'Recente scans',
   'paperScan.noScans': 'Nog geen scans. Fotografeer uw eerste observatieblad.',
@@ -5596,6 +5598,7 @@ export const nl: Record<string, string> = {
   'paperScan.saveFailed': 'Deze wijziging kon niet worden opgeslagen.',
   'paperScan.commitFailed': 'Opslaan in de profielen is mislukt. Probeer het opnieuw.',
   'paperScan.commitSuccess': 'Opgeslagen in de profielen van de kinderen.',
+  'paperScan.progressFailed': '{count} voortgangsupdates konden niet worden opgeslagen — controleer deze kinderen en keur ze opnieuw goed.',
 
   // ── School Features (self-serve Feature Switchboard) ──────────────────
   'schoolFeatures.menuLabel': 'Schoolfuncties',

@@ -16,6 +16,7 @@ import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 import { useFeatures } from '@/hooks/useFeatures';
 import { compressImage } from '@/lib/montree/media/compression';
+import { isNativeCameraAvailable, captureNativePhoto } from '@/lib/montree/platform/camera';
 import type { MontreeChild } from '@/lib/montree/media/types';
 
 type PageState = 'home' | 'uploading' | 'processing' | 'review' | 'done';
@@ -62,6 +63,10 @@ interface PaperExtraction {
 
 interface CommitResult {
   progress_updated: number;
+  // Progress upserts the commit route tried and could NOT write. The sheet is
+  // still marked committed, so without surfacing this the teacher believes
+  // every approved row landed on a child's profile when some silently didn't.
+  progress_failed: number;
   observations_created: number;
   skipped: number;
 }
@@ -301,6 +306,50 @@ export default function PaperScanPage() {
     void handleFile(file);
   }, [handleFile]);
 
+  // ── Camera button ───────────────────────────────────────────────────────
+  // A bare <input type="file" capture="environment"> is only a HINT: iOS/Android
+  // browsers honour it, the Capacitor shell does not always, and desktop
+  // browsers ignore it entirely and show a file picker. The app already ships a
+  // proven native path (@capacitor/camera via lib/montree/platform/camera.ts,
+  // used by components/montree/media/CameraCapture.tsx), so use it when we're in
+  // the native shell and keep the input as the web fallback. Either way the
+  // photo goes through the SAME handleFile() compress + upload path.
+  const handleCameraClick = useCallback(async () => {
+    if (!isNativeCameraAvailable()) {
+      cameraInputRef.current?.click();
+      return;
+    }
+    try {
+      const photo = await captureNativePhoto({ facing: 'environment' });
+      // handleFile takes a File; CapturedPhoto gives us a Blob. compressImage
+      // accepts File | Blob, but the multipart append below names the part, so
+      // wrapping keeps the filename/type explicit.
+      const file = new File([photo.blob], 'record-sheet.jpg', {
+        type: photo.blob.type || 'image/jpeg',
+        lastModified: Date.now(),
+      });
+      await handleFile(file);
+    } catch (err) {
+      // House pattern (CameraCapture.tsx): a cancel is not an error.
+      if (err instanceof Error && err.message.includes('cancelled')) return;
+      console.error('[paper-scan] Native camera failed, falling back to input:', err);
+      cameraInputRef.current?.click();
+    }
+  }, [handleFile]);
+
+  // Web-desktop hint. On a phone the camera button opens the camera; on a
+  // laptop `capture` is ignored and the teacher gets a file picker, which reads
+  // as broken unless we say so. Computed in an effect so SSR and first paint agree.
+  const [showDesktopHint, setShowDesktopHint] = useState(false);
+  useEffect(() => {
+    if (isNativeCameraAvailable()) return;
+    const coarsePointer = typeof window.matchMedia === 'function'
+      ? window.matchMedia('(pointer: coarse)').matches
+      : false;
+    const touchCapable = typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0;
+    if (!coarsePointer && !touchCapable) setShowDesktopHint(true);
+  }, []);
+
   const handleRetryExtract = useCallback(() => {
     if (!scan?.id) return;
     triggerExtract(scan.id);
@@ -418,13 +467,24 @@ export default function PaperScanPage() {
       const res = await montreeApi(`/api/montree/paper-scan/${scan.id}/commit`, { method: 'POST' });
       if (!res.ok) throw new Error(`Commit: ${res.status}`);
       const data = await res.json();
+      const progressFailed = Number(data?.progress_failed ?? 0) || 0;
       setCommitResult({
         progress_updated: data?.progress_updated ?? 0,
+        progress_failed: progressFailed,
         observations_created: data?.observations_created ?? 0,
         skipped: data?.skipped ?? 0,
       });
       setPageState('done');
-      toast.success(t('paperScan.commitSuccess'));
+      // Partial data loss must never hide behind a green toast: the commit route
+      // marks the sheet committed even when some progress upserts error, so a
+      // silent success here would tell the teacher records landed that didn't.
+      if (progressFailed > 0) {
+        toast.warning(t('paperScan.progressFailed').replace('{count}', String(progressFailed)), {
+          duration: 10000,
+        });
+      } else {
+        toast.success(t('paperScan.commitSuccess'));
+      }
       void loadScans();
     } catch (err) {
       console.error('[paper-scan] Commit error:', err);
@@ -566,12 +626,17 @@ export default function PaperScanPage() {
               />
 
               <button
-                onClick={() => cameraInputRef.current?.click()}
+                onClick={() => { void handleCameraClick(); }}
                 className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition"
               >
                 <Camera className="w-5 h-5" />
                 {t('paperScan.takePhoto')}
               </button>
+              {showDesktopHint && (
+                <p className="mt-2 text-xs text-white/40 leading-snug">
+                  {t('paperScan.desktopHint')}
+                </p>
+              )}
               <button
                 onClick={() => galleryInputRef.current?.click()}
                 className="w-full mt-2 flex items-center justify-center gap-2 px-6 py-3 bg-white/[0.06] border border-[rgba(52,211,153,0.2)] text-white/80 rounded-xl hover:bg-white/[0.1] transition"
@@ -982,6 +1047,14 @@ export default function PaperScanPage() {
                 .replace('{observations}', String(commitResult?.observations_created ?? 0))
                 .replace('{skipped}', String(commitResult?.skipped ?? 0))}
             </p>
+            {/* The toast above expires; this stays on screen so the teacher can
+                act on it. Same amber treatment the review screen uses for
+                low-confidence reads. */}
+            {(commitResult?.progress_failed ?? 0) > 0 && (
+              <p className="max-w-md mx-auto mb-6 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                ⚠ {t('paperScan.progressFailed').replace('{count}', String(commitResult?.progress_failed ?? 0))}
+              </p>
+            )}
             <button
               onClick={startOver}
               className="px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition"

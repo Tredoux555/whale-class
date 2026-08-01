@@ -2348,6 +2348,7 @@ export const fr: Record<string, string> = {
   'voiceObs.selectLanguage': 'Langue d\'enregistrement',
   'voiceObs.confidence': 'confiance',
   'voiceObs.commitSuccess': 'Observations intégrées aux dossiers des enfants !',
+  'voiceObs.progressFailed': '{count} mises à jour de progression n\'ont pas pu être enregistrées — vérifiez ces enfants et saisissez-les à nouveau.',
   'voiceObs.commitWarning': 'Certaines observations ont des enfants non associés. Assignez-les avant de valider.',
   'voiceObs.statsApproved': 'Approuvées',
   'voiceObs.statsRejected': 'Rejetées',
@@ -5539,6 +5540,7 @@ export const fr: Record<string, string> = {
   'paperScan.scanCta': 'Scanner une feuille d’observation',
   'paperScan.takePhoto': 'Prendre une photo',
   'paperScan.chooseFromGallery': 'Choisir dans la galerie',
+  'paperScan.desktopHint': 'Sur un ordinateur, cela ouvre un sélecteur de fichiers — utilisez un téléphone pour photographier les feuilles.',
   'paperScan.sheetDate': 'Date de la feuille',
   'paperScan.recentScans': 'Scans récents',
   'paperScan.noScans': 'Aucun scan pour le moment. Photographiez votre première feuille.',
@@ -5596,6 +5598,7 @@ export const fr: Record<string, string> = {
   'paperScan.saveFailed': 'Impossible d’enregistrer cette modification.',
   'paperScan.commitFailed': 'Impossible d’enregistrer dans les profils. Veuillez réessayer.',
   'paperScan.commitSuccess': 'Enregistré dans les profils des enfants.',
+  'paperScan.progressFailed': '{count} mises à jour de progression n\'ont pas pu être enregistrées — vérifiez ces enfants et validez à nouveau.',
 
   // ── School Features (self-serve Feature Switchboard) ──────────────────
   'schoolFeatures.menuLabel': 'Fonctionnalités de l’école',

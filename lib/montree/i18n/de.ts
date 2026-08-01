@@ -2348,6 +2348,7 @@ export const de: Record<string, string> = {
   'voiceObs.selectLanguage': 'Aufnahmesprache',
   'voiceObs.confidence': 'Konfidenz',
   'voiceObs.commitSuccess': 'Beobachtungen in Schülerdatensätze übernommen!',
+  'voiceObs.progressFailed': '{count} Fortschritts-Updates konnten nicht gespeichert werden – prüfe diese Kinder und erfasse sie erneut.',
   'voiceObs.commitWarning': 'Einige Beobachtungen haben nicht zugeordnete Schüler. Weisen Sie diese vor dem Übernehmen zu.',
   'voiceObs.statsApproved': 'Genehmigt',
   'voiceObs.statsRejected': 'Abgelehnt',
@@ -5539,6 +5540,7 @@ export const de: Record<string, string> = {
   'paperScan.scanCta': 'Beobachtungsbogen scannen',
   'paperScan.takePhoto': 'Foto aufnehmen',
   'paperScan.chooseFromGallery': 'Aus Galerie wählen',
+  'paperScan.desktopHint': 'Am Computer öffnet sich hier eine Dateiauswahl – fotografiere die Bögen mit dem Handy.',
   'paperScan.sheetDate': 'Datum des Bogens',
   'paperScan.recentScans': 'Letzte Scans',
   'paperScan.noScans': 'Noch keine Scans. Fotografieren Sie Ihren ersten Bogen.',
@@ -5596,6 +5598,7 @@ export const de: Record<string, string> = {
   'paperScan.saveFailed': 'Diese Änderung konnte nicht gespeichert werden.',
   'paperScan.commitFailed': 'Speichern in den Profilen fehlgeschlagen. Bitte erneut versuchen.',
   'paperScan.commitSuccess': 'In den Profilen der Kinder gespeichert.',
+  'paperScan.progressFailed': '{count} Fortschritts-Updates konnten nicht gespeichert werden – prüfe diese Kinder und bestätige erneut.',
 
   // ── School Features (self-serve Feature Switchboard) ──────────────────
   'schoolFeatures.menuLabel': 'Schulfunktionen',

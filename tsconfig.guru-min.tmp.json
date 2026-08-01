@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "incremental": true, "tsBuildInfoFile": "./tsconfig.guru-min.tmp.tsbuildinfo" },
+  "include": [
+    "next-env.d.ts",
+    "components/montree/onboarding-copilot/CopilotDock.tsx",
+    "lib/montree/i18n/index.ts"
+  ]
+}
