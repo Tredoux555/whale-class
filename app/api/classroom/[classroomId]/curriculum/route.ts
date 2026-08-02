@@ -9,10 +9,10 @@ const supabase = createClient(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { classroomId: string } }
+  { params }: { params: Promise<{ classroomId: string }> }
 ) {
   try {
-    const { classroomId } = params;
+    const { classroomId } = await params;
     const { searchParams } = new URL(request.url);
     const area = searchParams.get('area');
     const activeOnly = searchParams.get('activeOnly') !== 'false';
@@ -74,10 +74,10 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { classroomId: string } }
+  { params }: { params: Promise<{ classroomId: string }> }
 ) {
   try {
-    const { classroomId } = params;
+    const { classroomId } = await params;
     const { workId, updates } = await request.json();
     if (!workId) return NextResponse.json({ success: false, error: 'workId required' }, { status: 400 });
     if (!updates || typeof updates !== 'object') {
@@ -117,10 +117,10 @@ export async function PATCH(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { classroomId: string } }
+  { params }: { params: Promise<{ classroomId: string }> }
 ) {
   try {
-    const { classroomId } = params;
+    const { classroomId } = await params;
     const { area, category, name, description } = await request.json();
     if (!area || !category || !name) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
