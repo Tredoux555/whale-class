@@ -470,13 +470,20 @@ export async function POST(request: NextRequest) {
       // don't want to lose visual_description / proposed_name / etc.
       // Just merge the is_other flag (+ optional note + category) on top.
       const existingDraft = (mediaRow.sonnet_draft as Record<string, unknown>) || {};
-      const newDraft = {
+      const newDraft: Record<string, unknown> = {
         ...existingDraft,
         is_other: true,
         other_note: note || null,
         other_category: category, // 'behavioral_observation' | 'outdoor_play' | 'special_event' | null
         other_classified_at: new Date().toISOString(),
       };
+      // 🚨 A human has now agreed, so this is no longer the AI's provisional
+      // opinion. The flag MUST be cleared here: the gallery treats
+      // is_other_provisional as "don't show this as teacher-filed yet", so
+      // leaving it set would render a confirmed Other photo as plain
+      // "Untagged" — the pipeline writes it on every AI-only Other
+      // (process/route.ts), and this is the path that resolves them.
+      delete newDraft.is_other_provisional;
 
       // Session 130: the real link. `event_id` is only honoured when the
       // event exists AND belongs to the caller's school — a mismatch is a

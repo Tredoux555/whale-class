@@ -72,6 +72,13 @@ import {
 import type { Locale } from '@/lib/montree/i18n/locales';
 import { isValidLocale } from '@/lib/montree/i18n/locales';
 import { isFeatureEnabled } from '@/lib/montree/features/server';
+import { shouldTrustHaikuMatch } from '@/lib/montree/photo-identification/gate-a';
+import {
+  scoreClassroomRecall,
+  hasStrongRecall,
+  RECALL_CANDIDATE_SCORE,
+  type RecallHit,
+} from '@/lib/montree/photo-identification/classroom-recall';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 
 // Photo pipeline v2 (Session 117+) — see migration 224. When true:
@@ -466,18 +473,23 @@ export async function POST(request: NextRequest) {
     //   3. The matched work has classroom visual memory
     //   4. The matched work resolves to a row in montree_classroom_curriculum_works
     const ident = twoPassResult.identification;
-    const haikuTrusted =
-      twoPassResult.success &&
-      ident !== null &&
-      (
-        // Path 1 (original): high confidence AND the classroom has taught this work.
-        (ident.confidence >= HAIKU_TRUST_CONFIDENCE && twoPassResult.hasVisualMemoryForMatch) ||
-        // Path 2 (first-sight): exact curriculum-name match at high confidence,
-        // even with no prior visual memory. Never auto-files a non-work.
-        (ident.is_curriculum_work !== false &&
-          ident.matchScore >= EXACT_MATCH_SCORE &&
-          ident.confidence >= EXACT_FIRST_SIGHT_CONFIDENCE)
-      );
+    // Gate A lives in lib/montree/photo-identification/gate-a.ts so the
+    // "never auto-file something the model called a non-work" invariant is
+    // unit-tested. The thresholds stay here — they are tuned from the
+    // [PhotoIdentification] GateA telemetry logged a few lines below.
+    //
+    // 🚨 2026-08-02: that invariant used to hold only because the "Other"
+    // escape hatch returned before this line was ever reached. Classroom
+    // recall can now suppress that early return, so the guard had to become
+    // explicit — Path 1 never checked is_curriculum_work.
+    const haikuTrusted = shouldTrustHaikuMatch({
+      success: twoPassResult.success,
+      identification: ident,
+      hasVisualMemoryForMatch: twoPassResult.hasVisualMemoryForMatch,
+      trustConfidence: HAIKU_TRUST_CONFIDENCE,
+      exactMatchScore: EXACT_MATCH_SCORE,
+      exactFirstSightConfidence: EXACT_FIRST_SIGHT_CONFIDENCE,
+    });
 
     // Phase 1 telemetry (Apr 8) — log every Gate A decision so we can tune
     // HAIKU_TRUST_CONFIDENCE and the visual memory filter from real data
@@ -581,30 +593,118 @@ export async function POST(request: NextRequest) {
     const passesNotCurriculumGate = !photoPipelineV2
       ? true
       : (ident?.confidence ?? 0) >= IS_CURRICULUM_WORK_FALSE_CONFIDENCE_FLOOR;
+
+    // 🚨 INCIDENT FIX (2026-07-29 ring-tree, Whale Class) — ask the classroom's
+    // own memory before honouring a "not a curriculum work" verdict.
+    //
+    // The escape hatch below used to run BEFORE Gate A, so it returned without
+    // ever consulting visual memory. A teacher taught the system a new custom
+    // work from photo A; photo B of the same material 22 seconds later got the
+    // same is_curriculum_work=false verdict and was filed as Other again. The
+    // freshly written visual memory could not participate in the decision, and
+    // its times_used stayed at 0.
+    //
+    // A classroom's own custom works are the ones most likely to look "not like
+    // standard Montessori materials" to the model, so this hatch was biased
+    // against exactly what it should protect. Recall runs ONLY on this branch
+    // (~1% of photos), so the happy path costs nothing.
+    let classroomRecall: RecallHit[] = [];
+    const notCurriculumVerdict =
+      twoPassResult.success && !!ident && ident.is_curriculum_work === false && passesNotCurriculumGate;
+
+    if (notCurriculumVerdict && media.classroom_id) {
+      const { data: recallRows, error: recallErr } = await supabase
+        .from('montree_visual_memory')
+        .select('work_name, visual_description, key_materials')
+        .eq('classroom_id', media.classroom_id)
+        .limit(500);
+
+      if (recallErr) {
+        // Non-fatal: no recall just means we behave as before (route to Other).
+        console.error('[PhotoIdentification] Classroom recall query failed (non-fatal):', recallErr.message);
+      } else {
+        classroomRecall = scoreClassroomRecall(
+          twoPassResult.visualDescription,
+          (recallRows || []).map((r: { work_name: string; visual_description: string | null; key_materials: string[] | null }) => ({
+            workName: r.work_name,
+            visualDescription: r.visual_description,
+            keyMaterials: r.key_materials,
+          })),
+        );
+        console.log('[PhotoIdentification] ClassroomRecall ' + JSON.stringify({
+          mediaId,
+          corpus: (recallRows || []).length,
+          top: classroomRecall.slice(0, 3).map((h) => ({ w: h.workName, s: Number(h.score.toFixed(3)) })),
+          override: hasStrongRecall(classroomRecall),
+        }));
+      }
+    }
+
+    // The classroom remembers something that looks like this. Its own memory
+    // outranks Haiku's generic "that's not a Montessori work" opinion, so do
+    // NOT file as Other — fall through to the draft path with the remembered
+    // work as the proposed name, for the teacher to confirm with one tap.
+    const recallOverridesOther = hasStrongRecall(classroomRecall);
+
+    // Candidate chips worth offering, whichever way this photo is routed.
+    const recallCandidates = classroomRecall
+      .filter((h) => h.score >= RECALL_CANDIDATE_SCORE)
+      .map((h) => ({
+        workName: h.workName,
+        workKey: null as string | null,
+        area: null as string | null,
+        score: Number(h.score.toFixed(3)),
+        source: 'classroom_recall' as const,
+      }));
+
     if (
       twoPassResult.success &&
       ident &&
       ident.is_curriculum_work === false &&
-      passesNotCurriculumGate
+      passesNotCurriculumGate &&
+      !recallOverridesOther
     ) {
+      // 🚨 STATUS RULING (Tredoux, 2026-08-02): the AI may never file a photo
+      // away by itself on an "Other" verdict — it must always come to the
+      // teacher first. Previously this wrote identification_status='confirmed',
+      // which made the row terminal: excluded from the recovery sweep AND in
+      // the /process idempotency skip-list, so it could never be re-evaluated
+      // even after the classroom learned the work. It also overloaded
+      // 'confirmed' to mean two different things ("a teacher confirmed this"
+      // and "the AI decided it isn't a work").
+      //
+      // It now lands as a normal haiku_drafted card, still carrying is_other so
+      // the gallery keeps its 📌 treatment, and teacher_confirmed stays false so
+      // it sits in the queue until a human agrees. Confirming it as Other in
+      // Photo Audit is what sets 'confirmed' + teacher_confirmed=true.
       const { error: otherErr } = await supabase
         .from('montree_media')
         .update({
           work_id: null,
-          identification_status: 'confirmed',
+          identification_status: 'haiku_drafted',
           identification_confidence: ident.confidence,
           teacher_confirmed: false, // teacher hasn't seen it yet — Other is provisional
           sonnet_draft: {
             _source: 'haiku_pass2_not_curriculum',
             visual_description: twoPassResult.visualDescription,
             is_other: true,
+            // Provisional = the AI's opinion, not a teacher's decision.
+            // Read by the gallery + audit UI so an AI-only "Other" is never
+            // presented as though a teacher had filed it. Consumers must treat
+            // is_other as authoritative ONLY when this flag is absent and
+            // work_id is null — the resolve route does not strip it when a
+            // teacher later attaches the photo to a real work.
+            is_other_provisional: true,
             other_classified_at: new Date().toISOString(),
             other_note: ident.observation || null,
             haiku_confidence: ident.confidence,
             // Gap 1 — always-suggest: even on "Other", carry the closest
             // curriculum guesses so the card offers a one-tap "looks like X?"
             // override. Lets the teacher rescue a real work the AI mis-called.
-            top_candidates: ident.topCandidates,
+            // Classroom-recall hits lead, because a work THIS classroom has
+            // actually taught beats a fuzzy match against the static curriculum.
+            top_candidates: [...recallCandidates, ...(ident.topCandidates || [])].slice(0, 5),
+            classroom_recall: recallCandidates,
           },
         })
         .eq('id', mediaId);
@@ -706,18 +806,34 @@ export async function POST(request: NextRequest) {
       // Store the Haiku Pass 2 result as haiku_drafted.
       // Also persist the Pass 1 visual description in sonnet_draft JSONB
       // (as a partial draft) so the Sonnet endpoint can read it back.
+      // When classroom recall overrode an "Other" verdict, the remembered work
+      // — not Haiku's discarded guess — is what the teacher should see proposed.
+      // We still never auto-file it: this is a draft awaiting one tap.
+      const recallLead = recallOverridesOther ? classroomRecall[0] : null;
+      const draftProposedName = recallLead ? recallLead.workName : ident.workName;
+      const draftCandidates = recallLead
+        ? [...recallCandidates, ...(ident.topCandidates || [])].slice(0, 5)
+        : ident.topCandidates;
+
       const haikuDraftData: Record<string, unknown> = {
         identification_status: 'haiku_drafted',
         identification_confidence: ident.confidence,
         sonnet_draft: {
-          _source: 'haiku_pass2',
+          _source: recallLead ? 'classroom_recall_override' : 'haiku_pass2',
           visual_description: twoPassResult.visualDescription,
-          proposed_name: ident.workName,
+          proposed_name: draftProposedName,
           haiku_work_name: ident.haikuWorkName,
           confidence: ident.confidence,
           area: ident.area,
-          // Top 3 candidates for quick-tap chips in the audit UI.
-          top_candidates: ident.topCandidates,
+          // Top candidates for quick-tap chips in the audit UI.
+          top_candidates: draftCandidates,
+          ...(recallLead
+            ? {
+                classroom_recall: recallCandidates,
+                recall_score: Number(recallLead.score.toFixed(3)),
+                recall_shared_terms: recallLead.sharedTerms,
+              }
+            : {}),
         },
       };
       const { error: haikuDraftErr } = await supabase
