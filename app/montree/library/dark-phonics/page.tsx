@@ -42,6 +42,18 @@ const nn = (n: number) => String(n).padStart(2, '0');
 const media = (path: string, v?: number) =>
   `/api/montree/media/proxy/${path}?bucket=dark-phonics${v ? `&v=${v}` : ''}`;
 
+/**
+ * Cache-buster for the storybook print PDFs served straight out of
+ * public/dark-phonics-books/print/ and public/dark-phonics-materials/ — NOT
+ * proxied, so they carry no built-in versioning of their own and are served
+ * with a several-hour Cache-Control by both the browser and Cloudflare. Bump
+ * this whenever ANY book's print PDF or materials are rebuilt (the curated
+ * rebuild project touches every book eventually); a stale value here is
+ * exactly the "book still shows the old art" bug filed 2026-08-02.
+ */
+const STORYBOOK_PRINT_VERSION = 2; // bumped 2026-08-02: Book 1 + Book 2 curated rebuild
+const printPdf = (path: string) => `${path}?v=${STORYBOOK_PRINT_VERSION}`;
+
 /** Trimmed-down photo-bank row — only the fields this page renders/forwards. */
 interface BankPhoto {
   id: string;
@@ -727,8 +739,8 @@ export default function DarkPhonicsPage() {
                             Initial-sound pattern book — the child shouts the picture word.
                           </div>
                           <div className="mt-3 flex flex-wrap gap-2">
-                            <Pill href={`/dark-phonics-books/print/${l.book.slug}-A5-reading.pdf`}>Read-along</Pill>
-                            <Pill href={`/dark-phonics-books/print/${l.book.slug}-A5-booklet-print.pdf`}>Print booklet A5</Pill>
+                            <Pill href={printPdf(`/dark-phonics-books/print/${l.book.slug}-A5-reading.pdf`)}>Read-along</Pill>
+                            <Pill href={printPdf(`/dark-phonics-books/print/${l.book.slug}-A5-booklet-print.pdf`)}>Print booklet A5</Pill>
                           </div>
                         </div>
                       </div>
@@ -764,13 +776,13 @@ export default function DarkPhonicsPage() {
                         )}
                         {l.book && (
                           <>
-                            <Pill href={`/dark-phonics-materials/${l.book.slug}/paperwork-pack.pdf`}>Paperwork pack</Pill>
-                            <Pill href={`/dark-phonics-materials/${l.book.slug}/build-it-sheet.pdf`}>Build-it sheet</Pill>
-                            <Pill href={`/dark-phonics-materials/${l.book.slug}/tracing-workbook.pdf`}>Tracing workbook</Pill>
-                            <Pill href={`/dark-phonics-materials/${l.book.slug}/sentence-strips.pdf`}>Sentence strips</Pill>
-                            <Pill href={`/dark-phonics-materials/${l.book.slug}/three-part-cards-control.pdf`}>Three-part cards · Control</Pill>
-                            <Pill href={`/dark-phonics-materials/${l.book.slug}/three-part-cards-pictures.pdf`}>Three-part cards · Pictures</Pill>
-                            <Pill href={`/dark-phonics-materials/${l.book.slug}/three-part-cards-labels.pdf`}>Three-part cards · Labels</Pill>
+                            <Pill href={printPdf(`/dark-phonics-materials/${l.book.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
+                            <Pill href={printPdf(`/dark-phonics-materials/${l.book.slug}/build-it-sheet.pdf`)}>Build-it sheet</Pill>
+                            <Pill href={printPdf(`/dark-phonics-materials/${l.book.slug}/tracing-workbook.pdf`)}>Tracing workbook</Pill>
+                            <Pill href={printPdf(`/dark-phonics-materials/${l.book.slug}/sentence-strips.pdf`)}>Sentence strips</Pill>
+                            <Pill href={printPdf(`/dark-phonics-materials/${l.book.slug}/three-part-cards-control.pdf`)}>Three-part cards · Control</Pill>
+                            <Pill href={printPdf(`/dark-phonics-materials/${l.book.slug}/three-part-cards-pictures.pdf`)}>Three-part cards · Pictures</Pill>
+                            <Pill href={printPdf(`/dark-phonics-materials/${l.book.slug}/three-part-cards-labels.pdf`)}>Three-part cards · Labels</Pill>
                           </>
                         )}
                       </div>
