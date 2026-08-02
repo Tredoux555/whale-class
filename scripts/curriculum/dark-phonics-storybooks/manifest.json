@@ -27,9 +27,14 @@
           "mj_prompt": "a sleepy brown sloth with shaggy fur and big round googly eyes, peeking out of a tall knitted sock with bold red and white horizontal stripes and a fluffy white cuff, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         },
         {
-          "key": "p5-recap",
-          "text": "A snake, a star, and a sloth in my sock?!",
-          "mj_prompt": "a friendly green snake, a smiling golden five-pointed star, and a sleepy brown sloth with shaggy fur, all peeking out together of a tall knitted sock with bold red and white horizontal stripes and a fluffy white cuff, all with big round googly eyes, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+          "key": "p5-potato",
+          "text": "A potato in my sock!",
+          "mj_prompt": "a round brown potato with two small eye-sprouts and big round googly eyes, peeking out of a tall knitted sock with bold red and white horizontal stripes and a fluffy white cuff, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p6-recap",
+          "text": "A snake, a star, a sloth, and a potato in my sock?!",
+          "mj_prompt": "a friendly green snake, a smiling golden five-pointed star, a sleepy brown sloth with shaggy fur, and a round brown potato with two small eye-sprouts, all peeking out together of a tall knitted sock with bold red and white horizontal stripes and a fluffy white cuff, all with big round googly eyes, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         }
       ]
     },
@@ -127,7 +132,7 @@
         },
         {
           "key": "p5-recap",
-          "text": "And now the pig is… sick!",
+          "text": "And now the pig is\u2026 sick!",
           "mj_prompt": "one round pink pig with a gigantic lumpy belly, the shapes of a pineapple, a pen, a pencil, and a frying pan handle all visible pressing out from inside, pig looking green and queasy with dizzy swirl eyes, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         }
       ]
@@ -268,7 +273,7 @@
       "num": 9,
       "letter": "g",
       "slug": "oh-no-goat",
-      "title": "Oh No, Goat…",
+      "title": "Oh No, Goat\u2026",
       "pages": [
         {
           "key": "p1-grapes",
@@ -292,7 +297,7 @@
         },
         {
           "key": "p5-recap",
-          "text": "Oh no, goat…",
+          "text": "Oh no, goat\u2026",
           "mj_prompt": "one goat with a huge lumpy bulging belly happily playing a guitar, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         }
       ]
@@ -626,7 +631,7 @@
       "num": 20,
       "letter": "l",
       "slug": "oh-no-lion",
-      "title": "Oh No, Lion…",
+      "title": "Oh No, Lion\u2026",
       "pages": [
         {
           "key": "p1-lemon",
@@ -650,7 +655,7 @@
         },
         {
           "key": "p5-recap",
-          "text": "Oh no, lion…",
+          "text": "Oh no, lion\u2026",
           "mj_prompt": "a golden lion with its giant silly tongue stuck fast to a wooden ladder, a small green lizard patting its nose, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         }
       ]
