@@ -349,6 +349,33 @@ const WEEKS: WeekBlock[] = [
 ];
 
 /**
+ * Preteach Bingo — every 4 weeks' worth of object-basket words, pooled and
+ * surfaced a block early so the teacher can build bingo (or anything else)
+ * from the *next* 20 words before the class ever reaches them. Tredoux
+ * 2026-08-02: "the bingo board gets saved at week one so we are prelearning
+ * the vocab" — grouped by index (weeks 1–4, 5–8, …), not by letter, so a
+ * sound-only week (ck, week 13) just contributes zero words to its block
+ * instead of breaking the grouping. Pool sizes vary (a block straddling a
+ * digraph week has 15 words, not 20) — that's fine, the bingo pipeline
+ * already cycles a short pool to fill a 4×4 board.
+ */
+const PRETEACH_BLOCK_SIZE = 4;
+type PreteachBlock = {
+  startWeek: number;
+  endWeek: number;
+  items: Array<{ label: string; display: string }>;
+};
+const PRETEACH_BLOCKS: PreteachBlock[] = [];
+for (let i = 0; i < WEEKS.length; i += PRETEACH_BLOCK_SIZE) {
+  const slice = WEEKS.slice(i, i + PRETEACH_BLOCK_SIZE);
+  const items = slice.flatMap((w) =>
+    (w.words ?? []).map((word) => ({ label: wordPhotoLabel(word), display: wordText(word) }))
+  );
+  if (items.length === 0) continue; // a block of nothing but sound-only weeks — nothing to preteach
+  PRETEACH_BLOCKS.push({ startWeek: slice[0].week, endWeek: slice[slice.length - 1].week, items });
+}
+
+/**
  * Letters whose ready-made three-part-card sheets actually exist on disk under
  * public/satpin-materials/<slug>/. Only SATPIN has them so far — every later
  * week hides the row rather than link to a 404. Drop a slug in here the moment
@@ -669,6 +696,40 @@ export default function SatpinPage() {
       </div>
     );
   };
+
+  /**
+   * Preteach Bingo card — one per 4-week block, pinned to the block's first
+   * week. Same hand-off as any other basket (`PictureRow` + `createMaterials`,
+   * "Create materials with these pictures →"): this is deliberately NOT a
+   * different pipeline, just the existing one fed the pooled 20 words early.
+   */
+  const PreteachBingoRow = ({ block }: { block: PreteachBlock }) => (
+    <div
+      className="rounded-2xl border p-6"
+      style={{
+        background: 'linear-gradient(135deg, rgba(245,208,66,0.10), rgba(245,208,66,0.02))',
+        borderColor: 'rgba(245,208,66,0.22)',
+      }}
+    >
+      <div className="flex items-center gap-5">
+        <div
+          className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0"
+          style={{ background: 'rgba(245,208,66,0.18)' }}
+        >
+          <span className="text-2xl leading-none" role="img" aria-label="Preteach Bingo">🎲</span>
+        </div>
+        <div className="flex-1 text-left">
+          <div className="text-white font-semibold text-lg">
+            Preteach Bingo &middot; Weeks {block.startWeek}–{block.endWeek}
+          </div>
+          <div className="text-sm mt-0.5" style={{ color: 'rgba(250,230,150,0.55)' }}>
+            {block.items.length} words &middot; get a head start before this block begins
+          </div>
+        </div>
+      </div>
+      <PictureRow items={block.items} accent="245,208,66" />
+    </div>
+  );
 
   /** Slim dashed row used by both empty slots. */
   const EmptySlot = ({ children }: { children: React.ReactNode }) => (
@@ -1059,6 +1120,11 @@ export default function SatpinPage() {
           <div className="mt-4 space-y-4">
             {WEEKS.map((block, index) => {
               const words = block.words ?? [];
+              // Every 4th week (1, 5, 9, …) opens a new preteach block — the
+              // *next* 20 words, pinned to the week they start on.
+              const preteachBlock = index % PRETEACH_BLOCK_SIZE === 0
+                ? PRETEACH_BLOCKS.find((p) => p.startWeek === block.week)
+                : undefined;
 
               // Sound-only week (a digraph such as ck): nothing to put in a
               // basket, so no words, pictures, printables or reader/book slots
@@ -1066,45 +1132,48 @@ export default function SatpinPage() {
               // intact. It still gets a song slot: a digraph can have a song.
               if (words.length === 0) {
                 return (
-                  <div
-                    key={block.slug}
-                    className="rounded-2xl border border-dashed px-5 py-4"
-                    style={{
-                      background: `linear-gradient(135deg, rgba(${block.accent},0.05), rgba(${block.accent},0.015))`,
-                      borderColor: `rgba(${block.accent},0.14)`,
-                    }}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                        style={{ background: `rgba(${block.accent},0.10)` }}
-                      >
-                        <span className="text-xl font-bold leading-none" style={{ color: `rgba(${block.accent},0.7)` }}>
-                          {block.letter}
-                        </span>
-                      </div>
-                      <div className="flex-1 text-left">
-                        <div className="text-white/55 font-medium text-sm">
-                          Week {block.week} — {block.letter}
+                  <React.Fragment key={block.slug}>
+                    {preteachBlock && <PreteachBingoRow block={preteachBlock} />}
+                    <div
+                      className="rounded-2xl border border-dashed px-5 py-4"
+                      style={{
+                        background: `linear-gradient(135deg, rgba(${block.accent},0.05), rgba(${block.accent},0.015))`,
+                        borderColor: `rgba(${block.accent},0.14)`,
+                      }}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div
+                          className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                          style={{ background: `rgba(${block.accent},0.10)` }}
+                        >
+                          <span className="text-xl font-bold leading-none" style={{ color: `rgba(${block.accent},0.7)` }}>
+                            {block.letter}
+                          </span>
                         </div>
-                        <div className="text-xs mt-0.5" style={{ color: `rgba(${block.tint},0.35)` }}>
-                          {block.note ?? 'Sound-only week · no object basket'}
+                        <div className="flex-1 text-left">
+                          <div className="text-white/55 font-medium text-sm">
+                            Week {block.week} — {block.letter}
+                          </div>
+                          <div className="text-xs mt-0.5" style={{ color: `rgba(${block.tint},0.35)` }}>
+                            {block.note ?? 'Sound-only week · no object basket'}
+                          </div>
                         </div>
                       </div>
+                      {/* A sound-only week still moves the decode gate — ck
+                          unlocks sock/sick — so the ledger renders here too. */}
+                      <DecodableRow block={block} index={index} />
+                      <SongRow block={block} />
+                      <LetterCardRow block={block} />
+                      <VideoRow block={block} />
                     </div>
-                    {/* A sound-only week still moves the decode gate — ck
-                        unlocks sock/sick — so the ledger renders here too. */}
-                    <DecodableRow block={block} index={index} />
-                    <SongRow block={block} />
-                    <LetterCardRow block={block} />
-                    <VideoRow block={block} />
-                  </div>
+                  </React.Fragment>
                 );
               }
 
               return (
+              <React.Fragment key={block.slug}>
+              {preteachBlock && <PreteachBingoRow block={preteachBlock} />}
               <div
-                key={block.slug}
                 className="rounded-2xl border p-6"
                 style={{
                   background: `linear-gradient(135deg, rgba(${block.accent},0.09), rgba(${block.accent},0.02))`,
@@ -1233,6 +1302,7 @@ export default function SatpinPage() {
                 {/* Workbook material — last row in the card */}
                 <PaperworkRow block={block} />
               </div>
+              </React.Fragment>
               );
             })}
           </div>
