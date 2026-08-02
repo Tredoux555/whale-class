@@ -89,6 +89,7 @@ interface AuditPhoto {
     observation?: string;
     /** Marker for the "Other / not a curriculum work" classification. */
     is_other?: boolean;
+    is_other_provisional?: boolean;
     /** Top 3 fuzzy-match candidates (best-first). Powers the quick-tap chips. */
     top_candidates?: Array<{
       workName: string;
@@ -1618,6 +1619,21 @@ export default function PhotoAuditPage() {
       return;
     }
     const draft = photo.sonnet_draft;
+
+    // A provisional "Other" is the AI saying "this isn't a work" — the card
+    // shows no proposed name, so there is nothing for the teacher to be
+    // endorsing. Falling through to top_candidates[0] below would attach the
+    // photo to a guess they never saw. Send them to the picker instead.
+    // (2026-08-02, with the non-terminal Other routing.)
+    if (draft?.is_other_provisional === true && !draft?.proposed_name) {
+      // allowAutoAttach MUST stay false. That flag enables auto-attach tiers
+      // keyed on closest_existing_match / proposed_name; the Other draft
+      // carries neither today, but enriching that draft shape later would
+      // silently reopen the very "attach to a guess the teacher never saw"
+      // hole this guard exists to close.
+      openThisIsSheet(photo, false);
+      return;
+    }
 
     // Try 1: proposed_name (AI's primary guess)
     const proposed = draft?.proposed_name?.trim() || photo.work_name?.trim();

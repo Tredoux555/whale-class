@@ -45,6 +45,7 @@ interface GalleryItem extends MontreeMedia {
   identification_status?: string | null;
   sonnet_draft?: {
     is_other?: boolean;
+    is_other_provisional?: boolean;
     other_note?: string | null;
     other_classified_at?: string | null;
     proposed_name?: string | null;
@@ -852,7 +853,18 @@ export default function GalleryPage() {
                   </div>
                 );
               }
-              const isOther = photo.sonnet_draft?.is_other === true;
+              // "Saved as Other" is a TEACHER's decision. Two cases must not
+              // wear that label:
+              //   1. work_id is set — the photo was rescued onto a real work.
+              //      Nothing clears sonnet_draft.is_other on that path, so
+              //      without this guard a correctly-tagged photo would show
+              //      "Saved as Other" forever, hiding the work name.
+              //   2. is_other_provisional — the AI's own guess that this
+              //      isn't a work, still awaiting review (2026-08-02).
+              const isOther =
+                photo.sonnet_draft?.is_other === true &&
+                !photo.work_id &&
+                photo.sonnet_draft?.is_other_provisional !== true;
               const DRAFT_STATUSES = ['haiku_drafted', 'haiku_matched', 'sonnet_drafted'];
               const proposed = photo.sonnet_draft?.proposed_name?.trim() || '';
               // Drafted-but-unconfirmed: the AI has a guess (proposed_name) but
