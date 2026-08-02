@@ -30,6 +30,9 @@ export async function GET(request: NextRequest) {
       .order('name', { ascending: true }),
     supabase
       .from('montree_teachers')
+      // login_code is a live credential (teachers sign in with it). It is
+      // selected here only so the PRINCIPAL view can show it — it is stripped
+      // for every other role below. Do not surface it more widely.
       .select('id, name, email, classroom_id, login_code, role, is_active')
       .eq('school_id', auth.schoolId)
       .eq('is_active', true)
@@ -150,7 +153,10 @@ export async function GET(request: NextRequest) {
         name: t.name,
         email: t.email,
         role: t.role || 'teacher',
-        login_code: t.login_code || null,
+        // Only a principal may see another teacher's login code. A teacher
+        // reading the directory used to get every colleague's credential,
+        // which is a same-school account-takeover primitive.
+        login_code: auth.role === 'principal' ? (t.login_code || null) : null,
       })),
       parents: parentsByClassroom.get(c.id) || [],
       child_count: children.filter((c2) => c2.classroom_id === c.id).length,

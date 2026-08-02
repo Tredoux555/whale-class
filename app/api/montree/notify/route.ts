@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { notifyParentsOfReport, sendReportReadyEmail } from '@/lib/montree/email';
 
 // POST - Notify parents of a report
@@ -17,6 +18,17 @@ export async function POST(request: NextRequest) {
 
     if (!childId) {
       return NextResponse.json({ error: 'Child ID required' }, { status: 400 });
+    }
+
+    // SECURITY: this route emails a child's REAL parents. Without an
+    // ownership check any authenticated teacher could fire a "report ready"
+    // email at another school's families, referencing a report they don't own.
+    if (!auth.schoolId) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+    const childAccess = await verifyChildBelongsToSchool(childId, auth.schoolId);
+    if (!childAccess.allowed) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
     const supabase = getSupabase();

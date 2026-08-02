@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
 // GET: List patterns for a child
 export async function GET(request: NextRequest) {
@@ -20,6 +21,17 @@ export async function GET(request: NextRequest) {
         { success: false, error: 'child_id is required' },
         { status: 400 }
       );
+    }
+
+    // SECURITY: verifySchoolRequest only proves the caller holds a valid token
+    // for SOME school. Without this, any authenticated teacher could reach
+    // another school's child by supplying its id.
+    if (!auth.schoolId) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+    }
+    const childAccess = await verifyChildBelongsToSchool(childId, auth.schoolId);
+    if (!childAccess.allowed) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
     }
 
     const supabase = getSupabase();
@@ -77,6 +89,30 @@ export async function PATCH(request: NextRequest) {
     }
 
     const supabase = getSupabase();
+
+    // SECURITY: a pattern id alone is not authorisation. Resolve it to its
+    // child and verify that child belongs to the caller's school — otherwise
+    // any pattern in the system could be edited or deactivated by raw UUID.
+    if (!auth.schoolId) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+    }
+    const { data: patternRow } = await supabase
+      .from('montree_child_patterns')
+      .select('id, child_id')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (!patternRow) {
+      return NextResponse.json({ success: false, error: 'Pattern not found' }, { status: 404 });
+    }
+
+    const patternAccess = await verifyChildBelongsToSchool(
+      patternRow.child_id as string,
+      auth.schoolId,
+    );
+    if (!patternAccess.allowed) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+    }
 
     const updateData: Record<string, unknown> = {};
     if (typeof still_active === 'boolean') updateData.still_active = still_active;

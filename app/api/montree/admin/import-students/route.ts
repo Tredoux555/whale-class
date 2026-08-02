@@ -173,15 +173,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'students array required' }, { status: 400 });
     }
 
-    // Verify classroom exists
+    // SECURITY: existence is NOT ownership. classroomId comes straight from
+    // the request body, so without the school comparison below any
+    // authenticated caller could bulk-insert fabricated children (and their
+    // progress rows) into ANOTHER school's classroom.
     const { data: classroom, error: classroomError } = await supabase
       .from('montree_classrooms')
-      .select('id, name')
+      .select('id, name, school_id')
       .eq('id', classroomId)
       .single();
 
     if (classroomError || !classroom) {
       return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
+    }
+
+    if (!auth.schoolId || classroom.school_id !== auth.schoolId) {
+      console.error('[SECURITY] import-students cross-school attempt', {
+        callerSchool: auth.schoolId, targetClassroom: classroomId,
+      });
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
     // Get curriculum works for fuzzy matching

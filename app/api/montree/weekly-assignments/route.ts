@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,6 +22,17 @@ export async function GET(request: NextRequest) {
 
     if (!childId) {
       return NextResponse.json({ error: 'child_id required' }, { status: 400 });
+    }
+
+    // SECURITY: verifySchoolRequest only proves the caller holds a valid token
+    // for SOME school. Without this, any authenticated teacher could reach
+    // another school's child by supplying its id.
+    if (!auth.schoolId) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+    const childAccess = await verifyChildBelongsToSchool(childId, auth.schoolId);
+    if (!childAccess.allowed) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
     // Get child's classroom
