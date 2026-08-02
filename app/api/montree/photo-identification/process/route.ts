@@ -73,6 +73,7 @@ import type { Locale } from '@/lib/montree/i18n/locales';
 import { isValidLocale } from '@/lib/montree/i18n/locales';
 import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { shouldTrustHaikuMatch } from '@/lib/montree/photo-identification/gate-a';
+import { logServerError } from '@/lib/montree/server-errors';
 import {
   scoreClassroomRecall,
   hasStrongRecall,
@@ -404,6 +405,23 @@ export async function POST(request: NextRequest) {
         console.error('[PhotoIdentification] Pass-1 Sonnet rescue threw (non-fatal):', rescueErr);
       }
       if (p1Outcome !== 'sonnet_rescued') {
+        // Surface it. Until now every pipeline failure went only to Railway
+        // stdout, so a school-wide outage (revoked Anthropic key, model
+        // outage) was invisible on the super-admin health dashboard and to
+        // the photo-sweep cron's digest. Fire-and-forget; never blocks.
+        logServerError({
+          origin: 'photo-identification/pass1',
+          message: 'Pass 1 produced no visual description',
+          severity: 'error',
+          context: {
+            media_id: mediaId,
+            school_id: auth.schoolId,
+            classroom_id: media.classroom_id,
+            sonnet_rescue_available: sonnetTierEnabled,
+            errors: twoPassResult.errors?.slice(0, 5) ?? null,
+          },
+        }, supabase);
+
         const { error: failedWriteErr } = await supabase
           .from('montree_media')
           .update({
@@ -987,6 +1005,18 @@ export async function POST(request: NextRequest) {
       console.error('[PhotoIdentification] Pass-2 Sonnet rescue threw (non-fatal):', rescueErr);
     }
     if (p2Outcome !== 'sonnet_rescued') {
+      logServerError({
+        origin: 'photo-identification/pass2',
+        message: 'Pass 2 produced no identification',
+        severity: 'error',
+        context: {
+          media_id: mediaId,
+          school_id: auth.schoolId,
+          classroom_id: media.classroom_id,
+          errors: twoPassResult.errors?.slice(0, 5) ?? null,
+        },
+      }, supabase);
+
       const { error: failedWriteErr } = await supabase
         .from('montree_media')
         .update({
@@ -1036,6 +1066,14 @@ export async function POST(request: NextRequest) {
     } catch (writeErr) {
       console.error('[PhotoIdentification] Failed to write crash-failed status:', writeErr);
     }
+
+    logServerError({
+      origin: 'photo-identification/crash',
+      message: pipelineError instanceof Error ? pipelineError.message : String(pipelineError),
+      stack: pipelineError instanceof Error ? pipelineError.stack || null : null,
+      severity: 'fatal',
+      context: { media_id: mediaId },
+    });
 
     return NextResponse.json({
       success: false,

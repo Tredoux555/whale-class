@@ -32,6 +32,8 @@ export interface Work {
   sequence?: number;
   photo_url?: string;
   is_custom?: boolean;
+  /** Set by the API (select *). Drives the "recently added" dot in the list. */
+  created_at?: string;
   // JSONB cache columns for translated guide content (one per non-English
   // locale). Shape: { quick_guide, materials, direct_aims, presentation_steps,
   // control_of_error, why_it_matters, parent_description } — keys are
