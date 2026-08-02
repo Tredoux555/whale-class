@@ -125,7 +125,7 @@ dpbuild.page_back = page_back
 # Per slug: (title_lines, title_accent, title_size, oral_words, end_sound?)
 COVERS = {
     'snake-in-my-sock':        (['Snake in', 'My Sock'], 'Snake', 44, 'snake · star · sloth · potato'),
-    'ant-on-my-apple':         (['Ant on', 'My Apple'], 'Ant', 44, 'ant · alligator · anteater'),
+    'ant-on-my-apple':         (['Ant on', 'My Apple'], 'Ant', 44, 'ant · alligator · anteater · ambulance'),
     'tiger-in-the-taxi':       (['A Tiger in', 'the Taxi'], 'Tiger', 42, 'turtle · tomato · toothbrush · tiger'),
     'pig-ate-a-pineapple':     (['The Pig Ate', 'a Pineapple'], 'Pineapple', 40, 'pineapple · pen · pencil · pan'),
     'in-the-igloo':            (['In the Igloo'], 'Igloo', 46, 'iguana · insect · inchworm · infant'),
@@ -178,7 +178,8 @@ SPLITS = {
         ('', 'An ant on my apple!', 100),
         ('', 'An alligator on my apple!', 100),
         ('', 'An anteater on my apple!', 100),
-        ('', ['An ant, an alligator,', 'and an anteater', 'on my apple?!'], 100),
+        ('', 'An ambulance on my apple!', 100),
+        ('', ['An ant, an alligator,', 'an anteater, and', 'an ambulance on my apple?!'], 100),
     ],
     'tiger-in-the-taxi': [
         ('', 'A turtle in the taxi!', 100),
