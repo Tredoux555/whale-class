@@ -6,13 +6,13 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 // Assign classrooms to teacher
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { teacherId: string } }
+  { params }: { params: Promise<{ teacherId: string }> }
 ) {
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
 
-    const { teacherId } = params;
+    const { teacherId } = await params;
     const { classroom_ids } = await request.json();
     const supabase = getSupabase();
 

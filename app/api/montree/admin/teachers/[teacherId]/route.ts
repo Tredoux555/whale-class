@@ -6,13 +6,13 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 // Update teacher (activate/deactivate)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { teacherId: string } }
+  { params }: { params: Promise<{ teacherId: string }> }
 ) {
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
 
-    const { teacherId } = params;
+    const { teacherId } = await params;
     const body = await request.json();
     const supabase = getSupabase();
     const schoolId = auth.schoolId;

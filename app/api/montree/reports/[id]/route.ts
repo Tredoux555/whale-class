@@ -7,14 +7,15 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
 
     const supabase = getSupabase();
-    const reportId = params.id;
+    const { id } = await params;
+    const reportId = id;
 
     if (!reportId) {
       return NextResponse.json({ error: 'Report ID required' }, { status: 400 });
@@ -42,14 +43,15 @@ export async function GET(
 // PATCH - Update report status
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
 
     const supabase = getSupabase();
-    const reportId = params.id;
+    const { id } = await params;
+    const reportId = id;
     const body = await request.json();
     const { status, approved_by, sent_to } = body;
 

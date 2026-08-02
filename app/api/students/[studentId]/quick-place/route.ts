@@ -13,10 +13,10 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 // POST: Quick place student - sets progress for all areas
 export async function POST(
   request: NextRequest,
-  { params }: { params: { studentId: string } }
+  { params }: { params: Promise<{ studentId: string }> }
 ) {
   try {
-    const { studentId } = params;
+    const { studentId } = await params;
     const { placements, recordedBy } = await request.json();
 
     if (!placements || typeof placements !== 'object') {
@@ -85,10 +85,10 @@ export async function POST(
 // GET: Get current placement status
 export async function GET(
   request: NextRequest,
-  { params }: { params: { studentId: string } }
+  { params }: { params: Promise<{ studentId: string }> }
 ) {
   try {
-    const { studentId } = params;
+    const { studentId } = await params;
     const { searchParams } = new URL(request.url);
     const classroomId = searchParams.get('classroomId');
 
