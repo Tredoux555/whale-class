@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
 const AREA_CONFIG: Record<string, { name: string; icon: string; color: string }> = {
   practical_life: { name: 'Practical Life', icon: '🧹', color: '#22c55e' },
@@ -36,6 +37,16 @@ export async function GET(request: NextRequest) {
 
     if (!childId) {
       return NextResponse.json({ error: 'child_id required' }, { status: 400 });
+    }
+
+    // SECURITY: child_id arrives from the query string. Without this check any
+    // authenticated teacher could read another school's child's full progress.
+    if (!auth.schoolId) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+    const childAccess = await verifyChildBelongsToSchool(childId, auth.schoolId);
+    if (!childAccess.allowed) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
     // Get the child to find their classroom

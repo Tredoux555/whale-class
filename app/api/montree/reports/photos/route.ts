@@ -52,6 +52,15 @@ export async function PATCH(request: NextRequest) {
     const classroom = Array.isArray(child.classroom) ? child.classroom[0] : child.classroom;
     const school_id = classroom?.school_id;
 
+    // SECURITY: child_id arrives from the request body. verifySchoolRequest only
+    // proves the caller holds a valid token for SOME school — without comparing
+    // the resolved school here, a teacher at School A could rewrite School B's
+    // parent-facing weekly report photo set (the delete + insert below are
+    // scoped only by report_id).
+    if (!school_id || school_id !== auth.schoolId) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
     // Calculate week_number and report_year
     const reportYear = weekStart.getFullYear();
     const startOfYear = new Date(reportYear, 0, 1);
@@ -103,31 +112,90 @@ export async function PATCH(request: NextRequest) {
       .delete()
       .eq('report_id', report.id);
 
-    // Insert new report media entries
+    // Insert new report media entries.
+    // SECURITY: selected_media_ids arrives straight from the client, so each id
+    // must be proven to belong to this school AND this child before it is
+    // attached to a parent-facing report. Group photos legitimately carry
+    // child_id = null on montree_media and link through montree_media_children,
+    // so both ownership routes are accepted; anything matching neither is
+    // dropped (this is also what keeps another child's photo out of the report).
+    let attachedCount = 0;
     if (selected_media_ids.length > 0) {
-      const mediaEntries = selected_media_ids.map((media_id, index) => ({
-        report_id: report.id,
-        media_id,
-        display_order: index,
-      }));
+      const [ownedRes, junctionRes] = await Promise.all([
+        supabase
+          .from('montree_media')
+          .select('id, child_id')
+          .in('id', selected_media_ids)
+          .eq('school_id', school_id),
+        supabase
+          .from('montree_media_children')
+          .select('media_id')
+          .in('media_id', selected_media_ids)
+          .eq('child_id', child_id),
+      ]);
 
-      const { error: insertError } = await supabase
-        .from('montree_report_media')
-        .insert(mediaEntries);
-
-      if (insertError) {
-        console.error('Media insert error:', insertError);
+      // A transient failure on either lookup must NOT be read as "the teacher
+      // owns none of these photos" — that would silently attach zero photos to
+      // a parent report while returning success.
+      if (ownedRes.error || junctionRes.error) {
+        console.error(
+          '[ReportPhotos] Media ownership lookup failed:',
+          ownedRes.error || junctionRes.error
+        );
         return NextResponse.json(
-          { error: 'Failed to update photos' },
+          { error: 'Failed to verify photo ownership' },
           { status: 500 }
         );
+      }
+
+      const junctionIds = new Set(
+        (junctionRes.data || []).map((r: { media_id: string }) => r.media_id)
+      );
+      const ownedIds = new Set(
+        (ownedRes.data || [])
+          .filter(
+            (m: { id: string; child_id: string | null }) =>
+              m.child_id === child_id || junctionIds.has(m.id)
+          )
+          .map((m: { id: string }) => m.id)
+      );
+
+      const rejected = selected_media_ids.filter((id: string) => !ownedIds.has(id));
+      if (rejected.length > 0) {
+        console.warn(
+          `[ReportPhotos] Rejected ${rejected.length} media id(s) not owned by child ${child_id}`
+        );
+      }
+
+      const mediaEntries = selected_media_ids
+        .filter((media_id: string) => ownedIds.has(media_id))
+        .map((media_id: string, index: number) => ({
+          report_id: report.id,
+          media_id,
+          display_order: index,
+        }));
+
+      attachedCount = mediaEntries.length;
+
+      if (mediaEntries.length > 0) {
+        const { error: insertError } = await supabase
+          .from('montree_report_media')
+          .insert(mediaEntries);
+
+        if (insertError) {
+          console.error('Media insert error:', insertError);
+          return NextResponse.json(
+            { error: 'Failed to update photos' },
+            { status: 500 }
+          );
+        }
       }
     }
 
     return NextResponse.json({
       success: true,
       report_id: report.id,
-      photos_count: selected_media_ids.length,
+      photos_count: attachedCount,
     });
   } catch (error) {
     console.error('Photo update error:', error);

@@ -62,7 +62,16 @@ export async function verifyChildBelongsToSchool(
       .eq('montree_classrooms.school_id', schoolId)
       .maybeSingle();
 
-    if (error || !data) {
+    if (error) {
+      // A transient DB failure is NOT proof that the child belongs elsewhere.
+      // Deny this request (fail closed) but do NOT cache the denial, or one
+      // blip would lock a legitimate teacher out of this child for 5 minutes.
+      console.error('[verifyChildBelongsToSchool] lookup failed (not cached):', error.message);
+      return { allowed: false };
+    }
+
+    if (!data) {
+      // Genuine negative: the child is not in this school. Safe to cache.
       const result = { allowed: false };
       accessCache.set(cacheKey, { result, expiresAt: Date.now() + CACHE_TTL_MS });
       return result;
