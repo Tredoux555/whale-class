@@ -31,6 +31,27 @@ interface CurriculumWorkListProps {
   onWorkUpdated?: () => void;
 }
 
+// A work a teacher added in the last week gets a quiet dot next to its name.
+//
+// WHY: new custom works are appended at the END of their area's sequence
+// (max + 1), so on a 125-work Practical Life shelf a work you just created
+// lands at position 125 and is effectively unfindable — this is exactly how a
+// teacher lost track of a work they had just added on 2026-07-29. We
+// deliberately do NOT reorder the shelf to fix that: `sequence` is the
+// Montessori progression, not a display preference. A marker makes the work
+// findable while leaving the progression untouched.
+//
+// Language-neutral on purpose — a dot needs no translation across the 12
+// locales, and adding a new i18n key here would gain nothing.
+const RECENTLY_ADDED_DAYS = 7;
+
+function isRecentlyAdded(createdAt?: string): boolean {
+  if (!createdAt) return false;
+  const t = Date.parse(createdAt);
+  if (Number.isNaN(t)) return false;
+  return Date.now() - t < RECENTLY_ADDED_DAYS * 86400_000;
+}
+
 export default function CurriculumWorkList({
   selectedArea,
   works,
@@ -126,8 +147,19 @@ export default function CurriculumWorkList({
                   ) : (
                     <div className={`w-2 h-8 rounded-full bg-gradient-to-b ${AREA_COLORS[selectedArea]}`} />
                   )}
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 flex items-center gap-2">
                     <p style={{ fontFamily: '"Inter", sans-serif', fontWeight: 500, color: 'rgba(255,255,255,0.90)', margin: 0, fontSize: 14 }}>{getLocalizedWorkName(work, locale)}</p>
+                    {isRecentlyAdded(work.created_at) && (
+                      <span
+                        title={`Added ${new Date(work.created_at as string).toLocaleDateString()}`}
+                        aria-label="Recently added"
+                        style={{
+                          width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
+                          background: 'rgb(52,211,153)',
+                          boxShadow: '0 0 6px rgba(52,211,153,0.7)',
+                        }}
+                      />
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>{work.age_range || '3-6'}</span>

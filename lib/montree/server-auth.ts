@@ -60,9 +60,20 @@ export interface ParentTokenPayload {
 /**
  * Create a signed JWT for a Montree teacher, principal, or homeschool parent session.
  * TTL is MONTREE_JWT_TTL_DAYS (default 3650 ≈ 10y) — see constant above.
+ *
+ * `opts.ttlSeconds` overrides that for SERVER-INTERNAL tokens only (the photo
+ * recovery cron mints a 60-second one so it can invoke the identification route
+ * in-process without a teacher session). Never hand a short-TTL token to a
+ * browser — the long default exists precisely so teachers are never logged out.
  */
-export async function createMontreeToken(payload: MontreeTokenPayload): Promise<string> {
-  const ttl = `${MONTREE_JWT_TTL_DAYS}d`;
+export async function createMontreeToken(
+  payload: MontreeTokenPayload,
+  opts?: { ttlSeconds?: number },
+): Promise<string> {
+  const ttl =
+    opts?.ttlSeconds && opts.ttlSeconds > 0
+      ? `${Math.floor(opts.ttlSeconds)}s`
+      : `${MONTREE_JWT_TTL_DAYS}d`;
   const token = await new SignJWT({
     schoolId: payload.schoolId,
     classroomId: payload.classroomId || null,
