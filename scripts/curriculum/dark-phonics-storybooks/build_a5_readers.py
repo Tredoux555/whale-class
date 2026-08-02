@@ -124,7 +124,7 @@ dpbuild.page_back = page_back
 # --- editorial: title lines / accent / oral words / page splits ------------
 # Per slug: (title_lines, title_accent, title_size, oral_words, end_sound?)
 COVERS = {
-    'snake-in-my-sock':        (['Snake in', 'My Sock'], 'Snake', 44, 'snake · star · sloth'),
+    'snake-in-my-sock':        (['Snake in', 'My Sock'], 'Snake', 44, 'snake · star · sloth · potato'),
     'ant-on-my-apple':         (['Ant on', 'My Apple'], 'Ant', 44, 'ant · alligator · anteater'),
     'tiger-in-the-taxi':       (['A Tiger in', 'the Taxi'], 'Tiger', 42, 'turtle · tomato · toothbrush · tiger'),
     'pig-ate-a-pineapple':     (['The Pig Ate', 'a Pineapple'], 'Pineapple', 40, 'pineapple · pen · pencil · pan'),
@@ -170,7 +170,8 @@ SPLITS = {
         ('', 'A snake in my sock!', 100),
         ('', 'A star in my sock!', 100),
         ('', 'A sloth in my sock!', 100),
-        ('', ['A snake, a star,', 'and a sloth', 'in my sock?!'], 100),
+        ('', 'A potato in my sock!', 100),
+        ('', ['A snake, a star,', 'a sloth, and a potato', 'in my sock?!'], 100),
     ],
     'ant-on-my-apple': [
         ('', 'An apple.', 100),
