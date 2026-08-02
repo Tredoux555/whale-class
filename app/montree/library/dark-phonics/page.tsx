@@ -139,6 +139,7 @@ const BOOK_PAGE_KEYS: Record<string, string[]> = {
   'yak-on-the-yacht': ['p1-yak', 'p2-yam', 'p3-yoyo', 'p4-yarn', 'p5-recap'],
   'zzz-at-the-zoo': ['p1-zebra', 'p2-zipper', 'p3-zucchini', 'p4-zeppelin', 'p5-recap'],
   'queen-on-the-quilt': ['p1-quill', 'p2-quarter', 'p3-quail', 'p4-queen', 'p5-recap'],
+  'the-sat': ['p1-ant', 'p2-snake', 'p3-apple', 'p4-sun', 'p5-star', 'p6-cat', 'p7-recap'],
 };
 
 /** Photo carries the 'dark-phonics-vocab' tag — top preference for a word chip's picture. */
