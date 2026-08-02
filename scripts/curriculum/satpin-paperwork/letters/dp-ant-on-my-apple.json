@@ -12,36 +12,28 @@
       "order": 1,
       "word": "ant",
       "sentence": "An ant on my apple!",
-      "art": "p1-ant.png"
+      "art": "p2-ant.png"
     },
     {
       "order": 2,
-      "word": "anchor",
-      "sentence": "An anchor on my apple!",
-      "art": "p2-anchor.png"
-    },
-    {
-      "order": 3,
       "word": "alligator",
       "sentence": "An alligator on my apple!",
       "art": "p3-alligator.png"
     },
     {
-      "order": 4,
-      "word": "ambulance",
-      "sentence": "An ambulance on my apple!",
-      "art": "p4-ambulance.png"
+      "order": 3,
+      "word": "anteater",
+      "sentence": "An anteater on my apple!",
+      "art": "p4-anteater.png"
     }
   ],
   "sequencingDisplayOrder": [
     2,
-    1,
-    4,
-    3
+    3,
+    1
   ],
   "matchDisplayOrder": [
     3,
-    4,
     1,
     2
   ],
@@ -49,27 +41,27 @@
     {
       "question": "is an ant on my apple?",
       "answer": true,
-      "imageArt": "p1-ant.png"
+      "imageArt": "p2-ant.png"
     },
     {
-      "question": "is a ball on my apple?",
+      "question": "is a snake on my apple?",
       "answer": false,
-      "imageArt": "../bear-in-the-boat/p1-ball.png"
+      "imageArt": "../snake-in-my-sock/p2-snake.png"
     },
     {
-      "question": "is an anchor on my apple?",
+      "question": "is an alligator on my apple?",
       "answer": true,
-      "imageArt": "p2-anchor.png"
+      "imageArt": "p3-alligator.png"
     },
     {
-      "question": "is a cat on my apple?",
+      "question": "is a tiger on my apple?",
       "answer": false,
-      "imageArt": "../cow-on-the-car/p1-cat.png"
+      "imageArt": "../tiger-in-the-taxi/p4-tiger.png"
     }
   ],
   "_notes": {
-    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py \u2014 do not hand-edit; regenerate instead.",
-    "recap": "p5-recap excluded from pages[] \u2014 it lists all swap words in one summary sentence, not a single \"word\" the satpin pages[] format expects (see p.json convention, five single-topic pages).",
+    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py — do not hand-edit; regenerate instead. NOTE (2026-08-02 curated rebuild): gen_dp_paperwork.py no longer exists in the repo; this file was hand-edited to match its established schema/conventions exactly (see dp-snake-in-my-sock.json for the 3-page-book template this follows, same fixed sequencingDisplayOrder/matchDisplayOrder rotation) when anchor+ambulance were dropped for anteater and the art keys were renumbered (p1-ant->p2-ant, p3-alligator kept its key, p4-ambulance->p4-anteater; new p1-apple has no paperwork page, matching how the frame noun was never a paperwork page before).",
+    "recap": "p5-recap excluded from pages[] — it lists all swap words in one summary sentence, not a single \"word\" the satpin pages[] format expects (see p.json convention, five single-topic pages).",
     "yesno": "2 true from the book's own first two pages; 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, in this book's own question frame."
   }
 }

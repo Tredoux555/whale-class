@@ -40,29 +40,29 @@
       "title": "Ant on My Apple",
       "pages": [
         {
-          "key": "p1-ant",
-          "text": "An ant on my apple!",
-          "mj_prompt": "one tiny red ant standing on top of one plump round red apple, apple still perfectly round, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+          "key": "p1-apple",
+          "text": "An apple.",
+          "mj_prompt": "one large glossy red apple with a curved brown stem, standing alone, no creature, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         },
         {
-          "key": "p2-anchor",
-          "text": "An anchor on my apple!",
-          "mj_prompt": "one small grey ship anchor balanced on top of one round red apple, the apple slightly squashed flatter than before, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+          "key": "p2-ant",
+          "text": "An ant on my apple!",
+          "mj_prompt": "one small shiny black ant with big round googly eyes and thin bendy legs, standing on top of one large glossy red apple with a curved brown stem, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         },
         {
           "key": "p3-alligator",
           "text": "An alligator on my apple!",
-          "mj_prompt": "one green alligator lying on top of one round red apple, the apple squashed noticeably flatter and wider than before, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+          "mj_prompt": "one green alligator with a long snout full of white teeth and big round googly eyes, standing on top of one large glossy red apple with a curved brown stem, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         },
         {
-          "key": "p4-ambulance",
-          "text": "An ambulance on my apple!",
-          "mj_prompt": "one white and red rescue van with a round siren light on its roof balanced on top of one red apple, the apple squashed almost completely flat like a pancake, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+          "key": "p4-anteater",
+          "text": "An anteater on my apple!",
+          "mj_prompt": "one grey anteater with a long curved snout, shaggy fur, a bushy tail, and big round googly eyes, standing on top of one large glossy red apple with a curved brown stem, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         },
         {
           "key": "p5-recap",
-          "text": "An ant, an anchor, an alligator, and an ambulance on my apple?!",
-          "mj_prompt": "one red apple squashed completely flat like a pancake, with a tiny ant, a grey anchor, a green alligator, and a white and red rescue van all teetering together in a wobbly pile on top of it, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+          "text": "An ant, an alligator, and an anteater on my apple?!",
+          "mj_prompt": "one small shiny black ant, one green alligator with a long snout full of white teeth, and one grey anteater with a long curved snout, shaggy fur, and a bushy tail, all together on top of one large glossy red apple with a curved brown stem, all with big round googly eyes, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         }
       ]
     },
