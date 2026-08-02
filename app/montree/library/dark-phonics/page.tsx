@@ -113,7 +113,7 @@ const BOOK_VOCAB: Record<string, string[]> = {
  */
 const BOOK_PAGE_KEYS: Record<string, string[]> = {
   'snake-in-my-sock': ['p1-sock', 'p2-snake', 'p3-star', 'p4-sloth', 'p5-potato', 'p6-recap'],
-  'ant-on-my-apple': ['p1-apple', 'p2-ant', 'p3-alligator', 'p4-anteater', 'p5-recap'],
+  'ant-on-my-apple': ['p1-apple', 'p2-ant', 'p3-alligator', 'p4-anteater', 'p5-ambulance', 'p6-recap'],
   'tiger-in-the-taxi': ['p1-turtle', 'p2-tomato', 'p3-toothbrush', 'p4-tiger', 'p5-recap'],
   'pig-ate-a-pineapple': ['p1-pineapple', 'p2-pen', 'p3-pencil', 'p4-pan', 'p5-recap'],
   'in-the-igloo': ['p1-iguana', 'p2-insect', 'p3-inchworm', 'p4-infant', 'p5-recap'],
