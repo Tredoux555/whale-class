@@ -202,7 +202,18 @@ function photoSrc(photo: BankPhoto, width: number): string {
   return getThumbnailUrl(photo.storage_path, width, 70, 'photo-bank');
 }
 
-type Book = { slug: string; title: string };
+type Book = {
+  slug: string;
+  title: string;
+  /** Row description under the title. Defaults to the standard initial-sound-book blurb. */
+  description?: string;
+  /** Cover image override — a local /public path for books with no Supabase-bucket cover yet.
+   *  Absent means "proxied from the dark-phonics bucket at books/covers/<slug>.png" (the 27-book default). */
+  cover?: string;
+  /** Set false for books that don't have the paperwork/tracing/three-part-card pack built yet
+   *  (only the 27 curated Dark Phonics books do). Defaults to true. */
+  materials?: boolean;
+};
 type Reader = { slug: string; title: string };
 
 type RawLesson = {
@@ -213,8 +224,10 @@ type RawLesson = {
   catchphrase: string;
   /** Hard-card vocab. Absent for the three review/abstract lessons (33, 34, 46). */
   words?: string[];
-  /** Storybook — lessons 5–31 only (book N of the 27 = lesson N + 4). */
-  book?: Book;
+  /** Storybooks — lessons 5–31 always carry at least one (book N of the 27 = lesson N + 4);
+   *  a lesson can carry more than one (e.g. lesson 7 also has the hybrid SATPIN reader
+   *  "The ___ Sat!"). Up to ~5 is the target once more books exist per lesson. */
+  books?: Book[];
   /** Easy Reader gated at this lesson — 11 of the 49 carry one. */
   reader?: Reader;
 };
@@ -242,33 +255,36 @@ const PALETTE: Array<[string, string]> = [
 
 /** The 49 lessons, in teaching order. Numbers are the curriculum's own (5–53). */
 const RAW: RawLesson[] = [
-  { n: 5, sound: 's', title: 'The Snake Says Ssss', catchphrase: '“snake in my sock!”', words: ['snake', 'sock'], book: { slug: 'snake-in-my-sock', title: 'Snake in My Sock' } },
-  { n: 6, sound: 'a', title: 'A Is for Apple', catchphrase: '“ant on my apple!”', words: ['ant', 'apple'], book: { slug: 'ant-on-my-apple', title: 'Ant on My Apple' } },
-  { n: 7, sound: 't', title: 'Tick-Tock, T!', catchphrase: '“tick-tock, stinky sock!”', words: ['clock', 'sock'], book: { slug: 'tiger-in-the-taxi', title: 'A Tiger in the Taxi' } },
-  { n: 8, sound: 'p', title: 'Pop, Pop, P!', catchphrase: '“pop, pop, puppy poop!”', words: ['pup'], book: { slug: 'pig-ate-a-pineapple', title: 'The Pig Ate a Pineapple' } },
-  { n: 9, sound: 'i', title: 'I, I, Itsy I', catchphrase: '“icky, sticky pig!”', words: ['pig'], book: { slug: 'in-the-igloo', title: 'In the Igloo' } },
-  { n: 10, sound: 'n', title: 'N for the Nose', catchphrase: '“no-no, nanny goat!”', words: ['goat'], book: { slug: 'not-in-my-nest', title: 'Not in My Nest!' } },
-  { n: 11, sound: 'm', title: 'Mmm, That\'s Good!', catchphrase: '“mmm, muddy monkey!”', words: ['monkey'], book: { slug: 'monkey-in-my-mug', title: 'A Monkey in My Mug' } },
-  { n: 12, sound: 'd', title: 'D for the Dog', catchphrase: '“dirty dog, dig dig dig!”', words: ['dog'], book: { slug: 'dinosaur-on-a-drum', title: 'A Dinosaur on a Drum' } },
-  { n: 13, sound: 'g', title: 'G for the Goat', catchphrase: '“goat got my gum!”', words: ['goat', 'gum'], book: { slug: 'oh-no-goat', title: 'Oh No, Goat…' } },
-  { n: 14, sound: 'o', title: 'O for the Octopus', catchphrase: '“hot dog on a log!”', words: ['hotdog', 'log'], book: { slug: 'owl-ate-an-orange', title: 'An Owl Ate an Orange' } },
-  { n: 15, sound: 'c', title: 'C for the Cat', catchphrase: '“cat ate my cookie!”', words: ['cat', 'cookie'], book: { slug: 'cow-on-the-car', title: 'A Cow on the Car' } },
-  { n: 16, sound: 'k', title: 'K Says It Too', catchphrase: '“kooky king kicks!”', words: ['king'], book: { slug: 'koala-in-the-pocket', title: 'A Koala in the Pocket' } },
-  { n: 17, sound: 'ck', title: 'Two Letters, One Kick', catchphrase: '“kick the stinky sock!”', words: ['sock'], book: { slug: 'on-a-rock', title: 'On a Rock' }, reader: { slug: 'the-cat-sat', title: 'The Cat Sat' } },
-  { n: 18, sound: 'e', title: 'Crack the Egg, E!', catchphrase: '“ten messy hens!”', words: ['hen'], book: { slug: 'elephant-sat-on-the-egg', title: 'The Elephant Sat on the Egg' } },
-  { n: 19, sound: 'u', title: 'Up Goes the Umbrella', catchphrase: '“yummy bug in my cup!”', words: ['bug', 'cup'], book: { slug: 'under-my-umbrella', title: 'Under My Umbrella' }, reader: { slug: 'mud-pup', title: 'Mud Pup' } },
-  { n: 20, sound: 'r', title: 'Rrr Goes the Engine', catchphrase: '“run, run, red rat!”', words: ['rat'], book: { slug: 'rabbit-in-the-rocket', title: 'A Rabbit in the Rocket' } },
-  { n: 21, sound: 'h', title: 'H, the Panting Pup', catchphrase: '“ha-ha, hairy hippo!”', words: ['hippo'], book: { slug: 'horse-in-my-hat', title: 'A Horse in My Hat' } },
-  { n: 22, sound: 'b', title: 'B for the Bobbing Boat', catchphrase: '“big baby burp!”', words: ['baby'], book: { slug: 'bear-in-the-boat', title: 'A Bear in the Boat' }, reader: { slug: 'hen-in-bed', title: 'Hen in Bed' } },
-  { n: 23, sound: 'f', title: 'Ffff Like a Fan', catchphrase: '“funny fox in my fan!”', words: ['fox', 'fan'], book: { slug: 'frog-on-the-fan', title: 'A Frog on the Fan' } },
-  { n: 24, sound: 'l', title: 'La-La-La Goes L', catchphrase: '“lazy lion licks!”', words: ['lion'], book: { slug: 'oh-no-lion', title: 'Oh No, Lion…' } },
-  { n: 25, sound: 'j', title: 'Jump for J', catchphrase: '“jump in the jelly jam!”', words: ['jam'], book: { slug: 'jellyfish-in-the-jar', title: 'A Jellyfish in the Jar' } },
-  { n: 26, sound: 'v', title: 'Vvvv Goes the Van', catchphrase: '“vroom-vroom van!”', words: ['van'], book: { slug: 'volcano-in-the-van', title: 'A Volcano in the Van' } },
-  { n: 27, sound: 'w', title: 'W for the Windy Day', catchphrase: '“wiggly wet worm!”', words: ['worm'], book: { slug: 'whale-in-the-wagon', title: 'A Whale in the Wagon' } },
-  { n: 28, sound: 'x', title: 'X Marks the Box', catchphrase: '“six fox in a box!”', words: ['fox', 'box'], book: { slug: 'fox-in-a-box', title: 'A Fox in a Box' }, reader: { slug: 'fox-in-a-box', title: 'Fox in a Box' } },
-  { n: 29, sound: 'y', title: 'Yes! Yum! Y!', catchphrase: '“yummy yellow yo-yo!”', words: ['yoyo'], book: { slug: 'yak-on-the-yacht', title: 'A Yak on the Yacht' } },
-  { n: 30, sound: 'z', title: 'Zzz Like a Buzzing Bee', catchphrase: '“zippy zebra, zzz!”', words: ['zebra'], book: { slug: 'zzz-at-the-zoo', title: 'Zzz at the Zoo' } },
-  { n: 31, sound: 'qu', title: 'The Queen Says Qu', catchphrase: '“quick quacky duck!”', words: ['duck'], book: { slug: 'queen-on-the-quilt', title: 'A Queen on the Quilt' } },
+  { n: 5, sound: 's', title: 'The Snake Says Ssss', catchphrase: '“snake in my sock!”', words: ['snake', 'sock'], books: [{ slug: 'snake-in-my-sock', title: 'Snake in My Sock' }] },
+  { n: 6, sound: 'a', title: 'A Is for Apple', catchphrase: '“ant on my apple!”', words: ['ant', 'apple'], books: [{ slug: 'ant-on-my-apple', title: 'Ant on My Apple' }] },
+  { n: 7, sound: 't', title: 'Tick-Tock, T!', catchphrase: '“tick-tock, stinky sock!”', words: ['clock', 'sock'], books: [
+    { slug: 'tiger-in-the-taxi', title: 'A Tiger in the Taxi' },
+    { slug: 'the-sat', title: 'The ___ Sat!', description: 'Hybrid decodable — teacher reads the set-up, the child shouts “Sat!” on every page.', cover: '/dark-phonics-books/covers/the-sat.png', materials: false },
+  ] },
+  { n: 8, sound: 'p', title: 'Pop, Pop, P!', catchphrase: '“pop, pop, puppy poop!”', words: ['pup'], books: [{ slug: 'pig-ate-a-pineapple', title: 'The Pig Ate a Pineapple' }] },
+  { n: 9, sound: 'i', title: 'I, I, Itsy I', catchphrase: '“icky, sticky pig!”', words: ['pig'], books: [{ slug: 'in-the-igloo', title: 'In the Igloo' }] },
+  { n: 10, sound: 'n', title: 'N for the Nose', catchphrase: '“no-no, nanny goat!”', words: ['goat'], books: [{ slug: 'not-in-my-nest', title: 'Not in My Nest!' }] },
+  { n: 11, sound: 'm', title: 'Mmm, That\'s Good!', catchphrase: '“mmm, muddy monkey!”', words: ['monkey'], books: [{ slug: 'monkey-in-my-mug', title: 'A Monkey in My Mug' }] },
+  { n: 12, sound: 'd', title: 'D for the Dog', catchphrase: '“dirty dog, dig dig dig!”', words: ['dog'], books: [{ slug: 'dinosaur-on-a-drum', title: 'A Dinosaur on a Drum' }] },
+  { n: 13, sound: 'g', title: 'G for the Goat', catchphrase: '“goat got my gum!”', words: ['goat', 'gum'], books: [{ slug: 'oh-no-goat', title: 'Oh No, Goat…' }] },
+  { n: 14, sound: 'o', title: 'O for the Octopus', catchphrase: '“hot dog on a log!”', words: ['hotdog', 'log'], books: [{ slug: 'owl-ate-an-orange', title: 'An Owl Ate an Orange' }] },
+  { n: 15, sound: 'c', title: 'C for the Cat', catchphrase: '“cat ate my cookie!”', words: ['cat', 'cookie'], books: [{ slug: 'cow-on-the-car', title: 'A Cow on the Car' }] },
+  { n: 16, sound: 'k', title: 'K Says It Too', catchphrase: '“kooky king kicks!”', words: ['king'], books: [{ slug: 'koala-in-the-pocket', title: 'A Koala in the Pocket' }] },
+  { n: 17, sound: 'ck', title: 'Two Letters, One Kick', catchphrase: '“kick the stinky sock!”', words: ['sock'], books: [{ slug: 'on-a-rock', title: 'On a Rock' }], reader: { slug: 'the-cat-sat', title: 'The Cat Sat' } },
+  { n: 18, sound: 'e', title: 'Crack the Egg, E!', catchphrase: '“ten messy hens!”', words: ['hen'], books: [{ slug: 'elephant-sat-on-the-egg', title: 'The Elephant Sat on the Egg' }] },
+  { n: 19, sound: 'u', title: 'Up Goes the Umbrella', catchphrase: '“yummy bug in my cup!”', words: ['bug', 'cup'], books: [{ slug: 'under-my-umbrella', title: 'Under My Umbrella' }], reader: { slug: 'mud-pup', title: 'Mud Pup' } },
+  { n: 20, sound: 'r', title: 'Rrr Goes the Engine', catchphrase: '“run, run, red rat!”', words: ['rat'], books: [{ slug: 'rabbit-in-the-rocket', title: 'A Rabbit in the Rocket' }] },
+  { n: 21, sound: 'h', title: 'H, the Panting Pup', catchphrase: '“ha-ha, hairy hippo!”', words: ['hippo'], books: [{ slug: 'horse-in-my-hat', title: 'A Horse in My Hat' }] },
+  { n: 22, sound: 'b', title: 'B for the Bobbing Boat', catchphrase: '“big baby burp!”', words: ['baby'], books: [{ slug: 'bear-in-the-boat', title: 'A Bear in the Boat' }], reader: { slug: 'hen-in-bed', title: 'Hen in Bed' } },
+  { n: 23, sound: 'f', title: 'Ffff Like a Fan', catchphrase: '“funny fox in my fan!”', words: ['fox', 'fan'], books: [{ slug: 'frog-on-the-fan', title: 'A Frog on the Fan' }] },
+  { n: 24, sound: 'l', title: 'La-La-La Goes L', catchphrase: '“lazy lion licks!”', words: ['lion'], books: [{ slug: 'oh-no-lion', title: 'Oh No, Lion…' }] },
+  { n: 25, sound: 'j', title: 'Jump for J', catchphrase: '“jump in the jelly jam!”', words: ['jam'], books: [{ slug: 'jellyfish-in-the-jar', title: 'A Jellyfish in the Jar' }] },
+  { n: 26, sound: 'v', title: 'Vvvv Goes the Van', catchphrase: '“vroom-vroom van!”', words: ['van'], books: [{ slug: 'volcano-in-the-van', title: 'A Volcano in the Van' }] },
+  { n: 27, sound: 'w', title: 'W for the Windy Day', catchphrase: '“wiggly wet worm!”', words: ['worm'], books: [{ slug: 'whale-in-the-wagon', title: 'A Whale in the Wagon' }] },
+  { n: 28, sound: 'x', title: 'X Marks the Box', catchphrase: '“six fox in a box!”', words: ['fox', 'box'], books: [{ slug: 'fox-in-a-box', title: 'A Fox in a Box' }], reader: { slug: 'fox-in-a-box', title: 'Fox in a Box' } },
+  { n: 29, sound: 'y', title: 'Yes! Yum! Y!', catchphrase: '“yummy yellow yo-yo!”', words: ['yoyo'], books: [{ slug: 'yak-on-the-yacht', title: 'A Yak on the Yacht' }] },
+  { n: 30, sound: 'z', title: 'Zzz Like a Buzzing Bee', catchphrase: '“zippy zebra, zzz!”', words: ['zebra'], books: [{ slug: 'zzz-at-the-zoo', title: 'Zzz at the Zoo' }] },
+  { n: 31, sound: 'qu', title: 'The Queen Says Qu', catchphrase: '“quick quacky duck!”', words: ['duck'], books: [{ slug: 'queen-on-the-quilt', title: 'A Queen on the Quilt' }] },
   { n: 32, sound: 'review', title: 'All Our Sounds', catchphrase: '“cat, pig, dog - woof!”', words: ['cat', 'pig', 'dog'] },
   { n: 33, sound: 'review', title: 'The Five Little Vowels', catchphrase: '“a, e, i, o, u... achoo!”' },
   { n: 34, sound: 'review', title: 'We Know the Alphabet', catchphrase: '“a to z, easy-peasy!”' },
@@ -364,7 +380,7 @@ export default function DarkPhonicsPage() {
   // Book scene pictures — one fetch per book slug, batched.
   useEffect(() => {
     let cancelled = false;
-    const slugs = Object.keys(BOOK_PAGE_KEYS);
+    const slugs = Array.from(new Set(LESSONS.flatMap(l => (l.books ?? []).map(b => b.slug))));
     (async () => {
       const found = await Promise.all(slugs.map(async (slug) => [slug, await fetchBookPictures(slug)] as const));
       if (cancelled) return;
@@ -637,7 +653,8 @@ export default function DarkPhonicsPage() {
                       for lessons 5–31 (BOOK_VOCAB), the hard-card vocab for
                       every other lesson. */}
                   {(() => {
-                    const chipWords = l.book ? (BOOK_VOCAB[l.book.slug] ?? l.words ?? []) : (l.words ?? []);
+                    const firstBook = l.books?.[0];
+                    const chipWords = firstBook ? (BOOK_VOCAB[firstBook.slug] ?? l.words ?? []) : (l.words ?? []);
                     return chipWords.length > 0 ? (
                       <>
                         <div className="mt-4 flex flex-wrap gap-2">
@@ -656,7 +673,7 @@ export default function DarkPhonicsPage() {
                           ))}
                         </div>
                         {/* Vocab pictures — only for the 27 book lessons */}
-                        {l.book && <VocabPictureRow words={chipWords} accent={l.accent} />}
+                        {firstBook && <VocabPictureRow words={chipWords} accent={l.accent} />}
                       </>
                     ) : (
                       <div className="mt-4 text-left text-[11px] text-white/20">
@@ -722,33 +739,38 @@ export default function DarkPhonicsPage() {
                     <EmptySlot>Song card — coming soon</EmptySlot>
                   )}
 
-                  {/* STORYBOOK — lessons 5–31 only */}
-                  {l.book && (
-                    <Row accent={l.accent} label="Story book">
+                  {/* STORYBOOK(S) — lessons 5–31 always carry at least one; a lesson
+                      can carry more than one (target: up to ~5 per lesson). */}
+                  {l.books?.map((book, bi) => (
+                    <Row
+                      key={book.slug}
+                      accent={l.accent}
+                      label={l.books!.length > 1 ? `Story book ${bi + 1}` : 'Story book'}
+                    >
                       <div className="flex items-start gap-3">
                         <img
-                          src={media(`books/covers/${l.book.slug}.png`, 3)}
-                          alt={l.book.title}
+                          src={book.cover ?? media(`books/covers/${book.slug}.png`, 3)}
+                          alt={book.title}
                           loading="lazy"
                           className="w-16 rounded-md shrink-0"
                           style={{ background: '#0e0e16' }}
                         />
                         <div className="flex-1 min-w-0">
-                          <div className="text-white/90 font-medium text-sm">{l.book.title}</div>
+                          <div className="text-white/90 font-medium text-sm">{book.title}</div>
                           <div className="text-white/35 text-xs mt-0.5 leading-relaxed">
-                            Initial-sound pattern book — the child shouts the picture word.
+                            {book.description ?? 'Initial-sound pattern book — the child shouts the picture word.'}
                           </div>
                           <div className="mt-3 flex flex-wrap gap-2">
-                            <Pill href={printPdf(`/dark-phonics-books/print/${l.book.slug}-A5-reading.pdf`)}>Read-along</Pill>
-                            <Pill href={printPdf(`/dark-phonics-books/print/${l.book.slug}-A5-booklet-print.pdf`)}>Print booklet A5</Pill>
+                            <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-reading.pdf`)}>Read-along</Pill>
+                            <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-booklet-print.pdf`)}>Print booklet A5</Pill>
                           </div>
                         </div>
                       </div>
 
                       {/* Book scene pictures + their own hand-off */}
-                      <BookPictureRow slug={l.book.slug} accent={l.accent} />
+                      <BookPictureRow slug={book.slug} accent={l.accent} />
                     </Row>
-                  )}
+                  ))}
 
                   {/* EASY READER — only on the 11 gate lessons */}
                   {l.reader && (
@@ -765,7 +787,7 @@ export default function DarkPhonicsPage() {
                       full paperwork/three-part-card family for the 27 book
                       lessons (public/dark-phonics-materials/<slug>/, built
                       by the satpin printable generators). */}
-                  {has('flashcards', l.n) || (l.words && l.words.length > 0) || l.book ? (
+                  {has('flashcards', l.n) || (l.words && l.words.length > 0) || (l.books && l.books.length > 0) ? (
                     <Row accent={l.accent} label="Printables">
                       <div className="flex flex-wrap gap-2">
                         {has('flashcards', l.n) && (
@@ -774,17 +796,17 @@ export default function DarkPhonicsPage() {
                         {l.words && l.words.length > 0 && (
                           <Pill href={media(`vocab-packs/lesson-${nn(l.n)}.pdf`)}>Vocab cards</Pill>
                         )}
-                        {l.book && (
-                          <>
-                            <Pill href={printPdf(`/dark-phonics-materials/${l.book.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
-                            <Pill href={printPdf(`/dark-phonics-materials/${l.book.slug}/build-it-sheet.pdf`)}>Build-it sheet</Pill>
-                            <Pill href={printPdf(`/dark-phonics-materials/${l.book.slug}/tracing-workbook.pdf`)}>Tracing workbook</Pill>
-                            <Pill href={printPdf(`/dark-phonics-materials/${l.book.slug}/sentence-strips.pdf`)}>Sentence strips</Pill>
-                            <Pill href={printPdf(`/dark-phonics-materials/${l.book.slug}/three-part-cards-control.pdf`)}>Three-part cards · Control</Pill>
-                            <Pill href={printPdf(`/dark-phonics-materials/${l.book.slug}/three-part-cards-pictures.pdf`)}>Three-part cards · Pictures</Pill>
-                            <Pill href={printPdf(`/dark-phonics-materials/${l.book.slug}/three-part-cards-labels.pdf`)}>Three-part cards · Labels</Pill>
-                          </>
-                        )}
+                        {l.books?.filter(b => b.materials !== false).map(book => (
+                          <React.Fragment key={book.slug}>
+                            <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
+                            <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/build-it-sheet.pdf`)}>Build-it sheet</Pill>
+                            <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/tracing-workbook.pdf`)}>Tracing workbook</Pill>
+                            <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/sentence-strips.pdf`)}>Sentence strips</Pill>
+                            <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/three-part-cards-control.pdf`)}>Three-part cards · Control</Pill>
+                            <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/three-part-cards-pictures.pdf`)}>Three-part cards · Pictures</Pill>
+                            <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/three-part-cards-labels.pdf`)}>Three-part cards · Labels</Pill>
+                          </React.Fragment>
+                        ))}
                       </div>
                     </Row>
                   ) : (
