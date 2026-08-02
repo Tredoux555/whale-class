@@ -261,6 +261,7 @@ const RAW: RawLesson[] = [
   { n: 7, sound: 't', title: 'Tick-Tock, T!', catchphrase: '“tick-tock, stinky sock!”', words: ['clock', 'sock'], books: [
     { slug: 'tiger-in-the-taxi', title: 'A Tiger in the Taxi' },
     { slug: 'the-sat', title: 'The ___ Sat!', description: 'Hybrid decodable — teacher reads the set-up, the child shouts “Sat!” on every page.', cover: '/dark-phonics-books/covers/the-sat.png', materials: false },
+    { slug: 'the-tall', title: 'The Tall ___!', description: 'Companion pattern book, same cast as A Tiger in the Taxi — the child shouts the picture word.', cover: '/dark-phonics-books/covers/the-tall.png', materials: false },
   ] },
   { n: 8, sound: 'p', title: 'Pop, Pop, P!', catchphrase: '“pop, pop, puppy poop!”', words: ['pup'], books: [{ slug: 'pig-ate-a-pineapple', title: 'The Pig Ate a Pineapple' }] },
   { n: 9, sound: 'i', title: 'I, I, Itsy I', catchphrase: '“icky, sticky pig!”', words: ['pig'], books: [{ slug: 'in-the-igloo', title: 'In the Igloo' }] },
