@@ -51,7 +51,7 @@ const media = (path: string, v?: number) =>
  * rebuild project touches every book eventually); a stale value here is
  * exactly the "book still shows the old art" bug filed 2026-08-02.
  */
-const STORYBOOK_PRINT_VERSION = 2; // bumped 2026-08-02: Book 1 + Book 2 curated rebuild
+const STORYBOOK_PRINT_VERSION = 3; // bumped 2026-08-02: Book 1 potato + Book 2 ambulance art/PDF rebuild
 const printPdf = (path: string) => `${path}?v=${STORYBOOK_PRINT_VERSION}`;
 
 /** Trimmed-down photo-bank row — only the fields this page renders/forwards. */
@@ -749,7 +749,7 @@ export default function DarkPhonicsPage() {
                     >
                       <div className="flex items-start gap-3">
                         <img
-                          src={book.cover ?? media(`books/covers/${book.slug}.png`, 3)}
+                          src={book.cover ?? media(`books/covers/${book.slug}.png`, 4)}
                           alt={book.title}
                           loading="lazy"
                           className="w-16 rounded-md shrink-0"
