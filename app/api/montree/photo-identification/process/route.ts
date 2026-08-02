@@ -617,6 +617,11 @@ export async function POST(request: NextRequest) {
         .from('montree_visual_memory')
         .select('work_name, visual_description, key_materials')
         .eq('classroom_id', media.classroom_id)
+        // Deterministic slice: without an explicit order, WHICH 500 rows come
+        // back is planner-dependent once a classroom's moat outgrows the cap,
+        // so the same photo could recall differently run to run.
+        .order('description_confidence', { ascending: false })
+        .order('work_name', { ascending: true })
         .limit(500);
 
       if (recallErr) {
