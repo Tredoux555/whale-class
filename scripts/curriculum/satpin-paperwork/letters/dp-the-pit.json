@@ -1,0 +1,75 @@
+{
+  "letter": "i",
+  "week": 5,
+  "slug": "dp-the-pit",
+  "bookSlug": "the-pit",
+  "bookTitle": "The ___ Sat in the Pit!",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-the-pit.py",
+  "artDir": "phonics-images/dark-phonics-books/the-pit",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "ant",
+      "sentence": "The ant sat in the pit!",
+      "art": "p2-ant.png"
+    },
+    {
+      "order": 2,
+      "word": "snake",
+      "sentence": "The snake sat in the pit!",
+      "art": "p6-snake.png"
+    },
+    {
+      "order": 3,
+      "word": "cat",
+      "sentence": "The cat sat in the pit!",
+      "art": "p7-cat.png"
+    },
+    {
+      "order": 4,
+      "word": "potato",
+      "sentence": "The potato sat in the pit!",
+      "art": "p9-potato.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    3,
+    1,
+    4,
+    2
+  ],
+  "matchDisplayOrder": [
+    2,
+    4,
+    1,
+    3
+  ],
+  "yesno": [
+    {
+      "question": "did the ant sit in the pit?",
+      "answer": true,
+      "imageArt": "p2-ant.png"
+    },
+    {
+      "question": "did the duck sit in the pit?",
+      "answer": false,
+      "imageArt": "../on-a-rock/p1-duck.png"
+    },
+    {
+      "question": "did the cat sit in the pit?",
+      "answer": true,
+      "imageArt": "p7-cat.png"
+    },
+    {
+      "question": "did the frog sit in the pit?",
+      "answer": false,
+      "imageArt": "../frog-on-the-fan/p1-frog.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Adapted 2026-08-03 from dp-the-spat.json as letter book three (The ___ Sat in the Pit, letter I, short i) — do not hand-edit blindly, keep in sync with books_def.py's the-pit entry.",
+    "recap": "pages[] expects four single-topic pages, so the-pit's six-strong cast is pared to ant (first in), snake and cat (last two in), plus p9-potato (the book's twist/finale swap character). p1-pit (scene-setter, empty pit) and p8-recap (whole cast crowding the pit) are excluded, and apple/sun/star sit out — same exclusion rule as dp-the-spat.",
+    "yesno": "2 true from the book's own pages (ant, cat). 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, same as dp-the-spat's decoys — verified those source files exist."
+  }
+}
