@@ -3236,3 +3236,41 @@ instruction naming both tracks.
 If a future task touches the letter P dark-phonics lesson and the pig book
 reappears anywhere in that diff, that is a bug — stop and re-read this block
 before proceeding.
+
+
+## 📖 DARK PHONICS PAGE STRUCTURE RULING (2026-08-03)
+
+`app/montree/library/dark-phonics/page.tsx` was rebuilt 878→718 lines. This is
+now the locked shape of the page — do not relitigate without an explicit
+instruction from Tredoux:
+
+- **49 lessons, displayed 1–49.** `displayN(n) = n − 4` converts the
+  curriculum's internal lesson numbers (5–53) to what the page shows. Every
+  rendered lesson number goes through `displayN`. Media keys are UNCHANGED —
+  still `lesson-05` … `lesson-53` in the bucket/proxy paths via `nn(n)` on the
+  raw `n`. Never rename bucket files to match the displayed 1–49 numbering.
+- **The song is the core of every lesson.** The music/song `<Row>` renders
+  unconditionally, first, for all 49 lessons — everything else (video,
+  picture, book, reader, printables) is conditional on what assets exist.
+- **Letter books only, one per letter as written:** the-sat + the-tall on
+  displayed Lesson 3 (n=7, T), the-spat on Lesson 4 (n=8, P), the-pit on
+  Lesson 5 (n=9, I). More letter books are added the same way, one per
+  letter, as they're written and shipped — not batch-added ahead of time.
+- **The 27 old initial-sound pattern storybooks are RETIRED from this page.**
+  Their assets (bucket, `public/`, DB rows) are untouched — only the page's
+  references to them were removed. Do not re-link them here.
+- **Vocab picture grids (`BOOK_VOCAB`, `BOOK_PAGE_KEYS`, `VocabPictureRow`,
+  `fetchVocabByLabel`, `vocabPictures` state) are permanently removed from
+  this page.** Word chips now come straight from each lesson's `l.words`. Do
+  not resurrect the vocab-grid pattern here.
+- **The 92-word `dark-phonics-vocab` MJ prompt list drafted earlier
+  2026-08-03 is VOID** — it targeted the now-removed vocab grid. Do not run
+  or revive it.
+- **Future Montessori-style matching materials (sentence-building,
+  match-to-sentence) derive from each letter book's own media as that book
+  ships** — not from a separate vocab-photo system.
+- **tsconfig scoped-check gotcha:** the base `tsconfig.json`'s `"@/*"` maps
+  to a nonexistent `./src/*`, so any scoped `tsconfig.*.tmp.json` used for a
+  fast `tsc --noEmit -p ...` check must override `paths` to map `"@/*"` to
+  `"./*"` or every `@/...` import fails to resolve.
+  `tsconfig.dp-page.tmp.json` is the working template for this.
