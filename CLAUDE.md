@@ -3173,8 +3173,9 @@ cast around the prop, and TEACHER POTATO always cameos on the final page ("The p
 - Book 2 "The ___ Spat" (letter P) — text LOCKED: 'A basin. / The penguin spat! / The pig spat! /
   The pelican spat! / The penguin, the pig, and the pelican spat?! / The potato spat?!' Cast =
   all-P animals (penguin/pig/pelican) + potato in a shower cap; anchor prop = "a round white
-  pedestal basin with a single silver tap" (toothbrushing frame). 7-prompt pack delivered in chat
-  2026-08-03; Tredoux generating.
+  pedestal basin with a single silver tap" (toothbrushing frame). art picked + filed 2026-08-03;
+  book BUILT + SHIPPED same day (the-spat A5 pair in public/satpin-books/print/ + dark-phonics-books
+  mirror; def in books_def.py).
 
 **🚨 THE ACTION-VERB RULE (the spitting lesson — applies to ANY verb MJ fights: spit, throw, kick,
 sneeze, blow, eat-the-object):** MJ v8 cannot render a verb happening at a mouth — it distorts the
