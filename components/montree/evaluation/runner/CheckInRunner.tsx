@@ -1,0 +1,1021 @@
+'use client';
+
+/**
+ * Montree Milestones — the check-in runner.
+ *
+ * Full-screen by design: this component covers the dashboard chrome entirely, because the
+ * tablet is handed to a child and a stray tap on "Reports" mid-sitting ends the sitting.
+ *
+ * The flow is the ported D2 engine (lib/montree/evaluation/runner-engine.ts):
+ *   setup → per module { intro → practice ×2 → items } → rest → … → observations → close
+ * with stop rules skipping the rest of a strand or module, and the extension rule offering
+ * a few band-up items after a perfect strand.
+ *
+ * DATA PATH
+ *   • The child's identity comes from the route parameter. There is no name field anywhere
+ *     in this component — typing a child's name to start a check-in is how records get
+ *     attached to the wrong child.
+ *   • The item bank arrives as a server-side projection (one band, one form, the chosen
+ *     modules), never as the full 1.6 MB file.
+ *   • Answers are autosaved to localStorage after every response and flushed to
+ *     `/sessions/:id/items` opportunistically. The endpoint is idempotent on
+ *     (session_id, item_id), so a re-send after a dropped connection is safe.
+ *   • Bands are NOT computed here. `/complete` re-scores from the full bank server-side.
+ *
+ * OFFLINE POSTURE (stated plainly because it is a limitation, not a feature):
+ *   Starting a check-in needs the network once — for the session row and the bank slice.
+ *   After that the sitting runs entirely offline: every answer is written to localStorage,
+ *   the queue flushes on `online` and again before `/complete`, and a teacher who finishes
+ *   offline sees the queue held with a "send now" button rather than a lost morning.
+ */
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { useI18n } from '@/lib/montree/i18n';
+import type { AgeBand, Band, FormCode, WindowCode } from '@/lib/montree/evaluation/types';
+import type { ProjectedBank } from '@/lib/montree/evaluation/bank-projection';
+import {
+  advance, ageBandFromMonths, ageMonthsFromBirthDate, answeredCount, buildRunnerIndex,
+  createRun, currentItem, currentStep, defaultFormForWindow, endEarly, finish,
+  progressDots, recordObservation, recordResponse, schoolYearForDate, toObservationPayload,
+  toRawResponses, windowForDate,
+  type RunnerIndex, type RunState,
+} from '@/lib/montree/evaluation/runner-engine';
+import {
+  deleteSnapshot, flushResponses, isOnline, listSnapshots, probeStorage, saveSnapshot,
+  type RunSnapshot,
+} from '@/lib/montree/evaluation/runner-storage';
+import { GuideCharacter } from '../GuideCharacter';
+import { useSpeech } from '../useSpeech';
+import { BandChip } from '../BandChip';
+import { bankText } from '../localized';
+import { C, SERIF, SANS } from '../tokens';
+import { ItemStage, type ItemAnswer } from './ItemStage';
+import { ObservationPanel } from './ObservationPanel';
+import { HoldButton } from './HoldButton';
+
+/* ───────────────────────────────────────────────────────────────── constants */
+
+const MODULE_CHOICES: Array<{ id: string; labelKey: 'milestones.run.moduleLit' | 'milestones.run.moduleMath' | 'milestones.run.moduleEfl' | 'milestones.run.moduleObs' }> = [
+  { id: 'M-LIT', labelKey: 'milestones.run.moduleLit' },
+  { id: 'M-MATH', labelKey: 'milestones.run.moduleMath' },
+  { id: 'M-EFL', labelKey: 'milestones.run.moduleEfl' },
+  { id: 'M-OBS', labelKey: 'milestones.run.moduleObs' },
+];
+
+const AGE_BANDS: AgeBand[] = ['A3', 'A4', 'A5'];
+const WINDOW_CODES: WindowCode[] = ['autumn', 'winter', 'spring'];
+/** Send in the background every few answers; the rest of the queue goes at the close. */
+const FLUSH_EVERY = 6;
+
+type Screen = 'setup' | 'running' | 'summary' | 'blocked';
+
+interface CompletePayload {
+  summary?: {
+    core: { mapPercent: number | null; denominator: number; suppressed: boolean; suppressionReason: string | null; exceeded: number };
+    efl: { mapPercent: number | null; denominator: number; suppressed: boolean; suppressionReason: string | null };
+    counts: Record<string, number>;
+    itemsAdministered: number;
+    itemsSkipped: number;
+  };
+  narrative?: { growth: string | null; profile: string | null; english: string | null };
+}
+
+/* ──────────────────────────────────────────────────────────────── component */
+
+export function CheckInRunner({
+  childId,
+  childName,
+  birthDate,
+}: {
+  childId: string;
+  childName: string | null;
+  birthDate: string | null;
+}) {
+  const router = useRouter();
+  const { t, locale } = useI18n();
+
+  /* ---------------- setup configuration ---------------- */
+  const suggestedMonths = useMemo(() => ageMonthsFromBirthDate(birthDate), [birthDate]);
+  const [ageBand, setAgeBand] = useState<AgeBand>(() => (
+    suggestedMonths !== null ? ageBandFromMonths(suggestedMonths) : 'A4'
+  ));
+  const [windowCode, setWindowCode] = useState<WindowCode>(() => windowForDate());
+  const [formCode, setFormCode] = useState<FormCode>(() => defaultFormForWindow(windowForDate()));
+  const [formTouched, setFormTouched] = useState(false);
+  const [modules, setModules] = useState<string[]>(['M-LIT', 'M-MATH']);
+
+  /* ---------------- runtime ---------------- */
+  const [screen, setScreen] = useState<Screen>('setup');
+  const [blocked, setBlocked] = useState<{ title: string; body: string } | null>(null);
+  const [starting, setStarting] = useState(false);
+  const [scriptOpen, setScriptOpen] = useState(false);
+  const [storageOk] = useState(() => probeStorage().available);
+  const [resumable, setResumable] = useState<RunSnapshot | null>(null);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [completion, setCompletion] = useState<CompletePayload | null>(null);
+  const [completing, setCompleting] = useState(false);
+
+  const bankRef = useRef<ProjectedBank | null>(null);
+  const indexRef = useRef<RunnerIndex | null>(null);
+  const runRef = useRef<RunState | null>(null);
+  const syncedRef = useRef<string[]>([]);
+  // The run state lives in a ref (the engine mutates it in place, as a state machine should);
+  // this counter is the only thing React needs in order to redraw after a mutation.
+  const [, redraw] = useReducer((n: number) => n + 1, 0);
+
+  /* ---------------- audio ----------------
+     `useSpeech` reports honestly whether narration is actually live. When it is not, the
+     item screen shows the teacher script card by default and the sitting runs by reading
+     aloud — a dead speaker must never block a check-in. */
+  const speech = useSpeech();
+  const audioOn = speech.live;
+  const speak = speech.speak;
+  const enableAudio = useCallback(() => {
+    void speech.enable().then((ok) => { if (!ok) toast.message(t('milestones.run.soundNone')); });
+  }, [speech, t]);
+
+  /* ---------------- resume ---------------- */
+  useEffect(() => {
+    if (!storageOk) return;
+    const candidates = listSnapshots(childId).filter((s) => !s.run.completedAt);
+    if (candidates.length) setResumable(candidates[0]);
+  }, [childId, storageOk]);
+
+  const persist = useCallback(() => {
+    const run = runRef.current;
+    const bank = bankRef.current;
+    if (!run || !bank || !storageOk) return;
+    saveSnapshot({
+      bankVersion: bank.bankVersion,
+      bankQuery: { ageBand: run.config.ageBand, formCode: run.config.formCode, modules: run.config.moduleIds },
+      run,
+      syncedItemIds: syncedRef.current,
+    });
+  }, [storageOk]);
+
+  /* ---------------- sending ---------------- */
+  const flushNow = useCallback(async (silent = true): Promise<boolean> => {
+    const run = runRef.current;
+    if (!run?.sessionId) return false;
+    const responses = toRawResponses(run) as unknown as Array<Record<string, unknown>>;
+    const observations = toObservationPayload(run) as unknown as Array<Record<string, unknown>>;
+    const result = await flushResponses({
+      sessionId: run.sessionId,
+      responses,
+      observations,
+      syncedItemIds: syncedRef.current,
+    });
+    if (result.ok) {
+      syncedRef.current = result.syncedItemIds;
+      setPendingCount(0);
+      setSendError(null);
+      persist();
+      return true;
+    }
+    setPendingCount(responses.length - syncedRef.current.length);
+    setSendError(result.error);
+    if (!silent) toast.error(t('milestones.run.sendFailed'));
+    return false;
+  }, [persist, t]);
+
+  // Flush whenever the tablet comes back online mid-sitting.
+  useEffect(() => {
+    const onOnline = () => { void flushNow(true); };
+    window.addEventListener('online', onOnline);
+    return () => window.removeEventListener('online', onOnline);
+  }, [flushNow]);
+
+  /* ---------------- starting ---------------- */
+  const loadBank = useCallback(async (query: { ageBand: string; formCode: string; modules: string[] }) => {
+    const params = new URLSearchParams({
+      ageBand: query.ageBand,
+      formCode: query.formCode,
+      modules: query.modules.join(','),
+    });
+    const res = await fetch(`/api/montree/evaluation/bank?${params.toString()}`);
+    if (res.status === 503) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body?.reason === 'migration_pending' ? 'migration_pending' : 'feature_off');
+    }
+    if (!res.ok) throw new Error(`bank_${res.status}`);
+    const body = await res.json();
+    return body.bank as ProjectedBank;
+  }, []);
+
+  const blockFor = useCallback((reason: string) => {
+    if (reason === 'feature_off') {
+      setBlocked({ title: t('milestones.featureOffTitle'), body: t('milestones.featureOffBody') });
+    } else if (reason === 'migration_pending') {
+      setBlocked({ title: t('milestones.migrationPendingTitle'), body: t('milestones.migrationPendingBody') });
+    } else {
+      setBlocked({ title: t('milestones.loadFailed'), body: reason });
+    }
+    setScreen('blocked');
+  }, [t]);
+
+  const begin = useCallback(async () => {
+    if (!modules.length) { toast.error(t('milestones.run.noModules')); return; }
+    setStarting(true);
+    try {
+      const bank = await loadBank({ ageBand, formCode, modules });
+      const res = await fetch('/api/montree/evaluation/sessions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          childId,
+          windowCode,
+          ageBand,
+          formCode,
+          modules,
+          deliveryMode: 'tablet',
+          assessmentLocale: locale,
+          schoolYear: schoolYearForDate(),
+        }),
+      });
+      if (res.status === 503) {
+        const body = await res.json().catch(() => ({}));
+        blockFor(body?.reason === 'migration_pending' ? 'migration_pending' : 'feature_off');
+        return;
+      }
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        blockFor(body?.detail ?? body?.error ?? `session_${res.status}`);
+        return;
+      }
+      const body = await res.json();
+
+      const index = buildRunnerIndex(bank);
+      const run = createRun(bank, index, {
+        childId, ageBand, ageMonths: suggestedMonths, formCode, windowCode,
+        schoolYear: schoolYearForDate(), moduleIds: modules, assessmentLocale: locale,
+      });
+      run.sessionId = body?.session?.id ?? null;
+      bankRef.current = bank;
+      indexRef.current = index;
+      runRef.current = run;
+      syncedRef.current = [];
+      persist();
+      setScreen('running');
+      redraw();
+    } catch (error) {
+      blockFor((error as Error).message);
+    } finally {
+      setStarting(false);
+    }
+  }, [modules, ageBand, formCode, windowCode, childId, locale, suggestedMonths, loadBank, persist, redraw, blockFor, t]);
+
+  const resume = useCallback(async (snapshot: RunSnapshot) => {
+    setStarting(true);
+    try {
+      const bank = await loadBank(snapshot.bankQuery);
+      const index = buildRunnerIndex(bank);
+      const run = snapshot.run;
+      // `startedMs` came from the previous page load. Left alone, a check-in resumed the
+      // next morning would report a sixteen-hour duration; the clock restarts on resume.
+      run.startedMs = Date.now();
+      // Never re-show a question the child has already answered.
+      while (run.steps[run.stepIndex]
+        && (run.steps[run.stepIndex].skipped || run.responses[run.steps[run.stepIndex].itemId])) {
+        run.stepIndex += 1;
+      }
+      if (run.stepIndex >= run.steps.length) {
+        run.phase = run.config.moduleIds.includes('M-OBS') ? 'observation' : 'close';
+      } else if (run.phase === 'intro' || run.phase === 'rest' || run.phase === 'paused') {
+        // keep the screen the teacher left on
+      } else {
+        run.phase = run.steps[run.stepIndex].kind === 'practice' ? 'practice' : 'item';
+      }
+      bankRef.current = bank;
+      indexRef.current = index;
+      runRef.current = run;
+      syncedRef.current = snapshot.syncedItemIds ?? [];
+      setResumable(null);
+      setScreen('running');
+      redraw();
+      void flushNow(true);
+    } catch (error) {
+      blockFor((error as Error).message);
+    } finally {
+      setStarting(false);
+    }
+  }, [loadBank, redraw, blockFor, flushNow]);
+
+  /* ---------------- completing ---------------- */
+  const submitAndComplete = useCallback(async () => {
+    const run = runRef.current;
+    if (!run?.sessionId) return;
+    setCompleting(true);
+    const flushed = await flushNow(true);
+    if (!flushed) {
+      setCompleting(false);
+      return;      // queue is kept; the summary screen offers "send now"
+    }
+    try {
+      const res = await fetch(`/api/montree/evaluation/sessions/${run.sessionId}/complete`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          durationSeconds: run.durationSeconds,
+          status: 'completed',
+          childName: childName ?? undefined,
+        }),
+      });
+      if (!res.ok) {
+        const detail = await res.text().catch(() => '');
+        setSendError(`complete_${res.status}${detail ? `: ${detail.slice(0, 160)}` : ''}`);
+        return;
+      }
+      const body = (await res.json()) as CompletePayload;
+      setCompletion(body);
+      setSendError(null);
+      // The record is filed server-side; the local copy is no longer the only one.
+      deleteSnapshot(run.localId);
+      toast.success(t('milestones.run.finished'));
+    } catch (error) {
+      setSendError((error as Error).message);
+    } finally {
+      setCompleting(false);
+    }
+  }, [flushNow, childName, t]);
+
+  /* ---------------- item flow ---------------- */
+  const step = runRef.current ? currentStep(runRef.current) : null;
+  const item = runRef.current && indexRef.current ? currentItem(runRef.current, indexRef.current) : null;
+
+  const goNext = useCallback(() => {
+    const run = runRef.current;
+    const bank = bankRef.current;
+    const index = indexRef.current;
+    if (!run || !bank || !index) return;
+    const outcome = advance(bank, index, run);
+    persist();
+    if (outcome.next === 'rest' || outcome.next === 'observation' || outcome.next === 'close') {
+      void flushNow(true);
+    }
+    if (outcome.next === 'close') void submitAndComplete();
+    redraw();
+  }, [persist, flushNow, submitAndComplete, redraw]);
+
+  const onItemComplete = useCallback((answer: ItemAnswer | null) => {
+    const run = runRef.current;
+    const index = indexRef.current;
+    if (!run || !index || !item) return;
+    if (answer) {
+      recordResponse(index, run, item, {
+        optionIds: answer.optionIds,
+        sequence: answer.sequence,
+        rubricScore: answer.rubricScore,
+        latencyMs: answer.latencyMs,
+        replayCount: answer.replayCount,
+      });
+      persist();
+      const answered = answeredCount(run);
+      setPendingCount(Math.max(0, answered - syncedRef.current.length));
+      if (answered % FLUSH_EVERY === 0) void flushNow(true);
+    }
+    goNext();
+  }, [item, persist, flushNow, goNext]);
+
+  const finishNow = useCallback(() => {
+    const run = runRef.current;
+    const index = indexRef.current;
+    if (!run || !index) return;
+    endEarly(index, run, 'teacher_ended');
+    finish(run);
+    persist();
+    redraw();
+    void submitAndComplete();
+  }, [persist, redraw, submitAndComplete]);
+
+  const leave = useCallback(() => {
+    if (!window.confirm(t('milestones.run.exitConfirm'))) return;
+    persist();
+    router.push(`/montree/dashboard/${childId}/milestones`);
+  }, [t, persist, router, childId]);
+
+  /* ─────────────────────────────────────────────────────────────── screens */
+
+  if (screen === 'blocked' && blocked) {
+    return (
+      <FullScreen>
+        <Centered>
+          <GuideCharacter size={120} />
+          <h1 style={{ fontFamily: SERIF, fontSize: 24, marginTop: 16 }}>{blocked.title}</h1>
+          <p style={{ color: C.inkSoft, maxWidth: 560, lineHeight: 1.6 }}>{blocked.body}</p>
+          <PrimaryButton onClick={() => router.push(`/montree/dashboard/${childId}/milestones`)}>
+            {t('milestones.run.backToProfile')}
+          </PrimaryButton>
+        </Centered>
+      </FullScreen>
+    );
+  }
+
+  if (screen === 'setup') {
+    return (
+      <FullScreen>
+        <div style={{ maxWidth: 860, margin: '0 auto', padding: '24px 22px 60px', fontFamily: SANS, color: C.ink }}>
+          <TopBar
+            onLeave={() => router.push(`/montree/dashboard/${childId}/milestones`)}
+            leaveLabel={t('milestones.run.backToProfile')}
+            audioOn={audioOn}
+            onAudio={enableAudio}
+            audioLabel={audioOn ? t('milestones.run.soundOn') : t('milestones.run.soundCheck')}
+          />
+          <h1 style={{ fontFamily: SERIF, fontSize: 28, margin: '18px 0 8px' }}>{t('milestones.run.title')}</h1>
+          <p style={{ color: C.inkSoft, fontSize: 15, lineHeight: 1.6, maxWidth: 620 }}>{t('milestones.run.intro')}</p>
+
+          <Card>
+            <FieldLabel>{t('milestones.run.child')}</FieldLabel>
+            <div style={{ fontFamily: SERIF, fontSize: 20 }}>{childName ?? childId}</div>
+          </Card>
+
+          {resumable && (
+            <Card warm>
+              <FieldLabel>{t('milestones.run.resumeTitle')}</FieldLabel>
+              <p style={{ margin: '0 0 12px', fontSize: 14, color: C.inkSoft }}>
+                {t('milestones.run.resumeBody', {
+                  window: resumable.run.config.windowCode,
+                  when: new Date(resumable.savedAt).toLocaleString(),
+                  n: answeredCount(resumable.run),
+                })}
+              </p>
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                <PrimaryButton onClick={() => void resume(resumable)} disabled={starting}>
+                  {t('milestones.run.resume')}
+                </PrimaryButton>
+                <GhostButton onClick={() => {
+                  if (!window.confirm(t('milestones.run.discardConfirm'))) return;
+                  deleteSnapshot(resumable.run.localId);
+                  setResumable(null);
+                }}>
+                  {t('milestones.run.discard')}
+                </GhostButton>
+              </div>
+            </Card>
+          )}
+
+          <Card>
+            <FieldLabel>{t('milestones.run.ageBand')}</FieldLabel>
+            <Segmented
+              options={AGE_BANDS.map((b) => ({ id: b, label: b }))}
+              value={ageBand}
+              onChange={(v) => setAgeBand(v as AgeBand)}
+            />
+            <p style={{ fontSize: 12.5, color: C.inkSoft, margin: '8px 0 0' }}>
+              {suggestedMonths !== null ? t('milestones.run.ageBandAuto') : t('milestones.run.ageBandUnknown')}
+            </p>
+          </Card>
+
+          <Card>
+            <FieldLabel>{t('milestones.run.window')}</FieldLabel>
+            <Segmented
+              options={WINDOW_CODES.map((w) => ({
+                id: w,
+                label: w === 'autumn' ? t('milestones.windowAutumn')
+                  : w === 'winter' ? t('milestones.windowWinter') : t('milestones.windowSpring'),
+              }))}
+              value={windowCode}
+              onChange={(v) => {
+                const next = v as WindowCode;
+                setWindowCode(next);
+                if (!formTouched) setFormCode(defaultFormForWindow(next));
+              }}
+            />
+            <div style={{ marginTop: 16 }}>
+              <FieldLabel>{t('milestones.run.form')}</FieldLabel>
+              <Segmented
+                options={[{ id: 'A', label: 'A' }, { id: 'B', label: 'B' }]}
+                value={formCode}
+                onChange={(v) => { setFormTouched(true); setFormCode(v as FormCode); }}
+              />
+              <p style={{ fontSize: 12.5, color: C.inkSoft, margin: '8px 0 0' }}>{t('milestones.run.formHelp')}</p>
+            </div>
+          </Card>
+
+          <Card>
+            <FieldLabel>{t('milestones.run.modules')}</FieldLabel>
+            {MODULE_CHOICES.map((choice) => {
+              const on = modules.includes(choice.id);
+              return (
+                <button
+                  key={choice.id}
+                  type="button"
+                  onClick={() => setModules((prev) => (
+                    prev.includes(choice.id) ? prev.filter((m) => m !== choice.id) : [...prev, choice.id]
+                  ))}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 14, width: '100%', textAlign: 'left',
+                    padding: '14px 16px', minHeight: 72, marginBottom: 10, borderRadius: 16,
+                    border: `2px solid ${on ? C.forest : C.sandDark}`,
+                    background: on ? '#F2F6EE' : C.paper, cursor: 'pointer', fontSize: 16,
+                  }}
+                >
+                  <span style={{
+                    width: 30, height: 30, borderRadius: 9, flex: '0 0 auto',
+                    border: `2px solid ${on ? C.forest : C.sandDark}`,
+                    background: on ? C.forest : 'transparent', color: '#fff',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700,
+                  }}>{on ? '✓' : ''}</span>
+                  {t(choice.labelKey)}
+                </button>
+              );
+            })}
+          </Card>
+
+          <p style={{ fontSize: 12.5, color: C.inkSoft, lineHeight: 1.6 }}>
+            {storageOk ? t('milestones.run.savedHere') : t('milestones.run.notSavedHere')}
+          </p>
+
+          <PrimaryButton onClick={() => void begin()} disabled={starting || !modules.length} wide>
+            {starting ? t('milestones.run.preparing') : t('milestones.run.begin')}
+          </PrimaryButton>
+        </div>
+      </FullScreen>
+    );
+  }
+
+  const run = runRef.current;
+  const bank = bankRef.current;
+  const index = indexRef.current;
+  if (!run || !bank || !index) {
+    return <FullScreen><Centered><p>{t('milestones.run.preparing')}</p></Centered></FullScreen>;
+  }
+
+  const chrome = (
+    <TopBar
+      onLeave={leave}
+      leaveLabel={t('milestones.run.exit')}
+      audioOn={audioOn}
+      onAudio={enableAudio}
+      audioLabel={audioOn ? t('milestones.run.soundOn') : t('milestones.run.soundCheck')}
+      dots={progressDots(run)}
+      pending={pendingCount}
+      offline={!isOnline()}
+      offlineLabel={t('milestones.run.offlineTitle')}
+      onFinish={run.phase === 'item' || run.phase === 'practice' ? finishNow : undefined}
+      finishLabel={t('milestones.run.finishHere')}
+    />
+  );
+
+  /* ---- the summary the teacher holds to reach ---- */
+  if (screen === 'summary') {
+    return (
+      <FullScreen>
+        <div style={{ maxWidth: 860, margin: '0 auto', padding: '20px 22px 60px', fontFamily: SANS, color: C.ink }}>
+          {chrome}
+          <h1 style={{ fontFamily: SERIF, fontSize: 26, margin: '18px 0 12px' }}>{t('milestones.run.summaryTitle')}</h1>
+
+          {completing && <p style={{ color: C.inkSoft }}>{t('milestones.run.finishing')}</p>}
+
+          {sendError && (
+            <Card warm>
+              <p style={{ margin: '0 0 12px', fontSize: 14 }}>{t('milestones.run.sendFailed')}</p>
+              <p style={{ margin: '0 0 12px', fontSize: 12, color: C.inkSoft }}>{sendError}</p>
+              <PrimaryButton onClick={() => void submitAndComplete()}>{t('milestones.run.sendRetry')}</PrimaryButton>
+            </Card>
+          )}
+
+          {completion?.summary && (
+            <>
+              <Card>
+                <FieldLabel>{t('milestones.map')}</FieldLabel>
+                {completion.summary.core.suppressed || completion.summary.core.mapPercent === null ? (
+                  <>
+                    <div style={{ fontFamily: SERIF, fontSize: 22, color: C.inkSoft }}>{t('milestones.mapSuppressed')}</div>
+                    <p style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.55, maxWidth: 620 }}>
+                      {t('milestones.mapSuppressedSmallN', { n: 12 })}
+                    </p>
+                  </>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+                    <span style={{ fontFamily: SERIF, fontSize: 44, color: C.forest }}>
+                      {completion.summary.core.mapPercent}%
+                    </span>
+                    <span style={{ color: C.inkSoft, fontSize: 13 }}>
+                      {t('milestones.mapOf', { n: completion.summary.core.denominator })}
+                    </span>
+                  </div>
+                )}
+                {completion.narrative?.profile && (
+                  <p style={{ fontSize: 14, lineHeight: 1.6, color: C.inkSoft, marginTop: 10 }}>
+                    {completion.narrative.profile}
+                  </p>
+                )}
+              </Card>
+
+              <Card>
+                <FieldLabel>{t('milestones.coverage')}</FieldLabel>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  <BandChip band="secure" label={`${t('milestones.secure')} · ${completion.summary.counts.secure ?? 0}`} />
+                  <BandChip band="developing" label={`${t('milestones.developing')} · ${completion.summary.counts.developing ?? 0}`} />
+                  <BandChip band="emerging" label={`${t('milestones.emerging')} · ${completion.summary.counts.emerging ?? 0}`} />
+                  <BandChip band="unassessed" label={`${t('milestones.unassessed')} · ${completion.summary.counts.unassessed ?? 0}`} />
+                </div>
+              </Card>
+
+              {completion.narrative?.growth && (
+                <Card>
+                  <FieldLabel>{t('milestones.growth')}</FieldLabel>
+                  <p style={{ fontFamily: SERIF, fontSize: 17, lineHeight: 1.5, margin: 0 }}>
+                    {completion.narrative.growth}
+                  </p>
+                </Card>
+              )}
+
+              <p style={{ fontSize: 11.5, color: C.inkSoft, lineHeight: 1.55, maxWidth: 640 }}>
+                {t('milestones.mapCaveat')}
+              </p>
+            </>
+          )}
+
+          <PrimaryButton onClick={() => router.push(`/montree/dashboard/${childId}/milestones`)} wide>
+            {t('milestones.run.backToProfile')}
+          </PrimaryButton>
+        </div>
+      </FullScreen>
+    );
+  }
+
+  /* ---- intro before each module ---- */
+  if (run.phase === 'intro') {
+    const mod = index.moduleById.get(run.directModules[run.moduleIndex]);
+    const line = t('milestones.run.introLine', { module: bankText(mod?.name, locale) });
+    return (
+      <FullScreen>
+        {chrome}
+        <Centered>
+          <GuideCharacter size={170} />
+          <h1 style={{ fontFamily: SERIF, fontSize: 28, marginTop: 18 }}>{bankText(mod?.name, locale)}</h1>
+          <p style={{ fontFamily: SERIF, fontSize: 20, maxWidth: 600, lineHeight: 1.5 }}>{line}</p>
+          <PrimaryButton onClick={() => {
+            run.phase = run.steps[run.stepIndex]?.kind === 'practice' ? 'practice' : 'item';
+            speak(line);
+            redraw();
+          }}>
+            {t('milestones.run.start')}
+          </PrimaryButton>
+        </Centered>
+      </FullScreen>
+    );
+  }
+
+  /* ---- between modules ---- */
+  if (run.phase === 'rest' || run.phase === 'paused') {
+    const paused = run.phase === 'paused';
+    return (
+      <FullScreen>
+        {chrome}
+        <Centered>
+          <GuideCharacter size={170} />
+          <h1 style={{ fontFamily: SERIF, fontSize: 26 }}>
+            {paused ? t('milestones.run.pausedTitle') : t('milestones.run.restTitle')}
+          </h1>
+          <p style={{ color: C.inkSoft, maxWidth: 560, lineHeight: 1.6 }}>
+            {paused ? t('milestones.run.pausedBody') : t('milestones.run.restBody')}
+          </p>
+          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
+            {/* Carrying on lands on the next module's intro, exactly as the tablet build
+                does — the child hears what they are about to play before it starts. */}
+            <PrimaryButton onClick={() => { run.phase = 'intro'; redraw(); }}>
+              {t('milestones.run.carryOn')}
+            </PrimaryButton>
+            {!paused && (
+              <GhostButton onClick={() => { run.phase = 'paused'; persist(); redraw(); }}>
+                {t('milestones.run.stopForNow')}
+              </GhostButton>
+            )}
+            <GhostButton onClick={finishNow}>{t('milestones.run.finishHere')}</GhostButton>
+          </div>
+        </Centered>
+      </FullScreen>
+    );
+  }
+
+  /* ---- teacher-rated observations ---- */
+  if (run.phase === 'observation') {
+    return (
+      <FullScreen>
+        {chrome}
+        <ObservationPanel
+          bank={bank}
+          index={index}
+          locale={locale}
+          observations={run.observations}
+          onRate={(milestoneId, band: Band) => {
+            recordObservation(run, milestoneId, band, run.observations[milestoneId]?.note);
+            persist();
+            redraw();
+          }}
+          onNote={(milestoneId, note) => {
+            const existing = run.observations[milestoneId];
+            if (!existing) return;
+            recordObservation(run, milestoneId, existing.band, note);
+            persist();
+            redraw();
+          }}
+          onDone={() => {
+            finish(run);
+            persist();
+            redraw();
+            void submitAndComplete();
+          }}
+          labels={{
+            title: t('milestones.run.obsTitle'),
+            intro: t('milestones.run.obsIntro'),
+            whichFits: t('milestones.run.obsWhichFits'),
+            done: t('milestones.run.obsDone'),
+            progress: (d, total) => t('milestones.run.obsProgress', { done: d, total }),
+            bandLabels: {
+              emerging: t('milestones.emerging'),
+              developing: t('milestones.developing'),
+              secure: t('milestones.secure'),
+            },
+            note: t('milestones.run.obsNote'),
+          }}
+        />
+      </FullScreen>
+    );
+  }
+
+  /* ---- the close: identical every time, whatever happened ---- */
+  if (run.phase === 'close') {
+    return (
+      <FullScreen>
+        {chrome}
+        <Centered>
+          <PetalSky />
+          <GuideCharacter size={170} pose="cheer" />
+          <h1 style={{ fontFamily: SERIF, fontSize: 28, marginTop: 14 }}>{t('milestones.run.closeLine')}</h1>
+          <p style={{ color: C.inkSoft }}>{t('milestones.run.closeSub')}</p>
+          <HoldButton
+            onHold={() => setScreen('summary')}
+            label={t('milestones.run.toSummary')}
+            hint={t('milestones.run.holdHint')}
+          />
+        </Centered>
+      </FullScreen>
+    );
+  }
+
+  /* ---- an item ---- */
+  if (item && step) {
+    return (
+      <FullScreen>
+        {chrome}
+        <ItemStage
+          key={`${item.id}-${run.stepIndex}`}
+          item={item}
+          module={index.moduleById.get(step.moduleId)}
+          stimulusById={index.stimulusById}
+          practice={step.kind === 'practice'}
+          locale={locale}
+          audioLive={audioOn}
+          speak={speak}
+          scriptOpen={scriptOpen}
+          onToggleScript={() => setScriptOpen((v) => !v)}
+          onComplete={onItemComplete}
+          labels={{
+            practice: t('milestones.run.practice'),
+            replay: t('milestones.run.replay'),
+            showScript: t('milestones.run.showScript'),
+            hideScript: t('milestones.run.hideScript'),
+            teacherScript: t('milestones.run.teacherScript'),
+            sequenceHint: t('milestones.run.sequenceHint'),
+            sequenceDone: t('milestones.run.sequenceDone'),
+            soundNone: t('milestones.run.soundNone'),
+            teacherOnly: t('milestones.run.teacherOnly'),
+            thankYou: t('milestones.run.thankYou'),
+          }}
+        />
+      </FullScreen>
+    );
+  }
+
+  return (
+    <FullScreen>
+      {chrome}
+      <Centered><p>{t('milestones.run.preparing')}</p></Centered>
+    </FullScreen>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────── presentational */
+
+/**
+ * The runner covers everything. A fixed, opaque, top-of-stack surface is the only reliable
+ * way to keep the dashboard header out from under a child's hand on a tablet.
+ */
+function FullScreen({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 9999,
+      background: C.cream, color: C.ink, overflowY: 'auto',
+      display: 'flex', flexDirection: 'column',
+      touchAction: 'manipulation', WebkitUserSelect: 'none', userSelect: 'none',
+      paddingTop: 'env(safe-area-inset-top)',
+    }}>
+      {children}
+    </div>
+  );
+}
+
+function Centered({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{
+      flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+      justifyContent: 'center', textAlign: 'center', gap: 14, padding: 30,
+      fontFamily: SANS,
+    }}>
+      {children}
+    </div>
+  );
+}
+
+/** Teacher chrome. The dot counter lives here — the child's screen never shows progress. */
+function TopBar({
+  onLeave, leaveLabel, audioOn, onAudio, audioLabel, dots, pending, offline, offlineLabel,
+  onFinish, finishLabel,
+}: {
+  onLeave: () => void;
+  leaveLabel: string;
+  audioOn: boolean;
+  onAudio: () => void;
+  audioLabel: string;
+  dots?: Array<'done' | 'now' | 'todo' | 'skip'>;
+  pending?: number;
+  offline?: boolean;
+  offlineLabel?: string;
+  onFinish?: () => void;
+  finishLabel?: string;
+}) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+      padding: '8px 14px', background: 'rgba(255,253,248,.9)',
+      borderBottom: `1px solid ${C.line}`, fontSize: 13, color: C.inkSoft, fontFamily: SANS,
+    }}>
+      <Chip onClick={onLeave}>{leaveLabel}</Chip>
+      <Chip onClick={onAudio} on={audioOn}>{audioLabel}</Chip>
+      {dots && (
+        <div style={{ display: 'flex', gap: 5, alignItems: 'center', flexWrap: 'wrap', maxWidth: 340 }}>
+          {dots.map((state, i) => (
+            <span
+              key={i}
+              style={{
+                width: 9, height: 9, borderRadius: '50%',
+                background: state === 'done' ? C.moss : state === 'now' ? C.forest : state === 'skip' ? 'transparent' : C.sandDark,
+                border: state === 'skip' ? `1.5px solid ${C.sandDark}` : 'none',
+                transform: state === 'now' ? 'scale(1.35)' : undefined,
+              }}
+            />
+          ))}
+        </div>
+      )}
+      <span style={{ flex: 1 }} />
+      {offline && <span style={{ color: C.clay }}>{offlineLabel}</span>}
+      {!!pending && <span>{pending}</span>}
+      {onFinish && finishLabel && <Chip onClick={onFinish}>{finishLabel}</Chip>}
+    </div>
+  );
+}
+
+function Chip({ children, onClick, on }: { children: React.ReactNode; onClick: () => void; on?: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        border: `1px solid ${on ? C.forest : C.line}`, borderRadius: 999, padding: '7px 14px',
+        background: on ? C.forest : C.paper, color: on ? '#fff' : 'inherit',
+        fontSize: 13, minHeight: 38, cursor: 'pointer',
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function Card({ children, warm = false }: { children: React.ReactNode; warm?: boolean }) {
+  return (
+    <div style={{
+      background: warm ? '#FDF6E7' : C.paper,
+      border: `1px solid ${warm ? C.sandDark : C.line}`,
+      borderRadius: 22, padding: '20px 22px', margin: '0 0 18px',
+    }}>
+      {children}
+    </div>
+  );
+}
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ fontSize: 12.5, color: C.inkSoft, marginBottom: 8, fontFamily: SANS }}>{children}</div>
+  );
+}
+
+function Segmented({
+  options, value, onChange,
+}: {
+  options: Array<{ id: string; label: string }>;
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  return (
+    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+      {options.map((option) => {
+        const on = option.id === value;
+        return (
+          <button
+            key={option.id}
+            type="button"
+            onClick={() => onChange(option.id)}
+            style={{
+              flex: '1 1 auto', minWidth: 92, minHeight: 64, borderRadius: 16,
+              border: `2px solid ${on ? C.forest : C.sandDark}`,
+              background: on ? C.forest : C.paper, color: on ? '#fff' : C.ink,
+              padding: '10px 14px', fontWeight: 600, fontSize: 15, cursor: 'pointer',
+            }}
+          >
+            {option.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function PrimaryButton({
+  children, onClick, disabled, wide,
+}: {
+  children: React.ReactNode; onClick: () => void; disabled?: boolean; wide?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        minHeight: 64, padding: '14px 30px', borderRadius: 18,
+        background: C.forest, color: '#fff', border: `2px solid ${C.forest}`,
+        fontFamily: SANS, fontSize: 17, fontWeight: 600,
+        width: wide ? '100%' : undefined, opacity: disabled ? 0.45 : 1,
+        cursor: disabled ? 'default' : 'pointer', touchAction: 'manipulation',
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function GhostButton({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        minHeight: 64, padding: '14px 26px', borderRadius: 18,
+        background: C.paper, color: C.ink, border: `2px solid ${C.sandDark}`,
+        fontFamily: SANS, fontSize: 16, fontWeight: 600, cursor: 'pointer',
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+/** The close animation. Same petals every time — it is for having stayed, not for doing well. */
+function PetalSky() {
+  const petals = Array.from({ length: 9 }, (_, i) => i);
+  return (
+    <>
+      <style>{`
+        @keyframes mm-petal {
+          0% { transform: translateY(0) rotate(0); opacity: 0 }
+          15% { opacity: 1 }
+          100% { transform: translateY(120px) rotate(220deg); opacity: 0 }
+        }
+        @media (prefers-reduced-motion: reduce) { .mm-petal { animation: none !important; opacity: .6 } }
+      `}</style>
+      <div style={{ position: 'relative', width: '100%', maxWidth: 520, height: 130, overflow: 'hidden' }}>
+        {petals.map((i) => (
+          <span
+            key={i}
+            className="mm-petal"
+            style={{
+              position: 'absolute', width: 16, height: 16, borderRadius: '60% 0 60% 0',
+              left: `${6 + i * 10}%`,
+              background: i % 2 ? C.gold : C.moss,
+              animation: `mm-petal 4.2s linear ${i * 0.42}s infinite`,
+            }}
+          />
+        ))}
+      </div>
+    </>
+  );
+}
+
+export default CheckInRunner;
