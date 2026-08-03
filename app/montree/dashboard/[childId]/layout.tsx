@@ -8,6 +8,8 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { getSession, type MontreeSession } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
+import { useFeaturesContext } from '@/lib/montree/features';
+import type { FeatureKey } from '@/lib/montree/features';
 
 // ── Dark forest tokens ────────────────────────────────────────────────────────
 const C = {
@@ -38,6 +40,19 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [child,   setChild]   = useState<ChildInfo | null>(null);
 
+  // Montree Milestones is opt-in per school (migration 314, default OFF). The provider is
+  // mounted by /montree/dashboard/layout.tsx and fails closed — an unknown flag reads as
+  // false, so the tab simply does not exist for a school that has not asked for it.
+  // `child_evaluation` is not in the FeatureKey union yet (that file is owned by the
+  // features module); the cast is the same one lib/montree/evaluation/montree-bridge.ts
+  // makes server-side, and both disappear when the key is added there.
+  const { isEnabled } = useFeaturesContext();
+  const milestonesOn = isEnabled('child_evaluation' as FeatureKey);
+
+  // The check-in runner is handed to a child. Header, tabs and back arrow all disappear:
+  // a stray tap on "Reports" mid-sitting ends the sitting.
+  const isRunner = pathname.includes('/milestones/run');
+
   useEffect(() => {
     const sess = getSession();
     if (!sess) { router.push('/montree/login'); return; }
@@ -54,6 +69,7 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
   }, [childId, router]);
 
   const getActiveTab = () => {
+    if (pathname.includes('/milestones'))   return 'milestones';
     if (pathname.endsWith('/gallery'))      return 'gallery';
     if (pathname.endsWith('/reports'))      return 'gallery';
     if (pathname.endsWith('/progress'))     return 'progress';
@@ -66,6 +82,13 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
   const tabs: { id: string; label: string; href: string }[] = [
     { id: 'gallery', label: `📸 ${t('nav.gallery' as any) || 'Review'}`, href: `/montree/dashboard/${childId}/gallery` },
   ];
+  if (milestonesOn) {
+    tabs.push({
+      id: 'milestones',
+      label: `🌱 ${t('milestones.tab')}`,
+      href: `/montree/dashboard/${childId}/milestones`,
+    });
+  }
 
   if (!session) {
     return (
@@ -77,6 +100,9 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
       </div>
     );
   }
+
+  // The runner owns the whole screen — no header, no tabs, no page padding.
+  if (isRunner) return <>{children}</>;
 
   const displayName    = child?.name || t('common.student' as any);
   const displayInitial = child?.name?.charAt(0)?.toUpperCase() || '?';
