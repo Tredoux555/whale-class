@@ -8,6 +8,9 @@ U='/mnt/user-data/uploads/montree/phonics-images/satpin-v2/books'
 # against the repo's phonics-images dir — no device_stage_files hop, so an
 # absolute Mac path is used instead of the U= Cowork-container convention above.
 SPAT2='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/satpin-v2/books/the-spat'
+# 'the-pit' (letter-book three, the-sat cast in the pit) — same Mac-direct
+# convention as SPAT2 above.
+PIT3='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/satpin-v2/books/the-pit'
 BOOKS=[
 dict(slug='snake-in-my-sock', title_lines=['Snake in','my SOCK!'], title_accent='SOCK!', title_size=40,
  band='WEEK 1  ·  THE SOUND  /s/', booknum='BOOK ONE OF SIX', cover='bk1/p7.png',
@@ -62,6 +65,21 @@ dict(slug='the-spat', title_lines=['The ___','Spat!'], title_accent='Spat!', tit
   dict(nar='The pelican…', text='Spat!', size=92, art=SPAT2+'/spat-p4.png'),
   dict(text=['Spat! Spat!','Spat!'], style='drop', size=64, art=SPAT2+'/spat-p5.png'),
   dict(nar='And the…?!', art=SPAT2+'/spat-p6.png'),
+ ]),
+dict(slug='the-pit', title_lines=['The ___ Sat','in the Pit!'], title_accent='Pit!', title_size=46,
+ band='LETTER I  ·  s a t p i', booknum='LETTER BOOK THREE', cover=PIT3+'/cover.png',
+ new='Pit  ·  in', review='sat  ·  spat  ·  at', heart='♥  heart words — a · the',
+ oral_note='the nouns live in the pictures — named aloud, never printed',
+ spreads=[
+  dict(nar='A pit.', art=PIT3+'/pit-p1.png'),
+  dict(nar='The ant…', text=['Sat in','the pit!'], size=44, art=PIT3+'/pit-p2.png'),
+  dict(nar='The apple…', text=['Sat in','the pit!'], size=44, art=PIT3+'/pit-p3.png'),
+  dict(nar='The sun…', text=['Sat in','the pit!'], size=44, art=PIT3+'/pit-p4.png'),
+  dict(nar='The star…', text=['Sat in','the pit!'], size=44, art=PIT3+'/pit-p5.png'),
+  dict(nar='The snake…', text=['Sat in','the pit!'], size=44, art=PIT3+'/pit-p6.png'),
+  dict(nar='The cat…', text=['Sat in','the pit!'], size=44, art=PIT3+'/pit-p7.png'),
+  dict(text=['Sat in the pit!','Sat in the pit!','Sat in the pit!'], style='drop', size=42, art=PIT3+'/pit-p8.png'),
+  dict(nar='And the…?!', art=PIT3+'/pit-p9.png'),
  ]),
 dict(slug='spat', title_lines=['SPAT!'], title_accent='SPAT!', title_size=64,
  band='WEEK 4  ·  FIRST FULLY DECODABLE BOOK  ·  s a t p', booknum='BOOK FOUR OF SIX',

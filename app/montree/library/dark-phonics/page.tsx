@@ -83,6 +83,7 @@ const BOOK_VOCAB: Record<string, string[]> = {
   'ant-on-my-apple': ['ant', 'alligator', 'anteater', 'apple'],
   'tiger-in-the-taxi': ['turtle', 'tomato', 'toothbrush', 'tiger', 'taxi'],
   'the-spat': ['basin', 'penguin', 'pig', 'pelican', 'potato'],
+  'the-pit': ['pit', 'ant', 'apple', 'sun', 'star', 'snake', 'cat', 'potato'],
   'in-the-igloo': ['iguana', 'insect', 'inchworm', 'infant', 'igloo'],
   'not-in-my-nest': ['nut', 'net', 'nail', 'napkin', 'nest'],
   'monkey-in-my-mug': ['mouse', 'mushroom', 'magnet', 'monkey', 'mug'],
@@ -120,6 +121,7 @@ const BOOK_PAGE_KEYS: Record<string, string[]> = {
   'ant-on-my-apple': ['p1-apple', 'p2-ant', 'p3-alligator', 'p4-anteater', 'p5-ambulance', 'p6-recap'],
   'tiger-in-the-taxi': ['p1-turtle', 'p2-tomato', 'p3-toothbrush', 'p4-tiger', 'p5-recap'],
   'the-spat': ['p1-basin', 'p2-penguin', 'p3-pig', 'p4-pelican', 'p5-recap', 'p6-potato'],
+  'the-pit': ['p1-pit', 'p2-ant', 'p3-apple', 'p4-sun', 'p5-star', 'p6-snake', 'p7-cat', 'p8-recap', 'p9-potato'],
   'in-the-igloo': ['p1-iguana', 'p2-insect', 'p3-inchworm', 'p4-infant', 'p5-recap'],
   'not-in-my-nest': ['p1-nut', 'p2-net', 'p3-nail', 'p4-napkin', 'p5-recap'],
   'monkey-in-my-mug': ['p1-mouse', 'p2-mushroom', 'p3-magnet', 'p4-monkey', 'p5-recap'],
@@ -281,7 +283,10 @@ const RAW: RawLesson[] = [
   { n: 8, sound: 'p', title: 'Pop, Pop, P!', catchphrase: '“pop, pop, puppy poop!”', decodable: ['sap', 'pat', 'tap', 'spat'], words: ['pup'], books: [
     { slug: 'the-spat', title: 'The ___ Spat!', description: 'Letter P initial-sound book — cast: basin, penguin, pig, pelican, potato.', cover: '/dark-phonics-books/covers/the-spat.png' },
   ] },
-  { n: 9, sound: 'i', title: 'I, I, Itsy I', catchphrase: '“icky, sticky pig!”', decodable: ['sit', 'it', 'is', 'sip', 'pit', 'spit'], words: ['pig'], books: [{ slug: 'in-the-igloo', title: 'In the Igloo' }] },
+  { n: 9, sound: 'i', title: 'I, I, Itsy I', catchphrase: '“icky, sticky pig!”', decodable: ['sit', 'it', 'is', 'sip', 'pit', 'spit'], words: ['pig'], books: [
+    { slug: 'in-the-igloo', title: 'In the Igloo' },
+    { slug: 'the-pit', title: 'The ___ Sat in the Pit!', description: 'Letter Book Three — the-sat cast returns: pit, ant, apple, sun, star, snake, cat, potato.', cover: '/dark-phonics-books/covers/the-pit.png' },
+  ] },
   { n: 10, sound: 'n', title: 'N for the Nose', catchphrase: '“no-no, nanny goat!”', decodable: ['an', 'ant', 'in', 'nap', 'naps', 'pan', 'tin', 'nip', 'snap'], heartWords: ['I'], words: ['goat'], books: [{ slug: 'not-in-my-nest', title: 'Not in My Nest!' }] },
   { n: 11, sound: 'm', title: 'Mmm, That\'s Good!', catchphrase: '“mmm, muddy monkey!”', decodable: ['mat', 'Sam'], words: ['monkey'], books: [{ slug: 'monkey-in-my-mug', title: 'A Monkey in My Mug' }] },
   { n: 12, sound: 'd', title: 'D for the Dog', catchphrase: '“dirty dog, dig dig dig!”', decodable: ['pad'], words: ['dog'], books: [{ slug: 'dinosaur-on-a-drum', title: 'A Dinosaur on a Drum' }] },
