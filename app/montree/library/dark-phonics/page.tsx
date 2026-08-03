@@ -14,11 +14,14 @@
 //
 // Public: no auth. middleware.ts exempts /montree/library/*.
 //
-// Data sources, merged into LESSONS below — keep the four in step:
+// Data sources, merged into LESSONS below — keep the five in step:
 //   public/dark-phonics-playlist.html                                n / sound / title / catchphrase (canonical)
 //   lib/montree/english-curriculum/spec/dark-phonics-hardcards.json  vocab words (46 of 49 — 33/34/46 are review/abstract)
 //   scripts/curriculum/dark-phonics-storybooks/manifest.json         27 storybooks (book N = lesson N + 4)
 //   public/dark-phonics-readers.html                                 the 11 easy readers + their gate lessons
+//   scripts/curriculum/flashcards/books_def.py (weeks 3–6) +
+//   scripts/curriculum/dark-phonics-readers/book07.py–book27.py      decodable words + heart words per lesson's
+//   (weeks 7–27; book/week N = lesson N + 4)                         reader (RawLesson.decodable / .heartWords)
 //
 // Media lives in the public `dark-phonics` Supabase bucket and is served
 // through /api/montree/media/proxy/<path>?bucket=dark-phonics. WHICH lessons
@@ -33,6 +36,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import LanguageToggle from '@/components/montree/LanguageToggle';
+import DecodableLedger from '@/components/montree/satpin/DecodableLedger';
 import { getProxyUrl, getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
 
 /** Zero-padded lesson number — every media object is named lesson-NN.<ext>. */
@@ -231,6 +235,15 @@ type RawLesson = {
   books?: Book[];
   /** Easy Reader gated at this lesson — 11 of the 49 carry one. */
   reader?: Reader;
+  /** Decodable words INTRODUCED by this lesson's reader — mirrors the NEW list
+   *  at the back of the book (books_def.py weeks 3–6, book07–27.py weeks
+   *  7–27; book/week N = lesson N + 4). The cumulative "so far" list a child
+   *  can actually read at this point is computed at render from every earlier
+   *  lesson's entry. Lessons 5–6 have none — sounds only; lessons 32–53 add
+   *  none, so they carry the full 61-word ledger forward unchanged. */
+  decodable?: string[];
+  /** Heart words introduced this lesson (read by sight, not decoded). */
+  heartWords?: string[];
 };
 
 type Lesson = RawLesson & { accent: string; tint: string };
@@ -258,35 +271,38 @@ const PALETTE: Array<[string, string]> = [
 const RAW: RawLesson[] = [
   { n: 5, sound: 's', title: 'The Snake Says Ssss', catchphrase: '“snake in my sock!”', words: ['snake', 'sock'], books: [{ slug: 'snake-in-my-sock', title: 'Snake in My Sock' }] },
   { n: 6, sound: 'a', title: 'A Is for Apple', catchphrase: '“ant on my apple!”', words: ['ant', 'apple'], books: [{ slug: 'ant-on-my-apple', title: 'Ant on My Apple' }] },
-  { n: 7, sound: 't', title: 'Tick-Tock, T!', catchphrase: '“tick-tock, stinky sock!”', words: ['clock', 'sock'], books: [
+  { n: 7, sound: 't', title: 'Tick-Tock, T!', catchphrase: '“tick-tock, stinky sock!”', decodable: ['sat', 'at'], heartWords: ['a'], words: ['clock', 'sock'], books: [
     { slug: 'tiger-in-the-taxi', title: 'A Tiger in the Taxi' },
     { slug: 'the-sat', title: 'The ___ Sat!', description: 'Hybrid decodable — teacher reads the set-up, the child shouts “Sat!” on every page.', cover: '/dark-phonics-books/covers/the-sat.png', materials: false },
     { slug: 'the-tall', title: 'The Tall ___!', description: 'Companion pattern book, same cast as A Tiger in the Taxi — the child shouts the picture word.', cover: '/dark-phonics-books/covers/the-tall.png', materials: false },
   ] },
-  { n: 8, sound: 'p', title: 'Pop, Pop, P!', catchphrase: '“pop, pop, puppy poop!”', words: ['pup'], books: [{ slug: 'pig-ate-a-pineapple', title: 'The Pig Ate a Pineapple' }] },
-  { n: 9, sound: 'i', title: 'I, I, Itsy I', catchphrase: '“icky, sticky pig!”', words: ['pig'], books: [{ slug: 'in-the-igloo', title: 'In the Igloo' }] },
-  { n: 10, sound: 'n', title: 'N for the Nose', catchphrase: '“no-no, nanny goat!”', words: ['goat'], books: [{ slug: 'not-in-my-nest', title: 'Not in My Nest!' }] },
-  { n: 11, sound: 'm', title: 'Mmm, That\'s Good!', catchphrase: '“mmm, muddy monkey!”', words: ['monkey'], books: [{ slug: 'monkey-in-my-mug', title: 'A Monkey in My Mug' }] },
-  { n: 12, sound: 'd', title: 'D for the Dog', catchphrase: '“dirty dog, dig dig dig!”', words: ['dog'], books: [{ slug: 'dinosaur-on-a-drum', title: 'A Dinosaur on a Drum' }] },
-  { n: 13, sound: 'g', title: 'G for the Goat', catchphrase: '“goat got my gum!”', words: ['goat', 'gum'], books: [{ slug: 'oh-no-goat', title: 'Oh No, Goat…' }] },
-  { n: 14, sound: 'o', title: 'O for the Octopus', catchphrase: '“hot dog on a log!”', words: ['hotdog', 'log'], books: [{ slug: 'owl-ate-an-orange', title: 'An Owl Ate an Orange' }] },
-  { n: 15, sound: 'c', title: 'C for the Cat', catchphrase: '“cat ate my cookie!”', words: ['cat', 'cookie'], books: [{ slug: 'cow-on-the-car', title: 'A Cow on the Car' }] },
-  { n: 16, sound: 'k', title: 'K Says It Too', catchphrase: '“kooky king kicks!”', words: ['king'], books: [{ slug: 'koala-in-the-pocket', title: 'A Koala in the Pocket' }] },
-  { n: 17, sound: 'ck', title: 'Two Letters, One Kick', catchphrase: '“kick the stinky sock!”', words: ['sock'], books: [{ slug: 'on-a-rock', title: 'On a Rock' }], reader: { slug: 'the-cat-sat', title: 'The Cat Sat' } },
-  { n: 18, sound: 'e', title: 'Crack the Egg, E!', catchphrase: '“ten messy hens!”', words: ['hen'], books: [{ slug: 'elephant-sat-on-the-egg', title: 'The Elephant Sat on the Egg' }] },
-  { n: 19, sound: 'u', title: 'Up Goes the Umbrella', catchphrase: '“yummy bug in my cup!”', words: ['bug', 'cup'], books: [{ slug: 'under-my-umbrella', title: 'Under My Umbrella' }], reader: { slug: 'mud-pup', title: 'Mud Pup' } },
-  { n: 20, sound: 'r', title: 'Rrr Goes the Engine', catchphrase: '“run, run, red rat!”', words: ['rat'], books: [{ slug: 'rabbit-in-the-rocket', title: 'A Rabbit in the Rocket' }] },
-  { n: 21, sound: 'h', title: 'H, the Panting Pup', catchphrase: '“ha-ha, hairy hippo!”', words: ['hippo'], books: [{ slug: 'horse-in-my-hat', title: 'A Horse in My Hat' }] },
-  { n: 22, sound: 'b', title: 'B for the Bobbing Boat', catchphrase: '“big baby burp!”', words: ['baby'], books: [{ slug: 'bear-in-the-boat', title: 'A Bear in the Boat' }], reader: { slug: 'hen-in-bed', title: 'Hen in Bed' } },
-  { n: 23, sound: 'f', title: 'Ffff Like a Fan', catchphrase: '“funny fox in my fan!”', words: ['fox', 'fan'], books: [{ slug: 'frog-on-the-fan', title: 'A Frog on the Fan' }] },
-  { n: 24, sound: 'l', title: 'La-La-La Goes L', catchphrase: '“lazy lion licks!”', words: ['lion'], books: [{ slug: 'oh-no-lion', title: 'Oh No, Lion…' }] },
-  { n: 25, sound: 'j', title: 'Jump for J', catchphrase: '“jump in the jelly jam!”', words: ['jam'], books: [{ slug: 'jellyfish-in-the-jar', title: 'A Jellyfish in the Jar' }] },
-  { n: 26, sound: 'v', title: 'Vvvv Goes the Van', catchphrase: '“vroom-vroom van!”', words: ['van'], books: [{ slug: 'volcano-in-the-van', title: 'A Volcano in the Van' }] },
-  { n: 27, sound: 'w', title: 'W for the Windy Day', catchphrase: '“wiggly wet worm!”', words: ['worm'], books: [{ slug: 'whale-in-the-wagon', title: 'A Whale in the Wagon' }] },
-  { n: 28, sound: 'x', title: 'X Marks the Box', catchphrase: '“six fox in a box!”', words: ['fox', 'box'], books: [{ slug: 'fox-in-a-box', title: 'A Fox in a Box' }], reader: { slug: 'fox-in-a-box', title: 'Fox in a Box' } },
-  { n: 29, sound: 'y', title: 'Yes! Yum! Y!', catchphrase: '“yummy yellow yo-yo!”', words: ['yoyo'], books: [{ slug: 'yak-on-the-yacht', title: 'A Yak on the Yacht' }] },
-  { n: 30, sound: 'z', title: 'Zzz Like a Buzzing Bee', catchphrase: '“zippy zebra, zzz!”', words: ['zebra'], books: [{ slug: 'zzz-at-the-zoo', title: 'Zzz at the Zoo' }] },
-  { n: 31, sound: 'qu', title: 'The Queen Says Qu', catchphrase: '“quick quacky duck!”', words: ['duck'], books: [{ slug: 'queen-on-the-quilt', title: 'A Queen on the Quilt' }] },
+  { n: 8, sound: 'p', title: 'Pop, Pop, P!', catchphrase: '“pop, pop, puppy poop!”', decodable: ['sap', 'pat', 'tap', 'spat'], words: ['pup'], books: [
+    { slug: 'pig-ate-a-pineapple', title: 'The Pig Ate a Pineapple' },
+    { slug: 'the-spat', title: 'The ___ Spat!', description: 'Companion Letter Book Two — teacher reads the set-up, the child shouts “Spat!” on every page.', cover: '/dark-phonics-books/covers/the-spat.png', materials: false },
+  ] },
+  { n: 9, sound: 'i', title: 'I, I, Itsy I', catchphrase: '“icky, sticky pig!”', decodable: ['sit', 'it', 'is', 'sip', 'pit', 'spit'], words: ['pig'], books: [{ slug: 'in-the-igloo', title: 'In the Igloo' }] },
+  { n: 10, sound: 'n', title: 'N for the Nose', catchphrase: '“no-no, nanny goat!”', decodable: ['an', 'ant', 'in', 'nap', 'naps', 'pan', 'tin', 'nip', 'snap'], heartWords: ['I'], words: ['goat'], books: [{ slug: 'not-in-my-nest', title: 'Not in My Nest!' }] },
+  { n: 11, sound: 'm', title: 'Mmm, That\'s Good!', catchphrase: '“mmm, muddy monkey!”', decodable: ['mat', 'Sam'], words: ['monkey'], books: [{ slug: 'monkey-in-my-mug', title: 'A Monkey in My Mug' }] },
+  { n: 12, sound: 'd', title: 'D for the Dog', catchphrase: '“dirty dog, dig dig dig!”', decodable: ['pad'], words: ['dog'], books: [{ slug: 'dinosaur-on-a-drum', title: 'A Dinosaur on a Drum' }] },
+  { n: 13, sound: 'g', title: 'G for the Goat', catchphrase: '“goat got my gum!”', decodable: ['pig'], words: ['goat', 'gum'], books: [{ slug: 'oh-no-goat', title: 'Oh No, Goat…' }] },
+  { n: 14, sound: 'o', title: 'O for the Octopus', catchphrase: '“hot dog on a log!”', decodable: ['pot', 'dog'], words: ['hotdog', 'log'], books: [{ slug: 'owl-ate-an-orange', title: 'An Owl Ate an Orange' }] },
+  { n: 15, sound: 'c', title: 'C for the Cat', catchphrase: '“cat ate my cookie!”', decodable: ['cot', 'cat'], words: ['cat', 'cookie'], books: [{ slug: 'cow-on-the-car', title: 'A Cow on the Car' }] },
+  { n: 16, sound: 'k', title: 'K Says It Too', catchphrase: '“kooky king kicks!”', decodable: ['kit', 'Kim'], words: ['king'], books: [{ slug: 'koala-in-the-pocket', title: 'A Koala in the Pocket' }] },
+  { n: 17, sound: 'ck', title: 'Two Letters, One Kick', catchphrase: '“kick the stinky sock!”', decodable: ['sock', 'sick'], heartWords: ['ate'], words: ['sock'], books: [{ slug: 'on-a-rock', title: 'On a Rock' }], reader: { slug: 'the-cat-sat', title: 'The Cat Sat' } },
+  { n: 18, sound: 'e', title: 'Crack the Egg, E!', catchphrase: '“ten messy hens!”', decodable: ['egg'], words: ['hen'], books: [{ slug: 'elephant-sat-on-the-egg', title: 'The Elephant Sat on the Egg' }] },
+  { n: 19, sound: 'u', title: 'Up Goes the Umbrella', catchphrase: '“yummy bug in my cup!”', decodable: ['duck', 'mud', 'stuck'], words: ['bug', 'cup'], books: [{ slug: 'under-my-umbrella', title: 'Under My Umbrella' }], reader: { slug: 'mud-pup', title: 'Mud Pup' } },
+  { n: 20, sound: 'r', title: 'Rrr Goes the Engine', catchphrase: '“run, run, red rat!”', decodable: ['rug', 'rat', 'under'], words: ['rat'], books: [{ slug: 'rabbit-in-the-rocket', title: 'A Rabbit in the Rocket' }] },
+  { n: 21, sound: 'h', title: 'H, the Panting Pup', catchphrase: '“ha-ha, hairy hippo!”', decodable: ['hat', 'hen'], words: ['hippo'], books: [{ slug: 'horse-in-my-hat', title: 'A Horse in My Hat' }] },
+  { n: 22, sound: 'b', title: 'B for the Bobbing Boat', catchphrase: '“big baby burp!”', decodable: ['bed', 'bug'], words: ['baby'], books: [{ slug: 'bear-in-the-boat', title: 'A Bear in the Boat' }], reader: { slug: 'hen-in-bed', title: 'Hen in Bed' } },
+  { n: 23, sound: 'f', title: 'Ffff Like a Fan', catchphrase: '“funny fox in my fan!”', decodable: ['fan', 'off'], words: ['fox', 'fan'], books: [{ slug: 'frog-on-the-fan', title: 'A Frog on the Fan' }] },
+  { n: 24, sound: 'l', title: 'La-La-La Goes L', catchphrase: '“lazy lion licks!”', decodable: ['log', 'run', 'croc'], words: ['lion'], books: [{ slug: 'oh-no-lion', title: 'Oh No, Lion…' }] },
+  { n: 25, sound: 'j', title: 'Jump for J', catchphrase: '“jump in the jelly jam!”', decodable: ['jug', 'jam'], words: ['jam'], books: [{ slug: 'jellyfish-in-the-jar', title: 'A Jellyfish in the Jar' }] },
+  { n: 26, sound: 'v', title: 'Vvvv Goes the Van', catchphrase: '“vroom-vroom van!”', decodable: ['van'], words: ['van'], books: [{ slug: 'volcano-in-the-van', title: 'A Volcano in the Van' }] },
+  { n: 27, sound: 'w', title: 'W for the Windy Day', catchphrase: '“wiggly wet worm!”', decodable: ['wig'], words: ['worm'], books: [{ slug: 'whale-in-the-wagon', title: 'A Whale in the Wagon' }] },
+  { n: 28, sound: 'x', title: 'X Marks the Box', catchphrase: '“six fox in a box!”', decodable: ['box', 'fox'], words: ['fox', 'box'], books: [{ slug: 'fox-in-a-box', title: 'A Fox in a Box' }], reader: { slug: 'fox-in-a-box', title: 'Fox in a Box' } },
+  { n: 29, sound: 'y', title: 'Yes! Yum! Y!', catchphrase: '“yummy yellow yo-yo!”', decodable: ['yam', 'big'], words: ['yoyo'], books: [{ slug: 'yak-on-the-yacht', title: 'A Yak on the Yacht' }] },
+  { n: 30, sound: 'z', title: 'Zzz Like a Buzzing Bee', catchphrase: '“zippy zebra, zzz!”', decodable: ['zip', 'bag'], words: ['zebra'], books: [{ slug: 'zzz-at-the-zoo', title: 'Zzz at the Zoo' }] },
+  { n: 31, sound: 'qu', title: 'The Queen Says Qu', catchphrase: '“quick quacky duck!”', decodable: ['quilt', 'squid'], words: ['duck'], books: [{ slug: 'queen-on-the-quilt', title: 'A Queen on the Quilt' }] },
   { n: 32, sound: 'review', title: 'All Our Sounds', catchphrase: '“cat, pig, dog - woof!”', words: ['cat', 'pig', 'dog'] },
   { n: 33, sound: 'review', title: 'The Five Little Vowels', catchphrase: '“a, e, i, o, u... achoo!”' },
   { n: 34, sound: 'review', title: 'We Know the Alphabet', catchphrase: '“a to z, easy-peasy!”' },
@@ -555,6 +571,22 @@ export default function DarkPhonicsPage() {
     );
   };
 
+  /**
+   * The decodable ledger — what the child can actually READ by this lesson.
+   * NEW words (this lesson's reader) are highlighted in the reader red;
+   * everything decodable from earlier lessons follows muted, newest first
+   * (same order as the books' REVIEW lists). Lessons 5–6 are sounds only;
+   * lessons 32–53 add no new reader, so they carry the running total forward.
+   * Shared styling with app/montree/library/satpin/page.tsx.
+   */
+  const DecodableRow = ({ lesson, index }: { lesson: Lesson; index: number }) => {
+    const newWords = lesson.decodable ?? [];
+    // Newest-first, mirroring how the books stack their REVIEW lines.
+    const prior = LESSONS.slice(0, index).reverse().flatMap(l => l.decodable ?? []);
+    const hearts = LESSONS.slice(0, index + 1).flatMap(l => l.heartWords ?? []);
+    return <DecodableLedger newWords={newWords} prior={prior} hearts={hearts} />;
+  };
+
   return (
     <div className="min-h-screen relative overflow-hidden flex flex-col" style={{ background: '#06140e' }}>
 
@@ -617,7 +649,7 @@ export default function DarkPhonicsPage() {
 
           {/* One card per lesson */}
           <div className="mt-8 space-y-4">
-            {LESSONS.map((l) => {
+            {LESSONS.map((l, index) => {
               const song = media(`songs/lesson-${nn(l.n)}.mp3`);
               const video = media(`videos/lesson-${nn(l.n)}.mp4`);
               const picture = media(`pictures/lesson-${nn(l.n)}.png`);
@@ -683,6 +715,9 @@ export default function DarkPhonicsPage() {
                       </div>
                     );
                   })()}
+
+                  {/* Decodable ledger — what the child can READ by this lesson */}
+                  <DecodableRow lesson={l} index={index} />
 
                   {/* SONG — every lesson has one */}
                   <Row

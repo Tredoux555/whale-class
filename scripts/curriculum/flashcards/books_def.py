@@ -4,6 +4,10 @@
 # Art inputs resolve from /mnt/user-data/uploads/... after device_stage_files; all
 # Midjourney job UUIDs are in docs/curriculum/satpin-redesign/art-manifest.md.
 U='/mnt/user-data/uploads/montree/phonics-images/satpin-v2/books'
+# 'the-spat' (letter-book two, penguin/pig/pelican) was built on the Mac directly
+# against the repo's phonics-images dir — no device_stage_files hop, so an
+# absolute Mac path is used instead of the U= Cowork-container convention above.
+SPAT2='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/satpin-v2/books/the-spat'
 BOOKS=[
 dict(slug='snake-in-my-sock', title_lines=['Snake in','my SOCK!'], title_accent='SOCK!', title_size=40,
  band='WEEK 1  ·  THE SOUND  /s/', booknum='BOOK ONE OF SIX', cover='bk1/p7.png',
@@ -46,6 +50,18 @@ dict(slug='the-sat', title_lines=['The ___','Sat!'], title_accent='Sat!', title_
   dict(nar='The cat…', text='Sat!', size=92, art='tiles/SAT-p6.png'),
   dict(text=['Sat! Sat!','Sat!'], style='drop', size=64, art='tiles/SAT-p7.png'),
   dict(nar='And the…?!', art='tiles/SAT-p8.png'),
+ ]),
+dict(slug='the-spat', title_lines=['The ___','Spat!'], title_accent='Spat!', title_size=46,
+ band='LETTER P  ·  s a t p', booknum='LETTER BOOK TWO', cover=SPAT2+'/cover.png',
+ new='Spat', review='sat  ·  at', heart='♥  heart words — a · the',
+ oral_note='the nouns live in the pictures — named aloud, never printed',
+ spreads=[
+  dict(nar='A basin.', art=SPAT2+'/spat-p1.png'),
+  dict(nar='The penguin…', text='Spat!', size=92, art=SPAT2+'/spat-p2.png'),
+  dict(nar='The pig…', text='Spat!', size=92, art=SPAT2+'/spat-p3.png'),
+  dict(nar='The pelican…', text='Spat!', size=92, art=SPAT2+'/spat-p4.png'),
+  dict(text=['Spat! Spat!','Spat!'], style='drop', size=64, art=SPAT2+'/spat-p5.png'),
+  dict(nar='And the…?!', art=SPAT2+'/spat-p6.png'),
  ]),
 dict(slug='spat', title_lines=['SPAT!'], title_accent='SPAT!', title_size=64,
  band='WEEK 4  ·  FIRST FULLY DECODABLE BOOK  ·  s a t p', booknum='BOOK FOUR OF SIX',
