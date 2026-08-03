@@ -946,8 +946,9 @@ export default function MontreeLanding() {
             {t('landing.hero.cta')}
           </Link>
           <span className="m-hero-kicker m-hero-kicker-below">{t('landing.hero.kicker')}</span>
-          {/* Fineprint trust signal under the CTA — cheap, honest pricing line. */}
-          <span className="m-hero-fineprint">{t('landing.hero.fineprint')}</span>
+          {/* Fineprint trust signal under the CTA — cheap, honest pricing line.
+              Hidden 2026-08-03 per Tredoux's request. Uncomment to restore. */}
+          {/* <span className="m-hero-fineprint">{t('landing.hero.fineprint')}</span> */}
         </div>
       </section>
 
