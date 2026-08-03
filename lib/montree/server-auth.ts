@@ -41,11 +41,17 @@ export const MONTREE_JWT_TTL_DAYS = Math.max(
 // via referrals; schoolId on their JWT is their montree_teachers row's
 // (placeholder for shell agents, real for teacher-agents) and is INERT for
 // agent routes — those self-scope via founding_teacher_id = sub.
+// 'org_admin' (Phase 6) is the ORGANIZATION-tier leader — a school group / chain /
+// programme office sitting above one or more schools and below the platform. Like
+// 'agent', schoolId on their JWT is INERT: an org admin belongs to no single school, so
+// the minting route sets schoolId to the organisation id purely to satisfy the non-empty
+// check below, and every /api/montree/org/* route self-scopes via organizationId.
 export interface MontreeTokenPayload {
-  sub: string;        // teacher ID, principal ID, agent ID (= montree_teachers.id), or homeschool parent ID
+  sub: string;        // teacher ID, principal ID, agent ID (= montree_teachers.id), homeschool parent ID, or org admin ID
   schoolId: string;
   classroomId?: string;
-  role: 'teacher' | 'principal' | 'homeschool_parent' | 'agent';
+  role: 'teacher' | 'principal' | 'homeschool_parent' | 'agent' | 'org_admin';
+  organizationId?: string;  // set on org_admin tokens only (montree_organizations.id)
 }
 
 // Parent token payload (stored in HTTP-only cookie)
@@ -78,6 +84,7 @@ export async function createMontreeToken(
     schoolId: payload.schoolId,
     classroomId: payload.classroomId || null,
     role: payload.role,
+    organizationId: payload.organizationId || null,
   })
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(payload.sub)
@@ -104,7 +111,10 @@ export async function verifyMontreeToken(token: string): Promise<MontreeTokenPay
       return null;
     }
 
-    if (role !== 'teacher' && role !== 'principal' && role !== 'homeschool_parent' && role !== 'agent') {
+    if (
+      role !== 'teacher' && role !== 'principal' && role !== 'homeschool_parent' &&
+      role !== 'agent' && role !== 'org_admin'
+    ) {
       return null;
     }
 
@@ -112,7 +122,8 @@ export async function verifyMontreeToken(token: string): Promise<MontreeTokenPay
       sub,
       schoolId,
       classroomId: (payload.classroomId as string) || undefined,
-      role: role as 'teacher' | 'principal' | 'homeschool_parent' | 'agent',
+      role: role as 'teacher' | 'principal' | 'homeschool_parent' | 'agent' | 'org_admin',
+      organizationId: (payload.organizationId as string) || undefined,
     };
   } catch {
     // Token is invalid, expired, or tampered with
@@ -178,7 +189,7 @@ export async function verifyParentToken(token: string): Promise<ParentTokenPaylo
 export function setMontreeAuthCookie(
   response: NextResponse,
   token: string,
-  role?: 'teacher' | 'principal' | 'homeschool_parent' | 'agent'
+  role?: 'teacher' | 'principal' | 'homeschool_parent' | 'agent' | 'org_admin'
 ): void {
   const maxAge = MONTREE_JWT_TTL_DAYS * 24 * 60 * 60;  // matches JWT TTL
   const secure = process.env.NODE_ENV === 'production';
@@ -200,6 +211,7 @@ export function setMontreeAuthCookie(
   const surface =
     role === 'principal' ? '/montree/admin'
     : role === 'agent' ? '/montree/agent/dashboard'
+    : role === 'org_admin' ? '/montree/org'
     : '/montree/dashboard';
   response.cookies.set('montree_surface', surface, {
     httpOnly: false,

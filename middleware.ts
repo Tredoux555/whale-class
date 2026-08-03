@@ -336,7 +336,17 @@ export async function middleware(req: NextRequest) {
     '/story',      // Story system (has its own auth)
     '/riddick',    // Riddick's sanctuary door (story-admin auth via the form)
     '/bayan',      // Bayan's sanctuary door (story-admin auth via the form)
-    '/montree',    // Montree app - has its own auth system (teacher/parent logins)
+    '/montree',    // Montree app - has its own auth system (teacher/parent/org-admin logins)
+    // Phase 6 (organization tier) invite links. Already covered by the '/montree' entry
+    // above, and listed explicitly on purpose: these two routes are the ONLY way a new
+    // organisation or a new school inside one comes into existence, and they are opened
+    // cold by someone with no session at all. If '/montree' is ever narrowed, these must
+    // survive the narrowing — a gated invite link is a dead invite link.
+    '/montree/org/join',
+    '/montree/school/join',
+    // …and the door an organization leader returns to for the rest of the relationship.
+    // Listed for the same reason: it must load with no session at all.
+    '/montree/org/login',
     '/lyf-coach',  // Lyf Coach web — public signup/login/coach + privacy pages (own client-side auth; APIs live under /api/lyf-coach)
     '/auth/login',
     '/auth/signup',

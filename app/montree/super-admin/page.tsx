@@ -792,6 +792,20 @@ export default function SuperAdminPage() {
             >
               🌱 Milestones
             </Link>
+            {/* 🏛 Organizations — the Phase 6 organization tier (migration 315). The ONLY
+                door into it: org invite links are minted here and nowhere else. */}
+            <Link
+              href="/montree/super-admin/organizations"
+              className="px-3 py-2 rounded-lg font-medium text-sm transition-colors"
+              style={{
+                background: 'rgba(8,20,12,0.55)',
+                border: '1px solid rgba(52,211,153,0.18)',
+                color: 'rgba(255,255,255,0.75)',
+              }}
+              title="School groups and chains — mint an organization invite link"
+            >
+              🏛 Organizations
+            </Link>
             <Link
               href="/montree/onboarding"
               className="px-3 py-2 rounded-lg font-medium text-sm transition-colors"

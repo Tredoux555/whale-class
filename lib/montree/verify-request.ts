@@ -24,7 +24,12 @@ export interface VerifiedRequest {
   // these is INERT (the agent's montree_teachers row's school_id, placeholder
   // for shell agents). Agent routes MUST self-scope via founding_teacher_id =
   // userId, NOT via schoolId.
-  role: 'teacher' | 'principal' | 'homeschool_parent' | 'agent';
+  // 'org_admin' (Phase 6) — ORGANIZATION-tier leaders. Same deal as agents: schoolId is
+  // INERT (it carries the organisation id only so the token shape stays uniform). Org
+  // routes MUST self-scope via organizationId, NOT via schoolId.
+  role: 'teacher' | 'principal' | 'homeschool_parent' | 'agent' | 'org_admin';
+  /** Set on org_admin sessions only — montree_organizations.id. */
+  organizationId?: string;
 }
 
 /**
@@ -42,7 +47,10 @@ export interface VerifiedRequest {
 async function toVerifiedOrLocked(
   payload: MontreeTokenPayload,
 ): Promise<VerifiedRequest | NextResponse> {
-  if (payload.role !== 'agent' && (await isSchoolLocked(payload.schoolId))) {
+  if (
+    payload.role !== 'agent' && payload.role !== 'org_admin' &&
+    (await isSchoolLocked(payload.schoolId))
+  ) {
     return NextResponse.json(
       { error: 'This account has been locked.', code: 'school_locked' },
       { status: 403 },
@@ -53,6 +61,7 @@ async function toVerifiedOrLocked(
     schoolId: payload.schoolId,
     classroomId: payload.classroomId,
     role: payload.role,
+    organizationId: payload.organizationId,
   };
 }
 
