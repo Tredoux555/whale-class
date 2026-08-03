@@ -777,6 +777,21 @@ export default function SuperAdminPage() {
             >
               🎬 Phonics Videos
             </Link>
+            {/* 🌱 Montree Milestones — organisation tier (Phase 5). Standing in on the
+                platform session until a real multi-school-but-not-global role exists;
+                see app/montree/super-admin/milestones/page.tsx for the full note. */}
+            <Link
+              href="/montree/super-admin/milestones"
+              className="px-3 py-2 rounded-lg font-medium text-sm transition-colors"
+              style={{
+                background: 'rgba(8,20,12,0.55)',
+                border: '1px solid rgba(52,211,153,0.18)',
+                color: 'rgba(255,255,255,0.75)',
+              }}
+              title="Montree Milestones across every opted-in school — aggregate only"
+            >
+              🌱 Milestones
+            </Link>
             <Link
               href="/montree/onboarding"
               className="px-3 py-2 rounded-lg font-medium text-sm transition-colors"

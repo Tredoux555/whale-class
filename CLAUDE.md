@@ -3274,3 +3274,9 @@ instruction from Tredoux:
   fast `tsc --noEmit -p ...` check must override `paths` to map `"@/*"` to
   `"./*"` or every `@/...` import fails to resolve.
   `tsconfig.dp-page.tmp.json` is the working template for this.
+
+---
+
+## 🗄️ PRODUCTION SQL RULE (PERMANENT — added 2026-08-03, direct instruction from Tredoux)
+
+All SQL destined for the production database is ALWAYS handed to Tredoux in the chat (pasteable snippet or attached .sql file) for him to run in the Supabase SQL editor himself. Claude never executes SQL against production directly — not via psql/connection strings, not via browser automation, not via any other channel. Migrations are still authored as numbered files in migrations/, but they are APPLIED by Tredoux from chat-delivered SQL. (Context: direct DB ports are blocked by the local VPN, and production SQL stays under human control.)

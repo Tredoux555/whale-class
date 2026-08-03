@@ -3,24 +3,29 @@
  * Montree Milestones — the seam between this module and the rest of the Montree repo.
  *
  * ════════════════════════════════════════════════════════════════════════════════════
- *  MERGE STEP — do this once, when you drop these files into the repo.
+ *  MERGE STEP — DONE (Phase 5). The three `notWired()` stubs are wired to the real
+ *  repo helpers below. Two adaptations were required and are load-bearing:
  *
- *  Delete the three `notWired()` bodies below and wire the real helpers instead:
- *
- *      import { getSupabase } from '@/lib/supabase-client';
- *      import { verifySchoolRequest } from '@/lib/montree/verify-request';
- *      import { isEnabled } from '@/lib/montree/features';        // server-side flag read
- *
- *  Exact paths and return shapes vary slightly by repo revision — grep for
- *  `verifySchoolRequest(` in `app/api/montree/work-rhythm/route.ts` and copy whatever
- *  that route does. Adapt the result into `SchoolAuth` below; nothing else in this
- *  module reaches outside itself.
+ *   1. `isFeatureEnabled` in `lib/montree/features/server.ts` takes THREE arguments
+ *      (`supabase, schoolId, featureKey`). Every call site in this module uses the
+ *      two-argument form, so the bridge keeps its 2-arg signature and supplies the
+ *      service-role client itself. Do not "simplify" this back to a pass-through.
+ *   2. `verifySchoolRequest` in `lib/montree/verify-request.ts` is typed for a
+ *      `NextRequest` and returns `VerifiedRequest | NextResponse` (the 401 body).
+ *      The evaluation routes are App Router route handlers, so the object they
+ *      receive IS a NextRequest at runtime even though it is declared as `Request`.
+ *      See the cast note on `verifySchoolRequest()` below.
  * ════════════════════════════════════════════════════════════════════════════════════
  *
  * Why a seam at all: this module was authored outside the repo and must typecheck and be
  * reviewable standalone. Everything the module needs from Montree passes through here, so
  * the integration surface is four functions, not forty import lines.
  */
+import type { NextRequest } from 'next/server';
+import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest as realVerifySchoolRequest } from '@/lib/montree/verify-request';
+import { isFeatureEnabled as realIsFeatureEnabled } from '@/lib/montree/features/server';
+import type { FeatureKey } from '@/lib/montree/features/types';
 
 /** Minimal structural view of the Supabase service-role client this module uses. */
 export interface SupabaseLike {
@@ -36,6 +41,10 @@ export interface SchoolAuth {
   role: 'teacher' | 'principal' | 'super_admin' | 'homeschool_parent' | string;
 }
 
+/**
+ * Kept exported: callers (and older tests) still catch it, and it remains the right error
+ * for any future seam function that is added but not yet wired.
+ */
 export class EvaluationNotWiredError extends Error {
   constructor(what: string) {
     super(
@@ -46,23 +55,54 @@ export class EvaluationNotWiredError extends Error {
   }
 }
 
-const notWired = (what: string): never => { throw new EvaluationNotWiredError(what); };
+/* ──────────────────────────────────────────────────────────── wired helpers */
 
-/* ─────────────────────────────────────────────────────── replace these three */
-
-/** MERGE STEP: `return getSupabase();` */
+/** The repo's server-side service-role singleton. */
 export function getSupabaseClient(): SupabaseLike {
-  return notWired('getSupabaseClient');
+  return getSupabase() as unknown as SupabaseLike;
 }
 
-/** MERGE STEP: call the repo helper and map its result onto `SchoolAuth`. Return null when unauthenticated. */
-export async function verifySchoolRequest(_request: Request): Promise<SchoolAuth | null> {
-  return notWired('verifySchoolRequest');
+/**
+ * Identity + tenancy for one request.
+ *
+ * The real helper reads the httpOnly `montree-auth` cookie first and falls back to
+ * `Authorization: Bearer`, returning a 401 `NextResponse` when neither works. We
+ * translate that response into `null` — `openRoute()` owns the 401 body for this module
+ * so every evaluation route answers in the same shape.
+ *
+ * The cast: App Router hands route handlers a `NextRequest`, but the evaluation routes
+ * declare the parameter as `Request` (they were authored outside the repo). `NextRequest
+ * extends Request`, so the value is always the richer type at runtime. The guard below
+ * makes that assumption explicit rather than silent: a bare `Request` (i.e. this was
+ * called from somewhere that is not the Next.js router) is refused, never treated as
+ * anonymous-but-fine and never crashed on `.cookies` being undefined.
+ */
+export async function verifySchoolRequest(request: Request): Promise<SchoolAuth | null> {
+  if (!('cookies' in (request as object))) {
+    throw new Error(
+      '[montree-milestones] verifySchoolRequest was handed a bare Request. Evaluation routes ' +
+      'must be invoked as Next.js App Router route handlers (NextRequest).',
+    );
+  }
+  const result = await realVerifySchoolRequest(request as NextRequest);
+  // NextResponse extends Response — a Response here means 401/403 (bad token, locked school).
+  if (result instanceof Response) return null;
+  return {
+    userId: result.userId,
+    schoolId: result.schoolId,
+    classroomId: result.classroomId ?? null,
+    role: result.role,
+  };
 }
 
-/** MERGE STEP: `return isEnabled(schoolId, featureKey);` — must fail CLOSED on error. */
-export async function isFeatureEnabled(_schoolId: string, _featureKey: string): Promise<boolean> {
-  return notWired('isFeatureEnabled');
+/**
+ * Flag read. The repo helper is 3-arg (`supabase, schoolId, featureKey`); this module
+ * calls it 2-arg everywhere, so the client is supplied here. Fails CLOSED: the real
+ * implementation returns `false` on any error and does not cache the failure.
+ */
+export async function isFeatureEnabled(schoolId: string, featureKey: string): Promise<boolean> {
+  if (!schoolId || !featureKey) return false;
+  return realIsFeatureEnabled(getSupabase(), schoolId, featureKey as FeatureKey);
 }
 
 /* ───────────────────────────────────────── implemented here, no repo dependency */

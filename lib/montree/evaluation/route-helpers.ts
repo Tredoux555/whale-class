@@ -2,11 +2,14 @@
 /**
  * Montree Milestones — shared route plumbing.
  *
- * Every evaluation route does the same four things before it touches data:
+ * Every evaluation route does the same five things before it touches data:
  *   1. verifySchoolRequest()            → 401 if there is no verified school session
- *   2. isFeatureEnabled(…, 'child_evaluation') → friendly 503 { available:false } when off
- *   3. verifyChildBelongsToSchool()     → 403 on any child id that isn't this school's
- *   4. treat 42703 / 42P01 as "migration not run" → 503 { migration_pending:true }, never a 500
+ *   2. role ∈ { teacher, principal }    → 403; Montree Milestones is a teacher reflection
+ *                                         tool. A parent session (homeschool_parent) and an
+ *                                         agent session must never read a child's bands.
+ *   3. isFeatureEnabled(…, 'child_evaluation') → friendly 503 { available:false } when off
+ *   4. verifyChildBelongsToSchool()     → 403 on any child id that isn't this school's
+ *   5. treat 42703 / 42P01 as "migration not run" → 503 { migration_pending:true }, never a 500
  *
  * Rule 4 exists because of the migration-311 postmortem: a write path that assumed its
  * columns existed failed silently while the parent record was already marked committed.
@@ -43,6 +46,27 @@ export function json(body: unknown, status = 200): Response {
 
 export const unauthorized = () => json({ error: 'unauthorized' }, 401);
 export const forbidden = (reason: string) => json({ error: 'forbidden', reason }, 403);
+
+/**
+ * Who may administer or read a check-in.
+ *
+ * `MontreeTokenPayload.role` is one of teacher | principal | homeschool_parent | agent.
+ * Migration 314 stores `administered_by_role IN ('teacher','principal','system')`, and
+ * ARCHITECTURE.md §3 makes this a teacher reflection tool — so the two role vocabularies
+ * agree, and the two roles NOT on this list are excluded deliberately:
+ *   • homeschool_parent — the parent-facing surfaces must never see evaluation data.
+ *   • agent            — an agent session's schoolId is INERT (see verify-request.ts),
+ *                        so tenancy cannot be enforced for it here at all.
+ */
+export const EVALUATION_ROLES: readonly string[] = ['teacher', 'principal'];
+
+export const forbiddenRole = (role: string) =>
+  json({
+    error: 'forbidden',
+    reason: 'role_not_permitted',
+    role,
+    message: 'Montree Milestones is available to teachers and principals.',
+  }, 403);
 export const badRequest = (error: string, detail?: unknown) => json({ error, detail: detail ?? null }, 400);
 
 export const featureOff = () =>
@@ -78,7 +102,7 @@ export interface RouteContext {
   supabase: SupabaseLike;
 }
 
-/** Steps 1 and 2. Returns a Response to send straight back, or the context to carry on with. */
+/** Steps 1–3. Returns a Response to send straight back, or the context to carry on with. */
 export async function openRoute(request: Request): Promise<{ ctx: RouteContext } | { response: Response }> {
   let auth: SchoolAuth | null = null;
   try {
@@ -87,6 +111,11 @@ export async function openRoute(request: Request): Promise<{ ctx: RouteContext }
     return { response: serverError('auth', error) };
   }
   if (!auth?.schoolId) return { response: unauthorized() };
+
+  if (!EVALUATION_ROLES.includes(auth.role)) {
+    console.warn(`[montree-milestones][SECURITY] role ${auth.role} rejected for school ${auth.schoolId}`);
+    return { response: forbiddenRole(auth.role) };
+  }
 
   let enabled = false;
   try {

@@ -10,6 +10,11 @@ import dynamic from 'next/dynamic';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
 import { rememberLaunchSurface, clearLaunchSurface } from '@/lib/montree/launch-surface';
+// 🌱 Montree Milestones (Phase 5) — the sidebar row is gated on the school's
+// `child_evaluation` flag, so a school that hasn't opted in never sees it.
+// Imported from ./cache rather than the features barrel: the barrel also
+// re-exports lib/montree/features/server.ts, which must not reach the client.
+import { fetchFeatures } from '@/lib/montree/features/cache';
 import {
   Home,
   GraduationCap,
@@ -24,6 +29,7 @@ import {
   Users,
   Sparkles,
   Sliders,
+  Sprout,
 } from 'lucide-react';
 // 🚨 Perf Tier 2.4 (PERF_HEALTH_CHECK.md) — Astra panel is 1,200 lines and
 // mounted on every /montree/admin/* page. Loading it eagerly added ~30-50 KB
@@ -305,6 +311,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   // the principal gets the School Features switchboard in the sidebar.
   const [selfServe, setSelfServe] = useState(false);
   const [authState, setAuthState] = useState<AuthState>('checking');
+  // 🌱 Montree Milestones — school id + flag, for the gated sidebar row.
+  const [schoolId, setSchoolId] = useState<string | null>(null);
+  const [milestonesOn, setMilestonesOn] = useState(false);
 
   useEffect(() => {
     const schoolData = localStorage.getItem('montree_school');
@@ -316,6 +325,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       try {
         const s = JSON.parse(schoolData);
         setSchoolName(s.name || '');
+        if (typeof s.id === 'string') setSchoolId(s.id);
       } catch { /* ignore */ }
     }
     // 🚨 Session 155 — do NOT bail to login just because montree_principal is
@@ -364,6 +374,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         // from the live session (fixes a stale or partial local session, e.g.
         // the generic "School" sidebar).
         if (data.school?.name) setSchoolName(data.school.name);
+        if (data.school?.id) setSchoolId(data.school.id);
         if (data.teacher?.id) setPrincipalId(data.teacher.id);
         // Migration 292 — surface the "Message Tredoux" nav only for Founding schools.
         setFoundingMember(Boolean(data.school?.founding_member));
@@ -434,6 +445,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return () => window.removeEventListener('storage', onStorage);
   }, [router]);
 
+  // 🌱 Montree Milestones gate. `child_evaluation` HAS a definition row
+  // (migration 314 inserts it), so it does appear in /api/montree/features and
+  // fetchFeatures() is the right reader here. Fails closed — any error leaves
+  // the row hidden, which is the correct posture for an opt-in feature.
+  useEffect(() => {
+    if (authState !== 'authed' || !schoolId) return;
+    let cancelled = false;
+    fetchFeatures(schoolId)
+      .then((features) => {
+        if (cancelled) return;
+        const row = features.find((f) => (f.feature_key as string) === 'child_evaluation');
+        setMilestonesOn(Boolean(row?.enabled));
+      })
+      .catch(() => { /* fail closed — row stays hidden */ });
+    return () => { cancelled = true; };
+  }, [authState, schoolId]);
+
   // Give Control gate for the "School Features" sidebar row.
   //
   // Deliberately NOT /api/montree/features (nor hooks/useFeatures, which wraps
@@ -500,6 +528,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           icon: Lock,
           match: (p) => p.startsWith('/montree/admin/conversations'),
         },
+        // 🌱 Montree Milestones (Phase 5) — the school-wide reflection view.
+        // Lives at /montree/principal/milestones, not under /montree/admin, so
+        // `match` is an exact prefix on that path. Hardcoded English label
+        // (renders via t()'s key-fallback, same as "Message Tredoux" below) so
+        // this adds no i18n parity churn. Gated on the school's
+        // `child_evaluation` flag — invisible to schools that haven't opted in.
+        ...(milestonesOn
+          ? [
+              {
+                href: '/montree/principal/milestones',
+                label: 'Milestones',
+                icon: Sprout,
+                match: (p: string) => p.startsWith('/montree/principal/milestones'),
+              },
+            ]
+          : []),
         // Give Control — the self-serve Feature Switchboard. Same page the
         // teacher More-menu row points at (/montree/dashboard/school-features);
         // it is school-scoped, not classroom-scoped, so the principal is its
