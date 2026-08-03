@@ -851,6 +851,9 @@ export default function MontreeLanding() {
             >
               {t('landing.nav.library')}
             </Link>
+            {/* Explainer nav link hidden 2026-08-03 per Tredoux's request
+                (follow-up to the Pricing hide in 5b2f2f49). Commented out,
+                not deleted — for reinstatement later.
             <Link
               className="m-nav-link m-nav-link-explainer"
               href="/montree/explainer"
@@ -866,6 +869,7 @@ export default function MontreeLanding() {
             >
               {t('landing.nav.explainer')}
             </Link>
+            */}
             {/* Pricing nav link hidden 2026-08-03 per Tredoux's request
                 (follow-up to the hero fine-print hide in c8e3bc70). Commented
                 out, not deleted, so it's easy to restore.
