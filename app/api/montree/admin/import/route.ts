@@ -137,6 +137,13 @@ export async function POST(request: NextRequest) {
       }
 
       // Add work progress
+      //
+      // WP2: this direct montree_child_progress insert has NOT been converted yet.
+      // The single sanctioned writer is lib/montree/progress/write-progress.ts —
+      // route it through writeProgressBatch() for the rank gate, the stamps and the
+      // montree_progress_events journal. Deferred from WP1 deliberately: this
+      // importer also writes work_name_chinese and remaps 'mathematics'→'math',
+      // neither of which the primitive knows about yet.
       if (childId && assignment.works?.length > 0) {
         for (const work of assignment.works) {
           let area = work.area;

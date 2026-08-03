@@ -21,8 +21,14 @@
 //
 // It NEVER downgrades. 'mastered' is teacher-decision-only (set via the explicit
 // Presented/Practicing/Mastered picker or the evidence route) — never here.
+//
+// WP1 (Aug 2026): this is now a THIN WRAPPER. It owns the LADDER — which rung a
+// confirmed photo lands on — and nothing else. The write itself (stamps, rank
+// gate, first-mastery date, the montree_progress_events journal) belongs to
+// lib/montree/progress/write-progress.ts, the one sanctioned writer.
 
 import type { getSupabase } from '@/lib/supabase-client';
+import { writeProgress } from './write-progress';
 
 type SupabaseClient = ReturnType<typeof getSupabase>;
 
@@ -31,56 +37,67 @@ export async function advanceProgressOnConfirm({
   childId,
   workName,
   area,
+  source = 'photo_confirm',
+  classroomId = null,
+  schoolId = null,
+  actor = null,
 }: {
   supabase: SupabaseClient;
   childId: string;
   workName: string | null;
   area: string | null;
+  /** What confirmed it — recorded on the progress event. */
+  source?: string;
+  classroomId?: string | null;
+  schoolId?: string | null;
+  actor?: string | null;
 }): Promise<void> {
   if (!childId || !workName?.trim()) return;
   const name = workName.trim();
-  const now = new Date().toISOString();
 
   try {
     // Matched by (child_id, work_name) — the table's UNIQUE key — same as every
     // other read/write in this flow. work_name is the string, never work_id.
     const { data: existing } = await supabase
       .from('montree_child_progress')
-      .select('id, status')
+      .select('status')
       .eq('child_id', childId)
       .eq('work_name', name)
       .maybeSingle();
 
-    // No row yet → first evidence lands on 'presented'.
-    if (!existing) {
-      await supabase.from('montree_child_progress').insert({
-        child_id: childId,
-        work_name: name,
-        area: area || null,
-        status: 'presented',
-      });
-      console.log(`[Progress] confirm advance: child=${childId} work="${name}" (new) → presented`);
-      return;
-    }
-
-    const current = existing.status || 'not_started';
+    const current: string = existing ? (existing.status || 'not_started') : '';
 
     // Mastered is teacher-owned + terminal here — leave it completely untouched.
     if (current === 'mastered') return;
 
-    // One rung up the ladder; anything already 'practicing' (or an unexpected
-    // active value) just keeps its status and refreshes the timestamp.
+    // No row yet → first evidence lands on 'presented'. Otherwise one rung up;
+    // anything already 'practicing' (or an unexpected active value) keeps its
+    // status and just gets its timestamp refreshed.
     const next =
-      current === 'not_started' ? 'presented'
+      !existing ? 'presented'
+      : current === 'not_started' ? 'presented'
       : current === 'presented' ? 'practicing'
-      : null;
+      : current;
 
-    await supabase
-      .from('montree_child_progress')
-      .update(next ? { status: next, updated_at: now } : { updated_at: now })
-      .eq('id', existing.id);
+    const result = await writeProgress(supabase, {
+      childId,
+      workName: name,
+      area,
+      status: next,
+      source,
+      classroomId,
+      schoolId,
+      // Only ever true when next === current, i.e. a pure updated_at refresh on an
+      // already-'practicing' work (the behaviour this function has always had). The
+      // ladder above can never produce a LOWER rung, so this is not a downgrade channel.
+      allowDowngrade: !!existing && next === current,
+    }, { actor });
 
-    console.log(`[Progress] confirm advance: child=${childId} work="${name}" ${current} → ${next || current}`);
+    if (result.outcome === 'failed') {
+      console.error(`[Progress] confirm advance failed: child=${childId} work="${name}" ${result.error || ''}`);
+      return;
+    }
+    console.log(`[Progress] confirm advance: child=${childId} work="${name}" ${existing ? current : '(new)'} → ${result.status}`);
   } catch (err) {
     // Never block the confirm on a progress-write hiccup.
     console.error('[Progress] advanceProgressOnConfirm failed (non-fatal):', err);

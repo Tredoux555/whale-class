@@ -676,6 +676,12 @@ async function seedCurriculumPositions(
       });
     }
 
+    // WP2: this direct montree_child_progress write has NOT been converted yet.
+    // The single sanctioned writer is lib/montree/progress/write-progress.ts —
+    // route this through writeProgress()/writeProgressBatch() so it gets the rank
+    // gate, the classroom/school/work_key stamps and the montree_progress_events
+    // journal. Deferred from WP1 deliberately: this is bulk curriculum-position seeding at onboarding
+    // time and needs its own batching/ordering review.
     if (upserts.length > 0) {
       const { error } = await supabase
         .from('montree_child_progress')
@@ -826,6 +832,14 @@ async function seedFocusWorks(
     // seedCurriculumPositions may have already written for this work
     // (e.g., if it was already mastered, we don't want to downgrade to
     // presented/practicing just because Sonnet was picking a focus).
+    //
+    // WP2: this hand-rolled rank ladder + update/insert pair has NOT been converted
+    // yet. The single sanctioned writer is lib/montree/progress/write-progress.ts —
+    // route it through writeProgress() (allowDowngrade: false gives exactly this
+    // never-downgrade behaviour) so it also gets the classroom/school/work_key
+    // stamps and the montree_progress_events journal. Deferred from WP1 deliberately:
+    // onboarding is a high-traffic first-run path with its own 'completed' alias in
+    // STATUS_RANK, and it deserves its own test pass.
     const STATUS_RANK: Record<string, number> = {
       not_started: 0, presented: 1, practicing: 2, mastered: 3, completed: 3,
     };

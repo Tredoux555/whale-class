@@ -287,6 +287,13 @@ export async function POST(request: NextRequest) {
         }
 
         // Insert progress record
+        //
+        // WP2: this direct montree_child_progress insert has NOT been converted yet.
+        // The single sanctioned writer is lib/montree/progress/write-progress.ts —
+        // route it through writeProgress() for the rank gate, the stamps and the
+        // montree_progress_events journal. Deferred from WP1 deliberately: the
+        // importer writes a fuzzy-match provenance note into `notes` and its own
+        // presented_at, so converting it is a data-shape decision, not a swap.
         const { error: progressError } = await supabase
           .from('montree_child_progress')
           .insert({
