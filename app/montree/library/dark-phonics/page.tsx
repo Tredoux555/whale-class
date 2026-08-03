@@ -146,21 +146,23 @@ const BOOK_PAGE_KEYS: Record<string, string[]> = {
   'the-sat': ['p1-ant', 'p2-snake', 'p3-apple', 'p4-sun', 'p5-star', 'p6-cat', 'p7-recap'],
 };
 
-/** Photo carries the 'dark-phonics-vocab' tag — top preference for a word chip's picture. */
+/**
+ * 🚨 STYLE SEPARATION (locked): this page is Dark Phonics and shows the Seuss
+ * pen-and-ink ILLUSTRATIONS ONLY. The real Montessori photographs belong to
+ * the Montree Phonics page and must never appear here — a word with no
+ * illustration renders the "no picture" placeholder instead.
+ */
+
+/** Photo carries the 'dark-phonics-vocab' tag — the only source for a word chip's picture. */
 function isDarkPhonicsVocabPhoto(photo: BankPhoto): boolean {
   return (photo.tags || []).some(t => String(t || '').trim().toLowerCase() === 'dark-phonics-vocab');
 }
 
-/** Photo is from the clean SATPIN object-basket set — second preference. */
-function isSatpinBasketPhoto(photo: BankPhoto): boolean {
-  const tagged = (photo.tags || []).some(t => String(t || '').trim().toLowerCase() === 'satpin-basket');
-  return tagged || (photo.storage_path || '').startsWith('picture-bank/');
-}
-
 /**
- * Look one vocab word up in the Picture Bank and return the best exact-label
- * match: 'dark-phonics-vocab' first, then a SATPIN basket photo, then
- * whatever exact match sorts first.
+ * Look one vocab word up in the Picture Bank and return the exact-label match
+ * tagged 'dark-phonics-vocab'. Nothing else qualifies: the old SATPIN-basket
+ * and first-exact-match fallbacks leaked real photographs onto this page for
+ * the 23 words that exist in both sets, so both are gone.
  */
 async function fetchVocabByLabel(word: string): Promise<BankPhoto | null> {
   try {
@@ -171,7 +173,7 @@ async function fetchVocabByLabel(word: string): Promise<BankPhoto | null> {
     const photos: BankPhoto[] = data.photos || [];
     const target = word.trim().toLowerCase();
     const exact = photos.filter(p => (p.label || '').trim().toLowerCase() === target);
-    return exact.find(isDarkPhonicsVocabPhoto) || exact.find(isSatpinBasketPhoto) || exact[0] || null;
+    return exact.find(isDarkPhonicsVocabPhoto) || null;
   } catch {
     return null;
   }
@@ -277,7 +279,7 @@ const RAW: RawLesson[] = [
     { slug: 'the-tall', title: 'The Tall ___!', description: 'Companion pattern book, same cast as A Tiger in the Taxi — the child shouts the picture word.', cover: '/dark-phonics-books/covers/the-tall.png', materials: false },
   ] },
   { n: 8, sound: 'p', title: 'Pop, Pop, P!', catchphrase: '“pop, pop, puppy poop!”', decodable: ['sap', 'pat', 'tap', 'spat'], words: ['pup'], books: [
-    { slug: 'the-spat', title: 'The ___ Spat!', description: 'Letter P initial-sound book — cast: basin, penguin, pig, pelican, potato.', cover: '/dark-phonics-books/covers/the-spat.png', materials: false },
+    { slug: 'the-spat', title: 'The ___ Spat!', description: 'Letter P initial-sound book — cast: basin, penguin, pig, pelican, potato.', cover: '/dark-phonics-books/covers/the-spat.png' },
   ] },
   { n: 9, sound: 'i', title: 'I, I, Itsy I', catchphrase: '“icky, sticky pig!”', decodable: ['sit', 'it', 'is', 'sip', 'pit', 'spit'], words: ['pig'], books: [{ slug: 'in-the-igloo', title: 'In the Igloo' }] },
   { n: 10, sound: 'n', title: 'N for the Nose', catchphrase: '“no-no, nanny goat!”', decodable: ['an', 'ant', 'in', 'nap', 'naps', 'pan', 'tin', 'nip', 'snap'], heartWords: ['I'], words: ['goat'], books: [{ slug: 'not-in-my-nest', title: 'Not in My Nest!' }] },

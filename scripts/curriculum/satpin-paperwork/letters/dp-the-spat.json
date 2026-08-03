@@ -1,0 +1,75 @@
+{
+  "letter": "p",
+  "week": 4,
+  "slug": "dp-the-spat",
+  "bookSlug": "the-spat",
+  "bookTitle": "The ___ Spat!",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-the-spat.py",
+  "artDir": "phonics-images/dark-phonics-books/the-spat",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "penguin",
+      "sentence": "The penguin spat!",
+      "art": "p2-penguin.png"
+    },
+    {
+      "order": 2,
+      "word": "pig",
+      "sentence": "The pig spat!",
+      "art": "p3-pig.png"
+    },
+    {
+      "order": 3,
+      "word": "pelican",
+      "sentence": "The pelican spat!",
+      "art": "p4-pelican.png"
+    },
+    {
+      "order": 4,
+      "word": "potato",
+      "sentence": "The potato spat!",
+      "art": "p6-potato.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    3,
+    1,
+    4,
+    2
+  ],
+  "matchDisplayOrder": [
+    2,
+    4,
+    1,
+    3
+  ],
+  "yesno": [
+    {
+      "question": "did the penguin spit?",
+      "answer": true,
+      "imageArt": "p2-penguin.png"
+    },
+    {
+      "question": "did the quill spit?",
+      "answer": false,
+      "imageArt": "../queen-on-the-quilt/p1-quill.png"
+    },
+    {
+      "question": "did the pig spit?",
+      "answer": true,
+      "imageArt": "p3-pig.png"
+    },
+    {
+      "question": "did the rabbit spit?",
+      "answer": false,
+      "imageArt": "../rabbit-in-the-rocket/p1-rabbit.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Adapted 2026-08-03 from dp-pig-ate-a-pineapple.json (now retired) as the letter P dark-phonics book — do not hand-edit blindly, keep in sync with manifest.json entry.",
+    "recap": "p1-basin (scene-setter, empty basin, no character) and p5-recap (all three main spitters together) are excluded from pages[] — pages[] expects four single-topic initial-sound pages, one per character: penguin, pig, pelican, potato (p6-potato is the book's twist/finale swap character).",
+    "yesno": "2 true from the book's own pages (penguin, pig). 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, same as the retired pig book's decoys — verified those source files still exist."
+  }
+}
