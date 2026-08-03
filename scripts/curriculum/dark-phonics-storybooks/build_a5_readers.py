@@ -127,7 +127,6 @@ COVERS = {
     'snake-in-my-sock':        (['Snake in', 'My Sock'], 'Snake', 44, 'snake · star · sloth · potato'),
     'ant-on-my-apple':         (['Ant on', 'My Apple'], 'Ant', 44, 'ant · alligator · anteater · ambulance'),
     'tiger-in-the-taxi':       (['A Tiger in', 'the Taxi'], 'Tiger', 42, 'turtle · tomato · toothbrush · tiger'),
-    'pig-ate-a-pineapple':     (['The Pig Ate', 'a Pineapple'], 'Pineapple', 40, 'pineapple · pen · pencil · pan'),
     'in-the-igloo':            (['In the Igloo'], 'Igloo', 46, 'iguana · insect · inchworm · infant'),
     'not-in-my-nest':          (['Not in', 'My Nest!'], 'Nest', 44, 'nut · net · nail · napkin'),
     'monkey-in-my-mug':        (['A Monkey', 'in My Mug'], 'Monkey', 42, 'mouse · mushroom · magnet · monkey'),
@@ -187,13 +186,6 @@ SPLITS = {
         ('', 'A toothbrush in the taxi!', 100),
         ('', 'A tiger in the taxi!', 100),
         ('', ['A turtle, a tomato,', 'a toothbrush, and a tiger', 'in the taxi?!'], 100),
-    ],
-    'pig-ate-a-pineapple': [
-        ('The pig ate a…', 'pineapple!', 92),
-        ('The pig ate a…', 'pen!', 92),
-        ('The pig ate a…', 'pencil!', 92),
-        ('The pig ate a…', 'pan!', 92),
-        ('And now the pig is…', 'sick!', 92),
     ],
     'in-the-igloo': [
         ('', 'An iguana in the igloo!', 100),
@@ -401,6 +393,8 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     built = []
     for entry in sorted(entries, key=lambda e: e['num']):
+        if entry.get('retired'):
+            continue
         book = make_book(entry)
         dpbuild.build(book, OUT)
         built.append(book['slug'])

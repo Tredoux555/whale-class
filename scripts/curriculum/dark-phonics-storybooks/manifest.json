@@ -114,6 +114,8 @@
       "letter": "p",
       "slug": "pig-ate-a-pineapple",
       "title": "The Pig Ate a Pineapple",
+      "retired": true,
+      "retired_note": "Killed 2026-08-03 per Tredoux — dark-phonics letter P is now The ___ Spat (letter book two). Do not resurrect.",
       "pages": [
         {
           "key": "p1-pineapple",

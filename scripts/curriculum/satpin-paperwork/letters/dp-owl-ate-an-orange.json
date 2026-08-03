@@ -52,9 +52,9 @@
       "imageArt": "p1-owl.png"
     },
     {
-      "question": "did a pineapple eat an orange?",
+      "question": "did a fox eat an orange?",
       "answer": false,
-      "imageArt": "../pig-ate-a-pineapple/p1-pineapple.png"
+      "imageArt": "../fox-in-a-box/p1-fox.png"
     },
     {
       "question": "did an otter eat an orange?",

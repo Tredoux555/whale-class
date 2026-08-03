@@ -62,9 +62,9 @@
       "imageArt": "p2-chick.png"
     },
     {
-      "question": "is a pineapple on a rock?",
+      "question": "is a sock on a rock?",
       "answer": false,
-      "imageArt": "../pig-ate-a-pineapple/p1-pineapple.png"
+      "imageArt": "../snake-in-my-sock/p1-sock.png"
     }
   ],
   "_notes": {
