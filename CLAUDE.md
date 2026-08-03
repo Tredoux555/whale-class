@@ -21,6 +21,15 @@
    Sonnet subagents do ALL work; Fable only directs, decides, writes critical copy, and reviews.
    Burning Fable context on mechanical work is a violation, not a style choice.
 
+## 🔒 HARD RULE — PHONICS IMAGE STYLE SEPARATION (ALL SESSIONS, ALL MODELS, PERMANENT)
+
+- **Montree Phonics** (`app/montree/library/satpin/page.tsx`) uses **REAL PHOTOGRAPHS ONLY**. DB tags: `satpin-basket`, `cvc-photo`.
+- **Dark Phonics** (`app/montree/library/dark-phonics/page.tsx`) uses **Dr-Seuss-STYLE ILLUSTRATIONS ONLY**. DB tags: `dark-phonics-vocab`, `dark-phonics-book`, `dark-phonics-book-<slug>`.
+- Style is determined by `montree_photo_bank.tags` ONLY — never by storage_path prefix, filename, or "first search result".
+- NO cross-style fallbacks in code, ever. A word with no correct-style image renders a placeholder — never the other page's style. (Hard cutover decided 2026-08-03; cross-style fallbacks were removed from both pages.)
+- Every new image upload/ingest script MUST tag rows into exactly one style family. Never tag a row into both families.
+- Any agent, model, or session touching phonics images or these pages must preserve this separation. When in doubt: real photo → Montree Phonics; illustration → Dark Phonics; verify visually before tagging.
+
 ## 📌 ONGOING PROJECT — DARK PHONICS CURATED BOOK REBUILD (Aug 1, 2026, handoff from Fable → Sonnet; Tredoux out of Fable credit)
 
 **Mission: re-do all 27 Dark Phonics pattern books to Tredoux's CURATED standard, book by book, until the series catches satpin (satpin just finished 'n'). Tredoux runs all MJ prompts HIMSELF (v8.2) — Claude writes prompts in chat, Tredoux generates, drops winners, Claude rebuilds.**
@@ -3199,3 +3208,31 @@ locked water rule).
 **Discipline unchanged:** test-run-first (roll ONE character page 3× before writing the full pack),
 verbatim-repeated anchor-prop + character descriptor clauses in every prompt, locked house suffix +
 --ar 1:1, no --cref/--oref (v8.2), Claude writes prompts in chat, Tredoux runs them 3× and picks.
+
+
+## ⚖️ TWO TRACKS RULING (PERMANENT — 2026-08-03, per Tredoux)
+
+Montree/satpin and Dark Phonics are two formally separate tracks. Do not blend
+them, do not "helpfully" sync vocab/art/copy between them without an explicit
+instruction naming both tracks.
+
+- **Montree / satpin track** (`app/montree/library/satpin/page.tsx`,
+  `scripts/curriculum/satpin-paperwork/letters/p.json`, real photographs,
+  Montessori three-period-lesson model) — keeps the pig/pen/pineapple/pencil/pan
+  vocab and "The Pig Ate a Pineapple" book. DO NOT TOUCH, DO NOT REMOVE, DO NOT
+  RESTYLE. This is a live, separately-owned track.
+- **Dark Phonics track** (`app/montree/library/dark-phonics/page.tsx`,
+  `scripts/curriculum/satpin-paperwork/letters/dp-*.json`,
+  `scripts/curriculum/dark-phonics-storybooks/`, cartoon pen-and-ink house
+  style) — carte blanche. On this side, "The Pig Ate a Pineapple" is KILLED —
+  book, artwork, materials, and vocab words gone entirely (see manifest.json's
+  `"retired": true` entry, num 4 — do not resurrect, do not renumber the other
+  entries). Its replacement for letter P is **"The ___ Spat"**
+  (slug `the-spat`, shipped 2026-08-03): cast = basin, penguin, pig, pelican,
+  potato. Its 7 pictures (cover + 6 pages) are the P lesson's canonical
+  material-source images and also live in the general Picture Library
+  (`montree_photo_bank`, tags `dark-phonics`/`letter-p`/`the-spat`).
+
+If a future task touches the letter P dark-phonics lesson and the pig book
+reappears anywhere in that diff, that is a bug — stop and re-read this block
+before proceeding.
