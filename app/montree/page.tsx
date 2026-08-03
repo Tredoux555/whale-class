@@ -866,8 +866,9 @@ export default function MontreeLanding() {
             >
               {t('landing.nav.explainer')}
             </Link>
-            {/* Pricing — pricing is the #2 question after "what is it", so it
-                stays visible on mobile (NOT .m-nav-link-secondary). */}
+            {/* Pricing nav link hidden 2026-08-03 per Tredoux's request
+                (follow-up to the hero fine-print hide in c8e3bc70). Commented
+                out, not deleted, so it's easy to restore.
             <Link
               className="m-nav-link m-nav-link-pricing"
               href="/pricing"
@@ -883,6 +884,7 @@ export default function MontreeLanding() {
             >
               {t('landing.nav.pricing')}
             </Link>
+            */}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {/* Ambassador nav link removed (Jul 2026) — no more public agent
