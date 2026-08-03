@@ -399,6 +399,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Batch insert progress records if any
+    //
+    // WP2: this direct montree_child_progress upsert has NOT been converted yet.
+    // The single sanctioned writer is lib/montree/progress/write-progress.ts —
+    // route it through writeProgressBatch() so bulk-created children get the rank
+    // gate, the classroom/school/work_key stamps and the montree_progress_events
+    // journal. Deferred from WP1 deliberately: bulk creation writes for many
+    // children at once and needs a chunking strategy the primitive doesn't have yet.
     if (progressRecordsToInsert.length > 0) {
       const { error: progressError } = await supabase
         .from('montree_child_progress')

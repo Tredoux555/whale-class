@@ -7,6 +7,7 @@ import { createClient } from '@supabase/supabase-js';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { advanceShelfAfterMastery } from '@/lib/montree/progress/advance-shelf-after-mastery';
+import { writeProgress } from '@/lib/montree/progress/write-progress';
 
 // Escape special SQL wildcard characters for safe ILIKE usage
 function escapeIlike(str: string): string {
@@ -89,51 +90,6 @@ export async function POST(request: NextRequest) {
     const workNameToSave = work_name || work_key;
     const now = new Date().toISOString();
 
-    // Never-downgrade guard: skip if existing status is higher in progression
-    // Used by auto-presented (group photos) to avoid overwriting practicing/mastered
-    if (no_downgrade && statusStr !== 'not_started') {
-      const STATUS_RANK: Record<string, number> = { 'not_started': 0, 'presented': 1, 'practicing': 2, 'mastered': 3 };
-      const { data: existingProgress } = await supabase
-        .from('montree_child_progress')
-        .select('status')
-        .eq('child_id', child_id)
-        .eq('work_name', workNameToSave)
-        .maybeSingle();
-
-      if (existingProgress && (STATUS_RANK[existingProgress.status] || 0) >= (STATUS_RANK[statusStr] || 0)) {
-        return NextResponse.json({ success: true, skipped: true, existing_status: existingProgress.status });
-      }
-    }
-
-    // Build the record for upsert
-    const record: Record<string, unknown> = {
-      child_id,
-      work_name: workNameToSave,
-      area: area || null,
-      status: statusStr,
-      updated_at: now,
-    };
-
-    // Only set mastered_at on FIRST transition to mastered (preserve original date)
-    let isFirstMastery = false;
-    if (statusStr === 'mastered') {
-      // Check if already mastered — don't overwrite existing mastered_at
-      const { data: existing } = await supabase
-        .from('montree_child_progress')
-        .select('mastered_at')
-        .eq('child_id', child_id)
-        .eq('work_name', workNameToSave)
-        .maybeSingle();
-
-      if (!existing?.mastered_at) {
-        record.mastered_at = now;
-        isFirstMastery = true;
-      }
-      // If already has mastered_at, keep the original date
-    }
-    if (notes !== undefined) {
-      record.notes = notes;
-    }
     // NOTE: is_focus column does NOT exist on montree_child_progress in
     // production. Writing it caused 500s on every progress update. The
     // dashboard's fetchAssignments sort gracefully falls back to status
@@ -143,63 +99,52 @@ export async function POST(request: NextRequest) {
     // consumers. If we ever want true is_focus persistence on the progress
     // table, ship a migration first then re-enable.
 
-    // Use UPSERT with ON CONFLICT
-    // This requires the unique_child_work constraint from migration 111
-    const { data, error } = await supabase
-      .from('montree_child_progress')
-      .upsert(record, {
-        onConflict: 'child_id,work_name',
-        ignoreDuplicates: false, // Update on conflict
-      })
-      .select('id, status')
-      .single();
+    // ── THE WRITE — lib/montree/progress/write-progress.ts owns it ───────────
+    // The upsert, the never-downgrade guard, the first-mastery date and the
+    // 42P10 fallback that used to live inline here are all the primitive's job
+    // now (stamps + the montree_progress_events journal come along for free).
+    //
+    // ⚠️ RANK-GATE POLARITY — preserved EXACTLY as it has always behaved here:
+    // the gate is OPTIONAL and CALLER-SUPPLIED. It engages only when the caller
+    // passes no_downgrade AND the requested status isn't 'not_started' (the old
+    // guard's own `statusStr !== 'not_started'` condition — a not_started write
+    // from this route has always been unconditional). Everything else — the
+    // teacher's P/P/M picker, every UI tap — writes whatever it says, including
+    // downwards, because a teacher correcting the record is the one actor
+    // allowed to move a child back down the ladder.
+    // FUTURE TIGHTENING DECISION (WP2): flip this to gated-by-default and give
+    // the explicit picker its own correction flag, so unflagged automated
+    // callers can't silently downgrade. Not done here: this route is called
+    // from a dozen UI paths and changing the default is a product decision,
+    // not a refactor.
+    const rankGated = !!no_downgrade && statusStr !== 'not_started';
 
-    if (error) {
-      // If unique constraint doesn't exist yet, fall back to manual check
-      if (error.code === '42P10' || error.message?.includes('constraint')) {
+    const result = await writeProgress(supabase, {
+      childId: child_id,
+      workName: workNameToSave,
+      // work_key is NOT forwarded: this route's `work_key` field is historically
+      // whatever the caller had to hand — a curriculum row UUID from photo-audit,
+      // a bare work name when work_name is absent. The primitive resolves the real
+      // catalog slug from the name instead.
+      area: area || null,
+      status: statusStr,
+      source: 'teacher_update',
+      classroomId,
+      notes: notes !== undefined ? notes : undefined,
+      allowDowngrade: !rankGated,
+    }, { actor: auth.userId || null });
 
-        // Check if exists
-        const { data: existing } = await supabase
-          .from('montree_child_progress')
-          .select('id')
-          .eq('child_id', child_id)
-          .eq('work_name', workNameToSave)
-          .maybeSingle();
-
-        if (existing) {
-          // Update
-          const { error: updateError } = await supabase
-            .from('montree_child_progress')
-            .update({
-              status: statusStr,
-              area: area || null,
-              updated_at: now,
-              mastered_at: statusStr === 'mastered' ? now : null,
-              notes: notes !== undefined ? notes : undefined,
-            })
-            .eq('id', existing.id);
-
-          if (updateError) {
-            console.error('[progress/update] Fallback update error:', updateError);
-            return NextResponse.json({ error: 'Failed to update' }, { status: 500 });
-          }
-        } else {
-          // Insert
-          record.presented_at = now;
-          const { error: insertError } = await supabase
-            .from('montree_child_progress')
-            .insert(record);
-
-          if (insertError) {
-            console.error('[progress/update] Fallback insert error:', insertError);
-            return NextResponse.json({ error: 'Failed to create' }, { status: 500 });
-          }
-        }
-      } else {
-        console.error('[progress/update] Upsert error:', error);
-        return NextResponse.json({ error: 'Failed to save progress' }, { status: 500 });
-      }
+    if (result.outcome === 'skipped_rank' || result.outcome === 'skipped_noop') {
+      return NextResponse.json({ success: true, skipped: true, existing_status: result.previousStatus });
     }
+
+    if (result.outcome === 'failed') {
+      console.error('[progress/update] Write failed:', result.error);
+      return NextResponse.json({ error: 'Failed to save progress' }, { status: 500 });
+    }
+
+    const data = result.row ?? null;
+    const isFirstMastery = result.firstMastery;
 
     // (Focus demote block removed — was writing is_focus=false to a column
     // that doesn't exist on montree_child_progress, which would have errored.

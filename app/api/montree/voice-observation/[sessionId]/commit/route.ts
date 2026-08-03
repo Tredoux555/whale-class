@@ -5,17 +5,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { deleteSessionAudioAndTranscripts } from '@/lib/montree/voice';
+import { writeProgress } from '@/lib/montree/progress/write-progress';
 
-// The progress ladder, ranked. Higher never becomes lower.
-// Mirrors paper-scan/[scanId]/commit/route.ts — voice used to upsert the
-// proposed status unconditionally, so a "presented" heard on the recording
-// could downgrade a work the child had already mastered.
-const STATUS_RANK: Record<string, number> = {
-  not_started: 0,
-  presented: 1,
-  practicing: 2,
-  mastered: 3,
-};
+// The progress ladder (not_started < presented < practicing < mastered) is enforced
+// by lib/montree/progress/write-progress.ts — the single sanctioned writer. Voice used
+// to upsert the proposed status unconditionally, so a "presented" heard on the
+// recording could downgrade a work the child had already mastered; the local
+// STATUS_RANK table that fixed it lives in the primitive now.
 
 export async function POST(
   request: NextRequest,
@@ -86,47 +82,33 @@ export async function POST(
       try {
         // Upsert progress record
         if (workName && finalStatus) {
-          // Never-downgrade: read the current rung before writing. A recording
-          // that says "presented" must not undo a mastered work.
+          // Never-downgrade is the primitive's default: a recording that says
+          // "presented" must not undo a mastered work.
           // EXCEPTION: an explicit teacher_final_status is a teacher decision
-          // (the review screen's status picker) and always wins.
-          const { data: existingProgress } = await supabase
-            .from('montree_child_progress')
-            .select('status')
-            .eq('child_id', ext.child_id)
-            .eq('work_name', workName)
-            .maybeSingle();
+          // (the review screen's status picker) and always wins — that, and only
+          // that, sets allowDowngrade.
+          const result = await writeProgress(supabase, {
+            childId: ext.child_id,
+            workName,
+            workKey: ext.work_key || null,
+            area: area || 'practical_life',
+            status: finalStatus,
+            source: 'voice_observation',
+            classroomId: session.classroom_id,
+            schoolId: session.school_id,
+            allowDowngrade: !!ext.teacher_final_status,
+          }, { actor: auth.userId || null });
 
-          const isTeacherDecision = !!ext.teacher_final_status;
-          const currentRank = STATUS_RANK[existingProgress?.status || 'not_started'] ?? 0;
-          const nextRank = STATUS_RANK[finalStatus] ?? 0;
-
-          if (isTeacherDecision || !existingProgress || nextRank > currentRank) {
-            const { error: progressError } = await supabase
-              .from('montree_child_progress')
-              .upsert({
-                child_id: ext.child_id,
-                classroom_id: session.classroom_id,
-                work_name: workName,
-                work_key: ext.work_key || null,
-                area: area || 'practical_life',
-                status: finalStatus,
-                updated_at: new Date().toISOString(),
-              }, {
-                onConflict: 'child_id,work_name',
-              });
-
-            if (progressError) {
-              // audit-fix (Aug 2026): the session is marked 'committed' below and
-              // the audio + transcripts are deleted regardless, so a swallowed
-              // upsert failure is unrecoverable. Count it and report it.
-              console.error('[VoiceObs] Progress upsert error:', progressError);
-              progressFailed++;
-              errors.push(`Progress update failed for extraction ${ext.id}`);
-              continue;
-            }
+          if (result.outcome === 'failed') {
+            // audit-fix (Aug 2026): the session is marked 'committed' below and
+            // the audio + transcripts are deleted regardless, so a swallowed
+            // write failure is unrecoverable. Count it and report it.
+            console.error('[VoiceObs] Progress write error:', result.error);
+            progressFailed++;
+            errors.push(`Progress update failed for extraction ${ext.id}`);
+            continue;
           }
-          // else: already at or above this rung — the record stands.
+          // skipped_* → already at or above this rung; the record stands.
         }
 
         // Insert behavioral observation if notes present

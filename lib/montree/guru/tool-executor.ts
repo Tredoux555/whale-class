@@ -7,6 +7,7 @@ import { AREA_LABELS_EN as AREA_LABELS } from '@/lib/montree/i18n/area-labels';
 import { updateChildSettings } from './settings-helper';
 import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
 import { seedRecommendedWork } from '@/lib/montree/progress/seed-recommended-work';
+import { writeProgress } from '@/lib/montree/progress/write-progress';
 
 // Build a set of valid work names at module load for fast lookup
 const VALID_WORK_NAMES: Set<string> = new Set();
@@ -186,48 +187,33 @@ export async function executeTool(
         return { success: false, message: `Invalid status: ${status}` };
       }
 
-      const record: Record<string, unknown> = {
-        child_id: effectiveProgressId,
-        work_name,
+      // ⚠️ BEHAVIOUR CHANGE (WP1, Aug 2026): this tool used to write whatever the
+      // model said, unconditionally — an AI inference could silently move a child
+      // from 'mastered' back to 'presented'. It is now rank-gated like every other
+      // writer. The ONLY way down the ladder is the teacher explicitly asking for a
+      // correction, which the model signals with correcting_downward.
+      // first-mastery / first-presentation date protection moved into the primitive.
+      const correctingDownward = input.correcting_downward === true;
+
+      const result = await writeProgress(supabase, {
+        childId: effectiveProgressId,
+        workName: work_name,
         area,
         status,
+        source: 'guru',
         notes,
-        updated_at: new Date().toISOString(),
-      };
+        allowDowngrade: correctingDownward,
+      }, { actor: 'guru' });
 
-      // First mastery protection: only set mastered_at if not already set
-      if (status === 'mastered') {
-        const { data: existing } = await supabase
-          .from('montree_child_progress')
-          .select('mastered_at')
-          .eq('child_id', effectiveProgressId)
-          .eq('work_name', work_name)
-          .maybeSingle();
-
-        if (!existing?.mastered_at) {
-          record.mastered_at = new Date().toISOString();
-        }
+      if (result.outcome === 'failed') return { success: false, message: 'Failed to update progress' };
+      if (result.outcome === 'skipped_rank' || result.outcome === 'skipped_noop') {
+        // Told plainly so the model reports the truth rather than claiming a change.
+        return {
+          success: true,
+          message: `${work_name} stays at ${result.previousStatus} — ${status} is not further along, so the record stands`,
+          detail: `Rank-gated: existing status "${result.previousStatus}" is at or above requested "${status}". Set correcting_downward only if the teacher explicitly asked to move it back down.`,
+        };
       }
-
-      // First presentation protection: only set presented_at if not already set
-      if (status === 'presented') {
-        const { data: existing } = await supabase
-          .from('montree_child_progress')
-          .select('presented_at')
-          .eq('child_id', effectiveProgressId)
-          .eq('work_name', work_name)
-          .maybeSingle();
-
-        if (!existing?.presented_at) {
-          record.presented_at = new Date().toISOString();
-        }
-      }
-
-      const { error } = await supabase
-        .from('montree_child_progress')
-        .upsert(record, { onConflict: 'child_id,work_name' });
-
-      if (error) return { success: false, message: 'Failed to update progress' };
       return { success: true, message: `${work_name} → ${status}` };
     }
 

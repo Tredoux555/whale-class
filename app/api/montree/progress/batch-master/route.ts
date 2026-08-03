@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
+import { writeProgressBatch } from '@/lib/montree/progress/write-progress';
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
     // Verify child exists
     const { data: child, error: childError } = await supabase
       .from('montree_children')
-      .select('id')
+      .select('id, classroom_id')
       .eq('id', child_id)
       .maybeSingle();
 
@@ -48,64 +49,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Child not found' }, { status: 404 });
     }
 
-    const now = new Date().toISOString();
-
-    // Query 1: Fetch existing progress for these work names (to preserve mastered_at)
-    const workNames = works.map((w: { work_name: string }) => w.work_name);
-    const { data: existing } = await supabase
-      .from('montree_child_progress')
-      .select('work_name, status, mastered_at')
-      .eq('child_id', child_id)
-      .in('work_name', workNames);
-
-    const existingMap = new Map<string, { status: string; mastered_at: string | null }>();
-    for (const e of existing || []) {
-      existingMap.set(e.work_name?.toLowerCase(), {
-        status: e.status,
-        mastered_at: e.mastered_at,
-      });
-    }
-
-    // Build upsert records — only for works not already mastered
-    const records = [];
-    let skipped = 0;
-
-    for (const w of works) {
-      const key = w.work_name?.toLowerCase();
-      const ex = existingMap.get(key);
-
-      // Skip if already mastered (don't overwrite mastered_at)
-      if (ex?.status === 'mastered') {
-        skipped++;
-        continue;
-      }
-
-      records.push({
-        child_id,
-        work_name: w.work_name,
+    // ── THE WRITE — one call, one pre-read, one upsert ──────────────────────
+    // The "already mastered → skip" rule and the mastered_at preservation this
+    // route used to hand-roll fall out of the primitive's rank gate for free:
+    // 'mastered' can never out-rank 'mastered', and the first mastery date is
+    // never rewritten. Auto-mastery is an inference from where the teacher set
+    // the focus work, NOT a teacher correction — so it must never downgrade.
+    const results = await writeProgressBatch(
+      supabase,
+      works.map((w: { work_name: string; area: string }) => ({
+        childId: child_id,
+        workName: w.work_name,
         area: w.area,
         status: 'mastered',
-        mastered_at: ex?.mastered_at || now,
-        updated_at: now,
-      });
+        source: 'auto_mastery',
+        classroomId: child.classroom_id || null,
+        allowDowngrade: false,
+      })),
+      { actor: auth.userId || null },
+    );
+
+    if (results.some(r => r.outcome === 'failed')) {
+      console.error('[batch-master] Write failed:', results.find(r => r.outcome === 'failed')?.error);
+      return NextResponse.json({ error: 'Failed to batch update' }, { status: 500 });
     }
 
-    // Query 2: Batch upsert all at once
-    let upserted = 0;
-    if (records.length > 0) {
-      const { error: upsertError } = await supabase
-        .from('montree_child_progress')
-        .upsert(records, {
-          onConflict: 'child_id,work_name',
-          ignoreDuplicates: false,
-        });
-
-      if (upsertError) {
-        console.error('[batch-master] Upsert error:', upsertError);
-        return NextResponse.json({ error: 'Failed to batch update' }, { status: 500 });
-      }
-      upserted = records.length;
-    }
+    const upserted = results.filter(r => r.outcome === 'written').length;
+    const skipped = results.filter(r => r.outcome === 'skipped_rank' || r.outcome === 'skipped_noop').length;
 
     return NextResponse.json({
       success: true,

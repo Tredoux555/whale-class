@@ -12,15 +12,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { advanceProgressOnConfirm } from '@/lib/montree/progress/advance-on-confirm';
+import { writeProgress } from '@/lib/montree/progress/write-progress';
 import { PAPER_SCAN_BUCKET, type PaperScanExtractionRow } from '@/lib/montree/paper-scan/types';
 
-// The progress ladder, ranked. Higher never becomes lower.
-const STATUS_RANK: Record<string, number> = {
-  not_started: 0,
-  presented: 1,
-  practicing: 2,
-  mastered: 3,
-};
+// The progress ladder (not_started < presented < practicing < mastered) is enforced
+// by lib/montree/progress/write-progress.ts — the single sanctioned writer. The local
+// STATUS_RANK table this route used to carry lives there now.
 
 export async function POST(
   request: NextRequest,
@@ -88,48 +85,34 @@ export async function POST(
 
         if (workName) {
           if (finalStatus) {
-            // Never-downgrade: read the current rung before writing. A sheet
-            // that says "presented" must not undo a mastered work.
-            // EXCEPTION: an explicit teacher_final_status is a teacher
-            // decision (the review screen's status picker) and always wins —
-            // same principle as the P/P/M picker elsewhere in the app.
-            const { data: existing } = await supabase
-              .from('montree_child_progress')
-              .select('status')
-              .eq('child_id', ext.child_id)
-              .eq('work_name', workName)
-              .maybeSingle();
+            // Never-downgrade is the primitive's default: a sheet that says
+            // "presented" must not undo a mastered work.
+            // EXCEPTION: an explicit teacher_final_status is a teacher decision
+            // (the review screen's status picker) and always wins — same principle
+            // as the P/P/M picker elsewhere in the app. That, and only that, sets
+            // allowDowngrade.
+            const result = await writeProgress(supabase, {
+              childId: ext.child_id,
+              workName,
+              workKey: ext.work_key || null,
+              area: ext.area || 'practical_life',
+              status: finalStatus,
+              source: 'paper_scan',
+              classroomId: scan.classroom_id,
+              schoolId: scan.school_id,
+              allowDowngrade: !!ext.teacher_final_status,
+            }, { actor: auth.userId || null });
 
-            const isTeacherDecision = !!ext.teacher_final_status;
-            const currentRank = STATUS_RANK[existing?.status || 'not_started'] ?? 0;
-            const nextRank = STATUS_RANK[finalStatus] ?? 0;
-
-            if (isTeacherDecision || !existing || nextRank > currentRank) {
-              const { error: progressError } = await supabase
-                .from('montree_child_progress')
-                .upsert({
-                  child_id: ext.child_id,
-                  classroom_id: scan.classroom_id,
-                  work_name: workName,
-                  work_key: ext.work_key || null,
-                  area: ext.area || 'practical_life',
-                  status: finalStatus,
-                  updated_at: now,
-                }, {
-                  onConflict: 'child_id,work_name',
-                });
-
-              if (progressError) {
-                // audit-fix (Aug 2026): the scan is marked 'committed' below and the
-                // sheet photo is deleted regardless, so a swallowed upsert failure is
-                // unrecoverable data loss. Count it and surface it in the response.
-                console.error('[PaperScan] Progress upsert error:', progressError.message);
-                progressFailed++;
-                errors.push(`Progress update failed for extraction ${ext.id}`);
-              } else {
-                progressUpdated++;
-                didSomething = true;
-              }
+            if (result.outcome === 'failed') {
+              // audit-fix (Aug 2026): the scan is marked 'committed' below and the
+              // sheet photo is deleted regardless, so a swallowed upsert failure is
+              // unrecoverable data loss. Count it and surface it in the response.
+              console.error('[PaperScan] Progress write error:', result.error);
+              progressFailed++;
+              errors.push(`Progress update failed for extraction ${ext.id}`);
+            } else if (result.outcome === 'written') {
+              progressUpdated++;
+              didSomething = true;
             } else {
               // Already at or above this rung — the record stands.
               didSomething = true;
@@ -143,6 +126,10 @@ export async function POST(
               childId: ext.child_id,
               workName,
               area: ext.area,
+              source: 'paper_scan',
+              classroomId: scan.classroom_id,
+              schoolId: scan.school_id,
+              actor: auth.userId || null,
             });
             progressUpdated++;
             didSomething = true;

@@ -134,6 +134,10 @@ export const GURU_TOOLS: Tool[] = [
           enum: ["not_started", "presented", "practicing", "mastered"]
         },
         notes: { type: "string", description: "Optional notes about this update" },
+        correcting_downward: {
+          type: "boolean",
+          description: "Set true ONLY when the teacher has explicitly asked to move a work BACK DOWN the ladder (e.g. 'I marked Pink Tower mastered by mistake, put it back to practicing'). Without it a lower or equal status is refused and the existing record stands. Never set this to make a status 'stick' — automated inference must not downgrade a child."
+        },
         target_child_id: {
           type: "string",
           description: "Optional: update a DIFFERENT child's progress (must be in same classroom). Omit for current child."
