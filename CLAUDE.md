@@ -3148,3 +3148,53 @@ Commander, never `device_bash`, on this repo). The device bridge still can't `rm
 Permanent Operating Rule 2) — move to `_to_delete/` instead; e.g. a scout's stray
 `_tmp_scout_raster` dir was moved to `_to_delete/_tmp_scout_raster_jul31` — Tredoux can empty
 `_to_delete/` whenever convenient.
+
+---
+
+## 🧠 ORCHESTRATION RULE (PERMANENT — added 2026-08-02)
+
+When Claude (any session, any interface) runs multi-step or multi-agent work in this repo:
+
+1. **The lead session is ORCHESTRATOR ONLY.** It plans, delegates, reviews, and integrates. It never does grunt work (bulk file reading, web research, code generation, data processing) in its own context — that is exclusively for subagents/worker models.
+2. **Model policy:** Sonnet = scout & worker (research, exploration, bulk reads, routine code). Opus = builder (architecture, complex builds, final synthesis).
+3. **Conserve context aggressively.** Workers write full outputs to files and return compact summaries; the orchestrator reads summaries, never raw dumps. Large files are read only by subagents.
+4. **Standard phase pattern:** Phase 1 Research → Phase 2 Theoretical Architecture → Phase 3 Build → Phase 4 Audit & Verification.
+
+---
+
+## 🎨 MJ ACTION-VERB PLAYBOOK + "THE ___ WORD" LETTER BOOKS (PERMANENT — added 2026-08-03, per Tredoux)
+
+**The series (Dark Phonics side — carte blanche, NOT bound by montree real-photo/Montessori rules):**
+one book per letter, one simple decodable word the sentence ends on; character names are picture
+words (shouted, not read). Formula = FIXED ANCHOR PROP + ROTATING CAST (the sock principle): one
+anchor prop described VERBATIM in every prompt, one character per page, recap page crowds the whole
+cast around the prop, and TEACHER POTATO always cameos on the final page ("The potato <word>?!").
+- Book 1 "The ___ Sat" — SHIPPED, massive hit. Cast: ant, apple, sun, star, snake, cat + potato.
+- Book 2 "The ___ Spat" (letter P) — text LOCKED: 'A basin. / The penguin spat! / The pig spat! /
+  The pelican spat! / The penguin, the pig, and the pelican spat?! / The potato spat?!' Cast =
+  all-P animals (penguin/pig/pelican) + potato in a shower cap; anchor prop = "a round white
+  pedestal basin with a single silver tap" (toothbrushing frame). 7-prompt pack delivered in chat
+  2026-08-03; Tredoux generating.
+
+**🚨 THE ACTION-VERB RULE (the spitting lesson — applies to ANY verb MJ fights: spit, throw, kick,
+sneeze, blow, eat-the-object):** MJ v8 cannot render a verb happening at a mouth — it distorts the
+mouth, goes drool/vomit, or ignores the action entirely. NEVER write the verb in the prompt. Build
+the action from four parts instead:
+1. POSE, not verb — the freeze-frame that implies the action ("cheeks puffed like balloons, lips
+   in a tiny O" reads as spitting without ever saying it).
+2. PROJECTILE AS OBJECT — the spit/throw/sneeze is a THING mid-air with a position ("one small
+   cloud of white toothpaste foam"), never an action.
+3. TRAJECTORY — "along a short dashed ink motion line" (cartoon language MJ understands natively).
+4. TARGET — give the projectile a destination (basin/bucket); it anchors the whole composition.
+Same family as the mud-pup lesson (describe the RESULT STATE, not the process) and the goat-guitar
+refusal (MJ won't render eating-a-guitar — result-state or prop-swap instead).
+
+**Projectile reliability ladder (pick the highest rung that fits the gag):** solid object (a single
+black watermelon seed = bulletproof, cannot misrender) > foam/blob (white foam on the white
+background needs "pale mint-blue watercolor bubbles" accents or it vanishes) > liquid arc (hardest —
+always "one thin curved ink line with small droplets, only light blue watercolor accents" per the
+locked water rule).
+
+**Discipline unchanged:** test-run-first (roll ONE character page 3× before writing the full pack),
+verbatim-repeated anchor-prop + character descriptor clauses in every prompt, locked house suffix +
+--ar 1:1, no --cref/--oref (v8.2), Claude writes prompts in chat, Tredoux runs them 3× and picks.
