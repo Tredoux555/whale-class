@@ -14,6 +14,18 @@ PIT3='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/
 # 'the-pat' (letter-book two-and-a-half, the-sat cast can pat) — art filed directly
 # under phonics-images/dark-phonics-books/ (not satpin-v2/books/ like SPAT2/PIT3).
 PAT4='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-pat'
+# TEXT RULES (locked from the-pat onward, apply to every future book):
+# 1. CASE: a spread's `text` is body copy continuing the sentence its `nar`
+#    starts (e.g. nar='The star...'  text='can pat!'  reads as one sentence:
+#    'The star... can pat!'). On a page with a `nar`, `text` starts
+#    lowercase -- it is never a fresh sentence. Only true sentence-starts
+#    get a capital: the `nar` line itself, and titles (title_lines /
+#    title_accent, which stay title case).
+# 2. RECAP/CHANT: the drop-style recap page (no `nar` on that page) repeats
+#    ONLY the bare target word, capitalized each time as its own exclamation
+#    -- e.g. text=['Pat! Pat!','Pat!'] for a target word 'pat', matching
+#    the-sat's ['Sat! Sat!','Sat!']. Never the full phrase (not 'can pat!'
+#    x3) -- just the target word.
 BOOKS=[
 dict(slug='snake-in-my-sock', title_lines=['Snake in','my SOCK!'], title_accent='SOCK!', title_size=40,
  band='WEEK 1  ·  THE SOUND  /s/', booknum='BOOK ONE OF SIX', cover='bk1/p7.png',
@@ -89,13 +101,13 @@ dict(slug='the-pat', title_lines=['The ___','Can Pat!'], title_accent='Pat!', ti
  new='Pat', review='sat  ·  spat  ·  at', heart='♥  heart words — a · the',
  oral_note='the nouns live in the pictures — named aloud, never printed',
  spreads=[
-  dict(nar='The ant…', text='Can pat!', size=92, art=PAT4+'/p1-ant.png'),
-  dict(nar='The apple…', text='Can pat!', size=92, art=PAT4+'/p2-apple.png'),
-  dict(nar='The sun…', text='Can pat!', size=92, art=PAT4+'/p3-sun.png'),
-  dict(nar='The star…', text='Can pat!', size=92, art=PAT4+'/p4-star.png'),
-  dict(nar='The snake…', text='Can pat!', size=92, art=PAT4+'/p5-snake.png'),
-  dict(nar='The cat…', text='Can pat!', size=92, art=PAT4+'/p6-cat.png'),
-  dict(text=['Can pat!','Can pat!','Can pat!'], style='drop', size=64, art=PAT4+'/p7-recap.png'),
+  dict(nar='The ant…', text='can pat!', size=92, art=PAT4+'/p1-ant.png'),
+  dict(nar='The apple…', text='can pat!', size=92, art=PAT4+'/p2-apple.png'),
+  dict(nar='The sun…', text='can pat!', size=92, art=PAT4+'/p3-sun.png'),
+  dict(nar='The star…', text='can pat!', size=92, art=PAT4+'/p4-star.png'),
+  dict(nar='The snake…', text='can pat!', size=92, art=PAT4+'/p5-snake.png'),
+  dict(nar='The cat…', text='can pat!', size=92, art=PAT4+'/p6-cat.png'),
+  dict(text=['Pat! Pat!','Pat!'], style='drop', size=64, art=PAT4+'/p7-recap.png'),
   dict(nar='And the…?!', art=PAT4+'/p8-potato.png'),
  ]),
 dict(slug='spat', title_lines=['SPAT!'], title_accent='SPAT!', title_size=64,
