@@ -11,6 +11,9 @@ SPAT2='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images
 # 'the-pit' (letter-book three, the-sat cast in the pit) — same Mac-direct
 # convention as SPAT2 above.
 PIT3='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/satpin-v2/books/the-pit'
+# 'the-pat' (letter-book two-and-a-half, the-sat cast can pat) — art filed directly
+# under phonics-images/dark-phonics-books/ (not satpin-v2/books/ like SPAT2/PIT3).
+PAT4='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-pat'
 BOOKS=[
 dict(slug='snake-in-my-sock', title_lines=['Snake in','my SOCK!'], title_accent='SOCK!', title_size=40,
  band='WEEK 1  ·  THE SOUND  /s/', booknum='BOOK ONE OF SIX', cover='bk1/p7.png',
@@ -80,6 +83,20 @@ dict(slug='the-pit', title_lines=['The ___ Sat','in the Pit!'], title_accent='Pi
   dict(nar='The cat…', text=['Sat in','the pit!'], size=44, art=PIT3+'/pit-p7.png'),
   dict(text=['Sat in the pit!','Sat in the pit!','Sat in the pit!'], style='drop', size=42, art=PIT3+'/pit-p8.png'),
   dict(nar='And the…?!', art=PIT3+'/pit-p9.png'),
+ ]),
+dict(slug='the-pat', title_lines=['The ___','Can Pat!'], title_accent='Pat!', title_size=46,
+ band='LETTER P  ·  s a t p (the-sat cast)', booknum='LETTER BOOK TWO · PAT', cover=PAT4+'/p7-recap.png',
+ new='Pat', review='sat  ·  spat  ·  at', heart='♥  heart words — a · the',
+ oral_note='the nouns live in the pictures — named aloud, never printed',
+ spreads=[
+  dict(nar='The ant…', text='Can pat!', size=92, art=PAT4+'/p1-ant.png'),
+  dict(nar='The apple…', text='Can pat!', size=92, art=PAT4+'/p2-apple.png'),
+  dict(nar='The sun…', text='Can pat!', size=92, art=PAT4+'/p3-sun.png'),
+  dict(nar='The star…', text='Can pat!', size=92, art=PAT4+'/p4-star.png'),
+  dict(nar='The snake…', text='Can pat!', size=92, art=PAT4+'/p5-snake.png'),
+  dict(nar='The cat…', text='Can pat!', size=92, art=PAT4+'/p6-cat.png'),
+  dict(text=['Can pat!','Can pat!','Can pat!'], style='drop', size=64, art=PAT4+'/p7-recap.png'),
+  dict(nar='And the…?!', art=PAT4+'/p8-potato.png'),
  ]),
 dict(slug='spat', title_lines=['SPAT!'], title_accent='SPAT!', title_size=64,
  band='WEEK 4  ·  FIRST FULLY DECODABLE BOOK  ·  s a t p', booknum='BOOK FOUR OF SIX',
