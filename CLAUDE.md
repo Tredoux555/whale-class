@@ -20,6 +20,23 @@
    grunt work — never reads big files, never scrapes, never drives the browser, never builds.
    Sonnet subagents do ALL work; Fable only directs, decides, writes critical copy, and reviews.
    Burning Fable context on mechanical work is a violation, not a style choice.
+6. **AUTONOMOUS COMMIT + PUSH.** Claude does not need to ask permission before running `git commit`
+   and `git push` in this repo. The required process, every single time, no exceptions:
+   (1) AUDIT — run `git status` and `git diff` first and identify exactly which files belong to
+   the current task's changes; (2) stage ONLY those specific files by name (never `git add -A` or
+   `git add .` — this repo routinely has unrelated in-progress/scratch changes sitting uncommitted
+   that must never be swept into an unrelated commit); (3) if the audit is clean — no unexpected
+   files, no secrets, no unrelated work-in-progress accidentally included — commit with a clear
+   descriptive message and push, via Desktop Commander from the Mac checkout (the Cowork device
+   bridge / `device_bash` has no network access, so `git push` always fails there — see rule #1).
+   If the audit surfaces anything unexpected (unrelated modified files, something that looks like
+   it shouldn't be committed, a dirty/ambiguous git state), STOP and ask the user rather than
+   committing through it. This rule authorizes skipping the "may I deploy" check-in specifically
+   for the mechanical git commit/push step — it does NOT relax anything else: content still gets
+   reviewed by the user via whatever means the task calls for (e.g. a contact sheet), and rule #4's
+   SQL handling is unchanged (SQL is always pasted in full into chat for the user to run himself,
+   never executed directly). Authorized by Tredoux in chat on 2026-08-04, after being explicitly
+   warned this removes the separate pre-deploy approval gate for a production app.
 
 ## 🔒 HARD RULE — PHONICS IMAGE STYLE SEPARATION (ALL SESSIONS, ALL MODELS, PERMANENT)
 

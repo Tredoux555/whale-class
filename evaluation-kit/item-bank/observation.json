@@ -1,0 +1,5265 @@
+{
+  "schemaVersion": "1.0",
+  "bankVersion": "1.2.0",
+  "generatedAt": "2026-08-03T00:00:00Z",
+  "assessmentLocales": [
+    "en",
+    "zh"
+  ],
+  "attribution": {
+    "elof": "US HHS, Office of Head Start — Early Learning Outcomes Framework (public domain)",
+    "eyfs": "UK DfE — EYFS / Development Matters, Open Government Licence v3.0",
+    "chinaMoe": "PRC Ministry of Education — 3–6岁儿童学习与发展指南 (2012). Cited as a curriculum reference, not as an evaluative standard (不是评价标准) and not as MoE endorsement.",
+    "domainValidity": "IDELA (Save the Children) and OECD IELS are cited as evidence that these domains are measured internationally. No protocol is reused and no alignment is claimed.",
+    "note": "Milestone wording in this bank is original. Framework codes are citations, not reproduced text."
+  },
+  "notes": {
+    "englishMediumScope": "Core literacy DIRECT assessment (LCL-C Phonological awareness and LCL-D Print & alphabet knowledge) assumes ENGLISH-MEDIUM instruction: the rhymes, letters and printed words are English, and the alphabet is the Roman alphabet in the house SATPIN order. Those two strands carry `englishMedium: true` and deliberately carry NO China-MoE crosswalk code, because 语言.阅读与书写准备 describes Chinese literacy readiness and this evidence does not speak to it. A school teaching in a language other than English should report LCL-A, LCL-B and LCL-E for the core language domain and use the separate EFL track (E3/E4/E5) for the child's English letters and sounds; LCL-C and LCL-D should be left unassessed rather than administered in translation. Unassessed milestones are always printed, never hidden.",
+    "evidenceLinking": "Every scored direct item carries a constructTag. A milestone's evidence is the set of items in its evidenceBand whose constructTag equals the milestone's own constructTag — never a positional slice of the authoring order. The validator fails the build on any mismatch.",
+    "sharedEvidence": "E6.A5.1 and E6.A5.2 are both evidenced by the single A5 spoken-production item, because the blueprint allows only one E6 item at that band. This is declared, not accidental.",
+    "decodability": "Any item whose construct is word_reading or cvc_read_* declares the printed word in `decodableWord`. Every letter in it must appear in TAUGHT_LETTERS for that band (Montree Phonics house order) or be a listed heart word. The validator enforces this.",
+    "internalFields": "distractors[].rationale is INTERNAL item-writer documentation. It is never rendered to a child, parent or teacher on any D2 screen or in any D3 pack, and is therefore exempt from the forbidden-term lint. A future teacher-facing item-review surface must re-lint it before displaying it."
+  },
+  "internalFields": [
+    "items[].distractors[].rationale"
+  ],
+  "module": {
+    "id": "M-OBS",
+    "name": {
+      "en": "Observation checklist",
+      "zh": "观察记录表"
+    },
+    "deliveredIn": [
+      "montree_teacher_ui",
+      "paper"
+    ],
+    "ratedOver": "the whole check-in window, never in a sitting"
+  },
+  "observationChecklists": [
+    {
+      "id": "OBS.ATL.A3",
+      "domainId": "ATL",
+      "strandIds": [
+        "ATL-A",
+        "ATL-B",
+        "ATL-C",
+        "ATL-D"
+      ],
+      "ageBand": "A3",
+      "milestoneIds": [
+        "ATL-A.A3.1",
+        "ATL-A.A3.2",
+        "ATL-B.A3.1",
+        "ATL-B.A3.2",
+        "ATL-C.A3.1",
+        "ATL-C.A3.2",
+        "ATL-D.A3.1",
+        "ATL-D.A3.2"
+      ],
+      "itemIds": [
+        "IT.OBS.ATL-A.A3.1",
+        "IT.OBS.ATL-A.A3.2",
+        "IT.OBS.ATL-B.A3.1",
+        "IT.OBS.ATL-B.A3.2",
+        "IT.OBS.ATL-C.A3.1",
+        "IT.OBS.ATL-C.A3.2",
+        "IT.OBS.ATL-D.A3.1",
+        "IT.OBS.ATL-D.A3.2"
+      ],
+      "guidance": {
+        "en": "Rate from what you have seen in the work cycle this term. Best fit, not a checklist. Leave a milestone unrated rather than guessing — unrated milestones are reported, never hidden.",
+        "zh": "请根据本学期工作周期中的观察进行评定。选择最贴近的一档，而不是逐项打勾。没把握就留空，不要猜测——未评定的项目会如实报告，不会被隐藏。"
+      }
+    },
+    {
+      "id": "OBS.SED.A3",
+      "domainId": "SED",
+      "strandIds": [
+        "SED-A",
+        "SED-B",
+        "SED-C",
+        "SED-D"
+      ],
+      "ageBand": "A3",
+      "milestoneIds": [
+        "SED-A.A3.1",
+        "SED-A.A3.2",
+        "SED-B.A3.1",
+        "SED-B.A3.2",
+        "SED-C.A3.1",
+        "SED-C.A3.2",
+        "SED-D.A3.1",
+        "SED-D.A3.2"
+      ],
+      "itemIds": [
+        "IT.OBS.SED-A.A3.1",
+        "IT.OBS.SED-A.A3.2",
+        "IT.OBS.SED-B.A3.1",
+        "IT.OBS.SED-B.A3.2",
+        "IT.OBS.SED-C.A3.1",
+        "IT.OBS.SED-C.A3.2",
+        "IT.OBS.SED-D.A3.1",
+        "IT.OBS.SED-D.A3.2"
+      ],
+      "guidance": {
+        "en": "Rate from what you have seen in the work cycle this term. Best fit, not a checklist. Leave a milestone unrated rather than guessing — unrated milestones are reported, never hidden.",
+        "zh": "请根据本学期工作周期中的观察进行评定。选择最贴近的一档，而不是逐项打勾。没把握就留空，不要猜测——未评定的项目会如实报告，不会被隐藏。"
+      }
+    },
+    {
+      "id": "OBS.PPL.A3",
+      "domainId": "PPL",
+      "strandIds": [
+        "PPL-A",
+        "PPL-B",
+        "PPL-C",
+        "PPL-D"
+      ],
+      "ageBand": "A3",
+      "milestoneIds": [
+        "PPL-A.A3.1",
+        "PPL-A.A3.2",
+        "PPL-B.A3.1",
+        "PPL-B.A3.2",
+        "PPL-C.A3.1",
+        "PPL-C.A3.2",
+        "PPL-D.A3.1",
+        "PPL-D.A3.2"
+      ],
+      "itemIds": [
+        "IT.OBS.PPL-A.A3.1",
+        "IT.OBS.PPL-A.A3.2",
+        "IT.OBS.PPL-B.A3.1",
+        "IT.OBS.PPL-B.A3.2",
+        "IT.OBS.PPL-C.A3.1",
+        "IT.OBS.PPL-C.A3.2",
+        "IT.OBS.PPL-D.A3.1",
+        "IT.OBS.PPL-D.A3.2"
+      ],
+      "guidance": {
+        "en": "Rate from what you have seen in the work cycle this term. Best fit, not a checklist. Leave a milestone unrated rather than guessing — unrated milestones are reported, never hidden.",
+        "zh": "请根据本学期工作周期中的观察进行评定。选择最贴近的一档，而不是逐项打勾。没把握就留空，不要猜测——未评定的项目会如实报告，不会被隐藏。"
+      }
+    },
+    {
+      "id": "OBS.LCL-E.A3",
+      "domainId": "LCL",
+      "strandIds": [
+        "LCL-E"
+      ],
+      "ageBand": "A3",
+      "milestoneIds": [
+        "LCL-E.A3.1",
+        "LCL-E.A3.2"
+      ],
+      "itemIds": [
+        "IT.OBS.LCL-E.A3.1",
+        "IT.OBS.LCL-E.A3.2"
+      ],
+      "guidance": {
+        "en": "Rate from what you have seen in the work cycle this term. Best fit, not a checklist. Leave a milestone unrated rather than guessing — unrated milestones are reported, never hidden.",
+        "zh": "请根据本学期工作周期中的观察进行评定。选择最贴近的一档，而不是逐项打勾。没把握就留空，不要猜测——未评定的项目会如实报告，不会被隐藏。"
+      }
+    },
+    {
+      "id": "OBS.COG-E.A3",
+      "domainId": "COG",
+      "strandIds": [
+        "COG-E"
+      ],
+      "ageBand": "A3",
+      "milestoneIds": [
+        "COG-E.A3.1",
+        "COG-E.A3.2"
+      ],
+      "itemIds": [
+        "IT.OBS.COG-E.A3.1",
+        "IT.OBS.COG-E.A3.2"
+      ],
+      "guidance": {
+        "en": "Rate from what you have seen in the work cycle this term. Best fit, not a checklist. Leave a milestone unrated rather than guessing — unrated milestones are reported, never hidden.",
+        "zh": "请根据本学期工作周期中的观察进行评定。选择最贴近的一档，而不是逐项打勾。没把握就留空，不要猜测——未评定的项目会如实报告，不会被隐藏。"
+      }
+    },
+    {
+      "id": "OBS.ATL.A4",
+      "domainId": "ATL",
+      "strandIds": [
+        "ATL-A",
+        "ATL-B",
+        "ATL-C",
+        "ATL-D"
+      ],
+      "ageBand": "A4",
+      "milestoneIds": [
+        "ATL-A.A4.1",
+        "ATL-A.A4.2",
+        "ATL-B.A4.1",
+        "ATL-B.A4.2",
+        "ATL-C.A4.1",
+        "ATL-C.A4.2",
+        "ATL-D.A4.1",
+        "ATL-D.A4.2"
+      ],
+      "itemIds": [
+        "IT.OBS.ATL-A.A4.1",
+        "IT.OBS.ATL-A.A4.2",
+        "IT.OBS.ATL-B.A4.1",
+        "IT.OBS.ATL-B.A4.2",
+        "IT.OBS.ATL-C.A4.1",
+        "IT.OBS.ATL-C.A4.2",
+        "IT.OBS.ATL-D.A4.1",
+        "IT.OBS.ATL-D.A4.2"
+      ],
+      "guidance": {
+        "en": "Rate from what you have seen in the work cycle this term. Best fit, not a checklist. Leave a milestone unrated rather than guessing — unrated milestones are reported, never hidden.",
+        "zh": "请根据本学期工作周期中的观察进行评定。选择最贴近的一档，而不是逐项打勾。没把握就留空，不要猜测——未评定的项目会如实报告，不会被隐藏。"
+      }
+    },
+    {
+      "id": "OBS.SED.A4",
+      "domainId": "SED",
+      "strandIds": [
+        "SED-A",
+        "SED-B",
+        "SED-C",
+        "SED-D"
+      ],
+      "ageBand": "A4",
+      "milestoneIds": [
+        "SED-A.A4.1",
+        "SED-A.A4.2",
+        "SED-B.A4.1",
+        "SED-B.A4.2",
+        "SED-C.A4.1",
+        "SED-C.A4.2",
+        "SED-D.A4.1",
+        "SED-D.A4.2"
+      ],
+      "itemIds": [
+        "IT.OBS.SED-A.A4.1",
+        "IT.OBS.SED-A.A4.2",
+        "IT.OBS.SED-B.A4.1",
+        "IT.OBS.SED-B.A4.2",
+        "IT.OBS.SED-C.A4.1",
+        "IT.OBS.SED-C.A4.2",
+        "IT.OBS.SED-D.A4.1",
+        "IT.OBS.SED-D.A4.2"
+      ],
+      "guidance": {
+        "en": "Rate from what you have seen in the work cycle this term. Best fit, not a checklist. Leave a milestone unrated rather than guessing — unrated milestones are reported, never hidden.",
+        "zh": "请根据本学期工作周期中的观察进行评定。选择最贴近的一档，而不是逐项打勾。没把握就留空，不要猜测——未评定的项目会如实报告，不会被隐藏。"
+      }
+    },
+    {
+      "id": "OBS.PPL.A4",
+      "domainId": "PPL",
+      "strandIds": [
+        "PPL-A",
+        "PPL-B",
+        "PPL-C",
+        "PPL-D"
+      ],
+      "ageBand": "A4",
+      "milestoneIds": [
+        "PPL-A.A4.1",
+        "PPL-A.A4.2",
+        "PPL-B.A4.1",
+        "PPL-B.A4.2",
+        "PPL-C.A4.1",
+        "PPL-C.A4.2",
+        "PPL-D.A4.1",
+        "PPL-D.A4.2"
+      ],
+      "itemIds": [
+        "IT.OBS.PPL-A.A4.1",
+        "IT.OBS.PPL-A.A4.2",
+        "IT.OBS.PPL-B.A4.1",
+        "IT.OBS.PPL-B.A4.2",
+        "IT.OBS.PPL-C.A4.1",
+        "IT.OBS.PPL-C.A4.2",
+        "IT.OBS.PPL-D.A4.1",
+        "IT.OBS.PPL-D.A4.2"
+      ],
+      "guidance": {
+        "en": "Rate from what you have seen in the work cycle this term. Best fit, not a checklist. Leave a milestone unrated rather than guessing — unrated milestones are reported, never hidden.",
+        "zh": "请根据本学期工作周期中的观察进行评定。选择最贴近的一档，而不是逐项打勾。没把握就留空，不要猜测——未评定的项目会如实报告，不会被隐藏。"
+      }
+    },
+    {
+      "id": "OBS.LCL-E.A4",
+      "domainId": "LCL",
+      "strandIds": [
+        "LCL-E"
+      ],
+      "ageBand": "A4",
+      "milestoneIds": [
+        "LCL-E.A4.1",
+        "LCL-E.A4.2"
+      ],
+      "itemIds": [
+        "IT.OBS.LCL-E.A4.1",
+        "IT.OBS.LCL-E.A4.2"
+      ],
+      "guidance": {
+        "en": "Rate from what you have seen in the work cycle this term. Best fit, not a checklist. Leave a milestone unrated rather than guessing — unrated milestones are reported, never hidden.",
+        "zh": "请根据本学期工作周期中的观察进行评定。选择最贴近的一档，而不是逐项打勾。没把握就留空，不要猜测——未评定的项目会如实报告，不会被隐藏。"
+      }
+    },
+    {
+      "id": "OBS.COG-E.A4",
+      "domainId": "COG",
+      "strandIds": [
+        "COG-E"
+      ],
+      "ageBand": "A4",
+      "milestoneIds": [
+        "COG-E.A4.1",
+        "COG-E.A4.2"
+      ],
+      "itemIds": [
+        "IT.OBS.COG-E.A4.1",
+        "IT.OBS.COG-E.A4.2"
+      ],
+      "guidance": {
+        "en": "Rate from what you have seen in the work cycle this term. Best fit, not a checklist. Leave a milestone unrated rather than guessing — unrated milestones are reported, never hidden.",
+        "zh": "请根据本学期工作周期中的观察进行评定。选择最贴近的一档，而不是逐项打勾。没把握就留空，不要猜测——未评定的项目会如实报告，不会被隐藏。"
+      }
+    },
+    {
+      "id": "OBS.ATL.A5",
+      "domainId": "ATL",
+      "strandIds": [
+        "ATL-A",
+        "ATL-B",
+        "ATL-C",
+        "ATL-D"
+      ],
+      "ageBand": "A5",
+      "milestoneIds": [
+        "ATL-A.A5.1",
+        "ATL-A.A5.2",
+        "ATL-B.A5.1",
+        "ATL-B.A5.2",
+        "ATL-C.A5.1",
+        "ATL-C.A5.2",
+        "ATL-D.A5.1",
+        "ATL-D.A5.2"
+      ],
+      "itemIds": [
+        "IT.OBS.ATL-A.A5.1",
+        "IT.OBS.ATL-A.A5.2",
+        "IT.OBS.ATL-B.A5.1",
+        "IT.OBS.ATL-B.A5.2",
+        "IT.OBS.ATL-C.A5.1",
+        "IT.OBS.ATL-C.A5.2",
+        "IT.OBS.ATL-D.A5.1",
+        "IT.OBS.ATL-D.A5.2"
+      ],
+      "guidance": {
+        "en": "Rate from what you have seen in the work cycle this term. Best fit, not a checklist. Leave a milestone unrated rather than guessing — unrated milestones are reported, never hidden.",
+        "zh": "请根据本学期工作周期中的观察进行评定。选择最贴近的一档，而不是逐项打勾。没把握就留空，不要猜测——未评定的项目会如实报告，不会被隐藏。"
+      }
+    },
+    {
+      "id": "OBS.SED.A5",
+      "domainId": "SED",
+      "strandIds": [
+        "SED-A",
+        "SED-B",
+        "SED-C",
+        "SED-D"
+      ],
+      "ageBand": "A5",
+      "milestoneIds": [
+        "SED-A.A5.1",
+        "SED-A.A5.2",
+        "SED-B.A5.1",
+        "SED-B.A5.2",
+        "SED-C.A5.1",
+        "SED-C.A5.2",
+        "SED-D.A5.1",
+        "SED-D.A5.2"
+      ],
+      "itemIds": [
+        "IT.OBS.SED-A.A5.1",
+        "IT.OBS.SED-A.A5.2",
+        "IT.OBS.SED-B.A5.1",
+        "IT.OBS.SED-B.A5.2",
+        "IT.OBS.SED-C.A5.1",
+        "IT.OBS.SED-C.A5.2",
+        "IT.OBS.SED-D.A5.1",
+        "IT.OBS.SED-D.A5.2"
+      ],
+      "guidance": {
+        "en": "Rate from what you have seen in the work cycle this term. Best fit, not a checklist. Leave a milestone unrated rather than guessing — unrated milestones are reported, never hidden.",
+        "zh": "请根据本学期工作周期中的观察进行评定。选择最贴近的一档，而不是逐项打勾。没把握就留空，不要猜测——未评定的项目会如实报告，不会被隐藏。"
+      }
+    },
+    {
+      "id": "OBS.PPL.A5",
+      "domainId": "PPL",
+      "strandIds": [
+        "PPL-A",
+        "PPL-B",
+        "PPL-C",
+        "PPL-D"
+      ],
+      "ageBand": "A5",
+      "milestoneIds": [
+        "PPL-A.A5.1",
+        "PPL-A.A5.2",
+        "PPL-B.A5.1",
+        "PPL-B.A5.2",
+        "PPL-C.A5.1",
+        "PPL-C.A5.2",
+        "PPL-D.A5.1",
+        "PPL-D.A5.2"
+      ],
+      "itemIds": [
+        "IT.OBS.PPL-A.A5.1",
+        "IT.OBS.PPL-A.A5.2",
+        "IT.OBS.PPL-B.A5.1",
+        "IT.OBS.PPL-B.A5.2",
+        "IT.OBS.PPL-C.A5.1",
+        "IT.OBS.PPL-C.A5.2",
+        "IT.OBS.PPL-D.A5.1",
+        "IT.OBS.PPL-D.A5.2"
+      ],
+      "guidance": {
+        "en": "Rate from what you have seen in the work cycle this term. Best fit, not a checklist. Leave a milestone unrated rather than guessing — unrated milestones are reported, never hidden.",
+        "zh": "请根据本学期工作周期中的观察进行评定。选择最贴近的一档，而不是逐项打勾。没把握就留空，不要猜测——未评定的项目会如实报告，不会被隐藏。"
+      }
+    },
+    {
+      "id": "OBS.LCL-E.A5",
+      "domainId": "LCL",
+      "strandIds": [
+        "LCL-E"
+      ],
+      "ageBand": "A5",
+      "milestoneIds": [
+        "LCL-E.A5.1",
+        "LCL-E.A5.2"
+      ],
+      "itemIds": [
+        "IT.OBS.LCL-E.A5.1",
+        "IT.OBS.LCL-E.A5.2"
+      ],
+      "guidance": {
+        "en": "Rate from what you have seen in the work cycle this term. Best fit, not a checklist. Leave a milestone unrated rather than guessing — unrated milestones are reported, never hidden.",
+        "zh": "请根据本学期工作周期中的观察进行评定。选择最贴近的一档，而不是逐项打勾。没把握就留空，不要猜测——未评定的项目会如实报告，不会被隐藏。"
+      }
+    },
+    {
+      "id": "OBS.COG-E.A5",
+      "domainId": "COG",
+      "strandIds": [
+        "COG-E"
+      ],
+      "ageBand": "A5",
+      "milestoneIds": [
+        "COG-E.A5.1",
+        "COG-E.A5.2"
+      ],
+      "itemIds": [
+        "IT.OBS.COG-E.A5.1",
+        "IT.OBS.COG-E.A5.2"
+      ],
+      "guidance": {
+        "en": "Rate from what you have seen in the work cycle this term. Best fit, not a checklist. Leave a milestone unrated rather than guessing — unrated milestones are reported, never hidden.",
+        "zh": "请根据本学期工作周期中的观察进行评定。选择最贴近的一档，而不是逐项打勾。没把握就留空，不要猜测——未评定的项目会如实报告，不会被隐藏。"
+      }
+    }
+  ],
+  "items": [
+    {
+      "id": "IT.OBS.ATL-A.A3.1",
+      "milestoneId": "ATL-A.A3.1",
+      "strandId": "ATL-A",
+      "domainId": "ATL",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Settles to a chosen activity for a short time.",
+        "zh": "能安坐于自己选择的活动一小段时间。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Settles with an adult beside them for a moment or two.",
+          "zh": "需成人陪伴才能安坐片刻。"
+        },
+        "developing": {
+          "en": "Settles to a chosen activity for a few minutes on most days.",
+          "zh": "多数日子里能自行安坐几分钟。"
+        },
+        "secure": {
+          "en": "Settles quickly and stays until the activity feels finished.",
+          "zh": "能很快投入并坚持到自己觉得完成为止。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.ATL-A.A3.2",
+      "milestoneId": "ATL-A.A3.2",
+      "strandId": "ATL-A",
+      "domainId": "ATL",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Comes back to an activity after a small interruption.",
+        "zh": "被打断后能回到原来的活动。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Needs an adult to lead them back.",
+          "zh": "需成人带回。"
+        },
+        "developing": {
+          "en": "Comes back after a reminder.",
+          "zh": "经提醒后能回来。"
+        },
+        "secure": {
+          "en": "Comes back alone and picks up where they stopped.",
+          "zh": "能自己回来并接着做。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.ATL-B.A3.1",
+      "milestoneId": "ATL-B.A3.1",
+      "strandId": "ATL-B",
+      "domainId": "ATL",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Chooses an activity with a little help.",
+        "zh": "在少量帮助下选择活动。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Chooses when an adult offers two options.",
+          "zh": "成人给两个选项时能选。"
+        },
+        "developing": {
+          "en": "Chooses from the shelf with a gentle prompt.",
+          "zh": "稍加提示能从架上选择。"
+        },
+        "secure": {
+          "en": "Chooses freely from the work they know.",
+          "zh": "能自由选择熟悉的工作。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.ATL-B.A3.2",
+      "milestoneId": "ATL-B.A3.2",
+      "strandId": "ATL-B",
+      "domainId": "ATL",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Shows what they want to do by pointing or asking.",
+        "zh": "通过指认或询问表达想做什么。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Shows what they want by reaching or leading an adult.",
+          "zh": "靠伸手或拉着成人表达。"
+        },
+        "developing": {
+          "en": "Points to or names the work they want.",
+          "zh": "会指认或说出想要的工作。"
+        },
+        "secure": {
+          "en": "Asks clearly for the work or lesson they want.",
+          "zh": "能清楚说出想做的工作或课程。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.ATL-C.A3.1",
+      "milestoneId": "ATL-C.A3.1",
+      "strandId": "ATL-C",
+      "domainId": "ATL",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Tries a different way when something does not work.",
+        "zh": "一种方法行不通时会尝试别的方法。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Stops, or hands the work to an adult.",
+          "zh": "停下来或把工作交给成人。"
+        },
+        "developing": {
+          "en": "Tries a second way after a suggestion.",
+          "zh": "经建议后会尝试第二种方法。"
+        },
+        "secure": {
+          "en": "Tries several ways before asking for help.",
+          "zh": "会先尝试多种方法再求助。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.ATL-C.A3.2",
+      "milestoneId": "ATL-C.A3.2",
+      "strandId": "ATL-C",
+      "domainId": "ATL",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "emerging_edge",
+      "statement": {
+        "en": "Uses a familiar material in a new way during play.",
+        "zh": "能用熟悉的材料玩出新花样。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Uses the material only as it was shown.",
+          "zh": "只按示范的方式使用材料。"
+        },
+        "developing": {
+          "en": "Adds a small change of their own.",
+          "zh": "会加入一点自己的变化。"
+        },
+        "secure": {
+          "en": "Invents new ways and explains them.",
+          "zh": "能创造新玩法并加以说明。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.ATL-D.A3.1",
+      "milestoneId": "ATL-D.A3.1",
+      "strandId": "ATL-D",
+      "domainId": "ATL",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Waits for a short turn with help from an adult.",
+        "zh": "在成人帮助下能短暂等待轮到自己。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Finds waiting hard even with support.",
+          "zh": "即使有支持也难以等待。"
+        },
+        "developing": {
+          "en": "Waits a short time with an adult nearby.",
+          "zh": "成人在旁时能短暂等待。"
+        },
+        "secure": {
+          "en": "Waits calmly for a short turn.",
+          "zh": "能平静地等待短暂的轮候。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.ATL-D.A3.2",
+      "milestoneId": "ATL-D.A3.2",
+      "strandId": "ATL-D",
+      "domainId": "ATL",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Stops an action when reminded.",
+        "zh": "经提醒能停止某个行为。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Needs to be gently moved away.",
+          "zh": "需要被轻轻带离。"
+        },
+        "developing": {
+          "en": "Stops after one or two reminders.",
+          "zh": "经一两次提醒后停止。"
+        },
+        "secure": {
+          "en": "Stops at the first reminder.",
+          "zh": "第一次提醒就停止。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-A.A3.1",
+      "milestoneId": "SED-A.A3.1",
+      "strandId": "SED-A",
+      "domainId": "SED",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Seeks out a familiar adult for comfort or help.",
+        "zh": "会主动寻求熟悉的成人安慰或帮助。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Accepts comfort when it is offered.",
+          "zh": "别人主动安慰时会接受。"
+        },
+        "developing": {
+          "en": "Goes to a familiar adult when upset.",
+          "zh": "难过时会去找熟悉的成人。"
+        },
+        "secure": {
+          "en": "Goes to a familiar adult and says what has upset them.",
+          "zh": "会去找熟悉的成人并说出原因。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-A.A3.2",
+      "milestoneId": "SED-A.A3.2",
+      "strandId": "SED-A",
+      "domainId": "SED",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Responds warmly when an adult greets them.",
+        "zh": "成人问候时能友好回应。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Notices the greeting.",
+          "zh": "会注意到问候。"
+        },
+        "developing": {
+          "en": "Returns the greeting with a look or a word.",
+          "zh": "用眼神或一个词回应问候。"
+        },
+        "secure": {
+          "en": "Greets warmly, and often greets first.",
+          "zh": "热情回应，并常常主动问候。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-B.A3.1",
+      "milestoneId": "SED-B.A3.1",
+      "strandId": "SED-B",
+      "domainId": "SED",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Plays alongside other children happily.",
+        "zh": "能与同伴愉快地平行游戏。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Plays near others but mostly watches.",
+          "zh": "在旁边但多半在观看。"
+        },
+        "developing": {
+          "en": "Plays alongside others comfortably.",
+          "zh": "能自在地与同伴平行游戏。"
+        },
+        "secure": {
+          "en": "Plays alongside and swaps a few words or materials.",
+          "zh": "平行游戏中会交流几句或交换材料。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-B.A3.2",
+      "milestoneId": "SED-B.A3.2",
+      "strandId": "SED-B",
+      "domainId": "SED",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Notices when another child is nearby and makes room.",
+        "zh": "会注意到同伴在旁并让出空间。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Needs a reminder to make space.",
+          "zh": "需要提醒才让出空间。"
+        },
+        "developing": {
+          "en": "Makes room when asked.",
+          "zh": "被请求时会让出空间。"
+        },
+        "secure": {
+          "en": "Notices and makes room without being asked.",
+          "zh": "会主动注意并让出空间。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-C.A3.1",
+      "milestoneId": "SED-C.A3.1",
+      "strandId": "SED-C",
+      "domainId": "SED",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Shows their feelings clearly and can be comforted.",
+        "zh": "能清楚表达情绪并接受安慰。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Shows strong feelings and needs a lot of comfort.",
+          "zh": "情绪强烈，需要大量安抚。"
+        },
+        "developing": {
+          "en": "Shows feelings and settles with comfort.",
+          "zh": "表达情绪后经安慰能平静。"
+        },
+        "secure": {
+          "en": "Shows feelings and settles quickly.",
+          "zh": "表达情绪后能很快平静。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-C.A3.2",
+      "milestoneId": "SED-C.A3.2",
+      "strandId": "SED-C",
+      "domainId": "SED",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Recognises happy and sad in faces and stories.",
+        "zh": "能在表情和故事中辨认高兴和难过。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Notices a strong feeling in a face.",
+          "zh": "能注意到明显的表情。"
+        },
+        "developing": {
+          "en": "Points to happy or sad when asked.",
+          "zh": "被问到时能指出高兴或难过。"
+        },
+        "secure": {
+          "en": "Names happy and sad and says why.",
+          "zh": "能说出高兴、难过并说明原因。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-D.A3.1",
+      "milestoneId": "SED-D.A3.1",
+      "strandId": "SED-D",
+      "domainId": "SED",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Copies a greeting with a familiar adult or child.",
+        "zh": "能模仿与熟悉的人打招呼。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Watches the greeting.",
+          "zh": "观看别人打招呼。"
+        },
+        "developing": {
+          "en": "Copies the greeting when prompted.",
+          "zh": "经提示能模仿打招呼。"
+        },
+        "secure": {
+          "en": "Greets by copying, without a prompt.",
+          "zh": "无需提示就能模仿问候。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-D.A3.2",
+      "milestoneId": "SED-D.A3.2",
+      "strandId": "SED-D",
+      "domainId": "SED",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Begins to use please and thank you with reminders.",
+        "zh": "在提醒下开始使用\"请\"和\"谢谢\"。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Uses them when they are said first.",
+          "zh": "别人先说才跟着说。"
+        },
+        "developing": {
+          "en": "Uses them after a reminder.",
+          "zh": "经提醒后会使用。"
+        },
+        "secure": {
+          "en": "Uses them most of the time.",
+          "zh": "多数时候都会使用。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-A.A3.1",
+      "milestoneId": "PPL-A.A3.1",
+      "strandId": "PPL-A",
+      "domainId": "PPL",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Uses a whole-hand or three-finger grip to hold a tool.",
+        "zh": "能用全手或三指握持工具。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Holds with a whole-hand grip.",
+          "zh": "用全手握持。"
+        },
+        "developing": {
+          "en": "Uses a three-finger grip some of the time.",
+          "zh": "有时能用三指握持。"
+        },
+        "secure": {
+          "en": "Uses a three-finger grip comfortably.",
+          "zh": "能舒适地使用三指握持。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-A.A3.2",
+      "milestoneId": "PPL-A.A3.2",
+      "strandId": "PPL-A",
+      "domainId": "PPL",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Threads large beads or uses tongs to move objects.",
+        "zh": "能穿大珠子或用夹子夹取物品。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Manages with hand-over-hand help.",
+          "zh": "需要手把手帮助。"
+        },
+        "developing": {
+          "en": "Manages a few on their own.",
+          "zh": "能自己完成几个。"
+        },
+        "secure": {
+          "en": "Threads or transfers a whole set smoothly.",
+          "zh": "能顺利完成整套穿珠或转移。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-B.A3.1",
+      "milestoneId": "PPL-B.A3.1",
+      "strandId": "PPL-B",
+      "domainId": "PPL",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Walks, runs and climbs with growing steadiness.",
+        "zh": "走、跑、攀爬越来越稳。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Moves steadily on flat ground.",
+          "zh": "在平地上行走稳定。"
+        },
+        "developing": {
+          "en": "Runs and climbs with growing confidence.",
+          "zh": "跑和爬越来越有信心。"
+        },
+        "secure": {
+          "en": "Moves confidently over different surfaces.",
+          "zh": "在不同地面都能自信移动。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-B.A3.2",
+      "milestoneId": "PPL-B.A3.2",
+      "strandId": "PPL-B",
+      "domainId": "PPL",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Carries a tray or a jug across the room without spilling.",
+        "zh": "能端着托盘或水壶走过教室而不洒。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Carries with an adult’s hand.",
+          "zh": "需成人扶着。"
+        },
+        "developing": {
+          "en": "Carries a light tray alone.",
+          "zh": "能独自端轻的托盘。"
+        },
+        "secure": {
+          "en": "Carries a full jug carefully across the room.",
+          "zh": "能小心地把满水壶端过教室。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-C.A3.1",
+      "milestoneId": "PPL-C.A3.1",
+      "strandId": "PPL-C",
+      "domainId": "PPL",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Washes and dries hands with a reminder.",
+        "zh": "经提醒能洗手擦干。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Washes with an adult guiding.",
+          "zh": "需成人引导洗手。"
+        },
+        "developing": {
+          "en": "Washes and dries after a reminder.",
+          "zh": "经提醒能洗手擦干。"
+        },
+        "secure": {
+          "en": "Washes and dries thoroughly by themselves.",
+          "zh": "能自己彻底洗净擦干。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-C.A3.2",
+      "milestoneId": "PPL-C.A3.2",
+      "strandId": "PPL-C",
+      "domainId": "PPL",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Puts on shoes or a coat with some help.",
+        "zh": "在一些帮助下能穿鞋或外套。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Holds out arms and feet to be dressed.",
+          "zh": "伸出手脚等人帮忙穿。"
+        },
+        "developing": {
+          "en": "Manages part of it alone.",
+          "zh": "能自己完成一部分。"
+        },
+        "secure": {
+          "en": "Manages shoes or coat with only fastenings left.",
+          "zh": "除扣件外都能自己完成。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-D.A3.1",
+      "milestoneId": "PPL-D.A3.1",
+      "strandId": "PPL-D",
+      "domainId": "PPL",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Helps put a material back on the shelf.",
+        "zh": "能帮助把材料放回架上。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Puts it back when it is handed to them.",
+          "zh": "别人递给才放回。"
+        },
+        "developing": {
+          "en": "Puts it back after a reminder.",
+          "zh": "经提醒会放回。"
+        },
+        "secure": {
+          "en": "Puts it back in the right place by themselves.",
+          "zh": "能自己放回正确位置。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-D.A3.2",
+      "milestoneId": "PPL-D.A3.2",
+      "strandId": "PPL-D",
+      "domainId": "PPL",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Wipes a spill when shown.",
+        "zh": "经示范能擦拭洒出的东西。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Watches an adult wipe.",
+          "zh": "看着成人擦。"
+        },
+        "developing": {
+          "en": "Wipes with help.",
+          "zh": "在帮助下擦拭。"
+        },
+        "secure": {
+          "en": "Fetches the cloth and wipes alone.",
+          "zh": "能自己去拿抹布并擦干净。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.LCL-E.A3.1",
+      "milestoneId": "LCL-E.A3.1",
+      "strandId": "LCL-E",
+      "domainId": "LCL",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Draws on purpose and says what it means.",
+        "zh": "有意识地涂画并说出它的意思。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Draws freely, without meaning attached.",
+          "zh": "随意涂画没有含义。"
+        },
+        "developing": {
+          "en": "Says what a drawing means when asked.",
+          "zh": "被问到时能说出含义。"
+        },
+        "secure": {
+          "en": "Draws something and tells you what it says.",
+          "zh": "会画下图形并说出它写的是什么。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.LCL-E.A3.2",
+      "milestoneId": "LCL-E.A3.2",
+      "strandId": "LCL-E",
+      "domainId": "LCL",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Draws lines, circles and shapes with growing control.",
+        "zh": "画线条、圆形和图形的控制力增强。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Scribbles with whole-arm movement.",
+          "zh": "用整个手臂涂鸦。"
+        },
+        "developing": {
+          "en": "Draws lines and circles on purpose.",
+          "zh": "能有意识地画线和圆。"
+        },
+        "secure": {
+          "en": "Draws recognisable shapes on request.",
+          "zh": "能按要求画出可辨认的图形。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.COG-E.A3.1",
+      "milestoneId": "COG-E.A3.1",
+      "strandId": "COG-E",
+      "domainId": "COG",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Notices and points out changes around them.",
+        "zh": "能注意并指出周围的变化。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Notices when it is pointed out.",
+          "zh": "经指出才注意到。"
+        },
+        "developing": {
+          "en": "Points out changes they notice.",
+          "zh": "会指出自己注意到的变化。"
+        },
+        "secure": {
+          "en": "Notices changes and talks about them.",
+          "zh": "注意到变化并加以谈论。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.COG-E.A3.2",
+      "milestoneId": "COG-E.A3.2",
+      "strandId": "COG-E",
+      "domainId": "COG",
+      "ageBand": "A3",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Explores materials with all their senses.",
+        "zh": "会用多种感官探索材料。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Explores by looking and touching.",
+          "zh": "只用看和摸探索。"
+        },
+        "developing": {
+          "en": "Explores with several senses.",
+          "zh": "会用多种感官探索。"
+        },
+        "secure": {
+          "en": "Explores carefully and describes what they notice.",
+          "zh": "仔细探索并描述所发现的。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.ATL-A.A4.1",
+      "milestoneId": "ATL-A.A4.1",
+      "strandId": "ATL-A",
+      "domainId": "ATL",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Stays with a chosen work through a whole work cycle.",
+        "zh": "能在一个完整工作周期内持续做同一项工作。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Stays for part of the cycle before moving on.",
+          "zh": "只能坚持工作周期的一部分。"
+        },
+        "developing": {
+          "en": "Stays with one work for most of the cycle.",
+          "zh": "大部分时间能坚持一项工作。"
+        },
+        "secure": {
+          "en": "Works through the whole cycle and finishes what they began.",
+          "zh": "能坚持整个周期并完成所开始的工作。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.ATL-A.A4.2",
+      "milestoneId": "ATL-A.A4.2",
+      "strandId": "ATL-A",
+      "domainId": "ATL",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Keeps trying when a piece of work is difficult.",
+        "zh": "遇到困难时仍能继续尝试。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Stops or swaps to an easier work when it gets hard.",
+          "zh": "遇到困难就停下或换容易的工作。"
+        },
+        "developing": {
+          "en": "Tries again once or twice, sometimes with encouragement.",
+          "zh": "会再试一两次，有时需要鼓励。"
+        },
+        "secure": {
+          "en": "Keeps working at the hard part and looks for a way through.",
+          "zh": "会持续琢磨难点并设法解决。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.ATL-B.A4.1",
+      "milestoneId": "ATL-B.A4.1",
+      "strandId": "ATL-B",
+      "domainId": "ATL",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Chooses their own work without being asked.",
+        "zh": "无需提示即能自主选择工作。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Waits to be pointed towards a work.",
+          "zh": "需要被引导到某项工作。"
+        },
+        "developing": {
+          "en": "Chooses alone on most mornings.",
+          "zh": "多数上午能自己选择。"
+        },
+        "secure": {
+          "en": "Chooses without hesitation and settles straight away.",
+          "zh": "毫不犹豫地选择并立刻投入。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.ATL-B.A4.2",
+      "milestoneId": "ATL-B.A4.2",
+      "strandId": "ATL-B",
+      "domainId": "ATL",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Chooses work that stretches them, not only easy favourites.",
+        "zh": "会选择有挑战的工作，而不只是熟悉容易的。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Returns to the same easy work each day.",
+          "zh": "每天重复同样容易的工作。"
+        },
+        "developing": {
+          "en": "Tries a newer work when invited.",
+          "zh": "受邀时会尝试较新的工作。"
+        },
+        "secure": {
+          "en": "Chooses harder work themselves and enjoys the challenge.",
+          "zh": "会主动选择更难的工作并享受挑战。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.ATL-C.A4.1",
+      "milestoneId": "ATL-C.A4.1",
+      "strandId": "ATL-C",
+      "domainId": "ATL",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Finds more than one way to solve a small problem.",
+        "zh": "能想出不止一种办法解决小问题。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Finds one way with help.",
+          "zh": "在帮助下能找到一种方法。"
+        },
+        "developing": {
+          "en": "Finds a second way when encouraged.",
+          "zh": "受鼓励时能找到第二种方法。"
+        },
+        "secure": {
+          "en": "Offers two or more ways without prompting.",
+          "zh": "能主动提出两种以上方法。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.ATL-C.A4.2",
+      "milestoneId": "ATL-C.A4.2",
+      "strandId": "ATL-C",
+      "domainId": "ATL",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Asks a question to work something out.",
+        "zh": "会用提问来弄清楚问题。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Shows puzzlement without asking.",
+          "zh": "表现出困惑但不发问。"
+        },
+        "developing": {
+          "en": "Asks a simple question about what to do.",
+          "zh": "会问一个关于怎么做的简单问题。"
+        },
+        "secure": {
+          "en": "Asks a question that gets to the heart of the problem.",
+          "zh": "能问到问题的关键。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.ATL-D.A4.1",
+      "milestoneId": "ATL-D.A4.1",
+      "strandId": "ATL-D",
+      "domainId": "ATL",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Waits for a material that another child is using.",
+        "zh": "能等待同伴正在使用的材料。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Takes the material or asks an adult to fetch it.",
+          "zh": "直接拿走或让成人去取。"
+        },
+        "developing": {
+          "en": "Waits after a reminder of the ground rule.",
+          "zh": "经规则提醒后能等待。"
+        },
+        "secure": {
+          "en": "Waits, and chooses something else meanwhile.",
+          "zh": "能等待，并在等待时另选工作。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.ATL-D.A4.2",
+      "milestoneId": "ATL-D.A4.2",
+      "strandId": "ATL-D",
+      "domainId": "ATL",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Manages a change in the routine with a little support.",
+        "zh": "在少量支持下能适应常规的变化。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Finds changes upsetting and needs comfort.",
+          "zh": "变化会让其不安，需要安抚。"
+        },
+        "developing": {
+          "en": "Manages a change when told in advance.",
+          "zh": "事先告知就能应对变化。"
+        },
+        "secure": {
+          "en": "Takes changes in their stride.",
+          "zh": "能从容应对变化。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-A.A4.1",
+      "milestoneId": "SED-A.A4.1",
+      "strandId": "SED-A",
+      "domainId": "SED",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Asks an adult for help using words.",
+        "zh": "能用语言向成人求助。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Shows the problem without words.",
+          "zh": "用动作而非语言表达问题。"
+        },
+        "developing": {
+          "en": "Asks in a few words.",
+          "zh": "能用简短的话求助。"
+        },
+        "secure": {
+          "en": "Explains what help is needed.",
+          "zh": "能说明需要什么帮助。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-A.A4.2",
+      "milestoneId": "SED-A.A4.2",
+      "strandId": "SED-A",
+      "domainId": "SED",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Enjoys sharing news with a familiar adult.",
+        "zh": "乐于与熟悉的成人分享自己的事。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Shares when asked a direct question.",
+          "zh": "被直接询问时才分享。"
+        },
+        "developing": {
+          "en": "Shares a piece of news on most days.",
+          "zh": "多数日子会分享一件事。"
+        },
+        "secure": {
+          "en": "Starts conversations and listens to the reply.",
+          "zh": "会主动发起对话并倾听回应。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-B.A4.1",
+      "milestoneId": "SED-B.A4.1",
+      "strandId": "SED-B",
+      "domainId": "SED",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Joins in a shared activity with one or two children.",
+        "zh": "能与一两个同伴一起参与活动。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Joins when invited by an adult.",
+          "zh": "成人邀请时会加入。"
+        },
+        "developing": {
+          "en": "Joins a small group on most days.",
+          "zh": "多数日子能加入小组。"
+        },
+        "secure": {
+          "en": "Joins in and helps the group keep going.",
+          "zh": "加入并帮助小组继续进行。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-B.A4.2",
+      "milestoneId": "SED-B.A4.2",
+      "strandId": "SED-B",
+      "domainId": "SED",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Takes turns in a game with a little support.",
+        "zh": "在少量支持下能在游戏中轮流。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Finds turn-taking hard.",
+          "zh": "轮流对其来说很难。"
+        },
+        "developing": {
+          "en": "Takes turns after a reminder.",
+          "zh": "经提醒能轮流。"
+        },
+        "secure": {
+          "en": "Takes turns and reminds others kindly.",
+          "zh": "能轮流并友善地提醒他人。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-C.A4.1",
+      "milestoneId": "SED-C.A4.1",
+      "strandId": "SED-C",
+      "domainId": "SED",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Names how they are feeling.",
+        "zh": "能说出自己的感受。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Shows the feeling without naming it.",
+          "zh": "表现出情绪但说不出名称。"
+        },
+        "developing": {
+          "en": "Names a feeling when prompted.",
+          "zh": "经提示能说出一种情绪。"
+        },
+        "secure": {
+          "en": "Names feelings as they happen.",
+          "zh": "能在当下说出自己的感受。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-C.A4.2",
+      "milestoneId": "SED-C.A4.2",
+      "strandId": "SED-C",
+      "domainId": "SED",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Notices when another child is upset.",
+        "zh": "能注意到同伴不开心。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Notices when it is pointed out.",
+          "zh": "经指出才注意到。"
+        },
+        "developing": {
+          "en": "Notices and tells an adult.",
+          "zh": "注意到并告诉成人。"
+        },
+        "secure": {
+          "en": "Notices and responds kindly.",
+          "zh": "注意到并友善回应。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-D.A4.1",
+      "milestoneId": "SED-D.A4.1",
+      "strandId": "SED-D",
+      "domainId": "SED",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Greets visitors and says goodbye without prompting.",
+        "zh": "能主动问候来访者并道别。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Greets when prompted.",
+          "zh": "经提示会问候。"
+        },
+        "developing": {
+          "en": "Greets most visitors alone.",
+          "zh": "多数来访者都能自己问候。"
+        },
+        "secure": {
+          "en": "Greets and says goodbye warmly every time.",
+          "zh": "每次都热情地问候和道别。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-D.A4.2",
+      "milestoneId": "SED-D.A4.2",
+      "strandId": "SED-D",
+      "domainId": "SED",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Waits for a pause before joining a conversation.",
+        "zh": "会等待谈话的间隙再加入。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Interrupts and needs a reminder.",
+          "zh": "会打断，需要提醒。"
+        },
+        "developing": {
+          "en": "Waits when reminded of the signal.",
+          "zh": "经提醒会等待信号。"
+        },
+        "secure": {
+          "en": "Waits for a pause by themselves.",
+          "zh": "能自己等待谈话间隙。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-A.A4.1",
+      "milestoneId": "PPL-A.A4.1",
+      "strandId": "PPL-A",
+      "domainId": "PPL",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Holds a pencil comfortably between fingers and thumb.",
+        "zh": "能用手指和拇指舒适地握笔。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Grip is tight or changes often.",
+          "zh": "握得很紧或经常变换。"
+        },
+        "developing": {
+          "en": "Holds correctly for short spells.",
+          "zh": "短时间内握姿正确。"
+        },
+        "secure": {
+          "en": "Holds correctly and comfortably throughout.",
+          "zh": "全程握姿正确且舒适。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-A.A4.2",
+      "milestoneId": "PPL-A.A4.2",
+      "strandId": "PPL-A",
+      "domainId": "PPL",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Uses scissors to cut along a line.",
+        "zh": "能用剪刀沿线剪。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Snips at the edge of the paper.",
+          "zh": "只能在纸边剪小口。"
+        },
+        "developing": {
+          "en": "Cuts along a straight line.",
+          "zh": "能沿直线剪。"
+        },
+        "secure": {
+          "en": "Cuts along straight and curved lines accurately.",
+          "zh": "能准确地沿直线和曲线剪。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-B.A4.1",
+      "milestoneId": "PPL-B.A4.1",
+      "strandId": "PPL-B",
+      "domainId": "PPL",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Balances on one foot for a few seconds.",
+        "zh": "能单脚站立几秒。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Balances briefly with support.",
+          "zh": "有支撑时能短暂平衡。"
+        },
+        "developing": {
+          "en": "Balances a few seconds on the stronger foot.",
+          "zh": "惯用脚能站立几秒。"
+        },
+        "secure": {
+          "en": "Balances on either foot for several seconds.",
+          "zh": "双脚都能站立数秒。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-B.A4.2",
+      "milestoneId": "PPL-B.A4.2",
+      "strandId": "PPL-B",
+      "domainId": "PPL",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Moves carefully around others and around work on the floor.",
+        "zh": "能小心地绕过同伴和地上的工作。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Needs reminders about mats and space.",
+          "zh": "需提醒注意工作毯和空间。"
+        },
+        "developing": {
+          "en": "Moves around most work carefully.",
+          "zh": "多数情况能小心绕行。"
+        },
+        "secure": {
+          "en": "Moves through a busy room without disturbing anyone.",
+          "zh": "能在忙碌的教室中穿行而不打扰他人。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-C.A4.1",
+      "milestoneId": "PPL-C.A4.1",
+      "strandId": "PPL-C",
+      "domainId": "PPL",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Manages their own coat, shoes and bag.",
+        "zh": "能自己管理外套、鞋子和书包。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Manages one of the three alone.",
+          "zh": "三样中能自己完成一样。"
+        },
+        "developing": {
+          "en": "Manages most of them alone.",
+          "zh": "多数能自己完成。"
+        },
+        "secure": {
+          "en": "Manages all three and puts them away.",
+          "zh": "三样都能完成并收好。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-C.A4.2",
+      "milestoneId": "PPL-C.A4.2",
+      "strandId": "PPL-C",
+      "domainId": "PPL",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Serves their own snack and clears it away.",
+        "zh": "能自己取点心并收拾干净。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Serves with an adult beside them.",
+          "zh": "需成人在旁协助。"
+        },
+        "developing": {
+          "en": "Serves and clears after a reminder.",
+          "zh": "经提醒能取用并收拾。"
+        },
+        "secure": {
+          "en": "Serves, eats and clears the place fully alone.",
+          "zh": "能独立取用、进食并完全收拾。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-D.A4.1",
+      "milestoneId": "PPL-D.A4.1",
+      "strandId": "PPL-D",
+      "domainId": "PPL",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Returns work complete and ready for the next child.",
+        "zh": "能把工作完整地整理好，供下一个孩子使用。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Returns work with pieces missing.",
+          "zh": "放回时缺少部件。"
+        },
+        "developing": {
+          "en": "Returns work complete after a reminder.",
+          "zh": "经提醒能完整放回。"
+        },
+        "secure": {
+          "en": "Checks the work is complete before returning it.",
+          "zh": "放回前会检查是否完整。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-D.A4.2",
+      "milestoneId": "PPL-D.A4.2",
+      "strandId": "PPL-D",
+      "domainId": "PPL",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Uses cloths, brushes and jugs for their proper purpose.",
+        "zh": "能正确使用抹布、刷子和水壶。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Explores the tools in play.",
+          "zh": "把工具当玩具探索。"
+        },
+        "developing": {
+          "en": "Uses each tool correctly after a reminder.",
+          "zh": "经提醒能正确使用工具。"
+        },
+        "secure": {
+          "en": "Chooses and uses the right tool for the job.",
+          "zh": "能选择并正确使用合适的工具。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.LCL-E.A4.1",
+      "milestoneId": "LCL-E.A4.1",
+      "strandId": "LCL-E",
+      "domainId": "LCL",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Writes some of the letters in their own name.",
+        "zh": "能写出自己名字中的一些字母。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Copies one letter of their name.",
+          "zh": "能照着写一个字母。"
+        },
+        "developing": {
+          "en": "Writes two or three letters of their name.",
+          "zh": "能写出名字中的两三个字母。"
+        },
+        "secure": {
+          "en": "Writes most of their name unaided.",
+          "zh": "能独立写出名字的大部分。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.LCL-E.A4.2",
+      "milestoneId": "LCL-E.A4.2",
+      "strandId": "LCL-E",
+      "domainId": "LCL",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Uses letter shapes in their drawing and play.",
+        "zh": "在绘画和游戏中使用字母形状。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Includes letter-like shapes.",
+          "zh": "画出类似字母的记号。"
+        },
+        "developing": {
+          "en": "Includes real letters among the shapes.",
+          "zh": "记号中出现真正的字母。"
+        },
+        "secure": {
+          "en": "Labels drawings with letters they know.",
+          "zh": "会用认识的字母给画作标注。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.COG-E.A4.1",
+      "milestoneId": "COG-E.A4.1",
+      "strandId": "COG-E",
+      "domainId": "COG",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Asks questions about how and why things happen.",
+        "zh": "会问事情如何发生、为什么发生。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Asks what something is.",
+          "zh": "问\"这是什么\"。"
+        },
+        "developing": {
+          "en": "Asks how something works.",
+          "zh": "问\"这怎么用\"。"
+        },
+        "secure": {
+          "en": "Asks why, and listens to the answer.",
+          "zh": "会问\"为什么\"并倾听回答。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.COG-E.A4.2",
+      "milestoneId": "COG-E.A4.2",
+      "strandId": "COG-E",
+      "domainId": "COG",
+      "ageBand": "A4",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Talks about their family and the people in their community.",
+        "zh": "能谈论家人和社区中的人。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Names family members.",
+          "zh": "能说出家人的称呼。"
+        },
+        "developing": {
+          "en": "Talks about family and one community role.",
+          "zh": "能谈家人和一种社区角色。"
+        },
+        "secure": {
+          "en": "Talks about family, neighbours and the jobs people do.",
+          "zh": "能谈家人、邻居和人们的工作。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.ATL-A.A5.1",
+      "milestoneId": "ATL-A.A5.1",
+      "strandId": "ATL-A",
+      "domainId": "ATL",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Returns to the same work over several days to make it better.",
+        "zh": "能连续几天回到同一项工作并加以改进。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Returns when reminded of the work.",
+          "zh": "经提醒才回到该工作。"
+        },
+        "developing": {
+          "en": "Returns over two or three days.",
+          "zh": "能在两三天内回到该工作。"
+        },
+        "secure": {
+          "en": "Returns across the week, refining the work unprompted.",
+          "zh": "一周内主动回到该工作并不断改进。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.ATL-A.A5.2",
+      "milestoneId": "ATL-A.A5.2",
+      "strandId": "ATL-A",
+      "domainId": "ATL",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Plans what they want to finish and sees it through.",
+        "zh": "能计划要完成的事并坚持完成。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Says what they want to do but changes often.",
+          "zh": "会说想做什么但常常改变。"
+        },
+        "developing": {
+          "en": "Plans and finishes with an adult checking in.",
+          "zh": "在成人稍加关注下能完成计划。"
+        },
+        "secure": {
+          "en": "Plans, gathers what is needed, and finishes independently.",
+          "zh": "能自行计划、准备材料并独立完成。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.ATL-B.A5.1",
+      "milestoneId": "ATL-B.A5.1",
+      "strandId": "ATL-B",
+      "domainId": "ATL",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Plans their morning and chooses a balance of work.",
+        "zh": "能规划上午的工作并做出均衡的选择。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Plans one work at a time.",
+          "zh": "一次只能计划一项工作。"
+        },
+        "developing": {
+          "en": "Plans two or three works with support.",
+          "zh": "在支持下能计划两三项工作。"
+        },
+        "secure": {
+          "en": "Plans a balanced morning across areas independently.",
+          "zh": "能独立规划涵盖各区域的均衡上午。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.ATL-B.A5.2",
+      "milestoneId": "ATL-B.A5.2",
+      "strandId": "ATL-B",
+      "domainId": "ATL",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "emerging_edge",
+      "statement": {
+        "en": "Asks for a new lesson when they are ready for one.",
+        "zh": "准备好时会主动要求新的课程。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Watches other children’s lessons with interest.",
+          "zh": "会有兴趣地观看别人的课程。"
+        },
+        "developing": {
+          "en": "Asks for a lesson when reminded it is available.",
+          "zh": "经提醒后会要求上课。"
+        },
+        "secure": {
+          "en": "Asks for the next lesson at the right moment for themselves.",
+          "zh": "能在合适的时机主动要求新课程。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.ATL-C.A5.1",
+      "milestoneId": "ATL-C.A5.1",
+      "strandId": "ATL-C",
+      "domainId": "ATL",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Thinks a problem through before acting.",
+        "zh": "行动前会先思考问题。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Acts first, then notices the problem.",
+          "zh": "先行动，之后才发现问题。"
+        },
+        "developing": {
+          "en": "Pauses and thinks when reminded.",
+          "zh": "经提醒会停下来思考。"
+        },
+        "secure": {
+          "en": "Pauses, plans, then acts.",
+          "zh": "会停顿、计划，然后行动。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.ATL-C.A5.2",
+      "milestoneId": "ATL-C.A5.2",
+      "strandId": "ATL-C",
+      "domainId": "ATL",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "emerging_edge",
+      "statement": {
+        "en": "Explains how they solved something to another child.",
+        "zh": "能向同伴解释自己是怎么解决的。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Shows another child what to do.",
+          "zh": "向同伴示范怎么做。"
+        },
+        "developing": {
+          "en": "Explains with a few words and gestures.",
+          "zh": "用简短的话和手势解释。"
+        },
+        "secure": {
+          "en": "Explains the steps clearly so the other child can follow.",
+          "zh": "能清楚说明步骤，让同伴跟着做。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.ATL-D.A5.1",
+      "milestoneId": "ATL-D.A5.1",
+      "strandId": "ATL-D",
+      "domainId": "ATL",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Waits, takes turns and follows the ground rules without reminders.",
+        "zh": "无需提醒即能等待、轮流并遵守班级规则。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Follows the rules with reminders.",
+          "zh": "经提醒能遵守规则。"
+        },
+        "developing": {
+          "en": "Follows the rules for most of the day.",
+          "zh": "一天中大部分时间能遵守规则。"
+        },
+        "secure": {
+          "en": "Follows the rules all day and helps others to.",
+          "zh": "全天遵守规则并帮助他人遵守。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.ATL-D.A5.2",
+      "milestoneId": "ATL-D.A5.2",
+      "strandId": "ATL-D",
+      "domainId": "ATL",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Calms themselves when upset, using a strategy they know.",
+        "zh": "难过时能用自己会的方法平静下来。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Needs an adult to help them settle.",
+          "zh": "需要成人帮助才能平静。"
+        },
+        "developing": {
+          "en": "Uses a known strategy when reminded.",
+          "zh": "经提醒会使用学过的方法。"
+        },
+        "secure": {
+          "en": "Notices the feeling and settles themselves.",
+          "zh": "能察觉情绪并自行平静下来。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-A.A5.1",
+      "milestoneId": "SED-A.A5.1",
+      "strandId": "SED-A",
+      "domainId": "SED",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Talks with adults about ideas and plans, not only needs.",
+        "zh": "能与成人谈论想法和计划，而不只是需求。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Talks mostly about what they need.",
+          "zh": "多半只谈自己的需要。"
+        },
+        "developing": {
+          "en": "Talks about what they are making or doing.",
+          "zh": "会谈论正在做的事。"
+        },
+        "secure": {
+          "en": "Talks about ideas and plans and asks the adult’s view.",
+          "zh": "会谈想法和计划，并询问成人的看法。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-A.A5.2",
+      "milestoneId": "SED-A.A5.2",
+      "strandId": "SED-A",
+      "domainId": "SED",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Accepts guidance from an adult and acts on it.",
+        "zh": "能接受成人的指导并照着做。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Accepts guidance reluctantly.",
+          "zh": "勉强接受指导。"
+        },
+        "developing": {
+          "en": "Accepts and follows guidance most times.",
+          "zh": "多数时候能接受并照做。"
+        },
+        "secure": {
+          "en": "Accepts guidance readily and puts it to use.",
+          "zh": "欣然接受指导并加以运用。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-B.A5.1",
+      "milestoneId": "SED-B.A5.1",
+      "strandId": "SED-B",
+      "domainId": "SED",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Works with others on a shared plan.",
+        "zh": "能与同伴共同完成一个计划。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Works beside others on the same thing.",
+          "zh": "与同伴做同一件事但各做各的。"
+        },
+        "developing": {
+          "en": "Agrees a simple plan with one child.",
+          "zh": "能与一个同伴商定简单计划。"
+        },
+        "secure": {
+          "en": "Plans with a group and shares out the roles.",
+          "zh": "能与小组共同计划并分工。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-B.A5.2",
+      "milestoneId": "SED-B.A5.2",
+      "strandId": "SED-B",
+      "domainId": "SED",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Sorts out a small disagreement with words.",
+        "zh": "能用语言解决小冲突。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Comes to an adult to settle it.",
+          "zh": "会找成人来解决。"
+        },
+        "developing": {
+          "en": "Uses words with an adult nearby.",
+          "zh": "成人在旁时能用语言处理。"
+        },
+        "secure": {
+          "en": "Settles small disagreements independently.",
+          "zh": "能独立解决小冲突。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-C.A5.1",
+      "milestoneId": "SED-C.A5.1",
+      "strandId": "SED-C",
+      "domainId": "SED",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Talks about why they feel a certain way.",
+        "zh": "能说出自己为什么会有这种感受。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Names the feeling only.",
+          "zh": "只能说出情绪名称。"
+        },
+        "developing": {
+          "en": "Gives a simple reason.",
+          "zh": "能给出简单的原因。"
+        },
+        "secure": {
+          "en": "Explains the reason and what would help.",
+          "zh": "能说明原因和什么会有帮助。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-C.A5.2",
+      "milestoneId": "SED-C.A5.2",
+      "strandId": "SED-C",
+      "domainId": "SED",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Offers comfort or help to a child who is upset.",
+        "zh": "会主动安慰或帮助难过的同伴。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Watches with concern.",
+          "zh": "关切地看着。"
+        },
+        "developing": {
+          "en": "Offers help when it is suggested.",
+          "zh": "经建议会提供帮助。"
+        },
+        "secure": {
+          "en": "Offers comfort in their own way, unprompted.",
+          "zh": "会用自己的方式主动安慰。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-D.A5.1",
+      "milestoneId": "SED-D.A5.1",
+      "strandId": "SED-D",
+      "domainId": "SED",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Uses the classroom courtesies naturally through the day.",
+        "zh": "全天自然地使用班级礼仪。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Uses courtesies at set moments.",
+          "zh": "只在固定时刻使用礼仪。"
+        },
+        "developing": {
+          "en": "Uses courtesies through much of the day.",
+          "zh": "一天中大部分时间使用礼仪。"
+        },
+        "secure": {
+          "en": "Courtesy is part of how they move through the day.",
+          "zh": "礼仪已成为其自然的一部分。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.SED-D.A5.2",
+      "milestoneId": "SED-D.A5.2",
+      "strandId": "SED-D",
+      "domainId": "SED",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "emerging_edge",
+      "statement": {
+        "en": "Helps a younger child learn a routine.",
+        "zh": "能帮助年幼的同伴学习常规。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Notices a younger child needing help.",
+          "zh": "注意到年幼同伴需要帮助。"
+        },
+        "developing": {
+          "en": "Helps when asked.",
+          "zh": "被请求时会帮忙。"
+        },
+        "secure": {
+          "en": "Helps a younger child patiently and unprompted.",
+          "zh": "会耐心地主动帮助年幼同伴。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-A.A5.1",
+      "milestoneId": "PPL-A.A5.1",
+      "strandId": "PPL-A",
+      "domainId": "PPL",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Draws and writes with steady control.",
+        "zh": "画画和书写时手部控制稳定。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Lines are large and uneven.",
+          "zh": "笔画大而不匀。"
+        },
+        "developing": {
+          "en": "Control is steady for short pieces.",
+          "zh": "短篇书写时控制稳定。"
+        },
+        "secure": {
+          "en": "Control is steady and sized to the paper.",
+          "zh": "控制稳定且大小得当。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-A.A5.2",
+      "milestoneId": "PPL-A.A5.2",
+      "strandId": "PPL-A",
+      "domainId": "PPL",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Fastens buttons, zips and small catches.",
+        "zh": "能扣纽扣、拉拉链和扣小搭扣。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Manages large fastenings with help.",
+          "zh": "在帮助下能完成大的扣件。"
+        },
+        "developing": {
+          "en": "Manages most fastenings alone.",
+          "zh": "多数扣件能自己完成。"
+        },
+        "secure": {
+          "en": "Manages all the classroom fastenings independently.",
+          "zh": "能独立完成教室里所有扣件。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-B.A5.1",
+      "milestoneId": "PPL-B.A5.1",
+      "strandId": "PPL-B",
+      "domainId": "PPL",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Hops, skips and changes direction with control.",
+        "zh": "能有控制地单脚跳、跳跃并变换方向。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Hops on the spot.",
+          "zh": "能原地单脚跳。"
+        },
+        "developing": {
+          "en": "Hops and skips a short distance.",
+          "zh": "能跳跃一小段距离。"
+        },
+        "secure": {
+          "en": "Hops, skips and turns with control.",
+          "zh": "能有控制地跳跃和转向。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-B.A5.2",
+      "milestoneId": "PPL-B.A5.2",
+      "strandId": "PPL-B",
+      "domainId": "PPL",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Carries and places heavy or awkward material safely.",
+        "zh": "能安全地搬运和放置较重或不易拿的材料。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Carries light material alone.",
+          "zh": "只能独自搬轻的材料。"
+        },
+        "developing": {
+          "en": "Carries heavier material with care.",
+          "zh": "能小心搬运较重的材料。"
+        },
+        "secure": {
+          "en": "Judges what they can carry and asks for help when needed.",
+          "zh": "能判断自己搬得动什么，并在需要时求助。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-C.A5.1",
+      "milestoneId": "PPL-C.A5.1",
+      "strandId": "PPL-C",
+      "domainId": "PPL",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Looks after their own belongings all day.",
+        "zh": "全天能照管好自己的物品。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Needs reminders about belongings.",
+          "zh": "需要提醒才照管物品。"
+        },
+        "developing": {
+          "en": "Keeps track of belongings on most days.",
+          "zh": "多数日子能管好物品。"
+        },
+        "secure": {
+          "en": "Keeps belongings in order without reminders.",
+          "zh": "无需提醒就能保持物品整齐。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-C.A5.2",
+      "milestoneId": "PPL-C.A5.2",
+      "strandId": "PPL-C",
+      "domainId": "PPL",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Notices what they need and gets it themselves.",
+        "zh": "能察觉自己的需要并自行取用。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Tells an adult what they need.",
+          "zh": "会告诉成人自己需要什么。"
+        },
+        "developing": {
+          "en": "Gets what they need when reminded where it is.",
+          "zh": "经提醒位置后能自己去取。"
+        },
+        "secure": {
+          "en": "Notices and gets what they need independently.",
+          "zh": "能自己察觉并取用所需。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-D.A5.1",
+      "milestoneId": "PPL-D.A5.1",
+      "strandId": "PPL-D",
+      "domainId": "PPL",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Takes care of the room without being asked.",
+        "zh": "无需要求即能照顾教室环境。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Tidies when asked.",
+          "zh": "被要求时会整理。"
+        },
+        "developing": {
+          "en": "Notices and tidies their own area.",
+          "zh": "会注意并整理自己的区域。"
+        },
+        "secure": {
+          "en": "Notices what the room needs and does it.",
+          "zh": "能察觉教室的需要并去做。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.PPL-D.A5.2",
+      "milestoneId": "PPL-D.A5.2",
+      "strandId": "PPL-D",
+      "domainId": "PPL",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "emerging_edge",
+      "statement": {
+        "en": "Shows another child how to care for a material.",
+        "zh": "能向同伴示范如何爱护材料。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Tells a child not to spoil a material.",
+          "zh": "会阻止同伴弄坏材料。"
+        },
+        "developing": {
+          "en": "Shows a child what to do when asked.",
+          "zh": "被请求时会示范。"
+        },
+        "secure": {
+          "en": "Shows a child carefully and patiently, unprompted.",
+          "zh": "会主动耐心地示范给同伴。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.LCL-E.A5.1",
+      "milestoneId": "LCL-E.A5.1",
+      "strandId": "LCL-E",
+      "domainId": "LCL",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Writes their own name clearly.",
+        "zh": "能清楚地写出自己的名字。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Writes their name with a model to copy.",
+          "zh": "需照着范例书写。"
+        },
+        "developing": {
+          "en": "Writes their name from memory, letters uneven.",
+          "zh": "能凭记忆写出，字母不匀。"
+        },
+        "secure": {
+          "en": "Writes their name clearly and consistently.",
+          "zh": "能清楚一致地写出名字。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.LCL-E.A5.2",
+      "milestoneId": "LCL-E.A5.2",
+      "strandId": "LCL-E",
+      "domainId": "LCL",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Writes short taught words using the sounds they know.",
+        "zh": "能用学过的音写出简短的词。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Writes the first sound of a word only.",
+          "zh": "只能写出第一个音。"
+        },
+        "developing": {
+          "en": "Writes the first and last sounds.",
+          "zh": "能写出首尾两个音。"
+        },
+        "secure": {
+          "en": "Writes short taught words readably.",
+          "zh": "能写出可读的学过短词。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.COG-E.A5.1",
+      "milestoneId": "COG-E.A5.1",
+      "strandId": "COG-E",
+      "domainId": "COG",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Makes a guess about what will happen and checks it.",
+        "zh": "能预测将会发生什么并加以验证。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Says what they think will happen.",
+          "zh": "能说出自己的猜想。"
+        },
+        "developing": {
+          "en": "Guesses and watches what happens.",
+          "zh": "猜测后会观察结果。"
+        },
+        "secure": {
+          "en": "Guesses, checks, and says whether they were right.",
+          "zh": "猜测、验证并说出对错。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    },
+    {
+      "id": "IT.OBS.COG-E.A5.2",
+      "milestoneId": "COG-E.A5.2",
+      "strandId": "COG-E",
+      "domainId": "COG",
+      "ageBand": "A5",
+      "form": "O",
+      "moduleId": "M-OBS",
+      "type": "observation_checklist",
+      "expectation": "expected",
+      "statement": {
+        "en": "Talks about living things, the weather or the seasons with some detail.",
+        "zh": "能较详细地谈论生物、天气或季节。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Names a plant, animal or weather word.",
+          "zh": "能说出植物、动物或天气的名称。"
+        },
+        "developing": {
+          "en": "Describes one of them in a sentence.",
+          "zh": "能用一句话描述其中一样。"
+        },
+        "secure": {
+          "en": "Explains a change and gives a reason.",
+          "zh": "能解释变化并说明原因。"
+        }
+      },
+      "scoring": {
+        "method": "teacher_band",
+        "bands": [
+          "emerging",
+          "developing",
+          "secure"
+        ],
+        "maxPoints": null,
+        "rubric": null
+      },
+      "evidenceNote": {
+        "maxChars": 300,
+        "optional": true
+      },
+      "evidenceMedia": {
+        "field": "montree_media.id",
+        "optional": true
+      },
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "teacher ticks one band and may add an evidence note"
+      },
+      "prompt": {
+        "teacherScript": {
+          "en": "Rate this from what you have already seen in the work cycle. Choose the best fit — this is a judgement, not a tally.",
+          "zh": "请根据你在工作周期中已经观察到的情况评定。选择最贴近的一档——这是整体判断，不是逐项打勾。"
+        }
+      }
+    }
+  ]
+}
