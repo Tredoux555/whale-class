@@ -1,11 +1,15 @@
 // /montree/library/dark-phonics/page.tsx
 // Montree Library — Dark Phonics, the whole programme on one page.
 //
-// One card per lesson (5–53, 49 lessons): the song, the music video, the song
-// card picture, the storybook, the easy reader and the printables — every
-// asset that exists for that sound, in teaching order. This is the all-in-one
+// One card per lesson (49 lessons): the song, the music video, the song card
+// picture, the letter book, the easy reader and the printables — every asset
+// that exists for that sound, in teaching order. This is the all-in-one
 // replacement for the multi-tab hub at public/dark-phonics.html; the old hub
 // stays put and now carries a banner pointing here.
+//
+// NUMBERING: the curriculum's own lesson numbers are 5–53 and every media
+// object is still named lesson-05 … lesson-53. The PAGE shows 1–49 — see
+// displayN() below. Internal n and every media key stay untouched.
 //
 // Hardcoded English, deliberately bypassing i18n — the same sanctioned
 // exception as app/montree/library/satpin/page.tsx: the content itself IS
@@ -14,10 +18,10 @@
 //
 // Public: no auth. middleware.ts exempts /montree/library/*.
 //
-// Data sources, merged into LESSONS below — keep the five in step:
+// Data sources, merged into LESSONS below — keep them in step:
 //   public/dark-phonics-playlist.html                                n / sound / title / catchphrase (canonical)
 //   lib/montree/english-curriculum/spec/dark-phonics-hardcards.json  vocab words (46 of 49 — 33/34/46 are review/abstract)
-//   scripts/curriculum/dark-phonics-storybooks/manifest.json         27 storybooks (book N = lesson N + 4)
+//   public/dark-phonics-books/                                       the four "THE ___" letter books (covers + print PDFs)
 //   public/dark-phonics-readers.html                                 the 11 easy readers + their gate lessons
 //   scripts/curriculum/flashcards/books_def.py (weeks 3–6) +
 //   scripts/curriculum/dark-phonics-readers/book07.py–book27.py      decodable words + heart words per lesson's
@@ -41,6 +45,14 @@ import { getProxyUrl, getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/
 
 /** Zero-padded lesson number — every media object is named lesson-NN.<ext>. */
 const nn = (n: number) => String(n).padStart(2, '0');
+
+/**
+ * The number the PAGE shows. The curriculum's internal numbering runs 5–53
+ * (and every bucket object is named lesson-05 … lesson-53), but Dark Phonics
+ * is taught as lessons 1–49, so everything a parent reads is n − 4. Use this
+ * for EVERY rendered lesson number; never for a media key or a bucket path.
+ */
+const displayN = (n: number) => n - 4;
 
 /** Media-proxy URL for a path inside the public `dark-phonics` bucket. */
 const media = (path: string, v?: number) =>
@@ -69,122 +81,20 @@ interface BankPhoto {
 }
 
 /**
- * The 27 storybooks' own vocabulary, straight off
- * scripts/curriculum/dark-phonics-storybooks/manifest.json pages p1–p4 (the
- * picture word each page introduces), plus the frame noun every page repeats
- * — the container the word is dropped into ('sock', 'nest', 'igloo') or the
- * constant actor/object round which the pattern turns ('pig' ate a
- * pineapple/pen/pencil/pan; an owl/otter/ostrich/octopus ate an 'orange').
- * Book num 1 = lesson 5 … book 27 = lesson 31 — keep this in step with the
- * manifest. Two books (letter E, letter X) only have three picture words.
- */
-const BOOK_VOCAB: Record<string, string[]> = {
-  'snake-in-my-sock': ['snake', 'star', 'sloth', 'sock'],
-  'ant-on-my-apple': ['ant', 'alligator', 'anteater', 'apple'],
-  'tiger-in-the-taxi': ['turtle', 'tomato', 'toothbrush', 'tiger', 'taxi'],
-  'the-spat': ['basin', 'penguin', 'pig', 'pelican', 'potato'],
-  'the-pit': ['pit', 'ant', 'apple', 'sun', 'star', 'snake', 'cat', 'potato'],
-  'in-the-igloo': ['iguana', 'insect', 'inchworm', 'infant', 'igloo'],
-  'not-in-my-nest': ['nut', 'net', 'nail', 'napkin', 'nest'],
-  'monkey-in-my-mug': ['mouse', 'mushroom', 'magnet', 'monkey', 'mug'],
-  'dinosaur-on-a-drum': ['dog', 'doll', 'duck', 'dinosaur', 'drum'],
-  'oh-no-goat': ['grapes', 'gloves', 'gift', 'guitar', 'goat'],
-  'owl-ate-an-orange': ['owl', 'otter', 'ostrich', 'octopus', 'orange'],
-  'cow-on-the-car': ['cat', 'cup', 'comb', 'cow', 'car'],
-  'koala-in-the-pocket': ['key', 'kite', 'kettle', 'koala', 'pocket'],
-  'on-a-rock': ['duck', 'chick', 'clock', 'sock', 'rock'],
-  'elephant-sat-on-the-egg': ['hen', 'eagle', 'elephant', 'egg'],
-  'under-my-umbrella': ['unicorn', 'ukulele', 'unicycle', 'urchin', 'umbrella'],
-  'rabbit-in-the-rocket': ['rabbit', 'robot', 'rose', 'ring', 'rocket'],
-  'horse-in-my-hat': ['hen', 'hammer', 'heart', 'horse', 'hat'],
-  'bear-in-the-boat': ['ball', 'banana', 'bell', 'bear', 'boat'],
-  'frog-on-the-fan': ['frog', 'fish', 'feather', 'fork', 'fan'],
-  'oh-no-lion': ['lemon', 'leaf', 'ladder', 'lizard', 'lion'],
-  'jellyfish-in-the-jar': ['jug', 'jacket', 'jet', 'jellyfish', 'jar'],
-  'volcano-in-the-van': ['violin', 'vase', 'vest', 'volcano', 'van'],
-  'whale-in-the-wagon': ['worm', 'watch', 'wolf', 'whale', 'wagon'],
-  'fox-in-a-box': ['fox', 'ox', 'xylophone', 'box'],
-  'yak-on-the-yacht': ['yak', 'yam', 'yoyo', 'yarn', 'yacht'],
-  'zzz-at-the-zoo': ['zebra', 'zipper', 'zucchini', 'zeppelin', 'zoo'],
-  'queen-on-the-quilt': ['quill', 'quarter', 'quail', 'queen', 'quilt'],
-};
-
-/**
- * Each book's page keys, in manifest order — the sort key for the Book
- * Pictures row (label is "<slug> <key>", e.g. "snake-in-my-sock p1-snake",
- * so pN is parsed straight off the label) and the source of BOOK_VOCAB above.
- * scripts/curriculum/upload-dark-phonics-book-art.mjs ingests one photo per
- * key, tagged 'dark-phonics-book' + 'dark-phonics-book-<slug>'.
- */
-const BOOK_PAGE_KEYS: Record<string, string[]> = {
-  'snake-in-my-sock': ['p1-sock', 'p2-snake', 'p3-star', 'p4-sloth', 'p5-potato', 'p6-recap'],
-  'ant-on-my-apple': ['p1-apple', 'p2-ant', 'p3-alligator', 'p4-anteater', 'p5-ambulance', 'p6-recap'],
-  'tiger-in-the-taxi': ['p1-turtle', 'p2-tomato', 'p3-toothbrush', 'p4-tiger', 'p5-recap'],
-  'the-spat': ['p1-basin', 'p2-penguin', 'p3-pig', 'p4-pelican', 'p5-recap', 'p6-potato'],
-  'the-pit': ['p1-pit', 'p2-ant', 'p3-apple', 'p4-sun', 'p5-star', 'p6-snake', 'p7-cat', 'p8-recap', 'p9-potato'],
-  'in-the-igloo': ['p1-iguana', 'p2-insect', 'p3-inchworm', 'p4-infant', 'p5-recap'],
-  'not-in-my-nest': ['p1-nut', 'p2-net', 'p3-nail', 'p4-napkin', 'p5-recap'],
-  'monkey-in-my-mug': ['p1-mouse', 'p2-mushroom', 'p3-magnet', 'p4-monkey', 'p5-recap'],
-  'dinosaur-on-a-drum': ['p1-dog', 'p2-doll', 'p3-duck', 'p4-dinosaur', 'p5-recap'],
-  'oh-no-goat': ['p1-grapes', 'p2-gloves', 'p3-gift', 'p4-guitar', 'p5-recap'],
-  'owl-ate-an-orange': ['p1-owl', 'p2-otter', 'p3-ostrich', 'p4-octopus', 'p5-recap'],
-  'cow-on-the-car': ['p1-cat', 'p2-cup', 'p3-comb', 'p4-cow', 'p5-recap'],
-  'koala-in-the-pocket': ['p1-key', 'p2-kite', 'p3-kettle', 'p4-koala', 'p5-recap'],
-  'on-a-rock': ['p1-duck', 'p2-chick', 'p3-clock', 'p4-sock', 'p5-recap'],
-  'elephant-sat-on-the-egg': ['p1-hen', 'p2-eagle', 'p3-elephant', 'p4-recap'],
-  'under-my-umbrella': ['p1-unicorn', 'p2-ukulele', 'p3-unicycle', 'p4-urchin', 'p5-recap'],
-  'rabbit-in-the-rocket': ['p1-rabbit', 'p2-robot', 'p3-rose', 'p4-ring', 'p5-recap'],
-  'horse-in-my-hat': ['p1-hen', 'p2-hammer', 'p3-heart', 'p4-horse', 'p5-recap'],
-  'bear-in-the-boat': ['p1-ball', 'p2-banana', 'p3-bell', 'p4-bear', 'p5-recap'],
-  'frog-on-the-fan': ['p1-frog', 'p2-fish', 'p3-feather', 'p4-fork', 'p5-recap'],
-  'oh-no-lion': ['p1-lemon', 'p2-leaf', 'p3-ladder', 'p4-lizard', 'p5-recap'],
-  'jellyfish-in-the-jar': ['p1-jug', 'p2-jacket', 'p3-jet', 'p4-jellyfish', 'p5-recap'],
-  'volcano-in-the-van': ['p1-violin', 'p2-vase', 'p3-vest', 'p4-volcano', 'p5-recap'],
-  'whale-in-the-wagon': ['p1-worm', 'p2-watch', 'p3-wolf', 'p4-whale', 'p5-recap'],
-  'fox-in-a-box': ['p1-fox', 'p2-ox', 'p3-xylophone', 'p4-recap'],
-  'yak-on-the-yacht': ['p1-yak', 'p2-yam', 'p3-yoyo', 'p4-yarn', 'p5-recap'],
-  'zzz-at-the-zoo': ['p1-zebra', 'p2-zipper', 'p3-zucchini', 'p4-zeppelin', 'p5-recap'],
-  'queen-on-the-quilt': ['p1-quill', 'p2-quarter', 'p3-quail', 'p4-queen', 'p5-recap'],
-  'the-sat': ['p1-ant', 'p2-snake', 'p3-apple', 'p4-sun', 'p5-star', 'p6-cat', 'p7-recap'],
-};
-
-/**
  * 🚨 STYLE SEPARATION (locked): this page is Dark Phonics and shows the Seuss
  * pen-and-ink ILLUSTRATIONS ONLY. The real Montessori photographs belong to
- * the Montree Phonics page and must never appear here — a word with no
- * illustration renders the "no picture" placeholder instead.
+ * the Montree Phonics page and must never appear here. Image resolution is
+ * therefore TAG-ONLY — a picture is used if and only if it carries this
+ * book's own 'dark-phonics-book-<slug>' tag. Never reintroduce a
+ * first-exact-match or SATPIN-basket fallback: both leaked real photographs
+ * onto this page. A book with no tagged art renders the "no pictures yet"
+ * placeholder instead.
  */
-
-/** Photo carries the 'dark-phonics-vocab' tag — the only source for a word chip's picture. */
-function isDarkPhonicsVocabPhoto(photo: BankPhoto): boolean {
-  return (photo.tags || []).some(t => String(t || '').trim().toLowerCase() === 'dark-phonics-vocab');
-}
-
-/**
- * Look one vocab word up in the Picture Bank and return the exact-label match
- * tagged 'dark-phonics-vocab'. Nothing else qualifies: the old SATPIN-basket
- * and first-exact-match fallbacks leaked real photographs onto this page for
- * the 23 words that exist in both sets, so both are gone.
- */
-async function fetchVocabByLabel(word: string): Promise<BankPhoto | null> {
-  try {
-    const params = new URLSearchParams({ page: '1', limit: '20', kind: 'pictures', q: word });
-    const res = await fetch(`/api/montree/photo-bank?${params}`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    const photos: BankPhoto[] = data.photos || [];
-    const target = word.trim().toLowerCase();
-    const exact = photos.filter(p => (p.label || '').trim().toLowerCase() === target);
-    return exact.find(isDarkPhonicsVocabPhoto) || null;
-  } catch {
-    return null;
-  }
-}
 
 /**
  * A book's scene pictures — searched by slug, kept if tagged
- * 'dark-phonics-book-<slug>', sorted p1→p5 by the page number embedded in
- * the label ("<slug> p1-snake").
+ * 'dark-phonics-book-<slug>', sorted p1→pN by the page number embedded in
+ * the label ("<slug> p1-ant").
  */
 async function fetchBookPictures(slug: string): Promise<BankPhoto[]> {
   try {
@@ -216,11 +126,13 @@ type Book = {
   title: string;
   /** Row description under the title. Defaults to the standard initial-sound-book blurb. */
   description?: string;
-  /** Cover image override — a local /public path for books with no Supabase-bucket cover yet.
-   *  Absent means "proxied from the dark-phonics bucket at books/covers/<slug>.png" (the 27-book default). */
+  /** Cover image override — a local /public path. All four letter books set it
+   *  (/dark-phonics-books/covers/<slug>.png). Absent falls back to the
+   *  dark-phonics bucket at books/covers/<slug>.png. */
   cover?: string;
-  /** Set false for books that don't have the paperwork/tracing/three-part-card pack built yet
-   *  (only the 27 curated Dark Phonics books do). Defaults to true. */
+  /** Set false for books that don't have the paperwork/tracing/three-part-card
+   *  pack built yet. Defaults to true — the-spat and the-pit have full packs in
+   *  public/dark-phonics-materials/<slug>/; the-sat and the-tall do not yet. */
   materials?: boolean;
 };
 type Reader = { slug: string; title: string };
@@ -233,9 +145,10 @@ type RawLesson = {
   catchphrase: string;
   /** Hard-card vocab. Absent for the three review/abstract lessons (33, 34, 46). */
   words?: string[];
-  /** Storybooks — lessons 5–31 always carry at least one (book N of the 27 = lesson N + 4);
-   *  a lesson can carry more than one (e.g. lesson 7 also has the hybrid SATPIN reader
-   *  "The ___ Sat!"). Up to ~5 is the target once more books exist per lesson. */
+  /** Letter books. The 27 old initial-sound pattern storybooks were retired from
+   *  this page on 2026-08-03 (assets untouched); the only books here now are the
+   *  four "THE ___" letter books — n=7 the-sat + the-tall, n=8 the-spat,
+   *  n=9 the-pit. A lesson can carry more than one; up to ~5 is the target. */
   books?: Book[];
   /** Easy Reader gated at this lesson — 11 of the 49 carry one. */
   reader?: Reader;
@@ -271,44 +184,44 @@ const PALETTE: Array<[string, string]> = [
   ['163,230,53', '217,249,157'],   // lime
 ];
 
-/** The 49 lessons, in teaching order. Numbers are the curriculum's own (5–53). */
+/** The 49 lessons, in teaching order. `n` is the curriculum's own number (5–53)
+ *  and drives every media key; the page shows displayN(n) = n − 4, i.e. 1–49. */
 const RAW: RawLesson[] = [
-  { n: 5, sound: 's', title: 'The Snake Says Ssss', catchphrase: '“snake in my sock!”', words: ['snake', 'sock'], books: [{ slug: 'snake-in-my-sock', title: 'Snake in My Sock' }] },
-  { n: 6, sound: 'a', title: 'A Is for Apple', catchphrase: '“ant on my apple!”', words: ['ant', 'apple'], books: [{ slug: 'ant-on-my-apple', title: 'Ant on My Apple' }] },
+  { n: 5, sound: 's', title: 'The Snake Says Ssss', catchphrase: '“snake in my sock!”', words: ['snake', 'sock'] },
+  { n: 6, sound: 'a', title: 'A Is for Apple', catchphrase: '“ant on my apple!”', words: ['ant', 'apple'] },
   { n: 7, sound: 't', title: 'Tick-Tock, T!', catchphrase: '“tick-tock, stinky sock!”', decodable: ['sat', 'at'], heartWords: ['a'], words: ['clock', 'sock'], books: [
-    { slug: 'tiger-in-the-taxi', title: 'A Tiger in the Taxi' },
     { slug: 'the-sat', title: 'The ___ Sat!', description: 'Hybrid decodable — teacher reads the set-up, the child shouts “Sat!” on every page.', cover: '/dark-phonics-books/covers/the-sat.png', materials: false },
-    { slug: 'the-tall', title: 'The Tall ___!', description: 'Companion pattern book, same cast as A Tiger in the Taxi — the child shouts the picture word.', cover: '/dark-phonics-books/covers/the-tall.png', materials: false },
+    { slug: 'the-tall', title: 'The Tall ___!', description: 'Companion pattern book, same cast — the child shouts the picture word.', cover: '/dark-phonics-books/covers/the-tall.png', materials: false },
   ] },
   { n: 8, sound: 'p', title: 'Pop, Pop, P!', catchphrase: '“pop, pop, puppy poop!”', decodable: ['sap', 'pat', 'tap', 'spat'], words: ['pup'], books: [
     { slug: 'the-spat', title: 'The ___ Spat!', description: 'Letter P initial-sound book — cast: basin, penguin, pig, pelican, potato.', cover: '/dark-phonics-books/covers/the-spat.png' },
+    { slug: 'the-pat', title: 'The ___ Can Pat!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat, potato.', cover: '/dark-phonics-books/covers/the-pat.png', materials: false },
   ] },
   { n: 9, sound: 'i', title: 'I, I, Itsy I', catchphrase: '“icky, sticky pig!”', decodable: ['sit', 'it', 'is', 'sip', 'pit', 'spit'], words: ['pig'], books: [
-    { slug: 'in-the-igloo', title: 'In the Igloo' },
-    { slug: 'the-pit', title: 'The ___ Sat in the Pit!', description: 'Letter Book Three — the-sat cast returns: pit, ant, apple, sun, star, snake, cat, potato.', cover: '/dark-phonics-books/covers/the-pit.png' },
+    { slug: 'the-pit', title: 'The ___ Sat in the Pit!', description: 'Letter Book Three — the-sat cast returns: pit, ant, apple, sun, star, snake, cat, potato.', cover: '/dark-phonics-books/covers/the-pit.png', materials: true },
   ] },
-  { n: 10, sound: 'n', title: 'N for the Nose', catchphrase: '“no-no, nanny goat!”', decodable: ['an', 'ant', 'in', 'nap', 'naps', 'pan', 'tin', 'nip', 'snap'], heartWords: ['I'], words: ['goat'], books: [{ slug: 'not-in-my-nest', title: 'Not in My Nest!' }] },
-  { n: 11, sound: 'm', title: 'Mmm, That\'s Good!', catchphrase: '“mmm, muddy monkey!”', decodable: ['mat', 'Sam'], words: ['monkey'], books: [{ slug: 'monkey-in-my-mug', title: 'A Monkey in My Mug' }] },
-  { n: 12, sound: 'd', title: 'D for the Dog', catchphrase: '“dirty dog, dig dig dig!”', decodable: ['pad'], words: ['dog'], books: [{ slug: 'dinosaur-on-a-drum', title: 'A Dinosaur on a Drum' }] },
-  { n: 13, sound: 'g', title: 'G for the Goat', catchphrase: '“goat got my gum!”', decodable: ['pig'], words: ['goat', 'gum'], books: [{ slug: 'oh-no-goat', title: 'Oh No, Goat…' }] },
-  { n: 14, sound: 'o', title: 'O for the Octopus', catchphrase: '“hot dog on a log!”', decodable: ['pot', 'dog'], words: ['hotdog', 'log'], books: [{ slug: 'owl-ate-an-orange', title: 'An Owl Ate an Orange' }] },
-  { n: 15, sound: 'c', title: 'C for the Cat', catchphrase: '“cat ate my cookie!”', decodable: ['cot', 'cat'], words: ['cat', 'cookie'], books: [{ slug: 'cow-on-the-car', title: 'A Cow on the Car' }] },
-  { n: 16, sound: 'k', title: 'K Says It Too', catchphrase: '“kooky king kicks!”', decodable: ['kit', 'Kim'], words: ['king'], books: [{ slug: 'koala-in-the-pocket', title: 'A Koala in the Pocket' }] },
-  { n: 17, sound: 'ck', title: 'Two Letters, One Kick', catchphrase: '“kick the stinky sock!”', decodable: ['sock', 'sick'], heartWords: ['ate'], words: ['sock'], books: [{ slug: 'on-a-rock', title: 'On a Rock' }], reader: { slug: 'the-cat-sat', title: 'The Cat Sat' } },
-  { n: 18, sound: 'e', title: 'Crack the Egg, E!', catchphrase: '“ten messy hens!”', decodable: ['egg'], words: ['hen'], books: [{ slug: 'elephant-sat-on-the-egg', title: 'The Elephant Sat on the Egg' }] },
-  { n: 19, sound: 'u', title: 'Up Goes the Umbrella', catchphrase: '“yummy bug in my cup!”', decodable: ['duck', 'mud', 'stuck'], words: ['bug', 'cup'], books: [{ slug: 'under-my-umbrella', title: 'Under My Umbrella' }], reader: { slug: 'mud-pup', title: 'Mud Pup' } },
-  { n: 20, sound: 'r', title: 'Rrr Goes the Engine', catchphrase: '“run, run, red rat!”', decodable: ['rug', 'rat', 'under'], words: ['rat'], books: [{ slug: 'rabbit-in-the-rocket', title: 'A Rabbit in the Rocket' }] },
-  { n: 21, sound: 'h', title: 'H, the Panting Pup', catchphrase: '“ha-ha, hairy hippo!”', decodable: ['hat', 'hen'], words: ['hippo'], books: [{ slug: 'horse-in-my-hat', title: 'A Horse in My Hat' }] },
-  { n: 22, sound: 'b', title: 'B for the Bobbing Boat', catchphrase: '“big baby burp!”', decodable: ['bed', 'bug'], words: ['baby'], books: [{ slug: 'bear-in-the-boat', title: 'A Bear in the Boat' }], reader: { slug: 'hen-in-bed', title: 'Hen in Bed' } },
-  { n: 23, sound: 'f', title: 'Ffff Like a Fan', catchphrase: '“funny fox in my fan!”', decodable: ['fan', 'off'], words: ['fox', 'fan'], books: [{ slug: 'frog-on-the-fan', title: 'A Frog on the Fan' }] },
-  { n: 24, sound: 'l', title: 'La-La-La Goes L', catchphrase: '“lazy lion licks!”', decodable: ['log', 'run', 'croc'], words: ['lion'], books: [{ slug: 'oh-no-lion', title: 'Oh No, Lion…' }] },
-  { n: 25, sound: 'j', title: 'Jump for J', catchphrase: '“jump in the jelly jam!”', decodable: ['jug', 'jam'], words: ['jam'], books: [{ slug: 'jellyfish-in-the-jar', title: 'A Jellyfish in the Jar' }] },
-  { n: 26, sound: 'v', title: 'Vvvv Goes the Van', catchphrase: '“vroom-vroom van!”', decodable: ['van'], words: ['van'], books: [{ slug: 'volcano-in-the-van', title: 'A Volcano in the Van' }] },
-  { n: 27, sound: 'w', title: 'W for the Windy Day', catchphrase: '“wiggly wet worm!”', decodable: ['wig'], words: ['worm'], books: [{ slug: 'whale-in-the-wagon', title: 'A Whale in the Wagon' }] },
-  { n: 28, sound: 'x', title: 'X Marks the Box', catchphrase: '“six fox in a box!”', decodable: ['box', 'fox'], words: ['fox', 'box'], books: [{ slug: 'fox-in-a-box', title: 'A Fox in a Box' }], reader: { slug: 'fox-in-a-box', title: 'Fox in a Box' } },
-  { n: 29, sound: 'y', title: 'Yes! Yum! Y!', catchphrase: '“yummy yellow yo-yo!”', decodable: ['yam', 'big'], words: ['yoyo'], books: [{ slug: 'yak-on-the-yacht', title: 'A Yak on the Yacht' }] },
-  { n: 30, sound: 'z', title: 'Zzz Like a Buzzing Bee', catchphrase: '“zippy zebra, zzz!”', decodable: ['zip', 'bag'], words: ['zebra'], books: [{ slug: 'zzz-at-the-zoo', title: 'Zzz at the Zoo' }] },
-  { n: 31, sound: 'qu', title: 'The Queen Says Qu', catchphrase: '“quick quacky duck!”', decodable: ['quilt', 'squid'], words: ['duck'], books: [{ slug: 'queen-on-the-quilt', title: 'A Queen on the Quilt' }] },
+  { n: 10, sound: 'n', title: 'N for the Nose', catchphrase: '“no-no, nanny goat!”', decodable: ['an', 'ant', 'in', 'nap', 'naps', 'pan', 'tin', 'nip', 'snap'], heartWords: ['I'], words: ['goat'] },
+  { n: 11, sound: 'm', title: 'Mmm, That\'s Good!', catchphrase: '“mmm, muddy monkey!”', decodable: ['mat', 'Sam'], words: ['monkey'] },
+  { n: 12, sound: 'd', title: 'D for the Dog', catchphrase: '“dirty dog, dig dig dig!”', decodable: ['pad'], words: ['dog'] },
+  { n: 13, sound: 'g', title: 'G for the Goat', catchphrase: '“goat got my gum!”', decodable: ['pig'], words: ['goat', 'gum'] },
+  { n: 14, sound: 'o', title: 'O for the Octopus', catchphrase: '“hot dog on a log!”', decodable: ['pot', 'dog'], words: ['hotdog', 'log'] },
+  { n: 15, sound: 'c', title: 'C for the Cat', catchphrase: '“cat ate my cookie!”', decodable: ['cot', 'cat'], words: ['cat', 'cookie'] },
+  { n: 16, sound: 'k', title: 'K Says It Too', catchphrase: '“kooky king kicks!”', decodable: ['kit', 'Kim'], words: ['king'] },
+  { n: 17, sound: 'ck', title: 'Two Letters, One Kick', catchphrase: '“kick the stinky sock!”', decodable: ['sock', 'sick'], heartWords: ['ate'], words: ['sock'], reader: { slug: 'the-cat-sat', title: 'The Cat Sat' } },
+  { n: 18, sound: 'e', title: 'Crack the Egg, E!', catchphrase: '“ten messy hens!”', decodable: ['egg'], words: ['hen'] },
+  { n: 19, sound: 'u', title: 'Up Goes the Umbrella', catchphrase: '“yummy bug in my cup!”', decodable: ['duck', 'mud', 'stuck'], words: ['bug', 'cup'], reader: { slug: 'mud-pup', title: 'Mud Pup' } },
+  { n: 20, sound: 'r', title: 'Rrr Goes the Engine', catchphrase: '“run, run, red rat!”', decodable: ['rug', 'rat', 'under'], words: ['rat'] },
+  { n: 21, sound: 'h', title: 'H, the Panting Pup', catchphrase: '“ha-ha, hairy hippo!”', decodable: ['hat', 'hen'], words: ['hippo'] },
+  { n: 22, sound: 'b', title: 'B for the Bobbing Boat', catchphrase: '“big baby burp!”', decodable: ['bed', 'bug'], words: ['baby'], reader: { slug: 'hen-in-bed', title: 'Hen in Bed' } },
+  { n: 23, sound: 'f', title: 'Ffff Like a Fan', catchphrase: '“funny fox in my fan!”', decodable: ['fan', 'off'], words: ['fox', 'fan'] },
+  { n: 24, sound: 'l', title: 'La-La-La Goes L', catchphrase: '“lazy lion licks!”', decodable: ['log', 'run', 'croc'], words: ['lion'] },
+  { n: 25, sound: 'j', title: 'Jump for J', catchphrase: '“jump in the jelly jam!”', decodable: ['jug', 'jam'], words: ['jam'] },
+  { n: 26, sound: 'v', title: 'Vvvv Goes the Van', catchphrase: '“vroom-vroom van!”', decodable: ['van'], words: ['van'] },
+  { n: 27, sound: 'w', title: 'W for the Windy Day', catchphrase: '“wiggly wet worm!”', decodable: ['wig'], words: ['worm'] },
+  { n: 28, sound: 'x', title: 'X Marks the Box', catchphrase: '“six fox in a box!”', decodable: ['box', 'fox'], words: ['fox', 'box'], reader: { slug: 'fox-in-a-box', title: 'Fox in a Box' } },
+  { n: 29, sound: 'y', title: 'Yes! Yum! Y!', catchphrase: '“yummy yellow yo-yo!”', decodable: ['yam', 'big'], words: ['yoyo'] },
+  { n: 30, sound: 'z', title: 'Zzz Like a Buzzing Bee', catchphrase: '“zippy zebra, zzz!”', decodable: ['zip', 'bag'], words: ['zebra'] },
+  { n: 31, sound: 'qu', title: 'The Queen Says Qu', catchphrase: '“quick quacky duck!”', decodable: ['quilt', 'squid'], words: ['duck'] },
   { n: 32, sound: 'review', title: 'All Our Sounds', catchphrase: '“cat, pig, dog - woof!”', words: ['cat', 'pig', 'dog'] },
   { n: 33, sound: 'review', title: 'The Five Little Vowels', catchphrase: '“a, e, i, o, u... achoo!”' },
   { n: 34, sound: 'review', title: 'We Know the Alphabet', catchphrase: '“a to z, easy-peasy!”' },
@@ -354,13 +267,11 @@ export default function DarkPhonicsPage() {
   const router = useRouter();
   /** null until the existence check returns — nothing media-gated renders before then. */
   const [index, setIndex] = useState<MediaIndex | null>(null);
-  /** Vocab-word pictures, keyed by lowercase word — one flat map, deduped
-   *  across all 27 books' BOOK_VOCAB (a few words like 'sock' and 'hen'
-   *  repeat across books and are only ever fetched once). */
-  const [vocabPictures, setVocabPictures] = useState<Record<string, BankPhoto>>({});
-  const [picturesLoading, setPicturesLoading] = useState(true);
-  /** Book scene pictures, keyed by slug — one fetch per book. */
+  /** Book scene pictures, keyed by slug — one fetch per letter book. */
   const [bookPictures, setBookPictures] = useState<Record<string, BankPhoto[]>>({});
+  /** False once the book-picture fetch has settled — until then a book with no
+   *  rows shows '…' rather than the "no pictures yet" placeholder. */
+  const [picturesLoading, setPicturesLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -382,26 +293,7 @@ export default function DarkPhonicsPage() {
     return () => { cancelled = true; };
   }, []);
 
-  // Vocab pictures — one de-duped Set of every word across all 27 books'
-  // BOOK_VOCAB, fetched in a single batched Promise.all (same shape as
-  // satpin/page.tsx's picture effect).
-  useEffect(() => {
-    let cancelled = false;
-    const labels = Array.from(new Set(Object.values(BOOK_VOCAB).flat().map(w => w.toLowerCase())));
-    (async () => {
-      const found = await Promise.all(labels.map(async (label) => [label, await fetchVocabByLabel(label)] as const));
-      if (cancelled) return;
-      const map: Record<string, BankPhoto> = {};
-      for (const [label, photo] of found) {
-        if (photo) map[label] = photo;
-      }
-      setVocabPictures(map);
-      setPicturesLoading(false);
-    })();
-    return () => { cancelled = true; };
-  }, []);
-
-  // Book scene pictures — one fetch per book slug, batched.
+  // Book scene pictures — one fetch per letter-book slug, batched.
   useEffect(() => {
     let cancelled = false;
     const slugs = Array.from(new Set(LESSONS.flatMap(l => (l.books ?? []).map(b => b.slug))));
@@ -411,6 +303,7 @@ export default function DarkPhonicsPage() {
       const map: Record<string, BankPhoto[]> = {};
       for (const [slug, photos] of found) map[slug] = photos;
       setBookPictures(map);
+      setPicturesLoading(false);
     })();
     return () => { cancelled = true; };
   }, []);
@@ -478,57 +371,6 @@ export default function DarkPhonicsPage() {
       {children}
     </a>
   );
-
-  /** 5-col thumbnail grid + hand-off for a book's own word chips. */
-  const VocabPictureRow = ({ words, accent }: { words: string[]; accent: string }) => {
-    const photos = words.map(w => vocabPictures[w.toLowerCase()]).filter(Boolean) as BankPhoto[];
-    return (
-      <div className="mt-4">
-        <div className="grid grid-cols-5 gap-2">
-          {words.map((w) => {
-            const photo = vocabPictures[w.toLowerCase()];
-            return (
-              <div
-                key={w}
-                className="rounded-lg overflow-hidden border"
-                style={{ borderColor: `rgba(${accent},0.16)`, background: 'rgba(255,255,255,0.04)' }}
-                title={w}
-              >
-                <div className="aspect-square flex items-center justify-center">
-                  {photo ? (
-                    <img
-                      src={photoSrc(photo, 240)}
-                      srcSet={photo.storage_path ? getThumbnailSrcSet(photo.storage_path, 120, 70, 'photo-bank') : undefined}
-                      sizes="(max-width: 640px) 18vw, 120px"
-                      alt={w}
-                      loading="lazy"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-white/15 text-[10px] px-1 text-center leading-tight">
-                      {picturesLoading ? '…' : 'no picture'}
-                    </span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        <button
-          onClick={() => createMaterials(photos)}
-          disabled={photos.length === 0}
-          className="mt-3 w-full px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all hover:bg-white/[0.06] disabled:opacity-30 disabled:cursor-not-allowed"
-          style={{
-            borderColor: `rgba(${accent},0.35)`,
-            background: `rgba(${accent},0.10)`,
-            color: `rgb(${accent})`,
-          }}
-        >
-          Create materials with these pictures →
-        </button>
-      </div>
-    );
-  };
 
   /** 5-col thumbnail grid + hand-off for a book's scene pictures. */
   const BookPictureRow = ({ slug, accent }: { slug: string; accent: string }) => {
@@ -644,8 +486,8 @@ export default function DarkPhonicsPage() {
           </h1>
 
           <p className="text-white/40 mt-5 text-lg max-w-lg mx-auto leading-relaxed">
-            The whole programme on one page — lessons 5 to 53, in teaching order.
-            Song, music video, song card, storybook, easy reader and printables,
+            The whole programme on one page — lessons 1 to 49, in teaching order.
+            Song, music video, song card, letter book, easy reader and printables,
             all in the one card per sound.
           </p>
 
@@ -681,7 +523,7 @@ export default function DarkPhonicsPage() {
                     </div>
                     <div className="flex-1 text-left min-w-0">
                       <div className="text-white font-semibold text-base sm:text-lg">
-                        Lesson {l.n} — {l.title}
+                        Lesson {displayN(l.n)} — {l.title}
                       </div>
                       <div className="text-sm mt-0.5" style={{ color: `rgba(${l.tint},0.5)` }}>
                         {l.catchphrase}
@@ -689,12 +531,11 @@ export default function DarkPhonicsPage() {
                     </div>
                   </div>
 
-                  {/* Word chips — the book's own picture words + frame noun
-                      for lessons 5–31 (BOOK_VOCAB), the hard-card vocab for
-                      every other lesson. */}
+                  {/* Word chips — the lesson's hard-card vocab, every lesson.
+                      (Book-specific chips + the vocab photo grid were retired
+                      with the 27 pattern storybooks on 2026-08-03.) */}
                   {(() => {
-                    const firstBook = l.books?.[0];
-                    const chipWords = firstBook ? (BOOK_VOCAB[firstBook.slug] ?? l.words ?? []) : (l.words ?? []);
+                    const chipWords = l.words ?? [];
                     return chipWords.length > 0 ? (
                       <>
                         <div className="mt-4 flex flex-wrap gap-2">
@@ -712,8 +553,6 @@ export default function DarkPhonicsPage() {
                             </span>
                           ))}
                         </div>
-                        {/* Vocab pictures — only for the 27 book lessons */}
-                        {firstBook && <VocabPictureRow words={chipWords} accent={l.accent} />}
                       </>
                     ) : (
                       <div className="mt-4 text-left text-[11px] text-white/20">
@@ -771,7 +610,7 @@ export default function DarkPhonicsPage() {
                       <a href={picture} target="_blank" rel="noopener noreferrer" className="block">
                         <img
                           src={picture}
-                          alt={`Lesson ${l.n} song card`}
+                          alt={`Lesson ${displayN(l.n)} song card`}
                           loading="lazy"
                           className="rounded-lg w-full max-w-[240px]"
                           style={{ background: '#0e0e16' }}
@@ -782,8 +621,9 @@ export default function DarkPhonicsPage() {
                     <EmptySlot>Song card — coming soon</EmptySlot>
                   )}
 
-                  {/* STORYBOOK(S) — lessons 5–31 always carry at least one; a lesson
-                      can carry more than one (target: up to ~5 per lesson). */}
+                  {/* LETTER BOOK(S) — only lessons 7 (the-sat, the-tall), 8
+                      (the-spat) and 9 (the-pit) carry one today; a lesson can
+                      carry more than one (target: up to ~5 per lesson). */}
                   {l.books?.map((book, bi) => (
                     <Row
                       key={book.slug}
@@ -827,9 +667,10 @@ export default function DarkPhonicsPage() {
                   )}
 
                   {/* PRINTABLES — flashcard deck + vocab card pack, plus the
-                      full paperwork/three-part-card family for the 27 book
-                      lessons (public/dark-phonics-materials/<slug>/, built
-                      by the satpin printable generators). */}
+                      full paperwork/three-part-card family for the letter books
+                      that have one (public/dark-phonics-materials/<slug>/,
+                      built by the satpin printable generators — the-spat and
+                      the-pit today). */}
                   {has('flashcards', l.n) || (l.words && l.words.length > 0) || (l.books && l.books.length > 0) ? (
                     <Row accent={l.accent} label="Printables">
                       <div className="flex flex-wrap gap-2">
