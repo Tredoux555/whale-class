@@ -30,15 +30,18 @@ PAT4='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/
 # EXPRESSION RULE (locked from the-nap onward, applies to every future book
 # and every character, including new MJ art prompts): every character must
 # read as happy or content in EVERY image, full stop -- no fear, sadness,
-# anger, grumpiness, or distress, ever. This audience is very young and very
-# easily influenced by facial expression. This supersedes any earlier
-# "grumpy"/"skeptical" character note (e.g. the Cat's sat-p6.png reference
-# was grumpy-eyed; going forward the Cat is written as warm and content
-# instead, same physical design -- striped, tufted ears, whiskers -- just a
-# pleasant expression). Comic "left out" gags (e.g. the potato missing an
-# action the cast can do) stay upbeat, silly, and energetic -- never sad,
-# scared, or upset. Confused/startled reads are also out; if a page needs a
-# "can't join in" beat, play it as cheerful and full of energy instead.
+# anger, or distress, ever. This audience is very young and very easily
+# influenced by facial expression. Comic "left out" gags (e.g. the potato
+# missing an action the cast can do) stay upbeat, silly, and energetic --
+# never sad, scared, or upset. Confused/startled reads are also out; if a
+# page needs a "can't join in" beat, play it as cheerful and full of energy
+# instead.
+# CAT EXCEPTION: the Cat keeps a playful SKEPTICAL look (one eyebrow
+# slightly raised, quizzical, good-humored) -- that's personality, not
+# distress, and stays. GRUMPY is what's out (that reads unhappy). Skeptical
+# only shows with eyes open (e.g. cover, awake scenes) -- on a sleeping page
+# the Cat is simply content and peaceful like the rest of the cast, same as
+# every other character.
 BOOKS=[
 dict(slug='snake-in-my-sock', title_lines=['Snake in','my SOCK!'], title_accent='SOCK!', title_size=40,
  band='WEEK 1  ·  THE SOUND  /s/', booknum='BOOK ONE OF SIX', cover='bk1/p7.png',
