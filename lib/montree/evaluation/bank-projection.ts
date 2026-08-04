@@ -10,13 +10,16 @@
  * the chosen modules — plus the band above where the bank genuinely treats it as
  * extension evidence, and the observation checklist when M-OBS was chosen.
  *
- * RULES (mirrors build/gen-d2-projection.mjs, which does the same job for the standalone
- * tablet file):
+ * RULES (mirrors evaluation-kit/gen-d2-projection.mjs, which does the same job for the
+ * standalone tablet file):
  *   • Only ever DROP fields. Never rename one, never author content, never recompute.
  *   • `bankVersion` and `bankChecksum` are copied verbatim, so a session recorded against
  *     a projection matches on checksum server-side with no drift allowance.
  *   • The server re-scores from the FULL bank regardless of what the client was sent —
  *     this projection decides what is shown, never what is true.
+ *   • Stimuli keep `render.raster` (base64 data URL, where authored) alongside
+ *     `render.svg`, same as the tablet projection — offline/self-contained, no external
+ *     asset fetch, only present on the ~20 stimuli that have raster art today.
  */
 import { getBankIndex } from './bank';
 import type {
@@ -27,13 +30,17 @@ import type {
 /** The band whose items may be offered as extension evidence for a child at `band`. */
 const BAND_UP: Record<AgeBand, AgeBand | null> = { A3: 'A4', A4: 'A5', A5: null };
 
-/** A stimulus as the runner needs it: the SVG body and the alt text, nothing else. */
+/**
+ * A stimulus as the runner needs it: the SVG body and the alt text, nothing else — plus
+ * `raster` when the bank authored one, so the runner can render the same raster art the
+ * D2 tablet build shows instead of the SVG placeholder.
+ */
 export interface ProjectedStimulus {
   id: string;
   kind: string;
   label: ItemBank['stimuli'][number]['label'];
   altText: ItemBank['stimuli'][number]['altText'];
-  render: { viewBox: string; svg: string };
+  render: { viewBox: string; svg: string; raster?: string };
 }
 
 /** What `GET /api/montree/evaluation/bank` returns and the runner engine consumes. */
@@ -162,7 +169,11 @@ export function projectBank(req: ProjectionRequest): ProjectedBank {
       kind: s.kind,
       label: s.label,
       altText: s.altText,
-      render: { viewBox: s.render?.viewBox ?? '0 0 100 100', svg: s.render?.svg ?? '' },
+      render: {
+        viewBox: s.render?.viewBox ?? '0 0 100 100',
+        svg: s.render?.svg ?? '',
+        ...(s.render?.raster !== undefined ? { raster: s.render.raster } : {}),
+      },
     }));
 
   // Rubrics: only the ones a teacher-scored oral item in this slice refers to.

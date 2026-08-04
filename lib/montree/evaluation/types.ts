@@ -152,6 +152,8 @@ export interface StimulusRender {
   viewBox: string;
   /** Inline SVG body (no <svg> wrapper) — the app builds the sprite from these. */
   svg?: string;
+  /** Raster art (data:image/webp;base64 URL, ≤512×512), authored for a subset of stimuli. */
+  raster?: string;
   printMinMm: number;
   monochromeSafe: boolean;
 }

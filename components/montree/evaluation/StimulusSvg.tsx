@@ -5,7 +5,12 @@
  *
  * The bank stores each stimulus as an inline SVG body (`render.svg`) plus a viewBox — no
  * external files, so a check-in renders identically offline, on a USB-stick copy, and in
- * the printed paper pack.
+ * the printed paper pack. A subset of stimuli also carry `render.raster` (a
+ * data:image/webp;base64 URL, ≤512×512) — the same raster art the D2 tablet build shows.
+ * Being a data URL keeps it just as offline/self-contained as the inline SVG: no external
+ * asset fetch, nothing to fail to load on a USB-stick copy. When present, raster wins;
+ * otherwise this falls back to the SVG rendering below, which remains the only art for
+ * the great majority of stimuli.
  *
  * On `dangerouslySetInnerHTML`: this markup is authored content from our own item bank,
  * served by our own gated endpoint, and it is SVG geometry — there is no user-supplied
@@ -36,6 +41,18 @@ export function StimulusSvg({
     );
   }
   const alt = label ?? stimulus.altText?.en ?? stimulus.label?.en ?? '';
+  if (stimulus.render.raster) {
+    return (
+      <img
+        src={stimulus.render.raster}
+        alt={alt}
+        style={{
+          maxHeight, maxWidth: '100%', width: '100%', height: '100%',
+          objectFit: 'contain', pointerEvents: 'none',
+        }}
+      />
+    );
+  }
   return (
     <svg
       viewBox={stimulus.render.viewBox}
