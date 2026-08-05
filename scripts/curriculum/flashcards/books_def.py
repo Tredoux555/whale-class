@@ -18,6 +18,8 @@ PAT4='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/
 NAP4='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-nap'
 # 'the-mat' (letter-book five, the-sat cast sat on the mat) — same convention as PAT4.
 MAT5='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-mat'
+# 'the-sad' (letter-book six, the-sat cast is sad) — same convention as PAT4.
+SAD6='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-sad'
 # TEXT RULES (locked from the-pat onward, apply to every future book):
 # 1. CASE: a spread's `text` is body copy continuing the sentence its `nar`
 #    starts (e.g. nar='The star...'  text='can pat!'  reads as one sentence:
@@ -157,6 +159,33 @@ dict(slug='the-mat', title_lines=['The ___ Sat','on the Mat!'], title_accent='Ma
   dict(nar='The cat…', text='sat on the mat!', size=80, art=MAT5+'/p6-cat.png'),
   dict(text=['Mat! Mat!','Mat!'], style='drop', size=64, art=MAT5+'/p7-recap.png'),
   dict(text=['The potato','didn’t sit','on the mat!'], size=42, art=MAT5+'/p8-potato.png'),
+ ]),
+# ONE-TIME EXCEPTION to the EXPRESSION RULE, for 'the-sad' ONLY (Tredoux,
+# explicit, 2026-08-05): the hero word for Letter D is 'sad' — genuinely sad
+# expressions (gentle storybook sadness: drooping brows, a small tear,
+# downturned frown — never distressing/scary) are allowed on this book's
+# character pages and its p7 recap. The book resolves the sadness itself:
+# the potato arrives NOT sad and cheers everyone up, ending on a genuine
+# happy group finale (p9) — so the book as a whole still lands happy. This
+# does NOT reopen the rule generally: EXPRESSION RULE (always happy/content,
+# Cat-skeptical-not-grumpy exception) is back in full force for every book
+# after the-sad. cover uses p9 (the happy finale), not the sad p7 recap —
+# a sad cover thumbnail on the library page would be the wrong first
+# impression, breaking from the usual cover=recap convention on purpose.
+dict(slug='the-sad', title_lines=['The ___','Is Sad!'], title_accent='Sad!', title_size=46,
+ band='LETTER D  ·  s a t p i n m d (the-sat cast)', booknum='LETTER BOOK SIX · SAD', cover=SAD6+'/p9-finale.png',
+ new='Sad', review='sat  ·  spat  ·  pat  ·  pit  ·  nap  ·  mat  ·  at', heart='♥  heart words — a · the',
+ oral_note='the nouns live in the pictures — named aloud, never printed',
+ spreads=[
+  dict(nar='The ant…', text='is sad.', size=88, art=SAD6+'/p1-ant.png'),
+  dict(nar='The apple…', text='is sad.', size=88, art=SAD6+'/p2-apple.png'),
+  dict(nar='The sun…', text='is sad.', size=88, art=SAD6+'/p3-sun.png'),
+  dict(nar='The star…', text='is sad.', size=88, art=SAD6+'/p4-star.png'),
+  dict(nar='The snake…', text='is sad.', size=88, art=SAD6+'/p5-snake.png'),
+  dict(nar='The cat…', text='is sad.', size=88, art=SAD6+'/p6-cat.png'),
+  dict(text=['Sad! Sad!','Sad!'], style='drop', size=64, art=SAD6+'/p7-recap.png'),
+  dict(text=['The potato','is not sad!'], size=48, art=SAD6+'/p8-potato.png'),
+  dict(text=['Now the whole crew','is not sad!'], size=42, art=SAD6+'/p9-finale.png'),
  ]),
 dict(slug='spat', title_lines=['SPAT!'], title_accent='SPAT!', title_size=64,
  band='WEEK 4  ·  FIRST FULLY DECODABLE BOOK  ·  s a t p', booknum='BOOK FOUR OF SIX',
