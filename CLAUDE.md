@@ -71,6 +71,16 @@
 
 **CADENCE: book 2 = ant-on-my-apple (PULL TREDOUX'S REFERENCE ART FIRST — song card lesson-06 + any satpin apple/ant art — before writing any prompt). Then t, p, i, n… in book order. Prompt pack per book: cover + 'A <object>.' page + 3 single-character pages + recap, all with verbatim-repeated descriptors, delivered in chat for Tredoux to run.**
 
+## 🖼️ SESSION — Aug 4-5, 2026 (Cowork/Fable directing Sonnet workers) — MILESTONES ART REPLACEMENT COMPLETE + GO-LIVE AUDIT
+
+**Montree Milestones art replacement is DONE: 115/115 in-scope picture/scene stimuli now carry Midjourney-generated/composited/programmatically-drawn raster art (webp ≤512² q80), `render.svg` kept as fallback everywhere. Bank `1.10.0`, `sha256:3cb8ee0b3bea14ddebb6cb8a73dd9192b9033775780d6e2825660afaacb4dc82`. Only `ST.col.blue`/`ST.col.red` stay vector, by design.** Commit chain: `4a494132`→`3ddcfe62` (waves 2–9) → `267e37ae` docs → `4d94ac0b` **CRITICAL renderer fix** — the D2 app template and paper generator were SVG-only despite the bank carrying raster for 8 waves; nothing anyone looked at had actually changed until this fix landed (both now raster-first with SVG fallback, D2 + all 7 PDFs rebuilt).
+
+**THE LESSON: audits must verify what renders on screen/page, not just what data a file carries** — the renderer gap above shipped through 7 waves of technically-passing audits. Also fixed in `d4229b11`: ST.hand's original vector was an inappropriate raised-middle-finger gesture, replaced with an open palm — printed packs from before this commit need reprints. Size-set stimuli (10 `at_ball/rod/pencil/tree_*`) resolved 2026-08-05 as one-size-per-card (Option A), not all-three-with-arrow — sizes are separate answer options within items, and two items show a single size alone.
+
+Go-live audit 2026-08-05: repo+bank 9/9 PASS, D2 functional 5/5 PASS (256/256 raster renders confirmed actually on-screen, not just present in data), paper 6/6 PASS. **Outstanding: live montree.xyz verification still PENDING** — Chrome was logged out during the audit, needs Tredoux to log in and confirm served bank = 1.10.0 with rasters rendering. Also owed: tablet redistribution of the new D2 build (old builds trigger `acceptBankDrift` 409), physical pack reprints (old art + the hand fix), and a few optional items.
+
+Full commit-by-commit history, composite pipeline, design decisions, and operational gotchas: `docs/evaluation/ART_FINAL_HANDOFF.md` (supersedes `WAVE1_HANDOFF.md`/`WAVE7_HANDOFF.md` for current-state truth; those remain as history).
+
 ## 🧺 SESSION — Aug 1, 2026 pt3 (Fable directing, Sonnet fleet) — NATURAL-ORDER FIX + FULL DARK PHONICS MATERIALS SUITE
 
 **Tredoux language ruling (LOCKED for all Dark Phonics books): STRAIGHT NATURAL ORDER, exactly as the song sings it — 'A snake in my sock!' — never inverted, never clever. nar/text split allowed ONLY when the sentence naturally ends on the swap word (pig/goat/lion). Test-run-first is now mandatory: build 3, eyeball every page, then scale.** All 54 A5 PDFs rebuilt (commit b7cc6942, only the SPLITS dict changed). Art pass deferred — some MJ art below Tredoux's song-card standard; fix individually later (his call).
