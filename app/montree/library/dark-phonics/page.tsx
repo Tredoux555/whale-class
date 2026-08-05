@@ -203,7 +203,9 @@ const RAW: RawLesson[] = [
   { n: 10, sound: 'n', title: 'N for the Nose', catchphrase: '“no-no, nanny goat!”', decodable: ['an', 'ant', 'in', 'nap', 'naps', 'pan', 'tin', 'nip', 'snap'], heartWords: ['I'], words: ['goat'], books: [
     { slug: 'the-nap', title: 'The ___ Can Nap!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat, potato.', cover: '/dark-phonics-books/covers/the-nap.png', materials: false },
   ] },
-  { n: 11, sound: 'm', title: 'Mmm, That\'s Good!', catchphrase: '“mmm, muddy monkey!”', decodable: ['mat', 'Sam'], words: ['monkey'] },
+  { n: 11, sound: 'm', title: 'Mmm, That\'s Good!', catchphrase: '“mmm, muddy monkey!”', decodable: ['mat', 'Sam'], words: ['monkey'], books: [
+    { slug: 'the-mat', title: 'The ___ Sat on the Mat!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — plus the potato, who didn’t.', cover: '/dark-phonics-books/covers/the-mat.png', materials: false },
+  ] },
   { n: 12, sound: 'd', title: 'D for the Dog', catchphrase: '“dirty dog, dig dig dig!”', decodable: ['pad'], words: ['dog'] },
   { n: 13, sound: 'g', title: 'G for the Goat', catchphrase: '“goat got my gum!”', decodable: ['pig'], words: ['goat', 'gum'] },
   { n: 14, sound: 'o', title: 'O for the Octopus', catchphrase: '“hot dog on a log!”', decodable: ['pot', 'dog'], words: ['hotdog', 'log'] },

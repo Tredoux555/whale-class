@@ -16,6 +16,8 @@ PIT3='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/
 PAT4='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-pat'
 # 'the-nap' (letter-book four, the-sat cast can nap) — same convention as PAT4.
 NAP4='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-nap'
+# 'the-mat' (letter-book five, the-sat cast sat on the mat) — same convention as PAT4.
+MAT5='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-mat'
 # TEXT RULES (locked from the-pat onward, apply to every future book):
 # 1. CASE: a spread's `text` is body copy continuing the sentence its `nar`
 #    starts (e.g. nar='The star...'  text='can pat!'  reads as one sentence:
@@ -141,6 +143,20 @@ dict(slug='the-nap', title_lines=['The ___','Can Nap!'], title_accent='Nap!', ti
   dict(nar='The cat…', text='can nap!', size=92, art=NAP4+'/p6-cat.png'),
   dict(text=['Nap! Nap!','Nap!'], style='drop', size=64, art=NAP4+'/p7-recap.png'),
   dict(nar='And the…?!', art=NAP4+'/p8-potato.png'),
+ ]),
+dict(slug='the-mat', title_lines=['The ___ Sat','on the Mat!'], title_accent='Mat!', title_size=44,
+ band='LETTER M  ·  s a t p i n m (the-sat cast)', booknum='LETTER BOOK FIVE · MAT', cover=MAT5+'/p7-recap.png',
+ new='Mat', review='sat  ·  spat  ·  pat  ·  pit  ·  nap  ·  at', heart='♥  heart words — a · the',
+ oral_note='the nouns live in the pictures — named aloud, never printed',
+ spreads=[
+  dict(nar='The ant…', text='sat on the mat!', size=80, art=MAT5+'/p1-ant.png'),
+  dict(nar='The apple…', text='sat on the mat!', size=80, art=MAT5+'/p2-apple.png'),
+  dict(nar='The sun…', text='sat on the mat!', size=80, art=MAT5+'/p3-sun.png'),
+  dict(nar='The star…', text='sat on the mat!', size=80, art=MAT5+'/p4-star.png'),
+  dict(nar='The snake…', text='sat on the mat!', size=80, art=MAT5+'/p5-snake.png'),
+  dict(nar='The cat…', text='sat on the mat!', size=80, art=MAT5+'/p6-cat.png'),
+  dict(text=['Mat! Mat!','Mat!'], style='drop', size=64, art=MAT5+'/p7-recap.png'),
+  dict(text=['The potato','didn’t sit','on the mat!'], size=42, art=MAT5+'/p8-potato.png'),
  ]),
 dict(slug='spat', title_lines=['SPAT!'], title_accent='SPAT!', title_size=64,
  band='WEEK 4  ·  FIRST FULLY DECODABLE BOOK  ·  s a t p', booknum='BOOK FOUR OF SIX',
