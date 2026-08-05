@@ -20,6 +20,8 @@ NAP4='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/
 MAT5='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-mat'
 # 'the-sad' (letter-book six, the-sat cast is sad) — same convention as PAT4.
 SAD6='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-sad'
+# 'the-dig' (letter-book seven, the-sat cast digs) — same convention as PAT4.
+DIG7='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-dig'
 # TEXT RULES (locked from the-pat onward, apply to every future book):
 # 1. CASE: a spread's `text` is body copy continuing the sentence its `nar`
 #    starts (e.g. nar='The star...'  text='can pat!'  reads as one sentence:
@@ -187,6 +189,22 @@ dict(slug='the-sad', title_lines=['The ___','Is Sad!'], title_accent='Sad!', tit
   dict(text=['The potato','is not sad!'], size=48, art=SAD6+'/p8-potato.png'),
   dict(text=['Now the whole crew','is not sad!'], size=42, art=SAD6+'/p9-finale.png'),
  ]),
+
+dict(slug='the-dig', title_lines=['The ___','Digs!'], title_accent='Digs!', title_size=46,
+ band='LETTER G  ·  s a t p i n m d g (the-sat cast)', booknum='LETTER BOOK SEVEN · DIG', cover=DIG7+'/p7-recap.png',
+ new='Dig', review='sat  ·  spat  ·  pat  ·  pit  ·  nap  ·  mat  ·  sad  ·  at', heart='♥  heart words — a · the',
+ oral_note='the nouns live in the pictures — named aloud, never printed',
+ spreads=[
+  dict(nar='The ant…', text='digs.', size=92, art=DIG7+'/p1-ant.png'),
+  dict(nar='The apple…', text='digs.', size=92, art=DIG7+'/p2-apple.png'),
+  dict(nar='The sun…', text='digs.', size=92, art=DIG7+'/p3-sun.png'),
+  dict(nar='The star…', text='digs.', size=92, art=DIG7+'/p4-star.png'),
+  dict(nar='The snake…', text='digs.', size=92, art=DIG7+'/p5-snake.png'),
+  dict(nar='The cat…', text='digs.', size=92, art=DIG7+'/p6-cat.png'),
+  dict(text=['Dig! Dig!','Dig!'], style='drop', size=64, art=DIG7+'/p7-recap.png'),
+  dict(text=['The potato',"doesn't dig!"], size=48, art=DIG7+'/p8-potato.png'),
+ ]),
+
 dict(slug='spat', title_lines=['SPAT!'], title_accent='SPAT!', title_size=64,
  band='WEEK 4  ·  FIRST FULLY DECODABLE BOOK  ·  s a t p', booknum='BOOK FOUR OF SIX',
  cover=U+'/spat/spat-p7-spat-eruption.png',
