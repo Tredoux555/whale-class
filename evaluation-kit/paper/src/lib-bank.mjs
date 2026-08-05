@@ -8,8 +8,10 @@
  * Rules:
  *   • Only ever SELECT, GROUP and COUNT. Never author item content, never invent a threshold.
  *   • `bankVersion` / `bankChecksum` are copied verbatim onto every pack (cover + footer).
- *   • Print uses `render.svg` for EVERY stimulus. `render.raster` is deliberately ignored:
- *     vector prints losslessly at any size and stays crisp in greyscale.
+ *   • Print uses `render.raster` where the bank carries it (same rule as the tablet app and
+ *     the web app's StimulusSvg.tsx), falling back to `render.svg` otherwise — still the
+ *     only art for the majority of stimuli, which vector-prints losslessly at any size and
+ *     stays crisp in greyscale.
  *   • Item ids are printed without their `IT.` prefix everywhere except the colour notice,
  *     which quotes the full canonical id.
  */

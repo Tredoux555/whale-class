@@ -46,10 +46,17 @@ const upper = (s) => String(s ?? '').toUpperCase();
 const eyebrow = (text) => `<p class="eyebrow">${esc(text)}</p>`;
 
 const svgArt = (stim, cls = 'art') => {
-  if (!stim?.render?.svg) return '<div class="art art--missing"></div>';
+  if (!stim?.render) return '<div class="art art--missing"></div>';
+  const alt = attr(stim.altText?.en ?? stim.label?.en ?? '');
+  // Raster wins where the bank carries it (same rule as the tablet app and web StimulusSvg.tsx);
+  // otherwise fall back to the inline SVG, still the only art for most stimuli.
+  if (stim.render.raster) {
+    return `<img class="${cls}" src="${attr(stim.render.raster)}" alt="${alt}"/>`;
+  }
+  if (!stim.render.svg) return '<div class="art art--missing"></div>';
   return (
     `<svg class="${cls}" viewBox="${attr(stim.render.viewBox || '0 0 100 100')}" ` +
-    `role="img" aria-label="${attr(stim.altText?.en ?? stim.label?.en ?? '')}">` +
+    `role="img" aria-label="${alt}">` +
     stim.render.svg +
     `</svg>`
   );
@@ -935,7 +942,7 @@ table{width:100%;border-collapse:collapse}
 .card--solo{width:150mm;height:150mm;margin:0 auto}
 .cp__solo{display:flex;gap:5mm;justify-content:center;align-items:center}
 .cp__solo--2 .card--solo,.cp__solo--3 .card--solo{width:84mm;height:84mm}
-.art{width:100%;height:100%;display:block}
+.art{width:100%;height:100%;display:block;object-fit:contain}
 .cp__code{position:absolute;bottom:0;left:0;right:0;text-align:center;
   font-family:var(--mono);font-size:7.5pt;color:var(--ink-faint);letter-spacing:.08em}
 
