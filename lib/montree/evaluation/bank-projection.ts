@@ -19,7 +19,8 @@
  *     this projection decides what is shown, never what is true.
  *   • Stimuli keep `render.raster` (base64 data URL, where authored) alongside
  *     `render.svg`, same as the tablet projection — offline/self-contained, no external
- *     asset fetch, only present on the ~20 stimuli that have raster art today.
+ *     asset fetch, present on stimuli that have raster art (100 of 117 in-scope
+ *     picture/scene stimuli as of bank 1.8.x).
  */
 import { getBankIndex } from './bank';
 import type {
