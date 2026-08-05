@@ -5241,8 +5241,8 @@ export const ja: Record<string, string> = {
   'landing.explainerTeaser.cta': '解説動画を見る',
   // "Try it" gate modal (components/montree/TryItGateModal.tsx). Self-serve
   // signup is closed — every landing-page CTA opens this form instead.
-  'landing.tryitGate.title': 'Montree を体験する',
-  'landing.tryitGate.body': 'Montree をお試しになりたい場合は、メッセージをお送りください。ご希望にぴったり合う形でご案内します。',
+  'landing.tryitGate.title': 'Montree にご関心をお寄せいただきありがとうございます',
+  'landing.tryitGate.body': '現在、かつてないほど多くの園・学校にご参加いただいています。ふさわしいサービスと品質をお届けするため、まずは既存のお客さまへの対応にお時間をいただけますと幸いです。下記にお名前とご連絡先をご記入ください。できるだけ速やかに、丁寧にご案内いたします。ご一緒できる日を楽しみにしております。',
   'landing.tryitGate.name': 'お名前',
   'landing.tryitGate.email': 'メールアドレス',
   'landing.tryitGate.organisation': '団体 / 園・学校',
@@ -5250,7 +5250,7 @@ export const ja: Record<string, string> = {
   'landing.tryitGate.submit': 'メッセージを送る',
   'landing.tryitGate.sending': '送信中…',
   'landing.tryitGate.successTitle': '送信しました',
-  'landing.tryitGate.success': 'ありがとうございます — 追ってご連絡いたします。',
+  'landing.tryitGate.success': 'ありがとうございます — ご記入内容を承りました。お迎えできる準備が整い次第、ご連絡いたします。',
   'landing.tryitGate.error': '問題が発生しました。もう一度お試しください。',
   'landing.tryitGate.required': 'すべての項目をご記入ください。',
   'landing.tryitGate.invalidEmail': '有効なメールアドレスをご入力ください。',

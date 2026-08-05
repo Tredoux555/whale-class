@@ -5656,8 +5656,8 @@ export const zh = {
   'landing.explainerTeaser.cta': '观看说明视频',
   // "Try it" gate modal (components/montree/TryItGateModal.tsx). Self-serve
   // signup is closed — every landing-page CTA opens this form instead.
-  'landing.tryitGate.title': '体验 Montree',
-  'landing.tryitGate.body': '如果您想体验 Montree，请给我们留言，我们会确保为您提供最合适的方案。',
+  'landing.tryitGate.title': '感谢您对 Montree 的关注',
+  'landing.tryitGate.body': '目前有前所未有的众多学校加入我们。为了确保您获得应有的服务与品质，请给我们一点时间先照顾好现有的客户 — 请在下方留下您的姓名和联系方式，我们会尽快、尽善地安排您加入。期待与您同行。',
   'landing.tryitGate.name': '姓名',
   'landing.tryitGate.email': '邮箱',
   'landing.tryitGate.organisation': '机构 / 学校',
@@ -5665,7 +5665,7 @@ export const zh = {
   'landing.tryitGate.submit': '发送留言',
   'landing.tryitGate.sending': '发送中…',
   'landing.tryitGate.successTitle': '留言已发送',
-  'landing.tryitGate.success': '谢谢 — 我们会尽快与您联系。',
+  'landing.tryitGate.success': '谢谢 — 我们已收到您的信息。一旦能够迎接您加入，我们会立即与您联系。',
   'landing.tryitGate.error': '出了点问题，请重试。',
   'landing.tryitGate.required': '请填写所有栏目。',
   'landing.tryitGate.invalidEmail': '请输入有效的邮箱地址。',
