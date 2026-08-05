@@ -4226,6 +4226,23 @@ export const en = {
   'landing.explainerTeaser.title': 'Watch Montree work.',
   'landing.explainerTeaser.body': 'Short, honest explainers — one for every part of Montree. No demo to book. No sales call. Just press play.',
   'landing.explainerTeaser.cta': 'Watch the explainers',
+  // "Try it" gate modal (components/montree/TryItGateModal.tsx). Self-serve
+  // signup is closed — every landing-page CTA opens this form instead.
+  'landing.tryitGate.title': 'Try Montree',
+  'landing.tryitGate.body': 'If you would like to try Montree, send us a message so we can ensure you get exactly what you need.',
+  'landing.tryitGate.name': 'Name',
+  'landing.tryitGate.email': 'Email',
+  'landing.tryitGate.organisation': 'Organisation / School',
+  'landing.tryitGate.message': 'Message',
+  'landing.tryitGate.submit': 'Send message',
+  'landing.tryitGate.sending': 'Sending…',
+  'landing.tryitGate.successTitle': 'Message sent',
+  'landing.tryitGate.success': 'Thanks — we\'ll get back to you shortly.',
+  'landing.tryitGate.error': 'Something went wrong. Please try again.',
+  'landing.tryitGate.required': 'Please fill in every field.',
+  'landing.tryitGate.invalidEmail': 'Please enter a valid email address.',
+  'landing.tryitGate.close': 'Close',
+  'landing.tryitGate.done': 'Done',
 
   // Explainer page (montree.xyz/montree/explainer)
   'explainer.nav.back': 'Back to home',
