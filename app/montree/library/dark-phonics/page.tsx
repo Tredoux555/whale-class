@@ -209,7 +209,9 @@ const RAW: RawLesson[] = [
   { n: 12, sound: 'd', title: 'D for the Dog', catchphrase: '“dirty dog, dig dig dig!”', decodable: ['pad', 'sad'], words: ['dog'], books: [
     { slug: 'the-sad', title: 'The ___ Is Sad!', description: 'The-sat cast returns — sad for once, until the potato cheers everyone up.', cover: '/dark-phonics-books/covers/the-sad.png', materials: false },
   ] },
-  { n: 13, sound: 'g', title: 'G for the Goat', catchphrase: '“goat got my gum!”', decodable: ['pig'], words: ['goat', 'gum'] },
+  { n: 13, sound: 'g', title: 'G for the Goat', catchphrase: '“goat got my gum!”', decodable: ['pig', 'dig'], words: ['goat', 'gum'], books: [
+    { slug: 'the-dig', title: 'The ___ Digs!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — plus the potato, who doesn’t.', cover: '/dark-phonics-books/covers/the-dig.png', materials: false },
+  ] },
   { n: 14, sound: 'o', title: 'O for the Octopus', catchphrase: '“hot dog on a log!”', decodable: ['pot', 'dog'], words: ['hotdog', 'log'] },
   { n: 15, sound: 'c', title: 'C for the Cat', catchphrase: '“cat ate my cookie!”', decodable: ['cot', 'cat'], words: ['cat', 'cookie'] },
   { n: 16, sound: 'k', title: 'K Says It Too', catchphrase: '“kooky king kicks!”', decodable: ['kit', 'Kim'], words: ['king'] },
