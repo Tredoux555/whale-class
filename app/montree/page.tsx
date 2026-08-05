@@ -1,17 +1,23 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { getSession } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import MontreeLogo from '@/components/montree/MonteeLogo';
+import TryItGateModal from '@/components/montree/TryItGateModal';
 
 // /montree/page.tsx — Montree landing page (v2 — deep forest palette)
 
 export default function MontreeLanding() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const revealRefs = useRef<HTMLElement[]>([]);
+  // ── "Try it" gate ──
+  // Montree is not self-serve any more: every CTA that used to link straight
+  // to /montree/login-select?signup=true now opens this modal instead. The
+  // Log in links are untouched — existing schools still sign in normally.
+  const [tryItOpen, setTryItOpen] = useState(false);
 
   // ── PWA app-mode launch (Jul 3 2026, Tredoux) ──
   // When Montree is opened FROM THE HOME SCREEN (standalone display mode),
@@ -110,6 +116,22 @@ export default function MontreeLanding() {
     revealRefs.current.forEach((el) => el && obs.observe(el));
     return () => obs.disconnect();
   }, []);
+
+  // Log the intent, then open the gate. The POST is deliberately NOT awaited —
+  // the modal must appear instantly, and a failed/blocked tracking call can
+  // never be allowed to swallow the click.
+  const openTryIt = useCallback(() => {
+    fetch('/api/montree/tryit/click', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        referrer: typeof document !== 'undefined' ? document.referrer || null : null,
+        locale,
+      }),
+      keepalive: true,
+    }).catch(err => console.error('[landing] try-it click log failed:', err));
+    setTryItOpen(true);
+  }, [locale]);
 
   const addReveal = (el: HTMLElement | null) => {
     if (el && !revealRefs.current.includes(el)) {
@@ -948,9 +970,9 @@ export default function MontreeLanding() {
           <span className="m-hero-eyebrow">{t('landing.hero.label')}</span>
           <h1>{t('landing.hero.title')}</h1>
           <p className="m-hero-tagline">{t('landing.hero.tagline')}</p>
-          <Link className="m-pill m-pill-lg" href="/montree/login-select?signup=true">
+          <button type="button" className="m-pill m-pill-lg" onClick={openTryIt}>
             {t('landing.hero.cta')}
-          </Link>
+          </button>
           <span className="m-hero-kicker m-hero-kicker-below">{t('landing.hero.kicker')}</span>
           {/* Fineprint trust signal under the CTA — cheap, honest pricing line.
               Hidden 2026-08-03 per Tredoux's request. Uncomment to restore. */}
@@ -1033,9 +1055,9 @@ export default function MontreeLanding() {
           </div>
 
           <div className="m-pricing-cta-row">
-            <Link className="m-pill m-pill-lg" href="/montree/login-select?signup=true">
+            <button type="button" className="m-pill m-pill-lg" onClick={openTryIt}>
               {t('landing.pricing.cta')}
-            </Link>
+            </button>
             <Link className="m-pricing-cta-secondary" href="/pricing">
               {t('landing.pricing.seeFull')}
             </Link>
@@ -1059,9 +1081,9 @@ export default function MontreeLanding() {
       <section className="m-closing" id="cta" ref={addReveal}>
         <h2>{t('landing.closing.title')}</h2>
         <p className="m-closing-sub">{t('landing.closing.body')}</p>
-        <a className="m-pill m-pill-lg" href="/montree/login-select?signup=true">
+        <button type="button" className="m-pill m-pill-lg" onClick={openTryIt}>
           {t('landing.closing.cta')}
-        </a>
+        </button>
       </section>
 
       {/* ── BOTTOM QUOTE ──
@@ -1088,6 +1110,9 @@ export default function MontreeLanding() {
         </div>
       </footer>
       </div>
+
+      {/* The "Try it" gate — see openTryIt above. */}
+      <TryItGateModal isOpen={tryItOpen} onClose={() => setTryItOpen(false)} />
     </>
   );
 }

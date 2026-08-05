@@ -37,6 +37,9 @@ const CommandTab = dynamic(() => import('@/components/montree/super-admin/Comman
 // 📮 Creator inbox — direct messages from the Teachers' Room on the public
 // SATPIN page. Same montree_dm pipe as the lead DMs, its own sender card.
 const CreatorInboxTab = dynamic(() => import('@/components/montree/super-admin/CreatorInboxTab'), { ssr: false });
+// 🎟️ Try It — the landing-page gate. Self-serve signup is closed, so every
+// "Try it" press lands here: anonymous click counts + the messages people send.
+const TryItRequestsTab = dynamic(() => import('@/components/montree/super-admin/TryItRequestsTab'), { ssr: false });
 
 
 interface DmMessage {
@@ -47,7 +50,7 @@ interface DmMessage {
   created_at: string;
 }
 
-type TabType = 'command' | 'schools' | 'feedback' | 'creator-inbox' | 'leads' | 'visitors' | 'agents' | 'agent-inbox' | 'money' | 'campaign' | 'playbook' | 'health' | 'dlq' | 'errors' | 'outreach' | 'founding' | 'global-outreach';
+type TabType = 'command' | 'schools' | 'feedback' | 'creator-inbox' | 'tryit' | 'leads' | 'visitors' | 'agents' | 'agent-inbox' | 'money' | 'campaign' | 'playbook' | 'health' | 'dlq' | 'errors' | 'outreach' | 'founding' | 'global-outreach';
 
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -394,7 +397,7 @@ export default function SuperAdminPage() {
     if (typeof window === 'undefined') return;
     const sp = new URLSearchParams(window.location.search);
     const tab = sp.get('tab');
-    const valid: TabType[] = ['command', 'schools', 'feedback', 'creator-inbox', 'leads', 'visitors', 'agents', 'agent-inbox', 'money', 'campaign', 'playbook', 'health', 'dlq', 'errors', 'outreach', 'founding', 'global-outreach'];
+    const valid: TabType[] = ['command', 'schools', 'feedback', 'creator-inbox', 'tryit', 'leads', 'visitors', 'agents', 'agent-inbox', 'money', 'campaign', 'playbook', 'health', 'dlq', 'errors', 'outreach', 'founding', 'global-outreach'];
     if (tab && (valid as string[]).includes(tab)) {
       setActiveTab(tab as TabType);
     }
@@ -853,6 +856,9 @@ export default function SuperAdminPage() {
             label="Foundation"
             badge={foundingUnread > 0 ? { text: `✉ ${foundingUnread}`, color: 'red' } : null}
           />
+          {/* 🎟️ Try It sits high in the strip: with self-serve signup closed,
+              these messages ARE the new-school pipeline. */}
+          <SuperAdminTab active={activeTab === 'tryit'} onClick={() => setActiveTab('tryit')} icon="🎟️" label="Try It" />
           <SuperAdminTab active={activeTab === 'global-outreach'} onClick={() => setActiveTab('global-outreach')} icon="🌍" label="Global Outreach" />
           <SuperAdminTab active={activeTab === 'schools'} onClick={() => setActiveTab('schools')} icon="🏫" label="Schools" />
           <SuperAdminTab
@@ -973,6 +979,10 @@ export default function SuperAdminPage() {
               });
             }}
           />
+        )}
+
+        {activeTab === 'tryit' && (
+          <TryItRequestsTab saToken={saToken} />
         )}
 
         {activeTab === 'visitors' && (
