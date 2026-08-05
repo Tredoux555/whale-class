@@ -5241,8 +5241,8 @@ export const nl: Record<string, string> = {
   'landing.explainerTeaser.cta': 'Bekijk de uitlegvideo\'s',
   // "Try it" gate modal (components/montree/TryItGateModal.tsx). Self-serve
   // signup is closed — every landing-page CTA opens this form instead.
-  'landing.tryitGate.title': 'Montree proberen',
-  'landing.tryitGate.body': 'Wil je Montree proberen? Stuur ons een bericht, dan zorgen we dat je precies krijgt wat je nodig hebt.',
+  'landing.tryitGate.title': 'Bedankt voor je interesse in Montree',
+  'landing.tryitGate.body': 'We verwelkomen op dit moment een ongekend aantal nieuwe scholen. Om je de service en de kwaliteit te geven die je verdient, geef ons even de kans om eerst onze huidige klanten te verzorgen — laat hieronder je naam en contactgegevens achter, dan halen we je zo snel en zorgvuldig mogelijk aan boord. We kijken ernaar uit je erbij te hebben.',
   'landing.tryitGate.name': 'Naam',
   'landing.tryitGate.email': 'E-mail',
   'landing.tryitGate.organisation': 'Organisatie / School',
@@ -5250,7 +5250,7 @@ export const nl: Record<string, string> = {
   'landing.tryitGate.submit': 'Bericht versturen',
   'landing.tryitGate.sending': 'Versturen…',
   'landing.tryitGate.successTitle': 'Bericht verstuurd',
-  'landing.tryitGate.success': 'Bedankt — we nemen snel contact met je op.',
+  'landing.tryitGate.success': 'Bedankt — we hebben je gegevens ontvangen. We nemen contact op zodra we je welkom kunnen heten.',
   'landing.tryitGate.error': 'Er ging iets mis. Probeer het opnieuw.',
   'landing.tryitGate.required': 'Vul alle velden in.',
   'landing.tryitGate.invalidEmail': 'Vul een geldig e-mailadres in.',

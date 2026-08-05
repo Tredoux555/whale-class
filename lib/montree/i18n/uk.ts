@@ -5238,8 +5238,8 @@ export const uk: Record<string, string> = {
   'landing.explainerTeaser.cta': 'Дивіться пояснювачі',
   // "Try it" gate modal (components/montree/TryItGateModal.tsx). Self-serve
   // signup is closed — every landing-page CTA opens this form instead.
-  'landing.tryitGate.title': 'Спробувати Montree',
-  'landing.tryitGate.body': 'Якщо ви хочете спробувати Montree, напишіть нам — і ми подбаємо, щоб ви отримали саме те, що вам потрібно.',
+  'landing.tryitGate.title': 'Дякуємо за ваш інтерес до Montree',
+  'landing.tryitGate.body': 'Зараз до нас приєднується безпрецедентна кількість нових шкіл. Щоб ви отримали той сервіс і ту якість, на які заслуговуєте, дайте нам змогу спершу подбати про нинішніх клієнтів — залиште нижче своє імʼя та контактні дані, і ми приєднаємо вас якнайшвидше та якнайретельніше. Чекаємо на вас.',
   'landing.tryitGate.name': 'Ім\'я',
   'landing.tryitGate.email': 'Електронна пошта',
   'landing.tryitGate.organisation': 'Організація / Школа',
@@ -5247,7 +5247,7 @@ export const uk: Record<string, string> = {
   'landing.tryitGate.submit': 'Надіслати повідомлення',
   'landing.tryitGate.sending': 'Надсилання…',
   'landing.tryitGate.successTitle': 'Повідомлення надіслано',
-  'landing.tryitGate.success': 'Дякуємо — ми невдовзі відповімо вам.',
+  'landing.tryitGate.success': 'Дякуємо — ми отримали ваші дані. Звʼяжемося з вами, щойно зможемо привітати вас на борту.',
   'landing.tryitGate.error': 'Щось пішло не так. Спробуйте ще раз.',
   'landing.tryitGate.required': 'Будь ласка, заповніть усі поля.',
   'landing.tryitGate.invalidEmail': 'Введіть дійсну електронну адресу.',
