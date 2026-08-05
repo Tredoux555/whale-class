@@ -59,3 +59,8 @@ Standard mini-pipeline run: `bankVersion` bumped `1.8.0` → `1.8.1` in all 5 au
 2. Get Tredoux's decision on the size-set design (isolated-card vs all-three-plus-arrow) before touching the 10 size-set stimuli — the current design impacts two single-object items if changed.
 3. col.blue / col.red stay vector permanently — no action needed.
 4. Once the above land, the raster count should reach 115 of 117 in-scope stimuli (2 permanent vector skips excluded).
+
+
+## Completion — waves 8 and 9 (2026-08-05)
+
+Waves 8 (`7134f7f8`) and 9 (`3ddcfe62`) closed out the remaining stimuli from "What's next" above. Art replacement is **COMPLETE** — 115 of 115 in-scope picture/scene stimuli carry `render.raster` at bank `1.10.0`; only `ST.col.blue` / `ST.col.red` remain vector by design (permanent, not a gap). The size-set stimuli were resolved as one-size-per-card (Option A) per Tredoux, 2026-08-05. The rods and feather (`ST.at_rod_long/mid/short`, `ST.at_light`) are programmatically drawn art — no Midjourney source. Base assets for the size-set and remaining raw ingredients are retained in `_assets_incoming/` for reference.
