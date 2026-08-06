@@ -218,7 +218,9 @@ const RAW: RawLesson[] = [
   { n: 15, sound: 'c', title: 'C for the Cat', catchphrase: '“cat ate my cookie!”', decodable: ['cot', 'cat'], words: ['cat', 'cookie'], books: [
     { slug: 'the-cot', title: 'The ___ Sat in a Cot!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each sat in a cot. The potato didn’t — just a nap in a deck chair.', cover: '/dark-phonics-books/covers/the-cot.png', materials: false },
   ] },
-  { n: 16, sound: 'k', title: 'K Says It Too', catchphrase: '“kooky king kicks!”', decodable: ['kit', 'Kim'], words: ['king'] },
+  { n: 16, sound: 'k', title: 'K Says It Too', catchphrase: '“kooky king kicks!”', decodable: ['kit', 'Kim'], words: ['king'], books: [
+    { slug: 'the-kit', title: 'The ___ Has a Kit!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each with a first-aid kit. The potato has none — until a grazed knee brings the whole crew running to help.', cover: '/dark-phonics-books/covers/the-kit.png', materials: false },
+  ] },
   { n: 17, sound: 'ck', title: 'Two Letters, One Kick', catchphrase: '“kick the stinky sock!”', decodable: ['sock', 'sick'], heartWords: ['ate'], words: ['sock'], reader: { slug: 'the-cat-sat', title: 'The Cat Sat' } },
   { n: 18, sound: 'e', title: 'Crack the Egg, E!', catchphrase: '“ten messy hens!”', decodable: ['egg'], words: ['hen'] },
   { n: 19, sound: 'u', title: 'Up Goes the Umbrella', catchphrase: '“yummy bug in my cup!”', decodable: ['duck', 'mud', 'stuck'], words: ['bug', 'cup'], reader: { slug: 'mud-pup', title: 'Mud Pup' } },
