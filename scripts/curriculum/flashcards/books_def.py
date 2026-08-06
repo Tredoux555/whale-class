@@ -37,6 +37,9 @@ EGG11='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images
 # 'the-mud' (letter-book twelve, the-sat cast is in the mud; potato sits it out,
 # chilling in his deck chair) — same convention as PAT4.
 MUD12='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-mud'
+# 'the-rat' (letter-book thirteen, the-sat cast chases a rat; potato doesn't,
+# chills with the rat instead) — same convention as PAT4.
+RAT13='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-rat'
 # TEXT RULES (locked from the-pat onward, apply to every future book):
 # 1. CASE: a spread's `text` is body copy continuing the sentence its `nar`
 #    starts (e.g. nar='The star...'  text='can pat!'  reads as one sentence:
@@ -310,6 +313,21 @@ dict(slug='the-mud', title_lines=['The ___','Is in the Mud!'], title_accent='Mud
   dict(nar='The cat…', text='is in the mud.', size=78, art=MUD12+'/p6-cat.png'),
   dict(text=['Mud! Mud!','Mud!'], style='drop', size=64, art=MUD12+'/p7-recap.png'),
   dict(text=['The potato',"isn't in",'the mud!'], size=42, art=MUD12+'/p8-potato.png'),
+ ]),
+
+dict(slug='the-rat', title_lines=['The ___','Chased the Rat!'], title_accent='Rat!', title_size=36,
+ band='LETTER R  ·  s a t p i n m d g o c k e u r (the-sat cast)', booknum='LETTER BOOK THIRTEEN · RAT', cover=RAT13+'/p7-recap.png',
+ new='Rat', review='sat  ·  spat  ·  pat  ·  pit  ·  nap  ·  mat  ·  sad  ·  dig  ·  dog  ·  cot  ·  kit  ·  egg  ·  mud  ·  at', heart='♥  heart words — a · the',
+ oral_note='the nouns live in the pictures — named aloud, never printed',
+ spreads=[
+  dict(nar='The ant…', text='chased the rat.', size=68, art=RAT13+'/p1-ant.png'),
+  dict(nar='The apple…', text='chased the rat.', size=68, art=RAT13+'/p2-apple.png'),
+  dict(nar='The sun…', text='chased the rat.', size=68, art=RAT13+'/p3-sun.png'),
+  dict(nar='The star…', text='chased the rat.', size=68, art=RAT13+'/p4-star.png'),
+  dict(nar='The snake…', text='chased the rat.', size=68, art=RAT13+'/p5-snake.png'),
+  dict(nar='The cat…', text='chased the rat.', size=68, art=RAT13+'/p6-cat.png'),
+  dict(text=['Rat! Rat!','Rat!'], style='drop', size=64, art=RAT13+'/p7-recap.png'),
+  dict(text=['The potato',"didn't chase",'the rat!'], size=42, art=RAT13+'/p8-potato.png'),
  ]),
 
 dict(slug='spat', title_lines=['SPAT!'], title_accent='SPAT!', title_size=64,

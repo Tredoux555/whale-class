@@ -228,7 +228,9 @@ const RAW: RawLesson[] = [
   { n: 19, sound: 'u', title: 'Up Goes the Umbrella', catchphrase: '“yummy bug in my cup!”', decodable: ['duck', 'mud', 'stuck'], words: ['bug', 'cup'], reader: { slug: 'mud-pup', title: 'Mud Pup' }, books: [
     { slug: 'the-mud', title: 'The ___ Is in the Mud!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each splashing in the mud. The potato isn’t — he’s chilling in his deck chair.', cover: '/dark-phonics-books/covers/the-mud.png', materials: false },
   ] },
-  { n: 20, sound: 'r', title: 'Rrr Goes the Engine', catchphrase: '“run, run, red rat!”', decodable: ['rug', 'rat', 'under'], words: ['rat'] },
+  { n: 20, sound: 'r', title: 'Rrr Goes the Engine', catchphrase: '“run, run, red rat!”', decodable: ['rug', 'rat', 'under'], words: ['rat'], books: [
+    { slug: 'the-rat', title: 'The ___ Chased the Rat!', description: 'The-sat cast is off after a new friend: a rat! Ant, apple, sun, star, snake, cat — all mid-chase. The potato skips the chase — he’s chilling in his deck chair, and the rat joins him for a cold drink.', cover: '/dark-phonics-books/covers/the-rat.png', materials: false },
+  ] },
   { n: 21, sound: 'h', title: 'H, the Panting Pup', catchphrase: '“ha-ha, hairy hippo!”', decodable: ['hat', 'hen'], words: ['hippo'] },
   { n: 22, sound: 'b', title: 'B for the Bobbing Boat', catchphrase: '“big baby burp!”', decodable: ['bed', 'bug'], words: ['baby'], reader: { slug: 'hen-in-bed', title: 'Hen in Bed' } },
   { n: 23, sound: 'f', title: 'Ffff Like a Fan', catchphrase: '“funny fox in my fan!”', decodable: ['fan', 'off'], words: ['fox', 'fan'] },
