@@ -220,6 +220,13 @@ function UnifiedLoginContent() {
 
         {/* Help links */}
         <div style={{ textAlign: 'center', marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {/* Organisation directors have their own door. Their code would not resolve here —
+              /api/montree/auth/unified matches against teachers, principals, agents and
+              parents, never montree_organization_admins — so point them at the page that
+              takes both their code and their email + password. */}
+          <a href="/montree/org/login" className="fn-login-link">
+            {t('auth.organizationDoor')}
+          </a>
           <a href="/montree/try" className="fn-login-link">
             {t('auth.noCode')}
           </a>

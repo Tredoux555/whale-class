@@ -6184,6 +6184,8 @@ export const zh = {
   'org.invite.onceOnly': '此链接只能使用一次。系统不会自动发送邮件——分享由您来做。',
   'org.invite.qrAlt': '邀请链接的二维码',
   'org.invite.qrHint': '用手机相机对准这里',
+  'org.invite.qrSave': '保存二维码',
+  'org.invite.qrShare': '分享二维码',
 
   'org.join.eyebrow': '一份邀请',
   'org.join.welcome': '欢迎来到蒙树',
@@ -6332,5 +6334,28 @@ export const zh = {
   // Clipboard fallback — in-app WeChat/WhatsApp webviews often block writeText.
   'org.invite.copyFailed': '无法复制',
   'org.invite.copyFallback': '您的浏览器不允许自动复制。请长按上方的链接选中它，然后手动复制。',
+
+  // ── Phase 6b: director login codes, God's Eye, dead-invite sign-in ──────────────
+  'auth.organizationDoor': 'I lead an organisation',
+  'org.login.codeSubtitle': 'Enter your login code to continue',
+  'org.login.codeHint': 'Your login code was shown when you set your organisation up. Lost it? Use your email and password, and ask Montree for a new one.',
+  'org.login.usePassword': 'Use my email and password instead',
+  'org.login.useCode': 'I have a login code',
+  'org.join.signInInstead': 'Sign in to your organisation',
+  'org.join.readyTitle': '{name} is ready',
+  'org.join.readyLead': 'Your organisation is set up. Sign in any time with the email and password you just chose.',
+  'org.join.codeLead': 'This is your login code. It works alongside your email and password — either one gets you in.',
+  'org.join.codeKeepSafe': 'Keep it safe. This is the only time it is shown; after this, only Montree can look it up for you.',
+  'org.join.copyCode': 'Copy code',
+  'org.join.codeCopied': 'Copied',
+  'org.join.enterDashboard': 'Go to your organisation',
+  'org.schoolJoin.signInInstead': 'Sign in to your school',
+  'org.dash.enterSchool': 'Enter school',
+  'org.dash.entering': 'Opening…',
+  'org.dash.enterFailed': 'Could not open that school.',
+  'org.dash.lastActivity': 'Last teacher activity {ago}',
+  'org.dash.noActivityYet': 'No teacher has signed in yet',
+  'org.dash.idleTeachers': '{n} idle teachers',
+  'org.dash.quietChildren': '{n} children with no recent observation',
 
 } as const;

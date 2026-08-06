@@ -13,6 +13,11 @@ export async function GET(request: NextRequest) {
   }
 
   const { userId, schoolId, classroomId, role } = auth;
+  // Phase 6b ("God's Eye") — when an organisation director has stepped into one of their
+  // schools, the principal cockpit needs to know so it can say so. The claim is carried on
+  // the signed token; this is the only place the client can learn about it, because the
+  // cockpit layout already treats auth/me as the single authority on the session.
+  const actingOrgAdminId = auth.actingOrgAdminId ?? null;
 
   try {
     const supabase = getSupabase();
@@ -91,6 +96,12 @@ export async function GET(request: NextRequest) {
       teacher: identity,
       school: schoolRes.data,
       classroom,
+      // Present ONLY on a session minted by /api/montree/org/enter-school. Informational —
+      // the cockpit renders the "Organisation view" banner and its Return button from it.
+      // Never a permission: this session is scoped to `schoolId` like any other principal's.
+      acting: actingOrgAdminId
+        ? { orgAdminId: actingOrgAdminId, organizationId: auth.actingOrganizationId ?? null }
+        : null,
     });
   } catch {
     return NextResponse.json({ authenticated: false }, { status: 500 });

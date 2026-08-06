@@ -131,6 +131,11 @@ export default function ClassroomDetailPage({
   const [showAddTeacher, setShowAddTeacher] = useState(false);
   const [teacherForm, setTeacherForm] = useState({ name: '', email: '' });
   const [newCode, setNewCode] = useState<string | null>(null);
+  // Phase 6b — a reset password, shown ONCE in the same modal the login code uses. The
+  // server returns it in the reset response and nowhere else; if the principal closes this
+  // without reading it, the only way forward is another reset.
+  const [newPassword, setNewPassword] = useState<string | null>(null);
+  const [resettingId, setResettingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   // Add Student modal (rarely surfaced — gated behind Advanced disclosure)
@@ -270,6 +275,34 @@ export default function ClassroomDetailPage({
       }
     } catch {
       toast.error(t('admin.failedToRegenerateCode'));
+    }
+  };
+
+  // Reset a teacher's PASSWORD (Phase 6b). Same authority, same surface and the same
+  // show-it-once treatment as "Regenerate code" directly above — the principal can already
+  // hand this teacher a new login code, and a forgotten password should not be a
+  // platform-owner ticket. The server mints the password (generate:true) so the principal
+  // never has to invent one, and returns it exactly once.
+  const resetPassword = async (teacherId: string) => {
+    if (!confirm('Reset this teacher\'s password? Their current one stops working immediately.')) return;
+    setResettingId(teacherId);
+    try {
+      const res = await fetch('/api/montree/auth/set-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacher_id: teacherId, generate: true }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.password) {
+        toast.error(data?.error || 'Could not reset the password.');
+        return;
+      }
+      setNewPassword(data.password);
+      setShowAddTeacher(true); // the same reveal surface the login code uses
+    } catch {
+      toast.error('Could not reset the password.');
+    } finally {
+      setResettingId(null);
     }
   };
 
@@ -545,6 +578,11 @@ export default function ClassroomDetailPage({
                   regenerateCode(teacher.id);
                   setOpenMenuId(null);
                 }}
+                onResetPassword={() => {
+                  void resetPassword(teacher.id);
+                  setOpenMenuId(null);
+                }}
+                resetting={resettingId === teacher.id}
               />
             ))}
           </div>
@@ -615,13 +653,27 @@ export default function ClassroomDetailPage({
       {/* ── Add Teacher modal ─────────────────────────────────────── */}
       {showAddTeacher && (
         <Modal
-          title={newCode ? 'Login code' : t('admin.addTeacher')}
+          title={newPassword ? 'New password' : newCode ? 'Login code' : t('admin.addTeacher')}
           onClose={() => {
             setShowAddTeacher(false);
             setNewCode(null);
+            setNewPassword(null);
           }}
         >
-          {newCode ? (
+          {newPassword ? (
+            <CodeRevealBlock
+              code={newPassword}
+              copied={copiedCode === newPassword}
+              onCopy={() => copyCode(newPassword)}
+              onDone={() => {
+                setShowAddTeacher(false);
+                setNewPassword(null);
+              }}
+              lead="Give this to the teacher. It replaces their old password and is shown only once — ask them to change it after they sign in."
+              copyLabel="Copy password"
+              wide
+            />
+          ) : newCode ? (
             <CodeRevealBlock
               code={newCode}
               copied={copiedCode === newCode}
@@ -750,6 +802,8 @@ function TeacherRow({
   onMenuToggle,
   onChangeRole,
   onRegenerate,
+  onResetPassword,
+  resetting,
 }: {
   teacher: Teacher;
   isLead: boolean;
@@ -760,6 +814,8 @@ function TeacherRow({
   onMenuToggle: (e: React.MouseEvent) => void;
   onChangeRole: (role: string) => void;
   onRegenerate: () => void;
+  onResetPassword: () => void;
+  resetting: boolean;
 }) {
   const initial = (teacher.name || '?').trim().charAt(0).toUpperCase();
   const justCopied = !!teacher.login_code && copiedCode === teacher.login_code;
@@ -1013,6 +1069,11 @@ function TeacherRow({
                 }}
               />
               <MenuItem label="Regenerate code" onClick={onRegenerate} />
+              <MenuItem
+                label={resetting ? 'Resetting…' : 'Reset password'}
+                onClick={onResetPassword}
+                disabled={resetting}
+              />
             </div>
           ) : null}
         </div>
@@ -1370,11 +1431,21 @@ function CodeRevealBlock({
   copied,
   onCopy,
   onDone,
+  // Phase 6b — the same block now reveals a reset PASSWORD as well as a login code. Both are
+  // shown once and copied once; only the words and the type size differ, so they share one
+  // component rather than growing a near-identical twin.
+  lead = 'Share this code with the teacher so they can log in.',
+  copyLabel = 'Copy code',
+  wide = false,
 }: {
   code: string;
   copied: boolean;
   onCopy: () => void;
   onDone: () => void;
+  lead?: string;
+  copyLabel?: string;
+  /** A 10-character password needs smaller type and tighter tracking than a 6-char code. */
+  wide?: boolean;
 }) {
   return (
     <div style={{ textAlign: 'center' }}>
@@ -1386,7 +1457,7 @@ function CodeRevealBlock({
           lineHeight: 1.55,
         }}
       >
-        Share this code with the teacher so they can log in.
+        {lead}
       </p>
       <div
         style={{
@@ -1400,11 +1471,12 @@ function CodeRevealBlock({
         <div
           style={{
             fontFamily: T.mono,
-            fontSize: 28,
+            fontSize: wide ? 22 : 28,
             fontWeight: 600,
             color: T.goldText,
-            letterSpacing: 4,
+            letterSpacing: wide ? 1.5 : 4,
             marginBottom: 10,
+            wordBreak: 'break-all',
           }}
         >
           {code}
@@ -1434,7 +1506,7 @@ function CodeRevealBlock({
           ) : (
             <>
               <Copy size={13} strokeWidth={2} />
-              Copy code
+              {copyLabel}
             </>
           )}
         </button>

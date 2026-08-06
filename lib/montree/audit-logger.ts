@@ -44,12 +44,37 @@ export async function logAudit(supabase: SupabaseClient, entry: AuditEntry): Pro
 }
 
 /**
- * Extract client IP from request headers (Railway sets x-forwarded-for)
+ * Extract the client IP from request headers.
+ *
+ * 🚨 SECURITY (audit fix Aug 2026): the naive `x-forwarded-for.split(',')[0]` is
+ * ATTACKER-CONTROLLED. X-Forwarded-For is built left-to-right — each proxy APPENDS the
+ * address it saw — so the FIRST entry is whatever the original client sent, which a client
+ * can set to anything. Trusting it made every fail-closed rate limiter both bypassable (spoof
+ * a fresh IP per attempt) AND a lockout weapon (spoof a victim's IP to burn their bucket).
+ *
+ * Trust order, most-trustworthy first:
+ *   1. `cf-connecting-ip` — set by Cloudflare from the real TCP peer, stripped-and-reset on
+ *      every request, not client-appendable. When present it is authoritative.
+ *   2. the LAST hop of `x-forwarded-for` — the entry the CLOSEST trusted proxy appended, i.e.
+ *      the peer IT saw. A client can prepend spoofed entries but cannot stop the edge from
+ *      appending the real one at the end. This is the correct value to trust when there is
+ *      exactly one trusted proxy in front (the deployment's edge).
+ *   3. `x-real-ip` — single-value edge header, used where set.
+ *
+ * Signature is unchanged, so every existing caller keeps working — they just get a value that
+ * cannot be forged from the request body.
  */
 export function getClientIP(headers: Headers): string {
-  return headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    headers.get('x-real-ip') ||
-    'unknown';
+  const cfConnecting = headers.get('cf-connecting-ip')?.trim();
+  if (cfConnecting) return cfConnecting;
+
+  const forwarded = headers.get('x-forwarded-for');
+  if (forwarded) {
+    const hops = forwarded.split(',').map((h) => h.trim()).filter(Boolean);
+    if (hops.length > 0) return hops[hops.length - 1];
+  }
+
+  return headers.get('x-real-ip')?.trim() || 'unknown';
 }
 
 /**

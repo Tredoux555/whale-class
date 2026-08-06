@@ -7,6 +7,7 @@
 //   - principals (montree_school_admins with login_code)
 //   - teachers (montree_teachers where is_agent=false, with login_code)
 //   - agents (montree_teachers where is_agent=true, with login_code)
+//   - org_directors (montree_organization_admins with login_code — migrations 315 + 317)
 //
 // Each row includes the school it belongs to so the UI can group by school
 // AND by role. Inactive rows (is_active=false / agent_suspended_at IS NOT
@@ -68,6 +69,24 @@ interface AgentLogin {
   agent_login_set_at: string | null;
   agent_login_last_used_at: string | null;
   agent_suspended_at: string | null;
+  created_at: string;
+}
+
+/**
+ * Organisation directors (Phase 6b). Shape follows PrincipalLogin as closely as the table
+ * allows: same `kind` discriminator, same plaintext `login_code`, same last-sign-in field.
+ * There is no school_id — a director belongs to an ORGANISATION, never to one school — so it
+ * carries organization_id / organization_name in the same slot instead.
+ */
+interface OrgDirectorLogin {
+  kind: 'org_director';
+  id: string;
+  name: string | null;
+  email: string | null;
+  login_code: string;
+  organization_id: string;
+  organization_name: string | null;
+  last_login_at: string | null;
   created_at: string;
 }
 
@@ -385,6 +404,66 @@ export async function GET(request: NextRequest) {
       };
     });
 
+  // ── Organisation directors (migrations 315 + 317) ────────────────────────────────────
+  // Read SEPARATELY from the Promise.all above, and deliberately so: those four reads throw
+  // on error, which is right for tables that have existed since the beginning. These two are
+  // recent, and a database where migration 315 or 317 has not been run must still be able to
+  // show every school login. A missing table here means an empty section, never a 500.
+  const orgDirectors: OrgDirectorLogin[] = [];
+  try {
+    // ⚠️ Unpaged read — caps at PostgREST's ~1000-row default. Total directors platform-wide is
+    // far under that; if the org tier ever grows past it, promote to a .range() paged loop like
+    // the school-side reads. created_at DESC is the display order (newest first).
+    const { data: directorRows, error: directorErr } = await supabase
+      .from('montree_organization_admins')
+      .select('id, name, email, login_code, organization_id, last_login_at, created_at')
+      .not('login_code', 'is', null)
+      .order('created_at', { ascending: false });
+
+    if (directorErr) {
+      console.warn('[all-logins] organization directors unavailable:', directorErr.message);
+    } else {
+      const rows = ((directorRows ?? []) as unknown) as Array<{
+        id: string;
+        name: string | null;
+        email: string | null;
+        login_code: string | null;
+        organization_id: string;
+        last_login_at: string | null;
+        created_at: string;
+      }>;
+
+      const orgIds = Array.from(new Set(rows.map((r) => r.organization_id).filter(Boolean)));
+      const orgNames = new Map<string, string>();
+      if (orgIds.length > 0) {
+        const { data: orgs } = await supabase
+          .from('montree_organizations')
+          .select('id, name')
+          .in('id', orgIds);
+        for (const o of ((orgs ?? []) as unknown) as Array<{ id: string; name: string }>) {
+          orgNames.set(o.id, o.name);
+        }
+      }
+
+      for (const r of rows) {
+        if (typeof r.login_code !== 'string' || r.login_code.length === 0) continue;
+        orgDirectors.push({
+          kind: 'org_director',
+          id: r.id,
+          name: r.name ?? null,
+          email: r.email ?? null,
+          login_code: r.login_code,
+          organization_id: r.organization_id,
+          organization_name: orgNames.get(r.organization_id) ?? null,
+          last_login_at: r.last_login_at ?? null,
+          created_at: r.created_at,
+        });
+      }
+    }
+  } catch (e) {
+    console.warn('[all-logins] organization directors lookup failed:', e);
+  }
+
   // Detect hash/code desync for principals so the UI can surface it.
   // Audit fix: only flag rows where password_hash IS legacy-shape (64-char
   // hex) and mismatches. Bcrypt rows ($2-prefixed) and any other shape
@@ -426,17 +505,20 @@ export async function GET(request: NextRequest) {
       principals,
       teachers,
       agents,
+      org_directors: orgDirectors,
       parent_invites: parentInvites,
       desynced_principal_ids: desyncedPrincipalIds,
       counts: {
         principals: principals.length,
         teachers: teachers.length,
         agents: agents.length,
+        org_directors: orgDirectors.length,
         parent_invites: parentInvites.length,
         total:
           principals.length +
           teachers.length +
           agents.length +
+          orgDirectors.length +
           parentInvites.length,
       },
       generated_at: new Date().toISOString(),

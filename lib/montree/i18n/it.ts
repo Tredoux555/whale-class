@@ -5775,6 +5775,8 @@ export const it: Record<string, string> = {
   'org.invite.onceOnly': 'This link works once. Nothing is emailed automatically — sharing it is up to you.',
   'org.invite.qrAlt': 'QR code for the invitation link',
   'org.invite.qrHint': 'Point a phone camera here',
+  'org.invite.qrSave': 'Save QR code',
+  'org.invite.qrShare': 'Share QR code',
 
   'org.join.eyebrow': 'An invitation',
   'org.join.welcome': 'Welcome to Montree',
@@ -5923,5 +5925,28 @@ export const it: Record<string, string> = {
   // Clipboard fallback — in-app WeChat/WhatsApp webviews often block writeText.
   'org.invite.copyFailed': 'Could not copy',
   'org.invite.copyFallback': 'Your browser would not let us copy it. Press and hold the link above to select it, then copy it by hand.',
+
+  // ── Phase 6b: director login codes, God's Eye, dead-invite sign-in ──────────────
+  'auth.organizationDoor': 'I lead an organisation',
+  'org.login.codeSubtitle': 'Enter your login code to continue',
+  'org.login.codeHint': 'Your login code was shown when you set your organisation up. Lost it? Use your email and password, and ask Montree for a new one.',
+  'org.login.usePassword': 'Use my email and password instead',
+  'org.login.useCode': 'I have a login code',
+  'org.join.signInInstead': 'Sign in to your organisation',
+  'org.join.readyTitle': '{name} is ready',
+  'org.join.readyLead': 'Your organisation is set up. Sign in any time with the email and password you just chose.',
+  'org.join.codeLead': 'This is your login code. It works alongside your email and password — either one gets you in.',
+  'org.join.codeKeepSafe': 'Keep it safe. This is the only time it is shown; after this, only Montree can look it up for you.',
+  'org.join.copyCode': 'Copy code',
+  'org.join.codeCopied': 'Copied',
+  'org.join.enterDashboard': 'Go to your organisation',
+  'org.schoolJoin.signInInstead': 'Sign in to your school',
+  'org.dash.enterSchool': 'Enter school',
+  'org.dash.entering': 'Opening…',
+  'org.dash.enterFailed': 'Could not open that school.',
+  'org.dash.lastActivity': 'Last teacher activity {ago}',
+  'org.dash.noActivityYet': 'No teacher has signed in yet',
+  'org.dash.idleTeachers': '{n} idle teachers',
+  'org.dash.quietChildren': '{n} children with no recent observation',
 
 };

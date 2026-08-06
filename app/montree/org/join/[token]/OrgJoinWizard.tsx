@@ -7,9 +7,14 @@
  * the same dark, ceremonial surface a principal meets at /montree/principal/register, so an
  * organisation leader and their principals recognise the same product.
  *
- * Two steps, four fields, and the last button drops them straight into /montree/org with a
- * live session. Everything else about setting an organisation up happens there, where they
- * can see what they are doing.
+ * Two steps, four fields, and then ONE more screen before /montree/org: the login code.
+ *
+ * That third screen is not a formality. The code (migration 317) is shown exactly once — it is
+ * plaintext in the registration response and nowhere else the director can reach — so the
+ * wizard stops and makes them look at it, the same way the principal cockpit stops and makes a
+ * principal look at a teacher's code before it disappears. A director who taps past it can
+ * still sign in with their email and password, and the platform owner can reissue a code, so
+ * this is a moment worth taking rather than a trap.
  */
 
 import { useState } from 'react';
@@ -27,6 +32,11 @@ export default function OrgJoinWizard({ token, landing }: { token: string; landi
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  // Set once registration succeeds. `''` means the account was created but no code came back
+  // (migration 317 not run) — the done screen then simply omits the code panel.
+  const [issuedCode, setIssuedCode] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const [organizationName, setOrganizationName] = useState(landing.prefillName ?? '');
   const [contactName, setContactName] = useState('');
@@ -58,11 +68,26 @@ export default function OrgJoinWizard({ token, landing }: { token: string; landi
         localStorage.setItem('montree_org_admin', JSON.stringify(data.admin));
       } catch { /* private browsing — the cookie is still the real session */ }
 
-      router.push('/montree/org');
+      // Stop here rather than pushing to /montree/org — the code is in `data` and nowhere
+      // else. See the note at the top of this file.
+      setIssuedCode(typeof data.loginCode === 'string' ? data.loginCode : '');
+      setDone(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('org.join.failed'));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const copyCode = async () => {
+    if (!issuedCode) return;
+    try {
+      await navigator.clipboard.writeText(issuedCode);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // In-app webviews (WeChat/WhatsApp) block writeText. The code is on screen in large
+      // type — they can read it or select it by hand, so this is silent by design.
     }
   };
 
@@ -82,9 +107,94 @@ export default function OrgJoinWizard({ token, landing }: { token: string; landi
             <p style={{ color: FT.whisper, fontSize: '0.92rem', textAlign: 'center', marginTop: 14, lineHeight: 1.7 }}>
               {landing.message || t('org.join.deadLinkBody')}
             </p>
-            <div style={{ marginTop: 28, textAlign: 'center' }}>
+            {/* 🚨 The dead end used to be a genuine dead end. The most common reason a link
+                does not work is that it ALREADY WORKED — the person redeemed it, closed the
+                tab, and came back to the same link days later. inviteStatusMessage('used')
+                already tells them "sign in instead"; this is the button that lets them. */}
+            <div style={{ marginTop: 26, textAlign: 'center' }}>
+              <Link href="/montree/org/login" className="fn-pill" style={{ display: 'inline-block' }}>
+                {t('org.join.signInInstead')}
+              </Link>
+            </div>
+            <div style={{ marginTop: 16, textAlign: 'center' }}>
               <Link href="/montree" className="fn-login-link">{t('org.join.backToMontree')}</Link>
             </div>
+          </div>
+        </div>
+        <div className="fn-foot">Montree · montree.xyz</div>
+      </div>
+    );
+  }
+
+  // ── Registered. The one screen where the login code exists ─────────────────────────────
+  if (done) {
+    return (
+      <div className="fn-page">
+        <style dangerouslySetInnerHTML={{ __html: FUNNEL_CSS }} />
+        <div className="fn-topbar">
+          <a className="fn-wordmark" href="/montree"><span>{t('app.name')}</span></a>
+          <LanguageToggle className="bg-white/10 hover:bg-white/20 text-white border border-white/[0.08]" />
+        </div>
+        <div className="fn-stage-wrap" style={{ padding: '48px 20px 72px' }}>
+          <div className="fn-screen center" style={{ maxWidth: 470 }}>
+            <div className="fn-eyebrow" style={{ textAlign: 'center' }}>{t('org.join.eyebrow')}</div>
+            <h1 className="fn-h1" style={{ textAlign: 'center' }}>
+              {t('org.join.readyTitle', { name: organizationName })}
+            </h1>
+
+            {issuedCode ? (
+              <>
+                <p style={{ color: FT.whisper, fontSize: '0.92rem', textAlign: 'center', marginTop: 14, lineHeight: 1.7 }}>
+                  {t('org.join.codeLead')}
+                </p>
+                <div
+                  style={{
+                    marginTop: 22,
+                    padding: '22px 18px',
+                    background: 'rgba(232,201,106,0.08)',
+                    border: '1px solid rgba(232,201,106,0.18)',
+                    borderRadius: 14,
+                    textAlign: 'center',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                      fontSize: 32,
+                      fontWeight: 600,
+                      color: '#f0d68a',
+                      letterSpacing: 6,
+                    }}
+                  >
+                    {issuedCode}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void copyCode()}
+                    className="fn-pill ghost"
+                    style={{ marginTop: 16 }}
+                  >
+                    {copied ? t('org.join.codeCopied') : t('org.join.copyCode')}
+                  </button>
+                </div>
+                <p style={{ color: FT.hush, fontSize: '0.8rem', textAlign: 'center', marginTop: 16, lineHeight: 1.7 }}>
+                  {t('org.join.codeKeepSafe')}
+                </p>
+              </>
+            ) : (
+              <p style={{ color: FT.whisper, fontSize: '0.92rem', textAlign: 'center', marginTop: 14, lineHeight: 1.7 }}>
+                {t('org.join.readyLead')}
+              </p>
+            )}
+
+            <button
+              type="button"
+              onClick={() => router.push('/montree/org')}
+              className="fn-pill block"
+              style={{ marginTop: 26 }}
+            >
+              {t('org.join.enterDashboard')}
+            </button>
           </div>
         </div>
         <div className="fn-foot">Montree · montree.xyz</div>

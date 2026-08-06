@@ -24,6 +24,15 @@ import InviteLinkCard from '@/components/montree/org/InviteLinkCard';
 import { Card, DataTable, EmptyState, Section, StatTile, TileRow } from '@/components/montree/evaluation-reports/ReportChrome';
 import { T } from '@/components/montree/evaluation-reports/tokens';
 
+interface DirectorRow {
+  id: string;
+  name: string | null;
+  email: string | null;
+  /** Plaintext, super-admin only. null before migration 317, or if never issued. */
+  loginCode: string | null;
+  lastLoginAt: string | null;
+}
+
 interface OrgRow {
   id: string;
   name: string;
@@ -32,6 +41,7 @@ interface OrgRow {
   contactEmail: string | null;
   createdAt: string;
   schoolCount: number;
+  admins: DirectorRow[];
 }
 
 interface InviteRow {
@@ -156,6 +166,71 @@ export default function SuperAdminOrganizationsPage() {
       setMintError(err instanceof Error ? err.message : 'Could not create the invitation.');
     } finally {
       setMinting(false);
+    }
+  };
+
+  // ── Director recovery + view-as (Phase 6b) ──────────────────────────────────────────────
+  // One shared "secret just revealed" slot: whichever of the two actions ran last owns it.
+  // Both secrets are returned exactly once by the API, so they are held here until dismissed
+  // rather than re-fetched.
+  const [busyAction, setBusyAction] = useState<string | null>(null);
+  const [revealed, setRevealed] = useState<
+    { adminId: string; kind: 'code' | 'password'; value: string } | null
+  >(null);
+  const [actionError, setActionError] = useState('');
+
+  const directorAction = async (adminId: string, action: 'regenerate_login_code' | 'reset_password') => {
+    if (!token || busyAction) return;
+    setBusyAction(`${adminId}:${action}`);
+    setActionError('');
+    setRevealed(null);
+    try {
+      const res = await fetch('/api/montree/super-admin/organizations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-super-admin-token': token },
+        body: JSON.stringify({ action, adminId }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setActionError(body?.error || 'That did not work.');
+        return;
+      }
+      setRevealed(
+        action === 'regenerate_login_code'
+          ? { adminId, kind: 'code', value: body.loginCode }
+          : { adminId, kind: 'password', value: body.password },
+      );
+      void load(token); // the list now shows the new code
+    } catch {
+      setActionError('Could not reach the server.');
+    } finally {
+      setBusyAction(null);
+    }
+  };
+
+  // Become this organisation. The endpoint swaps the montree-auth cookie server-side, so this
+  // is a hard navigation — nothing about the super-admin console's state belongs inside an
+  // organisation dashboard. The sa_session token stays in sessionStorage, so coming back to
+  // this console after signing out of the org view still works.
+  const viewAsOrganization = async (orgId: string) => {
+    if (!token || busyAction) return;
+    setBusyAction(`${orgId}:view_as`);
+    setActionError('');
+    try {
+      const res = await fetch(`/api/montree/super-admin/organizations/${orgId}/view-as`, {
+        method: 'POST',
+        headers: { 'x-super-admin-token': token },
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setActionError(body?.error || 'Could not open that organization.');
+        setBusyAction(null);
+        return;
+      }
+      window.location.href = body.redirect || '/montree/org';
+    } catch {
+      setActionError('Could not reach the server.');
+      setBusyAction(null);
     }
   };
 
@@ -343,6 +418,149 @@ export default function SuperAdminOrganizationsPage() {
               )}
             </Section>
 
+            {/* ── Directors ────────────────────────────────────────────────────────────────
+                The org-tier god view. Every director's live login code in plaintext, plus the
+                two recoveries and "view as organization". This is the same posture as the
+                schools god view at /api/montree/super-admin/all-logins: one operator, one
+                screen, and no support ticket that has to end with "I can't see it either". */}
+            {orgs && orgs.length > 0 ? (
+              <Section
+                title="Directors"
+                subtitle="Every organization leader, their live login code, and when they last signed in. Codes are shown in full — this page is the recovery path when a director loses theirs."
+              >
+                {actionError ? (
+                  <p style={{ fontFamily: T.sans, fontSize: 12.5, color: '#f2a883', margin: '0 0 12px' }}>{actionError}</p>
+                ) : null}
+                <div style={{ display: 'grid', gap: 10 }}>
+                  {orgs.map((o) => (
+                    <Card key={`dir-${o.id}`} padding={14}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                        <div style={{ fontFamily: T.serif, fontSize: 17, color: T.textPrimary }}>{o.name}</div>
+                        <button
+                          type="button"
+                          onClick={() => void viewAsOrganization(o.id)}
+                          disabled={busyAction !== null}
+                          style={{
+                            ...secondaryBtn,
+                            opacity: busyAction !== null ? 0.6 : 1,
+                            cursor: busyAction !== null ? 'default' : 'pointer',
+                          }}
+                        >
+                          {busyAction === `${o.id}:view_as` ? 'Opening…' : 'View as organization'}
+                        </button>
+                      </div>
+
+                      {o.admins.length === 0 ? (
+                        <p style={{ fontFamily: T.sans, fontSize: 12.5, color: T.textMuted, margin: '10px 0 0' }}>
+                          No leader account on this organization.
+                        </p>
+                      ) : (
+                        <div style={{ display: 'grid', gap: 10, marginTop: 12 }}>
+                          {o.admins.map((a) => (
+                            <div
+                              key={a.id}
+                              style={{
+                                borderTop: '1px solid rgba(255,255,255,0.07)',
+                                paddingTop: 10,
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                gap: 12,
+                                flexWrap: 'wrap',
+                                alignItems: 'center',
+                              }}
+                            >
+                              <div style={{ minWidth: 0 }}>
+                                <div style={{ fontFamily: T.sans, fontSize: 13.5, color: T.textPrimary }}>
+                                  {a.name || '—'}
+                                </div>
+                                <div style={{ fontFamily: T.sans, fontSize: 12, color: T.textMuted, marginTop: 2 }}>
+                                  {a.email || '—'}
+                                  {' · '}
+                                  {a.lastLoginAt
+                                    ? `last signed in ${new Date(a.lastLoginAt).toLocaleDateString()}`
+                                    : 'never signed in'}
+                                </div>
+                              </div>
+                              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                                <code
+                                  style={{
+                                    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                                    fontSize: 13,
+                                    letterSpacing: 2,
+                                    color: a.loginCode ? '#f0d68a' : T.textMuted,
+                                    background: a.loginCode ? 'rgba(232,201,106,0.08)' : 'transparent',
+                                    border: a.loginCode ? '1px solid rgba(232,201,106,0.18)' : '1px solid transparent',
+                                    borderRadius: 8,
+                                    padding: '5px 10px',
+                                  }}
+                                >
+                                  {a.loginCode || 'no code'}
+                                </code>
+                                <button
+                                  type="button"
+                                  onClick={() => void directorAction(a.id, 'regenerate_login_code')}
+                                  disabled={busyAction !== null}
+                                  style={{ ...secondaryBtn, opacity: busyAction !== null ? 0.6 : 1 }}
+                                >
+                                  {busyAction === `${a.id}:regenerate_login_code` ? 'Issuing…' : 'New code'}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => void directorAction(a.id, 'reset_password')}
+                                  disabled={busyAction !== null}
+                                  style={{ ...secondaryBtn, opacity: busyAction !== null ? 0.6 : 1 }}
+                                >
+                                  {busyAction === `${a.id}:reset_password` ? 'Resetting…' : 'Reset password'}
+                                </button>
+                              </div>
+
+                              {/* Shown once, right where the action was taken. */}
+                              {revealed && revealed.adminId === a.id ? (
+                                <div
+                                  style={{
+                                    width: '100%',
+                                    marginTop: 4,
+                                    padding: '10px 12px',
+                                    background: 'rgba(232,201,106,0.08)',
+                                    border: '1px solid rgba(232,201,106,0.20)',
+                                    borderRadius: 10,
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    gap: 10,
+                                    flexWrap: 'wrap',
+                                    alignItems: 'center',
+                                  }}
+                                >
+                                  <span style={{ fontFamily: T.sans, fontSize: 12.5, color: '#f0d68a' }}>
+                                    {revealed.kind === 'code' ? 'New login code: ' : 'New password (shown once): '}
+                                    <strong
+                                      style={{
+                                        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                                        letterSpacing: 1.5,
+                                      }}
+                                    >
+                                      {revealed.value}
+                                    </strong>
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setRevealed(null)}
+                                    style={secondaryBtn}
+                                  >
+                                    Done
+                                  </button>
+                                </div>
+                              ) : null}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </Card>
+                  ))}
+                </div>
+              </Section>
+            ) : null}
+
             <Section title="Invitations" subtitle="Organization links you have minted. A link you withdraw stops working immediately and disappears from this list.">
               {invites === null ? (
                 <div className="animate-pulse" aria-hidden style={{ height: 90, background: 'rgba(255,255,255,0.04)', borderRadius: 16 }} />
@@ -395,6 +613,18 @@ export default function SuperAdminOrganizationsPage() {
     </div>
   );
 }
+
+/** The quiet action button used throughout the Directors section. */
+const secondaryBtn: React.CSSProperties = {
+  background: 'transparent',
+  color: 'rgba(255,255,255,0.72)',
+  border: '1px solid rgba(255,255,255,0.16)',
+  borderRadius: 9,
+  padding: '6px 12px',
+  fontFamily: T.sans,
+  fontSize: 12.5,
+  cursor: 'pointer',
+};
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
