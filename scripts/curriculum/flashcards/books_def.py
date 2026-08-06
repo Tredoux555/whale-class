@@ -22,6 +22,8 @@ MAT5='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/
 SAD6='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-sad'
 # 'the-dig' (letter-book seven, the-sat cast digs) — same convention as PAT4.
 DIG7='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-dig'
+# 'the-dog' (letter-book eight, the-sat cast each has a dog; potato has five) — same convention as PAT4.
+DOG8='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-dog'
 # TEXT RULES (locked from the-pat onward, apply to every future book):
 # 1. CASE: a spread's `text` is body copy continuing the sentence its `nar`
 #    starts (e.g. nar='The star...'  text='can pat!'  reads as one sentence:
@@ -203,6 +205,21 @@ dict(slug='the-dig', title_lines=['The ___','Digs!'], title_accent='Digs!', titl
   dict(nar='The cat…', text='digs.', size=92, art=DIG7+'/p6-cat.png'),
   dict(text=['Dig! Dig!','Dig!'], style='drop', size=64, art=DIG7+'/p7-recap.png'),
   dict(text=['The potato',"doesn't dig!"], size=48, art=DIG7+'/p8-potato.png'),
+ ]),
+
+dict(slug='the-dog', title_lines=['The ___','Has a Dog!'], title_accent='Dog!', title_size=44,
+ band='LETTER O  ·  s a t p i n m d g o (the-sat cast)', booknum='LETTER BOOK EIGHT · DOG', cover=DOG8+'/p7-recap.png',
+ new='Dog', review='sat  ·  spat  ·  pat  ·  pit  ·  nap  ·  mat  ·  sad  ·  dig  ·  at', heart='♥  heart words — a · the',
+ oral_note='the nouns live in the pictures — named aloud, never printed',
+ spreads=[
+  dict(nar='The ant…', text='has a dog.', size=76, art=DOG8+'/p1-ant.png'),
+  dict(nar='The apple…', text='has a dog.', size=76, art=DOG8+'/p2-apple.png'),
+  dict(nar='The sun…', text='has a dog.', size=76, art=DOG8+'/p3-sun.png'),
+  dict(nar='The star…', text='has a dog.', size=76, art=DOG8+'/p4-star.png'),
+  dict(nar='The snake…', text='has a dog.', size=76, art=DOG8+'/p5-snake.png'),
+  dict(nar='The cat…', text='has a dog.', size=76, art=DOG8+'/p6-cat.png'),
+  dict(text=['Dog! Dog!','Dog!'], style='drop', size=64, art=DOG8+'/p7-recap.png'),
+  dict(text=['The potato','has 5 dogs!'], size=46, art=DOG8+'/p8-potato.png'),
  ]),
 
 dict(slug='spat', title_lines=['SPAT!'], title_accent='SPAT!', title_size=64,
