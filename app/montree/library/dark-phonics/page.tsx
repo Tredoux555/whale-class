@@ -212,7 +212,9 @@ const RAW: RawLesson[] = [
   { n: 13, sound: 'g', title: 'G for the Goat', catchphrase: '“goat got my gum!”', decodable: ['pig', 'dig'], words: ['goat', 'gum'], books: [
     { slug: 'the-dig', title: 'The ___ Digs!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — plus the potato, who doesn’t.', cover: '/dark-phonics-books/covers/the-dig.png', materials: false },
   ] },
-  { n: 14, sound: 'o', title: 'O for the Octopus', catchphrase: '“hot dog on a log!”', decodable: ['pot', 'dog'], words: ['hotdog', 'log'] },
+  { n: 14, sound: 'o', title: 'O for the Octopus', catchphrase: '“hot dog on a log!”', decodable: ['pot', 'dog'], words: ['hotdog', 'log'], books: [
+    { slug: 'the-dog', title: 'The ___ Has a Dog!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each walking a different dog. The potato has five.', cover: '/dark-phonics-books/covers/the-dog.png', materials: false },
+  ] },
   { n: 15, sound: 'c', title: 'C for the Cat', catchphrase: '“cat ate my cookie!”', decodable: ['cot', 'cat'], words: ['cat', 'cookie'] },
   { n: 16, sound: 'k', title: 'K Says It Too', catchphrase: '“kooky king kicks!”', decodable: ['kit', 'Kim'], words: ['king'] },
   { n: 17, sound: 'ck', title: 'Two Letters, One Kick', catchphrase: '“kick the stinky sock!”', decodable: ['sock', 'sick'], heartWords: ['ate'], words: ['sock'], reader: { slug: 'the-cat-sat', title: 'The Cat Sat' } },
