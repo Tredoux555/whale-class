@@ -24,6 +24,7 @@ const ALLOWED_BUCKETS = new Set([
   'story-uploads',
   'photo-bank',
   'dark-phonics', // public — Dark Phonics films/pictures for the curriculum Studio
+  'grace-courtesy', // public — Grace & Courtesy songs/pictures/storybooks
 ]);
 const DEFAULT_BUCKET = 'montree-media';
 
