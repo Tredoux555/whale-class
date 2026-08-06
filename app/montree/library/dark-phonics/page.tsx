@@ -215,7 +215,9 @@ const RAW: RawLesson[] = [
   { n: 14, sound: 'o', title: 'O for the Octopus', catchphrase: '“hot dog on a log!”', decodable: ['pot', 'dog'], words: ['hotdog', 'log'], books: [
     { slug: 'the-dog', title: 'The ___ Has a Dog!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each walking a different dog. The potato has five.', cover: '/dark-phonics-books/covers/the-dog.png', materials: false },
   ] },
-  { n: 15, sound: 'c', title: 'C for the Cat', catchphrase: '“cat ate my cookie!”', decodable: ['cot', 'cat'], words: ['cat', 'cookie'] },
+  { n: 15, sound: 'c', title: 'C for the Cat', catchphrase: '“cat ate my cookie!”', decodable: ['cot', 'cat'], words: ['cat', 'cookie'], books: [
+    { slug: 'the-cot', title: 'The ___ Sat in a Cot!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each sat in a cot. The potato didn’t — just a nap in a deck chair.', cover: '/dark-phonics-books/covers/the-cot.png', materials: false },
+  ] },
   { n: 16, sound: 'k', title: 'K Says It Too', catchphrase: '“kooky king kicks!”', decodable: ['kit', 'Kim'], words: ['king'] },
   { n: 17, sound: 'ck', title: 'Two Letters, One Kick', catchphrase: '“kick the stinky sock!”', decodable: ['sock', 'sick'], heartWords: ['ate'], words: ['sock'], reader: { slug: 'the-cat-sat', title: 'The Cat Sat' } },
   { n: 18, sound: 'e', title: 'Crack the Egg, E!', catchphrase: '“ten messy hens!”', decodable: ['egg'], words: ['hen'] },
