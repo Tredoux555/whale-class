@@ -34,6 +34,9 @@ KIT10='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images
 # 'the-egg' (letter-book eleven, the-sat cast each has an egg; potato cracks
 # his) — same convention as PAT4.
 EGG11='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-egg'
+# 'the-mud' (letter-book twelve, the-sat cast is in the mud; potato sits it out,
+# chilling in his deck chair) — same convention as PAT4.
+MUD12='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-mud'
 # TEXT RULES (locked from the-pat onward, apply to every future book):
 # 1. CASE: a spread's `text` is body copy continuing the sentence its `nar`
 #    starts (e.g. nar='The star...'  text='can pat!'  reads as one sentence:
@@ -292,6 +295,21 @@ dict(slug='the-egg', title_lines=['The ___','Has an Egg!'], title_accent='Egg!',
   dict(nar='The cat…', text='has an egg.', size=74, art=EGG11+'/p6-cat.png'),
   dict(text=['Egg! Egg!','Egg!'], style='drop', size=64, art=EGG11+'/p7-recap.png'),
   dict(text=['The potato','had an egg!'], size=46, art=EGG11+'/p8-potato.png'),
+ ]),
+
+dict(slug='the-mud', title_lines=['The ___','Is in the Mud!'], title_accent='Mud!', title_size=40,
+ band='LETTER U  ·  s a t p i n m d g o c k e u (the-sat cast)', booknum='LETTER BOOK TWELVE · MUD', cover=MUD12+'/p7-recap.png',
+ new='Mud', review='sat  ·  spat  ·  pat  ·  pit  ·  nap  ·  mat  ·  sad  ·  dig  ·  dog  ·  cot  ·  kit  ·  egg  ·  at', heart='♥  heart words — a · the',
+ oral_note='the nouns live in the pictures — named aloud, never printed',
+ spreads=[
+  dict(nar='The ant…', text='is in the mud.', size=78, art=MUD12+'/p1-ant.png'),
+  dict(nar='The apple…', text='is in the mud.', size=78, art=MUD12+'/p2-apple.png'),
+  dict(nar='The sun…', text='is in the mud.', size=78, art=MUD12+'/p3-sun.png'),
+  dict(nar='The star…', text='is in the mud.', size=78, art=MUD12+'/p4-star.png'),
+  dict(nar='The snake…', text='is in the mud.', size=78, art=MUD12+'/p5-snake.png'),
+  dict(nar='The cat…', text='is in the mud.', size=78, art=MUD12+'/p6-cat.png'),
+  dict(text=['Mud! Mud!','Mud!'], style='drop', size=64, art=MUD12+'/p7-recap.png'),
+  dict(text=['The potato',"isn't in",'the mud!'], size=42, art=MUD12+'/p8-potato.png'),
  ]),
 
 dict(slug='spat', title_lines=['SPAT!'], title_accent='SPAT!', title_size=64,
