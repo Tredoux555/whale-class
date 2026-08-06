@@ -225,7 +225,9 @@ const RAW: RawLesson[] = [
   { n: 18, sound: 'e', title: 'Crack the Egg, E!', catchphrase: '“ten messy hens!”', decodable: ['egg'], words: ['hen'], books: [
     { slug: 'the-egg', title: 'The ___ Has an Egg!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each with an egg. The potato had one too — until he cracked it.', cover: '/dark-phonics-books/covers/the-egg.png', materials: false },
   ] },
-  { n: 19, sound: 'u', title: 'Up Goes the Umbrella', catchphrase: '“yummy bug in my cup!”', decodable: ['duck', 'mud', 'stuck'], words: ['bug', 'cup'], reader: { slug: 'mud-pup', title: 'Mud Pup' } },
+  { n: 19, sound: 'u', title: 'Up Goes the Umbrella', catchphrase: '“yummy bug in my cup!”', decodable: ['duck', 'mud', 'stuck'], words: ['bug', 'cup'], reader: { slug: 'mud-pup', title: 'Mud Pup' }, books: [
+    { slug: 'the-mud', title: 'The ___ Is in the Mud!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each splashing in the mud. The potato isn’t — he’s chilling in his deck chair.', cover: '/dark-phonics-books/covers/the-mud.png', materials: false },
+  ] },
   { n: 20, sound: 'r', title: 'Rrr Goes the Engine', catchphrase: '“run, run, red rat!”', decodable: ['rug', 'rat', 'under'], words: ['rat'] },
   { n: 21, sound: 'h', title: 'H, the Panting Pup', catchphrase: '“ha-ha, hairy hippo!”', decodable: ['hat', 'hen'], words: ['hippo'] },
   { n: 22, sound: 'b', title: 'B for the Bobbing Boat', catchphrase: '“big baby burp!”', decodable: ['bed', 'bug'], words: ['baby'], reader: { slug: 'hen-in-bed', title: 'Hen in Bed' } },
