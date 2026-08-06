@@ -24,6 +24,9 @@ SAD6='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/
 DIG7='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-dig'
 # 'the-dog' (letter-book eight, the-sat cast each has a dog; potato has five) — same convention as PAT4.
 DOG8='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-dog'
+# 'the-cot' (letter-book nine, the-sat cast sat in a baby cot; potato sips a drink
+# in a deck chair instead, then naps) — same convention as PAT4. First 9-page book.
+COT9='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-cot'
 # TEXT RULES (locked from the-pat onward, apply to every future book):
 # 1. CASE: a spread's `text` is body copy continuing the sentence its `nar`
 #    starts (e.g. nar='The star...'  text='can pat!'  reads as one sentence:
@@ -220,6 +223,22 @@ dict(slug='the-dog', title_lines=['The ___','Has a Dog!'], title_accent='Dog!', 
   dict(nar='The cat…', text='has a dog.', size=76, art=DOG8+'/p6-cat.png'),
   dict(text=['Dog! Dog!','Dog!'], style='drop', size=64, art=DOG8+'/p7-recap.png'),
   dict(text=['The potato','has 5 dogs!'], size=46, art=DOG8+'/p8-potato.png'),
+ ]),
+
+dict(slug='the-cot', title_lines=['The ___','Sat in a Cot!'], title_accent='Cot!', title_size=42,
+ band='LETTER C  ·  s a t p i n m d g o c (the-sat cast)', booknum='LETTER BOOK NINE · COT', cover=COT9+'/p7-recap.png',
+ new='Cot', review='sat  ·  spat  ·  pat  ·  pit  ·  nap  ·  mat  ·  sad  ·  dig  ·  dog  ·  at', heart='♥  heart words — a · the',
+ oral_note='the nouns live in the pictures — named aloud, never printed',
+ spreads=[
+  dict(nar='The ant…', text='sat in a cot.', size=80, art=COT9+'/p1-ant.png'),
+  dict(nar='The apple…', text='sat in a cot.', size=80, art=COT9+'/p2-apple.png'),
+  dict(nar='The sun…', text='sat in a cot.', size=80, art=COT9+'/p3-sun.png'),
+  dict(nar='The star…', text='sat in a cot.', size=80, art=COT9+'/p4-star.png'),
+  dict(nar='The snake…', text='sat in a cot.', size=80, art=COT9+'/p5-snake.png'),
+  dict(nar='The cat…', text='sat in a cot.', size=80, art=COT9+'/p6-cat.png'),
+  dict(text=['Cot! Cot!','Cot!'], style='drop', size=64, art=COT9+'/p7-recap.png'),
+  dict(text=['The potato',"didn’t sit",'in a cot!'], size=42, art=COT9+'/p8-potato.png'),
+  dict(text=['The potato','naps.'], size=56, art=COT9+'/p9-potato-naps.png'),
  ]),
 
 dict(slug='spat', title_lines=['SPAT!'], title_accent='SPAT!', title_size=64,
