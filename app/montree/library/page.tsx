@@ -152,6 +152,38 @@ export default function LibraryWelcomePage() {
               </svg>
             </Link>
 
+            {/* Grace & Courtesy — deep forest-green accent (the series' locked
+                art-style palette, deliberately distinct from Dark Phonics'
+                violet). One classroom rule per book; seeded with Book 1. */}
+            <Link
+              href="/montree/library/grace-courtesy"
+              className="group relative flex items-center gap-5 w-full p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(62,142,101,0.10), rgba(30,84,58,0.04))',
+                borderColor: 'rgba(62,142,101,0.20)',
+              }}
+            >
+              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'linear-gradient(135deg, rgba(62,142,101,0.14), rgba(30,84,58,0.06))' }} />
+
+              <div className="relative z-10 w-14 h-14 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300" style={{ background: 'rgba(62,142,101,0.18)' }}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#7FC79E' }}>
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </div>
+              <div className="relative z-10 flex-1 text-left">
+                <div className="text-white font-semibold text-lg">Grace &amp; Courtesy</div>
+                <div className="text-sm mt-0.5" style={{ color: 'rgba(154,214,178,0.55)' }}>
+                  Classroom rules, why they matter &middot; one book at a time
+                </div>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 group-hover:translate-x-1 transition-all shrink-0" style={{ color: 'rgba(127,199,158,0.4)' }}>
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
+
             {/* Path 1: Create — warm accent */}
             <Link
               href="/montree/library/tools"
