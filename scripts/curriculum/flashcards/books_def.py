@@ -31,6 +31,9 @@ COT9='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/
 # none, grazes a knee playing football, then the crew brings their kits to help)
 # — same convention as PAT4. Second 9-page book.
 KIT10='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-kit'
+# 'the-egg' (letter-book eleven, the-sat cast each has an egg; potato cracks
+# his) — same convention as PAT4.
+EGG11='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-egg'
 # TEXT RULES (locked from the-pat onward, apply to every future book):
 # 1. CASE: a spread's `text` is body copy continuing the sentence its `nar`
 #    starts (e.g. nar='The star...'  text='can pat!'  reads as one sentence:
@@ -267,6 +270,28 @@ dict(slug='the-kit', title_lines=['The ___','Has a Kit!'], title_accent='Kit!', 
   dict(text=['Kit! Kit!','Kit!'], style='drop', size=64, art=KIT10+'/p7-recap.png'),
   dict(text=['The potato',"doesn't have",'a kit!'], size=42, art=KIT10+'/p8-potato.png'),
   dict(text=['The crew helps','the potato!'], size=42, art=KIT10+'/p9-crew.png'),
+ ]),
+
+# ONE-TIME EXCEPTION to the EXPRESSION RULE, for 'the-egg' p8 ONLY (Tredoux,
+# explicit, 2026-08-06): the potato cracks his egg and should NOT read as
+# delighted about it -- that sends the wrong message. His page reads flat and
+# not-happy (downturned mouth, no tears, not distraught -- just unimpressed
+# with himself), same tone as the-kit's exception. This does NOT reopen the
+# rule generally: EXPRESSION RULE is back in full force for every book after
+# the-egg.
+dict(slug='the-egg', title_lines=['The ___','Has an Egg!'], title_accent='Egg!', title_size=42,
+ band='LETTER E  ·  s a t p i n m d g o c k e (the-sat cast)', booknum='LETTER BOOK ELEVEN · EGG', cover=EGG11+'/p7-recap.png',
+ new='Egg', review='sat  ·  spat  ·  pat  ·  pit  ·  nap  ·  mat  ·  sad  ·  dig  ·  dog  ·  cot  ·  kit  ·  at', heart='♥  heart words — a · the',
+ oral_note='the nouns live in the pictures — named aloud, never printed',
+ spreads=[
+  dict(nar='The ant…', text='has an egg.', size=74, art=EGG11+'/p1-ant.png'),
+  dict(nar='The apple…', text='has an egg.', size=74, art=EGG11+'/p2-apple.png'),
+  dict(nar='The sun…', text='has an egg.', size=74, art=EGG11+'/p3-sun.png'),
+  dict(nar='The star…', text='has an egg.', size=74, art=EGG11+'/p4-star.png'),
+  dict(nar='The snake…', text='has an egg.', size=74, art=EGG11+'/p5-snake.png'),
+  dict(nar='The cat…', text='has an egg.', size=74, art=EGG11+'/p6-cat.png'),
+  dict(text=['Egg! Egg!','Egg!'], style='drop', size=64, art=EGG11+'/p7-recap.png'),
+  dict(text=['The potato','had an egg!'], size=46, art=EGG11+'/p8-potato.png'),
  ]),
 
 dict(slug='spat', title_lines=['SPAT!'], title_accent='SPAT!', title_size=64,
