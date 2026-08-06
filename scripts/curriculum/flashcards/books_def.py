@@ -27,6 +27,10 @@ DOG8='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/
 # 'the-cot' (letter-book nine, the-sat cast sat in a baby cot; potato sips a drink
 # in a deck chair instead, then naps) — same convention as PAT4. First 9-page book.
 COT9='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-cot'
+# 'the-kit' (letter-book ten, the-sat cast each has a first-aid kit; potato has
+# none, grazes a knee playing football, then the crew brings their kits to help)
+# — same convention as PAT4. Second 9-page book.
+KIT10='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-kit'
 # TEXT RULES (locked from the-pat onward, apply to every future book):
 # 1. CASE: a spread's `text` is body copy continuing the sentence its `nar`
 #    starts (e.g. nar='The star...'  text='can pat!'  reads as one sentence:
@@ -239,6 +243,30 @@ dict(slug='the-cot', title_lines=['The ___','Sat in a Cot!'], title_accent='Cot!
   dict(text=['Cot! Cot!','Cot!'], style='drop', size=64, art=COT9+'/p7-recap.png'),
   dict(text=['The potato',"didn’t sit",'in a cot!'], size=42, art=COT9+'/p8-potato.png'),
   dict(text=['The potato','naps.'], size=56, art=COT9+'/p9-potato-naps.png'),
+ ]),
+
+# ONE-TIME EXCEPTION to the EXPRESSION RULE, for 'the-kit' p8 ONLY (Tredoux,
+# explicit, 2026-08-04): the potato grazes a knee playing football and has no
+# kit of his own — his page may read as genuinely not happy (no fear/tears
+# required, just not cheerful; downturned brow is fine, no crying). This does
+# NOT reopen the rule generally: the book resolves it immediately on p9, where
+# the whole crew brings their kits to help and everyone (including the
+# potato) is back to happy/content, same as every book's usual close.
+# EXPRESSION RULE is back in full force for every book after the-kit.
+dict(slug='the-kit', title_lines=['The ___','Has a Kit!'], title_accent='Kit!', title_size=44,
+ band='LETTER K  ·  s a t p i n m d g o c k (the-sat cast)', booknum='LETTER BOOK TEN · KIT', cover=KIT10+'/p7-recap.png',
+ new='Kit', review='sat  ·  spat  ·  pat  ·  pit  ·  nap  ·  mat  ·  sad  ·  dig  ·  dog  ·  cot  ·  at', heart='♥  heart words — a · the',
+ oral_note='the nouns live in the pictures — named aloud, never printed',
+ spreads=[
+  dict(nar='The ant…', text='has a kit.', size=76, art=KIT10+'/p1-ant.png'),
+  dict(nar='The apple…', text='has a kit.', size=76, art=KIT10+'/p2-apple.png'),
+  dict(nar='The sun…', text='has a kit.', size=76, art=KIT10+'/p3-sun.png'),
+  dict(nar='The star…', text='has a kit.', size=76, art=KIT10+'/p4-star.png'),
+  dict(nar='The snake…', text='has a kit.', size=76, art=KIT10+'/p5-snake.png'),
+  dict(nar='The cat…', text='has a kit.', size=76, art=KIT10+'/p6-cat.png'),
+  dict(text=['Kit! Kit!','Kit!'], style='drop', size=64, art=KIT10+'/p7-recap.png'),
+  dict(text=['The potato',"doesn't have",'a kit!'], size=42, art=KIT10+'/p8-potato.png'),
+  dict(text=['The crew helps','the potato!'], size=42, art=KIT10+'/p9-crew.png'),
  ]),
 
 dict(slug='spat', title_lines=['SPAT!'], title_accent='SPAT!', title_size=64,
