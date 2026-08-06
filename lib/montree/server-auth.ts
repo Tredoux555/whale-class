@@ -46,12 +46,41 @@ export const MONTREE_JWT_TTL_DAYS = Math.max(
 // 'agent', schoolId on their JWT is INERT: an org admin belongs to no single school, so
 // the minting route sets schoolId to the organisation id purely to satisfy the non-empty
 // check below, and every /api/montree/org/* route self-scopes via organizationId.
+//
+// ── ACTING CLAIMS (Phase 6b — "God's Eye") ────────────────────────────────────────────────
+// Three optional claims record that a session is somebody LOOKING THROUGH another role rather
+// than being that role. They are additive and never widen access on their own — every route
+// still scopes on sub/schoolId/organizationId exactly as before. What they buy is (a) an
+// honest banner on the surface being viewed, and (b) the one piece of state the way back
+// needs, carried in the token instead of in a server-side session table.
+//
+//   actingAsSuperAdmin   — a super-admin minted this org_admin token from the platform console
+//                          (POST /api/montree/super-admin/organizations/[id]/view-as). The org
+//                          dashboard renders "Super-admin view · {org}" while it is set.
+//   actingOrgAdminId     — an organisation director minted this PRINCIPAL token by entering one
+//                          of their own schools (POST /api/montree/org/enter-school). It is the
+//                          montree_organization_admins.id to return to, and it is the ONLY
+//                          thing POST /api/montree/org/return-to-org will act on.
+//   actingOrganizationId — the organisation to re-mint for on the way back. Kept alongside
+//                          actingOrgAdminId rather than re-derived, so the return path is a
+//                          verification (does this admin still belong to this org?) rather
+//                          than a fresh trust decision.
+//
+// 🚨 These claims are only ever WRITTEN by a route that has already verified the minting
+// identity (verifySuperAdminAuth / verifyOrgRequest). A forged token is not a concern — the
+// whole payload is signed — but do not let a client-supplied value reach them.
 export interface MontreeTokenPayload {
   sub: string;        // teacher ID, principal ID, agent ID (= montree_teachers.id), homeschool parent ID, or org admin ID
   schoolId: string;
   classroomId?: string;
   role: 'teacher' | 'principal' | 'homeschool_parent' | 'agent' | 'org_admin';
   organizationId?: string;  // set on org_admin tokens only (montree_organizations.id)
+  /** Super-admin is viewing this organisation. Set only by the super-admin view-as route. */
+  actingAsSuperAdmin?: boolean;
+  /** montree_organization_admins.id to return to. Set only by /api/montree/org/enter-school. */
+  actingOrgAdminId?: string;
+  /** montree_organizations.id to return to. Set alongside actingOrgAdminId. */
+  actingOrganizationId?: string;
 }
 
 // Parent token payload (stored in HTTP-only cookie)
@@ -85,6 +114,12 @@ export async function createMontreeToken(
     classroomId: payload.classroomId || null,
     role: payload.role,
     organizationId: payload.organizationId || null,
+    // Acting claims — see the note on MontreeTokenPayload. Omitted entirely (rather than
+    // written as null) when absent, so an ordinary token is byte-identical to what this
+    // function produced before Phase 6b.
+    ...(payload.actingAsSuperAdmin ? { actingAsSuperAdmin: true } : {}),
+    ...(payload.actingOrgAdminId ? { actingOrgAdminId: payload.actingOrgAdminId } : {}),
+    ...(payload.actingOrganizationId ? { actingOrganizationId: payload.actingOrganizationId } : {}),
   })
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(payload.sub)
@@ -124,6 +159,9 @@ export async function verifyMontreeToken(token: string): Promise<MontreeTokenPay
       classroomId: (payload.classroomId as string) || undefined,
       role: role as 'teacher' | 'principal' | 'homeschool_parent' | 'agent' | 'org_admin',
       organizationId: (payload.organizationId as string) || undefined,
+      actingAsSuperAdmin: payload.actingAsSuperAdmin === true ? true : undefined,
+      actingOrgAdminId: (payload.actingOrgAdminId as string) || undefined,
+      actingOrganizationId: (payload.actingOrganizationId as string) || undefined,
     };
   } catch {
     // Token is invalid, expired, or tampered with

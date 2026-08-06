@@ -26,6 +26,7 @@ import { createMontreeToken, setMontreeAuthCookie } from '@/lib/montree/server-a
 import { orgSlug } from '@/lib/montree/org/invite-tokens';
 import { claimInvite, releaseInvite } from '@/lib/montree/org/claim-invite';
 import { isOrgMigrationPending, orgMigrationPending } from '@/lib/montree/org/verify-org-request';
+import { issueDirectorLoginCode } from '@/lib/montree/org/director-login-code';
 
 export const dynamic = 'force-dynamic';
 
@@ -148,18 +149,46 @@ export async function POST(request: NextRequest) {
     }
 
     // ── 4. The leader's login ─────────────────────────────────────────────────────────
+    // Two credentials, issued together (migration 317): the email + password they just chose,
+    // and a 6-character code from the same generator every teacher and principal gets. The
+    // code is the uniform porthole — a director standing next to their principals types a code
+    // into the same kind of box. It is returned ONCE, on the success screen; after that only
+    // the super-admin console can read it back.
+    //
+    // 🚨 Never fatal. issueDirectorLoginCode() returns null on a database where migration 317
+    // has not been run, and registration carries on without a code — a bonus credential must
+    // not be able to cost somebody their organisation.
+    const loginCode = await issueDirectorLoginCode(supabase);
+
     const passwordHash = await hashPassword(password);
-    const { data: admin, error: adminErr } = await supabase
+    const baseInsert = {
+      organization_id: org.id,
+      name: contactName.trim(),
+      email: cleanEmail,
+      password_hash: passwordHash,
+      last_login_at: new Date().toISOString(),
+    };
+
+    let issuedCode = loginCode;
+    let { data: admin, error: adminErr } = await supabase
       .from('montree_organization_admins')
-      .insert({
-        organization_id: org.id,
-        name: contactName.trim(),
-        email: cleanEmail,
-        password_hash: passwordHash,
-        last_login_at: new Date().toISOString(),
-      })
+      .insert({ ...baseInsert, ...(issuedCode ? { login_code: issuedCode } : {}) })
       .select('id, name, email')
       .single();
+
+    // 🚨 The bonus credential must NEVER cost someone their organisation (L4). If the ONLY reason
+    // the insert failed is a unique collision AND we were attaching a code, retry once WITHOUT it
+    // — the director registers code-less (they still have email + password, and super-admin can
+    // issue a code later) rather than the whole registration aborting. A collision on the email
+    // (the other unique column) will fail the retry too and correctly fall through to rollback.
+    if (adminErr && (adminErr as { code?: string }).code === '23505' && issuedCode) {
+      issuedCode = null;
+      ({ data: admin, error: adminErr } = await supabase
+        .from('montree_organization_admins')
+        .insert(baseInsert)
+        .select('id, name, email')
+        .single());
+    }
 
     if (adminErr || !admin) {
       console.error('[montree-org] organization admin creation failed:', adminErr);
@@ -190,11 +219,18 @@ export async function POST(request: NextRequest) {
       organizationId: org.id,
     });
 
-    const response = NextResponse.json({
-      success: true,
-      organization: { id: org.id, name: org.name, slug: org.slug },
-      admin: { id: admin.id, name: admin.name, email: admin.email, role: 'org_admin' },
-    });
+    const response = NextResponse.json(
+      {
+        success: true,
+        organization: { id: org.id, name: org.name, slug: org.slug },
+        admin: { id: admin.id, name: admin.name, email: admin.email, role: 'org_admin' },
+        // Plaintext, exactly once. null when migration 317 has not been run OR the code was
+        // dropped on a collision retry (L4) — the wizard simply omits the code panel in that case.
+        loginCode: issuedCode ?? null,
+      },
+      // A credential is in this body. Never let a proxy or the browser cache keep it.
+      { headers: { 'Cache-Control': 'private, no-store' } },
+    );
     setMontreeAuthCookie(response, jwt, 'org_admin');
     return response;
   } catch (error) {

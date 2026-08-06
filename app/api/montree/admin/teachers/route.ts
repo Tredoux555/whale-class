@@ -1,15 +1,44 @@
 // /api/montree/admin/teachers/route.ts
 // CRUD for teachers + code regeneration
+//
+// 🚨 AUTHORITY (audit fix Aug 2026): the mutating verbs here MINT credentials — POST issues a
+// teacher login code, PATCH {regenerate_code} rewrites both login_code AND password_hash. They
+// used to run for ANY authenticated session in the school (a teacher, an assistant, even a
+// homeschool-parent role could regenerate a colleague's code and silently reset their password).
+// Every mutating branch now requires a PRINCIPAL session. GET (the roster read the teacher-
+// management page needs) stays open to any school session. An org director acting through a
+// school carries role 'principal' (enter-school mints a principal token), so God's-Eye writes
+// pass this gate exactly like a real principal's — that is intended.
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifySchoolRequest, type VerifiedRequest } from '@/lib/montree/verify-request';
 import { legacySha256 } from '@/lib/montree/password';
 import { MINIMAL_DEFAULT_MENU } from '@/lib/montree/menu/config';
 import { generateSecureCode } from '@/lib/montree/secure-code';
+import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 
 function generateLoginCode(): string {
   // Crypto-safe 6-char credential (no 0/O/1/I).
   return generateSecureCode();
+}
+
+/** Credentials in the body — never let a proxy or the browser cache them. */
+const NO_STORE = { 'Cache-Control': 'private, no-store' } as const;
+
+/**
+ * Require a principal session. Returns the verified request on success, or a NextResponse to
+ * send straight back (401 unauthenticated, 403 wrong role). Kept tiny and local — the three
+ * mutating verbs share it, GET does not use it.
+ */
+function requirePrincipal(auth: VerifiedRequest | NextResponse): VerifiedRequest | NextResponse {
+  if (auth instanceof NextResponse) return auth;
+  if (auth.role !== 'principal') {
+    return NextResponse.json(
+      { error: 'Only a principal can manage teachers.', code: 'not_principal' },
+      { status: 403 },
+    );
+  }
+  return auth;
 }
 
 // List teachers for school
@@ -67,8 +96,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const auth = await verifySchoolRequest(request);
-    if (auth instanceof NextResponse) return auth;
+    const gated = requirePrincipal(await verifySchoolRequest(request));
+    if (gated instanceof NextResponse) return gated;
+    const auth = gated;
 
     const schoolId = auth.schoolId;
 
@@ -97,11 +127,22 @@ export async function POST(request: NextRequest) {
 
     if (error) throw error;
 
-    // Return with plaintext code (only shown once!)
-    return NextResponse.json({ 
-      success: true, 
-      teacher: { ...teacher, login_code: loginCode }
+    await logAudit(supabase, {
+      adminIdentifier: auth.userId,
+      action: 'teacher_created',
+      resourceType: 'teacher',
+      resourceId: teacher?.id,
+      resourceDetails: { schoolId, actingOrgAdminId: auth.actingOrgAdminId || undefined },
+      ipAddress: getClientIP(request.headers),
+      userAgent: getUserAgent(request.headers),
+      isSensitive: true,
     });
+
+    // Return with plaintext code (only shown once!) — no-store, it is a live credential.
+    return NextResponse.json(
+      { success: true, teacher: { ...teacher, login_code: loginCode } },
+      { headers: NO_STORE },
+    );
   } catch (error) {
     console.error('Create teacher error:', error);
     return NextResponse.json({ error: 'Failed to create teacher' }, { status: 500 });
@@ -112,8 +153,9 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const auth = await verifySchoolRequest(request);
-    if (auth instanceof NextResponse) return auth;
+    const gated = requirePrincipal(await verifySchoolRequest(request));
+    if (gated instanceof NextResponse) return gated;
+    const auth = gated;
 
     const schoolId = auth.schoolId;
 
@@ -143,11 +185,29 @@ export async function PATCH(request: NextRequest) {
 
     if (error) throw error;
 
-    return NextResponse.json({ 
-      success: true, 
-      teacher,
-      new_login_code: newCode // Only returned if regenerated
-    });
+    // A regenerated code is a live credential: audit it isSensitive and mark the response
+    // no-store. An ordinary field edit (name/role/classroom) is neither.
+    if (newCode) {
+      await logAudit(supabase, {
+        adminIdentifier: auth.userId,
+        action: 'teacher_code_regenerated',
+        resourceType: 'teacher',
+        resourceId: id,
+        resourceDetails: { schoolId, actingOrgAdminId: auth.actingOrgAdminId || undefined },
+        ipAddress: getClientIP(request.headers),
+        userAgent: getUserAgent(request.headers),
+        isSensitive: true,
+      });
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        teacher,
+        new_login_code: newCode, // Only returned if regenerated
+      },
+      newCode ? { headers: NO_STORE } : undefined,
+    );
   } catch (error) {
     console.error('Update teacher error:', error);
     return NextResponse.json({ error: 'Failed to update teacher' }, { status: 500 });
@@ -158,8 +218,9 @@ export async function PATCH(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const auth = await verifySchoolRequest(request);
-    if (auth instanceof NextResponse) return auth;
+    const gated = requirePrincipal(await verifySchoolRequest(request));
+    if (gated instanceof NextResponse) return gated;
+    const auth = gated;
 
     const schoolId = auth.schoolId;
 

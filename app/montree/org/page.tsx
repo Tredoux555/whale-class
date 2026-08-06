@@ -48,6 +48,12 @@ interface OrgSchool {
   teacherCount: number;
   milestonesEnabled: boolean;
   milestonesCheckIns: number;
+  // Engagement signals (Phase 6b) — see the header of /api/montree/org/schools for the
+  // definitions, which are borrowed verbatim from the principal's own Today page.
+  lastTeacherActivityAt: string | null;
+  idleTeacherCount: number;
+  /** null when the route could not read the photo history in full — show nothing, not zero. */
+  quietChildCount: number | null;
 }
 
 interface SchoolsPayload {
@@ -56,6 +62,22 @@ interface SchoolsPayload {
   admin: { id: string; name: string; email: string };
   schools: OrgSchool[];
   totals: { schools: number; children: number; teachers: number; milestonesSchools: number };
+  acting?: { asSuperAdmin?: boolean };
+}
+
+/**
+ * "2d ago" for an engagement line. Deliberately coarse: a director does not need a
+ * timestamp, they need to know whether a school is alive this week.
+ */
+function agoLabel(iso: string | null): string | null {
+  if (!iso) return null;
+  const ms = Date.now() - new Date(iso).getTime();
+  if (!Number.isFinite(ms) || ms < 0) return null;
+  const days = Math.floor(ms / (24 * 60 * 60 * 1000));
+  if (days >= 1) return `${days}d ago`;
+  const hours = Math.floor(ms / (60 * 60 * 1000));
+  if (hours >= 1) return `${hours}h ago`;
+  return 'just now';
 }
 
 interface InviteRow {
@@ -108,6 +130,11 @@ export default function OrgDashboardPage() {
   const [minting, setMinting] = useState(false);
   const [mintError, setMintError] = useState('');
   const [freshLink, setFreshLink] = useState<{ link: string; expiresAt: string } | null>(null);
+
+  // "Enter school" (Phase 6b) — the id currently being opened, and the last failure so the
+  // director is told WHY a school would not open (most often: it has no principal account yet).
+  const [enteringId, setEnteringId] = useState<string | null>(null);
+  const [enterError, setEnterError] = useState<string>('');
 
   const loadSchools = useCallback(async () => {
     try {
@@ -186,6 +213,39 @@ export default function OrgDashboardPage() {
       setMintError(err instanceof Error ? err.message : t('org.dash.inviteFailed'));
     } finally {
       setMinting(false);
+    }
+  };
+
+  // Step into a school and see it exactly as its principal does. The endpoint swaps the
+  // montree-auth cookie for a principal-shaped one (scoped to that school, carrying the way
+  // back), so this is a HARD navigation — a soft router.push would keep React state built for
+  // an organisation session alive inside a school cockpit.
+  const enterSchool = async (schoolId: string) => {
+    if (enteringId) return;
+    setEnteringId(schoolId);
+    setEnterError('');
+    try {
+      const res = await fetch('/api/montree/org/enter-school', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ schoolId }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setEnterError(body?.error || t('org.dash.enterFailed'));
+        setEnteringId(null);
+        return;
+      }
+      // The cockpit reads these two keys for its optimistic chrome; clear the organisation's
+      // so it cannot render a stale school name for a beat.
+      try {
+        localStorage.removeItem('montree_school');
+        localStorage.removeItem('montree_principal');
+      } catch { /* private browsing — the cookie is the real session */ }
+      window.location.href = body.redirect || '/montree/admin';
+    } catch {
+      setEnterError(t('org.dash.enterFailed'));
+      setEnteringId(null);
     }
   };
 
@@ -289,6 +349,28 @@ export default function OrgDashboardPage() {
 
   return shell(
     <>
+      {/* ── Super-admin view banner (Phase 6b) ────────────────────────────────────────────
+          The platform owner is looking through this organisation's dashboard. Slim and
+          permanent while the claim is on the session, so nobody — including Tredoux — ever
+          forgets whose seat they are sitting in. Derived from the signed token by
+          verifyOrgRequest; a client cannot set it, and a real director never sees it. */}
+      {data.acting?.asSuperAdmin ? (
+        <div
+          style={{
+            marginBottom: 18,
+            padding: '9px 14px',
+            background: 'rgba(232,201,106,0.10)',
+            border: '1px solid rgba(232,201,106,0.24)',
+            borderRadius: 10,
+            fontFamily: T.sans,
+            fontSize: 12.5,
+            color: '#f0d68a',
+          }}
+        >
+          Super-admin view · <strong style={{ fontWeight: 600 }}>{data.organization.name}</strong>
+        </div>
+      ) : null}
+
       <header style={{ marginBottom: 26 }}>
         <div style={{ fontFamily: T.sans, fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', color: T.emeraldDim }}>
           {t('org.dash.eyebrow')}
@@ -380,28 +462,66 @@ export default function OrgDashboardPage() {
           />
         ) : (
           <div style={{ display: 'grid', gap: 12 }}>
-            {data.schools.map((s) => (
-              <Card key={s.id} padding={16}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontFamily: T.serif, fontSize: 18, color: T.textPrimary }}>{s.name}</div>
-                    <div style={{ fontFamily: T.sans, fontSize: 12.5, color: T.textMuted, marginTop: 4 }}>
-                      {s.principalName || t('org.dash.principalUnknown')}
-                      {s.principalEmail ? ` · ${s.principalEmail}` : ''}
+            {enterError ? (
+              <p style={{ fontFamily: T.sans, fontSize: 12.5, color: '#f2a883', margin: 0 }}>{enterError}</p>
+            ) : null}
+            {data.schools.map((s) => {
+              // Engagement line — deliberately one quiet sentence under the school's name,
+              // not a dashboard. A director scanning forty schools should be able to see
+              // which ones have gone quiet without reading a single number twice.
+              const activity = agoLabel(s.lastTeacherActivityAt);
+              const signals: string[] = [];
+              signals.push(
+                activity
+                  ? t('org.dash.lastActivity', { ago: activity })
+                  : t('org.dash.noActivityYet'),
+              );
+              if (s.idleTeacherCount > 0) {
+                signals.push(t('org.dash.idleTeachers', { n: String(s.idleTeacherCount) }));
+              }
+              if (s.quietChildCount !== null && s.quietChildCount > 0) {
+                signals.push(t('org.dash.quietChildren', { n: String(s.quietChildCount) }));
+              }
+
+              return (
+                <Card key={s.id} padding={16}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontFamily: T.serif, fontSize: 18, color: T.textPrimary }}>{s.name}</div>
+                      <div style={{ fontFamily: T.sans, fontSize: 12.5, color: T.textMuted, marginTop: 4 }}>
+                        {s.principalName || t('org.dash.principalUnknown')}
+                        {s.principalEmail ? ` · ${s.principalEmail}` : ''}
+                      </div>
+                      <div style={{ fontFamily: T.sans, fontSize: 12, color: T.textMuted, marginTop: 6 }}>
+                        {signals.join(' · ')}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start', fontFamily: T.sans, fontSize: 12.5, color: T.textSecondary }}>
+                      <span>{t('org.dash.childCount', { n: String(s.childCount) })}</span>
+                      <span>{t('org.dash.teacherCount', { n: String(s.teacherCount) })}</span>
+                      <span style={{ color: s.milestonesEnabled ? T.emerald : T.textMuted }}>
+                        {s.milestonesEnabled
+                          ? t('org.dash.milestonesOn', { n: String(s.milestonesCheckIns) })
+                          : t('org.dash.milestonesOff')}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => void enterSchool(s.id)}
+                        disabled={enteringId !== null}
+                        style={{
+                          ...ghostBtn,
+                          padding: '7px 14px',
+                          opacity: enteringId !== null && enteringId !== s.id ? 0.5 : 1,
+                          cursor: enteringId !== null ? 'default' : 'pointer',
+                        }}
+                      >
+                        {enteringId === s.id ? t('org.dash.entering') : t('org.dash.enterSchool')}
+                      </button>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', fontFamily: T.sans, fontSize: 12.5, color: T.textSecondary }}>
-                    <span>{t('org.dash.childCount', { n: String(s.childCount) })}</span>
-                    <span>{t('org.dash.teacherCount', { n: String(s.teacherCount) })}</span>
-                    <span style={{ color: s.milestonesEnabled ? T.emerald : T.textMuted }}>
-                      {s.milestonesEnabled
-                        ? t('org.dash.milestonesOn', { n: String(s.milestonesCheckIns) })
-                        : t('org.dash.milestonesOff')}
-                    </span>
-                  </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
         )}
       </Section>

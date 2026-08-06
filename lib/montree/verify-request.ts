@@ -30,6 +30,17 @@ export interface VerifiedRequest {
   role: 'teacher' | 'principal' | 'homeschool_parent' | 'agent' | 'org_admin';
   /** Set on org_admin sessions only — montree_organizations.id. */
   organizationId?: string;
+  // ── Acting claims (Phase 6b, "God's Eye") — see MontreeTokenPayload for the full note.
+  // These are informational: they NEVER widen what a route may touch. A principal token
+  // carrying actingOrgAdminId is scoped to its schoolId exactly like any other principal
+  // token; the claim only says who to hand the session back to, and lets the surface be
+  // honest about who is looking.
+  /** Super-admin is viewing this organisation through an org_admin session. */
+  actingAsSuperAdmin?: boolean;
+  /** An organisation director is inside one of their schools — the id to return to. */
+  actingOrgAdminId?: string;
+  /** The organisation to return to, alongside actingOrgAdminId. */
+  actingOrganizationId?: string;
 }
 
 /**
@@ -62,6 +73,9 @@ async function toVerifiedOrLocked(
     classroomId: payload.classroomId,
     role: payload.role,
     organizationId: payload.organizationId,
+    actingAsSuperAdmin: payload.actingAsSuperAdmin,
+    actingOrgAdminId: payload.actingOrgAdminId,
+    actingOrganizationId: payload.actingOrganizationId,
   };
 }
 

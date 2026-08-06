@@ -311,6 +311,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   // the principal gets the School Features switchboard in the sidebar.
   const [selfServe, setSelfServe] = useState(false);
   const [authState, setAuthState] = useState<AuthState>('checking');
+  // Phase 6b ("God's Eye") — true when this cockpit session was minted by an organisation
+  // director stepping into one of their schools (POST /api/montree/org/enter-school). It comes
+  // from the signed token via auth/me, never from localStorage: a banner claiming somebody is
+  // looking through your school must not be forgeable by editing a browser store, in either
+  // direction. Everything about the cockpit is otherwise unchanged.
+  const [actingAsOrg, setActingAsOrg] = useState(false);
+  const [returningToOrg, setReturningToOrg] = useState(false);
   // 🌱 Montree Milestones — school id + flag, for the gated sidebar row.
   const [schoolId, setSchoolId] = useState<string | null>(null);
   const [milestonesOn, setMilestonesOn] = useState(false);
@@ -378,6 +385,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         if (data.teacher?.id) setPrincipalId(data.teacher.id);
         // Migration 292 — surface the "Message Tredoux" nav only for Founding schools.
         setFoundingMember(Boolean(data.school?.founding_member));
+        setActingAsOrg(Boolean(data.acting?.orgAdminId));
         // Remember the cockpit as this principal's launch surface so the next
         // PWA home-screen launch opens straight here (no splash flash).
         if (data.role === 'principal') rememberLaunchSurface('/montree/admin');
@@ -603,6 +611,35 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     window.location.href = '/montree';
   };
 
+  // Hand the session back to the organisation. The endpoint reads the way back off the signed
+  // token — nothing is sent — and swaps the cookie in place, so this is a hard navigation for
+  // the same reason logout is: a clean slate with no stale React state holding a school that
+  // is no longer the session's.
+  const returnToOrganization = async () => {
+    if (returningToOrg) return;
+    setReturningToOrg(true);
+    try {
+      const res = await fetch('/api/montree/org/return-to-org', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        // The claim outlived the director or the organisation. Sending them to the org login
+        // is the honest next step — it is where they can prove who they are.
+        window.location.href = '/montree/org/login';
+        return;
+      }
+      try {
+        localStorage.removeItem('montree_school');
+        localStorage.removeItem('montree_principal');
+      } catch { /* ignore */ }
+      window.location.href = data.redirect || '/montree/org';
+    } catch {
+      setReturningToOrg(false);
+    }
+  };
+
   const isActive = (item: NavItem) =>
     item.match ? item.match(pathname) : pathname === item.href;
 
@@ -627,6 +664,57 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           zIndex: 0,
         }}
       />
+
+      {/* ── Organisation view banner (Phase 6b) ─────────────────────────────────
+          A director is looking through this school. Slim, gold, in-flow at the very
+          top of the shell so it reads as a frame around the cockpit rather than a
+          notification inside it — and so it never covers the sticky mobile bar. It
+          is the ONLY way out of the school, so the Return button is a real button,
+          not a link the browser might treat as a plain navigation. */}
+      {actingAsOrg && (
+        <div
+          className="admin-acting-banner"
+          style={{
+            position: 'relative',
+            zIndex: 35,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 12,
+            flexWrap: 'wrap',
+            padding: '8px 16px',
+            paddingTop: 'calc(8px + env(safe-area-inset-top))',
+            background: 'rgba(232,201,106,0.10)',
+            borderBottom: '1px solid rgba(232,201,106,0.24)',
+            fontFamily: T.sans,
+            fontSize: 12.5,
+            color: '#f0d68a',
+          }}
+        >
+          <span>
+            Organisation view · <strong style={{ fontWeight: 600 }}>{schoolName || 'this school'}</strong>
+          </span>
+          <button
+            type="button"
+            onClick={() => void returnToOrganization()}
+            disabled={returningToOrg}
+            style={{
+              background: 'rgba(232,201,106,0.16)',
+              border: '1px solid rgba(232,201,106,0.34)',
+              borderRadius: 8,
+              padding: '4px 12px',
+              color: '#f0d68a',
+              fontFamily: T.sans,
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: returningToOrg ? 'default' : 'pointer',
+              opacity: returningToOrg ? 0.6 : 1,
+            }}
+          >
+            {returningToOrg ? 'Returning…' : 'Return to organisation'}
+          </button>
+        </div>
+      )}
 
       {/* Mobile top bar (visible <960px) */}
       <div
@@ -810,6 +898,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           .admin-main {
             margin-left: 240px !important;
             padding: 36px 40px 80px 40px !important;
+          }
+          /* The acting banner clears the fixed 240px sidebar on desktop, the same
+             way .admin-main does. */
+          .admin-acting-banner {
+            margin-left: 240px !important;
           }
         }
         @media (max-width: 959px) {

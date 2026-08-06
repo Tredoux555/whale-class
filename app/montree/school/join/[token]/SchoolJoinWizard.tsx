@@ -80,7 +80,17 @@ export default function SchoolJoinWizard({ token, landing }: { token: string; la
             <p style={{ color: FT.whisper, fontSize: '0.92rem', textAlign: 'center', marginTop: 14, lineHeight: 1.7 }}>
               {landing.message || t('org.schoolJoin.deadLinkBody')}
             </p>
-            <div style={{ marginTop: 28, textAlign: 'center' }}>
+            {/* 🚨 A used school link almost always means the principal ALREADY registered
+                with it and came back to the same message in a chat thread. inviteStatusMessage
+                tells them to sign in; this is the button that does it. Registering again would
+                create a second, unlinked school — the wrong move, so it stays the quiet
+                secondary option below. */}
+            <div style={{ marginTop: 26, textAlign: 'center' }}>
+              <Link href="/montree/principal/login" className="fn-pill" style={{ display: 'inline-block' }}>
+                {t('org.schoolJoin.signInInstead')}
+              </Link>
+            </div>
+            <div style={{ marginTop: 16, textAlign: 'center' }}>
               <Link href="/montree/principal/register" className="fn-login-link">
                 {t('org.schoolJoin.registerAnyway')}
               </Link>

@@ -3,11 +3,17 @@
 /**
  * /montree/org/login — the organisation leader's door.
  *
- * The unified login at /montree/login-select is a CODE box: teachers, principals and
- * parents all type a short code into one field. An organisation leader has no code — they
- * chose an email and a password when they redeemed their invite link — so they get this
- * page instead, skinned exactly like login-select (same Lanternlight card, same logo, same
- * footer) so it is recognisably the same product's front door.
+ * TWO MODES, and the order matters. The CODE box is primary and is what the page opens on,
+ * because that is the shape of every other front door in Montree: a teacher types a code, a
+ * principal types a code, a parent types a code. A director now gets one too (migration 317),
+ * and this page should feel like login-select — same Lanternlight card, same logo, same
+ * footer, same big monospace code field.
+ *
+ * Email + password is the second mode, one tap away, and it is NOT a legacy path: every
+ * director chose those credentials when they redeemed their invite link, every director who
+ * registered before migration 317 has no code at all, and a director who loses their code
+ * signs in this way while the platform owner reissues one. Both modes post to the same
+ * endpoint, which decides on the shape of the body.
  *
  * Bookmarkable and self-sufficient: this is the URL an org leader returns to for the rest
  * of the relationship, and /montree/org sends anyone without a session straight here.
@@ -24,6 +30,9 @@ export default function OrgLoginPage() {
   const router = useRouter();
   const { t } = useI18n();
 
+  // 'code' is the landing mode — see the note above.
+  const [mode, setMode] = useState<'code' | 'password'>('code');
+  const [code, setCode] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -37,7 +46,9 @@ export default function OrgLoginPage() {
       const res = await fetch('/api/montree/org/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(
+          mode === 'code' ? { code: code.trim() } : { email, password },
+        ),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || t('org.login.failed'));
@@ -68,7 +79,9 @@ export default function OrgLoginPage() {
             <MontreeLogo size={40} />
           </div>
           <h1 className="fn-h1" style={{ fontSize: '2rem', marginBottom: 4 }}>{t('app.name')}</h1>
-          <p style={{ color: 'rgba(232,201,106,0.6)', fontSize: '0.85rem' }}>{t('org.login.subtitle')}</p>
+          <p style={{ color: 'rgba(232,201,106,0.6)', fontSize: '0.85rem' }}>
+            {mode === 'code' ? t('org.login.codeSubtitle') : t('org.login.subtitle')}
+          </p>
           <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.72rem', marginTop: 4 }}>montree.xyz</p>
         </div>
 
@@ -78,43 +91,82 @@ export default function OrgLoginPage() {
               <div className="fn-error" style={{ marginTop: 0, textAlign: 'center' }}>{error}</div>
             )}
 
-            <div className="fn-field" style={{ marginBottom: 0 }}>
-              <label>{t('org.login.emailLabel')}</label>
+            {mode === 'code' ? (
+              // The same big monospace field as /montree/login-select, deliberately — a
+              // director's code is the same kind of thing as their teachers' codes.
               <input
-                type="email"
-                className="fn-input"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t('org.login.emailPlaceholder')}
+                type="text"
+                className="fn-code-input"
+                value={code}
+                onChange={(e) => setCode(e.target.value.toUpperCase().slice(0, 6))}
+                placeholder="ABC123"
                 required
                 autoFocus
-                autoComplete="email"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="characters"
                 spellCheck={false}
               />
-            </div>
+            ) : (
+              <>
+                <div className="fn-field" style={{ marginBottom: 0 }}>
+                  <label>{t('org.login.emailLabel')}</label>
+                  <input
+                    type="email"
+                    className="fn-input"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={t('org.login.emailPlaceholder')}
+                    required
+                    autoFocus
+                    autoComplete="email"
+                    spellCheck={false}
+                  />
+                </div>
 
-            <div className="fn-field" style={{ marginBottom: 0 }}>
-              <label>{t('org.login.passwordLabel')}</label>
-              <input
-                type="password"
-                className="fn-input"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={t('org.login.passwordPlaceholder')}
-                required
-                autoComplete="current-password"
-              />
-            </div>
+                <div className="fn-field" style={{ marginBottom: 0 }}>
+                  <label>{t('org.login.passwordLabel')}</label>
+                  <input
+                    type="password"
+                    className="fn-input"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={t('org.login.passwordPlaceholder')}
+                    required
+                    autoComplete="current-password"
+                  />
+                </div>
+              </>
+            )}
 
-            <button type="submit" className="fn-pill block" disabled={loading || !email || !password}>
+            <button
+              type="submit"
+              className="fn-pill block"
+              disabled={
+                loading ||
+                (mode === 'code' ? code.trim().length < 6 : !email || !password)
+              }
+            >
               {loading ? t('org.login.signingIn') : t('org.login.signIn')}
             </button>
           </form>
         </div>
 
-        <p className="fn-login-hint">{t('org.login.hint')}</p>
+        <p className="fn-login-hint">
+          {mode === 'code' ? t('org.login.codeHint') : t('org.login.hint')}
+        </p>
 
         <div style={{ textAlign: 'center', marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {/* Switching modes clears the error so a failed code attempt does not sit over the
+              password form telling the director something that is no longer true. */}
+          <button
+            type="button"
+            className="fn-login-link"
+            style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+            onClick={() => { setMode(mode === 'code' ? 'password' : 'code'); setError(''); }}
+          >
+            {mode === 'code' ? t('org.login.usePassword') : t('org.login.useCode')}
+          </button>
           <a href="/montree/login-select" className="fn-login-link">{t('org.login.notAnOrg')}</a>
         </div>
       </div>

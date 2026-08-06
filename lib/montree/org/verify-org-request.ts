@@ -48,6 +48,13 @@ export interface OrgContext {
   organizationSlug: string;
   adminName: string;
   adminEmail: string;
+  /**
+   * True when this org session was minted by the platform owner from the super-admin console
+   * (Phase 6b "view as organisation"). Purely informational — the session is scoped to this
+   * organisation exactly like a real director's, and every route below reads it only to render
+   * the honest "Super-admin view" banner. Never a permission.
+   */
+  actingAsSuperAdmin: boolean;
 }
 
 /**
@@ -121,6 +128,7 @@ export async function verifyOrgRequest(
       organizationSlug: org.slug,
       adminName: admin.name,
       adminEmail: admin.email,
+      actingAsSuperAdmin: auth.actingAsSuperAdmin === true,
     },
   };
 }
