@@ -183,6 +183,18 @@ const RAW: RawLesson[] = [
     },
     song: true,
   },
+  {
+    n: 2,
+    title: 'Indoor Voice',
+    why: 'So friends can think.',
+    cast: ['Cat', 'Ant', 'Apple', 'Star', 'Snake', 'Potato'],
+    book: {
+      slug: 'indoor-voice',
+      title: 'Indoor Voice',
+      cover: '/grace-courtesy-books/covers/indoor-voice.png',
+    },
+    song: true,
+  },
 ];
 
 /** Same list, with a colour stamped on each card. */
