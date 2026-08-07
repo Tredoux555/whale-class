@@ -53,3 +53,11 @@ tp_montage_jobs table is the ledger: done jobs × $0.50).
 - **🚨 RULES for future sessions**: Potato Snaps NEVER touches montree_ tables or lib/montree (only
   lib/supabase-client). The proxy bucket allowlist stays exactly one bucket. Parents never get raw
   photos. Board count and montage media_ids must stay the same query shape (WYSIWYG).
+
+## 💡 V2.0 DIRECTION (Tredoux, Aug 7) — "PSS" (Photo Sorting System)
+Rename/reframe for scale: ONE shared login per school (not per class) so subject teachers across a big
+school (~100 classes) can all shoot and tag ANY child — a school-wide photo sorting system. Needs a
+school layer above tp_classes (school → classes → children), child search/filter in the tag screen
+(100+ classes can't be one flat face grid), and per-school shared teacher codes. v1.0 stays flat
+(class = tenant) and is being piloted in the kindergarten (17 classrooms). Do NOT build until v1.0
+pilot feedback is in.
