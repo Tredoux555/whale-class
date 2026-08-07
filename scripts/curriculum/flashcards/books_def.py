@@ -317,7 +317,7 @@ dict(slug='the-mud', title_lines=['The ___','Is in the Mud!'], title_accent='Mud
 
 dict(slug='the-rat', title_lines=['The ___','Chased the Rat!'], title_accent='Rat!', title_size=36,
  band='LETTER R  ·  s a t p i n m d g o c k e u r (the-sat cast)', booknum='LETTER BOOK THIRTEEN · RAT', cover=RAT13+'/p7-recap.png',
- new='Rat', review='sat  ·  spat  ·  pat  ·  pit  ·  nap  ·  mat  ·  sad  ·  dig  ·  dog  ·  cot  ·  kit  ·  egg  ·  mud  ·  at', heart='♥  heart words — a · the',
+ new='Rat', review=['sat  ·  spat  ·  pat  ·  pit  ·  nap  ·  mat  ·  sad', 'dig  ·  dog  ·  cot  ·  kit  ·  egg  ·  mud  ·  at'], heart='♥  heart words — a · the',
  oral_note='the nouns live in the pictures — named aloud, never printed',
  spreads=[
   dict(nar='The ant…', text='chased the rat.', size=68, art=RAT13+'/p1-ant.png'),
