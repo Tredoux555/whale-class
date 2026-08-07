@@ -40,6 +40,9 @@ MUD12='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images
 # 'the-rat' (letter-book thirteen, the-sat cast chases a rat; potato doesn't,
 # chills with the rat instead) — same convention as PAT4.
 RAT13='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-rat'
+# 'the-hot' (letter-book fourteen, the-sat cast is hot, fanning themselves under
+# a blazing sun; potato isn't — shaded in his deck chair) — same convention as PAT4.
+HOT14='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-hot'
 # TEXT RULES (locked from the-pat onward, apply to every future book):
 # 1. CASE: a spread's `text` is body copy continuing the sentence its `nar`
 #    starts (e.g. nar='The star...'  text='can pat!'  reads as one sentence:
@@ -328,6 +331,21 @@ dict(slug='the-rat', title_lines=['The ___','Chased the Rat!'], title_accent='Ra
   dict(nar='The cat…', text='chased the rat.', size=68, art=RAT13+'/p6-cat.png'),
   dict(text=['Rat! Rat!','Rat!'], style='drop', size=64, art=RAT13+'/p7-recap.png'),
   dict(text=['The potato',"didn't chase",'the rat!'], size=42, art=RAT13+'/p8-potato.png'),
+ ]),
+
+dict(slug='the-hot', title_lines=['The ___','Is Hot!'], title_accent='Hot!', title_size=44,
+ band='LETTER H  ·  s a t p i n m d g o c k e u r h (the-sat cast)', booknum='LETTER BOOK FOURTEEN · HOT', cover=HOT14+'/p7-recap.png',
+ new='Hot', review=['sat  ·  spat  ·  pat  ·  pit  ·  nap  ·  mat  ·  sad', 'dig  ·  dog  ·  cot  ·  kit  ·  egg  ·  mud  ·  rat  ·  at'], heart='♥  heart words — a · the',
+ oral_note='the nouns live in the pictures — named aloud, never printed',
+ spreads=[
+  dict(nar='The ant…', text='is hot.', size=84, art=HOT14+'/p1-ant.png'),
+  dict(nar='The apple…', text='is hot.', size=84, art=HOT14+'/p2-apple.png'),
+  dict(nar='The sun…', text='is hot.', size=84, art=HOT14+'/p3-sun.png'),
+  dict(nar='The star…', text='is hot.', size=84, art=HOT14+'/p4-star.png'),
+  dict(nar='The snake…', text='is hot.', size=84, art=HOT14+'/p5-snake.png'),
+  dict(nar='The cat…', text='is hot.', size=84, art=HOT14+'/p6-cat.png'),
+  dict(text=['Hot! Hot!','Hot!'], style='drop', size=64, art=HOT14+'/p7-recap.png'),
+  dict(text=['The potato',"isn't hot!"], size=46, art=HOT14+'/p8-potato.png'),
  ]),
 
 dict(slug='spat', title_lines=['SPAT!'], title_accent='SPAT!', title_size=64,
