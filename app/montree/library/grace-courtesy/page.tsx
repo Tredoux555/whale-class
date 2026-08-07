@@ -20,13 +20,23 @@
 //
 // Public: no auth. middleware.ts exempts everything under /montree/library.
 //
-// Media lives in the public `grace-courtesy` Supabase bucket (allowlisted in
-// app/api/montree/media/proxy/[...path]/route.ts) and is served through
-// /api/montree/media/proxy/<path>?bucket=grace-courtesy by filename convention:
+// Song + song-card media live in the public `grace-courtesy` Supabase bucket
+// (allowlisted in app/api/montree/media/proxy/[...path]/route.ts), served
+// through /api/montree/media/proxy/<path>?bucket=grace-courtesy:
 //   songs/lesson-NN.mp3          the song
 //   pictures/lesson-NN.png       the song card
-//   books/<slug>.pdf             the storybook
-//   books/covers/<slug>.png      its cover
+//
+// Storybooks follow the Dark Phonics pattern instead — NOT the Supabase
+// bucket: two static A5 print PDFs + a static cover in public/, plus each
+// page's scene picture uploaded into the shared Picture Bank
+// (montree_photo_bank table / photo-bank bucket) tagged
+// 'grace-courtesy-book-<slug>' so the "Book pictures" grid + "Create
+// materials" hand-off works exactly like the Dark Phonics library page:
+//   public/grace-courtesy-books/print/<slug>-A5-reading.pdf
+//   public/grace-courtesy-books/print/<slug>-A5-booklet-print.pdf
+//   public/grace-courtesy-books/covers/<slug>.png
+//   scripts/curriculum/upload-grace-courtesy-book-art.mjs        → Picture Bank ingest
+//   scripts/curriculum/grace-courtesy-books/build_a5_readers.py  → PDF build
 //
 // EXISTENCE CHECKS: Dark Phonics asks /api/montree/phonics-videos once on mount
 // for which lesson numbers have media. That route is hardcoded to the
@@ -40,10 +50,12 @@
 // probes with one bucket-listing endpoint modelled on /api/montree/phonics-videos.
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import LanguageToggle from '@/components/montree/LanguageToggle';
+import { getProxyUrl, getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
 
 /** Zero-padded lesson number — every media object is named lesson-NN.<ext>. */
 const nn = (n: number) => String(n).padStart(2, '0');
@@ -52,10 +64,68 @@ const nn = (n: number) => String(n).padStart(2, '0');
 const media = (path: string, v?: number) =>
   `/api/montree/media/proxy/${path}?bucket=grace-courtesy${v ? `&v=${v}` : ''}`;
 
+/**
+ * Cache-buster for the storybook print PDFs served straight out of
+ * public/grace-courtesy-books/print/ — NOT proxied, so they carry no
+ * built-in versioning of their own and are served with a long
+ * Cache-Control by both the browser and Cloudflare. Bump this whenever a
+ * book's print PDF is rebuilt. Mirrors Dark Phonics' STORYBOOK_PRINT_VERSION.
+ */
+const STORYBOOK_PRINT_VERSION = 1;
+const printPdf = (path: string) => `${path}?v=${STORYBOOK_PRINT_VERSION}`;
+
+/** Trimmed-down photo-bank row — only the fields this page renders/forwards. */
+interface BankPhoto {
+  id: string;
+  label: string;
+  filename: string;
+  storage_path: string;
+  public_url: string;
+  tags?: string[] | null;
+}
+
+/**
+ * A book's scene pictures — searched by slug, kept if tagged
+ * 'grace-courtesy-book-<slug>', sorted p1→pN by the page number embedded
+ * in the label ("<slug> p1-cover"). Mirrors Dark Phonics' fetchBookPictures
+ * — same tag-only resolution rule: a book with no tagged art renders the
+ * "no pictures yet" placeholder instead of leaking unrelated photos.
+ */
+async function fetchBookPictures(slug: string): Promise<BankPhoto[]> {
+  try {
+    const params = new URLSearchParams({ page: '1', limit: '20', kind: 'pictures', q: slug });
+    const res = await fetch(`/api/montree/photo-bank?${params}`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    const photos: BankPhoto[] = data.photos || [];
+    const tag = `grace-courtesy-book-${slug}`;
+    const matches = photos.filter(p => (p.tags || []).some(t => String(t || '').trim().toLowerCase() === tag));
+    const pageNum = (label: string) => {
+      const m = /p(\d+)-/.exec(label || '');
+      return m ? parseInt(m[1], 10) : 999;
+    };
+    return matches.sort((a, b) => pageNum(a.label) - pageNum(b.label));
+  } catch {
+    return [];
+  }
+}
+
+/** Photo-bank rows are rendered through the Cloudflare-cached proxy, never public_url. */
+function photoSrc(photo: BankPhoto, width: number): string {
+  if (!photo.storage_path) return photo.public_url || '';
+  return getThumbnailUrl(photo.storage_path, width, 70, 'photo-bank');
+}
+
 type Book = {
-  /** Filename stem in the bucket: books/<slug>.pdf, books/covers/<slug>.png. */
+  /** Filename stem for the print PDFs / cover in public/grace-courtesy-books/,
+   *  and the Picture Bank tag suffix 'grace-courtesy-book-<slug>'. */
   slug: string;
   title: string;
+  /** Row description under the title. Defaults to the standard blurb. */
+  description?: string;
+  /** Cover image — a local /public path
+   *  (/grace-courtesy-books/covers/<slug>.png). */
+  cover?: string;
 };
 
 type RawLesson = {
@@ -106,7 +176,11 @@ const RAW: RawLesson[] = [
     title: 'Walking Feet',
     why: 'So we don’t CRASH.',
     cast: ['Cat', 'Ant', 'Apple', 'Star', 'Snake', 'Potato'],
-    book: { slug: 'walking-feet', title: 'Walking Feet' },
+    book: {
+      slug: 'walking-feet',
+      title: 'Walking Feet',
+      cover: '/grace-courtesy-books/covers/walking-feet.png',
+    },
     song: true,
   },
 ];
@@ -203,16 +277,98 @@ function useAssetPresence(url: string | null): Presence {
  */
 function LessonCard({ lesson }: { lesson: Lesson }) {
   const { accent, tint } = lesson;
+  const router = useRouter();
 
   const songUrl = lesson.song ? media(`songs/lesson-${nn(lesson.n)}.mp3`) : null;
   const pictureUrl = media(`pictures/lesson-${nn(lesson.n)}.png`);
-  const bookUrl = lesson.book ? media(`books/${lesson.book.slug}.pdf`) : null;
-  const coverUrl = lesson.book ? media(`books/covers/${lesson.book.slug}.png`) : null;
 
   const song = useAssetPresence(songUrl);
   const picture = useAssetPresence(pictureUrl);
-  const book = useAssetPresence(bookUrl);
-  const cover = useAssetPresence(coverUrl);
+
+  // Book scene pictures — fetched from the shared Picture Bank, tagged
+  // 'grace-courtesy-book-<slug>'. Own effect per card, same reasoning as
+  // useAssetPresence above: hooks can't live inside a .map().
+  const [bookPictures, setBookPictures] = useState<BankPhoto[]>([]);
+  const [picturesLoading, setPicturesLoading] = useState(true);
+  const bookSlug = lesson.book?.slug;
+
+  useEffect(() => {
+    if (!bookSlug) { setPicturesLoading(false); return; }
+    let cancelled = false;
+    setPicturesLoading(true);
+    (async () => {
+      const photos = await fetchBookPictures(bookSlug);
+      if (!cancelled) { setBookPictures(photos); setPicturesLoading(false); }
+    })();
+    return () => { cancelled = true; };
+  }, [bookSlug]);
+
+  /**
+   * Hand a set of pictures to the Picture Library hub. Uses the
+   * `photoBankPreselect` key — deliberately NOT `photoBankExport`, which
+   * the creation tools consume-and-delete on mount. Copied verbatim from
+   * Dark Phonics / SATPIN.
+   */
+  const createMaterials = useCallback((photos: BankPhoto[]) => {
+    if (photos.length === 0) return;
+    const payload = photos.map(p => ({
+      id: p.id,
+      label: p.label,
+      public_url: p.storage_path ? getProxyUrl(p.storage_path, 'photo-bank') : p.public_url,
+      filename: p.filename,
+    }));
+    try {
+      sessionStorage.setItem('photoBankPreselect', JSON.stringify({ photos: payload }));
+    } catch (err) {
+      console.error('Failed to stage Grace & Courtesy pictures:', err);
+      return;
+    }
+    router.push('/montree/library/photo-bank');
+  }, [router]);
+
+  /** 5-col thumbnail grid + hand-off for this book's scene pictures. */
+  const BookPictureRow = () => (
+    <div className="mt-4">
+      <div className="text-white/30 text-xs mb-2 text-left">Book pictures — from the book</div>
+      <div className="grid grid-cols-5 gap-2">
+        {bookPictures.length > 0 ? bookPictures.map((photo) => (
+          <div
+            key={photo.id}
+            className="rounded-lg overflow-hidden border"
+            style={{ borderColor: `rgba(${accent},0.16)`, background: 'rgba(255,255,255,0.04)' }}
+            title={photo.label}
+          >
+            <div className="aspect-square flex items-center justify-center">
+              <img
+                src={photoSrc(photo, 240)}
+                srcSet={photo.storage_path ? getThumbnailSrcSet(photo.storage_path, 120, 70, 'photo-bank') : undefined}
+                sizes="(max-width: 640px) 18vw, 120px"
+                alt={photo.label}
+                loading="lazy"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        )) : (
+          <span className="col-span-5 text-white/15 text-[10px] text-center py-3">
+            {picturesLoading ? '…' : 'no pictures yet'}
+          </span>
+        )}
+      </div>
+      <button
+        onClick={() => createMaterials(bookPictures)}
+        disabled={bookPictures.length === 0}
+        className="mt-3 w-full px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all hover:bg-white/[0.06] disabled:opacity-30 disabled:cursor-not-allowed"
+        style={{
+          borderColor: `rgba(${accent},0.35)`,
+          background: `rgba(${accent},0.10)`,
+          color: `rgb(${accent})`,
+        }}
+      >
+        Create materials with these pictures →
+      </button>
+    </div>
+  );
 
   return (
     <div
@@ -294,41 +450,38 @@ function LessonCard({ lesson }: { lesson: Lesson }) {
         <EmptySlot>{picture === 'checking' ? '…' : 'Song card — coming soon'}</EmptySlot>
       )}
 
-      {/* STORY BOOK — the rule as a story, once the PDF exists */}
-      {lesson.book && bookUrl && book === 'present' ? (
+      {/* STORY BOOK — two print PDFs (static /public files, Dark Phonics
+          format) + the Picture Bank scene-picture grid. Renders
+          unconditionally once a lesson declares a book: unlike the
+          Supabase-bucket song/song-card assets above, these are static
+          repo files, always present the moment the entry lands here. */}
+      {lesson.book && (
         <Row accent={accent} label="Story book">
           <div className="flex items-start gap-3">
-            {cover === 'present' && coverUrl ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                src={coverUrl}
-                alt={lesson.book.title}
-                loading="lazy"
-                className="w-16 rounded-md shrink-0"
-                style={{ background: '#0e0e16' }}
-              />
-            ) : (
-              <div
-                className="w-16 h-20 rounded-md shrink-0 flex items-center justify-center text-center text-[9px] leading-tight px-1"
-                style={{ background: 'rgba(255,255,255,0.03)', border: `1px dashed rgba(${accent},0.2)`, color: 'rgba(255,255,255,0.2)' }}
-              >
-                {cover === 'checking' ? '…' : 'cover soon'}
-              </div>
-            )}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={lesson.book.cover ?? media(`books/covers/${lesson.book.slug}.png`)}
+              alt={lesson.book.title}
+              loading="lazy"
+              className="w-16 rounded-md shrink-0"
+              style={{ background: '#0e0e16' }}
+            />
             <div className="flex-1 min-w-0">
               <div className="text-white/90 font-medium text-sm">{lesson.book.title}</div>
               <div className="text-white/35 text-xs mt-0.5 leading-relaxed">
-                The rule as a story — the cast get it wrong first, then get it right.
+                {lesson.book.description ?? 'The rule as a story — the cast get it wrong first, then get it right.'}
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
-                <Pill href={bookUrl}>📗 Read the book</Pill>
+                <Pill href={printPdf(`/grace-courtesy-books/print/${lesson.book.slug}-A5-reading.pdf`)}>Read-along</Pill>
+                <Pill href={printPdf(`/grace-courtesy-books/print/${lesson.book.slug}-A5-booklet-print.pdf`)}>Print booklet A5</Pill>
               </div>
             </div>
           </div>
+
+          {/* Book scene pictures + their own hand-off */}
+          <BookPictureRow />
         </Row>
-      ) : lesson.book ? (
-        <EmptySlot>{book === 'checking' ? '…' : 'Story book — coming soon'}</EmptySlot>
-      ) : null}
+      )}
     </div>
   );
 }
