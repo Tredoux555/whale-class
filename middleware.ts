@@ -116,7 +116,12 @@ export async function middleware(req: NextRequest) {
   // product domain. The rest of the split (/admin, /teacher, /games, /auth,
   // /whale-class) stays deferred. NOTE: '/story' here only matches page routes —
   // '/api/story/*' starts with '/api', so the APIs are untouched and serve both.
-  const WHALE_ONLY_PREFIXES: string[] = ['/riddick', '/story', '/bayan'];
+  // Aug 7, 2026: '/potato' joins the list. Potato Snaps is a standalone product
+  // that lives ONLY on www.teacherpotato.xyz — a montree.xyz visitor who lands
+  // on /potato* is bounced to teacherpotato rather than served a second brand on
+  // the wrong domain. ('/api/potato/*' starts with '/api', so the APIs are
+  // untouched by this and gate themselves, exactly like '/api/story/*'.)
+  const WHALE_ONLY_PREFIXES: string[] = ['/riddick', '/story', '/bayan', '/potato'];
   const isWhaleOnlyPath = WHALE_ONLY_PREFIXES.some(
     (p) => pathname === p || pathname.startsWith(p + '/'),
   );
@@ -361,6 +366,12 @@ export async function middleware(req: NextRequest) {
     '/terms',       // Terms of service — public
     '/support',     // Support page — public (required by App Store; montree.xyz/support)
     '/welcome',     // Outreach landing pages (/welcome/[code]) — cold-email links, must load anonymously
+    // Potato Snaps (www.teacherpotato.xyz) — own auth system entirely: 6-char
+    // class/child codes, own httpOnly cookies, every /api/potato/* route gates
+    // itself. Without this entry the legacy Supabase-role gate at the bottom of
+    // this file silently 302s every anonymous visitor to '/', which reads as
+    // "the page doesn't exist". Same reason '/montree' is on this list.
+    '/potato',
   ];
   
   // Check if pathname matches exactly or starts with a public path

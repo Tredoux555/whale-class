@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Potato Snaps — Design Spec v1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   POTATO SNAPS — TOKENS
+   Philosophy: "Lunchbox Modern"
+   ============================================================ */
+:root{
+  /* ---- core palette ---- */
+  --honey:#E8A317;        /* primary action */
+  --honey-deep:#C9860B;   /* honey text on cream, icon strokes */
+  --butter:#FFD466;       /* rings, halos, celebration */
+  --butter-soft:#FFF0C9;  /* tinted surfaces */
+  --blue:#9ED2F0;         /* progress, parent-side action */
+  --blue-deep:#3E93C4;    /* blue text on cream */
+  --sky:#EAF6FD;          /* wash surface */
+  --cream:#FFFDF6;        /* page */
+  --paper:#FFFFFF;        /* card */
+  --sand:#F1E7D6;         /* bar track, hairlines */
+  --sand-line:#EBDFC9;    /* card hairline */
+  --ink:#23395B;          /* all text */
+  --ink-70:rgba(35,57,91,.70);
+  --ink-50:rgba(35,57,91,.50);
+  --ink-35:rgba(35,57,91,.35);
+  --coral:#FF7B6B;        /* destructive only */
+  --coral-deep:#D6503F;   /* destructive text/border */
+
+  /* ---- radii ---- */
+  --r-card:24px;
+  --r-btn:18px;
+  --r-chip:999px;
+  --r-tile:16px;
+
+  /* ---- shadows (friendly only) ---- */
+  --sh-card:0 1px 0 rgba(35,57,91,.04), 0 10px 22px -16px rgba(35,57,91,.30);
+  --sh-lift:0 2px 0 rgba(35,57,91,.06), 0 14px 26px -16px rgba(35,57,91,.36);
+  --sh-gold:0 2px 0 rgba(150,96,4,.18), 0 14px 26px -14px rgba(232,163,23,.55);
+
+  --disp:'Baloo 2', ui-rounded, system-ui, sans-serif;
+  --body:'Nunito', system-ui, sans-serif;
+  --mono:'JetBrains Mono', ui-monospace, Menlo, monospace;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--cream);
+  color:var(--ink);
+  font-family:var(--body);
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ============================================================
+   SPEC CANVAS CHROME
+   ============================================================ */
+.canvas{
+  min-height:100vh;
+  background:
+    radial-gradient(1100px 620px at 12% -8%, #FFF3D6 0%, rgba(255,243,214,0) 62%),
+    radial-gradient(900px 560px at 96% 4%, #E7F4FD 0%, rgba(231,244,253,0) 60%),
+    var(--cream);
+}
+.canvas::before{
+  content:"";position:fixed;inset:0;pointer-events:none;
+  background-image:radial-gradient(rgba(35,57,91,.055) 1px, transparent 1px);
+  background-size:26px 26px;
+  mask-image:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,.12));
+  -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,.12));
+}
+.specbar{
+  position:sticky;top:0;z-index:40;
+  background:rgba(255,253,246,.86);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--sand-line);
+}
+.specbar__in{
+  max-width:1240px;margin:0 auto;padding:16px 28px 14px;
+  display:flex;align-items:center;gap:20px;flex-wrap:wrap;
+}
+.brandlock{display:flex;align-items:center;gap:12px;min-width:0}
+.brandlock h1{
+  font-family:var(--disp);font-weight:800;font-size:20px;margin:0;letter-spacing:-.01em;line-height:1;
+}
+.brandlock p{
+  margin:3px 0 0;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-35);
+}
+.tabs{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+.tab{
+  font-family:var(--body);font-weight:800;font-size:13px;color:var(--ink-70);
+  background:transparent;border:1.5px solid transparent;border-radius:999px;
+  padding:9px 16px;cursor:pointer;transition:.16s;white-space:nowrap;
+}
+.tab:hover{background:rgba(35,57,91,.05);color:var(--ink)}
+.tab.on{background:var(--ink);color:#FFFDF6;border-color:var(--ink)}
+.tab .n{opacity:.45;margin-right:7px;font-family:var(--mono);font-size:11px}
+.tab.on .n{opacity:.6}
+
+.stage{max-width:1240px;margin:0 auto;padding:38px 28px 96px;position:relative;z-index:1}
+.stage__head{margin:0 0 30px;max-width:620px}
+.stage__eyebrow{
+  font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--honey-deep);margin:0 0 8px;display:flex;align-items:center;gap:10px;
+}
+.stage__eyebrow::after{content:"";height:1.5px;flex:1;background:linear-gradient(90deg,var(--butter),rgba(255,212,102,0))}
+.stage__title{font-family:var(--disp);font-weight:800;font-size:34px;line-height:1.06;margin:0 0 10px;letter-spacing:-.02em}
+.stage__sub{margin:0;font-size:15px;line-height:1.6;color:var(--ink-70);font-weight:600}
+
+.split{display:grid;grid-template-columns:auto 1fr;gap:52px;align-items:start}
+@media (max-width:980px){.split{grid-template-columns:1fr;gap:34px}}
+
+/* device frame */
+.device{
+  width:414px;padding:12px;border-radius:52px;background:var(--paper);
+  border:1px solid var(--sand-line);
+  box-shadow:0 3px 0 rgba(35,57,91,.05), 0 40px 70px -46px rgba(35,57,91,.55);
+  position:relative;
+}
+.device__screen{
+  width:390px;min-height:844px;border-radius:40px;overflow:hidden;background:var(--cream);
+  position:relative;
+}
+.device__cap{
+  position:absolute;left:0;right:0;bottom:-34px;text-align:center;
+  font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-35);
+}
+.devicewrap{padding-bottom:44px}
+
+/* annotation column */
+.notes{padding-top:6px;max-width:460px}
+.note{margin:0 0 26px}
+.note h3{
+  font-family:var(--disp);font-weight:800;font-size:17px;margin:0 0 10px;
+  display:flex;align-items:center;gap:9px;
+}
+.note h3 .dot{width:9px;height:9px;border-radius:999px;background:var(--honey);flex:none}
+.note ul{margin:0;padding:0;list-style:none}
+.note li{
+  font-size:13.5px;line-height:1.62;color:var(--ink-70);font-weight:600;
+  padding:0 0 0 20px;margin:0 0 7px;position:relative;
+}
+.note li::before{
+  content:"";position:absolute;left:4px;top:9px;width:6px;height:6px;border-radius:2px;
+  background:var(--blue);
+}
+.note li b{color:var(--ink);font-weight:800}
+.note code{
+  font-family:var(--mono);font-size:11.5px;background:var(--sky);color:var(--blue-deep);
+  padding:2px 6px;border-radius:6px;
+}
+
+/* ============================================================
+   PHONE UI PRIMITIVES
+   ============================================================ */
+.app{width:100%;min-height:844px;background:var(--cream);position:relative;display:flex;flex-direction:column}
+.bare .app{min-height:100vh}
+
+.topbar{
+  position:sticky;top:0;z-index:20;background:rgba(255,253,246,.94);
+  backdrop-filter:blur(12px);
+  padding:calc(14px + env(safe-area-inset-top)) 18px 13px;
+  border-bottom:1px solid var(--sand-line);
+  display:flex;align-items:center;gap:12px;
+}
+.topbar__txt{min-width:0;flex:1}
+.topbar__title{font-family:var(--disp);font-weight:800;font-size:19px;line-height:1.12;margin:0;letter-spacing:-.01em}
+.weekpill{
+  display:inline-flex;align-items:center;gap:6px;margin-top:4px;
+  background:var(--sky);color:var(--blue-deep);
+  font-size:11.5px;font-weight:800;letter-spacing:.01em;
+  padding:3px 10px;border-radius:999px;
+}
+.iconbtn{
+  width:40px;height:40px;flex:none;border-radius:14px;border:1.5px solid var(--sand-line);
+  background:var(--paper);display:grid;place-items:center;cursor:pointer;
+}
+.scroll{flex:1;padding:16px 16px 30px}
+
+/* buttons */
+.btn{
+  font-family:var(--disp);font-weight:800;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  border-radius:var(--r-btn);letter-spacing:-.005em;transition:.15s;
+}
+.btn--primary{background:var(--honey);color:var(--ink);box-shadow:var(--sh-gold)}
+.btn--blue{background:var(--blue);color:var(--ink);box-shadow:0 2px 0 rgba(35,57,91,.07), 0 14px 26px -16px rgba(62,147,196,.7)}
+.btn--ghost{background:var(--paper);color:var(--ink);border:1.5px solid var(--sand-line);box-shadow:var(--sh-card)}
+.btn--danger{background:#FFF0ED;color:var(--coral-deep);border:1.5px solid rgba(214,80,63,.28)}
+.btn--lg{height:56px;font-size:18px;padding:0 22px;width:100%}
+.btn--md{height:46px;font-size:15.5px;padding:0 18px}
+.btn--sm{height:36px;font-size:13.5px;padding:0 14px;border-radius:12px}
+.btn[disabled]{background:var(--sand);color:var(--ink-35);box-shadow:none;cursor:default}
+
+/* camera hero */
+.camerabtn{
+  width:100%;background:var(--honey);border:none;border-radius:var(--r-card);
+  padding:15px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;
+  box-shadow:var(--sh-gold);text-align:left;position:relative;overflow:hidden;
+}
+.camerabtn::after{
+  content:"";position:absolute;right:-26px;top:-40px;width:120px;height:120px;border-radius:999px;
+  background:rgba(255,255,255,.16);
+}
+.camerabtn__ic{
+  width:52px;height:52px;flex:none;border-radius:18px;background:rgba(255,255,255,.9);
+  display:grid;place-items:center;box-shadow:0 2px 0 rgba(150,96,4,.14);
+}
+.camerabtn__t{font-family:var(--disp);font-weight:800;font-size:19px;line-height:1.1;color:var(--ink)}
+.camerabtn__s{font-family:var(--body);font-weight:700;font-size:12.5px;color:rgba(35,57,91,.68);margin-top:3px}
+
+/* section label */
+.seclabel{
+  display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  margin:22px 2px 11px;
+}
+.seclabel h2{font-family:var(--disp);font-weight:800;font-size:15px;margin:0;letter-spacing:.01em}
+.seclabel span{font-size:11.5px;font-weight:800;color:var(--ink-35);letter-spacing:.02em}
+
+/* ---- roster row ---- */
+.row{
+  background:var(--paper);border:1.5px solid var(--sand-line);border-radius:var(--r-card);
+  padding:13px 15px;margin-bottom:11px;box-shadow:var(--sh-card);
+  display:grid;grid-template-columns:56px 1fr;gap:13px;align-items:start;
+}
+.row--ready{background:linear-gradient(180deg,#FFFBEF 0%,#FFFFFF 62%);border-color:#F4DFA6;box-shadow:var(--sh-lift)}
+.row--empty{background:var(--paper);border-style:dashed;border-color:#E4DAC6;box-shadow:none}
+.row__body{min-width:0;padding-top:2px}
+.row__head{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.row__name{font-family:var(--disp);font-weight:800;font-size:17.5px;line-height:1;margin:0;flex:1;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.01em}
+.row__hint{font-size:12px;font-weight:700;color:var(--ink-35);margin:9px 0 0}
+
+/* avatar */
+.av{
+  width:56px;height:56px;border-radius:999px;display:grid;place-items:center;
+  font-family:var(--disp);font-weight:800;font-size:22px;color:var(--ink);
+  box-shadow:0 0 0 3px var(--paper), 0 0 0 5.5px var(--butter);
+  position:relative;
+}
+.av--sm{width:44px;height:44px;font-size:17px;box-shadow:0 0 0 2.5px var(--paper), 0 0 0 4.5px var(--butter)}
+.av--xs{width:34px;height:34px;font-size:14px;box-shadow:0 0 0 2px var(--paper), 0 0 0 3.5px var(--butter)}
+.av--lg{width:72px;height:72px;font-size:27px;box-shadow:0 0 0 3px var(--paper), 0 0 0 5px var(--sand)}
+.av--none{background:#FAF5EA;color:var(--ink-35);box-shadow:none;border:2px dashed #E0D4BC}
+
+/* count chip */
+.chip{
+  font-family:var(--body);font-weight:800;font-size:12.5px;flex:none;
+  padding:5px 11px;border-radius:999px;background:var(--sand);color:var(--ink-70);
+  letter-spacing:.01em;line-height:1;white-space:nowrap;
+}
+.chip--zero{background:#F6F1E7;color:var(--ink-35)}
+.chip--gold{background:var(--honey);color:var(--ink);box-shadow:0 1px 0 rgba(150,96,4,.2)}
+
+/* ---- THE BAR ---- */
+.bar{
+  height:16px;border-radius:999px;background:var(--sand);
+  position:relative;overflow:hidden;
+  box-shadow:inset 0 1px 2px rgba(35,57,91,.07);
+}
+.bar__fill{
+  position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:var(--blue);
+  box-shadow:inset 0 -2px 0 rgba(35,57,91,.07);
+}
+.bar__ticks{position:absolute;inset:0;display:flex;pointer-events:none}
+.bar__ticks i{flex:1;border-right:2px solid rgba(255,255,255,.62)}
+.bar__ticks i:last-child{border-right:none}
+.bar--empty{background:transparent;box-shadow:none;border:2px dashed #E0D4BC}
+.bar--empty .bar__ticks{display:none}
+.bar--gold .bar__fill{
+  background:linear-gradient(180deg,#F2B437 0%,var(--honey) 100%);
+  box-shadow:inset 0 -2px 0 rgba(150,96,4,.22);
+}
+.bar--gold .bar__ticks i{border-right-color:rgba(255,253,246,.5)}
+.bar--cooking .bar__fill{
+  background:repeating-linear-gradient(115deg,#F2B437 0 12px,#E8A317 12px 24px);
+  opacity:.72;
+}
+
+/* celebrate sparkles — own box, never overlaps the chip */
+.sparks{position:relative;width:22px;height:20px;flex:none;margin-right:2px}
+.sparks i{position:absolute;background:var(--butter);border-radius:1.5px}
+.sparks i:nth-child(1){width:7px;height:7px;left:1px;top:1px;transform:rotate(20deg)}
+.sparks i:nth-child(2){width:5px;height:5px;left:12px;top:-3px;background:var(--honey);transform:rotate(42deg)}
+.sparks i:nth-child(3){width:5px;height:5px;left:8px;top:12px;background:var(--honey);opacity:.55;transform:rotate(-16deg)}
+
+/* row action / status */
+.rowact{margin-top:11px}
+.status{
+  margin-top:11px;display:flex;align-items:center;gap:9px;
+  background:var(--sky);border-radius:14px;padding:9px 12px;
+}
+.status--gold{background:var(--butter-soft)}
+.status__t{font-size:13px;font-weight:800;color:var(--ink);flex:1;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.status__m{font-size:12px;font-weight:700;color:var(--ink-50);white-space:nowrap}
+.dots{display:inline-flex;gap:3px;align-items:center}
+.dots i{width:5px;height:5px;border-radius:999px;background:var(--honey-deep)}
+.dots i:nth-child(2){opacity:.6}
+.dots i:nth-child(3){opacity:.3}
+.tick{
+  width:22px;height:22px;border-radius:999px;background:var(--blue);flex:none;
+  display:grid;place-items:center;box-shadow:0 1px 0 rgba(35,57,91,.1);
+}
+.watch{
+  font-family:var(--disp);font-weight:800;font-size:13.5px;color:var(--honey-deep);
+  display:inline-flex;align-items:center;gap:5px;white-space:nowrap;
+}
+
+/* ---- tag screen ---- */
+.photocard{
+  border-radius:var(--r-card);overflow:hidden;position:relative;
+  border:1.5px solid var(--sand-line);box-shadow:var(--sh-card);background:var(--sky);
+}
+.photocard__chip{
+  position:absolute;left:12px;top:12px;background:rgba(255,253,246,.94);
+  font-size:11.5px;font-weight:800;color:var(--ink);padding:5px 11px 5px 9px;border-radius:999px;
+  box-shadow:0 2px 8px rgba(35,57,91,.14);
+  display:flex;align-items:center;gap:5px;
+}
+.facegrid{margin-bottom:4px}
+.q{font-family:var(--disp);font-weight:800;font-size:23px;margin:20px 2px 4px;letter-spacing:-.015em}
+.qsub{font-size:13px;font-weight:700;color:var(--ink-50);margin:0 2px 16px}
+.facegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 8px}
+.face{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer}
+.face__av{position:relative}
+.face__av .av{transition:.15s}
+.face--on .av{box-shadow:0 0 0 3px var(--paper), 0 0 0 6.5px var(--honey)}
+.face__badge{
+  position:absolute;right:-3px;bottom:-3px;width:26px;height:26px;border-radius:999px;
+  background:var(--butter);border:2.5px solid var(--paper);display:grid;place-items:center;
+  box-shadow:0 2px 6px rgba(35,57,91,.2);
+}
+.face__n{font-size:12.5px;font-weight:700;color:var(--ink-50);text-align:center;line-height:1.1}
+.face--on .face__n{font-weight:800;color:var(--ink)}
+.footbar{
+  position:sticky;bottom:0;background:rgba(255,253,246,.95);backdrop-filter:blur(12px);
+  border-top:1px solid var(--sand-line);
+  padding:13px 16px calc(15px + env(safe-area-inset-bottom));
+  display:flex;gap:10px;
+}
+
+/* ---- parent login ---- */
+.login{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:40px 28px calc(70px + env(safe-area-inset-bottom));text-align:center;position:relative;
+}
+.halo{
+  position:relative;width:196px;height:196px;display:grid;place-items:center;margin-bottom:6px;
+}
+.halo::before{
+  content:"";position:absolute;inset:0;border-radius:999px;z-index:0;
+  background:radial-gradient(circle at 50% 48%, rgba(255,224,150,.55) 0%, rgba(255,224,150,0) 68%);
+}
+.halo::after{
+  content:"";position:absolute;inset:6px;border-radius:999px;z-index:0;
+  border:2px dashed rgba(232,163,23,.24);
+}
+.halo > svg{position:relative;z-index:1}
+.wordmark{font-family:var(--disp);font-weight:800;font-size:36px;letter-spacing:-.025em;margin:2px 0 0;line-height:1}
+.wordrule{width:58px;height:5px;border-radius:999px;background:var(--honey);margin:11px auto 0}
+.logintag{font-size:13.5px;font-weight:700;color:var(--ink-50);margin:12px 0 30px;line-height:1.5}
+.codeboxes{display:flex;gap:8px;justify-content:center;margin-bottom:26px}
+.cbox{
+  width:46px;height:60px;border-radius:var(--r-tile);background:var(--paper);
+  border:2px solid var(--sand-line);display:grid;place-items:center;
+  font-family:var(--disp);font-weight:800;font-size:27px;color:var(--ink);
+  box-shadow:0 1px 0 rgba(35,57,91,.04);
+}
+.cbox--on{border-color:var(--blue);background:#FBFEFF}
+.cbox--cur{border-color:var(--honey);box-shadow:0 0 0 4px rgba(232,163,23,.14)}
+.caret{width:2px;height:26px;background:var(--honey);border-radius:2px}
+.helper{font-size:13px;font-weight:700;color:var(--ink-50);margin:16px 0 0;line-height:1.55;max-width:250px}
+.byline{
+  position:absolute;left:0;right:0;bottom:calc(26px + env(safe-area-inset-bottom));
+  font-size:11px;font-weight:800;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-35);
+}
+
+/* ---- parent feed ---- */
+.greet{margin:20px 2px 18px}
+.greet h2{font-family:var(--disp);font-weight:800;font-size:26px;line-height:1.14;margin:0;letter-spacing:-.02em}
+.greet p{margin:7px 0 0;font-size:13.5px;font-weight:700;color:var(--ink-50)}
+.mcard{
+  background:var(--paper);border:1.5px solid var(--sand-line);border-radius:var(--r-card);
+  padding:13px;margin-bottom:16px;box-shadow:var(--sh-card);
+}
+.mcard__top{display:flex;align-items:center;gap:8px;margin:1px 3px 12px}
+.mcard__wk{font-family:var(--disp);font-weight:800;font-size:15px;flex:1;letter-spacing:-.005em}
+.newbadge{
+  background:var(--butter);color:var(--ink);font-size:10.5px;font-weight:800;
+  letter-spacing:.1em;padding:4px 9px;border-radius:999px;
+}
+.player{
+  background:var(--sky);border-radius:18px;padding:14px;display:grid;place-items:center;
+  border:1px solid #DCEDF8;
+}
+.frame916{
+  width:172px;aspect-ratio:9/16;border-radius:14px;position:relative;overflow:hidden;
+  box-shadow:0 3px 0 rgba(35,57,91,.06), 0 18px 30px -20px rgba(35,57,91,.5);
+}
+.playbtn{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:58px;height:58px;border-radius:999px;background:var(--honey);
+  display:grid;place-items:center;
+  box-shadow:0 0 0 5px rgba(255,253,246,.55), 0 3px 0 rgba(150,96,4,.2), 0 10px 20px -10px rgba(35,57,91,.4);
+}
+.mcard__meta{display:flex;align-items:center;gap:8px;margin:12px 3px 12px;font-size:12.5px;font-weight:700;color:var(--ink-50)}
+.mcard__meta b{color:var(--ink-70);font-weight:800}
+.dotsep{width:3px;height:3px;border-radius:999px;background:var(--ink-35)}
+
+/* ---- teacher extras ---- */
+.hgroup{margin:22px 2px 12px}
+.hgroup h2{font-family:var(--disp);font-weight:800;font-size:18px;margin:0;letter-spacing:-.01em}
+.hgroup p{margin:4px 0 0;font-size:12.5px;font-weight:700;color:var(--ink-50)}
+.lrow{
+  background:var(--paper);border:1.5px solid var(--sand-line);border-radius:20px;
+  padding:11px 13px;margin-bottom:9px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh-card);
+}
+.lrow__n{font-family:var(--disp);font-weight:800;font-size:16px;flex:1;min-width:0;line-height:1.15}
+.lrow__n small{display:block;font-family:var(--body);font-weight:700;font-size:11.5px;color:var(--ink-35);margin-top:2px}
+.addrow{
+  border:2px dashed #E4DAC6;border-radius:20px;padding:14px;display:flex;align-items:center;
+  justify-content:center;gap:9px;font-family:var(--disp);font-weight:800;font-size:15px;color:var(--ink-50);
+  cursor:pointer;background:rgba(255,255,255,.5);
+}
+.code{
+  font-family:var(--mono);font-weight:700;font-size:19px;letter-spacing:.14em;color:var(--ink);
+  background:var(--sky);border-radius:12px;padding:8px 12px 8px 14px;line-height:1;
+}
+.segment{display:flex;background:var(--sand);border-radius:999px;padding:4px;gap:3px;margin:0 2px}
+.segment button{
+  flex:1 1 0;border:none;background:transparent;border-radius:999px;padding:9px 8px;cursor:pointer;
+  font-family:var(--disp);font-weight:800;font-size:14px;color:var(--ink-50);
+}
+.segment button.on{background:var(--paper);color:var(--ink);box-shadow:0 1px 0 rgba(35,57,91,.06), 0 4px 10px -6px rgba(35,57,91,.4)}
+
+/* ============================================================
+   TOKENS SHEET
+   ============================================================ */
+.sheet{display:grid;gap:34px}
+.panel{
+  background:var(--paper);border:1.5px solid var(--sand-line);border-radius:26px;
+  padding:26px 28px 30px;box-shadow:var(--sh-card);
+}
+.panel__h{
+  display:flex;align-items:baseline;gap:14px;margin:0 0 20px;padding-bottom:14px;
+  border-bottom:1px solid var(--sand-line);
+}
+.panel__h h3{font-family:var(--disp);font-weight:800;font-size:19px;margin:0;letter-spacing:-.01em}
+.panel__h span{font-family:var(--mono);font-size:11px;color:var(--ink-35);letter-spacing:.06em}
+.panel__h em{
+  margin-left:auto;font-style:normal;font-size:12px;font-weight:700;color:var(--ink-50);
+}
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:14px}
+.sw__c{height:76px;border-radius:16px;border:1px solid rgba(35,57,91,.16);
+  box-shadow:inset 0 -14px 20px -18px rgba(35,57,91,.5)}
+.sw__n{font-family:var(--disp);font-weight:800;font-size:14px;margin:10px 0 1px}
+.sw__x{font-family:var(--mono);font-size:11.5px;color:var(--ink-50);letter-spacing:.04em}
+.sw__u{font-size:11.5px;font-weight:700;color:var(--ink-35);margin-top:5px;line-height:1.4}
+.typerow{display:flex;align-items:baseline;gap:20px;padding:13px 0;border-bottom:1px dashed var(--sand-line)}
+.typerow:last-child{border-bottom:none}
+.typerow__s{flex:1;min-width:0;color:var(--ink)}
+.typerow__m{font-family:var(--mono);font-size:11px;color:var(--ink-35);text-align:right;white-space:nowrap;line-height:1.6}
+.barstates{display:grid;gap:16px}
+.barstate{display:grid;grid-template-columns:126px 1fr auto;gap:16px;align-items:center}
+.barstate__l{font-size:12.5px;font-weight:800;color:var(--ink-70)}
+.barstate__l small{display:block;font-weight:700;color:var(--ink-35);font-size:11px;margin-top:2px}
+.btnrow{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.shapes{display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap}
+.shape{text-align:center}
+.shape__b{background:var(--butter-soft);border:1.5px solid #F3E2B6;width:92px;height:66px}
+.shape__l{font-family:var(--mono);font-size:11px;color:var(--ink-50);margin-top:8px}
+.mascotshow{display:flex;gap:36px;align-items:flex-end;flex-wrap:wrap}
+.mascotshow figcaption{font-family:var(--mono);font-size:11px;color:var(--ink-35);margin-top:12px;text-align:center}
+.mascotshow figure{margin:0}
+
+/* bare (screenshot) mode */
+.bare .specbar,.bare .stage__head,.bare .notes,.bare .device__cap{display:none}
+.bare .canvas{background:var(--cream)}
+.bare .canvas::before{display:none}
+.bare .stage{padding:0;max-width:none}
+.bare .device{width:100%;padding:0;border:none;border-radius:0;box-shadow:none}
+.bare .device__screen{width:100%;min-height:100vh;border-radius:0}
+.bare .devicewrap{padding:0}
+.bare .split{display:block}
+</style>
+</head>
+<body>
+<div class="canvas">
+  <header class="specbar">
+    <div class="specbar__in">
+      <div class="brandlock" id="brandlock"></div>
+      <nav class="tabs" id="tabs"></nav>
+    </div>
+  </header>
+  <main class="stage" id="stage"></main>
+</div>
+
+<script>
+/* ============================================================
+   MASCOT — original potato face, inline SVG
+   ============================================================ */
+function mascot(size, opt){
+  opt = opt || {};
+  var camera = opt.camera !== false;
+  var body = '#F3C56B', edge = '#C9860B', ink = '#23395B';
+  return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 200 200" fill="none" aria-hidden="true" style="display:block">'
+  + '<ellipse cx="102" cy="186" rx="58" ry="8" fill="'+ink+'" opacity="'+(opt.shadow===false?0:0.07)+'"/>'
+  + '<path d="M100 22 C133 17 167 34 177 65 C187 96 180 133 152 155 C125 176 83 181 55 165 C25 148 11 112 19 79 C27 47 62 26 100 22 Z" fill="'+body+'" stroke="'+edge+'" stroke-width="5" stroke-linejoin="round"/>'
+  + '<path d="M45 66 C55 47 72 37 90 33" stroke="#FFFFFF" stroke-opacity=".34" stroke-width="6" stroke-linecap="round"/>'
+  + '<circle cx="152" cy="58" r="4" fill="'+edge+'" opacity=".38"/>'
+  + '<circle cx="40" cy="122" r="3.4" fill="'+edge+'" opacity=".3"/>'
+  + '<circle cx="124" cy="38" r="2.8" fill="'+edge+'" opacity=".26"/>'
+  + '<ellipse cx="60" cy="106" rx="13" ry="9" fill="#FF7B6B" opacity=".38"/>'
+  + '<ellipse cx="142" cy="106" rx="13" ry="9" fill="#FF7B6B" opacity=".38"/>'
+  + '<circle cx="78" cy="84" r="7.5" fill="'+ink+'"/>'
+  + '<circle cx="124" cy="84" r="7.5" fill="'+ink+'"/>'
+  + '<circle cx="80.5" cy="81" r="2.4" fill="#FFFFFF"/>'
+  + '<circle cx="126.5" cy="81" r="2.4" fill="#FFFFFF"/>'
+  + '<path d="M87 104 Q101 118 115 104" stroke="'+ink+'" stroke-width="5" stroke-linecap="round" fill="none"/>'
+  + (camera
+     ? '<rect x="60" y="120" width="82" height="52" rx="16" fill="#9ED2F0" stroke="'+ink+'" stroke-width="4.5"/>'
+     + '<rect x="70" y="112" width="24" height="11" rx="5" fill="#FFD466" stroke="'+ink+'" stroke-width="4"/>'
+     + '<circle cx="101" cy="146" r="17" fill="#EAF6FD" stroke="'+ink+'" stroke-width="4.5"/>'
+     + '<circle cx="101" cy="146" r="8" fill="'+ink+'" opacity=".85"/>'
+     + '<circle cx="96" cy="141" r="3" fill="#FFFFFF"/>'
+     + '<circle cx="130" cy="130" r="3.4" fill="#FFD466"/>'
+     + '<circle cx="60" cy="156" r="10" fill="'+body+'" stroke="'+edge+'" stroke-width="4"/>'
+     + '<circle cx="142" cy="156" r="10" fill="'+body+'" stroke="'+edge+'" stroke-width="4"/>'
+     : '')
+  + '</svg>';
+}
+
+/* ============================================================
+   ICONS
+   ============================================================ */
+var I = {
+  camera: function(s,c){s=s||26;c=c||'#23395B';return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none"><path d="M4 8.5h2.6l1.3-2.2h8.2l1.3 2.2H20a1.6 1.6 0 0 1 1.6 1.6v7.6A1.6 1.6 0 0 1 20 19.3H4a1.6 1.6 0 0 1-1.6-1.6v-7.6A1.6 1.6 0 0 1 4 8.5Z" stroke="'+c+'" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="13.6" r="3.5" stroke="'+c+'" stroke-width="2"/></svg>'},
+  menu: function(s,c){s=s||20;c=c||'#23395B';return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none"><path d="M4.5 7.5h15M4.5 12h15M4.5 16.5h15" stroke="'+c+'" stroke-width="2.2" stroke-linecap="round"/></svg>'},
+  back: function(s,c){s=s||20;c=c||'#23395B';return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none"><path d="M14.5 5.5 8 12l6.5 6.5" stroke="'+c+'" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'},
+  check: function(s,c,w){s=s||14;c=c||'#FFFDF6';return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none"><path d="M5 12.6 10 17.5 19 7" stroke="'+c+'" stroke-width="'+(w||3.4)+'" stroke-linecap="round" stroke-linejoin="round"/></svg>'},
+  film: function(s,c){s=s||18;c=c||'#23395B';return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none"><rect x="2.6" y="5.4" width="18.8" height="13.2" rx="3" stroke="'+c+'" stroke-width="2"/><path d="M2.6 9.6h18.8M8 5.6v3.8M16 5.6v3.8" stroke="'+c+'" stroke-width="2"/><path d="M10.6 12.4v4l3.6-2-3.6-2Z" fill="'+c+'"/></svg>'},
+  play: function(s,c){s=s||22;c=c||'#23395B';return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none"><path d="M8.4 5.6 18 12l-9.6 6.4V5.6Z" fill="'+c+'"/></svg>'},
+  pencil: function(s,c){s=s||16;c=c||'#23395B';return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none"><path d="m5 19 .9-3.6L15.6 5.7a2 2 0 0 1 2.8 0l.9.9a2 2 0 0 1 0 2.8L9.6 19.1 5 19Z" stroke="'+c+'" stroke-width="2" stroke-linejoin="round"/></svg>'},
+  print: function(s,c){s=s||17;c=c||'#23395B';return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none"><path d="M7.4 8.6V4.4h9.2v4.2" stroke="'+c+'" stroke-width="2" stroke-linejoin="round"/><path d="M7.4 17.6H5a1.6 1.6 0 0 1-1.6-1.6v-5.8A1.6 1.6 0 0 1 5 8.6h14a1.6 1.6 0 0 1 1.6 1.6V16a1.6 1.6 0 0 1-1.6 1.6h-2.4" stroke="'+c+'" stroke-width="2" stroke-linejoin="round"/><rect x="7.4" y="14.2" width="9.2" height="5.4" rx="1.4" stroke="'+c+'" stroke-width="2" stroke-linejoin="round"/></svg>'},
+  plus: function(s,c){s=s||18;c=c||'#23395B';return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none"><path d="M12 5.6v12.8M5.6 12h12.8" stroke="'+c+'" stroke-width="2.6" stroke-linecap="round"/></svg>'}
+};
+
+/* ============================================================
+   DEMO DATA
+   ============================================================ */
+var TINT = ['#FFD466','#9ED2F0','#FFC6A8','#CDE3F5','#F4D68C','#B9DFF3','#FFDDCB','#D9EAF7'];
+function av(name, i, cls){
+  return '<div class="av '+(cls||'')+'" style="background:'+TINT[i%TINT.length]+'">'+name.charAt(0)+'</div>';
+}
+
+/* sorted least-photos-first */
+var KIDS = [
+  {n:'Zara',  c:0,  s:'empty'},
+  {n:'Kai',   c:2,  s:'go'},
+  {n:'Noah',  c:3,  s:'go'},
+  {n:'Mia',   c:5,  s:'go'},
+  {n:'Ayaan', c:6,  s:'go'},
+  {n:'Leo',   c:8,  s:'ready'},
+  {n:'Sofia', c:9,  s:'cooking'},
+  {n:'Emma',  c:11, s:'done'}
+];
+
+function bar(state, count){
+  var pct = Math.max(0, Math.min(1, count/8))*100;
+  var cls = 'bar' + (state==='empty' ? ' bar--empty' : '')
+          + (state==='ready'||state==='done' ? ' bar--gold' : '')
+          + (state==='cooking' ? ' bar--gold bar--cooking' : '');
+  var ticks = '<div class="bar__ticks">'+Array(8).join('x').split('x').map(function(){return '<i></i>'}).join('')+'</div>';
+  return '<div class="'+cls+'">'
+    + (state==='empty' ? '' : '<div class="bar__fill" style="width:'+pct+'%"></div>')
+    + ticks + '</div>';
+}
+function chip(state, count){
+  if(state==='empty') return '<div class="chip chip--zero">0/8</div>';
+  if(count < 8) return '<div class="chip">'+count+'/8</div>';
+  return '<div class="chip chip--gold">'+I.check(11,'#23395B',3.6)+' '+count+'</div>';
+}
+
+function rosterRow(k, i){
+  var extra = '';
+  if(k.s==='ready'){
+    extra = '<div class="rowact"><button class="btn btn--primary btn--md" style="width:100%">'+I.film(19)+' Make montage</button></div>';
+  } else if(k.s==='cooking'){
+    extra = '<div class="status status--gold">'
+      + '<div class="status__t">Cooking your montage…</div>'
+      + '<div class="dots"><i></i><i></i><i></i></div>'
+      + '<div class="status__m">~2 min</div></div>';
+  } else if(k.s==='done'){
+    extra = '<div class="status">'
+      + '<div class="tick">'+I.check(12,'#23395B',3.6)+'</div>'
+      + '<div class="status__t">Sent to parents</div>'
+      + '<div class="watch">'+I.play(13,'#C9860B')+' Watch</div></div>';
+  } else if(k.s==='empty'){
+    extra = '<p class="row__hint">No photos yet this week</p>';
+  }
+  var rowcls = 'row' + (k.s==='ready' ? ' row--ready' : '') + (k.s==='empty' ? ' row--empty' : '');
+  var sparks = k.s==='ready' ? '<div class="sparks"><i></i><i></i><i></i></div>' : '';
+  return '<div class="'+rowcls+'">'
+    + av(k.n, i)
+    + '<div class="row__body">'
+      + '<div class="row__head"><h3 class="row__name">'+k.n+'</h3>'+sparks+chip(k.s,k.c)+'</div>'
+      + bar(k.s, k.c)
+      + extra
+    + '</div></div>';
+}
+
+/* ============================================================
+   SCREEN 1 — CAPTURE BOARD
+   ============================================================ */
+function screenBoard(){
+  return '<div class="app">'
+  + '<div class="topbar">'
+    + mascot(40,{shadow:false})
+    + '<div class="topbar__txt">'
+      + '<h1 class="topbar__title">Sunflower Class</h1>'
+      + '<div class="weekpill">This week · Sep 7–11</div>'
+    + '</div>'
+    + '<button class="iconbtn">'+I.menu(20)+'</button>'
+  + '</div>'
+  + '<div class="scroll">'
+    + '<button class="camerabtn">'
+      + '<div class="camerabtn__ic">'+I.camera(27,'#C9860B')+'</div>'
+      + '<div><div class="camerabtn__t">Take a photo</div>'
+      + '<div class="camerabtn__s">Then tap who is in it</div></div>'
+    + '</button>'
+    + '<div class="seclabel"><h2>Your children</h2><span>8 PHOTOS = 1 MONTAGE</span></div>'
+    + KIDS.map(rosterRow).join('')
+  + '</div></div>';
+}
+
+/* ============================================================
+   SCREEN 2 — TAG
+   ============================================================ */
+function photoPlaceholder(){
+  /* stand-in for a real classroom photo: blocks resting on one shared baseline */
+  var base = 172, H = 202;
+  return '<svg viewBox="0 0 358 '+H+'" width="100%" style="display:block" role="img" aria-label="Photo preview">'
+  + '<defs><linearGradient id="pgs" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0" stop-color="#E6F3FC"/><stop offset="1" stop-color="#FBF1DE"/></linearGradient></defs>'
+  + '<rect width="358" height="'+H+'" fill="url(#pgs)"/>'
+  + '<circle cx="296" cy="48" r="44" fill="#FFD466" opacity=".18"/>'
+  + '<circle cx="296" cy="48" r="26" fill="#FFD466"/>'
+  + '<rect x="0" y="'+base+'" width="358" height="'+(H-base)+'" fill="#EFE2C9"/>'
+  + '<rect x="0" y="'+(base-4)+'" width="358" height="4" fill="#E3D2B2"/>'
+  + '<rect x="56" y="'+(base-72)+'" width="66" height="72" rx="12" fill="#9ED2F0"/>'
+  + '<rect x="56" y="'+(base-72)+'" width="66" height="20" rx="10" fill="#B9DFF3"/>'
+  + '<circle cx="168" cy="'+(base-30)+'" r="30" fill="#FF7B6B" opacity=".8"/>'
+  + '<rect x="204" y="'+(base-42)+'" width="30" height="42" rx="8" fill="#FFD466"/>'
+  + '<path d="M248 '+base+' l31-62 31 62Z" fill="#E8A317" opacity=".92"/>'
+  + '</svg>';
+}
+var TAGGED = {Emma:true, Leo:true, Kai:true};
+function screenTag(){
+  var faces = ['Emma','Leo','Kai','Mia','Noah','Ayaan','Sofia','Zara','Kofi','Ada','Nia','Tomas'].map(function(n,i){
+    var on = !!TAGGED[n];
+    return '<div class="face'+(on?' face--on':'')+'">'
+      + '<div class="face__av">' + av(n,i,'av--lg')
+      + (on ? '<div class="face__badge">'+I.check(13,'#23395B',3.6)+'</div>' : '')
+      + '</div><div class="face__n">'+n+'</div></div>';
+  }).join('');
+  return '<div class="app">'
+  + '<div class="topbar">'
+    + '<button class="iconbtn">'+I.back(20)+'</button>'
+    + '<div class="topbar__txt"><h1 class="topbar__title">New photo</h1></div>'
+  + '</div>'
+  + '<div class="scroll" style="padding-bottom:12px">'
+    + '<div class="photocard"><div class="photocard__chip">'+I.camera(14,'#C9860B')+' Just now</div>'+photoPlaceholder()+'</div>'
+    + '<h2 class="q">Who\'s in this photo?</h2>'
+    + '<p class="qsub">Tap every child you can see. It counts for each of them.</p>'
+    + '<div class="facegrid">'+faces+'</div>'
+  + '</div>'
+  + '<div class="footbar">'
+    + '<button class="btn btn--ghost btn--lg" style="width:112px">Retake</button>'
+    + '<button class="btn btn--primary btn--lg">'+I.check(19,'#23395B',3.4)+' Save · 3 tagged</button>'
+  + '</div></div>';
+}
+
+/* ============================================================
+   SCREEN 3 — PARENT LOGIN
+   ============================================================ */
+function screenParentLogin(){
+  var letters = ['K','7','M','2','',''];
+  var boxes = letters.map(function(l,i){
+    var cur = (l==='' && letters[i-1]!=='' );
+    return '<div class="cbox '+(l?'cbox--on':'')+(cur?' cbox--cur':'')+'">'+(l || (cur?'<div class="caret"></div>':''))+'</div>';
+  }).join('');
+  return '<div class="app">'
+  + '<div class="login">'
+    + '<div class="halo">'+mascot(150,{shadow:false})+'</div>'
+    + '<h1 class="wordmark">Potato Snaps</h1>'
+    + '<div class="wordrule"></div>'
+    + '<p class="logintag">Little films of your child\'s week</p>'
+    + '<div class="codeboxes">'+boxes+'</div>'
+    + '<button class="btn btn--blue btn--lg" style="max-width:300px">Enter</button>'
+    + '<p class="helper">Ask your teacher for your child\'s code.</p>'
+    + '<div class="byline">Teacher Potato</div>'
+  + '</div></div>';
+}
+
+/* ============================================================
+   SCREEN 4 — PARENT FEED
+   ============================================================ */
+function videoStill(a,b,c,d){
+  return '<svg viewBox="0 0 172 306" width="100%" height="100%" style="display:block">'
+  + '<rect width="172" height="306" fill="'+a+'"/>'
+  + '<circle cx="130" cy="50" r="42" fill="'+b+'" opacity=".28"/>'
+  + '<circle cx="130" cy="50" r="26" fill="'+b+'"/>'
+  + '<rect x="0" y="226" width="172" height="80" fill="'+c+'"/>'
+  + '<rect x="0" y="223" width="172" height="3" fill="'+d+'" opacity=".55"/>'
+  + '<rect x="18" y="170" width="46" height="56" rx="10" fill="'+d+'" opacity=".9"/>'
+  + '<circle cx="98" cy="204" r="22" fill="'+b+'"/>'
+  + '<path d="M124 226l24-46 24 46Z" fill="'+d+'" opacity=".72"/>'
+  + '</svg>';
+}
+function montageCard(week, isNew, photos, dur, still){
+  return '<div class="mcard">'
+    + '<div class="mcard__top"><div class="mcard__wk">'+week+'</div>'
+    + (isNew ? '<div class="newbadge">NEW</div>' : '')
+    + '</div>'
+    + '<div class="player"><div class="frame916">'+still+'<div class="playbtn">'+I.play(24,'#23395B')+'</div></div></div>'
+    + '<div class="mcard__meta"><b>'+photos+' photos</b><div class="dotsep"></div><span>'+dur+'</span><div class="dotsep"></div><span>Tap to play</span></div>'
+    + '<button class="btn btn--blue btn--md" style="width:100%">Watch Emma\'s week '+I.play(15,'#23395B')+'</button>'
+  + '</div>';
+}
+function screenParentFeed(){
+  return '<div class="app">'
+  + '<div class="topbar">'
+    + mascot(34,{camera:false})
+    + '<div class="topbar__txt"><h1 class="topbar__title">Potato Snaps</h1></div>'
+    + av('Emma',0,'av--xs')
+  + '</div>'
+  + '<div class="scroll">'
+    + '<div class="greet"><h2>Emma\'s week at<br>Sunflower Class</h2>'
+    + '<p>A new little film every Friday.</p></div>'
+    + montageCard('This week · Sep 7–11', true, 11, '42 seconds', videoStill('#DFEFFA','#FFD466','#EFE2C9','#8CC7E8'))
+    + montageCard('Aug 31 – Sep 4', false, 9, '36 seconds', videoStill('#FFF0D5','#9ED2F0','#F2DCAD','#E8A317'))
+    + montageCard('Aug 24 – 28', false, 8, '33 seconds', videoStill('#FCEBE4','#FFC6A8','#F3E1D6','#FF9782'))
+  + '</div></div>';
+}
+
+/* ============================================================
+   SCREEN 5 — TEACHER EXTRAS
+   ============================================================ */
+function screenExtras(){
+  var kids = [['Emma',1],['Leo',1],['Kai',1],['Mia',0],['Noah',1]];
+  var children = kids.map(function(p,i){
+    var n = p[0], hasFace = p[1];
+    return '<div class="lrow">'
+      + (hasFace ? av(n,i,'av--sm') : '<div class="av av--sm av--none">'+n.charAt(0)+'</div>')
+      + '<div class="lrow__n">'+n+'<small>'+(hasFace?'Face photo added':'No face photo yet')+'</small></div>'
+      + '<button class="btn btn--ghost btn--sm">'+I.pencil(15)+' Edit</button></div>';
+  }).join('');
+  var codes = [['Emma','K7M2QX'],['Leo','B4RTN9'],['Kai','P2WD7K']].map(function(p,i){
+    return '<div class="lrow">'+av(p[0],i,'av--xs')
+      + '<div class="lrow__n" style="font-size:15px">'+p[0]+'</div>'
+      + '<div class="code">'+p[1]+'</div>'
+      + '<button class="iconbtn" style="width:38px;height:38px">'+I.print(17,'#C9860B')+'</button></div>';
+  }).join('');
+  return '<div class="app">'
+  + '<div class="topbar">'
+    + '<button class="iconbtn">'+I.back(20)+'</button>'
+    + '<div class="topbar__txt"><h1 class="topbar__title">Class settings</h1>'
+    + '<div class="weekpill">Sunflower Class</div></div>'
+  + '</div>'
+  + '<div class="scroll">'
+    + '<div class="segment"><button class="on">Children</button><button>Parent codes</button></div>'
+    + '<div class="hgroup"><h2>Children</h2><p>Tap a child to change their name or face photo.</p></div>'
+    + children
+    + '<div class="addrow">'+I.plus(18,'#23395B')+' Add a child</div>'
+    + '<div class="hgroup"><h2>Parent codes</h2><p>One code per child. Print it and send it home.</p></div>'
+    + codes
+    + '<button class="btn btn--ghost btn--md" style="width:100%;margin-top:12px">'+I.print(17)+' Print all code cards</button>'
+  + '</div></div>';
+}
+
+/* ============================================================
+   SCREEN 6 — TOKENS
+   ============================================================ */
+var PALETTE = [
+  ['Honey','#E8A317','Primary action, ready bar, celebration'],
+  ['Honey deep','#C9860B','Honey text & icons on cream (AA)'],
+  ['Butter','#FFD466','Avatar ring, badges, NEW pill'],
+  ['Butter soft','#FFF0C9','Tinted surfaces, cooking status'],
+  ['Baby blue','#9ED2F0','Progress fill, parent action'],
+  ['Blue deep','#3E93C4','Blue text on cream (AA)'],
+  ['Sky wash','#EAF6FD','Status panels, code pills'],
+  ['Cream','#FFFDF6','Page'],
+  ['Paper','#FFFFFF','Cards'],
+  ['Sand','#F1E7D6','Bar track, segmented control'],
+  ['Sand line','#EBDFC9','Every card hairline'],
+  ['Ink navy','#23395B','All text, all icons'],
+  ['Coral','#FF7B6B','Destructive tint only'],
+  ['Coral deep','#D6503F','Destructive text & border']
+];
+function tokenSheet(){
+  var sw = PALETTE.map(function(p){
+    return '<div><div class="sw__c" style="background:'+p[1]+'"></div>'
+      + '<div class="sw__n">'+p[0]+'</div><div class="sw__x">'+p[1]+'</div>'
+      + '<div class="sw__u">'+p[2]+'</div></div>';
+  }).join('');
+
+  var type = [
+    ['Potato Snaps','Baloo 2 · 800 · 36 / -2.5%','font-family:var(--disp);font-weight:800;font-size:36px;letter-spacing:-.025em'],
+    ['Emma\'s week','Baloo 2 · 800 · 26 / -2%','font-family:var(--disp);font-weight:800;font-size:26px;letter-spacing:-.02em'],
+    ['Who\'s in this photo?','Baloo 2 · 800 · 23','font-family:var(--disp);font-weight:800;font-size:23px;letter-spacing:-.015em'],
+    ['Sunflower Class','Baloo 2 · 800 · 19 — top bar','font-family:var(--disp);font-weight:800;font-size:19px'],
+    ['Ayaan','Baloo 2 · 800 · 17.5 — child name','font-family:var(--disp);font-weight:800;font-size:17.5px'],
+    ['Take a photo','Baloo 2 · 800 · 18 — button','font-family:var(--disp);font-weight:800;font-size:18px'],
+    ['Tap every child you can see.','Nunito · 700 · 13.5 — body','font-family:var(--body);font-weight:700;font-size:13.5px'],
+    ['5/8','Nunito · 800 · 12.5 — count chip','font-family:var(--body);font-weight:800;font-size:12.5px'],
+    ['K7M2QX','JetBrains Mono · 700 · 19 / +14% — codes','font-family:var(--mono);font-weight:700;font-size:19px;letter-spacing:.14em']
+  ].map(function(t){
+    return '<div class="typerow"><div class="typerow__s" style="'+t[2]+'">'+t[0]+'</div>'
+      + '<div class="typerow__m">'+t[1]+'</div></div>';
+  }).join('');
+
+  var states = [
+    ['Empty','0 photos','empty',0],
+    ['Collecting','1–7 photos','go',5],
+    ['Ready','8+ · gold flip','ready',8],
+    ['Cooking','job queued','cooking',9],
+    ['Sent','montage delivered','done',11]
+  ].map(function(s){
+    return '<div class="barstate">'
+      + '<div class="barstate__l">'+s[0]+'<small>'+s[1]+'</small></div>'
+      + '<div>'+bar(s[2],s[3])+'</div>'
+      + chip(s[2],s[3]) + '</div>';
+  }).join('');
+
+  var shapes = [['24px','var(--r-card)','card'],['18px','var(--r-btn)','button'],['16px','var(--r-tile)','tile'],['999px','999px','bar / chip / avatar']]
+    .map(function(s){
+      return '<div class="shape"><div class="shape__b" style="border-radius:'+s[0]+'"></div>'
+        + '<div class="shape__l">'+s[0]+' · '+s[2]+'</div></div>';
+    }).join('');
+
+  return '<div class="sheet">'
+  + '<div class="panel"><div class="panel__h"><h3>Palette</h3><span>14 TOKENS</span><em>Ink navy on honey = 5.4:1 · ink on baby blue = 7.0:1</em></div>'
+    + '<div class="swatches">'+sw+'</div></div>'
+
+  + '<div class="panel"><div class="panel__h"><h3>Type scale</h3><span>BALOO 2 + NUNITO + JETBRAINS MONO</span><em>Display for names & verbs. Nunito for anything read.</em></div>'
+    + type + '</div>'
+
+  + '<div class="panel"><div class="panel__h"><h3>The bar</h3><span>5 STATES</span><em>8 segment ticks · cool fill on a warm track · Ready and Sent share the gold bar, the status line separates them</em></div>'
+    + '<div class="barstates">'+states+'</div></div>'
+
+  + '<div class="panel"><div class="panel__h"><h3>Buttons</h3><span>5 VARIANTS</span><em>Honey and blue always carry ink navy labels — never white.</em></div>'
+    + '<div class="btnrow">'
+      + '<button class="btn btn--primary btn--md">'+I.film(19)+' Make montage</button>'
+      + '<button class="btn btn--blue btn--md">Watch '+I.play(15,'#23395B')+'</button>'
+      + '<button class="btn btn--ghost btn--md">'+I.pencil(15)+' Edit</button>'
+      + '<button class="btn btn--danger btn--md">Delete photo</button>'
+      + '<button class="btn btn--md" disabled>Make montage</button>'
+    + '</div></div>'
+
+  + '<div class="panel"><div class="panel__h"><h3>Radii &amp; surfaces</h3><span>4 STEPS</span><em>Every card sits on paper: 1.5px sand hairline + one short shadow.</em></div>'
+    + '<div class="shapes">'+shapes+'</div></div>'
+
+  + '<div class="panel"><div class="panel__h"><h3>Mascot</h3><span>INLINE SVG · 200×200</span><em>Full mascot at 38px and up · camera-free variant below 32px.</em></div>'
+    + '<div class="mascotshow">'
+      + '<figure>'+mascot(180)+'<figcaption>full · login 150</figcaption></figure>'
+      + '<figure>'+mascot(96)+'<figcaption>96</figcaption></figure>'
+      + '<figure>'+mascot(52)+'<figcaption>52</figcaption></figure>'
+      + '<figure>'+mascot(40,{shadow:false})+'<figcaption>40 · top bar</figcaption></figure>'
+      + '<figure>'+mascot(28,{camera:false,shadow:false})+'<figcaption>28 · camera-free</figcaption></figure>'
+      + '<figure style="display:flex;gap:14px;align-items:flex-end">'
+        + av('Emma',0)+av('Leo',4)+av('Kai',2)
+      + '</figure>'
+    + '</div></div>'
+  + '</div>';
+}
+
+/* ============================================================
+   TABS + RENDER
+   ============================================================ */
+var TABS = [
+  {id:'board',   n:'01', label:'Capture Board', device:true,
+   title:'Capture Board', eyebrow:'Teacher · the screen',
+   sub:'Faces on the left spine, one bar per child filling toward eight. The whole week readable in one glance from across the room.',
+   render:screenBoard,
+   notes:[
+     ['The row','<b>56px face</b> pinned left, name + count chip on one line, bar beneath. Rows are identical by law — the one that differs becomes the event.',
+      'Sorted <b>least photos first</b>, so the children who need attention rise to the top.',
+      'Card: <code>#FFF</code> · 24px radius · 1.5px sand hairline · one short shadow.'],
+     ['The bar','Track is <b>warm sand</b>, fill is <b>baby blue</b> — temperature contrast reads at arm\'s length, better than blue on sky wash.',
+      '<b>8 segment ticks</b> let a teacher count progress without reading the number.',
+      'At 8+ the fill flips to <b>honey gold</b>, the chip inverts, three butter sparkles appear, and the row tints warm.'],
+     ['States shown','<b>Empty</b> dashed · <b>Collecting</b> blue · <b>Ready</b> gold + Make montage · <b>Cooking</b> candy-stripe + bouncing dots · <b>Sent</b> blue tick + Watch link.'],
+     ['Camera','A single honey slab, 76px tall, above the roster. One primary verb per screen — nothing competes with it.']
+   ]},
+  {id:'tag',     n:'02', label:'Tag', device:true,
+   title:'Tag the photo', eyebrow:'Teacher · after capture',
+   sub:'One question, asked plainly, answered with faces. The photo counts for every child tagged.',
+   render:screenTag,
+   notes:[
+     ['Face grid','72px avatars, 3 up. Selected = <b>honey ring</b> + butter check badge with a paper outline so it reads on any tint.',
+      'Unselected names sit at 50% ink; selected names go display-weight. Selection is legible without color alone.'],
+     ['Save bar','Sticky, safe-area padded, live count in the label: <b>Save · 3 tagged</b>. Retake is a ghost — never coral, it isn\'t destructive.']
+   ]},
+  {id:'parent-login', n:'03', label:'Parent Login', device:true,
+   title:'Parent login', eyebrow:'Parent · the door',
+   sub:'A parent will do this once, standing in a hallway, holding a paper card. Six boxes and nothing else.',
+   render:screenParentLogin,
+   notes:[
+     ['Mascot','150px on a butter halo with a dashed honey ring — the only place the mascot is ever hero-scale.'],
+     ['Code boxes','46×60, 16px radius. Filled boxes take a blue border, the active box takes a honey border and a soft honey focus ring.'],
+     ['Enter','Baby blue, ink label. The parent side is blue-led; the teacher side is honey-led. Same family, different hand.']
+   ]},
+  {id:'parent-feed', n:'04', label:'Parent Feed', device:true,
+   title:'Parent feed', eyebrow:'Parent · the payoff',
+   sub:'Newest week first. A portrait still, a big honey play button, and one sentence of context.',
+   render:screenParentFeed,
+   notes:[
+     ['Montage card','9:16 still held at <b>172px wide</b> inside a sky-wash panel — portrait shape stated honestly without eating the screen.',
+      'Play button is honey with an ink glyph; the full-width action beneath is blue. Two ways in, one hierarchy.'],
+     ['Copy','Week label as heading, <b>NEW</b> butter pill on the latest only, meta line kept to photos · duration · format.']
+   ]},
+  {id:'teacher-extras', n:'05', label:'Teacher Extras', device:true,
+   title:'Children &amp; codes', eyebrow:'Teacher · housekeeping',
+   sub:'The two admin jobs a teacher actually does, on one quiet screen.',
+   render:screenExtras,
+   notes:[
+     ['On this canvas','Both sections are shown together so the founder can see them at once. In build they are the two halves of the segmented control at the top.'],
+     ['Children','44px face, name, ghost Edit. A child with no face photo yet takes a <b>dashed empty avatar</b> — the gap is visible without being scolding.',
+      'A dashed <b>Add a child</b> row closes the list — an empty slot, not a floating button.'],
+     ['Parent codes','Codes set in <b>JetBrains Mono 700</b> at +14% tracking on sky wash, so 0/O and 1/I can never be misread over the phone.',
+      'Print sits on every row and once at the bottom — kindergarten reality: codes get lost.']
+   ]},
+  {id:'tokens', n:'06', label:'Tokens', device:false,
+   title:'Design tokens', eyebrow:'System',
+   sub:'Fourteen colours, one display face, one body face, one mono. Every component in this product is built from what is on this sheet.',
+   render:tokenSheet, notes:[]}
+];
+
+var params = new URLSearchParams(location.search);
+var state = { tab: params.get('tab') || 'board' };
+var bare = params.get('bare') === '1';
+if(bare) document.body.classList.add('bare');
+
+function renderBrand(){
+  document.getElementById('brandlock').innerHTML =
+    mascot(40,{shadow:false}) + '<div><h1>Potato Snaps</h1><p>Design Spec · v1 · Lunchbox Modern</p></div>';
+}
+function renderTabs(){
+  document.getElementById('tabs').innerHTML = TABS.map(function(t){
+    return '<button class="tab'+(t.id===state.tab?' on':'')+'" data-tab="'+t.id+'"><span class="n">'+t.n+'</span>'+t.label+'</button>';
+  }).join('');
+  Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(b){
+    b.addEventListener('click', function(){ state.tab = b.dataset.tab; renderTabs(); renderStage(); window.scrollTo(0,0); });
+  });
+}
+function renderStage(){
+  var t = TABS.filter(function(x){return x.id===state.tab})[0];
+  var head = '<div class="stage__head">'
+    + '<p class="stage__eyebrow">'+t.eyebrow+'</p>'
+    + '<h2 class="stage__title">'+t.title+'</h2>'
+    + '<p class="stage__sub">'+t.sub+'</p></div>';
+  var notes = t.notes.map(function(n){
+    return '<div class="note"><h3><span class="dot"></span>'+n[0]+'</h3><ul>'
+      + n.slice(1).map(function(li){return '<li>'+li+'</li>'}).join('') + '</ul></div>';
+  }).join('');
+  var body;
+  if(t.device){
+    body = '<div class="split"><div class="devicewrap"><div class="device"><div class="device__screen">'
+      + t.render() + '</div><div class="device__cap">iPhone · 390 × 844</div></div></div>'
+      + '<div class="notes">'+notes+'</div></div>';
+  } else {
+    body = t.render();
+  }
+  document.getElementById('stage').innerHTML = head + body;
+}
+renderBrand(); renderTabs(); renderStage();
+</script>
+</body>
+</html>
