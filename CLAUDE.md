@@ -38,6 +38,10 @@
    never executed directly). Authorized by Tredoux in chat on 2026-08-04, after being explicitly
    warned this removes the separate pre-deploy approval gate for a production app.
 
+## 🥔 SESSION — Aug 7, 2026 (Cowork/Fable directing Sonnet+Opus) — POTATO SNAPS BUILT (standalone montage app for teacherpotato.xyz)
+
+**Potato Snaps shipped to the repo: teacher photographs kids → per-child weekly bars toward 8 → "Make montage" → potato-worker renders → parents watch via per-child code. TOTALLY separate from Montree: tp_ tables only, private `potato-snaps` bucket, /potato + /api/potato routes, cookies potato_teacher/potato_parent, hardcoded English (no i18n keys), zero lib/montree imports (only lib/supabase-client). Canonical: `docs/handoffs/SESSION_POTATO_SNAPS_AUG7.md` + `docs/handoffs/potato-snaps/` (binding contract, build notes, Sonnet audit SHIP-WITH-NOTES 0 CRIT/1 HIGH fixed, Tredoux-approved design spec). ⏳ PENDING: migration 318 (SQL pasted in chat Aug 7), potato-worker Railway service creation (root dir potato-worker, 4vCPU/4GB, envs DATABASE_URL+SUPABASE_URL+SUPABASE_SERVICE_ROLE_KEY, blank start command), live walk on www.teacherpotato.xyz. 🚨 RULES: Potato Snaps never touches montree_ tables; proxy bucket allowlist stays exactly one bucket; parents never get raw photos; board count query and montage media_ids derivation stay the same query shape (WYSIWYG).**
+
 ## 🔒 HARD RULE — PHONICS IMAGE STYLE SEPARATION (ALL SESSIONS, ALL MODELS, PERMANENT)
 
 - **Montree Phonics** (`app/montree/library/satpin/page.tsx`) uses **REAL PHOTOGRAPHS ONLY**. DB tags: `satpin-basket`, `cvc-photo`.
@@ -3307,3 +3311,24 @@ instruction from Tredoux:
 ## 🗄️ PRODUCTION SQL RULE (PERMANENT — added 2026-08-03, direct instruction from Tredoux)
 
 All SQL destined for the production database is ALWAYS handed to Tredoux in the chat (pasteable snippet or attached .sql file) for him to run in the Supabase SQL editor himself. Claude never executes SQL against production directly — not via psql/connection strings, not via browser automation, not via any other channel. Migrations are still authored as numbered files in migrations/, but they are APPLIED by Tredoux from chat-delivered SQL. (Context: direct DB ports are blocked by the local VPN, and production SQL stays under human control.)
+
+---
+
+## ⛔ HARD RULE — Tredoux is a teacher, not a coder (set 2026-08-06)
+
+Two things are NON-NEGOTIABLE on every build, forever, without being asked:
+
+1. **Always paste the full SQL directly in the chat** whenever a database migration is part of the work — the complete, copy-paste-ready SQL, in the chat message itself, not just as a file. Follow it with dead-simple, click-by-click instructions (where to go, what to click, what to paste, how to know it worked).
+
+2. **Run EVERYTHING else yourself.** Tredoux does not code and should never be asked to run lint, typecheck, npm, git, build commands, or anything technical. Do not mention tool names/versions (ESLint, tsc, v8/v9, etc.) as things he must act on — just handle them and report the outcome in plain language. The ONLY manual step he ever performs is pasting SQL into Supabase (because that's the one action a non-coder can safely do and only he has access to the live database).
+
+Write all instructions for a smart non-technical person. Plain language, no jargon.
+
+### Clarification (2026-08-06): the TWO unavoidable manual steps
+
+Tredoux performs exactly two manual actions, both because they require his private credentials that the Cowork sandbox cannot and should not hold — everything else is run for him:
+
+1. **Pasting SQL into Supabase** — only he has the live database login.
+2. **Publishing / deploying** — double-clicking a prepared one-click `.command` file (e.g. PUBLISH_DIRECTOR_PLATFORM.command). Going live requires pushing to his private GitHub over SSH, which needs his GitHub credentials + network. The cloud sandbox has no access to his GitHub; the on-device bash has no network; and macOS blocks automated typing into Terminal. So the assistant CANNOT push for him — it must prepare a surgical, ready-to-run publish file (stages ONLY the changed files, never `git add -A`, since the working tree usually has unrelated work-in-progress), make it executable + clear quarantine, then Tredoux double-clicks it.
+
+For every future build: after shipping files to disk, ALWAYS (a) give the SQL in chat, and (b) prepare + arm the one-click publish file and tell him exactly where to double-click. Never leave "it's saved but not live" as a silent gap — he is not a coder and will assume saved = live.
