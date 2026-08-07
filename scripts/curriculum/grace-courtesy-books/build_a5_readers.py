@@ -59,6 +59,7 @@ OUT = os.environ.get('MONTREE_BOOK_OUT',
 NUMWORDS = ['ZERO', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE', 'TEN']
 
 FOREST = (0.24, 0.42, 0.23)   # house "forest" palette slot -- the rule accent
+MOSS = (122/255, 168/255, 88/255)   # site's "moss" palette slot -- Book 2's accent
 
 # --- composed pages (cloned from build_booklets, only the label text and
 #     the tail page differ -- painters/layout untouched) -----------------
@@ -144,6 +145,27 @@ BOOKS = [
             ('Heel to toe, soft and slow.', 'page-06.jpg'),
             ('No crash! Walking feet keep friends safe.', 'page-07.jpg'),
             ('Now let’s sing it! (Potato sat this one out.)', 'page-08.jpg'),
+        ],
+    ),
+    dict(
+        num=2,
+        slug='indoor-voice',
+        title_lines=['Indoor Voice'],
+        title_accent='Indoor',
+        title_size=44,
+        band_text='GRACE & COURTESY  ·  RULE 2  ·  INDOOR VOICE',
+        band_color=MOSS,
+        booknum='BOOK TWO',
+        cover_art='page-01-cover.jpg',
+        why='So friends can think.',
+        pages=[
+            ('Shhh. Shhh.', 'page-02.jpg'),
+            ('Here comes Potato! SHOUT!', 'page-03.jpg'),
+            ('CRASH!', 'page-04.jpg'),
+            ('Shhh, Potato. Indoor voice.', 'page-05.jpg'),
+            ('Soft and low.', 'page-06.jpg'),
+            ('Soft voice. Gentle hands.', 'page-07.jpg'),
+            ('Quiet and peaceful. Everyone’s happy.', 'page-08.jpg'),
         ],
     ),
 ]
