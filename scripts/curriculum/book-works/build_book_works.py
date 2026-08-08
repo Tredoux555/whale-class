@@ -285,6 +285,9 @@ def work1_page1(c, title, rows):
 
 
 def work1_page2(c, title, rows):
+    """Control of error -- SAME layout as page 1 (sentence left, picture
+    slot right), just with the picture filled in. Montessori convention:
+    the control must be identical in layout to the activity, not mirrored."""
     ct = header(c, title, 'Picture Match — control of error')
     n = len(rows)
     pitch, bottoms = row_positions(ct, n)
@@ -292,15 +295,14 @@ def work1_page2(c, title, rows):
     text_w = CW - BOX1_W - GAP
     for i, r in enumerate(rows):
         by = bottoms[i] + (pitch - box_h) / 2
-        bx = M
+        bx = PW - M - BOX1_W
         solid_box(c, bx, by, BOX1_W, box_h)
         draw_image_contained(c, r['art'], bx + 2 * mm, by + 2 * mm,
                               BOX1_W - 4 * mm, box_h - 4 * mm)
         size = sentence_row_size(r['text'], text_w)
         c.setFont('WordRg', size)
         c.setFillColorRGB(*INK)
-        c.drawRightString(PW - M, by + box_h / 2 - size * 0.32, r['text'])
-    note(c, M, 12 * mm, 'control of error — flip to check')
+        c.drawString(M, by + box_h / 2 - size * 0.32, r['text'])
     footer(c, title, 'Picture Match')
     c.showPage()
 
@@ -344,6 +346,8 @@ def work2_page1(c, title, rows):
 
 
 def work2_page2(c, title, rows):
+    """Control of error -- SAME layout as page 1 (sentence slot left,
+    picture slot right), just filled in. Not mirrored."""
     ct = header(c, title, 'Sentence & Picture Match — control of error')
     n = len(rows)
     pitch, bottoms = row_positions(ct, n)
@@ -351,17 +355,16 @@ def work2_page2(c, title, rows):
     usize = uniform_sent_size(rows)
     for i, r in enumerate(rows):
         by = bottoms[i] + (pitch - box_h) / 2
-        px = M
-        solid_box(c, px, by, BOX1_W, box_h)
-        draw_image_contained(c, r['art'], px + 2 * mm, by + 2 * mm,
-                              BOX1_W - 4 * mm, box_h - 4 * mm)
-        sx = M + BOX1_W + GAP
+        sx = M
         solid_box(c, sx, by, SENT_W, box_h)
         c.setFont('WordRg', usize)
         c.setFillColorRGB(*INK)
         c.drawCentredString(sx + SENT_W / 2, by + box_h / 2 - usize * 0.32,
                              r['text'])
-    note(c, M, 12 * mm, 'control of error — flip to check')
+        bx = M + SENT_W + GAP
+        solid_box(c, bx, by, BOX1_W, box_h)
+        draw_image_contained(c, r['art'], bx + 2 * mm, by + 2 * mm,
+                              BOX1_W - 4 * mm, box_h - 4 * mm)
     footer(c, title, 'Sentence & Picture Match')
     c.showPage()
 
@@ -463,6 +466,8 @@ def work4_page1(c, title, rows):
 
 
 def work4_page2(c, title, rows):
+    """Control of error -- SAME layout as page 1 (picture left, words/
+    sentence right in the same slot column), just filled in. Not mirrored."""
     ct = header(c, title, 'Sentence Builder — free — control of error')
     n = len(rows)
     pitch, bottoms = row_positions(ct, n)
@@ -470,15 +475,15 @@ def work4_page2(c, title, rows):
     avail = CW - PIC3_W - GAP3
     for i, r in enumerate(rows):
         py = bottoms[i] + (pitch - pic_h) / 2
-        px = PW - M - PIC3_W
+        px = M
         solid_box(c, px, py, PIC3_W, pic_h)
         draw_image_contained(c, r['art'], px + 2 * mm, py + 2 * mm,
                               PIC3_W - 4 * mm, pic_h - 4 * mm)
         size = fit(r['text'], 'WordRg', 24, avail, floor=11)
         c.setFont('WordRg', size)
         c.setFillColorRGB(*INK)
-        c.drawString(M, py + pic_h / 2 - size * 0.32, r['text'])
-    note(c, M, 12 * mm, 'control of error — flip to check')
+        tx = M + PIC3_W + GAP3
+        c.drawString(tx, py + pic_h / 2 - size * 0.32, r['text'])
     footer(c, title, 'Sentence Builder — free')
     c.showPage()
 
