@@ -696,6 +696,131 @@ export const POTATO_CSS = `
   flex:1;min-width:140px;font-size:12.5px;font-weight:700;color:var(--pt-ink-70);line-height:1.4;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   v1.3 — MAKE ≠ SEND
+   The warmest thing on the board is the one thing waiting on the teacher.
+   Tokens and treatments lifted from design spec tabs 12–14.
+   ═══════════════════════════════════════════════════════════════════ */
+:root{
+  --pt-honey-lift:#F5B838;        /* top stop of every honey gradient */
+  --pt-sand-edge:#F5EDDF;         /* card bottom edge — the paper thickness */
+  --pt-sh-glow:0 2px 3px rgba(150,96,4,.22), 0 0 0 4px rgba(255,212,102,.34), 0 18px 30px -14px rgba(232,163,23,.72);
+  --pt-sh-pol:0 1px 2px rgba(35,57,91,.13), 0 8px 16px -9px rgba(35,57,91,.40);
+}
+
+/* the glowing CTA — used ONLY for "waiting on you" actions */
+.pt-btn--glow{box-shadow:var(--pt-sh-glow), inset 0 -2.5px 0 rgba(150,96,4,.22)}
+.pt-btn--quiet{background:transparent;color:var(--pt-ink-70);border:1.5px solid var(--pt-sand-line);box-shadow:none}
+.pt-iconbtn--sm{width:44px;height:44px;border-radius:14px}
+
+/* READY TO SEND — the new fifth row state */
+.pt-row--send{
+  background:linear-gradient(180deg,#FFF6DF 0%,#FFFDF4 62%);border-color:#E9C566;
+  box-shadow:0 2px 4px rgba(150,96,4,.10), 0 18px 34px -18px rgba(201,134,11,.45), inset 0 -2.5px 0 #F3DDA4;
+}
+.pt-tick--gold{background:linear-gradient(180deg,var(--pt-honey-lift),var(--pt-honey))}
+.pt-filmcard--send{
+  background:linear-gradient(180deg,#FFF4D6,#FFFDF4 62%);border-color:#E9C566;
+  box-shadow:0 2px 4px rgba(150,96,4,.12), 0 20px 38px -20px rgba(201,134,11,.5), inset 0 -2.5px 0 #F1D999;
+}
+
+/* ---- sheets (mini-picker, preview) ---- */
+.pt-sheet{
+  position:fixed;inset:0;z-index:75;display:flex;flex-direction:column;
+  background:var(--pt-cream);background-image:var(--pt-grain);background-blend-mode:soft-light;
+}
+.pt-grab{width:44px;height:5px;border-radius:999px;background:var(--pt-sand);margin:9px auto 0;flex:none}
+.pt-sheetbar{
+  padding:12px 16px 12px;display:flex;align-items:center;gap:12px;
+  background:linear-gradient(180deg,rgba(255,253,246,.98),rgba(255,253,246,.9));
+  border-bottom:1px solid var(--pt-sand-line);position:sticky;top:0;z-index:20;flex:none;
+}
+.pt-sheetbar--bare{border-bottom:none;background:transparent}
+.pt-sheetbar__t{flex:1;min-width:0}
+.pt-sheetbar__t h1{font-family:var(--pt-disp);font-weight:800;font-size:19.5px;margin:0;letter-spacing:-.015em;line-height:1.1;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pt-sheetbar__t p{margin:3px 0 0;font-size:12.5px;font-weight:800;color:var(--pt-honey-deep)}
+.pt-sheetbar__t p .pt-sep{color:var(--pt-ink-35);margin:0 5px}
+.pt-foothint{font-size:12.5px;font-weight:700;color:var(--pt-ink-50);text-align:center;margin:0}
+
+/* ---- the deselect grid: a polaroid you can set aside ---- */
+.pt-pick{display:grid;grid-template-columns:repeat(2,1fr);gap:18px 14px;padding:4px 2px 2px}
+.pt-pol{
+  background:var(--pt-paper);padding:5px;border-radius:9px;box-shadow:var(--pt-sh-pol);
+  position:relative;display:block;border:none;cursor:pointer;width:100%;transform-origin:50% 50%;
+  transition:transform .18s ease, opacity .18s ease, filter .18s ease;
+}
+.pt-pol:nth-child(4n+1){transform:rotate(-1.4deg)}
+.pt-pol:nth-child(4n+2){transform:rotate(1deg)}
+.pt-pol:nth-child(4n+3){transform:rotate(.6deg)}
+.pt-pol:nth-child(4n+4){transform:rotate(-.8deg)}
+.pt-pol__i{aspect-ratio:1/1;border-radius:5px;overflow:hidden;background:var(--pt-sky);display:block}
+.pt-pol__i img{width:100%;height:100%;object-fit:cover;display:block}
+.pt-pol__star{
+  position:absolute;right:9px;top:9px;width:28px;height:28px;border-radius:999px;display:grid;place-items:center;
+  background:var(--pt-butter);box-shadow:0 1px 4px rgba(35,57,91,.24);z-index:2;
+}
+.pt-pol__star--off{background:rgba(255,253,246,.9)}
+/* set aside: grayscale, flat, straight. Nothing red, nothing shakes. */
+.pt-pol--out{filter:grayscale(1);opacity:.5;box-shadow:0 1px 2px rgba(35,57,91,.1);transform:rotate(0deg)}
+.pt-pol__out{
+  position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:2;
+  background:var(--pt-sand);color:var(--pt-ink-50);font-size:11px;font-weight:800;
+  padding:4px 11px;border-radius:999px;letter-spacing:.04em;
+}
+
+/* ---- nudge: advice, then a floor ---- */
+.pt-nudge{
+  display:flex;align-items:center;gap:9px;background:var(--pt-butter-soft);border-radius:14px;
+  padding:10px 13px;box-shadow:inset 0 0 0 1.5px rgba(201,134,11,.2);margin-bottom:10px;
+}
+.pt-nudge--stop{background:#FFF0ED;box-shadow:inset 0 0 0 1.5px rgba(214,80,63,.22)}
+.pt-nudge__ic{width:36px;height:36px;border-radius:999px;flex:none;display:grid;place-items:center;
+  background:linear-gradient(180deg,var(--pt-butter),var(--pt-honey));box-shadow:0 2px 6px rgba(201,134,11,.4)}
+.pt-nudge--stop .pt-nudge__ic{background:#FF9E8A;box-shadow:none}
+.pt-nudge__t{font-size:13px;font-weight:800;color:var(--pt-ink);line-height:1.3}
+.pt-nudge__t small{display:block;font-weight:700;color:var(--pt-ink-50);font-size:11.5px;margin-top:1px}
+
+/* ---- preview + send ---- */
+.pt-preview{padding:8px 16px 16px;display:flex;flex:1;flex-direction:column;align-items:center;justify-content:center}
+.pt-readytag{
+  display:inline-flex;align-items:center;gap:7px;background:linear-gradient(180deg,var(--pt-butter),#FFC53D);
+  color:var(--pt-ink);font-family:var(--pt-disp);font-weight:800;font-size:13px;
+  padding:7px 15px 7px 11px;border-radius:999px;box-shadow:0 2px 6px rgba(201,134,11,.34);margin-bottom:14px;
+}
+.pt-vplayer{
+  width:236px;max-width:100%;aspect-ratio:9/16;border-radius:20px;overflow:hidden;position:relative;background:#0E1B2E;
+  box-shadow:0 3px 0 rgba(35,57,91,.07), 0 26px 44px -24px rgba(35,57,91,.6);
+}
+.pt-vplayer video{width:100%;height:100%;object-fit:cover;display:block;background:#0E1B2E}
+/* "Only you can see this" — the most important sentence on the screen. */
+.pt-privatepill{
+  display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--pt-ink-50);
+  background:var(--pt-sand);padding:6px 12px;border-radius:999px;margin-top:14px;
+}
+.pt-sendfoot{
+  padding:14px 16px calc(16px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;
+  border-top:1px solid var(--pt-sand-line);background:var(--pt-cream);flex:none;
+}
+.pt-sendnote{font-size:12px;font-weight:700;color:var(--pt-ink-50);text-align:center;margin:0}
+
+/* ---- the sent moment ---- */
+.pt-sentwrap{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:36px 30px;text-align:center;
+}
+.pt-sentwrap h2{font-family:var(--pt-disp);font-weight:800;font-size:27px;margin:20px 0 0;letter-spacing:-.02em;line-height:1.14}
+.pt-sentwrap p{font-size:14px;font-weight:700;color:var(--pt-ink-50);margin:9px 0 0;line-height:1.5;max-width:250px}
+.pt-sentring{position:relative;width:150px;height:150px;display:grid;place-items:center}
+.pt-sentring::before{content:"";position:absolute;inset:0;border-radius:999px;
+  background:radial-gradient(circle,rgba(255,212,102,.55),rgba(255,212,102,0) 68%)}
+.pt-sentring::after{content:"";position:absolute;inset:16px;border-radius:999px;border:2.5px dashed rgba(232,163,23,.32)}
+.pt-sentdisc{
+  position:relative;width:94px;height:94px;border-radius:999px;display:grid;place-items:center;
+  background:linear-gradient(180deg,var(--pt-honey-lift),var(--pt-honey));
+  box-shadow:0 4px 0 rgba(150,96,4,.24), 0 18px 30px -14px rgba(201,134,11,.7);
+}
+
 @media (prefers-reduced-motion: reduce){
   .pt-root *{animation:none !important;transition:none !important}
   .pt-pth{transform:none !important}

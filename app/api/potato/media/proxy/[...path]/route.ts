@@ -21,6 +21,22 @@
 //    prefix in the path before any upstream request is made. Everything that
 //    fails is a 404, not a 403 — a 403 confirms that the object exists.
 //
+// 4. 🚨 v1.3 — THE SEND GATE IS ENFORCED HERE TOO, NOT JUST IN THE LIST.
+//    /api/potato/montages filters unsent films out of a parent's feed, but
+//    that is a list-layer courtesy, not the actual confidentiality boundary —
+//    THIS route is the only thing standing between a byte and a parent. A
+//    parent who somehow ends up holding the storage path of their own child's
+//    film (a shared/returned device, a forwarded link, a cached URL from a
+//    service worker, a future "share preview" feature) must not be able to
+//    fetch it just because the class/child prefix matches. So a parent's
+//    request for a `montages/` path additionally requires the job's
+//    `sent_at` to be set — the exact same law the list endpoint enforces,
+//    checked again at the only place that actually releases bytes. A teacher
+//    is unaffected: she may always preview her own class's unsent films.
+//    Pre-migration (no `sent_at` column) this degrades to the v1.2 rule —
+//    every rendered film readable — via the same `caps.send` probe every
+//    other route uses, so this route never 500s during the deploy window.
+//
 // Path grammar this route recognises:
 //   class/<classId>/faces/<childId>.jpg
 //   class/<classId>/photos/<yyyy>/<mm>/<uuid>.<ext>
@@ -28,7 +44,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyPotatoTeacher, verifyPotatoParent, UUID_RE } from '@/lib/potato/auth';
-import { potatoDb, loadClass, POTATO_BUCKET } from '@/lib/potato/db';
+import { potatoDb, loadClass, potatoCapabilities, isSetupPending, POTATO_BUCKET } from '@/lib/potato/db';
 
 export const dynamic = 'force-dynamic';
 // Long enough for a parent on a slow phone to finish a film.
@@ -63,7 +79,7 @@ async function isAuthorized(request: NextRequest, segments: string[]): Promise<b
 
   const teacher = await verifyPotatoTeacher(request);
   if (teacher) {
-    // A teacher owns everything filed under her own class, branding included.
+    // A teacher owns everything filed under her own class.
     return teacher.classId === classId;
   }
 
@@ -74,19 +90,11 @@ async function isAuthorized(request: NextRequest, segments: string[]): Promise<b
     if (kind === 'faces' && segments.length === 4) {
       return segments[3] === `${parent.childId}.jpg`;
     }
+    // Their child's films.
     if (kind === 'montages' && segments.length >= 4) {
-      // v1.1: the CLASS film is for every parent in the class. The literal
-      // segment 'class' can never collide with a child id — child ids are
-      // uuids, and the class film is written to
-      //   class/<classId>/montages/class/<weekStart>-<jobId>.mp4
-      if (segments[3] === 'class') return true;
-      // …and their own child's films.
-      return segments[3] === parent.childId;
+      if (segments[3] !== parent.childId) return false;
+      return isSentToParent(classId, segments.join('/'));
     }
-    // v1.1: school logo + class emblem. These are the school's public face —
-    // they appear on the parent's own feed and at the end of every film — so
-    // any parent of THIS class may read them. Still never cross-class.
-    if (kind === 'branding') return true;
     // Raw classroom photos are NOT parent-reachable. The storage path carries
     // no child id, so ownership cannot be proven from the path, and a single
     // shot may hold four other people's children. Parents get films only.
@@ -94,6 +102,42 @@ async function isAuthorized(request: NextRequest, segments: string[]): Promise<b
   }
 
   return false;
+}
+
+/**
+ * 🚨 THE SECOND GATE. Path ownership proves this is the right family; it does
+ * not prove the teacher has sent the film. A rendered-but-unsent film is the
+ * teacher's alone even when its path names her child correctly, so a parent
+ * request additionally has to find a job row for this exact object that has
+ * actually been published.
+ *
+ * `storage_path` carries a unique index (migration 320), so this is a single
+ * indexed lookup — not a scan — and it reuses the same class_id the caller
+ * already matched, never trusting the path alone.
+ *
+ * Pre-migration (no `sent_at` column) there is nothing to gate on, so this
+ * falls back to v1.2: any rendered film readable. Any other lookup failure
+ * fails CLOSED, the same as the class-ownership check above.
+ */
+async function isSentToParent(classId: string, storagePath: string): Promise<boolean> {
+  const supabase = potatoDb();
+  try {
+    const caps = await potatoCapabilities(supabase);
+    if (!caps.send) return true;
+    const { data, error } = await supabase
+      .from('tp_montage_jobs')
+      .select('sent_at')
+      .eq('class_id', classId)
+      .eq('storage_path', storagePath)
+      .eq('status', 'done')
+      .maybeSingle();
+    if (error) throw error;
+    return !!data?.sent_at;
+  } catch (error) {
+    if (isSetupPending(error)) return true;
+    console.error('[potato/proxy] send-gate lookup failed:', error);
+    return false;
+  }
 }
 
 async function handle(request: NextRequest, segments: string[], method: 'GET' | 'HEAD') {
