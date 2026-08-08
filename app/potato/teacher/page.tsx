@@ -34,7 +34,9 @@ import {
   IconBack,
   IconChevron,
 } from '@/components/potato/PotatoBits';
-import { getJson, postJson, postForm, messageFrom, PotatoApiError } from '@/lib/potato/client';
+import { getJson, postJson, messageFrom, PotatoApiError } from '@/lib/potato/client';
+import { enqueuePhoto } from '@/lib/potato/offline/sync-manager';
+import { usePotatoQueue } from '@/lib/potato/offline/usePotatoQueue';
 import { currentWeekStartLocal, addDays, weekLabel } from '@/lib/potato/week';
 
 interface BoardChild {
@@ -100,6 +102,10 @@ export default function CaptureBoardPage() {
   const [makingFor, setMakingFor] = useState<string | null>(null);
   const [watching, setWatching] = useState<{ name: string; url: string } | null>(null);
 
+  // The offline capture queue. Photos live on the device first; this reports
+  // what is still owed to the server and surfaces anything it refused.
+  const queue = usePotatoQueue(board?.class.id ?? null);
+
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showToast = useCallback((text: string, bad = false) => {
     setToast({ text, bad });
@@ -162,25 +168,45 @@ export default function CaptureBoardPage() {
     });
   }, []);
 
+  /**
+   * 🚨 THE FOUNDER'S RULE, IN ONE FUNCTION.
+   * The photo is written to the device BEFORE any network is touched. By the
+   * time the teacher reads "Saved", the shot survives a dead spot, a locked
+   * screen, a flat battery and a browser restart. The upload happens after, on
+   * its own time, and retries until it lands.
+   *
+   * `capturedAt` is the shutter instant the camera stamped — not now, and
+   * certainly not whenever the upload eventually succeeds.
+   */
   const savePhoto = useCallback(async () => {
     if (!pendingPhoto || tagged.size === 0 || saving) return;
+    const classId = board?.class.id;
+    if (!classId) return;
     setSaving(true);
     try {
-      const form = new FormData();
-      form.append('file', pendingPhoto.blob, 'snap.jpg');
-      form.append('childIds', JSON.stringify(Array.from(tagged)));
-      await postForm('/api/potato/photos/upload', form);
+      await enqueuePhoto(pendingPhoto.blob, {
+        classId,
+        childIds: Array.from(tagged),
+        capturedAt: pendingPhoto.timestamp,
+        width: pendingPhoto.width,
+        height: pendingPhoto.height,
+      });
       setPendingPhoto(null);
       setTagged(new Set());
       setStage('board');
-      showToast('Saved.');
-      await load(weekStart, true);
+      showToast('Saved ✓ — uploading…');
+      // Kick a sync but never wait on it: the save is already final.
+      queue.retry();
+      // The board's counts come from the server, so they catch up as uploads
+      // land; refresh quietly in case this one is already through.
+      load(weekStart, true).catch((err) => console.error('[potato] board refresh failed:', err));
     } catch (err) {
-      showToast(messageFrom(err, 'That photo didn’t save.'), true);
+      // Only a genuine device-storage failure reaches here.
+      showToast(messageFrom(err, 'That photo didn’t save to this device.'), true);
     } finally {
       setSaving(false);
     }
-  }, [pendingPhoto, tagged, saving, showToast, load, weekStart]);
+  }, [pendingPhoto, tagged, saving, board, showToast, load, weekStart, queue]);
 
   const makeMontage = useCallback(
     async (child: BoardChild) => {
@@ -397,6 +423,37 @@ export default function CaptureBoardPage() {
             <div className="pt-camerabtn__s">{'Then tap who’s in it'}</div>
           </div>
         </button>
+
+        {queue.waiting > 0 ? (
+          <button type="button" className="pt-pending" onClick={queue.retry} disabled={queue.syncing}>
+            <span className="pt-pending__dot" aria-hidden="true" />
+            <span className="pt-pending__t">
+              {queue.waiting === 1 ? '1 photo waiting to upload' : `${queue.waiting} photos waiting to upload`}
+              <small>{queue.syncing ? 'Uploading now…' : 'Saved on this device · tap to try now'}</small>
+            </span>
+          </button>
+        ) : null}
+
+        {queue.rejected.length > 0 ? (
+          <div className="pt-rejected">
+            <div className="pt-rejected__h">
+              {queue.rejected.length === 1
+                ? '1 photo couldn’t be saved'
+                : `${queue.rejected.length} photos couldn’t be saved`}
+            </div>
+            {queue.rejected.slice(0, 4).map((entry) => (
+              <div className="pt-rejected__row" key={entry.id}>
+                <span className="pt-rejected__msg">{entry.errorMessage || 'The server refused it.'}</span>
+                <button type="button" className="pt-btn pt-btn--ghost pt-btn--sm" onClick={() => queue.retryOne(entry.id)}>
+                  Try again
+                </button>
+                <button type="button" className="pt-btn pt-btn--danger pt-btn--sm" onClick={() => queue.discardOne(entry.id)}>
+                  Discard
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : null}
 
         {board?.classFilm?.available ? (
           <ClassFilmCard
