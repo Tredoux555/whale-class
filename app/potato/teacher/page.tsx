@@ -25,12 +25,14 @@ import CameraCapture, { type PotatoCapturedPhoto } from '@/components/potato/Cam
 import {
   Mascot,
   Avatar,
+  EmblemMark,
   IconCamera,
   IconMenu,
   IconCheck,
   IconFilm,
   IconPlay,
   IconBack,
+  IconChevron,
 } from '@/components/potato/PotatoBits';
 import { getJson, postJson, postForm, messageFrom, PotatoApiError } from '@/lib/potato/client';
 import { currentWeekStartLocal, addDays, weekLabel } from '@/lib/potato/week';
@@ -43,8 +45,32 @@ interface BoardChild {
   latestJob: { id: string; status: string; videoUrl: string | null } | null;
 }
 
+interface Branding {
+  schoolName: string | null;
+  schoolLogoUrl: string | null;
+  emblemUrl: string | null;
+  initials: string;
+}
+
+interface ClassFilmState {
+  available: boolean;
+  min: number;
+  max: number;
+  poolCount: number;
+  job: {
+    id: string;
+    status: string;
+    photoCount: number;
+    videoUrl: string | null;
+    excused: string[];
+  } | null;
+}
+
 interface BoardResponse {
   class: { id: string; name: string; tz: string };
+  /** v1.1 — null until migration 319 has run; every surface falls back cleanly */
+  branding: Branding | null;
+  classFilm: ClassFilmState | null;
   weekStart: string;
   weekLabel: string;
   isCurrentWeek: boolean;
@@ -109,9 +135,11 @@ export default function CaptureBoardPage() {
   }, [weekStart, load]);
 
   // While a montage is cooking, refresh quietly until it lands.
-  const cooking = !!board?.children.some(
-    (child) => child.latestJob?.status === 'queued' || child.latestJob?.status === 'processing',
-  );
+  const classFilmStatus = board?.classFilm?.job?.status;
+  const cooking =
+    !!board?.children.some(
+      (child) => child.latestJob?.status === 'queued' || child.latestJob?.status === 'processing',
+    ) || classFilmStatus === 'queued' || classFilmStatus === 'processing';
   useEffect(() => {
     if (!cooking) return;
     const timer = setInterval(() => load(weekStart, true), COOKING_POLL_MS);
@@ -163,7 +191,7 @@ export default function CaptureBoardPage() {
         showToast(`Making ${child.name}’s film…`);
         await load(weekStart, true);
       } catch (err) {
-        showToast(messageFrom(err, 'Could not start that montage.'), true);
+        showToast(messageFrom(err, 'Could not start that film.'), true);
       } finally {
         setMakingFor(null);
       }
@@ -217,7 +245,7 @@ export default function CaptureBoardPage() {
           </div>
 
           <h2 className="pt-q">{'Who’s in this photo?'}</h2>
-          <p className="pt-qsub">Tap every child you can see. It counts for each of them.</p>
+          <p className="pt-qsub">Tap everyone you can see.</p>
 
           <div className="pt-facegrid">
             {roster.map((child) => {
@@ -290,7 +318,18 @@ export default function CaptureBoardPage() {
   return (
     <div className="pt-app">
       <div className="pt-topbar">
-        <Mascot size={40} shadow={false} />
+        {/* v1.1: the class emblem takes the mascot's place — the app advertises
+            the school, not itself. Pre-migration there is no branding, so the
+            mascot stays. */}
+        {board?.branding ? (
+          <EmblemMark
+            url={board.branding.emblemUrl}
+            initials={board.branding.initials}
+            size={40}
+          />
+        ) : (
+          <Mascot size={40} shadow={false} />
+        )}
         <div className="pt-topbar__txt">
           <h1 className="pt-topbar__title">{board?.class.name ?? 'Potato Snaps'}</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -339,6 +378,9 @@ export default function CaptureBoardPage() {
           <Link href="/potato/teacher/codes" className="pt-btn pt-btn--ghost pt-btn--md" style={{ textDecoration: 'none' }}>
             Parent codes
           </Link>
+          <Link href="/potato/teacher/branding" className="pt-btn pt-btn--ghost pt-btn--md" style={{ textDecoration: 'none' }}>
+            Branding
+          </Link>
           <button type="button" className="pt-btn pt-btn--ghost pt-btn--md" onClick={logout}>
             Log out
           </button>
@@ -352,13 +394,21 @@ export default function CaptureBoardPage() {
           </div>
           <div>
             <div className="pt-camerabtn__t">Take a photo</div>
-            <div className="pt-camerabtn__s">Then tap who is in it</div>
+            <div className="pt-camerabtn__s">{'Then tap who’s in it'}</div>
           </div>
         </button>
 
+        {board?.classFilm?.available ? (
+          <ClassFilmCard
+            state={board.classFilm}
+            weekStart={weekStart}
+            onWatch={(url) => setWatching({ name: `${board.class.name} · class film`, url })}
+          />
+        ) : null}
+
         <div className="pt-seclabel">
           <h2>Your children</h2>
-          <span>{`${threshold} PHOTOS = 1 MONTAGE`}</span>
+          <span>{`${threshold} PHOTOS = 1 FILM`}</span>
         </div>
 
         {loading ? (
@@ -424,6 +474,96 @@ export default function CaptureBoardPage() {
 
       {toast ? <div className={`pt-toast ${toast.bad ? 'pt-toast--bad' : ''}`.trim()}>{toast.text}</div> : null}
     </div>
+  );
+}
+
+// -------------------------------------------------------- class film card ---
+
+/**
+ * One 70px slot under the camera and above the roster.
+ *
+ * Capture happens twenty times a day and keeps the top slot and the only honey
+ * fill on the screen; the class film happens once a week, so this card is warm
+ * paper with a blue emblem tile — deliberately NOT a second primary button.
+ * One honey fill per screen is a system law.
+ */
+function ClassFilmCard({
+  state,
+  weekStart,
+  onWatch,
+}: {
+  state: ClassFilmState;
+  weekStart: string;
+  onWatch: (url: string) => void;
+}) {
+  const job = state.job;
+  const status = job?.status;
+
+  if (status === 'queued' || status === 'processing') {
+    return (
+      <div className="pt-filmcard pt-filmcard--cook">
+        <div className="pt-filmcard__ic">
+          <IconFilm size={22} color="#C9860B" />
+        </div>
+        <div>
+          <div className="pt-filmcard__t">Cooking the class film…</div>
+          <div className="pt-filmcard__s">{`${job?.photoCount ?? 0} photos · every child is in it`}</div>
+        </div>
+        <div className="pt-filmcard__cta">~4 min</div>
+        <div className="pt-filmcard__stripe" />
+      </div>
+    );
+  }
+
+  if (status === 'done') {
+    const excused = job?.excused ?? [];
+    return (
+      <div className="pt-filmcard pt-filmcard--sent">
+        <div className="pt-filmcard__ic">
+          <IconCheck size={20} color="#3E93C4" weight={3.4} />
+        </div>
+        <div>
+          <div className="pt-filmcard__t">Class film sent to all parents</div>
+          <div className="pt-filmcard__s">
+            {`${job?.photoCount ?? 0} photos`}
+            {excused.length > 0 ? ` · ${excused.join(', ')} excused` : ''}
+          </div>
+        </div>
+        {job?.videoUrl ? (
+          <button type="button" className="pt-filmcard__cta" style={{ background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => onWatch(job.videoUrl as string)}>
+            <IconPlay size={13} color="#C9860B" /> Watch
+          </button>
+        ) : (
+          <div className="pt-filmcard__cta">Sent</div>
+        )}
+      </div>
+    );
+  }
+
+  // Not started (and the failed case, which also invites another go).
+  return (
+    <Link
+      href={`/potato/teacher/class-film?week=${encodeURIComponent(weekStart)}`}
+      className="pt-filmcard"
+      style={{ textDecoration: 'none' }}
+    >
+      <div className="pt-filmcard__ic">
+        <IconFilm size={22} color="#3E93C4" />
+      </div>
+      <div>
+        <div className="pt-filmcard__t">
+          {status === 'failed' ? 'The class film did not finish' : 'This week’s class film'}
+        </div>
+        <div className="pt-filmcard__s">
+          {state.poolCount === 0
+            ? 'Take some photos first'
+            : `${state.poolCount} ${state.poolCount === 1 ? 'photo' : 'photos'} to choose from`}
+        </div>
+      </div>
+      <div className="pt-filmcard__cta">
+        {status === 'failed' ? 'Try again' : 'Pick favorites'} <IconChevron size={13} color="#C9860B" />
+      </div>
+    </Link>
   );
 }
 
@@ -507,7 +647,7 @@ function ChildRow({
           <p className="pt-row__hint">No photos yet this week</p>
         ) : isCooking ? (
           <div className="pt-status pt-status--gold">
-            <div className="pt-status__t">Cooking your montage…</div>
+            <div className="pt-status__t">Cooking the film…</div>
             <div className="pt-dots">
               <i />
               <i />
@@ -543,7 +683,7 @@ function ChildRow({
         ) : isReady ? (
           <div className="pt-rowact">
             <button type="button" className="pt-btn pt-btn--primary pt-btn--md" style={{ width: '100%' }} disabled={busy} onClick={onMake}>
-              <IconFilm size={19} /> {busy ? 'Starting…' : 'Make montage'}
+              <IconFilm size={19} /> {busy ? 'Starting…' : 'Make film'}
             </button>
           </div>
         ) : null}

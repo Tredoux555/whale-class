@@ -6,6 +6,11 @@
 //
 // Identical inputs always produce identical output (required so the worker's
 // calculateMetadata and the component agree on frame counts).
+//
+// v1.1: the duration targets became a FUNCTION of photo count so a class film
+// (up to 40 photos, ~2 minutes) fits the same grid machinery. For any film of
+// LONG_FORM_THRESHOLD photos or fewer the numbers are byte-identical to v1.0 —
+// child films must not move a single frame.
 
 export const FPS = 30;
 export const FADE = 0.8; // crossfade seconds (windows centred on each cut)
@@ -17,12 +22,33 @@ export interface Track {
   durationSec: number;
 }
 
+/**
+ * White-label lockup for the end card (design tab 09). Every field is
+ * optional-safe: a database with no branding columns yet, or a class that has
+ * uploaded nothing, still renders a complete card.
+ */
+export interface Branding {
+  /** School name — the largest line. Null → className is promoted into it. */
+  schoolName: string | null;
+  className: string;
+  /** "WEEK OF SEP 7–11" */
+  weekLabel: string;
+  /** public-relative, e.g. "branding/job/school-logo.png". Null → initials. */
+  logoFile: string | null;
+  /** public-relative, e.g. "branding/job/emblem.png". Null → row omits it. */
+  emblemFile: string | null;
+  /** Fallback mark, e.g. "WP". Always present. */
+  initials: string;
+}
+
 export interface MontageProps {
   childName: string;
   subtitle: string; // e.g. "Week of July 20"
-  eyebrow?: string; // defaults to "Weekly Moments"
+  eyebrow?: string; // defaults to "Potato Snaps"
   photos: { file: string }[]; // public-relative, e.g. "photos/job/00.jpg"
   track: Track;
+  /** v1.1 branded end card. Absent → the plain v1.0 sign-off. */
+  branding?: Branding;
   locale?: string;
   // Index signature: Remotion requires composition props to be assignable to
   // Record<string, unknown>. Declared props keep their concrete types.
@@ -46,7 +72,7 @@ export interface Timeline {
   totalDurationFrames: number;
 }
 
-// Target / bounds (seconds).
+// Target / bounds (seconds) for a standard child film.
 const TARGET_TOTAL_SEC = 50;
 const MIN_TOTAL_SEC = 35;
 const MAX_TOTAL_SEC = 65;
@@ -55,6 +81,13 @@ const END_CARD_TARGET_SEC = 3.5;
 const END_CARD_MIN_SEC = 2.6;
 const MIN_K = 1; // downbeat-intervals per photo
 const MAX_K = 3;
+
+/**
+ * At or below this photo count the film uses the v1.0 constants unchanged.
+ * Above it (class films only — the hygiene cap keeps child films at 20) the
+ * targets stretch so every photo still gets its own downbeat.
+ */
+export const LONG_FORM_THRESHOLD = 20;
 
 const clamp = (v: number, lo: number, hi: number) =>
   Math.max(lo, Math.min(hi, v));
@@ -74,6 +107,64 @@ function medianDownbeatInterval(downbeats: number[]): number {
   }
   const m = median(gaps);
   return m > 0.05 ? m : 2.6; // fallback for degenerate grids
+}
+
+/**
+ * The downbeat index the title card hands over on. Extracted from
+ * computeTimeline so maxPhotosForTrack() below can't drift from it.
+ */
+function titleEndIndex(downbeats: number[]): number {
+  let titleEndIdx = 1;
+  if (downbeats.length > 1) {
+    titleEndIdx = downbeats.findIndex((t) => t >= MIN_TITLE_SEC);
+    if (titleEndIdx < 1) titleEndIdx = 1;
+    // keep at least two downbeats of runway for photos + end card
+    titleEndIdx = Math.min(titleEndIdx, Math.max(1, downbeats.length - 3));
+  }
+  return titleEndIdx;
+}
+
+/**
+ * How many photos this track's grid can carry at one downbeat each. Below this
+ * the timeline is safe; at or above it the tail photos would collapse to
+ * zero-length and silently vanish from the film — which for a class film would
+ * silently drop a child. `validateMusicAssets()` hard-fails at boot if any
+ * usable track cannot carry MAX_CLASS_PHOTOS.
+ */
+export function maxPhotosForTrack(track: Track): number {
+  const downbeats = track.downbeats;
+  if (!Array.isArray(downbeats) || downbeats.length < 4) return 0;
+  return Math.max(0, downbeats.length - 1 - titleEndIndex(downbeats) - 1);
+}
+
+export interface DurationBounds {
+  target: number;
+  min: number;
+  max: number;
+}
+
+/**
+ * v1.0 constants for a standard film; a stretched, photo-count-derived window
+ * for a long one. For photoCount <= LONG_FORM_THRESHOLD this returns exactly
+ * { 50, 35, 65 }, so the v1.0 fitting behaviour is preserved bit for bit.
+ */
+export function durationBoundsFor(
+  photoCount: number,
+  dbAvg: number,
+  titleEndSec: number
+): DurationBounds {
+  if (photoCount <= LONG_FORM_THRESHOLD) {
+    return { target: TARGET_TOTAL_SEC, min: MIN_TOTAL_SEC, max: MAX_TOTAL_SEC };
+  }
+  // One downbeat per photo is the natural long-form rhythm: at ~2.6–3.5s a
+  // beat that is 40 photos ≈ 105–145s. Allow two intervals of slack above it
+  // so the fitting loop settles instead of grinding against the ceiling.
+  const onePerPhoto = titleEndSec + photoCount * dbAvg + END_CARD_TARGET_SEC;
+  return {
+    target: onePerPhoto,
+    min: MIN_TOTAL_SEC,
+    max: onePerPhoto + 2 * dbAvg,
+  };
 }
 
 // Spread `plusCount` +1 bumps evenly across `count` photos (interleaved so the
@@ -104,13 +195,7 @@ export function computeTimeline(
   const hardCeiling = Math.max(MIN_TOTAL_SEC, durationSec - 1);
 
   // --- title: end on the first downbeat that gives us >= MIN_TITLE_SEC ---
-  let titleEndIdx = 1;
-  if (downbeats.length > 1) {
-    titleEndIdx = downbeats.findIndex((t) => t >= MIN_TITLE_SEC);
-    if (titleEndIdx < 1) titleEndIdx = 1;
-    // keep at least two downbeats of runway for photos + end card
-    titleEndIdx = Math.min(titleEndIdx, Math.max(1, downbeats.length - 3));
-  }
+  const titleEndIdx = titleEndIndex(downbeats);
   const titleEndSec = downbeats.length > titleEndIdx ? downbeats[titleEndIdx] : 3.0;
 
   // Degenerate: no photos → title + end card only.
@@ -136,8 +221,11 @@ export function computeTimeline(
 
   const dbAvg = medianDownbeatInterval(downbeats);
 
-  // Target photo-region seconds so the whole film lands near TARGET_TOTAL_SEC.
-  const targetTotal = clamp(TARGET_TOTAL_SEC, MIN_TOTAL_SEC, hardCeiling);
+  // v1.1: bounds scale with photo count (identity for <= LONG_FORM_THRESHOLD).
+  const bounds = durationBoundsFor(photoCount, dbAvg, titleEndSec);
+
+  // Target photo-region seconds so the whole film lands near bounds.target.
+  const targetTotal = clamp(bounds.target, bounds.min, hardCeiling);
   const targetPhotoRegion = Math.max(
     dbAvg * photoCount, // never below one interval per photo
     targetTotal - titleEndSec - END_CARD_TARGET_SEC
@@ -184,8 +272,8 @@ export function computeTimeline(
     }
   }
 
-  // Fit total into [MIN_TOTAL_SEC, min(MAX_TOTAL_SEC, hardCeiling)].
-  const upper = Math.min(MAX_TOTAL_SEC, hardCeiling);
+  // Fit total into [bounds.min, min(bounds.max, hardCeiling)].
+  const upper = Math.min(bounds.max, hardCeiling);
   let guard = 0;
   while (guard++ < 200) {
     const { totalDurationSec } = evaluate();
@@ -194,7 +282,7 @@ export function computeTimeline(
       const i = ks.indexOf(Math.max(...ks));
       if (ks[i] <= MIN_K) break;
       ks[i] -= 1;
-    } else if (totalDurationSec < MIN_TOTAL_SEC) {
+    } else if (totalDurationSec < bounds.min) {
       // grow the shortest-dwell photo, if the grid can supply it
       if (sum(ks) + 1 > maxIntervalsAvailable) break;
       const i = ks.indexOf(Math.min(...ks));

@@ -4,7 +4,7 @@
 //   --plan <jobId>   dry-run: print hygiene decisions + chosen track, no render
 
 import { ensureBrowser } from '@remotion/renderer';
-import { loadConfig, WorkerConfig } from './config';
+import { loadConfig, assertTimeoutSanity, WorkerConfig } from './config';
 import {
   initPool,
   closePool,
@@ -13,11 +13,14 @@ import {
   markFailure,
   getJobById,
   getChildName,
+  getClassRow,
+  jobKind,
 } from './db';
 import { fetchEligiblePhotos, downloadPhotos } from './media';
-import { runHygiene } from './hygiene';
+import { runHygiene, MAX_CLASS_PHOTOS } from './hygiene';
 import { validateMusicAssets, trackForReport } from './music';
-import { processJob, cleanupOrphanTemp, MIN_RENDER_PHOTOS } from './pipeline';
+import { prepareBranding } from './branding';
+import { processJob, cleanupOrphanTemp, minPhotosForKind } from './pipeline';
 
 let shuttingDown = false;
 let processing = false;
@@ -83,8 +86,10 @@ async function handleOneJob(cfg: WorkerConfig): Promise<JobTick> {
   if (!job) return 'none';
   processing = true;
   let tick: JobTick = 'ok';
+  const kind = jobKind(job);
   console.log(
-    `[worker] claimed job ${job.id} (class ${job.class_id}, child ${job.child_id}, ` +
+    `[worker] claimed ${kind} job ${job.id} (class ${job.class_id}` +
+      `${kind === 'class' ? '' : `, child ${job.child_id}`}, ` +
       `week ${job.week_start}, ${job.media_ids?.length ?? 0} photos, attempt ${job.attempt})`
   );
   try {
@@ -145,18 +150,41 @@ async function runPlan(cfg: WorkerConfig, jobId: string) {
     await shutdown(1);
     return;
   }
-  const childName = await getChildName(job.child_id, job.class_id);
+  const kind = jobKind(job);
+  const isClass = kind === 'class';
+  const classRow = await getClassRow(job.class_id);
+  const branding = await prepareBranding(cfg, {
+    classRow,
+    weekStart: job.week_start,
+  });
+  const childName = job.child_id
+    ? await getChildName(job.child_id, job.class_id)
+    : null;
   const eligible = await fetchEligiblePhotos(job);
-  console.log(`\n=== PLAN for job ${jobId} ===`);
+
+  console.log(`\n=== PLAN for ${kind} job ${jobId} ===`);
   console.log(
-    `child ${childName ?? job.child_id} · class ${job.class_id} · week ${job.week_start} · status ${job.status}`
+    isClass
+      ? `class ${branding.className} · ${job.class_id} · week ${job.week_start} · status ${job.status}`
+      : `child ${childName ?? job.child_id} · class ${job.class_id} · week ${job.week_start} · status ${job.status}`
   );
   console.log(
     `selected: ${job.media_ids?.length ?? 0}   still present: ${eligible.length}`
   );
+  console.log(
+    `branding: school="${branding.schoolName ?? '—'}" class="${branding.className}" ` +
+      `label="${branding.weekLabel}" logo=${branding.logoFile ?? 'none (initials ' + branding.initials + ')'} ` +
+      `emblem=${branding.emblemFile ?? 'none'}`
+  );
+  if (isClass && job.excused_child_ids?.length) {
+    console.log(`excused: ${job.excused_child_ids.length} child(ren)`);
+  }
 
   const downloaded = await downloadPhotos(cfg, eligible);
-  const { photos, decisions } = await runHygiene(downloaded);
+  const { photos, decisions } = await runHygiene(
+    downloaded,
+    isClass ? { maxPhotos: MAX_CLASS_PHOTOS, curated: true } : {}
+  );
 
   console.log('\nphoto_id                              captured_at            decision');
   console.log('-'.repeat(90));
@@ -178,7 +206,7 @@ async function runPlan(cfg: WorkerConfig, jobId: string) {
   console.log(
     `\nfinal photos: ${photos.length}   chosen track: ${slug} (${track.bpm} bpm, ${track.durationSec}s, ${track.downbeats.length} downbeats)`
   );
-  if (photos.length < MIN_RENDER_PHOTOS) {
+  if (photos.length < minPhotosForKind(kind)) {
     console.log('=> would SKIP (insufficient photos)');
   }
   await shutdown(0);
@@ -186,6 +214,7 @@ async function runPlan(cfg: WorkerConfig, jobId: string) {
 
 async function main() {
   const cfg = loadConfig();
+  assertTimeoutSanity(cfg);
   initPool(cfg);
   installSignals();
 

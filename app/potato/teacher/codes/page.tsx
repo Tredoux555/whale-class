@@ -151,7 +151,7 @@ export default function ParentCodesPage() {
             </button>
 
             <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(35,57,91,.35)', textAlign: 'center', marginTop: 14 }}>
-              Parents go to teacherpotato.xyz/potato and type their code.
+              Parents go to teacherpotato.xyz/potato and type their code to watch the films.
             </p>
           </>
         )}

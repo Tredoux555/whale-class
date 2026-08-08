@@ -70,3 +70,34 @@ export async function downloadPhotos(
   }
   return out;
 }
+
+/**
+ * v1.1: fetch a single object (a school logo or class emblem) from the bucket.
+ *
+ * Returns null instead of throwing on ANY failure — a missing or unreadable
+ * branding image must degrade to the initials fallback, never fail a film that
+ * is otherwise perfectly renderable.
+ */
+export async function downloadObject(
+  cfg: WorkerConfig,
+  storagePath: string
+): Promise<Buffer | null> {
+  try {
+    const sb = getSupabase(cfg);
+    const { data, error } = await sb.storage
+      .from(cfg.mediaBucket)
+      .download(storagePath);
+    if (error || !data) {
+      console.warn(
+        `[media] branding asset ${storagePath} unavailable: ${error?.message ?? 'no data'}`
+      );
+      return null;
+    }
+    return Buffer.from(await data.arrayBuffer());
+  } catch (err) {
+    console.warn(
+      `[media] branding asset ${storagePath} failed: ${(err as Error).message}`
+    );
+    return null;
+  }
+}

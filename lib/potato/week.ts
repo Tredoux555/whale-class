@@ -221,6 +221,35 @@ export function weekLabel(weekStart: string): string {
     : `${m1} ${monday.getUTCDate()} – ${m2} ${friday.getUTCDate()}`;
 }
 
+const WEEKDAY_LONG = [
+  'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
+];
+
+/**
+ * "Monday · Sep 7" — the day rule between groups in the class-film picker and
+ * the lightbox's centre label.
+ *
+ * Read in the CLASS timezone, so a photo taken at 08:00 in Shanghai is filed
+ * under Monday even though the stored instant is Sunday in UTC.
+ */
+export function dayLabelInZone(instantIso: string, tz: string): string {
+  const instant = new Date(instantIso);
+  if (Number.isNaN(instant.getTime())) return '';
+  const p = partsInZone(instant, safeTimeZone(tz));
+  return `${WEEKDAY_LONG[p.weekday]} · ${MONTH_SHORT[p.month - 1]} ${p.day}`;
+}
+
+/**
+ * A stable sort key for grouping photos into days — the class-tz calendar date.
+ * Never derived from toISOString(), which would split a day at the wrong hour.
+ */
+export function dayKeyInZone(instantIso: string, tz: string): string {
+  const instant = new Date(instantIso);
+  if (Number.isNaN(instant.getTime())) return '';
+  const p = partsInZone(instant, safeTimeZone(tz));
+  return `${p.year}-${pad2(p.month)}-${pad2(p.day)}`;
+}
+
 /** Year + month folder names for a storage path, in the class's own calendar. */
 export function storageDateFolders(tz: string, instant: Date = new Date()): { yyyy: string; mm: string } {
   const p = partsInZone(instant, safeTimeZone(tz));

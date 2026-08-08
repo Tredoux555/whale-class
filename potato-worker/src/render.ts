@@ -15,7 +15,12 @@ import {
   renderFrames,
   CancelSignal,
 } from '@remotion/renderer';
-import { REMOTION_ENTRY, REMOTION_PUBLIC, JOB_PHOTOS_DIR } from './config';
+import {
+  REMOTION_ENTRY,
+  REMOTION_PUBLIC,
+  JOB_PHOTOS_DIR,
+  JOB_BRANDING_DIR,
+} from './config';
 import type { WorkerConfig } from './config';
 import { COMPOSITION_ID } from '../remotion/src/Root';
 import type { MontageProps } from '../remotion/src/timing';
@@ -40,35 +45,57 @@ export function getBundle(): Promise<string> {
 
 // 🚨 bundle() COPIES publicDir into <bundle>/public ONCE, at bundle time, and
 // the bundle above is cached for the whole process lifetime. The per-job
-// photos are written into REMOTION_PUBLIC/photos/job by the pipeline AFTER
-// that copy has happened, so from the SECOND job in a process onward the
-// browser is served whatever job #1 left in the snapshot:
+// assets are written into REMOTION_PUBLIC by the pipeline AFTER that copy has
+// happened, so from the SECOND job in a process onward the browser is served
+// whatever job #1 left in the snapshot:
 //   - a job with <= as many photos silently renders the previous job's images;
 //   - a job with more photos 404s on the first index the snapshot lacks
 //     ("Error loading image with src: http://localhost:3000/public/photos/job/09.jpg"
 //     — that origin is Remotion's own static server for the bundle dir, not
 //     the Next app).
-// Re-sync photos/job into the live bundle before every render. The renderer's
-// static server streams from disk per request, so a post-bundle write is
-// picked up; for the first job of a process this rewrites byte-identical
-// files, leaving that path's output unchanged.
-function syncJobPhotosIntoBundle(bundleDir: string): void {
-  const dest = path.join(bundleDir, 'public', 'photos', 'job');
+// v1.1 adds the white-label branding images to exactly the same trap: without
+// the re-sync, every class in the process would wear the FIRST class's school
+// logo. Both directories are therefore mirrored before every render.
+// The renderer's static server streams from disk per request, so a post-bundle
+// write is picked up; for the first job of a process this rewrites
+// byte-identical files, leaving that path's output unchanged.
+function syncDirIntoBundle(
+  bundleDir: string,
+  srcDir: string,
+  relParts: string[]
+): number {
+  const dest = path.join(bundleDir, 'public', ...relParts);
+  fs.rmSync(dest, { recursive: true, force: true });
+  fs.mkdirSync(dest, { recursive: true });
+  if (!fs.existsSync(srcDir)) return 0;
+  const names = fs.readdirSync(srcDir);
+  let copied = 0;
+  for (const name of names) {
+    const from = path.join(srcDir, name);
+    if (!fs.statSync(from).isFile()) continue;
+    fs.copyFileSync(from, path.join(dest, name));
+    copied++;
+  }
+  return copied;
+}
+
+function syncJobAssetsIntoBundle(bundleDir: string): void {
   try {
-    fs.rmSync(dest, { recursive: true, force: true });
-    fs.mkdirSync(dest, { recursive: true });
-    if (!fs.existsSync(JOB_PHOTOS_DIR)) return;
-    const names = fs.readdirSync(JOB_PHOTOS_DIR);
-    for (const name of names) {
-      const from = path.join(JOB_PHOTOS_DIR, name);
-      if (!fs.statSync(from).isFile()) continue;
-      fs.copyFileSync(from, path.join(dest, name));
-    }
-    console.log(`[render] synced ${names.length} job photo(s) into bundle`);
+    const photos = syncDirIntoBundle(bundleDir, JOB_PHOTOS_DIR, [
+      'photos',
+      'job',
+    ]);
+    const branding = syncDirIntoBundle(bundleDir, JOB_BRANDING_DIR, [
+      'branding',
+      'job',
+    ]);
+    console.log(
+      `[render] synced ${photos} job photo(s) + ${branding} branding asset(s) into bundle`
+    );
   } catch (err) {
     // Never fail the render here — if the sync could not run, the render
     // proceeds exactly as it did before and surfaces its own error.
-    console.warn('[render] job photo sync failed:', (err as Error).message);
+    console.warn('[render] job asset sync failed:', (err as Error).message);
   }
 }
 
@@ -172,7 +199,7 @@ export async function renderMontage(input: RenderInput): Promise<RenderOutput> {
   const { cfg, props, mp3Path, workDir, concurrency, cancelSignal } = input;
   const serveUrl = await getBundle();
   // Cached bundle + per-job public assets: refresh the copy the browser sees.
-  syncJobPhotosIntoBundle(serveUrl);
+  syncJobAssetsIntoBundle(serveUrl);
 
   const composition = await selectComposition({
     serveUrl,

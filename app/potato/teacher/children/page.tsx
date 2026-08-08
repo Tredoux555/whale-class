@@ -202,7 +202,9 @@ export default function ChildrenPage() {
                 </button>
                 <div className="pt-lrow__n">
                   {child.name}
-                  <small>{child.faceUrl ? 'Face photo added' : 'No face photo yet'}</small>
+                  {/* Copy diet: only the GAP earns a line. A face that is
+                      already there does not need telling. */}
+                  {child.faceUrl ? null : <small>No face photo yet</small>}
                 </div>
                 <button
                   type="button"

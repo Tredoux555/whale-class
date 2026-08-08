@@ -9,7 +9,7 @@ import {
   clientKey,
 } from '@/lib/potato/auth';
 import { normalizeCode, isWellFormedCode } from '@/lib/potato/codes';
-import { potatoDb, isSetupPending } from '@/lib/potato/db';
+import { potatoDb, potatoCapabilities, isSetupPending, initialsFor } from '@/lib/potato/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const supabase = potatoDb();
+    const caps = await potatoCapabilities(supabase);
     const { data: row, error } = await supabase
       .from('tp_parent_codes')
       .select('id, class_id, child_id')
@@ -49,13 +50,18 @@ export async function POST(request: NextRequest) {
     // child (or class) must not open a door.
     const { data: child, error: childError } = await supabase
       .from('tp_children')
-      .select('id, name, class_id, is_active, tp_classes!inner(id, name, is_active)')
+      .select(
+        caps.classes
+          ? 'id, name, class_id, is_active, tp_classes!inner(id, name, is_active, school_name)'
+          : 'id, name, class_id, is_active, tp_classes!inner(id, name, is_active)',
+      )
       .eq('id', row.child_id)
       .maybeSingle();
     if (childError) throw childError;
 
-    const klass = (child as { tp_classes?: { id: string; name: string; is_active: boolean } } | null)
-      ?.tp_classes;
+    const klass = (child as {
+      tp_classes?: { id: string; name: string; is_active: boolean; school_name?: string | null };
+    } | null)?.tp_classes;
     if (!child || child.is_active === false || !klass || klass.is_active === false) {
       return NextResponse.json({ error: 'That code is no longer active.' }, { status: 401 });
     }
@@ -65,6 +71,12 @@ export async function POST(request: NextRequest) {
       ok: true,
       child: { id: child.id, name: child.name },
       className: klass.name,
+      // v1.1: handed back so the sign-in screen can greet a RETURNING parent
+      // with their own school next time. Text only — the logo image needs the
+      // cookie we are only now setting, so the initials mark is the honest
+      // pre-auth fallback (and it is the design's own no-logo state).
+      schoolName: caps.classes ? (klass.school_name?.trim() || null) : null,
+      initials: initialsFor(klass.school_name?.trim() || klass.name),
     });
     setParentCookie(response, token);
 

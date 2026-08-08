@@ -1,61 +1,76 @@
 // GET /api/potato/montages — finished films, newest first.
 //
+// v1.1: one stream mixing the child's own films and the whole class's films.
+//
 // Two callers, two very different trust levels:
-//   • teacher — may ask for any child in her own class (?childId=…)
-//   • parent  — gets THEIR child and only their child. The childId comes from
-//               the signed cookie and the `childId` query param is ignored
-//               outright, so there is nothing to smuggle.
+//   • teacher — her own class. `?childId=` narrows to one child's films (plus
+//     the class films); omitted, she sees everything the class has made.
+//   • parent  — THEIR child's films plus the class films of THEIR class. Both
+//     ids come from the signed cookie; the `childId` query param is ignored
+//     outright, so there is nothing to smuggle.
 //
 // Only `done` jobs with a storage_path are ever returned: a queued or failed
 // render must never surface as a broken player in a parent's hand.
+//
+// 🚨 PRE-MIGRATION: `kind` may not exist yet. This route feature-detects and
+// falls back to exactly v1.0 behaviour — child films only, no class films, no
+// branding. A parent's feed keeps working through the deploy window.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyPotatoTeacher, verifyPotatoParent, UUID_RE } from '@/lib/potato/auth';
-import { potatoDb, loadOwnedChild, isSetupPending, proxyUrl } from '@/lib/potato/db';
+import {
+  potatoDb,
+  loadClass,
+  loadOwnedChild,
+  potatoCapabilities,
+  brandingOf,
+  isSetupPending,
+  proxyUrl,
+} from '@/lib/potato/db';
 import { weekLabel } from '@/lib/potato/week';
 
 export const dynamic = 'force-dynamic';
 
 interface JobRow {
   id: string;
-  child_id: string;
+  child_id: string | null;
   week_start: string;
   storage_path: string | null;
   media_ids: string[] | null;
   created_at: string;
   completed_at: string | null;
+  kind?: string;
+  excused_child_ids?: string[] | null;
 }
 
 export async function GET(request: NextRequest) {
   const supabase = potatoDb();
 
   let classId: string;
-  let childId: string;
+  let childId: string | null = null;
   let childName: string | null = null;
-  let className: string | null = null;
+  let isParent = false;
 
   const teacher = await verifyPotatoTeacher(request);
   if (teacher) {
+    classId = teacher.classId;
     const requested = new URL(request.url).searchParams.get('childId');
-    if (!requested || !UUID_RE.test(requested)) {
-      return NextResponse.json({ error: 'childId is required' }, { status: 400 });
-    }
-    try {
-      const child = await loadOwnedChild(supabase, teacher.classId, requested);
-      if (!child) return NextResponse.json({ error: 'Child not found' }, { status: 404 });
-      classId = teacher.classId;
-      childId = child.id;
-      // 🚨 childName is deliberately left null here (not `child.name`) so the
-      // shared active-status check below always runs for the teacher path
-      // too — deactivating a class is the only revocation lever for a
-      // 10-year teacher cookie, and this route must honor it exactly like
-      // every other route, not just the parent branch.
-    } catch (error) {
-      if (isSetupPending(error)) {
-        return NextResponse.json({ error: 'setup_pending' }, { status: 503 });
+    if (requested) {
+      if (!UUID_RE.test(requested)) {
+        return NextResponse.json({ error: 'Invalid child id' }, { status: 400 });
       }
-      console.error('[potato/montages] teacher lookup error:', error);
-      return NextResponse.json({ error: 'Could not load films.' }, { status: 500 });
+      try {
+        const child = await loadOwnedChild(supabase, teacher.classId, requested);
+        if (!child) return NextResponse.json({ error: 'Child not found' }, { status: 404 });
+        childId = child.id;
+        childName = child.name;
+      } catch (error) {
+        if (isSetupPending(error)) {
+          return NextResponse.json({ error: 'setup_pending' }, { status: 503 });
+        }
+        console.error('[potato/montages] teacher lookup error:', error);
+        return NextResponse.json({ error: 'Could not load films.' }, { status: 500 });
+      }
     }
   } else {
     const parent = await verifyPotatoParent(request);
@@ -63,59 +78,88 @@ export async function GET(request: NextRequest) {
     // 🚨 Never from the query string.
     classId = parent.classId;
     childId = parent.childId;
+    isParent = true;
   }
 
   try {
-    if (childName === null) {
+    const caps = await potatoCapabilities(supabase);
+    const klass = await loadClass(supabase, classId);
+    if (!klass) return NextResponse.json({ error: 'Class not found' }, { status: 404 });
+
+    if (isParent && childId) {
       const { data: child, error } = await supabase
         .from('tp_children')
-        .select('id, name, is_active, tp_classes!inner(name, is_active)')
+        .select('id, name, photo_path, is_active')
         .eq('id', childId)
         .eq('class_id', classId)
         .maybeSingle();
       if (error) throw error;
-      const klass = (child as { tp_classes?: { name: string; is_active: boolean } } | null)?.tp_classes;
-      if (!child || child.is_active === false || !klass || klass.is_active === false) {
+      if (!child || child.is_active === false) {
         return NextResponse.json({ error: 'That code is no longer active.' }, { status: 401 });
       }
       childName = child.name;
-      className = klass.name;
     }
 
-    const { data, error } = await supabase
+    const columns = caps.jobs
+      ? 'id, child_id, week_start, storage_path, media_ids, created_at, completed_at, kind, excused_child_ids'
+      : 'id, child_id, week_start, storage_path, media_ids, created_at, completed_at';
+
+    let query = supabase
       .from('tp_montage_jobs')
-      .select('id, child_id, week_start, storage_path, media_ids, created_at, completed_at')
+      .select(columns)
       .eq('class_id', classId)
-      .eq('child_id', childId)
       .eq('status', 'done')
-      .not('storage_path', 'is', null)
+      .not('storage_path', 'is', null);
+
+    if (caps.jobs) {
+      // The child's own films OR the class's films. Before migration 319 there
+      // is no `kind`, so the filter below collapses to "this child's films",
+      // which is precisely v1.0.
+      if (childId) query = query.or(`child_id.eq.${childId},kind.eq.class`);
+    } else if (childId) {
+      query = query.eq('child_id', childId);
+    }
+
+    const { data, error } = await query
       .order('week_start', { ascending: false })
       .order('created_at', { ascending: false })
-      .limit(60);
+      .limit(120);
     if (error) throw error;
 
-    // Re-runs are allowed, so a week can hold several done jobs. The newest
-    // wins — the ordering above already puts it first.
+    // Re-runs are allowed, so a week can hold several done jobs of a kind. The
+    // newest wins — the ordering above already puts it first.
     const seen = new Set<string>();
-    const montages = [];
+    const films = [];
     for (const job of (data ?? []) as JobRow[]) {
-      if (seen.has(job.week_start)) continue;
-      seen.add(job.week_start);
-      montages.push({
+      const kind = caps.jobs && job.kind === 'class' ? 'class' : 'child';
+      // A teacher browsing the whole class keeps one film per child per week.
+      const slot = `${kind}:${kind === 'class' ? 'all' : job.child_id}:${job.week_start}`;
+      if (seen.has(slot)) continue;
+      seen.add(slot);
+      films.push({
         id: job.id,
+        kind,
+        childId: job.child_id,
         weekStart: job.week_start,
         weekLabel: weekLabel(job.week_start),
         videoUrl: proxyUrl(job.storage_path),
         photoCount: job.media_ids?.length ?? 0,
+        excusedCount: (job.excused_child_ids ?? []).length,
         completedAt: job.completed_at ?? job.created_at,
       });
     }
 
     return NextResponse.json({
       ok: true,
-      child: { id: childId, name: childName },
-      className,
-      montages,
+      child: childId ? { id: childId, name: childName } : null,
+      className: klass.name,
+      branding: caps.classes ? brandingOf(klass) : null,
+      /** v1.1 flag so a client can tell "no class films yet" from "not migrated" */
+      classFilmsAvailable: caps.jobs,
+      films,
+      // v1.0 clients read `montages`; keep the key alive so an old cached bundle
+      // in a parent's PWA does not render an empty feed after this deploy.
+      montages: films.filter((f) => f.kind === 'child'),
     });
   } catch (error) {
     if (isSetupPending(error)) {
