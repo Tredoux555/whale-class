@@ -126,6 +126,41 @@ export async function middleware(req: NextRequest) {
     (p) => pathname === p || pathname.startsWith(p + '/'),
   );
 
+  // Bare apex → www, for Potato Snaps paths only.
+  //
+  // WHY REDIRECT RATHER THAN SERVE: the Potato Snaps cookies (potato_teacher /
+  // potato_parent) are host-only — they carry no `domain` attribute, so a
+  // session minted on www.teacherpotato.xyz is invisible on the apex. If the
+  // apex ever served /potato it would render a signed-out copy of the app and a
+  // teacher would sign in, get bounced, and sign in again forever. All potato
+  // traffic has to converge on ONE host, and that host is www.
+  //
+  // ⚠ TODAY THIS IS DEFENSIVE, NOT THE LIVE FIX. The apex still resolves to a
+  // domain-parking service (15.197.225.128 / 3.33.251.168 — the same IPs named
+  // below), which answers every request itself: it 301s only '/' to www and
+  // 404s everything deeper. Those requests never reach Railway, so this
+  // middleware never runs for them. The live apex 404 is fixed OFF the codebase,
+  // either by making the registrar's forward preserve the path
+  // (teacherpotato.xyz/* → https://www.teacherpotato.xyz/*) or by attaching the
+  // apex to Railway. This guard is what makes that second option safe: the
+  // moment the apex points here, /potato* bounces to www instead of serving a
+  // cookie-less app.
+  //
+  // 307, not 301: same as the montree.xyz rule below, and a permanent redirect
+  // would be cached by every browser that ever hit it — expensive to undo.
+  const isApexTeacherPotato = isTeacherPotato && !hostname.startsWith('www.');
+  const isPotatoPath =
+    pathname === '/potato' ||
+    pathname.startsWith('/potato/') ||
+    pathname === '/api/potato' ||
+    pathname.startsWith('/api/potato/');
+  if (isApexTeacherPotato && isPotatoPath) {
+    const target = new URL(pathname, 'https://www.teacherpotato.xyz');
+    target.search = req.nextUrl.search;
+    target.hash = req.nextUrl.hash;
+    return NextResponse.redirect(target);
+  }
+
   // Block Montree routes on teacherpotato.xyz — EXCEPT the public Library
   // (Tredoux, Jul 19 2026: his school's teachers get FULL Library access on
   // teacherpotato — Dark Phonics, Curriculum Studio, lesson launcher,
