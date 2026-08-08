@@ -656,6 +656,46 @@ export const POTATO_CSS = `
   font-size:12.5px;font-weight:700;color:var(--pt-ink-35)}
 .pt-emptyhint svg{flex:none;opacity:.9}
 
+/* ═══════════════════════════════════════════════════════════════════
+   v1.2 — OFFLINE CAPTURE QUEUE
+   Calm, never alarming. A photo waiting to upload is SAFE, not broken —
+   the sky wash says "in hand", coral is reserved for a real refusal.
+   ═══════════════════════════════════════════════════════════════════ */
+.pt-pending{
+  width:100%;display:flex;align-items:center;gap:11px;margin-top:12px;
+  padding:10px 13px;border-radius:17px;text-align:left;cursor:pointer;
+  background:var(--pt-sky);border:1.5px solid #DAEBF7;box-shadow:var(--pt-sh-card);
+  font-family:inherit;color:var(--pt-ink);min-height:48px;
+}
+.pt-pending:disabled{cursor:default;opacity:.85}
+.pt-pending__dot{
+  width:10px;height:10px;border-radius:999px;flex:none;background:var(--pt-blue-deep);
+  animation:pt-breathe 1.8s ease-in-out infinite;
+}
+@keyframes pt-breathe{0%,100%{opacity:.35;transform:scale(.85)}50%{opacity:1;transform:scale(1)}}
+.pt-pending__t{
+  flex:1;min-width:0;font-size:13px;font-weight:800;line-height:1.25;color:var(--pt-ink);
+}
+.pt-pending__t small{
+  display:block;font-weight:700;font-size:11.5px;color:var(--pt-ink-50);margin-top:3px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.pt-rejected{
+  margin-top:12px;padding:12px 13px;border-radius:18px;
+  background:#FFF0ED;border:1.5px solid rgba(214,80,63,.28);
+}
+.pt-rejected__h{
+  font-family:var(--pt-disp);font-weight:800;font-size:14px;color:var(--pt-coral-deep);margin-bottom:9px;
+}
+.pt-rejected__row{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding-top:9px;border-top:1px solid rgba(214,80,63,.16);
+}
+.pt-rejected__row:first-of-type{border-top:none;padding-top:0}
+.pt-rejected__msg{
+  flex:1;min-width:140px;font-size:12.5px;font-weight:700;color:var(--pt-ink-70);line-height:1.4;
+}
+
 @media (prefers-reduced-motion: reduce){
   .pt-root *{animation:none !important;transition:none !important}
   .pt-pth{transform:none !important}
