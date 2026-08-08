@@ -1,0 +1,105 @@
+{
+  "letter": "r",
+  "week": 15,
+  "slug": "dp-the-rat",
+  "bookSlug": "the-rat",
+  "bookTitle": "The ___ Chased the Rat!",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-the-rat.py",
+  "artDir": "phonics-images/dark-phonics-books/the-rat",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "ant",
+      "sentence": "The ant chased the rat.",
+      "art": "p1-ant.png"
+    },
+    {
+      "order": 2,
+      "word": "snake",
+      "sentence": "The snake chased the rat.",
+      "art": "p5-snake.png"
+    },
+    {
+      "order": 3,
+      "word": "cat",
+      "sentence": "The cat chased the rat.",
+      "art": "p6-cat.png"
+    },
+    {
+      "order": 4,
+      "word": "potato",
+      "sentence": "The potato didn't chase the rat!",
+      "art": "p8-potato.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    3,
+    1,
+    4,
+    2
+  ],
+  "matchDisplayOrder": [
+    2,
+    4,
+    1,
+    3
+  ],
+  "yesno": [
+    {
+      "question": "did the ant chase the rat?",
+      "answer": true,
+      "imageArt": "p1-ant.png"
+    },
+    {
+      "question": "did the apple chase the rat?",
+      "answer": true,
+      "imageArt": "p2-apple.png"
+    },
+    {
+      "question": "did the star chase the rat?",
+      "answer": true,
+      "imageArt": "p4-star.png"
+    },
+    {
+      "question": "did the snake chase the rat?",
+      "answer": true,
+      "imageArt": "p5-snake.png"
+    },
+    {
+      "question": "did the cat chase the rat?",
+      "answer": true,
+      "imageArt": "p6-cat.png"
+    },
+    {
+      "question": "did the potato chase the rat?",
+      "answer": false,
+      "imageArt": "p8-potato.png"
+    },
+    {
+      "question": "did the dinosaur chase the rat?",
+      "answer": false,
+      "imageArt": "../dinosaur-on-a-drum/p4-dinosaur.png"
+    },
+    {
+      "question": "did the sloth chase the rat?",
+      "answer": false,
+      "imageArt": "../snake-in-my-sock/p4-sloth.png"
+    },
+    {
+      "question": "did the cow chase the rat?",
+      "answer": false,
+      "imageArt": "../cow-on-the-car/p4-cow.png"
+    },
+    {
+      "question": "did the fox chase the rat?",
+      "answer": false,
+      "imageArt": "../fox-in-a-box/p1-fox.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Generated 2026-08-08 for the 13-book the-sat cast paperwork rollout, following dp-the-spat.json / dp-the-pit.json conventions -- do not hand-edit blindly, keep in sync with books_def.py's the-rat entry.",
+    "recap": "pages[] selects a 4-page subset of this book's 6-strong the-sat cast (ant, snake, cat) plus a 4th page -- the book's own potato finale sentence where the book resolves one (e.g. \"The potato didn't chase the rat!\"), or another cast page where the potato page is an unresolved cliffhanger ('And the...?!', no text) or where its sentence doesn't carry the target word. apple/sun/star (or the extra p9 beat on the-cot/the-kit) sit out, same exclusion rule as dp-the-pit. Recap (style='drop') pages are always excluded.",
+    "yesno": "10 items (5 true, 5 false) per Tredoux's 2026-08-08 brief -- widening from dp-the-spat/dp-the-pit's 4-item convention (which build_paperwork.py still chunks correctly at 5/page). 5 true from this book's own cast pages; 5 false either the book's own potato page answering false to the book's question (when the story itself says the potato does NOT do the action), or borrowed decoy words/art from other Dark Phonics books via a relative ../<slug>/ imageArt path -- verified those source files exist."
+  }
+}
