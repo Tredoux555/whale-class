@@ -134,8 +134,17 @@ type Book = {
    *  pack built yet. Defaults to true — the-spat and the-pit have full packs in
    *  public/dark-phonics-materials/<slug>/; the-sat and the-tall do not yet. */
   materials?: boolean;
+  /** Set true for books that have the 4 printable book-works (picture match,
+   *  sentence + picture, sentence builder guided/free) built at
+   *  public/dark-phonics-books/works/<slug>/. Defaults to false. */
+  works?: boolean;
 };
-type Reader = { slug: string; title: string };
+type Reader = {
+  slug: string;
+  title: string;
+  /** Same as Book.works, above — set true where the reader's works pack exists. */
+  works?: boolean;
+};
 
 type RawLesson = {
   n: number;
@@ -190,18 +199,18 @@ const RAW: RawLesson[] = [
   { n: 5, sound: 's', title: 'The Snake Says Ssss', catchphrase: '“snake in my sock!”', words: ['snake', 'sock'] },
   { n: 6, sound: 'a', title: 'A Is for Apple', catchphrase: '“ant on my apple!”', words: ['ant', 'apple'] },
   { n: 7, sound: 't', title: 'Tick-Tock, T!', catchphrase: '“tick-tock, stinky sock!”', decodable: ['sat', 'at'], heartWords: ['a'], words: ['clock', 'sock'], books: [
-    { slug: 'the-sat', title: 'The ___ Sat!', description: 'Hybrid decodable — teacher reads the set-up, the child shouts “Sat!” on every page.', cover: '/dark-phonics-books/covers/the-sat.png', materials: false },
+    { slug: 'the-sat', title: 'The ___ Sat!', description: 'Hybrid decodable — teacher reads the set-up, the child shouts “Sat!” on every page.', cover: '/dark-phonics-books/covers/the-sat.png', materials: false, works: true },
     { slug: 'the-tall', title: 'The Tall ___!', description: 'Companion pattern book, same cast — the child shouts the picture word.', cover: '/dark-phonics-books/covers/the-tall.png', materials: false },
   ] },
   { n: 8, sound: 'p', title: 'Pop, Pop, P!', catchphrase: '“pop, pop, puppy poop!”', decodable: ['sap', 'pat', 'tap', 'spat'], words: ['pup'], books: [
-    { slug: 'the-spat', title: 'The ___ Spat!', description: 'Letter P initial-sound book — cast: basin, penguin, pig, pelican, potato.', cover: '/dark-phonics-books/covers/the-spat.png' },
-    { slug: 'the-pat', title: 'The ___ Can Pat!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat, potato.', cover: '/dark-phonics-books/covers/the-pat.png', materials: false },
+    { slug: 'the-spat', title: 'The ___ Spat!', description: 'Letter P initial-sound book — cast: basin, penguin, pig, pelican, potato.', cover: '/dark-phonics-books/covers/the-spat.png', works: true },
+    { slug: 'the-pat', title: 'The ___ Can Pat!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat, potato.', cover: '/dark-phonics-books/covers/the-pat.png', materials: false, works: true },
   ] },
   { n: 9, sound: 'i', title: 'I, I, Itsy I', catchphrase: '“icky, sticky pig!”', decodable: ['sit', 'it', 'is', 'sip', 'pit', 'spit'], words: ['pig'], books: [
-    { slug: 'the-pit', title: 'The ___ Sat in the Pit!', description: 'Letter Book Three — the-sat cast returns: pit, ant, apple, sun, star, snake, cat, potato.', cover: '/dark-phonics-books/covers/the-pit.png', materials: true },
+    { slug: 'the-pit', title: 'The ___ Sat in the Pit!', description: 'Letter Book Three — the-sat cast returns: pit, ant, apple, sun, star, snake, cat, potato.', cover: '/dark-phonics-books/covers/the-pit.png', materials: true, works: true },
   ] },
   { n: 10, sound: 'n', title: 'N for the Nose', catchphrase: '“no-no, nanny goat!”', decodable: ['an', 'ant', 'in', 'nap', 'naps', 'pan', 'tin', 'nip', 'snap'], heartWords: ['I'], words: ['goat'], books: [
-    { slug: 'the-nap', title: 'The ___ Naps!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — plus the potato, who doesn’t.', cover: '/dark-phonics-books/covers/the-nap.png', materials: false },
+    { slug: 'the-nap', title: 'The ___ Naps!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — plus the potato, who doesn’t.', cover: '/dark-phonics-books/covers/the-nap.png', materials: false, works: true },
   ] },
   { n: 11, sound: 'm', title: 'Mmm, That\'s Good!', catchphrase: '“mmm, muddy monkey!”', decodable: ['mat', 'Sam'], words: ['monkey'], books: [
     { slug: 'the-mat', title: 'The ___ Sat on the Mat!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — plus the potato, who didn’t.', cover: '/dark-phonics-books/covers/the-mat.png', materials: false },
@@ -221,7 +230,7 @@ const RAW: RawLesson[] = [
   { n: 16, sound: 'k', title: 'K Says It Too', catchphrase: '“kooky king kicks!”', decodable: ['kit', 'Kim'], words: ['king'], books: [
     { slug: 'the-kit', title: 'The ___ Has a Kit!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each with a first-aid kit. The potato has none — until a grazed knee brings the whole crew running to help.', cover: '/dark-phonics-books/covers/the-kit.png', materials: false },
   ] },
-  { n: 17, sound: 'ck', title: 'Two Letters, One Kick', catchphrase: '“kick the stinky sock!”', decodable: ['sock', 'sick'], heartWords: ['ate'], words: ['sock'], reader: { slug: 'the-cat-sat', title: 'The Cat Sat' } },
+  { n: 17, sound: 'ck', title: 'Two Letters, One Kick', catchphrase: '“kick the stinky sock!”', decodable: ['sock', 'sick'], heartWords: ['ate'], words: ['sock'], reader: { slug: 'the-cat-sat', title: 'The Cat Sat', works: true } },
   { n: 18, sound: 'e', title: 'Crack the Egg, E!', catchphrase: '“ten messy hens!”', decodable: ['egg'], words: ['hen'], books: [
     { slug: 'the-egg', title: 'The ___ Has an Egg!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each with an egg. The potato had one too — until he cracked it.', cover: '/dark-phonics-books/covers/the-egg.png', materials: false },
   ] },
@@ -440,6 +449,20 @@ export default function DarkPhonicsPage() {
       </div>
     );
   };
+
+  /** Printable book-works row — the 4 manipulative print-and-cut works
+   *  (public/dark-phonics-books/works/<slug>/), where built. */
+  const WorksRow = ({ slug }: { slug: string }) => (
+    <div className="mt-4">
+      <div className="text-white/25 text-[10px] tracking-wider uppercase mb-2 text-left">Printable works</div>
+      <div className="flex flex-wrap gap-2">
+        <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work1-picture-match.pdf`)}>Picture match</Pill>
+        <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work2-sentence-picture-match.pdf`)}>Sentence + picture</Pill>
+        <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work3-sentence-builder-guided.pdf`)}>Sentence builder · guided</Pill>
+        <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work4-sentence-builder-free.pdf`)}>Sentence builder · free</Pill>
+      </div>
+    </div>
+  );
 
   /**
    * The decodable ledger — what the child can actually READ by this lesson.
@@ -674,6 +697,9 @@ export default function DarkPhonicsPage() {
 
                       {/* Book scene pictures + their own hand-off */}
                       <BookPictureRow slug={book.slug} accent={l.accent} />
+
+                      {/* Printable book-works, where built */}
+                      {book.works && <WorksRow slug={book.slug} />}
                     </Row>
                   ))}
 
@@ -685,6 +711,9 @@ export default function DarkPhonicsPage() {
                           📗 {l.reader.title}
                         </Pill>
                       </div>
+
+                      {/* Printable book-works, where built */}
+                      {l.reader.works && <WorksRow slug={l.reader.slug} />}
                     </Row>
                   )}
 
