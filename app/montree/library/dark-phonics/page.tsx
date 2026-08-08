@@ -213,35 +213,35 @@ const RAW: RawLesson[] = [
     { slug: 'the-nap', title: 'The ___ Naps!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — plus the potato, who doesn’t.', cover: '/dark-phonics-books/covers/the-nap.png', materials: false, works: true },
   ] },
   { n: 11, sound: 'm', title: 'Mmm, That\'s Good!', catchphrase: '“mmm, muddy monkey!”', decodable: ['mat', 'Sam'], words: ['monkey'], books: [
-    { slug: 'the-mat', title: 'The ___ Sat on the Mat!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — plus the potato, who didn’t.', cover: '/dark-phonics-books/covers/the-mat.png', materials: false },
+    { slug: 'the-mat', title: 'The ___ Sat on the Mat!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — plus the potato, who didn’t.', cover: '/dark-phonics-books/covers/the-mat.png', materials: false, works: true },
   ] },
   { n: 12, sound: 'd', title: 'D for the Dog', catchphrase: '“dirty dog, dig dig dig!”', decodable: ['pad', 'sad'], words: ['dog'], books: [
-    { slug: 'the-sad', title: 'The ___ Is Sad!', description: 'The-sat cast returns — sad for once, until the potato cheers everyone up.', cover: '/dark-phonics-books/covers/the-sad.png', materials: false },
+    { slug: 'the-sad', title: 'The ___ Is Sad!', description: 'The-sat cast returns — sad for once, until the potato cheers everyone up.', cover: '/dark-phonics-books/covers/the-sad.png', materials: false, works: true },
   ] },
   { n: 13, sound: 'g', title: 'G for the Goat', catchphrase: '“goat got my gum!”', decodable: ['pig', 'dig'], words: ['goat', 'gum'], books: [
-    { slug: 'the-dig', title: 'The ___ Digs!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — plus the potato, who doesn’t.', cover: '/dark-phonics-books/covers/the-dig.png', materials: false },
+    { slug: 'the-dig', title: 'The ___ Digs!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — plus the potato, who doesn’t.', cover: '/dark-phonics-books/covers/the-dig.png', materials: false, works: true },
   ] },
   { n: 14, sound: 'o', title: 'O for the Octopus', catchphrase: '“hot dog on a log!”', decodable: ['pot', 'dog'], words: ['hotdog', 'log'], books: [
-    { slug: 'the-dog', title: 'The ___ Has a Dog!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each walking a different dog. The potato has five.', cover: '/dark-phonics-books/covers/the-dog.png', materials: false },
+    { slug: 'the-dog', title: 'The ___ Has a Dog!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each walking a different dog. The potato has five.', cover: '/dark-phonics-books/covers/the-dog.png', materials: false, works: true },
   ] },
   { n: 15, sound: 'c', title: 'C for the Cat', catchphrase: '“cat ate my cookie!”', decodable: ['cot', 'cat'], words: ['cat', 'cookie'], books: [
-    { slug: 'the-cot', title: 'The ___ Sat in a Cot!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each sat in a cot. The potato didn’t — just a nap in a deck chair.', cover: '/dark-phonics-books/covers/the-cot.png', materials: false },
+    { slug: 'the-cot', title: 'The ___ Sat in a Cot!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each sat in a cot. The potato didn’t — just a nap in a deck chair.', cover: '/dark-phonics-books/covers/the-cot.png', materials: false, works: true },
   ] },
   { n: 16, sound: 'k', title: 'K Says It Too', catchphrase: '“kooky king kicks!”', decodable: ['kit', 'Kim'], words: ['king'], books: [
-    { slug: 'the-kit', title: 'The ___ Has a Kit!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each with a first-aid kit. The potato has none — until a grazed knee brings the whole crew running to help.', cover: '/dark-phonics-books/covers/the-kit.png', materials: false },
+    { slug: 'the-kit', title: 'The ___ Has a Kit!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each with a first-aid kit. The potato has none — until a grazed knee brings the whole crew running to help.', cover: '/dark-phonics-books/covers/the-kit.png', materials: false, works: true },
   ] },
   { n: 17, sound: 'ck', title: 'Two Letters, One Kick', catchphrase: '“kick the stinky sock!”', decodable: ['sock', 'sick'], heartWords: ['ate'], words: ['sock'], reader: { slug: 'the-cat-sat', title: 'The Cat Sat', works: true } },
   { n: 18, sound: 'e', title: 'Crack the Egg, E!', catchphrase: '“ten messy hens!”', decodable: ['egg'], words: ['hen'], books: [
-    { slug: 'the-egg', title: 'The ___ Has an Egg!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each with an egg. The potato had one too — until he cracked it.', cover: '/dark-phonics-books/covers/the-egg.png', materials: false },
+    { slug: 'the-egg', title: 'The ___ Has an Egg!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each with an egg. The potato had one too — until he cracked it.', cover: '/dark-phonics-books/covers/the-egg.png', materials: false, works: true },
   ] },
   { n: 19, sound: 'u', title: 'Up Goes the Umbrella', catchphrase: '“yummy bug in my cup!”', decodable: ['duck', 'mud', 'stuck'], words: ['bug', 'cup'], reader: { slug: 'mud-pup', title: 'Mud Pup' }, books: [
-    { slug: 'the-mud', title: 'The ___ Is in the Mud!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each splashing in the mud. The potato isn’t — he’s chilling in his deck chair.', cover: '/dark-phonics-books/covers/the-mud.png', materials: false },
+    { slug: 'the-mud', title: 'The ___ Is in the Mud!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each splashing in the mud. The potato isn’t — he’s chilling in his deck chair.', cover: '/dark-phonics-books/covers/the-mud.png', materials: false, works: true },
   ] },
   { n: 20, sound: 'r', title: 'Rrr Goes the Engine', catchphrase: '“run, run, red rat!”', decodable: ['rug', 'rat', 'under'], words: ['rat'], books: [
-    { slug: 'the-rat', title: 'The ___ Chased the Rat!', description: 'The-sat cast is off after a new friend: a rat! Ant, apple, sun, star, snake, cat — all mid-chase. The potato skips the chase — he’s chilling in his deck chair, and the rat joins him for a cold drink.', cover: '/dark-phonics-books/covers/the-rat.png', materials: false },
+    { slug: 'the-rat', title: 'The ___ Chased the Rat!', description: 'The-sat cast is off after a new friend: a rat! Ant, apple, sun, star, snake, cat — all mid-chase. The potato skips the chase — he’s chilling in his deck chair, and the rat joins him for a cold drink.', cover: '/dark-phonics-books/covers/the-rat.png', materials: false, works: true },
   ] },
   { n: 21, sound: 'h', title: 'H, the Panting Pup', catchphrase: '“ha-ha, hairy hippo!”', decodable: ['hat', 'hen'], words: ['hippo'], books: [
-    { slug: 'the-hot', title: 'The ___ Is Hot!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — all fanning themselves under a blazing sun. The potato isn’t hot — he’s in the shade of his umbrella, cold drink in hand.', cover: '/dark-phonics-books/covers/the-hot.png', materials: false },
+    { slug: 'the-hot', title: 'The ___ Is Hot!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — all fanning themselves under a blazing sun. The potato isn’t hot — he’s in the shade of his umbrella, cold drink in hand.', cover: '/dark-phonics-books/covers/the-hot.png', materials: false, works: true },
   ] },
   { n: 22, sound: 'b', title: 'B for the Bobbing Boat', catchphrase: '“big baby burp!”', decodable: ['bed', 'bug'], words: ['baby'], reader: { slug: 'hen-in-bed', title: 'Hen in Bed' } },
   { n: 23, sound: 'f', title: 'Ffff Like a Fan', catchphrase: '“funny fox in my fan!”', decodable: ['fan', 'off'], words: ['fox', 'fan'] },
