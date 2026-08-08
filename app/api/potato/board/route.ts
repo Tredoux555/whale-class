@@ -42,6 +42,8 @@ interface JobRow {
   kind?: string;
   media_ids?: string[] | null;
   excused_child_ids?: string[] | null;
+  /** v1.3 — null until the teacher publishes; absent before migration 321 */
+  sent_at?: string | null;
 }
 
 export async function GET(request: NextRequest) {
@@ -66,9 +68,11 @@ export async function GET(request: NextRequest) {
     ]);
 
     // Every job for this class this week — one query for the whole board.
-    const jobColumns = caps.jobs
-      ? 'id, child_id, status, storage_path, created_at, kind, media_ids, excused_child_ids'
-      : 'id, child_id, status, storage_path, created_at';
+    const jobColumns = [
+      'id, child_id, status, storage_path, created_at',
+      caps.jobs ? ', kind, media_ids, excused_child_ids' : '',
+      caps.send ? ', sent_at' : '',
+    ].join('');
     const { data: jobData, error: jobError } = await supabase
       .from('tp_montage_jobs')
       .select(jobColumns)
@@ -102,7 +106,14 @@ export async function GET(request: NextRequest) {
           ? {
               id: job.id,
               status: job.status,
+              // The teacher may preview her own unsent film — the proxy already
+              // allows any teacher of the class to read the object, so this URL
+              // is safe to hand her whether or not it has been published.
               videoUrl: job.status === 'done' ? proxyUrl(job.storage_path) : null,
+              // 🚨 v1.3: rendered is not published. Pre-migration there is no
+              // sent_at, so everything done counts as sent — v1.2 behaviour.
+              isSent: caps.send ? !!job.sent_at : true,
+              sentAt: job.sent_at ?? null,
             }
           : null,
       };
@@ -136,6 +147,9 @@ export async function GET(request: NextRequest) {
               ? {
                   id: classJob.id,
                   status: classJob.status,
+                  // Same law for the class film: made is not sent.
+                  isSent: caps.send ? !!classJob.sent_at : true,
+                  sentAt: classJob.sent_at ?? null,
                   photoCount: classJob.media_ids?.length ?? 0,
                   videoUrl: classJob.status === 'done' ? proxyUrl(classJob.storage_path) : null,
                   excused: (classJob.excused_child_ids ?? [])

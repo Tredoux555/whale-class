@@ -244,6 +244,48 @@ export function IconPeople({ size = 18, color = '#3E93C4' }: IconProps) {
   );
 }
 
+// ------------------------------------------------------------ v1.3 icons ----
+
+export function IconEye({ size = 18, color = '#23395B' }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M2.6 12S6.2 5.8 12 5.8 21.4 12 21.4 12 17.8 18.2 12 18.2 2.6 12 2.6 12Z" stroke={color} strokeWidth="2" strokeLinejoin="round" />
+      <circle cx="12" cy="12" r="3.4" stroke={color} strokeWidth="2" />
+    </svg>
+  );
+}
+
+export function IconSend({ size = 18, color = '#23395B' }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M20.6 3.4 10.9 13.1M20.6 3.4l-6.2 17.2-3.5-7.5-7.5-3.5L20.6 3.4Z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function IconRedo({ size = 17, color = '#23395B' }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M20 5.6v5.2h-5.2" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M19.3 10.8a7.6 7.6 0 1 0-1.6 6" stroke={color} strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function IconSun({ size = 18, color = '#23395B' }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="4.2" fill={color} />
+      <path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M18.5 5.5l-1.7 1.7M7.2 16.8l-1.7 1.7" stroke={color} strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/** Hollow star — a photo the teacher has tapped OUT of the film. */
+export function IconStarOutline({ size = 14, color = 'rgba(35,57,91,.42)' }: IconProps) {
+  return <IconStar size={size} color={color} filled={false} />;
+}
+
 // ----------------------------------------------------------- brand marks ----
 
 /**

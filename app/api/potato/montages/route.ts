@@ -12,6 +12,14 @@
 // Only `done` jobs with a storage_path are ever returned: a queued or failed
 // render must never surface as a broken player in a parent's hand.
 //
+// 🚨 v1.3 PUBLISH GATE — THE PRODUCT LAW
+// A parent sees a film only when status='done' AND sent_at IS NOT NULL. A film
+// that has rendered but not been sent is the TEACHER's, and hers alone, until
+// she has watched it and tapped Send. Rendering is not publishing.
+//
+// The teacher's own list is deliberately NOT gated: she must be able to see —
+// and preview — exactly the films that are still waiting on her.
+//
 // 🚨 PRE-MIGRATION: `kind` may not exist yet. This route feature-detects and
 // falls back to exactly v1.0 behaviour — child films only, no class films, no
 // branding. A parent's feed keeps working through the deploy window.
@@ -34,6 +42,7 @@ export const dynamic = 'force-dynamic';
 interface JobRow {
   id: string;
   child_id: string | null;
+  sent_at?: string | null;
   week_start: string;
   storage_path: string | null;
   media_ids: string[] | null;
@@ -100,9 +109,11 @@ export async function GET(request: NextRequest) {
       childName = child.name;
     }
 
-    const columns = caps.jobs
-      ? 'id, child_id, week_start, storage_path, media_ids, created_at, completed_at, kind, excused_child_ids'
-      : 'id, child_id, week_start, storage_path, media_ids, created_at, completed_at';
+    const columns = [
+      'id, child_id, week_start, storage_path, media_ids, created_at, completed_at',
+      caps.jobs ? ', kind, excused_child_ids' : '',
+      caps.send ? ', sent_at' : '',
+    ].join('');
 
     let query = supabase
       .from('tp_montage_jobs')
@@ -110,6 +121,13 @@ export async function GET(request: NextRequest) {
       .eq('class_id', classId)
       .eq('status', 'done')
       .not('storage_path', 'is', null);
+
+    // 🚨 THE GATE. Parents get published films only. Pre-migration `sent_at`
+    // does not exist, so there is nothing to filter on and behaviour falls back
+    // to v1.2 — every rendered film visible — rather than hiding the lot.
+    if (isParent && caps.send) {
+      query = query.not('sent_at', 'is', null);
+    }
 
     if (caps.jobs) {
       // The child's own films OR the class's films. Before migration 319 there
@@ -139,6 +157,9 @@ export async function GET(request: NextRequest) {
       films.push({
         id: job.id,
         kind,
+        // Teacher-facing: which films are still waiting on her.
+        sentAt: job.sent_at ?? null,
+        isSent: caps.send ? !!job.sent_at : true,
         childId: job.child_id,
         weekStart: job.week_start,
         weekLabel: weekLabel(job.week_start),

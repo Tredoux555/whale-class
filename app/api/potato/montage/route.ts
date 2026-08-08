@@ -3,10 +3,15 @@
 // Body: { childId, weekStart? }
 //
 // 🚨 media_ids are derived SERVER-side from that child's photos for that week,
-// using the same query shape the board counted with. A client may never supply
-// a media list — that is the security contract this product inherits from
-// Montree, and it is also what keeps the film honest: what the bar showed is
-// what the film contains.
+// using the same query shape the board counted with.
+//
+// v1.3 adds an optional `excludedMediaIds` — the mini-picker's deselect model.
+// The client still may NOT supply a media list: it may only SUBTRACT from the
+// set the server already derived. Anything it names that is not one of this
+// child's photos this week is simply not in the set to remove, so the worst a
+// hostile caller can do is make its own child's film shorter. That keeps the
+// original security contract intact while letting a teacher drop the blurry
+// ones — which is the whole point of the picker.
 //
 // Every row in tp_montage_jobs is one deliberate tap. This table IS the ledger.
 
@@ -19,6 +24,7 @@ import {
   loadWeekPhotos,
   isSetupPending,
   MONTAGE_THRESHOLD,
+  CHILD_FILM_MIN,
 } from '@/lib/potato/db';
 import { resolveWeekStart } from '@/lib/potato/week';
 
@@ -34,7 +40,11 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
-  const payload = (body ?? {}) as { childId?: unknown; weekStart?: unknown };
+  const payload = (body ?? {}) as {
+    childId?: unknown;
+    weekStart?: unknown;
+    excludedMediaIds?: unknown;
+  };
   const childId = typeof payload.childId === 'string' ? payload.childId : '';
   if (!UUID_RE.test(childId)) {
     return NextResponse.json({ error: 'Invalid child id' }, { status: 400 });
@@ -75,15 +85,33 @@ export async function POST(request: NextRequest) {
     }
 
     const week = await loadWeekPhotos(supabase, session.classId, weekStart, klass.tz);
-    const mine = week.byChild.get(child.id) ?? [];
+    const derived = week.byChild.get(child.id) ?? [];
 
-    if (mine.length < MONTAGE_THRESHOLD) {
-      const short = MONTAGE_THRESHOLD - mine.length;
+    // Subtract whatever the teacher tapped out. Absent field = v1.2 behaviour,
+    // so an older cached bundle keeps working untouched.
+    const excluded = new Set(
+      Array.isArray(payload.excludedMediaIds)
+        ? payload.excludedMediaIds.filter(
+            (v): v is string => typeof v === 'string' && UUID_RE.test(v),
+          )
+        : [],
+    );
+    const usedPicker = excluded.size > 0;
+    const mine = derived.filter((photo) => !excluded.has(photo.id));
+
+    // The floor. Below four there is no film to speak of; between four and
+    // eight the UI nudges and lets her through.
+    if (mine.length < CHILD_FILM_MIN) {
+      const message = usedPicker
+        ? `Keep at least ${CHILD_FILM_MIN} photos — ${mine.length} left in ${child.name}’s film.`
+        : `${child.name} needs at least ${CHILD_FILM_MIN} photos this week — ${derived.length} so far.`;
       return NextResponse.json(
         {
-          error: `${child.name} needs ${MONTAGE_THRESHOLD} photos this week — ${mine.length} so far, ${short} to go.`,
+          error: message,
           photoCount: mine.length,
-          threshold: MONTAGE_THRESHOLD,
+          available: derived.length,
+          threshold: CHILD_FILM_MIN,
+          encouraged: MONTAGE_THRESHOLD,
         },
         { status: 400 },
       );

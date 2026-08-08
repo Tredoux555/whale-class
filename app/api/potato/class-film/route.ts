@@ -64,7 +64,11 @@ export async function GET(request: NextRequest) {
     // second render while one is already cooking.
     const { data: liveJob, error: jobError } = await supabase
       .from('tp_montage_jobs')
-      .select('id, status, excused_child_ids, media_ids, created_at')
+      .select(
+        caps.send
+          ? 'id, status, excused_child_ids, media_ids, created_at, sent_at'
+          : 'id, status, excused_child_ids, media_ids, created_at',
+      )
       .eq('class_id', session.classId)
       .eq('week_start', weekStart)
       .eq('kind', 'class')
@@ -104,6 +108,8 @@ export async function GET(request: NextRequest) {
             id: liveJob.id,
             status: liveJob.status,
             photoCount: (liveJob.media_ids as string[] | null)?.length ?? 0,
+            // v1.3: a rendered class film still waits for the teacher to send.
+            isSent: caps.send ? !!liveJob.sent_at : true,
             excusedChildIds: (liveJob.excused_child_ids as string[] | null) ?? [],
           }
         : null,

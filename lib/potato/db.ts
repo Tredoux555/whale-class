@@ -7,8 +7,21 @@ import { weekRange } from '@/lib/potato/week';
 
 export const POTATO_BUCKET = 'potato-snaps';
 
-/** How many photos a child needs before a montage can be made. */
+/**
+ * How many photos a child needs before the board offers to make a film.
+ * This is the BAR's target and the encouragement — not a hard rule any more.
+ */
 export const MONTAGE_THRESHOLD = 8;
+
+/**
+ * v1.3: the real floor for a child film, enforced server-side.
+ *
+ * The mini-picker lets a teacher drop weak shots, and a good six-photo film
+ * beats a padded nine-photo one. Below four there is no film to speak of, so
+ * that is where the wall is. Between 4 and 7 the UI nudges and lets her
+ * through — advice, not a wall.
+ */
+export const CHILD_FILM_MIN = 4;
 
 /** A class film is at least 8 and at most 40 photos. See lib/potato/classfilm.ts. */
 export const CLASS_FILM_BUCKET_PREFIX = 'branding';
@@ -90,6 +103,18 @@ interface Capabilities {
   jobs: boolean;
   /** tp_classes.school_name / .school_logo_path / .emblem_path exist */
   classes: boolean;
+  /**
+   * v1.3 — tp_montage_jobs.sent_at exists, so make-then-send is enforceable.
+   *
+   * 🚨 THE DEGRADE HERE IS THE INTERESTING ONE. Without this column there is
+   * nowhere to record that a teacher approved a film, so the publish gate
+   * cannot be enforced — and a gate that cannot be enforced must not be
+   * PRETENDED. Falling back to "every done film is visible" is exactly v1.2's
+   * behaviour: no film disappears from a parent's feed during the deploy
+   * window, and no film is silently held back either. The moment 321 lands,
+   * the gate switches on for everything rendered from then.
+   */
+  send: boolean;
 }
 
 const NEGATIVE_TTL_MS = 30_000;
@@ -111,14 +136,15 @@ async function probeColumn(
 export async function potatoCapabilities(supabase: UntypedClient): Promise<Capabilities> {
   const now = Date.now();
   if (capsCache) {
-    const fresh = capsCache.value.jobs && capsCache.value.classes;
+    const fresh = capsCache.value.jobs && capsCache.value.classes && capsCache.value.send;
     if (fresh || now - capsCache.at < NEGATIVE_TTL_MS) return capsCache.value;
   }
-  const [jobs, classes] = await Promise.all([
+  const [jobs, classes, send] = await Promise.all([
     probeColumn(supabase, 'tp_montage_jobs', 'kind, excused_child_ids'),
     probeColumn(supabase, 'tp_classes', 'school_name, school_logo_path, emblem_path'),
+    probeColumn(supabase, 'tp_montage_jobs', 'sent_at'),
   ]);
-  const value: Capabilities = { jobs, classes };
+  const value: Capabilities = { jobs, classes, send };
   capsCache = { value, at: now };
   return value;
 }

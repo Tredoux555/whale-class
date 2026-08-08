@@ -33,10 +33,13 @@ import {
   IconPlay,
   IconBack,
   IconChevron,
+  IconEye,
 } from '@/components/potato/PotatoBits';
 import { getJson, postJson, messageFrom, PotatoApiError } from '@/lib/potato/client';
 import { enqueuePhoto } from '@/lib/potato/offline/sync-manager';
 import { usePotatoQueue } from '@/lib/potato/offline/usePotatoQueue';
+import ChildFilmPicker from '@/components/potato/ChildFilmPicker';
+import PreviewSendSheet, { type PreviewFilm } from '@/components/potato/PreviewSendSheet';
 import { currentWeekStartLocal, addDays, weekLabel } from '@/lib/potato/week';
 
 interface BoardChild {
@@ -44,7 +47,7 @@ interface BoardChild {
   name: string;
   faceUrl: string | null;
   photoCount: number;
-  latestJob: { id: string; status: string; videoUrl: string | null } | null;
+  latestJob: { id: string; status: string; videoUrl: string | null; isSent: boolean; sentAt: string | null } | null;
 }
 
 interface Branding {
@@ -65,6 +68,8 @@ interface ClassFilmState {
     photoCount: number;
     videoUrl: string | null;
     excused: string[];
+    isSent: boolean;
+    sentAt: string | null;
   } | null;
 }
 
@@ -105,6 +110,14 @@ export default function CaptureBoardPage() {
   // The offline capture queue. Photos live on the device first; this reports
   // what is still owed to the server and surfaces anything it refused.
   const queue = usePotatoQueue(board?.class.id ?? null);
+
+  // v1.3 — make and send are separate acts, so the board drives two sheets:
+  // the mini-picker (choose what goes in) and preview+send (decide to publish).
+  const [picking, setPicking] = useState<{ id: string; name: string } | null>(null);
+  // Remembered per child so "Remake" returns to the picker with the selection
+  // the teacher already made, rather than making her start again.
+  const [excludedByChild, setExcludedByChild] = useState<Record<string, string[]>>({});
+  const [previewing, setPreviewing] = useState<PreviewFilm | null>(null);
 
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showToast = useCallback((text: string, bad = false) => {
@@ -209,11 +222,17 @@ export default function CaptureBoardPage() {
   }, [pendingPhoto, tagged, saving, board, showToast, load, weekStart, queue]);
 
   const makeMontage = useCallback(
-    async (child: BoardChild) => {
+    async (child: { id: string; name: string }, excludedMediaIds: string[]) => {
       if (makingFor) return;
       setMakingFor(child.id);
       try {
-        await postJson('/api/potato/montage', { childId: child.id, weekStart });
+        await postJson('/api/potato/montage', {
+          childId: child.id,
+          weekStart,
+          excludedMediaIds,
+        });
+        setExcludedByChild((prev) => ({ ...prev, [child.id]: excludedMediaIds }));
+        setPicking(null);
         showToast(`Making ${child.name}’s film…`);
         await load(weekStart, true);
       } catch (err) {
@@ -460,6 +479,18 @@ export default function CaptureBoardPage() {
             state={board.classFilm}
             weekStart={weekStart}
             onWatch={(url) => setWatching({ name: `${board.class.name} · class film`, url })}
+            onPreview={() =>
+              setPreviewing({
+                jobId: board.classFilm!.job!.id,
+                kind: 'class',
+                childId: null,
+                title: board.class.name,
+                weekLabel: board.weekLabel,
+                photoCount: board.classFilm!.job!.photoCount,
+                videoUrl: board.classFilm!.job!.videoUrl,
+                familyCount: board.children.length,
+              })
+            }
           />
         ) : null}
 
@@ -487,7 +518,18 @@ export default function CaptureBoardPage() {
               child={child}
               threshold={threshold}
               busy={makingFor === child.id}
-              onMake={() => makeMontage(child)}
+              onPick={() => setPicking({ id: child.id, name: child.name })}
+              onPreview={() =>
+                setPreviewing({
+                  jobId: child.latestJob!.id,
+                  kind: 'child',
+                  childId: child.id,
+                  title: child.name,
+                  weekLabel: board?.weekLabel ?? '',
+                  photoCount: child.photoCount,
+                  videoUrl: child.latestJob!.videoUrl,
+                })
+              }
               onWatch={(url) => setWatching({ name: child.name, url })}
               weekStart={weekStart}
             />
@@ -529,6 +571,44 @@ export default function CaptureBoardPage() {
         </div>
       ) : null}
 
+      {picking ? (
+        <ChildFilmPicker
+          childId={picking.id}
+          childName={picking.name}
+          weekStart={weekStart}
+          initialExcluded={excludedByChild[picking.id]}
+          busy={makingFor === picking.id}
+          onCancel={() => setPicking(null)}
+          onMake={(excludedMediaIds) => makeMontage(picking, excludedMediaIds)}
+        />
+      ) : null}
+
+      {previewing ? (
+        <PreviewSendSheet
+          film={previewing}
+          onClose={() => setPreviewing(null)}
+          onRemake={() => {
+            // Back to the picker with the selection intact. Only a child film
+            // can be remade here; a class film is rebuilt in its own picker.
+            const film = previewing;
+            setPreviewing(null);
+            if (film.kind === 'child' && film.childId) {
+              // By id. Two children with the same name is an ordinary week in a
+              // kindergarten, and a name match would reopen the wrong picker.
+              const child = board?.children.find((c) => c.id === film.childId);
+              if (child) setPicking({ id: child.id, name: child.name });
+            } else if (film.kind === 'child') {
+              console.error('[potato] preview had no childId — cannot remake');
+            } else {
+              router.push(`/potato/teacher/class-film?week=${encodeURIComponent(weekStart)}`);
+            }
+          }}
+          onSent={() => {
+            load(weekStart, true).catch((err) => console.error('[potato] board refresh failed:', err));
+          }}
+        />
+      ) : null}
+
       {toast ? <div className={`pt-toast ${toast.bad ? 'pt-toast--bad' : ''}`.trim()}>{toast.text}</div> : null}
     </div>
   );
@@ -548,10 +628,12 @@ function ClassFilmCard({
   state,
   weekStart,
   onWatch,
+  onPreview,
 }: {
   state: ClassFilmState;
   weekStart: string;
   onWatch: (url: string) => void;
+  onPreview: () => void;
 }) {
   const job = state.job;
   const status = job?.status;
@@ -568,6 +650,28 @@ function ClassFilmCard({
         </div>
         <div className="pt-filmcard__cta">~4 min</div>
         <div className="pt-filmcard__stripe" />
+      </div>
+    );
+  }
+
+  // Same law as a child film: made is not sent.
+  if (status === 'done' && job?.isSent === false) {
+    return (
+      <div className="pt-filmcard pt-filmcard--send">
+        <div className="pt-filmcard__ic">
+          <IconFilm size={22} color="#23395B" />
+        </div>
+        <div>
+          <div className="pt-filmcard__t">Class film ready</div>
+          <div className="pt-filmcard__s">{`${job.photoCount} photos · only you can see it`}</div>
+        </div>
+        <button
+          type="button"
+          className="pt-btn pt-btn--primary pt-btn--glow pt-btn--sm"
+          onClick={onPreview}
+        >
+          <IconEye size={17} /> Preview
+        </button>
       </div>
     );
   }
@@ -630,14 +734,18 @@ function ChildRow({
   child,
   threshold,
   busy,
-  onMake,
+  onPick,
+  onPreview,
   onWatch,
   weekStart,
 }: {
   child: BoardChild;
   threshold: number;
   busy: boolean;
-  onMake: () => void;
+  /** open the mini-picker — making a film is no longer one tap */
+  onPick: () => void;
+  /** open preview & send for an already-rendered, unsent film */
+  onPreview: () => void;
   onWatch: (url: string) => void;
   weekStart: string;
 }) {
@@ -645,9 +753,13 @@ function ChildRow({
   const status = child.latestJob?.status;
   const isEmpty = count === 0;
   const isCooking = status === 'queued' || status === 'processing';
-  const isSent = status === 'done';
+  // 🚨 v1.3: 'done' now splits in two. A rendered film is READY TO SEND until
+  // the teacher has previewed it and tapped Send; only then is it Sent.
+  const isDone = status === 'done';
+  const isReadyToSend = isDone && child.latestJob?.isSent === false;
+  const isSent = isDone && child.latestJob?.isSent !== false;
   const isFailed = status === 'failed';
-  const isReady = count >= threshold && !isCooking && !isSent;
+  const isReady = count >= threshold && !isCooking && !isDone;
 
   const pct = Math.max(0, Math.min(1, count / threshold)) * 100;
   const gold = count >= threshold;
@@ -661,7 +773,13 @@ function ChildRow({
     .filter(Boolean)
     .join(' ');
 
-  const rowClass = ['pt-row', isReady ? 'pt-row--ready' : '', isEmpty ? 'pt-row--empty' : '']
+  const rowClass = [
+    'pt-row',
+    isReady ? 'pt-row--ready' : '',
+    // The warmest card on the board, because it is the only one waiting on her.
+    isReadyToSend ? 'pt-row--send' : '',
+    isEmpty ? 'pt-row--empty' : '',
+  ]
     .filter(Boolean)
     .join(' ');
 
@@ -712,6 +830,23 @@ function ChildRow({
             </div>
             <div className="pt-status__m">~2 min</div>
           </div>
+        ) : isReadyToSend ? (
+          <>
+            <div className="pt-status pt-status--gold" style={{ marginBottom: 10 }}>
+              <div className="pt-tick pt-tick--gold">
+                <IconCheck size={13} color="#23395B" weight={3.6} />
+              </div>
+              <div className="pt-status__t">Film ready</div>
+            </div>
+            <button
+              type="button"
+              className="pt-btn pt-btn--primary pt-btn--glow pt-btn--md"
+              style={{ width: '100%' }}
+              onClick={onPreview}
+            >
+              <IconEye size={19} /> Preview &amp; send
+            </button>
+          </>
         ) : isSent ? (
           <div className="pt-status">
             <div className="pt-tick">
@@ -732,14 +867,14 @@ function ChildRow({
               </div>
             </div>
             <div className="pt-rowact">
-              <button type="button" className="pt-btn pt-btn--primary pt-btn--md" style={{ width: '100%' }} disabled={busy} onClick={onMake}>
+              <button type="button" className="pt-btn pt-btn--primary pt-btn--md" style={{ width: '100%' }} disabled={busy} onClick={onPick}>
                 <IconFilm size={19} /> {busy ? 'Starting…' : 'Try again'}
               </button>
             </div>
           </>
         ) : isReady ? (
           <div className="pt-rowact">
-            <button type="button" className="pt-btn pt-btn--primary pt-btn--md" style={{ width: '100%' }} disabled={busy} onClick={onMake}>
+            <button type="button" className="pt-btn pt-btn--primary pt-btn--md" style={{ width: '100%' }} disabled={busy} onClick={onPick}>
               <IconFilm size={19} /> {busy ? 'Starting…' : 'Make film'}
             </button>
           </div>
