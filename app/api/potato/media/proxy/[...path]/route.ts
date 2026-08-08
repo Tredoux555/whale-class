@@ -63,7 +63,7 @@ async function isAuthorized(request: NextRequest, segments: string[]): Promise<b
 
   const teacher = await verifyPotatoTeacher(request);
   if (teacher) {
-    // A teacher owns everything filed under her own class.
+    // A teacher owns everything filed under her own class, branding included.
     return teacher.classId === classId;
   }
 
@@ -74,10 +74,19 @@ async function isAuthorized(request: NextRequest, segments: string[]): Promise<b
     if (kind === 'faces' && segments.length === 4) {
       return segments[3] === `${parent.childId}.jpg`;
     }
-    // Their child's films.
     if (kind === 'montages' && segments.length >= 4) {
+      // v1.1: the CLASS film is for every parent in the class. The literal
+      // segment 'class' can never collide with a child id — child ids are
+      // uuids, and the class film is written to
+      //   class/<classId>/montages/class/<weekStart>-<jobId>.mp4
+      if (segments[3] === 'class') return true;
+      // …and their own child's films.
       return segments[3] === parent.childId;
     }
+    // v1.1: school logo + class emblem. These are the school's public face —
+    // they appear on the parent's own feed and at the end of every film — so
+    // any parent of THIS class may read them. Still never cross-class.
+    if (kind === 'branding') return true;
     // Raw classroom photos are NOT parent-reachable. The storage path carries
     // no child id, so ownership cannot be proven from the path, and a single
     // shot may hold four other people's children. Parents get films only.

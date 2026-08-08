@@ -14,13 +14,23 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Avatar, IconBack, IconTrash } from '@/components/potato/PotatoBits';
-import { getJson, deleteJson, messageFrom, PotatoApiError } from '@/lib/potato/client';
+import Lightbox, { type LightboxPhoto } from '@/components/potato/Lightbox';
+import { getJson, deleteJson, patchJson, messageFrom, PotatoApiError } from '@/lib/potato/client';
 import { currentWeekStartLocal } from '@/lib/potato/week';
 
 interface Photo {
   id: string;
   url: string | null;
   capturedAt: string;
+  /** v1.1 — the lightbox shows and fixes these */
+  dayLabel: string;
+  childIds: string[];
+}
+
+interface RosterChild {
+  id: string;
+  name: string;
+  faceUrl: string | null;
 }
 
 interface PhotosResponse {
@@ -28,6 +38,7 @@ interface PhotosResponse {
   weekStart: string;
   weekLabel: string;
   threshold: number;
+  children: RosterChild[];
   photos: Photo[];
 }
 
@@ -41,6 +52,7 @@ export default function ChildPhotosPage() {
   const [loading, setLoading] = useState(true);
   const [fatal, setFatal] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [lightboxAt, setLightboxAt] = useState<number | null>(null);
   const [toast, setToast] = useState<{ text: string; bad?: boolean } | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -82,8 +94,10 @@ export default function ChildPhotosPage() {
     load();
   }, [load]);
 
+  // Takes the minimum it needs, so the grid (Photo) and the lightbox
+  // (LightboxPhoto) can both hand it a row.
   const remove = useCallback(
-    async (photo: Photo) => {
+    async (photo: { id: string }) => {
       if (deleting) return;
       if (!window.confirm('Delete this photo?')) return;
       setDeleting(photo.id);
@@ -101,8 +115,38 @@ export default function ChildPhotosPage() {
       } finally {
         setDeleting(null);
       }
+      // Keep the viewer pointed at something real: deleting the last photo
+      // closes it, deleting any other steps back rather than off the end.
+      setLightboxAt((at) => {
+        if (at === null) return null;
+        const remaining = (before?.photos.length ?? 1) - 1;
+        if (remaining <= 0) return null;
+        return Math.min(at, remaining - 1);
+      });
     },
     [deleting, data, showToast],
+  );
+
+  const retag = useCallback(
+    async (photo: LightboxPhoto, childIds: string[]) => {
+      const before = data;
+      // Optimistic — a tag fix should feel like flicking a switch.
+      setData((current) =>
+        current
+          ? {
+              ...current,
+              photos: current.photos.map((p) => (p.id === photo.id ? { ...p, childIds } : p)),
+            }
+          : current,
+      );
+      try {
+        await patchJson(`/api/potato/photos/${photo.id}`, { childIds });
+      } catch (err) {
+        setData(before);
+        showToast(messageFrom(err, 'Could not save those tags.'), true);
+      }
+    },
+    [data, showToast],
   );
 
   const count = data?.photos.length ?? 0;
@@ -124,7 +168,7 @@ export default function ChildPhotosPage() {
       <div className="pt-scroll">
         <div className="pt-seclabel">
           <h2>{`${count} of ${threshold} this week`}</h2>
-          <span>TAP ✕ TO DELETE</span>
+          <span>TAP A PHOTO TO OPEN IT</span>
         </div>
 
         {loading ? (
@@ -135,12 +179,19 @@ export default function ChildPhotosPage() {
           <div className="pt-empty">No photos yet this week.</div>
         ) : (
           <div className="pt-photogrid">
-            {data!.photos.map((photo) => (
+            {data!.photos.map((photo, i) => (
               <div className="pt-thumb" key={photo.id}>
-                {photo.url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={photo.url} alt="" loading="lazy" />
-                ) : null}
+                <button
+                  type="button"
+                  onClick={() => setLightboxAt(i)}
+                  aria-label={`Open ${photo.dayLabel || 'this photo'}`}
+                  style={{ display: 'block', width: '100%', height: '100%', padding: 0, border: 'none', background: 'none', cursor: 'pointer' }}
+                >
+                  {photo.url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={photo.url} alt="" loading="lazy" />
+                  ) : null}
+                </button>
                 <button
                   type="button"
                   className="pt-thumb__x"
@@ -159,6 +210,19 @@ export default function ChildPhotosPage() {
           Whatever is here is what goes into the film.
         </p>
       </div>
+
+      {lightboxAt !== null && data && data.photos[lightboxAt] ? (
+        <Lightbox
+          photos={data.photos}
+          index={lightboxAt}
+          roster={data.children}
+          onIndexChange={setLightboxAt}
+          onClose={() => setLightboxAt(null)}
+          onDelete={remove}
+          onRetag={retag}
+          busy={deleting !== null}
+        />
+      ) : null}
 
       {toast ? <div className={`pt-toast ${toast.bad ? 'pt-toast--bad' : ''}`.trim()}>{toast.text}</div> : null}
     </div>

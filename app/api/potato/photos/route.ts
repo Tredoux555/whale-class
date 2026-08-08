@@ -1,6 +1,11 @@
 // GET /api/potato/photos?childId=…&week=YYYY-MM-DD — the review strip.
+//
 // Teacher only. Lists one child's photos for a week so bad shots can be deleted
-// before the montage is made (deleting IS the curation — there is no AI here).
+// before the film is made (deleting IS the curation — there is no AI here).
+//
+// v1.1 adds what the full-screen lightbox needs: the day each shot belongs to
+// (in the CLASS timezone), who is tagged in it, and the class roster so a tag
+// can be fixed without a second round trip.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyPotatoTeacher, UUID_RE } from '@/lib/potato/auth';
@@ -8,12 +13,13 @@ import {
   potatoDb,
   loadClass,
   loadOwnedChild,
+  listChildren,
   loadWeekPhotos,
   isSetupPending,
   proxyUrl,
   MONTAGE_THRESHOLD,
 } from '@/lib/potato/db';
-import { resolveWeekStart, weekLabel } from '@/lib/potato/week';
+import { resolveWeekStart, weekLabel, dayLabelInZone } from '@/lib/potato/week';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,7 +46,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'week must be YYYY-MM-DD' }, { status: 400 });
     }
 
-    const week = await loadWeekPhotos(supabase, session.classId, weekStart, klass.tz);
+    const [roster, week] = await Promise.all([
+      listChildren(supabase, session.classId),
+      loadWeekPhotos(supabase, session.classId, weekStart, klass.tz),
+    ]);
     const mine = week.byChild.get(child.id) ?? [];
 
     return NextResponse.json({
@@ -49,10 +58,18 @@ export async function GET(request: NextRequest) {
       weekStart,
       weekLabel: weekLabel(weekStart),
       threshold: MONTAGE_THRESHOLD,
+      // The whole roster, so the lightbox can offer a tag fix in place.
+      children: roster.map((c) => ({
+        id: c.id,
+        name: c.name,
+        faceUrl: proxyUrl(c.photo_path),
+      })),
       photos: mine.map((photo) => ({
         id: photo.id,
         url: proxyUrl(photo.storage_path),
         capturedAt: photo.captured_at,
+        dayLabel: dayLabelInZone(photo.captured_at, klass.tz),
+        childIds: week.tagsByPhoto.get(photo.id) ?? [],
       })),
     });
   } catch (error) {

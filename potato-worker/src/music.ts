@@ -5,6 +5,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { MUSIC_DIR } from './config';
+import { MAX_CLASS_PHOTOS } from './hygiene';
+import { maxPhotosForTrack } from '../remotion/src/timing';
 import type { Track } from '../remotion/src/timing';
 
 // Usable defaults: the 5 STEADY/ACCEPTABLE slots. Excludes tender-strings
@@ -46,6 +48,31 @@ export function validateMusicAssets(): void {
     throw new Error(
       `Music assets missing from ${MUSIC_DIR}: ${missing.join(', ')}. ` +
         `Run scripts/prepare-assets.sh before building the image.`
+    );
+  }
+
+  // 🚨 v1.1 capacity gate. A class film gives every photo its own downbeat, so
+  // a track whose grid is shorter than the photo count would collapse the tail
+  // cuts to zero length — the last photos would silently never appear, and in
+  // a class film that means a child is missing from the "everyone is in it"
+  // video. Better a loud boot failure than a quietly wrong film.
+  const short: string[] = [];
+  for (const slug of USABLE_SLUGS) {
+    const beats = loadBeats(slug);
+    const capacity = maxPhotosForTrack({
+      slug,
+      bpm: beats.bpm,
+      downbeats: beats.downbeats,
+      durationSec: beats.duration,
+    });
+    if (capacity < MAX_CLASS_PHOTOS) {
+      short.push(`${slug} (${capacity} < ${MAX_CLASS_PHOTOS})`);
+    }
+  }
+  if (short.length) {
+    throw new Error(
+      `Music grid too short for a ${MAX_CLASS_PHOTOS}-photo class film: ${short.join(', ')}. ` +
+        `Beat-map a longer cut, or lower MAX_CLASS_PHOTOS in src/hygiene.ts.`
     );
   }
 }

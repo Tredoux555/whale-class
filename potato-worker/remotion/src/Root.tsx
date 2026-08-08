@@ -13,13 +13,23 @@ const stubDownbeats = Array.from({ length: 40 }, (_, i) => 0.25 + i * 2.6);
 const defaultProps: MontageProps = {
   childName: 'Ellie',
   subtitle: 'Week of August 3',
-  eyebrow: 'Potato Snaps',
+  eyebrow: 'Willowbank Primary',
   photos: [],
   track: {
     slug: 'bright-week',
     bpm: 92,
     downbeats: stubDownbeats,
     durationSec: 128,
+  },
+  // Studio preview of the branded end card with the initials fallback (no
+  // logo/emblem files exist outside a real job).
+  branding: {
+    schoolName: 'Willowbank Primary',
+    className: 'Sunflower Class',
+    weekLabel: 'WEEK OF AUG 3–7',
+    logoFile: null,
+    emblemFile: null,
+    initials: 'WP',
   },
 };
 

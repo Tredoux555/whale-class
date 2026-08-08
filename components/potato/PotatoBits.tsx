@@ -166,9 +166,145 @@ export function IconPlus({ size = 18, color = '#23395B' }: IconProps) {
 export function IconTrash({ size = 15, color = '#D6503F' }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M4.5 6.6h15M9.4 6.6V4.8h5.2v1.8M6.6 6.6l.8 12.2h9.2l.8-12.2" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M4.6 6.8h14.8M9.6 6.6V4.9h4.8v1.7M6.6 6.8l.9 12.3h9l.9-12.3" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
+}
+
+// ------------------------------------------------------------ v1.1 icons ----
+
+export function IconStar({ size = 15, color = '#23395B', filled = false }: IconProps & { filled?: boolean }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M12 3.6l2.55 5.3 5.85.78-4.28 4.03 1.09 5.79L12 16.72 6.79 19.5l1.09-5.79L3.6 9.68l5.85-.78L12 3.6Z"
+        fill={filled ? color : 'none'}
+        stroke={color}
+        strokeWidth="2.1"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function IconSpark({ size = 16, color = '#23395B' }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 2.6c.9 5 3.5 7.6 8.5 8.4-5 .9-7.6 3.5-8.5 8.5-.9-5-3.5-7.6-8.5-8.5 5-.8 7.6-3.4 8.5-8.4Z" fill={color} />
+    </svg>
+  );
+}
+
+export function IconX({ size = 14, color = '#23395B' }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M6.4 6.4l11.2 11.2M17.6 6.4L6.4 17.6" stroke={color} strokeWidth="2.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function IconChevron({ size = 16, color = '#23395B' }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M9.5 5.5 16 12l-6.5 6.5" stroke={color} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function IconUpload({ size = 16, color = '#23395B' }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M12 16.4V4.9m0 0L7.6 9.3M12 4.9l4.4 4.4M4.6 15.6v2.4a2 2 0 0 0 2 2h10.8a2 2 0 0 0 2-2v-2.4"
+        stroke={color}
+        strokeWidth="2.1"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function IconLock({ size = 13, color = '#23395B' }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="4.8" y="10.4" width="14.4" height="9.2" rx="2.6" stroke={color} strokeWidth="2.1" />
+      <path d="M8.4 10.2V8a3.6 3.6 0 0 1 7.2 0v2.2" stroke={color} strokeWidth="2.1" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function IconPeople({ size = 18, color = '#3E93C4' }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="9" cy="8.4" r="3.4" stroke={color} strokeWidth="2" />
+      <path d="M3.4 19.2c.5-3.2 2.8-5 5.6-5s5.1 1.8 5.6 5" stroke={color} strokeWidth="2" strokeLinecap="round" />
+      <path d="M16.2 5.4a3.2 3.2 0 0 1 0 6.1M17.4 14.6c2 .5 3.4 2.2 3.8 4.6" stroke={color} strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// ----------------------------------------------------------- brand marks ----
+
+/**
+ * v1.1 white-label lockup. The app advertises the school, not itself.
+ *
+ * Order is always SCHOOL first, CLASS second, Potato Snaps last. The school
+ * mark is a rounded square (an uploaded asset of any shape, safely cropped);
+ * the class emblem is a circle, matching the children's faces.
+ *
+ * With no upload yet, the fallback is INITIALS IN A CIRCLE at the same size and
+ * weight, so the layout never shifts when HQ uploads. Never a potato — the
+ * potato is our brand, not theirs.
+ */
+export function SchoolMark({
+  url,
+  initials,
+  size = 44,
+  radius,
+}: {
+  url?: string | null;
+  initials: string;
+  size?: number;
+  radius?: number;
+}) {
+  const [broken, setBroken] = React.useState(false);
+  const r = radius ?? Math.round(size * 0.28);
+  if (url && !broken) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        className="pt-brandmark"
+        src={url}
+        alt=""
+        width={size}
+        height={size}
+        style={{ width: size, height: size, borderRadius: r }}
+        onError={() => setBroken(true)}
+      />
+    );
+  }
+  return (
+    <div
+      className="pt-logoph"
+      style={{ width: size, height: size, fontSize: Math.round(size * 0.34), borderRadius: r }}
+    >
+      {initials}
+    </div>
+  );
+}
+
+/** The class emblem: always a circle. Falls back to the class's own initials. */
+export function EmblemMark({
+  url,
+  initials,
+  size = 38,
+}: {
+  url?: string | null;
+  initials: string;
+  size?: number;
+}) {
+  return <SchoolMark url={url} initials={initials} size={size} radius={999} />;
 }
 
 // ---------------------------------------------------------------- avatar ----

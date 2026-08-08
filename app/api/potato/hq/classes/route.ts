@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyPotatoHq, checkPotatoRateLimit, clientKey } from '@/lib/potato/auth';
-import { potatoDb, isSetupPending } from '@/lib/potato/db';
+import { potatoDb, potatoCapabilities, isSetupPending, proxyUrl } from '@/lib/potato/db';
 import { mintUniqueCode } from '@/lib/potato/codes';
 import { safeTimeZone } from '@/lib/potato/week';
 
@@ -20,6 +20,10 @@ interface ClassRow {
   tz: string;
   is_active: boolean;
   created_at: string;
+  /** v1.1 — absent before migration 319 */
+  school_name?: string | null;
+  school_logo_path?: string | null;
+  emblem_path?: string | null;
 }
 
 // HQ is a legitimate rapid-fire caller (unlock, then a list refresh after every
@@ -42,9 +46,11 @@ export async function GET(request: NextRequest) {
 
   try {
     const supabase = potatoDb();
+    const caps = await potatoCapabilities(supabase);
+    const base = 'id, name, login_code, tz, is_active, created_at';
     const { data, error } = await supabase
       .from('tp_classes')
-      .select('id, name, login_code, tz, is_active, created_at')
+      .select(caps.classes ? `${base}, school_name, school_logo_path, emblem_path` : base)
       .order('created_at', { ascending: false })
       .limit(200);
     if (error) throw error;
@@ -78,6 +84,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       ok: true,
+      brandingAvailable: caps.classes,
       classes: classes.map((klass) => ({
         id: klass.id,
         name: klass.name,
@@ -87,7 +94,10 @@ export async function GET(request: NextRequest) {
         createdAt: klass.created_at,
         children: childCount.get(klass.id) ?? 0,
         photos: photoCount.get(klass.id) ?? 0,
-        montages: jobCount.get(klass.id) ?? 0,
+        films: jobCount.get(klass.id) ?? 0,
+        schoolName: klass.school_name ?? null,
+        schoolLogoUrl: proxyUrl(klass.school_logo_path ?? null),
+        emblemUrl: proxyUrl(klass.emblem_path ?? null),
       })),
     });
   } catch (error) {

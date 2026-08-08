@@ -3,18 +3,38 @@
 //   2. Blur gate — variance of the Laplacian; drop the softest outliers only
 //      while more than 12 photos survive
 //   3. Perceptual near-dupe collapse — dHash, hamming <= 6 keeps the sharper
-//   4. >20 -> keep the 20 best-spread chronologically (never the first/last)
+//   4. >maxPhotos -> keep the best-spread chronologically (never the first/last)
 //
 // Chronological order (captured_at asc) is preserved throughout.
+//
+// 🚨 v1.1 CURATED MODE. A class film's photos were hand-picked by the teacher
+// in the picker, and the API validated that EVERY active child appears in at
+// least one of them (addendum §3). If the blur gate or the near-dupe collapse
+// then dropped a photo here, a child could silently vanish from the film —
+// breaking the "Every child is in this one" promise the parent feed prints.
+// So for class films we skip both judgement passes: EXIF-rotate and normalize
+// only. Curation IS the feature; the worker does not second-guess it.
 
 import sharp from 'sharp';
 import type { DownloadedPhoto } from './media';
 
 export const MIN_PHOTOS = 8;
 export const MAX_PHOTOS = 20;
+/** Addendum §3 caps the class-film picker at 40. */
+export const MAX_CLASS_PHOTOS = 40;
 const DEDUPE_HAMMING = 6;
 const BLUR_FLOOR = 12; // never drop below this many for blur reasons
 const BLUR_REL_THRESHOLD = 0.35; // drop only clearly-soft outliers
+
+export interface HygieneOptions {
+  /** Cap on surviving photos. Defaults to MAX_PHOTOS (20) as in v1.0. */
+  maxPhotos?: number;
+  /**
+   * Teacher-curated set: skip the blur gate and the near-dupe collapse so no
+   * hand-picked photo (and therefore no child) can be dropped. Default false.
+   */
+  curated?: boolean;
+}
 
 export interface PhotoDecision {
   id: string;
@@ -121,19 +141,26 @@ async function normalize(oriented: Buffer): Promise<Buffer> {
 }
 
 export async function runHygiene(
-  downloaded: DownloadedPhoto[]
+  downloaded: DownloadedPhoto[],
+  options: HygieneOptions = {}
 ): Promise<HygieneResult> {
+  const maxPhotos = options.maxPhotos ?? MAX_PHOTOS;
+  const curated = options.curated === true;
   const decisions: PhotoDecision[] = [];
 
   // --- analyze: EXIF-orient, then compute blur + hash ---
+  // The blur/hash work is skipped in curated mode — nothing consumes it there,
+  // and it is the most expensive part of the pass on a 40-photo film.
   const analyses: Analysis[] = [];
   for (const d of downloaded) {
     try {
       const oriented = await sharp(d.buffer).rotate().toBuffer(); // auto-orient
-      const [blur, hash] = await Promise.all([
-        laplacianVariance(oriented),
-        dHash(oriented),
-      ]);
+      const [blur, hash] = curated
+        ? [0, 0n]
+        : await Promise.all([
+            laplacianVariance(oriented),
+            dHash(oriented),
+          ]);
       analyses.push({
         id: d.id,
         capturedAt: d.capturedAt,
@@ -152,58 +179,63 @@ export async function runHygiene(
   }
 
   // --- near-dupe collapse (chronological pass, keep the sharper) ---
-  const kept: Analysis[] = [];
-  for (const a of analyses) {
-    let collided = -1;
-    for (let j = 0; j < kept.length; j++) {
-      if (hamming(a.hash, kept[j].hash) <= DEDUPE_HAMMING) {
-        collided = j;
-        break;
+  let kept: Analysis[];
+  if (curated) {
+    kept = analyses.slice();
+  } else {
+    kept = [];
+    for (const a of analyses) {
+      let collided = -1;
+      for (let j = 0; j < kept.length; j++) {
+        if (hamming(a.hash, kept[j].hash) <= DEDUPE_HAMMING) {
+          collided = j;
+          break;
+        }
+      }
+      if (collided === -1) {
+        kept.push(a);
+      } else if (a.blur > kept[collided].blur) {
+        const dropped = kept[collided];
+        decisions.push({
+          id: dropped.id,
+          capturedAt: dropped.capturedAt,
+          kept: false,
+          reason: `near-duplicate of ${a.id} (kept sharper)`,
+          blur: dropped.blur,
+        });
+        kept[collided] = a; // replace with the sharper shot
+      } else {
+        decisions.push({
+          id: a.id,
+          capturedAt: a.capturedAt,
+          kept: false,
+          reason: `near-duplicate of ${kept[collided].id} (kept sharper)`,
+          blur: a.blur,
+        });
       }
     }
-    if (collided === -1) {
-      kept.push(a);
-    } else if (a.blur > kept[collided].blur) {
-      const dropped = kept[collided];
-      decisions.push({
-        id: dropped.id,
-        capturedAt: dropped.capturedAt,
-        kept: false,
-        reason: `near-duplicate of ${a.id} (kept sharper)`,
-        blur: dropped.blur,
-      });
-      kept[collided] = a; // replace with the sharper shot
-    } else {
-      decisions.push({
-        id: a.id,
-        capturedAt: a.capturedAt,
-        kept: false,
-        reason: `near-duplicate of ${kept[collided].id} (kept sharper)`,
-        blur: a.blur,
-      });
-    }
-  }
 
-  // --- blur gate: drop the softest outliers, never below BLUR_FLOOR ---
-  while (kept.length > BLUR_FLOOR) {
-    const med = median(kept.map((k) => k.blur));
-    let minIdx = 0;
-    for (let i = 1; i < kept.length; i++) {
-      if (kept[i].blur < kept[minIdx].blur) minIdx = i;
-    }
-    if (kept[minIdx].blur < BLUR_REL_THRESHOLD * med) {
-      const dropped = kept.splice(minIdx, 1)[0];
-      decisions.push({
-        id: dropped.id,
-        capturedAt: dropped.capturedAt,
-        kept: false,
-        reason: `blurry (var ${dropped.blur.toFixed(1)} < ${(
-          BLUR_REL_THRESHOLD * med
-        ).toFixed(1)})`,
-        blur: dropped.blur,
-      });
-    } else {
-      break;
+    // --- blur gate: drop the softest outliers, never below BLUR_FLOOR ---
+    while (kept.length > BLUR_FLOOR) {
+      const med = median(kept.map((k) => k.blur));
+      let minIdx = 0;
+      for (let i = 1; i < kept.length; i++) {
+        if (kept[i].blur < kept[minIdx].blur) minIdx = i;
+      }
+      if (kept[minIdx].blur < BLUR_REL_THRESHOLD * med) {
+        const dropped = kept.splice(minIdx, 1)[0];
+        decisions.push({
+          id: dropped.id,
+          capturedAt: dropped.capturedAt,
+          kept: false,
+          reason: `blurry (var ${dropped.blur.toFixed(1)} < ${(
+            BLUR_REL_THRESHOLD * med
+          ).toFixed(1)})`,
+          blur: dropped.blur,
+        });
+      } else {
+        break;
+      }
     }
   }
 
@@ -214,10 +246,12 @@ export async function runHygiene(
     return ta - tb;
   });
 
-  // --- cap at MAX_PHOTOS: keep the best-spread, never the first or last ---
+  // --- cap at maxPhotos: keep the best-spread, never the first or last ---
+  // For a curated class film the API already enforced <= 40, so this is a
+  // belt-and-braces ceiling rather than an expected trim.
   let survivors = kept;
-  if (survivors.length > MAX_PHOTOS) {
-    const picked = pickEvenSpread(survivors.length, MAX_PHOTOS);
+  if (survivors.length > maxPhotos) {
+    const picked = pickEvenSpread(survivors.length, maxPhotos);
     const keptSet = new Set(picked);
     const next: Analysis[] = [];
     survivors.forEach((s, i) => {
@@ -228,7 +262,7 @@ export async function runHygiene(
           id: s.id,
           capturedAt: s.capturedAt,
           kept: false,
-          reason: `over ${MAX_PHOTOS} photos — dropped to keep an even spread`,
+          reason: `over ${maxPhotos} photos — dropped to keep an even spread`,
           blur: s.blur,
         });
       }
