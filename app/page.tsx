@@ -233,12 +233,16 @@ export default function Home() {
                 <span>👩‍🏫</span>
                 <span className="hidden sm:inline">Teachers</span>
               </a>
-              <Link 
-                href="/games"
-                className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl font-medium transition-all backdrop-blur-sm"
+              {/* Potato Snaps — the school's photo/film product, which lives
+                  on this host at /potato. Replaced the Games tab (Aug 8, 2026):
+                  a deliberate move away from screens. The /games routes are
+                  untouched, just no longer advertised from this header. */}
+              <Link
+                href="/potato"
+                className="flex items-center gap-2 px-4 py-2 bg-amber-300/25 hover:bg-amber-300/40 ring-1 ring-amber-200/40 rounded-xl font-medium transition-all backdrop-blur-sm"
               >
-                <span>🎮</span>
-                <span className="hidden sm:inline">Games</span>
+                <span>📸</span>
+                <span className="hidden sm:inline">PSS</span>
               </Link>
             </div>
           </div>
