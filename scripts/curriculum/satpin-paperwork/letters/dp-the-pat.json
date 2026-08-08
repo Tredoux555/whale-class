@@ -1,0 +1,105 @@
+{
+  "letter": "p",
+  "week": 4,
+  "slug": "dp-the-pat",
+  "bookSlug": "the-pat",
+  "bookTitle": "The ___ Can Pat!",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-the-pat.py",
+  "artDir": "phonics-images/dark-phonics-books/the-pat",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "ant",
+      "sentence": "The ant can pat!",
+      "art": "p1-ant.png"
+    },
+    {
+      "order": 2,
+      "word": "snake",
+      "sentence": "The snake can pat!",
+      "art": "p5-snake.png"
+    },
+    {
+      "order": 3,
+      "word": "star",
+      "sentence": "The star can pat!",
+      "art": "p4-star.png"
+    },
+    {
+      "order": 4,
+      "word": "cat",
+      "sentence": "The cat can pat!",
+      "art": "p6-cat.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    3,
+    1,
+    4,
+    2
+  ],
+  "matchDisplayOrder": [
+    2,
+    4,
+    1,
+    3
+  ],
+  "yesno": [
+    {
+      "question": "did the ant pat?",
+      "answer": true,
+      "imageArt": "p1-ant.png"
+    },
+    {
+      "question": "did the apple pat?",
+      "answer": true,
+      "imageArt": "p2-apple.png"
+    },
+    {
+      "question": "did the sun pat?",
+      "answer": true,
+      "imageArt": "p3-sun.png"
+    },
+    {
+      "question": "did the star pat?",
+      "answer": true,
+      "imageArt": "p4-star.png"
+    },
+    {
+      "question": "did the snake pat?",
+      "answer": true,
+      "imageArt": "p5-snake.png"
+    },
+    {
+      "question": "did the queen pat?",
+      "answer": false,
+      "imageArt": "../queen-on-the-quilt/p4-queen.png"
+    },
+    {
+      "question": "did the koala pat?",
+      "answer": false,
+      "imageArt": "../koala-in-the-pocket/p4-koala.png"
+    },
+    {
+      "question": "did the monkey pat?",
+      "answer": false,
+      "imageArt": "../monkey-in-my-mug/p4-monkey.png"
+    },
+    {
+      "question": "did the tiger pat?",
+      "answer": false,
+      "imageArt": "../tiger-in-the-taxi/p4-tiger.png"
+    },
+    {
+      "question": "did the turtle pat?",
+      "answer": false,
+      "imageArt": "../tiger-in-the-taxi/p1-turtle.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Generated 2026-08-08 for the 13-book the-sat cast paperwork rollout, following dp-the-spat.json / dp-the-pit.json conventions -- do not hand-edit blindly, keep in sync with books_def.py's the-pat entry.",
+    "recap": "This book's own finale page ('And the...?!', art=p8-potato.png) is an unresolved cliffhanger with no printed sentence -- picked up by a later book in the series -- so it is excluded here per the '?! cliffhanger fragment' exclusion rule, and pages[] uses four of this book's six same-pattern cast pages instead (ant, snake, + two more). yesno never references the potato for this book, to avoid inventing an outcome the book itself doesn't show.",
+    "yesno": "10 items (5 true, 5 false) per Tredoux's 2026-08-08 brief -- widening from dp-the-spat/dp-the-pit's 4-item convention (which build_paperwork.py still chunks correctly at 5/page). 5 true from this book's own cast pages; 5 false either the book's own potato page answering false to the book's question (when the story itself says the potato does NOT do the action), or borrowed decoy words/art from other Dark Phonics books via a relative ../<slug>/ imageArt path -- verified those source files exist."
+  }
+}

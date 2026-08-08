@@ -1,0 +1,105 @@
+{
+  "letter": "g",
+  "week": 9,
+  "slug": "dp-the-dig",
+  "bookSlug": "the-dig",
+  "bookTitle": "The ___ Digs!",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-the-dig.py",
+  "artDir": "phonics-images/dark-phonics-books/the-dig",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "ant",
+      "sentence": "The ant digs.",
+      "art": "p1-ant.png"
+    },
+    {
+      "order": 2,
+      "word": "snake",
+      "sentence": "The snake digs.",
+      "art": "p5-snake.png"
+    },
+    {
+      "order": 3,
+      "word": "cat",
+      "sentence": "The cat digs.",
+      "art": "p6-cat.png"
+    },
+    {
+      "order": 4,
+      "word": "potato",
+      "sentence": "The potato doesn't dig!",
+      "art": "p8-potato.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    3,
+    1,
+    4,
+    2
+  ],
+  "matchDisplayOrder": [
+    2,
+    4,
+    1,
+    3
+  ],
+  "yesno": [
+    {
+      "question": "did the ant dig?",
+      "answer": true,
+      "imageArt": "p1-ant.png"
+    },
+    {
+      "question": "did the apple dig?",
+      "answer": true,
+      "imageArt": "p2-apple.png"
+    },
+    {
+      "question": "did the sun dig?",
+      "answer": true,
+      "imageArt": "p3-sun.png"
+    },
+    {
+      "question": "did the star dig?",
+      "answer": true,
+      "imageArt": "p4-star.png"
+    },
+    {
+      "question": "did the snake dig?",
+      "answer": true,
+      "imageArt": "p5-snake.png"
+    },
+    {
+      "question": "did the potato dig?",
+      "answer": false,
+      "imageArt": "p8-potato.png"
+    },
+    {
+      "question": "did the ox dig?",
+      "answer": false,
+      "imageArt": "../fox-in-a-box/p2-ox.png"
+    },
+    {
+      "question": "did the frog dig?",
+      "answer": false,
+      "imageArt": "../frog-on-the-fan/p1-frog.png"
+    },
+    {
+      "question": "did the fish dig?",
+      "answer": false,
+      "imageArt": "../frog-on-the-fan/p2-fish.png"
+    },
+    {
+      "question": "did the horse dig?",
+      "answer": false,
+      "imageArt": "../horse-in-my-hat/p4-horse.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Generated 2026-08-08 for the 13-book the-sat cast paperwork rollout, following dp-the-spat.json / dp-the-pit.json conventions -- do not hand-edit blindly, keep in sync with books_def.py's the-dig entry.",
+    "recap": "pages[] selects a 4-page subset of this book's 6-strong the-sat cast (ant, snake, cat) plus a 4th page -- the book's own potato finale sentence where the book resolves one (e.g. \"The potato didn't chase the rat!\"), or another cast page where the potato page is an unresolved cliffhanger ('And the...?!', no text) or where its sentence doesn't carry the target word. apple/sun/star (or the extra p9 beat on the-cot/the-kit) sit out, same exclusion rule as dp-the-pit. Recap (style='drop') pages are always excluded.",
+    "yesno": "10 items (5 true, 5 false) per Tredoux's 2026-08-08 brief -- widening from dp-the-spat/dp-the-pit's 4-item convention (which build_paperwork.py still chunks correctly at 5/page). 5 true from this book's own cast pages; 5 false either the book's own potato page answering false to the book's question (when the story itself says the potato does NOT do the action), or borrowed decoy words/art from other Dark Phonics books via a relative ../<slug>/ imageArt path -- verified those source files exist."
+  }
+}
