@@ -17,11 +17,21 @@
 // error for BOTH a missing account and a wrong credential, so the endpoint never tells an
 // attacker which emails or codes exist.
 //
-// Why this route exists at all: the unified login at /montree/login-select resolves codes
-// against teachers, principals, agents and parents. A director is none of those, and widening
-// that funnel to a fifth table would put an organisation's front door inside a route that has
-// four other reasons to change. /montree/org/login is the director's own door, and now it
-// takes a code like every other door in the product.
+// Why this route still exists: the unified login at /montree/login-select DOES now resolve
+// director codes — it tries montree_organization_admins between principal and teacher, and a
+// director typing their 6-character code into the one box everybody else uses lands in
+// /montree/org exactly as they should. (That funnel was widened deliberately; the older comment
+// here argued against it, and the argument lost. The counter-argument that stands is the one in
+// director-login-code.ts: because the three login_code columns now share ONE namespace at that
+// route, every code minted for ANY of them must be probed against ALL of them.)
+//
+// What unified CANNOT do is the other door: EMAIL + PASSWORD. Those are the credentials a
+// director chose when they redeemed their invite link, they are the only credentials every
+// director who registered before migration 317 has at all, and the unified box takes a single
+// code field. So this route remains the director's own door — and it is also the place where a
+// director-shaped failure gets a director-shaped answer (a 503 that names the missing migration,
+// an explicit 'org_gone'), rather than the deliberately uniform "Invalid code" the unified chain
+// has to return so it never reveals which of five tables a code belongs to.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';

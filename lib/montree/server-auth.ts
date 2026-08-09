@@ -65,6 +65,15 @@ export const MONTREE_JWT_TTL_DAYS = Math.max(
 //                          actingOrgAdminId rather than re-derived, so the return path is a
 //                          verification (does this admin still belong to this org?) rather
 //                          than a fresh trust decision.
+//   actingPrincipalId    — a PRINCIPAL minted this TEACHER token by entering one of their own
+//                          classrooms (POST /api/montree/admin/enter-classroom). It is the
+//                          montree_school_admins.id to return to, and it is the ONLY thing
+//                          POST /api/montree/admin/return-to-admin will act on. Same shape,
+//                          one level down: org → school is actingOrgAdminId, school →
+//                          classroom is this. The school to return to is not carried
+//                          separately because a teacher token already names it (schoolId is
+//                          the same school either way — a principal can only enter their own
+//                          classrooms), so the return path re-verifies rather than trusts.
 //
 // 🚨 These claims are only ever WRITTEN by a route that has already verified the minting
 // identity (verifySuperAdminAuth / verifyOrgRequest). A forged token is not a concern — the
@@ -81,6 +90,8 @@ export interface MontreeTokenPayload {
   actingOrgAdminId?: string;
   /** montree_organizations.id to return to. Set alongside actingOrgAdminId. */
   actingOrganizationId?: string;
+  /** montree_school_admins.id to return to. Set only by /api/montree/admin/enter-classroom. */
+  actingPrincipalId?: string;
 }
 
 // Parent token payload (stored in HTTP-only cookie)
@@ -120,6 +131,7 @@ export async function createMontreeToken(
     ...(payload.actingAsSuperAdmin ? { actingAsSuperAdmin: true } : {}),
     ...(payload.actingOrgAdminId ? { actingOrgAdminId: payload.actingOrgAdminId } : {}),
     ...(payload.actingOrganizationId ? { actingOrganizationId: payload.actingOrganizationId } : {}),
+    ...(payload.actingPrincipalId ? { actingPrincipalId: payload.actingPrincipalId } : {}),
   })
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(payload.sub)
@@ -162,6 +174,7 @@ export async function verifyMontreeToken(token: string): Promise<MontreeTokenPay
       actingAsSuperAdmin: payload.actingAsSuperAdmin === true ? true : undefined,
       actingOrgAdminId: (payload.actingOrgAdminId as string) || undefined,
       actingOrganizationId: (payload.actingOrganizationId as string) || undefined,
+      actingPrincipalId: (payload.actingPrincipalId as string) || undefined,
     };
   } catch {
     // Token is invalid, expired, or tampered with
@@ -223,13 +236,29 @@ export async function verifyParentToken(token: string): Promise<ParentTokenPaylo
  * Set the montree-auth httpOnly cookie on a NextResponse.
  * Call this in login routes after creating the JWT token.
  * maxAge matches the JWT TTL (MONTREE_JWT_TTL_DAYS, default 3650 ≈ 10y).
+ *
+ * 🚨 `opts.maxAgeSeconds` MUST be passed by any caller that minted a SHORT-LIVED token
+ * (createMontreeToken's `ttlSeconds` — the borrowed seats: /api/montree/org/enter-school and
+ * /api/montree/admin/enter-classroom). Pass the same number to both, always. A cookie that
+ * outlives the token inside it is not a cosmetic mismatch: the browser keeps presenting a
+ * credential that every route rejects, so the moment the 8-hour seat lapses the user is 401'd
+ * everywhere INCLUDING the return route that would have handed them their own session back —
+ * and the borrowed cookie has already overwritten the long-lived one they arrived with. Expiring
+ * the cookie with the token makes that lapse a clean logged-out state instead of a dead end.
+ *
+ * The `montree_surface` launch hint gets the same maxAge for the same reason: an expired
+ * borrowed seat should stop pointing a PWA home-screen launch at a surface that can only 401.
  */
 export function setMontreeAuthCookie(
   response: NextResponse,
   token: string,
-  role?: 'teacher' | 'principal' | 'homeschool_parent' | 'agent' | 'org_admin'
+  role?: 'teacher' | 'principal' | 'homeschool_parent' | 'agent' | 'org_admin',
+  opts?: { maxAgeSeconds?: number }
 ): void {
-  const maxAge = MONTREE_JWT_TTL_DAYS * 24 * 60 * 60;  // matches JWT TTL
+  const maxAge =
+    opts?.maxAgeSeconds && opts.maxAgeSeconds > 0
+      ? Math.floor(opts.maxAgeSeconds)
+      : MONTREE_JWT_TTL_DAYS * 24 * 60 * 60;  // matches JWT TTL
   const secure = process.env.NODE_ENV === 'production';
   response.cookies.set(MONTREE_AUTH_COOKIE, token, {
     httpOnly: true,

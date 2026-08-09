@@ -24,7 +24,7 @@
 // just not rendered. Future "show your work" toggle would be one render swap.
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo, memo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Send, RotateCcw } from 'lucide-react';
 import { useI18n } from '@/lib/montree/i18n';
@@ -237,7 +237,40 @@ function EmptyState({ firstName }: { firstName: string }) {
   );
 }
 
-function UserBubble({ text }: { text: string }) {
+// 🚨 PERF (Astra "Page Unresponsive" freeze fix) — TracyBody style objects are
+// hoisted to module scope so the memoized TracyBody receives a
+// REFERENCE-STABLE `style` prop. Inline `style={{...}}` literals rebuilt one
+// object per render and forced a full markdown re-parse of every historical
+// turn on every streamed frame. Do not inline these back.
+const BODY_STYLE: React.CSSProperties = {
+  fontFamily: T.sans,
+  fontSize: 14.5,
+  lineHeight: 1.7,
+  color: T.textSoft,
+};
+const BRIEF_STYLE: React.CSSProperties = {
+  fontFamily: T.sans,
+  fontSize: 14.5,
+  lineHeight: 1.65,
+  color: T.textSoft,
+};
+const DOSSIER_STYLE: React.CSSProperties = {
+  fontFamily: T.sans,
+  fontSize: 14,
+  lineHeight: 1.7,
+  color: T.textSoft,
+};
+
+// 🚨 PERF (Astra freeze fix) — memo() is the core of the fix. Every SSE flush
+// calls setTurns, which re-renders the map over ALL visible turns (up to
+// MAX_PERSISTED_TURNS = 30 restored from localStorage / the server thread).
+// Without memo, each historical turn re-ran splitActionLine + TracyBody's
+// regex parse per frame → O(history × tokens) main-thread work → the tab
+// locked while an answer streamed. `setTurns` only ever replaces the LAST
+// turn object (`[...prev.slice(0, -1), updated]`), so earlier turns keep
+// their identity and memo skips them outright. Any refactor that rebuilds
+// prior turn objects during streaming reintroduces the freeze.
+const UserBubble = memo(function UserBubble({ text }: { text: string }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
       <div
@@ -257,7 +290,7 @@ function UserBubble({ text }: { text: string }) {
       </div>
     </div>
   );
-}
+});
 
 /**
  * Session 135 — parent-meeting brief + dossier disclosure.
@@ -297,15 +330,7 @@ function MeetingBriefCard({ brief }: { brief: MeetingBrief }) {
           marginBottom: 12,
         }}
       >
-        <TracyBody
-          text={brief.dossier_markdown!}
-          style={{
-            fontFamily: T.sans,
-            fontSize: 14.5,
-            lineHeight: 1.7,
-            color: T.textSoft,
-          }}
-        />
+        <TracyBody text={brief.dossier_markdown!} style={BODY_STYLE} />
       </div>
     );
   }
@@ -321,15 +346,7 @@ function MeetingBriefCard({ brief }: { brief: MeetingBrief }) {
       }}
     >
       {/* Brief — always visible at the top. The cue card. */}
-      <TracyBody
-        text={brief.brief_markdown!}
-        style={{
-          fontFamily: T.sans,
-          fontSize: 14.5,
-          lineHeight: 1.65,
-          color: T.textSoft,
-        }}
-      />
+      <TracyBody text={brief.brief_markdown!} style={BRIEF_STYLE} />
 
       {/* Disclosure — only render when there's a dossier to expand to. */}
       {hasDossier && (
@@ -364,15 +381,7 @@ function MeetingBriefCard({ brief }: { brief: MeetingBrief }) {
                 borderTop: '1px solid rgba(232,201,106,0.18)',
               }}
             >
-              <TracyBody
-                text={brief.dossier_markdown!}
-                style={{
-                  fontFamily: T.sans,
-                  fontSize: 14,
-                  lineHeight: 1.7,
-                  color: T.textSoft,
-                }}
-              />
+              <TracyBody text={brief.dossier_markdown!} style={DOSSIER_STYLE} />
             </div>
           )}
         </>
@@ -381,9 +390,15 @@ function MeetingBriefCard({ brief }: { brief: MeetingBrief }) {
   );
 }
 
-function AssistantBubble({ turn }: { turn: ConvTurn }) {
+const AssistantBubble = memo(function AssistantBubble({ turn }: { turn: ConvTurn }) {
   const { t } = useI18n();
-  const { body, action } = splitActionLine(turn.text);
+  // 🚨 PERF (Astra freeze fix) — splitActionLine walks + splits the whole turn
+  // text. Keyed on turn.text so a re-render triggered by anything other than
+  // new tokens doesn't re-parse the message.
+  const { body, action } = useMemo(
+    () => splitActionLine(turn.text),
+    [turn.text]
+  );
   // Show the rich animated indicator while we're waiting on Astra AND have
   // no text yet AND no meeting brief content has landed yet. Once tokens
   // start streaming (either Astra's text OR a meeting brief chunk) the
@@ -487,17 +502,7 @@ function AssistantBubble({ turn }: { turn: ConvTurn }) {
         )}
         {/* Body prose (everything except the closing action line). Fenced
             code blocks render as CopyableMessageCard via TracyBody. */}
-        {body && (
-          <TracyBody
-            text={body}
-            style={{
-              fontFamily: T.sans,
-              fontSize: 14.5,
-              lineHeight: 1.7,
-              color: T.textSoft,
-            }}
-          />
-        )}
+        {body && <TracyBody text={body} style={BODY_STYLE} />}
 
         {/* Session 153 — filterable, full-screen-swipeable photo album from
             get_child_photos (structured child_photos SSE event). */}
@@ -581,6 +586,163 @@ function AssistantBubble({ turn }: { turn: ConvTurn }) {
       </div>
     </div>
   );
+});
+
+// 🚨 PERF (Astra "Page Unresponsive" freeze fix) — the SSE event switch used
+// to live inline inside handleEvent and fired its OWN setTurns per event.
+// Only 'text' was rAF-throttled; tool_call / tool_progress / tool_result /
+// thinking / meeting_brief_chunk / meeting_brief / child_photos each caused a
+// synchronous re-render of the ENTIRE conversation. meeting_brief_chunk was
+// the worst amplifier — an unthrottled token stream of large markdown. This
+// pure-ish reducer lets a whole frame's worth of events collapse into a
+// single setTurns (see flushPending below).
+//
+// CONTRACT: `draft` is a turn object the caller already cloned and owns, so
+// mutating it in place here is safe and avoids an allocation per event. Never
+// pass a turn that's still referenced by React state.
+function applyEventToTurn(
+  draft: ConvTurn,
+  evt: Record<string, unknown>,
+  errorFallback: string
+): ConvTurn {
+  switch (evt.type) {
+    case 'tool_call': {
+      const tool: ToolEvent = {
+        name: String(evt.tool || 'tool'),
+        success: null,
+      };
+      draft.tools = [...(draft.tools || []), tool];
+      // Clear any stale progress from a prior tool — fresh tool, fresh slate.
+      draft.progress = null;
+      break;
+    }
+    case 'tool_progress': {
+      const phase = typeof evt.phase === 'string' ? evt.phase : '';
+      const rawVars = evt.vars;
+      const vars =
+        rawVars && typeof rawVars === 'object'
+          ? (rawVars as Record<string, string>)
+          : undefined;
+      if (phase) {
+        draft.progress = { phase, vars };
+      }
+      break;
+    }
+    case 'tool_result': {
+      const tools = [...(draft.tools || [])];
+      for (let i = tools.length - 1; i >= 0; i--) {
+        if (tools[i].name === String(evt.tool) && tools[i].success === null) {
+          tools[i] = {
+            ...tools[i],
+            success: !!evt.success,
+            summary:
+              typeof evt.summary === 'string' ? evt.summary : undefined,
+          };
+          break;
+        }
+      }
+      draft.tools = tools;
+      break;
+    }
+    case 'thinking': {
+      draft.thinking = (draft.thinking || '') + String(evt.text || '');
+      break;
+    }
+    case 'meeting_brief_init': {
+      // Session 136 — prepare_parent_meeting started. UI flips to
+      // "Preparing the dossier…" instead of the generic spinner so
+      // the principal knows what's happening even before the first
+      // chunk lands. Cleared by the final meeting_brief event
+      // (success) or by done/error (failure).
+      draft.preparingDossier = true;
+      break;
+    }
+    case 'meeting_brief_chunk': {
+      // Session 135 — incremental token from prepare_parent_meeting's
+      // streamed Sonnet call. Each chunk has { section, delta }. We
+      // append the delta to the appropriate side of the in-progress
+      // brief. The MeetingBriefCard renders the partial markdown live
+      // as it builds. After the stream finishes, the final
+      // `meeting_brief` event arrives and replaces the whole thing
+      // with the canonical full payload (for cache + correctness).
+      const section = evt.section === 'brief' ? 'brief' : 'dossier';
+      const delta = typeof evt.delta === 'string' ? evt.delta : '';
+      if (!delta) break;
+      const prevBrief = draft.meetingBrief ?? {
+        brief_markdown: '',
+        dossier_markdown: '',
+        child_name: null,
+        from_cache: false,
+      };
+      if (section === 'brief') {
+        draft.meetingBrief = {
+          ...prevBrief,
+          brief_markdown: (prevBrief.brief_markdown ?? '') + delta,
+        };
+      } else {
+        draft.meetingBrief = {
+          ...prevBrief,
+          dossier_markdown: (prevBrief.dossier_markdown ?? '') + delta,
+        };
+      }
+      break;
+    }
+    case 'meeting_brief': {
+      // Session 135 — final structured brief + dossier from
+      // prepare_parent_meeting. Sent at tool completion AFTER the
+      // streamed chunks (if any). Replaces the in-progress payload
+      // with the canonical version. Also the only event that fires
+      // on cache-hits (no streaming for cached responses, which are
+      // already complete on the server).
+      const briefMd =
+        typeof evt.brief_markdown === 'string' ? evt.brief_markdown : null;
+      const dossierMd =
+        typeof evt.dossier_markdown === 'string' ? evt.dossier_markdown : null;
+      const childName =
+        typeof evt.child_name === 'string' ? evt.child_name : null;
+      const fromCache = !!evt.from_cache;
+      draft.meetingBrief = {
+        brief_markdown: briefMd,
+        dossier_markdown: dossierMd,
+        child_name: childName,
+        from_cache: fromCache,
+      };
+      // Session 136 — final payload landed; clear preparingDossier
+      // so the UI stops showing "Preparing the dossier…" and the
+      // brief renders cleanly.
+      draft.preparingDossier = false;
+      break;
+    }
+    case 'child_photos': {
+      // Session 153 — structured photo array; render as a filterable
+      // full-screen album. Validate shape defensively.
+      if (Array.isArray(evt.photos)) {
+        draft.childPhotos = (evt.photos as unknown[]).filter(
+          (p): p is ChildPhotoItem =>
+            !!p &&
+            typeof p === 'object' &&
+            typeof (p as ChildPhotoItem).url === 'string'
+        );
+      }
+      break;
+    }
+    case 'done': {
+      draft.pending = false;
+      draft.progress = null;
+      draft.preparingDossier = false;
+      draft.costUsd =
+        typeof evt.cost_usd === 'number' ? evt.cost_usd : undefined;
+      break;
+    }
+    case 'error': {
+      draft.pending = false;
+      draft.progress = null;
+      draft.preparingDossier = false;
+      draft.error = String(evt.error || errorFallback);
+      break;
+    }
+  }
+  return draft;
 }
 
 // ── Main page ────────────────────────────────────────────────────────────
@@ -610,6 +772,17 @@ export default function AdminAgentPage() {
   // per frame applies the buffered chunk. ~80% CPU reduction during stream.
   const pendingTextRef = useRef('');
   const rafIdRef = useRef<number | null>(null);
+
+  // 🚨 PERF (Astra "Page Unresponsive" freeze fix) — Tier 2.1 only throttled
+  // 'text'. Every tool / thinking / meeting_brief_chunk event still called
+  // setTurns synchronously, and each of those re-rendered EVERY turn in the
+  // conversation (up to MAX_PERSISTED_TURNS = 30), each one re-running
+  // splitActionLine + TracyBody's regex parse. meeting_brief_chunk was the
+  // worst offender: an unthrottled stream of large markdown deltas. Non-
+  // terminal events now queue here and drain on the same rAF as text, so a
+  // whole frame costs ONE setTurns. 'done'/'error' still apply immediately —
+  // correctness (spinner teardown) beats a frame of batching.
+  const pendingEventsRef = useRef<Record<string, unknown>[]>([]);
 
   // 🚨 Perf Tier 2.2 (safe half — PERF_HEALTH_CHECK.md): AbortController
   // for the in-flight SSE stream. Aborted on unmount, on "New conversation"
@@ -791,196 +964,72 @@ export default function AdminAgentPage() {
     inputRef.current?.focus();
   }, [convId]);
 
-  // Flush any buffered token text from pendingTextRef into setTurns. Called
-  // by requestAnimationFrame and synchronously by handleEvent before non-text
-  // events apply (so token order is preserved relative to tool calls / done).
-  const flushTextBuffer = useCallback(() => {
+  // Flush the buffered SSE frame — accumulated text tokens AND queued
+  // non-terminal events — in ONE setTurns. Called by the rAF callback and
+  // synchronously by handleEvent when a terminal ('done'/'error') event
+  // arrives. Text is applied before the queued events, which is safe because
+  // they touch disjoint fields on the turn (text vs tools/progress/thinking/
+  // meetingBrief); ordering AMONG the events is preserved by the queue.
+  const flushPending = useCallback(() => {
     rafIdRef.current = null;
-    const pending = pendingTextRef.current;
-    if (!pending) return;
+    const pendingText = pendingTextRef.current;
+    const pendingEvents = pendingEventsRef.current;
+    if (!pendingText && pendingEvents.length === 0) return;
     pendingTextRef.current = '';
+    pendingEventsRef.current = [];
+    const errorFallback = t('tracy.errors.transient');
     setTurns((prev) => {
       if (prev.length === 0) return prev;
       const last = prev[prev.length - 1];
       if (last.role !== 'assistant') return prev;
-      return [
-        ...prev.slice(0, -1),
-        { ...last, text: (last.text || '') + pending },
-      ];
-    });
-  }, []);
-
-  const handleEvent = useCallback((evt: Record<string, unknown>) => {
-    // Fast path: text events buffer and schedule a single rAF flush. Multiple
-    // tokens within one frame collapse into one setTurns call.
-    if (evt.type === 'text') {
-      pendingTextRef.current += String(evt.text || '');
-      if (rafIdRef.current === null) {
-        rafIdRef.current = requestAnimationFrame(flushTextBuffer);
-      }
-      return;
-    }
-
-    // Non-text event: drain any pending text synchronously so the next
-    // setTurns sees it before applying the new event state.
-    if (rafIdRef.current !== null) {
-      cancelAnimationFrame(rafIdRef.current);
-      rafIdRef.current = null;
-    }
-    const drained = pendingTextRef.current;
-    pendingTextRef.current = '';
-
-    setTurns((prev) => {
-      if (prev.length === 0) return prev;
-      const last = prev[prev.length - 1];
-      if (last.role !== 'assistant') return prev;
-
-      const updated = {
+      // ONE clone per frame — applyEventToTurn then mutates this draft.
+      const updated: ConvTurn = {
         ...last,
-        text: drained ? (last.text || '') + drained : last.text,
+        text: pendingText ? (last.text || '') + pendingText : last.text,
       };
-      switch (evt.type) {
-        case 'tool_call': {
-          const tool: ToolEvent = {
-            name: String(evt.tool || 'tool'),
-            success: null,
-          };
-          updated.tools = [...(updated.tools || []), tool];
-          // Clear any stale progress from a prior tool — fresh tool, fresh slate.
-          updated.progress = null;
-          break;
-        }
-        case 'tool_progress': {
-          const phase = typeof evt.phase === 'string' ? evt.phase : '';
-          const rawVars = (evt as Record<string, unknown>).vars;
-          const vars =
-            rawVars && typeof rawVars === 'object'
-              ? (rawVars as Record<string, string>)
-              : undefined;
-          if (phase) {
-            updated.progress = { phase, vars };
-          }
-          break;
-        }
-        case 'tool_result': {
-          const tools = [...(updated.tools || [])];
-          for (let i = tools.length - 1; i >= 0; i--) {
-            if (
-              tools[i].name === String(evt.tool) &&
-              tools[i].success === null
-            ) {
-              tools[i] = {
-                ...tools[i],
-                success: !!evt.success,
-                summary:
-                  typeof evt.summary === 'string' ? evt.summary : undefined,
-              };
-              break;
-            }
-          }
-          updated.tools = tools;
-          break;
-        }
-        case 'thinking': {
-          updated.thinking = (updated.thinking || '') + String(evt.text || '');
-          break;
-        }
-        case 'meeting_brief_init': {
-          // Session 136 — prepare_parent_meeting started. UI flips to
-          // "Preparing the dossier…" instead of the generic spinner so
-          // the principal knows what's happening even before the first
-          // chunk lands. Cleared by the final meeting_brief event
-          // (success) or by done/error (failure).
-          updated.preparingDossier = true;
-          break;
-        }
-        case 'meeting_brief_chunk': {
-          // Session 135 — incremental token from prepare_parent_meeting's
-          // streamed Sonnet call. Each chunk has { section, delta }. We
-          // append the delta to the appropriate side of the in-progress
-          // brief. The MeetingBriefCard renders the partial markdown live
-          // as it builds. After the stream finishes, the final
-          // `meeting_brief` event arrives and replaces the whole thing
-          // with the canonical full payload (for cache + correctness).
-          const section = evt.section === 'brief' ? 'brief' : 'dossier';
-          const delta = typeof evt.delta === 'string' ? evt.delta : '';
-          if (!delta) break;
-          const prev = updated.meetingBrief ?? {
-            brief_markdown: '',
-            dossier_markdown: '',
-            child_name: null,
-            from_cache: false,
-          };
-          if (section === 'brief') {
-            updated.meetingBrief = {
-              ...prev,
-              brief_markdown: (prev.brief_markdown ?? '') + delta,
-            };
-          } else {
-            updated.meetingBrief = {
-              ...prev,
-              dossier_markdown: (prev.dossier_markdown ?? '') + delta,
-            };
-          }
-          break;
-        }
-        case 'meeting_brief': {
-          // Session 135 — final structured brief + dossier from
-          // prepare_parent_meeting. Sent at tool completion AFTER the
-          // streamed chunks (if any). Replaces the in-progress payload
-          // with the canonical version. Also the only event that fires
-          // on cache-hits (no streaming for cached responses, which are
-          // already complete on the server).
-          const briefMd =
-            typeof evt.brief_markdown === 'string' ? evt.brief_markdown : null;
-          const dossierMd =
-            typeof evt.dossier_markdown === 'string' ? evt.dossier_markdown : null;
-          const childName =
-            typeof evt.child_name === 'string' ? evt.child_name : null;
-          const fromCache = !!evt.from_cache;
-          updated.meetingBrief = {
-            brief_markdown: briefMd,
-            dossier_markdown: dossierMd,
-            child_name: childName,
-            from_cache: fromCache,
-          };
-          // Session 136 — final payload landed; clear preparingDossier
-          // so the UI stops showing "Preparing the dossier…" and the
-          // brief renders cleanly.
-          updated.preparingDossier = false;
-          break;
-        }
-        case 'child_photos': {
-          // Session 153 — structured photo array; render as a filterable
-          // full-screen album. Validate shape defensively.
-          if (Array.isArray(evt.photos)) {
-            updated.childPhotos = (evt.photos as unknown[]).filter(
-              (p): p is ChildPhotoItem =>
-                !!p && typeof p === 'object' && typeof (p as ChildPhotoItem).url === 'string'
-            );
-          }
-          break;
-        }
-        case 'done': {
-          updated.pending = false;
-          updated.progress = null;
-          updated.preparingDossier = false;
-          updated.costUsd =
-            typeof evt.cost_usd === 'number' ? evt.cost_usd : undefined;
-          break;
-        }
-        case 'error': {
-          updated.pending = false;
-          updated.progress = null;
-          updated.preparingDossier = false;
-          updated.error = String(evt.error || t('tracy.errors.transient'));
-          break;
-        }
+      for (const evt of pendingEvents) {
+        applyEventToTurn(updated, evt, errorFallback);
       }
-
+      // Prior turns keep their object identity here — that's what lets the
+      // memoized bubbles skip re-rendering the whole history.
       return [...prev.slice(0, -1), updated];
     });
-  }, [t, flushTextBuffer]);
+  }, [t]);
+
+  const handleEvent = useCallback(
+    (evt: Record<string, unknown>) => {
+      // Text tokens buffer + rAF schedule. Multiple tokens within one frame
+      // collapse into one setTurns call.
+      if (evt.type === 'text') {
+        pendingTextRef.current += String(evt.text || '');
+        if (rafIdRef.current === null) {
+          rafIdRef.current = requestAnimationFrame(flushPending);
+        }
+        return;
+      }
+
+      // Terminal events end the turn (spinner teardown, error card) — apply
+      // them this tick rather than waiting a frame, draining everything
+      // buffered ahead of them so nothing is lost or reordered.
+      if (evt.type === 'done' || evt.type === 'error') {
+        if (rafIdRef.current !== null) {
+          cancelAnimationFrame(rafIdRef.current);
+          rafIdRef.current = null;
+        }
+        pendingEventsRef.current.push(evt);
+        flushPending();
+        return;
+      }
+
+      // Everything else (tool_* / thinking / meeting_brief* / child_photos)
+      // rides the same rAF as text — see pendingEventsRef above.
+      pendingEventsRef.current.push(evt);
+      if (rafIdRef.current === null) {
+        rafIdRef.current = requestAnimationFrame(flushPending);
+      }
+    },
+    [flushPending]
+  );
 
   // Cancel any pending rAF on unmount so we don't run setTurns after teardown.
   useEffect(() => {
@@ -1028,6 +1077,19 @@ export default function AdminAgentPage() {
     };
     setTurns((prev) => [...prev, userTurn, assistantTurn]);
     setQuestion('');
+
+    // 🚨 PERF freeze fix, correctness half — drop anything the rAF coalescer is still holding
+    // from a PREVIOUS stream before this turn becomes the last one. flushPending always applies
+    // to `prev[prev.length - 1]`, so a frame left buffered by an aborted or errored stream (the
+    // abort above, a convId change, a dropped connection) would be appended to the brand-new
+    // assistant turn instead — the previous answer's tail bleeding into the next reply. Cancel
+    // the scheduled flush too, so it cannot fire on stale refs.
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
+    pendingTextRef.current = '';
+    pendingEventsRef.current = [];
 
     // Build short history for the server (last 6 turns, role + text only).
     // Server sanitises again on its end — this is just a courtesy clamp.
@@ -1150,6 +1212,12 @@ export default function AdminAgentPage() {
         )
       );
     } finally {
+      // 🚨 PERF freeze fix — the rAF coalescer can be holding a frame's worth
+      // of text/tool events when the stream ends abnormally (abort, network
+      // error, non-OK status). Drain it so nothing buffered is silently
+      // dropped. On the normal path 'done' already flushed and this is a
+      // no-op.
+      flushPending();
       // Clear the controller if it's still the one we created — protects
       // against a brand-new submit() racing with this finally block.
       if (streamControllerRef.current === controller) {
@@ -1157,7 +1225,7 @@ export default function AdminAgentPage() {
       }
       setSubmitting(false);
     }
-  }, [question, submitting, convId, turns, handleEvent, locale, t]);
+  }, [question, submitting, convId, turns, handleEvent, locale, t, flushPending]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {

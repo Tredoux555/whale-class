@@ -145,6 +145,13 @@ export default function ClassroomDetailPage({
   // Advanced disclosure inside the empty-students card
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
+  // "Enter classroom" — borrowing this room's teacher seat. `enterError` is rendered inline
+  // under the header card because the interesting failure (a classroom with no teacher yet)
+  // is an instruction, not a blip: a toast that vanishes would leave the principal clicking
+  // a button that quietly does nothing.
+  const [entering, setEntering] = useState(false);
+  const [enterError, setEnterError] = useState('');
+
   // ── Effects ──────────────────────────────────────────────────────
   useEffect(() => {
     const schoolData = localStorage.getItem('montree_school');
@@ -243,6 +250,42 @@ export default function ClassroomDetailPage({
       teacher.email
     )}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = href;
+  };
+
+  // Step into this classroom and see it exactly as its teacher does. The endpoint swaps the
+  // montree-auth cookie for a teacher-shaped one (scoped to this classroom, carrying the way
+  // back), so this is a HARD navigation — a soft router.push would keep React state built for
+  // a principal session alive inside the teacher dashboard. The three localStorage keys are
+  // cleared first for the same reason: the dashboard rebuilds its session from the new cookie
+  // via recoverSession(), and a stale mirror would race it.
+  const enterClassroom = async () => {
+    if (entering) return;
+    setEntering(true);
+    setEnterError('');
+    try {
+      const res = await fetch('/api/montree/admin/enter-classroom', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ classroomId }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setEnterError(data?.error || 'Could not open that classroom.');
+        setEntering(false);
+        return;
+      }
+      try {
+        localStorage.removeItem('montree_session');
+        localStorage.removeItem('montree_school');
+        localStorage.removeItem('montree_principal');
+      } catch {
+        // private browsing — the cookie is the real session
+      }
+      window.location.assign(data.redirect || '/montree/dashboard');
+    } catch {
+      setEnterError('Could not open that classroom.');
+      setEntering(false);
+    }
   };
 
   const changeRole = async (teacherId: string, newRole: string) => {
@@ -433,6 +476,10 @@ export default function ClassroomDetailPage({
           display: 'flex',
           alignItems: 'center',
           gap: 18,
+          // Two actions now live up here (Enter classroom + Remove). On a phone they wrap
+          // under the classroom name instead of crushing it to nothing — the title block
+          // below carries a real minWidth so the wrap actually triggers.
+          flexWrap: 'wrap',
           padding: '20px 22px',
           background: T.cardBg,
           backdropFilter: 'blur(14px)',
@@ -457,7 +504,7 @@ export default function ClassroomDetailPage({
         >
           {classroom.icon || '🌱'}
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ flex: 1, minWidth: 160 }}>
           <h1
             style={{
               fontFamily: T.serif,
@@ -482,6 +529,32 @@ export default function ClassroomDetailPage({
             {stat}
           </p>
         </div>
+        {/* Enter classroom — the principal borrows this room's teacher seat and sees the
+            real teacher experience (8-hour session, audit-logged, banner + Return button on
+            the dashboard). Sits directly beside the classroom name because that is where a
+            principal is standing when they think "what is she actually seeing?" — and it is
+            the answer to "can you send me your login code?", which is the thing this replaces. */}
+        <button
+          onClick={() => void enterClassroom()}
+          disabled={entering}
+          title="See this classroom as its teacher sees it"
+          style={{
+            flexShrink: 0,
+            alignSelf: 'flex-start',
+            background: T.emeraldSoft,
+            border: '1px solid rgba(52,211,153,0.34)',
+            color: T.emerald,
+            borderRadius: 999,
+            padding: '6px 14px',
+            fontSize: 13,
+            fontWeight: 600,
+            fontFamily: T.sans,
+            cursor: entering ? 'default' : 'pointer',
+            opacity: entering ? 0.6 : 1,
+          }}
+        >
+          {entering ? 'Opening…' : 'Enter classroom'}
+        </button>
         {/* Session 140: classrooms had no UI delete affordance (and the item
             DELETE route 405'd — now added). Soft-removes the classroom; students
             and teachers stay in the system. */}
@@ -522,6 +595,23 @@ export default function ClassroomDetailPage({
           Remove
         </button>
       </header>
+
+      {/* Why "Enter classroom" didn't open. The one that matters is a classroom with no
+          teacher row yet — the server says so in words, and the fix (Add teacher) is the
+          next section down. */}
+      {enterError ? (
+        <p
+          role="alert"
+          style={{
+            margin: '-24px 0 30px 0',
+            fontSize: 13,
+            color: T.red,
+            lineHeight: 1.5,
+          }}
+        >
+          {enterError}
+        </p>
+      ) : null}
 
       {/* ── Teaching team section ─────────────────────────────────── */}
       <section data-copilot="teaching-team" style={{ marginBottom: 44 }}>

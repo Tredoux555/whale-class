@@ -20,7 +20,7 @@ import {
   // Clapperboard removed — was the Montage Studio menu-row icon; that row
   // was removed (see the "More menu" block below) when Studio was retired.
 } from 'lucide-react';
-import { getSession, clearSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
+import { getSession, clearSession, recoverSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { HOME_THEME } from '@/lib/montree/home-theme';
 import { useI18n } from '@/lib/montree/i18n';
 import type { TranslationKey } from '@/lib/montree/i18n/en';
@@ -298,8 +298,20 @@ function DashboardHeader() {
 
   useEffect(() => {
     const sess = getSession();
-    if (!sess) return;
-    setSession(sess);
+    if (sess) {
+      setSession(sess);
+      return;
+    }
+    // No localStorage mirror, but there may still be a live httpOnly cookie: a principal who
+    // just stepped into this classroom (the cookie was swapped server-side and the stale
+    // mirror cleared), or iOS having wiped localStorage on a PWA relaunch. This effect runs
+    // ONCE, so without the rebuild the header would sit classroom-less for the entire visit —
+    // no student search, no teacher list — while the page below it worked fine.
+    let cancelled = false;
+    recoverSession()
+      .then((recovered) => { if (!cancelled && recovered) setSession(recovered); })
+      .catch(() => { /* the page's own recovery still runs; never break the header */ });
+    return () => { cancelled = true; };
   }, []);
 
   // Students for the search dropdown — shared SWR cache, NOT a raw fetch.

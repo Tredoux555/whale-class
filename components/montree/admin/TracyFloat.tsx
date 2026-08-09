@@ -35,7 +35,7 @@
 //   session re-attempts the introduction once AI is enabled.
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo, memo } from 'react';
 import { usePathname } from 'next/navigation';
 import { Send, Minus } from 'lucide-react';
 import TracyAvatar from './TracyAvatar';
@@ -176,6 +176,78 @@ function isQuestionOffer(action: string | null): boolean {
   );
 }
 
+// 🚨 PERF (Astra "Page Unresponsive" freeze fix) — the SSE event switch used
+// to live inline inside handleEvent and fired its OWN setTurns per event.
+// Only 'text' was rAF-throttled; tool_call / tool_progress / tool_result /
+// thinking each triggered a synchronous full-conversation re-render. Pulling
+// the switch out into a pure-ish reducer lets us COALESCE a whole frame's
+// worth of events into a single setTurns (see flushPending below).
+//
+// CONTRACT: `draft` is a turn object the caller already cloned and owns, so
+// mutating it in place here is safe and avoids an allocation per event. Never
+// pass a turn that's still referenced by React state.
+function applyEventToTurn(
+  draft: ConvTurn,
+  evt: Record<string, unknown>,
+  errorFallback: string
+): ConvTurn {
+  switch (evt.type) {
+    case 'tool_call': {
+      const tool: ToolEvent = {
+        name: String(evt.tool || 'tool'),
+        success: null,
+      };
+      draft.tools = [...(draft.tools || []), tool];
+      draft.progress = null;
+      break;
+    }
+    case 'tool_progress': {
+      const phase = typeof evt.phase === 'string' ? evt.phase : '';
+      const rawVars = evt.vars;
+      const vars =
+        rawVars && typeof rawVars === 'object'
+          ? (rawVars as Record<string, string>)
+          : undefined;
+      if (phase) draft.progress = { phase, vars };
+      break;
+    }
+    case 'tool_result': {
+      const tools = [...(draft.tools || [])];
+      for (let i = tools.length - 1; i >= 0; i--) {
+        if (tools[i].name === String(evt.tool) && tools[i].success === null) {
+          tools[i] = {
+            ...tools[i],
+            success: !!evt.success,
+            summary:
+              typeof evt.summary === 'string' ? evt.summary : undefined,
+          };
+          break;
+        }
+      }
+      draft.tools = tools;
+      break;
+    }
+    case 'thinking': {
+      draft.thinking = (draft.thinking || '') + String(evt.text || '');
+      break;
+    }
+    case 'done': {
+      draft.pending = false;
+      draft.progress = null;
+      draft.costUsd =
+        typeof evt.cost_usd === 'number' ? evt.cost_usd : undefined;
+      break;
+    }
+    case 'error': {
+      draft.pending = false;
+      draft.progress = null;
+      draft.error = String(evt.error || errorFallback);
+      break;
+    }
+  }
+  return draft;
+}
+
 // ── Component ────────────────────────────────────────────────────────────
 
 export default function TracyFloat() {
@@ -203,6 +275,16 @@ export default function TracyFloat() {
   // mobile + low-end devices.
   const pendingTextRef = useRef('');
   const rafIdRef = useRef<number | null>(null);
+
+  // 🚨 PERF (Astra "Page Unresponsive" freeze fix) — Tier 2.1 only throttled
+  // 'text'. Every tool_call / tool_progress / tool_result / thinking event
+  // still called setTurns synchronously, and each of those re-rendered EVERY
+  // turn in the conversation (up to MAX_PERSISTED_TURNS=30 restored from
+  // localStorage), each one re-running splitActionLine + TracyBody's regex
+  // parse. Non-terminal events now queue here and drain on the same rAF as
+  // text, so the whole frame costs ONE setTurns. 'done'/'error' still apply
+  // immediately — correctness (spinner teardown) beats a frame of batching.
+  const pendingEventsRef = useRef<Record<string, unknown>[]>([]);
 
   // 🚨 Tier 2.2 (safe half) — AbortController for the SSE stream.
   // Aborted on unmount + on every new conversation. The retry-with-resume
@@ -383,118 +465,72 @@ export default function TracyFloat() {
     return () => vv.removeEventListener('resize', handler);
   }, [open]);
 
-  // Flush buffered SSE text tokens (Tier 2.1). Called by rAF callback and
-  // synchronously by handleEvent before any non-text event fires so order
-  // is preserved relative to tool calls / done / error.
-  const flushTextBuffer = useCallback(() => {
+  // Flush the buffered SSE frame — accumulated text tokens AND queued
+  // non-terminal events — in ONE setTurns. Called by the rAF callback and
+  // synchronously by handleEvent when a terminal ('done'/'error') event
+  // arrives. Text is applied before the queued events, which is safe because
+  // they touch disjoint fields on the turn (text vs tools/progress/thinking);
+  // ordering AMONG the events is preserved by the queue.
+  const flushPending = useCallback(() => {
     rafIdRef.current = null;
-    const pending = pendingTextRef.current;
-    if (!pending) return;
+    const pendingText = pendingTextRef.current;
+    const pendingEvents = pendingEventsRef.current;
+    if (!pendingText && pendingEvents.length === 0) return;
     pendingTextRef.current = '';
+    pendingEventsRef.current = [];
+    const errorFallback = t('tracy.errors.transient') || 'Something went wrong.';
     setTurns((prev) => {
       if (prev.length === 0) return prev;
       const last = prev[prev.length - 1];
       if (last.role !== 'assistant') return prev;
-      return [
-        ...prev.slice(0, -1),
-        { ...last, text: (last.text || '') + pending },
-      ];
+      // ONE clone per frame — applyEventToTurn then mutates this draft.
+      const updated: ConvTurn = {
+        ...last,
+        text: pendingText ? (last.text || '') + pendingText : last.text,
+      };
+      for (const evt of pendingEvents) {
+        applyEventToTurn(updated, evt, errorFallback);
+      }
+      // Prior turns keep their object identity here — that's what lets the
+      // memoized bubbles below skip re-rendering the whole history.
+      return [...prev.slice(0, -1), updated];
     });
-  }, []);
+  }, [t]);
 
   // ── Streaming submit (shared by free-text + greeting + action buttons) ─
   const handleEvent = useCallback(
     (evt: Record<string, unknown>) => {
-      // Fast path: text tokens buffer + rAF schedule. Multiple tokens within
-      // one frame collapse into one setTurns call.
+      // Text tokens buffer + rAF schedule. Multiple tokens within one frame
+      // collapse into one setTurns call.
       if (evt.type === 'text') {
         pendingTextRef.current += String(evt.text || '');
         if (rafIdRef.current === null) {
-          rafIdRef.current = requestAnimationFrame(flushTextBuffer);
+          rafIdRef.current = requestAnimationFrame(flushPending);
         }
         return;
       }
 
-      // Non-text event: drain pending text synchronously so token order is
-      // preserved against the new state change.
-      if (rafIdRef.current !== null) {
-        cancelAnimationFrame(rafIdRef.current);
-        rafIdRef.current = null;
-      }
-      const drained = pendingTextRef.current;
-      pendingTextRef.current = '';
-
-      setTurns((prev) => {
-        if (prev.length === 0) return prev;
-        const last = prev[prev.length - 1];
-        if (last.role !== 'assistant') return prev;
-        const updated: ConvTurn = {
-          ...last,
-          text: drained ? (last.text || '') + drained : last.text,
-        };
-        switch (evt.type) {
-          case 'tool_call': {
-            const tool: ToolEvent = {
-              name: String(evt.tool || 'tool'),
-              success: null,
-            };
-            updated.tools = [...(updated.tools || []), tool];
-            updated.progress = null;
-            break;
-          }
-          case 'tool_progress': {
-            const phase = typeof evt.phase === 'string' ? evt.phase : '';
-            const rawVars = (evt as Record<string, unknown>).vars;
-            const vars =
-              rawVars && typeof rawVars === 'object'
-                ? (rawVars as Record<string, string>)
-                : undefined;
-            if (phase) updated.progress = { phase, vars };
-            break;
-          }
-          case 'tool_result': {
-            const tools = [...(updated.tools || [])];
-            for (let i = tools.length - 1; i >= 0; i--) {
-              if (
-                tools[i].name === String(evt.tool) &&
-                tools[i].success === null
-              ) {
-                tools[i] = {
-                  ...tools[i],
-                  success: !!evt.success,
-                  summary:
-                    typeof evt.summary === 'string' ? evt.summary : undefined,
-                };
-                break;
-              }
-            }
-            updated.tools = tools;
-            break;
-          }
-          case 'thinking': {
-            updated.thinking = (updated.thinking || '') + String(evt.text || '');
-            break;
-          }
-          case 'done': {
-            updated.pending = false;
-            updated.progress = null;
-            updated.costUsd =
-              typeof evt.cost_usd === 'number' ? evt.cost_usd : undefined;
-            break;
-          }
-          case 'error': {
-            updated.pending = false;
-            updated.progress = null;
-            updated.error = String(
-              evt.error || t('tracy.errors.transient') || 'Something went wrong.'
-            );
-            break;
-          }
+      // Terminal events end the turn (spinner teardown, error card) — apply
+      // them this tick rather than waiting a frame, draining everything
+      // buffered ahead of them so nothing is lost or reordered.
+      if (evt.type === 'done' || evt.type === 'error') {
+        if (rafIdRef.current !== null) {
+          cancelAnimationFrame(rafIdRef.current);
+          rafIdRef.current = null;
         }
-        return [...prev.slice(0, -1), updated];
-      });
+        pendingEventsRef.current.push(evt);
+        flushPending();
+        return;
+      }
+
+      // Everything else (tool_call / tool_progress / tool_result / thinking)
+      // rides the same rAF as text — see pendingEventsRef above.
+      pendingEventsRef.current.push(evt);
+      if (rafIdRef.current === null) {
+        rafIdRef.current = requestAnimationFrame(flushPending);
+      }
     },
-    [t, flushTextBuffer]
+    [flushPending]
   );
 
   // Cancel any pending rAF on unmount so we don't run setTurns after teardown.
@@ -539,6 +575,19 @@ export default function TracyFloat() {
         if (addUserTurn) return [...prev, userTurn, assistantTurn];
         return [...prev, assistantTurn];
       });
+
+      // 🚨 PERF freeze fix, correctness half — drop anything the rAF coalescer is still
+      // holding from a PREVIOUS stream before this turn becomes the last one. flushPending
+      // always applies to `prev[prev.length - 1]`, so a frame left buffered by an aborted or
+      // errored stream (the abort below, a convId change, a dropped connection) would be
+      // appended to the brand-new assistant turn instead — the previous answer's tail bleeding
+      // into the next reply. Cancel the scheduled flush too, so it cannot fire on stale refs.
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+      pendingTextRef.current = '';
+      pendingEventsRef.current = [];
 
       // Build short history for the server (last 6 turns)
       const history: { role: 'user' | 'assistant'; content: string }[] = [];
@@ -732,6 +781,12 @@ export default function TracyFloat() {
           )
         );
       } finally {
+        // 🚨 PERF freeze fix — the rAF coalescer can be holding a frame's
+        // worth of text/tool events when the stream ends abnormally (abort,
+        // network error, non-OK status). Drain it so nothing buffered is
+        // silently dropped. On the normal path 'done' already flushed and
+        // this is a no-op.
+        flushPending();
         // Clear the controller if it's still the one we created — protects
         // against a brand-new sendMessage() racing with this finally block.
         if (streamControllerRef.current === controller) {
@@ -739,7 +794,7 @@ export default function TracyFloat() {
         }
       }
     },
-    [turns, locale, t, handleEvent, open]
+    [turns, locale, t, handleEvent, open, flushPending]
   );
 
   // 🚨 Perf Tier 2.3 — fireGreeting REMOVED. Was firing [GREETING]/[GREETING_FIRST]
@@ -762,6 +817,24 @@ export default function TracyFloat() {
     },
     [question, submitting, convId, sendMessage]
   );
+
+  // 🚨 PERF (Astra freeze fix) — `submit` depends transitively on `turns`, so
+  // its identity changes on EVERY streamed frame. Passing inline arrows built
+  // from it into AssistantBubble would hand the memoized bubble a fresh prop
+  // each frame and defeat memoization for the entire history. Route through a
+  // ref so the two handlers below are created once and stay reference-stable
+  // for the life of the component.
+  const submitRef = useRef(submit);
+  useEffect(() => {
+    submitRef.current = submit;
+  }, [submit]);
+
+  const handleOfferAccept = useCallback(() => {
+    submitRef.current('Yes, please.');
+  }, []);
+  const handleOfferDecline = useCallback(() => {
+    submitRef.current('Not now.');
+  }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -963,12 +1036,8 @@ export default function TracyFloat() {
                 isLast={isLastAssistant}
                 disabled={submitting}
                 progressLabel={progressLabel}
-                onAccept={() => {
-                  submit('Yes, please.');
-                }}
-                onDecline={() => {
-                  submit('Not now.');
-                }}
+                onAccept={handleOfferAccept}
+                onDecline={handleOfferDecline}
               />
             );
           })
@@ -1055,7 +1124,28 @@ export default function TracyFloat() {
 
 // ── Sub-components ────────────────────────────────────────────────────────
 
-function UserBubble({ text }: { text: string }) {
+// 🚨 PERF (Astra "Page Unresponsive" freeze fix) — hoisted out of the JSX so
+// TracyBody receives a REFERENCE-STABLE `style` prop and its own memo() can
+// actually bite. An inline `style={{...}}` literal here would rebuild the
+// object every render and force a full re-parse of every historical turn.
+const TRACY_BODY_STYLE: React.CSSProperties = {
+  fontFamily: T.sans,
+  fontSize: 14,
+  lineHeight: 1.6,
+  color: T.textSoft,
+  wordBreak: 'break-word',
+};
+
+// 🚨 PERF (Astra freeze fix) — memo() is the core of the fix. Every SSE
+// flush calls setTurns, which re-renders the map over ALL visible turns.
+// Without memo, each historical turn re-ran splitActionLine + TracyBody's
+// regex parse on every frame → O(history × tokens) main-thread work → the
+// tab locked. `setTurns` replaces only the LAST turn object
+// (`[...prev.slice(0, -1), updated]`), so every earlier turn keeps its
+// identity and memo skips it outright. Keep it that way — any refactor that
+// rebuilds prior turn objects (e.g. `prev.map(...)` over the whole array
+// during streaming) silently reintroduces the freeze.
+const UserBubble = memo(function UserBubble({ text }: { text: string }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
       <div
@@ -1076,9 +1166,9 @@ function UserBubble({ text }: { text: string }) {
       </div>
     </div>
   );
-}
+});
 
-function AssistantBubble({
+const AssistantBubble = memo(function AssistantBubble({
   turn,
   isLast,
   disabled,
@@ -1098,7 +1188,13 @@ function AssistantBubble({
   // principal hitting Astra would crash this bubble. AssistantBubble is a
   // component, so useI18n() is valid.
   const { t } = useI18n();
-  const { body, action } = splitActionLine(turn.text);
+  // 🚨 PERF (Astra freeze fix) — splitActionLine walks + splits the whole
+  // turn text. Keyed on turn.text so a re-render caused by any OTHER prop
+  // (isLast flipping, submitting toggling) doesn't re-parse the message.
+  const { body, action } = useMemo(
+    () => splitActionLine(turn.text),
+    [turn.text]
+  );
   const isThinking = turn.pending && !turn.text && !turn.error;
   const showOfferButtons =
     isLast &&
@@ -1122,18 +1218,7 @@ function AssistantBubble({
     <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
       <TracyAvatar size={28} />
       <div style={{ flex: 1, minWidth: 0, paddingTop: 2 }}>
-        {body && (
-          <TracyBody
-            text={body}
-            style={{
-              fontFamily: T.sans,
-              fontSize: 14,
-              lineHeight: 1.6,
-              color: T.textSoft,
-              wordBreak: 'break-word',
-            }}
-          />
-        )}
+        {body && <TracyBody text={body} style={TRACY_BODY_STYLE} />}
         {action && (
           <div
             style={{
@@ -1253,4 +1338,4 @@ function AssistantBubble({
       </div>
     </div>
   );
-}
+});

@@ -7,12 +7,20 @@
 // teachers with the existing 6-character login codes (/api/montree/admin/teachers) and
 // teachers add children directly (/api/montree/children). Phase 6 stops here on purpose.
 //
-// The school row this writes is deliberately IDENTICAL to what
-// /api/montree/principal/register writes — same trial length, same plan_type, same
-// montage_enabled, same subscription_status — plus organization_id. A school that arrived
-// through an organisation must be indistinguishable from a self-serve school everywhere
-// else in the product; the organisation is a reporting and onboarding relationship, not a
-// different kind of account.
+// The school row this writes mirrors /api/montree/principal/register — same plan_type, same
+// montage_enabled, same shape — with two deliberate differences: organization_id, and BILLING.
+//
+// 🚨 ORGANISATION SCHOOLS ARE FREE FOR LIFE. Every school that arrives through an organisation
+// belongs to one of the non-profit partners the founder onboarded by hand to validate Montree
+// in the field. They never pay, so they must never be put on a clock: no trial, no expiry
+// banner, no 402 the morning the trial lapses in the middle of a school term. Concretely:
+//   subscription_status 'active' · trial_ends_at NULL · billing_override_usd 0 · a note saying why
+// plus a permanent Sonnet AI-tier grant (the same applyAiTier() grant the Partner Program's
+// free-for-life redemption applies), because the flags — not the subscription — are what
+// resolveReportModel() actually reads.
+//
+// Everything else about an organisation school stays indistinguishable from a self-serve one;
+// the organisation is a reporting and onboarding relationship, not a different kind of account.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
@@ -22,8 +30,8 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import { getClientIP } from '@/lib/montree/audit-logger';
 import { createMontreeToken, setMontreeAuthCookie } from '@/lib/montree/server-auth';
 import { getLocationFromRequest } from '@/lib/ip-geolocation';
-import { DEFAULTS } from '@/lib/montree/constants';
 import { orgSlug } from '@/lib/montree/org/invite-tokens';
+import { ORG_SCHOOL_GRANT, applyOrgSchoolGrant } from '@/lib/montree/org/free-for-life';
 import { claimInvite, releaseInvite } from '@/lib/montree/org/claim-invite';
 import { isOrgMigrationPending, orgMigrationPending } from '@/lib/montree/org/verify-org-request';
 
@@ -134,10 +142,10 @@ export async function POST(request: NextRequest) {
       slug = `${baseSlug}-${Math.floor(Math.random() * 9000) + 1000}`;
     }
 
-    // Launch pricing (plan amendment A1): every 'trialing' school MUST carry a
-    // trial_ends_at — see the long note in /api/montree/principal/register.
-    const trialEndsAt = new Date(Date.now() + DEFAULTS.TRIAL_DAYS * 24 * 60 * 60 * 1000);
-
+    // Launch pricing (plan amendment A1) says every 'trialing' school MUST carry a
+    // trial_ends_at. An organisation school is never 'trialing' — see ORG_SCHOOL_GRANT and
+    // the note at the top of this file — so it carries no trial date at all, which is the
+    // one shape that rule permits alongside it.
     const { data: school, error: schoolError } = await supabase
       .from('montree_schools')
       .insert({
@@ -145,8 +153,7 @@ export async function POST(request: NextRequest) {
         slug,
         owner_email: cleanEmail,
         owner_name: principalName.trim(),
-        subscription_status: 'trialing',
-        trial_ends_at: trialEndsAt.toISOString(),
+        ...ORG_SCHOOL_GRANT,
         plan_type: 'school',
         subscription_tier: 'free',
         is_active: true,
@@ -190,6 +197,12 @@ export async function POST(request: NextRequest) {
     // The invite was already stamped used (and stamped with this email) by the claim in
     // step 2. Nothing left to burn — a school invite already carries its organisation, so
     // unlike an organisation invite there is nothing to backfill either.
+
+    // ── 4b. The other half of free-for-life: permanent Premium (Sonnet) ───────────────
+    // Awaited rather than fire-and-forget so the first report this school generates already
+    // sees the flags — but non-fatal by contract (see applyOrgSchoolGrant), so a feature-flag
+    // hiccup can never cost a principal their signup.
+    await applyOrgSchoolGrant(supabase, school.id, 'org_school_free_for_life');
 
     // signup_country parity with principal/register. Fire-and-forget analytics — must
     // never block or fail a signup.

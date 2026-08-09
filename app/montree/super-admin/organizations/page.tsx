@@ -208,6 +208,73 @@ export default function SuperAdminOrganizationsPage() {
     }
   };
 
+  // ── Create a school inside an organisation (the shortcut around the invite chain) ───────
+  // Normally a school appears when a director mints a link and a principal redeems it. This is
+  // the path for when Tredoux is ON THE CALL with the director: make the school here, read the
+  // principal's code down the phone. One org's form is open at a time — this console is one
+  // operator doing one thing, and a grid of half-filled forms would only invite a mis-click.
+  const [addSchoolOrgId, setAddSchoolOrgId] = useState<string | null>(null);
+  const [newSchoolName, setNewSchoolName] = useState('');
+  const [newPrincipalName, setNewPrincipalName] = useState('');
+  const [newPrincipalEmail, setNewPrincipalEmail] = useState('');
+  const [createError, setCreateError] = useState('');
+  // Held until dismissed: the login code comes back exactly once in the response.
+  const [createdSchool, setCreatedSchool] = useState<
+    { orgId: string; schoolName: string; principalName: string; principalEmail: string; loginCode: string } | null
+  >(null);
+  const [copied, setCopied] = useState(false);
+
+  const openAddSchool = (orgId: string) => {
+    setAddSchoolOrgId(orgId);
+    setCreatedSchool(null);
+    setCreateError('');
+    setNewSchoolName('');
+    setNewPrincipalName('');
+    setNewPrincipalEmail('');
+  };
+
+  const createSchool = async (orgId: string) => {
+    if (!token || busyAction) return;
+    setBusyAction(`${orgId}:create_school`);
+    setCreateError('');
+    setCreatedSchool(null);
+    try {
+      const res = await fetch('/api/montree/super-admin/organizations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-super-admin-token': token },
+        body: JSON.stringify({
+          action: 'create_school',
+          organizationId: orgId,
+          schoolName: newSchoolName.trim(),
+          principalName: newPrincipalName.trim(),
+          principalEmail: newPrincipalEmail.trim() || undefined,
+        }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setCreateError(body?.error || 'Could not create the school.');
+        return;
+      }
+      setCreatedSchool({
+        orgId,
+        schoolName: body.school?.name ?? newSchoolName.trim(),
+        principalName: body.principal?.name ?? newPrincipalName.trim(),
+        principalEmail: body.principal?.email ?? '',
+        loginCode: body.principal?.loginCode ?? '',
+      });
+      setCopied(false);
+      setAddSchoolOrgId(null);
+      setNewSchoolName('');
+      setNewPrincipalName('');
+      setNewPrincipalEmail('');
+      void load(token); // the school count on this organisation just went up
+    } catch {
+      setCreateError('Could not reach the server.');
+    } finally {
+      setBusyAction(null);
+    }
+  };
+
   // Become this organisation. The endpoint swaps the montree-auth cookie server-side, so this
   // is a hard navigation — nothing about the super-admin console's state belongs inside an
   // organisation dashboard. The sa_session token stays in sessionStorage, so coming back to
@@ -418,15 +485,16 @@ export default function SuperAdminOrganizationsPage() {
               )}
             </Section>
 
-            {/* ── Directors ────────────────────────────────────────────────────────────────
-                The org-tier god view. Every director's live login code in plaintext, plus the
-                two recoveries and "view as organization". This is the same posture as the
-                schools god view at /api/montree/super-admin/all-logins: one operator, one
-                screen, and no support ticket that has to end with "I can't see it either". */}
+            {/* ── Directors and schools ────────────────────────────────────────────────────
+                The org-tier god view. Every director's live login code in plaintext, the two
+                recoveries, "view as organization" — and the shortcut that creates a school
+                outright. Same posture as the schools god view at
+                /api/montree/super-admin/all-logins: one operator, one screen, and no support
+                ticket that has to end with "I can't see it either". */}
             {orgs && orgs.length > 0 ? (
               <Section
-                title="Directors"
-                subtitle="Every organization leader, their live login code, and when they last signed in. Codes are shown in full — this page is the recovery path when a director loses theirs."
+                title="Directors and schools"
+                subtitle="Every organization leader, their live login code, and when they last signed in. Codes are shown in full — this page is the recovery path when a director loses theirs. You can also create a school and its principal directly, without waiting for a director to mint a link."
               >
                 {actionError ? (
                   <p style={{ fontFamily: T.sans, fontSize: 12.5, color: '#f2a883', margin: '0 0 12px' }}>{actionError}</p>
@@ -436,19 +504,161 @@ export default function SuperAdminOrganizationsPage() {
                     <Card key={`dir-${o.id}`} padding={14}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
                         <div style={{ fontFamily: T.serif, fontSize: 17, color: T.textPrimary }}>{o.name}</div>
-                        <button
-                          type="button"
-                          onClick={() => void viewAsOrganization(o.id)}
-                          disabled={busyAction !== null}
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (addSchoolOrgId === o.id) {
+                                setAddSchoolOrgId(null);
+                                setCreateError('');
+                              } else {
+                                openAddSchool(o.id);
+                              }
+                            }}
+                            disabled={busyAction !== null}
+                            style={{
+                              ...secondaryBtn,
+                              opacity: busyAction !== null ? 0.6 : 1,
+                              cursor: busyAction !== null ? 'default' : 'pointer',
+                            }}
+                          >
+                            {addSchoolOrgId === o.id ? 'Cancel' : 'Add school'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void viewAsOrganization(o.id)}
+                            disabled={busyAction !== null}
+                            style={{
+                              ...secondaryBtn,
+                              opacity: busyAction !== null ? 0.6 : 1,
+                              cursor: busyAction !== null ? 'default' : 'pointer',
+                            }}
+                          >
+                            {busyAction === `${o.id}:view_as` ? 'Opening…' : 'View as organization'}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* The form, and — after it runs — the principal's code. Both live inside
+                          this organisation's card so there is never any doubt which group the
+                          new school landed in. */}
+                      {addSchoolOrgId === o.id ? (
+                        <div
                           style={{
-                            ...secondaryBtn,
-                            opacity: busyAction !== null ? 0.6 : 1,
-                            cursor: busyAction !== null ? 'default' : 'pointer',
+                            marginTop: 12,
+                            paddingTop: 12,
+                            borderTop: '1px solid rgba(255,255,255,0.07)',
                           }}
                         >
-                          {busyAction === `${o.id}:view_as` ? 'Opening…' : 'View as organization'}
-                        </button>
-                      </div>
+                          <p style={{ fontFamily: T.sans, fontSize: 12.5, color: T.textSecondary, margin: '0 0 10px', lineHeight: 1.6 }}>
+                            Creates the school inside {o.name} and its principal in one step. The principal
+                            signs in at /montree/login with the 6-character code you get back. Organization
+                            schools are free for life — no trial, no billing.
+                          </p>
+                          <div style={{ display: 'grid', gap: 10 }}>
+                            <input
+                              type="text"
+                              value={newSchoolName}
+                              onChange={(e) => setNewSchoolName(e.target.value)}
+                              placeholder="School name"
+                              style={inputStyle}
+                            />
+                            <input
+                              type="text"
+                              value={newPrincipalName}
+                              onChange={(e) => setNewPrincipalName(e.target.value)}
+                              placeholder="Principal's name"
+                              style={inputStyle}
+                            />
+                            <input
+                              type="email"
+                              value={newPrincipalEmail}
+                              onChange={(e) => setNewPrincipalEmail(e.target.value)}
+                              placeholder="Principal's email (optional — you can fill it in later)"
+                              style={inputStyle}
+                            />
+                          </div>
+                          {createError ? (
+                            <p style={{ fontFamily: T.sans, fontSize: 12.5, color: '#f2a883', margin: '10px 0 0' }}>{createError}</p>
+                          ) : null}
+                          <button
+                            type="button"
+                            onClick={() => void createSchool(o.id)}
+                            disabled={busyAction !== null || !newSchoolName.trim() || newPrincipalName.trim().length < 2}
+                            style={{
+                              marginTop: 12,
+                              background: T.emerald,
+                              color: '#062017',
+                              border: 'none',
+                              borderRadius: 10,
+                              padding: '9px 16px',
+                              fontFamily: T.sans,
+                              fontSize: 13,
+                              fontWeight: 600,
+                              opacity: busyAction !== null || !newSchoolName.trim() || newPrincipalName.trim().length < 2 ? 0.55 : 1,
+                              cursor: busyAction !== null ? 'default' : 'pointer',
+                            }}
+                          >
+                            {busyAction === `${o.id}:create_school` ? 'Creating…' : 'Create school'}
+                          </button>
+                        </div>
+                      ) : null}
+
+                      {createdSchool && createdSchool.orgId === o.id ? (
+                        <div
+                          style={{
+                            marginTop: 12,
+                            padding: '12px 14px',
+                            background: 'rgba(232,201,106,0.08)',
+                            border: '1px solid rgba(232,201,106,0.20)',
+                            borderRadius: 12,
+                          }}
+                        >
+                          <div style={{ fontFamily: T.sans, fontSize: 13, color: T.textPrimary }}>
+                            {createdSchool.schoolName} is ready.
+                          </div>
+                          <div style={{ fontFamily: T.sans, fontSize: 12, color: T.textMuted, margin: '4px 0 10px' }}>
+                            {createdSchool.principalName}
+                            {createdSchool.principalEmail ? ` · ${createdSchool.principalEmail}` : ''}
+                            {' · signs in at /montree/login'}
+                          </div>
+                          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                            <code
+                              style={{
+                                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                                fontSize: 15,
+                                letterSpacing: 3,
+                                color: '#f0d68a',
+                                background: 'rgba(232,201,106,0.10)',
+                                border: '1px solid rgba(232,201,106,0.22)',
+                                borderRadius: 8,
+                                padding: '7px 12px',
+                              }}
+                            >
+                              {createdSchool.loginCode}
+                            </code>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                void navigator.clipboard
+                                  ?.writeText(createdSchool.loginCode)
+                                  .then(() => setCopied(true))
+                                  .catch(() => { /* the code is on screen either way */ });
+                              }}
+                              style={secondaryBtn}
+                            >
+                              {copied ? 'Copied' : 'Copy code'}
+                            </button>
+                            <button type="button" onClick={() => setCreatedSchool(null)} style={secondaryBtn}>
+                              Done
+                            </button>
+                          </div>
+                          <p style={{ fontFamily: T.sans, fontSize: 11.5, color: T.textMuted, margin: '10px 0 0', lineHeight: 1.6 }}>
+                            Shown once here — it stays readable afterwards in the schools view under Montree
+                            Admin. Send it to the principal yourself.
+                          </p>
+                        </div>
+                      ) : null}
 
                       {o.admins.length === 0 ? (
                         <p style={{ fontFamily: T.sans, fontSize: 12.5, color: T.textMuted, margin: '10px 0 0' }}>

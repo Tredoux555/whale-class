@@ -41,6 +41,10 @@ export interface VerifiedRequest {
   actingOrgAdminId?: string;
   /** The organisation to return to, alongside actingOrgAdminId. */
   actingOrganizationId?: string;
+  /** A principal is inside one of their own classrooms — the montree_school_admins.id to
+   *  return to. Set only by /api/montree/admin/enter-classroom; read only by
+   *  /api/montree/admin/return-to-admin and by auth/me (for the honest banner). */
+  actingPrincipalId?: string;
 }
 
 /**
@@ -76,6 +80,7 @@ async function toVerifiedOrLocked(
     actingAsSuperAdmin: payload.actingAsSuperAdmin,
     actingOrgAdminId: payload.actingOrgAdminId,
     actingOrganizationId: payload.actingOrganizationId,
+    actingPrincipalId: payload.actingPrincipalId,
   };
 }
 

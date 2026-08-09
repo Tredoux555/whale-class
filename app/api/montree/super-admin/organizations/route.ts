@@ -7,11 +7,15 @@
 //          /api/montree/super-admin/all-logins is for schools, and it carries the same
 //          no-store posture for the same reason.
 //
-//   POST — the two recoveries Tredoux gets asked for by name:
+//   POST — the two recoveries Tredoux gets asked for by name, plus the one creation:
 //            { action: 'regenerate_login_code', adminId }  → a fresh code, returned once.
 //            { action: 'reset_password', adminId }         → a fresh password, returned once
 //                                                            (bcrypt-hashed on the row).
-//          Both are audit-logged isSensitive.
+//            { action: 'create_school', organizationId, schoolName, principalName,
+//              principalEmail? }                           → a whole school + its principal,
+//                                                            with the principal's login code
+//                                                            returned once to be sent on.
+//          All three are audit-logged isSensitive.
 //
 // "View as organisation" lives one level down, at
 // /api/montree/super-admin/organizations/[id]/view-as, because it mints a session rather than
@@ -31,9 +35,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { isOrgMigrationPending, orgMigrationPending } from '@/lib/montree/org/verify-org-request';
-import { issueDirectorLoginCode } from '@/lib/montree/org/director-login-code';
-import { hashPassword } from '@/lib/montree/password';
-import { generateTempPassword } from '@/lib/montree/secure-code';
+import { issueDirectorLoginCode, probeLoginCode } from '@/lib/montree/org/director-login-code';
+import { hashPassword, legacySha256 } from '@/lib/montree/password';
+import { generateSecureCode, generateTempPassword } from '@/lib/montree/secure-code';
+import { orgSlug } from '@/lib/montree/org/invite-tokens';
+import { ORG_SCHOOL_GRANT, applyOrgSchoolGrant } from '@/lib/montree/org/free-for-life';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 
 export const dynamic = 'force-dynamic';
@@ -166,13 +172,25 @@ export async function GET(request: NextRequest) {
   );
 }
 
+/** Trim a string field off an untyped JSON body, or ''. */
+function str(body: unknown, key: string): string {
+  const value = (body as Record<string, unknown> | null)?.[key];
+  return typeof value === 'string' ? value.trim() : '';
+}
+
 /**
- * POST — director credential recovery.
+ * POST — director credential recovery, and direct school creation.
  *
- * Two actions, both operating on ONE director by id and both returning the new secret exactly
- * once. Neither touches the organisation, its schools or anything else: the whole point is a
- * surgical fix for "our director cannot get in", made by the only person on the platform who
- * is allowed to make it.
+ * Two of the three actions operate on ONE director by id and return the new secret exactly
+ * once: a surgical fix for "our director cannot get in", made by the only person on the
+ * platform who is allowed to make it.
+ *
+ * The third, `create_school`, is the shortcut around the whole onboarding chain. Normally a
+ * school appears when a director mints a school link and a principal redeems it. But the
+ * founder is often sitting WITH the director — on a call, in a school office — and the fastest
+ * path is for him to make the school himself and read the principal's code down the phone.
+ * That is exactly what this does, and it produces the same rows the invite path produces,
+ * including the free-for-life billing grant (ORG_SCHOOL_GRANT).
  */
 export async function POST(request: NextRequest) {
   const { valid } = await verifySuperAdminAuth(request.headers);
@@ -183,12 +201,16 @@ export async function POST(request: NextRequest) {
   const userAgent = getUserAgent(request.headers);
 
   const body = await request.json().catch(() => ({}));
-  const action = typeof (body as { action?: unknown }).action === 'string'
-    ? (body as { action: string }).action
-    : '';
-  const adminId = typeof (body as { adminId?: unknown }).adminId === 'string'
-    ? (body as { adminId: string }).adminId.trim()
-    : '';
+  const action = str(body, 'action');
+
+  // ── create_school ─────────────────────────────────────────────────────────────────────
+  // Handled before the adminId gate below: this action is scoped to an ORGANISATION, not to a
+  // director, and it is the only one here that writes tenant rows.
+  if (action === 'create_school') {
+    return createOrganizationSchool(supabase, body, { ip, userAgent });
+  }
+
+  const adminId = str(body, 'adminId');
 
   if (!adminId) return NextResponse.json({ error: 'adminId is required.' }, { status: 400 });
 
@@ -283,4 +305,191 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({ error: `Unknown action: ${action || '(none)'}` }, { status: 400 });
+}
+
+/**
+ * Create a school inside an organisation, with its principal, in one shot.
+ *
+ * The rows are deliberately the SAME rows /api/montree/org/register-school writes — same slug
+ * collision handling, same ORG_SCHOOL_GRANT billing, same permanent Sonnet grant, same
+ * organization_id — with ONE difference, and it is the point of the whole action: the
+ * principal is created the way /api/montree/super-admin/principals creates one, with a
+ * 6-character login code (plaintext on the row, legacySha256 in password_hash) instead of a
+ * password they chose. Nobody is standing at a keyboard to choose one, and a code is what the
+ * founder can read down a phone line.
+ *
+ * 🚨 The code comes back exactly once in this response, and is readable again afterwards from
+ * the schools god view (/api/montree/super-admin/all-logins) — this is a recovery-capable
+ * platform, not a one-way door.
+ */
+async function createOrganizationSchool(
+  supabase: ReturnType<typeof getSupabase>,
+  body: unknown,
+  ctx: { ip: string; userAgent: string },
+): Promise<NextResponse> {
+  const organizationId = str(body, 'organizationId');
+  const schoolName = str(body, 'schoolName');
+  const principalName = str(body, 'principalName');
+  const principalEmailRaw = str(body, 'principalEmail').toLowerCase();
+
+  if (!organizationId) return NextResponse.json({ error: 'organizationId is required.' }, { status: 400 });
+  if (!schoolName) return NextResponse.json({ error: 'School name is required.' }, { status: 400 });
+  if (principalName.length < 2) return NextResponse.json({ error: 'Principal name is required.' }, { status: 400 });
+  if (principalEmailRaw && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(principalEmailRaw)) {
+    return NextResponse.json({ error: 'That does not look like an email address.' }, { status: 400 });
+  }
+
+  // The organisation must exist — a school pointed at a dead uuid would be an orphan the
+  // console cannot show, and the FK would reject it anyway with a far less readable error.
+  const { data: org, error: orgErr } = await supabase
+    .from('montree_organizations')
+    .select('id, name')
+    .eq('id', organizationId)
+    .maybeSingle();
+
+  if (orgErr) {
+    if (isOrgMigrationPending(orgErr)) return orgMigrationPending(orgErr.message);
+    console.error('[montree-org] create_school organization lookup failed:', orgErr);
+    return NextResponse.json({ error: orgErr.message }, { status: 500 });
+  }
+  if (!org) return NextResponse.json({ error: 'Organization not found.' }, { status: 404 });
+
+  // Slug collision handling, identical to register-school: inside an organisation two branches
+  // genuinely can share a name, so a collision renames rather than refuses.
+  const baseSlug = orgSlug(schoolName) || 'school';
+  let slug = baseSlug;
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const { data: taken } = await supabase
+      .from('montree_schools')
+      .select('id')
+      .eq('slug', slug)
+      .maybeSingle();
+    if (!taken) break;
+    slug = `${baseSlug}-${Math.floor(Math.random() * 9000) + 1000}`;
+  }
+
+  // montree_school_admins.email is NOT NULL and the table's UNIQUE is (school_id, email), so a
+  // principal always needs one. When the founder does not have it yet — common on a phone call
+  // — synthesise a per-school placeholder in the house shape (see the parent-invite path's
+  // `pending-…@parent.montree.local`). The .local TLD never resolves, so nothing can ever be
+  // sent to it by accident, and the principal signs in with the CODE regardless. Fill the real
+  // address in later from the super-admin schools view.
+  const principalEmail = principalEmailRaw || `principal-${slug}@school.montree.local`;
+
+  // ── The principal's login code, minted BEFORE anything is written ──────────────────────
+  // 🚨 Probed against ALL THREE code tables (see probeLoginCode) — not just this one. The
+  // partial UNIQUE on montree_school_admins.login_code (migration 194) only stops a duplicate
+  // WITHIN that table; a code that collides with a TEACHER's would sail past it and then, at
+  // /api/montree/auth/unified, outrank that teacher (principal is tried first) and hand the
+  // founder's new principal session to whoever typed it — across tenants.
+  //
+  // Minted here, ahead of the school insert, so the failure path writes NOTHING and needs no
+  // rollback: a school that exists but has no signable-into principal is the exact state the
+  // rollback below exists to prevent, and not creating it in the first place is cheaper.
+  let loginCode = '';
+  for (let attempt = 0; attempt < 6 && !loginCode; attempt += 1) {
+    const candidate = generateSecureCode();
+    const verdict = await probeLoginCode(supabase, candidate);
+    if (verdict === 'free') loginCode = candidate;
+    if (verdict === 'error') {
+      // Already logged inside probeLoginCode. Refusing to mint is a retry for the founder;
+      // minting a code we could not verify is a takeover we would never find out about.
+      return NextResponse.json(
+        { error: 'Could not check the login code right now. Try again in a moment.' },
+        { status: 503 },
+      );
+    }
+  }
+  if (!loginCode) {
+    console.error('[montree-org] create_school could not find a free principal login code after 6 attempts');
+    return NextResponse.json(
+      { error: 'Could not mint a login code. Try again.' },
+      { status: 503 },
+    );
+  }
+
+  const { data: school, error: schoolError } = await supabase
+    .from('montree_schools')
+    .insert({
+      name: schoolName,
+      slug,
+      owner_email: principalEmail,
+      owner_name: principalName,
+      ...ORG_SCHOOL_GRANT,
+      plan_type: 'school',
+      subscription_tier: 'free',
+      is_active: true,
+      montage_enabled: true,
+      organization_id: org.id,
+    })
+    .select('id, name, slug')
+    .single();
+
+  if (schoolError || !school) {
+    if (isOrgMigrationPending(schoolError)) {
+      return orgMigrationPending((schoolError as { message?: string }).message);
+    }
+    console.error('[montree-org] create_school school insert failed:', schoolError);
+    return NextResponse.json({ error: 'Could not create the school.' }, { status: 500 });
+  }
+
+  // Both credential columns, exactly as /api/montree/super-admin/principals writes them:
+  // login_code is the readable half (so the god view can hand it back later) and password_hash
+  // is legacySha256 of the same code, because THAT is what the principal login path compares
+  // against. Writing one without the other produces an account that cannot sign in.
+  // `loginCode` was minted and cross-table-probed above, before any row existed; the partial
+  // UNIQUE on login_code (migration 194) remains the last-resort backstop and lands in the
+  // rollback below if it ever fires.
+  const { data: principal, error: adminError } = await supabase
+    .from('montree_school_admins')
+    .insert({
+      school_id: school.id,
+      email: principalEmail,
+      name: principalName,
+      login_code: loginCode,
+      password_hash: legacySha256(loginCode),
+      role: 'principal',
+      is_active: true,
+    })
+    .select('id, name, email, role')
+    .single();
+
+  if (adminError || !principal) {
+    // A school nobody can sign into is worse than no school: it would sit in the org's count
+    // forever and the only fix would be a manual delete. Roll it back, same as register-school.
+    console.error('[montree-org] create_school principal insert failed:', adminError);
+    await supabase.from('montree_schools').delete().eq('id', school.id);
+    return NextResponse.json({ error: 'Could not create the principal account.' }, { status: 500 });
+  }
+
+  // The other half of free-for-life. Non-fatal by contract — the school exists and works
+  // either way, and the AI tier is one click away in the super-admin schools view.
+  await applyOrgSchoolGrant(supabase, school.id, 'super_admin_org_school_created');
+
+  await logAudit(supabase, {
+    adminIdentifier: 'super_admin',
+    action: 'org_school_created_by_super_admin',
+    resourceType: 'school',
+    resourceId: school.id,
+    resourceDetails: {
+      organizationId: org.id,
+      organizationName: org.name,
+      schoolName: school.name,
+      principalId: principal.id,
+      principalEmail,
+      placeholderEmail: !principalEmailRaw,
+    },
+    ipAddress: ctx.ip,
+    userAgent: ctx.userAgent,
+    isSensitive: true,
+  });
+
+  return NextResponse.json(
+    {
+      success: true,
+      school: { id: school.id, name: school.name, slug: school.slug },
+      principal: { id: principal.id, name: principal.name, email: principal.email, loginCode },
+    },
+    { headers: NO_STORE },
+  );
 }
