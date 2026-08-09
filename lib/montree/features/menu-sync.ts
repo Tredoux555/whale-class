@@ -79,6 +79,7 @@ export const FEATURE_MENU_MAP: Partial<Record<FeatureKey, MenuItemId>> = {
   curriculum_browser: 'curriculum',          // /montree/dashboard/curriculum — "Curriculum Browser" (migration 149)
   community_library: 'library',              // /montree/library — "Community Library" (migration 149)
   classroom_setup_ai: 'classroom_setup',     // /montree/dashboard/classroom-builder — "Classroom Setup AI" (migration 149)
+  child_evaluation: 'milestones',            // /montree/dashboard/milestones — "Montree Milestones" (migration 314)
 
   // ── LEGACY menu_* keys (kept, but inert) ───────────────────────────────────
   // These have NO row in montree_feature_definitions, so GET /api/montree/features
@@ -128,10 +129,20 @@ interface StoredMenuItem {
 /**
  * Push a feature toggle into every teacher's saved menu for one school.
  *
- * enable  → item set visible:true (PREPENDED if the config predates the item,
- *           so the school actually sees what they just turned on)
- * disable → item set visible:false (never removed — order is preserved for
- *           when it comes back)
+ * enable  → item set visible:true AND MOVED TO THE FRONT, so the school actually
+ *           sees what they just turned on.
+ * disable → item set visible:false, left exactly where it is (never removed — the
+ *           teacher's order is preserved for when it comes back)
+ *
+ * 🚨 The move-to-front on enable is deliberate and was verified as a real gap, not a
+ * cosmetic one. The original code prepended ONLY when the id was ABSENT from the config —
+ * but `sanitizeMenuConfig` back-fills every registry id into every config it touches, so in
+ * practice the id is almost always already present, hidden, somewhere down the list. The
+ * old branch then flipped it visible IN PLACE, and a school that had just switched a
+ * feature on found its new row buried among twenty others. A hidden→visible transition is
+ * exactly "what they just turned on", so it is treated the same as a brand-new item.
+ * An item that is ALREADY visible is not moved — that would reshuffle a menu a teacher
+ * deliberately ordered, for a toggle that changed nothing.
  *
  * Read-merge-write on settings, mirroring app/api/montree/teacher/menu PATCH:
  * spread the existing settings object and replace only `.menu`.
@@ -196,9 +207,12 @@ export async function syncTeacherMenusForSchool(
     let nextItems: StoredMenuItem[];
 
     if (enabled) {
-      nextItems = existing
-        ? items.map((it) => (it.id === menuItemId ? { ...it, visible: true } : it))
-        : [{ id: menuItemId, visible: true }, ...items];
+      // Absent, or present-but-hidden → front of the list, visible. Already visible → the
+      // no-op guard below catches it and nothing is written at all.
+      nextItems = [
+        { id: menuItemId, visible: true },
+        ...items.filter((it) => it.id !== menuItemId),
+      ];
     } else {
       if (!existing) {
         // Already absent → already invisible. Nothing to write.

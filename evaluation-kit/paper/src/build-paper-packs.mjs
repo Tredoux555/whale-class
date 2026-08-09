@@ -656,11 +656,17 @@ ${eyebrow('Section 6 · summary')}
 <div class="panel">
   ${eyebrow('What this age is expected to reach')}
   <p class="small">At ${esc(v.bandMeta.label)} this pack carries <b>${c.coreExpected}</b> core
-  milestones marked <i>expected</i> and <b>${c.eflExpected}</b> in English. A further
-  <b>${c.extension}</b> belong${c.extension === 1 ? 's' : ''} to the next age band — securing
-  ${c.extension === 1 ? 'it' : 'them'} is recorded as <i>exceeded</i>. <b>${c.emergingEdge}</b>
-  ${c.emergingEdge === 1 ? 'is' : 'are'} informative rather than expected: they appear in some
-  children at this age and are never counted against a child. Only expected milestones that were
+  milestones marked <i>expected</i> and <b>${c.eflExpected}</b> in English. ${
+    c.extension
+      ? `A further <b>${c.extension}</b> belong${c.extension === 1 ? 's' : ''} to the band above — securing ${c.extension === 1 ? 'it' : 'them'} is recorded as <i>exceeded</i>.`
+      : v.isTopBand
+        ? 'This is the highest band, so there is none above it to reach into and nothing here is recorded as <i>exceeded</i>.'
+        : ''
+  } ${
+    c.emergingEdge
+      ? `<b>${c.emergingEdge}</b> ${c.emergingEdge === 1 ? 'is' : 'are'} informative rather than expected: they appear in some children at this age and are never counted against a child.`
+      : 'Every milestone in this pack is one typically expected at this band.'
+  } Only expected milestones that were
   actually checked go into the attainment figure; everything left blank is printed as not yet
   checked, never quietly dropped.</p>
 </div>
@@ -670,7 +676,7 @@ ${eyebrow('Section 6 · summary')}
   <tbody>
     <tr><td class="w-def2">Core: secure · developing · emerging · not yet checked</td><td class="fline"></td></tr>
     <tr><td class="w-def2">English: secure · developing · emerging · not yet checked</td><td class="fline"></td></tr>
-    <tr><td class="w-def2">Milestones secured from the next age band (exceeded)</td><td class="fline"></td></tr>
+    ${v.isTopBand ? '' : `<tr><td class="w-def2">Milestones secured from the band above (exceeded)</td><td class="fline"></td></tr>`}
     <tr><td class="w-def2">Bands you set yourself, against the table</td><td class="fline"></td></tr>
   </tbody>
 </table>

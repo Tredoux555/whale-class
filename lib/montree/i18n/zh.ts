@@ -6171,6 +6171,13 @@ export const zh = {
   'milestones.run.discardConfirm': '要放弃这次未完成的记录吗？将无法恢复。',
   'milestones.run.obsNote': '证据备注（可选）',
   'milestones.run.startFresh': '开始一次新的记录',
+  // 🌿 Montree Canopy — the Grade 1 tier. Shown only where child_evaluation_g1 is on.
+  'milestones.run.bandG1': '一年级 · 树冠',
+  'milestones.canopyReadyTitle': '可以进入树冠阶段了',
+  'milestones.canopyReadyBody': '这个孩子已经超出了幼儿阶段记录所能留意到的范围。树冠阶段（Montree Canopy）是下一层，为六到七岁的孩子准备——同样温和的记录方式，只是上面留出了更多空间。下次开始时选择「一年级 · 树冠」。',
+  'milestones.canopyReadyCta': '开始一次树冠记录',
+  // The language-of-assessment gate (lib/montree/evaluation/locale-gate.ts).
+  'milestones.localeSuppressedNote': '本次语言下未查看的部分：{strands}（共 {n} 项里程碑）。这些内容建立在英语语音和英文字母之上，因此在以其他语言进行的记录中会被略去，而不是翻译过来——翻译后衡量的是英语能力，而不是读写能力。',
 
 
   // ── Organization tier (Phase 6, migration 315) ──

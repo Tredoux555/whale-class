@@ -5762,6 +5762,13 @@ export const nl: Record<string, string> = {
   'milestones.run.discardConfirm': 'Discard the unfinished check-in? It cannot be brought back.',
   'milestones.run.obsNote': 'Evidence note (optional)',
   'milestones.run.startFresh': 'Start a new check-in',
+  // 🌿 Montree Canopy — the Grade 1 tier. Shown only where child_evaluation_g1 is on.
+  'milestones.run.bandG1': 'Groep 3 · Canopy',
+  'milestones.canopyReadyTitle': 'Klaar voor Montree Canopy',
+  'milestones.canopyReadyBody': 'Dit kind reikt al verder dan wat de kleutercheck bedoeld is om te zien. Montree Canopy is de volgende laag, voor zes- en zevenjarigen: dezelfde rustige check, met meer ruimte erboven. Kies bij de volgende check «Groep 3 · Canopy».',
+  'milestones.canopyReadyCta': 'Een Canopy-check starten',
+  // The language-of-assessment gate (lib/montree/evaluation/locale-gate.ts).
+  'milestones.localeSuppressedNote': 'Niet bekeken in deze taal: {strands} ({n} mijlpalen). Ze bouwen voort op Engelse klanken en het Engelse alfabet en worden daarom weggelaten uit een check in een andere taal in plaats van vertaald — een vertaalde versie zou Engels weergeven, geen geletterdheid.',
 
 
   // ── Organization tier (Phase 6, migration 315) ──

@@ -32,6 +32,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'r
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useI18n } from '@/lib/montree/i18n';
+import { useFeatures } from '@/hooks/useFeatures';
 import type { AgeBand, Band, FormCode, WindowCode } from '@/lib/montree/evaluation/types';
 import type { ProjectedBank } from '@/lib/montree/evaluation/bank-projection';
 import {
@@ -63,7 +64,13 @@ const MODULE_CHOICES: Array<{ id: string; labelKey: 'milestones.run.moduleLit' |
   { id: 'M-OBS', labelKey: 'milestones.run.moduleObs' },
 ];
 
+/**
+ * The kindergarten bands, always offered. `G1` — Montree Canopy — is appended only when the
+ * school has `child_evaluation_g1` on (see CANOPY_BAND below): a school that runs
+ * kindergarten only must never be shown a tier it cannot start.
+ */
 const AGE_BANDS: AgeBand[] = ['A3', 'A4', 'A5'];
+const CANOPY_BAND: AgeBand = 'G1';
 const WINDOW_CODES: WindowCode[] = ['autumn', 'winter', 'spring'];
 /** Send in the background every few answers; the rest of the queue goes at the close. */
 const FLUSH_EVERY = 6;
@@ -94,12 +101,33 @@ export function CheckInRunner({
 }) {
   const router = useRouter();
   const { t, locale } = useI18n();
+  const { isEnabled } = useFeatures();
+  const canopyOn = isEnabled('child_evaluation_g1');
 
   /* ---------------- setup configuration ---------------- */
   const suggestedMonths = useMemo(() => ageMonthsFromBirthDate(birthDate), [birthDate]);
   const [ageBand, setAgeBand] = useState<AgeBand>(() => (
     suggestedMonths !== null ? ageBandFromMonths(suggestedMonths) : 'A4'
   ));
+  /**
+   * Bands this teacher may choose. Canopy is additive and fails closed — `useFeatures` is
+   * fail-closed itself, so a flag fetch that never lands simply leaves the kindergarten
+   * bands. A child old enough for G1 in a school without Canopy is offered A5, which the
+   * server accepts; it is never left with a band it cannot start.
+   */
+  const bandChoices = useMemo<AgeBand[]>(
+    () => (canopyOn ? [...AGE_BANDS, CANOPY_BAND] : AGE_BANDS),
+    [canopyOn],
+  );
+  const bandLabel = useCallback(
+    (band: AgeBand): string => (band === CANOPY_BAND ? t('milestones.run.bandG1') : band),
+    [t],
+  );
+  // A six-year-old suggests G1. Without Canopy that band cannot be run, so fall back to the
+  // top kindergarten band rather than sitting on an option the school does not have.
+  useEffect(() => {
+    if (!canopyOn && ageBand === CANOPY_BAND) setAgeBand('A5');
+  }, [canopyOn, ageBand]);
   const [windowCode, setWindowCode] = useState<WindowCode>(() => windowForDate());
   const [formCode, setFormCode] = useState<FormCode>(() => defaultFormForWindow(windowForDate()));
   const [formTouched, setFormTouched] = useState(false);
@@ -149,7 +177,12 @@ export function CheckInRunner({
     if (!run || !bank || !storageOk) return;
     saveSnapshot({
       bankVersion: bank.bankVersion,
-      bankQuery: { ageBand: run.config.ageBand, formCode: run.config.formCode, modules: run.config.moduleIds },
+      bankQuery: {
+        ageBand: run.config.ageBand,
+        formCode: run.config.formCode,
+        modules: run.config.moduleIds,
+        assessmentLocale: run.config.assessmentLocale,
+      },
       run,
       syncedItemIds: syncedRef.current,
     });
@@ -188,11 +221,16 @@ export function CheckInRunner({
   }, [flushNow]);
 
   /* ---------------- starting ---------------- */
-  const loadBank = useCallback(async (query: { ageBand: string; formCode: string; modules: string[] }) => {
+  const loadBank = useCallback(async (
+    query: { ageBand: string; formCode: string; modules: string[]; assessmentLocale?: string },
+  ) => {
     const params = new URLSearchParams({
       ageBand: query.ageBand,
       formCode: query.formCode,
       modules: query.modules.join(','),
+      // The language-of-assessment gate: the slice excludes the English-medium core strands
+      // when this is not English, so the tablet is never handed content it must not use.
+      assessmentLocale: query.assessmentLocale || 'en',
     });
     const res = await fetch(`/api/montree/evaluation/bank?${params.toString()}`);
     if (res.status === 503) {
@@ -219,7 +257,7 @@ export function CheckInRunner({
     if (!modules.length) { toast.error(t('milestones.run.noModules')); return; }
     setStarting(true);
     try {
-      const bank = await loadBank({ ageBand, formCode, modules });
+      const bank = await loadBank({ ageBand, formCode, modules, assessmentLocale: locale });
       const res = await fetch('/api/montree/evaluation/sessions', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -269,7 +307,12 @@ export function CheckInRunner({
   const resume = useCallback(async (snapshot: RunSnapshot) => {
     setStarting(true);
     try {
-      const bank = await loadBank(snapshot.bankQuery);
+      // A snapshot written before the language-of-assessment gate has no locale on its bank
+      // query; the run's own config always does, so resume from that.
+      const bank = await loadBank({
+        ...snapshot.bankQuery,
+        assessmentLocale: snapshot.bankQuery.assessmentLocale || snapshot.run.config.assessmentLocale,
+      });
       const index = buildRunnerIndex(bank);
       const run = snapshot.run;
       // `startedMs` came from the previous page load. Left alone, a check-in resumed the
@@ -459,7 +502,7 @@ export function CheckInRunner({
           <Card>
             <FieldLabel>{t('milestones.run.ageBand')}</FieldLabel>
             <Segmented
-              options={AGE_BANDS.map((b) => ({ id: b, label: b }))}
+              options={bandChoices.map((b) => ({ id: b, label: bandLabel(b) }))}
               value={ageBand}
               onChange={(v) => setAgeBand(v as AgeBand)}
             />

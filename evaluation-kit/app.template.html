@@ -642,7 +642,8 @@ function bindTap(node, fn){
 /* =================================================================
    SESSION ENGINE
    ================================================================= */
-var BANDS_UP = { A3:'A4', A4:'A5', A5:null };
+// G1 (Montree Canopy, Grade 1) is the top band — nothing sits above it to extend into.
+var BANDS_UP = { A3:'A4', A4:'A5', A5:'G1', G1:null };
 
 function itemsFor(moduleId, band, form){
   var mod = IDX.module[moduleId];
@@ -939,7 +940,8 @@ function computeMAP(results, band, track){
   var n = rows.length;
   var minN = BANK.scoring.mapSuppressionMinN;
   // EFL MAP% is suppressed outright at A3 and A4 (too few expected English milestones exist there),
-  // and is always reported on its own — never folded into the core figure.
+  // and is always reported on its own — never folded into the core figure. A5 and G1
+  // (Montree Canopy) are eligible — the mirror of EFL_MAP_ELIGIBLE_BANDS in scoring.ts.
   var eflBandSuppressed = (track==='efl' && (band==='A3' || band==='A4'));
   var suppressed = (n < minN) || eflBandSuppressed;
   return {
@@ -1004,7 +1006,12 @@ function dotsHTML(){
 /* ------------------------------ setup ---------------------------- */
 function screenSetup(){
   var c = S.cfg;
-  var bands = ['A3','A4','A5'], bandLbl = {A3:'A3 · 3–3;11', A4:'A4 · 4–4;11', A5:'A5 · 5–5;11'};
+  // Only bands the embedded bank actually carries content for are offered — so this file
+  // shows the three kindergarten bands until the Montree Canopy (G1) content run lands.
+  var bands = ['A3','A4','A5','G1'].filter(function(b){
+    return BANK.items.some(function(i){ return i.ageBand===b; });
+  });
+  var bandLbl = {A3:'A3 · 3–3;11', A4:'A4 · 4–4;11', A5:'A5 · 5–5;11', G1:'G1 · Canopy · 6–7'};
   var wins = [['autumn','A'],['winter','B'],['spring','A']];
   var mods = ['M-LIT','M-MATH','M-EFL','M-FOCUS','M-OBS'].map(function(id){ return {id:id}; })
     .filter(function(m){ return !!IDX.module[m.id]; });
@@ -1287,7 +1294,9 @@ function screenObservation(){
   var lists = BANK.observationChecklists.filter(function(c){ return c.ageBand===band; });
   var total = 0, done = 0;
   BANK.observationItems.forEach(function(o){ if (o.ageBand===band){ total++; if (r.observations[o.milestoneId] && r.observations[o.milestoneId].band) done++; } });
-  var bandBtns = ['A3','A4','A5'].map(function(b){
+  var bandBtns = ['A3','A4','A5','G1'].filter(function(b){
+    return BANK.observationItems.some(function(o){ return o.ageBand===b; });
+  }).map(function(b){
     return '<button class="chipbtn'+(b===band?' on':'')+'" data-act="obsBand" data-v="'+b+'">'+b+'</button>'; }).join(' ');
 
   var body = lists.map(function(c){
@@ -1597,7 +1606,7 @@ document.getElementById('app').addEventListener('click', function(ev){
       S.soundEnabled = true; if(!S.voice) S.voice = pickVoice();
       if (!speak('Hello! Can you hear me? Let us play together.')) alert(T('soundNone'));
       render(); break;
-    case 'band': S.cfg.ageBand = v; S.cfg.ageMonths = ({A3:42,A4:54,A5:66})[v]; render(); break;
+    case 'band': S.cfg.ageBand = v; S.cfg.ageMonths = ({A3:42,A4:54,A5:66,G1:78})[v]; render(); break;
     case 'win':
       S.cfg.windowCode = v; S.cfg.form = (v==='winter') ? 'B' : 'A'; render(); break;
     case 'form': S.cfg.form = v; render(); break;

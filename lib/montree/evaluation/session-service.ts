@@ -9,8 +9,8 @@
  * Nothing in this file deletes anything.
  */
 import { getBankIndex } from './bank';
-import { COHORT_MIN_CHILDREN } from './constants';
-import { isMigrationPendingError, type RouteContext } from './route-helpers';
+import { CANOPY_BAND, COHORT_MIN_CHILDREN } from './constants';
+import { isCheckConstraintViolation, isMigrationPendingError, type RouteContext } from './route-helpers';
 import { computeGrowth, scoreSession } from './scoring';
 import type {
   AgeBand, Band, EvaluationMilestoneResultRow, EvaluationSessionRow, FormCode, GrowthInputResult,
@@ -207,6 +207,7 @@ export async function persistResponses(args: PersistResponsesArgs): Promise<{
       ageBand: args.session.age_band,
       formCode: args.session.form_code,
       modules: args.session.modules ?? [],
+      assessmentLocale: args.session.assessment_locale,
       responses: [raw],
       index,
     }).scored[0];
@@ -313,6 +314,7 @@ export async function finalizeSession(args: FinalizeArgs): Promise<FinalizeOutpu
     ageBand: session.age_band as AgeBand,
     formCode: session.form_code as FormCode,
     modules: session.modules ?? [],
+    assessmentLocale: session.assessment_locale,
     responses,
     observations,
     overrides: [...overrideMap.values()],
@@ -352,7 +354,16 @@ export async function finalizeSession(args: FinalizeArgs): Promise<FinalizeOutpu
     const { error } = await supabase
       .from('montree_evaluation_milestone_results')
       .upsert(resultRows, { onConflict: 'session_id,milestone_id' });
-    if (error) raise('write milestone results', error);
+    if (error) {
+      // Defence in depth for Montree Canopy. A G1 session cannot be created before
+      // migration 322 widens the sessions CHECK, so this results-table CHECK should be
+      // unreachable — but if a G1 row ever arrives ahead of the SQL, it degrades to a
+      // clean "migration pending" 503 instead of an opaque 500 mid-finalisation.
+      if (session.age_band === CANOPY_BAND && isCheckConstraintViolation(error)) {
+        throw new ServiceError('write milestone results', error, true);
+      }
+      raise('write milestone results', error);
+    }
   }
 
   const summary = scoredSession.summary;

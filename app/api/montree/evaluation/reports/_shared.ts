@@ -36,12 +36,11 @@ import { json } from '@/lib/montree/evaluation/route-helpers';
 import type { SupabaseLike } from '@/lib/montree/evaluation/montree-bridge';
 
 /**
- * `child_evaluation` is not yet a member of the repo's `FeatureKey` union (that union
- * is owned by lib/montree/features/types.ts and is edited by the flag catalogue, not
- * by this module). The row exists in `montree_feature_definitions` — migration 314
- * inserts it — so the runtime read is real; only the compile-time union is behind.
+ * `child_evaluation` is a member of the repo's `FeatureKey` union (added Aug 2026 in
+ * lib/montree/features/types.ts), and the row exists in `montree_feature_definitions`
+ * — migration 314 inserts it — so this is now a plain, cast-free alias.
  */
-export const CHILD_EVALUATION_KEY = FEATURE_KEY as unknown as FeatureKey;
+export const CHILD_EVALUATION_KEY: FeatureKey = FEATURE_KEY;
 
 export const featureOff = () =>
   json(

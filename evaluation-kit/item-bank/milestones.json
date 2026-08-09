@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0",
-  "bankVersion": "1.10.0",
-  "generatedAt": "2026-08-03T00:00:00Z",
+  "bankVersion": "1.11.0",
+  "generatedAt": "2026-08-09T00:00:00Z",
   "assessmentLocales": [
     "en",
     "zh"
@@ -18,7 +18,9 @@
     "evidenceLinking": "Every scored direct item carries a constructTag. A milestone's evidence is the set of items in its evidenceBand whose constructTag equals the milestone's own constructTag — never a positional slice of the authoring order. The validator fails the build on any mismatch.",
     "sharedEvidence": "E6.A5.1 and E6.A5.2 are both evidenced by the single A5 spoken-production item, because the blueprint allows only one E6 item at that band. This is declared, not accidental.",
     "decodability": "Any item whose construct is word_reading or cvc_read_* declares the printed word in `decodableWord`. Every letter in it must appear in TAUGHT_LETTERS for that band (Montree Phonics house order) or be a listed heart word. The validator enforces this.",
-    "internalFields": "distractors[].rationale is INTERNAL item-writer documentation. It is never rendered to a child, parent or teacher on any D2 screen or in any D3 pack, and is therefore exempt from the forbidden-term lint. A future teacher-facing item-review surface must re-lint it before displaying it."
+    "internalFields": "distractors[].rationale is INTERNAL item-writer documentation. It is never rendered to a child, parent or teacher on any D2 screen or in any D3 pack, and is therefore exempt from the forbidden-term lint. A future teacher-facing item-review surface must re-lint it before displaying it.",
+    "canopyG1": "Montree Canopy is band G1, the second tier of this instrument for children of about 6–7 who have outgrown the kindergarten bands. It is the same instrument, not a second one: same domains, strands, three-band model and suppression posture. Its crosswalk anchors are the US Common Core Grade 1 standards (`crosswalk.ccss`) and the UK National Curriculum Year 1 / Key Stage 1 programmes of study (`crosswalk.ukNc`), because ELOF, EYFS and the China MoE 3–6 Guide are all early-years frameworks that stop below this band — those three fields are therefore carried as explicit empties at G1 rather than stretched to fit. `crosswalk.otherAnchor` names the non-statutory framework (CASEL, NAEYC, PSHE, Montessori) a non-academic strand is written against. The EFL track claims no CEFR, Cambridge or Trinity level at this band either, exactly as at A3–A5.",
+    "exceededAtA5": "Six A5 milestones carry `expectation: \"extension\"` with evidence in G1 (LCL-D.A5.3/4, COG-A.A5.3, COG-B.A5.3, COG-C.A5.3, E5.A5.3). Until Canopy existed there was no band above A5, so an A5 child could never register as having exceeded the band. These six make that reachable, using the declared extension-evidence shape the bank already uses at A3 and A4."
   },
   "internalFields": [
     "items[].distractors[].rationale"
@@ -82,6 +84,39 @@
       "h",
       "b",
       "f"
+    ],
+    "G1": [
+      "s",
+      "a",
+      "t",
+      "p",
+      "i",
+      "n",
+      "m",
+      "d",
+      "g",
+      "o",
+      "c",
+      "k",
+      "ck",
+      "e",
+      "u",
+      "r",
+      "h",
+      "b",
+      "f",
+      "l",
+      "j",
+      "v",
+      "w",
+      "x",
+      "y",
+      "z",
+      "qu",
+      "sh",
+      "ch",
+      "th",
+      "ng"
     ]
   },
   "heartWords": [
@@ -105,6 +140,10 @@
       "A5": [
         "story_question",
         "order_words"
+      ],
+      "G1": [
+        "inference_from_read_aloud",
+        "three_step_instruction"
       ]
     },
     "LCL-B": {
@@ -119,6 +158,10 @@
       "A5": [
         "retell_in_order",
         "explain_to_naive_listener"
+      ],
+      "G1": [
+        "retell_with_detail",
+        "word_meaning_and_category"
       ]
     },
     "LCL-C": {
@@ -133,6 +176,10 @@
       "A5": [
         "initial_sound_isolation",
         "final_sound_isolation"
+      ],
+      "G1": [
+        "phoneme_segmentation",
+        "vowel_sound_contrast"
       ]
     },
     "LCL-D": {
@@ -147,6 +194,10 @@
       "A5": [
         "word_reading",
         "print_directionality"
+      ],
+      "G1": [
+        "decode_taught_pattern_word",
+        "read_sentence_aloud"
       ]
     },
     "COG-A": {
@@ -161,6 +212,10 @@
       "A5": [
         "count_beyond_ten",
         "one_more_than"
+      ],
+      "G1": [
+        "count_past_hundred",
+        "tens_and_ones"
       ]
     },
     "COG-B": {
@@ -175,6 +230,10 @@
       "A5": [
         "take_away_within_five",
         "join_two_groups"
+      ],
+      "G1": [
+        "add_subtract_within_twenty",
+        "word_problem_within_twenty"
       ]
     },
     "COG-C": {
@@ -189,6 +248,10 @@
       "A5": [
         "continue_longer_pattern",
         "position_behind_between_next"
+      ],
+      "G1": [
+        "name_solid_shape",
+        "halves_and_quarters"
       ]
     },
     "COG-D": {
@@ -203,6 +266,10 @@
       "A5": [
         "sort_two_attributes",
         "compare_length_or_weight"
+      ],
+      "G1": [
+        "read_clock_half_hour",
+        "compare_by_measure"
       ]
     },
     "E1": {
@@ -217,6 +284,10 @@
       "A5": [
         "english_vocab_describing",
         "english_vocab_position_number_time"
+      ],
+      "G1": [
+        "english_vocab_school_day",
+        "english_vocab_action_and_place"
       ]
     },
     "E2": {
@@ -231,6 +302,10 @@
       "A5": [
         "two_step_en",
         "instruction_with_position_en"
+      ],
+      "G1": [
+        "three_step_en",
+        "instruction_with_order_en"
       ]
     },
     "E3": {
@@ -245,6 +320,10 @@
       "A5": [
         "english_initial_isolation",
         "english_final_sound"
+      ],
+      "G1": [
+        "english_medial_vowel",
+        "english_phoneme_blend"
       ]
     },
     "E4": {
@@ -259,6 +338,10 @@
       "A5": [
         "letter_sound_receptive",
         "letter_sound_expressive"
+      ],
+      "G1": [
+        "digraph_sound_receptive",
+        "digraph_sound_expressive"
       ]
     },
     "E5": {
@@ -273,6 +356,10 @@
       "A5": [
         "cvc_read_one",
         "cvc_read_more"
+      ],
+      "G1": [
+        "read_english_word_pattern",
+        "read_english_sentence"
       ]
     },
     "E6": {
@@ -287,6 +374,10 @@
       "A5": [
         "english_short_phrase",
         "english_short_phrase"
+      ],
+      "G1": [
+        "english_ask_question",
+        "english_describe_picture"
       ]
     }
   },
@@ -520,6 +611,10 @@
         "A5": [
           "story_question",
           "order_words"
+        ],
+        "G1": [
+          "inference_from_read_aloud",
+          "three_step_instruction"
         ]
       },
       "stopRule": {
@@ -551,6 +646,10 @@
         "A5": [
           "retell_in_order",
           "explain_to_naive_listener"
+        ],
+        "G1": [
+          "retell_with_detail",
+          "word_meaning_and_category"
         ]
       },
       "stopRule": {
@@ -582,6 +681,10 @@
         "A5": [
           "initial_sound_isolation",
           "final_sound_isolation"
+        ],
+        "G1": [
+          "phoneme_segmentation",
+          "vowel_sound_contrast"
         ]
       },
       "stopRule": {
@@ -613,6 +716,10 @@
         "A5": [
           "word_reading",
           "print_directionality"
+        ],
+        "G1": [
+          "decode_taught_pattern_word",
+          "read_sentence_aloud"
         ]
       },
       "stopRule": {
@@ -662,6 +769,10 @@
         "A5": [
           "count_beyond_ten",
           "one_more_than"
+        ],
+        "G1": [
+          "count_past_hundred",
+          "tens_and_ones"
         ]
       },
       "stopRule": {
@@ -693,6 +804,10 @@
         "A5": [
           "take_away_within_five",
           "join_two_groups"
+        ],
+        "G1": [
+          "add_subtract_within_twenty",
+          "word_problem_within_twenty"
         ]
       },
       "stopRule": {
@@ -724,6 +839,10 @@
         "A5": [
           "continue_longer_pattern",
           "position_behind_between_next"
+        ],
+        "G1": [
+          "name_solid_shape",
+          "halves_and_quarters"
         ]
       },
       "stopRule": {
@@ -755,6 +874,10 @@
         "A5": [
           "sort_two_attributes",
           "compare_length_or_weight"
+        ],
+        "G1": [
+          "read_clock_half_hour",
+          "compare_by_measure"
         ]
       },
       "stopRule": {
@@ -876,6 +999,10 @@
         "A5": [
           "english_vocab_describing",
           "english_vocab_position_number_time"
+        ],
+        "G1": [
+          "english_vocab_school_day",
+          "english_vocab_action_and_place"
         ]
       },
       "stopRule": {
@@ -907,6 +1034,10 @@
         "A5": [
           "two_step_en",
           "instruction_with_position_en"
+        ],
+        "G1": [
+          "three_step_en",
+          "instruction_with_order_en"
         ]
       },
       "stopRule": {
@@ -938,6 +1069,10 @@
         "A5": [
           "english_initial_isolation",
           "english_final_sound"
+        ],
+        "G1": [
+          "english_medial_vowel",
+          "english_phoneme_blend"
         ]
       },
       "stopRule": {
@@ -969,6 +1104,10 @@
         "A5": [
           "letter_sound_receptive",
           "letter_sound_expressive"
+        ],
+        "G1": [
+          "digraph_sound_receptive",
+          "digraph_sound_expressive"
         ]
       },
       "stopRule": {
@@ -1000,6 +1139,10 @@
         "A5": [
           "cvc_read_one",
           "cvc_read_more"
+        ],
+        "G1": [
+          "read_english_word_pattern",
+          "read_english_sentence"
         ]
       },
       "stopRule": {
@@ -1031,6 +1174,10 @@
         "A5": [
           "english_short_phrase",
           "english_short_phrase"
+        ],
+        "G1": [
+          "english_ask_question",
+          "english_describe_picture"
         ]
       },
       "stopRule": {
@@ -3493,7 +3640,8 @@
         "eyfs": {
           "area": "Mathematics",
           "band": "3-4",
-          "elg": null
+          "elg": "Numerical Patterns",
+          "elgNote": "Best fit. Since the 2021 EYFS reform there is no dedicated ELG for measurement, sorting or classification; that content sits inside Numerical Patterns."
         },
         "chinaMoe": [
           "科学.数学认知.目标1(3-4岁)"
@@ -3545,7 +3693,8 @@
         "eyfs": {
           "area": "Mathematics",
           "band": "3-4",
-          "elg": null
+          "elg": "Numerical Patterns",
+          "elgNote": "Best fit. Since the 2021 EYFS reform there is no dedicated ELG for measurement, sorting or classification; that content sits inside Numerical Patterns."
         },
         "chinaMoe": [
           "科学.数学认知.目标1(3-4岁)"
@@ -3601,7 +3750,8 @@
         "eyfs": {
           "area": "Mathematics",
           "band": "3-4",
-          "elg": null
+          "elg": "Numerical Patterns",
+          "elgNote": "Best fit. Since the 2021 EYFS reform there is no dedicated ELG for measurement, sorting or classification; that content sits inside Numerical Patterns."
         },
         "chinaMoe": [
           "科学.数学认知.目标1(4-5岁)"
@@ -3653,7 +3803,8 @@
         "eyfs": {
           "area": "Mathematics",
           "band": "3-4",
-          "elg": null
+          "elg": "Numerical Patterns",
+          "elgNote": "Best fit. Since the 2021 EYFS reform there is no dedicated ELG for measurement, sorting or classification; that content sits inside Numerical Patterns."
         },
         "chinaMoe": [
           "科学.数学认知.目标1(4-5岁)"
@@ -3709,7 +3860,8 @@
         "eyfs": {
           "area": "Mathematics",
           "band": "Reception",
-          "elg": null
+          "elg": "Numerical Patterns",
+          "elgNote": "Best fit. Since the 2021 EYFS reform there is no dedicated ELG for measurement, sorting or classification; that content sits inside Numerical Patterns."
         },
         "chinaMoe": [
           "科学.数学认知.目标1(5-6岁)"
@@ -3761,7 +3913,8 @@
         "eyfs": {
           "area": "Mathematics",
           "band": "Reception",
-          "elg": null
+          "elg": "Numerical Patterns",
+          "elgNote": "Best fit. Since the 2021 EYFS reform there is no dedicated ELG for measurement, sorting or classification; that content sits inside Numerical Patterns."
         },
         "chinaMoe": [
           "科学.数学认知.目标1(5-6岁)"
@@ -6069,8 +6222,8 @@
       },
       "crosswalk": {
         "elof": [
-          "P-ATL 11",
-          "P-ATL 12"
+          "P-ATL 10",
+          "P-ATL 11"
         ],
         "eyfs": {
           "area": "Characteristics of Effective Teaching and Learning",
@@ -6120,8 +6273,8 @@
       },
       "crosswalk": {
         "elof": [
-          "P-ATL 11",
-          "P-ATL 12"
+          "P-ATL 10",
+          "P-ATL 11"
         ],
         "eyfs": {
           "area": "Characteristics of Effective Teaching and Learning",
@@ -6171,8 +6324,8 @@
       },
       "crosswalk": {
         "elof": [
-          "P-ATL 11",
-          "P-ATL 12"
+          "P-ATL 10",
+          "P-ATL 11"
         ],
         "eyfs": {
           "area": "Characteristics of Effective Teaching and Learning",
@@ -6222,8 +6375,8 @@
       },
       "crosswalk": {
         "elof": [
-          "P-ATL 11",
-          "P-ATL 12"
+          "P-ATL 10",
+          "P-ATL 11"
         ],
         "eyfs": {
           "area": "Characteristics of Effective Teaching and Learning",
@@ -6273,8 +6426,8 @@
       },
       "crosswalk": {
         "elof": [
-          "P-ATL 11",
-          "P-ATL 12"
+          "P-ATL 10",
+          "P-ATL 11"
         ],
         "eyfs": {
           "area": "Characteristics of Effective Teaching and Learning",
@@ -6324,8 +6477,8 @@
       },
       "crosswalk": {
         "elof": [
-          "P-ATL 11",
-          "P-ATL 12"
+          "P-ATL 10",
+          "P-ATL 11"
         ],
         "eyfs": {
           "area": "Characteristics of Effective Teaching and Learning",
@@ -6376,7 +6529,7 @@
       "crosswalk": {
         "elof": [
           "P-ATL 9",
-          "P-ATL 10"
+          "P-ATL 8"
         ],
         "eyfs": {
           "area": "Characteristics of Effective Teaching and Learning",
@@ -6427,7 +6580,7 @@
       "crosswalk": {
         "elof": [
           "P-ATL 9",
-          "P-ATL 10"
+          "P-ATL 8"
         ],
         "eyfs": {
           "area": "Characteristics of Effective Teaching and Learning",
@@ -6478,7 +6631,7 @@
       "crosswalk": {
         "elof": [
           "P-ATL 9",
-          "P-ATL 10"
+          "P-ATL 8"
         ],
         "eyfs": {
           "area": "Characteristics of Effective Teaching and Learning",
@@ -6529,7 +6682,7 @@
       "crosswalk": {
         "elof": [
           "P-ATL 9",
-          "P-ATL 10"
+          "P-ATL 8"
         ],
         "eyfs": {
           "area": "Characteristics of Effective Teaching and Learning",
@@ -6580,7 +6733,7 @@
       "crosswalk": {
         "elof": [
           "P-ATL 9",
-          "P-ATL 10"
+          "P-ATL 8"
         ],
         "eyfs": {
           "area": "Characteristics of Effective Teaching and Learning",
@@ -6631,7 +6784,7 @@
       "crosswalk": {
         "elof": [
           "P-ATL 9",
-          "P-ATL 10"
+          "P-ATL 8"
         ],
         "eyfs": {
           "area": "Characteristics of Effective Teaching and Learning",
@@ -10049,6 +10202,3292 @@
           ],
           "workKeys": [
             "cu_living_nonliving"
+          ]
+        }
+      }
+    },
+    {
+      "id": "ATL-A.G1.1",
+      "strandId": "ATL-A",
+      "domainId": "ATL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Works with deep focus on one activity for a long stretch.",
+        "zh": "能长时间专注地做一项活动。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Stays with an activity for a few minutes before moving on.",
+          "zh": "能投入几分钟后就转去做别的。"
+        },
+        "developing": {
+          "en": "Works for a good stretch and comes back after a short break.",
+          "zh": "能投入较长一段时间，短暂离开后会回来继续。"
+        },
+        "secure": {
+          "en": "Works right through a long stretch and would rather not be interrupted.",
+          "zh": "能一气呵成地长时间工作，不愿被打断。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.ATL-A.G1.1",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "Key Stage 1 — PSHE: Health and Wellbeing (self-management)",
+        "otherAnchor": "NAEYC Approaches to Learning",
+        "montessori": {
+          "areaKeys": [
+            "practical_life"
+          ],
+          "workKeys": [
+            "pl_work_cycle"
+          ]
+        }
+      }
+    },
+    {
+      "id": "ATL-A.G1.2",
+      "strandId": "ATL-A",
+      "domainId": "ATL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Picks up work begun on another day and carries it through to the end.",
+        "zh": "能接着前几天开始的工作继续做到完成。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Starts again from the beginning, or leaves it.",
+          "zh": "要么从头再来，要么放下不做。"
+        },
+        "developing": {
+          "en": "Picks it up again once someone reminds them where they stopped.",
+          "zh": "经人提醒上次做到哪里后能接着做。"
+        },
+        "secure": {
+          "en": "Finds their own work, sees where they stopped, and finishes it.",
+          "zh": "能自己找到工作、看出上次停在哪里并完成它。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.ATL-A.G1.2",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "Key Stage 1 — PSHE: Health and Wellbeing (setting and working towards goals)",
+        "otherAnchor": "NAEYC Approaches to Learning",
+        "montessori": {
+          "areaKeys": [
+            "practical_life"
+          ],
+          "workKeys": [
+            "pl_work_cycle"
+          ]
+        }
+      }
+    },
+    {
+      "id": "ATL-B.G1.1",
+      "strandId": "ATL-B",
+      "domainId": "ATL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Chooses their own work and begins it without being told.",
+        "zh": "能自己选择工作并主动开始。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Waits to be pointed towards something.",
+          "zh": "要等别人指点才开始。"
+        },
+        "developing": {
+          "en": "Chooses on most days, with a word from an adult now and then.",
+          "zh": "多数日子能自己选择，偶尔需要成人提一句。"
+        },
+        "secure": {
+          "en": "Comes in, decides, and begins on their own.",
+          "zh": "进教室后能自己决定并开始工作。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.ATL-B.G1.1",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "Key Stage 1 — PSHE: Living in the Wider World (taking responsibility)",
+        "otherAnchor": "NAEYC Approaches to Learning",
+        "montessori": {
+          "areaKeys": [
+            "practical_life"
+          ],
+          "workKeys": [
+            "pl_free_choice"
+          ]
+        }
+      }
+    },
+    {
+      "id": "ATL-B.G1.2",
+      "strandId": "ATL-B",
+      "domainId": "ATL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Asks a question when they are unsure what to do, instead of stopping.",
+        "zh": "不确定该怎么做时会开口提问，而不是停下来。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Goes quiet or waits when stuck.",
+          "zh": "卡住时会沉默或干等。"
+        },
+        "developing": {
+          "en": "Asks once an adult comes near.",
+          "zh": "成人走近时才会问。"
+        },
+        "secure": {
+          "en": "Seeks someone out and asks a clear question.",
+          "zh": "会主动找人并把问题问清楚。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.ATL-B.G1.2",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "SL.1.1.c"
+        ],
+        "ukNc": "English Year 1 — Spoken language: ask relevant questions to extend understanding",
+        "otherAnchor": "CASEL — Self-Awareness",
+        "montessori": {
+          "areaKeys": [
+            "practical_life"
+          ],
+          "workKeys": [
+            "pl_free_choice"
+          ]
+        }
+      }
+    },
+    {
+      "id": "ATL-C.G1.1",
+      "strandId": "ATL-C",
+      "domainId": "ATL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Tries a way of their own before asking an adult for help.",
+        "zh": "在向成人求助前会先自己试一种办法。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Asks for help as soon as something is hard.",
+          "zh": "一遇到困难就求助。"
+        },
+        "developing": {
+          "en": "Tries once, then asks.",
+          "zh": "会试一次，然后求助。"
+        },
+        "secure": {
+          "en": "Tries more than one way, and can say what they tried.",
+          "zh": "会尝试不止一种办法，并能说出自己试过什么。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.ATL-C.G1.1",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "Key Stage 1 — Science: working scientifically (solving problems practically)",
+        "otherAnchor": "CASEL — Responsible Decision-Making",
+        "montessori": {
+          "areaKeys": [
+            "sensorial"
+          ],
+          "workKeys": [
+            "se_problem_solving"
+          ]
+        }
+      }
+    },
+    {
+      "id": "ATL-C.G1.2",
+      "strandId": "ATL-C",
+      "domainId": "ATL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Looks back over their own work and puts right whatever does not look right.",
+        "zh": "会回头检查自己的工作，并改正看起来不对的地方。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Says it is finished without looking back over it.",
+          "zh": "不回头检查就说做完了。"
+        },
+        "developing": {
+          "en": "Looks back when asked, and changes what an adult points out.",
+          "zh": "经要求会回头看，并改成人指出的地方。"
+        },
+        "secure": {
+          "en": "Looks back without being asked and puts things right on their own.",
+          "zh": "不用别人说就会回头检查并自行改正。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.ATL-C.G1.2",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "RF.1.4.c"
+        ],
+        "ukNc": "English Year 1 — Word reading: re-reading to check the text makes sense",
+        "otherAnchor": "Montessori control of error",
+        "montessori": {
+          "areaKeys": [
+            "sensorial"
+          ],
+          "workKeys": [
+            "se_problem_solving"
+          ]
+        }
+      }
+    },
+    {
+      "id": "ATL-D.G1.1",
+      "strandId": "ATL-D",
+      "domainId": "ATL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Moves calmly from one activity to the next with little help.",
+        "zh": "能平静地从一项活动过渡到下一项，几乎不需要帮助。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Needs an adult alongside them at each change.",
+          "zh": "每次转换都需要成人陪在身边。"
+        },
+        "developing": {
+          "en": "Moves on with a reminder, and settles again quickly.",
+          "zh": "经提醒能转换，并很快重新投入。"
+        },
+        "secure": {
+          "en": "Finishes, tidies and moves on without being prompted.",
+          "zh": "能自行收尾、整理并转入下一项。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.ATL-D.G1.1",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "Key Stage 1 — PSHE: Health and Wellbeing (managing change and routines)",
+        "otherAnchor": "CASEL — Self-Management",
+        "montessori": {
+          "areaKeys": [
+            "practical_life"
+          ],
+          "workKeys": [
+            "pl_grace_courtesy"
+          ]
+        }
+      }
+    },
+    {
+      "id": "ATL-D.G1.2",
+      "strandId": "ATL-D",
+      "domainId": "ATL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Waits their turn and holds back a first impulse when the moment calls for it.",
+        "zh": "能等待轮到自己，并在需要时忍住第一反应。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Acts straight away and finds waiting hard.",
+          "zh": "常立刻行动，很难等待。"
+        },
+        "developing": {
+          "en": "Waits with a reminder, for a short time.",
+          "zh": "经提醒能短暂等待。"
+        },
+        "secure": {
+          "en": "Waits, and stops themselves without anyone saying anything.",
+          "zh": "能自行等待并克制自己，无需他人提醒。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.ATL-D.G1.2",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "Key Stage 1 — PSHE: Health and Wellbeing (self-regulation)",
+        "otherAnchor": "CASEL — Self-Management",
+        "montessori": {
+          "areaKeys": [
+            "practical_life"
+          ],
+          "workKeys": [
+            "pl_grace_courtesy"
+          ]
+        }
+      }
+    },
+    {
+      "id": "SED-A.G1.1",
+      "strandId": "SED-A",
+      "domainId": "SED",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Talks with a familiar adult about their own work and what they are trying to do.",
+        "zh": "能与熟悉的成人谈自己的工作和想做的事。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Answers a direct question about the work.",
+          "zh": "别人直接问起时才回答。"
+        },
+        "developing": {
+          "en": "Shows the work and says a little about it.",
+          "zh": "会展示工作并简单说一说。"
+        },
+        "secure": {
+          "en": "Starts the conversation and explains what they are aiming for.",
+          "zh": "会主动开口，并说明自己想达成什么。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.SED-A.G1.1",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "SL.1.4"
+        ],
+        "ukNc": "English Year 1 — Spoken language: give well-structured explanations",
+        "otherAnchor": "CASEL — Relationship Skills",
+        "montessori": {
+          "areaKeys": [
+            "practical_life"
+          ],
+          "workKeys": [
+            "pl_grace_courtesy"
+          ]
+        }
+      }
+    },
+    {
+      "id": "SED-A.G1.2",
+      "strandId": "SED-A",
+      "domainId": "SED",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Asks an adult for what they need, in words, at a good moment.",
+        "zh": "能在合适的时机用语言向成人表达需要。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Shows what they need without words, or waits.",
+          "zh": "用动作示意或干等，不开口。"
+        },
+        "developing": {
+          "en": "Asks, but often breaks in on something else.",
+          "zh": "会开口，但常挑错时机。"
+        },
+        "secure": {
+          "en": "Waits for a good moment and asks clearly.",
+          "zh": "会等合适的时机并清楚地提出。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.SED-A.G1.2",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "SL.1.6"
+        ],
+        "ukNc": "English Year 1 — Spoken language: speak audibly and fluently",
+        "otherAnchor": "CASEL — Relationship Skills",
+        "montessori": {
+          "areaKeys": [
+            "practical_life"
+          ],
+          "workKeys": [
+            "pl_grace_courtesy"
+          ]
+        }
+      }
+    },
+    {
+      "id": "SED-B.G1.1",
+      "strandId": "SED-B",
+      "domainId": "SED",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Takes turns in a group activity without an adult reminding them.",
+        "zh": "在集体活动中能自觉轮流，不需成人提醒。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Takes turns when an adult manages it.",
+          "zh": "在成人组织下能轮流。"
+        },
+        "developing": {
+          "en": "Takes turns with an occasional reminder.",
+          "zh": "偶尔需要提醒就能轮流。"
+        },
+        "secure": {
+          "en": "Keeps the turns going, and helps others keep them too.",
+          "zh": "能自觉轮流，还会帮助同伴一起遵守。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.SED-B.G1.1",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "SL.1.1.a"
+        ],
+        "ukNc": "English Year 1 — Spoken language: take turns in discussion",
+        "otherAnchor": "CASEL — Relationship Skills",
+        "montessori": {
+          "areaKeys": [
+            "practical_life"
+          ],
+          "workKeys": [
+            "pl_grace_courtesy"
+          ]
+        }
+      }
+    },
+    {
+      "id": "SED-B.G1.2",
+      "strandId": "SED-B",
+      "domainId": "SED",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Builds on what another child has just said in a conversation.",
+        "zh": "在交谈中能接着同伴刚说的话往下说。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Talks alongside others rather than to them.",
+          "zh": "各说各的，较少互相回应。"
+        },
+        "developing": {
+          "en": "Answers a peer, then moves to their own subject.",
+          "zh": "会回应同伴，但很快转回自己的话题。"
+        },
+        "secure": {
+          "en": "Picks up a peer’s idea and adds to it across several exchanges.",
+          "zh": "能接住同伴的想法并连续几轮往下谈。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.SED-B.G1.2",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "SL.1.1.b"
+        ],
+        "ukNc": "English Year 1 — Spoken language: build on the contributions of others",
+        "otherAnchor": "CASEL — Relationship Skills",
+        "montessori": {
+          "areaKeys": [
+            "practical_life"
+          ],
+          "workKeys": [
+            "pl_grace_courtesy"
+          ]
+        }
+      }
+    },
+    {
+      "id": "SED-C.G1.1",
+      "strandId": "SED-C",
+      "domainId": "SED",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Names how they feel with a word that fits, not only happy or sad.",
+        "zh": "能用贴切的词说出自己的感受，而不只是\"开心\"或\"难过\"。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Uses happy or sad for most feelings.",
+          "zh": "大多只用开心或难过来表达。"
+        },
+        "developing": {
+          "en": "Finds a more exact word with a little help.",
+          "zh": "在稍加引导下能找到更贴切的词。"
+        },
+        "secure": {
+          "en": "Chooses a word that fits, and says what brought the feeling on.",
+          "zh": "能选出贴切的词，并说出感受的由来。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.SED-C.G1.1",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "Key Stage 1 — PSHE: Health and Wellbeing (feelings and emotions)",
+        "otherAnchor": "CASEL — Self-Awareness",
+        "montessori": {
+          "areaKeys": [
+            "practical_life"
+          ],
+          "workKeys": [
+            "pl_grace_courtesy"
+          ]
+        }
+      }
+    },
+    {
+      "id": "SED-C.G1.2",
+      "strandId": "SED-C",
+      "domainId": "SED",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Uses a way of their own to settle when they are upset.",
+        "zh": "难过时能用自己的办法平复情绪。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Needs an adult to settle them.",
+          "zh": "需要成人帮助才能平复。"
+        },
+        "developing": {
+          "en": "Uses a familiar way when reminded of it.",
+          "zh": "经提醒能用熟悉的办法。"
+        },
+        "secure": {
+          "en": "Chooses a way and uses it without being asked.",
+          "zh": "能自行选择并使用平复的办法。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.SED-C.G1.2",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "Key Stage 1 — PSHE: Health and Wellbeing (managing feelings)",
+        "otherAnchor": "CASEL — Self-Management",
+        "montessori": {
+          "areaKeys": [
+            "practical_life"
+          ],
+          "workKeys": [
+            "pl_grace_courtesy"
+          ]
+        }
+      }
+    },
+    {
+      "id": "SED-D.G1.1",
+      "strandId": "SED-D",
+      "domainId": "SED",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Greets, thanks and asks politely without being prompted.",
+        "zh": "能主动问候、道谢并礼貌地提出请求。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Uses courteous words when reminded.",
+          "zh": "经提醒会使用礼貌用语。"
+        },
+        "developing": {
+          "en": "Uses them with familiar people most of the time.",
+          "zh": "面对熟悉的人时多数能做到。"
+        },
+        "secure": {
+          "en": "Uses them with everyone, including visitors, unprompted.",
+          "zh": "对所有人（包括来访者）都能主动做到。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.SED-D.G1.1",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "Key Stage 1 — PSHE: Relationships (courtesy and respect)",
+        "otherAnchor": "Montessori Grace & Courtesy",
+        "montessori": {
+          "areaKeys": [
+            "practical_life"
+          ],
+          "workKeys": [
+            "pl_grace_courtesy"
+          ]
+        }
+      }
+    },
+    {
+      "id": "SED-D.G1.2",
+      "strandId": "SED-D",
+      "domainId": "SED",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Settles a small disagreement with a friend using words.",
+        "zh": "能用语言化解与同伴之间的小分歧。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Comes to an adult with the disagreement.",
+          "zh": "遇到分歧就找成人。"
+        },
+        "developing": {
+          "en": "Talks it through with an adult nearby.",
+          "zh": "在成人在旁时能谈开。"
+        },
+        "secure": {
+          "en": "Talks it through with the other child on their own.",
+          "zh": "能自己和同伴谈开并解决。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.SED-D.G1.2",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "Key Stage 1 — PSHE: Relationships (managing disagreement)",
+        "otherAnchor": "CASEL — Relationship Skills",
+        "montessori": {
+          "areaKeys": [
+            "practical_life"
+          ],
+          "workKeys": [
+            "pl_grace_courtesy"
+          ]
+        }
+      }
+    },
+    {
+      "id": "LCL-E.G1.1",
+      "strandId": "LCL-E",
+      "domainId": "LCL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Writes a sentence of their own with a capital letter, spaces between the words and a full stop.",
+        "zh": "能自己写出一句话，句首大写、词间留空、句末有句号。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Writes words, with the spaces or the capital letter still coming.",
+          "zh": "能写出词，但空格或大写还不稳定。"
+        },
+        "developing": {
+          "en": "Writes a sentence with most of the punctuation in place.",
+          "zh": "能写出句子，大部分标点和大写都到位。"
+        },
+        "secure": {
+          "en": "Writes a sentence with the capital, the spaces and the full stop all in place.",
+          "zh": "写出的句子大写、空格和句号都齐全。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.LCL-E.G1.1",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "L.1.1.j",
+          "L.1.2.a",
+          "L.1.2.b"
+        ],
+        "ukNc": "English Year 1 — Writing: leaving spaces between words, capital letters and full stops",
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_metal_insets",
+            "la_moveable_alphabet"
+          ]
+        }
+      }
+    },
+    {
+      "id": "LCL-E.G1.2",
+      "strandId": "LCL-E",
+      "domainId": "LCL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Writes a short piece of two or more sentences that holds together from beginning to end.",
+        "zh": "能写出两句以上、前后连贯的短文。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Writes one sentence at a time, each on its own.",
+          "zh": "一次只写一句，句与句之间没有联系。"
+        },
+        "developing": {
+          "en": "Writes two or three sentences on one subject.",
+          "zh": "能围绕一个话题写两三句。"
+        },
+        "secure": {
+          "en": "Writes a short piece with a clear beginning and a closing idea.",
+          "zh": "能写出有开头也有收尾的短文。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.LCL-E.G1.2",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "W.1.3",
+          "W.1.5"
+        ],
+        "ukNc": "English Year 1 — Writing: sequencing sentences to form short narratives",
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_metal_insets",
+            "la_moveable_alphabet"
+          ]
+        }
+      }
+    },
+    {
+      "id": "COG-E.G1.1",
+      "strandId": "COG-E",
+      "domainId": "COG",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Asks a question about the world and suggests a way to find out.",
+        "zh": "能提出关于世界的问题，并想出一种寻找答案的办法。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Notices something and says what they see.",
+          "zh": "能注意到现象并说出所见。"
+        },
+        "developing": {
+          "en": "Asks a question about it.",
+          "zh": "会就此提出问题。"
+        },
+        "secure": {
+          "en": "Asks a question and suggests how they could find out.",
+          "zh": "既能提问，也能说出可以怎样去找答案。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.COG-E.G1.1",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "W.1.7",
+          "W.1.8"
+        ],
+        "ukNc": "Key Stage 1 — Science: working scientifically (asking simple questions)",
+        "montessori": {
+          "areaKeys": [
+            "cultural"
+          ],
+          "workKeys": [
+            "cu_living_nonliving"
+          ]
+        }
+      }
+    },
+    {
+      "id": "COG-E.G1.2",
+      "strandId": "COG-E",
+      "domainId": "COG",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Keeps a simple record of what they notice and says what it shows.",
+        "zh": "能把观察到的内容简单记录下来，并说出记录说明了什么。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Talks about what they noticed without recording it.",
+          "zh": "能说出观察到的，但不做记录。"
+        },
+        "developing": {
+          "en": "Draws or tallies what they noticed.",
+          "zh": "会用画图或计数的方式记录。"
+        },
+        "secure": {
+          "en": "Records it in a chart or tally and says what it shows.",
+          "zh": "能用表格或计数记录，并说出其中的意思。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.COG-E.G1.2",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "1.MD.4"
+        ],
+        "ukNc": "Key Stage 1 — Science: working scientifically (gathering and recording data)",
+        "montessori": {
+          "areaKeys": [
+            "cultural"
+          ],
+          "workKeys": [
+            "cu_living_nonliving"
+          ]
+        }
+      }
+    },
+    {
+      "id": "PPL-A.G1.1",
+      "strandId": "PPL-A",
+      "domainId": "PPL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Forms letters and numerals starting in the right place and moving in the right direction.",
+        "zh": "写字母和数字时起笔位置和运笔方向都正确。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Forms them recognisably, starting in various places.",
+          "zh": "能写得认得出，但起笔位置不定。"
+        },
+        "developing": {
+          "en": "Forms most of them the right way round.",
+          "zh": "大部分字形的方向正确。"
+        },
+        "secure": {
+          "en": "Forms letters and numerals correctly and comfortably, at speed.",
+          "zh": "能正确、轻松且较快地书写字母和数字。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.PPL-A.G1.1",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "L.1.1.a"
+        ],
+        "ukNc": "English Year 1 — Handwriting: form lower-case letters in the correct direction",
+        "montessori": {
+          "areaKeys": [
+            "practical_life"
+          ],
+          "workKeys": [
+            "pl_transferring",
+            "pl_dressing_frames"
+          ]
+        }
+      }
+    },
+    {
+      "id": "PPL-A.G1.2",
+      "strandId": "PPL-A",
+      "domainId": "PPL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Uses scissors and other classroom tools accurately and safely.",
+        "zh": "能准确、安全地使用剪刀和其他教室用具。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Uses a tool with an adult alongside.",
+          "zh": "需成人在旁才能使用工具。"
+        },
+        "developing": {
+          "en": "Uses familiar tools on their own, roughly accurately.",
+          "zh": "能独立使用熟悉的工具，准确度一般。"
+        },
+        "secure": {
+          "en": "Uses tools accurately, and puts them away safely.",
+          "zh": "能准确使用工具，并安全归位。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.PPL-A.G1.2",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "Key Stage 1 — Design and Technology: using tools safely",
+        "otherAnchor": "Montessori Practical Life",
+        "montessori": {
+          "areaKeys": [
+            "practical_life"
+          ],
+          "workKeys": [
+            "pl_transferring"
+          ]
+        }
+      }
+    },
+    {
+      "id": "PPL-B.G1.1",
+      "strandId": "PPL-B",
+      "domainId": "PPL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Throws, catches or kicks with control in a game.",
+        "zh": "在游戏中能有控制地投掷、接住或踢球。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Sends and stops a ball at close range.",
+          "zh": "近距离能把球送出并挡住。"
+        },
+        "developing": {
+          "en": "Catches or kicks accurately most of the time.",
+          "zh": "多数时候能准确接住或踢中。"
+        },
+        "secure": {
+          "en": "Keeps control of the ball inside a game with others.",
+          "zh": "在与同伴的游戏中能持续控球。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.PPL-B.G1.1",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "Key Stage 1 — Physical Education: master basic movements including throwing and catching",
+        "montessori": {
+          "areaKeys": [
+            "practical_life"
+          ],
+          "workKeys": [
+            "pl_carrying"
+          ]
+        }
+      }
+    },
+    {
+      "id": "PPL-B.G1.2",
+      "strandId": "PPL-B",
+      "domainId": "PPL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Puts movements together — hopping, skipping, jumping — and keeps their balance.",
+        "zh": "能把跳、蹦、单脚跳等动作连起来并保持平衡。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Performs one movement at a time.",
+          "zh": "一次只能做一个动作。"
+        },
+        "developing": {
+          "en": "Links two movements with a pause between.",
+          "zh": "能把两个动作连起来，中间会停顿。"
+        },
+        "secure": {
+          "en": "Links several movements smoothly, staying balanced.",
+          "zh": "能流畅地连贯多个动作并保持平衡。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.PPL-B.G1.2",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "Key Stage 1 — Physical Education: developing balance, agility and co-ordination",
+        "montessori": {
+          "areaKeys": [
+            "practical_life"
+          ],
+          "workKeys": [
+            "pl_carrying"
+          ]
+        }
+      }
+    },
+    {
+      "id": "PPL-C.G1.1",
+      "strandId": "PPL-C",
+      "domainId": "PPL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Looks after their own belongings and personal care without an adult.",
+        "zh": "能自己照顾好个人物品和生活自理，不需成人帮忙。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Manages with a step-by-step reminder.",
+          "zh": "需要一步步提醒才能完成。"
+        },
+        "developing": {
+          "en": "Manages most of it independently.",
+          "zh": "大部分能独立完成。"
+        },
+        "secure": {
+          "en": "Manages it all, and notices when something is missing.",
+          "zh": "全部能独立完成，还能发现东西少了。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.PPL-C.G1.1",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "Key Stage 1 — PSHE: Health and Wellbeing (personal care and independence)",
+        "montessori": {
+          "areaKeys": [
+            "practical_life"
+          ],
+          "workKeys": [
+            "pl_care_of_self"
+          ]
+        }
+      }
+    },
+    {
+      "id": "PPL-C.G1.2",
+      "strandId": "PPL-C",
+      "domainId": "PPL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Gets themselves ready for what comes next without being told.",
+        "zh": "不用别人说就能为下一项活动做好准备。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Follows the group once it has started moving.",
+          "zh": "要等大家开始行动才跟上。"
+        },
+        "developing": {
+          "en": "Gets ready with a reminder.",
+          "zh": "经提醒能做好准备。"
+        },
+        "secure": {
+          "en": "Sees what is coming and gets ready on their own.",
+          "zh": "能预见接下来的安排并自行准备好。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.PPL-C.G1.2",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "Key Stage 1 — PSHE: Health and Wellbeing (routines and organisation)",
+        "montessori": {
+          "areaKeys": [
+            "practical_life"
+          ],
+          "workKeys": [
+            "pl_care_of_self"
+          ]
+        }
+      }
+    },
+    {
+      "id": "PPL-D.G1.1",
+      "strandId": "PPL-D",
+      "domainId": "PPL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Sets up what they need and clears it all away afterwards.",
+        "zh": "能自己准备所需材料，用完后全部收拾归位。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Clears away when asked.",
+          "zh": "经要求会收拾。"
+        },
+        "developing": {
+          "en": "Sets up and clears away with a reminder.",
+          "zh": "经提醒能准备和收拾。"
+        },
+        "secure": {
+          "en": "Sets up, clears away and leaves the space ready for the next child.",
+          "zh": "能准备、收拾，并把环境留给下一个孩子。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.PPL-D.G1.1",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "Key Stage 1 — PSHE: Living in the Wider World (caring for the shared environment)",
+        "otherAnchor": "Montessori Practical Life",
+        "montessori": {
+          "areaKeys": [
+            "practical_life"
+          ],
+          "workKeys": [
+            "pl_care_of_environment"
+          ]
+        }
+      }
+    },
+    {
+      "id": "PPL-D.G1.2",
+      "strandId": "PPL-D",
+      "domainId": "PPL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "statement": {
+        "en": "Keeps up a job for the classroom right across the week.",
+        "zh": "能坚持完成一整周的班级职责。"
+      },
+      "bandDescriptors": {
+        "emerging": {
+          "en": "Does the job on the day they are reminded.",
+          "zh": "经提醒的那天会做。"
+        },
+        "developing": {
+          "en": "Does it most days of the week.",
+          "zh": "一周中大部分日子会做。"
+        },
+        "secure": {
+          "en": "Does it every day without being reminded.",
+          "zh": "每天都主动完成，无需提醒。"
+        }
+      },
+      "evidence": {
+        "observationItemId": "IT.OBS.PPL-D.G1.2",
+        "minCoverage": 1
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "Key Stage 1 — PSHE: Living in the Wider World (responsibility in the community)",
+        "otherAnchor": "Montessori care of community",
+        "montessori": {
+          "areaKeys": [
+            "practical_life"
+          ],
+          "workKeys": [
+            "pl_care_of_environment"
+          ]
+        }
+      }
+    },
+    {
+      "id": "LCL-A.G1.1",
+      "strandId": "LCL-A",
+      "domainId": "LCL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "inference_from_read_aloud",
+      "statement": {
+        "en": "Answers a question about something read aloud, including one they have to work out for themselves.",
+        "zh": "能回答关于朗读内容的问题，包括需要自己推想才能答出的问题。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.LCL-A.G1.A.01",
+          "IT.LCL-A.G1.A.02",
+          "IT.LCL-A.G1.B.01",
+          "IT.LCL-A.G1.B.02"
+        ],
+        "byForm": {
+          "A": [
+            "IT.LCL-A.G1.A.01",
+            "IT.LCL-A.G1.A.02"
+          ],
+          "B": [
+            "IT.LCL-A.G1.B.01",
+            "IT.LCL-A.G1.B.02"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "RL.1.1",
+          "RI.1.1",
+          "SL.1.2"
+        ],
+        "ukNc": "English Year 1 — Reading comprehension: making inferences on the basis of what is being said and done",
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_oral_language"
+          ]
+        }
+      }
+    },
+    {
+      "id": "LCL-A.G1.2",
+      "strandId": "LCL-A",
+      "domainId": "LCL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "three_step_instruction",
+      "statement": {
+        "en": "Follows a spoken instruction with three parts, in order, the first time it is said.",
+        "zh": "能一次听清并按顺序完成含三个步骤的口头指令。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.LCL-A.G1.A.03",
+          "IT.LCL-A.G1.A.04",
+          "IT.LCL-A.G1.B.03",
+          "IT.LCL-A.G1.B.04"
+        ],
+        "byForm": {
+          "A": [
+            "IT.LCL-A.G1.A.03",
+            "IT.LCL-A.G1.A.04"
+          ],
+          "B": [
+            "IT.LCL-A.G1.B.03",
+            "IT.LCL-A.G1.B.04"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "SL.1.1.a",
+          "SL.1.2"
+        ],
+        "ukNc": "English Year 1 — Spoken language: listen and respond appropriately to adults and their peers",
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_oral_language"
+          ]
+        }
+      }
+    },
+    {
+      "id": "LCL-B.G1.1",
+      "strandId": "LCL-B",
+      "domainId": "LCL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "retell_with_detail",
+      "statement": {
+        "en": "Retells a story in order and says what someone did or how they felt.",
+        "zh": "能按顺序复述故事，并说出人物做了什么或有什么感受。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.LCL-B.G1.A.01",
+          "IT.LCL-B.G1.B.01"
+        ],
+        "byForm": {
+          "A": [
+            "IT.LCL-B.G1.A.01"
+          ],
+          "B": [
+            "IT.LCL-B.G1.B.01"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "RL.1.2",
+          "SL.1.4"
+        ],
+        "ukNc": "English Year 1 — Reading comprehension: retelling and discussing significant events",
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_oral_language"
+          ]
+        }
+      }
+    },
+    {
+      "id": "LCL-B.G1.2",
+      "strandId": "LCL-B",
+      "domainId": "LCL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "word_meaning_and_category",
+      "statement": {
+        "en": "Says what a word means in their own words, and groups words that belong together.",
+        "zh": "能用自己的话说出词义，并把同一类的词归在一起。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.LCL-B.G1.A.02",
+          "IT.LCL-B.G1.A.03",
+          "IT.LCL-B.G1.B.02",
+          "IT.LCL-B.G1.B.03"
+        ],
+        "byForm": {
+          "A": [
+            "IT.LCL-B.G1.A.02",
+            "IT.LCL-B.G1.A.03"
+          ],
+          "B": [
+            "IT.LCL-B.G1.B.02",
+            "IT.LCL-B.G1.B.03"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "L.1.4.a",
+          "L.1.5.a"
+        ],
+        "ukNc": "English Year 1 — Reading comprehension: discussing word meanings and linking new meanings to those already known",
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_oral_language"
+          ]
+        }
+      }
+    },
+    {
+      "id": "LCL-C.G1.1",
+      "strandId": "LCL-C",
+      "domainId": "LCL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "phoneme_segmentation",
+      "statement": {
+        "en": "Says every sound in a spoken word, in order.",
+        "zh": "能按顺序说出一个词里的每一个音。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.LCL-C.G1.A.01",
+          "IT.LCL-C.G1.A.02",
+          "IT.LCL-C.G1.B.01",
+          "IT.LCL-C.G1.B.02"
+        ],
+        "byForm": {
+          "A": [
+            "IT.LCL-C.G1.A.01",
+            "IT.LCL-C.G1.A.02"
+          ],
+          "B": [
+            "IT.LCL-C.G1.B.01",
+            "IT.LCL-C.G1.B.02"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "RF.1.2.d"
+        ],
+        "ukNc": "English Year 1 — Word reading: applying phonic knowledge and skill as the route to decode words",
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_sound_games"
+          ]
+        },
+        "montreeEnglish": {
+          "phase": "blue",
+          "lessonRange": [
+            1,
+            27
+          ]
+        }
+      }
+    },
+    {
+      "id": "LCL-C.G1.2",
+      "strandId": "LCL-C",
+      "domainId": "LCL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "vowel_sound_contrast",
+      "statement": {
+        "en": "Hears whether two words have the same middle vowel sound.",
+        "zh": "能听出两个词中间的元音是否相同。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.LCL-C.G1.A.03",
+          "IT.LCL-C.G1.A.04",
+          "IT.LCL-C.G1.B.03",
+          "IT.LCL-C.G1.B.04"
+        ],
+        "byForm": {
+          "A": [
+            "IT.LCL-C.G1.A.03",
+            "IT.LCL-C.G1.A.04"
+          ],
+          "B": [
+            "IT.LCL-C.G1.B.03",
+            "IT.LCL-C.G1.B.04"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "RF.1.2.a"
+        ],
+        "ukNc": "English Year 1 — Word reading: respond speedily with the correct sound to graphemes",
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_sound_games"
+          ]
+        },
+        "montreeEnglish": {
+          "phase": "blue",
+          "lessonRange": [
+            1,
+            27
+          ]
+        }
+      }
+    },
+    {
+      "id": "LCL-D.G1.1",
+      "strandId": "LCL-D",
+      "domainId": "LCL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "decode_taught_pattern_word",
+      "statement": {
+        "en": "Reads a word with a two-letter sound or a vowel team by sounding it out — even a word they have never seen.",
+        "zh": "能通过拼读读出含双字母音或元音组合的词，包括从未见过的词。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.LCL-D.G1.A.01",
+          "IT.LCL-D.G1.A.02",
+          "IT.LCL-D.G1.A.03",
+          "IT.LCL-D.G1.B.01",
+          "IT.LCL-D.G1.B.02",
+          "IT.LCL-D.G1.B.03"
+        ],
+        "byForm": {
+          "A": [
+            "IT.LCL-D.G1.A.01",
+            "IT.LCL-D.G1.A.02",
+            "IT.LCL-D.G1.A.03"
+          ],
+          "B": [
+            "IT.LCL-D.G1.B.01",
+            "IT.LCL-D.G1.B.02",
+            "IT.LCL-D.G1.B.03"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "RF.1.3.a",
+          "RF.1.3.c"
+        ],
+        "ukNc": "English Year 1 — Word reading: blend sounds in unfamiliar words containing taught GPCs · Year 1 phonics check (made-up words)",
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_moveable_alphabet",
+            "la_reading_folder"
+          ]
+        },
+        "montreeEnglish": {
+          "phase": "blue",
+          "lessonRange": [
+            1,
+            27
+          ]
+        }
+      }
+    },
+    {
+      "id": "LCL-D.G1.2",
+      "strandId": "LCL-D",
+      "domainId": "LCL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "read_sentence_aloud",
+      "statement": {
+        "en": "Reads a short sentence and shows they know what it says.",
+        "zh": "能读出一句短句，并表明自己明白句子的意思。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.LCL-D.G1.A.04",
+          "IT.LCL-D.G1.A.05",
+          "IT.LCL-D.G1.B.04",
+          "IT.LCL-D.G1.B.05"
+        ],
+        "byForm": {
+          "A": [
+            "IT.LCL-D.G1.A.04",
+            "IT.LCL-D.G1.A.05"
+          ],
+          "B": [
+            "IT.LCL-D.G1.B.04",
+            "IT.LCL-D.G1.B.05"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "RF.1.4.a",
+          "RF.1.4.c"
+        ],
+        "ukNc": "English Year 1 — Word reading: read aloud books closely matched to their improving phonic knowledge",
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_moveable_alphabet",
+            "la_reading_folder"
+          ]
+        },
+        "montreeEnglish": {
+          "phase": "blue",
+          "lessonRange": [
+            1,
+            27
+          ]
+        }
+      }
+    },
+    {
+      "id": "COG-A.G1.1",
+      "strandId": "COG-A",
+      "domainId": "COG",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "count_past_hundred",
+      "statement": {
+        "en": "Counts on past one hundred from any number, and counts in tens and in fives.",
+        "zh": "能从任意数往上数过一百，并能十个十个、五个五个地数。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.COG-A.G1.A.01",
+          "IT.COG-A.G1.A.02",
+          "IT.COG-A.G1.A.03",
+          "IT.COG-A.G1.B.01",
+          "IT.COG-A.G1.B.02",
+          "IT.COG-A.G1.B.03"
+        ],
+        "byForm": {
+          "A": [
+            "IT.COG-A.G1.A.01",
+            "IT.COG-A.G1.A.02",
+            "IT.COG-A.G1.A.03"
+          ],
+          "B": [
+            "IT.COG-A.G1.B.01",
+            "IT.COG-A.G1.B.02",
+            "IT.COG-A.G1.B.03"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "1.NBT.1"
+        ],
+        "ukNc": "Mathematics Year 1 — Number and place value: count to and across 100, forwards and backwards, from any given number",
+        "montessori": {
+          "areaKeys": [
+            "mathematics"
+          ],
+          "workKeys": [
+            "ma_golden_beads",
+            "ma_hundred_board"
+          ]
+        }
+      }
+    },
+    {
+      "id": "COG-A.G1.2",
+      "strandId": "COG-A",
+      "domainId": "COG",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "tens_and_ones",
+      "statement": {
+        "en": "Knows what each digit in a two-digit number stands for, and uses that to say which number is larger.",
+        "zh": "知道两位数中每个数位的含义，并据此判断哪个数更大。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.COG-A.G1.A.04",
+          "IT.COG-A.G1.A.05",
+          "IT.COG-A.G1.B.04",
+          "IT.COG-A.G1.B.05"
+        ],
+        "byForm": {
+          "A": [
+            "IT.COG-A.G1.A.04",
+            "IT.COG-A.G1.A.05"
+          ],
+          "B": [
+            "IT.COG-A.G1.B.04",
+            "IT.COG-A.G1.B.05"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "1.NBT.2",
+          "1.NBT.3"
+        ],
+        "ukNc": "Mathematics Year 1 — Number and place value: represent and compare numbers using tens and ones",
+        "montessori": {
+          "areaKeys": [
+            "mathematics"
+          ],
+          "workKeys": [
+            "ma_golden_beads",
+            "ma_hundred_board"
+          ]
+        }
+      }
+    },
+    {
+      "id": "COG-B.G1.1",
+      "strandId": "COG-B",
+      "domainId": "COG",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "add_subtract_within_twenty",
+      "statement": {
+        "en": "Adds and takes away within twenty in a way that works for them.",
+        "zh": "能用适合自己的方法在二十以内进行加法和减法。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.COG-B.G1.A.01",
+          "IT.COG-B.G1.A.02",
+          "IT.COG-B.G1.B.01",
+          "IT.COG-B.G1.B.02"
+        ],
+        "byForm": {
+          "A": [
+            "IT.COG-B.G1.A.01",
+            "IT.COG-B.G1.A.02"
+          ],
+          "B": [
+            "IT.COG-B.G1.B.01",
+            "IT.COG-B.G1.B.02"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "1.OA.6"
+        ],
+        "ukNc": "Mathematics Year 1 — Addition and subtraction: number bonds and related subtraction facts within 20",
+        "montessori": {
+          "areaKeys": [
+            "mathematics"
+          ],
+          "workKeys": [
+            "ma_golden_beads",
+            "ma_stamp_game"
+          ]
+        }
+      }
+    },
+    {
+      "id": "COG-B.G1.2",
+      "strandId": "COG-B",
+      "domainId": "COG",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "word_problem_within_twenty",
+      "statement": {
+        "en": "Works out an everyday problem that needs adding or taking away.",
+        "zh": "能解决需要用加法或减法的日常生活问题。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.COG-B.G1.A.03",
+          "IT.COG-B.G1.A.04",
+          "IT.COG-B.G1.B.03",
+          "IT.COG-B.G1.B.04"
+        ],
+        "byForm": {
+          "A": [
+            "IT.COG-B.G1.A.03",
+            "IT.COG-B.G1.A.04"
+          ],
+          "B": [
+            "IT.COG-B.G1.B.03",
+            "IT.COG-B.G1.B.04"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "1.OA.1"
+        ],
+        "ukNc": "Mathematics Year 1 — Addition and subtraction: solve one-step problems with concrete objects and pictorial representations",
+        "montessori": {
+          "areaKeys": [
+            "mathematics"
+          ],
+          "workKeys": [
+            "ma_golden_beads",
+            "ma_stamp_game"
+          ]
+        }
+      }
+    },
+    {
+      "id": "COG-C.G1.1",
+      "strandId": "COG-C",
+      "domainId": "COG",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "name_solid_shape",
+      "statement": {
+        "en": "Names a solid shape and says one thing that is true of every one of them.",
+        "zh": "能说出立体图形的名称，并说出这类形体共有的一个特点。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.COG-C.G1.A.01",
+          "IT.COG-C.G1.A.02",
+          "IT.COG-C.G1.B.01",
+          "IT.COG-C.G1.B.02"
+        ],
+        "byForm": {
+          "A": [
+            "IT.COG-C.G1.A.01",
+            "IT.COG-C.G1.A.02"
+          ],
+          "B": [
+            "IT.COG-C.G1.B.01",
+            "IT.COG-C.G1.B.02"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "1.G.1",
+          "1.G.2"
+        ],
+        "ukNc": "Mathematics Year 1 — Geometry: recognise and name common 3-D shapes",
+        "montessori": {
+          "areaKeys": [
+            "sensorial",
+            "mathematics"
+          ],
+          "workKeys": [
+            "se_geometric_solids",
+            "se_geometric_cabinet"
+          ]
+        }
+      }
+    },
+    {
+      "id": "COG-C.G1.2",
+      "strandId": "COG-C",
+      "domainId": "COG",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "halves_and_quarters",
+      "statement": {
+        "en": "Finds a half and a quarter of a shape, and notices when the parts are not equal.",
+        "zh": "能找出图形的二分之一和四分之一，并看出各部分是否相等。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.COG-C.G1.A.03",
+          "IT.COG-C.G1.A.04",
+          "IT.COG-C.G1.B.03",
+          "IT.COG-C.G1.B.04"
+        ],
+        "byForm": {
+          "A": [
+            "IT.COG-C.G1.A.03",
+            "IT.COG-C.G1.A.04"
+          ],
+          "B": [
+            "IT.COG-C.G1.B.03",
+            "IT.COG-C.G1.B.04"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "1.G.3"
+        ],
+        "ukNc": "Mathematics Year 1 — Fractions: recognise, find and name a half and a quarter",
+        "montessori": {
+          "areaKeys": [
+            "sensorial",
+            "mathematics"
+          ],
+          "workKeys": [
+            "se_geometric_solids",
+            "se_geometric_cabinet"
+          ]
+        }
+      }
+    },
+    {
+      "id": "COG-D.G1.1",
+      "strandId": "COG-D",
+      "domainId": "COG",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "read_clock_half_hour",
+      "statement": {
+        "en": "Reads the time on a clock at the hour and at half past.",
+        "zh": "能读出钟面上的整点和半点时间。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.COG-D.G1.A.01",
+          "IT.COG-D.G1.A.02",
+          "IT.COG-D.G1.B.01",
+          "IT.COG-D.G1.B.02"
+        ],
+        "byForm": {
+          "A": [
+            "IT.COG-D.G1.A.01",
+            "IT.COG-D.G1.A.02"
+          ],
+          "B": [
+            "IT.COG-D.G1.B.01",
+            "IT.COG-D.G1.B.02"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "1.MD.3"
+        ],
+        "ukNc": "Mathematics Year 1 — Measurement: tell the time to the hour and half past the hour",
+        "montessori": {
+          "areaKeys": [
+            "sensorial"
+          ],
+          "workKeys": [
+            "se_red_rods",
+            "se_knobbed_cylinders"
+          ]
+        }
+      }
+    },
+    {
+      "id": "COG-D.G1.2",
+      "strandId": "COG-D",
+      "domainId": "COG",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "compare_by_measure",
+      "statement": {
+        "en": "Compares three things and picks out the longest, the tallest or the shortest.",
+        "zh": "能比较三样东西，并找出最长、最高或最短的那一个。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.COG-D.G1.A.03",
+          "IT.COG-D.G1.B.03"
+        ],
+        "byForm": {
+          "A": [
+            "IT.COG-D.G1.A.03"
+          ],
+          "B": [
+            "IT.COG-D.G1.B.03"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [
+          "1.MD.1"
+        ],
+        "ukNc": "Mathematics Year 1 — Measurement: compare, describe and solve practical problems for lengths and heights",
+        "montessori": {
+          "areaKeys": [
+            "sensorial"
+          ],
+          "workKeys": [
+            "se_red_rods",
+            "se_knobbed_cylinders"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E1.G1.1",
+      "strandId": "E1",
+      "domainId": "EFL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "english_vocab_school_day",
+      "statement": {
+        "en": "Points to everyday classroom things named in English.",
+        "zh": "听到英语说出的日常教室物品名称时能指出来。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.E1.G1.A.01",
+          "IT.E1.G1.A.02",
+          "IT.E1.G1.A.03",
+          "IT.E1.G1.B.01",
+          "IT.E1.G1.B.02",
+          "IT.E1.G1.B.03"
+        ],
+        "byForm": {
+          "A": [
+            "IT.E1.G1.A.01",
+            "IT.E1.G1.A.02",
+            "IT.E1.G1.A.03"
+          ],
+          "B": [
+            "IT.E1.G1.B.01",
+            "IT.E1.G1.B.02",
+            "IT.E1.G1.B.03"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "English as an additional language — receptive vocabulary (no CEFR or Cambridge level is claimed)",
+        "otherAnchor": "Primary EFL practice — picture-pointing receptive vocabulary",
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_english_vocabulary"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E1.G1.2",
+      "strandId": "E1",
+      "domainId": "EFL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "english_vocab_action_and_place",
+      "statement": {
+        "en": "Points to the picture for an English word about doing something or about where something is.",
+        "zh": "听到表示动作或位置的英语词时能指出相应的图片。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.E1.G1.A.04",
+          "IT.E1.G1.A.05",
+          "IT.E1.G1.B.04",
+          "IT.E1.G1.B.05"
+        ],
+        "byForm": {
+          "A": [
+            "IT.E1.G1.A.04",
+            "IT.E1.G1.A.05"
+          ],
+          "B": [
+            "IT.E1.G1.B.04",
+            "IT.E1.G1.B.05"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "English as an additional language — receptive vocabulary (no CEFR or Cambridge level is claimed)",
+        "otherAnchor": "Primary EFL practice — picture-pointing receptive vocabulary",
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_english_vocabulary"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E2.G1.1",
+      "strandId": "E2",
+      "domainId": "EFL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "three_step_en",
+      "statement": {
+        "en": "Follows a spoken English instruction with three parts.",
+        "zh": "能听懂并完成含三个步骤的英语口头指令。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.E2.G1.A.01",
+          "IT.E2.G1.A.02",
+          "IT.E2.G1.B.01",
+          "IT.E2.G1.B.02"
+        ],
+        "byForm": {
+          "A": [
+            "IT.E2.G1.A.01",
+            "IT.E2.G1.A.02"
+          ],
+          "B": [
+            "IT.E2.G1.B.01",
+            "IT.E2.G1.B.02"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "English as an additional language — listening (no CEFR or Cambridge level is claimed)",
+        "otherAnchor": "Primary EFL practice — listen-and-do",
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_english_oral"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E2.G1.2",
+      "strandId": "E2",
+      "domainId": "EFL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "instruction_with_order_en",
+      "statement": {
+        "en": "Follows an English instruction that says which part to do first.",
+        "zh": "能听懂含先后次序的英语指令并按序完成。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.E2.G1.A.03",
+          "IT.E2.G1.B.03"
+        ],
+        "byForm": {
+          "A": [
+            "IT.E2.G1.A.03"
+          ],
+          "B": [
+            "IT.E2.G1.B.03"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "English as an additional language — listening (no CEFR or Cambridge level is claimed)",
+        "otherAnchor": "Primary EFL practice — listen-and-do",
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_english_oral"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E3.G1.1",
+      "strandId": "E3",
+      "domainId": "EFL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "english_medial_vowel",
+      "statement": {
+        "en": "Hears the middle sound in a short English word.",
+        "zh": "能听出英语短词中间的那个音。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.E3.G1.A.01",
+          "IT.E3.G1.A.02",
+          "IT.E3.G1.B.01",
+          "IT.E3.G1.B.02"
+        ],
+        "byForm": {
+          "A": [
+            "IT.E3.G1.A.01",
+            "IT.E3.G1.A.02"
+          ],
+          "B": [
+            "IT.E3.G1.B.01",
+            "IT.E3.G1.B.02"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "English as an additional language — phonological awareness (no CEFR or Cambridge level is claimed)",
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_english_sound_games"
+          ]
+        },
+        "montreeEnglish": {
+          "phase": "blue",
+          "lessonRange": [
+            1,
+            12
+          ]
+        }
+      }
+    },
+    {
+      "id": "E3.G1.2",
+      "strandId": "E3",
+      "domainId": "EFL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "english_phoneme_blend",
+      "statement": {
+        "en": "Blends English sounds said one at a time into a whole word.",
+        "zh": "能把一个一个说出的英语音合成完整的词。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.E3.G1.A.03",
+          "IT.E3.G1.B.03"
+        ],
+        "byForm": {
+          "A": [
+            "IT.E3.G1.A.03"
+          ],
+          "B": [
+            "IT.E3.G1.B.03"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "English as an additional language — phonological awareness (no CEFR or Cambridge level is claimed)",
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_english_sound_games"
+          ]
+        },
+        "montreeEnglish": {
+          "phase": "blue",
+          "lessonRange": [
+            1,
+            12
+          ]
+        }
+      }
+    },
+    {
+      "id": "E4.G1.1",
+      "strandId": "E4",
+      "domainId": "EFL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "digraph_sound_receptive",
+      "statement": {
+        "en": "Finds the two letters that make a given English sound.",
+        "zh": "能找出发出某个英语音的那两个字母。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.E4.G1.A.01",
+          "IT.E4.G1.B.01"
+        ],
+        "byForm": {
+          "A": [
+            "IT.E4.G1.A.01"
+          ],
+          "B": [
+            "IT.E4.G1.B.01"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "English as an additional language — letter and sound knowledge (no CEFR or Cambridge level is claimed)",
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_english_letter_sounds"
+          ]
+        },
+        "montreeEnglish": {
+          "phase": "blue",
+          "lessonRange": [
+            1,
+            8
+          ]
+        }
+      }
+    },
+    {
+      "id": "E4.G1.2",
+      "strandId": "E4",
+      "domainId": "EFL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "digraph_sound_expressive",
+      "statement": {
+        "en": "Says the sound two letters make together.",
+        "zh": "能说出两个字母组合在一起发出的音。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.E4.G1.A.02",
+          "IT.E4.G1.B.02"
+        ],
+        "byForm": {
+          "A": [
+            "IT.E4.G1.A.02"
+          ],
+          "B": [
+            "IT.E4.G1.B.02"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "English as an additional language — letter and sound knowledge (no CEFR or Cambridge level is claimed)",
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_english_letter_sounds"
+          ]
+        },
+        "montreeEnglish": {
+          "phase": "blue",
+          "lessonRange": [
+            1,
+            8
+          ]
+        }
+      }
+    },
+    {
+      "id": "E5.G1.1",
+      "strandId": "E5",
+      "domainId": "EFL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "read_english_word_pattern",
+      "statement": {
+        "en": "Reads an English word containing a two-letter sound or a vowel team.",
+        "zh": "能读出含双字母音或元音组合的英语词。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.E5.G1.A.01",
+          "IT.E5.G1.A.02",
+          "IT.E5.G1.B.01",
+          "IT.E5.G1.B.02"
+        ],
+        "byForm": {
+          "A": [
+            "IT.E5.G1.A.01",
+            "IT.E5.G1.A.02"
+          ],
+          "B": [
+            "IT.E5.G1.B.01",
+            "IT.E5.G1.B.02"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "English as an additional language — word reading (no CEFR or Cambridge level is claimed)",
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_english_cvc"
+          ]
+        },
+        "montreeEnglish": {
+          "phase": "blue",
+          "lessonRange": [
+            1,
+            27
+          ]
+        }
+      }
+    },
+    {
+      "id": "E5.G1.2",
+      "strandId": "E5",
+      "domainId": "EFL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "read_english_sentence",
+      "statement": {
+        "en": "Reads a short English sentence and shows they know what it says.",
+        "zh": "能读出一句英语短句，并表明自己明白它的意思。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.E5.G1.A.03",
+          "IT.E5.G1.B.03"
+        ],
+        "byForm": {
+          "A": [
+            "IT.E5.G1.A.03"
+          ],
+          "B": [
+            "IT.E5.G1.B.03"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "English as an additional language — word reading (no CEFR or Cambridge level is claimed)",
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_english_cvc"
+          ]
+        },
+        "montreeEnglish": {
+          "phase": "blue",
+          "lessonRange": [
+            1,
+            27
+          ]
+        }
+      }
+    },
+    {
+      "id": "E6.G1.1",
+      "strandId": "E6",
+      "domainId": "EFL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "english_ask_question",
+      "statement": {
+        "en": "Asks a simple question in English.",
+        "zh": "能用英语提出一个简单的问题。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.E6.G1.A.01",
+          "IT.E6.G1.B.01"
+        ],
+        "byForm": {
+          "A": [
+            "IT.E6.G1.A.01"
+          ],
+          "B": [
+            "IT.E6.G1.B.01"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "English as an additional language — spoken production (no CEFR or Cambridge level is claimed)",
+        "otherAnchor": "Primary EFL practice — modelled question frames",
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_english_oral"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E6.G1.2",
+      "strandId": "E6",
+      "domainId": "EFL",
+      "ageBand": "G1",
+      "expectation": "expected",
+      "constructTag": "english_describe_picture",
+      "statement": {
+        "en": "Describes a picture in English in a short sentence.",
+        "zh": "能用一句简短的英语描述一张图片。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.E6.G1.A.02",
+          "IT.E6.G1.B.02"
+        ],
+        "byForm": {
+          "A": [
+            "IT.E6.G1.A.02"
+          ],
+          "B": [
+            "IT.E6.G1.B.02"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1"
+      },
+      "crosswalk": {
+        "elof": [],
+        "eyfs": {
+          "area": null,
+          "band": null,
+          "elg": null
+        },
+        "chinaMoe": null,
+        "ccss": [],
+        "ukNc": "English as an additional language — spoken production (no CEFR or Cambridge level is claimed)",
+        "otherAnchor": "Primary EFL practice — modelled question frames",
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_english_oral"
+          ]
+        }
+      }
+    },
+    {
+      "id": "LCL-D.A5.3",
+      "strandId": "LCL-D",
+      "domainId": "LCL",
+      "ageBand": "A5",
+      "expectation": "extension",
+      "constructTag": "decode_taught_pattern_word",
+      "statement": {
+        "en": "Reads a word with two letters that make one sound.",
+        "zh": "能读出含两个字母发一个音的词。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.LCL-D.G1.A.01",
+          "IT.LCL-D.G1.B.01"
+        ],
+        "byForm": {
+          "A": [
+            "IT.LCL-D.G1.A.01"
+          ],
+          "B": [
+            "IT.LCL-D.G1.B.01"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1",
+        "extensionEvidence": true
+      },
+      "crosswalk": {
+        "elof": [
+          "P-LIT 2",
+          "P-LIT 3"
+        ],
+        "eyfs": {
+          "area": "Literacy",
+          "band": "Reception",
+          "elg": "Word Reading"
+        },
+        "chinaMoe": null,
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_sandpaper_letters",
+            "la_moveable_alphabet"
+          ]
+        },
+        "montreeEnglish": {
+          "phase": "pink",
+          "lessonRange": [
+            1,
+            27
+          ]
+        }
+      }
+    },
+    {
+      "id": "LCL-D.A5.4",
+      "strandId": "LCL-D",
+      "domainId": "LCL",
+      "ageBand": "A5",
+      "expectation": "extension",
+      "constructTag": "read_sentence_aloud",
+      "statement": {
+        "en": "Reads a whole short sentence aloud.",
+        "zh": "能把一句短句完整地读出来。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.LCL-D.G1.A.04",
+          "IT.LCL-D.G1.B.04"
+        ],
+        "byForm": {
+          "A": [
+            "IT.LCL-D.G1.A.04"
+          ],
+          "B": [
+            "IT.LCL-D.G1.B.04"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1",
+        "extensionEvidence": true
+      },
+      "crosswalk": {
+        "elof": [
+          "P-LIT 2",
+          "P-LIT 3"
+        ],
+        "eyfs": {
+          "area": "Literacy",
+          "band": "Reception",
+          "elg": "Word Reading"
+        },
+        "chinaMoe": null,
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_sandpaper_letters",
+            "la_moveable_alphabet"
+          ]
+        },
+        "montreeEnglish": {
+          "phase": "pink",
+          "lessonRange": [
+            1,
+            27
+          ]
+        }
+      }
+    },
+    {
+      "id": "COG-A.A5.3",
+      "strandId": "COG-A",
+      "domainId": "COG",
+      "ageBand": "A5",
+      "expectation": "extension",
+      "constructTag": "count_past_hundred",
+      "statement": {
+        "en": "Counts on past one hundred from a number they are given.",
+        "zh": "能从给定的数往上数过一百。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.COG-A.G1.A.01",
+          "IT.COG-A.G1.B.01"
+        ],
+        "byForm": {
+          "A": [
+            "IT.COG-A.G1.A.01"
+          ],
+          "B": [
+            "IT.COG-A.G1.B.01"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1",
+        "extensionEvidence": true
+      },
+      "crosswalk": {
+        "elof": [
+          "P-MATH 1",
+          "P-MATH 2"
+        ],
+        "eyfs": {
+          "area": "Mathematics",
+          "band": "Reception",
+          "elg": "Number"
+        },
+        "chinaMoe": [
+          "科学.数学认知.目标2(5-6岁)"
+        ],
+        "montessori": {
+          "areaKeys": [
+            "mathematics"
+          ],
+          "workKeys": [
+            "ma_number_rods",
+            "ma_sandpaper_numerals"
+          ]
+        }
+      }
+    },
+    {
+      "id": "COG-B.A5.3",
+      "strandId": "COG-B",
+      "domainId": "COG",
+      "ageBand": "A5",
+      "expectation": "extension",
+      "constructTag": "add_subtract_within_twenty",
+      "statement": {
+        "en": "Adds and takes away within twenty.",
+        "zh": "能在二十以内进行加法和减法。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.COG-B.G1.A.01",
+          "IT.COG-B.G1.B.01"
+        ],
+        "byForm": {
+          "A": [
+            "IT.COG-B.G1.A.01"
+          ],
+          "B": [
+            "IT.COG-B.G1.B.01"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1",
+        "extensionEvidence": true
+      },
+      "crosswalk": {
+        "elof": [
+          "P-MATH 4",
+          "P-MATH 5",
+          "P-MATH 6"
+        ],
+        "eyfs": {
+          "area": "Mathematics",
+          "band": "Reception",
+          "elg": "Number"
+        },
+        "chinaMoe": [
+          "科学.数学认知.目标2(5-6岁)"
+        ],
+        "montessori": {
+          "areaKeys": [
+            "mathematics"
+          ],
+          "workKeys": [
+            "ma_spindle_boxes",
+            "ma_cards_and_counters"
+          ]
+        }
+      }
+    },
+    {
+      "id": "COG-C.A5.3",
+      "strandId": "COG-C",
+      "domainId": "COG",
+      "ageBand": "A5",
+      "expectation": "extension",
+      "constructTag": "halves_and_quarters",
+      "statement": {
+        "en": "Finds a half of a shape.",
+        "zh": "能找出图形的二分之一。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.COG-C.G1.A.03",
+          "IT.COG-C.G1.B.04"
+        ],
+        "byForm": {
+          "A": [
+            "IT.COG-C.G1.A.03"
+          ],
+          "B": [
+            "IT.COG-C.G1.B.04"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1",
+        "extensionEvidence": true
+      },
+      "crosswalk": {
+        "elof": [
+          "P-MATH 7",
+          "P-MATH 9",
+          "P-MATH 10"
+        ],
+        "eyfs": {
+          "area": "Mathematics",
+          "band": "Reception",
+          "elg": "Numerical Patterns"
+        },
+        "chinaMoe": [
+          "科学.数学认知.目标3(5-6岁)"
+        ],
+        "montessori": {
+          "areaKeys": [
+            "sensorial",
+            "mathematics"
+          ],
+          "workKeys": [
+            "se_geometric_cabinet"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E5.A5.3",
+      "strandId": "E5",
+      "domainId": "EFL",
+      "ageBand": "A5",
+      "expectation": "extension",
+      "constructTag": "read_english_word_pattern",
+      "statement": {
+        "en": "Reads an English word with a taught two-letter sound.",
+        "zh": "能读出含学过的双字母音的英语词。"
+      },
+      "bandDescriptors": null,
+      "evidence": {
+        "itemIds": [
+          "IT.E5.G1.A.02",
+          "IT.E5.G1.B.01"
+        ],
+        "byForm": {
+          "A": [
+            "IT.E5.G1.A.02"
+          ],
+          "B": [
+            "IT.E5.G1.B.01"
+          ]
+        },
+        "minCoverage": 0.5,
+        "evidenceBand": "G1",
+        "extensionEvidence": true
+      },
+      "crosswalk": {
+        "elof": [
+          "P-LIT 3"
+        ],
+        "eyfs": {
+          "area": "Literacy",
+          "band": "Reception",
+          "elg": "Word Reading"
+        },
+        "chinaMoe": null,
+        "montessori": {
+          "areaKeys": [
+            "language"
+          ],
+          "workKeys": [
+            "la_english_cvc"
+          ]
+        },
+        "montreeEnglish": {
+          "phase": "pink",
+          "lessonRange": [
+            4,
+            27
           ]
         }
       }

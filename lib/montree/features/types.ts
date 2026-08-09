@@ -52,6 +52,18 @@ export type FeatureKey =
   // per school AFTER this flag is enabled, via scripts/curriculum/seed-english-program.mjs.
   // Migration 293. Default OFF; schools opt in.
   | 'english_program'
+  // 🌱 Montree Milestones — the three-times-a-year developmental check-in
+  // (per-child tab + the class-level index at /montree/dashboard/milestones +
+  // the principal's school-wide view). Migration 314 inserts the definition row
+  // (category 'assessment'). Default OFF; schools opt in.
+  | 'child_evaluation'
+  // 🌿 Montree Canopy — the Grade 1 (G1) TIER of Montree Milestones, for children of 6–7
+  // who have outgrown the kindergarten bands. Requires `child_evaluation` as well: this
+  // flag opens the extra tier, it does not open the instrument. Migration 322 inserts the
+  // definition row (category 'assessment', premium). Default OFF; schools opt in.
+  // Deliberately NOT in FEATURE_MENU_MAP — Canopy lives inside the existing Milestones
+  // surfaces and owns no menu row of its own.
+  | 'child_evaluation_g1'
   | 'curriculum_browser'
   | 'community_library'
   | 'picture_bank'

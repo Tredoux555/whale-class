@@ -15,7 +15,7 @@
  * columns existed failed silently while the parent record was already marked committed.
  * Here, a missing column can only ever produce a loud, diagnosable 503.
  */
-import { FEATURE_KEY } from './constants';
+import { CANOPY_BAND, CANOPY_PUBLIC_NAME, FEATURE_KEY, FEATURE_KEY_G1 } from './constants';
 import {
   getSupabaseClient, isFeatureEnabled, verifySchoolRequest,
   verifyChildBelongsToSchool, type SchoolAuth, type SupabaseLike,
@@ -35,6 +35,26 @@ export function isMigrationPendingError(error: unknown): boolean {
     msg.includes('does not exist') &&
     (msg.includes('relation') || msg.includes('column') || msg.includes('schema cache'))
   );
+}
+
+/**
+ * Postgres CHECK-constraint violation. This is the Montree Canopy pre-migration guard.
+ *
+ * Repo law: code deploys BEFORE the SQL is run. Between the deploy and Tredoux running
+ * migration 322, `age_band` still reads `CHECK (age_band IN ('A3','A4','A5'))`, so a G1
+ * insert comes back 23514. Left alone that is an opaque 500 on a brand-new feature; caught
+ * here it is the same friendly, diagnosable "migration pending" 503 every other missing
+ * piece of schema produces. A3/A4/A5 can never reach this path — they satisfy the old
+ * constraint and the new one identically.
+ */
+const CHECK_VIOLATION_CODE = '23514';
+
+export function isCheckConstraintViolation(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const e = error as { code?: string; message?: string };
+  if (e.code === CHECK_VIOLATION_CODE) return true;
+  const msg = (e.message ?? '').toLowerCase();
+  return msg.includes('violates check constraint');
 }
 
 export function json(body: unknown, status = 200): Response {
@@ -76,12 +96,35 @@ export const featureOff = () =>
     message: 'Montree Milestones is not switched on for this school.',
   }, 503);
 
+export const canopyOff = () =>
+  json({
+    available: false,
+    reason: 'feature_off',
+    feature: FEATURE_KEY_G1,
+    message: `${CANOPY_PUBLIC_NAME} (Grade 1) is not switched on for this school.`,
+  }, 503);
+
 export const migrationPending = (detail?: string) =>
   json({
     available: false,
     reason: 'migration_pending',
     migration_pending: true,
     message: `Montree Milestones is installed but ${MIGRATION_FILE} has not been run yet.`,
+    detail: detail ?? null,
+  }, 503);
+
+export const CANOPY_MIGRATION_FILE = 'migrations/322_montree_canopy_g1.sql';
+
+/** The G1-specific twin of `migrationPending`, for a CHECK constraint not yet widened. */
+export const canopyMigrationPending = (detail?: string) =>
+  json({
+    available: false,
+    reason: 'migration_pending',
+    migration_pending: true,
+    feature: FEATURE_KEY_G1,
+    message:
+      `${CANOPY_PUBLIC_NAME} is installed but ${CANOPY_MIGRATION_FILE} has not been run yet, ` +
+      'so this database still only accepts the kindergarten bands. Kindergarten check-ins are unaffected.',
     detail: detail ?? null,
   }, 503);
 
@@ -127,6 +170,28 @@ export async function openRoute(request: Request): Promise<{ ctx: RouteContext }
   if (!enabled) return { response: featureOff() };
 
   return { ctx: { auth, supabase: getSupabaseClient() } };
+}
+
+/**
+ * The Montree Canopy gate. `child_evaluation` opens the instrument; `child_evaluation_g1`
+ * opens the Grade 1 TIER of it. A school running kindergarten only never gets a G1 sitting,
+ * a G1 bank slice or a G1 import, and finds out through the same friendly 503 shape as any
+ * other switched-off feature rather than a 400 it cannot interpret.
+ *
+ * Fails CLOSED: a flag lookup that blows up is a server error, never an open door.
+ * Bands other than G1 are waved through untouched — this can only ever ADD a refusal.
+ */
+export async function requireCanopyForBand(
+  ctx: RouteContext,
+  ageBand: string | null | undefined,
+): Promise<Response | null> {
+  if (ageBand !== CANOPY_BAND) return null;
+  try {
+    const enabled = await isFeatureEnabled(ctx.auth.schoolId, FEATURE_KEY_G1);
+    return enabled ? null : canopyOff();
+  } catch (error) {
+    return serverError('canopy_feature_flag', error);
+  }
 }
 
 export interface VerifiedChild { classroomId: string | null; name: string | null; birthDate: string | null }

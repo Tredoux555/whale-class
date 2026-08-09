@@ -9,6 +9,13 @@
 // to its legacy flag-gated render — so existing schools are untouched.
 
 export const MENU_ITEM_IDS = [
+  // Montree Milestones — FIRST, deliberately (Tredoux, Aug 2026). This array is the
+  // ORDER a sanitized or newly-seeded config comes out in, so leading it is what makes
+  // Milestones the first row of the customizable section for every teacher who has not
+  // hand-ordered their own menu. DashboardHeader pins the row to the very top of the "…"
+  // menu to match. Gated by the 'child_evaluation' feature flag; hidden by default,
+  // surfaced by FEATURE_MENU_MAP when a school switches Milestones on.
+  'milestones',
   // Paper Scan (Cellphoneless Classrooms) — photograph the handwritten record
   // sheet after class; Claude reads it, the teacher reviews, it lands on the
   // children's profiles. Gated by the 'paper_scan' feature flag (migration 308).

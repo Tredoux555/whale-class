@@ -20,6 +20,7 @@
  * and no peer comparison anywhere in this file, by design.
  */
 import { getBankIndex } from './bank';
+import { localeSuppressedStrandIds, LOCALE_SUPPRESSION_REASON } from './locale-gate';
 import type {
   AgeBand, Band, BandOrUnassessed, BankIndex, BankItem, BankScoringConfig, DomainSummary,
   Expectation, FormCode, GrowthDelta, GrowthDirection, GrowthInputResult, GrowthSummary, MapResult, Milestone,
@@ -39,14 +40,18 @@ export const BAND_RANK: Record<BandOrUnassessed, number> = {
 const BAND_BY_RANK: Band[] = ['emerging', 'developing', 'secure'];
 
 /**
- * EFL MAP% is only published at A5.
+ * EFL MAP% is only published at A5 and G1.
  *
  * The n < 12 rule already forces this today (the bank carries 6 expected EFL milestones at
  * A3 and 8 at A4), but stating it explicitly means a future bank edit that adds EFL
  * milestones cannot silently start publishing an English percentage for a three-year-old,
  * whose English exposure is far too short and too variable for a percentage to mean anything.
+ *
+ * G1 (Montree Canopy) is eligible for the same reason A5 is: by Grade 1 a child has had
+ * long enough and steady enough English exposure for the figure to carry meaning. The
+ * n < 12 rule still governs whether one is actually published.
  */
-export const EFL_MAP_ELIGIBLE_BANDS: readonly AgeBand[] = ['A5'];
+export const EFL_MAP_ELIGIBLE_BANDS: readonly AgeBand[] = ['A5', 'G1'];
 
 const EMPTY_COUNTS = (): Record<BandOrUnassessed, number> =>
   ({ emerging: 0, developing: 0, secure: 0, unassessed: 0 });
@@ -220,6 +225,12 @@ export function scoreItemResponses(
 export interface MilestoneScoringInput {
   ageBand: AgeBand;
   formCode: FormCode;
+  /**
+   * Language of assessment. Under a non-English locale the English-medium core strands
+   * (LCL-C, LCL-D) are reported `unassessed` with `unassessedReason: 'locale_not_supported'`
+   * rather than banded — see `locale-gate.ts`. Omitted ⇒ English ⇒ no change at all.
+   */
+  assessmentLocale?: string | null;
   scored: ScoredItemResponse[];
   /** milestoneId → teacher-chosen band, for observation milestones. */
   observations?: Array<{ milestoneId: string; band: Band; note?: string | null; evidenceMediaId?: string | null }>;
@@ -305,6 +316,8 @@ export function computeMilestoneResults(input: MilestoneScoringInput): Milestone
 
   const minCoverageDefault = config.minCoverage;
   const results: MilestoneResult[] = [];
+  // Strands this sitting's language of assessment stands down. Empty for English.
+  const localeSuppressed = localeSuppressedStrandIds(index.bank.strands, input.assessmentLocale);
 
   for (const milestone of candidates.values()) {
     const track = index.trackByDomainId.get(milestone.domainId) ?? 'core';
@@ -319,8 +332,17 @@ export function computeMilestoneResults(input: MilestoneScoringInput): Milestone
     let evidenceItemIds: string[] = [];
     let evidenceNote: string | null = null;
     let evidenceMediaId: string | null = null;
+    let unassessedReason: string | null = null;
 
-    if (milestone.evidence.observationItemId) {
+    if (localeSuppressed.has(milestone.strandId)) {
+      // The language-of-assessment gate. This milestone was never scheduled, so there is no
+      // evidence and there must be no band: an honest, labelled gap, counted in the
+      // denominator like every other unassessed milestone. A teacher override below can
+      // still speak for it — a human with a stated reason always outranks a rule.
+      bandComputed = 'unassessed';
+      coverage = 0;
+      unassessedReason = LOCALE_SUPPRESSION_REASON;
+    } else if (milestone.evidence.observationItemId) {
       // 1:1 with a checklist item — the teacher chooses the band directly, best-fit.
       if (observed) {
         bandComputed = observed.band;
@@ -396,6 +418,7 @@ export function computeMilestoneResults(input: MilestoneScoringInput): Milestone
       evidenceNote,
       evidenceMediaId,
       evidenceItemIds,
+      unassessedReason,
     });
   }
 
@@ -661,6 +684,8 @@ export function scoreSession(params: {
   ageBand: AgeBand;
   formCode: FormCode;
   modules: string[];
+  /** Language of assessment — drives the English-medium strand gate (locale-gate.ts). */
+  assessmentLocale?: string | null;
   responses: RawItemResponse[];
   observations?: Array<{ milestoneId: string; band: Band; note?: string | null; evidenceMediaId?: string | null }>;
   overrides?: TeacherOverride[];
@@ -680,6 +705,7 @@ export function scoreSession(params: {
   const { results, warnings } = computeMilestoneResults({
     ageBand: params.ageBand,
     formCode: params.formCode,
+    assessmentLocale: params.assessmentLocale,
     scored,
     observations: params.observations,
     overrides: params.overrides,

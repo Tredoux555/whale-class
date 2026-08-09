@@ -202,7 +202,8 @@ function ageMonthsBetween(birthDateIso, at) {
 function bandForAgeMonths(m) {
   if (m < 48) return 'A3';
   if (m < 60) return 'A4';
-  return 'A5';
+  if (m < 72) return 'A5';
+  return 'G1';  // Montree Canopy — the Grade 1 tier.
 }
 
 const sha256 = (s) => createHash('sha256').update(s).digest('hex');
@@ -416,11 +417,6 @@ async function seedSchool(client) {
     subscription_status: 'active',
     plan_type: 'premium',
     max_students: 100,
-    // owner_email/owner_name: prod's montree_schools.owner_email is NOT NULL. The base
-    // schema this script was written against does not require it, so it was omitted here
-    // originally; added so the seed also runs cleanly against prod's actual constraints.
-    owner_email: DEMO.principal.email,
-    owner_name: DEMO.principal.name,
   });
 
   await upsertById(client, 'montree_school_admins', null, {

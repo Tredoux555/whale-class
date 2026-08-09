@@ -27,6 +27,7 @@ import {
   Settings2,
   ScanLine,
   Activity,
+  Sprout,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { MENU_ITEM_IDS, type MenuItemId } from './config';
@@ -51,6 +52,9 @@ export const MENU_REGISTRY: Record<MenuItemId, MenuItemDef> = {
   parent_manager: { id: 'parent_manager', labelKey: null, label: 'Parents', route: '/montree/dashboard/parent-codes', icon: KeyRound },
   parent_messages: { id: 'parent_messages', labelKey: 'nav.messages', label: 'Messages', route: '/montree/dashboard/parent-chats', icon: MessageSquare },
   photo_audit: { id: 'photo_audit', labelKey: 'audit.title', label: 'Photo Audit', route: '/montree/dashboard/photo-audit', icon: Search },
+  // 🌱 Montree Milestones — class-level index; each child links to their own
+  // Milestones tab. Owned by the 'child_evaluation' flag (FEATURE_MENU_MAP).
+  milestones: { id: 'milestones', labelKey: 'milestones.tab', label: 'Milestones', route: '/montree/dashboard/milestones', icon: Sprout },
   classroom_overview: { id: 'classroom_overview', labelKey: 'nav.classroomOverview', label: 'Classroom Overview', route: '/montree/dashboard/classroom-overview', icon: LayoutGrid },
   calendar: { id: 'calendar', labelKey: 'nav.calendar', label: 'Calendar', route: '/montree/calendar', icon: Calendar },
   meeting_notes: { id: 'meeting_notes', labelKey: null, label: 'Meeting Notes', route: '/montree/dashboard/conversations', icon: Mic },

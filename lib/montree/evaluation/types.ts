@@ -15,7 +15,16 @@
 
 /* ────────────────────────────────────────────────────────────── shared scalars */
 
-export type AgeBand = 'A3' | 'A4' | 'A5';
+/**
+ * A3/A4/A5 are the kindergarten bands (3-, 4- and 5-year-olds).
+ *
+ * `G1` is **Montree Canopy** — the Grade 1 tier (ages 6–7), for a child who has outgrown
+ * the kindergarten check-in. It is a SECOND TIER of the same instrument, not a second
+ * instrument: same milestone/coverage/band rules, same suppression posture, same report.
+ * Gated separately by the `child_evaluation_g1` feature flag so a school that only runs
+ * kindergarten never sees it, and it is the top band — nothing sits above it.
+ */
+export type AgeBand = 'A3' | 'A4' | 'A5' | 'G1';
 export type FormCode = 'A' | 'B';
 /** 'P' = practice (never scored, never exported), 'O' = observation checklist. */
 export type BankFormCode = FormCode | 'P' | 'O';
@@ -106,12 +115,25 @@ export interface CrosswalkEyfs {
   area: string | null;
   band: string | null;
   elg: string | null;
+  /** Set where the ELG is a labelled best fit rather than an exact match (e.g. COG-D). */
+  elgNote?: string | null;
 }
 
 export interface MilestoneCrosswalk {
   elof: string[];
   eyfs: CrosswalkEyfs;
   chinaMoe?: string[] | null;
+  /**
+   * Montree Canopy (band `G1`) sits above ELOF, EYFS and the China MoE 3–6 Guide, so those
+   * three carry explicit empties there and these three fields carry the citation instead:
+   * `ccss` = US Common Core Grade 1 codes (empty on strands Common Core does not cover),
+   * `ukNc` = UK National Curriculum Year 1 / Key Stage 1 programme of study,
+   * `otherAnchor` = the non-statutory framework a non-academic strand is written against
+   * (CASEL, NAEYC, PSHE, Montessori). Absent on the kindergarten bands. See D1 §5.5.
+   */
+  ccss?: string[] | null;
+  ukNc?: string | null;
+  otherAnchor?: string | null;
   montessori?: { areaKeys: string[]; workKeys: string[] } | null;
   montreeEnglish?: { phase: string; lessonRange: [number, number] } | null;
 }
@@ -418,6 +440,14 @@ export interface MilestoneResult {
   evidenceMediaId: string | null;
   /** The evidence items that were actually administered, for the audit trail. */
   evidenceItemIds: string[];
+  /**
+   * WHY a milestone is unassessed, when there is a nameable reason rather than simply
+   * "we ran out of time". Today the only value is `locale_not_supported` — the
+   * language-of-assessment gate standing down an English-medium core strand in a
+   * non-English sitting (see `locale-gate.ts`). Null on every ordinary result.
+   * Derived, never stored: it is recomputed from the session's locale on read.
+   */
+  unassessedReason?: string | null;
 }
 
 export interface MapResult {

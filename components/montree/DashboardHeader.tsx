@@ -5,12 +5,13 @@
 import { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import {
   Camera, Mic, Square, MoreHorizontal, ChevronDown,
   FileText, Search, BookOpen,
   LayoutGrid, CalendarDays,
-  BookMarked, Globe, Settings2, LogOut,
-  MessageSquare, KeyRound, Calendar, UploadCloud, ListChecks,
+  BookMarked, Globe, Settings2, Settings, LogOut,
+  MessageSquare, KeyRound, Calendar, UploadCloud, ListChecks, Sprout,
   // Target / Sparkles / FolderOpen / TrendingUp / Users / BarChart2 removed with
   // the twelve dead menu_* rows (see the 🪦 note in the More menu). Images went
   // with them — its only other reference is the commented-out Photo Gallery row.
@@ -20,7 +21,7 @@ import {
   // Clapperboard removed — was the Montage Studio menu-row icon; that row
   // was removed (see the "More menu" block below) when Studio was retired.
 } from 'lucide-react';
-import { getSession, clearSession, recoverSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
+import { getSession, clearSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { HOME_THEME } from '@/lib/montree/home-theme';
 import { useI18n } from '@/lib/montree/i18n';
 import type { TranslationKey } from '@/lib/montree/i18n/en';
@@ -38,6 +39,14 @@ import { toast } from 'sonner';
 import { useFeatures } from '@/hooks/useFeatures';
 import { MENU_REGISTRY } from '@/lib/montree/menu/registry';
 import type { MenuConfig } from '@/lib/montree/menu/config';
+
+// The SAME switchboard the super admin uses — mounted here in school mode
+// (cookie auth, no Give Control section) for schools that have been given
+// control. Lazy so the header bundle is untouched for everyone else.
+const SchoolFeaturesModal = dynamic(
+  () => import('./super-admin/SchoolFeaturesModal'),
+  { ssr: false }
+);
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const C = {
@@ -183,6 +192,16 @@ function DashboardHeader() {
   const [showInvitePrincipal, setShowInvitePrincipal] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
 
+  // Give Control probe. isEnabled('feature_self_serve') is permanently false —
+  // that key has NO row in montree_feature_definitions and GET
+  // /api/montree/features maps over the definitions table (see the long note on
+  // the School Features menu row below). GET /api/montree/school-features IS the
+  // gate: 200 when Give Control is on, 403 'self_serve_disabled' when it isn't.
+  // Same probe the principal cockpit uses (app/montree/admin/layout.tsx).
+  // Fails closed — any error leaves the gear + menu row hidden.
+  const [selfServeOn, setSelfServeOn] = useState(false);
+  const [showSchoolFeatures, setShowSchoolFeatures] = useState(false);
+
   // Customizable menu config (per-teacher, settings.menu). null = no custom
   // config → render the legacy flag-gated menu below (existing schools
   // untouched). New signups are seeded with the minimal default at signup.
@@ -234,6 +253,9 @@ function DashboardHeader() {
     if (pathname === '/montree/dashboard/focus')              return 'focus-list';
     if (pathname?.startsWith('/montree/dashboard/photo-audit')) return 'photo-audit';
     if (pathname === '/montree/dashboard/guru')               return 'guru';
+    // Exact match only — /montree/dashboard/<childId>/milestones is the
+    // per-child tab, a different surface.
+    if (pathname === '/montree/dashboard/milestones')         return 'milestones';
     if (pathname?.startsWith('/montree/dashboard/curriculum/browse')) return 'curriculum-browse';
     if (pathname === '/montree/dashboard/curriculum')         return 'curriculum';
     if (pathname === '/montree/dashboard/classroom-overview') return 'class-overview';
@@ -298,21 +320,20 @@ function DashboardHeader() {
 
   useEffect(() => {
     const sess = getSession();
-    if (sess) {
-      setSession(sess);
-      return;
-    }
-    // No localStorage mirror, but there may still be a live httpOnly cookie: a principal who
-    // just stepped into this classroom (the cookie was swapped server-side and the stale
-    // mirror cleared), or iOS having wiped localStorage on a PWA relaunch. This effect runs
-    // ONCE, so without the rebuild the header would sit classroom-less for the entire visit —
-    // no student search, no teacher list — while the page below it worked fine.
-    let cancelled = false;
-    recoverSession()
-      .then((recovered) => { if (!cancelled && recovered) setSession(recovered); })
-      .catch(() => { /* the page's own recovery still runs; never break the header */ });
-    return () => { cancelled = true; };
+    if (!sess) return;
+    setSession(sess);
   }, []);
+
+  // Give Control probe — one cheap GET once a session exists (see the state
+  // declaration above for why this can't be a feature-flag read).
+  useEffect(() => {
+    if (!session?.school?.id) return;
+    let cancelled = false;
+    fetch('/api/montree/school-features', { credentials: 'include' })
+      .then((res) => { if (!cancelled) setSelfServeOn(res.ok); })
+      .catch(() => { /* fail closed — gear stays hidden */ });
+    return () => { cancelled = true; };
+  }, [session?.school?.id]);
 
   // Students for the search dropdown — shared SWR cache, NOT a raw fetch.
   // 🚨 Perf (PERF_PASS_JUN13.md Finding 3): this used to be a raw montreeApi
@@ -532,6 +553,10 @@ function DashboardHeader() {
           .mt-header-right-cluster { gap: 4px !important; }
           .mt-header-right-cluster .mt-icon-btn { padding-left: 6px !important; padding-right: 6px !important; }
           .mt-header-icon-messages-inline { display: none !important; }
+          /* Same treatment for the School Features gear (Give Control schools
+             only): it would be a 6th element in the right cluster on a phone.
+             The More menu carries a labelled row behind the same probe. */
+          .mt-header-icon-features-inline { display: none !important; }
           .mt-header-teacher-name { max-width: 56px !important; }
           /* Session 140 — at phone widths the right-cluster still overlapped
              the wordmark + teacher pill (the logo block is flexShrink:0 and the
@@ -716,6 +741,22 @@ function DashboardHeader() {
                 : <Mic    size={18} strokeWidth={1.75} color="#fff" />}
             </IconBtn>
 
+            {/* School Features ⚙️ — only for schools Montree has given control
+                to (probe above). Opens the SAME switchboard the super admin
+                uses, in school mode: cookie auth, no Give Control section.
+                Hidden ≤640px (see the media query above) — the More menu row
+                below is the mobile path. */}
+            {selfServeOn && (
+              <IconBtn
+                title={t('schoolFeatures.menuLabel')}
+                active={showSchoolFeatures}
+                onClick={() => setShowSchoolFeatures(true)}
+                className="mt-header-icon-features-inline"
+              >
+                <Settings size={18} strokeWidth={1.75} color="#fff" />
+              </IconBtn>
+            )}
+
             {/* More menu */}
             <div ref={moreMenuRef} data-copilot="more-menu" style={{ position: 'relative' }}>
               <IconBtn
@@ -728,6 +769,27 @@ function DashboardHeader() {
 
               {showMoreMenu && (
                 <div role="menu" style={MENU_PANEL_STYLE}>
+                  {/* 🌱 Montree Milestones — THE FIRST ROW OF THIS MENU (Tredoux, Aug 2026).
+                      Pinned OUTSIDE the config/legacy branch below so it is first in BOTH
+                      menu modes; without that it would only lead the legacy branch and sit
+                      fourth for every teacher who has a saved config.
+                      Two conditions, both required:
+                        • the school has 'child_evaluation' on ('milestones' has a real
+                          definition row from migration 314, so this gate is live), and
+                        • the teacher has not hidden it in Menu Management — a saved config
+                          stays the source of truth for visibility, exactly as it is for
+                          every row inside the branch.
+                      It is EXCLUDED from the config-driven map below (see the filter there)
+                      so a teacher with a config sees it once, here, and not twice. */}
+                  {isEnabled('child_evaluation')
+                    && (!menuConfig || menuConfig.items.some((i) => i.id === 'milestones' && i.visible)) && (
+                    <MenuRow
+                      icon={Sprout}
+                      label={t('milestones.tab')}
+                      active={activePage === 'milestones'}
+                      onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/milestones'); }}
+                    />
+                  )}
                   {/* Uploads — pinned at the TOP of the menu, OUTSIDE the
                       config/legacy branch below, so it shows for every teacher
                       regardless of which menu mode they're in (legacy flag-gated
@@ -797,7 +859,11 @@ function DashboardHeader() {
                       items (Invite principal / Menu Management / Logout) below
                       the divider are always shown in both branches. */}
                   {menuConfig ? (
-                    menuConfig.items.filter((i) => i.visible).map((i) => {
+                    // 'milestones' is filtered out here because it is pinned as the FIRST
+                    // row of this menu above. Rendering it from the config as well would
+                    // show it twice; its visibility still comes from the config, which is
+                    // what that pinned row checks.
+                    menuConfig.items.filter((i) => i.visible && i.id !== 'milestones').map((i) => {
                       const def = MENU_REGISTRY[i.id];
                       if (!def) return null;
                       const label = def.labelKey ? t(def.labelKey as TranslationKey) : def.label;
@@ -947,6 +1013,13 @@ function DashboardHeader() {
                   {isEnabled('paperwork_tracker') && (
                     <MenuRow icon={FileText} label={t('dashboard.paperworkTracker')} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/paperwork'); }} />
                   )}
+                  {/* 🌱 Montree Milestones MOVED (Aug 2026, Tredoux): it is now the FIRST
+                      row of this menu, pinned above Uploads outside this branch, so it leads
+                      in both menu modes rather than trailing the legacy one. See the note at
+                      the top of the panel. Teachers with a saved menu config still get the
+                      row's VISIBILITY from FEATURE_MENU_MAP
+                      (lib/montree/features/menu-sync.ts) — that is what makes the flag move
+                      a menu item for them. */}
                   </>
                   )}
                   <Divider />
@@ -970,20 +1043,18 @@ function DashboardHeader() {
                       read from pathname directly: activePage has no branch for
                       this route (adding one is outside this surgical change).
 
-                      ⚠️ KNOWN DEAD, same root cause as the twelve rows removed
-                      above: 'feature_self_serve' has NO row in
+                      This row used to be gated on isEnabled('feature_self_serve'),
+                      which is permanently FALSE: that key has NO row in
                       montree_feature_definitions (it is a bare
                       montree_school_features override — see the header comment on
-                      app/api/montree/super-admin/school-features/route.ts), and
-                      GET /api/montree/features maps over the definitions table,
-                      so isEnabled('feature_self_serve') is always false here.
-                      LEFT AS-IS deliberately: the principal now reaches the same
-                      page from the cockpit sidebar (app/montree/admin/layout.tsx),
-                      which probes GET /api/montree/school-features — the endpoint
-                      that actually knows. Fixing the teacher-side row the same way
-                      means a new fetch in the most-mounted component in the app;
-                      the cheaper real fix is a definition row for the key. */}
-                  {isEnabled('feature_self_serve') && (
+                      app/api/montree/super-admin/school-features/route.ts) and GET
+                      /api/montree/features maps over the definitions table, so the
+                      row could never render. It is now gated on the same probe the
+                      principal cockpit uses — GET /api/montree/school-features,
+                      the endpoint that actually knows (see selfServeOn above).
+                      This is also the mobile path to the ⚙️ gear in the icon row,
+                      which is hidden ≤640px. */}
+                  {selfServeOn && (
                     <MenuRow icon={Settings2} label={t('schoolFeatures.menuLabel')} active={pathname === '/montree/dashboard/school-features'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/school-features'); }} />
                   )}
                   <MenuRow icon={LogOut} label={t('auth.logout')} danger onClick={() => { setShowMoreMenu(false); clearSession(); router.push('/montree/login'); }} />
@@ -1143,6 +1214,19 @@ function DashboardHeader() {
         isOpen={showInvitePrincipal}
         onClose={() => setShowInvitePrincipal(false)}
       />
+
+      {/* School Features switchboard — opened from the ⚙️ gear. School mode:
+          no super-admin token (cookie auth against /api/montree/school-features)
+          and no Give Control section, which only Montree may flip. */}
+      {showSchoolFeatures && session?.school && (
+        <SchoolFeaturesModal
+          schoolId={session.school.id}
+          schoolName={session.school.name}
+          apiBase="/api/montree/school-features"
+          showGiveControl={false}
+          onClose={() => setShowSchoolFeatures(false)}
+        />
+      )}
     </>
   );
 }

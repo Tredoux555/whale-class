@@ -5762,6 +5762,13 @@ export const ko: Record<string, string> = {
   'milestones.run.discardConfirm': 'Discard the unfinished check-in? It cannot be brought back.',
   'milestones.run.obsNote': 'Evidence note (optional)',
   'milestones.run.startFresh': 'Start a new check-in',
+  // 🌿 Montree Canopy — the Grade 1 tier. Shown only where child_evaluation_g1 is on.
+  'milestones.run.bandG1': '1학년 · Canopy',
+  'milestones.canopyReadyTitle': 'Montree Canopy로 넘어갈 때입니다',
+  'milestones.canopyReadyBody': '이 아이는 유아 단계 기록이 살펴볼 수 있는 범위를 이미 넘어섰습니다. Montree Canopy는 만 6~7세를 위한 다음 단계로, 같은 방식의 편안한 기록에 위쪽으로 더 넓은 여유가 있습니다. 다음 기록을 시작할 때 「1학년 · Canopy」를 선택하세요.',
+  'milestones.canopyReadyCta': 'Canopy 기록 시작하기',
+  // The language-of-assessment gate (lib/montree/evaluation/locale-gate.ts).
+  'milestones.localeSuppressedNote': '이 언어에서는 살펴보지 않은 영역: {strands} ({n}개 항목). 영어 소리와 영어 알파벳을 바탕으로 하는 영역이라, 다른 언어로 진행하는 기록에서는 번역하지 않고 제외합니다. 번역한 문항은 문해력이 아니라 영어 실력을 비추게 되기 때문입니다.',
 
 
   // ── Organization tier (Phase 6, migration 315) ──
