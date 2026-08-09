@@ -73,7 +73,7 @@ html,body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 body{font-family:${KIDS_FONT};background:white;position:relative;}
 .page{page-break-after:always;width:${A4_WIDTH_CM}cm;height:${A4_HEIGHT_CM}cm;position:relative;overflow:hidden;}
 .page:last-child{page-break-after:auto;}
-.page-title{font-size:10pt;color:#999;margin-bottom:0.4cm;text-align:center;}
+.page-title{font-size:10pt;color:#000000;margin-bottom:0.4cm;text-align:center;}
 @media print{.page-title{display:none;}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;}}
 @media screen{body{padding:20px;background:#f0f0f0;}.page{background:white;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.12);}}
 `;
@@ -124,7 +124,7 @@ const PLACEHOLDER_EMOJI: Record<string, string> = {
 /** A grey placeholder tile with an emoji hint + the word — never throws. */
 export function placeholderTile(word: string): string {
   const emoji = PLACEHOLDER_EMOJI[word.toLowerCase()] ?? '🖼️';
-  return `<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f3f4f6;color:#9ca3af;text-align:center;gap:4px;">`
+  return `<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f3f4f6;color:#000000;text-align:center;gap:4px;">`
     + `<div style="font-size:min(40%,48px);line-height:1;">${emoji}</div>`
     + `<div style="font-size:11pt;font-family:${KIDS_FONT};">${escapeHtml(word)}</div>`
     + `</div>`;

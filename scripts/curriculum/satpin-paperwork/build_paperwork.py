@@ -49,11 +49,11 @@ pdfmetrics.registerFont(TTFont('Label',  F + 'WorkSans-Regular.ttf'))
 pdfmetrics.registerFont(TTFont('LabelB', F + 'WorkSans-Bold.ttf'))
 
 # ----------------------------------------------------------------- inks ----
-INK   = (0.10, 0.10, 0.10)
+INK   = (0, 0, 0)
 RED   = (0.776, 0.157, 0.157)      # #c62828
-GREY  = (0.52, 0.52, 0.52)
-FAINT = (0.72, 0.72, 0.72)
-HAIR  = (0.84, 0.84, 0.84)
+GREY  = (0, 0, 0)
+FAINT = (0, 0, 0)
+HAIR  = (0, 0, 0)
 
 PW, PH = A4                        # 210 x 297 mm
 M = 14 * mm
@@ -110,7 +110,7 @@ def draw_image_contained(c, path, x, y, w, h, frame=True):
 
 def write_box(c, x, y, size, corner=1.6 * mm):
     """The child's write-in square. Never smaller than 20 mm — small hands."""
-    c.setStrokeColorRGB(0.42, 0.42, 0.42)
+    c.setStrokeColorRGB(0, 0, 0)
     c.setLineWidth(0.9)
     c.roundRect(x, y, size, size, corner, stroke=1, fill=0)
 

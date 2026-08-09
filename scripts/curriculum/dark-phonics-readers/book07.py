@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Week 7 — locked template, no potato, words page moved to the BACK."""
 import sys, os
-sys.path.insert(0, '/mnt/user-data/uploads/montree/scripts/curriculum/flashcards')
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'flashcards'))
 import build_booklets as bb
 from build_booklets import (draw_tracked, make_text_page, make_art_page, page_blank,
                             page_cover, page_words, page_halftitle, folio,
@@ -9,7 +9,7 @@ from build_booklets import (draw_tracked, make_text_page, make_art_page, page_bl
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.pdfgen import canvas as rl_canvas
 
-M7 = '/mnt/user-data/uploads/montree/phonics-images/satpin-v2/books/monkey'
+M7 = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'phonics-images', 'satpin-v2', 'books', 'monkey')
 
 
 def page_back(c, book):
@@ -58,7 +58,7 @@ def build_words_at_back(book, outdir):
             painter(c, book)
             if is_story: folio(c, idx, left=(idx % 2 == 0))
             c.restoreState()
-        c.setStrokeColorRGB(0.8, 0.8, 0.8); c.setLineWidth(0.3)
+        c.setStrokeColorRGB(0, 0, 0); c.setLineWidth(0.3)
         c.line(sheetW/2, sheetH-4*mm, sheetW/2, sheetH-9*mm)
         c.line(sheetW/2, 4*mm, sheetW/2, 9*mm)
         c.showPage()
@@ -84,4 +84,4 @@ BOOK7 = dict(
     ],
 )
 
-build_words_at_back(BOOK7, '/home/claude/w7build/print')
+build_words_at_back(BOOK7, os.environ.get('MONTREE_BOOK_OUT', '/tmp/work/print'))

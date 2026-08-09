@@ -39,7 +39,7 @@ def create_pdf():
         fontSize=16,
         spaceBefore=20,
         spaceAfter=10,
-        textColor=colors.HexColor('#2d3748')
+        textColor=colors.HexColor('#000000')
     )
 
     h2_style = ParagraphStyle(
@@ -48,7 +48,7 @@ def create_pdf():
         fontSize=13,
         spaceBefore=15,
         spaceAfter=8,
-        textColor=colors.HexColor('#4a5568')
+        textColor=colors.HexColor('#000000')
     )
 
     h3_style = ParagraphStyle(
@@ -57,7 +57,7 @@ def create_pdf():
         fontSize=11,
         spaceBefore=10,
         spaceAfter=5,
-        textColor=colors.HexColor('#718096')
+        textColor=colors.HexColor('#000000')
     )
 
     normal_style = ParagraphStyle(
@@ -93,14 +93,14 @@ def create_pdf():
     ]
     summary_table = Table(summary_data, colWidths=[3*inch, 2*inch])
     summary_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4a5568')),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#000000')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, -1), 10),
         ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
         ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f7fafc')),
-        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e2e8f0')),
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#000000')),
         ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f7fafc')]),
     ]))
     story.append(summary_table)
@@ -237,7 +237,7 @@ def create_pdf():
         ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
         ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#e2e8f0')),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#000000')),
         ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#fef3c7')),
         ('BACKGROUND', (2, 0), (2, -1), colors.HexColor('#fef3c7')),
         ('LEFTPADDING', (0, 0), (-1, -1), 4),
@@ -290,13 +290,13 @@ def create_pdf():
 
     cards_table = Table(cards_data, colWidths=[1.3*inch, 0.8*inch, 1.1*inch, 1*inch, 1*inch])
     cards_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4a5568')),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#000000')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
         ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, -1), 9),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e2e8f0')),
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#000000')),
         ('BACKGROUND', (0, 1), (-1, 1), colors.HexColor('#fce7f3')),
         ('BACKGROUND', (0, 2), (-1, 2), colors.HexColor('#dbeafe')),
         ('BACKGROUND', (0, 3), (-1, 3), colors.HexColor('#d1fae5')),
@@ -330,13 +330,13 @@ def create_pdf():
 
     equip_table = Table(equip_data, colWidths=[3*inch, 1*inch, 1*inch])
     equip_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4a5568')),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#000000')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, -1), 8),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('ALIGN', (1, 0), (2, -1), 'CENTER'),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#e2e8f0')),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#000000')),
         ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f7fafc')]),
     ]))
     story.append(equip_table)

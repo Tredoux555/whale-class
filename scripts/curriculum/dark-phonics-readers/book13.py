@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import sys
-sys.path.insert(0, '/home/claude/w7build')
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from dpbuild import build, BOOKS_ROOT
 
 S = BOOKS_ROOT + '/sock'
@@ -30,4 +30,4 @@ BOOK = dict(
     ],
 )
 
-build(BOOK, '/home/claude/w7build/print')
+build(BOOK, os.environ.get('MONTREE_BOOK_OUT', '/tmp/work/print'))

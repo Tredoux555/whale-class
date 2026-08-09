@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import sys
-sys.path.insert(0, '/home/claude/w7build')
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from dpbuild import build, BOOKS_ROOT
 E = BOOKS_ROOT + '/hat'
 BOOK = dict(
@@ -21,4 +21,4 @@ BOOK = dict(
         dict(nar='And out of the hat got a…', text='hen!', style='drop', size=92, art=E+'/in-the-hat-p5-hen-v1.png'),
     ],
 )
-build(BOOK, '/home/claude/w7build/print')
+build(BOOK, os.environ.get('MONTREE_BOOK_OUT', '/tmp/work/print'))

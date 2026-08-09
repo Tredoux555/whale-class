@@ -20,7 +20,7 @@
 # phonics-images/satpin-v2/books/igloo/ alongside the pig set (that tree is
 # gitignored — the PNGs live on Tredoux's Mac only).
 import os, sys
-sys.path.insert(0, '/mnt/user-data/uploads/montree/scripts/curriculum/dark-phonics-readers')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from dpbuild import build, BOOKS_ROOT
 
 # Container default; set MONTREE_I_ART / MONTREE_BOOK_OUT to build on a Mac.

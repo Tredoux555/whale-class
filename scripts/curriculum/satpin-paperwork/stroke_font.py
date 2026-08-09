@@ -420,7 +420,7 @@ def draw_arrow(c, x, y, dx, dy, size, color, gap=0.15, length=0.34):
 
 
 ARROW_COLORS = [(0.55, 0.07, 0.11), (0.06, 0.20, 0.45)]   # stroke 1 red, 2 blue
-DOTTED = (0.34, 0.34, 0.34)
+DOTTED = (0, 0, 0)
 
 
 def draw_traced(c, text, x, y, size, tracking=0.10, arrows=True,

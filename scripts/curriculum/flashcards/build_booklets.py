@@ -28,10 +28,10 @@ pdfmetrics.registerFont(TTFont('NarB',   F+'Lora-BoldItalic.ttf'))
 pdfmetrics.registerFont(TTFont('Label',  F+'WorkSans-Regular.ttf'))
 pdfmetrics.registerFont(TTFont('LabelB', F+'WorkSans-Bold.ttf'))
 
-INK   = (0.10,0.10,0.10)
+INK   = (0,0,0)
 RED   = (0.776,0.157,0.157)   # #c62828
-GREY  = (0.52,0.52,0.52)
-FAINT = (0.72,0.72,0.72)
+GREY  = (0,0,0)
+FAINT = (0,0,0)
 
 PW, PH = 148.5*mm, 210*mm      # A5 portrait logical page
 M = 14*mm
@@ -253,7 +253,7 @@ def build(book, outdir='print'):
             painter(c, book)
             if is_story: folio(c, idx, left=(idx%2==0))
             c.restoreState()
-        c.setStrokeColorRGB(0.8,0.8,0.8); c.setLineWidth(0.3)
+        c.setStrokeColorRGB(0,0,0); c.setLineWidth(0.3)
         c.line(sheetW/2, sheetH-4*mm, sheetW/2, sheetH-9*mm)
         c.line(sheetW/2, 4*mm, sheetW/2, 9*mm)
         c.showPage()

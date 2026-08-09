@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import sys
-sys.path.insert(0, '/home/claude/w7build')
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from dpbuild import build, BOOKS_ROOT
 Y = BOOKS_ROOT + '/yam'
 BOOK = dict(
@@ -22,4 +22,4 @@ BOOK = dict(
         dict(nar='And now the pig is very…', text='big!', style='drop', size=92, art=Y+'/yum-yam-p5-big-v1.png'),
     ],
 )
-build(BOOK, '/home/claude/w7build/print')
+build(BOOK, os.environ.get('MONTREE_BOOK_OUT', '/tmp/work/print'))

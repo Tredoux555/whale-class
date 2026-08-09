@@ -41,9 +41,9 @@ export function buildColoring(spec: WeekSpec, assets: AssetMap, opts: BuildOpts 
 .sheet{box-sizing:border-box;padding:10mm;}
 .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5mm;}
 .top .aa{font-size:24pt;font-weight:700;font-family:${KIDS_FONT};color:${FRAME_COLOR};}
-.top .nm{font-size:12pt;color:#555;font-family:${KIDS_FONT};}
+.top .nm{font-size:12pt;color:#000000;font-family:${KIDS_FONT};}
 .cgrid{display:grid;grid-template-columns:1fr 1fr;gap:7mm;}
-.citem{height:${CELL_H_MM}mm;border:0.4mm dashed #d1d5db;border-radius:3mm;padding:4mm;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;}
+.citem{height:${CELL_H_MM}mm;border:0.4mm dashed #000000;border-radius:3mm;padding:4mm;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;}
 .ci-imgwrap{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .ci-img{max-width:100%;max-height:100%;object-fit:contain;}
 .ci-ph{flex:0 1 auto;}

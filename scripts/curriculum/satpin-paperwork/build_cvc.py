@@ -70,12 +70,12 @@ pdfmetrics.registerFont(TTFont('Label',  F + 'WorkSans-Regular.ttf'))
 pdfmetrics.registerFont(TTFont('LabelB', F + 'WorkSans-Bold.ttf'))
 
 # ----------------------------------------------------------------- inks ----
-INK   = (0.10, 0.10, 0.10)
+INK   = (0, 0, 0)
 RED   = (0.776, 0.157, 0.157)
-GREY  = (0.52, 0.52, 0.52)
-FAINT = (0.72, 0.72, 0.72)
-HAIR  = (0.84, 0.84, 0.84)
-SLOT  = (0.48, 0.48, 0.48)
+GREY  = (0, 0, 0)
+FAINT = (0, 0, 0)
+HAIR  = (0, 0, 0)
+SLOT  = (0, 0, 0)
 
 # ------------------------------------------------------------- geometry ---
 PW, PH = A4                        # 210 x 297 mm -- same page as paperwork-pack
@@ -177,14 +177,14 @@ def guidelines(c, x0, x1, base, u):
     """Three-line school paper: dotted headline, dashed midline, solid
     baseline -- identical to build_tracing.py's trace-it guide."""
     c.setLineWidth(0.6)
-    c.setStrokeColorRGB(0.70, 0.70, 0.70)
+    c.setStrokeColorRGB(0, 0, 0)
     c.setDash(0.9, 2.6)
     c.line(x0, base + 2 * u, x1, base + 2 * u)
-    c.setStrokeColorRGB(0.62, 0.62, 0.62)
+    c.setStrokeColorRGB(0, 0, 0)
     c.setDash(3.2, 3.2)
     c.line(x0, base + u, x1, base + u)
     c.setDash()
-    c.setStrokeColorRGB(0.38, 0.38, 0.38)
+    c.setStrokeColorRGB(0, 0, 0)
     c.setLineWidth(0.9)
     c.line(x0, base, x1, base)
 
@@ -309,7 +309,7 @@ def draw_picture_match(c, zone_top, week, distractors):
 
     # ---- slot 0: the empty paste target -----------------------------------
     px = M
-    dashed_box(c, px, box_y, box_w, MATCH_BOX_H, color=(0.62, 0.62, 0.62))
+    dashed_box(c, px, box_y, box_w, MATCH_BOX_H, color=(0, 0, 0))
     c.setFont('Label', 6.6)
     c.setFillColorRGB(*FAINT)
     c.drawCentredString(px + box_w / 2, box_y + MATCH_BOX_H / 2 - 2.2,
@@ -366,7 +366,7 @@ def build_week(w, weeks, idx, outdir):
     total = read_zone_h + trace_zone_h + match_zone_h
     top = TOP_CONTENT - max(0, (USABLE - total)) / 2
 
-    out = os.path.join(outdir, 'cvc-sheet.pdf')
+    out = os.path.join(outdir, 'cvc-sheet-%s.pdf' % w['slug'])
     c = rl_canvas.Canvas(out, pagesize=A4)
     c.setTitle('Week %d CVC sentence — %s' % (w['week'], sentence))
     page_chrome(c, w)
@@ -404,7 +404,7 @@ def build(repo_root, out_root, only_week=None):
         raise SystemExit('no cvc_weeks.json row for week %d' % only_week)
     outs = []
     for idx, w in targets:
-        outdir = os.path.join(out_root, 'public', 'satpin-materials', w['slug'])
+        outdir = os.path.join(out_root, 'public', 'dark-phonics-materials', 'cvc-sentence-sheets')
         outs.append(build_week(w, weeks, idx, outdir))
     return outs
 

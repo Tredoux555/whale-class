@@ -71,7 +71,7 @@ const media = (path: string, v?: number) =>
  * Cache-Control by both the browser and Cloudflare. Bump this whenever a
  * book's print PDF is rebuilt. Mirrors Dark Phonics' STORYBOOK_PRINT_VERSION.
  */
-const STORYBOOK_PRINT_VERSION = 1;
+const STORYBOOK_PRINT_VERSION = 2; // bumped 2026-08-09: grey print elements -> solid black
 const printPdf = (path: string) => `${path}?v=${STORYBOOK_PRINT_VERSION}`;
 
 /** Trimmed-down photo-bank row — only the fields this page renders/forwards. */

@@ -57,11 +57,11 @@ pdfmetrics.registerFont(TTFont('Nar', F + 'Lora-Italic.ttf'))
 pdfmetrics.registerFont(TTFont('Label', F + 'WorkSans-Regular.ttf'))
 pdfmetrics.registerFont(TTFont('LabelB', F + 'WorkSans-Bold.ttf'))
 
-INK = (0.10, 0.10, 0.10)
+INK = (0, 0, 0)
 RED = (0.776, 0.157, 0.157)
-GREY = (0.52, 0.52, 0.52)
-FAINT = (0.72, 0.72, 0.72)
-LINE = (0.73, 0.73, 0.73)
+GREY = (0, 0, 0)
+FAINT = (0, 0, 0)
+LINE = (0, 0, 0)
 
 PW, PH = A4
 M = 14 * mm
