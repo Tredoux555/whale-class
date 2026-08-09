@@ -52,7 +52,7 @@ export default function EarningsPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="min-h-screen bg-[#0a1a0f]" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ width: 32, height: 32, border: '2px solid rgba(130,217,174,0.2)', borderTopColor: '#62C396', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
@@ -62,6 +62,7 @@ export default function EarningsPage() {
   // Not a founding teacher
   if (data && !data.isFounding) {
     return (
+      <div className="min-h-screen bg-[#0a1a0f]">
       <div style={{ maxWidth: 560, margin: '0 auto', padding: '80px 32px', textAlign: 'center' }}>
         <div style={{ fontSize: 48, marginBottom: 24 }}>🌿</div>
         <h1 style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontWeight: 400, fontSize: '1.875rem', color: 'rgba(255,255,255,0.9)', marginBottom: 16, letterSpacing: '-0.015em' }}>
@@ -84,12 +85,14 @@ export default function EarningsPage() {
           Learn about the programme →
         </a>
       </div>
+      </div>
     );
   }
 
   const d = data!;
 
   return (
+    <div className="min-h-screen bg-[#0a1a0f]">
     <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 32px 80px' }}>
 
       {/* Back */}
@@ -206,6 +209,7 @@ export default function EarningsPage() {
           tredoux555@gmail.com
         </a>
       </p>
+    </div>
     </div>
   );
 }
