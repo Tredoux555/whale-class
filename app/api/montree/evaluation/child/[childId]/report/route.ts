@@ -19,6 +19,7 @@ import {
   buildMethodStatement, renderGrowthSentence, renderMapSentence, WINDOW_LABELS,
 } from '@/lib/montree/evaluation/benchmark-map';
 import { computeDomainSummaries, computeGrowth, computeMAP } from '@/lib/montree/evaluation/scoring';
+import { localeSuppressedStrandIds, LOCALE_SUPPRESSION_REASON } from '@/lib/montree/evaluation/locale-gate';
 import { loadClassroomPosition, windowSortKey } from '@/lib/montree/evaluation/session-service';
 import type {
   AgeBand, GrowthInputResult, MilestoneResult, WindowCode,
@@ -75,7 +76,7 @@ export async function GET(
   try {
     const { data: sessionRows, error: sErr } = await ctx.supabase
       .from('montree_evaluation_sessions')
-      .select('id, school_year, window_code, age_band, age_months, form_code, delivery_mode, status, completed_at, map_percent, map_denominator, map_suppressed, efl_map_percent, efl_map_denominator, efl_map_suppressed, milestones_unassessed, override_count, summary_json')
+      .select('id, school_year, window_code, age_band, age_months, form_code, delivery_mode, assessment_locale, status, completed_at, map_percent, map_denominator, map_suppressed, efl_map_percent, efl_map_denominator, efl_map_suppressed, milestones_unassessed, override_count, summary_json')
       .eq('child_id', childId)
       .eq('school_id', ctx.auth.schoolId)
       .order('completed_at', { ascending: false, nullsFirst: false })
@@ -147,17 +148,43 @@ export async function GET(
         })
       : null;
 
+    // The language-of-assessment gate, recomputed on read from the session's own locale.
+    // `unassessedReason` is derived rather than stored, so a stored result row carries no
+    // trace of it — this is where a report learns WHY an English-medium core strand is
+    // blank in a non-English sitting (see lib/montree/evaluation/locale-gate.ts).
+    const assessmentLocale = (current.assessment_locale as string | null) ?? 'en';
+    const localeSuppressed = localeSuppressedStrandIds(index.bank.strands, assessmentLocale);
+
     // Attach the milestone wording so the report never re-derives copy from an id.
     const milestones = results.map((r) => {
       const m = index.milestoneById.get(r.milestoneId);
       return {
         ...r,
+        unassessedReason: localeSuppressed.has(r.strandId) ? LOCALE_SUPPRESSION_REASON : null,
         statement: m?.statement ?? { en: r.milestoneId },
         bandDescriptors: m?.bandDescriptors ?? null,
         strandName: index.strandById.get(r.strandId)?.name ?? null,
         domainName: index.domainById.get(r.domainId)?.name ?? null,
       };
     });
+
+    // Surfaced so the panel can print the gap honestly instead of showing a silent zero.
+    // Only sent when the gate actually removed something from THIS check-in — a note
+    // about nothing is noise, not transparency.
+    const suppressedMilestoneCount = milestones
+      .filter((m) => m.unassessedReason === LOCALE_SUPPRESSION_REASON).length;
+    const suppressedStrandIds = [...localeSuppressed]
+      .filter((id) => index.strandById.has(id))
+      .sort();
+    const localeSuppression = suppressedMilestoneCount > 0
+      ? {
+          reason: LOCALE_SUPPRESSION_REASON,
+          assessmentLocale,
+          strandIds: suppressedStrandIds,
+          strandNames: suppressedStrandIds.map((id) => index.strandById.get(id)?.name ?? null),
+          milestoneCount: suppressedMilestoneCount,
+        }
+      : null;
 
     const name = child.name?.trim() || 'This child';
     const ageYears = ageYearsFromMonths(Number(current.age_months));
@@ -173,14 +200,15 @@ export async function GET(
         growthSentence: growth && fromLabel
           ? renderGrowthSentence({ name, fromWindowLabel: fromLabel, movedUp: growth.movedUp, steady: growth.steady, watching: growth.watching })
           : null,
-        profileSentence: renderMapSentence({ name, ageYears, map: core }),
-        englishSentence: efl.denominator > 0 ? renderMapSentence({ name, ageYears, map: efl }) : null,
+        profileSentence: renderMapSentence({ name, ageYears, map: core, ageBand }),
+        englishSentence: efl.denominator > 0 ? renderMapSentence({ name, ageYears, map: efl, ageBand }) : null,
         growth,
         map: core,
         efl,
       },
       domains,
       milestones,
+      localeSuppression,
       history: completed.map((s) => ({
         sessionId: s.id,
         schoolYear: s.school_year,

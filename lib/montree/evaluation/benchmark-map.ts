@@ -410,12 +410,17 @@ export function buildMethodStatement(
  * rules, so the wording and the rules can never drift apart. Suppression is honoured:
  * when there is no percentage to report, the sentence says so rather than going quiet.
  */
-export function renderMapSentence(args: { name: string; ageYears: number; map: MapResult }): string {
-  const { name, ageYears, map } = args;
+export function renderMapSentence(args: { name: string; ageYears: number; map: MapResult; ageBand?: AgeBand }): string {
+  const { name, ageYears, map, ageBand } = args;
+  // G1 (Montree Canopy) is explicitly NOT early-years (ARCHITECTURE.md / D1 §5.5 — ELOF and
+  // EYFS both stop below this band). "Mainstream early-years settings" is accurate for
+  // A3/A4/A5 but would be a factually wrong claim in a Canopy report, so this one phrase
+  // branches on band. Nothing else about this sentence, or about A3/A4/A5, changes.
+  const settingPhrase = ageBand === 'G1' ? 'a mainstream Grade 1 (Year 1) classroom' : 'mainstream early-years settings';
   if (map.suppressed || map.mapPercent === null) {
     return (
       `At this check-in, ${name} was assessed on ${map.denominator} of the milestones typically expected ` +
-      `of a ${ageYears} year-old in mainstream early-years settings, and securely met ${map.met} of them. ` +
+      `of a ${ageYears} year-old in ${settingPhrase}, and securely met ${map.met} of them. ` +
       `A percentage is not shown here — ${map.suppressionReason ?? 'too few milestones were assessed for one to be meaningful.'}`
     );
   }
@@ -424,7 +429,7 @@ export function renderMapSentence(args: { name: string; ageYears: number; map: M
     : '';
   return (
     `At this check-in, ${name} has securely met ${map.mapPercent}% of the ${map.denominator} milestones ` +
-    `typically expected of a ${ageYears} year-old in mainstream early-years settings${exceeded}.`
+    `typically expected of a ${ageYears} year-old in ${settingPhrase}${exceeded}.`
   );
 }
 

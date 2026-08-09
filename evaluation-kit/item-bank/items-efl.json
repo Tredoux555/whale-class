@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0",
-  "bankVersion": "1.10.0",
-  "generatedAt": "2026-08-03T00:00:00Z",
+  "bankVersion": "1.11.0",
+  "generatedAt": "2026-08-09T00:00:00Z",
   "assessmentLocales": [
     "en",
     "zh"
@@ -50,6 +50,10 @@
         "A5": [
           "IT.PRACTICE.EFL.A5.01",
           "IT.PRACTICE.EFL.A5.02"
+        ],
+        "G1": [
+          "IT.PRACTICE.EFL.G1.01",
+          "IT.PRACTICE.EFL.G1.02"
         ]
       },
       "targetMinutes": 5,
@@ -190,6 +194,36 @@
           "descriptor": {
             "en": "A short English phrase a listener can understand.",
             "zh": "能说出让人听得懂的英语短语。"
+          }
+        }
+      ]
+    },
+    "english_question": {
+      "scale": [
+        0,
+        1,
+        2
+      ],
+      "levels": [
+        {
+          "score": 0,
+          "descriptor": {
+            "en": "No question asked.",
+            "zh": "没有提出问题。"
+          }
+        },
+        {
+          "score": 1,
+          "descriptor": {
+            "en": "A question word or a phrase with a question in it.",
+            "zh": "只说出疑问词，或短语中带有提问的意思。"
+          }
+        },
+        {
+          "score": 2,
+          "descriptor": {
+            "en": "A whole English question a listener can answer.",
+            "zh": "能说出让人听得懂并能回答的完整英语问句。"
           }
         }
       ]
@@ -11243,6 +11277,3776 @@
       "paper": {
         "cardsPerRow": 2,
         "responseMode": "child points in order, teacher numbers the boxes"
+      },
+      "stop": {
+        "countsTowardStrandStop": false,
+        "countsTowardModuleStop": false,
+        "scored": false
+      },
+      "feedback": {
+        "correct": {
+          "en": "That’s the one. Let’s keep going.",
+          "zh": "就是这个。我们继续吧。"
+        },
+        "tryAgain": {
+          "en": "Let’s try that one together.",
+          "zh": "我们一起再试一次。"
+        }
+      },
+      "scored": false,
+      "milestoneIds": []
+    },
+    {
+      "id": "IT.E1.G1.A.01",
+      "strandId": "E1",
+      "ageBand": "G1",
+      "form": "A",
+      "moduleId": "M-EFL",
+      "sequence": 1,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Tap the bell."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "vocabulary: bell",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Tap the bell.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Tap the bell.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.bell"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.bag"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.box"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.book"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.bag",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.box",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.book",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "english_vocab_school_day",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E1.G1.1"
+      ]
+    },
+    {
+      "id": "IT.E1.G1.A.02",
+      "strandId": "E1",
+      "ageBand": "G1",
+      "form": "A",
+      "moduleId": "M-EFL",
+      "sequence": 2,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Tap the shirt."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "vocabulary: shirt",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Tap the shirt.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Tap the shirt.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.shirt"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.coat"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.sock"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.shoe"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.coat",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.sock",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.shoe",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "english_vocab_school_day",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E1.G1.1"
+      ]
+    },
+    {
+      "id": "IT.E1.G1.A.03",
+      "strandId": "E1",
+      "ageBand": "G1",
+      "form": "A",
+      "moduleId": "M-EFL",
+      "sequence": 3,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Tap the jug."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "vocabulary: jug",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Tap the jug.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Tap the jug.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.jug"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.mug"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.cup"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.pot"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.mug",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.cup",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.pot",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "english_vocab_school_day",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E1.G1.1"
+      ]
+    },
+    {
+      "id": "IT.E1.G1.A.04",
+      "strandId": "E1",
+      "ageBand": "G1",
+      "form": "A",
+      "moduleId": "M-EFL",
+      "sequence": 4,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Tap the picture that shows sweeping."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "action: sweeping",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Tap the picture that shows sweeping.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Tap the picture that shows sweeping.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.sc_sweep"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.sc_wash"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.sc_run"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.sc_read"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.sc_wash",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.sc_run",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.sc_read",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "english_vocab_action_and_place",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E1.G1.2"
+      ]
+    },
+    {
+      "id": "IT.E1.G1.A.05",
+      "strandId": "E1",
+      "ageBand": "G1",
+      "form": "A",
+      "moduleId": "M-EFL",
+      "sequence": 5,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Tap the picture where the cat is behind the box."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "position: behind",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Tap the picture where the cat is behind the box.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Tap the picture where the cat is behind the box.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.sc_cat_behind"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.sc_cat_in"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.sc_cat_next"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.sc_cat_on"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.sc_cat_in",
+          "role": "position_near",
+          "rationale": "The same objects in a different place — catches the nouns without the position word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.sc_cat_next",
+          "role": "position_near",
+          "rationale": "The same objects in a different place — catches the nouns without the position word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.sc_cat_on",
+          "role": "position_near",
+          "rationale": "The same objects in a different place — catches the nouns without the position word.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "english_vocab_action_and_place",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E1.G1.2"
+      ]
+    },
+    {
+      "id": "IT.E1.G1.B.01",
+      "strandId": "E1",
+      "ageBand": "G1",
+      "form": "B",
+      "moduleId": "M-EFL",
+      "sequence": 1,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Tap the door."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "vocabulary: door",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Tap the door.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Tap the door.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.door"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.box"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.bed"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.chair"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.box",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.bed",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.chair",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "english_vocab_school_day",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E1.G1.1"
+      ]
+    },
+    {
+      "id": "IT.E1.G1.B.02",
+      "strandId": "E1",
+      "ageBand": "G1",
+      "form": "B",
+      "moduleId": "M-EFL",
+      "sequence": 2,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Tap the coat."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "vocabulary: coat",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Tap the coat.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Tap the coat.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.coat"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.cap"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.hat"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.shirt"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.cap",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.hat",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.shirt",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "english_vocab_school_day",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E1.G1.1"
+      ]
+    },
+    {
+      "id": "IT.E1.G1.B.03",
+      "strandId": "E1",
+      "ageBand": "G1",
+      "form": "B",
+      "moduleId": "M-EFL",
+      "sequence": 3,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Tap the mug."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "vocabulary: mug",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Tap the mug.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Tap the mug.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.mug"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.jug"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.cup"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.pan"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.jug",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.cup",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.pan",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "english_vocab_school_day",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E1.G1.1"
+      ]
+    },
+    {
+      "id": "IT.E1.G1.B.04",
+      "strandId": "E1",
+      "ageBand": "G1",
+      "form": "B",
+      "moduleId": "M-EFL",
+      "sequence": 4,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Tap the picture that shows washing hands."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "action: washing hands",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Tap the picture that shows washing hands.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Tap the picture that shows washing hands.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.sc_wash"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.sc_drink"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.sc_eat"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.sc_sleep"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.sc_drink",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.sc_eat",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.sc_sleep",
+          "role": "semantic",
+          "rationale": "Same category as the target — catches a child who has the category but not the specific word.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "english_vocab_action_and_place",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E1.G1.2"
+      ]
+    },
+    {
+      "id": "IT.E1.G1.B.05",
+      "strandId": "E1",
+      "ageBand": "G1",
+      "form": "B",
+      "moduleId": "M-EFL",
+      "sequence": 5,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Tap the picture where the ball is between the boxes."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "position: between",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Tap the picture where the ball is between the boxes.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Tap the picture where the ball is between the boxes.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.sc_ball_between"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.sc_ball_in_box"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.sc_ball_on_chair"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.sc_ball_under_chair"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.sc_ball_in_box",
+          "role": "position_near",
+          "rationale": "The same objects in a different place — catches the nouns without the position word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.sc_ball_on_chair",
+          "role": "position_near",
+          "rationale": "The same objects in a different place — catches the nouns without the position word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.sc_ball_under_chair",
+          "role": "position_near",
+          "rationale": "The same objects in a different place — catches the nouns without the position word.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "english_vocab_action_and_place",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E1.G1.2"
+      ]
+    },
+    {
+      "id": "IT.E2.G1.A.01",
+      "strandId": "E2",
+      "ageBand": "G1",
+      "form": "A",
+      "moduleId": "M-EFL",
+      "sequence": 6,
+      "type": "listen_do",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Touch the cup, then the book, then the tree."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "three-step: cup, book, tree",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Touch the cup, then the book, then the tree.” Repeat once if the child asks. Record the order the child touches.",
+          "zh": "说：“Touch the cup, then the book, then the tree.” 如果孩子要求可重复一次，记录孩子触碰的顺序。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.cup"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.book"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.tree"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.hat"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1",
+          "o2",
+          "o3"
+        ],
+        "correctSequence": [
+          "o1",
+          "o2",
+          "o3"
+        ],
+        "maxPoints": 1,
+        "rubric": null,
+        "note": "Full credit only when the whole sequence is touched in the given order."
+      },
+      "distractors": [
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.hat",
+          "role": "unrelated",
+          "rationale": "Different category and different sound — a child choosing this is not yet attending to the prompt.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "three_step_en",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points in order, teacher numbers the boxes"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E2.G1.1"
+      ]
+    },
+    {
+      "id": "IT.E2.G1.A.02",
+      "strandId": "E2",
+      "ageBand": "G1",
+      "form": "A",
+      "moduleId": "M-EFL",
+      "sequence": 7,
+      "type": "listen_do",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Touch the hat, then the shoe, then the pen."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "three-step: hat, shoe, pen",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Touch the hat, then the shoe, then the pen.” Repeat once if the child asks. Record the order the child touches.",
+          "zh": "说：“Touch the hat, then the shoe, then the pen.” 如果孩子要求可重复一次，记录孩子触碰的顺序。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.hat"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.shoe"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.pen"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.mug"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1",
+          "o2",
+          "o3"
+        ],
+        "correctSequence": [
+          "o1",
+          "o2",
+          "o3"
+        ],
+        "maxPoints": 1,
+        "rubric": null,
+        "note": "Full credit only when the whole sequence is touched in the given order."
+      },
+      "distractors": [
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.mug",
+          "role": "unrelated",
+          "rationale": "Different category and different sound — a child choosing this is not yet attending to the prompt.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "three_step_en",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points in order, teacher numbers the boxes"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E2.G1.1"
+      ]
+    },
+    {
+      "id": "IT.E2.G1.A.03",
+      "strandId": "E2",
+      "ageBand": "G1",
+      "form": "A",
+      "moduleId": "M-EFL",
+      "sequence": 8,
+      "type": "listen_do",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Before you touch the ball, touch the key."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "order word: before",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Before you touch the ball, touch the key.” Repeat once if the child asks. Record the order the child touches.",
+          "zh": "说：“Before you touch the ball, touch the key.” 如果孩子要求可重复一次，记录孩子触碰的顺序。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.key"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.ball"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.mop"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.nut"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1",
+          "o2"
+        ],
+        "correctSequence": [
+          "o1",
+          "o2"
+        ],
+        "maxPoints": 1,
+        "rubric": null,
+        "note": "Full credit only when the whole sequence is touched in the given order."
+      },
+      "distractors": [
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.mop",
+          "role": "unrelated",
+          "rationale": "Different category and different sound — a child choosing this is not yet attending to the prompt.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.nut",
+          "role": "unrelated",
+          "rationale": "Different category and different sound — a child choosing this is not yet attending to the prompt.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "instruction_with_order_en",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points in order, teacher numbers the boxes"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E2.G1.2"
+      ]
+    },
+    {
+      "id": "IT.E2.G1.B.01",
+      "strandId": "E2",
+      "ageBand": "G1",
+      "form": "B",
+      "moduleId": "M-EFL",
+      "sequence": 6,
+      "type": "listen_do",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Touch the mat, then the bell, then the fox."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "three-step: mat, bell, fox",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Touch the mat, then the bell, then the fox.” Repeat once if the child asks. Record the order the child touches.",
+          "zh": "说：“Touch the mat, then the bell, then the fox.” 如果孩子要求可重复一次，记录孩子触碰的顺序。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.mat"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.bell"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.fox"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.jug"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1",
+          "o2",
+          "o3"
+        ],
+        "correctSequence": [
+          "o1",
+          "o2",
+          "o3"
+        ],
+        "maxPoints": 1,
+        "rubric": null,
+        "note": "Full credit only when the whole sequence is touched in the given order."
+      },
+      "distractors": [
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.jug",
+          "role": "unrelated",
+          "rationale": "Different category and different sound — a child choosing this is not yet attending to the prompt.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "three_step_en",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points in order, teacher numbers the boxes"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E2.G1.1"
+      ]
+    },
+    {
+      "id": "IT.E2.G1.B.02",
+      "strandId": "E2",
+      "ageBand": "G1",
+      "form": "B",
+      "moduleId": "M-EFL",
+      "sequence": 7,
+      "type": "listen_do",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Touch the jug, then the leaf, then the box."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "three-step: jug, leaf, box",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Touch the jug, then the leaf, then the box.” Repeat once if the child asks. Record the order the child touches.",
+          "zh": "说：“Touch the jug, then the leaf, then the box.” 如果孩子要求可重复一次，记录孩子触碰的顺序。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.jug"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.leaf"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.box"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.pen"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1",
+          "o2",
+          "o3"
+        ],
+        "correctSequence": [
+          "o1",
+          "o2",
+          "o3"
+        ],
+        "maxPoints": 1,
+        "rubric": null,
+        "note": "Full credit only when the whole sequence is touched in the given order."
+      },
+      "distractors": [
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.pen",
+          "role": "unrelated",
+          "rationale": "Different category and different sound — a child choosing this is not yet attending to the prompt.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "three_step_en",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points in order, teacher numbers the boxes"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E2.G1.1"
+      ]
+    },
+    {
+      "id": "IT.E2.G1.B.03",
+      "strandId": "E2",
+      "ageBand": "G1",
+      "form": "B",
+      "moduleId": "M-EFL",
+      "sequence": 8,
+      "type": "listen_do",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Before you touch the duck, touch the log."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "order word: before",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Before you touch the duck, touch the log.” Repeat once if the child asks. Record the order the child touches.",
+          "zh": "说：“Before you touch the duck, touch the log.” 如果孩子要求可重复一次，记录孩子触碰的顺序。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.log"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.duck"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.net"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.rug"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1",
+          "o2"
+        ],
+        "correctSequence": [
+          "o1",
+          "o2"
+        ],
+        "maxPoints": 1,
+        "rubric": null,
+        "note": "Full credit only when the whole sequence is touched in the given order."
+      },
+      "distractors": [
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.net",
+          "role": "unrelated",
+          "rationale": "Different category and different sound — a child choosing this is not yet attending to the prompt.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.rug",
+          "role": "unrelated",
+          "rationale": "Different category and different sound — a child choosing this is not yet attending to the prompt.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "instruction_with_order_en",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points in order, teacher numbers the boxes"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E2.G1.2"
+      ]
+    },
+    {
+      "id": "IT.E3.G1.A.01",
+      "strandId": "E3",
+      "ageBand": "G1",
+      "form": "A",
+      "moduleId": "M-EFL",
+      "sequence": 9,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Listen to the middle sound in cat. Tap the picture with the same middle sound."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "middle sound: cat",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Listen to the middle sound in cat. Tap the picture with the same middle sound.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Listen to the middle sound in cat. Tap the picture with the same middle sound.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.bag"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.pig"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.dog"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.cup"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.pig",
+          "role": "phonological",
+          "rationale": "Shares sounds with the target but not the one asked for — catches a near miss on the sound itself.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.dog",
+          "role": "phonological",
+          "rationale": "Shares sounds with the target but not the one asked for — catches a near miss on the sound itself.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.cup",
+          "role": "phonological",
+          "rationale": "Shares sounds with the target but not the one asked for — catches a near miss on the sound itself.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "english_medial_vowel",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E3.G1.1"
+      ]
+    },
+    {
+      "id": "IT.E3.G1.A.02",
+      "strandId": "E3",
+      "ageBand": "G1",
+      "form": "A",
+      "moduleId": "M-EFL",
+      "sequence": 10,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Listen to the middle sound in pot. Tap the picture with the same middle sound."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "middle sound: pot",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Listen to the middle sound in pot. Tap the picture with the same middle sound.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Listen to the middle sound in pot. Tap the picture with the same middle sound.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.log"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.fig"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.hen"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.bus"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.fig",
+          "role": "phonological",
+          "rationale": "Shares sounds with the target but not the one asked for — catches a near miss on the sound itself.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.hen",
+          "role": "phonological",
+          "rationale": "Shares sounds with the target but not the one asked for — catches a near miss on the sound itself.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.bus",
+          "role": "phonological",
+          "rationale": "Shares sounds with the target but not the one asked for — catches a near miss on the sound itself.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "english_medial_vowel",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E3.G1.1"
+      ]
+    },
+    {
+      "id": "IT.E3.G1.A.03",
+      "strandId": "E3",
+      "ageBand": "G1",
+      "form": "A",
+      "moduleId": "M-EFL",
+      "sequence": 11,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Listen to these sounds and put them together: f — o — x. Tap the picture."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "blend: f-o-x",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Listen to these sounds and put them together: f — o — x. Tap the picture.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Listen to these sounds and put them together: f — o — x. Tap the picture.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.fox"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.box"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.fig"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.sock"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.box",
+          "role": "phonological",
+          "rationale": "Shares sounds with the target but not the one asked for — catches a near miss on the sound itself.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.fig",
+          "role": "phonological",
+          "rationale": "Shares sounds with the target but not the one asked for — catches a near miss on the sound itself.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.sock",
+          "role": "unrelated",
+          "rationale": "Different category and different sound — a child choosing this is not yet attending to the prompt.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "english_phoneme_blend",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E3.G1.2"
+      ]
+    },
+    {
+      "id": "IT.E3.G1.B.01",
+      "strandId": "E3",
+      "ageBand": "G1",
+      "form": "B",
+      "moduleId": "M-EFL",
+      "sequence": 9,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Listen to the middle sound in pig. Tap the picture with the same middle sound."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "middle sound: pig",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Listen to the middle sound in pig. Tap the picture with the same middle sound.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Listen to the middle sound in pig. Tap the picture with the same middle sound.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.tin"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.pan"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.mop"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.mug"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.pan",
+          "role": "phonological",
+          "rationale": "Shares sounds with the target but not the one asked for — catches a near miss on the sound itself.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.mop",
+          "role": "phonological",
+          "rationale": "Shares sounds with the target but not the one asked for — catches a near miss on the sound itself.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.mug",
+          "role": "phonological",
+          "rationale": "Shares sounds with the target but not the one asked for — catches a near miss on the sound itself.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "english_medial_vowel",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E3.G1.1"
+      ]
+    },
+    {
+      "id": "IT.E3.G1.B.02",
+      "strandId": "E3",
+      "ageBand": "G1",
+      "form": "B",
+      "moduleId": "M-EFL",
+      "sequence": 10,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Listen to the middle sound in bus. Tap the picture with the same middle sound."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "middle sound: bus",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Listen to the middle sound in bus. Tap the picture with the same middle sound.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Listen to the middle sound in bus. Tap the picture with the same middle sound.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.nut"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.net"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.cat"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.log"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.net",
+          "role": "phonological",
+          "rationale": "Shares sounds with the target but not the one asked for — catches a near miss on the sound itself.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.cat",
+          "role": "phonological",
+          "rationale": "Shares sounds with the target but not the one asked for — catches a near miss on the sound itself.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.log",
+          "role": "phonological",
+          "rationale": "Shares sounds with the target but not the one asked for — catches a near miss on the sound itself.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "english_medial_vowel",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E3.G1.1"
+      ]
+    },
+    {
+      "id": "IT.E3.G1.B.03",
+      "strandId": "E3",
+      "ageBand": "G1",
+      "form": "B",
+      "moduleId": "M-EFL",
+      "sequence": 11,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Listen to these sounds and put them together: d — u — ck. Tap the picture."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "blend: d-u-ck",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Listen to these sounds and put them together: d — u — ck. Tap the picture.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Listen to these sounds and put them together: d — u — ck. Tap the picture.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.duck"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.dog"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.cup"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.sock"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.dog",
+          "role": "phonological",
+          "rationale": "Shares sounds with the target but not the one asked for — catches a near miss on the sound itself.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.cup",
+          "role": "phonological",
+          "rationale": "Shares sounds with the target but not the one asked for — catches a near miss on the sound itself.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.sock",
+          "role": "unrelated",
+          "rationale": "Different category and different sound — a child choosing this is not yet attending to the prompt.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "english_phoneme_blend",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E3.G1.2"
+      ]
+    },
+    {
+      "id": "IT.E4.G1.A.01",
+      "strandId": "E4",
+      "ageBand": "G1",
+      "form": "A",
+      "moduleId": "M-EFL",
+      "sequence": 12,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Tap the two letters that make the sound sh."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "grapheme for /sh/",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Tap the two letters that make the sound sh.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Tap the two letters that make the sound sh.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.dig.sh"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.dig.ch"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.dig.th"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.dig.ck"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.dig.ch",
+          "role": "letter_near",
+          "rationale": "Another taught two-letter sound — catches a partial grapheme–sound link.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.dig.th",
+          "role": "letter_near",
+          "rationale": "Another taught two-letter sound — catches a partial grapheme–sound link.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.dig.ck",
+          "role": "letter_near",
+          "rationale": "Another taught two-letter sound — catches a partial grapheme–sound link.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "digraph_sound_receptive",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E4.G1.1"
+      ]
+    },
+    {
+      "id": "IT.E4.G1.A.02",
+      "strandId": "E4",
+      "ageBand": "G1",
+      "form": "A",
+      "moduleId": "M-EFL",
+      "sequence": 13,
+      "type": "teacher_scored_oral",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "What sound do these two letters make together?"
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "say the sound: th",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “What sound do these two letters make together?” Give the child time. Do not model the answer. Note 0, 1 or 2 using the descriptors below.",
+          "zh": "说：“What sound do these two letters make together?” 给孩子充分的时间，不要示范答案，按下面的描述记 0、1 或 2。"
+        }
+      },
+      "stimulusIds": [
+        "ST.dig.th"
+      ],
+      "options": null,
+      "scoring": {
+        "method": "teacher_rubric",
+        "correctOptionIds": null,
+        "maxPoints": 2,
+        "rubric": {
+          "scale": [
+            0,
+            1,
+            2
+          ],
+          "levels": [
+            {
+              "score": 0,
+              "descriptor": {
+                "en": "No sound, or a different sound.",
+                "zh": "没有发音，或发出别的音。"
+              }
+            },
+            {
+              "score": 1,
+              "descriptor": {
+                "en": "Says the letter name, or gives the sound after a cue.",
+                "zh": "说出字母名称，或经提示后说出读音。"
+              }
+            },
+            {
+              "score": 2,
+              "descriptor": {
+                "en": "Says the sound clearly on their own.",
+                "zh": "能独立清楚地说出读音。"
+              }
+            }
+          ]
+        },
+        "rubricKey": "letter_sound"
+      },
+      "distractors": null,
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "digraph_sound_expressive",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "child speaks, teacher notes 0/1/2 on the sheet"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E4.G1.2"
+      ]
+    },
+    {
+      "id": "IT.E4.G1.B.01",
+      "strandId": "E4",
+      "ageBand": "G1",
+      "form": "B",
+      "moduleId": "M-EFL",
+      "sequence": 12,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Tap the two letters that make the sound ch."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "grapheme for /ch/",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Tap the two letters that make the sound ch.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Tap the two letters that make the sound ch.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.dig.ch"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.dig.sh"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.dig.th"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.dig.ng"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.dig.sh",
+          "role": "letter_near",
+          "rationale": "Another taught two-letter sound — catches a partial grapheme–sound link.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.dig.th",
+          "role": "letter_near",
+          "rationale": "Another taught two-letter sound — catches a partial grapheme–sound link.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.dig.ng",
+          "role": "letter_near",
+          "rationale": "Another taught two-letter sound — catches a partial grapheme–sound link.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "digraph_sound_receptive",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E4.G1.1"
+      ]
+    },
+    {
+      "id": "IT.E4.G1.B.02",
+      "strandId": "E4",
+      "ageBand": "G1",
+      "form": "B",
+      "moduleId": "M-EFL",
+      "sequence": 13,
+      "type": "teacher_scored_oral",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "What sound do these two letters make together?"
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "say the sound: ng",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “What sound do these two letters make together?” Give the child time. Do not model the answer. Note 0, 1 or 2 using the descriptors below.",
+          "zh": "说：“What sound do these two letters make together?” 给孩子充分的时间，不要示范答案，按下面的描述记 0、1 或 2。"
+        }
+      },
+      "stimulusIds": [
+        "ST.dig.ng"
+      ],
+      "options": null,
+      "scoring": {
+        "method": "teacher_rubric",
+        "correctOptionIds": null,
+        "maxPoints": 2,
+        "rubric": {
+          "scale": [
+            0,
+            1,
+            2
+          ],
+          "levels": [
+            {
+              "score": 0,
+              "descriptor": {
+                "en": "No sound, or a different sound.",
+                "zh": "没有发音，或发出别的音。"
+              }
+            },
+            {
+              "score": 1,
+              "descriptor": {
+                "en": "Says the letter name, or gives the sound after a cue.",
+                "zh": "说出字母名称，或经提示后说出读音。"
+              }
+            },
+            {
+              "score": 2,
+              "descriptor": {
+                "en": "Says the sound clearly on their own.",
+                "zh": "能独立清楚地说出读音。"
+              }
+            }
+          ]
+        },
+        "rubricKey": "letter_sound"
+      },
+      "distractors": null,
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "digraph_sound_expressive",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "child speaks, teacher notes 0/1/2 on the sheet"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E4.G1.2"
+      ]
+    },
+    {
+      "id": "IT.E5.G1.A.01",
+      "strandId": "E5",
+      "ageBand": "G1",
+      "form": "A",
+      "moduleId": "M-EFL",
+      "sequence": 14,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Read the words and tap the one that says tree."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "word: tree",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Read the words and tap the one that says tree.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Read the words and tap the one that says tree.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [
+        "ST.tree"
+      ],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.word.tree"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.word.three"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.word.free"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.word.true"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.word.three",
+          "role": "word_near",
+          "rationale": "A word differing by one or two letters — catches guessing from the first letter alone.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.word.free",
+          "role": "word_near",
+          "rationale": "A word differing by one or two letters — catches guessing from the first letter alone.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.word.true",
+          "role": "word_near",
+          "rationale": "A word differing by one or two letters — catches guessing from the first letter alone.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "read_english_word_pattern",
+      "decodableWord": "tree",
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E5.G1.1"
+      ]
+    },
+    {
+      "id": "IT.E5.G1.A.02",
+      "strandId": "E5",
+      "ageBand": "G1",
+      "form": "A",
+      "moduleId": "M-EFL",
+      "sequence": 15,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Read the words and tap the one that says chair."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "word: chair",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Read the words and tap the one that says chair.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Read the words and tap the one that says chair.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [
+        "ST.chair"
+      ],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.word.chair"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.word.chain"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.word.hair"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.word.char"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.word.chain",
+          "role": "word_near",
+          "rationale": "A word differing by one or two letters — catches guessing from the first letter alone.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.word.hair",
+          "role": "word_near",
+          "rationale": "A word differing by one or two letters — catches guessing from the first letter alone.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.word.char",
+          "role": "word_near",
+          "rationale": "A word differing by one or two letters — catches guessing from the first letter alone.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "read_english_word_pattern",
+      "decodableWord": "chair",
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E5.G1.1",
+        "E5.A5.3"
+      ]
+    },
+    {
+      "id": "IT.E5.G1.A.03",
+      "strandId": "E5",
+      "ageBand": "G1",
+      "form": "A",
+      "moduleId": "M-EFL",
+      "sequence": 16,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Read this sentence to yourself, then tap the picture it tells about."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "sentence: The cat is under the table.",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Read this sentence to yourself, then tap the picture it tells about.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Read this sentence to yourself, then tap the picture it tells about.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [
+        "ST.sent.g1.e1"
+      ],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.sc_cat_under"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.sc_cat_on"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.sc_cat_in"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.sc_cat_behind"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.sc_cat_on",
+          "role": "position_near",
+          "rationale": "The same objects in a different place — catches the nouns without the position word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.sc_cat_in",
+          "role": "position_near",
+          "rationale": "The same objects in a different place — catches the nouns without the position word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.sc_cat_behind",
+          "role": "position_near",
+          "rationale": "The same objects in a different place — catches the nouns without the position word.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "read_english_sentence",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E5.G1.2"
+      ]
+    },
+    {
+      "id": "IT.E5.G1.B.01",
+      "strandId": "E5",
+      "ageBand": "G1",
+      "form": "B",
+      "moduleId": "M-EFL",
+      "sequence": 14,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Read the words and tap the one that says shoe."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "word: shoe",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Read the words and tap the one that says shoe.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Read the words and tap the one that says shoe.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [
+        "ST.shoe"
+      ],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.word.shoe"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.word.show"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.word.shop"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.word.hoe"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.word.show",
+          "role": "word_near",
+          "rationale": "A word differing by one or two letters — catches guessing from the first letter alone.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.word.shop",
+          "role": "word_near",
+          "rationale": "A word differing by one or two letters — catches guessing from the first letter alone.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.word.hoe",
+          "role": "word_near",
+          "rationale": "A word differing by one or two letters — catches guessing from the first letter alone.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "read_english_word_pattern",
+      "decodableWord": "shoe",
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E5.G1.1",
+        "E5.A5.3"
+      ]
+    },
+    {
+      "id": "IT.E5.G1.B.02",
+      "strandId": "E5",
+      "ageBand": "G1",
+      "form": "B",
+      "moduleId": "M-EFL",
+      "sequence": 15,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Read the words and tap the one that says truck."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "word: truck",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Read the words and tap the one that says truck.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Read the words and tap the one that says truck.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [
+        "ST.truck"
+      ],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.word.truck"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.word.trick"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.word.track"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.word.duck"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.word.trick",
+          "role": "word_near",
+          "rationale": "A word differing by one or two letters — catches guessing from the first letter alone.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.word.track",
+          "role": "word_near",
+          "rationale": "A word differing by one or two letters — catches guessing from the first letter alone.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.word.duck",
+          "role": "word_near",
+          "rationale": "A word differing by one or two letters — catches guessing from the first letter alone.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "read_english_word_pattern",
+      "decodableWord": "truck",
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E5.G1.1"
+      ]
+    },
+    {
+      "id": "IT.E5.G1.B.03",
+      "strandId": "E5",
+      "ageBand": "G1",
+      "form": "B",
+      "moduleId": "M-EFL",
+      "sequence": 16,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Read this sentence to yourself, then tap the picture it tells about."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "sentence: The ball is on the chair.",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Read this sentence to yourself, then tap the picture it tells about.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Read this sentence to yourself, then tap the picture it tells about.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [
+        "ST.sent.g1.e2"
+      ],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.sc_ball_on_chair"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.sc_ball_under_chair"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.sc_ball_behind_chair"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.sc_ball_in_box"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": [
+        {
+          "optionId": "o2",
+          "stimulusId": "ST.sc_ball_under_chair",
+          "role": "position_near",
+          "rationale": "The same objects in a different place — catches the nouns without the position word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o3",
+          "stimulusId": "ST.sc_ball_behind_chair",
+          "role": "position_near",
+          "rationale": "The same objects in a different place — catches the nouns without the position word.",
+          "internalOnly": true
+        },
+        {
+          "optionId": "o4",
+          "stimulusId": "ST.sc_ball_in_box",
+          "role": "position_near",
+          "rationale": "The same objects in a different place — catches the nouns without the position word.",
+          "internalOnly": true
+        }
+      ],
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "read_english_sentence",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E5.G1.2"
+      ]
+    },
+    {
+      "id": "IT.E6.G1.A.01",
+      "strandId": "E6",
+      "ageBand": "G1",
+      "form": "A",
+      "moduleId": "M-EFL",
+      "sequence": 17,
+      "type": "teacher_scored_oral",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Look at this picture. Ask me a question about it in English."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "ask a question",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Look at this picture. Ask me a question about it in English.” Give the child time. Do not model the answer. Note 0, 1 or 2 using the descriptors below.",
+          "zh": "说：“Look at this picture. Ask me a question about it in English.” 给孩子充分的时间，不要示范答案，按下面的描述记 0、1 或 2。"
+        }
+      },
+      "stimulusIds": [
+        "ST.sc_read"
+      ],
+      "options": null,
+      "scoring": {
+        "method": "teacher_rubric",
+        "correctOptionIds": null,
+        "maxPoints": 2,
+        "rubric": {
+          "scale": [
+            0,
+            1,
+            2
+          ],
+          "levels": [
+            {
+              "score": 0,
+              "descriptor": {
+                "en": "No question asked.",
+                "zh": "没有提出问题。"
+              }
+            },
+            {
+              "score": 1,
+              "descriptor": {
+                "en": "A question word or a phrase with a question in it.",
+                "zh": "只说出疑问词，或短语中带有提问的意思。"
+              }
+            },
+            {
+              "score": 2,
+              "descriptor": {
+                "en": "A whole English question a listener can answer.",
+                "zh": "能说出让人听得懂并能回答的完整英语问句。"
+              }
+            }
+          ]
+        },
+        "rubricKey": "english_question"
+      },
+      "distractors": null,
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "english_ask_question",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "child speaks, teacher notes 0/1/2 on the sheet"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E6.G1.1"
+      ]
+    },
+    {
+      "id": "IT.E6.G1.A.02",
+      "strandId": "E6",
+      "ageBand": "G1",
+      "form": "A",
+      "moduleId": "M-EFL",
+      "sequence": 18,
+      "type": "teacher_scored_oral",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Tell me about this picture in English."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "describe the picture",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Tell me about this picture in English.” Give the child time. Do not model the answer. Note 0, 1 or 2 using the descriptors below.",
+          "zh": "说：“Tell me about this picture in English.” 给孩子充分的时间，不要示范答案，按下面的描述记 0、1 或 2。"
+        }
+      },
+      "stimulusIds": [
+        "ST.sc_eat"
+      ],
+      "options": null,
+      "scoring": {
+        "method": "teacher_rubric",
+        "correctOptionIds": null,
+        "maxPoints": 2,
+        "rubric": {
+          "scale": [
+            0,
+            1,
+            2
+          ],
+          "levels": [
+            {
+              "score": 0,
+              "descriptor": {
+                "en": "No English response.",
+                "zh": "没有用英语回应。"
+              }
+            },
+            {
+              "score": 1,
+              "descriptor": {
+                "en": "One English word, or a phrase that is hard to follow.",
+                "zh": "只说一个英语词，或短语不易听懂。"
+              }
+            },
+            {
+              "score": 2,
+              "descriptor": {
+                "en": "A short English phrase a listener can understand.",
+                "zh": "能说出让人听得懂的英语短语。"
+              }
+            }
+          ]
+        },
+        "rubricKey": "oral_phrase"
+      },
+      "distractors": null,
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "english_describe_picture",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "child speaks, teacher notes 0/1/2 on the sheet"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E6.G1.2"
+      ]
+    },
+    {
+      "id": "IT.E6.G1.B.01",
+      "strandId": "E6",
+      "ageBand": "G1",
+      "form": "B",
+      "moduleId": "M-EFL",
+      "sequence": 17,
+      "type": "teacher_scored_oral",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Look at this picture. Ask me a question about it in English."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "ask a question",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Look at this picture. Ask me a question about it in English.” Give the child time. Do not model the answer. Note 0, 1 or 2 using the descriptors below.",
+          "zh": "说：“Look at this picture. Ask me a question about it in English.” 给孩子充分的时间，不要示范答案，按下面的描述记 0、1 或 2。"
+        }
+      },
+      "stimulusIds": [
+        "ST.sc_jump"
+      ],
+      "options": null,
+      "scoring": {
+        "method": "teacher_rubric",
+        "correctOptionIds": null,
+        "maxPoints": 2,
+        "rubric": {
+          "scale": [
+            0,
+            1,
+            2
+          ],
+          "levels": [
+            {
+              "score": 0,
+              "descriptor": {
+                "en": "No question asked.",
+                "zh": "没有提出问题。"
+              }
+            },
+            {
+              "score": 1,
+              "descriptor": {
+                "en": "A question word or a phrase with a question in it.",
+                "zh": "只说出疑问词，或短语中带有提问的意思。"
+              }
+            },
+            {
+              "score": 2,
+              "descriptor": {
+                "en": "A whole English question a listener can answer.",
+                "zh": "能说出让人听得懂并能回答的完整英语问句。"
+              }
+            }
+          ]
+        },
+        "rubricKey": "english_question"
+      },
+      "distractors": null,
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "english_ask_question",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "child speaks, teacher notes 0/1/2 on the sheet"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E6.G1.1"
+      ]
+    },
+    {
+      "id": "IT.E6.G1.B.02",
+      "strandId": "E6",
+      "ageBand": "G1",
+      "form": "B",
+      "moduleId": "M-EFL",
+      "sequence": 18,
+      "type": "teacher_scored_oral",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Tell me about this picture in English."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "describe the picture",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Tell me about this picture in English.” Give the child time. Do not model the answer. Note 0, 1 or 2 using the descriptors below.",
+          "zh": "说：“Tell me about this picture in English.” 给孩子充分的时间，不要示范答案，按下面的描述记 0、1 或 2。"
+        }
+      },
+      "stimulusIds": [
+        "ST.sc_sweep"
+      ],
+      "options": null,
+      "scoring": {
+        "method": "teacher_rubric",
+        "correctOptionIds": null,
+        "maxPoints": 2,
+        "rubric": {
+          "scale": [
+            0,
+            1,
+            2
+          ],
+          "levels": [
+            {
+              "score": 0,
+              "descriptor": {
+                "en": "No English response.",
+                "zh": "没有用英语回应。"
+              }
+            },
+            {
+              "score": 1,
+              "descriptor": {
+                "en": "One English word, or a phrase that is hard to follow.",
+                "zh": "只说一个英语词，或短语不易听懂。"
+              }
+            },
+            {
+              "score": 2,
+              "descriptor": {
+                "en": "A short English phrase a listener can understand.",
+                "zh": "能说出让人听得懂的英语短语。"
+              }
+            }
+          ]
+        },
+        "rubricKey": "oral_phrase"
+      },
+      "distractors": null,
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": "english_describe_picture",
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 1,
+        "responseMode": "child speaks, teacher notes 0/1/2 on the sheet"
+      },
+      "stop": {
+        "countsTowardStrandStop": true,
+        "countsTowardModuleStop": true,
+        "scored": true
+      },
+      "feedback": {
+        "neutral": {
+          "en": "Thank you.",
+          "zh": "谢谢。"
+        }
+      },
+      "scored": true,
+      "milestoneIds": [
+        "E6.G1.2"
+      ]
+    },
+    {
+      "id": "IT.PRACTICE.EFL.G1.01",
+      "strandId": "E1",
+      "ageBand": "G1",
+      "form": "P",
+      "moduleId": "M-EFL",
+      "sequence": 1,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Tap the dog."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "practice: dog",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Tap the dog.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Tap the dog.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.dog"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.cat"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.cup"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.hat"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": null,
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": null,
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
+      },
+      "stop": {
+        "countsTowardStrandStop": false,
+        "countsTowardModuleStop": false,
+        "scored": false
+      },
+      "feedback": {
+        "correct": {
+          "en": "That’s the one. Let’s keep going.",
+          "zh": "就是这个。我们继续吧。"
+        },
+        "tryAgain": {
+          "en": "Let’s try that one together.",
+          "zh": "我们一起再试一次。"
+        }
+      },
+      "scored": false,
+      "milestoneIds": []
+    },
+    {
+      "id": "IT.PRACTICE.EFL.G1.02",
+      "strandId": "E1",
+      "ageBand": "G1",
+      "form": "P",
+      "moduleId": "M-EFL",
+      "sequence": 2,
+      "type": "tap_choice",
+      "promptLang": "en",
+      "prompt": {
+        "audio": {
+          "en": "Tap the sun."
+        },
+        "audioLocaleFixed": "en",
+        "onScreen": {
+          "en": "practice: sun",
+          "zh": null
+        },
+        "teacherScript": {
+          "en": "Say: “Tap the sun.” Repeat once if the child asks. Wait — there is no time limit.",
+          "zh": "说：“Tap the sun.” 如果孩子要求可重复一次。不限时间，请耐心等待。"
+        }
+      },
+      "stimulusIds": [],
+      "options": [
+        {
+          "id": "o1",
+          "stimulusId": "ST.sun"
+        },
+        {
+          "id": "o2",
+          "stimulusId": "ST.moon"
+        },
+        {
+          "id": "o3",
+          "stimulusId": "ST.tree"
+        },
+        {
+          "id": "o4",
+          "stimulusId": "ST.key"
+        }
+      ],
+      "scoring": {
+        "method": "auto_key",
+        "correctOptionIds": [
+          "o1"
+        ],
+        "maxPoints": 1,
+        "rubric": null
+      },
+      "distractors": null,
+      "timing": {
+        "maxSeconds": null,
+        "advanceOn": "response"
+      },
+      "repeatAllowed": true,
+      "repeatMax": 1,
+      "requiresColor": false,
+      "constructTag": null,
+      "decodableWord": null,
+      "paper": {
+        "cardsPerRow": 2,
+        "responseMode": "child points, teacher circles"
       },
       "stop": {
         "countsTowardStrandStop": false,

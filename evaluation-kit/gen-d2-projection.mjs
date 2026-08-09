@@ -6,7 +6,7 @@
  * resolved relative to this file (../lib/...) and overridable with --bank <file>.
  * This script only ever DROPS fields the tablet cannot use; it never
  * renames one and never authors content. Field names, ids, module list (M-OBS included)
- * and the 84 observation_checklist records all stay exactly as the canonical bank has them,
+ * and every observation_checklist record all stay exactly as the canonical bank has them,
  * so the tablet, the paper packs and the Montree API are reading the same words.
  *
  * bankVersion and bankChecksum are copied verbatim, and D2 re-exports them in every session
@@ -85,7 +85,8 @@ eq(projected.items.length, bank.items.length, 'item count');
 eq(projected.stimuli.length, bank.stimuli.length, 'stimulus count');
 eq(projected.milestones.length, bank.milestones.length, 'milestone count');
 eq(projected.modules.length, bank.modules.length, 'module count');
-eq(projected.items.filter((i) => i.type === 'observation_checklist').length, 84, 'observation records');
+eq(projected.items.filter((i) => i.type === 'observation_checklist').length,
+   bank.items.filter((i) => i.type === 'observation_checklist').length, 'observation records');
 if (!projected.modules.some((m) => m.id === 'M-OBS')) fail.push('M-OBS module missing');
 eq(projected.bankVersion, bank.bankVersion, 'bankVersion');
 eq(projected.bankChecksum, bank.bankChecksum, 'bankChecksum');

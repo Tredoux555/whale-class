@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0",
-  "bankVersion": "1.10.0",
-  "generatedAt": "2026-08-03T00:00:00Z",
+  "bankVersion": "1.11.0",
+  "generatedAt": "2026-08-09T00:00:00Z",
   "assessmentLocales": [
     "en",
     "zh"
@@ -5535,6 +5535,2398 @@
       "tags": [
         "shapes",
         "attributes"
+      ]
+    },
+    {
+      "id": "ST.word.fish",
+      "kind": "word",
+      "label": {
+        "en": "the word fish",
+        "zh": "单词 fish"
+      },
+      "altText": {
+        "en": "the printed word fish",
+        "zh": "单词 fish"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-fish",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">fish</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.fist",
+      "kind": "word",
+      "label": {
+        "en": "the word fist",
+        "zh": "单词 fist"
+      },
+      "altText": {
+        "en": "the printed word fist",
+        "zh": "单词 fist"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-fist",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">fist</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.dish",
+      "kind": "word",
+      "label": {
+        "en": "the word dish",
+        "zh": "单词 dish"
+      },
+      "altText": {
+        "en": "the printed word dish",
+        "zh": "单词 dish"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-dish",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">dish</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.wish",
+      "kind": "word",
+      "label": {
+        "en": "the word wish",
+        "zh": "单词 wish"
+      },
+      "altText": {
+        "en": "the printed word wish",
+        "zh": "单词 wish"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-wish",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">wish</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.rain",
+      "kind": "word",
+      "label": {
+        "en": "the word rain",
+        "zh": "单词 rain"
+      },
+      "altText": {
+        "en": "the printed word rain",
+        "zh": "单词 rain"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-rain",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">rain</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.ran",
+      "kind": "word",
+      "label": {
+        "en": "the word ran",
+        "zh": "单词 ran"
+      },
+      "altText": {
+        "en": "the printed word ran",
+        "zh": "单词 ran"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-ran",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">ran</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.rail",
+      "kind": "word",
+      "label": {
+        "en": "the word rail",
+        "zh": "单词 rail"
+      },
+      "altText": {
+        "en": "the printed word rail",
+        "zh": "单词 rail"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-rail",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">rail</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.main",
+      "kind": "word",
+      "label": {
+        "en": "the word main",
+        "zh": "单词 main"
+      },
+      "altText": {
+        "en": "the printed word main",
+        "zh": "单词 main"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-main",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">main</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.chog",
+      "kind": "word",
+      "label": {
+        "en": "the word chog",
+        "zh": "单词 chog"
+      },
+      "altText": {
+        "en": "the printed word chog",
+        "zh": "单词 chog"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-chog",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">chog</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.sent.g1.a1",
+      "kind": "word",
+      "label": {
+        "en": "the sentence: The big fish is in the net.",
+        "zh": "句子：大鱼在网里。"
+      },
+      "altText": {
+        "en": "the printed sentence The big fish is in the net.",
+        "zh": "印出的句子：大鱼在网里。"
+      },
+      "render": {
+        "svgSymbolId": "sym-sent-g1-a1",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"3\" y=\"30\" width=\"94\" height=\"40\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"9\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">The big fish is in the net.</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "sentences"
+      ]
+    },
+    {
+      "id": "ST.sent.g1.a2",
+      "kind": "word",
+      "label": {
+        "en": "the sentence: The cat is on the table.",
+        "zh": "句子：猫在桌子上。"
+      },
+      "altText": {
+        "en": "the printed sentence The cat is on the table.",
+        "zh": "印出的句子：猫在桌子上。"
+      },
+      "render": {
+        "svgSymbolId": "sym-sent-g1-a2",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"3\" y=\"30\" width=\"94\" height=\"40\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"9\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">The cat is on the table.</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "sentences"
+      ]
+    },
+    {
+      "id": "ST.word.book",
+      "kind": "word",
+      "label": {
+        "en": "the word book",
+        "zh": "单词 book"
+      },
+      "altText": {
+        "en": "the printed word book",
+        "zh": "单词 book"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-book",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">book</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.boot",
+      "kind": "word",
+      "label": {
+        "en": "the word boot",
+        "zh": "单词 boot"
+      },
+      "altText": {
+        "en": "the printed word boot",
+        "zh": "单词 boot"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-boot",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">boot</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.hook",
+      "kind": "word",
+      "label": {
+        "en": "the word hook",
+        "zh": "单词 hook"
+      },
+      "altText": {
+        "en": "the printed word hook",
+        "zh": "单词 hook"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-hook",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">hook</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.back",
+      "kind": "word",
+      "label": {
+        "en": "the word back",
+        "zh": "单词 back"
+      },
+      "altText": {
+        "en": "the printed word back",
+        "zh": "单词 back"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-back",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">back</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.moon",
+      "kind": "word",
+      "label": {
+        "en": "the word moon",
+        "zh": "单词 moon"
+      },
+      "altText": {
+        "en": "the printed word moon",
+        "zh": "单词 moon"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-moon",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">moon</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.mood",
+      "kind": "word",
+      "label": {
+        "en": "the word mood",
+        "zh": "单词 mood"
+      },
+      "altText": {
+        "en": "the printed word mood",
+        "zh": "单词 mood"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-mood",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">mood</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.noon",
+      "kind": "word",
+      "label": {
+        "en": "the word noon",
+        "zh": "单词 noon"
+      },
+      "altText": {
+        "en": "the printed word noon",
+        "zh": "单词 noon"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-noon",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">noon</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.shab",
+      "kind": "word",
+      "label": {
+        "en": "the word shab",
+        "zh": "单词 shab"
+      },
+      "altText": {
+        "en": "the printed word shab",
+        "zh": "单词 shab"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-shab",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">shab</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.sent.g1.b1",
+      "kind": "word",
+      "label": {
+        "en": "the sentence: The hen sat on six eggs.",
+        "zh": "句子：母鸡卧在六个蛋上。"
+      },
+      "altText": {
+        "en": "the printed sentence The hen sat on six eggs.",
+        "zh": "印出的句子：母鸡卧在六个蛋上。"
+      },
+      "render": {
+        "svgSymbolId": "sym-sent-g1-b1",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"3\" y=\"30\" width=\"94\" height=\"40\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"9\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">The hen sat on six eggs.</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "sentences"
+      ]
+    },
+    {
+      "id": "ST.sent.g1.b2",
+      "kind": "word",
+      "label": {
+        "en": "the sentence: The ball is under the chair.",
+        "zh": "句子：球在椅子下面。"
+      },
+      "altText": {
+        "en": "the printed sentence The ball is under the chair.",
+        "zh": "印出的句子：球在椅子下面。"
+      },
+      "render": {
+        "svgSymbolId": "sym-sent-g1-b2",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"3\" y=\"30\" width=\"94\" height=\"40\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"9\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">The ball is under the chair.</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "sentences"
+      ]
+    },
+    {
+      "id": "ST.num.97",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 97",
+        "zh": "数字 97"
+      },
+      "altText": {
+        "en": "the numeral 97",
+        "zh": "数字 97"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-97",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">97</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.99",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 99",
+        "zh": "数字 99"
+      },
+      "altText": {
+        "en": "the numeral 99",
+        "zh": "数字 99"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-99",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">99</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.100",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 100",
+        "zh": "数字 100"
+      },
+      "altText": {
+        "en": "the numeral 100",
+        "zh": "数字 100"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-100",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">100</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.101",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 101",
+        "zh": "数字 101"
+      },
+      "altText": {
+        "en": "the numeral 101",
+        "zh": "数字 101"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-101",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">101</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.90",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 90",
+        "zh": "数字 90"
+      },
+      "altText": {
+        "en": "the numeral 90",
+        "zh": "数字 90"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-90",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">90</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.40",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 40",
+        "zh": "数字 40"
+      },
+      "altText": {
+        "en": "the numeral 40",
+        "zh": "数字 40"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-40",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">40</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.31",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 31",
+        "zh": "数字 31"
+      },
+      "altText": {
+        "en": "the numeral 31",
+        "zh": "数字 31"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-31",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">31</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.50",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 50",
+        "zh": "数字 50"
+      },
+      "altText": {
+        "en": "the numeral 50",
+        "zh": "数字 50"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-50",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">50</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.34",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 34",
+        "zh": "数字 34"
+      },
+      "altText": {
+        "en": "the numeral 34",
+        "zh": "数字 34"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-34",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">34</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.42",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 42",
+        "zh": "数字 42"
+      },
+      "altText": {
+        "en": "the numeral 42",
+        "zh": "数字 42"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-42",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">42</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.24",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 24",
+        "zh": "数字 24"
+      },
+      "altText": {
+        "en": "the numeral 24",
+        "zh": "数字 24"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-24",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">24</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.b10.36",
+      "kind": "quantity",
+      "label": {
+        "en": "3 tens and 6 ones",
+        "zh": "3个十和6个一"
+      },
+      "altText": {
+        "en": "3 ten-rods and 6 single beads",
+        "zh": "3根十条和6颗单珠"
+      },
+      "render": {
+        "svgSymbolId": "sym-b10-36",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"8\" y=\"14\" width=\"9\" height=\"58\" rx=\"3\" fill=\"#d9c7a5\" stroke=\"#12100e\" stroke-width=\"2.4\"/><rect x=\"21\" y=\"14\" width=\"9\" height=\"58\" rx=\"3\" fill=\"#d9c7a5\" stroke=\"#12100e\" stroke-width=\"2.4\"/><rect x=\"34\" y=\"14\" width=\"9\" height=\"58\" rx=\"3\" fill=\"#d9c7a5\" stroke=\"#12100e\" stroke-width=\"2.4\"/><circle cx=\"12\" cy=\"82\" r=\"4.2\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.2\"/><circle cx=\"23\" cy=\"82\" r=\"4.2\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.2\"/><circle cx=\"34\" cy=\"82\" r=\"4.2\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.2\"/><circle cx=\"45\" cy=\"82\" r=\"4.2\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.2\"/><circle cx=\"56\" cy=\"82\" r=\"4.2\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.2\"/><circle cx=\"12\" cy=\"70\" r=\"4.2\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.2\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "quantity",
+        "place-value"
+      ]
+    },
+    {
+      "id": "ST.num.36",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 36",
+        "zh": "数字 36"
+      },
+      "altText": {
+        "en": "the numeral 36",
+        "zh": "数字 36"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-36",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">36</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.63",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 63",
+        "zh": "数字 63"
+      },
+      "altText": {
+        "en": "the numeral 63",
+        "zh": "数字 63"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-63",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">63</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.39",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 39",
+        "zh": "数字 39"
+      },
+      "altText": {
+        "en": "the numeral 39",
+        "zh": "数字 39"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-39",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">39</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.108",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 108",
+        "zh": "数字 108"
+      },
+      "altText": {
+        "en": "the numeral 108",
+        "zh": "数字 108"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-108",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">108</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.109",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 109",
+        "zh": "数字 109"
+      },
+      "altText": {
+        "en": "the numeral 109",
+        "zh": "数字 109"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-109",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">109</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.110",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 110",
+        "zh": "数字 110"
+      },
+      "altText": {
+        "en": "the numeral 110",
+        "zh": "数字 110"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-110",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">110</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.190",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 190",
+        "zh": "数字 190"
+      },
+      "altText": {
+        "en": "the numeral 190",
+        "zh": "数字 190"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-190",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">190</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.20",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 20",
+        "zh": "数字 20"
+      },
+      "altText": {
+        "en": "the numeral 20",
+        "zh": "数字 20"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-20",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">20</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.16",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 16",
+        "zh": "数字 16"
+      },
+      "altText": {
+        "en": "the numeral 16",
+        "zh": "数字 16"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-16",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">16</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.25",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 25",
+        "zh": "数字 25"
+      },
+      "altText": {
+        "en": "the numeral 25",
+        "zh": "数字 25"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-25",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">25</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.12",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 12",
+        "zh": "数字 12"
+      },
+      "altText": {
+        "en": "the numeral 12",
+        "zh": "数字 12"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-12",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">12</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.60",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 60",
+        "zh": "数字 60"
+      },
+      "altText": {
+        "en": "the numeral 60",
+        "zh": "数字 60"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-60",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">60</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.b10.52",
+      "kind": "quantity",
+      "label": {
+        "en": "5 tens and 2 ones",
+        "zh": "5个十和2个一"
+      },
+      "altText": {
+        "en": "5 ten-rods and 2 single beads",
+        "zh": "5根十条和2颗单珠"
+      },
+      "render": {
+        "svgSymbolId": "sym-b10-52",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"8\" y=\"14\" width=\"9\" height=\"58\" rx=\"3\" fill=\"#d9c7a5\" stroke=\"#12100e\" stroke-width=\"2.4\"/><rect x=\"21\" y=\"14\" width=\"9\" height=\"58\" rx=\"3\" fill=\"#d9c7a5\" stroke=\"#12100e\" stroke-width=\"2.4\"/><rect x=\"34\" y=\"14\" width=\"9\" height=\"58\" rx=\"3\" fill=\"#d9c7a5\" stroke=\"#12100e\" stroke-width=\"2.4\"/><rect x=\"47\" y=\"14\" width=\"9\" height=\"58\" rx=\"3\" fill=\"#d9c7a5\" stroke=\"#12100e\" stroke-width=\"2.4\"/><rect x=\"60\" y=\"14\" width=\"9\" height=\"58\" rx=\"3\" fill=\"#d9c7a5\" stroke=\"#12100e\" stroke-width=\"2.4\"/><circle cx=\"12\" cy=\"82\" r=\"4.2\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.2\"/><circle cx=\"23\" cy=\"82\" r=\"4.2\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.2\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "quantity",
+        "place-value"
+      ]
+    },
+    {
+      "id": "ST.num.52",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 52",
+        "zh": "数字 52"
+      },
+      "altText": {
+        "en": "the numeral 52",
+        "zh": "数字 52"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-52",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">52</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.57",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 57",
+        "zh": "数字 57"
+      },
+      "altText": {
+        "en": "the numeral 57",
+        "zh": "数字 57"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-57",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">57</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.14",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 14",
+        "zh": "数字 14"
+      },
+      "altText": {
+        "en": "the numeral 14",
+        "zh": "数字 14"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-14",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">14</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.13",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 13",
+        "zh": "数字 13"
+      },
+      "altText": {
+        "en": "the numeral 13",
+        "zh": "数字 13"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-13",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">13</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.15",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 15",
+        "zh": "数字 15"
+      },
+      "altText": {
+        "en": "the numeral 15",
+        "zh": "数字 15"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-15",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">15</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.22",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 22",
+        "zh": "数字 22"
+      },
+      "altText": {
+        "en": "the numeral 22",
+        "zh": "数字 22"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-22",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">22</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.num.17",
+      "kind": "numeral",
+      "label": {
+        "en": "the numeral 17",
+        "zh": "数字 17"
+      },
+      "altText": {
+        "en": "the numeral 17",
+        "zh": "数字 17"
+      },
+      "render": {
+        "svgSymbolId": "sym-num-17",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"38\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">17</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "numerals"
+      ]
+    },
+    {
+      "id": "ST.solid.cube",
+      "kind": "shape",
+      "label": {
+        "en": "cube",
+        "zh": "正方体"
+      },
+      "altText": {
+        "en": "a cube",
+        "zh": "正方体"
+      },
+      "render": {
+        "svgSymbolId": "sym-solid-cube",
+        "viewBox": "0 0 100 100",
+        "svg": "<path d=\"M24 38 L52 24 L80 38 L52 52 Z\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M24 38 L24 68 L52 82 L52 52 Z\" fill=\"#d9c7a5\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M80 38 L80 68 L52 82 L52 52 Z\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linejoin=\"round\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "shapes",
+        "solids"
+      ]
+    },
+    {
+      "id": "ST.solid.cuboid",
+      "kind": "shape",
+      "label": {
+        "en": "cuboid",
+        "zh": "长方体"
+      },
+      "altText": {
+        "en": "a cuboid",
+        "zh": "长方体"
+      },
+      "render": {
+        "svgSymbolId": "sym-solid-cuboid",
+        "viewBox": "0 0 100 100",
+        "svg": "<path d=\"M16 42 L50 26 L88 42 L54 58 Z\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M16 42 L16 66 L54 82 L54 58 Z\" fill=\"#d9c7a5\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M88 42 L88 66 L54 82 L54 58 Z\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linejoin=\"round\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "shapes",
+        "solids"
+      ]
+    },
+    {
+      "id": "ST.solid.cylinder",
+      "kind": "shape",
+      "label": {
+        "en": "cylinder",
+        "zh": "圆柱体"
+      },
+      "altText": {
+        "en": "a cylinder",
+        "zh": "圆柱体"
+      },
+      "render": {
+        "svgSymbolId": "sym-solid-cylinder",
+        "viewBox": "0 0 100 100",
+        "svg": "<path d=\"M24 30 L24 70 A26 10 0 0 0 76 70 L76 30 Z\" fill=\"#d9c7a5\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linejoin=\"round\"/><ellipse cx=\"50\" cy=\"30\" rx=\"26\" ry=\"10\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"3\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "shapes",
+        "solids"
+      ]
+    },
+    {
+      "id": "ST.solid.sphere",
+      "kind": "shape",
+      "label": {
+        "en": "sphere",
+        "zh": "球体"
+      },
+      "altText": {
+        "en": "a sphere",
+        "zh": "球体"
+      },
+      "render": {
+        "svgSymbolId": "sym-solid-sphere",
+        "viewBox": "0 0 100 100",
+        "svg": "<circle cx=\"50\" cy=\"52\" r=\"34\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"3\"/><ellipse cx=\"50\" cy=\"52\" rx=\"34\" ry=\"11\" fill=\"none\" stroke=\"#12100e\" stroke-width=\"2\"/><path d=\"M28 30 A16 12 0 0 1 42 24\" fill=\"none\" stroke=\"#12100e\" stroke-width=\"2\" stroke-linecap=\"round\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "shapes",
+        "solids"
+      ]
+    },
+    {
+      "id": "ST.frac.circle_half_shaded",
+      "kind": "shape",
+      "label": {
+        "en": "a circle with one half coloured in",
+        "zh": "涂了二分之一的圆"
+      },
+      "altText": {
+        "en": "a circle with one half coloured in",
+        "zh": "涂了二分之一的圆"
+      },
+      "render": {
+        "svgSymbolId": "sym-frac-circle-half-shaded",
+        "viewBox": "0 0 100 100",
+        "svg": "<path d=\"M50 50 L50.0 10.0 A40 40 0 0 1 50.0 90.0 Z\" fill=\"#d9c7a5\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linejoin=\"round\"/><path d=\"M50 50 L50.0 90.0 A40 40 0 0 1 50.0 10.0 Z\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linejoin=\"round\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "shapes",
+        "fractions"
+      ]
+    },
+    {
+      "id": "ST.frac.circle_quarter_shaded",
+      "kind": "shape",
+      "label": {
+        "en": "a circle with one quarter coloured in",
+        "zh": "涂了四分之一的圆"
+      },
+      "altText": {
+        "en": "a circle with one quarter coloured in",
+        "zh": "涂了四分之一的圆"
+      },
+      "render": {
+        "svgSymbolId": "sym-frac-circle-quarter-shaded",
+        "viewBox": "0 0 100 100",
+        "svg": "<path d=\"M50 50 L50.0 10.0 A40 40 0 0 1 90.0 50.0 Z\" fill=\"#d9c7a5\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linejoin=\"round\"/><path d=\"M50 50 L90.0 50.0 A40 40 0 0 1 50.0 90.0 Z\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linejoin=\"round\"/><path d=\"M50 50 L50.0 90.0 A40 40 0 0 1 10.0 50.0 Z\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linejoin=\"round\"/><path d=\"M50 50 L10.0 50.0 A40 40 0 0 1 50.0 10.0 Z\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linejoin=\"round\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "shapes",
+        "fractions"
+      ]
+    },
+    {
+      "id": "ST.frac.circle_uneven_shaded",
+      "kind": "shape",
+      "label": {
+        "en": "a circle with one of two unequal parts coloured in",
+        "zh": "两个不相等部分中涂了一份的圆"
+      },
+      "altText": {
+        "en": "a circle with one of two unequal parts coloured in",
+        "zh": "两个不相等部分中涂了一份的圆"
+      },
+      "render": {
+        "svgSymbolId": "sym-frac-circle-uneven-shaded",
+        "viewBox": "0 0 100 100",
+        "svg": "<path d=\"M50 50 L50.0 10.0 A40 40 0 0 1 84.6 70.0 Z\" fill=\"#d9c7a5\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linejoin=\"round\"/><path d=\"M50 50 L84.6 70.0 A40 40 0 1 1 50.0 10.0 Z\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linejoin=\"round\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "shapes",
+        "fractions"
+      ]
+    },
+    {
+      "id": "ST.frac.circle_three_quarters_shaded",
+      "kind": "shape",
+      "label": {
+        "en": "a circle with three quarters coloured in",
+        "zh": "涂了四分之三的圆"
+      },
+      "altText": {
+        "en": "a circle with three quarters coloured in",
+        "zh": "涂了四分之三的圆"
+      },
+      "render": {
+        "svgSymbolId": "sym-frac-circle-three-quarters-shaded",
+        "viewBox": "0 0 100 100",
+        "svg": "<path d=\"M50 50 L50.0 10.0 A40 40 0 0 1 90.0 50.0 Z\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linejoin=\"round\"/><path d=\"M50 50 L90.0 50.0 A40 40 0 0 1 50.0 90.0 Z\" fill=\"#d9c7a5\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linejoin=\"round\"/><path d=\"M50 50 L50.0 90.0 A40 40 0 0 1 10.0 50.0 Z\" fill=\"#d9c7a5\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linejoin=\"round\"/><path d=\"M50 50 L10.0 50.0 A40 40 0 0 1 50.0 10.0 Z\" fill=\"#d9c7a5\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linejoin=\"round\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "shapes",
+        "fractions"
+      ]
+    },
+    {
+      "id": "ST.frac.square_quarters",
+      "kind": "shape",
+      "label": {
+        "en": "a square cut into four equal parts",
+        "zh": "被分成四等份的正方形"
+      },
+      "altText": {
+        "en": "a square cut into four equal parts",
+        "zh": "被分成四等份的正方形"
+      },
+      "render": {
+        "svgSymbolId": "sym-frac-square-quarters",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"14\" y=\"14\" width=\"72\" height=\"72\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.6\"/><path d=\"M50 14 L50 86 M14 50 L86 50\" stroke=\"#12100e\" stroke-width=\"2.6\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "shapes",
+        "fractions"
+      ]
+    },
+    {
+      "id": "ST.frac.square_halves",
+      "kind": "shape",
+      "label": {
+        "en": "a square cut into two equal parts",
+        "zh": "被分成两等份的正方形"
+      },
+      "altText": {
+        "en": "a square cut into two equal parts",
+        "zh": "被分成两等份的正方形"
+      },
+      "render": {
+        "svgSymbolId": "sym-frac-square-halves",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"14\" y=\"14\" width=\"72\" height=\"72\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.6\"/><path d=\"M50 14 L50 86\" stroke=\"#12100e\" stroke-width=\"2.6\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "shapes",
+        "fractions"
+      ]
+    },
+    {
+      "id": "ST.frac.square_uneven",
+      "kind": "shape",
+      "label": {
+        "en": "a square cut into four parts that are not equal",
+        "zh": "被分成四个不相等部分的正方形"
+      },
+      "altText": {
+        "en": "a square cut into four parts that are not equal",
+        "zh": "被分成四个不相等部分的正方形"
+      },
+      "render": {
+        "svgSymbolId": "sym-frac-square-uneven",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"14\" y=\"14\" width=\"72\" height=\"72\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.6\"/><path d=\"M36 14 L36 86 M14 62 L86 62 M62 62 L62 86\" stroke=\"#12100e\" stroke-width=\"2.6\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "shapes",
+        "fractions"
+      ]
+    },
+    {
+      "id": "ST.frac.circle_halves",
+      "kind": "shape",
+      "label": {
+        "en": "a circle cut into two equal parts",
+        "zh": "被分成两等份的圆"
+      },
+      "altText": {
+        "en": "a circle cut into two equal parts",
+        "zh": "被分成两等份的圆"
+      },
+      "render": {
+        "svgSymbolId": "sym-frac-circle-halves",
+        "viewBox": "0 0 100 100",
+        "svg": "<path d=\"M50 50 L50.0 10.0 A40 40 0 0 1 50.0 90.0 Z\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linejoin=\"round\"/><path d=\"M50 50 L50.0 90.0 A40 40 0 0 1 50.0 10.0 Z\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linejoin=\"round\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "shapes",
+        "fractions"
+      ]
+    },
+    {
+      "id": "ST.solid.cone",
+      "kind": "shape",
+      "label": {
+        "en": "cone",
+        "zh": "圆锥体"
+      },
+      "altText": {
+        "en": "a cone",
+        "zh": "圆锥体"
+      },
+      "render": {
+        "svgSymbolId": "sym-solid-cone",
+        "viewBox": "0 0 100 100",
+        "svg": "<path d=\"M50 18 L78 72 A28 10 0 0 1 22 72 Z\" fill=\"#d9c7a5\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linejoin=\"round\"/><ellipse cx=\"50\" cy=\"72\" rx=\"28\" ry=\"10\" fill=\"none\" stroke=\"#12100e\" stroke-width=\"2\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "shapes",
+        "solids"
+      ]
+    },
+    {
+      "id": "ST.solid.pyramid",
+      "kind": "shape",
+      "label": {
+        "en": "pyramid",
+        "zh": "金字塔（棱锥）"
+      },
+      "altText": {
+        "en": "a pyramid",
+        "zh": "金字塔（棱锥）"
+      },
+      "render": {
+        "svgSymbolId": "sym-solid-pyramid",
+        "viewBox": "0 0 100 100",
+        "svg": "<path d=\"M50 16 L20 74 L52 84 Z\" fill=\"#d9c7a5\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M50 16 L82 66 L52 84 Z\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M20 74 L82 66\" fill=\"none\" stroke=\"#12100e\" stroke-width=\"2\" stroke-linecap=\"round\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "shapes",
+        "solids"
+      ]
+    },
+    {
+      "id": "ST.frac.square_quarter_shaded",
+      "kind": "shape",
+      "label": {
+        "en": "a square with one quarter coloured in",
+        "zh": "涂了四分之一的正方形"
+      },
+      "altText": {
+        "en": "a square with one quarter coloured in",
+        "zh": "涂了四分之一的正方形"
+      },
+      "render": {
+        "svgSymbolId": "sym-frac-square-quarter-shaded",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"14\" y=\"14\" width=\"72\" height=\"72\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.6\"/><rect x=\"14\" y=\"14\" width=\"36\" height=\"36\" fill=\"#d9c7a5\" stroke=\"#12100e\" stroke-width=\"2.6\"/><path d=\"M50 14 L50 86 M14 50 L86 50\" stroke=\"#12100e\" stroke-width=\"2.6\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "shapes",
+        "fractions"
+      ]
+    },
+    {
+      "id": "ST.frac.square_half_shaded",
+      "kind": "shape",
+      "label": {
+        "en": "a square with one half coloured in",
+        "zh": "涂了二分之一的正方形"
+      },
+      "altText": {
+        "en": "a square with one half coloured in",
+        "zh": "涂了二分之一的正方形"
+      },
+      "render": {
+        "svgSymbolId": "sym-frac-square-half-shaded",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"14\" y=\"14\" width=\"72\" height=\"72\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.6\"/><rect x=\"14\" y=\"14\" width=\"36\" height=\"72\" fill=\"#d9c7a5\" stroke=\"#12100e\" stroke-width=\"2.6\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "shapes",
+        "fractions"
+      ]
+    },
+    {
+      "id": "ST.frac.square_uneven_shaded",
+      "kind": "shape",
+      "label": {
+        "en": "a square with one of two unequal parts coloured in",
+        "zh": "两个不相等部分中涂了一份的正方形"
+      },
+      "altText": {
+        "en": "a square with one of two unequal parts coloured in",
+        "zh": "两个不相等部分中涂了一份的正方形"
+      },
+      "render": {
+        "svgSymbolId": "sym-frac-square-uneven-shaded",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"14\" y=\"14\" width=\"72\" height=\"72\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.6\"/><rect x=\"14\" y=\"14\" width=\"24\" height=\"72\" fill=\"#d9c7a5\" stroke=\"#12100e\" stroke-width=\"2.6\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "shapes",
+        "fractions"
+      ]
+    },
+    {
+      "id": "ST.frac.circle_uneven",
+      "kind": "shape",
+      "label": {
+        "en": "a circle cut into two parts that are not equal",
+        "zh": "被分成两个不相等部分的圆"
+      },
+      "altText": {
+        "en": "a circle cut into two parts that are not equal",
+        "zh": "被分成两个不相等部分的圆"
+      },
+      "render": {
+        "svgSymbolId": "sym-frac-circle-uneven",
+        "viewBox": "0 0 100 100",
+        "svg": "<path d=\"M50 50 L50.0 10.0 A40 40 0 0 1 84.6 70.0 Z\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linejoin=\"round\"/><path d=\"M50 50 L84.6 70.0 A40 40 0 1 1 50.0 10.0 Z\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linejoin=\"round\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "shapes",
+        "fractions"
+      ]
+    },
+    {
+      "id": "ST.frac.circle_quarters",
+      "kind": "shape",
+      "label": {
+        "en": "a circle cut into four equal parts",
+        "zh": "被分成四等份的圆"
+      },
+      "altText": {
+        "en": "a circle cut into four equal parts",
+        "zh": "被分成四等份的圆"
+      },
+      "render": {
+        "svgSymbolId": "sym-frac-circle-quarters",
+        "viewBox": "0 0 100 100",
+        "svg": "<path d=\"M50 50 L50.0 10.0 A40 40 0 0 1 90.0 50.0 Z\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linejoin=\"round\"/><path d=\"M50 50 L90.0 50.0 A40 40 0 0 1 50.0 90.0 Z\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linejoin=\"round\"/><path d=\"M50 50 L50.0 90.0 A40 40 0 0 1 10.0 50.0 Z\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linejoin=\"round\"/><path d=\"M50 50 L10.0 50.0 A40 40 0 0 1 50.0 10.0 Z\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linejoin=\"round\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "shapes",
+        "fractions"
+      ]
+    },
+    {
+      "id": "ST.clock.3_00",
+      "kind": "shape",
+      "label": {
+        "en": "a clock showing three o’clock",
+        "zh": "显示三点整的钟"
+      },
+      "altText": {
+        "en": "a clock face with the hands at three o’clock",
+        "zh": "指针指向三点整的钟面"
+      },
+      "render": {
+        "svgSymbolId": "sym-clock-3-00",
+        "viewBox": "0 0 100 100",
+        "svg": "<circle cx=\"50\" cy=\"50\" r=\"46\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"3\"/><path d=\"M50.0 18.0 L50.0 9.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M68.0 18.8 L70.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M81.2 32.0 L85.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M82.0 50.0 L91.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M81.2 68.0 L85.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M68.0 81.2 L70.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50.0 82.0 L50.0 91.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M32.0 81.2 L29.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.8 68.0 L14.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.0 50.0 L9.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M18.8 32.0 L14.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M32.0 18.8 L29.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50 50 L72.0 50.0\" stroke=\"#12100e\" stroke-width=\"4.5\" stroke-linecap=\"round\"/><path d=\"M50 50 L50.0 16.0\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linecap=\"round\"/><circle cx=\"50\" cy=\"50\" r=\"3.4\" fill=\"#12100e\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "time",
+        "clocks"
+      ]
+    },
+    {
+      "id": "ST.clock.3_30",
+      "kind": "shape",
+      "label": {
+        "en": "a clock showing half past three",
+        "zh": "显示三点半的钟"
+      },
+      "altText": {
+        "en": "a clock face with the hands at half past three",
+        "zh": "指针指向三点半的钟面"
+      },
+      "render": {
+        "svgSymbolId": "sym-clock-3-30",
+        "viewBox": "0 0 100 100",
+        "svg": "<circle cx=\"50\" cy=\"50\" r=\"46\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"3\"/><path d=\"M50.0 18.0 L50.0 9.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M68.0 18.8 L70.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M81.2 32.0 L85.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M82.0 50.0 L91.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M81.2 68.0 L85.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M68.0 81.2 L70.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50.0 82.0 L50.0 91.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M32.0 81.2 L29.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.8 68.0 L14.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.0 50.0 L9.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M18.8 32.0 L14.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M32.0 18.8 L29.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50 50 L71.3 55.7\" stroke=\"#12100e\" stroke-width=\"4.5\" stroke-linecap=\"round\"/><path d=\"M50 50 L50.0 84.0\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linecap=\"round\"/><circle cx=\"50\" cy=\"50\" r=\"3.4\" fill=\"#12100e\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "time",
+        "clocks"
+      ]
+    },
+    {
+      "id": "ST.clock.9_00",
+      "kind": "shape",
+      "label": {
+        "en": "a clock showing nine o’clock",
+        "zh": "显示九点整的钟"
+      },
+      "altText": {
+        "en": "a clock face with the hands at nine o’clock",
+        "zh": "指针指向九点整的钟面"
+      },
+      "render": {
+        "svgSymbolId": "sym-clock-9-00",
+        "viewBox": "0 0 100 100",
+        "svg": "<circle cx=\"50\" cy=\"50\" r=\"46\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"3\"/><path d=\"M50.0 18.0 L50.0 9.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M68.0 18.8 L70.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M81.2 32.0 L85.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M82.0 50.0 L91.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M81.2 68.0 L85.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M68.0 81.2 L70.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50.0 82.0 L50.0 91.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M32.0 81.2 L29.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.8 68.0 L14.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.0 50.0 L9.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M18.8 32.0 L14.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M32.0 18.8 L29.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50 50 L28.0 50.0\" stroke=\"#12100e\" stroke-width=\"4.5\" stroke-linecap=\"round\"/><path d=\"M50 50 L50.0 16.0\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linecap=\"round\"/><circle cx=\"50\" cy=\"50\" r=\"3.4\" fill=\"#12100e\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "time",
+        "clocks"
+      ]
+    },
+    {
+      "id": "ST.clock.12_00",
+      "kind": "shape",
+      "label": {
+        "en": "a clock showing twelve o’clock",
+        "zh": "显示十二点整的钟"
+      },
+      "altText": {
+        "en": "a clock face with the hands at twelve o’clock",
+        "zh": "指针指向十二点整的钟面"
+      },
+      "render": {
+        "svgSymbolId": "sym-clock-12-00",
+        "viewBox": "0 0 100 100",
+        "svg": "<circle cx=\"50\" cy=\"50\" r=\"46\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"3\"/><path d=\"M50.0 18.0 L50.0 9.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M68.0 18.8 L70.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M81.2 32.0 L85.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M82.0 50.0 L91.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M81.2 68.0 L85.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M68.0 81.2 L70.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50.0 82.0 L50.0 91.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M32.0 81.2 L29.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.8 68.0 L14.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.0 50.0 L9.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M18.8 32.0 L14.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M32.0 18.8 L29.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50 50 L50.0 28.0\" stroke=\"#12100e\" stroke-width=\"4.5\" stroke-linecap=\"round\"/><path d=\"M50 50 L50.0 16.0\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linecap=\"round\"/><circle cx=\"50\" cy=\"50\" r=\"3.4\" fill=\"#12100e\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "time",
+        "clocks"
+      ]
+    },
+    {
+      "id": "ST.clock.6_30",
+      "kind": "shape",
+      "label": {
+        "en": "a clock showing half past six",
+        "zh": "显示六点半的钟"
+      },
+      "altText": {
+        "en": "a clock face with the hands at half past six",
+        "zh": "指针指向六点半的钟面"
+      },
+      "render": {
+        "svgSymbolId": "sym-clock-6-30",
+        "viewBox": "0 0 100 100",
+        "svg": "<circle cx=\"50\" cy=\"50\" r=\"46\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"3\"/><path d=\"M50.0 18.0 L50.0 9.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M68.0 18.8 L70.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M81.2 32.0 L85.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M82.0 50.0 L91.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M81.2 68.0 L85.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M68.0 81.2 L70.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50.0 82.0 L50.0 91.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M32.0 81.2 L29.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.8 68.0 L14.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.0 50.0 L9.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M18.8 32.0 L14.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M32.0 18.8 L29.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50 50 L44.3 71.3\" stroke=\"#12100e\" stroke-width=\"4.5\" stroke-linecap=\"round\"/><path d=\"M50 50 L50.0 84.0\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linecap=\"round\"/><circle cx=\"50\" cy=\"50\" r=\"3.4\" fill=\"#12100e\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "time",
+        "clocks"
+      ]
+    },
+    {
+      "id": "ST.clock.6_00",
+      "kind": "shape",
+      "label": {
+        "en": "a clock showing six o’clock",
+        "zh": "显示六点整的钟"
+      },
+      "altText": {
+        "en": "a clock face with the hands at six o’clock",
+        "zh": "指针指向六点整的钟面"
+      },
+      "render": {
+        "svgSymbolId": "sym-clock-6-00",
+        "viewBox": "0 0 100 100",
+        "svg": "<circle cx=\"50\" cy=\"50\" r=\"46\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"3\"/><path d=\"M50.0 18.0 L50.0 9.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M68.0 18.8 L70.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M81.2 32.0 L85.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M82.0 50.0 L91.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M81.2 68.0 L85.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M68.0 81.2 L70.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50.0 82.0 L50.0 91.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M32.0 81.2 L29.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.8 68.0 L14.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.0 50.0 L9.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M18.8 32.0 L14.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M32.0 18.8 L29.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50 50 L50.0 72.0\" stroke=\"#12100e\" stroke-width=\"4.5\" stroke-linecap=\"round\"/><path d=\"M50 50 L50.0 16.0\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linecap=\"round\"/><circle cx=\"50\" cy=\"50\" r=\"3.4\" fill=\"#12100e\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "time",
+        "clocks"
+      ]
+    },
+    {
+      "id": "ST.clock.7_30",
+      "kind": "shape",
+      "label": {
+        "en": "a clock showing half past seven",
+        "zh": "显示七点半的钟"
+      },
+      "altText": {
+        "en": "a clock face with the hands at half past seven",
+        "zh": "指针指向七点半的钟面"
+      },
+      "render": {
+        "svgSymbolId": "sym-clock-7-30",
+        "viewBox": "0 0 100 100",
+        "svg": "<circle cx=\"50\" cy=\"50\" r=\"46\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"3\"/><path d=\"M50.0 18.0 L50.0 9.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M68.0 18.8 L70.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M81.2 32.0 L85.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M82.0 50.0 L91.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M81.2 68.0 L85.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M68.0 81.2 L70.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50.0 82.0 L50.0 91.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M32.0 81.2 L29.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.8 68.0 L14.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.0 50.0 L9.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M18.8 32.0 L14.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M32.0 18.8 L29.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50 50 L34.4 65.6\" stroke=\"#12100e\" stroke-width=\"4.5\" stroke-linecap=\"round\"/><path d=\"M50 50 L50.0 84.0\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linecap=\"round\"/><circle cx=\"50\" cy=\"50\" r=\"3.4\" fill=\"#12100e\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "time",
+        "clocks"
+      ]
+    },
+    {
+      "id": "ST.clock.9_30",
+      "kind": "shape",
+      "label": {
+        "en": "a clock showing half past nine",
+        "zh": "显示九点半的钟"
+      },
+      "altText": {
+        "en": "a clock face with the hands at half past nine",
+        "zh": "指针指向九点半的钟面"
+      },
+      "render": {
+        "svgSymbolId": "sym-clock-9-30",
+        "viewBox": "0 0 100 100",
+        "svg": "<circle cx=\"50\" cy=\"50\" r=\"46\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"3\"/><path d=\"M50.0 18.0 L50.0 9.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M68.0 18.8 L70.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M81.2 32.0 L85.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M82.0 50.0 L91.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M81.2 68.0 L85.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M68.0 81.2 L70.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50.0 82.0 L50.0 91.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M32.0 81.2 L29.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.8 68.0 L14.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.0 50.0 L9.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M18.8 32.0 L14.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M32.0 18.8 L29.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50 50 L28.7 44.3\" stroke=\"#12100e\" stroke-width=\"4.5\" stroke-linecap=\"round\"/><path d=\"M50 50 L50.0 84.0\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linecap=\"round\"/><circle cx=\"50\" cy=\"50\" r=\"3.4\" fill=\"#12100e\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "time",
+        "clocks"
+      ]
+    },
+    {
+      "id": "ST.clock.10_30",
+      "kind": "shape",
+      "label": {
+        "en": "a clock showing half past ten",
+        "zh": "显示十点半的钟"
+      },
+      "altText": {
+        "en": "a clock face with the hands at half past ten",
+        "zh": "指针指向十点半的钟面"
+      },
+      "render": {
+        "svgSymbolId": "sym-clock-10-30",
+        "viewBox": "0 0 100 100",
+        "svg": "<circle cx=\"50\" cy=\"50\" r=\"46\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"3\"/><path d=\"M50.0 18.0 L50.0 9.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M68.0 18.8 L70.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M81.2 32.0 L85.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M82.0 50.0 L91.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M81.2 68.0 L85.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M68.0 81.2 L70.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50.0 82.0 L50.0 91.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M32.0 81.2 L29.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.8 68.0 L14.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.0 50.0 L9.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M18.8 32.0 L14.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M32.0 18.8 L29.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50 50 L34.4 34.4\" stroke=\"#12100e\" stroke-width=\"4.5\" stroke-linecap=\"round\"/><path d=\"M50 50 L50.0 84.0\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linecap=\"round\"/><circle cx=\"50\" cy=\"50\" r=\"3.4\" fill=\"#12100e\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "time",
+        "clocks"
+      ]
+    },
+    {
+      "id": "ST.clock.10_00",
+      "kind": "shape",
+      "label": {
+        "en": "a clock showing ten o’clock",
+        "zh": "显示十点整的钟"
+      },
+      "altText": {
+        "en": "a clock face with the hands at ten o’clock",
+        "zh": "指针指向十点整的钟面"
+      },
+      "render": {
+        "svgSymbolId": "sym-clock-10-00",
+        "viewBox": "0 0 100 100",
+        "svg": "<circle cx=\"50\" cy=\"50\" r=\"46\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"3\"/><path d=\"M50.0 18.0 L50.0 9.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M68.0 18.8 L70.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M81.2 32.0 L85.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M82.0 50.0 L91.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M81.2 68.0 L85.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M68.0 81.2 L70.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50.0 82.0 L50.0 91.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M32.0 81.2 L29.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.8 68.0 L14.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.0 50.0 L9.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M18.8 32.0 L14.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M32.0 18.8 L29.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50 50 L30.9 39.0\" stroke=\"#12100e\" stroke-width=\"4.5\" stroke-linecap=\"round\"/><path d=\"M50 50 L50.0 16.0\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linecap=\"round\"/><circle cx=\"50\" cy=\"50\" r=\"3.4\" fill=\"#12100e\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "time",
+        "clocks"
+      ]
+    },
+    {
+      "id": "ST.clock.11_30",
+      "kind": "shape",
+      "label": {
+        "en": "a clock showing half past eleven",
+        "zh": "显示十一点半的钟"
+      },
+      "altText": {
+        "en": "a clock face with the hands at half past eleven",
+        "zh": "指针指向十一点半的钟面"
+      },
+      "render": {
+        "svgSymbolId": "sym-clock-11-30",
+        "viewBox": "0 0 100 100",
+        "svg": "<circle cx=\"50\" cy=\"50\" r=\"46\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"3\"/><path d=\"M50.0 18.0 L50.0 9.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M68.0 18.8 L70.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M81.2 32.0 L85.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M82.0 50.0 L91.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M81.2 68.0 L85.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M68.0 81.2 L70.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50.0 82.0 L50.0 91.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M32.0 81.2 L29.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.8 68.0 L14.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.0 50.0 L9.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M18.8 32.0 L14.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M32.0 18.8 L29.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50 50 L44.3 28.7\" stroke=\"#12100e\" stroke-width=\"4.5\" stroke-linecap=\"round\"/><path d=\"M50 50 L50.0 84.0\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linecap=\"round\"/><circle cx=\"50\" cy=\"50\" r=\"3.4\" fill=\"#12100e\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "time",
+        "clocks"
+      ]
+    },
+    {
+      "id": "ST.clock.4_30",
+      "kind": "shape",
+      "label": {
+        "en": "a clock showing half past four",
+        "zh": "显示四点半的钟"
+      },
+      "altText": {
+        "en": "a clock face with the hands at half past four",
+        "zh": "指针指向四点半的钟面"
+      },
+      "render": {
+        "svgSymbolId": "sym-clock-4-30",
+        "viewBox": "0 0 100 100",
+        "svg": "<circle cx=\"50\" cy=\"50\" r=\"46\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"3\"/><path d=\"M50.0 18.0 L50.0 9.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M68.0 18.8 L70.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M81.2 32.0 L85.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M82.0 50.0 L91.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M81.2 68.0 L85.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M68.0 81.2 L70.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50.0 82.0 L50.0 91.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M32.0 81.2 L29.5 85.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.8 68.0 L14.5 70.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M18.0 50.0 L9.0 50.0\" stroke=\"#12100e\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M18.8 32.0 L14.5 29.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M32.0 18.8 L29.5 14.5\" stroke=\"#12100e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M50 50 L65.6 65.6\" stroke=\"#12100e\" stroke-width=\"4.5\" stroke-linecap=\"round\"/><path d=\"M50 50 L50.0 84.0\" stroke=\"#12100e\" stroke-width=\"2.6\" stroke-linecap=\"round\"/><circle cx=\"50\" cy=\"50\" r=\"3.4\" fill=\"#12100e\"/>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "time",
+        "clocks"
+      ]
+    },
+    {
+      "id": "ST.dig.sh",
+      "kind": "letter",
+      "label": {
+        "en": "the letters sh",
+        "zh": "字母组合 sh"
+      },
+      "altText": {
+        "en": "the two letters sh",
+        "zh": "两个字母 sh"
+      },
+      "render": {
+        "svgSymbolId": "sym-dig-sh",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"34\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">sh</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "letters",
+        "digraphs"
+      ]
+    },
+    {
+      "id": "ST.dig.ch",
+      "kind": "letter",
+      "label": {
+        "en": "the letters ch",
+        "zh": "字母组合 ch"
+      },
+      "altText": {
+        "en": "the two letters ch",
+        "zh": "两个字母 ch"
+      },
+      "render": {
+        "svgSymbolId": "sym-dig-ch",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"34\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">ch</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "letters",
+        "digraphs"
+      ]
+    },
+    {
+      "id": "ST.dig.th",
+      "kind": "letter",
+      "label": {
+        "en": "the letters th",
+        "zh": "字母组合 th"
+      },
+      "altText": {
+        "en": "the two letters th",
+        "zh": "两个字母 th"
+      },
+      "render": {
+        "svgSymbolId": "sym-dig-th",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"34\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">th</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "letters",
+        "digraphs"
+      ]
+    },
+    {
+      "id": "ST.dig.ck",
+      "kind": "letter",
+      "label": {
+        "en": "the letters ck",
+        "zh": "字母组合 ck"
+      },
+      "altText": {
+        "en": "the two letters ck",
+        "zh": "两个字母 ck"
+      },
+      "render": {
+        "svgSymbolId": "sym-dig-ck",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"34\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">ck</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "letters",
+        "digraphs"
+      ]
+    },
+    {
+      "id": "ST.dig.ng",
+      "kind": "letter",
+      "label": {
+        "en": "the letters ng",
+        "zh": "字母组合 ng"
+      },
+      "altText": {
+        "en": "the two letters ng",
+        "zh": "两个字母 ng"
+      },
+      "render": {
+        "svgSymbolId": "sym-dig-ng",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"34\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">ng</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "letters",
+        "digraphs"
+      ]
+    },
+    {
+      "id": "ST.word.tree",
+      "kind": "word",
+      "label": {
+        "en": "the word tree",
+        "zh": "单词 tree"
+      },
+      "altText": {
+        "en": "the printed word tree",
+        "zh": "单词 tree"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-tree",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">tree</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.three",
+      "kind": "word",
+      "label": {
+        "en": "the word three",
+        "zh": "单词 three"
+      },
+      "altText": {
+        "en": "the printed word three",
+        "zh": "单词 three"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-three",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">three</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.free",
+      "kind": "word",
+      "label": {
+        "en": "the word free",
+        "zh": "单词 free"
+      },
+      "altText": {
+        "en": "the printed word free",
+        "zh": "单词 free"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-free",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">free</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.true",
+      "kind": "word",
+      "label": {
+        "en": "the word true",
+        "zh": "单词 true"
+      },
+      "altText": {
+        "en": "the printed word true",
+        "zh": "单词 true"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-true",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">true</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.chair",
+      "kind": "word",
+      "label": {
+        "en": "the word chair",
+        "zh": "单词 chair"
+      },
+      "altText": {
+        "en": "the printed word chair",
+        "zh": "单词 chair"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-chair",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">chair</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.chain",
+      "kind": "word",
+      "label": {
+        "en": "the word chain",
+        "zh": "单词 chain"
+      },
+      "altText": {
+        "en": "the printed word chain",
+        "zh": "单词 chain"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-chain",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">chain</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.hair",
+      "kind": "word",
+      "label": {
+        "en": "the word hair",
+        "zh": "单词 hair"
+      },
+      "altText": {
+        "en": "the printed word hair",
+        "zh": "单词 hair"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-hair",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">hair</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.char",
+      "kind": "word",
+      "label": {
+        "en": "the word char",
+        "zh": "单词 char"
+      },
+      "altText": {
+        "en": "the printed word char",
+        "zh": "单词 char"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-char",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">char</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.sent.g1.e1",
+      "kind": "word",
+      "label": {
+        "en": "the sentence: The cat is under the table.",
+        "zh": "句子：猫在桌子下面。"
+      },
+      "altText": {
+        "en": "the printed sentence The cat is under the table.",
+        "zh": "印出的句子：猫在桌子下面。"
+      },
+      "render": {
+        "svgSymbolId": "sym-sent-g1-e1",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"3\" y=\"30\" width=\"94\" height=\"40\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"9\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">The cat is under the table.</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "sentences"
+      ]
+    },
+    {
+      "id": "ST.word.shoe",
+      "kind": "word",
+      "label": {
+        "en": "the word shoe",
+        "zh": "单词 shoe"
+      },
+      "altText": {
+        "en": "the printed word shoe",
+        "zh": "单词 shoe"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-shoe",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">shoe</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.show",
+      "kind": "word",
+      "label": {
+        "en": "the word show",
+        "zh": "单词 show"
+      },
+      "altText": {
+        "en": "the printed word show",
+        "zh": "单词 show"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-show",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">show</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.shop",
+      "kind": "word",
+      "label": {
+        "en": "the word shop",
+        "zh": "单词 shop"
+      },
+      "altText": {
+        "en": "the printed word shop",
+        "zh": "单词 shop"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-shop",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">shop</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.hoe",
+      "kind": "word",
+      "label": {
+        "en": "the word hoe",
+        "zh": "单词 hoe"
+      },
+      "altText": {
+        "en": "the printed word hoe",
+        "zh": "单词 hoe"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-hoe",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">hoe</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.truck",
+      "kind": "word",
+      "label": {
+        "en": "the word truck",
+        "zh": "单词 truck"
+      },
+      "altText": {
+        "en": "the printed word truck",
+        "zh": "单词 truck"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-truck",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">truck</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.trick",
+      "kind": "word",
+      "label": {
+        "en": "the word trick",
+        "zh": "单词 trick"
+      },
+      "altText": {
+        "en": "the printed word trick",
+        "zh": "单词 trick"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-trick",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">trick</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.track",
+      "kind": "word",
+      "label": {
+        "en": "the word track",
+        "zh": "单词 track"
+      },
+      "altText": {
+        "en": "the printed word track",
+        "zh": "单词 track"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-track",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">track</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.word.duck",
+      "kind": "word",
+      "label": {
+        "en": "the word duck",
+        "zh": "单词 duck"
+      },
+      "altText": {
+        "en": "the printed word duck",
+        "zh": "单词 duck"
+      },
+      "render": {
+        "svgSymbolId": "sym-word-duck",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"4\" y=\"26\" width=\"92\" height=\"48\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"30\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">duck</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "words"
+      ]
+    },
+    {
+      "id": "ST.sent.g1.e2",
+      "kind": "word",
+      "label": {
+        "en": "the sentence: The ball is on the chair.",
+        "zh": "句子：球在椅子上。"
+      },
+      "altText": {
+        "en": "the printed sentence The ball is on the chair.",
+        "zh": "印出的句子：球在椅子上。"
+      },
+      "render": {
+        "svgSymbolId": "sym-sent-g1-e2",
+        "viewBox": "0 0 100 100",
+        "svg": "<rect x=\"3\" y=\"30\" width=\"94\" height=\"40\" rx=\"6\" fill=\"#fdfcf7\" stroke=\"#12100e\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><text x=\"50\" y=\"50\" font-family=\"Andika, Comic Sans MS, Verdana, sans-serif\" font-size=\"9\" fill=\"#12100e\" text-anchor=\"middle\" dominant-baseline=\"central\">The ball is on the chair.</text>",
+        "printMinMm": 60,
+        "monochromeSafe": true
+      },
+      "tags": [
+        "sentences"
       ]
     }
   ]

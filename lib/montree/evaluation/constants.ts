@@ -5,11 +5,29 @@
  * Child-facing name for a sitting: "Discovery Time". Never "test", never "assessment"
  * on a surface a teacher, parent or child can read (see forbidden-terms.ts).
  */
-import type { DeliveryMode, ModuleId, WindowCode } from './types';
+import type { AgeBand, DeliveryMode, ModuleId, WindowCode } from './types';
 
 export const FEATURE_KEY = 'child_evaluation';
 export const PUBLIC_NAME = 'Montree Milestones';
 export const CHILD_FACING_NAME = 'Discovery Time';
+
+/**
+ * Montree Canopy — the Grade 1 (G1) tier of the same check-in, gated by its OWN flag.
+ *
+ * A school with `child_evaluation` on but `child_evaluation_g1` off runs kindergarten
+ * only: every G1 request is refused with the ordinary `featureOff()` 503, and the G1
+ * chip never appears in the runner. Canopy is never implied by the Milestones flag.
+ */
+export const FEATURE_KEY_G1 = 'child_evaluation_g1';
+export const CANOPY_PUBLIC_NAME = 'Montree Canopy';
+export const CANOPY_BAND: AgeBand = 'G1';
+
+/** Every band the instrument knows, in order. The DB CHECK constraints mirror this list. */
+export const AGE_BANDS: readonly AgeBand[] = ['A3', 'A4', 'A5', 'G1'];
+
+export function isAgeBand(v: unknown): v is AgeBand {
+  return typeof v === 'string' && (AGE_BANDS as readonly string[]).includes(v);
+}
 
 export const WINDOW_CODES: readonly WindowCode[] = ['autumn', 'winter', 'spring'];
 export const DELIVERY_MODES: readonly DeliveryMode[] = ['tablet', 'paper', 'observation_only'];

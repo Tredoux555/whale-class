@@ -13,6 +13,12 @@
 //   • "Give Control" master switch at the top unlocks the school-facing
 //     version of this same switchboard (More menu → School Features).
 // Super-admin surface: plain English, not i18n'd.
+//
+// DUAL MODE (Aug 2026): the SAME component is now also mounted by the classroom
+// header's ⚙️ gear for schools that have Give Control. Pass
+// apiBase='/api/montree/school-features', no sessionToken, showGiveControl=false
+// and it runs on cookie auth against the school-facing route. Defaults keep the
+// super-admin call site (SchoolsTab) byte-identical.
 
 import { useState, useEffect, useCallback } from 'react';
 
@@ -39,10 +45,21 @@ interface SchoolFeaturesModalProps {
   schoolId: string;
   schoolName: string;
   onClose: () => void;
-  sessionToken: string;
+  /**
+   * Super-admin session token. When PRESENT the modal talks to the super-admin
+   * route (token header + explicit school_id). When ABSENT it runs in SCHOOL
+   * mode: cookie auth (verifySchoolRequest), no token header, and no school_id
+   * anywhere — the school-facing route derives the school from the JWT.
+   */
+  sessionToken?: string;
+  /** Defaults to the super-admin route. Pass '/api/montree/school-features' for school mode. */
+  apiBase?: string;
+  /** Give Control is a Montree-only switch — hide it on the school-facing surface. */
+  showGiveControl?: boolean;
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
+  assessment: '🌱 Assessment',
   dashboard: '📊 Dashboard',
   ai_tools: '🧠 AI Tools',
   management: '⚙️ Management',
@@ -57,7 +74,16 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 const API = '/api/montree/super-admin/school-features';
 
-export default function SchoolFeaturesModal({ schoolId, schoolName, onClose, sessionToken }: SchoolFeaturesModalProps) {
+export default function SchoolFeaturesModal({
+  schoolId,
+  schoolName,
+  onClose,
+  sessionToken,
+  apiBase = API,
+  showGiveControl = true,
+}: SchoolFeaturesModalProps) {
+  // No super-admin token ⇒ the school is looking at its own switchboard.
+  const schoolMode = !sessionToken;
   const [features, setFeatures] = useState<Feature[]>([]);
   const [menuSyncedKeys, setMenuSyncedKeys] = useState<string[]>([]);
   const [selfServe, setSelfServe] = useState(false);
@@ -68,10 +94,13 @@ export default function SchoolFeaturesModal({ schoolId, schoolName, onClose, ses
 
   const loadFeatures = useCallback(async () => {
     try {
-      // Super-admin reads are token-gated, same as before.
-      const res = await fetch(`${API}?school_id=${schoolId}`, {
-        headers: { 'x-super-admin-token': sessionToken },
-      });
+      // Super-admin reads are token-gated, same as before. School reads ride the
+      // montree-auth cookie and carry no school_id — the route derives it.
+      const res = schoolMode
+        ? await fetch(apiBase, { credentials: 'include' })
+        : await fetch(`${apiBase}?school_id=${schoolId}`, {
+            headers: { 'x-super-admin-token': sessionToken as string },
+          });
       if (!res.ok) throw new Error('Failed to fetch');
       const data = await res.json();
       setFeatures(data.features || []);
@@ -83,22 +112,35 @@ export default function SchoolFeaturesModal({ schoolId, schoolName, onClose, ses
     } finally {
       setLoading(false);
     }
-  }, [schoolId, sessionToken]);
+  }, [schoolId, sessionToken, apiBase, schoolMode]);
 
   useEffect(() => {
     loadFeatures();
   }, [loadFeatures]);
 
   // Shared POST helper — one action per call.
+  //
+  // The two routes speak slightly different dialects and both are kept exactly
+  // as they were: the super-admin route takes { school_id, action:{…} }; the
+  // school route takes the flat { feature_key, enabled } it has always taken
+  // (plus { action:'set_all', enabled } for the bulk sweep). Both answer with
+  // the same { menuSync, updated } shape, so nothing below has to branch.
   const postAction = useCallback(
     async (action: Record<string, unknown>) => {
-      const res = await fetch(API, {
+      const body = schoolMode
+        ? action.type === 'set_all'
+          ? { action: 'set_all', enabled: action.enabled }
+          : { feature_key: action.feature_key, enabled: action.enabled }
+        : { school_id: schoolId, action };
+
+      const res = await fetch(apiBase, {
         method: 'POST',
+        credentials: schoolMode ? 'include' : 'same-origin',
         headers: {
           'Content-Type': 'application/json',
-          'x-super-admin-token': sessionToken,
+          ...(schoolMode ? {} : { 'x-super-admin-token': sessionToken as string }),
         },
-        body: JSON.stringify({ school_id: schoolId, action }),
+        body: JSON.stringify(body),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || data?.success === false) {
@@ -106,7 +148,7 @@ export default function SchoolFeaturesModal({ schoolId, schoolName, onClose, ses
       }
       return data as { menuSync?: MenuSync; updated?: number };
     },
-    [schoolId, sessionToken]
+    [schoolId, sessionToken, apiBase, schoolMode]
   );
 
   // "… menus updated for N teachers" — the whole point of the sync.
@@ -193,8 +235,9 @@ export default function SchoolFeaturesModal({ schoolId, schoolName, onClose, ses
     return acc;
   }, {});
 
-  // Sort categories: dashboard first, then ai_tools, then rest
-  const categoryOrder = ['dashboard', 'ai_tools', 'management', 'media', 'reporting', 'learning', 'reading', 'planning', 'communication', 'general'];
+  // Sort categories: assessment (Montree Milestones) first, then dashboard,
+  // then ai_tools, then the rest.
+  const categoryOrder = ['assessment', 'dashboard', 'ai_tools', 'management', 'media', 'reporting', 'learning', 'reading', 'planning', 'communication', 'general'];
   const sortedCategories = Object.keys(grouped).sort((a, b) => {
     const ai = categoryOrder.indexOf(a);
     const bi = categoryOrder.indexOf(b);
@@ -227,7 +270,9 @@ export default function SchoolFeaturesModal({ schoolId, schoolName, onClose, ses
           </button>
         </div>
 
-        {/* Give Control — master switch, deliberately styled apart from the list */}
+        {/* Give Control — master switch, deliberately styled apart from the list.
+            Montree-only: never rendered on the school-facing surface. */}
+        {showGiveControl && (
         <div className="px-6 pt-4 pb-3 border-b border-slate-700/50 bg-slate-900/40">
           <button
             onClick={toggleGiveControl}
@@ -257,6 +302,7 @@ export default function SchoolFeaturesModal({ schoolId, schoolName, onClose, ses
             Never included in Enable all / Disable all.
           </p>
         </div>
+        )}
 
         {/* Bulk actions — one batch request, not N toggles */}
         <div className="px-6 py-3 flex gap-2 items-center border-b border-slate-700/50 bg-slate-900/30">

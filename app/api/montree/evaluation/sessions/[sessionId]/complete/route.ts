@@ -18,7 +18,7 @@ import {
 import { finalizeSession, loadSession, ServiceError } from '@/lib/montree/evaluation/session-service';
 import { buildMethodStatement, renderGrowthSentence, renderMapSentence, WINDOW_LABELS } from '@/lib/montree/evaluation/benchmark-map';
 import { ageYearsFromMonths } from '@/lib/montree/evaluation/route-helpers';
-import type { TeacherOverride } from '@/lib/montree/evaluation/types';
+import type { AgeBand, TeacherOverride } from '@/lib/montree/evaluation/types';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -86,9 +86,9 @@ export async function POST(
         growth: growth && fromLabel
           ? renderGrowthSentence({ name, fromWindowLabel: fromLabel, movedUp: growth.movedUp, steady: growth.steady, watching: growth.watching })
           : null,
-        profile: renderMapSentence({ name, ageYears, map: finalized.summary.core }),
+        profile: renderMapSentence({ name, ageYears, map: finalized.summary.core, ageBand: session.age_band as AgeBand }),
         english: finalized.summary.efl.denominator > 0
-          ? renderMapSentence({ name, ageYears, map: finalized.summary.efl })
+          ? renderMapSentence({ name, ageYears, map: finalized.summary.efl, ageBand: session.age_band as AgeBand })
           : null,
       },
       method: buildMethodStatement({

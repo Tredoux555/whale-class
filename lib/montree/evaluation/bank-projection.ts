@@ -23,13 +23,17 @@
  *     picture/scene stimuli as of bank 1.8.x).
  */
 import { getBankIndex } from './bank';
+import { localeSuppressedStrandIds } from './locale-gate';
 import type {
   AgeBand, BankItem, BankModule, Domain, FormCode, ItemBank, Milestone, ModuleId,
   ObservationChecklist, Rubric, Strand,
 } from './types';
 
-/** The band whose items may be offered as extension evidence for a child at `band`. */
-const BAND_UP: Record<AgeBand, AgeBand | null> = { A3: 'A4', A4: 'A5', A5: null };
+/**
+ * The band whose items may be offered as extension evidence for a child at `band`.
+ * G1 (Montree Canopy) is the top band — nothing sits above it.
+ */
+const BAND_UP: Record<AgeBand, AgeBand | null> = { A3: 'A4', A4: 'A5', A5: 'G1', G1: null };
 
 /**
  * A stimulus as the runner needs it: the SVG body and the alt text, nothing else — plus
@@ -69,6 +73,13 @@ export interface ProjectionRequest {
   ageBand: AgeBand;
   formCode: FormCode;
   moduleIds: string[];
+  /**
+   * Language of assessment for this sitting. Under a non-English locale the English-medium
+   * core strands (LCL-C, LCL-D) are left out of the slice entirely — the tablet is never
+   * handed content it must not administer (see `locale-gate.ts`). Defaults to English, so
+   * an omitted value produces exactly the projection this module produced before the gate.
+   */
+  assessmentLocale?: string;
 }
 
 const drop = <T extends object>(obj: T, keys: string[]): T => {
@@ -120,14 +131,18 @@ export function projectBank(req: ProjectionRequest): ProjectedBank {
 
   const bandUp = BAND_UP[ageBand];
   const extensionIds = bandUp ? extensionEvidenceItemIds(bank, ageBand, formCode) : new Set<string>();
+  const suppressedStrands = localeSuppressedStrandIds(bank.strands, req.assessmentLocale);
 
   const items: BankItem[] = [];
   for (const item of bank.items) {
     if (item.type === 'observation_checklist') {
-      if (wantObservation && item.ageBand === ageBand) items.push(projectItem(item));
+      if (wantObservation && item.ageBand === ageBand && !suppressedStrands.has(item.strandId)) {
+        items.push(projectItem(item));
+      }
       continue;
     }
     if (!directModules.includes(item.moduleId)) continue;
+    if (suppressedStrands.has(item.strandId)) continue;
     // Practice items carry form 'P' and are band-scoped; scored items are form A or B.
     const formOk = item.form === 'P' || item.form === formCode;
     if (!formOk) continue;

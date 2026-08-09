@@ -41,6 +41,14 @@ interface MenuSync {
   errors: string[];
 }
 
+// Section order — kept in step with the super-admin switchboard
+// (components/montree/super-admin/SchoolFeaturesModal.tsx). Assessment
+// (Montree Milestones) leads; anything unlisted falls to the bottom.
+const CATEGORY_ORDER = [
+  'assessment', 'dashboard', 'ai_tools', 'management', 'media',
+  'reporting', 'learning', 'reading', 'planning', 'communication', 'general',
+];
+
 // Category names come from the DB — shown capitalized, never translated.
 function categoryLabel(category: string): string {
   const cleaned = (category || 'general').replace(/_/g, ' ');
@@ -123,7 +131,8 @@ export default function SchoolFeaturesPage() {
     [saving, t]
   );
 
-  // Group by category, preserving the API's category ordering.
+  // Group by category, then sort the sections into CATEGORY_ORDER (the API
+  // returns them alphabetically by category, which buried Assessment).
   const categories: string[] = [];
   const grouped: Record<string, SchoolFeature[]> = {};
   for (const f of features) {
@@ -134,6 +143,11 @@ export default function SchoolFeaturesPage() {
     }
     grouped[cat].push(f);
   }
+  categories.sort((a, b) => {
+    const ai = CATEGORY_ORDER.indexOf(a);
+    const bi = CATEGORY_ORDER.indexOf(b);
+    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+  });
 
   return (
     <div style={{ maxWidth: 560, margin: '0 auto', padding: '0 16px 60px', fontFamily: SANS }}>

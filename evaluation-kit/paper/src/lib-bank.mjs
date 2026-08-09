@@ -29,13 +29,17 @@ export const DEFAULT_BANK_PATH =
  *  M-FOCUS is the optional tablet-only extension module and is never printed.
  *  M-OBS is printed as the observation booklet, not as a sitting module. */
 export const PAPER_MODULE_IDS = ['M-LIT', 'M-MATH', 'M-EFL'];
-export const AGE_BANDS = ['A3', 'A4', 'A5'];
+/** Printed packs exist for every band the bank carries, Montree Canopy (G1) included. */
+export const AGE_BANDS = ['A3', 'A4', 'A5', 'G1'];
 export const FORM_CODES = ['A', 'B'];
 
 export const BAND_META = {
   A3: { years: 3, label: '3 years', range: '3;0 – 3;11' },
   A4: { years: 4, label: '4 years', range: '4;0 – 4;11' },
   A5: { years: 5, label: '5 years', range: '5;0 – 5;11' },
+  // Montree Canopy is named, not aged, on the pack: it is a tier rather than a single year,
+  // and the cover already says "Montree Milestones", so the chip reads "Canopy · G1 · 6;0 – 7;11".
+  G1: { years: 6, label: 'Canopy', range: '6;0 – 7;11' },
 };
 
 export const FORM_META = {
@@ -326,6 +330,8 @@ export function buildPackView(bank, ageBand, formCode) {
   return {
     ageBand,
     formCode,
+    /** The top band has no band above it, so no pack page may offer "exceeded" there. */
+    isTopBand: AGE_BANDS[AGE_BANDS.length - 1] === ageBand,
     bandMeta: BAND_META[ageBand],
     formMeta: FORM_META[formCode],
     bankVersion: bank.bankVersion,

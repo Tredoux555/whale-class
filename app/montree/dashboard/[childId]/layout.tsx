@@ -9,7 +9,6 @@ import { ArrowLeft } from 'lucide-react';
 import { getSession, type MontreeSession } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
 import { useFeaturesContext } from '@/lib/montree/features';
-import type { FeatureKey } from '@/lib/montree/features';
 
 // ── Dark forest tokens ────────────────────────────────────────────────────────
 const C = {
@@ -43,11 +42,10 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
   // Montree Milestones is opt-in per school (migration 314, default OFF). The provider is
   // mounted by /montree/dashboard/layout.tsx and fails closed — an unknown flag reads as
   // false, so the tab simply does not exist for a school that has not asked for it.
-  // `child_evaluation` is not in the FeatureKey union yet (that file is owned by the
-  // features module); the cast is the same one lib/montree/evaluation/montree-bridge.ts
-  // makes server-side, and both disappear when the key is added there.
+  // `child_evaluation` is a first-class member of the FeatureKey union (added
+  // Aug 2026 alongside the class-level Milestones menu item), so no cast here.
   const { isEnabled } = useFeaturesContext();
-  const milestonesOn = isEnabled('child_evaluation' as FeatureKey);
+  const milestonesOn = isEnabled('child_evaluation');
 
   // The check-in runner is handed to a child. Header, tabs and back arrow all disappear:
   // a stray tap on "Reports" mid-sitting ends the sitting.

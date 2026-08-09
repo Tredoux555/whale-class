@@ -71,11 +71,15 @@ export function getBankIndex(bank: ItemBank = BANK): BankIndex {
 export const BANK_VERSION = BANK.bankVersion;
 export const BANK_CHECKSUM = BANK.bankChecksum;
 
-/** Age band from age in months. A child is always assessed at their chronological band. */
+/**
+ * Age band from age in months. A child is always assessed at their chronological band.
+ * ≥ 72 months (6 years) is Montree Canopy (G1) — the Grade 1 tier.
+ */
 export function ageBandFromMonths(ageMonths: number): AgeBand {
   if (ageMonths < 48) return 'A3';
   if (ageMonths < 60) return 'A4';
-  return 'A5';
+  if (ageMonths < 72) return 'A5';
+  return 'G1';
 }
 
 /** Autumn→A, Winter→B, Spring→A (ARCHITECTURE.md §4.3). Overridable by the teacher. */

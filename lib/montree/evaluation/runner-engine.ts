@@ -20,6 +20,7 @@ import type {
   AgeBand, Band, BankItem, BankModule, FormCode, RawItemResponse, Strand, WindowCode,
 } from './types';
 import type { ProjectedBank } from './bank-projection';
+import { localeSuppressedStrandIds } from './locale-gate';
 
 /* ───────────────────────────────────────────────────────────────── lookups */
 
@@ -123,7 +124,8 @@ export interface RunState {
   bankChecksum: string;
 }
 
-const BAND_UP: Record<AgeBand, AgeBand | null> = { A3: 'A4', A4: 'A5', A5: null };
+/** G1 (Montree Canopy) is the top band — there is nothing above it to extend into. */
+const BAND_UP: Record<AgeBand, AgeBand | null> = { A3: 'A4', A4: 'A5', A5: 'G1', G1: null };
 
 export function newLocalId(): string {
   try {
@@ -157,7 +159,8 @@ export function ageMonthsFromBirthDate(birthDate: string | null | undefined, at:
 export function ageBandFromMonths(ageMonths: number): AgeBand {
   if (ageMonths < 48) return 'A3';
   if (ageMonths < 60) return 'A4';
-  return 'A5';
+  if (ageMonths < 72) return 'A5';
+  return 'G1';  // Montree Canopy — the Grade 1 tier.
 }
 
 /** Autumn→A, Winter→B, Spring→A (ARCHITECTURE.md §4.3). Overridable by the teacher. */
@@ -217,30 +220,41 @@ export function clientPointsFor(
 
 /* ──────────────────────────────────────────────────────────── step building */
 
-/** Practice first, then the scored items for this module in strand then sequence order. */
+/**
+ * Practice first, then the scored items for this module in strand then sequence order.
+ *
+ * `assessmentLocale` drives the language-of-assessment gate (see `locale-gate.ts`): under a
+ * non-English locale the English-medium core strands (LCL-C, LCL-D) are never scheduled, so
+ * a child is not walked through English rhymes and Roman letters in a Chinese sitting. It
+ * defaults to English, which makes every existing caller behave exactly as before.
+ */
 export function buildModuleSteps(
   bank: ProjectedBank,
   index: RunnerIndex,
   moduleId: string,
   ageBand: AgeBand,
   formCode: FormCode,
+  assessmentLocale: string = 'en',
 ): RunStep[] {
   const mod = index.moduleById.get(moduleId);
   const strandOrder = new Map<string, number>();
   (mod?.strandIds ?? []).forEach((s, i) => strandOrder.set(s, i));
+  const suppressedStrands = localeSuppressedStrandIds(bank.strands, assessmentLocale);
 
   const steps: RunStep[] = [];
   const practiceIds = mod?.practiceItemIds?.[ageBand] ?? [];
   for (const id of practiceIds) {
     const item = index.itemById.get(id);
-    if (item) steps.push({ kind: 'practice', itemId: id, moduleId, extension: false, skipped: false, skipReason: null });
+    if (!item || suppressedStrands.has(item.strandId)) continue;
+    steps.push({ kind: 'practice', itemId: id, moduleId, extension: false, skipped: false, skipReason: null });
   }
 
   const scored = bank.items
     .filter((i) => i.moduleId === moduleId
       && i.ageBand === ageBand
       && i.form === formCode
-      && i.type !== 'observation_checklist')
+      && i.type !== 'observation_checklist'
+      && !suppressedStrands.has(i.strandId))
     .sort((a, b) => {
       const oa = strandOrder.get(a.strandId) ?? 99;
       const ob = strandOrder.get(b.strandId) ?? 99;
@@ -287,6 +301,7 @@ export function openModule(bank: ProjectedBank, index: RunnerIndex, run: RunStat
   run.strandStreak = {};
   run.steps = buildModuleSteps(
     bank, index, run.directModules[moduleIdx], run.config.ageBand, run.config.formCode,
+    run.config.assessmentLocale,
   );
 }
 
@@ -461,6 +476,9 @@ export function maybeExtend(
   const mod = index.moduleById.get(moduleId);
   if (!mod?.extensionRule?.administerBandUp) return 0;
   if (!BAND_UP[run.config.ageBand]) return 0;
+
+  // A strand the locale gate stood down cannot earn a bonus round in the band above.
+  if (localeSuppressedStrandIds(bank.strands, run.config.assessmentLocale).has(finishedStrandId)) return 0;
 
   const key = `${moduleId}|${finishedStrandId}`;
   if (run.extensionUsed[key]) return 0;

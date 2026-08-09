@@ -1,7 +1,8 @@
 // app/api/montree/school-features/route.ts
 // Feature Switchboard — school-facing (self-serve) surface.
 //   GET  → the school's own features, resolved (override ?? default)
-//   POST → { feature_key, enabled }  single toggle
+//   POST → { feature_key, enabled }        single toggle
+//   POST → { action: 'set_all', enabled }  Enable all / Disable all
 //
 // Both methods are hard-gated on the Give Control switch: the super admin must
 // have turned 'feature_self_serve' ON for this school, otherwise 403
@@ -15,7 +16,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { isFeatureEnabled, invalidateFeatureCache } from '@/lib/montree/features/server';
-import { syncTeacherMenusForSchool, MENU_SYNCED_FEATURE_KEYS } from '@/lib/montree/features/menu-sync';
+import {
+  syncTeacherMenusForSchool,
+  MENU_SYNCED_FEATURE_KEYS,
+  FEATURE_MENU_MAP,
+  type MenuSyncResult,
+} from '@/lib/montree/features/menu-sync';
+import type { FeatureKey } from '@/lib/montree/features/types';
 
 const SELF_SERVE_KEY = 'feature_self_serve';
 
@@ -114,7 +121,7 @@ export async function POST(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
 
-  let body: { feature_key?: string; enabled?: boolean };
+  let body: { feature_key?: string; enabled?: boolean; action?: string };
   try {
     body = await request.json();
   } catch {
@@ -123,7 +130,9 @@ export async function POST(request: NextRequest) {
 
   const featureKey = body?.feature_key;
   const enabled = body?.enabled;
-  if (!featureKey || typeof enabled !== 'boolean') {
+  const bulk = body?.action === 'set_all';
+
+  if (typeof enabled !== 'boolean' || (!bulk && !featureKey)) {
     return NextResponse.json(
       { success: false, error: 'feature_key and enabled required' },
       { status: 400 }
@@ -134,6 +143,70 @@ export async function POST(request: NextRequest) {
     const supabase = getSupabase();
     if (!(await isFeatureEnabled(supabase, auth.schoolId, SELF_SERVE_KEY))) {
       return selfServeDisabled();
+    }
+
+    // ── Enable all / Disable all ──────────────────────────────────────────
+    // Mirrors the super-admin route's set_all (one batch upsert + menu sync +
+    // cache invalidation) but sweeps ONLY the keys this school is allowed to
+    // touch — Give Control, the AI billing tier and the encryption flags are
+    // filtered out exactly as they are on the single-toggle path.
+    if (bulk) {
+      const { data: defs, error: defsError } = await supabase
+        .from('montree_feature_definitions')
+        .select('feature_key');
+
+      if (defsError) {
+        console.error('[school-features] definitions query error:', defsError.message);
+        return NextResponse.json({ success: false, error: 'Failed to load features' }, { status: 500 });
+      }
+
+      const keys = ((defs || []) as { feature_key: string }[])
+        .map((d) => d.feature_key)
+        .filter((k) => !isSchoolBlockedKey(k));
+
+      if (keys.length === 0) {
+        return NextResponse.json({
+          success: true,
+          updated: 0,
+          menuSync: { mapped: false, teachersUpdated: 0, teachersSkipped: 0, errors: [] } as MenuSyncResult,
+        });
+      }
+
+      const nowIso = new Date().toISOString();
+      const { error: upsertError } = await supabase.from('montree_school_features').upsert(
+        keys.map((key) => ({
+          school_id: auth.schoolId,
+          feature_key: key,
+          enabled,
+          enabled_by: 'school_self_serve',
+          enabled_at: nowIso,
+        })),
+        { onConflict: 'school_id,feature_key' }
+      );
+
+      if (upsertError) {
+        console.error('[school-features] set_all failed:', upsertError.message);
+        return NextResponse.json({ success: false, error: 'Failed to update features' }, { status: 500 });
+      }
+
+      const totals: MenuSyncResult = { mapped: true, teachersUpdated: 0, teachersSkipped: 0, errors: [] };
+      for (const key of keys) {
+        if (!FEATURE_MENU_MAP[key as FeatureKey]) continue;
+        const r = await syncTeacherMenusForSchool(supabase, auth.schoolId, key, enabled);
+        totals.teachersUpdated += r.teachersUpdated;
+        totals.teachersSkipped = Math.max(totals.teachersSkipped, r.teachersSkipped);
+        totals.errors.push(...r.errors);
+      }
+
+      invalidateFeatureCache(auth.schoolId);
+
+      return NextResponse.json({ success: true, updated: keys.length, menuSync: totals });
+    }
+
+    // Single toggle from here down — unchanged. (The guard above already
+    // rejected a missing feature_key; this narrows the type for TypeScript.)
+    if (!featureKey) {
+      return NextResponse.json({ success: false, error: 'feature_key required' }, { status: 400 });
     }
 
     // Enforced server-side, not just hidden in the UI.

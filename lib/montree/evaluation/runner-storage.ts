@@ -24,8 +24,12 @@ export interface RunSnapshot {
   v: number;
   savedAt: string;
   bankVersion: string;
-  /** The projection request that produced the bank this run was built against. */
-  bankQuery: { ageBand: string; formCode: string; modules: string[] };
+  /**
+   * The projection request that produced the bank this run was built against.
+   * `assessmentLocale` is optional so a snapshot written before the language-of-assessment
+   * gate existed still resumes — an absent value means English, which is what it was.
+   */
+  bankQuery: { ageBand: string; formCode: string; modules: string[]; assessmentLocale?: string };
   run: RunState;
   /** Item ids already accepted by the server. Anything else is still owed. */
   syncedItemIds: string[];

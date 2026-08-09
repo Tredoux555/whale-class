@@ -20,6 +20,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
+import { useFeatures } from '@/hooks/useFeatures';
 import { resolveLocalized } from '@/lib/montree/i18n/localized-types';
 import { BandChip } from './BandChip';
 import { T, SANS, SERIF } from './tokens';
@@ -76,6 +77,8 @@ interface ReportPayload {
   message?: string;
   schoolYear?: string;
   window?: string;
+  /** `ageBand` is the band of the check-in being shown, not the child's age today. */
+  child?: { id: string; name: string | null; ageMonths: number | null; ageBand: string | null };
   session?: { id: string; window_code: string; completed_at: string | null } | null;
   headline?: {
     growthSentence: string | null;
@@ -87,6 +90,19 @@ interface ReportPayload {
   };
   domains?: DomainPayload[];
   milestones?: MilestonePayload[];
+  /**
+   * Present only when the language-of-assessment gate stood a strand down — i.e. a
+   * non-English sitting, where the English-medium core literacy strands (phonological
+   * awareness, print & alphabet) are deliberately not administered rather than translated.
+   * Null on every English check-in.
+   */
+  localeSuppression?: {
+    reason: string;
+    assessmentLocale: string;
+    strandIds: string[];
+    strandNames: Array<Record<string, string> | null>;
+    milestoneCount: number;
+  } | null;
   history?: Array<{ sessionId: string; schoolYear: string; window: string; completedAt: string | null }>;
   method?: { statement: string; caveat: string; bankVersion: string };
 }
@@ -114,10 +130,15 @@ const WINDOWS = ['autumn', 'winter', 'spring'] as const;
 const MAP_MIN_N = 12;
 const DOMAIN_MIN_N = 6;
 
+/** Secure share of the milestones actually looked at, above which A5 has been outgrown. */
+const CANOPY_READY_SECURE_PERCENT = 80;
+
 /* ────────────────────────────────────────────────────────────── the panel */
 
 export function MilestonesPanel({ childId }: { childId: string }) {
   const { t, locale } = useI18n();
+  const { isEnabled } = useFeatures();
+  const canopyOn = isEnabled('child_evaluation_g1');
   const [state, setState] = useState<LoadState>({ kind: 'loading' });
   const [report, setReport] = useState<ReportPayload | null>(null);
   const [sessions, setSessions] = useState<SessionRow[]>([]);
@@ -218,6 +239,29 @@ export function MilestonesPanel({ childId }: { childId: string }) {
   const counts = countMilestones(report?.milestones ?? []);
   const hasSession = !!report?.session;
 
+  /**
+   * Ready for Montree Canopy?
+   *
+   * A child on the TOP kindergarten band (A5) who is either already reaching past it
+   * (at least one milestone banded secure on an `extension` expectation — that is what
+   * `exceeded` counts) or is secure across four fifths of what was actually looked at, has
+   * outgrown this tier. This is a SUGGESTION to the teacher, never an automatic promotion:
+   * the teacher chooses G1 in the runner, exactly as they choose any other band.
+   *
+   * Gated on the school having Canopy switched on — pointing at a tier they cannot start
+   * would be an advert, not a prompt.
+   *
+   * NOT a hook: this sits BELOW the early returns above, so a `useMemo` here would be a
+   * conditionally-called hook. It is a cheap derivation over numbers already in hand.
+   */
+  const readyForCanopy = isReadyForCanopy({
+    canopyOn,
+    hasSession,
+    sessionBand: report?.child?.ageBand ?? null,
+    counts,
+    exceeded: headline?.map?.exceeded ?? 0,
+  });
+
   return (
     <Shell>
       {/* Title + the one action that matters */}
@@ -263,6 +307,24 @@ export function MilestonesPanel({ childId }: { childId: string }) {
           <CardTitle>{t('milestones.noneTitle')}</CardTitle>
           <p style={{ color: T.textMd, fontSize: 14, lineHeight: 1.6, margin: 0 }}>{t('milestones.noneBody')}</p>
         </Card>
+      )}
+
+      {/* Ready for the next tier. A quiet gold note, not a badge — the teacher decides. */}
+      {readyForCanopy && (
+        <div style={{
+          background: 'rgba(232,201,106,0.07)', border: '1px solid rgba(232,201,106,0.30)',
+          borderRadius: 16, padding: '14px 18px', marginBottom: 14,
+        }}>
+          <div style={{ fontFamily: SERIF, fontSize: 16, color: '#E8C96A', marginBottom: 6 }}>
+            🌿 {t('milestones.canopyReadyTitle')}
+          </div>
+          <p style={{ color: T.textMd, fontSize: 13.5, lineHeight: 1.6, margin: '0 0 12px', maxWidth: 620 }}>
+            {t('milestones.canopyReadyBody')}
+          </p>
+          <Link href={startHref} style={{ ...btnStyle(false), textDecoration: 'none', fontSize: 14 }}>
+            {t('milestones.canopyReadyCta')}
+          </Link>
+        </div>
       )}
 
       {hasSession && (
@@ -316,6 +378,22 @@ export function MilestonesPanel({ childId }: { childId: string }) {
             <p style={{ color: T.textMute, fontSize: 12, margin: 0 }}>
               {t('milestones.milestonesTotal', { n: counts.total })}
             </p>
+            {/* The language-of-assessment gate, printed rather than hidden. A gap the
+                instrument chose is still a gap the teacher is owed an explanation for. */}
+            {report?.localeSuppression && (
+              <p style={{
+                color: T.textMd, fontSize: 12, lineHeight: 1.6, margin: '12px 0 0',
+                paddingTop: 12, borderTop: `1px solid ${T.border}`, maxWidth: 640,
+              }}>
+                {t('milestones.localeSuppressedNote', {
+                  strands: report.localeSuppression.strandNames
+                    .map((n) => (n ? resolveLocalized(n, locale) : ''))
+                    .filter(Boolean)
+                    .join(' · '),
+                  n: report.localeSuppression.milestoneCount,
+                })}
+              </p>
+            )}
           </Card>
 
           {/* Domains — a band chip below n=6, never a figure. */}
@@ -449,6 +527,25 @@ function btnStyle(primary: boolean): React.CSSProperties {
     color: primary ? '#08170e' : '#fff',
     fontFamily: SANS, fontSize: 15, fontWeight: 600, cursor: 'pointer',
   };
+}
+
+/**
+ * Has this child outgrown the kindergarten tier? See the call site for the reasoning.
+ * Pure, so the rule can be read (and changed) in one place without touching the render.
+ */
+function isReadyForCanopy(input: {
+  canopyOn: boolean;
+  hasSession: boolean;
+  sessionBand: string | null;
+  counts: ReturnType<typeof countMilestones>;
+  exceeded: number;
+}): boolean {
+  if (!input.canopyOn || !input.hasSession) return false;
+  if (input.sessionBand !== 'A5') return false;   // only the TOP kindergarten band graduates
+  const assessed = input.counts.secure + input.counts.developing + input.counts.emerging;
+  if (assessed === 0) return false;               // nothing was looked at — nothing to say
+  if (input.exceeded >= 1) return true;           // already reaching past the band
+  return (input.counts.secure / assessed) * 100 >= CANOPY_READY_SECURE_PERCENT;
 }
 
 function countMilestones(rows: MilestonePayload[]) {

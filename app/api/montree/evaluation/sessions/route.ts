@@ -7,13 +7,14 @@
  * again after a dropped connection resumes rather than forking the record.
  */
 import {
-  ageMonthsFromBirthDate, assertSchemaReady, badRequest, isMigrationPendingError, json,
-  migrationPending, openRoute, readJson, requireChild, serverError,
+  ageMonthsFromBirthDate, assertSchemaReady, badRequest, canopyMigrationPending,
+  isCheckConstraintViolation, isMigrationPendingError, json,
+  migrationPending, openRoute, readJson, requireCanopyForBand, requireChild, serverError,
 } from '@/lib/montree/evaluation/route-helpers';
 import { ageBandFromMonths, defaultFormForWindow, getBankIndex } from '@/lib/montree/evaluation/bank';
 import {
-  AGE_MONTHS_MAX, AGE_MONTHS_MIN, ALL_MODULE_IDS, CORE_MODULE_IDS, isDeliveryMode, isWindowCode,
-  schoolYearFor,
+  AGE_MONTHS_MAX, AGE_MONTHS_MIN, ALL_MODULE_IDS, CANOPY_BAND, CORE_MODULE_IDS, isAgeBand,
+  isDeliveryMode, isWindowCode, schoolYearFor,
 } from '@/lib/montree/evaluation/constants';
 import { ensureBankVersionRow } from '@/lib/montree/evaluation/session-service';
 import type { AgeBand, DeliveryMode, FormCode, WindowCode } from '@/lib/montree/evaluation/types';
@@ -68,8 +69,15 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   // Chronological band by default; a teacher may override it deliberately.
+  if (body.ageBand !== undefined && !isAgeBand(body.ageBand)) {
+    return badRequest('invalid_age_band', 'expected A3, A4, A5 or G1');
+  }
   const ageBand: AgeBand = body.ageBand ?? ageBandFromMonths(ageMonths);
   const formCode: FormCode = body.formCode ?? defaultFormForWindow(body.windowCode);
+
+  // Montree Canopy (G1) rides its own flag on top of the Milestones flag openRoute checked.
+  const canopyProblem = await requireCanopyForBand(ctx, ageBand);
+  if (canopyProblem) return canopyProblem;
 
   const requested = body.modules?.length ? body.modules : [...CORE_MODULE_IDS];
   const unknownModules = requested.filter((m) => !(ALL_MODULE_IDS as readonly string[]).includes(m));
@@ -126,6 +134,12 @@ export async function POST(request: Request): Promise<Response> {
       .maybeSingle();
     if (error) {
       if (isMigrationPendingError(error)) return migrationPending(error.message);
+      // Pre-migration safety: on a database whose age_band CHECK has not been widened yet,
+      // a G1 insert is a 23514, not a bug. A3/A4/A5 satisfy both the old and the new
+      // constraint, so this branch is unreachable for a kindergarten check-in.
+      if (ageBand === CANOPY_BAND && isCheckConstraintViolation(error)) {
+        return canopyMigrationPending(error.message);
+      }
       return serverError('create session', error);
     }
 

@@ -14,12 +14,14 @@
  *   • Idempotent: re-importing the same file updates the same session instead of forking it.
  */
 import {
-  ageMonthsFromBirthDate, assertSchemaReady, badRequest, isMigrationPendingError, json,
-  migrationPending, openRoute, readJson, requireChild, serverError,
+  ageMonthsFromBirthDate, assertSchemaReady, badRequest, canopyMigrationPending,
+  isCheckConstraintViolation, isMigrationPendingError, json,
+  migrationPending, openRoute, readJson, requireCanopyForBand, requireChild, serverError,
 } from '@/lib/montree/evaluation/route-helpers';
 import { ageBandFromMonths, getBankIndex } from '@/lib/montree/evaluation/bank';
 import {
-  AGE_MONTHS_MAX, AGE_MONTHS_MIN, ALL_MODULE_IDS, isDeliveryMode, isWindowCode, schoolYearFor,
+  AGE_BANDS, AGE_MONTHS_MAX, AGE_MONTHS_MIN, ALL_MODULE_IDS, CANOPY_BAND,
+  isDeliveryMode, isWindowCode, schoolYearFor,
 } from '@/lib/montree/evaluation/constants';
 import {
   ensureBankVersionRow, finalizeSession, persistResponses, ServiceError,
@@ -99,9 +101,15 @@ export async function POST(request: Request): Promise<Response> {
   if (ageMonths < AGE_MONTHS_MIN || ageMonths > AGE_MONTHS_MAX) {
     return badRequest('age_out_of_range', `Montree Milestones covers ${AGE_MONTHS_MIN}–${AGE_MONTHS_MAX} months (file said ${s.ageMonths}).`);
   }
-  const ageBand: AgeBand = (['A3', 'A4', 'A5'] as const).includes(s.ageBand) ? s.ageBand : ageBandFromMonths(ageMonths);
+  const ageBand: AgeBand = (AGE_BANDS as readonly string[]).includes(s.ageBand)
+    ? s.ageBand
+    : ageBandFromMonths(ageMonths);
   const formCode: FormCode = s.formCode === 'B' ? 'B' : 'A';
   const modules = (s.modules ?? []).filter((m) => (ALL_MODULE_IDS as readonly string[]).includes(m));
+
+  // Montree Canopy (G1) rides its own flag on top of the Milestones flag openRoute checked.
+  const canopyProblem = await requireCanopyForBand(ctx, ageBand);
+  if (canopyProblem) return canopyProblem;
 
   const schemaProblem = await assertSchemaReady(ctx.supabase);
   if (schemaProblem) return schemaProblem;
@@ -139,6 +147,10 @@ export async function POST(request: Request): Promise<Response> {
       .maybeSingle();
     if (upsertErr) {
       if (isMigrationPendingError(upsertErr)) return migrationPending(upsertErr.message);
+      // Pre-migration safety — see the note on isCheckConstraintViolation. Only G1 can hit it.
+      if (ageBand === CANOPY_BAND && isCheckConstraintViolation(upsertErr)) {
+        return canopyMigrationPending(upsertErr.message);
+      }
       return serverError('import session upsert', upsertErr);
     }
     const session = sessionRow as EvaluationSessionRow;
