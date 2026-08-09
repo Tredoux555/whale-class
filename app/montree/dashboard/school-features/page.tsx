@@ -63,6 +63,11 @@ export default function SchoolFeaturesPage() {
   const [loading, setLoading] = useState(true);
   const [locked, setLocked] = useState(false);
   const [saving, setSaving] = useState<string | null>(null);
+  // Persistent confirmation line — mirrors the super-admin switchboard's
+  // status banner (components/montree/super-admin/SchoolFeaturesModal.tsx).
+  // The toast fades after 1.8s; this stays until the next toggle replaces it,
+  // so a school owner can always see that the change actually saved.
+  const [status, setStatus] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -119,11 +124,13 @@ export default function SchoolFeaturesPage() {
             ? ` ${t('schoolFeatures.menuUpdated').replace('{count}', String(sync.teachersUpdated))}`
             : '';
         toast.success(`${base}${menuNote}`, { duration: 1800 });
+        setStatus({ tone: 'ok', text: `${base}${menuNote}` });
       } catch {
         setFeatures((prev) =>
           prev.map((f) => (f.feature_key === feature.feature_key ? { ...f, enabled: !next } : f))
         );
         toast.error(t('schoolFeatures.toggleFailed'));
+        setStatus({ tone: 'error', text: t('schoolFeatures.toggleFailed') });
       } finally {
         setSaving(null);
       }
@@ -151,7 +158,7 @@ export default function SchoolFeaturesPage() {
 
   return (
     <div className="min-h-screen bg-[#0a1a0f]" style={{ fontFamily: SANS }}>
-    <div style={{ maxWidth: 560, margin: '0 auto', padding: '0 16px 60px' }}>
+    <div style={{ maxWidth: 560, margin: '0 auto', padding: '24px 16px 60px' }}>
       <Toaster position="top-center" richColors />
 
       <button
@@ -171,9 +178,25 @@ export default function SchoolFeaturesPage() {
       <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.45)', margin: '0 0 8px', lineHeight: 1.5 }}>
         {t('schoolFeatures.subtitle')}
       </p>
-      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', margin: '0 0 24px', lineHeight: 1.5 }}>
+      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', margin: '0 0 4px', lineHeight: 1.5 }}>
         {t('schoolFeatures.appliesToAll')}
       </p>
+      {/* Auto-save is the interaction model — say so, so nobody hunts for a Save button. */}
+      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', margin: '0 0 20px', lineHeight: 1.5 }}>
+        {t('schoolFeatures.savesInstantly')}
+      </p>
+
+      {/* Persistent result of the last toggle — does not auto-dismiss. */}
+      {status && (
+        <div style={{
+          padding: '10px 14px', borderRadius: 10, marginBottom: 20, fontSize: 13, lineHeight: 1.45,
+          background: status.tone === 'ok' ? 'rgba(52,211,153,0.08)' : 'rgba(251,191,36,0.08)',
+          border: `1px solid ${status.tone === 'ok' ? 'rgba(52,211,153,0.2)' : 'rgba(251,191,36,0.2)'}`,
+          color: status.tone === 'ok' ? '#34d399' : '#fbbf24',
+        }}>
+          {status.tone === 'ok' ? '✓ ' : '⚠ '}{status.text}
+        </div>
+      )}
 
       {locked ? (
         <div style={{

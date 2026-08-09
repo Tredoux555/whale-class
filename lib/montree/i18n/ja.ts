@@ -5622,6 +5622,7 @@ export const ja: Record<string, string> = {
   'schoolFeatures.title': '学校の機能',
   'schoolFeatures.subtitle': '学校全体で使う機能をオン・オフできます。',
   'schoolFeatures.appliesToAll': '変更は学校のすべての先生に適用されます。',
+  'schoolFeatures.savesInstantly': '変更は即座に保存されます。ほかに押すボタンはありません。',
   'schoolFeatures.loading': '機能を読み込んでいます…',
   'schoolFeatures.loadFailed': '機能を読み込めませんでした。',
   'schoolFeatures.empty': '表示できる機能はまだありません。',
