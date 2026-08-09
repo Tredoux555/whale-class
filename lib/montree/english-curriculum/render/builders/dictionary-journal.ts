@@ -30,16 +30,16 @@ export function buildDictionaryJournal(spec: WeekSpec, assets: AssetMap, opts: B
 .sheet{padding:12mm 14mm;}
 .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3mm;}
 .top .aa{font-size:24pt;font-weight:700;font-family:${KIDS_FONT};color:${FRAME_COLOR};}
-.top .t{font-size:11pt;color:#999;letter-spacing:3px;font-family:system-ui;}
-.top .nm{font-size:11pt;color:#555;font-family:${KIDS_FONT};}
-.drow{display:flex;align-items:center;gap:8mm;height:48mm;border-bottom:0.3mm dashed #e5e7eb;}
+.top .t{font-size:11pt;color:#000000;letter-spacing:3px;font-family:system-ui;}
+.top .nm{font-size:11pt;color:#000000;font-family:${KIDS_FONT};}
+.drow{display:flex;align-items:center;gap:8mm;height:48mm;border-bottom:0.3mm dashed #000000;}
 .dpic{width:38mm;flex-shrink:0;text-align:center;}
 .dpic .cap{font-size:11pt;font-family:${KIDS_FONT};font-weight:700;color:${INK};margin-top:1mm;}
 .lines{position:relative;flex:1;height:24mm;}
-.l-top{position:absolute;left:0;right:0;top:0;border-top:0.35mm solid #d1d5db;}
-.l-mid{position:absolute;left:0;right:0;top:8mm;border-top:0.35mm dashed #c9c9c9;}
-.l-base{position:absolute;left:0;right:0;top:16mm;border-top:0.45mm solid #9ca3af;}
-.trace{position:absolute;left:4mm;top:16mm;transform:translateY(-84%);font-family:${KIDS_FONT};font-weight:700;font-size:15mm;line-height:1;color:#d1d5db;letter-spacing:1mm;}
+.l-top{position:absolute;left:0;right:0;top:0;border-top:0.35mm solid #000000;}
+.l-mid{position:absolute;left:0;right:0;top:8mm;border-top:0.35mm dashed #000000;}
+.l-base{position:absolute;left:0;right:0;top:16mm;border-top:0.45mm solid #000000;}
+.trace{position:absolute;left:4mm;top:16mm;transform:translateY(-84%);font-family:${KIDS_FONT};font-weight:700;font-size:15mm;line-height:1;color:#000000;letter-spacing:1mm;}
 `;
 
   const header = () =>

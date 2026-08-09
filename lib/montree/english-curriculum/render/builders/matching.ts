@@ -59,8 +59,8 @@ export function buildMatching(spec: WeekSpec, assets: AssetMap, opts: BuildOpts 
 .sheet{padding:${L.padVCm}cm ${L.padHCm}cm;}
 .top{height:1.6cm;margin-bottom:0.4cm;display:flex;justify-content:space-between;align-items:center;}
 .top .aa{font-size:24pt;font-weight:700;font-family:${KIDS_FONT};color:${FRAME_COLOR};}
-.top .nm{font-size:12pt;color:#555;font-family:${KIDS_FONT};}
-.instr{height:0.8cm;margin-bottom:0.6cm;display:flex;align-items:center;font-size:12pt;color:#666;font-family:${KIDS_FONT};}
+.top .nm{font-size:12pt;color:#000000;font-family:${KIDS_FONT};}
+.instr{height:0.8cm;margin-bottom:0.6cm;display:flex;align-items:center;font-size:12pt;color:#000000;font-family:${KIDS_FONT};}
 .match{display:grid;grid-template-columns:${L.wordColCm}cm ${L.colGapCm}cm ${L.picColCm}cm;justify-content:center;height:${L.usableHeightCm}cm;}
 .wcell{display:flex;align-items:center;justify-content:space-between;gap:6mm;font-family:${KIDS_FONT};font-weight:700;font-size:${fpt}pt;color:${INK};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:100%;}
 .pcell{display:flex;align-items:center;justify-content:space-between;gap:6mm;height:100%;}

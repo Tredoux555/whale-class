@@ -7,7 +7,7 @@
  *   - 'letters' (default, Level 1) — the original per-glyph stroke worksheet.
  *     Absent `materials.tracing.mode` = 'letters' = BYTE-IDENTICAL Level 1 output.
  *   - 'pattern' (Level 2/3) — a colour-coded Montessori pattern card: pattern
- *     letters RED, frame letters BLACK, silent letters GREY (soft halo). The
+ *     letters RED, frame letters BLACK, silent letters BLACK with a soft halo. The
  *     glyphs are still the a–z stroke-arrows from letter-strokes.ts (patterns are
  *     compositions of existing letters — no new glyph art).
  */
@@ -21,8 +21,8 @@ import { letterStrokeSVG } from '../letter-strokes';
 
 // Pattern-card presentation colours (Level 2/3 only — never touch Level 1 output).
 const PATTERN_RED = '#c0392b';   // the pattern grapheme (the sound being taught)
-const FRAME_INK = '#1f2937';     // the surrounding frame-word letters
-const SILENT_GREY = '#9ca3af';   // silent letters (a_e's e, kn's k, wr's w, mb's b)
+const FRAME_INK = '#000000';     // the surrounding frame-word letters
+const SILENT_GREY = '#000000';   // silent letters (a_e's e, kn's k, wr's w, mb's b) — black ink, marked by a soft halo
 
 export function buildTracing(spec: WeekSpec, _assets: AssetMap, opts: BuildOpts = {}): BuildResult {
   const mode = spec.materials?.tracing?.mode ?? 'letters';
@@ -38,12 +38,12 @@ export function buildTracing(spec: WeekSpec, _assets: AssetMap, opts: BuildOpts 
 .sheet{padding:12mm;}
 .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4mm;}
 .top .aa{font-size:26pt;font-weight:700;font-family:${KIDS_FONT};color:${FRAME_COLOR};}
-.top .nm{font-size:12pt;color:#555;font-family:${KIDS_FONT};}
-.instr{font-size:12pt;color:#666;font-family:${KIDS_FONT};margin:5mm 0 2mm;}
+.top .nm{font-size:12pt;color:#000000;font-family:${KIDS_FONT};}
+.instr{font-size:12pt;color:#000000;font-family:${KIDS_FONT};margin:5mm 0 2mm;}
 .bigletter{text-align:center;margin:2mm 0;}
-.trrow{display:flex;align-items:flex-end;gap:10mm;padding:0 6mm;height:26mm;border-top:0.3mm solid #e5e7eb;border-bottom:0.5mm solid #9ca3af;margin-bottom:4mm;}
+.trrow{display:flex;align-items:flex-end;gap:10mm;padding:0 6mm;height:26mm;border-top:0.3mm solid #000000;border-bottom:0.5mm solid #000000;margin-bottom:4mm;}
 .wordrow{display:flex;flex-wrap:wrap;gap:8mm 14mm;margin-top:3mm;}
-.wtrace{position:relative;font-family:${KIDS_FONT};font-weight:700;font-size:30pt;color:${LETTER_TRACE_TINT};letter-spacing:2mm;border-bottom:0.5mm solid #9ca3af;padding:0 4mm 1mm;line-height:1.1;}
+.wtrace{position:relative;font-family:${KIDS_FONT};font-weight:700;font-size:30pt;color:${LETTER_TRACE_TINT};letter-spacing:2mm;border-bottom:0.5mm solid #000000;padding:0 4mm 1mm;line-height:1.1;}
 `;
 
   const faint = letterStrokeSVG(letter, { widthMm: 24, guides: false, bandColor: LETTER_TRACE_TINT });
@@ -157,16 +157,16 @@ function buildPatternTracing(spec: WeekSpec, opts: BuildOpts = {}): BuildResult 
 .sheet{padding:12mm;}
 .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4mm;}
 .top .aa{font-size:26pt;font-weight:700;font-family:${KIDS_FONT};color:${PATTERN_RED};}
-.top .nm{font-size:12pt;color:#555;font-family:${KIDS_FONT};}
-.instr{font-size:12pt;color:#666;font-family:${KIDS_FONT};margin:5mm 0 2mm;}
+.top .nm{font-size:12pt;color:#000000;font-family:${KIDS_FONT};}
+.instr{font-size:12pt;color:#000000;font-family:${KIDS_FONT};margin:5mm 0 2mm;}
 .pcard{display:flex;justify-content:center;align-items:flex-end;gap:2mm;margin:2mm 0 4mm;}
 .pg{display:inline-block;}
 .pg.silent{filter:drop-shadow(0 0 1.4mm rgba(156,163,175,0.85));}
 .slot{width:22mm;height:2mm;border-bottom:0.8mm dashed ${SILENT_GREY};margin:0 2mm 8mm;}
-.legend{display:flex;justify-content:center;gap:10mm;font-size:11pt;font-family:${KIDS_FONT};color:#555;margin-bottom:4mm;}
+.legend{display:flex;justify-content:center;gap:10mm;font-size:11pt;font-family:${KIDS_FONT};color:#000000;margin-bottom:4mm;}
 .legend b{font-weight:700;}
 .wordrow{display:flex;flex-wrap:wrap;gap:8mm 14mm;margin-top:3mm;}
-.wtrace{position:relative;font-family:${KIDS_FONT};font-weight:700;font-size:30pt;letter-spacing:2mm;border-bottom:0.5mm solid #9ca3af;padding:0 4mm 1mm;line-height:1.1;}
+.wtrace{position:relative;font-family:${KIDS_FONT};font-weight:700;font-size:30pt;letter-spacing:2mm;border-bottom:0.5mm solid #000000;padding:0 4mm 1mm;line-height:1.1;}
 .pl{}
 .pl.silent{text-shadow:0 0 1.4mm rgba(156,163,175,0.9);}
 `;
@@ -191,7 +191,7 @@ function buildPatternTracing(spec: WeekSpec, opts: BuildOpts = {}): BuildResult 
     `<div class="pcard">${glyphCells}</div>` +
     `<div class="legend"><span><b style="color:${PATTERN_RED};">red</b> = the pattern</span>` +
     `<span><b style="color:${FRAME_INK};">black</b> = the word</span>` +
-    `<span><b style="color:${SILENT_GREY};">grey</b> = silent</span></div>` +
+    `<span><b>soft halo</b> = silent</span></div>` +
     wordSection +
     `</div>`;
 

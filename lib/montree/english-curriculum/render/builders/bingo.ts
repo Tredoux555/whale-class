@@ -62,18 +62,18 @@ export function buildBingo(spec: WeekSpec, assets: AssetMap, opts: BuildOpts = {
   const css = `
 .hdr{text-align:center;height:${BINGO_HEADER_MM}mm;margin:8mm 0 4mm;overflow:hidden;box-sizing:border-box;}
 .hdr h2{font-size:26px;color:${INK};font-family:${HEADING_FONT};font-weight:700;line-height:1.1;white-space:nowrap;}
-.hdr p{font-size:12px;color:#999;margin-top:3px;line-height:1.2;white-space:nowrap;}
+.hdr p{font-size:12px;color:#000000;margin-top:3px;line-height:1.2;white-space:nowrap;}
 .bgrid{display:grid;grid-template-columns:repeat(${size},1fr);width:${BINGO_GRID_WIDTH_MM}mm;margin:0 auto;background:${FRAME_COLOR};padding:${BINGO_BOARD_BORDER_MM}mm;gap:${BINGO_BOARD_BORDER_MM}mm;border-radius:${BINGO_RADIUS_PX}px;}
 .bcell{aspect-ratio:1;display:flex;flex-direction:column;overflow:hidden;background:white;border-radius:${Math.max(0, BINGO_RADIUS_PX - 2)}px;}
 .bcell img{width:100%;flex:1;object-fit:cover;display:block;min-height:0;}
 .bcell .w{font-size:14pt;font-weight:700;font-family:${KIDS_FONT};color:${INK};padding:2px 0;text-align:center;flex-shrink:0;line-height:1.2;}
-.bcell .phw{flex:1;display:flex;align-items:center;justify-content:center;font-family:${KIDS_FONT};font-weight:700;font-size:17pt;color:#9ca3af;}
+.bcell .phw{flex:1;display:flex;align-items:center;justify-content:center;font-family:${KIDS_FONT};font-weight:700;font-size:17pt;color:#000000;}
 .cgrid{display:grid;grid-template-columns:repeat(${BINGO_CALLING_COLS},1fr);width:${BINGO_GRID_WIDTH_MM}mm;margin:0 auto;gap:0;}
 .ccard{aspect-ratio:1;background:${FRAME_COLOR};padding:${BINGO_CARD_BORDER_MM}mm;border-radius:${CARD_BORDER_RADIUS_CM}cm;display:flex;flex-direction:column;}
 .cin{background:white;flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:${CARD_BORDER_RADIUS_CM}cm;}
 .cin img{width:100%;height:100%;object-fit:cover;display:block;}
 .cw{font-size:30pt;font-weight:700;font-family:${KIDS_FONT};color:${INK};}
-.cphw{font-size:19pt;font-weight:700;font-family:${KIDS_FONT};color:#9ca3af;}
+.cphw{font-size:19pt;font-weight:700;font-family:${KIDS_FONT};color:#000000;}
 `;
 
   const pages: string[] = [];

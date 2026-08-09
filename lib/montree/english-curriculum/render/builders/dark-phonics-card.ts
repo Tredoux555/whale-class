@@ -78,11 +78,11 @@ export function buildDarkPhonicsCard(spec: WeekSpec, _assets: AssetMap, opts: Bu
 .dp-card{width:${CARD_W_MM}mm;height:${CARD_H_MM}mm;background:${FRAME_COLOR};padding:${WHITE_BORDER_CM}cm;border-radius:${CARD_BORDER_RADIUS_CM}cm;display:flex;flex-direction:column;overflow:hidden;box-sizing:border-box;}
 .dp-inner{flex:1;min-height:0;background:white;border-radius:${CARD_BORDER_RADIUS_CM}cm;display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .dp-inner img{width:100%;height:100%;object-fit:contain;display:block;}
-.dp-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:${KIDS_FONT};font-weight:bold;color:#9ca3af;font-size:22pt;}
+.dp-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:${KIDS_FONT};font-weight:bold;color:#000000;font-size:22pt;}
 .dp-back-in{flex:1;min-height:0;background:white;border-radius:${CARD_BORDER_RADIUS_CM}cm;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:1.2cm 1.4cm;box-sizing:border-box;}
 .dp-letter{font-family:${KIDS_FONT};font-weight:bold;color:${FRAME_COLOR};line-height:1;}
 .dp-phrase{font-family:${KIDS_FONT};font-weight:bold;color:${INK};line-height:1.15;margin-top:0.8cm;word-break:break-word;overflow-wrap:anywhere;}
-.dp-foot{font-family:${KIDS_FONT};color:#9ca3af;font-size:13pt;margin-top:1.0cm;letter-spacing:0.06em;}
+.dp-foot{font-family:${KIDS_FONT};color:#000000;font-size:13pt;margin-top:1.0cm;letter-spacing:0.06em;}
 `;
 
   const frontInner = safeImg

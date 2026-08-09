@@ -42,7 +42,7 @@ export function buildVowelWall(spec: WeekSpec, _assets: AssetMap, opts: BuildOpt
   const css = `
 .v{display:flex;flex-direction:column;align-items:center;justify-content:center;height:29.7cm;}
 .vl{font-size:170mm;font-weight:700;font-family:${KIDS_FONT};line-height:1;}
-.vc{font-size:14pt;color:#999;letter-spacing:6px;font-family:system-ui;margin-top:4mm;}
+.vc{font-size:14pt;color:#000000;letter-spacing:6px;font-family:system-ui;margin-top:4mm;}
 `;
 
   const pages = letters.map((c) => {
@@ -86,22 +86,22 @@ function buildPatternWall(spec: WeekSpec, opts: BuildOpts = {}): BuildResult {
   const css = `
 *{box-sizing:border-box;}
 .pw{display:flex;flex-direction:column;align-items:center;justify-content:center;height:29.7cm;padding:12mm;}
-.pw .kick{font-size:14pt;letter-spacing:6px;color:#9ca3af;font-family:system-ui;text-transform:uppercase;}
+.pw .kick{font-size:14pt;letter-spacing:6px;color:#000000;font-family:system-ui;text-transform:uppercase;}
 .pw .big{font-size:150mm;font-weight:700;font-family:${KIDS_FONT};line-height:1;color:${FRAME_COLOR};}
-.pw .cap{font-size:14pt;color:#999;letter-spacing:6px;font-family:system-ui;margin-top:2mm;}
+.pw .cap{font-size:14pt;color:#000000;letter-spacing:6px;font-family:system-ui;margin-top:2mm;}
 .tree{padding:12mm;}
 .tree h1{text-align:center;font-family:${KIDS_FONT};color:${FRAME_COLOR};font-size:24pt;margin:0 0 2mm;}
-.tree .sub{text-align:center;color:#9ca3af;font-family:system-ui;font-size:11pt;letter-spacing:3px;margin-bottom:6mm;text-transform:uppercase;}
+.tree .sub{text-align:center;color:#000000;font-family:system-ui;font-size:11pt;letter-spacing:3px;margin-bottom:6mm;text-transform:uppercase;}
 .crown{text-align:center;font-family:${KIDS_FONT};font-size:16pt;color:${BOOK_GOLD};margin-bottom:4mm;}
 .branches{display:flex;gap:6mm;}
 .col{flex:1;display:flex;flex-direction:column;gap:3mm;}
-.col h2{font-family:system-ui;font-size:10pt;letter-spacing:2px;color:#9ca3af;text-transform:uppercase;text-align:center;margin:0 0 2mm;}
-.leaf{display:flex;justify-content:space-between;align-items:center;border:0.5mm solid #d1d5db;border-radius:3mm;padding:2.5mm 4mm;font-family:${KIDS_FONT};font-size:12pt;color:#9ca3af;}
-.leaf .wk{font-size:9pt;color:#c4c9d0;font-family:system-ui;}
+.col h2{font-family:system-ui;font-size:10pt;letter-spacing:2px;color:#000000;text-transform:uppercase;text-align:center;margin:0 0 2mm;}
+.leaf{display:flex;justify-content:space-between;align-items:center;border:0.5mm solid #000000;border-radius:3mm;padding:2.5mm 4mm;font-family:${KIDS_FONT};font-size:12pt;color:#000000;}
+.leaf .wk{font-size:9pt;color:#000000;font-family:system-ui;}
 .leaf.earned{border-color:${BOOK_EMERALD};color:${FRAME_COLOR};background:rgba(52,211,153,0.08);}
 .leaf.current{border-color:${BOOK_GOLD};color:#7a5b00;background:rgba(232,201,106,0.16);border-width:0.9mm;}
 .leaf.mirror.earned{border-color:${VOWEL_BLUE};color:${VOWEL_BLUE};background:rgba(36,86,199,0.08);}
-.trunk{margin-top:6mm;text-align:center;font-family:system-ui;font-size:10pt;letter-spacing:3px;color:#9ca3af;border-top:0.5mm solid #e5e7eb;padding-top:4mm;}
+.trunk{margin-top:6mm;text-align:center;font-family:system-ui;font-size:10pt;letter-spacing:3px;color:#000000;border-top:0.5mm solid #000000;padding-top:4mm;}
 `;
 
   // Page 1 — the week's earned pattern (the leaf), poster-size.

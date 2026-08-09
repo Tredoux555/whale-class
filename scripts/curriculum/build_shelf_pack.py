@@ -22,9 +22,9 @@ import os
 
 IMG = lambda w: os.path.join(IMG_DIR, f"{w}.png")
 RED = HexColor("#c62828")
-INK = HexColor("#1a1a1a")
-MUT = HexColor("#777777")
-LINE = HexColor("#bbbbbb")
+INK = HexColor("#000000")
+MUT = HexColor("#000000")
+LINE = HexColor("#000000")
 
 W, H = A4  # 595 x 842 pt
 

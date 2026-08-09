@@ -73,12 +73,12 @@ pdfmetrics.registerFont(TTFont('Label',  F + 'WorkSans-Regular.ttf'))
 pdfmetrics.registerFont(TTFont('LabelB', F + 'WorkSans-Bold.ttf'))
 
 # ----------------------------------------------------------------- inks ----
-INK   = (0.10, 0.10, 0.10)
+INK   = (0, 0, 0)
 RED   = (0.776, 0.157, 0.157)
-GREY  = (0.52, 0.52, 0.52)
-FAINT = (0.72, 0.72, 0.72)
-HAIR  = (0.84, 0.84, 0.84)
-SLOT  = (0.48, 0.48, 0.48)
+GREY  = (0, 0, 0)
+FAINT = (0, 0, 0)
+HAIR  = (0, 0, 0)
+SLOT  = (0, 0, 0)
 
 # ------------------------------------------------------------- geometry ---
 PW, PH = landscape(A4)                 # 297 x 210 mm
@@ -237,14 +237,14 @@ def draw_image_contained(c, path, x, y, w, h, frame=True):
 def guidelines(c, x0, x1, base, u):
     """Three-line school paper: dotted headline, dashed midline, solid baseline."""
     c.setLineWidth(0.6)
-    c.setStrokeColorRGB(0.70, 0.70, 0.70)
+    c.setStrokeColorRGB(0, 0, 0)
     c.setDash(0.9, 2.6)
     c.line(x0, base + 2 * u, x1, base + 2 * u)
-    c.setStrokeColorRGB(0.62, 0.62, 0.62)
+    c.setStrokeColorRGB(0, 0, 0)
     c.setDash(3.2, 3.2)
     c.line(x0, base + u, x1, base + u)
     c.setDash()
-    c.setStrokeColorRGB(0.38, 0.38, 0.38)
+    c.setStrokeColorRGB(0, 0, 0)
     c.setLineWidth(0.9)
     c.line(x0, base, x1, base)
 
@@ -474,7 +474,7 @@ def cover_page(c, cfg, art_path):
     label = 'written by'
     c.drawString(MG + 4 * mm, wy + 1.8 * mm, label)
     lx = MG + 4 * mm + c.stringWidth(label, 'Label', 12) + 4 * mm
-    c.setStrokeColorRGB(0.45, 0.45, 0.45)
+    c.setStrokeColorRGB(0, 0, 0)
     c.setLineWidth(0.9)
     c.setDash()
     c.line(lx, wy, MG + left_w, wy)
@@ -550,7 +550,7 @@ def strips_pdf(cfg, sentences, card_u, out):
         for row in rows:
             x = SMG
             for w, cwid in row:
-                c.setStrokeColorRGB(0.55, 0.55, 0.55)
+                c.setStrokeColorRGB(0, 0, 0)
                 c.setLineWidth(0.6)
                 c.setDash()
                 c.rect(x, y[0] - SLOT_H, cwid, SLOT_H, stroke=1, fill=0)

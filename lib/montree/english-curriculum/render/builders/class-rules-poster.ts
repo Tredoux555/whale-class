@@ -44,7 +44,7 @@ export function buildClassRulesPoster(spec: WeekSpec, assets: AssetMap, opts: Bu
 .poster{box-sizing:border-box;padding:14mm;display:flex;flex-direction:column;height:100%;}
 .p-head{text-align:center;margin-bottom:8mm;}
 .p-title{font-family:${KIDS_FONT};font-weight:700;color:${FRAME_COLOR};font-size:21pt;line-height:1.15;}
-.p-sub{font-family:system-ui;letter-spacing:5px;text-transform:uppercase;color:#8a9a8f;font-size:10pt;margin-top:3mm;}
+.p-sub{font-family:system-ui;letter-spacing:5px;text-transform:uppercase;color:#000000;font-size:10pt;margin-top:3mm;}
 .p-rows{display:flex;flex-direction:column;gap:5mm;flex:1;}
 .p-row{display:flex;align-items:stretch;gap:5mm;background:${FRAME_COLOR};border-radius:${CARD_BORDER_RADIUS_CM}cm;padding:${WHITE_BORDER_CM}cm;height:${ROW_H_MM}mm;overflow:hidden;}
 .p-img{width:${IMG_MM}mm;flex:0 0 auto;background:#fff;border-radius:${CARD_BORDER_RADIUS_CM}cm;display:flex;align-items:center;justify-content:center;overflow:hidden;}

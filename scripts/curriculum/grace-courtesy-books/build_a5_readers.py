@@ -232,7 +232,7 @@ def build(book, outdir):
             painter(c, book)
             if is_story: folio(c, idx, left=(idx % 2 == 0))
             c.restoreState()
-        c.setStrokeColorRGB(0.8, 0.8, 0.8); c.setLineWidth(0.3)
+        c.setStrokeColorRGB(0, 0, 0); c.setLineWidth(0.3)
         c.line(sheetW/2, sheetH-4*mm, sheetW/2, sheetH-9*mm)
         c.line(sheetW/2, 4*mm, sheetW/2, 9*mm)
         c.showPage()

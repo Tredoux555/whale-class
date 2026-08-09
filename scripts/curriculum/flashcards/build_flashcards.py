@@ -18,7 +18,7 @@ for n,f in [('Title','YoungSerif-Regular.ttf'),('Word','Outfit-Bold.ttf'),
             ('Label','WorkSans-Regular.ttf'),('LabelB','WorkSans-Bold.ttf')]:
     pdfmetrics.registerFont(TTFont(n, F+f))
 
-INK=(0.10,0.10,0.10); RED=(0.776,0.157,0.157); GREY=(0.52,0.52,0.52); FAINT=(0.72,0.72,0.72)
+INK=(0,0,0); RED=(0.776,0.157,0.157); GREY=(0,0,0); FAINT=(0,0,0)
 PW,PH = A4; M = 16*mm
 U='/mnt/user-data/uploads/montree/phonics-images/satpin-v2/books'
 SNG='/mnt/user-data/uploads/Dark Phonics'

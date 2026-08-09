@@ -25,7 +25,7 @@ export const CARD_BORDER_RADIUS_CM = 0.4;
 /** Print-material frame colour (CardGenerator default). */
 export const FRAME_COLOR = '#2D5A27';
 /** Card text ink (house). */
-export const INK = '#1f2937';
+export const INK = '#000000';
 /** Montessori vowel blue. */
 export const VOWEL_BLUE = '#2456c7';
 /** Book palette (dark forest / gold / emerald glow). */
@@ -227,6 +227,6 @@ export const LETTER_GUIDE_WIDTH = 2.6;
 /** Green Montessori "start here" dot radius. */
 export const LETTER_START_DOT_R = 4.6;
 /** Grey band tint. */
-export const LETTER_BAND_TINT = '#d1d5db';
+export const LETTER_BAND_TINT = '#000000';
 /** Faint trace-row tint. */
-export const LETTER_TRACE_TINT = '#e5e7eb';
+export const LETTER_TRACE_TINT = '#000000';

@@ -13,7 +13,11 @@ var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require
   throw Error('Dynamic require of "' + x + '" is not supported');
 });
 var __commonJS = (cb, mod) => function __require2() {
-  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+  try {
+    return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+  } catch (e) {
+    throw mod = 0, e;
+  }
 };
 var __copyProps = (to, from, except, desc) => {
   if (from && typeof from === "object" || typeof from === "function") {
@@ -3018,7 +3022,7 @@ var require_bitpacker = __commonJS({
         options.colorType
       ) !== -1;
       if (options.colorType === options.inputColorType) {
-        let bigEndian = function() {
+        let bigEndian = (function() {
           let buffer = new ArrayBuffer(2);
           new DataView(buffer).setInt16(
             0,
@@ -3027,7 +3031,7 @@ var require_bitpacker = __commonJS({
             /* littleEndian */
           );
           return new Int16Array(buffer)[0] !== 256;
-        }();
+        })();
         if (options.bitDepth === 8 || options.bitDepth === 16 && bigEndian) {
           return dataIn;
         }
@@ -4639,7 +4643,7 @@ var A4_HEIGHT_CM = 29.7;
 var WHITE_BORDER_CM = 0.5;
 var CARD_BORDER_RADIUS_CM = 0.4;
 var FRAME_COLOR = "#2D5A27";
-var INK = "#1f2937";
+var INK = "#000000";
 var VOWEL_BLUE = "#2456c7";
 var BOOK_FOREST = "#0a1a0f";
 var BOOK_FOREST_DEEP = "#070f0a";
@@ -4746,8 +4750,8 @@ var BOOK_HEIGHT_MM = 148;
 var LETTER_BAND_WIDTH = 11;
 var LETTER_GUIDE_WIDTH = 2.6;
 var LETTER_START_DOT_R = 4.6;
-var LETTER_BAND_TINT = "#d1d5db";
-var LETTER_TRACE_TINT = "#e5e7eb";
+var LETTER_BAND_TINT = "#000000";
+var LETTER_TRACE_TINT = "#000000";
 
 // lib/montree/english-curriculum/render/adaptive-font.ts
 function adaptiveLabelFontSize(label, basePt, cardWidthCm, labelHeightCm) {
@@ -4881,7 +4885,7 @@ html,body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 body{font-family:${KIDS_FONT};background:white;position:relative;}
 .page{page-break-after:always;width:${A4_WIDTH_CM}cm;height:${A4_HEIGHT_CM}cm;position:relative;overflow:hidden;}
 .page:last-child{page-break-after:auto;}
-.page-title{font-size:10pt;color:#999;margin-bottom:0.4cm;text-align:center;}
+.page-title{font-size:10pt;color:#000000;margin-bottom:0.4cm;text-align:center;}
 @media print{.page-title{display:none;}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;}}
 @media screen{body{padding:20px;background:#f0f0f0;}.page{background:white;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.12);}}
 `;
@@ -4949,7 +4953,7 @@ var PLACEHOLDER_EMOJI = {
 };
 function placeholderTile(word) {
   const emoji = PLACEHOLDER_EMOJI[word.toLowerCase()] ?? "\u{1F5BC}\uFE0F";
-  return `<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f3f4f6;color:#9ca3af;text-align:center;gap:4px;"><div style="font-size:min(40%,48px);line-height:1;">${emoji}</div><div style="font-size:11pt;font-family:${KIDS_FONT};">${escapeHtml(word)}</div></div>`;
+  return `<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f3f4f6;color:#000000;text-align:center;gap:4px;"><div style="font-size:min(40%,48px);line-height:1;">${emoji}</div><div style="font-size:11pt;font-family:${KIDS_FONT};">${escapeHtml(word)}</div></div>`;
 }
 
 // lib/montree/english-curriculum/render/builders/three-part-cards.ts
@@ -5166,8 +5170,8 @@ function buildMatching(spec, assets, opts = {}) {
 .sheet{padding:${L.padVCm}cm ${L.padHCm}cm;}
 .top{height:1.6cm;margin-bottom:0.4cm;display:flex;justify-content:space-between;align-items:center;}
 .top .aa{font-size:24pt;font-weight:700;font-family:${KIDS_FONT};color:${FRAME_COLOR};}
-.top .nm{font-size:12pt;color:#555;font-family:${KIDS_FONT};}
-.instr{height:0.8cm;margin-bottom:0.6cm;display:flex;align-items:center;font-size:12pt;color:#666;font-family:${KIDS_FONT};}
+.top .nm{font-size:12pt;color:#000000;font-family:${KIDS_FONT};}
+.instr{height:0.8cm;margin-bottom:0.6cm;display:flex;align-items:center;font-size:12pt;color:#000000;font-family:${KIDS_FONT};}
 .match{display:grid;grid-template-columns:${L.wordColCm}cm ${L.colGapCm}cm ${L.picColCm}cm;justify-content:center;height:${L.usableHeightCm}cm;}
 .wcell{display:flex;align-items:center;justify-content:space-between;gap:6mm;font-family:${KIDS_FONT};font-weight:700;font-size:${fpt}pt;color:${INK};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:100%;}
 .pcell{display:flex;align-items:center;justify-content:space-between;gap:6mm;height:100%;}
@@ -5236,18 +5240,18 @@ function buildBingo(spec, assets, opts = {}) {
   const css = `
 .hdr{text-align:center;height:${BINGO_HEADER_MM}mm;margin:8mm 0 4mm;overflow:hidden;box-sizing:border-box;}
 .hdr h2{font-size:26px;color:${INK};font-family:${HEADING_FONT};font-weight:700;line-height:1.1;white-space:nowrap;}
-.hdr p{font-size:12px;color:#999;margin-top:3px;line-height:1.2;white-space:nowrap;}
+.hdr p{font-size:12px;color:#000000;margin-top:3px;line-height:1.2;white-space:nowrap;}
 .bgrid{display:grid;grid-template-columns:repeat(${size},1fr);width:${BINGO_GRID_WIDTH_MM}mm;margin:0 auto;background:${FRAME_COLOR};padding:${BINGO_BOARD_BORDER_MM}mm;gap:${BINGO_BOARD_BORDER_MM}mm;border-radius:${BINGO_RADIUS_PX}px;}
 .bcell{aspect-ratio:1;display:flex;flex-direction:column;overflow:hidden;background:white;border-radius:${Math.max(0, BINGO_RADIUS_PX - 2)}px;}
 .bcell img{width:100%;flex:1;object-fit:cover;display:block;min-height:0;}
 .bcell .w{font-size:14pt;font-weight:700;font-family:${KIDS_FONT};color:${INK};padding:2px 0;text-align:center;flex-shrink:0;line-height:1.2;}
-.bcell .phw{flex:1;display:flex;align-items:center;justify-content:center;font-family:${KIDS_FONT};font-weight:700;font-size:17pt;color:#9ca3af;}
+.bcell .phw{flex:1;display:flex;align-items:center;justify-content:center;font-family:${KIDS_FONT};font-weight:700;font-size:17pt;color:#000000;}
 .cgrid{display:grid;grid-template-columns:repeat(${BINGO_CALLING_COLS},1fr);width:${BINGO_GRID_WIDTH_MM}mm;margin:0 auto;gap:0;}
 .ccard{aspect-ratio:1;background:${FRAME_COLOR};padding:${BINGO_CARD_BORDER_MM}mm;border-radius:${CARD_BORDER_RADIUS_CM}cm;display:flex;flex-direction:column;}
 .cin{background:white;flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:${CARD_BORDER_RADIUS_CM}cm;}
 .cin img{width:100%;height:100%;object-fit:cover;display:block;}
 .cw{font-size:30pt;font-weight:700;font-family:${KIDS_FONT};color:${INK};}
-.cphw{font-size:19pt;font-weight:700;font-family:${KIDS_FONT};color:#9ca3af;}
+.cphw{font-size:19pt;font-weight:700;font-family:${KIDS_FONT};color:#000000;}
 `;
   const pages = [];
   if (pool.length === 0) {
@@ -5476,8 +5480,8 @@ var KNOWN_STROKE_LETTERS = Object.keys(LETTERS);
 
 // lib/montree/english-curriculum/render/builders/tracing.ts
 var PATTERN_RED = "#c0392b";
-var FRAME_INK = "#1f2937";
-var SILENT_GREY = "#9ca3af";
+var FRAME_INK = "#000000";
+var SILENT_GREY = "#000000";
 function buildTracing(spec, _assets, opts = {}) {
   const mode = spec.materials?.tracing?.mode ?? "letters";
   if (mode === "pattern") return buildPatternTracing(spec, opts);
@@ -5489,12 +5493,12 @@ function buildTracing(spec, _assets, opts = {}) {
 .sheet{padding:12mm;}
 .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4mm;}
 .top .aa{font-size:26pt;font-weight:700;font-family:${KIDS_FONT};color:${FRAME_COLOR};}
-.top .nm{font-size:12pt;color:#555;font-family:${KIDS_FONT};}
-.instr{font-size:12pt;color:#666;font-family:${KIDS_FONT};margin:5mm 0 2mm;}
+.top .nm{font-size:12pt;color:#000000;font-family:${KIDS_FONT};}
+.instr{font-size:12pt;color:#000000;font-family:${KIDS_FONT};margin:5mm 0 2mm;}
 .bigletter{text-align:center;margin:2mm 0;}
-.trrow{display:flex;align-items:flex-end;gap:10mm;padding:0 6mm;height:26mm;border-top:0.3mm solid #e5e7eb;border-bottom:0.5mm solid #9ca3af;margin-bottom:4mm;}
+.trrow{display:flex;align-items:flex-end;gap:10mm;padding:0 6mm;height:26mm;border-top:0.3mm solid #000000;border-bottom:0.5mm solid #000000;margin-bottom:4mm;}
 .wordrow{display:flex;flex-wrap:wrap;gap:8mm 14mm;margin-top:3mm;}
-.wtrace{position:relative;font-family:${KIDS_FONT};font-weight:700;font-size:30pt;color:${LETTER_TRACE_TINT};letter-spacing:2mm;border-bottom:0.5mm solid #9ca3af;padding:0 4mm 1mm;line-height:1.1;}
+.wtrace{position:relative;font-family:${KIDS_FONT};font-weight:700;font-size:30pt;color:${LETTER_TRACE_TINT};letter-spacing:2mm;border-bottom:0.5mm solid #000000;padding:0 4mm 1mm;line-height:1.1;}
 `;
   const faint = letterStrokeSVG(letter, { widthMm: 24, guides: false, bandColor: LETTER_TRACE_TINT });
   const modelSmall = letterStrokeSVG(letter, { widthMm: 24, guides: false, bandColor: LETTER_BAND_TINT });
@@ -5561,16 +5565,16 @@ function buildPatternTracing(spec, opts = {}) {
 .sheet{padding:12mm;}
 .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4mm;}
 .top .aa{font-size:26pt;font-weight:700;font-family:${KIDS_FONT};color:${PATTERN_RED};}
-.top .nm{font-size:12pt;color:#555;font-family:${KIDS_FONT};}
-.instr{font-size:12pt;color:#666;font-family:${KIDS_FONT};margin:5mm 0 2mm;}
+.top .nm{font-size:12pt;color:#000000;font-family:${KIDS_FONT};}
+.instr{font-size:12pt;color:#000000;font-family:${KIDS_FONT};margin:5mm 0 2mm;}
 .pcard{display:flex;justify-content:center;align-items:flex-end;gap:2mm;margin:2mm 0 4mm;}
 .pg{display:inline-block;}
 .pg.silent{filter:drop-shadow(0 0 1.4mm rgba(156,163,175,0.85));}
 .slot{width:22mm;height:2mm;border-bottom:0.8mm dashed ${SILENT_GREY};margin:0 2mm 8mm;}
-.legend{display:flex;justify-content:center;gap:10mm;font-size:11pt;font-family:${KIDS_FONT};color:#555;margin-bottom:4mm;}
+.legend{display:flex;justify-content:center;gap:10mm;font-size:11pt;font-family:${KIDS_FONT};color:#000000;margin-bottom:4mm;}
 .legend b{font-weight:700;}
 .wordrow{display:flex;flex-wrap:wrap;gap:8mm 14mm;margin-top:3mm;}
-.wtrace{position:relative;font-family:${KIDS_FONT};font-weight:700;font-size:30pt;letter-spacing:2mm;border-bottom:0.5mm solid #9ca3af;padding:0 4mm 1mm;line-height:1.1;}
+.wtrace{position:relative;font-family:${KIDS_FONT};font-weight:700;font-size:30pt;letter-spacing:2mm;border-bottom:0.5mm solid #000000;padding:0 4mm 1mm;line-height:1.1;}
 .pl{}
 .pl.silent{text-shadow:0 0 1.4mm rgba(156,163,175,0.9);}
 `;
@@ -5581,7 +5585,7 @@ function buildPatternTracing(spec, opts = {}) {
     return `<span class="pg${g.role === "silent" ? " silent" : ""}">${svg}</span>`;
   }).join("");
   const wordSection = words.length ? `<div class="instr">Trace the words. The red sound is the pattern.</div><div class="wordrow">` + words.map((w) => `<div class="wtrace">${colorWord(pattern, w)}</div>`).join("") + `</div>` : "";
-  const body = `<div class="page sheet"><div class="top"><div class="aa">${escapeHtml(display)}</div><div class="nm">name ______________________</div></div><div class="instr">This week's pattern. Start each letter at the green dot; follow the arrows.</div><div class="pcard">${glyphCells}</div><div class="legend"><span><b style="color:${PATTERN_RED};">red</b> = the pattern</span><span><b style="color:${FRAME_INK};">black</b> = the word</span><span><b style="color:${SILENT_GREY};">grey</b> = silent</span></div>` + wordSection + `</div>`;
+  const body = `<div class="page sheet"><div class="top"><div class="aa">${escapeHtml(display)}</div><div class="nm">name ______________________</div></div><div class="instr">This week's pattern. Start each letter at the green dot; follow the arrows.</div><div class="pcard">${glyphCells}</div><div class="legend"><span><b style="color:${PATTERN_RED};">red</b> = the pattern</span><span><b style="color:${FRAME_INK};">black</b> = the word</span><span><b>soft halo</b> = silent</span></div>` + wordSection + `</div>`;
   return {
     html: docShell({ title: `Week ${spec.week} \u2014 Pattern ${display}`, css, body, fontBaseUrl: opts.fontBaseUrl, autoPrint: opts.autoPrint }),
     warnings
@@ -5606,9 +5610,9 @@ function buildColoring(spec, assets, opts = {}) {
 .sheet{box-sizing:border-box;padding:10mm;}
 .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5mm;}
 .top .aa{font-size:24pt;font-weight:700;font-family:${KIDS_FONT};color:${FRAME_COLOR};}
-.top .nm{font-size:12pt;color:#555;font-family:${KIDS_FONT};}
+.top .nm{font-size:12pt;color:#000000;font-family:${KIDS_FONT};}
 .cgrid{display:grid;grid-template-columns:1fr 1fr;gap:7mm;}
-.citem{height:${CELL_H_MM}mm;border:0.4mm dashed #d1d5db;border-radius:3mm;padding:4mm;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;}
+.citem{height:${CELL_H_MM}mm;border:0.4mm dashed #000000;border-radius:3mm;padding:4mm;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;}
 .ci-imgwrap{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .ci-img{max-width:100%;max-height:100%;object-fit:contain;}
 .ci-ph{flex:0 1 auto;}
@@ -5653,16 +5657,16 @@ function buildDictionaryJournal(spec, assets, opts = {}) {
 .sheet{padding:12mm 14mm;}
 .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3mm;}
 .top .aa{font-size:24pt;font-weight:700;font-family:${KIDS_FONT};color:${FRAME_COLOR};}
-.top .t{font-size:11pt;color:#999;letter-spacing:3px;font-family:system-ui;}
-.top .nm{font-size:11pt;color:#555;font-family:${KIDS_FONT};}
-.drow{display:flex;align-items:center;gap:8mm;height:48mm;border-bottom:0.3mm dashed #e5e7eb;}
+.top .t{font-size:11pt;color:#000000;letter-spacing:3px;font-family:system-ui;}
+.top .nm{font-size:11pt;color:#000000;font-family:${KIDS_FONT};}
+.drow{display:flex;align-items:center;gap:8mm;height:48mm;border-bottom:0.3mm dashed #000000;}
 .dpic{width:38mm;flex-shrink:0;text-align:center;}
 .dpic .cap{font-size:11pt;font-family:${KIDS_FONT};font-weight:700;color:${INK};margin-top:1mm;}
 .lines{position:relative;flex:1;height:24mm;}
-.l-top{position:absolute;left:0;right:0;top:0;border-top:0.35mm solid #d1d5db;}
-.l-mid{position:absolute;left:0;right:0;top:8mm;border-top:0.35mm dashed #c9c9c9;}
-.l-base{position:absolute;left:0;right:0;top:16mm;border-top:0.45mm solid #9ca3af;}
-.trace{position:absolute;left:4mm;top:16mm;transform:translateY(-84%);font-family:${KIDS_FONT};font-weight:700;font-size:15mm;line-height:1;color:#d1d5db;letter-spacing:1mm;}
+.l-top{position:absolute;left:0;right:0;top:0;border-top:0.35mm solid #000000;}
+.l-mid{position:absolute;left:0;right:0;top:8mm;border-top:0.35mm dashed #000000;}
+.l-base{position:absolute;left:0;right:0;top:16mm;border-top:0.45mm solid #000000;}
+.trace{position:absolute;left:4mm;top:16mm;transform:translateY(-84%);font-family:${KIDS_FONT};font-weight:700;font-size:15mm;line-height:1;color:#000000;letter-spacing:1mm;}
 `;
   const header = () => `<div class="top"><div class="aa">${escapeHtml(spec.letterDisplay || spec.sound)}</div><div class="t">MY DICTIONARY &middot; WEEK ${spec.week}</div><div class="nm">name ____________________</div></div>`;
   const row = (w) => `<div class="drow"><div class="dpic">${art2(w, assets, warnings)}<div class="cap">${escapeHtml(w)}</div></div><div class="lines"><div class="l-top"></div><div class="l-mid"></div><div class="l-base"></div><div class="trace">${escapeHtml(w)}</div></div></div>`;
@@ -5764,7 +5768,7 @@ function buildVowelWall(spec, _assets, opts = {}) {
   const css = `
 .v{display:flex;flex-direction:column;align-items:center;justify-content:center;height:29.7cm;}
 .vl{font-size:170mm;font-weight:700;font-family:${KIDS_FONT};line-height:1;}
-.vc{font-size:14pt;color:#999;letter-spacing:6px;font-family:system-ui;margin-top:4mm;}
+.vc{font-size:14pt;color:#000000;letter-spacing:6px;font-family:system-ui;margin-top:4mm;}
 `;
   const pages = letters.map((c) => {
     const vowel = isVowel(c);
@@ -5821,22 +5825,22 @@ function buildPatternWall(spec, opts = {}) {
   const css = `
 *{box-sizing:border-box;}
 .pw{display:flex;flex-direction:column;align-items:center;justify-content:center;height:29.7cm;padding:12mm;}
-.pw .kick{font-size:14pt;letter-spacing:6px;color:#9ca3af;font-family:system-ui;text-transform:uppercase;}
+.pw .kick{font-size:14pt;letter-spacing:6px;color:#000000;font-family:system-ui;text-transform:uppercase;}
 .pw .big{font-size:150mm;font-weight:700;font-family:${KIDS_FONT};line-height:1;color:${FRAME_COLOR};}
-.pw .cap{font-size:14pt;color:#999;letter-spacing:6px;font-family:system-ui;margin-top:2mm;}
+.pw .cap{font-size:14pt;color:#000000;letter-spacing:6px;font-family:system-ui;margin-top:2mm;}
 .tree{padding:12mm;}
 .tree h1{text-align:center;font-family:${KIDS_FONT};color:${FRAME_COLOR};font-size:24pt;margin:0 0 2mm;}
-.tree .sub{text-align:center;color:#9ca3af;font-family:system-ui;font-size:11pt;letter-spacing:3px;margin-bottom:6mm;text-transform:uppercase;}
+.tree .sub{text-align:center;color:#000000;font-family:system-ui;font-size:11pt;letter-spacing:3px;margin-bottom:6mm;text-transform:uppercase;}
 .crown{text-align:center;font-family:${KIDS_FONT};font-size:16pt;color:${BOOK_GOLD};margin-bottom:4mm;}
 .branches{display:flex;gap:6mm;}
 .col{flex:1;display:flex;flex-direction:column;gap:3mm;}
-.col h2{font-family:system-ui;font-size:10pt;letter-spacing:2px;color:#9ca3af;text-transform:uppercase;text-align:center;margin:0 0 2mm;}
-.leaf{display:flex;justify-content:space-between;align-items:center;border:0.5mm solid #d1d5db;border-radius:3mm;padding:2.5mm 4mm;font-family:${KIDS_FONT};font-size:12pt;color:#9ca3af;}
-.leaf .wk{font-size:9pt;color:#c4c9d0;font-family:system-ui;}
+.col h2{font-family:system-ui;font-size:10pt;letter-spacing:2px;color:#000000;text-transform:uppercase;text-align:center;margin:0 0 2mm;}
+.leaf{display:flex;justify-content:space-between;align-items:center;border:0.5mm solid #000000;border-radius:3mm;padding:2.5mm 4mm;font-family:${KIDS_FONT};font-size:12pt;color:#000000;}
+.leaf .wk{font-size:9pt;color:#000000;font-family:system-ui;}
 .leaf.earned{border-color:${BOOK_EMERALD};color:${FRAME_COLOR};background:rgba(52,211,153,0.08);}
 .leaf.current{border-color:${BOOK_GOLD};color:#7a5b00;background:rgba(232,201,106,0.16);border-width:0.9mm;}
 .leaf.mirror.earned{border-color:${VOWEL_BLUE};color:${VOWEL_BLUE};background:rgba(36,86,199,0.08);}
-.trunk{margin-top:6mm;text-align:center;font-family:system-ui;font-size:10pt;letter-spacing:3px;color:#9ca3af;border-top:0.5mm solid #e5e7eb;padding-top:4mm;}
+.trunk{margin-top:6mm;text-align:center;font-family:system-ui;font-size:10pt;letter-spacing:3px;color:#000000;border-top:0.5mm solid #000000;padding-top:4mm;}
 `;
   const poster = `<div class="page pw"><div class="kick">${escapeHtml(
     isMorphology ? "THE ENDING" : "THE PATTERN"
@@ -5929,7 +5933,7 @@ function buildClassRulesPoster(spec, assets, opts = {}) {
 .poster{box-sizing:border-box;padding:14mm;display:flex;flex-direction:column;height:100%;}
 .p-head{text-align:center;margin-bottom:8mm;}
 .p-title{font-family:${KIDS_FONT};font-weight:700;color:${FRAME_COLOR};font-size:21pt;line-height:1.15;}
-.p-sub{font-family:system-ui;letter-spacing:5px;text-transform:uppercase;color:#8a9a8f;font-size:10pt;margin-top:3mm;}
+.p-sub{font-family:system-ui;letter-spacing:5px;text-transform:uppercase;color:#000000;font-size:10pt;margin-top:3mm;}
 .p-rows{display:flex;flex-direction:column;gap:5mm;flex:1;}
 .p-row{display:flex;align-items:stretch;gap:5mm;background:${FRAME_COLOR};border-radius:${CARD_BORDER_RADIUS_CM}cm;padding:${WHITE_BORDER_CM}cm;height:${ROW_H_MM}mm;overflow:hidden;}
 .p-img{width:${IMG_MM}mm;flex:0 0 auto;background:#fff;border-radius:${CARD_BORDER_RADIUS_CM}cm;display:flex;align-items:center;justify-content:center;overflow:hidden;}
@@ -5976,11 +5980,11 @@ function buildDarkPhonicsCard(spec, _assets, opts = {}) {
 .dp-card{width:${CARD_W_MM}mm;height:${CARD_H_MM2}mm;background:${FRAME_COLOR};padding:${WHITE_BORDER_CM}cm;border-radius:${CARD_BORDER_RADIUS_CM}cm;display:flex;flex-direction:column;overflow:hidden;box-sizing:border-box;}
 .dp-inner{flex:1;min-height:0;background:white;border-radius:${CARD_BORDER_RADIUS_CM}cm;display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .dp-inner img{width:100%;height:100%;object-fit:contain;display:block;}
-.dp-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:${KIDS_FONT};font-weight:bold;color:#9ca3af;font-size:22pt;}
+.dp-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:${KIDS_FONT};font-weight:bold;color:#000000;font-size:22pt;}
 .dp-back-in{flex:1;min-height:0;background:white;border-radius:${CARD_BORDER_RADIUS_CM}cm;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:1.2cm 1.4cm;box-sizing:border-box;}
 .dp-letter{font-family:${KIDS_FONT};font-weight:bold;color:${FRAME_COLOR};line-height:1;}
 .dp-phrase{font-family:${KIDS_FONT};font-weight:bold;color:${INK};line-height:1.15;margin-top:0.8cm;word-break:break-word;overflow-wrap:anywhere;}
-.dp-foot{font-family:${KIDS_FONT};color:#9ca3af;font-size:13pt;margin-top:1.0cm;letter-spacing:0.06em;}
+.dp-foot{font-family:${KIDS_FONT};color:#000000;font-size:13pt;margin-top:1.0cm;letter-spacing:0.06em;}
 `;
   const frontInner = safeImg ? `<img src="${safeImg}" alt="${escapeHtml(phrase)}">` : `<div class="dp-ph">${escapeHtml(phrase)}</div>`;
   const front = `<div class="page dp-page"><div class="dp-card"><div class="dp-inner">${frontInner}</div></div></div>`;

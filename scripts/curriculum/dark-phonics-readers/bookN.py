@@ -23,7 +23,7 @@
 # Do not repeat letter I's debt of building against the incoming tray only —
 # `artDir` in letters/n.json points at the permanent nest/ location.
 import os, sys
-sys.path.insert(0, '/mnt/user-data/uploads/montree/scripts/curriculum/dark-phonics-readers')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from dpbuild import build, BOOKS_ROOT
 
 # Container default; set MONTREE_N_ART / MONTREE_BOOK_OUT to build on a Mac.
