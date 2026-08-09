@@ -6032,6 +6032,7 @@ export const zh = {
   'schoolFeatures.title': '学校功能',
   'schoolFeatures.subtitle': '为全校开启或关闭各项工具。',
   'schoolFeatures.appliesToAll': '更改将应用于学校的每一位老师。',
+  'schoolFeatures.savesInstantly': '更改会立即保存，无需再点击其他按钮。',
   'schoolFeatures.loading': '正在加载功能…',
   'schoolFeatures.loadFailed': '无法加载学校功能。',
   'schoolFeatures.empty': '暂无可显示的功能。',

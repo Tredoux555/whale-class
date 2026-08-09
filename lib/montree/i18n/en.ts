@@ -6091,6 +6091,7 @@ export const en = {
   'schoolFeatures.title': 'School Features',
   'schoolFeatures.subtitle': 'Turn tools on or off for your school.',
   'schoolFeatures.appliesToAll': 'Changes apply to every teacher in your school.',
+  'schoolFeatures.savesInstantly': "Changes save instantly — there's nothing else to press.",
   'schoolFeatures.loading': 'Loading features…',
   'schoolFeatures.loadFailed': 'Could not load your features.',
   'schoolFeatures.empty': 'No features to show yet.',

@@ -5619,6 +5619,7 @@ export const ru: Record<string, string> = {
   'schoolFeatures.title': 'Функции школы',
   'schoolFeatures.subtitle': 'Включайте и выключайте инструменты для всей школы.',
   'schoolFeatures.appliesToAll': 'Изменения действуют для всех педагогов школы.',
+  'schoolFeatures.savesInstantly': 'Изменения сохраняются мгновенно — больше ничего нажимать не нужно.',
   'schoolFeatures.loading': 'Загрузка функций…',
   'schoolFeatures.loadFailed': 'Не удалось загрузить функции.',
   'schoolFeatures.empty': 'Пока нет функций для отображения.',

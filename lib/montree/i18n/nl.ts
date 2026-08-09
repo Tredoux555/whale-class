@@ -5622,6 +5622,7 @@ export const nl: Record<string, string> = {
   'schoolFeatures.title': 'Schoolfuncties',
   'schoolFeatures.subtitle': 'Zet hulpmiddelen aan of uit voor de hele school.',
   'schoolFeatures.appliesToAll': 'Wijzigingen gelden voor alle leerkrachten van de school.',
+  'schoolFeatures.savesInstantly': 'Wijzigingen worden direct opgeslagen — er is verder niets om op te drukken.',
   'schoolFeatures.loading': 'Functies worden geladen…',
   'schoolFeatures.loadFailed': 'De functies konden niet worden geladen.',
   'schoolFeatures.empty': 'Nog geen functies om te tonen.',

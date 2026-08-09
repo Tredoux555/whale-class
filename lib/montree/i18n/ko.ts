@@ -5622,6 +5622,7 @@ export const ko: Record<string, string> = {
   'schoolFeatures.title': '학교 기능',
   'schoolFeatures.subtitle': '학교 전체에서 사용할 기능을 켜거나 끕니다.',
   'schoolFeatures.appliesToAll': '변경 사항은 학교의 모든 교사에게 적용됩니다.',
+  'schoolFeatures.savesInstantly': '변경 사항은 즉시 저장됩니다 — 따로 누를 것이 없습니다.',
   'schoolFeatures.loading': '기능을 불러오는 중…',
   'schoolFeatures.loadFailed': '기능을 불러오지 못했습니다.',
   'schoolFeatures.empty': '표시할 기능이 아직 없습니다.',
