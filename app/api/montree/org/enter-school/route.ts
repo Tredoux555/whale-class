@@ -262,6 +262,13 @@ export async function POST(request: NextRequest) {
   );
   // 'principal' so the PWA launch hint points at the cockpit while they are in there. The
   // return route sets it back to the organisation.
-  setMontreeAuthCookie(response, token, 'principal');
+  //
+  // 🚨 The cookie is given the SAME 8-hour life as the token it carries — see the note on
+  // setMontreeAuthCookie. A cookie that outlives its token leaves a director holding a
+  // credential every route rejects, including return-to-org, with their own org session
+  // already overwritten.
+  setMontreeAuthCookie(response, token, 'principal', {
+    maxAgeSeconds: ENTER_SCHOOL_TTL_SECONDS,
+  });
   return response;
 }

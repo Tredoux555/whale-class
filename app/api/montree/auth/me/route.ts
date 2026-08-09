@@ -18,6 +18,12 @@ export async function GET(request: NextRequest) {
   // the signed token; this is the only place the client can learn about it, because the
   // cockpit layout already treats auth/me as the single authority on the session.
   const actingOrgAdminId = auth.actingOrgAdminId ?? null;
+  // Same idea one level down — a PRINCIPAL has stepped into one of their own classrooms
+  // (POST /api/montree/admin/enter-classroom) and is holding a teacher session. The teacher
+  // dashboard needs to know so it can say so and offer the way back. Read from the signed
+  // token, never from localStorage: a banner claiming somebody is looking through a teacher's
+  // seat must not be forgeable by editing a browser store, in either direction.
+  const actingPrincipalId = auth.actingPrincipalId ?? null;
 
   try {
     const supabase = getSupabase();
@@ -99,8 +105,18 @@ export async function GET(request: NextRequest) {
       // Present ONLY on a session minted by /api/montree/org/enter-school. Informational —
       // the cockpit renders the "Organisation view" banner and its Return button from it.
       // Never a permission: this session is scoped to `schoolId` like any other principal's.
-      acting: actingOrgAdminId
-        ? { orgAdminId: actingOrgAdminId, organizationId: auth.actingOrganizationId ?? null }
+      // `acting` is present when EITHER hop is in play: an organisation director inside a
+      // school (orgAdminId), a principal inside a classroom (principalId), or both at once
+      // when a director stepped all the way down. Each consumer reads only the key it cares
+      // about — the admin cockpit gates its banner on orgAdminId, the teacher dashboard on
+      // principalId — so a session carrying both renders the right banner on whichever
+      // surface it is standing.
+      acting: actingOrgAdminId || actingPrincipalId
+        ? {
+            orgAdminId: actingOrgAdminId,
+            organizationId: auth.actingOrganizationId ?? null,
+            principalId: actingPrincipalId,
+          }
         : null,
     });
   } catch {

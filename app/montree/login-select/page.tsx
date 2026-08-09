@@ -220,10 +220,11 @@ function UnifiedLoginContent() {
 
         {/* Help links */}
         <div style={{ textAlign: 'center', marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {/* Organisation directors have their own door. Their code would not resolve here —
-              /api/montree/auth/unified matches against teachers, principals, agents and
-              parents, never montree_organization_admins — so point them at the page that
-              takes both their code and their email + password. */}
+          {/* A director's login CODE now resolves in the box above — /api/montree/auth/unified
+              matches montree_organization_admins alongside principals, teachers, agents and
+              parents. This link stays because it is still the only door that takes a
+              director's EMAIL + PASSWORD (every director who registered before migration 317
+              has no code at all). */}
           <a href="/montree/org/login" className="fn-login-link">
             {t('auth.organizationDoor')}
           </a>

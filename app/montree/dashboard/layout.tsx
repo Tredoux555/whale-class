@@ -8,9 +8,10 @@ import DashboardHeader from '@/components/montree/DashboardHeader';
 import NetworkStatusBanner from '@/components/montree/NetworkStatusBanner';
 import BackgroundTaskBanner from '@/components/montree/BackgroundTaskBanner';
 import PushRegistrar from '@/components/montree/PushRegistrar';
+import ActingPrincipalBanner from '@/components/montree/dashboard/ActingPrincipalBanner';
 import { registerSyncTriggers } from '@/lib/montree/offline/sync-triggers';
 import { FeaturesProvider } from '@/lib/montree/features';
-import { getSession } from '@/lib/montree/auth';
+import { getSession, recoverSession } from '@/lib/montree/auth';
 
 // Onboarding Copilot ("The Guide") — floating pill → guide card, ssr:false
 // (house pattern). Its own /state route is the sole gate; it renders nothing
@@ -36,8 +37,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   // Get schoolId for FeaturesProvider
   useEffect(() => {
+    let cancelled = false;
     const sess = getSession();
-    if (sess?.school?.id) setSchoolId(sess.school.id);
+    if (sess?.school?.id) {
+      setSchoolId(sess.school.id);
+      return;
+    }
+    // Cookie-only session — no localStorage mirror yet. Two ways to land here: a principal who
+    // just stepped into this classroom (the cookie was swapped server-side and the stale mirror
+    // cleared), or iOS wiping localStorage on a PWA relaunch. This effect runs ONCE, so without
+    // the rebuild schoolId would stay null for the whole visit and FeaturesProvider would
+    // fail closed — a borrowed teacher seat would show a stripped-down app that doesn't match
+    // what the teacher actually sees, which is the one thing this view must get right.
+    recoverSession()
+      .then((recovered) => {
+        if (!cancelled && recovered?.school?.id) setSchoolId(recovered.school.id);
+      })
+      .catch(() => { /* features stay closed for this visit — never crash the shell */ });
+    return () => { cancelled = true; };
   }, []);
 
   return (
@@ -45,6 +62,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="min-h-screen">
         <NetworkStatusBanner />
         <PushRegistrar />
+        {/* Above the sticky header, in flow — a frame around the borrowed surface rather than
+            a notification inside it (same placement as the organisation-view banner in the
+            admin shell). Renders nothing at all for an ordinary teacher. */}
+        <ActingPrincipalBanner />
         <DashboardHeader />
         {children}
         <BackgroundTaskBanner />

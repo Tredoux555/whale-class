@@ -35,7 +35,7 @@
 //     symbols visible. That's fine and keeps this component honest.
 'use client';
 
-import { Fragment, type ReactNode } from 'react';
+import { Fragment, memo, useMemo, type ReactNode } from 'react';
 import CopyableMessageCard from './CopyableMessageCard';
 
 interface TracyBodyProps {
@@ -200,42 +200,64 @@ function renderProse(text: string): ReactNode[] {
   return out;
 }
 
-export default function TracyBody({ text, style }: TracyBodyProps) {
-  const segments = parseSegments(text);
+const PROSE_STYLE: React.CSSProperties = { whiteSpace: 'pre-wrap' };
+
+// 🚨 PERF (Astra "Page Unresponsive" freeze fix) — this component used to
+// re-run the FULL regex parse (parseSegments + renderProse over every
+// character) on every single render. Because the Astra chat surfaces
+// re-render the whole conversation on each SSE flush, that meant re-parsing
+// all 30 persisted turns dozens of times a second while an answer streamed —
+// O(history × tokens) main-thread work, which locked the tab.
+//
+// Two guards now:
+//   1. memo() below — historical turns whose `text` + `style` props are
+//      reference-equal skip rendering (and therefore parsing) entirely.
+//      NOTE: this only bites if callers pass a STABLE `style` object — the
+//      Astra surfaces hoist theirs to module-level constants for exactly
+//      this reason. Don't reintroduce inline `style={{...}}` literals there.
+//   2. useMemo() inside — even when we DO re-render (the live streaming
+//      turn), the parse work is keyed on `text` so an unrelated prop change
+//      (e.g. a parent state flip) doesn't pay for a re-parse.
+function TracyBody({ text, style }: TracyBodyProps) {
+  const segments = useMemo(() => parseSegments(text), [text]);
 
   // Fast path — no fences. Render with bold-span support and original
   // whitespace preservation. This is the most common case for short turns.
-  if (segments.length === 0 || segments.every((s) => s.kind === 'prose')) {
-    return (
-      <div style={{ whiteSpace: 'pre-wrap', ...style }}>
-        {renderProse(text)}
-      </div>
-    );
+  const isAllProse =
+    segments.length === 0 || segments.every((s) => s.kind === 'prose');
+
+  const fastPathNodes = useMemo(
+    () => (isAllProse ? renderProse(text) : null),
+    [isAllProse, text]
+  );
+
+  const segmentNodes = useMemo(() => {
+    if (isAllProse) return null;
+    return segments.map((seg, i) => {
+      if (seg.kind === 'card') {
+        return (
+          <CopyableMessageCard
+            key={`card-${i}`}
+            text={seg.body || ''}
+            recipient={seg.recipient}
+          />
+        );
+      }
+      return (
+        <div key={`prose-${i}`} style={PROSE_STYLE}>
+          {renderProse(seg.text || '')}
+        </div>
+      );
+    });
+  }, [isAllProse, segments]);
+
+  // The wrapper style objects are rebuilt per render, but they're cheap and
+  // only ever land on a plain <div> — the expensive work above is memoized.
+  if (isAllProse) {
+    return <div style={{ whiteSpace: 'pre-wrap', ...style }}>{fastPathNodes}</div>;
   }
 
-  return (
-    <div style={style}>
-      {segments.map((seg, i) => {
-        if (seg.kind === 'card') {
-          return (
-            <CopyableMessageCard
-              key={`card-${i}`}
-              text={seg.body || ''}
-              recipient={seg.recipient}
-            />
-          );
-        }
-        return (
-          <div
-            key={`prose-${i}`}
-            style={{
-              whiteSpace: 'pre-wrap',
-            }}
-          >
-            {renderProse(seg.text || '')}
-          </div>
-        );
-      })}
-    </div>
-  );
+  return <div style={style}>{segmentNodes}</div>;
 }
+
+export default memo(TracyBody);

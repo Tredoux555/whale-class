@@ -1,5 +1,11 @@
 // /api/montree/auth/unified/route.ts
-// Unified login: one code, try all 3 tables (teacher → principal → parent)
+// Unified login: one code, one box. Order of resolution:
+//   0. referral code precheck
+//   1. principal   (montree_school_admins)
+//   2. director    (montree_organization_admins — the org-tier leader, migration 317)
+//   3. teacher / homeschool parent (montree_teachers)
+//   4. agent       (montree_teachers.agent_password_hash)
+//   5. parent      (montree_parent_invites)
 // Returns role + session data + sets appropriate cookie
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
@@ -8,6 +14,8 @@ import { verifyPassword, legacySha256 } from '@/lib/montree/password';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 import { logAgentAudit } from '@/lib/montree/referral/agent-audit';
+import { isOrgMigrationPending } from '@/lib/montree/org/verify-org-request';
+import { normalizeDirectorCode } from '@/lib/montree/org/director-login-code';
 import { cookies } from 'next/headers';
 
 // SQL injection defense helper for .ilike() queries
@@ -151,7 +159,91 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================
-    // 2. TRY TEACHER / HOMESCHOOL PARENT
+    // 2. TRY ORGANISATION DIRECTOR (migration 317)
+    // ============================================
+    // A director's 6-char code lives in PLAINTEXT at
+    // montree_organization_admins.login_code (migration 317) and used to resolve
+    // ONLY at /montree/org/login — so a director typing a perfectly valid code
+    // into the one box everybody else uses got "Invalid code". Directors now come
+    // through the same front door as everyone else; /montree/org/login stays as
+    // their email + password door and is unchanged.
+    //
+    // ORDER MATTERS, same reasoning as principal-before-teacher: a director is
+    // strictly more privileged than a teacher, so if one human somehow holds both
+    // a director code and a teacher code that collide, the higher role wins. It
+    // sits AFTER principal so the existing principal-before-teacher ordering — and
+    // the reason for it, above — is untouched.
+    //
+    // 🚨 A collision here is NOT two hats on one human — the three code tables are
+    // different tenants. Which is why every code minted for any of them is now
+    // probed against all three before it is issued (probeLoginCode in
+    // lib/montree/org/director-login-code.ts). Never mint a code into one of these
+    // tables without that probe: unified resolves them in one namespace now, so a
+    // duplicate hands one tenant's session to another tenant's user.
+    const directorResult = await tryDirectorLogin(supabase, normalizedCode);
+    if (directorResult instanceof NextResponse) return directorResult;
+    if (directorResult) {
+      const { admin, organization } = directorResult;
+
+      // No blockIfLocked here on purpose: the abuse lock (migration 286) is a
+      // per-SCHOOL gate and an organisation is not a school. A director's JWT
+      // carries no real schoolId — org routes self-scope on organizationId — so
+      // there is nothing to look up. Locking an individual school still shuts
+      // that school's own users out, which is what the lock is for.
+
+      // schoolId carries the organisation id purely so the token keeps its
+      // uniform shape; it is INERT for org routes. Identical to /org/login.
+      const token = await createMontreeToken({
+        sub: admin.id,
+        schoolId: organization.id,
+        role: 'org_admin',
+        organizationId: organization.id,
+      });
+
+      await supabase
+        .from('montree_organization_admins')
+        .update({ last_login_at: new Date().toISOString() })
+        .eq('id', admin.id);
+
+      // Same audit shape /org/login writes. 🚨 The code itself is a credential
+      // and NEVER goes into the audit table — `via` records which door only.
+      logAudit(supabase, {
+        adminIdentifier: admin.id,
+        action: 'login_success',
+        resourceType: 'org_admin',
+        resourceId: admin.id,
+        resourceDetails: {
+          endpoint: '/api/montree/auth/unified',
+          via: 'code',
+          organizationId: organization.id,
+        },
+        ipAddress: ip,
+        userAgent,
+      });
+
+      const response = NextResponse.json({
+        success: true,
+        role: 'org_admin',
+        token,
+        organization: {
+          id: organization.id,
+          name: organization.name,
+          slug: organization.slug,
+        },
+        admin: {
+          id: admin.id,
+          name: admin.name,
+          email: admin.email,
+          role: 'org_admin',
+        },
+        redirect: '/montree/org',
+      });
+      setMontreeAuthCookie(response, token, 'org_admin');
+      return response;
+    }
+
+    // ============================================
+    // 3. TRY TEACHER / HOMESCHOOL PARENT
     // ============================================
     const teacherResult = await tryTeacherLogin(supabase, normalizedCode);
     if (teacherResult) {
@@ -203,7 +295,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================
-    // 3. TRY AGENT LOGIN (Phase 7b)
+    // 4. TRY AGENT LOGIN (Phase 7b)
     // ============================================
     // Agent dashboard login. Sarah / multiplier partners enter their 6-char
     // agent code → tryAgentLogin returns the agent row → JWT issued with
@@ -278,7 +370,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================
-    // 4. TRY PARENT INVITE CODE
+    // 5. TRY PARENT INVITE CODE
     // ============================================
     const parentResult = await tryParentLogin(supabase, normalizedCode);
     if (parentResult) {
@@ -622,6 +714,91 @@ async function tryPrincipalLogin(supabase: ReturnType<typeof getSupabase>, code:
   const needsSetup = !classrooms || classrooms.length === 0;
 
   return { principal, school, needsSetup };
+}
+
+interface DirectorRow {
+  id: string;
+  name: string | null;
+  email: string | null;
+  organization_id: string;
+}
+
+interface OrganizationRow {
+  id: string;
+  name: string | null;
+  slug: string | null;
+}
+
+// ---- Helper: Try organisation director login (migration 317) ----
+// The director's 6-char code is stored in PLAINTEXT at
+// montree_organization_admins.login_code — deliberately, it is a code the
+// super-admin console displays and the director reads — so this is a single
+// equality lookup on a UNIQUE column, exactly the way /api/montree/org/login
+// does its code door. That route is the reference implementation; this is a
+// deliberate duplicate of its lookup rather than an import, because a route
+// handler can't be called from another route handler.
+//
+// Returns null on a NON-MATCH so the unified chain simply carries on to the
+// next table — including the migration-pending case: on a database where
+// migration 317 has not been run, login_code doesn't exist and Postgres
+// answers 42703. /org/login turns that into a 503 "run the migration" because
+// there the director IS the whole point of the request; here they are one of
+// five candidate identities, so a missing column must be invisible and let a
+// teacher/parent code resolve as normal.
+//
+// 🚨 But a REAL database error is NOT a non-match, and must never be laundered
+// into one. Falling through on a pooler blip walks the chain to its end and
+// tells a director holding a perfectly valid code "Invalid code" — after which
+// they retry, burn the 5-per-15-minutes fail-CLOSED rate limit, and are locked
+// out for a quarter of an hour with entirely the wrong mental model. So this
+// returns a NextResponse in that case and the caller returns it as-is. 503
+// rather than /org/login's 500 because the honest instruction is "try again",
+// and the login-select client renders `error` verbatim either way.
+async function tryDirectorLogin(
+  supabase: ReturnType<typeof getSupabase>,
+  code: string,
+): Promise<{ admin: DirectorRow; organization: OrganizationRow } | NextResponse | null> {
+  // normalizeDirectorCode returns null for anything that isn't exactly 6
+  // characters, so referral codes and long pastes never burn a lookup.
+  const directorCode = normalizeDirectorCode(code);
+  if (!directorCode) return null;
+
+  const { data, error } = await supabase
+    .from('montree_organization_admins')
+    .select('id, name, email, organization_id')
+    .eq('login_code', directorCode)
+    .maybeSingle();
+
+  if (error) {
+    // 42703/42P01/PGRST20x → migration 317 (or 315) not on this database.
+    // Silent fall-through — see the note above.
+    if (isOrgMigrationPending(error)) return null;
+    console.error('[unified-login] director code lookup failed:', error.message);
+    return NextResponse.json(
+      { error: 'Could not sign you in right now. Please try again.' },
+      { status: 503 },
+    );
+  }
+  if (!data) return null;
+
+  const { data: organization, error: orgErr } = await supabase
+    .from('montree_organizations')
+    .select('id, name, slug')
+    .eq('id', data.organization_id)
+    .maybeSingle();
+
+  // An orphaned admin row (organisation deleted) is not a session we can mint —
+  // every org route re-reads the organisation anyway and would 403. Fall
+  // through like tryPrincipalLogin does on a missing school; the dedicated door
+  // at /montree/org/login is where they get the explicit 'org_gone' message.
+  if (orgErr || !organization) {
+    console.warn(
+      `[unified-login] director ${data.id} matched but organization ${data.organization_id} is missing — refusing.`
+    );
+    return null;
+  }
+
+  return { admin: data as DirectorRow, organization: organization as OrganizationRow };
 }
 
 // ---- Helper: Try agent login (Phase 7b) ----

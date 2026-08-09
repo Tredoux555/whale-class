@@ -51,7 +51,20 @@ function GuruContent() {
   useEffect(() => {
     const measure = () => {
       const header = document.querySelector('[data-dashboard-header]') as HTMLElement | null;
-      const h = header?.offsetHeight ?? 0;
+      // The acting-principal banner (a principal standing inside this classroom) sits ABOVE
+      // the header in the shared layout and takes real height, so it has to come off the
+      // viewport too — otherwise the composer falls below the fold again, for that session
+      // only. Absent for every ordinary teacher, in which case this contributes 0.
+      //
+      // Both strips are STICKY, so this sum stays true at every scroll position rather than
+      // over-subtracting once the page moves. The banner publishes its height and fires a
+      // window resize from a commit-time effect (never a rAF inside a fetch callback — that
+      // raced the DOM), and re-fires it whenever its own height changes, so this measure
+      // re-runs at the right moments. Note the banner also zeroes the header's safe-area
+      // padding while mounted — one owner for the inset — so these two offsetHeights never
+      // double-count it.
+      const banner = document.querySelector('[data-dashboard-banner]') as HTMLElement | null;
+      const h = (header?.offsetHeight ?? 0) + (banner?.offsetHeight ?? 0);
       setChatHeight(h > 0 ? `calc(100dvh - ${h}px)` : '100dvh');
     };
     measure();
