@@ -97,7 +97,8 @@ export default function MenuSetupPage() {
   };
 
   return (
-    <div style={{ maxWidth: 560, margin: '0 auto', padding: '0 16px 120px', fontFamily: SANS }}>
+    <div className="min-h-screen bg-[#0a1a0f]" style={{ fontFamily: SANS }}>
+    <div style={{ maxWidth: 560, margin: '0 auto', padding: '0 16px 120px' }}>
       <Toaster position="top-center" richColors />
 
       <button
@@ -216,6 +217,7 @@ export default function MenuSetupPage() {
           </button>
         </div>
       )}
+    </div>
     </div>
   );
 }

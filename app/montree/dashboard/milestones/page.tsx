@@ -57,7 +57,8 @@ export default function ClassMilestonesPage() {
   const milestonesOn = isEnabled('child_evaluation');
 
   return (
-    <div style={{ maxWidth: 560, margin: '0 auto', padding: '0 16px 60px', fontFamily: SANS }}>
+    <div className="min-h-screen bg-[#0a1a0f]" style={{ fontFamily: SANS }}>
+    <div style={{ maxWidth: 560, margin: '0 auto', padding: '0 16px 60px' }}>
       <button
         onClick={() => router.back()}
         style={{
@@ -150,6 +151,7 @@ export default function ClassMilestonesPage() {
           ))}
         </div>
       )}
+    </div>
     </div>
   );
 }
