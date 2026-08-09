@@ -99,7 +99,17 @@ function NoteFieldImpl({
           boxSizing: 'border-box',
           padding: '10px 12px 40px',
           borderRadius: 10,
-          background: 'rgba(255,255,255,0.05)',
+          // Self-contained dark chip: rgba(255,255,255,0.05) alone is nearly
+          // transparent and depends on an ancestor painting #0a1a0f behind it.
+          // Every current call site happens to provide that, but this field
+          // is reused via FocusWorksSection wherever a teacher logs a note
+          // while presenting a work — a future call site without that
+          // ancestor would silently render white-on-white while typing
+          // (input still works, text is just invisible). Layering an opaque
+          // dark base under the translucent highlight makes it correct
+          // regardless of what's behind it.
+          backgroundColor: '#0a1a0f',
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.05), rgba(255,255,255,0.05))',
           border: `1px solid ${C.border}`,
           color: C.textPrimary,
           fontSize: 13,

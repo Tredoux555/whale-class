@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
+import type { TranslationKey } from '@/lib/montree/i18n';
 import {
   ChevronLeft, ChevronUp, ChevronDown, Eye, EyeOff, Check,
 } from 'lucide-react';
@@ -93,7 +94,7 @@ export default function MenuSetupPage() {
   const labelFor = (id: MenuConfigItem['id']) => {
     const def = MENU_REGISTRY[id];
     if (!def) return id;
-    return def.labelKey ? t(def.labelKey) : def.label;
+    return def.labelKey ? t(def.labelKey as TranslationKey) : def.label;
   };
 
   return (
