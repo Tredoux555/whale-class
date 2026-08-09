@@ -72,6 +72,17 @@ const MODULE_CHOICES: Array<{ id: string; labelKey: 'milestones.run.moduleLit' |
 const AGE_BANDS: AgeBand[] = ['A3', 'A4', 'A5'];
 const CANOPY_BAND: AgeBand = 'G1';
 const WINDOW_CODES: WindowCode[] = ['autumn', 'winter', 'spring'];
+/**
+ * Representative months for a manually-picked band, used only when there is no birth date to
+ * derive an exact age from. Each value round-trips through `ageBandFromMonths` back to the same
+ * band, so a teacher's manual choice is never silently reinterpreted as a different band.
+ */
+const BAND_MIDPOINT_MONTHS: Record<AgeBand, number> = {
+  A3: 42,
+  A4: 54,
+  A5: 66,
+  G1: 78,
+};
 /** Send in the background every few answers; the rest of the queue goes at the close. */
 const FLUSH_EVERY = 6;
 
@@ -257,6 +268,10 @@ export function CheckInRunner({
     if (!modules.length) { toast.error(t('milestones.run.noModules')); return; }
     setStarting(true);
     try {
+      // No date of birth means the teacher picked the band by hand; send the band's
+      // representative age so the server has the ageMonths it requires, and so the local run
+      // state and the stored session agree on one number.
+      const resolvedAgeMonths = suggestedMonths ?? BAND_MIDPOINT_MONTHS[ageBand];
       const bank = await loadBank({ ageBand, formCode, modules, assessmentLocale: locale });
       const res = await fetch('/api/montree/evaluation/sessions', {
         method: 'POST',
@@ -265,6 +280,7 @@ export function CheckInRunner({
           childId,
           windowCode,
           ageBand,
+          ageMonths: resolvedAgeMonths,
           formCode,
           modules,
           deliveryMode: 'tablet',
@@ -286,7 +302,7 @@ export function CheckInRunner({
 
       const index = buildRunnerIndex(bank);
       const run = createRun(bank, index, {
-        childId, ageBand, ageMonths: suggestedMonths, formCode, windowCode,
+        childId, ageBand, ageMonths: resolvedAgeMonths, formCode, windowCode,
         schoolYear: schoolYearForDate(), moduleIds: modules, assessmentLocale: locale,
       });
       run.sessionId = body?.session?.id ?? null;
