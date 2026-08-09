@@ -5619,6 +5619,7 @@ export const es: Record<string, string> = {
   'schoolFeatures.title': 'Funciones de la escuela',
   'schoolFeatures.subtitle': 'Activá o desactivá herramientas para toda la escuela.',
   'schoolFeatures.appliesToAll': 'Los cambios se aplican a todos los docentes de la escuela.',
+  'schoolFeatures.savesInstantly': 'Los cambios se guardan al instante: no hay nada más que pulsar.',
   'schoolFeatures.loading': 'Cargando funciones…',
   'schoolFeatures.loadFailed': 'No se pudieron cargar las funciones.',
   'schoolFeatures.empty': 'Todavía no hay funciones para mostrar.',

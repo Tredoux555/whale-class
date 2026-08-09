@@ -5619,6 +5619,7 @@ export const uk: Record<string, string> = {
   'schoolFeatures.title': 'Функції школи',
   'schoolFeatures.subtitle': 'Вмикайте та вимикайте інструменти для всієї школи.',
   'schoolFeatures.appliesToAll': 'Зміни діють для всіх педагогів школи.',
+  'schoolFeatures.savesInstantly': 'Зміни зберігаються миттєво — більше нічого натискати не потрібно.',
   'schoolFeatures.loading': 'Завантаження функцій…',
   'schoolFeatures.loadFailed': 'Не вдалося завантажити функції.',
   'schoolFeatures.empty': 'Поки немає функцій для показу.',
