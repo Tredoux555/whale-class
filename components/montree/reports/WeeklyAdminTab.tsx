@@ -821,12 +821,7 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
           <button
             onClick={() => setWeekStart(shiftWeek(weekStart, -1))}
             aria-label="Previous week"
-            style={{
-              ...ghostBtn,
-              width: 28,
-              height: 28,
-              padding: 0,
-            }}
+            className="btn btn-secondary btn-icon btn-sm"
           >
             <ChevronLeft size={14} strokeWidth={1.75} />
           </button>
@@ -852,14 +847,7 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
             }}
             disabled={weekStart >= (activeTab === 'plan' ? shiftWeek(currentWeekStart(), 1) : currentWeekStart())}
             aria-label="Next week"
-            style={{
-              ...ghostBtn,
-              width: 28,
-              height: 28,
-              padding: 0,
-              opacity: weekStart >= (activeTab === 'plan' ? shiftWeek(currentWeekStart(), 1) : currentWeekStart()) ? 0.30 : 1,
-              cursor: weekStart >= (activeTab === 'plan' ? shiftWeek(currentWeekStart(), 1) : currentWeekStart()) ? 'not-allowed' : 'pointer',
-            }}
+            className="btn btn-secondary btn-icon btn-sm"
           >
             <ChevronRight size={14} strokeWidth={1.75} />
           </button>
@@ -887,14 +875,7 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
               onClick={() => setWeeksBack(w => Math.max(1, w - 1))}
               disabled={weeksBack <= 1}
               aria-label={t('weeklyAdmin.rangeFewer')}
-              style={{
-                ...ghostBtn,
-                width: 24,
-                height: 24,
-                padding: 0,
-                opacity: weeksBack <= 1 ? 0.30 : 1,
-                cursor: weeksBack <= 1 ? 'not-allowed' : 'pointer',
-              }}
+              className="btn btn-secondary btn-icon btn-sm"
             >
               <Minus size={12} strokeWidth={1.75} />
             </button>
@@ -920,14 +901,7 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
               onClick={() => setWeeksBack(w => Math.min(MAX_WEEKS_BACK, w + 1))}
               disabled={weeksBack >= MAX_WEEKS_BACK}
               aria-label={t('weeklyAdmin.rangeMore')}
-              style={{
-                ...ghostBtn,
-                width: 24,
-                height: 24,
-                padding: 0,
-                opacity: weeksBack >= MAX_WEEKS_BACK ? 0.30 : 1,
-                cursor: weeksBack >= MAX_WEEKS_BACK ? 'not-allowed' : 'pointer',
-              }}
+              className="btn btn-secondary btn-icon btn-sm"
             >
               <Plus size={12} strokeWidth={1.75} />
             </button>
@@ -949,7 +923,7 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
           <button
             onClick={() => setMonthStart(shiftMonth(monthStart, -1))}
             aria-label="Previous month"
-            style={{ ...ghostBtn, width: 28, height: 28, padding: 0 }}
+            className="btn btn-secondary btn-icon btn-sm"
           >
             <ChevronLeft size={14} strokeWidth={1.75} />
           </button>
@@ -975,14 +949,7 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
             }}
             disabled={monthStart >= getCurrentMonthStart()}
             aria-label="Next month"
-            style={{
-              ...ghostBtn,
-              width: 28,
-              height: 28,
-              padding: 0,
-              opacity: monthStart >= getCurrentMonthStart() ? 0.30 : 1,
-              cursor: monthStart >= getCurrentMonthStart() ? 'not-allowed' : 'pointer',
-            }}
+            className="btn btn-secondary btn-icon btn-sm"
           >
             <ChevronRight size={14} strokeWidth={1.75} />
           </button>
@@ -1054,11 +1021,7 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
               <button
                 onClick={handleAutoFill}
                 disabled={autoFilling}
-                style={{
-                  ...ctaAmber,
-                  opacity: autoFilling ? 0.55 : 1,
-                  cursor: autoFilling ? 'not-allowed' : 'pointer',
-                }}
+                className="btn btn-gold btn-sm"
               >
                 <Sparkles size={12} strokeWidth={1.75} />
                 {autoFilling ? '...' : t('weeklyAdmin.autoFill')}
@@ -1067,11 +1030,7 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
               <button
                 onClick={() => handleGenerate(activeTab === 'plan' ? 'plan' : 'summary')}
                 disabled={generating !== null}
-                style={{
-                  ...(activeTab === 'plan' ? ctaViolet : ctaPrimary),
-                  opacity: generating !== null ? 0.55 : 1,
-                  cursor: generating !== null ? 'not-allowed' : 'pointer',
-                }}
+                className={`btn btn-sm ${activeTab === 'plan' ? 'btn-gold' : 'btn-primary'}`}
               >
                 <Download size={12} strokeWidth={2} />
                 {generating === activeTab ? t('weeklyAdmin.generating') : t('weeklyAdmin.generate')}
@@ -1080,11 +1039,7 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
               <button
                 onClick={() => saveNotes(false)}
                 disabled={saving}
-                style={{
-                  ...ctaPrimary,
-                  opacity: saving ? 0.55 : 1,
-                  cursor: saving ? 'not-allowed' : 'pointer',
-                }}
+                className="btn btn-primary btn-sm"
               >
                 <Save size={12} strokeWidth={2} />
                 {saving ? t('common.loading') : t('common.save')}
@@ -1097,11 +1052,7 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
               <button
                 onClick={handleMonthlyAutoFill}
                 disabled={monthlyAutoFilling || monthlyMigrationPending}
-                style={{
-                  ...ctaAmber,
-                  opacity: (monthlyAutoFilling || monthlyMigrationPending) ? 0.55 : 1,
-                  cursor: (monthlyAutoFilling || monthlyMigrationPending) ? 'not-allowed' : 'pointer',
-                }}
+                className="btn btn-gold btn-sm"
               >
                 <Sparkles size={12} strokeWidth={1.75} />
                 {monthlyAutoFilling ? '...' : t('weeklyAdmin.autoFill')}
@@ -1110,11 +1061,7 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
               <button
                 onClick={handleMonthlyGenerate}
                 disabled={monthlyGenerating || monthlyMigrationPending}
-                style={{
-                  ...ctaPrimary,
-                  opacity: (monthlyGenerating || monthlyMigrationPending) ? 0.55 : 1,
-                  cursor: (monthlyGenerating || monthlyMigrationPending) ? 'not-allowed' : 'pointer',
-                }}
+                className="btn btn-primary btn-sm"
               >
                 <Download size={12} strokeWidth={2} />
                 {monthlyGenerating ? t('weeklyAdmin.generating') : t('weeklyAdmin.generate')}
@@ -1123,11 +1070,7 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
               <button
                 onClick={handleMonthlySave}
                 disabled={monthlySaving || monthlyMigrationPending}
-                style={{
-                  ...ctaPrimary,
-                  opacity: (monthlySaving || monthlyMigrationPending) ? 0.55 : 1,
-                  cursor: (monthlySaving || monthlyMigrationPending) ? 'not-allowed' : 'pointer',
-                }}
+                className="btn btn-primary btn-sm"
               >
                 <Save size={12} strokeWidth={2} />
                 {monthlySaving ? t('common.loading') : t('common.save')}
@@ -1170,22 +1113,7 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
             <button
               onClick={handleAutoFill}
               disabled={autoFilling}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 5,
-                padding: '6px 12px',
-                background: T.amber,
-                border: 'none',
-                borderRadius: 999,
-                color: '#1a1206',
-                fontFamily: T.sans,
-                fontSize: 11,
-                fontWeight: 700,
-                cursor: autoFilling ? 'not-allowed' : 'pointer',
-                opacity: autoFilling ? 0.55 : 1,
-                whiteSpace: 'nowrap',
-              }}
+              className="btn btn-gold btn-sm btn-pill"
             >
               <Sparkles size={11} strokeWidth={1.75} />
               {t('weeklyAdmin.refreshAutoFill')}

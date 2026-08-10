@@ -153,7 +153,7 @@ export default function WorkSearchBar({
         {query && (
           <button
             onClick={() => { setQuery(''); setDebouncedQuery(''); setIsOpen(false); }}
-            className="text-gray-400 hover:text-gray-600 text-xs"
+            className="btn btn-ghost btn-icon btn-sm on-light text-xs"
           >
             ✕
           </button>

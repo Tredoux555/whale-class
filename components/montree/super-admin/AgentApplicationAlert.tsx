@@ -258,7 +258,7 @@ export default function AgentApplicationAlert({ saToken }: { saToken: string }) 
                   {(pitch || role) && (
                     <button
                       onClick={() => toggleExpanded(app.id)}
-                      className="block mt-1 text-xs text-amber-300/80 hover:text-amber-200 underline"
+                      className="btn btn-ghost btn-sm mt-1"
                     >
                       {isExpanded ? 'Hide pitch' : 'Read pitch'}
                     </button>
@@ -285,7 +285,7 @@ export default function AgentApplicationAlert({ saToken }: { saToken: string }) 
                   <button
                     onClick={() => accept(app)}
                     disabled={busy === app.id}
-                    className="text-xs px-2.5 py-1 rounded-lg bg-emerald-500/25 hover:bg-emerald-500/40 text-emerald-100 border border-emerald-500/50 transition-colors disabled:opacity-50 font-medium"
+                    className="btn btn-primary btn-sm"
                     title="Open Referrals tab with this applicant's details pre-filled to issue an agent code"
                   >
                     ✓ Accept
@@ -293,7 +293,7 @@ export default function AgentApplicationAlert({ saToken }: { saToken: string }) 
                   <button
                     onClick={() => replyWithMessage(app)}
                     disabled={busy === app.id}
-                    className="text-xs px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 border border-amber-500/40 transition-colors disabled:opacity-50"
+                    className="btn btn-gold btn-sm"
                     title="Open mail client with a short reply asking for more info. Marks as contacted."
                   >
                     ✉ Reply
@@ -301,7 +301,7 @@ export default function AgentApplicationAlert({ saToken }: { saToken: string }) 
                   <button
                     onClick={() => setStatus(app.id, 'declined')}
                     disabled={busy === app.id}
-                    className="text-xs px-2.5 py-1 rounded-lg bg-slate-600/30 hover:bg-slate-600/50 text-slate-300 border border-slate-600/50 transition-colors disabled:opacity-50"
+                    className="btn btn-secondary btn-sm"
                     title="Mark as declined. No email sent — handle that manually if needed."
                   >
                     ✗ Decline
@@ -413,17 +413,8 @@ export default function AgentApplicationAlert({ saToken }: { saToken: string }) 
             <button
               type="button"
               onClick={() => copyToClipboard(accepted.loginCode, 'code')}
-              style={{
-                marginTop: 12,
-                padding: '6px 12px',
-                borderRadius: 8,
-                background: copiedField === 'code' ? '#34d399' : 'rgba(0,0,0,0.30)',
-                border: '1px solid rgba(232,201,106,0.30)',
-                color: copiedField === 'code' ? '#0a1a0f' : 'rgba(234,241,230,0.65)',
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
+              className={`btn ${copiedField === 'code' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
+              style={{ marginTop: 12 }}
             >
               {copiedField === 'code' ? '✓ Copied' : 'Copy code'}
             </button>
@@ -469,17 +460,7 @@ export default function AgentApplicationAlert({ saToken }: { saToken: string }) 
               <button
                 type="button"
                 onClick={() => copyToClipboard(accepted.loginUrl, 'link')}
-                style={{
-                  padding: '10px 14px',
-                  borderRadius: 10,
-                  background: copiedField === 'link' ? '#34d399' : 'rgba(0,0,0,0.30)',
-                  border: '1px solid rgba(52,211,153,0.25)',
-                  color: copiedField === 'link' ? '#0a1a0f' : 'rgba(255,255,255,0.92)',
-                  fontSize: 12,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                }}
+                className={`btn ${copiedField === 'link' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
               >
                 {copiedField === 'link' ? '✓' : 'Copy link'}
               </button>
@@ -525,17 +506,8 @@ export default function AgentApplicationAlert({ saToken }: { saToken: string }) 
             <button
               type="button"
               onClick={() => copyToClipboard(accepted.welcomeMessage, 'message')}
-              style={{
-                flex: 1,
-                padding: '14px 16px',
-                borderRadius: 12,
-                background: copiedField === 'message' ? '#34d399' : '#34d399',
-                border: 'none',
-                color: '#0a1a0f',
-                fontWeight: 600,
-                fontSize: 15,
-                cursor: 'pointer',
-              }}
+              className="btn btn-primary btn-lg"
+              style={{ flex: 1 }}
             >
               {copiedField === 'message'
                 ? '✓ Copied — paste it anywhere'
@@ -544,16 +516,7 @@ export default function AgentApplicationAlert({ saToken }: { saToken: string }) 
             <button
               type="button"
               onClick={() => setAccepted(null)}
-              style={{
-                padding: '14px 18px',
-                borderRadius: 12,
-                background: 'transparent',
-                border: '1px solid rgba(255,255,255,0.18)',
-                color: 'rgba(234,241,230,0.65)',
-                fontWeight: 500,
-                fontSize: 14,
-                cursor: 'pointer',
-              }}
+              className="btn btn-ghost btn-outline btn-md"
             >
               Done
             </button>

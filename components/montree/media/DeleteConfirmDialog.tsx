@@ -61,14 +61,14 @@ export default function DeleteConfirmDialog({
           <button
             onClick={onCancel}
             disabled={isDeleting}
-            className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="btn btn-secondary btn-lg flex-1 on-light"
           >
             {isBulk ? t('deleteDialog.keepPhotos') : t('deleteDialog.keepPhoto')}
           </button>
           <button
             onClick={onConfirm}
             disabled={isDeleting}
-            className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="btn btn-danger btn-lg flex-1 on-light"
           >
             {isDeleting ? (
               <>

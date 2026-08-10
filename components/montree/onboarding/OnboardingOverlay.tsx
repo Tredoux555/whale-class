@@ -89,13 +89,13 @@ export default function OnboardingOverlay({
             <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
               Step {currentStepNumber} of {totalSteps}
             </span>
-            <button onClick={onDismiss} className="text-gray-400 hover:text-gray-600 text-lg leading-none p-1" aria-label="Close tutorial">✕</button>
+            <button onClick={onDismiss} className="btn btn-ghost btn-icon btn-sm on-light text-lg" aria-label="Close tutorial">✕</button>
           </div>
           <h3 className="text-lg font-bold text-gray-800 mb-1.5">{step.title}</h3>
           <p className="text-sm text-gray-600 mb-5 leading-relaxed">{step.description}</p>
           <div className="flex gap-2">
-            <button onClick={onSkip} className="flex-1 py-2 text-sm border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 transition-colors">Skip Tour</button>
-            <button onClick={onNext} className="flex-1 py-2 text-sm bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-semibold transition-colors">
+            <button onClick={onSkip} className="btn btn-secondary btn-md flex-1 on-light">Skip Tour</button>
+            <button onClick={onNext} className="btn btn-primary btn-md flex-1">
               {currentStepNumber === totalSteps ? 'Finish' : 'Next →'}
             </button>
           </div>
@@ -179,7 +179,7 @@ export default function OnboardingOverlay({
           </span>
           <button
             onClick={onDismiss}
-            className="text-gray-400 hover:text-gray-600 text-lg leading-none p-1"
+            className="btn btn-ghost btn-icon btn-sm on-light text-lg"
             aria-label="Close tutorial"
           >
             ✕
@@ -194,13 +194,13 @@ export default function OnboardingOverlay({
         <div className="flex gap-2">
           <button
             onClick={onSkip}
-            className="flex-1 py-2 text-sm border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 transition-colors"
+            className="btn btn-secondary btn-md flex-1 on-light"
           >
             Skip Tour
           </button>
           <button
             onClick={onNext}
-            className="flex-1 py-2 text-sm bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-semibold transition-colors"
+            className="btn btn-primary btn-md flex-1"
           >
             {currentStepNumber === totalSteps ? 'Finish' : 'Next →'}
           </button>

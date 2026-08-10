@@ -335,8 +335,7 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
           <p className={`text-sm ${BIO.text.secondary} mb-4`}>{t('home.shelf.fetchError')}</p>
           <button
             onClick={() => { setFetchError(false); setLoading(true); fetchShelf(); }}
-            className="px-6 py-2 rounded-xl text-sm font-medium"
-            style={{ background: 'rgba(74,222,128,0.15)', border: '1px solid rgba(74,222,128,0.3)', color: '#4ADE80' }}
+            className="btn btn-primary btn-md"
           >
             {t('common.tryAgain')}
           </button>
@@ -429,7 +428,7 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
                 <span className="text-[11px] font-semibold" style={{ color: colors.bg }}>
                   🌿 {tk(`area.${expandedArea}`)}
                 </span>
-                <button onClick={() => setExpandedArea(null)} className="text-white/30 text-xs px-1" aria-label="Close">✕</button>
+                <button onClick={() => setExpandedArea(null)} className="btn btn-ghost btn-icon btn-sm" aria-label="Close">✕</button>
               </div>
               <p className="text-xs text-white/65 leading-relaxed">{reason || t('home.shelf.noReason')}</p>
             </div>
@@ -452,7 +451,7 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
               onBlur={e => { e.currentTarget.style.border = '1px solid rgba(255,255,255,0.1)'; e.currentTarget.style.boxShadow = 'none'; }}
             />
             {searchText && (
-              <button onClick={() => { setSearchText(''); setSearchResults([]); }} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/40 text-xs" aria-label="Clear">✕</button>
+              <button onClick={() => { setSearchText(''); setSearchResults([]); }} className="btn btn-ghost btn-icon btn-sm absolute right-3.5 top-1/2 -translate-y-1/2" aria-label="Clear">✕</button>
             )}
           </div>
 
@@ -496,8 +495,7 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
             <p className={`text-sm ${BIO.text.secondary} mb-5 leading-relaxed`}>{t('home.shelf.emptyMessage')}</p>
             <button
               onClick={() => onAskGuide(t('home.shelf.suggestWork'))}
-              className="px-5 py-2.5 rounded-xl text-sm font-semibold"
-              style={{ background: '#4ADE80', color: '#0A1F1C', boxShadow: BIO.glow.soft }}
+              className="btn btn-primary btn-md btn-glow"
             >
               ✨ {t('home.shelf.askGuide')}
             </button>
@@ -540,7 +538,7 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
                   </span>
                 </div>
               </div>
-              <button onClick={closeWorkDetail} className="text-white/40 text-lg p-1">✕</button>
+              <button onClick={closeWorkDetail} className="btn btn-ghost btn-icon btn-sm text-lg">✕</button>
             </div>
 
             <div className="px-5 pb-4">
@@ -582,8 +580,7 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
                 <button
                   onClick={saveObservation}
                   disabled={savingObs}
-                  className="mt-2 px-4 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50"
-                  style={{ background: 'rgba(74,222,128,0.15)', border: '1px solid rgba(74,222,128,0.3)', color: '#4ADE80' }}
+                  className="btn btn-primary btn-sm mt-2"
                 >
                   {savingObs ? t('common.saving') : t('home.shelf.saveObservation')}
                 </button>
@@ -593,8 +590,7 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
             <div className="px-5 pb-5">
               <button
                 onClick={() => { const name = detailWork.work_name; closeWorkDetail(); openWorkGuide(name); }}
-                className="w-full py-3 rounded-xl text-sm font-medium transition-all"
-                style={{ background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.2)', color: '#4ADE80' }}
+                className="btn btn-primary btn-lg btn-full"
               >
                 {t('home.shelf.viewPresentation')}
               </button>

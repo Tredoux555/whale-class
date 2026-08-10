@@ -222,14 +222,14 @@ export default function PhotoCropper({ imageUrl, onCrop, onCancel }: Props) {
       <div className="flex gap-3 mt-4">
         <button
           onClick={onCancel}
-          className="px-6 py-2.5 bg-white/20 text-white rounded-lg font-semibold text-sm hover:bg-white/30 transition-colors"
+          className="btn btn-secondary btn-md"
         >
           Cancel
         </button>
         <button
           onClick={doCrop}
           disabled={processing || !imgLoaded}
-          className="px-6 py-2.5 bg-emerald-500 text-white rounded-lg font-semibold text-sm hover:bg-emerald-600 disabled:opacity-50 transition-colors"
+          className="btn btn-primary btn-md"
         >
           {processing ? 'Cropping...' : 'Crop'}
         </button>

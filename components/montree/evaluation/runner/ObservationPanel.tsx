@@ -143,11 +143,7 @@ export function ObservationPanel({
                         <button
                           type="button"
                           onClick={() => setOpenNote(milestoneId)}
-                          style={{
-                            border: `1px solid ${C.line}`, borderRadius: 999, padding: '8px 14px',
-                            background: C.paper, fontSize: 12.5, minHeight: 40, cursor: 'pointer',
-                            color: C.inkSoft,
-                          }}
+                          className="btn btn-secondary btn-sm btn-pill on-light"
                         >
                           {current.note ? current.note.slice(0, 60) : labels.note}
                         </button>
@@ -164,11 +160,7 @@ export function ObservationPanel({
       <button
         type="button"
         onClick={onDone}
-        style={{
-          minHeight: 64, padding: '14px 30px', borderRadius: 18, width: '100%',
-          background: C.forest, color: '#fff', border: `2px solid ${C.forest}`,
-          fontSize: 17, fontWeight: 600, cursor: 'pointer',
-        }}
+        className="btn btn-primary btn-lg btn-full on-light"
       >
         {labels.done}
       </button>

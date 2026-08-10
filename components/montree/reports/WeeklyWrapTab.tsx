@@ -879,16 +879,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <button
             onClick={() => setWeekStart(shiftWeek(weekStart, -1))}
-            style={{
-              padding: '6px 10px',
-              borderRadius: 8,
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.10)',
-              color: T.textPrimary,
-              cursor: 'pointer',
-              fontSize: 12,
-              fontFamily: T.sans,
-            }}
+            className="btn btn-secondary btn-icon btn-sm"
           >
             <ChevronLeft size={14} strokeWidth={1.75} />
           </button>
@@ -904,16 +895,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
           </span>
           <button
             onClick={() => setWeekStart(shiftWeek(weekStart, 1))}
-            style={{
-              padding: '6px 10px',
-              borderRadius: 8,
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.10)',
-              color: T.textPrimary,
-              cursor: 'pointer',
-              fontSize: 12,
-              fontFamily: T.sans,
-            }}
+            className="btn btn-secondary btn-icon btn-sm"
           >
             <ChevronRight size={14} strokeWidth={1.75} />
           </button>
@@ -925,18 +907,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
             <button
               onClick={() => handleGenerate(Array.from(selectedIds))}
               disabled={generating}
-              style={{
-                padding: '8px 14px',
-                borderRadius: 10,
-                background: T.blue,
-                color: '#0a0a0a',
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: generating ? 'not-allowed' : 'pointer',
-                opacity: generating ? 0.55 : 1,
-                border: 'none',
-                fontFamily: T.sans,
-              }}
+              className="btn btn-primary btn-sm"
             >
               {generating
                 ? `${genDone}/${genTotal}`
@@ -946,18 +917,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
             <button
               onClick={() => handleGenerate()}
               disabled={generating}
-              style={{
-                padding: '8px 14px',
-                borderRadius: 10,
-                background: T.emerald,
-                color: '#06281a',
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: generating ? 'not-allowed' : 'pointer',
-                opacity: generating ? 0.55 : 1,
-                border: 'none',
-                fontFamily: T.sans,
-              }}
+              className="btn btn-primary btn-sm"
             >
               {generating
                 ? `${genProgress || '...'} ${genDone}/${genTotal}`
@@ -980,38 +940,13 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
         }}>
           <button
             onClick={() => setSubView('teacher')}
-            style={{
-              padding: '8px 16px',
-              borderRadius: 999,
-              fontSize: 12,
-              fontWeight: 600,
-              fontFamily: T.sans,
-              background: subView === 'teacher' ? 'rgba(255,255,255,0.10)' : 'transparent',
-              color: subView === 'teacher' ? T.emerald : T.textSecondary,
-              border: subView === 'teacher' ? `1px solid rgba(52,211,153,0.30)` : '1px solid transparent',
-              cursor: 'pointer',
-              transition: 'all 120ms ease',
-            }}
+            className={`btn btn-pill btn-sm ${subView === 'teacher' ? 'btn-secondary' : 'btn-ghost'}`}
           >
             {t('weeklyWrap.teacherReview')}
           </button>
           <button
             onClick={() => setSubView('parents')}
-            style={{
-              padding: '8px 16px',
-              borderRadius: 999,
-              fontSize: 12,
-              fontWeight: 600,
-              fontFamily: T.sans,
-              background: subView === 'parents' ? 'rgba(255,255,255,0.10)' : 'transparent',
-              color: subView === 'parents' ? T.emerald : T.textSecondary,
-              border: subView === 'parents' ? `1px solid rgba(52,211,153,0.30)` : '1px solid transparent',
-              cursor: 'pointer',
-              transition: 'all 120ms ease',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-            }}
+            className={`btn btn-pill btn-sm ${subView === 'parents' ? 'btn-secondary' : 'btn-ghost'}`}
           >
             {t('weeklyWrap.parentReports')}
             {readyToSend > 0 && <span style={{ color: T.emerald, fontSize: 11 }}>{readyToSend}</span>}
@@ -1043,15 +978,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
               if (selectedIds.size === reports.length) setSelectedIds(new Set());
               else setSelectedIds(new Set(reports.map(r => r.child_id)));
             }}
-            style={{
-              fontSize: 11,
-              color: T.blue,
-              fontWeight: 600,
-              fontFamily: T.sans,
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-            }}
+            className="btn btn-ghost btn-sm"
           >
             {selectedIds.size === reports.length
               ? t('weeklyWrap.deselectAll')
@@ -1080,29 +1007,14 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <button
               onClick={jumpToCurrentWeek}
-              style={{
-                padding: '6px 12px',
-                borderRadius: 8,
-                background: 'rgba(232,201,106,0.18)',
-                border: '1px solid rgba(232,201,106,0.45)',
-                color: '#E8C96A',
-                fontSize: 12,
-                fontWeight: 700,
-                cursor: 'pointer',
-                fontFamily: T.sans,
-                whiteSpace: 'nowrap',
-              }}
+              className="btn btn-gold btn-sm"
             >
               {t('weeklyWrap.goToCurrentWeek')}
             </button>
             <button
               onClick={() => setWeekWarningDismissed(true)}
               aria-label="Dismiss"
-              style={{
-                width: 24, height: 24, borderRadius: '50%',
-                background: 'transparent', border: 'none',
-                color: 'rgba(232,201,106,0.7)', cursor: 'pointer', fontSize: 14, lineHeight: 1,
-              }}
+              className="btn btn-ghost btn-icon btn-sm btn-round"
             >
               ✕
             </button>
@@ -1886,22 +1798,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                   <div>
                     <button
                       onClick={() => setPreviewChild(null)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        padding: '10px 16px',
-                        width: '100%',
-                        textAlign: 'left',
-                        background: 'transparent',
-                        border: 'none',
-                        borderBottom: '1px solid rgba(52,211,153,0.15)',
-                        color: '#34d399',
-                        fontFamily: '"Inter", sans-serif',
-                        fontSize: 13,
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                      }}
+                      className="btn btn-ghost btn-md btn-full text-left"
                     >
                       <span>←</span> {t('weeklyWrap.backToList')}
                     </button>
@@ -1928,22 +1825,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                   {/* Back button */}
                   <button
                     onClick={() => { setPreviewChild(null); setEditingNarrative(null); }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      padding: '10px 16px',
-                      width: '100%',
-                      textAlign: 'left',
-                      background: 'transparent',
-                      border: 'none',
-                      borderBottom: '1px solid rgba(52,211,153,0.15)',
-                      color: '#34d399',
-                      fontFamily: '"Inter", sans-serif',
-                      fontSize: 13,
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
+                    className="btn btn-ghost btn-md btn-full text-left"
                   >
                     <span>←</span> {t('weeklyWrap.backToList')}
                   </button>
@@ -2004,18 +1886,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                               }
                             }
                           }}
-                          style={{
-                            padding: '6px 14px',
-                            borderRadius: 999,
-                            background: 'rgba(52,211,153,0.10)',
-                            border: '1px solid rgba(52,211,153,0.35)',
-                            color: '#34d399',
-                            fontFamily: '"Inter", sans-serif',
-                            fontSize: 11,
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            transition: 'all 120ms ease',
-                          }}
+                          className="btn btn-secondary btn-pill btn-sm"
                         >
                           {isEditing ? t('common.done') : t('common.edit')}
                         </button>
@@ -2109,21 +1980,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                         <button
                           onClick={() => handleRegenMontage(r.report_id!)}
                           disabled={busy}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 6,
-                            padding: '8px 14px',
-                            borderRadius: 999,
-                            background: 'rgba(52,211,153,0.08)',
-                            border: '1px solid rgba(52,211,153,0.25)',
-                            color: '#34d399',
-                            fontFamily: '"Inter", sans-serif',
-                            fontSize: 12,
-                            fontWeight: 600,
-                            cursor: busy ? 'default' : 'pointer',
-                            opacity: ms === 'queuing' ? 0.7 : 1,
-                          }}
+                          className="btn btn-secondary btn-pill btn-sm"
                         >
                           🎬 {ms === 'queued' ? `${t('weeklyWrap.montageQueued')} ✓` : t('weeklyWrap.montageRegen')}
                         </button>
@@ -2178,19 +2035,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
             <button
               onClick={handleSendAll}
               disabled={sending || sent}
-              style={{
-                padding: '8px 16px',
-                borderRadius: 10,
-                background: 'linear-gradient(180deg, #34d399, #10b981)',
-                border: '1px solid rgba(52,211,153,0.55)',
-                color: '#06281a',
-                fontFamily: '"Inter", sans-serif',
-                fontSize: 13,
-                fontWeight: 700,
-                cursor: (sending || sent) ? 'not-allowed' : 'pointer',
-                opacity: (sending || sent) ? 0.55 : 1,
-                boxShadow: 'none',
-              }}
+              className="btn btn-primary btn-md"
             >
               {sending
                 ? t('weeklyWrap.sending')

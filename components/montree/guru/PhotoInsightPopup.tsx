@@ -225,7 +225,7 @@ export default function PhotoInsightPopup({
       {overflowCount > 0 && (
         <button
           onClick={() => setExpanded(true)}
-          className="pointer-events-auto self-end bg-[#5D4037] text-white text-sm px-3 py-1.5 rounded-full shadow-lg hover:bg-[#4E342E] transition-colors"
+          className="btn btn-secondary btn-sm btn-pill pointer-events-auto self-end"
         >
           +{overflowCount} {t('popup.morePending')}
         </button>
@@ -337,7 +337,7 @@ function PopupCard({
           {/* Close/dismiss button */}
           <button
             onClick={onDismiss}
-            className="text-gray-400 hover:text-gray-800 p-0.5 -mt-0.5 -mr-1 flex-shrink-0"
+            className="btn btn-ghost btn-icon btn-sm on-light -mt-0.5 -mr-1 flex-shrink-0"
             aria-label="Dismiss"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -379,7 +379,7 @@ function PopupCard({
           <button
             onClick={() => onStatusPick('save')}
             disabled={isProcessing}
-            className="text-xs text-gray-500 hover:text-gray-700 disabled:opacity-50"
+            className="btn btn-ghost btn-sm on-light"
           >
             {t('popup.justSave')}
           </button>
@@ -411,7 +411,7 @@ function PopupCard({
           </div>
           <button
             onClick={onDismiss}
-            className="text-gray-400 hover:text-gray-800 p-0.5 -mt-0.5 -mr-1 flex-shrink-0"
+            className="btn btn-ghost btn-icon btn-sm on-light -mt-0.5 -mr-1 flex-shrink-0"
             aria-label="Dismiss"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -423,7 +423,7 @@ function PopupCard({
         <div className="px-3 pb-3">
           <button
             onClick={onTagManually}
-            className="w-full py-2 bg-gray-50 hover:bg-gray-100 text-gray-800 rounded-lg text-sm font-medium transition-colors"
+            className="btn btn-secondary btn-md btn-full on-light"
           >
             {t('popup.pickWork')}
           </button>
@@ -460,13 +460,13 @@ function PopupCard({
         </div>
         <button
           onClick={onTagManually}
-          className="text-xs font-medium text-amber-700 hover:text-amber-900 flex-shrink-0"
+          className="btn btn-ghost btn-sm on-light flex-shrink-0"
         >
           {t('popup.tagManually')}
         </button>
         <button
           onClick={onDismiss}
-          className="text-gray-400 hover:text-gray-800 p-0.5 flex-shrink-0"
+          className="btn btn-ghost btn-icon btn-sm on-light flex-shrink-0"
           aria-label="Dismiss"
         >
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none">

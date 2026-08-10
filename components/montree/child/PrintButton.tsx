@@ -20,7 +20,7 @@ export default function PrintButton({ childId }: PrintButtonProps) {
   return (
     <button
       onClick={handlePrint}
-      className="px-3 py-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg text-sm transition-colors flex-shrink-0"
+      className="btn btn-ghost btn-sm on-light flex-shrink-0"
       title={t('weekview.printWeeklyPlan')}
     >
       🖨️

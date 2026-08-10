@@ -39,7 +39,7 @@ export default function FeedbackTab({
     <div className="bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden">
       <div className="p-4 border-b border-slate-700 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-white">User Feedback</h2>
-        <button onClick={onFetchFeedback} className="text-sm text-slate-400 hover:text-white">
+        <button onClick={onFetchFeedback} className="btn btn-ghost btn-sm">
           ↻ Refresh
         </button>
       </div>
@@ -109,7 +109,7 @@ export default function FeedbackTab({
                 {!item.is_read && (
                   <button
                     onClick={() => onMarkRead(item.id)}
-                    className="px-3 py-1 text-sm bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg"
+                    className="btn btn-secondary btn-sm"
                   >
                     ✓ Read
                   </button>

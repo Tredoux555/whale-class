@@ -119,15 +119,8 @@ export default function ChangelogModal({ audience = 'all' }: ChangelogModalProps
           <button
             onClick={handleDismiss}
             aria-label={t('common.close')}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'rgba(255,255,255,0.5)',
-              fontSize: 22,
-              lineHeight: 1,
-              cursor: 'pointer',
-              padding: 4,
-            }}
+            className="btn btn-ghost btn-icon btn-sm"
+            style={{ fontSize: 22 }}
           >
             ×
           </button>
@@ -189,16 +182,7 @@ export default function ChangelogModal({ audience = 'all' }: ChangelogModalProps
           </Link>
           <button
             onClick={handleDismiss}
-            style={{
-              padding: '8px 16px',
-              background: 'rgba(52,211,153,0.18)',
-              border: '1px solid rgba(52,211,153,0.32)',
-              borderRadius: 10,
-              color: '#34d399',
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
+            className="btn btn-primary btn-sm"
           >
             {t('changelog.gotIt')}
           </button>

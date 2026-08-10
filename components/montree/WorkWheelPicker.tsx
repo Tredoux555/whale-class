@@ -270,17 +270,13 @@ export default function WorkWheelPicker({
                 <button
                   onClick={handleAddWork}
                   disabled={!newWorkName.trim() || isAdding}
-                  className="flex-1 py-3 rounded-xl text-sm font-medium text-white transition-colors disabled:opacity-30"
-                  style={{
-                    background: `linear-gradient(180deg, ${BRAND_EMERALD} 0%, ${BRAND_EMERALD_DARK} 100%)`,
-                    boxShadow: `0 4px 14px -4px ${BRAND_EMERALD}80`,
-                  }}
+                  className="btn btn-primary btn-md flex-1"
                 >
                   {isAdding ? '...' : `+ ${t('workWheel.addFirstWork')}`}
                 </button>
                 <button
                   onClick={() => { setShowAddForm(false); setNewWorkName(''); }}
-                  className="py-3 px-4 rounded-xl text-sm text-white/50 hover:text-white/80 bg-white/5"
+                  className="btn btn-secondary btn-md"
                 >
                   {t('common.cancel')}
                 </button>
@@ -291,14 +287,14 @@ export default function WorkWheelPicker({
               <p className="text-white/50 mb-6 text-sm">{t('workWheel.noWorksAvailable')}</p>
               <button
                 onClick={() => setShowAddForm(true)}
-                className="px-6 py-3 bg-white/10 rounded-xl text-white font-medium hover:bg-white/20 transition-colors text-sm"
+                className="btn btn-secondary btn-md"
               >
                 + {t('workWheel.addFirstWork')}
               </button>
             </>
           )}
 
-          <button onClick={onClose} className="block mx-auto mt-4 text-white/40 hover:text-white/70 text-sm">
+          <button onClick={onClose} className="btn btn-ghost btn-sm block mx-auto mt-4">
             {t('common.close')}
           </button>
         </div>
@@ -315,7 +311,7 @@ export default function WorkWheelPicker({
       {/* Header */}
       <div className="pt-[max(0.75rem,env(safe-area-inset-top))] px-5 pb-3 shrink-0" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between text-white">
-          <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 -ml-1">
+          <button onClick={onClose} className="btn btn-ghost btn-icon btn-round btn-md -ml-1">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
           <div className="text-center">
@@ -361,7 +357,7 @@ export default function WorkWheelPicker({
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
           </svg>
           {searchText && (
-            <button onClick={() => setSearchText('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
+            <button onClick={() => setSearchText('')} className="btn btn-secondary btn-icon btn-round btn-sm absolute right-3 top-1/2 -translate-y-1/2">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>
           )}
@@ -511,15 +507,15 @@ export default function WorkWheelPicker({
             <div className="flex gap-2">
               <button
                 onClick={() => setShowPositionPicker(true)}
-                className="flex-1 py-2.5 px-3 rounded-xl text-xs font-medium bg-white/8 text-white/70 border border-white/10 flex items-center justify-center gap-1.5 truncate hover:bg-white/12 transition-colors"
+                className="btn btn-secondary btn-sm flex-1 truncate"
               >
                 <span className="truncate">After: {insertAfterIndex !== null ? works[insertAfterIndex]?.name || '?' : '?'}</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="shrink-0 opacity-40"><path d="m6 9 6 6 6-6"/></svg>
               </button>
               <button
                 onClick={() => setInsertAfterIndex(null)}
-                className={`py-2.5 px-4 rounded-xl text-xs font-medium transition-colors ${
-                  insertAfterIndex === null ? 'bg-white/15 text-white' : 'bg-white/5 text-white/40'
+                className={`btn btn-sm ${
+                  insertAfterIndex === null ? 'btn-secondary' : 'btn-ghost'
                 }`}
               >
                 {t('workWheel.endOfList')}
@@ -532,7 +528,7 @@ export default function WorkWheelPicker({
                 <div className="h-full flex flex-col max-w-lg mx-auto w-full" onClick={e => e.stopPropagation()}>
                   <div className="pt-[max(1rem,env(safe-area-inset-top))] px-5 pb-3 shrink-0">
                     <div className="flex items-center justify-between text-white">
-                      <button onClick={() => { setShowPositionPicker(false); setPositionSearch(''); }} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10">
+                      <button onClick={() => { setShowPositionPicker(false); setPositionSearch(''); }} className="btn btn-ghost btn-icon btn-round btn-md">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
                       </button>
                       <h2 className="font-semibold text-base">{t('workWheel.insertAfterPosition')}</h2>
@@ -552,7 +548,7 @@ export default function WorkWheelPicker({
                         <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
                       </svg>
                       {positionSearch && (
-                        <button onClick={() => setPositionSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                        <button onClick={() => setPositionSearch('')} className="btn btn-secondary btn-icon btn-round btn-sm absolute right-3 top-1/2 -translate-y-1/2">
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
                         </button>
                       )}
@@ -587,18 +583,14 @@ export default function WorkWheelPicker({
             <div className="flex gap-2">
               <button
                 onClick={() => { setShowAddForm(false); setNewWorkName(''); }}
-                className="flex-1 py-3 bg-white/8 text-white/60 font-medium rounded-xl text-sm hover:bg-white/12 transition-colors"
+                className="btn btn-secondary btn-md flex-1"
               >
                 {t('common.cancel')}
               </button>
               <button
                 onClick={handleAddWork}
                 disabled={!newWorkName.trim() || isAdding}
-                className="flex-1 py-3 font-semibold rounded-xl text-sm disabled:opacity-40 transition-colors text-white"
-                style={{
-                  background: `linear-gradient(180deg, ${BRAND_EMERALD} 0%, ${BRAND_EMERALD_DARK} 100%)`,
-                  boxShadow: `0 4px 14px -4px ${BRAND_EMERALD}80`,
-                }}
+                className="btn btn-primary btn-md flex-1"
               >
                 {isAdding ? t('common.adding') : t('workWheel.addWork')}
               </button>
@@ -614,11 +606,7 @@ export default function WorkWheelPicker({
                 else { onSelectWork(selectedWork, selectedWork.status || 'not_started'); onClose(); }
               }}
               disabled={!selectedWork}
-              className="w-full py-3.5 text-white font-semibold rounded-2xl text-[15px] active:scale-[0.98] transition-all disabled:opacity-40"
-              style={{
-                background: `linear-gradient(180deg, ${BRAND_EMERALD} 0%, ${BRAND_EMERALD_DARK} 100%)`,
-                boxShadow: `0 6px 20px -6px ${BRAND_EMERALD}90`,
-              }}
+              className="btn btn-primary btn-lg btn-full"
             >
               {onAddExtra ? t('workWheel.addWork') : t('common.select')}
             </button>
@@ -633,12 +621,7 @@ export default function WorkWheelPicker({
             {/* Add custom work — agent-style affordance matching the voice onboarding catch */}
             <button
               onClick={() => setShowAddForm(true)}
-              className="w-full mt-3 py-3 px-4 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2"
-              style={{
-                background: 'rgba(232,201,106,0.08)',
-                border: '1px solid rgba(232,201,106,0.30)',
-                color: '#E8C96A',
-              }}
+              className="btn btn-gold btn-lg btn-full mt-3"
             >
               <span style={{
                 width: 20, height: 20, borderRadius: '50%',

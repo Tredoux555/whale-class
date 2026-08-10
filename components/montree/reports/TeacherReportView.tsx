@@ -48,7 +48,7 @@ export default function TeacherReportView({ report, childName, compact = false }
         )}
         <button
           onClick={() => setExpanded(true)}
-          className="text-xs text-emerald-600 font-medium hover:underline"
+          className="btn btn-ghost btn-sm on-light"
         >
           View full teacher report →
         </button>
@@ -61,7 +61,7 @@ export default function TeacherReportView({ report, childName, compact = false }
       {compact && (
         <button
           onClick={() => setExpanded(false)}
-          className="text-xs text-gray-400 hover:text-gray-600"
+          className="btn btn-ghost btn-sm on-light"
         >
           ← Collapse
         </button>

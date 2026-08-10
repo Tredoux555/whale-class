@@ -106,24 +106,8 @@ export default function CopyableMessageCard({
           onClick={handleCopy}
           aria-label={copied ? 'Copied' : 'Copy message'}
           title={copied ? 'Copied' : 'Copy'}
-          style={{
-            position: 'absolute',
-            top: 8,
-            right: 8,
-            width: 30,
-            height: 30,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: copied ? 'rgba(52,211,153,0.18)' : 'rgba(0,0,0,0.30)',
-            border: `1px solid ${
-              copied ? 'rgba(52,211,153,0.45)' : 'rgba(232,201,106,0.32)'
-            }`,
-            borderRadius: 8,
-            color: copied ? EMERALD : GOLD,
-            cursor: 'pointer',
-            transition: 'background 120ms ease, color 120ms ease, border-color 120ms ease',
-          }}
+          className={`btn btn-icon btn-sm ${copied ? 'btn-primary' : 'btn-gold'}`}
+          style={{ position: 'absolute', top: 8, right: 8 }}
         >
           {copied ? (
             <Check size={15} strokeWidth={2.25} />

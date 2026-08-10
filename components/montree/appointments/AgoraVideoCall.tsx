@@ -922,43 +922,15 @@ function WaitingTile({
 }
 
 function ControlButton({ icon, label, onClick, danger, accent, end, disabled }: { icon: React.ReactNode; label: string; onClick: () => void; danger?: boolean; accent?: boolean; end?: boolean; disabled?: boolean }) {
-  const bg = end
-    ? 'rgba(239,68,68,0.85)'
-    : danger
-      ? 'rgba(239,68,68,0.18)'
-      : accent
-        ? 'rgba(232,201,106,0.18)'
-        : 'rgba(255,255,255,0.10)';
-  const fg = end ? '#fff' : danger ? T.red : accent ? T.gold : T.textPrimary;
-  const border = end
-    ? 'none'
-    : danger
-      ? '1px solid rgba(239,68,68,0.45)'
-      : accent
-        ? '1px solid rgba(232,201,106,0.45)'
-        : '1px solid rgba(255,255,255,0.18)';
+  const variant = end ? 'btn-danger' : danger ? 'btn-danger btn-soft' : accent ? 'btn-gold' : 'btn-secondary';
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 4,
-        padding: '10px 14px',
-        borderRadius: 12,
-        background: bg,
-        border,
-        color: fg,
-        cursor: disabled ? 'wait' : 'pointer',
-        opacity: disabled ? 0.6 : 1,
-        fontFamily: T.sans,
-        fontSize: 11,
-        fontWeight: 600,
-      }}
+      className={`btn ${variant} btn-sm`}
+      style={{ flexDirection: 'column', gap: 4 }}
     >
       {icon}
       <span>{label}</span>
@@ -980,7 +952,7 @@ function ErrorPanel({ message, onClose, t }: { message: string; onClose: () => v
         <button
           type="button"
           onClick={onClose}
-          style={{ padding: '10px 20px', borderRadius: 10, background: T.emerald, color: '#0a1a0f', border: 'none', fontWeight: 600, cursor: 'pointer' }}
+          className="btn btn-primary btn-md"
         >
           {t('common.close')}
         </button>
@@ -1132,7 +1104,7 @@ function DebugPanel({
             <button
               type="button"
               onClick={onCopy}
-              style={{ padding: '6px 12px', borderRadius: 8, background: copyState === 'copied' ? 'rgba(52,211,153,0.20)' : 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: copyState === 'copied' ? T.emerald : T.textPrimary, fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+              className={`btn ${copyState === 'copied' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
               aria-label="Copy debug log"
             >
               {copyState === 'copied' ? <ClipboardCheck size={14} /> : <Clipboard size={14} />}
@@ -1141,14 +1113,14 @@ function DebugPanel({
             <button
               type="button"
               onClick={onClear}
-              style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)', color: T.textSecondary, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+              className="btn btn-secondary btn-sm"
             >
               Clear
             </button>
             <button
               type="button"
               onClick={onClose}
-              style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)', color: T.textSecondary, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+              className="btn btn-secondary btn-sm"
             >
               Close
             </button>

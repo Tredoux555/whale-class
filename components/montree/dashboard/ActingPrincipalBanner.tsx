@@ -193,18 +193,7 @@ export default function ActingPrincipalBanner() {
         type="button"
         onClick={() => void returnToAdmin()}
         disabled={returning}
-        style={{
-          background: 'rgba(232,201,106,0.16)',
-          border: '1px solid rgba(232,201,106,0.34)',
-          borderRadius: 8,
-          padding: '4px 12px',
-          color: GOLD,
-          fontFamily: SANS,
-          fontSize: 12,
-          fontWeight: 600,
-          cursor: returning ? 'default' : 'pointer',
-          opacity: returning ? 0.6 : 1,
-        }}
+        className="btn btn-gold btn-sm"
       >
         {returning ? 'Returning…' : 'Return to my school'}
       </button>

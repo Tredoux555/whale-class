@@ -751,7 +751,7 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                 </code>
                 <button
                   onClick={() => copy(revealed.code)}
-                  className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-sm transition-colors"
+                  className="btn btn-primary btn-md"
                 >
                   {copied ? '✓ Copied' : 'Copy'}
                 </button>
@@ -759,7 +759,7 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
             </div>
             <button
               onClick={() => { setRevealed(null); setCopied(false); }}
-              className="text-slate-400 hover:text-white text-sm self-start"
+              className="btn btn-ghost btn-icon btn-sm self-start"
               aria-label="Dismiss"
             >
               ✕
@@ -787,7 +787,7 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                 </code>
                 <button
                   onClick={() => copyTo(agentLoginRevealed.code, setAgentLoginCopied)}
-                  className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-white font-medium rounded-lg text-sm transition-colors"
+                  className="btn btn-gold btn-md"
                 >
                   {agentLoginCopied ? '✓ Copied' : 'Copy'}
                 </button>
@@ -795,7 +795,7 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
             </div>
             <button
               onClick={() => { setAgentLoginRevealed(null); setAgentLoginCopied(false); }}
-              className="text-slate-400 hover:text-white text-sm self-start"
+              className="btn btn-ghost btn-icon btn-sm self-start"
               aria-label="Dismiss"
             >
               ✕
@@ -829,7 +829,7 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                       setTimeout(() => setConnectLinkCopied(false), 2000);
                     } catch { /* */ }
                   }}
-                  className="px-3 py-2 bg-indigo-500 hover:bg-indigo-400 text-white text-xs font-medium rounded-lg transition-colors"
+                  className="btn btn-primary btn-sm"
                 >
                   {connectLinkCopied ? '✓ Copied' : 'Copy'}
                 </button>
@@ -837,7 +837,7 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
             </div>
             <button
               onClick={() => { setConnectLink(null); setConnectLinkCopied(false); }}
-              className="text-slate-400 hover:text-white text-sm self-start"
+              className="btn btn-ghost btn-icon btn-sm self-start"
               aria-label="Dismiss"
             >
               ✕
@@ -865,7 +865,7 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
         </div>
         <button
           onClick={() => setShowForm(s => !s)}
-          className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-sm transition-colors"
+          className="btn btn-primary btn-md"
         >
           {showForm ? 'Cancel' : '+ Issue code'}
         </button>
@@ -941,14 +941,14 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="px-4 py-2 text-slate-400 hover:text-white text-sm"
+              className="btn btn-ghost btn-md"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={creating}
-              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-sm disabled:opacity-50 transition-colors"
+              className="btn btn-primary btn-md"
             >
               {creating ? 'Creating…' : 'Generate code'}
             </button>
@@ -962,10 +962,10 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
           <button
             key={s}
             onClick={() => setStatusFilter(s)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`btn btn-sm ${
               statusFilter === s
-                ? 'bg-emerald-500 text-white'
-                : 'bg-slate-800 text-slate-400 hover:text-white'
+                ? 'btn-primary'
+                : 'btn-secondary'
             }`}
           >
             {s === 'all' ? `All (${referrals.length})` : `${s.charAt(0).toUpperCase() + s.slice(1)}`}
@@ -1081,7 +1081,7 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                         >
                           <button
                             onClick={() => copy(r.code)}
-                            className="px-2.5 py-1 text-xs rounded-md bg-slate-700 hover:bg-slate-600 text-slate-200"
+                            className="btn btn-secondary btn-sm"
                             aria-label="Copy code"
                           >
                             📋
@@ -1100,7 +1100,7 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                             <button
                               onClick={() => handleGenerateConnectLink(r.agent_id as string, r.agent_display_name, r.agent_stripe_connect_account_id)}
                               disabled={isLoadingConnect}
-                              className="px-2.5 py-1 text-xs rounded-md bg-indigo-500/20 hover:bg-indigo-500/35 text-indigo-300 border border-indigo-500/30 disabled:opacity-50"
+                              className="btn btn-secondary btn-sm"
                               aria-label={connect?.label === 'In progress' ? 'Resume Stripe onboarding' : 'Send Stripe onboarding link'}
                             >
                               {isLoadingConnect ? '…' : '💳'}
@@ -1121,10 +1121,10 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                           >
                             <button
                               onClick={() => openAgentLoginModal(r)}
-                              className={`px-2.5 py-1 text-xs rounded-md border ${
+                              className={`btn btn-sm ${
                                 r.agent_is_agent
-                                  ? 'bg-amber-500/15 hover:bg-amber-500/30 text-amber-300 border-amber-500/30'
-                                  : 'bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 border-emerald-500/30'
+                                  ? 'btn-gold'
+                                  : 'btn-primary'
                               }`}
                               aria-label={r.agent_is_agent ? 'Reset agent login' : 'Issue agent login'}
                             >
@@ -1146,7 +1146,7 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                           >
                             <button
                               onClick={() => openEditPctModal(r)}
-                              className="px-2.5 py-1 text-xs rounded-md bg-slate-700/60 hover:bg-slate-600 text-slate-200 border border-slate-600"
+                              className="btn btn-secondary btn-sm"
                               aria-label={`Edit default % (currently ${r.agent_default_share_pct ?? '—'}%)`}
                             >
                               ✏️
@@ -1192,7 +1192,7 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                                   setTimeout(() => URL.revokeObjectURL(url), 60_000);
                                 })();
                               }}
-                              className="inline-block px-2.5 py-1 text-xs rounded-md bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-500/30 no-underline"
+                              className="btn btn-secondary btn-sm"
                               aria-label="Annual statement"
                             >
                               📄
@@ -1213,7 +1213,7 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                           >
                             <button
                               onClick={() => openPayoutConfigModal(r)}
-                              className="px-2.5 py-1 text-xs rounded-md bg-violet-500/15 hover:bg-violet-500/30 text-violet-200 border border-violet-500/30"
+                              className="btn btn-gold btn-sm"
                               aria-label="Edit payout method + bank details"
                             >
                               💸
@@ -1238,7 +1238,7 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                                 r.agent_display_name
                               )}
                               disabled={loginAsLoadingId === r.agent_id}
-                              className="px-2.5 py-1 text-xs rounded-md bg-cyan-500/15 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 disabled:opacity-50"
+                              className="btn btn-secondary btn-sm"
                               aria-label={`Log in as ${r.agent_display_name}`}
                             >
                               {loginAsLoadingId === r.agent_id ? '…' : '🔓'}
@@ -1264,10 +1264,10 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                                 Boolean(r.agent_suspended_at)
                               )}
                               disabled={agentToggleLoadingId === r.agent_id}
-                              className={`px-2.5 py-1 text-xs rounded-md border disabled:opacity-50 ${
+                              className={`btn btn-sm ${
                                 r.agent_suspended_at
-                                  ? 'bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 border-emerald-500/30'
-                                  : 'bg-orange-500/15 hover:bg-orange-500/30 text-orange-300 border-orange-500/30'
+                                  ? 'btn-primary'
+                                  : 'btn-gold'
                               }`}
                               aria-label={r.agent_suspended_at ? 'Reactivate agent' : 'Suspend agent'}
                             >
@@ -1284,7 +1284,7 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
                         {r.status === 'pending' && (
                           <button
                             onClick={() => handleRevoke(r.id, r.code)}
-                            className="px-2.5 py-1 text-xs rounded-md bg-red-500/20 hover:bg-red-500/35 text-red-300 border border-red-500/30"
+                            className="btn btn-danger btn-soft btn-sm"
                             aria-label="Revoke code"
                           >
                             Revoke
@@ -1430,14 +1430,14 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
               <button
                 type="button"
                 onClick={() => setAgentLoginModal(null)}
-                className="px-4 py-2 text-slate-400 hover:text-white text-sm"
+                className="btn btn-ghost btn-md"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={agentLoginLoading}
-                className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white font-medium rounded-lg text-sm disabled:opacity-50"
+                className="btn btn-gold btn-md"
               >
                 {agentLoginLoading
                   ? 'Generating…'
@@ -1490,14 +1490,14 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
               <button
                 type="button"
                 onClick={() => setEditPctModal(null)}
-                className="px-4 py-2 text-slate-400 hover:text-white text-sm"
+                className="btn btn-ghost btn-md"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={editPctLoading}
-                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-sm disabled:opacity-50"
+                className="btn btn-primary btn-md"
               >
                 {editPctLoading ? 'Saving…' : 'Save default %'}
               </button>
@@ -1617,14 +1617,14 @@ export default function ReferralsTab({ saToken }: ReferralsTabProps) {
               <button
                 type="button"
                 onClick={() => setPayoutConfigModal(null)}
-                className="px-4 py-2 text-slate-400 hover:text-white text-sm"
+                className="btn btn-ghost btn-md"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={payoutConfigModal.loading}
-                className="px-4 py-2 bg-violet-500 hover:bg-violet-400 text-white font-medium rounded-lg text-sm disabled:opacity-50"
+                className="btn btn-gold btn-md"
               >
                 {payoutConfigModal.loading ? 'Saving…' : 'Save payout config'}
               </button>

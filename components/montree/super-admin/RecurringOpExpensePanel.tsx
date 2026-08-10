@@ -237,18 +237,18 @@ export default function RecurringOpExpensePanel({ sessionToken }: Props) {
                     <button
                       onClick={() => handleToggle(r)}
                       disabled={busy === r.id}
-                      className={`px-2 py-1 rounded text-[10px] font-medium border ${
+                      className={`btn btn-sm ${
                         r.is_active
-                          ? 'bg-slate-700/40 border-slate-700 text-slate-300 hover:bg-slate-700/60'
-                          : 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25'
-                      } disabled:opacity-50`}
+                          ? 'btn-secondary'
+                          : 'btn-primary'
+                      }`}
                     >
                       {r.is_active ? t('recurring.pause') : t('recurring.resume')}
                     </button>
                     <button
                       onClick={() => handleDelete(r.id)}
                       disabled={busy === r.id}
-                      className="px-2 py-1 rounded bg-red-500/15 border border-red-500/30 text-red-300 text-[10px] hover:bg-red-500/25 disabled:opacity-50"
+                      className="btn btn-danger btn-soft btn-sm"
                     >
                       🗑
                     </button>
@@ -307,13 +307,13 @@ export default function RecurringOpExpensePanel({ sessionToken }: Props) {
                 <button
                   onClick={handleAdd}
                   disabled={busy === 'add'}
-                  className="px-3 py-1.5 bg-emerald-500/25 border border-emerald-500/40 text-emerald-200 rounded text-xs font-semibold disabled:opacity-50"
+                  className="btn btn-primary btn-sm"
                 >
                   {busy === 'add' ? '⏳' : t('recurring.addTemplate')}
                 </button>
                 <button
                   onClick={() => { setShowAdd(false); setError(null); }}
-                  className="px-3 py-1.5 bg-slate-700/40 border border-slate-700 text-slate-300 rounded text-xs"
+                  className="btn btn-secondary btn-sm"
                 >
                   {t('common.cancel')}
                 </button>
@@ -322,7 +322,7 @@ export default function RecurringOpExpensePanel({ sessionToken }: Props) {
           ) : (
             <button
               onClick={() => setShowAdd(true)}
-              className="w-full px-3 py-2 bg-slate-800/40 hover:bg-slate-800/60 border border-dashed border-slate-700 text-slate-400 hover:text-slate-200 rounded-lg text-xs font-medium"
+              className="btn btn-secondary btn-md btn-full"
             >
               {t('recurring.addTemplateBtn')}
             </button>

@@ -319,7 +319,8 @@ export default function FocusWorksSection({
                 {/* Area badge — tap to swap focus work */}
                 <button
                   {...(areaIdx === 0 ? { 'data-guide': 'area-badge-first' } : {})}
-                  style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer', flexShrink: 0 }}
+                  className="btn btn-ghost btn-icon btn-sm"
+                  style={{ flexShrink: 0 }}
                   onClick={() => onOpenWheelPicker(area, focusWork?.work_name)}
                   onContextMenu={(e) => { e.preventDefault(); onOpenWheelPicker(area, focusWork?.work_name); }}
                   onTouchStart={(e) => {
@@ -337,7 +338,8 @@ export default function FocusWorksSection({
                 <button
                   {...(areaIdx === 0 ? { 'data-guide': 'first-work-name' } : {})}
                   onClick={() => toggleArea(area)}
-                  style={{ flex: 1, textAlign: 'left', background: 'none', border: 0, padding: 0, cursor: 'pointer' }}
+                  className="btn btn-ghost btn-md"
+                  style={{ flex: 1, textAlign: 'left' }}
                 >
                   {focusWork ? (
                     <span style={{ fontWeight: 500, color: C.textPrimary, fontSize: 14 }}>
@@ -373,7 +375,8 @@ export default function FocusWorksSection({
                 {/* Expand chevron */}
                 <button
                   onClick={() => toggleArea(area)}
-                  style={{ background: 'none', border: 0, padding: 2, cursor: 'pointer', color: C.textMuted, flexShrink: 0 }}
+                  className="btn btn-ghost btn-icon btn-sm"
+                  style={{ flexShrink: 0 }}
                 >
                   <ChevronDown
                     size={16}
@@ -404,22 +407,7 @@ export default function FocusWorksSection({
                       <button
                         {...(areaIdx === 0 ? { 'data-guide': 'quick-guide-btn' } : {})}
                         onClick={() => onOpenQuickGuide(focusWork.work_name, { zh: focusWork.chineseName, es: focusWork.spanishName, de: focusWork.deName, fr: focusWork.frName, pt: focusWork.ptName, nl: focusWork.nlName, it: focusWork.itName, ja: focusWork.jaName, ko: focusWork.koName, uk: focusWork.ukName, ru: focusWork.ruName })}
-                        style={{
-                          width: '100%',
-                          padding: '9px 16px',
-                          background: 'transparent',
-                          border: `1px solid ${C.emerald}`,
-                          borderRadius: 10,
-                          color: C.emerald,
-                          fontSize: 13,
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: 6,
-                          fontFamily: SANS,
-                        }}
+                        className="btn btn-secondary btn-sm btn-full"
                       >
                         <BookOpen size={15} strokeWidth={1.75} />
                         {t('focusWorks.quickGuide')}
@@ -461,22 +449,7 @@ export default function FocusWorksSection({
                     /* No focus work — show add button */
                     <button
                       onClick={() => onOpenWheelPicker(area)}
-                      style={{
-                        width: '100%',
-                        padding: '10px 0',
-                        background: C.emeraldSoft,
-                        border: `1px solid ${C.border}`,
-                        borderRadius: 10,
-                        color: C.emerald,
-                        fontSize: 13,
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 6,
-                        fontFamily: SANS,
-                      }}
+                      className="btn btn-primary btn-sm btn-full"
                     >
                       <Plus size={15} strokeWidth={2} />
                       {t('focusWorks.addOne')}
@@ -512,7 +485,7 @@ export default function FocusWorksSection({
                         </button>
                         <button
                           onClick={() => onRemoveExtra(extra)}
-                          style={{ background: 'none', border: 0, padding: 4, cursor: 'pointer', color: C.textMuted }}
+                          className="btn btn-ghost btn-icon btn-sm"
                           title={t('common.remove')}
                         >
                           <X size={13} strokeWidth={1.75} />
@@ -538,7 +511,7 @@ export default function FocusWorksSection({
           <button
             onClick={handleRefreshPlan}
             disabled={refreshingPlan}
-            style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', fontSize: 11, fontWeight: 500, color: '#f59e0b', background: 'none', border: 0, cursor: 'pointer', opacity: refreshingPlan ? 0.5 : 1, fontFamily: SANS }}
+            className="btn btn-ghost btn-sm"
           >
             {refreshingPlan ? (
               <div style={{ width: 10, height: 10, border: '2px solid rgba(245,158,11,0.3)', borderTopColor: '#f59e0b', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />

@@ -117,15 +117,8 @@ export default function DashboardGuide({ childName, isHomeschoolParent: isParent
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
           <button
             onClick={onDismiss}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'rgba(255,255,255,0.5)',
-              fontSize: 11,
-              cursor: 'pointer',
-              textDecoration: 'underline',
-              padding: 0,
-            }}
+            className="btn btn-ghost btn-sm"
+            style={{ textDecoration: 'underline' }}
           >
             {t('guide.common.dismiss')}
           </button>

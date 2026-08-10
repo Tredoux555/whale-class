@@ -566,7 +566,7 @@ export default function PortalChat({
               {!msg.isUser && msg.content.length > 10 && (
                 <button
                   onClick={(e) => { e.stopPropagation(); tts.play(msg.id, msg.content); }}
-                  className="mt-2 flex items-center gap-1.5 text-[10px] text-white/30 hover:text-white/60 transition-colors"
+                  className="btn btn-ghost btn-sm mt-2"
                   title={tts.playingId === msg.id ? t('home.portal.stop') : t('home.portal.listen')}
                 >
                   {tts.loadingId === msg.id ? (
@@ -616,7 +616,7 @@ export default function PortalChat({
             <img src={imagePreview} alt="Preview" className="h-16 rounded-lg object-cover" />
             <button
               onClick={clearImage}
-              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center"
+              className="btn btn-danger btn-icon btn-sm btn-round absolute -top-1.5 -right-1.5"
             >
               ✕
             </button>

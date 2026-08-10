@@ -117,7 +117,7 @@ export default function HealthTab({ sessionToken }: HealthTabProps) {
         <button
           onClick={fetchHealth}
           disabled={loading}
-          className="px-3 py-1.5 bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded-lg text-sm font-medium disabled:opacity-50"
+          className="btn btn-secondary btn-sm"
         >
           {loading ? '⏳' : '🔄'} {t('health.runCheck')}
         </button>
@@ -461,7 +461,7 @@ function CronTriggers({ sessionToken, onComplete }: { sessionToken: string; onCo
             key={trig.id}
             onClick={trig.fire}
             disabled={busy !== null}
-            className="px-3 py-2 bg-slate-800/60 hover:bg-emerald-500/15 hover:border-emerald-500/30 border border-slate-700 text-slate-300 hover:text-emerald-300 rounded-lg text-xs font-medium disabled:opacity-50 transition-colors"
+            className="btn btn-secondary btn-sm"
           >
             {busy === trig.id ? '⏳' : trig.icon} {trig.label}
           </button>

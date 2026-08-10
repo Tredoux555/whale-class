@@ -174,7 +174,7 @@ export default function AreaSpinnerWheel({
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
             <button
               onClick={onClose}
-              className="text-blue-500 font-medium px-2 py-1"
+              className="btn btn-ghost btn-sm on-light"
             >
               Cancel
             </button>
@@ -184,7 +184,7 @@ export default function AreaSpinnerWheel({
             </div>
             <button
               onClick={handleConfirm}
-              className="text-blue-500 font-semibold px-2 py-1"
+              className="btn btn-ghost btn-sm on-light"
             >
               Done
             </button>

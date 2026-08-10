@@ -252,7 +252,7 @@ export default function MontagesSheet({ onClose }: { onClose: () => void }) {
             onClick={load}
             aria-label={t('montageTracker.refresh')}
             title={t('montageTracker.refresh')}
-            style={{ ...actionButton('quiet'), padding: '6px 10px' }}
+            className="btn btn-secondary btn-icon btn-sm"
           >
             ↻
           </button>
@@ -261,7 +261,7 @@ export default function MontagesSheet({ onClose }: { onClose: () => void }) {
             onClick={onClose}
             aria-label={t('common.close')}
             title={t('common.close')}
-            style={{ ...actionButton('quiet'), padding: '6px 10px' }}
+            className="btn btn-secondary btn-icon btn-sm"
           >
             ✕
           </button>
@@ -279,7 +279,7 @@ export default function MontagesSheet({ onClose }: { onClose: () => void }) {
           {!loading && loadError && jobs.length === 0 && (
             <div style={{ textAlign: 'center' }}>
               <div style={{ color: T.red, fontSize: 13, marginBottom: 8 }}>{t('montageTracker.loadFailed')}</div>
-              <button type="button" onClick={() => { setLoading(true); load(); }} style={actionButton('primary')}>
+              <button type="button" onClick={() => { setLoading(true); load(); }} className="btn btn-primary btn-sm">
                 {t('montageTracker.retry')}
               </button>
             </div>
@@ -368,7 +368,7 @@ export default function MontagesSheet({ onClose }: { onClose: () => void }) {
                       <a
                         href={downloadUrl(job.video_url as string)}
                         download
-                        style={actionButton('quiet')}
+                        className="btn btn-secondary btn-sm"
                       >
                         ⬇ {t('admin.billing.download')}
                       </a>
@@ -380,7 +380,7 @@ export default function MontagesSheet({ onClose }: { onClose: () => void }) {
                         type="button"
                         onClick={() => handleSend(job)}
                         disabled={!!sendingId}
-                        style={actionButton('primary', !!sendingId)}
+                        className="btn btn-primary btn-sm"
                       >
                         {sending
                           ? t('weeklyWrap.sending')

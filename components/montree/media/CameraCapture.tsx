@@ -880,7 +880,7 @@ export default function CameraCapture({
             <p className="text-xl font-medium text-center mb-4">{error}</p>
             <button
               onClick={() => startCamera(currentFacing, captureMode === 'video')}
-              className="px-6 py-3 bg-blue-500 rounded-xl font-medium hover:bg-blue-600 transition-colors"
+              className="btn btn-primary btn-lg"
             >
               {t('camera.tryAgain')}
             </button>

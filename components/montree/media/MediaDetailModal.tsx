@@ -213,18 +213,7 @@ export default function MediaDetailModal({
           <button
             onClick={onClose}
             aria-label="Close"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 34,
-              height: 34,
-              borderRadius: 10,
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.10)',
-              color: T.textPrimary,
-              cursor: 'pointer',
-            }}
+            className="btn btn-secondary btn-icon btn-sm"
           >
             <X size={15} strokeWidth={1.75} />
           </button>
@@ -414,41 +403,16 @@ export default function MediaDetailModal({
             <>
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                style={{
-                  flex: 1,
-                  padding: '11px 14px',
-                  borderRadius: 12,
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.10)',
-                  color: T.textPrimary,
-                  fontFamily: T.sans,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
+                className="btn btn-secondary btn-md"
+                style={{ flex: 1 }}
               >
                 {t('common.cancel')}
               </button>
               <button
                 onClick={handleDelete}
                 disabled={deleting}
-                style={{
-                  flex: 1,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 7,
-                  padding: '11px 14px',
-                  borderRadius: 12,
-                  background: T.redSoft,
-                  border: `1px solid ${T.redBorder}`,
-                  color: T.red,
-                  fontFamily: T.sans,
-                  fontSize: 13,
-                  fontWeight: 700,
-                  cursor: deleting ? 'wait' : 'pointer',
-                  opacity: deleting ? 0.55 : 1,
-                }}
+                className="btn btn-danger btn-soft btn-md"
+                style={{ flex: 1 }}
               >
                 <Trash2 size={13} strokeWidth={1.75} />
                 {deleting ? t('common.deleting') : t('media.confirmDelete')}
@@ -458,62 +422,23 @@ export default function MediaDetailModal({
             <>
               <button
                 onClick={() => setShowDeleteConfirm(true)}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 7,
-                  padding: '11px 14px',
-                  borderRadius: 12,
-                  background: T.redSoft,
-                  border: `1px solid ${T.redBorder}`,
-                  color: T.red,
-                  fontFamily: T.sans,
-                  fontSize: 13,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
+                className="btn btn-danger btn-soft btn-md"
               >
                 <Trash2 size={13} strokeWidth={1.75} />
                 {t('common.delete')}
               </button>
               <button
                 onClick={onClose}
-                style={{
-                  flex: 1,
-                  padding: '11px 14px',
-                  borderRadius: 12,
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.10)',
-                  color: T.textPrimary,
-                  fontFamily: T.sans,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
+                className="btn btn-secondary btn-md"
+                style={{ flex: 1 }}
               >
                 {t('common.cancel')}
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving}
-                style={{
-                  flex: 1,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 7,
-                  padding: '11px 14px',
-                  borderRadius: 12,
-                  background: 'linear-gradient(180deg, #34d399, #10b981)',
-                  border: '1px solid rgba(52,211,153,0.55)',
-                  color: '#06281a',
-                  fontFamily: T.sans,
-                  fontSize: 13,
-                  fontWeight: 700,
-                  cursor: saving ? 'wait' : 'pointer',
-                  opacity: saving ? 0.55 : 1,
-                  boxShadow: saving ? 'none' : '0 4px 14px rgba(16,185,129,0.25)',
-                }}
+                className="btn btn-primary btn-md"
+                style={{ flex: 1 }}
               >
                 <Check size={13} strokeWidth={2.5} />
                 {saving ? t('common.saving') : t('media.saveChanges')}

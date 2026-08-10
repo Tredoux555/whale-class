@@ -279,18 +279,7 @@ export default function AreaHistoryModal({ isOpen, onClose, area, childId, child
           <button
             onClick={onClose}
             aria-label="Close"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              background: 'rgba(0,0,0,0.32)',
-              border: '1px solid rgba(255,255,255,0.18)',
-              color: 'rgba(255,255,255,0.95)',
-              cursor: 'pointer',
-            }}
+            className="btn btn-secondary btn-icon btn-sm"
           >
             <X size={16} strokeWidth={1.75} />
           </button>

@@ -127,7 +127,7 @@ export default function AgentNav() {
             every screen and platform; nav controls never share that corner. */}
         <button
           onClick={() => setMenuOpen(o => !o)}
-          className="md:hidden inline-flex items-center justify-center w-9 h-9 rounded-lg text-white/70 hover:text-white border border-white/10 shrink-0"
+          className="btn btn-secondary btn-icon btn-sm md:hidden shrink-0"
           aria-label="Menu"
           aria-expanded={menuOpen}
         >
@@ -152,7 +152,7 @@ export default function AgentNav() {
           <button
             onClick={signOut}
             disabled={signOutLoading}
-            className="hidden md:inline-flex px-3 py-1.5 rounded-lg text-xs font-medium text-white/70 hover:text-white border border-white/10 hover:border-white/30 transition-colors disabled:opacity-50 whitespace-nowrap"
+            className="btn btn-ghost btn-outline btn-sm hidden md:inline-flex"
           >
             {signOutLoading ? 'Signing out…' : 'Sign out'}
           </button>
@@ -179,7 +179,7 @@ export default function AgentNav() {
             <button
               onClick={signOut}
               disabled={signOutLoading}
-              className="mt-2 px-3 py-2 rounded-lg text-sm font-medium text-white/70 hover:text-white border border-white/10 hover:border-white/30 transition-colors text-left disabled:opacity-50"
+              className="btn btn-ghost btn-outline btn-md mt-2 text-left"
             >
               {signOutLoading ? 'Signing out…' : 'Sign out'}
             </button>

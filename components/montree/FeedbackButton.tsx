@@ -316,7 +316,7 @@ export default function FeedbackButton({
             <span className="font-semibold text-gray-800">{t('feedback.title')}</span>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+              className="btn btn-ghost btn-icon btn-sm on-light text-xl"
             >
               ×
             </button>
@@ -329,10 +329,10 @@ export default function FeedbackButton({
                 <button
                   key={type}
                   onClick={() => setSelectedType(type)}
-                  className={`flex-1 py-2 px-1 rounded-xl text-center transition-all ${
+                  className={`btn btn-sm flex-1 on-light ${
                     selectedType === type
-                      ? 'bg-emerald-100 border-2 border-emerald-500 scale-105'
-                      : 'bg-gray-100 border-2 border-transparent hover:bg-gray-200'
+                      ? 'btn-primary'
+                      : 'btn-secondary'
                   }`}
                 >
                   <div className="text-xl">{emoji}</div>
@@ -352,7 +352,7 @@ export default function FeedbackButton({
                   />
                   <button
                     onClick={() => setScreenshot(null)}
-                    className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full text-sm flex items-center justify-center hover:bg-red-600"
+                    className="btn btn-danger btn-icon btn-round btn-sm absolute top-1 right-1 text-sm"
                   >
                     ×
                   </button>
@@ -409,10 +409,10 @@ export default function FeedbackButton({
             <button
               onClick={handleSubmit}
               disabled={!selectedType || !message.trim() || isSubmitting}
-              className={`w-full mt-3 py-3 rounded-xl font-semibold transition-all ${
+              className={`btn btn-lg btn-full mt-3 on-light ${
                 selectedType && message.trim() && !isSubmitting
-                  ? 'bg-emerald-500 text-white hover:bg-emerald-600 active:scale-98'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  ? 'btn-primary'
+                  : 'btn-secondary'
               }`}
             >
               {isSubmitting ? (
@@ -430,10 +430,10 @@ export default function FeedbackButton({
       {/* Floating Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl transition-all hover:scale-110 active:scale-95 ${
+        className={`btn btn-icon btn-round btn-lg text-2xl ${
           isOpen
-            ? 'bg-gray-800 text-white rotate-45'
-            : 'bg-emerald-500 text-white hover:bg-emerald-600'
+            ? 'btn-secondary rotate-45'
+            : 'btn-primary'
         }`}
         aria-label={t('a11y.giveFeedback' as TranslationKey)}
       >

@@ -313,22 +313,7 @@ export default function AppointmentInviteCard({
             type="button"
             onClick={() => respond('accept')}
             disabled={!!busy}
-            style={{
-              padding: '10px 12px',
-              borderRadius: 10,
-              background: T.emerald,
-              color: '#0a1a0f',
-              border: 'none',
-              fontWeight: 600,
-              fontSize: 13,
-              cursor: busy ? 'wait' : 'pointer',
-              opacity: busy ? 0.6 : 1,
-              fontFamily: T.sans,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 6,
-            }}
+            className="btn btn-primary btn-sm"
           >
             {busy === 'accept' ? <Loader2 size={14} style={{ animation: 'spin 1.4s linear infinite' }} /> : <CheckCircle2 size={14} />}
             {t('msg.accept')}
@@ -337,22 +322,7 @@ export default function AppointmentInviteCard({
             type="button"
             onClick={() => respond('decline')}
             disabled={!!busy}
-            style={{
-              padding: '10px 12px',
-              borderRadius: 10,
-              background: 'rgba(255,255,255,0.05)',
-              color: T.textSecondary,
-              border: '1px solid rgba(255,255,255,0.18)',
-              fontWeight: 600,
-              fontSize: 13,
-              cursor: busy ? 'wait' : 'pointer',
-              opacity: busy ? 0.6 : 1,
-              fontFamily: T.sans,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 6,
-            }}
+            className="btn btn-secondary btn-sm"
           >
             {busy === 'decline' ? <Loader2 size={14} style={{ animation: 'spin 1.4s linear infinite' }} /> : <XCircle size={14} />}
             {t('msg.decline')}
@@ -361,20 +331,8 @@ export default function AppointmentInviteCard({
       ) : showJoin ? (
         <Link
           href={viewer === 'parent' ? `/montree/parent/calls/${appointmentId}` : `/montree/dashboard/calls/${appointmentId}`}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            padding: '10px 16px',
-            borderRadius: 10,
-            background: T.emerald,
-            color: '#0a1a0f',
-            fontWeight: 600,
-            fontSize: 13,
-            textDecoration: 'none',
-            marginTop: 4,
-          }}
+          className="btn btn-primary btn-sm"
+          style={{ marginTop: 4 }}
         >
           {t('msg.joinNow')} <ArrowRight size={14} />
         </Link>

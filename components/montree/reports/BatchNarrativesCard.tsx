@@ -218,37 +218,16 @@ export default function BatchNarrativesCard({ classroomId, children }: Props) {
         {!generating ? (
           <button
             onClick={() => handleGenerate(false)}
-            style={{
-              padding: '7px 14px',
-              borderRadius: 9,
-              background: 'linear-gradient(180deg, #34d399, #10b981)',
-              border: '1px solid rgba(52,211,153,0.55)',
-              color: '#06281a',
-              fontFamily: T.sans,
-              fontSize: 12,
-              fontWeight: 700,
-              cursor: 'pointer',
-              boxShadow: '0 4px 14px rgba(16,185,129,0.25)',
-              flexShrink: 0,
-            }}
+            className="btn btn-primary btn-sm"
+            style={{ flexShrink: 0 }}
           >
             {t('batchNarratives.generateButton')}
           </button>
         ) : (
           <button
             onClick={handleCancel}
-            style={{
-              padding: '7px 14px',
-              borderRadius: 9,
-              background: T.redSoft,
-              border: `1px solid ${T.redBorder}`,
-              color: T.red,
-              fontFamily: T.sans,
-              fontSize: 12,
-              fontWeight: 700,
-              cursor: 'pointer',
-              flexShrink: 0,
-            }}
+            className="btn btn-danger btn-soft btn-sm"
+            style={{ flexShrink: 0 }}
           >
             {t('batchNarratives.cancelButton')}
           </button>
@@ -328,16 +307,7 @@ export default function BatchNarrativesCard({ classroomId, children }: Props) {
               </span>
               <button
                 onClick={() => setExpanded(!expanded)}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: T.emerald,
-                  fontFamily: T.sans,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  padding: 0,
-                }}
+                className="btn btn-ghost btn-sm"
               >
                 {expanded ? t('batchNarratives.hideButton') : t('batchNarratives.detailsButton')}
               </button>
@@ -492,17 +462,8 @@ export default function BatchNarrativesCard({ classroomId, children }: Props) {
             {stats.generated > 0 && (
               <button
                 onClick={() => handleGenerate(true)}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: T.emerald,
-                  fontFamily: T.sans,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  textDecoration: 'underline',
-                  cursor: 'pointer',
-                  padding: 0,
-                }}
+                className="btn btn-ghost btn-sm"
+                style={{ textDecoration: 'underline' }}
               >
                 {t('batchNarratives.regenerateButton')}
               </button>

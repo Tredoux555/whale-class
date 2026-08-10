@@ -73,7 +73,7 @@ export default function MiraProactiveCard() {
         <button
           onClick={() => setDismissed(true)}
           aria-label={t('common.dismiss')}
-          className="text-slate-400 hover:text-white text-lg leading-none px-2 py-0.5"
+          className="btn btn-ghost btn-icon btn-sm text-lg"
         >
           ×
         </button>

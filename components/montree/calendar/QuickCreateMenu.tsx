@@ -162,19 +162,8 @@ export default function QuickCreateMenu({
       <button
         type="button"
         onClick={() => setMenuOpen((m) => !m)}
-        style={{
-          marginTop: 14,
-          background: 'rgba(52,211,153,0.18)',
-          border: '1px solid rgba(52,211,153,0.45)',
-          color: '#cfead4',
-          padding: '10px 14px',
-          borderRadius: 10,
-          cursor: 'pointer',
-          fontSize: 14,
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 6,
-        }}
+        className="btn btn-primary btn-md"
+        style={{ marginTop: 14 }}
         aria-haspopup="menu"
         aria-expanded={menuOpen}
       >
@@ -339,10 +328,10 @@ function EventQuickCreateModal({ selectedDay, tz, onClose, onCreated }: EventMod
         </Field>
         {error ? <div style={{ color: '#fca5a5', fontSize: 13 }}>{error}</div> : null}
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <button type="button" onClick={onClose} style={btnGhost}>
+          <button type="button" onClick={onClose} className="btn btn-secondary btn-md">
             Cancel
           </button>
-          <button type="submit" disabled={submitting} style={btnPrimary}>
+          <button type="submit" disabled={submitting} className="btn btn-primary btn-md">
             {submitting ? 'Saving…' : 'Save event'}
           </button>
         </div>
@@ -421,10 +410,10 @@ function TermQuickCreateModal({ selectedDay, onClose, onCreated }: ModalProps) {
         </Field>
         {error ? <div style={{ color: '#fca5a5', fontSize: 13 }}>{error}</div> : null}
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <button type="button" onClick={onClose} style={btnGhost}>
+          <button type="button" onClick={onClose} className="btn btn-secondary btn-md">
             Cancel
           </button>
-          <button type="submit" disabled={submitting} style={btnPrimary}>
+          <button type="submit" disabled={submitting} className="btn btn-primary btn-md">
             {submitting ? 'Saving…' : 'Save term'}
           </button>
         </div>
@@ -484,14 +473,8 @@ function ModalShell({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#9bd5b0',
-              fontSize: 22,
-              cursor: 'pointer',
-              padding: 4,
-            }}
+            className="btn btn-ghost btn-icon btn-sm"
+            style={{ fontSize: 22 }}
           >
             ✕
           </button>

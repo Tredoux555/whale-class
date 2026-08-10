@@ -287,20 +287,8 @@ export default function TeachingNotesView({
           <button
             type="button"
             onClick={() => window.print()}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '8px 14px',
-              borderRadius: 10,
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              color: 'rgba(255,255,255,0.85)',
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: 'pointer',
-              flexShrink: 0,
-            }}
+            className="btn btn-secondary btn-sm"
+            style={{ flexShrink: 0 }}
           >
             <Printer size={14} strokeWidth={1.75} /> Print
           </button>

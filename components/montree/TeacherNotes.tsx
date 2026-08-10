@@ -500,22 +500,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
           }}>
             <button
               onClick={() => setSelectedChildId(null)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 5,
-                padding: '6px 12px',
-                borderRadius: 999,
-                background: selectedChildId === null ? T.emerald : 'rgba(255,255,255,0.06)',
-                border: `1px solid ${selectedChildId === null ? 'rgba(52,211,153,0.65)' : 'rgba(255,255,255,0.10)'}`,
-                color: selectedChildId === null ? '#06281a' : T.textSecondary,
-                fontFamily: T.sans,
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                transition: 'all 120ms ease',
-              }}
+              className={`btn btn-sm btn-pill ${selectedChildId === null ? 'btn-primary' : 'btn-secondary'}`}
             >
               <Users size={11} strokeWidth={1.75} />
               {t('teacherNotes.classNote')}
@@ -526,19 +511,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
                 <button
                   key={child.id}
                   onClick={() => setSelectedChildId(child.id)}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: 999,
-                    background: active ? T.emerald : 'rgba(255,255,255,0.06)',
-                    border: `1px solid ${active ? 'rgba(52,211,153,0.65)' : 'rgba(255,255,255,0.10)'}`,
-                    color: active ? '#06281a' : T.textSecondary,
-                    fontFamily: T.sans,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    transition: 'all 120ms ease',
-                  }}
+                  className={`btn btn-sm btn-pill ${active ? 'btn-primary' : 'btn-secondary'}`}
                 >
                   {child.name}
                 </button>
@@ -593,20 +566,8 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
               onClick={recording ? stopRecording : startRecording}
               aria-label={recording ? t('teacherNotes.stop') : t('teacherNotes.recordVoice')}
               title={recording ? t('teacherNotes.stop') : t('teacherNotes.recordVoice')}
-              style={{
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 40,
-                height: 44,
-                borderRadius: 12,
-                background: recording ? T.redSoft : 'rgba(255,255,255,0.06)',
-                border: `1px solid ${recording ? T.redBorder : 'rgba(255,255,255,0.12)'}`,
-                color: recording ? T.red : T.textPrimary,
-                cursor: 'pointer',
-                transition: 'all 120ms ease',
-              }}
+              className={`btn btn-icon btn-md ${recording ? 'btn-danger btn-soft' : 'btn-secondary'}`}
+              style={{ position: 'relative' }}
             >
               {recording
                 ? <Square size={15} strokeWidth={2} fill="currentColor" />
@@ -619,13 +580,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
           <button
             onClick={handleSave}
             disabled={!content.trim() || saving}
-            style={{
-              ...ctaStyle,
-              height: 44,
-              padding: '0 16px',
-              opacity: (!content.trim() || saving) ? 0.45 : 1,
-              cursor: (!content.trim() || saving) ? 'not-allowed' : 'pointer',
-            }}
+            className="btn btn-primary btn-md"
           >
             <Check size={14} strokeWidth={2.25} />
             {saving ? '...' : t('teacherNotes.save')}
@@ -736,30 +691,14 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
                       }}>
                         <button
                           onClick={handleCancelEdit}
-                          style={{
-                            padding: '7px 14px',
-                            borderRadius: 8,
-                            background: 'rgba(255,255,255,0.06)',
-                            border: '1px solid rgba(255,255,255,0.10)',
-                            color: T.textSecondary,
-                            fontFamily: T.sans,
-                            fontSize: 12,
-                            fontWeight: 500,
-                            cursor: 'pointer',
-                          }}
+                          className="btn btn-secondary btn-sm"
                         >
                           {t('common.cancel')}
                         </button>
                         <button
                           onClick={handleSaveEdit}
                           disabled={!editContent.trim() || editSaving}
-                          style={{
-                            ...ctaStyle,
-                            padding: '7px 14px',
-                            fontSize: 12,
-                            opacity: (!editContent.trim() || editSaving) ? 0.45 : 1,
-                            cursor: (!editContent.trim() || editSaving) ? 'not-allowed' : 'pointer',
-                          }}
+                          className="btn btn-primary btn-sm"
                         >
                           <Check size={12} strokeWidth={2.5} />
                           {editSaving ? '...' : t('common.save')}
@@ -795,19 +734,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
                               onClick={() => handleStartEdit(note)}
                               aria-label={t('common.edit')}
                               title={t('common.edit')}
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                width: 28,
-                                height: 28,
-                                borderRadius: 8,
-                                background: 'transparent',
-                                border: '1px solid rgba(255,255,255,0.10)',
-                                color: T.textMuted,
-                                cursor: 'pointer',
-                                transition: 'all 120ms ease',
-                              }}
+                              className="btn btn-ghost btn-outline btn-icon btn-sm"
                             >
                               <Pencil size={12} strokeWidth={1.75} />
                             </button>
@@ -815,19 +742,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
                               onClick={() => handleDelete(note.id)}
                               aria-label={t('common.delete')}
                               title={t('common.delete')}
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                width: 28,
-                                height: 28,
-                                borderRadius: 8,
-                                background: 'transparent',
-                                border: '1px solid rgba(255,255,255,0.10)',
-                                color: T.textMuted,
-                                cursor: 'pointer',
-                                transition: 'all 120ms ease',
-                              }}
+                              className="btn btn-ghost btn-outline btn-icon btn-sm"
                             >
                               <Trash2 size={12} strokeWidth={1.75} />
                             </button>

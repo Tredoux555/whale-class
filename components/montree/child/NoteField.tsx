@@ -130,22 +130,7 @@ function NoteFieldImpl({
         <button
           onClick={handleSave}
           disabled={disabled}
-          style={{
-            padding: '5px 12px',
-            borderRadius: 8,
-            background: 'linear-gradient(135deg, #34d399, #059669)',
-            color: '#fff',
-            fontSize: 12,
-            fontWeight: 600,
-            border: 0,
-            cursor: disabled ? 'default' : 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-            opacity: disabled ? 0.45 : 1,
-            transition: 'opacity 140ms ease',
-            fontFamily: SANS,
-          }}
+          className="btn btn-primary btn-sm"
         >
           <Check size={12} strokeWidth={2.5} />
           {buttonLabel}

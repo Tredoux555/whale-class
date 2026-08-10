@@ -354,19 +354,10 @@ export default function BigMicPanel({ childId, childName, onAction }: Props) {
             onClick={handleMicTap}
             disabled={micBusy}
             title={micActive ? 'Stop' : 'Talk'}
+            className={`btn btn-icon btn-lg btn-round ${micActive ? 'btn-danger' : micBusy ? 'btn-secondary' : 'btn-primary'}`}
             style={{
               width: 84,
               height: 84,
-              borderRadius: '50%',
-              background: micBg,
-              border: `1px solid ${micBorder}`,
-              color: micColor,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: micBusy ? 'wait' : 'pointer',
-              boxShadow: micShadow,
-              transition: 'all 160ms ease',
               animation: micActive ? 'bmp-pulse 1.4s ease-in-out infinite' : 'none',
             }}
           >
@@ -419,18 +410,8 @@ export default function BigMicPanel({ childId, childName, onAction }: Props) {
         {!showTyping && stage !== 'recording' && !micBusy && !response && (
           <button
             onClick={() => setShowTyping(true)}
-            style={{
-              marginTop: 8,
-              background: 'transparent',
-              border: 'none',
-              color: T.emerald,
-              fontFamily: T.sans,
-              fontSize: 13,
-              fontWeight: 600,
-              textDecoration: 'underline',
-              cursor: 'pointer',
-              padding: 0,
-            }}
+            className="btn btn-ghost btn-sm"
+            style={{ marginTop: 8 }}
           >
             {t('bigMic.orTypeInstead')}
           </button>
@@ -466,22 +447,7 @@ export default function BigMicPanel({ childId, childName, onAction }: Props) {
             <button
               onClick={handleTypedSubmit}
               disabled={!typedText.trim()}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                padding: '8px 16px',
-                borderRadius: 12,
-                background: 'linear-gradient(180deg, #34d399, #10b981)',
-                border: '1px solid rgba(52,211,153,0.55)',
-                color: '#06281a',
-                fontFamily: T.sans,
-                fontSize: 13,
-                fontWeight: 700,
-                cursor: !typedText.trim() ? 'not-allowed' : 'pointer',
-                opacity: !typedText.trim() ? 0.5 : 1,
-                boxShadow: !typedText.trim() ? 'none' : '0 4px 14px rgba(16,185,129,0.30)',
-              }}
+              className="btn btn-primary btn-sm"
             >
               <Send size={13} strokeWidth={2} />
               {t('bigMic.send')}

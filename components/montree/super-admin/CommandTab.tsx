@@ -362,7 +362,7 @@ function DemosSection({ sessionToken }: { sessionToken: string }) {
           {TZ_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
         <button
-          style={{ ...actionBtn('#34d399', '#04150c'), padding: '8px 14px', opacity: saving ? 0.6 : 1 }}
+          className="btn btn-primary btn-md"
           onClick={create}
           disabled={saving}
         >
@@ -405,9 +405,9 @@ function DemosSection({ sessionToken }: { sessionToken: string }) {
                 )}
               </div>
               <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
-                <button style={{ ...actionBtn('rgba(52,211,153,0.18)', '#34d399'), opacity: busyId === m.id ? 0.5 : 1 }} disabled={busyId === m.id} onClick={() => setStatus(m.id, 'held')}>Held ✓</button>
-                <button style={{ ...actionBtn('rgba(248,113,113,0.15)', '#f87171'), opacity: busyId === m.id ? 0.5 : 1 }} disabled={busyId === m.id} onClick={() => setStatus(m.id, 'cancelled')}>Cancel ✕</button>
-                <button style={{ ...actionBtn('rgba(251,191,36,0.15)', '#fbbf24'), opacity: busyId === m.id ? 0.5 : 1 }} disabled={busyId === m.id} onClick={() => setStatus(m.id, 'no_show')}>No-show</button>
+                <button className="btn btn-secondary btn-sm" disabled={busyId === m.id} onClick={() => setStatus(m.id, 'held')}>Held ✓</button>
+                <button className="btn btn-danger btn-soft btn-sm" disabled={busyId === m.id} onClick={() => setStatus(m.id, 'cancelled')}>Cancel ✕</button>
+                <button className="btn btn-gold btn-sm" disabled={busyId === m.id} onClick={() => setStatus(m.id, 'no_show')}>No-show</button>
               </div>
             </div>
           ))}
@@ -419,7 +419,7 @@ function DemosSection({ sessionToken }: { sessionToken: string }) {
         <div style={{ marginTop: 14 }}>
           <button
             onClick={() => setShowPast((v) => !v)}
-            style={{ background: 'transparent', border: 'none', color: '#64748b', fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: 0 }}
+            className="btn btn-ghost btn-sm"
           >
             {showPast ? '▾' : '▸'} Past demos ({past.length})
           </button>
@@ -440,8 +440,8 @@ function DemosSection({ sessionToken }: { sessionToken: string }) {
                   </div>
                   {m.status === 'scheduled' && (
                     <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                      <button style={{ ...actionBtn('rgba(52,211,153,0.18)', '#34d399'), opacity: busyId === m.id ? 0.5 : 1 }} disabled={busyId === m.id} onClick={() => setStatus(m.id, 'held')}>Held ✓</button>
-                      <button style={{ ...actionBtn('rgba(248,113,113,0.15)', '#f87171'), opacity: busyId === m.id ? 0.5 : 1 }} disabled={busyId === m.id} onClick={() => setStatus(m.id, 'no_show')}>No-show</button>
+                      <button className="btn btn-secondary btn-sm" disabled={busyId === m.id} onClick={() => setStatus(m.id, 'held')}>Held ✓</button>
+                      <button className="btn btn-danger btn-soft btn-sm" disabled={busyId === m.id} onClick={() => setStatus(m.id, 'no_show')}>No-show</button>
                     </div>
                   )}
                 </div>
@@ -618,7 +618,7 @@ export default function CommandTab({ sessionToken, onNavigate }: CommandTabProps
       <h2 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 6px' }}>🧭 Command</h2>
       <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 20px' }}>
         The whole business at a glance — schools, pipeline, and money in one view.{' '}
-        <button style={{ ...navBtn, textDecoration: 'none' }} onClick={() => load()} disabled={loading}>
+        <button className="btn btn-ghost btn-sm" onClick={() => load()} disabled={loading}>
           {loading ? 'Refreshing…' : '↻ Refresh'}
         </button>
       </p>
@@ -767,10 +767,10 @@ export default function CommandTab({ sessionToken, onNavigate }: CommandTabProps
       <div style={{ ...card, display: 'flex', flexWrap: 'wrap', gap: 18, alignItems: 'center' }}>
         {onNavigate ? (
           <>
-            <button style={navBtn} onClick={() => onNavigate('founding')}>🌱 Foundation</button>
-            <button style={navBtn} onClick={() => onNavigate('global-outreach')}>🌍 Global Outreach</button>
-            <button style={navBtn} onClick={() => onNavigate('money')}>💰 Money</button>
-            <button style={navBtn} onClick={() => onNavigate('schools')}>🏫 Schools</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => onNavigate('founding')}>🌱 Foundation</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => onNavigate('global-outreach')}>🌍 Global Outreach</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => onNavigate('money')}>💰 Money</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => onNavigate('schools')}>🏫 Schools</button>
           </>
         ) : (
           <span style={{ fontSize: 13, color: '#64748b' }}>

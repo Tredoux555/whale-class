@@ -78,7 +78,7 @@ export default function PhotoQueueBanner({ childId }: PhotoQueueBannerProps) {
                   <span className="text-xs text-amber-600">{pendingMB} MB</span>
                   <button
                     onClick={() => sync()}
-                    className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded hover:bg-amber-200 transition-colors"
+                    className="btn btn-gold btn-sm on-light"
                   >
                     {t('offline.syncNow') || 'Sync now'}
                   </button>
@@ -113,7 +113,7 @@ export default function PhotoQueueBanner({ childId }: PhotoQueueBannerProps) {
             </span>
             <button
               onClick={() => sync()}
-              className="text-xs font-medium text-red-700 bg-red-100 px-2 py-0.5 rounded hover:bg-red-200 transition-colors"
+              className="btn btn-danger btn-soft btn-sm on-light"
             >
               {t('offline.retryAll') || 'Retry all'}
             </button>

@@ -328,21 +328,7 @@ export default function PendingAppointmentsBanner({
                     type="button"
                     onClick={() => respond(a.id, 'accept')}
                     disabled={busyId === a.id}
-                    style={{
-                      padding: '9px 12px',
-                      borderRadius: 8,
-                      background: T.emerald,
-                      color: '#0a1a0f',
-                      border: 'none',
-                      fontWeight: 600,
-                      fontSize: 12,
-                      cursor: busyId === a.id ? 'wait' : 'pointer',
-                      opacity: busyId === a.id ? 0.6 : 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 5,
-                    }}
+                    className="btn btn-primary btn-sm"
                   >
                     {busyId === a.id ? <Loader2 size={12} style={{ animation: 'spin 1.4s linear infinite' }} /> : <CheckCircle2 size={12} />}
                     {t('appt.accept')}
@@ -351,21 +337,7 @@ export default function PendingAppointmentsBanner({
                     type="button"
                     onClick={() => respond(a.id, 'decline')}
                     disabled={busyId === a.id}
-                    style={{
-                      padding: '9px 12px',
-                      borderRadius: 8,
-                      background: 'rgba(255,255,255,0.05)',
-                      color: T.textSecondary,
-                      border: '1px solid rgba(255,255,255,0.18)',
-                      fontWeight: 600,
-                      fontSize: 12,
-                      cursor: busyId === a.id ? 'wait' : 'pointer',
-                      opacity: busyId === a.id ? 0.6 : 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 5,
-                    }}
+                    className="btn btn-secondary btn-sm"
                   >
                     {busyId === a.id ? <Loader2 size={12} style={{ animation: 'spin 1.4s linear infinite' }} /> : <XCircle size={12} />}
                     {t('appt.decline')}

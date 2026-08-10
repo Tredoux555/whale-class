@@ -44,12 +44,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
             </p>
             <button
               onClick={() => this.setState({ hasError: false, error: null })}
-              className="px-6 py-2.5 rounded-xl text-sm font-medium transition-all"
-              style={{
-                background: 'rgba(74,222,128,0.15)',
-                border: '1px solid rgba(74,222,128,0.3)',
-                color: '#4ADE80',
-              }}
+              className="btn btn-primary btn-md"
             >
               {this.props.retryLabel || 'Try Again'}
             </button>

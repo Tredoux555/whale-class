@@ -338,19 +338,8 @@ export default function SetAppointmentModal({
               if (!submitting) onClose();
             }}
             aria-label={t('common.close')}
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.10)',
-              color: T.textSecondary,
-              cursor: submitting ? 'not-allowed' : 'pointer',
-              opacity: submitting ? 0.5 : 1,
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
+            className="btn btn-secondary btn-icon btn-sm"
+            style={{ cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.5 : 1 }}
           >
             <X size={16} strokeWidth={1.75} />
           </button>
@@ -391,7 +380,7 @@ export default function SetAppointmentModal({
             <button
               type="button"
               onClick={onClose}
-              style={btnPrimary()}
+              className="btn btn-primary btn-lg btn-full"
             >
               {t('common.done')}
             </button>
@@ -625,21 +614,7 @@ export default function SetAppointmentModal({
                               : [...prev, t.id]
                           );
                         }}
-                        style={{
-                          padding: '8px 12px',
-                          borderRadius: 999,
-                          background: checked ? T.emeraldSoft : T.inputBg,
-                          border: checked
-                            ? `1px solid ${T.emeraldRing}`
-                            : T.inputBorder,
-                          color: T.textPrimary,
-                          fontSize: 12,
-                          fontWeight: 500,
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 6,
-                        }}
+                        className={`btn btn-sm btn-pill ${checked ? 'btn-primary' : 'btn-secondary'}`}
                       >
                         {checked && <Check size={12} strokeWidth={2} />}
                         {t.name}
@@ -672,11 +647,7 @@ export default function SetAppointmentModal({
               type="button"
               onClick={handleSubmit}
               disabled={!canSubmit}
-              style={{
-                ...btnPrimary(),
-                opacity: canSubmit ? 1 : 0.55,
-                cursor: canSubmit ? 'pointer' : 'not-allowed',
-              }}
+              className="btn btn-primary btn-lg btn-full"
             >
               {submitting ? (
                 t('appt.sending')
@@ -729,22 +700,7 @@ function TypePill({
     <button
       type="button"
       onClick={onClick}
-      style={{
-        padding: '14px 12px',
-        borderRadius: 12,
-        background: active ? T.emeraldSoft : T.inputBg,
-        border: active ? `2px solid ${T.emeraldRing}` : T.inputBorder,
-        color: active ? T.textPrimary : T.textSecondary,
-        cursor: 'pointer',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 8,
-        fontSize: 14,
-        fontWeight: 500,
-        fontFamily: T.sans,
-        transition: 'background 0.18s, border 0.18s',
-      }}
+      className={`btn btn-md ${active ? 'btn-primary' : 'btn-secondary'}`}
     >
       {icon}
       {label}

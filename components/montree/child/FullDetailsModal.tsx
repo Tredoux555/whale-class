@@ -124,23 +124,8 @@ export default function FullDetailsModal({
         <button
           onClick={onClose}
           aria-label={t('common.closeModal')}
-          style={{
-            position: 'absolute',
-            top: 16,
-            right: 16,
-            zIndex: 20,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 34,
-            height: 34,
-            borderRadius: 10,
-            background: 'rgba(0,0,0,0.32)',
-            border: '1px solid rgba(255,255,255,0.18)',
-            color: T.textPrimary,
-            cursor: 'pointer',
-            backdropFilter: 'blur(8px)',
-          }}
+          className="btn btn-secondary btn-icon btn-sm"
+          style={{ position: 'absolute', top: 16, right: 16, zIndex: 20, backdropFilter: 'blur(8px)' }}
         >
           <X size={16} strokeWidth={1.75} />
         </button>

@@ -95,7 +95,7 @@ export default function QuickGuruFAB({ childId, childName }: QuickGuruFABProps) 
               </div>
               <button
                 onClick={handleClose}
-                className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 text-sm"
+                className="btn btn-secondary btn-icon btn-round btn-sm"
               >
                 ✕
               </button>

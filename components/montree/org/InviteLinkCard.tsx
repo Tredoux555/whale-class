@@ -138,15 +138,7 @@ export default function InviteLinkCard({
               <button
                 type="button"
                 onClick={onDone}
-                style={{
-                  background: 'transparent',
-                  color: textMuted,
-                  border: dark ? '1px solid rgba(255,255,255,0.14)' : '1px solid #d7e3dc',
-                  borderRadius: 10,
-                  padding: '9px 16px',
-                  fontSize: 13.5,
-                  cursor: 'pointer',
-                }}
+                className={`btn btn-ghost btn-outline btn-sm${!dark ? ' on-light' : ''}`}
               >
                 {t('org.invite.done')}
               </button>

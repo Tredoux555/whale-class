@@ -900,38 +900,16 @@ export default function CopilotDock({
         <button
           type="button"
           onClick={handleMinimize}
-          style={{
-            flex: 1,
-            minHeight: 34,
-            padding: '8px 8px',
-            borderRadius: 10,
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.10)',
-            color: T.textPrimary,
-            fontFamily: T.sans,
-            fontSize: 11.5,
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
+          className="btn btn-secondary btn-sm"
+          style={{ flex: 1 }}
         >
           {t('copilot.dismiss.justMinimize')}
         </button>
         <button
           type="button"
           onClick={handleDismiss}
-          style={{
-            flex: 1,
-            minHeight: 34,
-            padding: '8px 8px',
-            borderRadius: 10,
-            background: T.emeraldStrong,
-            border: `1px solid ${T.cardBorder}`,
-            color: T.emerald,
-            fontFamily: T.sans,
-            fontSize: 11.5,
-            fontWeight: 700,
-            cursor: 'pointer',
-          }}
+          className="btn btn-primary btn-sm"
+          style={{ flex: 1 }}
         >
           {t('copilot.dismiss.hideForever')}
         </button>
@@ -963,7 +941,7 @@ export default function CopilotDock({
           ref={(el) => {
             dockRef.current = el;
           }}
-          className="copilot-root"
+          className="copilot-root btn btn-secondary btn-icon btn-md btn-round"
           aria-label={t('copilot.dock.reopen')}
           title={t('copilot.dock.reopen')}
           style={{
@@ -974,23 +952,11 @@ export default function CopilotDock({
             transform: `translate3d(${offset.x}px, ${offset.y}px, 0)`,
             transition: dragging ? 'none' : undefined,
             touchAction: 'none',
-            width: 40,
-            height: 40,
-            padding: 0,
             flexShrink: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: '50%',
-            background: 'rgba(8,20,12,0.85)',
-            border: `1px solid ${T.cardBorder}`,
             backdropFilter: T.blur,
             WebkitBackdropFilter: T.blur,
-            boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
             cursor: dragging ? 'grabbing' : 'pointer',
-            color: T.emerald,
             opacity: 0.75,
-            fontFamily: T.sans,
           }}
         >
           <Sparkles size={16} strokeWidth={1.75} />
@@ -1110,22 +1076,8 @@ export default function CopilotDock({
             aria-label={t('copilot.pill.close')}
             aria-expanded={confirmingDismiss}
             title={t('copilot.pill.close')}
-            style={{
-              flexShrink: 0,
-              width: 32,
-              height: 32,
-              marginLeft: 2,
-              marginRight: -8,
-              padding: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'transparent',
-              border: 'none',
-              borderRadius: '50%',
-              color: T.textMuted,
-              cursor: 'pointer',
-            }}
+            className="btn btn-ghost btn-icon btn-sm btn-round"
+            style={{ flexShrink: 0, marginLeft: 2, marginRight: -8 }}
           >
             <X size={15} strokeWidth={1.75} />
           </button>
@@ -1271,16 +1223,8 @@ export default function CopilotDock({
               onClick={handleMinimize}
               aria-label={t('copilot.dock.minimize')}
               title={t('copilot.dock.minimize')}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: T.textMuted,
-                cursor: 'pointer',
-                padding: 4,
-                display: 'flex',
-                alignItems: 'center',
-                flexShrink: 0,
-              }}
+              className="btn btn-ghost btn-icon btn-sm"
+              style={{ flexShrink: 0 }}
             >
               <X size={17} strokeWidth={1.75} />
             </button>
@@ -1471,22 +1415,8 @@ export default function CopilotDock({
                   <button
                     type="button"
                     onClick={() => router.push(currentStep.route)}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      marginTop: 4,
-                      padding: '9px 16px',
-                      background: 'linear-gradient(180deg, #34d399, #10b981)',
-                      border: '1px solid rgba(52,211,153,0.55)',
-                      borderRadius: 12,
-                      color: '#06281a',
-                      fontFamily: T.sans,
-                      fontSize: 13.5,
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      boxShadow: 'none',
-                    }}
+                    className="btn btn-primary btn-md"
+                    style={{ marginTop: 4 }}
                   >
                     {t('copilot.card.takeMeThere')}
                     <ArrowRight size={15} strokeWidth={2} />
@@ -1513,16 +1443,7 @@ export default function CopilotDock({
                     type="button"
                     onClick={() => void handleDidIt()}
                     disabled={checking}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: checking ? T.textMuted : T.emerald,
-                      fontSize: 12.5,
-                      textDecoration: 'underline',
-                      cursor: checking ? 'default' : 'pointer',
-                      padding: 0,
-                      fontFamily: T.sans,
-                    }}
+                    className="btn btn-ghost btn-sm"
                   >
                     {checking ? t('copilot.dock.checking') : t('copilot.dock.didIt')}
                   </button>
@@ -1547,16 +1468,7 @@ export default function CopilotDock({
                     <button
                       type="button"
                       onClick={() => handleSkip(currentStep.id)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: T.textMuted,
-                        fontSize: 12.5,
-                        textDecoration: 'underline',
-                        cursor: 'pointer',
-                        padding: 0,
-                        fontFamily: T.sans,
-                      }}
+                      className="btn btn-ghost btn-sm"
                     >
                       {t('copilot.skipStep')}
                     </button>
@@ -1686,22 +1598,8 @@ export default function CopilotDock({
                       onClick={() => void handleAsk()}
                       disabled={!askInput.trim() || asking}
                       aria-label="Send"
-                      style={{
-                        flexShrink: 0,
-                        width: 32,
-                        height: 32,
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background:
-                          !askInput.trim() || asking
-                            ? 'rgba(52,211,153,0.20)'
-                            : 'linear-gradient(180deg, #34d399, #10b981)',
-                        border: 'none',
-                        color: !askInput.trim() || asking ? 'rgba(52,211,153,0.5)' : '#06281a',
-                        cursor: !askInput.trim() || asking ? 'not-allowed' : 'pointer',
-                      }}
+                      className="btn btn-primary btn-icon btn-sm btn-round"
+                      style={{ flexShrink: 0 }}
                     >
                       <ArrowUp size={16} strokeWidth={2.25} />
                     </button>
@@ -1727,15 +1625,7 @@ export default function CopilotDock({
                     <button
                       type="button"
                       onClick={() => setConfirmingDismiss(true)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: T.textMuted,
-                        fontSize: 11.5,
-                        cursor: 'pointer',
-                        padding: 0,
-                        fontFamily: T.sans,
-                      }}
+                      className="btn btn-ghost btn-sm"
                     >
                       {t('copilot.card.dismiss')}
                     </button>

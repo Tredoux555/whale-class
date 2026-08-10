@@ -141,10 +141,10 @@ export default function GamePlanCard({ childId, gamePlan, onRefresh }: Props) {
               <button
                 key={i}
                 onClick={() => setActivePhase(i)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-full whitespace-nowrap transition-colors ${
+                className={`btn btn-sm btn-pill whitespace-nowrap on-light ${
                   activePhase === i
-                    ? 'bg-amber-500 text-white'
-                    : 'bg-white/80 text-gray-600 hover:bg-amber-100'
+                    ? 'btn-gold'
+                    : 'btn-secondary'
                 }`}
               >
                 {phase.title.split(':')[0] || `Phase ${i + 1}`}
@@ -227,7 +227,7 @@ export default function GamePlanCard({ childId, gamePlan, onRefresh }: Props) {
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-100 hover:bg-amber-200 rounded-lg transition-colors disabled:opacity-50"
+              className="btn btn-gold btn-sm on-light flex items-center gap-1"
             >
               {refreshing ? (
                 <div className="w-3 h-3 border-2 border-amber-300 border-t-amber-600 rounded-full animate-spin" />

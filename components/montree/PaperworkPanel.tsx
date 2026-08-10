@@ -415,35 +415,14 @@ export default function PaperworkPanel() {
                 />
                 <button
                   onClick={() => handleSetTargetWeek(targetInput)}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 4,
-                    fontFamily: T.sans,
-                    fontSize: 12,
-                    fontWeight: 700,
-                    color: '#06281a',
-                    background: 'linear-gradient(180deg, #34d399, #10b981)',
-                    border: '1px solid rgba(52,211,153,0.55)',
-                    borderRadius: 8,
-                    padding: '5px 12px',
-                    cursor: 'pointer',
-                  }}
+                  className="btn btn-primary btn-sm"
                 >
                   <Check size={11} strokeWidth={2.5} />
                   Set
                 </button>
                 <button
                   onClick={() => setEditingTarget(false)}
-                  style={{
-                    fontFamily: T.sans,
-                    fontSize: 12,
-                    color: T.textMuted,
-                    background: 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: '4px 6px',
-                  }}
+                  className="btn btn-ghost btn-sm"
                 >
                   Cancel
                 </button>
@@ -451,21 +430,7 @@ export default function PaperworkPanel() {
             ) : (
               <button
                 onClick={() => { setEditingTarget(true); setTargetInput(target_week); }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  fontFamily: T.sans,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: T.textPrimary,
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.10)',
-                  borderRadius: 8,
-                  padding: '5px 12px',
-                  cursor: 'pointer',
-                  transition: 'all 120ms ease',
-                }}
+                className="btn btn-secondary btn-sm"
               >
                 Week {target_week}
                 <Pencil size={10} strokeWidth={1.75} color={T.textMuted} />
@@ -578,22 +543,8 @@ function Section({ label, dotColor, bgColor, defaultOpen, children }: {
     <div style={{ marginTop: 8 }}>
       <button
         onClick={() => setOpen(!open)}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          fontFamily: T.sans,
-          fontSize: 11,
-          fontWeight: 700,
-          color: T.textSecondary,
-          background: 'transparent',
-          border: 'none',
-          cursor: 'pointer',
-          padding: '6px 0',
-          textTransform: 'uppercase',
-          letterSpacing: 0.5,
-          width: '100%',
-        }}
+        className="btn btn-ghost btn-sm btn-full"
+        style={{ display: 'flex', alignItems: 'center', gap: 8 }}
       >
         <span style={{
           width: 7, height: 7, borderRadius: '50%',
@@ -677,18 +628,8 @@ function CompactChildCard({ child, maxWeek, advancing, editingChild, editWeek, o
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <button
             onClick={() => onStartEdit(child.id, child.current_week)}
-            style={{
-              fontFamily: T.sans,
-              fontSize: 11,
-              fontWeight: 700,
-              color: T.emerald,
-              background: T.emeraldStrong,
-              border: '1px solid rgba(52,211,153,0.30)',
-              borderRadius: 6,
-              padding: '2px 8px',
-              cursor: 'pointer',
-              fontVariantNumeric: 'tabular-nums',
-            }}
+            className="btn btn-primary btn-sm"
+            style={{ fontVariantNumeric: 'tabular-nums' }}
           >
             W{child.current_week}
           </button>
@@ -697,18 +638,7 @@ function CompactChildCard({ child, maxWeek, advancing, editingChild, editWeek, o
               onClick={() => onAdvance(child.id)}
               disabled={!!isAdvancing}
               aria-label="Advance"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 24,
-                height: 22,
-                color: T.emerald,
-                background: 'transparent',
-                border: 'none',
-                cursor: isAdvancing ? 'default' : 'pointer',
-                opacity: isAdvancing ? 0.4 : 1,
-              }}
+              className="btn btn-ghost btn-icon btn-sm"
             >
               {isAdvancing ? '...' : <ArrowRight size={13} strokeWidth={2} />}
             </button>
@@ -805,19 +735,8 @@ function ChildRow({ child, maxWeek, targetWeek, advancing, editingChild, editWee
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
           <button
             onClick={() => onStartEdit(child.id, child.current_week)}
-            style={{
-              fontFamily: T.sans,
-              fontSize: 12,
-              fontWeight: 700,
-              color: T.textPrimary,
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.10)',
-              borderRadius: 8,
-              padding: '4px 10px',
-              cursor: 'pointer',
-              fontVariantNumeric: 'tabular-nums',
-              transition: 'all 120ms ease',
-            }}
+            className="btn btn-secondary btn-sm"
+            style={{ fontVariantNumeric: 'tabular-nums' }}
           >
             W{child.current_week}
           </button>
@@ -889,38 +808,14 @@ function InlineEditor({ week, maxWeek, onChange, onConfirm, onCancel }: {
       <button
         onClick={onConfirm}
         aria-label="Confirm"
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: 24,
-          height: 24,
-          fontFamily: T.sans,
-          color: '#06281a',
-          background: 'linear-gradient(180deg, #34d399, #10b981)',
-          border: '1px solid rgba(52,211,153,0.55)',
-          borderRadius: 6,
-          padding: 0,
-          cursor: 'pointer',
-        }}
+        className="btn btn-primary btn-icon btn-sm"
       >
         <Check size={12} strokeWidth={2.5} />
       </button>
       <button
         onClick={onCancel}
         aria-label="Cancel"
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: 22,
-          height: 22,
-          color: T.textMuted,
-          background: 'transparent',
-          border: 'none',
-          cursor: 'pointer',
-          padding: 0,
-        }}
+        className="btn btn-ghost btn-icon btn-sm"
       >
         <X size={12} strokeWidth={1.75} />
       </button>

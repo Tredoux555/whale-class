@@ -135,10 +135,7 @@ export default function CurriculumGapCard() {
         <button
           onClick={handleDismiss}
           aria-label="Dismiss curriculum gaps for today"
-          style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            padding: 4, display: 'flex', color: T.textMuted,
-          }}
+          className="btn btn-ghost btn-icon btn-sm"
         >
           <X size={15} strokeWidth={1.75} />
         </button>

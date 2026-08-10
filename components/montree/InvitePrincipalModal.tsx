@@ -140,18 +140,8 @@ export default function InvitePrincipalModal({ isOpen, onClose }: Props) {
         <button
           onClick={onClose}
           aria-label="Close"
-          style={{
-            position: 'absolute',
-            top: 14,
-            right: 14,
-            background: 'transparent',
-            border: 'none',
-            color: T.textMuted,
-            cursor: 'pointer',
-            padding: 4,
-            display: 'flex',
-            alignItems: 'center',
-          }}
+          className="btn btn-ghost btn-icon btn-sm"
+          style={{ position: 'absolute', top: 14, right: 14 }}
         >
           <X size={20} strokeWidth={1.75} />
         </button>
@@ -261,42 +251,16 @@ export default function InvitePrincipalModal({ isOpen, onClose }: Props) {
               <button
                 onClick={onClose}
                 disabled={submitting}
-                style={{
-                  flex: 1,
-                  padding: '12px 18px',
-                  background: 'rgba(255,255,255,0.06)',
-                  color: T.textPrimary,
-                  border: '1px solid rgba(255,255,255,0.15)',
-                  borderRadius: 999,
-                  fontFamily: T.sans,
-                  fontSize: 14,
-                  fontWeight: 500,
-                  cursor: submitting ? 'not-allowed' : 'pointer',
-                  opacity: submitting ? 0.5 : 1,
-                }}
+                className="btn btn-secondary btn-pill btn-md"
+                style={{ flex: 1 }}
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={submitting || !name.trim() || !email.trim()}
-                style={{
-                  flex: 1,
-                  padding: '12px 18px',
-                  background: T.emerald,
-                  color: '#0a1a0f',
-                  border: 'none',
-                  borderRadius: 999,
-                  fontFamily: T.sans,
-                  fontSize: 14,
-                  fontWeight: 600,
-                  cursor:
-                    submitting || !name.trim() || !email.trim()
-                      ? 'not-allowed'
-                      : 'pointer',
-                  opacity:
-                    submitting || !name.trim() || !email.trim() ? 0.5 : 1,
-                }}
+                className="btn btn-primary btn-pill btn-md"
+                style={{ flex: 1 }}
               >
                 {submitting ? 'Creating…' : 'Get their code'}
               </button>
@@ -384,22 +348,7 @@ export default function InvitePrincipalModal({ isOpen, onClose }: Props) {
               </div>
               <button
                 onClick={handleCopy}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '8px 18px',
-                  background: copied ? 'rgba(52,211,153,0.18)' : 'rgba(255,255,255,0.08)',
-                  color: copied ? T.emerald : T.textPrimary,
-                  border: copied
-                    ? '1px solid rgba(52,211,153,0.30)'
-                    : '1px solid rgba(255,255,255,0.15)',
-                  borderRadius: 999,
-                  fontFamily: T.sans,
-                  fontSize: 13,
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                }}
+                className="btn btn-secondary btn-pill btn-sm"
               >
                 {copied ? (
                   <>
@@ -417,18 +366,7 @@ export default function InvitePrincipalModal({ isOpen, onClose }: Props) {
 
             <button
               onClick={onClose}
-              style={{
-                width: '100%',
-                padding: '12px 22px',
-                background: T.emerald,
-                color: '#0a1a0f',
-                border: 'none',
-                borderRadius: 999,
-                fontFamily: T.sans,
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
+              className="btn btn-primary btn-pill btn-md btn-full"
             >
               Done
             </button>

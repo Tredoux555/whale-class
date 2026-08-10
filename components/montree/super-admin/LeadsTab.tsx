@@ -103,7 +103,7 @@ export default function LeadsTab({
           {!selectMode && onBulkDeleteByStatus && newLeadsCount > 0 && (
             <button
               onClick={() => handleBulkDeleteByStatus('new')}
-              className="text-xs px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/30 font-medium whitespace-nowrap"
+              className="btn btn-danger btn-soft btn-sm"
               title="Delete every lead currently marked 'new'"
             >
               🧹 Clear all New ({newLeadsCount})
@@ -112,7 +112,7 @@ export default function LeadsTab({
           {!selectMode && onBulkDeleteByStatus && declinedLeadsCount > 0 && (
             <button
               onClick={() => handleBulkDeleteByStatus('declined')}
-              className="text-xs px-3 py-1.5 rounded-lg bg-slate-700/40 text-slate-300 hover:bg-slate-700/60 border border-slate-600 font-medium whitespace-nowrap"
+              className="btn btn-secondary btn-sm"
               title="Delete every lead currently marked 'declined'"
             >
               🧹 Clear Declined ({declinedLeadsCount})
@@ -121,16 +121,16 @@ export default function LeadsTab({
           {onBulkDeleteByIds && (
             <button
               onClick={() => { setSelectMode(s => !s); if (selectMode) setSelectedIds(new Set()); }}
-              className={`text-xs px-3 py-1.5 rounded-lg border font-medium whitespace-nowrap ${
+              className={`btn btn-sm ${
                 selectMode
-                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50'
-                  : 'bg-slate-700/40 text-slate-300 hover:bg-slate-700/60 border-slate-600'
+                  ? 'btn-primary'
+                  : 'btn-secondary'
               }`}
             >
               {selectMode ? '✓ Selecting' : '☑️ Select'}
             </button>
           )}
-          <button onClick={onFetchLeads} className="text-sm text-slate-400 hover:text-white">
+          <button onClick={onFetchLeads} className="btn btn-ghost btn-sm">
             ↻ Refresh
           </button>
         </div>
@@ -144,14 +144,14 @@ export default function LeadsTab({
           </span>
           <button
             onClick={selectAllVisible}
-            className="text-xs px-2.5 py-1 rounded-md bg-slate-700/60 text-slate-200 hover:bg-slate-600"
+            className="btn btn-secondary btn-sm"
           >
             Select all ({leads.length})
           </button>
           {newLeadsCount > 0 && (
             <button
               onClick={selectAllNew}
-              className="text-xs px-2.5 py-1 rounded-md bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25"
+              className="btn btn-primary btn-sm"
             >
               Select all New ({newLeadsCount})
             </button>
@@ -159,7 +159,7 @@ export default function LeadsTab({
           <button
             onClick={clearSelection}
             disabled={selectedIds.size === 0}
-            className="text-xs px-2.5 py-1 rounded-md bg-slate-700/40 text-slate-400 hover:bg-slate-700/60 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="btn btn-secondary btn-sm"
           >
             Clear
           </button>
@@ -167,13 +167,13 @@ export default function LeadsTab({
             <button
               onClick={handleBulkDeleteSelected}
               disabled={selectedIds.size === 0}
-              className="text-xs px-3 py-1.5 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/40 font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+              className="btn btn-danger btn-soft btn-sm"
             >
               🗑️ Delete {selectedIds.size > 0 ? selectedIds.size : ''} selected
             </button>
             <button
               onClick={exitSelectMode}
-              className="text-xs px-3 py-1.5 rounded-lg bg-slate-700/60 text-slate-300 hover:bg-slate-600"
+              className="btn btn-secondary btn-sm"
             >
               Done
             </button>
@@ -309,13 +309,13 @@ export default function LeadsTab({
                       <div className="flex gap-2 mt-1">
                         <button
                           onClick={() => onSaveNotes(lead.id)}
-                          className="px-3 py-1 text-xs bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 rounded-lg"
+                          className="btn btn-primary btn-sm"
                         >
                           Save
                         </button>
                         <button
                           onClick={() => setEditingNotes(null)}
-                          className="px-3 py-1 text-xs bg-slate-700 text-slate-400 hover:bg-slate-600 rounded-lg"
+                          className="btn btn-secondary btn-sm"
                         >
                           Cancel
                         </button>
@@ -324,7 +324,7 @@ export default function LeadsTab({
                   ) : lead.notes ? (
                     <button
                       onClick={() => { setEditingNotes(lead.id); setNotesText(lead.notes || ''); }}
-                      className="mt-2 text-sm text-slate-500 hover:text-slate-300 transition-colors"
+                      className="btn btn-ghost btn-sm mt-2"
                     >
                       📝 {lead.notes}
                     </button>
@@ -337,13 +337,13 @@ export default function LeadsTab({
                     <>
                       <button
                         onClick={() => onUpdateStatus(lead.id, 'contacted')}
-                        className="px-3 py-1.5 text-xs bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 rounded-lg font-medium whitespace-nowrap"
+                        className="btn btn-gold btn-sm"
                       >
                         📞 Contacted
                       </button>
                       <button
                         onClick={() => onProvision(lead)}
-                        className="px-3 py-1.5 text-xs bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 rounded-lg font-medium whitespace-nowrap"
+                        className="btn btn-primary btn-sm"
                       >
                         🏫 Provision
                       </button>
@@ -353,13 +353,13 @@ export default function LeadsTab({
                     <>
                       <button
                         onClick={() => onProvision(lead)}
-                        className="px-3 py-1.5 text-xs bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 rounded-lg font-medium whitespace-nowrap"
+                        className="btn btn-primary btn-sm"
                       >
                         🏫 Provision
                       </button>
                       <button
                         onClick={() => onUpdateStatus(lead.id, 'declined')}
-                        className="px-3 py-1.5 text-xs bg-slate-700 text-slate-400 hover:bg-slate-600 rounded-lg font-medium whitespace-nowrap"
+                        className="btn btn-secondary btn-sm"
                       >
                         ❌ Decline
                       </button>
@@ -368,7 +368,7 @@ export default function LeadsTab({
                   {lead.status === 'onboarded' && lead.provisioned_school_id && (
                     <button
                       onClick={() => onLoginAs(lead.provisioned_school_id as string)}
-                      className="px-3 py-1.5 text-xs bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 rounded-lg font-medium whitespace-nowrap"
+                      className="btn btn-gold btn-sm"
                     >
                       Login As →
                     </button>
@@ -387,14 +387,14 @@ export default function LeadsTab({
                   {!editingNotes && (
                     <button
                       onClick={() => { setEditingNotes(lead.id); setNotesText(lead.notes || ''); }}
-                      className="px-3 py-1.5 text-xs bg-slate-700 text-slate-400 hover:bg-slate-600 rounded-lg font-medium whitespace-nowrap"
+                      className="btn btn-secondary btn-sm"
                     >
                       📝 Notes
                     </button>
                   )}
                   <button
                     onClick={() => onDeleteLead(lead)}
-                    className="px-3 py-1.5 text-xs bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-lg font-medium whitespace-nowrap"
+                    className="btn btn-danger btn-soft btn-sm"
                   >
                     🗑️
                   </button>

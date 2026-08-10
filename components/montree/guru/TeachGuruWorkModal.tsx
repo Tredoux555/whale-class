@@ -404,7 +404,7 @@ export default function TeachGuruWorkModal({
               <>📝 {t('photoInsight.reviewContent' as any) || 'Review & Save'}</>
             )}
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+          <button onClick={onClose} className="btn btn-ghost btn-icon btn-sm on-light text-xl">×</button>
         </div>
 
         <div className="flex-1 overflow-y-auto">
@@ -499,7 +499,7 @@ export default function TeachGuruWorkModal({
                 <div className="space-y-1.5">
                   <button
                     onClick={() => setBrowseArea(null)}
-                    className="text-emerald-600 text-sm mb-1 inline-flex items-center gap-1"
+                    className="btn btn-ghost btn-sm on-light mb-1"
                   >
                     ← {t('workPicker.backToAreas' as any) || 'Back'}
                   </button>
@@ -556,7 +556,7 @@ export default function TeachGuruWorkModal({
               {/* Back to picker */}
               <button
                 onClick={() => setMode('pick')}
-                className="text-emerald-600 text-sm inline-flex items-center gap-1"
+                className="btn btn-ghost btn-sm on-light"
               >
                 ← {t('photoInsight.backToPicker' as any) || 'Back to work picker'}
               </button>
@@ -629,7 +629,7 @@ export default function TeachGuruWorkModal({
               <button
                 onClick={handleGenerate}
                 disabled={!workName.trim() || generating}
-                className="w-full py-2.5 rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="btn btn-primary btn-md btn-full"
               >
                 {generating ? (
                   <span className="inline-flex items-center gap-2">
@@ -693,14 +693,14 @@ export default function TeachGuruWorkModal({
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setMode('custom')}
-                  className="flex-1 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-600 hover:bg-gray-50"
+                  className="btn btn-secondary btn-md flex-1 on-light"
                 >
                   ← {t('common.back')}
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex-1 py-2 rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                  className="btn btn-primary btn-md flex-1"
                 >
                   {saving ? (
                     <span className="inline-flex items-center gap-2">

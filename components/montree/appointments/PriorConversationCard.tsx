@@ -140,7 +140,8 @@ export default function PriorConversationCard({ appointmentId }: PriorConversati
           <button
             type="button"
             onClick={() => setShowHistory((s) => !s)}
-            style={{ width: '100%', padding: '10px 14px', borderRadius: 10, background: T.cardBg, border: T.cardBorder, color: T.textPrimary, fontFamily: T.sans, fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+            className="btn btn-secondary btn-sm btn-full"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
           >
             <span>
               {showHistory

@@ -448,7 +448,7 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
             <span style={{ fontSize: 13, color: '#64748b' }}>% share</span>
           </div>
           <button
-            style={btn('#818cf8', '#0b1020')}
+            className="btn btn-gold btn-sm"
             disabled={pMinting}
             onClick={mintPartner}
           >
@@ -469,7 +469,7 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
                 <code style={{ background: 'rgba(129,140,248,0.12)', color: '#a5b4fc', padding: '8px 12px', borderRadius: 8, fontSize: 12, maxWidth: 460, overflowX: 'auto', whiteSpace: 'nowrap' }}>
                   {partnerResult.signup_link}
                 </code>
-                <button style={btn('#334155', '#e2e8f0')} onClick={() => copyText(partnerResult.signup_link, 'p-signup')}>
+                <button className="btn btn-secondary btn-sm" onClick={() => copyText(partnerResult.signup_link, 'p-signup')}>
                   {copiedField === 'p-signup' ? '✓ Copied' : 'Copy'}
                 </button>
               </div>
@@ -482,11 +482,11 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
                 <code style={{ background: 'rgba(52,211,153,0.10)', color: '#34d399', padding: '8px 12px', borderRadius: 8, fontSize: 12, maxWidth: 460, overflowX: 'auto', whiteSpace: 'nowrap' }}>
                   {partnerResult.referral_link}
                 </code>
-                <button style={btn('#334155', '#e2e8f0')} onClick={() => copyText(partnerResult.referral_link, 'p-ref')}>
+                <button className="btn btn-secondary btn-sm" onClick={() => copyText(partnerResult.referral_link, 'p-ref')}>
                   {copiedField === 'p-ref' ? '✓ Copied' : 'Copy'}
                 </button>
                 <button
-                  style={{ ...btn('rgba(232,201,106,0.15)', '#E8C96A'), opacity: qrStatusMap['mint-result'] === 'working' ? 0.7 : 1 }}
+                  className="btn btn-gold btn-sm"
                   onClick={() => generateQrCard(partnerResult.referral_link, partnerResult.referral_code, 'mint-result')}
                   disabled={qrStatusMap['mint-result'] === 'working'}
                 >
@@ -509,13 +509,13 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
                   <code style={{ background: 'rgba(232,201,106,0.12)', color: '#E8C96A', padding: '8px 12px', borderRadius: 8, fontSize: 14, fontWeight: 700, letterSpacing: 1 }}>
                     {partnerResult.agent_login_code}
                   </code>
-                  <button style={btn('#334155', '#e2e8f0')} onClick={() => copyText(partnerResult.agent_login_code!, 'p-code')}>
+                  <button className="btn btn-secondary btn-sm" onClick={() => copyText(partnerResult.agent_login_code!, 'p-code')}>
                     {copiedField === 'p-code' ? '✓ Copied' : 'Copy code'}
                   </button>
                   <code style={{ background: '#0b1220', border: '1px solid rgba(148,163,184,0.18)', color: '#94a3b8', padding: '8px 10px', borderRadius: 8, fontSize: 11, maxWidth: 380, overflowX: 'auto', whiteSpace: 'nowrap' }}>
                     {partnerResult.login_url}
                   </code>
-                  <button style={btn('#334155', '#e2e8f0')} onClick={() => copyText(partnerResult.login_url, 'p-loginurl')}>
+                  <button className="btn btn-secondary btn-sm" onClick={() => copyText(partnerResult.login_url, 'p-loginurl')}>
                     {copiedField === 'p-loginurl' ? '✓ Copied' : 'Copy URL'}
                   </button>
                 </div>
@@ -569,11 +569,11 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
           <div style={{ ...label, marginBottom: 6 }}>Wave</div>
           <input style={input} type="number" value={waveInput} onChange={(e) => setWaveInput(e.target.value)} />
         </div>
-        <button style={btn('#334155', '#e2e8f0')} disabled={savingConfig} onClick={() => saveConfig()}>
+        <button className="btn btn-secondary btn-sm" disabled={savingConfig} onClick={() => saveConfig()}>
           {savingConfig ? 'Saving…' : 'Save cap + wave'}
         </button>
         <button
-          style={btn(config.is_closed ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.15)', config.is_closed ? '#34d399' : '#f87171')}
+          className={`btn btn-sm ${config.is_closed ? 'btn-primary' : 'btn-danger btn-soft'}`}
           disabled={savingConfig}
           onClick={() => saveConfig({ is_closed: !config.is_closed })}
         >
@@ -590,12 +590,8 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
           <button
             key={f}
             onClick={() => setFilter(f)}
-            style={{
-              background: filter === f ? '#334155' : 'transparent',
-              color: filter === f ? '#e2e8f0' : '#64748b',
-              border: '1px solid rgba(148,163,184,0.2)', borderRadius: 999,
-              padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize',
-            }}
+            className={`btn btn-sm btn-pill ${filter === f ? 'btn-secondary' : 'btn-ghost'}`}
+            style={{ textTransform: 'capitalize' }}
           >
             {f}
           </button>
@@ -635,22 +631,22 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
                 )}
                 <div style={{ display: 'flex', gap: 8 }}>
                   {r.status !== 'admitted' && (
-                    <button style={btn('rgba(52,211,153,0.15)', '#34d399')} disabled={busyId === r.id} onClick={() => setStatus(r.id, 'admitted')}>
+                    <button className="btn btn-primary btn-sm" disabled={busyId === r.id} onClick={() => setStatus(r.id, 'admitted')}>
                       {busyId === r.id ? '…' : '✓ Admit'}
                     </button>
                   )}
                   {r.status !== 'declined' && (
-                    <button style={btn('rgba(248,113,113,0.12)', '#f87171')} disabled={busyId === r.id} onClick={() => setStatus(r.id, 'declined')}>
+                    <button className="btn btn-danger btn-soft btn-sm" disabled={busyId === r.id} onClick={() => setStatus(r.id, 'declined')}>
                       Decline
                     </button>
                   )}
                   {r.status !== 'waitlisted' && (
-                    <button style={btn('transparent', '#64748b')} disabled={busyId === r.id} onClick={() => setStatus(r.id, 'waitlisted')}>
+                    <button className="btn btn-ghost btn-sm" disabled={busyId === r.id} onClick={() => setStatus(r.id, 'waitlisted')}>
                       Reset
                     </button>
                   )}
                   <button
-                    style={btn('transparent', '#f87171')}
+                    className="btn btn-danger btn-soft btn-sm"
                     title="Delete this row permanently"
                     disabled={busyId === r.id}
                     onClick={() => deleteRow(r.id, r.school_name)}
@@ -680,11 +676,11 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
                         fontSize: 12, fontFamily: 'ui-monospace, SFMono-Regular, monospace',
                         maxWidth: 420, overflowX: 'auto', whiteSpace: 'nowrap',
                       }}>{link}</code>
-                      <button style={btn('#334155', '#e2e8f0')} onClick={() => copyLink(r.signup_code!)}>
+                      <button className="btn btn-secondary btn-sm" onClick={() => copyLink(r.signup_code!)}>
                         {copiedCode === r.signup_code ? '✓ Copied' : '📋 Copy link'}
                       </button>
                       <button
-                        style={{ ...btn('rgba(232,201,106,0.15)', '#E8C96A'), opacity: qrStatusMap[r.id] === 'working' ? 0.7 : 1 }}
+                        className="btn btn-gold btn-sm"
                         onClick={() => generateQrCard(link, r.signup_code!, r.id)}
                         disabled={qrStatusMap[r.id] === 'working'}
                       >
@@ -699,7 +695,7 @@ export default function FoundingTab({ sessionToken }: { sessionToken: string }) 
                     </>
                   ) : (
                     <button
-                      style={btn('rgba(232,201,106,0.15)', '#E8C96A')}
+                      className="btn btn-gold btn-sm"
                       disabled={busyId === r.id}
                       onClick={() => generateCode(r.id)}
                     >

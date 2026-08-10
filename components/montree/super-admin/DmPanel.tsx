@@ -47,7 +47,7 @@ export default function DmPanel({
               <p className="text-slate-400 text-xs">{leadEmail}</p>
             )}
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white text-xl">✕</button>
+          <button onClick={onClose} className="btn btn-ghost btn-icon btn-sm text-xl">✕</button>
         </div>
 
         {/* Messages */}
@@ -94,7 +94,7 @@ export default function DmPanel({
             <button
               onClick={onSend}
               disabled={sending || !newMsg.trim()}
-              className="px-4 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 disabled:opacity-50 transition-colors font-medium"
+              className="btn btn-primary btn-md"
             >
               {sending ? '...' : 'Send'}
             </button>

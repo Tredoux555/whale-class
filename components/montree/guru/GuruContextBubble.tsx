@@ -64,22 +64,8 @@ export default function GuruContextBubble({ pageKey, role }: GuruContextBubblePr
         <button
           onClick={handleDismiss}
           aria-label="Dismiss tip"
-          style={{
-            position: 'absolute',
-            top: 8,
-            right: 8,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 22,
-            height: 22,
-            borderRadius: '50%',
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.10)',
-            color: 'rgba(255,255,255,0.55)',
-            cursor: 'pointer',
-            transition: 'all 120ms ease',
-          }}
+          className="btn btn-secondary btn-icon btn-round btn-sm"
+          style={{ position: 'absolute', top: 8, right: 8 }}
         >
           <X size={11} strokeWidth={1.75} />
         </button>

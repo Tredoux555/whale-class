@@ -196,20 +196,8 @@ export default function VoiceComposer({ onReady, disabled, accent = '#34d399' }:
           disabled={disabled}
           title={t('msg.recordVoiceNote')}
           aria-label={t('msg.recordVoiceNote')}
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 999,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'rgba(52,211,153,0.10)',
-            border: '1px solid rgba(52,211,153,0.35)',
-            color: accent,
-            cursor: disabled ? 'not-allowed' : 'pointer',
-            opacity: disabled ? 0.4 : 1,
-            flexShrink: 0,
-          }}
+          className="btn btn-primary btn-icon btn-md btn-round"
+          style={{ flexShrink: 0 }}
         >
           <Mic size={18} />
         </button>
@@ -228,20 +216,8 @@ export default function VoiceComposer({ onReady, disabled, accent = '#34d399' }:
           onClick={stopRecording}
           title={t('msg.stopAndSend')}
           aria-label={t('msg.stopRecording')}
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 999,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: '#ef4444',
-            border: 'none',
-            color: '#fff',
-            cursor: 'pointer',
-            flexShrink: 0,
-            animation: 'voicepulse 1.4s ease-in-out infinite',
-          }}
+          className="btn btn-danger btn-icon btn-md btn-round"
+          style={{ flexShrink: 0, animation: 'voicepulse 1.4s ease-in-out infinite' }}
         >
           <Square size={16} fill="#fff" />
         </button>
@@ -253,19 +229,8 @@ export default function VoiceComposer({ onReady, disabled, accent = '#34d399' }:
           onClick={cancelRecording}
           title={t('common.cancel')}
           aria-label={t('msg.cancelRecording')}
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: 999,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'transparent',
-            border: '1px solid rgba(255,255,255,0.25)',
-            color: 'rgba(255,255,255,0.65)',
-            cursor: 'pointer',
-            flexShrink: 0,
-          }}
+          className="btn btn-ghost btn-outline btn-icon btn-sm btn-round"
+          style={{ flexShrink: 0 }}
         >
           <X size={14} />
         </button>

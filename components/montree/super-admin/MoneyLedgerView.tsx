@@ -294,7 +294,7 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
         {config.allowAdd && !showAdd && (
           <button
             onClick={() => setShowAdd(true)}
-            className="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-300 rounded-lg text-sm font-medium"
+            className="btn btn-primary btn-sm"
           >
             {t('moneyLedger.addExpense')}
           </button>
@@ -368,7 +368,7 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
             <button
               onClick={handleAdd}
               disabled={busy}
-              className="px-3 py-1.5 bg-emerald-500/25 hover:bg-emerald-500/40 border border-emerald-500/40 text-emerald-200 rounded-lg text-sm font-semibold disabled:opacity-50"
+              className="btn btn-primary btn-sm"
             >
               {busy ? t('moneyLedger.adding') : t('moneyLedger.addExpenseSave')}
             </button>
@@ -381,7 +381,7 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
                 setNewDate('');
                 setError(null);
               }}
-              className="px-3 py-1.5 bg-slate-700/40 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded-lg text-sm"
+              className="btn btn-secondary btn-sm"
             >
               {t('common.cancel')}
             </button>
@@ -448,7 +448,7 @@ export default function MoneyLedgerView({ sessionToken, view, periodMonth }: Mon
                     <button
                       onClick={() => handleDelete(row.id)}
                       disabled={busy}
-                      className="text-[10px] text-slate-500 hover:text-red-400 mt-1 disabled:opacity-50"
+                      className="btn btn-ghost btn-sm mt-1"
                       title={t('moneyLedger.deleteManualTooltip')}
                     >
                       {t('moneyLedger.deleteBtn')}

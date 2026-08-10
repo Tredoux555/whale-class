@@ -129,10 +129,10 @@ export default function WebhookDLQTab({ sessionToken }: WebhookDLQTabProps) {
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+              className={`btn btn-sm ${
                 statusFilter === s
-                  ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
-                  : 'bg-slate-800/40 border-slate-700 text-slate-400 hover:text-slate-200'
+                  ? 'btn-primary'
+                  : 'btn-secondary'
               }`}
             >
               {t(`dlq.filter.${s}` as Parameters<typeof t>[0])}
@@ -141,7 +141,7 @@ export default function WebhookDLQTab({ sessionToken }: WebhookDLQTabProps) {
           <button
             onClick={fetchDLQ}
             disabled={loading}
-            className="px-3 py-1.5 bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded-lg text-xs font-medium disabled:opacity-50"
+            className="btn btn-secondary btn-sm"
           >
             {loading ? '⏳' : '🔄'}
           </button>
@@ -204,7 +204,7 @@ export default function WebhookDLQTab({ sessionToken }: WebhookDLQTabProps) {
                   <div className="flex flex-col gap-1 shrink-0">
                     <button
                       onClick={() => setExpandedRow(isExpanded ? null : row.id)}
-                      className="px-2 py-1 bg-slate-800/40 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded text-[11px]"
+                      className="btn btn-secondary btn-sm"
                     >
                       {isExpanded ? t('dlq.hide') : t('dlq.showPayload')}
                     </button>
@@ -213,14 +213,14 @@ export default function WebhookDLQTab({ sessionToken }: WebhookDLQTabProps) {
                         <button
                           onClick={() => doAction(row.id, 'mark_resolved')}
                           disabled={busyId === row.id}
-                          className="px-2 py-1 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 rounded text-[11px] font-medium disabled:opacity-50"
+                          className="btn btn-primary btn-sm"
                         >
                           ✓ {t('dlq.resolve')}
                         </button>
                         <button
                           onClick={() => doAction(row.id, 'mark_ignored')}
                           disabled={busyId === row.id}
-                          className="px-2 py-1 bg-slate-700/40 hover:bg-slate-700/60 border border-slate-700 text-slate-400 rounded text-[11px]"
+                          className="btn btn-secondary btn-sm"
                         >
                           ⊘ {t('dlq.ignore')}
                         </button>

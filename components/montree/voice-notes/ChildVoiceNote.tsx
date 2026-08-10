@@ -222,11 +222,7 @@ export default function ChildVoiceNote({ childId, childName, onTranscript, onNot
   return (
     <button
       onClick={handleToggle}
-      className={`
-        flex items-center justify-center w-7 h-7 rounded-lg transition-all text-xs
-        ${state === 'recording' ? 'bg-red-500 animate-pulse shadow-sm shadow-red-500/30' : ''}
-        ${state === 'idle' ? 'bg-emerald-500 hover:bg-emerald-600 active:scale-90' : ''}
-      `}
+      className={`btn btn-icon btn-sm ${state === 'recording' ? 'btn-danger btn-glow' : 'btn-primary'}`}
       aria-label={state === 'recording' ? t('voiceNotes.stopRecording') : t('voiceNotes.startRecording')}
       title={state === 'recording' ? t('voiceNotes.stopRecording') : t('voiceNotes.startRecording')}
     >

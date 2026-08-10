@@ -179,8 +179,8 @@ export default function MeetingCopilotPanel({
           type="button"
           onClick={() => (active ? stop() : start())}
           className={[
-            'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-white transition',
-            active ? 'bg-red-500 hover:bg-red-600' : 'bg-amber-500 hover:bg-amber-600',
+            'btn btn-pill btn-sm on-light',
+            active ? 'btn-danger' : 'btn-gold',
           ].join(' ')}
         >
           {active ? <Square className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}

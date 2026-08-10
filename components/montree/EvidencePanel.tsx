@@ -439,24 +439,8 @@ export default function EvidencePanel() {
                             <button
                               onClick={(e) => { e.stopPropagation(); handleConfirmMastery(child.id, w.work_name); }}
                               disabled={confirming === key}
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: 4,
-                                padding: '5px 10px',
-                                borderRadius: 8,
-                                background: 'linear-gradient(180deg, #34d399, #10b981)',
-                                border: '1px solid rgba(52,211,153,0.55)',
-                                color: '#06281a',
-                                fontFamily: T.sans,
-                                fontSize: 10,
-                                fontWeight: 700,
-                                letterSpacing: 0.2,
-                                cursor: confirming === key ? 'wait' : 'pointer',
-                                opacity: confirming === key ? 0.55 : 1,
-                                whiteSpace: 'nowrap',
-                                flexShrink: 0,
-                              }}
+                              className="btn btn-primary btn-sm"
+                              style={{ flexShrink: 0 }}
                             >
                               <Star size={10} strokeWidth={1.75} />
                               {confirming === key ? t('evidence.confirming') : t('evidence.confirmMastery')}

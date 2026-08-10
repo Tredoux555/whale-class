@@ -218,19 +218,8 @@ export default function GuruDashboardCards({ childId, childName }: GuruDashboard
             {!plan && !planLoading && (
               <button
                 onClick={fetchDailyPlan}
-                style={{
-                  padding: '8px 14px',
-                  borderRadius: 10,
-                  background: T.emeraldStrong,
-                  border: '1px solid rgba(52,211,153,0.45)',
-                  color: T.emerald,
-                  fontFamily: T.sans,
-                  fontSize: 12,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                }}
+                className="btn btn-primary btn-sm"
+                style={{ flexShrink: 0 }}
               >
                 {t('guru.generatePlan')}
               </button>
@@ -238,18 +227,8 @@ export default function GuruDashboardCards({ childId, childName }: GuruDashboard
             {plan && (
               <button
                 onClick={() => setPlanExpanded(!planExpanded)}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: 9,
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.10)',
-                  color: T.textPrimary,
-                  fontFamily: T.sans,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  flexShrink: 0,
-                }}
+                className="btn btn-secondary btn-sm"
+                style={{ flexShrink: 0 }}
               >
                 {planExpanded ? t('guru.collapse') : t('guru.expand')}
               </button>
@@ -287,18 +266,8 @@ export default function GuruDashboardCards({ childId, childName }: GuruDashboard
             <p style={{ margin: 0, color: T.red, fontSize: 13 }}>{planError}</p>
             <button
               onClick={fetchDailyPlan}
-              style={{
-                marginTop: 4,
-                background: 'transparent',
-                border: 'none',
-                color: T.emerald,
-                fontFamily: T.sans,
-                fontSize: 12,
-                fontWeight: 600,
-                textDecoration: 'underline',
-                cursor: 'pointer',
-                padding: 0,
-              }}
+              className="btn btn-ghost btn-sm"
+              style={{ marginTop: 4 }}
             >
               {t('common.tryAgain')}
             </button>
@@ -344,21 +313,8 @@ export default function GuruDashboardCards({ childId, childName }: GuruDashboard
           <button
             onClick={() => setDismissedNudge(true)}
             aria-label="Dismiss"
-            style={{
-              position: 'absolute',
-              top: 10,
-              right: 10,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 24,
-              height: 24,
-              borderRadius: '50%',
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.10)',
-              color: T.textMuted,
-              cursor: 'pointer',
-            }}
+            className="btn btn-secondary btn-icon btn-sm btn-round"
+            style={{ position: 'absolute', top: 10, right: 10 }}
           >
             <X size={11} strokeWidth={1.75} />
           </button>
@@ -401,21 +357,8 @@ export default function GuruDashboardCards({ childId, childName }: GuruDashboard
           <button
             onClick={handleDismissSuggestion}
             aria-label="Dismiss"
-            style={{
-              position: 'absolute',
-              top: 10,
-              right: 10,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 24,
-              height: 24,
-              borderRadius: '50%',
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.10)',
-              color: T.textMuted,
-              cursor: 'pointer',
-            }}
+            className="btn btn-secondary btn-icon btn-sm btn-round"
+            style={{ position: 'absolute', top: 10, right: 10 }}
           >
             <X size={11} strokeWidth={1.75} />
           </button>

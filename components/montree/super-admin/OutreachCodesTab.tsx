@@ -199,10 +199,10 @@ export default function OutreachCodesTab({ sessionToken }: { sessionToken: strin
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+              className={`btn btn-sm ${
                 statusFilter === s
-                  ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
-                  : 'bg-slate-800/40 border-slate-700 text-slate-400 hover:text-slate-200'
+                  ? 'btn-primary'
+                  : 'btn-secondary'
               }`}
             >
               {s === 'all' ? 'All' : STATUS_META[s].label.replace(' 🎉', '')}
@@ -211,7 +211,7 @@ export default function OutreachCodesTab({ sessionToken }: { sessionToken: strin
           <button
             onClick={() => void fetchRows()}
             disabled={loading}
-            className="px-3 py-1.5 bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded-lg text-xs font-medium disabled:opacity-50"
+            className="btn btn-secondary btn-sm"
           >
             {loading ? '⏳' : '🔄'}
           </button>
@@ -295,7 +295,7 @@ export default function OutreachCodesTab({ sessionToken }: { sessionToken: strin
                     <div className="flex gap-2 pt-1">
                       <button
                         onClick={() => copyLink(row)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-medium border bg-slate-800/60 border-slate-700 text-slate-300 hover:bg-slate-700/60"
+                        className="btn btn-secondary btn-sm"
                       >
                         {copiedId === row.id ? '✓ Copied' : '📋 Copy link'}
                       </button>

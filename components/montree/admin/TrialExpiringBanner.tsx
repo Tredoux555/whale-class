@@ -138,32 +138,14 @@ export default function TrialExpiringBanner() {
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <Link
           href="/montree/admin/billing"
-          style={{
-            padding: '8px 14px',
-            borderRadius: 10,
-            background: urgent ? 'rgba(220,38,38,0.25)' : 'rgba(245,158,11,0.25)',
-            border: `1px solid ${border}`,
-            color: accent,
-            fontSize: 13,
-            fontWeight: 600,
-            textDecoration: 'none',
-            whiteSpace: 'nowrap',
-          }}
+          className={`btn btn-sm ${urgent ? 'btn-danger btn-soft' : 'btn-gold'}`}
         >
           {t('trialBanner.activatePlan')} →
         </Link>
         <button
           onClick={handleDismiss}
           aria-label={t('trialBanner.dismissForToday')}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: 'rgba(255,255,255,0.4)',
-            fontSize: 20,
-            lineHeight: 1,
-            cursor: 'pointer',
-            padding: '4px 8px',
-          }}
+          className="btn btn-ghost btn-icon btn-sm text-xl"
         >
           ×
         </button>

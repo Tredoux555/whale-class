@@ -439,15 +439,7 @@ export default function StudentFormGuide({
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <button
                 onClick={() => { setDismissed(true); onSkip(); }}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'rgba(255,255,255,0.5)',
-                  fontSize: 11,
-                  cursor: 'pointer',
-                  textDecoration: 'underline',
-                  padding: 0,
-                }}
+                className="btn btn-ghost btn-sm"
               >
                 {t('guide.common.skipTour')}
               </button>
@@ -517,7 +509,7 @@ export default function StudentFormGuide({
             {currentStep > 0 ? (
               <button
                 onClick={goBack}
-                style={{ background: 'none', border: '1px solid rgba(255,255,255,0.3)', color: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: 500, padding: '5px 12px', borderRadius: 8, cursor: 'pointer' }}
+                className="btn btn-ghost btn-outline btn-sm"
               >
                 ← {t('guide.common.back')}
               </button>
@@ -525,14 +517,14 @@ export default function StudentFormGuide({
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <button
                 onClick={() => { setDismissed(true); onSkip(); }}
-                style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 11, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                className="btn btn-ghost btn-sm"
               >
                 {t('guide.common.skipTour')}
               </button>
               {currentStep < STEPS.length - 1 && (
                 <button
                   onClick={advance}
-                  style={{ background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.4)', color: 'white', fontSize: 13, fontWeight: 600, padding: '5px 14px', borderRadius: 8, cursor: 'pointer' }}
+                  className="btn btn-secondary btn-sm"
                 >
                   {step.actionLabel || 'Next →'}
                 </button>

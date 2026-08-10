@@ -139,7 +139,7 @@ export default function DuplicateSheet({ open, onClose, onConsolidated }: Props)
                   : `${totalWorks} works scanned · ${groups.length} group${groups.length === 1 ? '' : 's'}`}
             </p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+          <button onClick={onClose} className="btn btn-ghost btn-icon btn-sm text-xl on-light">✕</button>
         </div>
 
         {/* Search — always visible */}
@@ -270,8 +270,7 @@ export default function DuplicateSheet({ open, onClose, onConsolidated }: Props)
                         <button
                           onClick={() => handleMerge(idx)}
                           disabled={isMerging || !selectedWinners[idx]}
-                          className="w-full py-2 rounded-lg text-sm font-semibold transition-colors
-                            bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-50"
+                          className="btn btn-primary btn-md btn-full"
                         >
                           {isMerging ? 'Merging...' : `Merge ${group.works.length} → 1`}
                         </button>
@@ -290,8 +289,7 @@ export default function DuplicateSheet({ open, onClose, onConsolidated }: Props)
             <button
               onClick={handleMergeAll}
               disabled={merging !== null}
-              className="w-full py-2.5 rounded-xl text-sm font-bold transition-colors
-                bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
+              className="btn btn-primary btn-md btn-full"
             >
               {merging !== null ? 'Merging...' : `Merge All (${pendingGroups.length} group${pendingGroups.length === 1 ? '' : 's'})`}
             </button>

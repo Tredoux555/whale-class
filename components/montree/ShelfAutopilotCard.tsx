@@ -322,13 +322,7 @@ export default function ShelfAutopilotCard({ classroomId, children }: Props) {
         <button
           onClick={handleGenerate}
           disabled={children.length === 0}
-          style={{
-            ...violetCta,
-            width: '100%',
-            padding: '10px 16px',
-            opacity: children.length === 0 ? 0.45 : 1,
-            cursor: children.length === 0 ? 'not-allowed' : 'pointer',
-          }}
+          className="btn btn-gold btn-md btn-full"
         >
           <Rocket size={13} strokeWidth={1.75} />
           {t('shelfAutopilot.generate')}
@@ -426,20 +420,7 @@ export default function ShelfAutopilotCard({ classroomId, children }: Props) {
           </h3>
           <button
             onClick={() => { setState('idle'); setResults([]); setAppliedProposals(new Set()); }}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 4,
-              padding: '5px 10px',
-              borderRadius: 7,
-              background: 'transparent',
-              border: '1px solid rgba(255,255,255,0.10)',
-              color: T.violet,
-              fontFamily: T.sans,
-              fontSize: 11,
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
+            className="btn btn-ghost btn-outline btn-sm"
           >
             <RotateCcw size={11} strokeWidth={1.75} />
             {t('shelfAutopilot.redo')}
@@ -557,13 +538,7 @@ export default function ShelfAutopilotCard({ classroomId, children }: Props) {
                         handleApplyAllForChild(child);
                       }}
                       disabled={applyingKey === `applying_all:${child.child_id}`}
-                      style={{
-                        ...violetCta,
-                        padding: '5px 10px',
-                        fontSize: 11,
-                        opacity: applyingKey === `applying_all:${child.child_id}` ? 0.55 : 1,
-                        cursor: applyingKey === `applying_all:${child.child_id}` ? 'wait' : 'pointer',
-                      }}
+                      className="btn btn-gold btn-sm"
                     >
                       {applyingKey === `applying_all:${child.child_id}`
                         ? t('shelfAutopilot.applying')
@@ -699,13 +674,7 @@ export default function ShelfAutopilotCard({ classroomId, children }: Props) {
                             <button
                               onClick={() => handleApplyProposal(child.child_id, proposal)}
                               disabled={isApplying}
-                              style={{
-                                ...violetCta,
-                                padding: '5px 12px',
-                                fontSize: 11,
-                                opacity: isApplying ? 0.55 : 1,
-                                cursor: isApplying ? 'wait' : 'pointer',
-                              }}
+                              className="btn btn-gold btn-sm"
                             >
                               {isApplying ? t('shelfAutopilot.applying') : t('shelfAutopilot.applyMove')}
                             </button>
@@ -781,15 +750,7 @@ export default function ShelfAutopilotCard({ classroomId, children }: Props) {
               </span>
               <button
                 onClick={() => handleGenerate()}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: T.violet,
-                  fontFamily: T.sans,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
+                className="btn btn-ghost btn-sm"
               >
                 {t('shelfAutopilot.retry')}
               </button>

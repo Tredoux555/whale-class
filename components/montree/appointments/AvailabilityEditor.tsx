@@ -332,7 +332,7 @@ export default function AvailabilityEditor() {
         subtitle="When you're open to meet, every week."
         action={
           !featureDisabled && !migrationPending ? (
-            <button onClick={() => setShowAddRule((v) => !v)} style={btnPrimary()}>
+            <button onClick={() => setShowAddRule((v) => !v)} className="btn btn-primary btn-md">
               <Plus size={16} strokeWidth={1.75} /> Add window
             </button>
           ) : null
@@ -365,8 +365,8 @@ export default function AvailabilityEditor() {
               </Field>
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => setShowAddRule(false)} style={btnGhost()}>Cancel</button>
-              <button onClick={addRule} style={btnPrimary()}>Save window</button>
+              <button onClick={() => setShowAddRule(false)} className="btn btn-secondary btn-md">Cancel</button>
+              <button onClick={addRule} className="btn btn-primary btn-md">Save window</button>
             </div>
           </div>
         )}
@@ -401,11 +401,12 @@ export default function AvailabilityEditor() {
                   <button
                     onClick={() => toggleRuleActive(rule)}
                     title={rule.is_active ? 'Pause' : 'Activate'}
-                    style={iconBtn(rule.is_active ? T.emerald : T.textMuted)}
+                    className="btn btn-secondary btn-icon btn-sm"
+                    style={{ color: rule.is_active ? T.emerald : T.textMuted }}
                   >
                     {rule.is_active ? <CheckCircle2 size={16} strokeWidth={1.75} /> : <XCircle size={16} strokeWidth={1.75} />}
                   </button>
-                  <button onClick={() => deleteRule(rule.id)} title="Remove" style={iconBtn(T.red)}>
+                  <button onClick={() => deleteRule(rule.id)} title="Remove" className="btn btn-secondary btn-icon btn-sm" style={{ color: T.red }}>
                     <Trash2 size={16} strokeWidth={1.75} />
                   </button>
                 </div>
@@ -421,7 +422,7 @@ export default function AvailabilityEditor() {
         subtitle="Vacation, sick day, school closure — block out specific times."
         action={
           !featureDisabled && !migrationPending ? (
-            <button onClick={() => setShowAddBlackout((v) => !v)} style={btnPrimary()}>
+            <button onClick={() => setShowAddBlackout((v) => !v)} className="btn btn-primary btn-md">
               <Plus size={16} strokeWidth={1.75} /> Add blackout
             </button>
           ) : null
@@ -441,8 +442,8 @@ export default function AvailabilityEditor() {
               <input value={newBlackoutReason} onChange={(e) => setNewBlackoutReason(e.target.value)} style={inputStyle()} placeholder="Vacation, sick, training day…" />
             </Field>
             <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
-              <button onClick={() => setShowAddBlackout(false)} style={btnGhost()}>Cancel</button>
-              <button onClick={addBlackout} style={btnPrimary()}>Save blackout</button>
+              <button onClick={() => setShowAddBlackout(false)} className="btn btn-secondary btn-md">Cancel</button>
+              <button onClick={addBlackout} className="btn btn-primary btn-md">Save blackout</button>
             </div>
           </div>
         )}
@@ -463,7 +464,7 @@ export default function AvailabilityEditor() {
                     </div>
                   )}
                 </div>
-                <button onClick={() => deleteBlackout(b.id)} title="Remove" style={iconBtn(T.red)}>
+                <button onClick={() => deleteBlackout(b.id)} title="Remove" className="btn btn-secondary btn-icon btn-sm" style={{ color: T.red }}>
                   <Trash2 size={16} strokeWidth={1.75} />
                 </button>
               </div>
@@ -511,20 +512,8 @@ export default function AvailabilityEditor() {
                     <button
                       type="button"
                       onClick={() => setAgoraCall(a)}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        marginTop: 8,
-                        padding: '6px 10px',
-                        borderRadius: 8,
-                        background: T.emerald,
-                        color: '#0a1a0f',
-                        fontWeight: 600,
-                        fontSize: 12,
-                        border: 'none',
-                        cursor: 'pointer',
-                      }}
+                      className="btn btn-primary btn-sm"
+                      style={{ marginTop: 8 }}
                       aria-label="Join the video call"
                     >
                       <Video size={12} strokeWidth={1.75} /> Join video call
@@ -535,19 +524,8 @@ export default function AvailabilityEditor() {
                       href={a.video_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        marginTop: 8,
-                        padding: '6px 10px',
-                        borderRadius: 8,
-                        background: T.emerald,
-                        color: '#0a1a0f',
-                        fontWeight: 600,
-                        fontSize: 12,
-                        textDecoration: 'none',
-                      }}
+                      className="btn btn-primary btn-sm"
+                      style={{ marginTop: 8 }}
                       aria-label="Join the video call (opens in a new tab)"
                     >
                       <Video size={12} strokeWidth={1.75} /> Join video call
@@ -569,17 +547,8 @@ export default function AvailabilityEditor() {
                           return next;
                         });
                       }}
-                      style={{
-                        background: 'transparent',
-                        border: 'none',
-                        color: 'rgba(232,201,106,0.85)',
-                        fontSize: 11,
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        padding: 0,
-                        textDecoration: 'underline',
-                        textUnderlineOffset: 2,
-                      }}
+                      className="btn btn-ghost btn-sm"
+                      style={{ textDecoration: 'underline', textUnderlineOffset: 2 }}
                     >
                       {expandedPriorIds.has(a.id) ? 'Hide prior conversations' : 'Show prior conversations'}
                     </button>

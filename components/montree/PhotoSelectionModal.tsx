@@ -87,7 +87,7 @@ export default function PhotoSelectionModal({
             <button
               onClick={onClose}
               disabled={saving}
-              className="text-white/80 hover:text-white text-2xl disabled:opacity-50"
+              className="btn btn-ghost btn-icon btn-sm text-2xl"
             >
               ×
             </button>
@@ -197,14 +197,14 @@ export default function PhotoSelectionModal({
           <button
             onClick={onClose}
             disabled={saving}
-            className="flex-1 py-3 rounded-xl font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50"
+            className="btn btn-secondary btn-md flex-1 on-light"
           >
             {t('common.cancel')}
           </button>
           <button
             onClick={handleSave}
             disabled={saving || selectedIds.size === 0}
-            className="flex-1 py-3 rounded-xl font-medium bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50"
+            className="btn btn-primary btn-md flex-1 on-light"
           >
             {saving ? `⏳ ${t('common.saving')}` : `✓ ${t('common.save')} (${selectedIds.size})`}
           </button>
