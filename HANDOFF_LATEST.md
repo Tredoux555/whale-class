@@ -1,5 +1,63 @@
 # Whale / Montree — Latest Handoff
 
+## 📷 Aug 10 (Cowork) — PHOTO ONBOARDING SHIPPED (roster import via photo/PDF/DOCX/XLSX) — LIVE
+
+**What shipped:** teacher uploads a class list (photo, PDF, DOCX, or XLSX) from the dashboard
+students page (new 📷 "Photo Onboarding" button next to Labels). Claude extracts students —
+names, birthdays, notes, China-aware (Chinese/pinyin/English names, `2019年3月5日`-style dates)
+— then a deterministic Jaro-Winkler matcher (`matchStudentName`) reconciles the extracted list
+against the classroom's active roster. The teacher reviews a full diff (create / update /
+archive / skip, every row editable) before ANYTHING is written to the database. Archives are
+soft (`is_active=false`) and audit-logged; notes APPEND rather than overwrite (5000-char cap,
+deduped); an empty-extraction guard means 0 students extracted → import fails HTTP 422, so a
+bad scan can never wipe a whole class.
+
+**Extraction:** `AI_MODEL` (not Haiku), temperature 0, forced tool_use `CLASS_LIST_TOOL`.
+Images go in as sharp-downscaled vision blocks; PDFs as Anthropic document blocks (scanned PDFs
+work fine, SDK 0.71.2); DOCX via `mammoth`; XLSX via new dependency `xlsx@^0.18.5` (SheetJS).
+
+**Files:** `lib/montree/photo-onboarding/{types,extractor,document-text,reconcile}.ts` ·
+`app/api/montree/photo-onboarding/{upload,[importId],[importId]/extract,[importId]/commit}/route.ts`
+(extract + commit both `maxDuration=120`) · `app/montree/dashboard/photo-onboarding/page.tsx`
+(5-state flow: upload → extract → review → commit → done) ·
+`tests/photo-onboarding-reconcile.test.ts` (14 tests) ·
+`migrations/325_photo_onboarding.sql` (`montree_roster_imports` + `montree_roster_import_entries`,
+RLS enabled/no policies, feature flag `photo_onboarding` DEFAULT ON in
+`montree_feature_definitions` — **migration ALREADY RUN in Supabase by Tredoux, Aug 10**).
+
+**Commit `48bd2041`** — 30 files, 3251 insertions. **LIVE at montree.xyz** — verified: page
+returns 200, upload API returns 401 (auth-gated, as expected).
+
+**Side fix in the same commit:** `children` GET / attendance / focus-works-batch routes now
+filter `.neq('is_active', false)` — archived children no longer leak into teacher-facing lists
+(closes a pre-existing gap where admin soft-deletes were hidden admin-side but still showed up
+teacher-side). **~220 other `montree_children` call sites were deliberately left unfiltered**
+(guru/*, weekly-admin-docs/*, progress/*, messages, montage, appointments, analysis,
+shelf-autopilot, notify) — this needs a product decision; single-child-by-id lookups are
+intentionally unfiltered so archived profiles stay reachable by direct link. Also:
+`students/page.tsx` got the 📷 entry button; `features/types.ts` gained the `'photo_onboarding'`
+FeatureKey; 56 i18n keys × 12 locales (en+zh hand-written, rest via `i18n:fill-ui`; `i18n:check`
+100%).
+
+**Owed next session:** (a) `is_active` filtering product decision for the ~220 unfiltered
+`montree_children` list queries; (b) pre-existing mismatch — `children/bulk` route caps 30
+students/request while the `BulkPasteImport` UI allows 200; (c) LFS-or-Storage decision for big
+print assets (see git history note below); (d) real-world testing of extraction quality on
+actual class-list photos, still pending.
+
+**Git history note (read before regenerating print PDFs again):** main's history now contains
+three unusual commits — `b386a308` + `eab5d26f` "temp: stage large curriculum objects (1/2, 2/2)"
+and merge `e1af6e09` "Merge staged curriculum assets" (GitHub 2GB push-size workaround; tree
+IDENTICAL to `80cbde93` — zero file changes, verified). Reason: unpushed commit `4fa363b0` (Aug 9
+grey→black print regeneration) carried 3.19GB of PDFs, exceeding GitHub's 2GB per-push limit.
+Content was staged to the remote in two <2GB slices on a temp branch, then a merge commit made
+them ancestors so the final push only sent 0.71GB; the temp branch was deleted. **Lesson/warning
+for future sessions:** regenerating all print PDFs in one commit will hit the 2GB limit again —
+either split such commits, or adopt Git LFS / move print packs to Supabase Storage (open
+suggestion, not yet decided).
+
+---
+
 ## 🔒 Aug 10 (Cowork) — MONTREE DESIGN SYSTEM LOCKED IN ("Soft Elevation" buttons)
 
 **LOCK-IN (Tredoux, binding):** the "Soft Elevation" button system — chosen from a
