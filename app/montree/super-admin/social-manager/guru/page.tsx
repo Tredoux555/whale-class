@@ -89,7 +89,7 @@ export default function SocialGuruPage() {
             {messages.length > 0 && (
               <button
                 onClick={handleClear}
-                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm transition-colors"
+                className="btn btn-secondary btn-md"
               >
                 Clear Chat
               </button>
@@ -230,7 +230,7 @@ export default function SocialGuruPage() {
             <button
               type="submit"
               disabled={!input.trim() || loading}
-              className="px-6 py-3 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-xl font-medium transition-colors"
+              className="btn btn-gold btn-lg"
             >
               Send
             </button>

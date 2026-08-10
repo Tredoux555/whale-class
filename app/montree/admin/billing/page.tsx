@@ -219,7 +219,7 @@ function BillingPageContent() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
-      <Link href="/montree/admin" className="text-emerald-300/70 hover:text-emerald-200 text-xs">
+      <Link href="/montree/admin" className="btn btn-ghost btn-sm">
         ← {t('billing.backToAdmin')}
       </Link>
       <h1 className="mt-2 text-3xl sm:text-4xl font-light text-white tracking-tight">{t('billing.title')}</h1>
@@ -244,7 +244,7 @@ function BillingPageContent() {
       {actionMessage && (
         <div className="mt-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 text-emerald-200 text-sm flex justify-between items-start gap-3">
           <span>{actionMessage}</span>
-          <button onClick={() => setActionMessage(null)} className="text-emerald-200/60 hover:text-white">✕</button>
+          <button onClick={() => setActionMessage(null)} className="btn btn-ghost btn-icon btn-sm">✕</button>
         </div>
       )}
 
@@ -321,7 +321,7 @@ function BillingPageContent() {
                     <button
                       onClick={() => startCheckout('starter')}
                       disabled={busy}
-                      className="mt-4 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-medium rounded-lg text-sm disabled:opacity-50 transition-colors"
+                      className="btn btn-secondary btn-md mt-4"
                     >
                       {busy ? t('billing.starting') : 'Choose Starter'}
                     </button>
@@ -341,7 +341,7 @@ function BillingPageContent() {
                     <button
                       onClick={() => startCheckout('premium')}
                       disabled={busy}
-                      className="mt-4 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-sm disabled:opacity-50 transition-colors"
+                      className="btn btn-primary btn-md mt-4"
                     >
                       {busy ? t('billing.starting') : 'Choose Premium'}
                     </button>
@@ -385,7 +385,7 @@ function BillingPageContent() {
                 <button
                   onClick={() => startCheckout('premium')}
                   disabled={busy}
-                  className="mt-4 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-sm disabled:opacity-50 transition-colors"
+                  className="btn btn-primary btn-md mt-4"
                 >
                   {busy ? t('billing.starting') : 'Set up billing'}
                 </button>
@@ -400,7 +400,7 @@ function BillingPageContent() {
                 <button
                   onClick={openPortal}
                   disabled={busy}
-                  className="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-medium rounded-lg text-sm disabled:opacity-50 transition-colors"
+                  className="btn btn-secondary btn-md"
                 >
                   {busy ? t('billing.opening') : t('billing.manageInStripe')}
                 </button>
@@ -409,7 +409,7 @@ function BillingPageContent() {
                 <button
                   onClick={openPortal}
                   disabled={busy}
-                  className="px-5 py-2.5 bg-red-500 hover:bg-red-400 text-white font-medium rounded-lg text-sm disabled:opacity-50 transition-colors"
+                  className="btn btn-danger btn-md"
                 >
                   {busy ? t('billing.opening') : t('billing.updatePayment')}
                 </button>
@@ -419,7 +419,7 @@ function BillingPageContent() {
                   href={latestOpenInvoice.invoice_pdf_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-sm transition-colors"
+                  className="btn btn-primary btn-md"
                 >
                   {t('billing.openInvoice')}
                 </a>
@@ -548,7 +548,7 @@ function BillingPageContent() {
                         href={h.invoice_pdf_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-emerald-300/80 hover:text-emerald-200 text-xs"
+                        className="btn btn-ghost btn-sm"
                       >
                         {t('billing.pdfLink')}
                       </a>

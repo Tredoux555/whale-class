@@ -97,9 +97,9 @@ export default function ChildrenListPage() {
       {/* Header */}
       <header className="bg-gray-800 border-b border-gray-700 p-4">
         <div className="max-w-6xl mx-auto flex items-center gap-3">
-          <Link 
+          <Link
             href="/admin/test"
-            className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+            className="btn btn-ghost btn-icon btn-sm"
           >
             <ChevronLeft size={24} />
           </Link>
@@ -135,10 +135,10 @@ export default function ChildrenListPage() {
               <button
                 key={key}
                 onClick={() => setSortBy(key)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  sortBy === key 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                className={`btn btn-md ${
+                  sortBy === key
+                    ? 'btn-primary'
+                    : 'btn-secondary'
                 }`}
               >
                 {label}

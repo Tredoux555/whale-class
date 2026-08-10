@@ -129,7 +129,7 @@ export default function GuruSettingsPage() {
       {/* Header */}
       <div className="px-4 pt-6 pb-4">
         <div className="flex items-center justify-between mb-2">
-          <button onClick={() => router.push('/montree/admin')} className="text-emerald-400 text-sm hover:underline">
+          <button onClick={() => router.push('/montree/admin')} className="btn btn-ghost btn-sm">
             {t('admin.guruSettings.backToAdmin')}
           </button>
           <LanguageToggle />
@@ -171,7 +171,7 @@ export default function GuruSettingsPage() {
               <button
                 key={style}
                 onClick={() => updateField('communication_style', style)}
-                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${settings.communication_style === style ? 'bg-emerald-600 text-white' : 'bg-white/10 text-emerald-300 hover:bg-white/20'}`}
+                className={`btn btn-sm flex-1 ${settings.communication_style === style ? 'btn-primary' : 'btn-secondary'}`}
               >
                 {t(`admin.guruSettings.communicationStyle.${style}`)}
               </button>
@@ -187,7 +187,7 @@ export default function GuruSettingsPage() {
               <button
                 key={range}
                 onClick={() => updateField('age_range_focus', range)}
-                className={`py-2 px-3 rounded-lg text-sm font-medium transition-colors ${settings.age_range_focus === range ? 'bg-emerald-600 text-white' : 'bg-white/10 text-emerald-300 hover:bg-white/20'}`}
+                className={`btn btn-sm ${settings.age_range_focus === range ? 'btn-primary' : 'btn-secondary'}`}
               >
                 {t(`admin.guruSettings.ageRange.${range}`)}
               </button>
@@ -271,7 +271,7 @@ export default function GuruSettingsPage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="w-full py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="btn btn-primary btn-lg btn-full"
         >
           {saving ? t('admin.guruSettings.saving') : t('admin.guruSettings.save')}
         </button>

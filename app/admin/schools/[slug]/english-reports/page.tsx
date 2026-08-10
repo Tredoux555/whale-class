@@ -327,17 +327,17 @@ export default function EnglishReportsPage() {
       {/* Actions */}
       <div className="border-b border-slate-800">
         <div className="max-w-3xl mx-auto px-4 py-2 flex gap-2 flex-wrap">
-          <button onClick={copyAll} className="px-4 py-1.5 bg-teal-600 text-white rounded text-sm hover:bg-teal-500">
+          <button onClick={copyAll} className="btn btn-primary btn-sm">
             📋 Copy All Reports
           </button>
-          <button onClick={() => setShowNextList(true)} className="px-4 py-1.5 bg-amber-600 text-white rounded text-sm hover:bg-amber-500">
+          <button onClick={() => setShowNextList(true)} className="btn btn-gold btn-sm">
             📅 Next Week List
           </button>
-          <button onClick={() => setShowPreview(true)} className="px-4 py-1.5 bg-slate-800 text-white rounded text-sm hover:bg-slate-700">
+          <button onClick={() => setShowPreview(true)} className="btn btn-secondary btn-sm">
             👁️ Preview
           </button>
           {connected && (
-            <button onClick={saveAllReports} disabled={saving} className="px-4 py-1.5 bg-green-600 text-white rounded text-sm hover:bg-green-500 disabled:opacity-50">
+            <button onClick={saveAllReports} disabled={saving} className="btn btn-primary btn-sm">
               {saving ? '⏳ Saving...' : '💾 Save All & Sync'}
             </button>
           )}
@@ -386,10 +386,10 @@ export default function EnglishReportsPage() {
                     <select value={entry.performance} onChange={(e) => updateWorkEntry(child.id, index, { performance: e.target.value as 'excellent' | 'good' | 'struggled' | 'repeat' })} className="bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-white text-sm">
                       {PERFORMANCE.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
                     </select>
-                    <button onClick={() => removeWork(child.id, index)} className="text-slate-600 hover:text-red-400 px-2">×</button>
+                    <button onClick={() => removeWork(child.id, index)} className="btn btn-ghost btn-icon btn-sm">×</button>
                   </div>
                 ))}
-                <button onClick={() => addWork(child.id)} className="text-teal-500 text-sm hover:text-teal-400">+ Add work</button>
+                <button onClick={() => addWork(child.id)} className="btn btn-ghost btn-sm">+ Add work</button>
               </div>
               
               <div className="flex gap-2 items-center mb-3">
@@ -418,8 +418,8 @@ export default function EnglishReportsPage() {
             <div className="p-4 border-b flex items-center justify-between bg-slate-100">
               <h2 className="font-bold text-slate-800">Week {selectedWeek} English Summary</h2>
               <div className="flex gap-2">
-                <button onClick={copyAll} className="px-3 py-1 bg-teal-600 text-white rounded text-sm">📋 Copy</button>
-                <button onClick={() => setShowPreview(false)} className="text-slate-500 hover:text-slate-800">✕</button>
+                <button onClick={copyAll} className="btn btn-primary btn-sm">📋 Copy</button>
+                <button onClick={() => setShowPreview(false)} className="btn btn-ghost btn-icon btn-sm on-light">✕</button>
               </div>
             </div>
             <div className="p-6 overflow-y-auto max-h-[70vh] text-slate-800 space-y-4 font-serif">
@@ -437,8 +437,8 @@ export default function EnglishReportsPage() {
             <div className="p-4 border-b flex items-center justify-between bg-amber-50">
               <h2 className="font-bold text-slate-800">📅 Week {selectedWeek + 1} Plan</h2>
               <div className="flex gap-2">
-                <button onClick={copyNextWeekList} className="px-3 py-1 bg-amber-600 text-white rounded text-sm">📋 Copy</button>
-                <button onClick={() => setShowNextList(false)} className="text-slate-500 hover:text-slate-800">✕</button>
+                <button onClick={copyNextWeekList} className="btn btn-gold btn-sm">📋 Copy</button>
+                <button onClick={() => setShowNextList(false)} className="btn btn-ghost btn-icon btn-sm on-light">✕</button>
               </div>
             </div>
             <div className="p-4 overflow-y-auto max-h-[70vh]">

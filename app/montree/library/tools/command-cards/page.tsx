@@ -256,7 +256,7 @@ ${pages}
         color: '#fff'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <button onClick={() => router.back()} style={{ color: '#fff', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px' }}>
+          <button onClick={() => router.back()} className="btn btn-ghost btn-sm">
             ← {t('tools.back_to_tools') || 'Back'}
           </button>
           <div style={{ flex: 1, textAlign: 'center' }}>
@@ -406,11 +406,8 @@ ${pages}
         />
         {customCommands.trim() && (
           <button onClick={() => setCustomCommands('')}
-            style={{
-              marginTop: '8px', padding: '6px 16px', borderRadius: '6px',
-              border: '1px solid #e0e0e0', backgroundColor: '#fff',
-              color: '#666', cursor: 'pointer', fontSize: '13px'
-            }}>
+            className="btn btn-secondary btn-sm on-light"
+            style={{ marginTop: '8px' }}>
             Reset to defaults
           </button>
         )}

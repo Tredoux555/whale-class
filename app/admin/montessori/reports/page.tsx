@@ -121,7 +121,7 @@ export default function ReportsPage() {
             </div>
             <Link
               href="/admin/montessori"
-              className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors text-sm"
+              className="btn btn-secondary btn-md"
             >
               Back to Montessori
             </Link>
@@ -216,7 +216,7 @@ export default function ReportsPage() {
                         setEndDate(end.toISOString().split('T')[0]);
                         setStartDate(start.toISOString().split('T')[0]);
                       }}
-                      className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+                      className="btn btn-secondary btn-md on-light"
                     >
                       Last 7 Days
                     </button>
@@ -228,7 +228,7 @@ export default function ReportsPage() {
                         setEndDate(end.toISOString().split('T')[0]);
                         setStartDate(start.toISOString().split('T')[0]);
                       }}
-                      className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+                      className="btn btn-secondary btn-md on-light"
                     >
                       Last 30 Days
                     </button>
@@ -240,7 +240,7 @@ export default function ReportsPage() {
                         setEndDate(end.toISOString().split('T')[0]);
                         setStartDate(start.toISOString().split('T')[0]);
                       }}
-                      className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+                      className="btn btn-secondary btn-md on-light"
                     >
                       Last 90 Days
                     </button>
@@ -251,7 +251,7 @@ export default function ReportsPage() {
                 <button
                   onClick={generateReport}
                   disabled={generating || !selectedChild || !startDate || !endDate}
-                  className="w-full bg-gradient-to-r from-[#4A90E2] to-[#2C5F7C] text-white px-8 py-4 rounded-xl text-lg font-bold hover:shadow-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-3"
+                  className="btn btn-primary btn-lg btn-full"
                 >
                   {generating ? (
                     <>
@@ -314,7 +314,7 @@ export default function ReportsPage() {
                 </p>
                 <Link
                   href="/admin/montessori/children"
-                  className="inline-block bg-yellow-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-yellow-600 transition-colors"
+                  className="btn btn-gold btn-lg"
                 >
                   Add Children
                 </Link>

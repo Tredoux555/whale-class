@@ -265,19 +265,7 @@ export default function ParentsListPage() {
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
-                  style={{
-                    padding: '8px 14px',
-                    borderRadius: 999,
-                    fontSize: 13,
-                    cursor: 'pointer',
-                    background: on
-                      ? 'rgba(52,211,153,0.18)'
-                      : 'rgba(255,255,255,0.04)',
-                    border: on
-                      ? '1px solid rgba(52,211,153,0.55)'
-                      : '1px solid rgba(255,255,255,0.10)',
-                    color: on ? T.emerald : T.textSecondary,
-                  }}
+                  className={`btn btn-sm btn-pill ${on ? 'btn-primary' : 'btn-secondary'}`}
                 >
                   {labels[f]}
                 </button>

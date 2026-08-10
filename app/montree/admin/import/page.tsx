@@ -278,13 +278,13 @@ export default function ImportPage() {
             <div className="flex gap-3 mt-6">
               <Link
                 href="/montree/admin/students"
-                className="flex-1 py-3 bg-emerald-600 text-white rounded-xl text-center font-medium hover:bg-emerald-500 transition-all"
+                className="btn btn-primary btn-lg flex-1"
               >
                 {t('import.viewStudents' as TranslationKey)} →
               </Link>
               <button
                 onClick={() => setResult(null)}
-                className="px-6 py-3 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-all"
+                className="btn btn-secondary btn-lg"
               >
                 {t('import.importAnother' as TranslationKey)}
               </button>

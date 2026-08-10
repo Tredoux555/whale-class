@@ -422,7 +422,7 @@ ${bodyContent}
         color: '#fff'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <button onClick={() => router.back()} style={{ color: '#fff', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px' }}>
+          <button onClick={() => router.back()} className="btn btn-ghost btn-sm">
             ← {t('tools.back_to_tools') || 'Back'}
           </button>
           <div style={{ flex: 1, textAlign: 'center' }}>

@@ -109,7 +109,7 @@ export default function NewsletterPage() {
       <header className="border-b border-slate-800 sticky top-0 z-20 bg-slate-950">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href={`/admin/schools/${slug}`} className="text-slate-500 hover:text-white text-sm">← Back</Link>
+            <Link href={`/admin/schools/${slug}`} className="btn btn-ghost btn-sm">← Back</Link>
             <div>
               <h1 className="text-white font-medium">📰 Newsletter Generator</h1>
               <p className="text-slate-500 text-xs">
@@ -136,7 +136,7 @@ export default function NewsletterPage() {
             
             <button
               onClick={copyAll}
-              className="px-4 py-1.5 bg-teal-600 text-white rounded text-sm hover:bg-teal-500"
+              className="btn btn-primary btn-sm"
             >
               {copied === 'all' ? '✓ Copied!' : '📋 Copy All'}
             </button>
@@ -175,13 +175,13 @@ export default function NewsletterPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => regenerate(1)}
-                className="px-3 py-1 bg-slate-800 text-slate-300 rounded text-xs hover:bg-slate-700"
+                className="btn btn-secondary btn-sm"
               >
                 🔄 Regenerate
               </button>
               <button
                 onClick={() => copyToClipboard(block1, 'block1')}
-                className="px-3 py-1 bg-teal-600/20 text-teal-400 rounded text-xs hover:bg-teal-600/30"
+                className="btn btn-secondary btn-sm"
               >
                 {copied === 'block1' ? '✓ Copied!' : '📋 Copy'}
               </button>
@@ -205,13 +205,13 @@ export default function NewsletterPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => regenerate(2)}
-                className="px-3 py-1 bg-slate-800 text-slate-300 rounded text-xs hover:bg-slate-700"
+                className="btn btn-secondary btn-sm"
               >
                 🔄 Regenerate
               </button>
               <button
                 onClick={() => copyToClipboard(block2, 'block2')}
-                className="px-3 py-1 bg-teal-600/20 text-teal-400 rounded text-xs hover:bg-teal-600/30"
+                className="btn btn-secondary btn-sm"
               >
                 {copied === 'block2' ? '✓ Copied!' : '📋 Copy'}
               </button>
@@ -235,13 +235,13 @@ export default function NewsletterPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => regenerate(3)}
-                className="px-3 py-1 bg-slate-800 text-slate-300 rounded text-xs hover:bg-slate-700"
+                className="btn btn-secondary btn-sm"
               >
                 🔄 Regenerate
               </button>
               <button
                 onClick={() => copyToClipboard(block3, 'block3')}
-                className="px-3 py-1 bg-teal-600/20 text-teal-400 rounded text-xs hover:bg-teal-600/30"
+                className="btn btn-secondary btn-sm"
               >
                 {copied === 'block3' ? '✓ Copied!' : '📋 Copy'}
               </button>

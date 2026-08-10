@@ -100,7 +100,7 @@ export default function UserManagementPage() {
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+          className="btn btn-primary btn-md on-light"
         >
           {showForm ? 'Cancel' : '+ Add User'}
         </button>
@@ -187,7 +187,7 @@ export default function UserManagementPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+                className="btn btn-primary btn-md on-light"
               >
                 {submitting ? 'Creating...' : 'Create User'}
               </button>

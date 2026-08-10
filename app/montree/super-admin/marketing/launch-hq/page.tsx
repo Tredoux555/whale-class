@@ -306,7 +306,7 @@ export default function LaunchHQ() {
 
   return (
     <div className="min-h-screen" style={{ background: "#070c09", color: "#c8e0d0", fontFamily: "'DM Sans', sans-serif" }}>
-      <div className="p-4 border-b border-slate-700"><Link href="/montree/super-admin/marketing" className="text-emerald-400 hover:text-emerald-300 text-sm">← Back to Marketing Hub</Link></div>
+      <div className="p-4 border-b border-slate-700"><Link href="/montree/super-admin/marketing" className="btn btn-ghost btn-sm">← Back to Marketing Hub</Link></div>
       {/* Header */}
       <div className="p-5 pb-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
         <div className="flex items-center gap-3 mb-3">

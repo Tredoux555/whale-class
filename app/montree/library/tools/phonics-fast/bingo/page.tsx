@@ -483,7 +483,7 @@ export default function PhonicsBingoPage() {
                   <h2 className="text-2xl font-bold text-gray-800">Select Word Groups</h2>
                   <button
                     onClick={selectAllGroups}
-                    className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-semibold text-sm"
+                    className="btn btn-primary btn-md on-light"
                   >
                     Select All
                   </button>
@@ -609,7 +609,7 @@ export default function PhonicsBingoPage() {
               <div className="mt-6 flex flex-wrap gap-3">
                 <button
                   onClick={handleGenerateBoards}
-                  className="px-8 py-4 bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-lg hover:from-teal-700 hover:to-teal-800 transition font-bold text-lg shadow-md hover:shadow-lg"
+                  className="btn btn-primary btn-lg on-light"
                 >
                   Generate Bingo Boards
                 </button>
@@ -618,7 +618,7 @@ export default function PhonicsBingoPage() {
                     handleGenerateBoards();
                     setTimeout(() => setMode('calling'), 50);
                   }}
-                  className="px-6 py-4 bg-gradient-to-r from-amber-400 to-amber-500 text-white rounded-lg hover:from-amber-500 hover:to-amber-600 transition font-bold text-lg shadow-md"
+                  className="btn btn-gold btn-lg on-light"
                 >
                   Generate Calling Cards
                 </button>
@@ -642,7 +642,7 @@ export default function PhonicsBingoPage() {
               </div>
               <button
                 onClick={() => handlePrint('boards')}
-                className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-semibold flex items-center gap-2 shadow-md"
+                className="btn btn-primary btn-md on-light"
               >
                 🖨️ Print All Boards
               </button>
@@ -679,7 +679,7 @@ export default function PhonicsBingoPage() {
               </div>
               <button
                 onClick={() => handlePrint('calling')}
-                className="px-6 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition font-semibold flex items-center gap-2 shadow-md"
+                className="btn btn-gold btn-md on-light"
               >
                 🖨️ Print Calling Cards
               </button>

@@ -538,20 +538,8 @@ export default function ClassroomDetailPage({
           onClick={() => void enterClassroom()}
           disabled={entering}
           title="See this classroom as its teacher sees it"
-          style={{
-            flexShrink: 0,
-            alignSelf: 'flex-start',
-            background: T.emeraldSoft,
-            border: '1px solid rgba(52,211,153,0.34)',
-            color: T.emerald,
-            borderRadius: 999,
-            padding: '6px 14px',
-            fontSize: 13,
-            fontWeight: 600,
-            fontFamily: T.sans,
-            cursor: entering ? 'default' : 'pointer',
-            opacity: entering ? 0.6 : 1,
-          }}
+          className="btn btn-primary btn-sm btn-pill"
+          style={{ flexShrink: 0, alignSelf: 'flex-start' }}
         >
           {entering ? 'Opening…' : 'Enter classroom'}
         </button>
@@ -579,18 +567,8 @@ export default function ClassroomDetailPage({
             }
           }}
           title="Remove classroom"
-          style={{
-            flexShrink: 0,
-            alignSelf: 'flex-start',
-            background: 'transparent',
-            border: '1px solid rgba(248,113,113,0.35)',
-            color: 'rgba(248,113,113,0.92)',
-            borderRadius: 999,
-            padding: '6px 14px',
-            fontSize: 13,
-            fontFamily: T.sans,
-            cursor: 'pointer',
-          }}
+          className="btn btn-danger btn-soft btn-sm btn-pill"
+          style={{ flexShrink: 0, alignSelf: 'flex-start' }}
         >
           Remove
         </button>
@@ -858,21 +836,7 @@ function SectionHeader({
       {actionLabel && onAction ? (
         <button
           onClick={onAction}
-          style={{
-            background: 'transparent',
-            border: '1px solid rgba(52,211,153,0.28)',
-            borderRadius: 10,
-            color: T.emerald,
-            padding: '6px 12px',
-            fontFamily: T.sans,
-            fontSize: 12.5,
-            fontWeight: 500,
-            cursor: 'pointer',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 4,
-            transition: 'all 0.15s ease',
-          }}
+          className="btn btn-ghost btn-outline btn-sm"
         >
           <Plus size={14} strokeWidth={2} />
           {actionLabel}
@@ -1026,26 +990,7 @@ function TeacherRow({
           <button
             onClick={onCopy}
             title="Copy login code"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '7px 12px',
-              background: justCopied
-                ? 'rgba(52,211,153,0.20)'
-                : T.goldSoft,
-              border: justCopied
-                ? '1px solid rgba(52,211,153,0.45)'
-                : '1px solid ' + T.goldSubtle,
-              borderRadius: 10,
-              fontFamily: T.mono,
-              fontSize: 13,
-              fontWeight: 600,
-              color: justCopied ? T.emerald : T.goldText,
-              cursor: 'pointer',
-              transition: 'all 0.15s ease',
-              letterSpacing: 0.6,
-            }}
+            className={`btn btn-sm ${justCopied ? 'btn-primary' : 'btn-gold'}`}
           >
             {justCopied ? (
               <>
@@ -1081,21 +1026,7 @@ function TeacherRow({
               ? `Email ${teacher.name} their login`
               : `Copy code to share with ${teacher.name}`
           }
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '7px 12px',
-            background: teacher.login_code ? T.emerald : 'rgba(52,211,153,0.16)',
-            border: 'none',
-            borderRadius: 10,
-            fontFamily: T.sans,
-            fontSize: 12.5,
-            fontWeight: 600,
-            color: teacher.login_code ? '#07120c' : T.textMuted,
-            cursor: teacher.login_code ? 'pointer' : 'not-allowed',
-            transition: 'all 0.15s ease',
-          }}
+          className="btn btn-primary btn-sm"
         >
           <Send size={13} strokeWidth={2} />
           Send
@@ -1244,17 +1175,7 @@ function EmptyTeachersCard({ onAdd }: { onAdd: () => void }) {
       </p>
       <button
         onClick={onAdd}
-        style={{
-          padding: '9px 18px',
-          background: T.emerald,
-          border: 'none',
-          borderRadius: 10,
-          color: '#07120c',
-          fontFamily: T.sans,
-          fontSize: 13.5,
-          fontWeight: 600,
-          cursor: 'pointer',
-        }}
+        className="btn btn-primary btn-md"
       >
         Add a teacher
       </button>
@@ -1304,21 +1225,8 @@ function EmptyStudentsCard({
 
       <button
         onClick={onToggleAdvanced}
-        style={{
-          marginTop: 18,
-          background: 'transparent',
-          border: 'none',
-          padding: 0,
-          color: T.textMuted,
-          fontFamily: T.sans,
-          fontSize: 12,
-          fontWeight: 500,
-          cursor: 'pointer',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 4,
-          letterSpacing: 0.4,
-        }}
+        className="btn btn-ghost btn-sm"
+        style={{ marginTop: 18 }}
       >
         {advancedOpen ? (
           <ChevronDown size={13} strokeWidth={2} />
@@ -1352,16 +1260,7 @@ function EmptyStudentsCard({
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <button
               onClick={onAddManually}
-              style={{
-                padding: '7px 12px',
-                background: 'transparent',
-                border: '1px solid rgba(52,211,153,0.28)',
-                borderRadius: 8,
-                color: T.emeraldDim,
-                fontFamily: T.sans,
-                fontSize: 12.5,
-                cursor: 'pointer',
-              }}
+              className="btn btn-ghost btn-outline btn-sm"
             >
               Add a student manually
             </button>
@@ -1573,20 +1472,7 @@ function CodeRevealBlock({
         </div>
         <button
           onClick={onCopy}
-          style={{
-            padding: '8px 16px',
-            background: copied ? T.emerald : 'rgba(255,255,255,0.06)',
-            color: copied ? '#07120c' : T.textSoft,
-            border: '1px solid rgba(52,211,153,0.20)',
-            borderRadius: 9,
-            fontFamily: T.sans,
-            fontSize: 12.5,
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-          }}
+          className={`btn btn-sm ${copied ? 'btn-primary' : 'btn-secondary'}`}
         >
           {copied ? (
             <>
@@ -1603,18 +1489,7 @@ function CodeRevealBlock({
       </div>
       <button
         onClick={onDone}
-        style={{
-          width: '100%',
-          padding: '11px',
-          background: T.emerald,
-          color: '#07120c',
-          border: 'none',
-          borderRadius: 10,
-          fontFamily: T.sans,
-          fontSize: 14,
-          fontWeight: 600,
-          cursor: 'pointer',
-        }}
+        className="btn btn-primary btn-md btn-full"
       >
         Done
       </button>
@@ -1772,38 +1647,16 @@ function FormButtons({
     <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
       <button
         onClick={onCancel}
-        style={{
-          flex: 1,
-          padding: '11px',
-          background: 'rgba(255,255,255,0.06)',
-          border: '1px solid rgba(255,255,255,0.10)',
-          borderRadius: 10,
-          color: T.textSoft,
-          fontFamily: T.sans,
-          fontSize: 14,
-          fontWeight: 500,
-          cursor: 'pointer',
-        }}
+        className="btn btn-secondary btn-md"
+        style={{ flex: 1 }}
       >
         {cancelLabel}
       </button>
       <button
         onClick={onSubmit}
         disabled={submitDisabled}
-        style={{
-          flex: 1,
-          padding: '11px',
-          background: submitDisabled
-            ? 'rgba(52,211,153,0.18)'
-            : T.emerald,
-          color: submitDisabled ? T.textMuted : '#07120c',
-          border: 'none',
-          borderRadius: 10,
-          fontFamily: T.sans,
-          fontSize: 14,
-          fontWeight: 600,
-          cursor: submitDisabled ? 'default' : 'pointer',
-        }}
+        className="btn btn-primary btn-md"
+        style={{ flex: 1 }}
       >
         {submitLabel}
       </button>

@@ -394,7 +394,7 @@ export default function PhonicsDictionaryPage() {
             <div className="flex items-center gap-3">
               <Link
                 href="/montree/library/tools/phonics-fast"
-                className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                className="btn btn-secondary btn-icon btn-md"
                 title="Back to Phonics Fast"
               >
                 ←
@@ -409,14 +409,14 @@ export default function PhonicsDictionaryPage() {
             <div className="flex gap-2">
               <button
                 onClick={handlePrint}
-                className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
+                className="btn btn-secondary btn-md"
                 title="Print dictionary"
               >
                 🖨️ Print
               </button>
               <button
                 onClick={() => setIsPrintMode(!isPrintMode)}
-                className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
+                className="btn btn-secondary btn-md"
               >
                 {isPrintMode ? '← View' : '👁️ Preview'}
               </button>

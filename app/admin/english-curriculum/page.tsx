@@ -99,7 +99,7 @@ export default function EnglishCurriculumPage() {
             </div>
             <Link
               href="/admin"
-              className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors text-sm"
+              className="btn btn-secondary btn-md"
             >
               Back to Admin
             </Link>
@@ -258,7 +258,7 @@ export default function EnglishCurriculumPage() {
                                 <div className="pt-2">
                                   <button
                                     onClick={() => toggleActivity(activity.id)}
-                                    className="text-[#4A90E2] hover:text-[#2C5F7C] font-semibold text-sm"
+                                    className="btn btn-ghost btn-sm on-light"
                                   >
                                     Collapse
                                   </button>

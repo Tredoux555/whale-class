@@ -84,7 +84,7 @@ export default function ChildrenPage() {
             </div>
             <Link
               href="/admin/montessori"
-              className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors text-sm"
+              className="btn btn-secondary btn-md"
             >
               Back
             </Link>
@@ -97,7 +97,7 @@ export default function ChildrenPage() {
         <div className="mb-6">
           <button
             onClick={() => setShowAddForm(!showAddForm)}
-            className="bg-[#4A90E2] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#2C5F7C] transition-colors shadow-md"
+            className="btn btn-primary btn-md on-light"
           >
             {showAddForm ? "Cancel" : "+ Add New Child"}
           </button>
@@ -198,7 +198,7 @@ export default function ChildrenPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-[#4A90E2] text-white py-3 rounded-lg font-semibold hover:bg-[#2C5F7C] transition-colors disabled:opacity-50"
+                className="btn btn-primary btn-md btn-full on-light"
               >
                 {submitting ? "Adding..." : "Add Child"}
               </button>

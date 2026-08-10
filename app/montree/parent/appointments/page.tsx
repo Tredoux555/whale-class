@@ -222,7 +222,7 @@ export default function ParentAppointmentsPage() {
           <div style={{ fontFamily: T.serif, fontSize: 16, fontWeight: 500, color: T.textPrimary }}>{t('apptPage.title')}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {view.kind !== 'list' && (
-              <button onClick={() => setView({ kind: 'list' })} style={backBtn()} aria-label={t('apptPage.backToList')}>
+              <button onClick={() => setView({ kind: 'list' })} className="btn btn-ghost btn-sm" aria-label={t('apptPage.backToList')}>
                 <ArrowLeft size={14} strokeWidth={2} /> {t('common.back')}
               </button>
             )}
@@ -312,13 +312,7 @@ function ListView({
         />
       )}
 
-      <button onClick={onBook} style={{
-        width: '100%', padding: '14px 18px', borderRadius: 12,
-        background: `linear-gradient(135deg, ${T.emerald}, ${T.emeraldDeep})`,
-        color: '#0a1a0f', fontWeight: 600, fontSize: 15, border: 'none',
-        cursor: 'pointer', marginBottom: 18,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-      }}>
+      <button onClick={onBook} className="btn btn-primary btn-lg btn-full" style={{ marginBottom: 18 }}>
         <Plus size={18} strokeWidth={2} /> {t('apptPage.bookMeeting')}
       </button>
 
@@ -524,21 +518,7 @@ function PendingInvitations({
                   type="button"
                   onClick={() => respond(a.id, 'accept')}
                   disabled={busyId === a.id}
-                  style={{
-                    padding: '12px 14px',
-                    borderRadius: 10,
-                    background: T.emerald,
-                    border: 'none',
-                    color: '#0a1a0f',
-                    fontWeight: 600,
-                    fontSize: 14,
-                    cursor: busyId === a.id ? 'not-allowed' : 'pointer',
-                    opacity: busyId === a.id ? 0.6 : 1,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 6,
-                  }}
+                  className="btn btn-primary btn-md"
                 >
                   <CheckCircle2 size={14} strokeWidth={2} />
                   {busyId === a.id ? '…' : t('apptPage.accept')}
@@ -547,21 +527,7 @@ function PendingInvitations({
                   type="button"
                   onClick={() => respond(a.id, 'decline')}
                   disabled={busyId === a.id}
-                  style={{
-                    padding: '12px 14px',
-                    borderRadius: 10,
-                    background: 'transparent',
-                    border: '1px solid rgba(239,68,68,0.4)',
-                    color: T.red,
-                    fontWeight: 600,
-                    fontSize: 14,
-                    cursor: busyId === a.id ? 'not-allowed' : 'pointer',
-                    opacity: busyId === a.id ? 0.6 : 1,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 6,
-                  }}
+                  className="btn btn-danger btn-soft btn-md"
                 >
                   <XCircle size={14} strokeWidth={2} />
                   {busyId === a.id ? '…' : t('apptPage.decline')}
@@ -703,12 +669,7 @@ function BookFlow({ bundles, featureFlags, t, intl, onCancel, onBooked }: { bund
             <FieldRow label={t('apptPage.aboutLabel')}>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {bundles.map((b) => (
-                  <button key={b.child_id} onClick={() => { setChildId(b.child_id); setRecipient(null); setStep('recipient'); }} style={{
-                    padding: '8px 14px', borderRadius: 999, fontSize: 13, fontWeight: 600,
-                    border: 'none', cursor: 'pointer',
-                    background: childId === b.child_id ? T.emerald : T.card,
-                    color: childId === b.child_id ? '#0a1a0f' : T.textPrimary,
-                  }}>
+                  <button key={b.child_id} onClick={() => { setChildId(b.child_id); setRecipient(null); setStep('recipient'); }} className={`btn btn-sm btn-pill ${childId === b.child_id ? 'btn-primary' : 'btn-secondary'}`}>
                     {b.child_name}
                   </button>
                 ))}
@@ -830,8 +791,8 @@ function BookFlow({ bundles, featureFlags, t, intl, onCancel, onBooked }: { bund
               )}
 
               <div style={{ display: 'flex', gap: 10 }}>
-                <button onClick={() => setStep('slot')} style={btnGhost()}>{t('common.back')}</button>
-                <button onClick={handleBook} disabled={submitting} style={btnPrimary(submitting)}>
+                <button onClick={() => setStep('slot')} className="btn btn-secondary btn-md">{t('common.back')}</button>
+                <button onClick={handleBook} disabled={submitting} className="btn btn-primary btn-md" style={{ flex: 1 }}>
                   {submitting ? t('apptPage.booking') : t('apptPage.confirmMeeting')}
                 </button>
               </div>
@@ -841,7 +802,7 @@ function BookFlow({ bundles, featureFlags, t, intl, onCancel, onBooked }: { bund
       )}
 
       {step === 'recipient' && (
-        <button onClick={onCancel} style={btnGhost()}>{t('common.cancel')}</button>
+        <button onClick={onCancel} className="btn btn-secondary btn-md">{t('common.cancel')}</button>
       )}
 
       <style jsx>{`
@@ -872,13 +833,7 @@ function SlotGrid({ slots, selectedStart, intl, onPick }: { slots: Array<{ start
             {dayslots.map((s) => {
               const selected = selectedStart === s.start;
               return (
-                <button key={s.start} onClick={() => onPick(s)} style={{
-                  padding: '10px 8px', borderRadius: 8,
-                  background: selected ? T.emerald : T.cardBg,
-                  border: selected ? 'none' : T.cardBorder,
-                  color: selected ? '#0a1a0f' : T.textPrimary,
-                  fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                }}>
+                <button key={s.start} onClick={() => onPick(s)} className={`btn btn-sm ${selected ? 'btn-primary' : 'btn-secondary'}`}>
                   {fmtTime(s.start, intl)}
                 </button>
               );
@@ -964,20 +919,8 @@ function DetailView({ appt, t, intl, onClose, onChanged }: { appt: Appointment; 
           <button
             type="button"
             onClick={() => setAgoraOpen(true)}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              marginTop: 12,
-              padding: '10px 14px',
-              borderRadius: 10,
-              background: T.emerald,
-              color: '#0a1a0f',
-              fontWeight: 600,
-              fontSize: 14,
-              border: 'none',
-              cursor: 'pointer',
-            }}
+            className="btn btn-primary btn-md"
+            style={{ marginTop: 12 }}
             aria-label={t('apptPage.joinVideoCall')}
           >
             <Video size={16} strokeWidth={1.75} /> {t('apptPage.joinVideoCall')}
@@ -988,19 +931,8 @@ function DetailView({ appt, t, intl, onClose, onChanged }: { appt: Appointment; 
             href={appt.video_url}
             target="_blank"
             rel="noopener noreferrer"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              marginTop: 12,
-              padding: '10px 14px',
-              borderRadius: 10,
-              background: T.emerald,
-              color: '#0a1a0f',
-              fontWeight: 600,
-              fontSize: 14,
-              textDecoration: 'none',
-            }}
+            className="btn btn-primary btn-md"
+            style={{ marginTop: 12 }}
             aria-label={t('apptPage.joinVideoCallNewTab')}
           >
             <Video size={16} strokeWidth={1.75} /> {t('apptPage.joinVideoCall')}
@@ -1025,16 +957,12 @@ function DetailView({ appt, t, intl, onClose, onChanged }: { appt: Appointment; 
       )}
 
       {canModify && (
-        <button onClick={handleCancel} disabled={cancelling} style={{
-          padding: '12px 14px', borderRadius: 10,
-          background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.32)',
-          color: T.red, fontSize: 14, fontWeight: 600, cursor: 'pointer',
-        }}>
+        <button onClick={handleCancel} disabled={cancelling} className="btn btn-danger btn-soft btn-md">
           {cancelling ? t('apptPage.cancelling') : t('apptPage.cancelMeeting')}
         </button>
       )}
 
-      <button onClick={onClose} style={btnGhost()}>{t('common.back')}</button>
+      <button onClick={onClose} className="btn btn-secondary btn-md">{t('common.back')}</button>
 
       {/* Phase 116.3 — full-viewport Agora call overlay. Dynamic import
           to keep the SDK chunk out of the initial bundle for anyone who

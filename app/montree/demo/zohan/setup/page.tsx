@@ -31,7 +31,7 @@ export default function ZohanSetupPage() {
           </p>
           <Link
             href="/montree/demo/zohan"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 border border-white/20 text-white rounded-xl hover:bg-white/20 transition-colors"
+            className="btn btn-secondary btn-md"
           >
             ← Back to Welcome
           </Link>
@@ -90,7 +90,7 @@ export default function ZohanSetupPage() {
             
             <button
               type="submit"
-              className="w-full px-6 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-semibold rounded-xl hover:from-emerald-600 hover:to-cyan-600 transition-all shadow-lg"
+              className="btn btn-primary btn-lg btn-full"
             >
               Get Early Access
             </button>
@@ -104,7 +104,7 @@ export default function ZohanSetupPage() {
         {/* Back link */}
         <Link
           href="/montree/demo/zohan"
-          className="inline-flex items-center gap-2 mt-8 text-slate-400 hover:text-white transition-colors"
+          className="btn btn-ghost btn-md mt-8"
         >
           ← Back to Welcome
         </Link>

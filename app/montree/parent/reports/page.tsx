@@ -290,20 +290,8 @@ function ReportsHistory() {
               <button
                 onClick={loadMore}
                 disabled={loadingMore}
-                style={{
-                  marginTop: 6,
-                  padding: '12px 18px',
-                  borderRadius: 12,
-                  background: 'transparent',
-                  border: '1px solid rgba(52,211,153,0.30)',
-                  color: T.emerald,
-                  fontSize: 14,
-                  fontWeight: 600,
-                  fontFamily: T.sans,
-                  cursor: loadingMore ? 'default' : 'pointer',
-                  opacity: loadingMore ? 0.6 : 1,
-                  transition: 'all 140ms ease',
-                }}
+                className="btn btn-ghost btn-outline btn-md"
+                style={{ marginTop: 6 }}
               >
                 {loadingMore ? t('common.loading') : t('parentReports.loadMore')}
               </button>

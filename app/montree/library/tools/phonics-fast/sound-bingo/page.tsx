@@ -392,8 +392,8 @@ export default function SoundBingoPage() {
             <button
               key={mode}
               onClick={() => setViewMode(mode)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                viewMode === mode ? 'bg-amber-600 text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'
+              className={`btn btn-md ${
+                viewMode === mode ? 'btn-gold' : 'btn-secondary on-light'
               }`}
             >
               {mode === 'setup' ? 'Game Setup' : 'Progression Map'}
@@ -403,16 +403,16 @@ export default function SoundBingoPage() {
             <>
               <button
                 onClick={() => setViewMode('boards')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                  viewMode === 'boards' ? 'bg-amber-600 text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'
+                className={`btn btn-md ${
+                  viewMode === 'boards' ? 'btn-gold' : 'btn-secondary on-light'
                 }`}
               >
                 Boards ({boards.length})
               </button>
               <button
                 onClick={() => setViewMode('calling')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                  viewMode === 'calling' ? 'bg-amber-600 text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'
+                className={`btn btn-md ${
+                  viewMode === 'calling' ? 'btn-gold' : 'btn-secondary on-light'
                 }`}
               >
                 Calling Cards
@@ -495,8 +495,8 @@ export default function SoundBingoPage() {
                       <button
                         key={size}
                         onClick={() => setBoardSize(size)}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                          boardSize === size ? 'bg-[#0D3330] text-white' : 'bg-gray-100 text-gray-600'
+                        className={`btn btn-md ${
+                          boardSize === size ? 'btn-primary' : 'btn-secondary on-light'
                         }`}
                       >
                         {size}x{size}
@@ -548,7 +548,7 @@ export default function SoundBingoPage() {
             {/* Generate button */}
             <button
               onClick={handleGenerate}
-              className="w-full py-4 rounded-xl text-lg font-bold bg-amber-600 text-white hover:bg-amber-700 transition-colors"
+              className="btn btn-gold btn-lg btn-full"
             >
               Generate {numBoards} Bingo Boards + Calling Cards
             </button>
@@ -565,13 +565,13 @@ export default function SoundBingoPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setViewMode('calling')}
-                  className="px-4 py-2 rounded-lg text-sm font-medium bg-amber-600 text-white hover:bg-amber-700"
+                  className="btn btn-gold btn-md"
                 >
                   View Calling Cards
                 </button>
                 <button
                   onClick={() => window.print()}
-                  className="px-4 py-2 rounded-lg text-sm font-medium bg-[#0D3330] text-white hover:bg-[#1a4a46]"
+                  className="btn btn-primary btn-md"
                 >
                   Print Boards
                 </button>
@@ -639,14 +639,14 @@ export default function SoundBingoPage() {
                 <button
                   onClick={handlePrevCall}
                   disabled={currentCallIndex === 0}
-                  className="px-6 py-3 rounded-xl text-lg font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-30 transition-colors"
+                  className="btn btn-secondary btn-lg on-light"
                 >
                   &larr; Previous
                 </button>
                 <button
                   onClick={handleNextCall}
                   disabled={currentCallIndex === callingCards.length - 1}
-                  className="px-6 py-3 rounded-xl text-lg font-bold bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-30 transition-colors"
+                  className="btn btn-gold btn-lg"
                 >
                   Next Call &rarr;
                 </button>
@@ -658,7 +658,7 @@ export default function SoundBingoPage() {
               <h3 className="font-bold text-gray-800">All Calling Cards</h3>
               <button
                 onClick={() => window.print()}
-                className="px-4 py-2 rounded-lg text-sm font-medium bg-[#0D3330] text-white hover:bg-[#1a4a46]"
+                className="btn btn-primary btn-md"
               >
                 Print Calling Cards
               </button>

@@ -103,14 +103,14 @@ export default function ChildrenPage() {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Link href="/admin" className="text-gray-500 hover:text-gray-700">
+              <Link href="/admin" className="btn btn-ghost btn-sm on-light">
                 ← Back
               </Link>
               <h1 className="text-2xl font-bold text-gray-900">👶 Children</h1>
             </div>
             <button 
               onClick={() => setShowAddModal(true)}
-              className="px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600"
+              className="btn btn-primary btn-md on-light"
             >
               + Add Child
             </button>
@@ -123,7 +123,7 @@ export default function ChildrenPage() {
         {error && (
           <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg flex items-center justify-between">
             <span>{error}</span>
-            <button onClick={fetchChildren} className="text-red-700 underline">
+            <button onClick={fetchChildren} className="btn btn-ghost btn-sm on-light">
               Retry
             </button>
           </div>
@@ -142,7 +142,7 @@ export default function ChildrenPage() {
             <p className="text-gray-500 mb-4">Add your first child to start tracking progress</p>
             <button 
               onClick={() => setShowAddModal(true)}
-              className="px-6 py-3 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600"
+              className="btn btn-primary btn-lg on-light"
             >
               + Add First Child
             </button>
@@ -238,7 +238,7 @@ export default function ChildrenPage() {
                   setShowAddModal(false);
                   setNewChild({ name: '', date_of_birth: '' });
                 }}
-                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                className="btn btn-secondary btn-md flex-1 on-light"
                 disabled={saving}
               >
                 Cancel
@@ -246,7 +246,7 @@ export default function ChildrenPage() {
               <button
                 onClick={handleAddChild}
                 disabled={saving || !newChild.name.trim()}
-                className="flex-1 px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 disabled:bg-gray-400"
+                className="btn btn-primary btn-md flex-1 on-light"
               >
                 {saving ? 'Adding...' : 'Add Child'}
               </button>

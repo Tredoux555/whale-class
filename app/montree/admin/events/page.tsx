@@ -137,13 +137,8 @@ export default function AdminEventsPage() {
       {!featureDisabled && !migrationPending && (
         <button
           onClick={() => setShowCompose(true)}
-          style={{
-            width: '100%', padding: '14px 18px', borderRadius: 12,
-            background: T.emerald, border: 'none', color: '#0a1a0f',
-            fontWeight: 600, fontSize: 15, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            marginBottom: 18,
-          }}
+          className="btn btn-primary btn-lg btn-full"
+          style={{ marginBottom: 18 }}
         >
           <Plus size={18} strokeWidth={1.75} /> {t('events.newEvent')}
         </button>
@@ -208,7 +203,7 @@ function EventCard({ event, classrooms, onChanged }: { event: EventRow; classroo
           {isCancelled && <span style={{ color: T.red, fontSize: 11, marginLeft: 8 }}>{t('events.tagCancelled')}</span>}
           {isPast && !isCancelled && <span style={{ color: T.textMuted, fontSize: 11, marginLeft: 8 }}>{t('events.tagPast')}</span>}
         </div>
-        <button onClick={() => setExpanded((v) => !v)} style={{ background: 'none', border: 'none', color: T.textMuted, cursor: 'pointer', fontSize: 11 }}>
+        <button onClick={() => setExpanded((v) => !v)} className="btn btn-ghost btn-sm">
           {expanded ? t('events.less') : t('events.more')}
         </button>
       </div>
@@ -249,9 +244,9 @@ function EventCard({ event, classrooms, onChanged }: { event: EventRow; classroo
           )}
           <div style={{ display: 'flex', gap: 10 }}>
             {!isCancelled && !isPast && (
-              <button onClick={handleCancel} style={btnGhost()}>{t('events.cancelEvent')}</button>
+              <button onClick={handleCancel} className="btn btn-secondary btn-sm">{t('events.cancelEvent')}</button>
             )}
-            <button onClick={handleDelete} style={{ ...btnGhost(), color: T.red, border: '1px solid rgba(239,68,68,0.45)' }}>
+            <button onClick={handleDelete} className="btn btn-danger btn-soft btn-sm">
               <Trash2 size={14} strokeWidth={1.75} /> {t('common.delete')}
             </button>
           </div>
@@ -329,7 +324,7 @@ function ComposeModal({ classrooms, onClose, onCreated }: { classrooms: Classroo
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <h2 style={{ fontFamily: T.serif, fontSize: 20, fontWeight: 500, margin: 0 }}>{t('events.newEvent')}</h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: T.textMuted, cursor: 'pointer' }}>
+          <button onClick={onClose} className="btn btn-ghost btn-icon btn-sm">
             <X size={20} strokeWidth={1.75} />
           </button>
         </div>
@@ -363,8 +358,8 @@ function ComposeModal({ classrooms, onClose, onCreated }: { classrooms: Classroo
           )}
 
           <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={onClose} style={btnGhost()}>{t('common.cancel')}</button>
-            <button onClick={submit} disabled={saving} style={{ ...btnPrimary(), flex: 1, opacity: saving ? 0.5 : 1 }}>
+            <button onClick={onClose} className="btn btn-secondary btn-sm">{t('common.cancel')}</button>
+            <button onClick={submit} disabled={saving} className="btn btn-primary btn-md flex-1">
               {saving ? t('events.creating') : t('events.create')}
             </button>
           </div>

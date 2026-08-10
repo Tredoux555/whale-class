@@ -120,7 +120,7 @@ export default function ApiUsageDashboard() {
           />
           <button
             onClick={handleLogin}
-            className="w-full bg-emerald-500 text-slate-900 py-3 rounded-lg font-semibold hover:bg-emerald-400 transition"
+            className="btn btn-primary btn-lg btn-full"
           >
             Access dashboard
           </button>
@@ -167,7 +167,7 @@ export default function ApiUsageDashboard() {
           </div>
           <button
             onClick={fetchUsage}
-            className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 hover:border-emerald-500/40 hover:text-emerald-300 transition"
+            className="btn btn-secondary btn-md"
           >
             Refresh
           </button>

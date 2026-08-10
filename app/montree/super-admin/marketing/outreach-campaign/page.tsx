@@ -345,11 +345,7 @@ export default function OutreachCampaignPage() {
         {/* Tabs */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
           {TABS.map(t => (
-            <button key={t.id} onClick={() => setTab(t.id)} style={{
-              padding: '10px 20px', borderRadius: 8, border: 'none', cursor: 'pointer',
-              background: tab === t.id ? '#0D3330' : '#E5E7EB',
-              color: tab === t.id ? '#FFF' : '#333', fontWeight: 600, fontSize: 14,
-            }}>{t.label}</button>
+            <button key={t.id} onClick={() => setTab(t.id)} className={`btn btn-md on-light ${tab === t.id ? 'btn-primary' : 'btn-secondary'}`}>{t.label}</button>
           ))}
         </div>
 
@@ -441,15 +437,8 @@ export default function OutreachCampaignPage() {
                     </div>
 
                     <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                      <button onClick={() => navigator.clipboard.writeText(t.email)} style={{
-                        padding: '8px 16px', borderRadius: 6, border: '1px solid #D1D5DB',
-                        background: '#FFF', cursor: 'pointer', fontSize: 13,
-                      }}>📋 Copy Email</button>
-                      <button onClick={() => markSent(t.id)} style={{
-                        padding: '8px 16px', borderRadius: 6, border: 'none',
-                        background: sent[t.id] ? '#D1D5DB' : '#059669', color: '#FFF',
-                        cursor: 'pointer', fontSize: 13, fontWeight: 600,
-                      }}>{sent[t.id] ? '✓ Marked Sent' : 'Mark as Sent'}</button>
+                      <button onClick={() => navigator.clipboard.writeText(t.email)} className="btn btn-secondary btn-sm on-light">📋 Copy Email</button>
+                      <button onClick={() => markSent(t.id)} className={`btn btn-sm on-light ${sent[t.id] ? 'btn-secondary' : 'btn-primary'}`}>{sent[t.id] ? '✓ Marked Sent' : 'Mark as Sent'}</button>
                     </div>
                   </div>
                 )}

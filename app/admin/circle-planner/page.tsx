@@ -60,7 +60,7 @@ export default function CircleTimePage() {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-700">
+              <button onClick={() => router.back()} className="btn btn-ghost btn-sm on-light">
                 ← Back
               </button>
               <h1 className="text-2xl font-bold text-gray-900">
@@ -70,26 +70,26 @@ export default function CircleTimePage() {
             <div className="flex gap-2">
               <Link
                 href="/admin/vocabulary-flashcards"
-                className="px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600"
+                className="btn btn-primary btn-md on-light"
               >
                 🃏 Flashcards
               </Link>
               <Link
                 href="/admin/card-generator"
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                className="btn btn-primary btn-md on-light"
               >
                 🎴 3-Part Cards
               </Link>
               <Link
                 href="/admin/flashcard-maker"
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                className="btn btn-gold btn-md on-light"
               >
                 🎵 Video Cards
               </Link>
               {selectedWeek && (
                 <button
                   onClick={handlePrint}
-                  className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+                  className="btn btn-gold btn-md on-light"
                 >
                   🖨️ Print Week
                 </button>
@@ -143,7 +143,7 @@ export default function CircleTimePage() {
                 </div>
                 <button
                   onClick={() => setSelectedWeek(null)}
-                  className="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30"
+                  className="btn btn-secondary btn-md"
                 >
                   ← All Weeks
                 </button>
@@ -163,7 +163,7 @@ export default function CircleTimePage() {
                     href={`https://www.youtube.com/results?search_query=${encodeURIComponent(plan.song.title + ' kids song')}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 py-1 bg-red-500 text-white text-sm rounded-full hover:bg-red-600 inline-flex items-center gap-1"
+                    className="btn btn-danger btn-sm btn-pill on-light"
                   >
                     ▶️ YouTube
                   </a>
@@ -196,7 +196,7 @@ export default function CircleTimePage() {
                         href={`https://www.youtube.com/results?search_query=${encodeURIComponent(book.title + ' read aloud')}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded-full hover:bg-red-200"
+                        className="btn btn-danger btn-soft btn-sm btn-pill on-light"
                       >
                         ▶️ Read Aloud
                       </a>
@@ -310,10 +310,10 @@ export default function CircleTimePage() {
                 <button
                   key={day}
                   onClick={() => setSelectedDay(day)}
-                  className={`px-4 py-2 rounded-lg whitespace-nowrap transition-all ${
+                  className={`btn btn-md ${
                     selectedDay === day
-                      ? 'bg-orange-500 text-white shadow-lg'
-                      : 'bg-white text-gray-700 hover:bg-orange-100'
+                      ? 'btn-primary'
+                      : 'btn-secondary on-light'
                   }`}
                 >
                   {DAY_LABELS[day].icon} {DAY_LABELS[day].label}
@@ -390,14 +390,14 @@ export default function CircleTimePage() {
               <button
                 onClick={() => setSelectedWeek(Math.max(1, (selectedWeek || 1) - 1))}
                 disabled={selectedWeek === 1}
-                className="px-4 py-2 bg-white rounded-lg shadow disabled:opacity-50"
+                className="btn btn-secondary btn-md on-light"
               >
                 ← Previous Week
               </button>
               <button
                 onClick={() => setSelectedWeek(Math.min(36, (selectedWeek || 1) + 1))}
                 disabled={selectedWeek === 36}
-                className="px-4 py-2 bg-white rounded-lg shadow disabled:opacity-50"
+                className="btn btn-secondary btn-md on-light"
               >
                 Next Week →
               </button>

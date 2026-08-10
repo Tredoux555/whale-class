@@ -260,7 +260,7 @@ export default function AllLoginsPage() {
     return (
       <div style={pageWrapStyle}>
         <p style={{ color: T.red, fontFamily: T.sans }}>Error: {error}</p>
-        <button style={btnGhostStyle} onClick={() => token && load(token)}>
+        <button className="btn btn-ghost btn-outline btn-sm" onClick={() => token && load(token)}>
           Retry
         </button>
       </div>
@@ -306,7 +306,7 @@ export default function AllLoginsPage() {
               agents. Tap any code to copy.
             </p>
           </div>
-          <button style={btnGhostStyle} onClick={() => router.push('/montree/super-admin')}>
+          <button className="btn btn-ghost btn-outline btn-sm" onClick={() => router.push('/montree/super-admin')}>
             ← Super-admin
           </button>
         </div>
@@ -341,7 +341,7 @@ export default function AllLoginsPage() {
               <button
                 key={r}
                 onClick={() => setRoleFilter(r)}
-                style={roleFilterPillStyle(roleFilter === r)}
+                className={`btn btn-sm btn-pill ${roleFilter === r ? 'btn-primary' : 'btn-secondary'}`}
               >
                 {r === 'all'
                   ? 'All'
@@ -633,7 +633,8 @@ function LoginRow(props: LoginRowProps) {
       </div>
       <button
         onClick={() => props.onCopy(props.id, props.code)}
-        style={codeChipStyle(justCopied)}
+        className={`btn btn-md ${justCopied ? 'btn-primary' : 'btn-gold'}`}
+        style={{ flex: '0 0 auto' }}
         title="Click to copy"
       >
         {justCopied ? '✓ Copied' : props.code}

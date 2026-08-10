@@ -784,7 +784,7 @@ export default function SentenceCardsPage() {
           {/* Print Button */}
           <button
             onClick={handlePrint}
-            className="mt-8 w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-4 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 text-lg"
+            className="btn btn-primary btn-lg btn-full on-light mt-8"
           >
             🖨️ Print / Save as PDF
           </button>

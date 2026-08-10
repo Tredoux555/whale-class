@@ -11,8 +11,7 @@ function CopyBtn({ text, label }) {
   const [c, setC] = useState(false);
   return (
     <button onClick={() => { navigator.clipboard.writeText(text); setC(true); setTimeout(() => setC(false), 2000); }}
-      className="px-3 py-1.5 rounded text-xs font-semibold transition-all"
-      style={{ background: c ? "rgba(46,204,113,0.2)" : "rgba(46,204,113,0.08)", border: `1px solid ${c ? "rgba(46,204,113,0.4)" : "rgba(46,204,113,0.15)"}`, color: c ? "#2ecc71" : "#8aaa9a" }}>
+      className={`btn btn-sm ${c ? "btn-primary" : "btn-ghost"}`}>
       {c ? "✓" : label || "📋"}
     </button>
   );
@@ -451,12 +450,7 @@ export default function GrowthEngine() {
             <div className="flex gap-2 overflow-x-auto pb-2">
               {EMAIL_SEQUENCE.map((e, i) => (
                 <button key={i} onClick={() => setSelectedEmail(i)}
-                  className="px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap"
-                  style={{
-                    background: selectedEmail === i ? "rgba(46,204,113,0.08)" : "rgba(255,255,255,0.02)",
-                    border: `1px solid ${selectedEmail === i ? "rgba(46,204,113,0.2)" : "rgba(255,255,255,0.04)"}`,
-                    color: selectedEmail === i ? "#2ecc71" : "#5a7a6a",
-                  }}>
+                  className={`btn btn-sm ${selectedEmail === i ? "btn-primary" : "btn-secondary"}`}>
                   Day {e.day}
                 </button>
               ))}

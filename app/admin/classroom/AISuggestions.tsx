@@ -105,7 +105,7 @@ export default function AISuggestions({ children, onSelectWork }: Props) {
       {/* Header */}
       <button 
         onClick={() => setExpanded(!expanded)}
-        className="w-full px-4 py-3 flex items-center justify-between bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 transition-colors"
+        className="btn btn-primary btn-lg btn-full on-light flex items-center justify-between"
       >
         <div className="flex items-center gap-2">
           <span className="text-xl">🧠</span>
@@ -125,10 +125,10 @@ export default function AISuggestions({ children, onSelectWork }: Props) {
                 <button
                   key={child.id}
                   onClick={() => setSelectedChild(child)}
-                  className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
+                  className={`btn btn-sm btn-pill on-light ${
                     selectedChild?.id === child.id
-                      ? 'bg-indigo-500 text-white shadow-md'
-                      : 'bg-white text-indigo-600 border border-indigo-200 hover:border-indigo-400'
+                      ? 'btn-primary'
+                      : 'btn-secondary'
                   }`}
                 >
                   {child.name}
@@ -186,7 +186,7 @@ export default function AISuggestions({ children, onSelectWork }: Props) {
                     {onSelectWork && (
                       <button
                         onClick={() => onSelectWork(rec.work_id, selectedChild.id, rec.work_name)}
-                        className="px-2 py-1 bg-indigo-500 text-white rounded text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                        className="btn btn-primary btn-sm on-light opacity-0 group-hover:opacity-100 flex-shrink-0"
                       >
                         + Assign
                       </button>

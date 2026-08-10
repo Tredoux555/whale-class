@@ -361,14 +361,7 @@ export default function ConversationsPage() {
         <p style={{ color: T.textSoft, marginBottom: 16 }}>{authError}</p>
         <button
           onClick={() => router.push('/montree/admin')}
-          style={{
-            padding: '10px 18px',
-            background: T.emeraldSoft,
-            border: T.cardBorder,
-            borderRadius: 8,
-            color: T.textSoft,
-            cursor: 'pointer',
-          }}
+          className="btn btn-secondary btn-md"
         >
           {t('meetingNotes.backToTracy' as TranslationKey)}
         </button>
@@ -453,17 +446,8 @@ function UnlockGate({
     <div>
       <button
         onClick={onBack}
-        style={{
-          background: 'transparent',
-          border: 'none',
-          color: T.textMuted,
-          cursor: 'pointer',
-          fontSize: 13,
-          marginBottom: 24,
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 6,
-        }}
+        className="btn btn-ghost btn-sm"
+        style={{ marginBottom: 24 }}
       >
         <ArrowLeft size={14} /> {t('common.back')}
       </button>
@@ -534,22 +518,7 @@ function UnlockGate({
         <button
           onClick={() => (isFirst ? onFirstSetup(pwd, confirm) : onUnlock(pwd))}
           disabled={busy || !pwd || (isFirst && !confirm)}
-          style={{
-            width: '100%',
-            padding: '12px 18px',
-            background: T.emerald,
-            color: '#062712',
-            border: 'none',
-            borderRadius: 10,
-            fontSize: 15,
-            fontWeight: 600,
-            cursor: busy ? 'wait' : 'pointer',
-            opacity: !pwd || (isFirst && !confirm) ? 0.55 : 1,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-          }}
+          className="btn btn-primary btn-md btn-full"
         >
           {busy && <Loader2 size={16} className="animate-spin" />}
           {isFirst
@@ -605,34 +574,14 @@ function ListView({
       >
         <button
           onClick={onBack}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: T.textMuted,
-            cursor: 'pointer',
-            fontSize: 13,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-          }}
+          className="btn btn-ghost btn-sm"
         >
           <ArrowLeft size={14} /> {t('meetingNotes.vaultTracyNav' as TranslationKey)}
         </button>
         <button
           onClick={onLock}
           title={t('meetingNotes.vaultLockTitle' as TranslationKey)}
-          style={{
-            background: 'transparent',
-            border: T.cardBorder,
-            color: T.textSoft,
-            padding: '6px 12px',
-            borderRadius: 8,
-            cursor: 'pointer',
-            fontSize: 12.5,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-          }}
+          className="btn btn-ghost btn-outline btn-sm"
         >
           <Lock size={13} /> {t('meetingNotes.vaultLock' as TranslationKey)}
         </button>
@@ -654,22 +603,8 @@ function ListView({
 
       <button
         onClick={onNew}
-        style={{
-          width: '100%',
-          padding: '14px 20px',
-          background: T.emerald,
-          color: '#062712',
-          border: 'none',
-          borderRadius: 12,
-          fontSize: 15,
-          fontWeight: 600,
-          cursor: 'pointer',
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 10,
-          marginBottom: 28,
-        }}
+        className="btn btn-primary btn-lg btn-full"
+        style={{ marginBottom: 28 }}
       >
         <Mic size={18} /> {t('meetingNotes.vaultNewConversation' as TranslationKey)}
       </button>
@@ -749,17 +684,8 @@ function DetailView({
     <div>
       <button
         onClick={onBack}
-        style={{
-          background: 'transparent',
-          border: 'none',
-          color: T.textMuted,
-          cursor: 'pointer',
-          fontSize: 13,
-          marginBottom: 20,
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 6,
-        }}
+        className="btn btn-ghost btn-sm"
+        style={{ marginBottom: 20 }}
       >
         <ArrowLeft size={14} /> {t('common.back')}
       </button>
@@ -889,18 +815,7 @@ function DetailView({
 
       <button
         onClick={onDelete}
-        style={{
-          background: 'transparent',
-          border: '1px solid rgba(239,68,68,0.30)',
-          color: '#f87171',
-          padding: '10px 16px',
-          borderRadius: 10,
-          cursor: 'pointer',
-          fontSize: 13,
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 8,
-        }}
+        className="btn btn-danger btn-soft btn-sm"
       >
         <Trash2 size={14} /> {t('common.delete')}
       </button>
@@ -1120,19 +1035,7 @@ function NewConversation({
         {!audioBlob && !recording && (
           <button
             onClick={startRecording}
-            style={{
-              padding: '14px 26px',
-              background: T.emerald,
-              color: '#062712',
-              border: 'none',
-              borderRadius: 999,
-              fontSize: 15,
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 10,
-            }}
+            className="btn btn-primary btn-lg btn-pill"
           >
             <Mic size={18} /> {t('meetingNotes.vaultStartRecording' as TranslationKey)}
           </button>
@@ -1152,19 +1055,7 @@ function NewConversation({
             </div>
             <button
               onClick={stopRecording}
-              style={{
-                padding: '12px 24px',
-                background: '#ef4444',
-                color: 'white',
-                border: 'none',
-                borderRadius: 999,
-                fontSize: 15,
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 10,
-              }}
+              className="btn btn-danger btn-lg btn-pill"
             >
               <MicOff size={18} /> {t('meetingNotes.vaultStop' as TranslationKey)}
             </button>
@@ -1186,19 +1077,7 @@ function NewConversation({
               <button
                 onClick={transcribeAudio}
                 disabled={transcribing}
-                style={{
-                  padding: '10px 18px',
-                  background: T.emerald,
-                  color: '#062712',
-                  border: 'none',
-                  borderRadius: 8,
-                  fontSize: 14,
-                  fontWeight: 600,
-                  cursor: transcribing ? 'wait' : 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                }}
+                className="btn btn-primary btn-md"
               >
                 {transcribing && <Loader2 size={14} className="animate-spin" />}
                 {t('meetingNotes.vaultTranscribeSummarize' as TranslationKey)}
@@ -1210,15 +1089,7 @@ function NewConversation({
                   setTranscript('');
                   setSummary('');
                 }}
-                style={{
-                  padding: '10px 18px',
-                  background: 'transparent',
-                  color: T.textSoft,
-                  border: T.cardBorder,
-                  borderRadius: 8,
-                  fontSize: 14,
-                  cursor: 'pointer',
-                }}
+                className="btn btn-ghost btn-outline btn-md"
               >
                 {t('meetingNotes.vaultReRecord' as TranslationKey)}
               </button>
@@ -1407,21 +1278,7 @@ function NewConversation({
       <button
         onClick={handleSave}
         disabled={saving}
-        style={{
-          width: '100%',
-          padding: '14px 18px',
-          background: T.emerald,
-          color: '#062712',
-          border: 'none',
-          borderRadius: 12,
-          fontSize: 15,
-          fontWeight: 600,
-          cursor: saving ? 'wait' : 'pointer',
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 10,
-        }}
+        className="btn btn-primary btn-lg btn-full"
       >
         {saving && <Loader2 size={16} className="animate-spin" />}
         <Lock size={16} /> {t('meetingNotes.vaultEncryptSave' as TranslationKey)}

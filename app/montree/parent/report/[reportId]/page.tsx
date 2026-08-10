@@ -313,7 +313,7 @@ export default function ParentReportPage() {
           {/* Always the localized string — never the raw English server
               `error` text, which produced a mixed-locale error screen. */}
           <p style={{ color: '#f87171', marginBottom: "1rem" }}>{t('parentReport.notFound')}</p>
-          <Link href="/montree/parent/dashboard" style={{ color: T.emerald, textDecoration: "underline", cursor: "pointer" }}>
+          <Link href="/montree/parent/dashboard" className="btn btn-ghost btn-sm">
             ← {t('common.backToDashboard')}
           </Link>
         </div>
@@ -337,7 +337,7 @@ export default function ParentReportPage() {
             <MontreeLogo size={26} />
             <span style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontSize: 15, fontWeight: 600, letterSpacing: -0.2 }}>Montree</span>
           </Link>
-          <Link href="/montree/parent/dashboard" style={{ color: T.textSecondary, fontSize: 12, fontWeight: 500, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <Link href="/montree/parent/dashboard" className="btn btn-ghost btn-sm">
             <ArrowLeft size={13} strokeWidth={2} /> {t('parentReport.back')}
           </Link>
           <LanguageToggle />

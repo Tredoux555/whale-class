@@ -129,7 +129,7 @@ export default function CurriculumPicker({
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="btn btn-ghost btn-icon btn-sm on-light absolute right-2 top-1/2 -translate-y-1/2"
                 >
                   ✕
                 </button>
@@ -214,13 +214,13 @@ export default function CurriculumPicker({
                         <button
                           onClick={handleAddCustomWork}
                           disabled={!customWorkName.trim()}
-                          className="flex-1 py-2 bg-amber-500 text-white text-sm rounded-lg font-medium disabled:opacity-50"
+                          className="btn btn-gold btn-sm flex-1"
                         >
                           Add Work
                         </button>
                         <button
                           onClick={() => { setShowAddCustom(false); setInsertAfterIndex(-1); }}
-                          className="px-3 py-2 bg-slate-200 text-slate-600 text-sm rounded-lg"
+                          className="btn btn-secondary btn-sm on-light"
                         >
                           Cancel
                         </button>
@@ -244,13 +244,13 @@ export default function CurriculumPicker({
                 <div className="flex gap-2">
                   <button
                     onClick={handleAddCustomWork}
-                    className="flex-1 py-2 bg-amber-500 text-white text-sm rounded-lg font-medium"
+                    className="btn btn-gold btn-sm flex-1"
                   >
                     Add at Beginning
                   </button>
                   <button
                     onClick={() => { setShowAddCustom(false); setInsertAfterIndex(-1); }}
-                    className="px-3 py-2 bg-slate-200 text-slate-600 text-sm rounded-lg"
+                    className="btn btn-secondary btn-sm on-light"
                   >
                     Cancel
                   </button>
@@ -265,14 +265,14 @@ export default function CurriculumPicker({
             <div className="flex gap-1 flex-wrap mb-2">
               <button
                 onClick={() => { setShowAddCustom(true); setInsertAfterIndex(-1); }}
-                className="px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded-lg hover:bg-amber-200"
+                className="btn btn-gold btn-sm"
               >
                 + At Beginning
               </button>
               {works.length > 0 && (
                 <button
                   onClick={() => { setShowAddCustom(true); setInsertAfterIndex(works.length - 1); }}
-                  className="px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded-lg hover:bg-amber-200"
+                  className="btn btn-gold btn-sm"
                 >
                   + At End
                 </button>

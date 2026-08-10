@@ -265,13 +265,13 @@ export default function VideoManagerPage() {
           <div className="flex gap-3">
             <button
               onClick={() => setShowUpload(true)}
-              className="px-4 py-2 bg-green-600 rounded-lg hover:bg-green-500 transition-colors font-medium"
+              className="btn btn-primary btn-md"
             >
               ➕ Upload
             </button>
             <Link
               href="/admin"
-              className="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+              className="btn btn-secondary btn-md"
             >
               ← Back to Admin
             </Link>
@@ -290,7 +290,7 @@ export default function VideoManagerPage() {
                 <button
                   key={video.id}
                   onClick={() => startEdit(video)}
-                  className="px-3 py-1 bg-red-800 hover:bg-red-700 rounded-lg text-sm"
+                  className="btn btn-danger btn-sm"
                 >
                   {video.title.slice(0, 25)}{video.title.length > 25 ? '...' : ''}
                 </button>
@@ -340,10 +340,10 @@ export default function VideoManagerPage() {
               <button
                 key={tab}
                 onClick={() => setMediaFilter(tab)}
-                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                className={`btn btn-sm ${
                   mediaFilter === tab
-                    ? 'bg-cyan-600 text-white'
-                    : 'text-gray-400 hover:text-white'
+                    ? 'btn-primary'
+                    : 'btn-ghost'
                 }`}
               >
                 {tab === 'all' ? `All (${videos.length})` :
@@ -363,13 +363,13 @@ export default function VideoManagerPage() {
             />
             <button
               onClick={fetchVideos}
-              className="px-4 py-2 bg-cyan-600 rounded-lg hover:bg-cyan-500"
+              className="btn btn-primary btn-md"
             >
               🔍
             </button>
             <button
               onClick={() => { setSearch(''); fetchVideos(); }}
-              className="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600"
+              className="btn btn-secondary btn-md"
             >
               Clear
             </button>
@@ -486,14 +486,14 @@ export default function VideoManagerPage() {
                     setUploadTitle('');
                     setUploadWeek('');
                   }}
-                  className="flex-1 px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600"
+                  className="btn btn-secondary btn-md flex-1"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={uploadVideo}
                   disabled={!uploadFile || !uploadTitle || uploading}
-                  className="flex-1 px-4 py-2 bg-green-600 rounded-lg hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="btn btn-primary btn-md flex-1"
                 >
                   {uploading
                     ? uploadProgress === -1
@@ -575,19 +575,19 @@ export default function VideoManagerPage() {
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => setEditingVideo(null)}
-                  className="flex-1 px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600"
+                  className="btn btn-secondary btn-md flex-1"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={() => deleteVideo(editingVideo.id, editingVideo.title)}
-                  className="px-4 py-2 bg-red-600 rounded-lg hover:bg-red-500"
+                  className="btn btn-danger btn-md"
                 >
                   🗑️ Delete
                 </button>
                 <button
                   onClick={updateVideo}
-                  className="flex-1 px-4 py-2 bg-cyan-600 rounded-lg hover:bg-cyan-500"
+                  className="btn btn-primary btn-md flex-1"
                 >
                   Save Changes
                 </button>
@@ -689,13 +689,13 @@ export default function VideoManagerPage() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => startEdit(video)}
-                        className="flex-1 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm"
+                        className="btn btn-secondary btn-sm flex-1"
                       >
                         ✏️ Edit
                       </button>
                       <button
                         onClick={() => deleteVideo(video.id, video.title)}
-                        className="px-3 py-2 bg-red-900 hover:bg-red-800 rounded-lg text-sm"
+                        className="btn btn-danger btn-sm"
                       >
                         🗑️
                       </button>

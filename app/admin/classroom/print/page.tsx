@@ -121,7 +121,7 @@ function PrintContent() {
       <div className="no-print fixed top-0 left-0 right-0 bg-white shadow-lg z-50 border-b">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={() => window.history.back()} className="p-2 hover:bg-gray-100 rounded-lg">
+            <button onClick={() => window.history.back()} className="btn btn-ghost btn-sm on-light">
               ← Back
             </button>
             <div>
@@ -147,8 +147,8 @@ function PrintContent() {
                     window.history.replaceState({}, '', url);
                     window.location.reload();
                   }}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                    mode === m.id ? 'bg-white shadow text-blue-600' : 'text-gray-600 hover:text-gray-900'
+                  className={`btn btn-sm on-light ${
+                    mode === m.id ? 'btn-secondary' : 'btn-ghost'
                   }`}
                 >
                   {m.label}
@@ -156,11 +156,11 @@ function PrintContent() {
               ))}
             </div>
             
-            <a href="/admin/weekly-planning" className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium">
+            <a href="/admin/weekly-planning" className="btn btn-primary btn-md">
               📤 Upload
             </a>
-            
-            <button onClick={handlePrint} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+
+            <button onClick={handlePrint} className="btn btn-primary btn-md">
               🖨️ Print
             </button>
           </div>

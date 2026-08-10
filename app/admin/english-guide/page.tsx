@@ -46,7 +46,7 @@ export default function EnglishGuidePage() {
             </div>
             <button
               onClick={() => router.back()}
-              className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg font-medium transition"
+              className="btn btn-secondary btn-md"
             >
               ← Back
             </button>
@@ -305,7 +305,7 @@ export default function EnglishGuidePage() {
             <div className="bg-gradient-to-r from-teal-500 to-emerald-600 rounded-xl p-6 text-white text-center relative">
               <button
                 onClick={() => window.print()}
-                className="absolute top-4 right-4 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg font-medium transition no-print flex items-center gap-2"
+                className="btn btn-secondary btn-md absolute top-4 right-4 no-print"
               >
                 🖨️ Print PDF
               </button>
@@ -692,16 +692,16 @@ export default function EnglishGuidePage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setShowVocabGuide(false)}
-                  className={`flex-1 py-3 px-4 rounded-lg font-medium transition ${
-                    !showVocabGuide ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  className={`btn btn-lg flex-1 on-light ${
+                    !showVocabGuide ? 'btn-primary' : 'btn-secondary'
                   }`}
                 >
                   📋 First 100 Words
                 </button>
                 <button
                   onClick={() => setShowVocabGuide(true)}
-                  className={`flex-1 py-3 px-4 rounded-lg font-medium transition ${
-                    showVocabGuide ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  className={`btn btn-lg flex-1 on-light ${
+                    showVocabGuide ? 'btn-gold' : 'btn-secondary'
                   }`}
                 >
                   🧺 Shopping Guide
@@ -791,7 +791,7 @@ export default function EnglishGuidePage() {
                             href={basket.taobaoLink}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 mt-2 px-3 py-1 bg-orange-500 text-white text-xs font-medium rounded-full hover:bg-orange-600 transition"
+                            className="btn btn-gold btn-sm btn-pill mt-2"
                           >
                             📍 Search Taobao
                           </a>

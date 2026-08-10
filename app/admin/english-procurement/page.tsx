@@ -90,64 +90,64 @@ export default function EnglishProcurementPage() {
         <div className="flex flex-wrap gap-2 mb-6">
           <button
             onClick={() => { setViewMode('sequence'); setSelectedCategory(null); setSelectedWork(null); }}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              viewMode === 'sequence' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-gray-200 hover:bg-slate-600'
+            className={`btn btn-md ${
+              viewMode === 'sequence' ? 'btn-primary' : 'btn-secondary'
             }`}
           >
             📚 Curriculum Sequence
           </button>
           <button
             onClick={() => { setViewMode('shopping'); setSelectedCategory(null); setSelectedWork(null); }}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              viewMode === 'shopping' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-gray-200 hover:bg-slate-600'
+            className={`btn btn-md ${
+              viewMode === 'shopping' ? 'btn-primary' : 'btn-secondary'
             }`}
           >
             🛒 Shopping List ({filteredMaterials.length})
           </button>
           <button
             onClick={() => { setViewMode('objects'); setSelectedCategory(null); setSelectedWork(null); }}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              viewMode === 'objects' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-gray-200 hover:bg-slate-600'
+            className={`btn btn-md ${
+              viewMode === 'objects' ? 'btn-primary' : 'btn-secondary'
             }`}
           >
             🔤 Objects A-Z
           </button>
           <button
             onClick={() => { setViewMode('words'); setSelectedCategory(null); setSelectedWork(null); }}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              viewMode === 'words' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-gray-200 hover:bg-slate-600'
+            className={`btn btn-md ${
+              viewMode === 'words' ? 'btn-primary' : 'btn-secondary'
             }`}
           >
             📝 Word Families
           </button>
           <button
             onClick={() => { setViewMode('phonograms'); setSelectedCategory(null); setSelectedWork(null); }}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              viewMode === 'phonograms' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-gray-200 hover:bg-slate-600'
+            className={`btn btn-md ${
+              viewMode === 'phonograms' ? 'btn-primary' : 'btn-secondary'
             }`}
           >
             🔊 Phonograms
           </button>
           <button
             onClick={() => { setViewMode('grammar'); setSelectedCategory(null); setSelectedWork(null); }}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              viewMode === 'grammar' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-gray-200 hover:bg-slate-600'
+            className={`btn btn-md ${
+              viewMode === 'grammar' ? 'btn-primary' : 'btn-secondary'
             }`}
           >
             📋 Grammar Boxes
           </button>
           <button
             onClick={() => { setViewMode('shelves'); setSelectedCategory(null); setSelectedWork(null); }}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              viewMode === 'shelves' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-gray-200 hover:bg-slate-600'
+            className={`btn btn-md ${
+              viewMode === 'shelves' ? 'btn-primary' : 'btn-secondary'
             }`}
           >
             🗄️ Shelf Layout
           </button>
           <button
             onClick={() => { setViewMode('checklist'); setSelectedCategory(null); setSelectedWork(null); }}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              viewMode === 'checklist' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-gray-200 hover:bg-slate-600'
+            className={`btn btn-md ${
+              viewMode === 'checklist' ? 'btn-primary' : 'btn-secondary'
             }`}
           >
             ✅ Assessment
@@ -166,7 +166,7 @@ export default function EnglishProcurementPage() {
           <a
             href="/docs/1688_Procurement_Guide.pdf"
             download="1688_Procurement_Guide.pdf"
-            className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition ml-auto"
+            className="btn btn-primary btn-md ml-auto"
           >
             📄 Download Guide
           </a>
@@ -174,7 +174,7 @@ export default function EnglishProcurementPage() {
             href="https://www.1688.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition"
+            className="btn btn-gold btn-md"
           >
             🔗 Open 1688.com
           </a>
@@ -245,10 +245,10 @@ export default function EnglishProcurementPage() {
                 <button
                   key={letter}
                   onClick={() => setSelectedLetter(selectedLetter === letter ? null : letter)}
-                  className={`w-10 h-10 rounded-lg font-bold transition ${
-                    selectedLetter === letter 
-                      ? 'bg-indigo-600 text-white' 
-                      : 'bg-slate-600 text-gray-200 hover:bg-slate-500'
+                  className={`btn btn-icon btn-md ${
+                    selectedLetter === letter
+                      ? 'btn-primary'
+                      : 'btn-secondary'
                   }`}
                 >
                   {letter.toUpperCase()}
@@ -256,10 +256,10 @@ export default function EnglishProcurementPage() {
               ))}
               <button
                 onClick={() => setSelectedLetter('all')}
-                className={`px-4 h-10 rounded-lg font-medium transition ${
-                  selectedLetter === 'all' 
-                    ? 'bg-indigo-600 text-white' 
-                    : 'bg-slate-600 text-gray-200 hover:bg-slate-500'
+                className={`btn btn-md ${
+                  selectedLetter === 'all'
+                    ? 'btn-primary'
+                    : 'btn-secondary'
                 }`}
               >
                 Show All
@@ -312,10 +312,10 @@ export default function EnglishProcurementPage() {
                 <button
                   key={vowel}
                   onClick={() => setSelectedLetter(vowel)}
-                  className={`px-4 py-2 rounded-t-lg font-medium transition ${
-                    selectedLetter === vowel 
-                      ? 'bg-indigo-600 text-white' 
-                      : 'bg-slate-600 text-gray-200 hover:bg-slate-500'
+                  className={`btn btn-md ${
+                    selectedLetter === vowel
+                      ? 'btn-primary'
+                      : 'btn-secondary'
                   }`}
                 >
                   {vowel}
@@ -375,10 +375,10 @@ export default function EnglishProcurementPage() {
                 <button
                   key={tab.id}
                   onClick={() => setSelectedPhonogramType(tab.id)}
-                  className={`px-3 py-1 rounded-lg text-sm font-medium transition ${
-                    selectedPhonogramType === tab.id 
-                      ? 'bg-green-600 text-white' 
-                      : 'bg-slate-600 text-gray-200 hover:bg-slate-500'
+                  className={`btn btn-sm ${
+                    selectedPhonogramType === tab.id
+                      ? 'btn-primary'
+                      : 'btn-secondary'
                   }`}
                 >
                   {tab.label}

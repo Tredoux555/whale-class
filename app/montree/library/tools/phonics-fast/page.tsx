@@ -155,7 +155,7 @@ export default function PhonicsHubPage() {
             </div>
             <button
               onClick={() => setExportBanner(0)}
-              className="text-emerald-400 hover:text-emerald-600 text-lg leading-none"
+              className="btn btn-ghost btn-icon btn-sm on-light text-lg"
             >
               ✕
             </button>
@@ -378,7 +378,7 @@ function PhaseTab({ phase }: { phase: PhonicsPhase }) {
           <button
             onClick={handlePrintAll}
             disabled={printing}
-            className="px-6 py-3 bg-[#0D3330] text-white rounded-xl font-bold text-sm shadow-lg hover:bg-[#1a4a47] transition-all disabled:opacity-50 disabled:cursor-wait flex items-center gap-2"
+            className="btn btn-primary btn-lg on-light"
           >
             {printing ? (
               <>⏳ Generating...</>
@@ -444,11 +444,7 @@ function CopyableWordList({ phase }: { phase: PhonicsPhase }) {
         <h3 className="font-bold text-gray-700">Word List — {allWords.length} words</h3>
         <button
           onClick={handleCopy}
-          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-            copied
-              ? 'bg-emerald-600 text-white'
-              : 'bg-[#0D3330] text-white hover:bg-[#1a4a47]'
-          }`}
+          className="btn btn-primary btn-md on-light"
         >
           {copied ? '✓ Copied!' : '📋 Copy All'}
         </button>

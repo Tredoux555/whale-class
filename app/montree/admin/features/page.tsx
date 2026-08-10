@@ -147,7 +147,7 @@ export default function FeaturesAdminPage() {
           </p>
           <button
             onClick={() => router.push('/montree/admin')}
-            style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 10, padding: '10px 18px', color: '#94a3b8', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+            className="btn btn-secondary btn-md"
           >
             ← {t('common.back' as TranslationKey)}
           </button>
@@ -172,7 +172,7 @@ export default function FeaturesAdminPage() {
           </p>
           <button
             onClick={() => router.push('/montree/admin/classrooms')}
-            style={{ background: '#10b981', border: 'none', borderRadius: 10, padding: '10px 18px', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+            className="btn btn-primary btn-md"
           >
             {t('features.openClassrooms' as TranslationKey)}
           </button>
@@ -197,7 +197,7 @@ export default function FeaturesAdminPage() {
         </div>
         <button
           onClick={() => router.push('/montree/admin')}
-          style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '8px 12px', color: '#94a3b8', cursor: 'pointer', fontSize: 13 }}
+          className="btn btn-secondary btn-sm"
         >
           ← {t('common.back' as TranslationKey)}
         </button>

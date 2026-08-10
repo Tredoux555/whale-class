@@ -160,7 +160,7 @@ export default function AgentCodesPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
-      <Link href="/montree/agent/dashboard" className="text-emerald-300/70 hover:text-emerald-200 text-xs">
+      <Link href="/montree/agent/dashboard" className="btn btn-ghost btn-sm">
         ← Back to dashboard
       </Link>
       <h1 className="mt-2 text-3xl sm:text-4xl font-light text-white tracking-tight">Codes</h1>
@@ -185,13 +185,13 @@ export default function AgentCodesPage() {
                 </code>
                 <button
                   onClick={() => copy(revealed.code)}
-                  className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-sm transition-colors"
+                  className="btn btn-primary btn-md"
                 >
                   {copied ? '✓ Copied' : 'Copy'}
                 </button>
                 <button
                   onClick={() => copy(`Try Montree free for a month: https://montree.xyz/montree/try?ref=${revealed.code}`)}
-                  className="px-3 py-2.5 bg-white/10 hover:bg-white/20 text-white font-medium rounded-lg text-sm transition-colors"
+                  className="btn btn-secondary btn-md"
                 >
                   Copy share link
                 </button>
@@ -202,7 +202,7 @@ export default function AgentCodesPage() {
             </div>
             <button
               onClick={() => setRevealed(null)}
-              className="text-slate-400 hover:text-white text-sm"
+              className="btn btn-ghost btn-icon btn-sm"
               aria-label="Dismiss"
             >
               ✕
@@ -238,7 +238,7 @@ export default function AgentCodesPage() {
           <button
             type="submit"
             disabled={generating || defaultPct === null || pitchLabel.trim().length < 3}
-            className="px-4 py-3 sm:py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-base sm:text-sm disabled:opacity-50 transition-colors"
+            className="btn btn-primary btn-md"
           >
             {generating ? 'Generating…' : 'Generate code'}
           </button>
@@ -257,10 +257,10 @@ export default function AgentCodesPage() {
           <button
             key={s}
             onClick={() => setStatusFilter(s)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`btn btn-sm ${
               statusFilter === s
-                ? 'bg-emerald-500 text-white'
-                : 'bg-white/5 text-white/60 hover:text-white border border-white/10'
+                ? 'btn-primary'
+                : 'btn-secondary'
             }`}
           >
             {s === 'all' ? `All (${codes?.length || 0})` : s === 'pending' ? `Pending (${counts.pending})` : s === 'redeemed' ? `Redeemed (${counts.redeemed})` : s.charAt(0).toUpperCase() + s.slice(1)}
@@ -307,7 +307,7 @@ export default function AgentCodesPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => copy(c.code)}
-                  className="px-3 py-2.5 sm:py-1.5 bg-white/5 hover:bg-white/10 text-white/80 text-xs rounded-lg border border-white/10"
+                  className="btn btn-secondary btn-sm"
                   title="Copy code"
                 >
                   📋 Copy
@@ -315,7 +315,7 @@ export default function AgentCodesPage() {
                 {c.redeemed_by_school_id && (
                   <Link
                     href={`/montree/agent/schools/${c.redeemed_by_school_id}`}
-                    className="px-3 py-2.5 sm:py-1.5 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 text-xs rounded-lg border border-emerald-500/30"
+                    className="btn btn-secondary btn-sm"
                   >
                     School →
                   </Link>
@@ -324,7 +324,7 @@ export default function AgentCodesPage() {
                   <button
                     onClick={() => revoke(c.id, c.code)}
                     disabled={revokingId === c.id}
-                    className="px-3 py-2.5 sm:py-1.5 bg-red-500/15 hover:bg-red-500/25 text-red-300 text-xs rounded-lg border border-red-500/30 disabled:opacity-50"
+                    className="btn btn-danger btn-soft btn-sm"
                   >
                     {revokingId === c.id ? '…' : 'Revoke'}
                   </button>

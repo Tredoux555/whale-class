@@ -357,23 +357,8 @@ export default function ParentMessagesPage() {
       {/* Floating compose button */}
       <button
         onClick={() => setComposeOpen(true)}
-        style={{
-          position: 'fixed',
-          right: 24,
-          bottom: 24,
-          zIndex: 30,
-          width: 56,
-          height: 56,
-          borderRadius: '50%',
-          background: `linear-gradient(135deg, ${T.emerald}, ${T.emeraldDeep})`,
-          border: 'none',
-          color: '#0a1a0f',
-          cursor: 'pointer',
-          boxShadow: '0 12px 32px rgba(52,211,153,0.35)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
+        className="btn btn-primary btn-icon btn-lg btn-round"
+        style={{ position: 'fixed', right: 24, bottom: 24, zIndex: 30 }}
         aria-label={t('parentMessages.newThread') || 'New conversation'}
       >
         <Plus size={24} strokeWidth={2} />
@@ -498,7 +483,7 @@ function ComposeModal({ onClose, onSent }: { onClose: () => void; onSent: (threa
           <h2 style={{ margin: 0, fontFamily: T.serif, fontSize: 20, fontWeight: 700, color: T.textPrimary }}>
             {t('parentMessages.newThread') || 'New conversation'}
           </h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: T.textMuted, cursor: 'pointer' }}>
+          <button onClick={onClose} className="btn btn-ghost btn-icon btn-sm">
             <X size={20} strokeWidth={1.75} />
           </button>
         </div>
@@ -522,16 +507,7 @@ function ComposeModal({ onClose, onSent }: { onClose: () => void; onSent: (threa
                     <button
                       key={b.child_id}
                       onClick={() => { setChildId(b.child_id); setRecipient(null); }}
-                      style={{
-                        padding: '8px 14px',
-                        borderRadius: 999,
-                        fontSize: 13,
-                        fontWeight: 600,
-                        border: 'none',
-                        cursor: 'pointer',
-                        background: childId === b.child_id ? T.emerald : T.card,
-                        color: childId === b.child_id ? '#0a1a0f' : T.textPrimary,
-                      }}
+                      className={`btn btn-sm btn-pill ${childId === b.child_id ? 'btn-primary' : 'btn-secondary'}`}
                     >
                       {b.child_name}
                     </button>
@@ -650,17 +626,7 @@ function ComposeModal({ onClose, onSent }: { onClose: () => void; onSent: (threa
                 <button
                   onClick={handleSend}
                   disabled={sending || !body.trim()}
-                  style={{
-                    padding: '14px 18px',
-                    borderRadius: 12,
-                    background: `linear-gradient(135deg, ${T.emerald}, ${T.emeraldDeep})`,
-                    border: 'none',
-                    color: '#0a1a0f',
-                    fontSize: 15,
-                    fontWeight: 700,
-                    cursor: sending || !body.trim() ? 'not-allowed' : 'pointer',
-                    opacity: sending || !body.trim() ? 0.5 : 1,
-                  }}
+                  className="btn btn-primary btn-md"
                 >
                   {sending ? (t('parentMessages.sending') || 'Sending…') : (t('parentMessages.send') || 'Send')}
                 </button>

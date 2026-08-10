@@ -174,7 +174,7 @@ export default function CommunityAdminPage() {
             className="w-full px-3 py-2 border border-gray-200 rounded-lg mb-3"
             onKeyDown={e => e.key === 'Enter' && setAuthenticated(true)}
           />
-          <button onClick={() => setAuthenticated(true)} className="w-full py-2 bg-[#0D3330] text-white rounded-lg font-medium">
+          <button onClick={() => setAuthenticated(true)} className="btn btn-primary btn-md btn-full on-light">
             Enter
           </button>
         </div>
@@ -191,16 +191,16 @@ export default function CommunityAdminPage() {
             <h1 className="text-xl font-bold mt-1">Community Works Moderation</h1>
           </div>
           <div className="flex gap-2">
-            <button onClick={handleSeed} disabled={seeding} className="px-3 py-1.5 bg-amber-600 rounded-lg text-sm hover:bg-amber-700 disabled:opacity-50">
+            <button onClick={handleSeed} disabled={seeding} className="btn btn-gold btn-sm">
               {seeding ? 'Seeding...' : 'Seed 329 Works'}
             </button>
-            <button onClick={handleMigrateSequence} disabled={seeding} className="px-3 py-1.5 bg-blue-600 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50">
+            <button onClick={handleMigrateSequence} disabled={seeding} className="btn btn-primary btn-sm">
               Fix Sequence
             </button>
-            <button onClick={handleBackup} disabled={backingUp} className="px-3 py-1.5 bg-emerald-600 rounded-lg text-sm hover:bg-emerald-700 disabled:opacity-50">
+            <button onClick={handleBackup} disabled={backingUp} className="btn btn-primary btn-sm">
               {backingUp ? 'Backing up...' : 'Create Backup'}
             </button>
-            <Link href="/montree/library" className="px-3 py-1.5 bg-white/10 rounded-lg text-sm hover:bg-white/20">
+            <Link href="/montree/library" className="btn btn-secondary btn-sm">
               View Library
             </Link>
           </div>
@@ -220,8 +220,8 @@ export default function CommunityAdminPage() {
             <button
               key={status}
               onClick={() => setStatusFilter(status)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium capitalize ${
-                statusFilter === status ? 'bg-[#0D3330] text-white' : 'bg-white text-gray-600 border border-gray-200'
+              className={`btn btn-md on-light capitalize ${
+                statusFilter === status ? 'btn-primary' : 'btn-secondary'
               }`}
             >
               {status}
@@ -318,7 +318,7 @@ export default function CommunityAdminPage() {
                   <button
                     onClick={() => handleGenerateGuide(selectedWork.id)}
                     disabled={generatingGuide}
-                    className="px-3 py-1 bg-emerald-500 text-white rounded-lg text-xs font-medium disabled:opacity-50"
+                    className="btn btn-primary btn-sm on-light"
                   >
                     {generatingGuide ? 'Generating...' : selectedWork.ai_guide ? 'Regenerate' : 'Generate Guide'}
                   </button>
@@ -334,23 +334,23 @@ export default function CommunityAdminPage() {
               {/* Action buttons */}
               <div className="flex gap-2 mt-4">
                 {selectedWork.status !== 'approved' && (
-                  <button onClick={() => handleAction(selectedWork.id, 'approved')} className="flex-1 py-2 bg-emerald-500 text-white rounded-lg text-sm font-medium">
+                  <button onClick={() => handleAction(selectedWork.id, 'approved')} className="btn btn-primary btn-md flex-1 on-light">
                     Approve
                   </button>
                 )}
                 {selectedWork.status !== 'rejected' && (
-                  <button onClick={() => handleAction(selectedWork.id, 'rejected')} className="flex-1 py-2 bg-red-500 text-white rounded-lg text-sm font-medium">
+                  <button onClick={() => handleAction(selectedWork.id, 'rejected')} className="btn btn-danger btn-md flex-1 on-light">
                     Reject
                   </button>
                 )}
                 {selectedWork.status !== 'flagged' && (
-                  <button onClick={() => handleAction(selectedWork.id, 'flagged')} className="flex-1 py-2 bg-amber-500 text-white rounded-lg text-sm font-medium">
+                  <button onClick={() => handleAction(selectedWork.id, 'flagged')} className="btn btn-gold btn-md flex-1 on-light">
                     Flag
                   </button>
                 )}
               </div>
 
-              <button onClick={() => handleDelete(selectedWork.id)} className="w-full mt-2 py-2 text-red-500 text-sm hover:text-red-700">
+              <button onClick={() => handleDelete(selectedWork.id)} className="btn btn-danger btn-soft btn-md btn-full on-light mt-2">
                 Delete Permanently
               </button>
             </div>

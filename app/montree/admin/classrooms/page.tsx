@@ -204,21 +204,7 @@ export default function ClassroomsPage() {
             href="https://montree.xyz/pricing"
             target="_blank"
             rel="noopener noreferrer"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '10px 18px',
-              background: 'rgba(232,201,106,0.10)',
-              color: '#E8C96A',
-              border: '1px solid rgba(232,201,106,0.30)',
-              borderRadius: 999,
-              fontFamily: T.sans,
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: 'pointer',
-              textDecoration: 'none',
-            }}
+            className="btn btn-gold btn-md btn-pill"
             title={t('admin.classrooms.upgradeTitle')}
           >
             <Plus size={16} strokeWidth={2.25} />
@@ -227,20 +213,7 @@ export default function ClassroomsPage() {
         ) : (
           <button
             onClick={() => openClassroomModal()}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '10px 18px',
-              background: T.emerald,
-              color: '#0a1a0f',
-              border: 'none',
-              borderRadius: 999,
-              fontFamily: T.sans,
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
+            className="btn btn-primary btn-md btn-pill"
           >
             <Plus size={16} strokeWidth={2.25} />
             {t('admin.addClassroom')}
@@ -268,16 +241,7 @@ export default function ClassroomsPage() {
           </p>
           <button
             onClick={() => openClassroomModal()}
-            style={{
-              padding: '12px 22px',
-              background: T.emerald,
-              color: '#0a1a0f',
-              border: 'none',
-              borderRadius: 999,
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
+            className="btn btn-primary btn-md btn-pill"
           >
             + {t('admin.addClassroom')}
           </button>
@@ -545,16 +509,7 @@ export default function ClassroomsPage() {
                   <button
                     key={icon}
                     onClick={() => setClassroomForm((f) => ({ ...f, icon }))}
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 10,
-                      background:
-                        classroomForm.icon === icon ? T.emerald : 'rgba(0,0,0,0.30)',
-                      border: 'none',
-                      fontSize: 20,
-                      cursor: 'pointer',
-                    }}
+                    className={`btn btn-icon btn-md ${classroomForm.icon === icon ? 'btn-primary' : 'btn-secondary'}`}
                   >
                     {icon}
                   </button>
@@ -601,37 +556,16 @@ export default function ClassroomsPage() {
             <div style={{ display: 'flex', gap: 10 }}>
               <button
                 onClick={() => setShowClassroomModal(false)}
-                style={{
-                  flex: 1,
-                  padding: '12px 18px',
-                  background: 'rgba(255,255,255,0.06)',
-                  color: T.textPrimary,
-                  border: '1px solid rgba(255,255,255,0.15)',
-                  borderRadius: 999,
-                  fontFamily: T.sans,
-                  fontSize: 14,
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                }}
+                className="btn btn-secondary btn-md btn-pill"
+                style={{ flex: 1 }}
               >
                 {t('admin.modal.cancel')}
               </button>
               <button
                 onClick={saveClassroom}
                 disabled={saving || !classroomForm.name.trim()}
-                style={{
-                  flex: 1,
-                  padding: '12px 18px',
-                  background: T.emerald,
-                  color: '#0a1a0f',
-                  border: 'none',
-                  borderRadius: 999,
-                  fontFamily: T.sans,
-                  fontSize: 14,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  opacity: saving || !classroomForm.name.trim() ? 0.5 : 1,
-                }}
+                className="btn btn-primary btn-md btn-pill"
+                style={{ flex: 1 }}
               >
                 {saving ? t('admin.modal.saving') : t('admin.modal.save')}
               </button>

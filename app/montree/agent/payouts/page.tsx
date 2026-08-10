@@ -358,7 +358,7 @@ export default function AgentPayoutsPage() {
           </p>
           <button
             onClick={() => openManualModal(unsupportedCountry)}
-            className="mt-4 inline-block px-4 py-3 sm:py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-base sm:text-sm transition-colors"
+            className="btn btn-primary btn-md mt-4"
           >
             Add bank details for manual wire
           </button>
@@ -403,7 +403,7 @@ export default function AgentPayoutsPage() {
                       setManualError(null);
                       setManualModalOpen(true);
                     }}
-                    className="text-emerald-300/80 hover:text-emerald-200 text-xs underline underline-offset-2"
+                    className="btn btn-ghost btn-sm"
                   >
                     Update bank details →
                   </button>
@@ -451,7 +451,7 @@ export default function AgentPayoutsPage() {
                 </p>
                 <button
                   onClick={() => openManualModal(null)}
-                  className="mt-3 inline-block px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-sm transition-colors"
+                  className="btn btn-primary btn-md mt-3"
                 >
                   Add bank details
                 </button>
@@ -475,7 +475,7 @@ export default function AgentPayoutsPage() {
                 <button
                   onClick={refreshStatus}
                   disabled={refreshLoading}
-                  className="text-emerald-300/80 hover:text-emerald-200 text-xs disabled:opacity-50"
+                  className="btn btn-ghost btn-sm"
                 >
                   {refreshLoading ? 'Refreshing…' : '↻ Refresh from Stripe'}
                 </button>
@@ -574,7 +574,7 @@ export default function AgentPayoutsPage() {
                 </p>
                 <button
                   onClick={() => openManualModal(null)}
-                  className="mt-3 text-emerald-300/80 hover:text-emerald-200 text-xs underline underline-offset-2"
+                  className="btn btn-ghost btn-sm mt-3"
                 >
                   My country isn&apos;t here — set me up with manual wire instead →
                 </button>
@@ -587,7 +587,7 @@ export default function AgentPayoutsPage() {
                 <button
                   onClick={generateLink}
                   disabled={linkLoading || (!data.stripe_connect_account_id && !selectedCountry)}
-                  className="inline-block px-4 py-3 sm:py-2 bg-amber-500 hover:bg-amber-400 text-white font-medium rounded-lg text-base sm:text-sm disabled:opacity-50 transition-colors"
+                  className="btn btn-gold btn-md"
                 >
                   {linkLoading
                     ? 'Generating…'
@@ -634,7 +634,7 @@ export default function AgentPayoutsPage() {
                 </a>
                 <button
                   onClick={() => copy(link.url)}
-                  className="px-3 py-3 sm:py-2 bg-white/10 hover:bg-white/20 text-white text-sm sm:text-xs rounded-lg"
+                  className="btn btn-secondary btn-sm"
                 >
                   {linkCopied ? '✓ Copied' : 'Copy link'}
                 </button>
@@ -705,7 +705,7 @@ export default function AgentPayoutsPage() {
               <button
                 onClick={() => !manualSubmitting && setManualModalOpen(false)}
                 disabled={manualSubmitting}
-                className="text-white/40 hover:text-white text-2xl leading-none disabled:opacity-30"
+                className="btn btn-ghost btn-icon btn-sm text-2xl"
                 aria-label="Close"
               >
                 ×
@@ -875,14 +875,14 @@ export default function AgentPayoutsPage() {
               <button
                 onClick={() => setManualModalOpen(false)}
                 disabled={manualSubmitting}
-                className="px-4 py-3 sm:py-2 text-white/70 hover:text-white text-base sm:text-sm disabled:opacity-50"
+                className="btn btn-ghost btn-md"
               >
                 Cancel
               </button>
               <button
                 onClick={submitManualWire}
                 disabled={manualSubmitting}
-                className="px-5 py-3 sm:py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-base sm:text-sm disabled:opacity-50 transition-colors"
+                className="btn btn-primary btn-md"
               >
                 {manualSubmitting ? 'Saving…' : (data?.manual_payout_details ? 'Save changes' : 'Save bank details')}
               </button>

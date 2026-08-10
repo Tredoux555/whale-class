@@ -133,7 +133,7 @@ export default function CampaignManagerPage() {
             onChange={(e) => setPassword(e.target.value)}
             className="w-full px-4 py-3 border rounded-lg text-sm mb-3"
           />
-          <button type="submit" className="w-full py-3 bg-emerald-700 text-white rounded-lg font-semibold text-sm">
+          <button type="submit" className="btn btn-primary btn-lg btn-full on-light">
             Log in
           </button>
         </form>
@@ -161,7 +161,7 @@ export default function CampaignManagerPage() {
               You review & send · Claude drafts · No automation
             </p>
           </div>
-          <button onClick={fetchData} disabled={loading} className="px-4 py-2 bg-white border rounded-lg text-sm text-gray-600 hover:bg-gray-50">
+          <button onClick={fetchData} disabled={loading} className="btn btn-secondary btn-md on-light">
             {loading ? '...' : '↻ Refresh'}
           </button>
         </div>
@@ -184,13 +184,13 @@ export default function CampaignManagerPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-6 bg-white rounded-xl p-1 border">
+        <div className="flex gap-1 mb-6 bg-white rounded-xl p-1 border on-light">
           {(['overview', 'drafted', 'queue', 'sent', 'replies'] as const).map(t => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                tab === t ? 'bg-emerald-600 text-white' : 'text-gray-500 hover:bg-gray-50'
+              className={`btn btn-md flex-1 ${
+                tab === t ? 'btn-primary' : 'btn-ghost'
               }`}
             >
               {t === 'overview' ? '📊 Overview' :
@@ -216,7 +216,7 @@ export default function CampaignManagerPage() {
                     <button
                       onClick={() => bulkUpdateStatus(data.drafted.map(c => c.id), 'sent')}
                       disabled={updating === 'bulk'}
-                      className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700"
+                      className="btn btn-primary btn-sm"
                     >
                       {updating === 'bulk' ? '...' : 'Mark All Sent'}
                     </button>
@@ -454,7 +454,7 @@ function ContactCard({
             <button
               onClick={() => onStatus(c.id, 'sent')}
               disabled={updating === c.id}
-              className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700"
+              className="btn btn-primary btn-sm"
             >
               {updating === c.id ? '...' : 'Mark Sent'}
             </button>
@@ -471,7 +471,7 @@ function ContactCard({
               <button
                 onClick={() => onStatus(c.id, 'bounced')}
                 disabled={updating === c.id}
-                className="px-3 py-1.5 bg-gray-100 text-gray-500 rounded-lg text-xs font-semibold hover:bg-gray-200"
+                className="btn btn-secondary btn-sm on-light"
               >
                 Bounced
               </button>
@@ -481,7 +481,7 @@ function ContactCard({
             <button
               onClick={() => onStatus(c.id, 'dead')}
               disabled={updating === c.id}
-              className="px-3 py-1.5 bg-gray-100 text-gray-400 rounded-lg text-xs font-semibold hover:bg-gray-200"
+              className="btn btn-secondary btn-sm on-light"
             >
               Skip
             </button>
@@ -490,7 +490,7 @@ function ContactCard({
             <button
               onClick={() => onStatus(c.id, 'converted')}
               disabled={updating === c.id}
-              className="px-3 py-1.5 bg-amber-500 text-white rounded-lg text-xs font-semibold hover:bg-amber-600"
+              className="btn btn-gold btn-sm"
             >
               {updating === c.id ? '...' : 'Converted!'}
             </button>

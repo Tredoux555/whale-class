@@ -186,7 +186,7 @@ export default function LyfCoachAdminPage() {
     <div style={{ minHeight: '100vh', background: BG, color: '#e8f0ea', padding: '28px 20px' }}>
       <div style={{ maxWidth: 980, margin: '0 auto' }}>
         <button onClick={() => router.push('/montree/super-admin')}
-          style={{ background: 'transparent', border: 'none', color: '#9fc7b0', cursor: 'pointer', fontSize: 13, padding: 0, marginBottom: 10 }}>
+          className="btn btn-ghost btn-sm" style={{ marginBottom: 10 }}>
           ← Montree Admin
         </button>
         <h1 style={{ fontFamily: 'Lora, Georgia, serif', fontSize: 28, margin: '0 0 4px', color: '#fff' }}>🌿 Lyf Coach Admin</h1>
@@ -240,7 +240,7 @@ export default function LyfCoachAdminPage() {
                         <td style={actionTd}>
                           {r.space === OWNER_SPACE
                             ? <span style={{ opacity: 0.4, fontSize: 12 }}>owner</span>
-                            : <button style={dangerBtn} onClick={() => openDelete(r.space, r.label)}>Delete</button>}
+                            : <button className="btn btn-danger btn-soft btn-sm" onClick={() => openDelete(r.space, r.label)}>Delete</button>}
                         </td>
                       </tr>
                     ))}
@@ -305,9 +305,9 @@ export default function LyfCoachAdminPage() {
                         ) : (
                           <>
                             {s.status !== 'canceled' && (
-                              <button style={cancelBtn} onClick={() => openCancel(s.space, s.label)}>Cancel</button>
+                              <button className="btn btn-gold btn-sm" style={{ marginRight: 8 }} onClick={() => openCancel(s.space, s.label)}>Cancel</button>
                             )}
-                            <button style={dangerBtn} onClick={() => openDelete(s.space, s.label)}>Delete</button>
+                            <button className="btn btn-danger btn-soft btn-sm" onClick={() => openDelete(s.space, s.label)}>Delete</button>
                           </>
                         )}
                       </td>
@@ -344,7 +344,7 @@ export default function LyfCoachAdminPage() {
                         <td style={td}>
                           {j.owed > 0 && (
                             <button onClick={() => recordRemittance(j.country)}
-                              style={{ fontSize: 12, padding: '4px 10px', borderRadius: 8, border: `1px solid ${EMERALD}`, background: 'transparent', color: EMERALD, cursor: 'pointer' }}>
+                              className="btn btn-primary btn-sm">
                               Record remittance
                             </button>
                           )}
@@ -360,7 +360,7 @@ export default function LyfCoachAdminPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <h2 style={{ fontSize: 16, margin: 0 }}>Tax register</h2>
                 <button onClick={addRegistration}
-                  style={{ fontSize: 12, padding: '6px 12px', borderRadius: 8, border: 'none', background: `linear-gradient(135deg, ${EMERALD}, #1D6B48)`, color: '#06140c', fontWeight: 700, cursor: 'pointer' }}>
+                  className="btn btn-primary btn-sm">
                   + Add registration
                 </button>
               </div>
@@ -413,17 +413,12 @@ export default function LyfCoachAdminPage() {
               )}
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                 <button onClick={() => { setModal(null); setConfirmText(''); }} disabled={busy}
-                  style={{ fontSize: 13, padding: '9px 16px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: '#cfe', cursor: busy ? 'default' : 'pointer' }}>
+                  className="btn btn-secondary btn-sm">
                   Keep
                 </button>
                 <button onClick={runMemberAction}
                   disabled={busy || (modal.kind === 'delete' && confirmText !== modal.label)}
-                  style={{
-                    fontSize: 13, padding: '9px 16px', borderRadius: 9, border: 'none', fontWeight: 700, color: '#06140c',
-                    background: modal.kind === 'delete' ? DANGER : GOLD,
-                    cursor: busy || (modal.kind === 'delete' && confirmText !== modal.label) ? 'default' : 'pointer',
-                    opacity: busy || (modal.kind === 'delete' && confirmText !== modal.label) ? 0.5 : 1,
-                  }}>
+                  className={`btn btn-sm ${modal.kind === 'delete' ? 'btn-danger' : 'btn-gold'}`}>
                   {busy ? 'Working…' : modal.kind === 'delete' ? 'Delete permanently' : 'Cancel subscription'}
                 </button>
               </div>

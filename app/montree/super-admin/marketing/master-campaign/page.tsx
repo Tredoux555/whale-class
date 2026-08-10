@@ -129,7 +129,7 @@ export default function MasterCampaignPage() {
             className="w-full p-3 bg-slate-800 border border-slate-700 rounded-lg mb-4 text-white placeholder-slate-500"
             autoFocus
           />
-          <button onClick={handleLogin} className="w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-500">
+          <button onClick={handleLogin} className="btn btn-primary btn-lg btn-full">
             Access Campaign
           </button>
         </div>
@@ -185,7 +185,7 @@ export default function MasterCampaignPage() {
               <button
                 onClick={handleDownload}
                 disabled={downloading}
-                className="bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-700 text-white font-semibold px-6 py-3 rounded-lg flex items-center gap-2 transition-all shadow-lg"
+                className="btn btn-primary btn-md"
               >
                 {downloading ? '⏳ Downloading…' : '⬇ Download Master.xlsx'}
               </button>

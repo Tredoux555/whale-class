@@ -210,13 +210,13 @@ export default function MediaLibraryPage() {
           <div className="flex gap-3">
             <button
               onClick={() => setShowUpload(true)}
-              className="px-4 py-2 bg-green-600 rounded-lg hover:bg-green-500 transition-colors flex items-center gap-2"
+              className="btn btn-primary btn-md"
             >
               <span>📤</span> Upload Files
             </button>
             <Link
               href="/admin"
-              className="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+              className="btn btn-secondary btn-md"
             >
               ← Back to Admin
             </Link>
@@ -235,7 +235,7 @@ export default function MediaLibraryPage() {
                 <button
                   key={doc.id}
                   onClick={() => startEdit(doc)}
-                  className="px-3 py-1 bg-yellow-800 hover:bg-yellow-700 rounded-lg text-sm"
+                  className="btn btn-gold btn-sm"
                 >
                   {doc.original_filename.slice(0, 30)}...
                 </button>
@@ -276,10 +276,10 @@ export default function MediaLibraryPage() {
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`px-4 py-2 rounded-lg transition-colors ${
+                className={`btn btn-md ${
                   filter === f
-                    ? 'bg-cyan-600 text-white'
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                    ? 'btn-primary'
+                    : 'btn-secondary'
                 }`}
               >
                 {f === 'all' ? '📁 All' : 
@@ -300,7 +300,7 @@ export default function MediaLibraryPage() {
           </div>
           <button
             onClick={fetchDocuments}
-            className="px-4 py-2 bg-cyan-600 rounded-lg hover:bg-cyan-500"
+            className="btn btn-primary btn-md"
           >
             🔍 Search
           </button>
@@ -354,7 +354,7 @@ export default function MediaLibraryPage() {
                         <span className="truncate">{file.name}</span>
                         <button
                           onClick={() => setUploadFiles(prev => prev.filter((_, idx) => idx !== i))}
-                          className="text-red-400 hover:text-red-300 ml-2"
+                          className="btn btn-ghost btn-icon btn-sm ml-2"
                         >
                           ✕
                         </button>
@@ -386,7 +386,7 @@ export default function MediaLibraryPage() {
                     setShowUpload(false);
                     setUploadFiles([]);
                   }}
-                  className="flex-1 px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600"
+                  className="btn btn-secondary btn-md flex-1"
                   disabled={uploading}
                 >
                   Cancel
@@ -394,7 +394,7 @@ export default function MediaLibraryPage() {
                 <button
                   onClick={handleUpload}
                   disabled={uploadFiles.length === 0 || uploading}
-                  className="flex-1 px-4 py-2 bg-green-600 rounded-lg hover:bg-green-500 disabled:bg-gray-600 disabled:cursor-not-allowed"
+                  className="btn btn-primary btn-md flex-1"
                 >
                   {uploading ? 'Uploading...' : `Upload ${uploadFiles.length} File(s)`}
                 </button>
@@ -452,13 +452,13 @@ export default function MediaLibraryPage() {
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => setEditingDoc(null)}
-                  className="flex-1 px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600"
+                  className="btn btn-secondary btn-md flex-1"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={updateDocument}
-                  className="flex-1 px-4 py-2 bg-cyan-600 rounded-lg hover:bg-cyan-500"
+                  className="btn btn-primary btn-md flex-1"
                 >
                   Save Changes
                 </button>
@@ -565,13 +565,13 @@ export default function MediaLibraryPage() {
                         <div className="flex gap-2">
                           <button
                             onClick={() => startEdit(doc)}
-                            className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-sm"
+                            className="btn btn-secondary btn-sm"
                           >
                             ✏️ Edit
                           </button>
                           <button
                             onClick={() => deleteDocument(doc.id, doc.original_filename)}
-                            className="px-3 py-1 bg-red-900 hover:bg-red-800 rounded text-sm"
+                            className="btn btn-danger btn-sm"
                           >
                             🗑️
                           </button>

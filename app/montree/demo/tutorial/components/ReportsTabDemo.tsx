@@ -32,7 +32,7 @@ export function ReportsTabDemo({
           </div>
         </div>
 
-        <button className="mt-4 w-full py-4 bg-white text-emerald-600 font-bold rounded-xl hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2 text-lg">
+        <button className="btn btn-secondary btn-lg btn-full mt-4">
           <span>✨</span>
           <span>Generate Report</span>
         </button>

@@ -574,12 +574,7 @@ export default function PrincipalAdminGuruPage() {
         {messages.length > 0 && (
           <button
             onClick={handleClearChat}
-            className="px-3 py-1.5 text-xs rounded-full font-medium transition-colors"
-            style={{
-              background: 'rgba(52,211,153,0.10)',
-              color: 'rgba(52,211,153,0.85)',
-              border: '1px solid rgba(52,211,153,0.25)',
-            }}
+            className="btn btn-primary btn-sm btn-pill"
           >
             Clear chat
           </button>
@@ -609,7 +604,7 @@ export default function PrincipalAdminGuruPage() {
                   <button
                     key={example}
                     onClick={() => setInput(example)}
-                    className="text-left text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg px-3 py-2 text-slate-300 transition-colors"
+                    className="btn btn-secondary btn-sm text-left"
                   >
                     {example}
                   </button>
@@ -721,12 +716,7 @@ export default function PrincipalAdminGuruPage() {
             <button
               type="button"
               onClick={handleCancel}
-              className="px-4 py-2 rounded-full font-medium"
-              style={{
-                background: 'rgba(248,113,113,0.18)',
-                color: '#f87171',
-                border: '1px solid rgba(248,113,113,0.25)',
-              }}
+              className="btn btn-danger btn-soft btn-md btn-pill"
             >
               Cancel
             </button>
@@ -734,13 +724,7 @@ export default function PrincipalAdminGuruPage() {
             <button
               type="submit"
               disabled={!input.trim() || loading}
-              className="px-5 py-2 rounded-full font-medium disabled:opacity-50 flex items-center gap-2"
-              style={{
-                background: '#34d399',
-                color: '#0a1a0f',
-                border: 'none',
-                fontWeight: 600,
-              }}
+              className="btn btn-primary btn-md btn-pill"
             >
               <SendHorizontal className="w-4 h-4" />
               Send
@@ -773,7 +757,7 @@ function ThinkingBlock({
     <div className="border border-slate-700/50 rounded-lg overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-1.5 px-3 py-1.5 text-[11px] text-slate-500 hover:text-slate-400 bg-slate-800/30 transition-colors"
+        className="btn btn-ghost btn-sm btn-full"
       >
         {isOpen ? (
           <ChevronDown className="w-3 h-3" />

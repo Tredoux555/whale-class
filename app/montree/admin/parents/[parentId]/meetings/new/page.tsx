@@ -546,19 +546,8 @@ export default function NewMeetingPage() {
                       <button
                         key={cid}
                         onClick={() => setSelectedChildId(cid)}
-                        style={{
-                          textAlign: 'left',
-                          padding: '10px 14px',
-                          borderRadius: 8,
-                          cursor: 'pointer',
-                          background: on
-                            ? 'rgba(52,211,153,0.18)'
-                            : 'rgba(255,255,255,0.03)',
-                          border: on
-                            ? '1px solid rgba(52,211,153,0.55)'
-                            : '1px solid rgba(255,255,255,0.08)',
-                          color: T.textPrimary,
-                        }}
+                        className={`btn btn-md ${on ? 'btn-primary' : 'btn-secondary'}`}
+                        style={{ textAlign: 'left' }}
                       >
                         {parent.child_names[idx] || cid.slice(0, 8)}
                       </button>
@@ -640,24 +629,8 @@ export default function NewMeetingPage() {
             <button
               onClick={startRecording}
               disabled={!consentAcknowledged}
-              style={{
-                marginTop: 24,
-                width: '100%',
-                padding: '16px',
-                background: consentAcknowledged
-                  ? T.emerald
-                  : 'rgba(255,255,255,0.08)',
-                color: consentAcknowledged ? '#0a1a0f' : T.textMuted,
-                border: 'none',
-                borderRadius: 12,
-                fontSize: 15,
-                fontWeight: 600,
-                cursor: consentAcknowledged ? 'pointer' : 'not-allowed',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 10,
-              }}
+              className="btn btn-primary btn-lg btn-full"
+              style={{ marginTop: 24 }}
             >
               <Mic size={20} />
               Start recording
@@ -744,18 +717,8 @@ export default function NewMeetingPage() {
             </p>
             <button
               onClick={goAnalyse}
-              style={{
-                marginTop: 24,
-                width: '100%',
-                padding: '14px',
-                background: T.emerald,
-                color: '#0a1a0f',
-                border: 'none',
-                borderRadius: 12,
-                fontSize: 15,
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
+              className="btn btn-primary btn-lg btn-full"
+              style={{ marginTop: 24 }}
             >
               Read meeting (Astra will analyse + propose profile updates)
             </button>

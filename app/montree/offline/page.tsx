@@ -132,17 +132,7 @@ export default function OfflinePage() {
         <button
           type="button"
           onClick={() => window.location.reload()}
-          style={{
-            width: '100%',
-            padding: '14px 18px',
-            borderRadius: 12,
-            background: '#34d399',
-            border: 'none',
-            color: '#0a1a0f',
-            fontWeight: 600,
-            fontSize: 15,
-            cursor: 'pointer',
-          }}
+          className="btn btn-primary btn-lg btn-full"
         >
           {t('offline.tryAgain' as TranslationKey)}
         </button>

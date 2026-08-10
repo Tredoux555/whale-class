@@ -681,14 +681,14 @@ function ChildDetailContent() {
             <div className="flex gap-3">
               <button
                 onClick={() => { setAddWorkModal(null); setCustomWorkName(''); }}
-                className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium"
+                className="btn btn-secondary btn-lg flex-1 on-light"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddCustomWork}
                 disabled={!customWorkName.trim()}
-                className="flex-1 py-3 bg-blue-600 text-white rounded-lg font-medium disabled:opacity-50"
+                className="btn btn-primary btn-lg flex-1"
               >
                 Add Work
               </button>
@@ -703,7 +703,7 @@ function ChildDetailContent() {
           <div className="bg-white rounded-xl overflow-hidden max-w-4xl w-full" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between p-4 border-b">
               <h3 className="font-semibold">{videoModal.title}</h3>
-              <button onClick={() => setVideoModal(null)} className="p-2 hover:bg-gray-100 rounded-lg text-xl">✕</button>
+              <button onClick={() => setVideoModal(null)} className="btn btn-ghost btn-icon btn-sm on-light text-xl">✕</button>
             </div>
             <div className="aspect-video">
               <iframe
@@ -724,9 +724,9 @@ function ChildDetailContent() {
       {mediaModal && (
         <div className="fixed inset-0 z-50 bg-black/90 flex flex-col" onClick={() => setMediaModal(null)}>
           {/* Close button */}
-          <button 
-            onClick={() => setMediaModal(null)} 
-            className="absolute top-4 right-4 w-10 h-10 bg-white/20 hover:bg-white/40 rounded-full flex items-center justify-center text-white text-xl z-10"
+          <button
+            onClick={() => setMediaModal(null)}
+            className="btn btn-secondary btn-icon btn-round btn-md absolute top-4 right-4 z-10 text-xl"
           >
             ✕
           </button>
@@ -768,20 +768,20 @@ function ChildDetailContent() {
               <div className="flex gap-2">
                 <button
                   onClick={() => toggleParentVisible(mediaModal)}
-                  className={`flex-1 py-3 rounded-xl font-medium transition-colors ${
-                    mediaModal.parent_visible 
-                      ? 'bg-green-600 text-white' 
-                      : 'bg-white/20 text-white hover:bg-white/30'
+                  className={`btn btn-lg flex-1 ${
+                    mediaModal.parent_visible
+                      ? 'btn-primary'
+                      : 'btn-secondary'
                   }`}
                 >
                   {mediaModal.parent_visible ? '👁 Shared' : '👁 Share'}
                 </button>
                 <button
                   onClick={() => toggleFeatured(mediaModal)}
-                  className={`flex-1 py-3 rounded-xl font-medium transition-colors ${
-                    mediaModal.is_featured 
-                      ? 'bg-yellow-500 text-white' 
-                      : 'bg-white/20 text-white hover:bg-white/30'
+                  className={`btn btn-lg flex-1 ${
+                    mediaModal.is_featured
+                      ? 'btn-gold'
+                      : 'btn-secondary'
                   }`}
                 >
                   {mediaModal.is_featured ? '⭐ Featured' : '⭐ Feature'}
@@ -789,7 +789,7 @@ function ChildDetailContent() {
                 <button
                   onClick={() => handleDelete(mediaModal)}
                   disabled={deleting === mediaModal.id}
-                  className="px-4 py-3 bg-red-500/80 text-white rounded-xl font-medium hover:bg-red-600 disabled:opacity-50"
+                  className="btn btn-danger btn-lg"
                 >
                   {deleting === mediaModal.id ? '...' : '🗑️'}
                 </button>

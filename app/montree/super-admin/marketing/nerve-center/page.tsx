@@ -371,8 +371,8 @@ export default function NerveCenterPage() {
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex-1 min-w-[100px] px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-              tab === t.id ? 'bg-emerald-500 text-slate-900' : 'text-slate-400 hover:text-white hover:bg-slate-700'
+            className={`btn btn-md flex-1 min-w-[100px] ${
+              tab === t.id ? 'btn-primary' : 'btn-ghost'
             }`}
           >
             {t.label}

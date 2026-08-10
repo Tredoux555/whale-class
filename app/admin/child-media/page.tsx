@@ -207,7 +207,7 @@ export default function ChildMediaPage() {
         >
           <button
             onClick={() => setLightbox(null)}
-            className="absolute top-4 right-4 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white text-xl"
+            className="btn btn-secondary btn-icon btn-round btn-md absolute top-4 right-4"
           >
             ✕
           </button>

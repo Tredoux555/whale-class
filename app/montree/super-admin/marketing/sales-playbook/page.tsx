@@ -293,7 +293,7 @@ function CopyButton({ text }: { text: string }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       }}
-      className="px-3 py-1 bg-slate-700 text-slate-300 rounded-lg text-xs hover:bg-emerald-600 hover:text-white transition-all"
+      className="btn btn-secondary btn-sm"
     >
       {copied ? '✓ Copied' : 'Copy'}
     </button>
@@ -370,8 +370,8 @@ export default function SalesPlaybookPage() {
           <button
             key={t.id}
             onClick={() => setTab(t.id as any)}
-            className={`flex-1 min-w-[100px] px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-              tab === t.id ? 'bg-emerald-500 text-slate-900' : 'text-slate-400 hover:text-white hover:bg-slate-700'
+            className={`btn btn-md flex-1 min-w-[100px] ${
+              tab === t.id ? 'btn-primary' : 'btn-ghost'
             }`}
           >
             {t.label}

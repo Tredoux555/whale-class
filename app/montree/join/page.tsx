@@ -81,7 +81,7 @@ function JoinContent() {
               </div>
 
               <div className="space-y-3">
-                <button onClick={handleGoToLogin} className="w-full" style={primaryBtn}>
+                <button onClick={handleGoToLogin} className="btn btn-primary btn-lg btn-full">
                   {t('join.loginNow' as TranslationKey)} →
                 </button>
 
@@ -97,7 +97,7 @@ function JoinContent() {
                 <p style={{ color: 'rgba(255,250,240,0.58)' }}>{t('join.noCodeProvided' as TranslationKey)}</p>
                 <p className="text-sm mt-2" style={{ color: 'rgba(255,250,240,0.34)' }}>{t('join.askPrincipal' as TranslationKey)}</p>
               </div>
-              <button onClick={handleGoToLogin} className="w-full" style={primaryBtn}>
+              <button onClick={handleGoToLogin} className="btn btn-primary btn-lg btn-full">
                 {t('join.goToLogin' as TranslationKey)} →
               </button>
             </>

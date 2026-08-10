@@ -177,16 +177,7 @@ export default function PrincipalMessagesTredouxPage() {
             </p>
             <button
               onClick={() => setComposeOpen(true)}
-              style={{
-                padding: '11px 22px',
-                background: 'linear-gradient(180deg, #27815a 0%, #1D6B48 100%)',
-                color: '#fff',
-                border: '1px solid rgba(130,217,174,0.18)',
-                borderRadius: 999,
-                fontSize: 14,
-                fontWeight: 500,
-                cursor: 'pointer',
-              }}
+              className="btn btn-primary btn-md btn-pill"
             >
               <Plus size={14} style={{ display: 'inline-block', marginRight: 6, verticalAlign: '-2px' }} />
               Start a message
@@ -199,17 +190,7 @@ export default function PrincipalMessagesTredouxPage() {
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 14 }}>
               <button
                 onClick={() => setComposeOpen(true)}
-                style={{
-                  padding: '8px 16px',
-                  background: 'linear-gradient(180deg, #27815a 0%, #1D6B48 100%)',
-                  color: '#fff',
-                  border: '1px solid rgba(130,217,174,0.18)',
-                  borderRadius: 999,
-                  fontSize: 13,
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                  display: 'inline-flex', alignItems: 'center', gap: 6,
-                }}
+                className="btn btn-primary btn-sm btn-pill"
               >
                 <Plus size={13} /> New message
               </button>
@@ -293,7 +274,7 @@ export default function PrincipalMessagesTredouxPage() {
                 <button
                   type="button"
                   onClick={() => !sending && setComposeOpen(false)}
-                  style={{ background: 'transparent', border: 'none', color: T.textMuted, cursor: 'pointer', padding: 4 }}
+                  className="btn btn-ghost btn-icon btn-sm"
                   aria-label="Close"
                 >
                   <X size={20} />
@@ -355,27 +336,15 @@ export default function PrincipalMessagesTredouxPage() {
                   type="button"
                   onClick={() => setComposeOpen(false)}
                   disabled={sending}
-                  style={{
-                    padding: '9px 18px',
-                    background: 'transparent', color: T.textSecondary,
-                    border: '1px solid rgba(255,255,255,0.15)',
-                    borderRadius: 999, fontSize: 13, cursor: 'pointer',
-                  }}
+                  className="btn btn-secondary btn-sm btn-pill"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={sending || !body.trim()}
-                  style={{
-                    padding: '9px 18px',
-                    background: 'linear-gradient(180deg, #27815a 0%, #1D6B48 100%)',
-                    color: '#fff',
-                    border: '1px solid rgba(130,217,174,0.18)',
-                    borderRadius: 999, fontSize: 13, cursor: 'pointer',
-                    display: 'inline-flex', alignItems: 'center', gap: 6,
-                    opacity: !body.trim() ? 0.5 : 1,
-                  }}
+                  className="btn btn-primary btn-sm btn-pill"
+                  style={{ opacity: !body.trim() ? 0.5 : 1 }}
                 >
                   <Send size={13} />
                   {sending ? 'Sending…' : 'Send'}

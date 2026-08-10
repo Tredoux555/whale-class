@@ -205,10 +205,10 @@ export default function ActivityPage() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setAutoRefresh(!autoRefresh)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`btn btn-md ${
                   autoRefresh
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500'
-                    : 'bg-gray-800 text-gray-400 border border-gray-700'
+                    ? 'btn-primary'
+                    : 'btn-secondary'
                 }`}
               >
                 {autoRefresh ? `🔄 ${t('admin.activity.live')}` : `⏸ ${t('admin.activity.paused')}`}
@@ -218,7 +218,7 @@ export default function ActivityPage() {
                   setLoading(true);
                   fetchActivity();
                 }}
-                className="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white text-sm font-medium transition-colors border border-gray-700"
+                className="btn btn-secondary btn-md"
               >
                 🔄 {t('admin.activity.refresh')}
               </button>

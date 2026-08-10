@@ -103,7 +103,7 @@ export default function CurriculumAreaPage() {
             </div>
           </div>
           
-          <button className="px-4 py-2 bg-white/20 text-white rounded-xl font-medium hover:bg-white/30 transition-colors text-sm">
+          <button className="btn btn-secondary btn-md">
             + Add Work
           </button>
         </div>

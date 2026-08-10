@@ -432,7 +432,7 @@ const VocabularyFlashcardGenerator = () => {
       <div className="bg-white border-b border-cyan-200 px-6 py-4 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={() => router.back()} className="text-cyan-600 hover:text-cyan-800">
+            <button onClick={() => router.back()} className="btn btn-ghost btn-sm on-light">
               ← Back
             </button>
             <h1 className="text-2xl font-bold text-gray-800">🃏 Vocabulary Flashcard Maker</h1>
@@ -441,7 +441,7 @@ const VocabularyFlashcardGenerator = () => {
             <button
               onClick={generatePrintableSheet}
               disabled={generating}
-              className="bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium"
+              className="btn btn-primary btn-md"
             >
               {generating ? '⏳ Generating...' : `🖨️ Print ${readyCount} Cards`}
             </button>
@@ -497,7 +497,7 @@ const VocabularyFlashcardGenerator = () => {
                     setTimeout(() => { el.textContent = word; }, 1000);
                   }
                 }}
-                className="px-3 py-1 bg-gray-100 hover:bg-cyan-100 rounded-lg text-sm font-medium text-gray-700 transition-all"
+                className="btn btn-secondary btn-sm on-light"
               >
                 <span id={`word-${word}`}>{word}</span>
               </button>
@@ -615,7 +615,7 @@ const VocabularyFlashcardGenerator = () => {
                       <img src={card.image} alt={word} className="w-full h-full object-contain" />
                       <button
                         onClick={(e) => { e.stopPropagation(); removeCard(word); }}
-                        className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full text-sm hover:bg-red-600"
+                        className="btn btn-danger btn-icon btn-sm btn-round absolute top-1 right-1"
                       >
                         ✕
                       </button>
@@ -654,7 +654,7 @@ const VocabularyFlashcardGenerator = () => {
             <button
               onClick={generatePrintableSheet}
               disabled={generating}
-              className="bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg flex items-center gap-2"
+              className="btn btn-primary btn-lg"
             >
               {generating ? <>⏳ Generating...</> : <>🎴 Generate {readyCount} Flashcards</>}
             </button>

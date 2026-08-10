@@ -201,7 +201,7 @@ export default function TeachersPage() {
           </h1>
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-medium transition"
+            className="btn btn-primary btn-md"
           >
             {t('admin.teachers.addTeacher')}
           </button>
@@ -247,7 +247,7 @@ export default function TeachersPage() {
                 {teacher.login_code && (
                   <button
                     onClick={() => copyLoginCode(teacher.login_code!)}
-                    className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-sm rounded-lg transition"
+                    className="btn btn-secondary btn-sm"
                     title={t('admin.teachers.copyLoginCode')}
                   >
                     📋 {teacher.login_code}
@@ -255,16 +255,16 @@ export default function TeachersPage() {
                 )}
                 <button
                   onClick={() => openAssignModal(teacher)}
-                  className="px-3 py-1.5 bg-blue-500/30 hover:bg-blue-500/50 text-blue-300 text-sm rounded-lg transition"
+                  className="btn btn-secondary btn-sm"
                 >
                   {t('admin.teachers.classrooms')}
                 </button>
                 <button
                   onClick={() => handleToggleActive(teacher)}
-                  className={`px-3 py-1.5 text-sm rounded-lg transition ${
-                    teacher.is_active 
-                      ? 'bg-red-500/30 hover:bg-red-500/50 text-red-300' 
-                      : 'bg-green-500/30 hover:bg-green-500/50 text-green-300'
+                  className={`btn btn-sm ${
+                    teacher.is_active
+                      ? 'btn-danger btn-soft'
+                      : 'btn-primary'
                   }`}
                 >
                   {teacher.is_active ? t('admin.teachers.deactivate') : t('admin.teachers.activate')}
@@ -320,14 +320,14 @@ export default function TeachersPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="flex-1 py-3 bg-white/10 text-white rounded-xl"
+                  className="btn btn-secondary btn-md flex-1"
                 >
                   {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-medium disabled:opacity-50"
+                  className="btn btn-primary btn-md flex-1"
                 >
                   {saving ? t('admin.teachers.adding') : t('admin.teachers.addTeacher')}
                 </button>
@@ -367,14 +367,14 @@ export default function TeachersPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setShowAssignModal(false)}
-                className="flex-1 py-3 bg-white/10 text-white rounded-xl"
+                className="btn btn-secondary btn-md flex-1"
               >
                 {t('common.cancel')}
               </button>
               <button
                 onClick={handleAssignClassrooms}
                 disabled={saving}
-                className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-medium disabled:opacity-50"
+                className="btn btn-primary btn-md flex-1"
               >
                 {saving ? t('common.saving') : t('common.save')}
               </button>

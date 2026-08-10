@@ -281,7 +281,7 @@ const LabelMaker = () => {
         color: '#fff'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <button onClick={() => router.back()} style={{ color: '#fff', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px' }}>
+          <button onClick={() => router.back()} className="btn btn-ghost btn-sm">
             ← Back
           </button>
           <div style={{ flex: 1, textAlign: 'center' }}>
@@ -452,17 +452,8 @@ const LabelMaker = () => {
         <button
           onClick={parseBulkText}
           disabled={!bulkText.trim()}
-          style={{
-            marginTop: '12px',
-            padding: '10px 24px',
-            borderRadius: '8px',
-            border: 'none',
-            backgroundColor: bulkText.trim() ? '#F59E0B' : '#e0e0e0',
-            color: bulkText.trim() ? '#fff' : '#999',
-            cursor: bulkText.trim() ? 'pointer' : 'not-allowed',
-            fontWeight: '600',
-            fontSize: '14px'
-          }}
+          className="btn btn-gold btn-md"
+          style={{ marginTop: '12px' }}
         >
           Add Labels
         </button>
@@ -485,30 +476,13 @@ const LabelMaker = () => {
               <button
                 onClick={generatePrintSheet}
                 disabled={generating}
-                style={{
-                  padding: '10px 20px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  backgroundColor: '#10B981',
-                  color: '#fff',
-                  cursor: generating ? 'not-allowed' : 'pointer',
-                  fontWeight: '600',
-                  opacity: generating ? 0.7 : 1
-                }}
+                className="btn btn-primary btn-md"
               >
                 {generating ? '⏳ Generating...' : '🖨️ Print Labels'}
               </button>
               <button
                 onClick={() => setLabels([])}
-                style={{
-                  padding: '10px 20px',
-                  borderRadius: '8px',
-                  border: '2px solid #EF4444',
-                  backgroundColor: 'transparent',
-                  color: '#EF4444',
-                  cursor: 'pointer',
-                  fontWeight: '600'
-                }}
+                className="btn btn-danger btn-soft btn-md"
               >
                 🗑️ Clear All
               </button>
@@ -547,19 +521,7 @@ const LabelMaker = () => {
                 </div>
                 <button
                   onClick={() => removeLabel(label.id)}
-                  style={{
-                    width: '24px',
-                    height: '24px',
-                    borderRadius: '4px',
-                    border: 'none',
-                    backgroundColor: 'rgba(255,255,255,0.2)',
-                    color: '#fff',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
+                  className="btn btn-secondary btn-icon btn-sm"
                 >
                   ✕
                 </button>

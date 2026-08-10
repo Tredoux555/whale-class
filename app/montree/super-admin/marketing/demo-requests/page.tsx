@@ -166,19 +166,7 @@ export default function DemoRequestsPage() {
           />
           <button
             type="submit"
-            style={{
-              width: '100%',
-              padding: '12px',
-              borderRadius: 12,
-              background: 'linear-gradient(180deg, #34d399, #10b981)',
-              border: '1px solid rgba(52,211,153,0.55)',
-              color: '#06281a',
-              fontFamily: T.sans,
-              fontSize: 13,
-              fontWeight: 700,
-              cursor: 'pointer',
-              boxShadow: '0 4px 14px rgba(16,185,129,0.30)',
-            }}
+            className="btn btn-primary btn-md btn-full"
           >
             Log in
           </button>
@@ -230,21 +218,7 @@ export default function DemoRequestsPage() {
           <button
             onClick={fetchData}
             disabled={loading}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '8px 14px',
-              borderRadius: 10,
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.10)',
-              color: T.textPrimary,
-              fontFamily: T.sans,
-              fontSize: 12,
-              fontWeight: 600,
-              cursor: loading ? 'wait' : 'pointer',
-              opacity: loading ? 0.55 : 1,
-            }}
+            className="btn btn-secondary btn-sm"
           >
             <RefreshCw size={12} strokeWidth={1.75} style={loading ? { animation: 'dr-spin 0.9s linear infinite' } : {}} />
             {loading ? '...' : 'Refresh'}
@@ -371,40 +345,14 @@ export default function DemoRequestsPage() {
                     <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                       <button
                         onClick={() => handleStatusChange(r.id, 'contacted')}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 4,
-                          padding: '6px 12px',
-                          borderRadius: 8,
-                          background: 'linear-gradient(180deg, #34d399, #10b981)',
-                          border: '1px solid rgba(52,211,153,0.55)',
-                          color: '#06281a',
-                          fontFamily: T.sans,
-                          fontSize: 11,
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                        }}
+                        className="btn btn-primary btn-sm"
                       >
                         <Check size={11} strokeWidth={2.5} />
                         Mark Contacted
                       </button>
                       <button
                         onClick={() => handleStatusChange(r.id, 'not_interested')}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 4,
-                          padding: '6px 12px',
-                          borderRadius: 8,
-                          background: 'rgba(255,255,255,0.06)',
-                          border: '1px solid rgba(255,255,255,0.10)',
-                          color: T.textSecondary,
-                          fontFamily: T.sans,
-                          fontSize: 11,
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                        }}
+                        className="btn btn-secondary btn-sm"
                       >
                         <X size={11} strokeWidth={2.5} />
                         Dismiss

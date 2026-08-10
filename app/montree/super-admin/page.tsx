@@ -233,7 +233,7 @@ function DemoRequestAlert({ saToken }: { saToken: string }) {
               <button
                 onClick={() => bulkReply({ lead_ids: Array.from(selected) })}
                 disabled={bulkSending}
-                className="text-xs px-3 py-1.5 rounded-lg bg-amber-500/25 hover:bg-amber-500/40 text-amber-100 border border-amber-500/50 font-medium transition-colors disabled:opacity-50"
+                className="btn btn-gold btn-sm"
                 title="Send the trial-link reply email to all selected leads. Each one is marked as contacted and dropped from the drip."
               >
                 {bulkSending ? 'Sending…' : `📧 Reply to ${selectedCount} selected`}
@@ -245,7 +245,7 @@ function DemoRequestAlert({ saToken }: { saToken: string }) {
                 bulkReply({ all_stale: true });
               }}
               disabled={bulkSending}
-              className="text-xs px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/30 text-amber-200 border border-amber-500/40 transition-colors disabled:opacity-50"
+              className="btn btn-gold btn-sm"
               title={`${staleCount} lead${staleCount > 1 ? 's are' : ' is'} older than 14 days. One click sends them all the trial-link email.`}
             >
               {bulkSending ? 'Sending…' : `📨 Reply to all stale (${staleCount})`}
@@ -324,7 +324,7 @@ function DemoRequestAlert({ saToken }: { saToken: string }) {
                 <button
                   onClick={() => replyWithTrialLink(lead)}
                   disabled={busy === lead.id}
-                  className="text-xs px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 border border-amber-500/40 transition-colors disabled:opacity-50"
+                  className="btn btn-gold btn-sm"
                   title="Opens your mail client with a pre-written reply containing the trial signup link. Also marks the lead as contacted (stops drip)."
                 >
                   📧 Reply with trial link
@@ -332,7 +332,7 @@ function DemoRequestAlert({ saToken }: { saToken: string }) {
                 <button
                   onClick={() => setStatus(lead.id, 'contacted')}
                   disabled={busy === lead.id}
-                  className="text-xs px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 border border-emerald-500/30 transition-colors disabled:opacity-50"
+                  className="btn btn-primary btn-sm"
                   title="Stops the drip and marks the lead as contacted"
                 >
                   {busy === lead.id ? '...' : '✓ Contacted'}
@@ -340,7 +340,7 @@ function DemoRequestAlert({ saToken }: { saToken: string }) {
                 <button
                   onClick={() => setStatus(lead.id, 'not_interested')}
                   disabled={busy === lead.id}
-                  className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-700/40 hover:bg-slate-700/60 text-slate-400 border border-slate-700 transition-colors disabled:opacity-50"
+                  className="btn btn-secondary btn-sm"
                   title="Mark as not interested. Drip stops."
                 >
                   Not interested
@@ -682,8 +682,7 @@ export default function SuperAdminPage() {
 
           <button
             onClick={handleLogin}
-            className="mt-4 w-full py-3 font-semibold rounded-xl transition-colors"
-            style={{ background: '#34d399', color: '#0a1a0f' }}
+            className="btn btn-primary btn-lg btn-full mt-4"
           >
             Login
           </button>

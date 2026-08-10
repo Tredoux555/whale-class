@@ -126,14 +126,14 @@ export default function ClassroomPage() {
               <Link
                 href={`/admin/classroom/print?week=${currentWeek}&year=${currentYear}`}
                 target="_blank"
-                className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors"
+                className="btn btn-secondary btn-icon btn-md on-light"
                 title="Print Weekly Plan"
               >
                 🖨️
               </Link>
               <Link 
-                href="/admin" 
-                className="text-gray-400 hover:text-gray-600 text-sm"
+                href="/admin"
+                className="btn btn-ghost btn-sm on-light"
               >
                 ← Admin
               </Link>

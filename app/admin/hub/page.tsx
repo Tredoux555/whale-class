@@ -188,7 +188,7 @@ export default function ClassroomHubPage() {
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/teacher/dashboard" className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30">
+              <Link href="/teacher/dashboard" className="btn btn-secondary btn-icon btn-md">
                 ←
               </Link>
               <div>
@@ -198,9 +198,9 @@ export default function ClassroomHubPage() {
                 <p className="text-blue-100 text-sm">Everything in one place</p>
               </div>
             </div>
-            <Link 
+            <Link
               href="/admin/classroom"
-              className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl font-medium transition-all flex items-center gap-2"
+              className="btn btn-secondary btn-md"
             >
               <span>📋</span>
               <span>Weekly View</span>
@@ -215,10 +215,10 @@ export default function ClassroomHubPage() {
           <div className="flex gap-1 py-2">
             <button
               onClick={() => setActiveTab('today')}
-              className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
-                activeTab === 'today' 
-                  ? 'bg-blue-600 text-white shadow-lg' 
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              className={`btn btn-md flex-1 ${
+                activeTab === 'today'
+                  ? 'btn-primary'
+                  : 'btn-secondary on-light'
               }`}
             >
               <span>📸</span>
@@ -231,10 +231,10 @@ export default function ClassroomHubPage() {
             </button>
             <button
               onClick={() => setActiveTab('shelves')}
-              className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
-                activeTab === 'shelves' 
-                  ? 'bg-green-600 text-white shadow-lg' 
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              className={`btn btn-md flex-1 ${
+                activeTab === 'shelves'
+                  ? 'btn-primary'
+                  : 'btn-secondary on-light'
               }`}
             >
               <span>📚</span>
@@ -242,10 +242,10 @@ export default function ClassroomHubPage() {
             </button>
             <button
               onClick={() => { setActiveTab('media'); fetchAllMedia(); }}
-              className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
-                activeTab === 'media' 
-                  ? 'bg-purple-600 text-white shadow-lg' 
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              className={`btn btn-md flex-1 ${
+                activeTab === 'media'
+                  ? 'btn-primary'
+                  : 'btn-secondary on-light'
               }`}
             >
               <span>🖼️</span>
@@ -294,9 +294,9 @@ export default function ClassroomHubPage() {
                 <div className="p-12 text-center">
                   <div className="text-5xl mb-4">📷</div>
                   <p className="text-gray-500">No captures today yet</p>
-                  <Link 
+                  <Link
                     href="/admin/classroom"
-                    className="inline-block mt-4 px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700"
+                    className="btn btn-primary btn-lg mt-4"
                   >
                     Go to Classroom
                   </Link>
@@ -347,10 +347,10 @@ export default function ClassroomHubPage() {
                   <button
                     key={area.id}
                     onClick={() => setSelectedArea(area.id)}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all ${
+                    className={`btn btn-md ${
                       selectedArea === area.id
-                        ? `bg-gradient-to-r ${area.color} text-white shadow-lg`
-                        : `${area.bgLight} text-gray-700 hover:shadow-md`
+                        ? 'btn-primary'
+                        : 'btn-secondary on-light'
                     }`}
                   >
                     <span className="text-lg">{area.icon}</span>
@@ -395,13 +395,13 @@ export default function ClassroomHubPage() {
                   />
                   <button
                     onClick={addWork}
-                    className="px-6 py-2 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700"
+                    className="btn btn-primary btn-md"
                   >
                     Add
                   </button>
                   <button
                     onClick={() => { setShowAddForm(false); setNewWorkName(''); }}
-                    className="px-4 py-2 bg-gray-200 text-gray-600 rounded-lg font-bold hover:bg-gray-300"
+                    className="btn btn-secondary btn-md on-light"
                   >
                     Cancel
                   </button>
@@ -452,13 +452,13 @@ export default function ClassroomHubPage() {
                           />
                           <button
                             onClick={() => updateWork(work.id, editingWork.name)}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700"
+                            className="btn btn-primary btn-md"
                           >
                             Save
                           </button>
                           <button
                             onClick={() => setEditingWork(null)}
-                            className="px-4 py-2 bg-gray-200 text-gray-600 rounded-lg font-bold hover:bg-gray-300"
+                            className="btn btn-secondary btn-md on-light"
                           >
                             Cancel
                           </button>
@@ -477,14 +477,14 @@ export default function ClassroomHubPage() {
                           <div className="flex gap-2">
                             <button
                               onClick={() => setEditingWork(work)}
-                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              className="btn btn-ghost btn-icon btn-sm on-light"
                               title="Edit"
                             >
                               ✏️
                             </button>
                             <button
                               onClick={() => deleteWork(work.id)}
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              className="btn btn-danger btn-soft btn-icon btn-sm on-light"
                               title="Delete"
                             >
                               🗑️
@@ -553,8 +553,8 @@ export default function ClassroomHubPage() {
           className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
           onClick={() => setLightbox(null)}
         >
-          <button 
-            className="absolute top-4 right-4 w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white text-2xl"
+          <button
+            className="btn btn-secondary btn-icon btn-round btn-md absolute top-4 right-4 text-2xl"
             onClick={() => setLightbox(null)}
           >
             ✕

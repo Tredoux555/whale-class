@@ -122,10 +122,10 @@ export default function ProgressDashboard() {
               <button
                 key={tab.key}
                 onClick={() => setView(tab.key as any)}
-                className={`px-4 py-2 rounded-lg font-medium ${
+                className={`btn btn-md ${
                   view === tab.key
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'btn-primary'
+                    : 'btn-secondary on-light'
                 }`}
               >
                 {tab.label}
@@ -139,7 +139,7 @@ export default function ProgressDashboard() {
         {error && (
           <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg">
             {error}
-            <button onClick={fetchChildren} className="ml-4 underline">Retry</button>
+            <button onClick={fetchChildren} className="btn btn-ghost btn-sm on-light ml-4">Retry</button>
           </div>
         )}
 
@@ -152,7 +152,7 @@ export default function ProgressDashboard() {
             <div className="text-6xl mb-4">👶</div>
             <h2 className="text-xl font-bold mb-2">No Children Found</h2>
             <p className="text-gray-500 mb-4">Add children first to track progress</p>
-            <Link href="/admin/children" className="text-emerald-600 underline">
+            <Link href="/admin/children" className="btn btn-ghost btn-sm on-light">
               Go to Children Page
             </Link>
           </div>
@@ -166,7 +166,7 @@ export default function ProgressDashboard() {
                 <h2 className="text-xl font-bold mb-4">🌳 Montree Progress View</h2>
                 <Link
                   href={`/admin/child-progress/${selectedChild}`}
-                  className="inline-block px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
+                  className="btn btn-primary btn-md"
                 >
                   Open Full Montree View →
                 </Link>
@@ -177,7 +177,7 @@ export default function ProgressDashboard() {
                 <h2 className="text-xl font-bold mb-4">📚 Curriculum Progress</h2>
                 <Link 
                   href={`/admin/child-progress/${selectedChild}`}
-                  className="inline-block px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
+                  className="btn btn-primary btn-md"
                 >
                   Open Detailed Progress View →
                 </Link>

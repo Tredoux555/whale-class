@@ -211,13 +211,13 @@ export default function ClassroomCurriculumPage() {
                         autoFocus
                         className="flex-1 bg-slate-900 border border-slate-700 rounded px-3 py-2 text-white text-sm focus:outline-none"
                       />
-                      <button onClick={() => insertWork(area, null)} className="px-3 py-2 bg-white text-black text-sm rounded">Add</button>
-                      <button onClick={() => { setShowInsertAt(null); setNewWorkName(''); }} className="px-3 py-2 text-slate-500 text-sm">Cancel</button>
+                      <button onClick={() => insertWork(area, null)} className="btn btn-primary btn-sm">Add</button>
+                      <button onClick={() => { setShowInsertAt(null); setNewWorkName(''); }} className="btn btn-ghost btn-sm">Cancel</button>
                     </div>
                   ) : (
                     <button
                       onClick={() => setShowInsertAt(`${area}-top`)}
-                      className="w-full py-2 border border-dashed border-slate-800 rounded text-slate-600 text-sm hover:border-slate-700 hover:text-slate-500 mb-2"
+                      className="btn btn-ghost btn-outline btn-sm btn-full mb-2"
                     >
                       + Insert work here
                     </button>
@@ -234,21 +234,21 @@ export default function ClassroomCurriculumPage() {
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={() => moveWork(work.id, 'up')}
-                            className="p-1 text-slate-600 hover:text-white"
+                            className="btn btn-ghost btn-icon btn-sm"
                             title="Move up"
                           >
                             ↑
                           </button>
                           <button
                             onClick={() => moveWork(work.id, 'down')}
-                            className="p-1 text-slate-600 hover:text-white"
+                            className="btn btn-ghost btn-icon btn-sm"
                             title="Move down"
                           >
                             ↓
                           </button>
                           <button
                             onClick={() => deleteWork(work.id)}
-                            className="p-1 text-slate-600 hover:text-red-400 ml-2"
+                            className="btn btn-ghost btn-icon btn-sm ml-2"
                             title="Delete"
                           >
                             ×
@@ -268,13 +268,13 @@ export default function ClassroomCurriculumPage() {
                             autoFocus
                             className="flex-1 bg-slate-900 border border-slate-700 rounded px-3 py-2 text-white text-sm focus:outline-none"
                           />
-                          <button onClick={() => insertWork(area, work.id)} className="px-3 py-2 bg-white text-black text-sm rounded">Add</button>
-                          <button onClick={() => { setShowInsertAt(null); setNewWorkName(''); }} className="px-3 py-2 text-slate-500 text-sm">Cancel</button>
+                          <button onClick={() => insertWork(area, work.id)} className="btn btn-primary btn-sm">Add</button>
+                          <button onClick={() => { setShowInsertAt(null); setNewWorkName(''); }} className="btn btn-ghost btn-sm">Cancel</button>
                         </div>
                       ) : (
                         <button
                           onClick={() => setShowInsertAt(work.id)}
-                          className="w-full py-1 text-slate-700 text-xs hover:text-slate-500 text-left ml-9 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="btn btn-ghost btn-sm btn-full text-left ml-9 opacity-0 group-hover:opacity-100"
                         >
                           + insert
                         </button>

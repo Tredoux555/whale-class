@@ -280,14 +280,14 @@ const VideoFlashcardMaker = () => {
         </div>
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={() => router.back()} className="text-cyan-600 hover:text-cyan-800">← Back</button>
+            <button onClick={() => router.back()} className="btn btn-ghost btn-sm on-light">← Back</button>
             <h1 className="text-2xl font-bold text-gray-800">Video Flashcard Maker</h1>
           </div>
           {cards.length > 0 && (
             <button
               onClick={generatePrintableSheet}
               disabled={generating}
-              className="bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium"
+              className="btn btn-primary btn-md"
             >
               {generating ? 'Generating...' : `Print ${cards.length} Cards`}
             </button>
@@ -342,7 +342,7 @@ const VideoFlashcardMaker = () => {
                   setPreviewFrame(null);
                   setCards([]);
                 }}
-                className="text-sm text-red-500 hover:text-red-700"
+                className="btn btn-ghost btn-sm on-light"
               >
                 Remove Video
               </button>
@@ -415,10 +415,10 @@ const VideoFlashcardMaker = () => {
 
                 {/* Navigation buttons */}
                 <div className="flex gap-2 flex-wrap">
-                  <button onClick={() => handleScrubberChange(Math.max(0, scrubTime - 5))} className="px-3 py-1.5 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm" disabled={!videoReady}>← 5s</button>
-                  <button onClick={() => handleScrubberChange(Math.max(0, scrubTime - 1))} className="px-3 py-1.5 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm" disabled={!videoReady}>← 1s</button>
-                  <button onClick={() => handleScrubberChange(Math.min(videoDuration, scrubTime + 1))} className="px-3 py-1.5 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm" disabled={!videoReady}>1s →</button>
-                  <button onClick={() => handleScrubberChange(Math.min(videoDuration, scrubTime + 5))} className="px-3 py-1.5 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm" disabled={!videoReady}>5s →</button>
+                  <button onClick={() => handleScrubberChange(Math.max(0, scrubTime - 5))} className="btn btn-secondary btn-sm on-light" disabled={!videoReady}>← 5s</button>
+                  <button onClick={() => handleScrubberChange(Math.max(0, scrubTime - 1))} className="btn btn-secondary btn-sm on-light" disabled={!videoReady}>← 1s</button>
+                  <button onClick={() => handleScrubberChange(Math.min(videoDuration, scrubTime + 1))} className="btn btn-secondary btn-sm on-light" disabled={!videoReady}>1s →</button>
+                  <button onClick={() => handleScrubberChange(Math.min(videoDuration, scrubTime + 5))} className="btn btn-secondary btn-sm on-light" disabled={!videoReady}>5s →</button>
                 </div>
 
                 {/* Action buttons */}
@@ -426,14 +426,14 @@ const VideoFlashcardMaker = () => {
                   <button
                     onClick={addCurrentFrame}
                     disabled={!previewFrame || !videoReady}
-                    className="flex-1 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+                    className="btn btn-primary btn-md flex-1"
                   >
                     ➕ Add This Frame
                   </button>
                   <button
                     onClick={autoExtractFrames}
                     disabled={!videoReady || autoExtracting}
-                    className="flex-1 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+                    className="btn btn-primary btn-md flex-1"
                   >
                     {autoExtracting ? `Extracting... ${extractProgress}%` : '⚡ Auto-Extract All'}
                   </button>
@@ -495,7 +495,7 @@ const VideoFlashcardMaker = () => {
                   {/* Remove button */}
                   <button
                     onClick={() => removeCard(card.id)}
-                    className="absolute top-1.5 right-1.5 z-10 bg-black/50 hover:bg-red-500 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center transition-colors"
+                    className="btn btn-danger btn-soft btn-icon btn-sm btn-round absolute top-1.5 right-1.5 z-10"
                   >
                     ✕
                   </button>
@@ -522,13 +522,13 @@ const VideoFlashcardMaker = () => {
               <button
                 onClick={generatePrintableSheet}
                 disabled={generating}
-                className="bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="btn btn-primary btn-lg"
               >
                 {generating ? 'Generating...' : `Print ${cards.length} Flashcards`}
               </button>
               <button
                 onClick={() => setCards([])}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-4 rounded-xl font-medium text-lg transition-all"
+                className="btn btn-secondary btn-lg on-light"
               >
                 Clear All
               </button>

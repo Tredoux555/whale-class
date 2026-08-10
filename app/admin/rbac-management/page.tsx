@@ -158,7 +158,7 @@ export default function RBACManagementPage() {
             </div>
             <button
               onClick={() => router.push('/admin')}
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="btn btn-secondary btn-md on-light"
             >
               Back to Admin
             </button>
@@ -231,10 +231,10 @@ export default function RBACManagementPage() {
                   <button
                     key={role}
                     onClick={() => setSelectedRole(role)}
-                    className={`px-4 py-2 rounded-md text-sm font-medium ${
+                    className={`btn btn-md ${
                       selectedRole === role
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? 'btn-primary'
+                        : 'btn-secondary on-light'
                     }`}
                   >
                     {ROLE_NAMES[role]}
@@ -311,7 +311,7 @@ export default function RBACManagementPage() {
               <h3 className="text-lg font-medium text-gray-900">Teacher Accounts</h3>
               <button
                 onClick={() => setShowAddTeacher(!showAddTeacher)}
-                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
+                className="btn btn-primary btn-md"
               >
                 + Add Teacher
               </button>
@@ -364,7 +364,7 @@ export default function RBACManagementPage() {
                   <button
                     onClick={addTeacher}
                     disabled={saving || !newTeacherEmail}
-                    className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50"
+                    className="btn btn-primary btn-md"
                   >
                     {saving ? 'Creating...' : 'Create Teacher'}
                   </button>
@@ -375,7 +375,7 @@ export default function RBACManagementPage() {
                       setNewTeacherName('');
                       setNewTeacherPassword('');
                     }}
-                    className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200"
+                    className="btn btn-secondary btn-md on-light"
                   >
                     Cancel
                   </button>
@@ -424,10 +424,10 @@ export default function RBACManagementPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                          <button className="text-blue-600 hover:text-blue-900 font-medium mr-3">
+                          <button className="btn btn-ghost btn-sm on-light mr-3">
                             Edit
                           </button>
-                          <button className="text-red-600 hover:text-red-900 font-medium">
+                          <button className="btn btn-danger btn-soft btn-sm">
                             Remove
                           </button>
                         </td>

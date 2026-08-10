@@ -833,12 +833,7 @@ export default function SatpinPage() {
             </div>
             <button
               onClick={() => createMaterials(wordPictures.map(i => i.photo))}
-              className="mt-3 w-full px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all hover:bg-white/[0.06]"
-              style={{
-                borderColor: 'rgba(248,113,113,0.35)',
-                background: 'rgba(198,40,40,0.10)',
-                color: 'rgb(252,165,165)',
-              }}
+              className="btn btn-danger btn-soft btn-md btn-full mt-3"
             >
               Create materials with these word pictures →
             </button>
@@ -935,8 +930,7 @@ export default function SatpinPage() {
       <a
         href={downloadHref}
         download
-        className="mt-3 inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-xs transition-all hover:bg-white/[0.06]"
-        style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)' }}
+        className="btn btn-secondary btn-sm mt-3"
       >
         Letter card &middot; PNG
       </a>
@@ -973,8 +967,7 @@ export default function SatpinPage() {
           <a
             href={downloadHref}
             download
-            className="px-2 py-1 rounded-md border text-[10px] transition-all hover:bg-white/[0.06]"
-            style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)' }}
+            className="btn btn-secondary btn-sm"
           >
             Download
           </a>
@@ -1021,8 +1014,7 @@ export default function SatpinPage() {
               key={d.href}
               href={d.href}
               download
-              className="px-3 py-2 rounded-lg border text-xs transition-all hover:bg-white/[0.06]"
-              style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)' }}
+              className="btn btn-secondary btn-sm"
             >
               {d.label}
             </a>
@@ -1064,8 +1056,7 @@ export default function SatpinPage() {
               key={d.href}
               href={d.href}
               download
-              className="px-3 py-2 rounded-lg border text-xs transition-all hover:bg-white/[0.06]"
-              style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)' }}
+              className="btn btn-secondary btn-sm"
             >
               {d.label}
             </a>
@@ -1091,7 +1082,7 @@ export default function SatpinPage() {
         className="relative z-10 px-6 pb-5 flex items-center justify-between"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1.25rem)' }}
       >
-        <Link href="/montree/library" className="text-white/40 text-sm hover:text-white/70 transition-colors">
+        <Link href="/montree/library" className="btn btn-ghost btn-sm">
           ← Library
         </Link>
         <LanguageToggle />
@@ -1276,8 +1267,7 @@ export default function SatpinPage() {
                               key={d.href}
                               href={d.href}
                               download
-                              className="px-3 py-2 rounded-lg border text-xs transition-all hover:bg-white/[0.06]"
-                              style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)' }}
+                              className="btn btn-secondary btn-sm"
                             >
                               {d.label}
                             </a>

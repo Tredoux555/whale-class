@@ -41,7 +41,7 @@ export default function SchoolsPage() {
             <span className="text-slate-700">/</span>
             <h1 className="text-white font-medium">Schools</h1>
           </div>
-          <button className="px-4 py-2 bg-white text-black text-sm font-medium rounded-lg hover:bg-slate-200 transition-colors">
+          <button className="btn btn-primary btn-md">
             + Add School
           </button>
         </div>

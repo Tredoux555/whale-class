@@ -173,7 +173,7 @@ export default function NPOApplicationPage() {
 
           <Link
             href="/montree"
-            className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all"
+            className="btn btn-primary btn-lg btn-glow"
           >
             {t('npo.returnToMontree' as TranslationKey)}
           </Link>
@@ -312,7 +312,7 @@ export default function NPOApplicationPage() {
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all mt-6"
+                className="btn btn-primary btn-lg btn-full btn-glow mt-6"
               >
                 {t('common.continue' as TranslationKey)} →
               </button>
@@ -380,14 +380,14 @@ export default function NPOApplicationPage() {
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="px-6 py-4 bg-white/10 backdrop-blur border border-white/20 text-white font-semibold rounded-xl hover:bg-white/20 transition-all"
+                  className="btn btn-secondary btn-lg"
                 >
                   ← {t('common.back' as TranslationKey)}
                 </button>
                 <button
                   type="button"
                   onClick={() => setStep(3)}
-                  className="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all"
+                  className="btn btn-primary btn-lg btn-glow flex-1"
                 >
                   {t('common.continue' as TranslationKey)} →
                 </button>
@@ -468,14 +468,14 @@ export default function NPOApplicationPage() {
                 <button
                   type="button"
                   onClick={() => setStep(2)}
-                  className="px-6 py-4 bg-white/10 backdrop-blur border border-white/20 text-white font-semibold rounded-xl hover:bg-white/20 transition-all"
+                  className="btn btn-secondary btn-lg"
                 >
                   ← {t('common.back' as TranslationKey)}
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="btn btn-primary btn-lg btn-glow flex-1"
                 >
                   {loading ? t('npo.submitting' as TranslationKey) : t('npo.submitApplication' as TranslationKey)}
                 </button>
