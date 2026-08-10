@@ -21,11 +21,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { getSupabase } from '@/lib/supabase-client';
+import { fetchVisitorsSince, wantsInternalIncluded } from '@/lib/montree/visitors';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const VISITOR_ROW_CAP = 50000; // mirror visitors/route.ts stats query
 const SCHOOLS_PER_LOCATION_CAP = 50;
 
 // Country statuses that count as "we have emailed them" for the warm signal.
@@ -153,6 +153,7 @@ export async function GET(request: NextRequest) {
   const days = Math.min(Math.max(parseInt(url.searchParams.get('days') || '30', 10) || 30, 1), 90);
   const countryFilter = (url.searchParams.get('country') || '').trim();
   const minVisits = Math.max(parseInt(url.searchParams.get('min_visits') || '1', 10) || 1, 1);
+  const includeInternal = wantsInternalIncluded(url.searchParams);
 
   const supabase = getSupabase();
   const since = new Date();
@@ -161,17 +162,22 @@ export async function GET(request: NextRequest) {
 
   try {
     // ── Query A: visitors in window ─────────────────────────────────────────
-    let vQuery = supabase
-      .from('montree_visitors')
-      .select('country, country_code, city, region, fingerprint, visited_at')
-      .gte('visited_at', sinceISO)
-      .limit(VISITOR_ROW_CAP);
-    if (countryFilter) vQuery = vQuery.eq('country', countryFilter);
-
-    const { data: visitorData, error: vError } = await vQuery;
-    if (vError) throw vError;
-
-    const visitors = (visitorData || []) as VisitorRow[];
+    // 🚨 FIXED — this used to be a single `.limit(VISITOR_ROW_CAP)` select,
+    // which PostgREST's server-side max-rows setting (commonly 1000) silently
+    // truncates regardless of the requested limit — a country with 3,000+
+    // visits (the exact "USA 3,198 rows" trap this file's header comment
+    // already warns about for contacts) was undercounted. fetchVisitorsSince
+    // pages past that cap and excludes internal traffic (migration 324) by
+    // default.
+    const visitors = await fetchVisitorsSince<VisitorRow>(
+      supabase,
+      'country, country_code, city, region, fingerprint, visited_at',
+      sinceISO,
+      {
+        includeInternal,
+        extra: countryFilter ? (q) => q.eq('country', countryFilter) : undefined,
+      }
+    );
 
     // Group visitors by (country_code|country|city|region) — a "location".
     type LocAcc = {

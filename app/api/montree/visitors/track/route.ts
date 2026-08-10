@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
       utm_medium?: string;
       utm_campaign?: string;
       utm_content?: string;
+      is_internal?: boolean;
     };
     try {
       body = await request.json();
@@ -105,15 +106,41 @@ export async function POST(request: NextRequest) {
     const utmCampaign = sanitizeUtm(body.utm_campaign) ?? null;
     const utmContent = sanitizeUtm(body.utm_content) ?? null;
 
+    // Whether THIS browser has been flagged internal (Tredoux's own device —
+    // migration 324 `is_internal` toggle, VisitorTracker.tsx reads a
+    // localStorage flag and sends it here). Only a boolean true is honored;
+    // anything else defaults to false, matching the column default.
+    const isInternal = body.is_internal === true;
+
     // Insert into DB.
-    // NOTE: actual table has `isp` column (not `ip`) and no `page_url` column
-    // (schema drift, migrations 156/163). Store IP in `isp` and page_url in the
-    // `referrer` fallback if no referrer. utm_* columns come from migration 288;
-    // if that migration hasn't run yet the first insert fails on the unknown
-    // columns and we retry WITHOUT them so tracking never breaks.
+    // 🚨 FIXED — this used to discard the real page_url entirely (it only
+    // ever landed in `referrer`, and only as a fallback when there was no
+    // real referrer), so every row displayed as page "/" and real
+    // navigation/funnel behavior was invisible. `page_url` was added by
+    // migration 163 and is now stored on every row; `referrer` holds only
+    // the actual document.referrer (or null) again.
+    // NOTE: IP still goes into `isp` (unchanged) — that column-naming quirk
+    // is tracked separately (docs/OUTREACH_AUDIT.md F-7.9) and is out of
+    // scope here; renaming it needs its own migration + backfill.
+    // utm_* columns come from migration 288; is_internal from migration 324.
+    // If a migration hasn't run yet the insert fails on the unknown columns
+    // and we retry with progressively fewer new columns so tracking never
+    // breaks pre-migration.
     const supabase = getSupabase();
     const baseRow = {
       isp: ip?.slice(0, 45) || null,
+      country,
+      country_code: countryCode,
+      city: location.city,
+      region: location.region,
+      timezone: location.timezone,
+      page_url: sanitizedPageUrl,
+      referrer: sanitizedReferrer,
+      user_agent: userAgent,
+      fingerprint,
+    };
+    const legacyRow = {
+      isp: baseRow.isp,
       country,
       country_code: countryCode,
       city: location.city,
@@ -123,26 +150,39 @@ export async function POST(request: NextRequest) {
       user_agent: userAgent,
       fingerprint,
     };
-
-    const { error } = await supabase.from('montree_visitors').insert({
-      ...baseRow,
+    const utmRow = {
       utm_source: utmSource,
       utm_medium: utmMedium,
       utm_campaign: utmCampaign,
       utm_content: utmContent,
-    });
+    };
 
-    if (error) {
-      // 42703 = undefined_column → migration 288 not run yet. Retry drift-safe.
-      if (error.code === '42703') {
-        const { error: retryErr } = await supabase.from('montree_visitors').insert(baseRow);
-        if (retryErr) {
-          console.error('[VISITOR-TRACK] DB insert error (no-utm retry):', retryErr.code);
+    const { error } = await supabase
+      .from('montree_visitors')
+      .insert({ ...baseRow, ...utmRow, is_internal: isInternal });
+
+    if (error && error.code === '42703') {
+      // 42703 = undefined_column. Try progressively fewer of the newer
+      // columns: drop is_internal (migration 324) → drop utm_* (migration
+      // 288) → drop page_url too (migration 163, the original schema-drift
+      // fallback shape) — so tracking never breaks pre-migration.
+      const { error: retry1 } = await supabase.from('montree_visitors').insert({ ...baseRow, ...utmRow });
+      if (retry1?.code === '42703') {
+        const { error: retry2 } = await supabase.from('montree_visitors').insert(baseRow);
+        if (retry2?.code === '42703') {
+          const { error: retry3 } = await supabase.from('montree_visitors').insert(legacyRow);
+          if (retry3) {
+            console.error('[VISITOR-TRACK] DB insert error (legacy retry):', retry3.code);
+          }
+        } else if (retry2) {
+          console.error('[VISITOR-TRACK] DB insert error (no-utm/no-internal retry):', retry2.code);
         }
-      } else {
-        console.error('[VISITOR-TRACK] DB insert error:', error.code);
-        // Don't expose error to client
+      } else if (retry1) {
+        console.error('[VISITOR-TRACK] DB insert error (no-internal retry):', retry1.code);
       }
+    } else if (error) {
+      console.error('[VISITOR-TRACK] DB insert error:', error.code);
+      // Don't expose error to client
     }
 
     return NextResponse.json({ ok: true });

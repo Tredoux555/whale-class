@@ -188,9 +188,22 @@ export async function middleware(req: NextRequest) {
   }
 
   // Force montree.xyz root → /montree (redundant with next.config.ts redirect,
-  // but kept as a fallback if that redirect doesn't fire).
+  // but kept as a fallback if that redirect doesn't fire). Middleware runs
+  // BEFORE next.config.ts's redirects() in the Next.js request pipeline, so
+  // in practice THIS is the redirect that actually fires for every request —
+  // the "fallback" is the primary path.
+  // 🚨 FIXED — this used to build the destination as new URL('/montree',
+  // req.url), which drops the entire query string. Every ad landing on the
+  // bare root (montree.xyz/?utm_source=facebook&...) lost its UTM params
+  // here before the client ever saw them, which is why utm_source was null
+  // on effectively 100% of visitor rows regardless of the tracking code
+  // being correct. Preserve search + hash, same as the other redirects in
+  // this file (see the WHALE_ONLY_PREFIXES / potato-apex blocks above).
   if (isMontree && pathname === '/') {
-    return NextResponse.redirect(new URL('/montree', req.url));
+    const target = new URL('/montree', req.url);
+    target.search = req.nextUrl.search;
+    target.hash = req.nextUrl.hash;
+    return NextResponse.redirect(target);
   }
   
   // EXPLICIT: /teacher routes use simple localStorage auth, not Montree
