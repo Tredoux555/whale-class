@@ -41,6 +41,7 @@
 //   class/<classId>/faces/<childId>.jpg
 //   class/<classId>/photos/<yyyy>/<mm>/<uuid>.<ext>
 //   class/<classId>/montages/<childId>/<weekStart>-<jobId>.mp4
+//   class/<classId>/intake/<childId>/<face|pickup-N|vaccination|…>.<ext>
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyPotatoTeacher, verifyPotatoParent, UUID_RE } from '@/lib/potato/auth';
@@ -94,6 +95,19 @@ async function isAuthorized(request: NextRequest, segments: string[]): Promise<b
     if (kind === 'montages' && segments.length >= 4) {
       if (segments[3] !== parent.childId) return false;
       return isSentToParent(classId, segments.join('/'));
+    }
+    // 🚨 Child Onboarding: everything under their OWN child's intake prefix —
+    // class/<classId>/intake/<childId>/… — and nothing else. This is the
+    // family's own upload (their child's face, the authorized adults' photos,
+    // a vaccination booklet) being read back so they can see what they sent
+    // and replace a blurry one. The childId segment is compared against the
+    // cookie, exactly as `faces` and `montages` are, so one family can never
+    // reach another family's documents even though they share a class prefix.
+    //
+    // No send-gate equivalent applies here: these bytes came FROM this family,
+    // so there is no teacher approval standing between them and it.
+    if (kind === 'intake' && segments.length >= 5) {
+      return segments[3] === parent.childId;
     }
     // Raw classroom photos are NOT parent-reachable. The storage path carries
     // no child id, so ownership cannot be proven from the path, and a single

@@ -66,12 +66,32 @@ export interface ChildContext {
   // Teacher's onboarding notes about this child (free-text from student creation)
   teacher_onboarding_notes?: string;
 
+  // 🧾 Parent intake (Child Onboarding, migration 326) — what the FAMILY told
+  // the school at enrollment. Only the committed form is read; a draft or an
+  // unreviewed submission never reaches the Guru. Undefined when the feature
+  // is unused, the table is absent, or the query failed — Guru is unaffected.
+  parent_intake?: ParentIntakeContext;
+
   // ESL context (school-level — detected from school location/name)
   isESL?: boolean;
   l1Language?: string;
 
   // Per-school Guru personality settings (from montree_schools.settings.guru_personality)
   schoolGuruPersonality?: Record<string, unknown> | null;
+}
+
+/** The handful of intake fields that actually change how a teacher meets a
+ *  child on Monday morning. Everything else in the intake (addresses, phone
+ *  numbers, document paths) is administrative and deliberately not sent. */
+export interface ParentIntakeContext {
+  strengths?: string;
+  growthAreas?: string;
+  fears?: string;
+  comfortItems?: string;
+  temperamentNotes?: string;
+  separationHistory?: string;
+  allergies: string[];
+  otherNotes?: string;
 }
 
 export interface MentalProfile {
@@ -225,6 +245,7 @@ export async function buildChildContext(
     { data: focusWorks },
     { data: childSettings },
     eslResult,
+    intakeResult,
   ] = await Promise.all([
     // 2. Mental profile
     supabase
@@ -293,6 +314,22 @@ export async function buildChildContext(
       .single()
       .then(r => r.data)
       .catch(() => null),
+    // 11. 🧾 Parent intake (Child Onboarding). COMMITTED only — a draft the
+    // family is still typing, or a submission the teacher hasn't reviewed,
+    // must never reach the Guru. Fails soft to null (table may not exist yet).
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('montree_child_intake')
+          .select('data')
+          .eq('child_id', childId)
+          .eq('status', 'committed')
+          .maybeSingle();
+        return data as { data?: unknown } | null;
+      } catch {
+        return null;
+      }
+    })(),
   ]);
 
   // Process mental profile
@@ -419,6 +456,44 @@ export async function buildChildContext(
     // Non-critical — Guru works fine without personality settings
   }
 
+  // 🧾 Distil the committed parent intake down to the fields that change how a
+  // teacher meets this child. Any shape surprise → undefined, never a throw.
+  let parentIntake: ParentIntakeContext | undefined;
+  try {
+    const raw = (intakeResult as { data?: unknown } | null)?.data as Record<string, unknown> | undefined;
+    if (raw && typeof raw === 'object') {
+      const dev = (raw.development as Record<string, unknown>) || {};
+      const health = (raw.health as Record<string, unknown>) || {};
+      const allergyRows = Array.isArray(health.allergies)
+        ? (health.allergies as Array<Record<string, unknown>>)
+        : [];
+      const allergies = allergyRows
+        .filter((a) => a && typeof a.allergen === 'string' && a.allergen.trim())
+        .map((a) => {
+          const sev = typeof a.severity === 'string' ? a.severity : '';
+          return sev ? `${String(a.allergen).trim()} (${sev})` : String(a.allergen).trim();
+        });
+
+      const str = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : undefined);
+      const candidate: ParentIntakeContext = {
+        strengths: str(dev.strengths),
+        growthAreas: str(dev.growthAreas),
+        fears: str(dev.fears),
+        comfortItems: str(dev.comfortItems),
+        temperamentNotes: str(dev.temperamentNotes),
+        separationHistory: str(dev.separationHistory),
+        otherNotes: str(dev.otherNotes),
+        allergies,
+      };
+      const hasSomething =
+        allergies.length > 0
+        || Object.entries(candidate).some(([k, v]) => k !== 'allergies' && !!v);
+      if (hasSomething) parentIntake = candidate;
+    }
+  } catch {
+    // Non-critical — the Guru has always worked without this.
+  }
+
   return {
     id: child.id,
     name: child.name.split(' ')[0], // First name only for privacy
@@ -442,6 +517,7 @@ export async function buildChildContext(
       set_by: fw.set_by,
     })),
     teacher_onboarding_notes: child.notes || undefined,
+    parent_intake: parentIntake,
     guru_child_profile: settings.guru_child_profile as Record<string, unknown> | undefined,
     parent_emotional_state: settings.guru_parent_current_state as ChildContext['parent_emotional_state'] | undefined,
     developmental_insights: (Array.isArray(settings.guru_developmental_insights) ? settings.guru_developmental_insights : []).map((i: Record<string, unknown>) => ({
@@ -558,6 +634,22 @@ export function formatContextForPrompt(context: ChildContext): string {
       mp.challenging_triggers.forEach(t => lines.push(`- ${t}`));
     }
 
+    lines.push('');
+  }
+
+  // 🧾 Parent intake — what the family told the school at enrollment. Only a
+  // teacher-COMMITTED form reaches this point (see buildChildContext).
+  if (context.parent_intake) {
+    const pi = context.parent_intake;
+    lines.push('PARENT INTAKE (provided by family at enrollment):');
+    if (pi.strengths) lines.push(`- Strengths: ${pi.strengths}`);
+    if (pi.growthAreas) lines.push(`- Finds hard: ${pi.growthAreas}`);
+    if (pi.temperamentNotes) lines.push(`- Temperament (family's words): ${pi.temperamentNotes}`);
+    if (pi.fears) lines.push(`- Fears / upsets: ${pi.fears}`);
+    if (pi.comfortItems) lines.push(`- Comforted by: ${pi.comfortItems}`);
+    if (pi.separationHistory) lines.push(`- Separation: ${pi.separationHistory}`);
+    if (pi.allergies.length > 0) lines.push(`- Allergies: ${pi.allergies.join(', ')}`);
+    if (pi.otherNotes) lines.push(`- Family also says: ${pi.otherNotes}`);
     lines.push('');
   }
 

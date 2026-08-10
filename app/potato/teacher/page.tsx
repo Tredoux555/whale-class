@@ -423,6 +423,9 @@ export default function CaptureBoardPage() {
           <Link href="/potato/teacher/codes" className="pt-btn pt-btn--ghost pt-btn--md" style={{ textDecoration: 'none' }}>
             Parent codes
           </Link>
+          <Link href="/potato/teacher/onboarding" className="pt-btn pt-btn--ghost pt-btn--md" style={{ textDecoration: 'none' }}>
+            Child profiles
+          </Link>
           <Link href="/potato/teacher/branding" className="pt-btn pt-btn--ghost pt-btn--md" style={{ textDecoration: 'none' }}>
             Branding
           </Link>

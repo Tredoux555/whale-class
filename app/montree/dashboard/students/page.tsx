@@ -637,6 +637,22 @@ export default function StudentsPage() {
           )}
           {!isHomeschoolParent(session) && (
             <button
+              onClick={() => router.push('/montree/dashboard/photo-onboarding?mode=update')}
+              className="btn btn-secondary btn-sm"
+            >
+              🔄 {t('photoOnboarding.updateClassButton')}
+            </button>
+          )}
+          {!isHomeschoolParent(session) && (
+            <button
+              onClick={() => router.push('/montree/dashboard/child-onboarding')}
+              className="btn btn-secondary btn-sm"
+            >
+              🧾 {t('childOnboarding.entryButton')}
+            </button>
+          )}
+          {!isHomeschoolParent(session) && (
+            <button
               onClick={() => router.push('/montree/dashboard/labels')}
               className="btn btn-secondary btn-sm"
             >

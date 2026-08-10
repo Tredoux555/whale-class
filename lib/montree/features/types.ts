@@ -15,6 +15,15 @@ export type FeatureKey =
   // anything is written. Migration 325. Default ON — nothing is saved without
   // an explicit review + Apply.
   | 'photo_onboarding'
+  // Child Onboarding — the family's enrollment intake. Parents fill in the full
+  // form on their existing parent login (guardians, emergency contacts,
+  // authorized pickup adults with photos, allergies, documents, per-purpose
+  // consents, and a getting-to-know-your-child section); the teacher reviews and
+  // commits it; the school then prints cubby / toothbrush / bed / table labels
+  // and the pickup + sign-in sheets, all carrying the child's face. Committed
+  // intake also feeds the child's Guru context. Migration 326. No AI anywhere.
+  // Default ON — nothing reaches a child's record without an explicit Commit.
+  | 'child_onboarding'
   // Give Control: school manages its own features from the dashboard
   // (/montree/dashboard/school-features + three-dot menu row).
   // No migration — montree_school_features override row only, default OFF.
