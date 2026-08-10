@@ -228,7 +228,7 @@ export default function Home() {
                   on this host so teachers never land on montree.xyz. */}
               <a
                 href="/montree/library"
-                className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl font-medium transition-all backdrop-blur-sm"
+                className="btn btn-secondary btn-md"
               >
                 <span>👩‍🏫</span>
                 <span className="hidden sm:inline">Teachers</span>
@@ -239,7 +239,7 @@ export default function Home() {
                   untouched, just no longer advertised from this header. */}
               <Link
                 href="/potato"
-                className="flex items-center gap-2 px-4 py-2 bg-amber-300/25 hover:bg-amber-300/40 ring-1 ring-amber-200/40 rounded-xl font-medium transition-all backdrop-blur-sm"
+                className="btn btn-gold btn-md"
               >
                 <span>📸</span>
                 <span className="hidden sm:inline">PSS</span>
@@ -256,10 +256,10 @@ export default function Home() {
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id as typeof selectedCategory)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-full font-medium whitespace-nowrap transition-all ${
+              className={`btn btn-pill btn-md ${
                 selectedCategory === cat.id
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-200"
-                  : "bg-white text-gray-700 hover:bg-gray-50 shadow-sm"
+                  ? "btn-primary"
+                  : "btn-secondary on-light"
               }`}
             >
               <span>{cat.icon}</span>
@@ -307,10 +307,10 @@ export default function Home() {
                   {/* Repeat Button */}
                   <button
                     onClick={(e) => { e.stopPropagation(); toggleRepeat(video.id); }}
-                    className={`absolute top-3 right-3 z-10 w-10 h-10 rounded-xl flex items-center justify-center transition-all shadow-lg ${
+                    className={`btn btn-icon btn-md absolute top-3 right-3 z-10 ${
                       repeatModes[video.id]
-                        ? "bg-blue-600 text-white"
-                        : "bg-white/90 text-gray-700 hover:bg-white"
+                        ? "btn-primary"
+                        : "btn-secondary on-light"
                     }`}
                     title={repeatModes[video.id] ? "Disable repeat" : "Enable repeat"}
                   >
@@ -344,14 +344,14 @@ export default function Home() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleDownload(video)}
-                      className="flex-1 flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2.5 rounded-xl font-medium transition-colors"
+                      className="btn btn-secondary btn-md flex-1 on-light"
                     >
                       <span>⬇️</span>
                       <span>Download</span>
                     </button>
                     <button
                       onClick={() => setShareTarget(video)}
-                      className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-medium transition-colors shadow-sm"
+                      className="btn btn-primary btn-md flex-1"
                       title="Share or get a QR code"
                     >
                       <span>🔗</span>

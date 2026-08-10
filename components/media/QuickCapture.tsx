@@ -268,20 +268,20 @@ export default function QuickCapture({
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-black/40 backdrop-blur-sm rounded-full p-1 flex">
           <button
             onClick={() => switchMode('photo')}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-              mode === 'photo' 
-                ? 'bg-white text-black' 
-                : 'text-white/70 hover:text-white'
+            className={`btn btn-md btn-pill ${
+              mode === 'photo'
+                ? 'btn-primary'
+                : 'btn-ghost'
             }`}
           >
             📷 Photo
           </button>
           <button
             onClick={() => switchMode('document')}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-              mode === 'document' 
-                ? 'bg-white text-black' 
-                : 'text-white/70 hover:text-white'
+            className={`btn btn-md btn-pill ${
+              mode === 'document'
+                ? 'btn-primary'
+                : 'btn-ghost'
             }`}
           >
             📄 Document
@@ -313,7 +313,7 @@ export default function QuickCapture({
             <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between">
               <button
                 onClick={handleClose}
-                className="w-10 h-10 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center text-white"
+                className="btn btn-secondary btn-icon btn-md btn-round"
               >
                 ✕
               </button>
@@ -336,7 +336,7 @@ export default function QuickCapture({
               <div className="flex items-center justify-center gap-12">
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center"
+                  className="btn btn-secondary btn-icon btn-md btn-round"
                 >
                   <span className="text-xl">🖼️</span>
                 </button>
@@ -362,11 +362,11 @@ export default function QuickCapture({
           {/* Close button */}
           <button
             onClick={handleClose}
-            className="absolute top-4 right-4 w-10 h-10 bg-white/10 backdrop-blur-sm text-white rounded-full flex items-center justify-center"
+            className="btn btn-secondary btn-icon btn-md btn-round absolute top-4 right-4"
           >
             ✕
           </button>
-          
+
           {/* Document upload area */}
           <div 
             onClick={() => docInputRef.current?.click()}
@@ -407,15 +407,15 @@ export default function QuickCapture({
             <button
               onClick={retakePhoto}
               disabled={step === 'saving'}
-              className="absolute top-4 left-4 px-4 py-2 bg-black/50 backdrop-blur-sm text-white rounded-full text-sm font-medium disabled:opacity-50"
+              className="btn btn-secondary btn-md btn-pill absolute top-4 left-4"
             >
               ↻ Retake
             </button>
-            
+
             <button
               onClick={handleClose}
               disabled={step === 'saving'}
-              className="absolute top-4 right-4 w-10 h-10 bg-black/50 backdrop-blur-sm text-white rounded-full flex items-center justify-center disabled:opacity-50"
+              className="btn btn-secondary btn-icon btn-md btn-round absolute top-4 right-4"
             >
               ✕
             </button>
@@ -486,15 +486,15 @@ export default function QuickCapture({
             <button
               onClick={retakePhoto}
               disabled={step === 'saving'}
-              className="mt-4 px-4 py-2 bg-white/10 backdrop-blur-sm text-white rounded-full text-sm font-medium disabled:opacity-50"
+              className="btn btn-secondary btn-md btn-pill mt-4"
             >
               ↻ Choose different file
             </button>
-            
+
             <button
               onClick={handleClose}
               disabled={step === 'saving'}
-              className="absolute top-4 right-4 w-10 h-10 bg-white/10 backdrop-blur-sm text-white rounded-full flex items-center justify-center disabled:opacity-50"
+              className="btn btn-secondary btn-icon btn-md btn-round absolute top-4 right-4"
             >
               ✕
             </button>

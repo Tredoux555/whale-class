@@ -92,7 +92,7 @@ function CallSplash({
       {action && (
         <button
           onClick={action.onClick}
-          className="rounded-full bg-slate-700 px-6 py-2.5 font-semibold transition-colors hover:bg-slate-600"
+          className="btn btn-secondary btn-md btn-pill"
         >
           {action.label}
         </button>

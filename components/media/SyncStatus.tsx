@@ -41,7 +41,7 @@ export default function SyncStatus({ className = '', showLabel = true }: SyncSta
       {pendingCount > 0 && !isSyncing && (
         <button
           onClick={sync}
-          className="flex items-center gap-1 px-2 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-medium hover:bg-slate-200 transition-colors"
+          className="btn btn-secondary btn-sm btn-pill on-light"
         >
           <span className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
           {pendingCount}
@@ -52,7 +52,7 @@ export default function SyncStatus({ className = '', showLabel = true }: SyncSta
       {failedCount > 0 && (
         <button
           onClick={retryFailed}
-          className="flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium hover:bg-red-200 transition-colors"
+          className="btn btn-danger btn-soft btn-sm btn-pill on-light"
         >
           <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
           {failedCount} failed

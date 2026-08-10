@@ -146,7 +146,7 @@ const LevelSelect = ({ onSelectLevel, onBack }: LevelSelectProps) => {
         {onBack && (
           <button
             onClick={onBack}
-            className="mb-4 flex items-center gap-2 text-amber-700 hover:text-amber-800 transition-colors"
+            className="btn btn-ghost btn-md mb-4 on-light"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -352,24 +352,21 @@ export default function GrammarSymbolsGame({
             {selectedLevel && selectedLevel < 3 && (
               <button
                 onClick={() => handleSelectLevel((selectedLevel + 1) as 1 | 2 | 3)}
-                className="w-full py-4 px-6 bg-green-500 text-white text-lg font-semibold 
-                           rounded-xl shadow-lg hover:bg-green-600 transition-colors"
+                className="btn btn-primary btn-lg btn-full"
               >
                 Try Level {selectedLevel + 1} →
               </button>
             )}
             <button
               onClick={handleBackToLevels}
-              className="w-full py-4 px-6 bg-amber-500 text-white text-lg font-semibold 
-                         rounded-xl shadow-lg hover:bg-amber-600 transition-colors"
+              className="btn btn-gold btn-lg btn-full"
             >
               Choose Another Level
             </button>
             {onComplete && (
               <button
                 onClick={handleComplete}
-                className="w-full py-3 px-6 bg-gray-200 text-gray-700 font-semibold 
-                           rounded-xl hover:bg-gray-300 transition-colors"
+                className="btn btn-secondary btn-lg btn-full on-light"
               >
                 Finish Game
               </button>
@@ -396,7 +393,7 @@ export default function GrammarSymbolsGame({
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <button
             onClick={handleBackToLevels}
-            className="flex items-center gap-1 text-amber-700 hover:text-amber-800 transition-colors"
+            className="btn btn-ghost btn-md on-light"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -484,7 +481,7 @@ export default function GrammarSymbolsGame({
           <div className="max-w-md mx-auto">
             <button
               onClick={handleNextSentence}
-              className="w-full py-4 px-6 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xl font-bold rounded-2xl shadow-lg hover:from-green-600 hover:to-emerald-600 active:scale-[0.98] transition-all duration-200"
+              className="btn btn-primary btn-lg btn-full"
             >
               {currentSentenceIndex < sentences.length - 1 ? 'Next Sentence →' : 'Finish Level! 🎉'}
             </button>

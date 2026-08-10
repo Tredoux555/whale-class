@@ -83,7 +83,7 @@ export function MessageComposer({
             <img src={imagePreview} alt="Preview" className="max-w-xs max-h-48 rounded-lg border border-white/10" />
             <button
               onClick={onImageClear}
-              className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-sm hover:bg-red-600"
+              className="btn btn-danger btn-icon btn-sm btn-round absolute -top-2 -right-2"
             >
               ×
             </button>
@@ -99,7 +99,7 @@ export function MessageComposer({
             </div>
             <button
               onClick={onAudioClear}
-              className="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-sm hover:bg-red-600"
+              className="btn btn-danger btn-icon btn-sm btn-round"
             >
               ×
             </button>
@@ -115,7 +115,7 @@ export function MessageComposer({
             </div>
             <button
               onClick={onVideoClear}
-              className="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-sm hover:bg-red-600"
+              className="btn btn-danger btn-icon btn-sm btn-round"
             >
               ×
             </button>
@@ -131,7 +131,7 @@ export function MessageComposer({
             </div>
             <button
               onClick={onDocumentClear}
-              className="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-sm hover:bg-red-600"
+              className="btn btn-danger btn-icon btn-sm btn-round"
             >
               ×
             </button>
@@ -189,7 +189,7 @@ export function MessageComposer({
               isUploadingDocument ||
               (!adminMessage.trim() && !selectedImage && !selectedAudio && !selectedVideo && !selectedDocument)
             }
-            className="px-6 py-2 bg-emerald-500 text-[#0a1a0f] rounded-lg hover:bg-emerald-600 disabled:bg-white/15 disabled:text-white/40 disabled:cursor-not-allowed transition-colors font-medium"
+            className="btn btn-primary btn-md"
           >
             {isUploadingDocument
               ? '⟳ Uploading Document...'
@@ -214,7 +214,7 @@ export function MessageComposer({
 
           <button
             onClick={onClearAll}
-            className="px-4 py-2 text-white/70 border border-white/15 rounded-lg hover:bg-white/5 transition-colors"
+            className="btn btn-secondary btn-md"
           >
             Clear
           </button>

@@ -256,7 +256,7 @@ export default function LessonDocuments({ weekNumber, year = new Date().getFullY
                 </a>
                 <button
                   onClick={(e) => { e.preventDefault(); deleteDocument(doc.id); }}
-                  className="p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="btn btn-ghost btn-icon btn-sm on-light opacity-0 group-hover:opacity-100"
                   title="Delete"
                 >
                   🗑️

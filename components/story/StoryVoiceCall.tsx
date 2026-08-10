@@ -362,7 +362,7 @@ export default function StoryVoiceCall({ callId, as, authToken, onClose }: Story
       <button
         onClick={hangUp}
         aria-label="Hang up"
-        className="flex h-16 w-16 items-center justify-center rounded-full bg-rose-600 text-2xl transition-colors hover:bg-rose-700"
+        className="btn btn-danger btn-icon btn-lg btn-round text-2xl"
       >
         📞
       </button>
@@ -392,7 +392,7 @@ export default function StoryVoiceCall({ callId, as, authToken, onClose }: Story
         {(phase === 'error' || phase === 'ended') && (
           <button
             onClick={onClose}
-            className="mt-2 rounded-full bg-slate-700 px-8 py-3 font-semibold transition-colors hover:bg-slate-600"
+            className="btn btn-secondary btn-lg btn-pill mt-2"
           >
             Close
           </button>

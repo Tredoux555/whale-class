@@ -285,7 +285,7 @@ export function FlashcardMaker() {
             <h2 className="text-xl font-semibold text-gray-800">🎞️ Select Frames from Video</h2>
             <button
               onClick={() => setShowScrubber(!showScrubber)}
-              className="text-sm text-blue-600 hover:text-blue-800"
+              className="btn btn-ghost btn-sm on-light"
             >
               {showScrubber ? 'Hide Scrubber' : 'Show Scrubber'}
             </button>
@@ -349,28 +349,28 @@ export function FlashcardMaker() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleScrubberChange(Math.max(0, scrubberTime - 1))}
-                      className="px-3 py-1 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm"
+                      className="btn btn-secondary btn-sm on-light"
                       disabled={!videoReady}
                     >
                       ← 1s
                     </button>
                     <button
                       onClick={() => handleScrubberChange(Math.max(0, scrubberTime - 0.1))}
-                      className="px-3 py-1 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm"
+                      className="btn btn-secondary btn-sm on-light"
                       disabled={!videoReady}
                     >
                       ← 0.1s
                     </button>
                     <button
                       onClick={() => handleScrubberChange(Math.min(videoDuration, scrubberTime + 0.1))}
-                      className="px-3 py-1 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm"
+                      className="btn btn-secondary btn-sm on-light"
                       disabled={!videoReady}
                     >
                       0.1s →
                     </button>
                     <button
                       onClick={() => handleScrubberChange(Math.min(videoDuration, scrubberTime + 1))}
-                      className="px-3 py-1 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm"
+                      className="btn btn-secondary btn-sm on-light"
                       disabled={!videoReady}
                     >
                       1s →
@@ -380,7 +380,7 @@ export function FlashcardMaker() {
                   <button
                     onClick={addFrameFromScrubber}
                     disabled={!scrubberPreview || !videoReady}
-                    className="w-full py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                    className="btn btn-primary btn-md btn-full"
                   >
                     ➕ Add This Frame
                   </button>

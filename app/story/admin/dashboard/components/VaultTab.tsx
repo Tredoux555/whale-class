@@ -114,7 +114,7 @@ export function VaultTab({
             />
             <button
               onClick={onVaultUnlock}
-              className="px-6 py-2 bg-emerald-500 text-[#0a1a0f] rounded-lg hover:bg-emerald-600 transition-colors font-medium"
+              className="btn btn-primary btn-md"
             >
               Unlock
             </button>
@@ -132,7 +132,7 @@ export function VaultTab({
               <h2 className="text-lg font-bold text-white/90">🔓 Vault Unlocked</h2>
               <button
                 onClick={onVaultLock}
-                className="px-3 py-1 text-sm bg-white/10 text-white/70 border border-white/10 rounded hover:bg-white/15 transition-colors"
+                className="btn btn-secondary btn-sm"
               >
                 Lock
               </button>
@@ -229,13 +229,13 @@ export function VaultTab({
                             <div className="flex gap-1 mt-1">
                               <button
                                 onClick={(e) => { e.stopPropagation(); onVaultDownload(file.id, file.filename); }}
-                                className="px-1.5 py-0.5 text-[9px] bg-white/20 text-white rounded hover:bg-white/30 transition-colors"
+                                className="btn btn-secondary btn-icon btn-sm"
                               >
                                 ⬇
                               </button>
                               <button
                                 onClick={(e) => { e.stopPropagation(); onVaultDelete(file.id); }}
-                                className="px-1.5 py-0.5 text-[9px] bg-red-500/40 text-white rounded hover:bg-red-500/60 transition-colors"
+                                className="btn btn-danger btn-soft btn-icon btn-sm"
                               >
                                 🗑
                               </button>
@@ -265,13 +265,13 @@ export function VaultTab({
                         <div className="flex gap-2">
                           <button
                             onClick={() => onVaultDownload(file.id, file.filename)}
-                            className="px-3 py-1 text-xs bg-[rgba(52,211,153,0.12)] text-emerald-300 border border-[rgba(52,211,153,0.25)] rounded hover:bg-[rgba(52,211,153,0.20)] transition-colors"
+                            className="btn btn-primary btn-sm"
                           >
                             ⬇ Download
                           </button>
                           <button
                             onClick={() => onVaultDelete(file.id)}
-                            className="px-3 py-1 text-xs bg-red-500/15 text-red-300 border border-red-500/30 rounded hover:bg-red-500/25 transition-colors"
+                            className="btn btn-danger btn-soft btn-sm"
                           >
                             🗑 Delete
                           </button>
@@ -467,7 +467,7 @@ function VaultUploadZone({ uploadingVault, uploadProgress, onVaultUpload }: Vaul
           type="button"
           disabled={uploadingVault}
           onClick={() => cameraPhotoInputRef.current?.click()}
-          className="flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white/80 bg-white/5 border border-white/15 rounded-lg hover:bg-white/10 active:bg-white/15 disabled:opacity-50 disabled:cursor-wait transition-colors"
+          className="btn btn-secondary btn-lg"
         >
           📷 Take photo
         </button>
@@ -475,7 +475,7 @@ function VaultUploadZone({ uploadingVault, uploadProgress, onVaultUpload }: Vaul
           type="button"
           disabled={uploadingVault}
           onClick={() => cameraVideoInputRef.current?.click()}
-          className="flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white/80 bg-white/5 border border-white/15 rounded-lg hover:bg-white/10 active:bg-white/15 disabled:opacity-50 disabled:cursor-wait transition-colors"
+          className="btn btn-secondary btn-lg"
         >
           🎥 Record video
         </button>

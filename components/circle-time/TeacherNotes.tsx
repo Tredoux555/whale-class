@@ -144,7 +144,7 @@ export default function TeacherNotes({
             <button
               onClick={addNote}
               disabled={!newNote.trim() || saving}
-              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+              className="btn btn-gold btn-md on-light"
             >
               {saving ? '...' : '+ Add'}
             </button>
@@ -188,7 +188,7 @@ export default function TeacherNotes({
                 {currentTeacher === note.teacher_name && (
                   <button
                     onClick={() => deleteNote(note.id)}
-                    className="p-1 text-gray-400 hover:text-red-500 ml-2"
+                    className="btn btn-danger btn-soft btn-icon btn-sm on-light ml-2"
                     title="Delete"
                   >
                     🗑️

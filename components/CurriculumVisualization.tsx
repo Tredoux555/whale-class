@@ -123,7 +123,7 @@ export const CurriculumVisualization: React.FC<
         <p className="text-red-700 font-medium">{error}</p>
         <button
           onClick={fetchAllData}
-          className="mt-4 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+          className="btn btn-danger btn-md mt-4"
         >
           Try Again
         </button>

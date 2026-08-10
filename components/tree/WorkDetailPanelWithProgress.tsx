@@ -94,25 +94,25 @@ export default function WorkDetailPanelWithProgress({
               {status === 'not_started' && (
                 <button
                   onClick={() => onStartWork(workId)}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                  className="btn btn-primary btn-md on-light"
                 >
                   Start This Work
                 </button>
               )}
-              
+
               {status === 'in_progress' && currentLevel < work.levels.length && (
                 <button
                   onClick={() => onCompleteLevel(workId, currentLevel)}
-                  className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+                  className="btn btn-gold btn-md on-light"
                 >
                   Complete Level {currentLevel}
                 </button>
               )}
-              
+
               {status === 'in_progress' && (
                 <button
                   onClick={() => onCompleteWork(workId)}
-                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                  className="btn btn-primary btn-md on-light"
                 >
                   Mark All Complete
                 </button>
@@ -190,7 +190,7 @@ export default function WorkDetailPanelWithProgress({
                     {childId && !isCompleted && status === 'in_progress' && (
                       <button
                         onClick={() => onCompleteLevel(workId, level.level)}
-                        className="ml-auto text-xs px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200"
+                        className="btn btn-primary btn-sm ml-auto on-light"
                       >
                         Complete
                       </button>

@@ -163,7 +163,7 @@ export default function EnhancedChildDashboard({ childId }: EnhancedChildDashboa
         <p className="text-red-700">{error}</p>
         <button
           onClick={loadChildData}
-          className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          className="btn btn-danger btn-md on-light mt-4"
         >
           Retry
         </button>
@@ -178,7 +178,7 @@ export default function EnhancedChildDashboard({ childId }: EnhancedChildDashboa
         <p className="text-yellow-700 mt-2">Child ID: {childId}</p>
         <button
           onClick={loadChildData}
-          className="mt-4 px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
+          className="btn btn-gold btn-md on-light mt-4"
         >
           Retry
         </button>
@@ -277,7 +277,7 @@ export default function EnhancedChildDashboard({ childId }: EnhancedChildDashboa
                   <p className="text-gray-600 mb-4">No activity assigned for today</p>
                   <button
                     onClick={generateTodayActivity}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+                    className="btn btn-primary btn-lg on-light"
                   >
                     Generate Today's Activity
                   </button>
@@ -337,14 +337,14 @@ export default function EnhancedChildDashboard({ childId }: EnhancedChildDashboa
                       <>
                         <button
                           onClick={() => markActivityComplete(true)}
-                          className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold"
+                          className="btn btn-primary btn-lg on-light"
                         >
                           <CheckCircle className="w-5 h-5" />
                           Mark Complete
                         </button>
                         <button
                           onClick={generateTodayActivity}
-                          className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-semibold"
+                          className="btn btn-secondary btn-lg on-light"
                         >
                           Get Different Activity
                         </button>
@@ -352,7 +352,7 @@ export default function EnhancedChildDashboard({ childId }: EnhancedChildDashboa
                     ) : (
                       <button
                         onClick={generateTodayActivity}
-                        className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+                        className="btn btn-primary btn-lg on-light"
                       >
                         <Clock className="w-5 h-5" />
                         Next Activity

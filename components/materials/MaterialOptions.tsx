@@ -147,8 +147,8 @@ export default function MaterialOptions({ type, options, onChange, onGenerate, g
             <div className="flex gap-2">
               <button
                 onClick={() => update('vowel', undefined)}
-                className={`px-3 py-1.5 rounded-lg ${
-                  !options.vowel ? 'bg-pink-500 text-white' : 'bg-gray-100'
+                className={`btn btn-sm ${
+                  !options.vowel ? 'btn-primary' : 'btn-secondary on-light'
                 }`}
               >
                 All
@@ -157,8 +157,8 @@ export default function MaterialOptions({ type, options, onChange, onGenerate, g
                 <button
                   key={v}
                   onClick={() => update('vowel', v)}
-                  className={`px-3 py-1.5 rounded-lg uppercase ${
-                    options.vowel === v ? 'bg-pink-500 text-white' : 'bg-gray-100'
+                  className={`btn btn-sm uppercase ${
+                    options.vowel === v ? 'btn-primary' : 'btn-secondary on-light'
                   }`}
                 >
                   {v}
@@ -176,8 +176,8 @@ export default function MaterialOptions({ type, options, onChange, onGenerate, g
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => update('blend', undefined)}
-                className={`px-3 py-1.5 rounded-lg ${
-                  !options.blend ? 'bg-blue-500 text-white' : 'bg-gray-100'
+                className={`btn btn-sm ${
+                  !options.blend ? 'btn-primary' : 'btn-secondary on-light'
                 }`}
               >
                 All
@@ -186,8 +186,8 @@ export default function MaterialOptions({ type, options, onChange, onGenerate, g
                 <button
                   key={b}
                   onClick={() => update('blend', b)}
-                  className={`px-3 py-1.5 rounded-lg uppercase ${
-                    options.blend === b ? 'bg-blue-500 text-white' : 'bg-gray-100'
+                  className={`btn btn-sm uppercase ${
+                    options.blend === b ? 'btn-primary' : 'btn-secondary on-light'
                   }`}
                 >
                   {b}
@@ -205,8 +205,8 @@ export default function MaterialOptions({ type, options, onChange, onGenerate, g
             <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
               <button
                 onClick={() => update('pattern', undefined)}
-                className={`px-3 py-1.5 rounded-lg ${
-                  !options.pattern ? 'bg-green-500 text-white' : 'bg-gray-100'
+                className={`btn btn-sm ${
+                  !options.pattern ? 'btn-primary' : 'btn-secondary on-light'
                 }`}
               >
                 All
@@ -215,8 +215,8 @@ export default function MaterialOptions({ type, options, onChange, onGenerate, g
                 <button
                   key={p}
                   onClick={() => update('pattern', p)}
-                  className={`px-3 py-1.5 rounded-lg ${
-                    options.pattern === p ? 'bg-green-500 text-white' : 'bg-gray-100'
+                  className={`btn btn-sm ${
+                    options.pattern === p ? 'btn-primary' : 'btn-secondary on-light'
                   }`}
                 >
                   {p}
@@ -333,7 +333,7 @@ export default function MaterialOptions({ type, options, onChange, onGenerate, g
                   </span>
                   <button
                     onClick={() => update('images', [])}
-                    className="text-xs text-red-500 hover:text-red-700"
+                    className="btn btn-ghost btn-sm on-light"
                   >
                     Clear all
                   </button>
@@ -384,7 +384,7 @@ export default function MaterialOptions({ type, options, onChange, onGenerate, g
         <button
           onClick={onGenerate}
           disabled={generating}
-          className="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg font-medium hover:from-indigo-600 hover:to-purple-600 disabled:opacity-50 flex items-center justify-center gap-2"
+          className="btn btn-primary btn-lg btn-full on-light"
         >
           {generating ? (
             <>

@@ -124,14 +124,14 @@ export function OnlineUsersTab({ onlineUsers, getSession }: OnlineUsersTabProps)
                     <button
                       onClick={() => startCall(username, 'voice')}
                       disabled={callingUser !== null}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-white/15 disabled:text-white/40 text-[#0a1a0f] text-xs font-semibold rounded-full transition-colors"
+                      className="btn btn-primary btn-sm btn-pill"
                     >
                       📞 {callingUser === username ? '…' : 'Voice'}
                     </button>
                     <button
                       onClick={() => startCall(username, 'video')}
                       disabled={callingUser !== null}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-[rgba(52,211,153,0.15)] border border-[rgba(52,211,153,0.30)] hover:bg-[rgba(52,211,153,0.25)] disabled:bg-white/10 disabled:text-white/40 disabled:border-white/10 text-emerald-300 text-xs font-semibold rounded-full transition-colors"
+                      className="btn btn-secondary btn-sm btn-pill"
                     >
                       📹 {callingUser === username ? '…' : 'Video'}
                     </button>

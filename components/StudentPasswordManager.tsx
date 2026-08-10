@@ -186,7 +186,7 @@ export default function StudentPasswordManager({
           <button
             type="submit"
             disabled={loading || !password || password !== confirmPassword}
-            className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="btn btn-primary btn-md flex-1 on-light"
           >
             {loading ? 'Saving...' : hasPassword ? 'Update Password' : 'Set Password'}
           </button>
@@ -195,7 +195,7 @@ export default function StudentPasswordManager({
               type="button"
               onClick={handleRemovePassword}
               disabled={loading}
-              className="px-4 py-2 bg-red-100 text-red-700 rounded-lg font-medium hover:bg-red-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="btn btn-danger btn-soft btn-md on-light"
             >
               Remove
             </button>

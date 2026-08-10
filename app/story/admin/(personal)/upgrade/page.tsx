@@ -81,16 +81,7 @@ export default function UpgradePage() {
               key={c}
               onClick={() => setCadence(c)}
               disabled={busy}
-              style={{
-                border: 'none',
-                cursor: busy ? 'default' : 'pointer',
-                padding: '8px 18px',
-                borderRadius: 9,
-                fontSize: 14,
-                fontWeight: 600,
-                color: cadence === c ? '#06140c' : '#cfe5d8',
-                background: cadence === c ? EMERALD : 'transparent',
-              }}
+              className={`btn btn-sm ${cadence === c ? 'btn-primary' : 'btn-ghost'}`}
             >
               {c === 'monthly' ? 'Monthly' : 'Annual'}
             </button>
@@ -108,19 +99,7 @@ export default function UpgradePage() {
         <button
           onClick={() => go('/api/story/coach-billing/checkout', { cadence })}
           disabled={busy}
-          style={{
-            width: '100%',
-            padding: '14px',
-            borderRadius: 12,
-            border: 'none',
-            cursor: busy ? 'default' : 'pointer',
-            fontSize: 16,
-            fontWeight: 700,
-            color: '#06140c',
-            background: `linear-gradient(135deg, ${EMERALD}, #1D6B48)`,
-            boxShadow: '0 6px 20px rgba(52,211,153,0.25)',
-            opacity: busy ? 0.7 : 1,
-          }}
+          className="btn btn-primary btn-lg btn-full"
         >
           {busy ? 'One moment…' : 'Upgrade'}
         </button>
@@ -130,15 +109,8 @@ export default function UpgradePage() {
         <button
           onClick={() => go('/api/story/coach-billing/portal')}
           disabled={busy}
-          style={{
-            marginTop: 16,
-            background: 'none',
-            border: 'none',
-            color: '#9fc7b0',
-            fontSize: 13,
-            cursor: busy ? 'default' : 'pointer',
-            textDecoration: 'underline',
-          }}
+          className="btn btn-ghost btn-sm"
+          style={{ marginTop: 16 }}
         >
           Manage billing
         </button>

@@ -84,7 +84,7 @@ export function FlashcardPreview({
             {/* Remove Button */}
             <button
               onClick={() => onRemove(index)}
-              className="absolute top-2 right-12 z-10 bg-red-500 text-white w-6 h-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm hover:bg-red-600"
+              className="btn btn-danger btn-icon btn-sm btn-round absolute top-2 right-12 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
             >
               ×
             </button>

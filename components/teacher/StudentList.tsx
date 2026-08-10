@@ -94,7 +94,7 @@ export default function StudentList({ students, onViewStudent, onAssignWork }: P
             <div className="flex gap-1">
               <button
                 onClick={() => onViewStudent(student.id)}
-                className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded"
+                className="btn btn-ghost btn-icon btn-sm on-light"
                 title="View details"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -104,7 +104,7 @@ export default function StudentList({ students, onViewStudent, onAssignWork }: P
               </button>
               <button
                 onClick={() => onAssignWork(student.id)}
-                className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded"
+                className="btn btn-ghost btn-icon btn-sm on-light"
                 title="Assign work"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

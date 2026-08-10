@@ -154,17 +154,8 @@ export default function ShareSongModal({ title, origin, onClose }: ShareSongModa
         <button
           onClick={onClose}
           aria-label="Close"
-          style={{
-            position: 'absolute',
-            top: 12,
-            right: 14,
-            background: 'transparent',
-            border: 'none',
-            fontSize: 22,
-            color: '#94a3b8',
-            cursor: 'pointer',
-            lineHeight: 1,
-          }}
+          className="btn btn-ghost btn-icon btn-md on-light"
+          style={{ position: 'absolute', top: 12, right: 14 }}
         >
           ×
         </button>
@@ -252,17 +243,7 @@ export default function ShareSongModal({ title, origin, onClose }: ShareSongModa
           />
           <button
             onClick={handleCopy}
-            style={{
-              padding: '9px 14px',
-              background: copied ? '#10b981' : '#6366f1',
-              color: 'white',
-              border: 'none',
-              borderRadius: 8,
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-            }}
+            className={`btn btn-sm ${copied ? 'btn-primary' : 'btn-secondary'} on-light`}
           >
             {copied ? '✓ Copied' : 'Copy'}
           </button>
@@ -273,35 +254,16 @@ export default function ShareSongModal({ title, origin, onClose }: ShareSongModa
           <button
             onClick={handleDownloadQr}
             disabled={!qrDataUrl}
-            style={{
-              flex: 1,
-              padding: '11px 14px',
-              background: '#f1f5f9',
-              color: '#1e293b',
-              border: '1px solid #e2e8f0',
-              borderRadius: 10,
-              fontSize: 13.5,
-              fontWeight: 600,
-              cursor: qrDataUrl ? 'pointer' : 'not-allowed',
-              opacity: qrDataUrl ? 1 : 0.5,
-            }}
+            className="btn btn-secondary btn-sm on-light"
+            style={{ flex: 1 }}
           >
             ⬇ Download QR
           </button>
           {nativeShareSupported && (
             <button
               onClick={handleNativeShare}
-              style={{
-                flex: 1,
-                padding: '11px 14px',
-                background: '#6366f1',
-                color: 'white',
-                border: 'none',
-                borderRadius: 10,
-                fontSize: 13.5,
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
+              className="btn btn-primary btn-sm on-light"
+              style={{ flex: 1 }}
             >
               📤 Share…
             </button>

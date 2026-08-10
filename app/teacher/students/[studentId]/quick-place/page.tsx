@@ -133,10 +133,10 @@ export default function QuickPlacePage() {
         
         <div className="mt-8 flex gap-4">
           <button onClick={handleSave} disabled={saving}
-            className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50">
+            className="btn btn-primary btn-lg flex-1 on-light">
             {saving ? 'Saving...' : 'Save Placement'}
           </button>
-          <Link href="/teacher/progress" className="px-6 py-3 border rounded-lg text-gray-700 hover:bg-gray-50">Cancel</Link>
+          <Link href="/teacher/progress" className="btn btn-secondary btn-lg on-light">Cancel</Link>
         </div>
       </div>
     </div>

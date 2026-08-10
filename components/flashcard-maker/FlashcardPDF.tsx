@@ -84,10 +84,10 @@ export function FlashcardPDF({ frames, songTitle }: FlashcardPDFProps) {
               <button
                 key={num}
                 onClick={() => setCardsPerPage(num as 1 | 2 | 4)}
-                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
+                className={`btn btn-md flex-1 ${
                   cardsPerPage === num
-                    ? 'bg-cyan-500 text-white shadow-md'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'btn-primary'
+                    : 'btn-secondary on-light'
                 }`}
               >
                 {num}
@@ -175,7 +175,7 @@ export function FlashcardPDF({ frames, songTitle }: FlashcardPDFProps) {
       <button
         onClick={generatePDF}
         disabled={isGenerating || frames.length === 0}
-        className="w-full py-4 px-6 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold rounded-xl hover:from-green-600 hover:to-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg text-lg"
+        className="btn btn-primary btn-lg btn-full"
       >
         {isGenerating ? (
           <span className="flex items-center justify-center gap-2">

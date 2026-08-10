@@ -50,7 +50,7 @@ export default function DailyPlanGenerator({ childId, childName }: Props) {
           <button
             onClick={handleGenerate}
             disabled={loading}
-            className="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg hover:from-purple-600 hover:to-indigo-600 disabled:opacity-50 flex items-center gap-2"
+            className="btn btn-primary btn-md on-light"
           >
             {loading ? (
               <>
