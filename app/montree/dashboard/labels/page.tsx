@@ -109,7 +109,7 @@ export default function LabelsPage() {
         {/* Header */}
         <div className="relative bg-[rgba(7,18,12,0.9)] border-b border-[rgba(52,211,153,0.15)] px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <button onClick={() => router.back()} className="text-white/50 hover:text-white/80 p-1">
+            <button onClick={() => router.back()} className="btn btn-ghost btn-icon btn-sm">
               ←
             </button>
             <span className="text-xl">🏷️</span>
@@ -118,7 +118,7 @@ export default function LabelsPage() {
           <button
             onClick={() => window.print()}
             disabled={selectedStudents.length === 0}
-            className="px-4 py-1.5 bg-[#34d399] text-[#04150c] rounded-lg text-sm font-medium hover:bg-[#2bbd88] disabled:opacity-40 disabled:cursor-not-allowed"
+            className="btn btn-primary btn-sm"
           >
             🖨️ {t('common.print')}
           </button>
@@ -158,7 +158,7 @@ export default function LabelsPage() {
                 </div>
                 <button
                   onClick={() => setLogoDataUrl(null)}
-                  className="text-xs text-red-400 hover:text-red-300 px-2 py-1 rounded hover:bg-red-500/10 flex-shrink-0"
+                  className="btn btn-danger btn-soft btn-sm flex-shrink-0"
                 >
                   {t('labels.remove') || 'Remove'}
                 </button>
@@ -205,9 +205,9 @@ export default function LabelsPage() {
                 {t('labels.students')} ({selected.size}/{students.length})
               </h2>
               <div className="flex gap-2">
-                <button onClick={selectAll} className="text-xs text-[#34d399] hover:underline">{t('labels.select_all')}</button>
+                <button onClick={selectAll} className="btn btn-ghost btn-sm">{t('labels.select_all')}</button>
                 <span className="text-white/20">|</span>
-                <button onClick={selectNone} className="text-xs text-white/40 hover:underline">{t('labels.none')}</button>
+                <button onClick={selectNone} className="btn btn-ghost btn-sm">{t('labels.none')}</button>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">

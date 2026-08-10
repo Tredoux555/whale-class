@@ -95,7 +95,7 @@ export default function SettingsPage() {
         <div className="pt-4 border-t border-white/10">
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center justify-center gap-2 bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-300 font-medium hover:bg-red-500/20 transition-all"
+            className="btn btn-danger btn-soft btn-lg btn-full"
           >
             🚪 {t('settings.signOut')}
           </button>

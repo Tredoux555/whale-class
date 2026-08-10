@@ -262,7 +262,7 @@ export default function SoundSafariGame() {
 
           <button
             onClick={() => setGameState('mode-select')}
-            className="w-full max-w-xs mx-auto p-6 bg-white rounded-3xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all active:scale-95"
+            className="btn btn-primary btn-lg btn-full max-w-xs mx-auto"
           >
             <span className="text-4xl block mb-2">🎮</span>
             <span className="text-2xl font-bold text-green-700">Start Adventure!</span>
@@ -459,14 +459,14 @@ export default function SoundSafariGame() {
           <div className="space-y-3">
             <button
               onClick={() => startGame(selectedPhase!)}
-              className="w-full p-4 bg-white text-green-700 rounded-2xl font-bold text-xl shadow-lg hover:scale-105 active:scale-95 transition-transform"
+              className="btn btn-primary btn-lg btn-full"
             >
               Play Again! 🔄
             </button>
-            
-            <Link 
-              href="/montree/dashboard/games" 
-              className="block w-full p-4 bg-white/20 text-white rounded-2xl font-bold text-xl hover:bg-white/30 transition-colors"
+
+            <Link
+              href="/montree/dashboard/games"
+              className="btn btn-secondary btn-lg btn-full block"
             >
               Back to Games
             </Link>

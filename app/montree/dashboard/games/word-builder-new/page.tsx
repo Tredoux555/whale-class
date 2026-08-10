@@ -487,11 +487,11 @@ export default function WordBuilderGame() {
           <div className="space-y-3">
             <button
               onClick={() => startGame(difficulty)}
-              className="w-full p-4 bg-white text-purple-700 rounded-2xl font-bold text-xl shadow-lg hover:scale-105 active:scale-95 transition-transform"
+              className="btn btn-primary btn-lg btn-full"
             >
               Play Again! 🔄
             </button>
-            <Link href="/montree/dashboard/games" className="block w-full p-4 bg-white/20 text-white rounded-2xl font-bold text-xl">
+            <Link href="/montree/dashboard/games" className="btn btn-secondary btn-lg btn-full block">
               Back to Games
             </Link>
           </div>
@@ -538,14 +538,14 @@ export default function WordBuilderGame() {
             <button
               onClick={() => currentWord && playWord(currentWord.word)}
               disabled={isPlaying}
-              className="bg-white/30 hover:bg-white/40 text-white px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors"
+              className="btn btn-secondary btn-sm"
             >
               🔊 Hear Word
             </button>
             <button
               onClick={soundOutWord}
               disabled={isPlaying}
-              className="bg-yellow-400 hover:bg-yellow-300 text-yellow-900 px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors"
+              className="btn btn-gold btn-sm"
             >
               🎵 Sound It Out
             </button>
@@ -612,7 +612,7 @@ export default function WordBuilderGame() {
           {/* Reset button */}
           <button
             onClick={resetWord}
-            className="w-full py-2 text-gray-500 hover:text-gray-700 text-sm font-medium"
+            className="btn btn-ghost btn-sm on-light btn-full"
           >
             🔄 Reset Word
           </button>

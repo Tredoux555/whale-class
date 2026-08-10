@@ -20,7 +20,7 @@ export class PotatoApiError extends Error {
 }
 
 const SETUP_PENDING_MESSAGE =
-  'Potato Snaps isn’t switched on yet. The database setup still has to be run.';
+  'PSS isn’t switched on yet. The database setup still has to be run.';
 
 async function readBody(response: Response): Promise<unknown> {
   const text = await response.text();

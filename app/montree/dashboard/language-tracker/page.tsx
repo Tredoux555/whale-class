@@ -155,7 +155,7 @@ export default function LanguageTrackerPage() {
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-1">
-            <button onClick={() => router.back()} className="text-white/50 hover:text-white/80 text-xl">←</button>
+            <button onClick={() => router.back()} className="btn btn-ghost btn-icon btn-sm text-xl">←</button>
             <h1 className="text-xl font-bold text-white/95">
               🇬🇧 {L('English Corner', '英语角')}
             </h1>
@@ -213,7 +213,7 @@ export default function LanguageTrackerPage() {
             {error && (
               <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-center">
                 <p className="text-red-300 text-sm">{error}</p>
-                <button onClick={fetchData} className="mt-2 text-sm text-red-300 underline">
+                <button onClick={fetchData} className="btn btn-ghost btn-sm mt-2">
                   {L('Retry', '重试')}
                 </button>
               </div>
@@ -316,7 +316,7 @@ export default function LanguageTrackerPage() {
             <div className="mt-8 text-center">
               <button
                 onClick={fetchData}
-                className="text-sm text-white/40 hover:text-emerald-400 transition-colors"
+                className="btn btn-ghost btn-sm"
               >
                 ↻ {L('Refresh', '刷新')}
               </button>
@@ -429,7 +429,7 @@ export default function LanguageTrackerPage() {
                 <div className="mt-8 text-center">
                   <button
                     onClick={fetchBingoData}
-                    className="text-sm text-white/40 hover:text-emerald-400 transition-colors"
+                    className="btn btn-ghost btn-sm"
                   >
                     ↻ {L('Refresh', '刷新')}
                   </button>

@@ -206,7 +206,7 @@ export default function LanguagePresentationPage() {
         <div className="fixed inset-0 bg-black text-white flex items-center justify-center z-50">
           <button
             onClick={() => router.push(`/montree/dashboard/${childId}/language-presentation`)}
-            className="text-emerald-400"
+            className="btn btn-ghost btn-md"
           >
             {t('No slides — go back', '暂无幻灯片 — 返回')}
           </button>
@@ -225,7 +225,7 @@ export default function LanguagePresentationPage() {
         {/* exit */}
         <button
           onClick={() => router.push(`/montree/dashboard/${childId}/language-presentation`)}
-          className="absolute top-4 right-4 z-30 text-white/60 hover:text-white text-sm px-3 py-1 rounded bg-white/10"
+          className="btn btn-secondary btn-sm absolute top-4 right-4 z-30"
         >
           ✕ {t('Exit', '退出')}
         </button>
@@ -288,7 +288,7 @@ export default function LanguagePresentationPage() {
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
           <Link
             href={`/montree/dashboard/${childId}`}
-            className="text-white/50 hover:text-[#34d399] text-sm"
+            className="btn btn-ghost btn-md"
           >
             ← {t('Back', '返回')}
           </Link>
@@ -303,7 +303,7 @@ export default function LanguagePresentationPage() {
               onClick={() =>
                 router.push(`/montree/dashboard/${childId}/language-presentation?mode=present`)
               }
-              className="px-4 py-2 bg-[#1D6B48] hover:bg-[#236B4C] text-white rounded-lg text-sm font-medium"
+              className="btn btn-primary btn-md"
             >
               🎬 {t('Present', '演示')}
             </button>
@@ -335,7 +335,7 @@ export default function LanguagePresentationPage() {
             <button
               onClick={handleGenerate}
               disabled={generating}
-              className="px-6 py-3 bg-[#1D6B48] hover:bg-[#236B4C] disabled:opacity-50 text-white rounded-lg font-medium"
+              className="btn btn-primary btn-lg"
             >
               {generating
                 ? t('Curating… (30-60s)', '整理中…（30-60 秒）')
@@ -362,7 +362,7 @@ export default function LanguagePresentationPage() {
               <button
                 onClick={handleGenerate}
                 disabled={generating}
-                className="px-3 py-1.5 text-sm text-[#34d399] hover:bg-[#34d399]/10 rounded-lg disabled:opacity-50"
+                className="btn btn-ghost btn-sm"
               >
                 {generating ? t('Regenerating…', '重新生成中…') : t('↻ Regenerate', '↻ 重新生成')}
               </button>
@@ -505,11 +505,11 @@ function SlideRow({
             <div className="flex gap-2 mt-1">
               <button
                 onClick={onCommit}
-                className="text-xs px-2 py-1 bg-[#1D6B48] text-white rounded hover:bg-[#236B4C]"
+                className="btn btn-primary btn-sm"
               >
                 {t('Save', '保存')}
               </button>
-              <button onClick={onCancelEdit} className="text-xs px-2 py-1 text-white/50 hover:text-white/70">
+              <button onClick={onCancelEdit} className="btn btn-ghost btn-sm">
                 {t('Cancel', '取消')}
               </button>
             </div>

@@ -88,7 +88,7 @@ export default function ProgressDetailPage() {
 
       {/* Header */}
       <div className="max-w-2xl mx-auto mb-6">
-        <Link href={`/montree/dashboard/${childId}/progress`} className="text-[#34d399] text-sm mb-2 inline-block">
+        <Link href={`/montree/dashboard/${childId}/progress`} className="btn btn-ghost btn-md mb-2 inline-block">
           ← {t('progress.back')}
         </Link>
         <h1 className="text-2xl font-bold text-white/95" style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontWeight: 500 }}>{t('progress.detailed_title')}</h1>
@@ -115,8 +115,8 @@ export default function ProgressDetailPage() {
         <div className="flex gap-2 overflow-x-auto pb-2">
           <button
             onClick={() => setSelectedArea(null)}
-            className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap ${
-              !selectedArea ? 'bg-[#1D6B48] text-white' : 'bg-white/[0.06] text-white/60 border border-[rgba(52,211,153,0.15)]'
+            className={`btn btn-sm btn-pill whitespace-nowrap ${
+              !selectedArea ? 'btn-primary' : 'btn-secondary'
             }`}
           >
             {t('progress.all_areas')}
@@ -125,8 +125,8 @@ export default function ProgressDetailPage() {
             <button
               key={area.key}
               onClick={() => setSelectedArea(area.key)}
-              className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap flex items-center gap-1 ${
-                selectedArea === area.key ? 'bg-[#1D6B48] text-white' : 'bg-white/[0.06] text-white/60 border border-[rgba(52,211,153,0.15)]'
+              className={`btn btn-sm btn-pill whitespace-nowrap flex items-center gap-1 ${
+                selectedArea === area.key ? 'btn-primary' : 'btn-secondary'
               }`}
             >
               <AreaBadge area={area.key} size="xs" />

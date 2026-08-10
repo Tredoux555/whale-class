@@ -574,7 +574,7 @@ export default function PaperScanPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => (pageState === 'home' ? router.push('/montree/dashboard') : startOver())}
-            className="text-white/50 hover:text-white/80"
+            className="btn btn-ghost btn-icon btn-sm"
             aria-label={t('common.back')}
           >
             ←
@@ -627,7 +627,7 @@ export default function PaperScanPage() {
 
               <button
                 onClick={() => { void handleCameraClick(); }}
-                className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition"
+                className="btn btn-primary btn-lg btn-full"
               >
                 <Camera className="w-5 h-5" />
                 {t('paperScan.takePhoto')}
@@ -639,7 +639,7 @@ export default function PaperScanPage() {
               )}
               <button
                 onClick={() => galleryInputRef.current?.click()}
-                className="w-full mt-2 flex items-center justify-center gap-2 px-6 py-3 bg-white/[0.06] border border-[rgba(52,211,153,0.2)] text-white/80 rounded-xl hover:bg-white/[0.1] transition"
+                className="btn btn-secondary btn-lg btn-full mt-2"
               >
                 <Images className="w-5 h-5" />
                 {t('paperScan.chooseFromGallery')}
@@ -715,13 +715,13 @@ export default function PaperScanPage() {
                 <p className="text-sm text-white/50 mb-6">{t('paperScan.failedHint')}</p>
                 <button
                   onClick={handleRetryExtract}
-                  className="px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition"
+                  className="btn btn-primary btn-lg"
                 >
                   {t('paperScan.retry')}
                 </button>
                 <button
                   onClick={startOver}
-                  className="block mx-auto mt-3 text-sm text-white/50 hover:text-white/80"
+                  className="btn btn-ghost btn-sm mx-auto mt-3"
                 >
                   {t('paperScan.scanAnother')}
                 </button>
@@ -736,7 +736,7 @@ export default function PaperScanPage() {
                 {processingSlow && (
                   <button
                     onClick={handleRetryExtract}
-                    className="mt-6 px-6 py-3 bg-white/[0.08] border border-[rgba(52,211,153,0.2)] text-white/85 rounded-xl hover:bg-white/[0.12] transition"
+                    className="btn btn-secondary btn-lg mt-6"
                   >
                     {t('paperScan.retry')}
                   </button>
@@ -781,7 +781,7 @@ export default function PaperScanPage() {
               <button
                 onClick={approveAllMatched}
                 disabled={busyRowId === '__all__'}
-                className="w-full mb-4 px-4 py-3 bg-white/[0.08] border border-[rgba(52,211,153,0.25)] text-emerald-200 rounded-xl hover:bg-white/[0.12] transition disabled:opacity-50"
+                className="btn btn-secondary btn-lg btn-full mb-4"
               >
                 {t('paperScan.approveAllMatched').replace('{count}', String(pendingMatched.length))}
               </button>
@@ -900,10 +900,10 @@ export default function PaperScanPage() {
                                   type="button"
                                   disabled={busy}
                                   onClick={() => void editRow(row.id, { area }, { area })}
-                                  className={`text-xs px-3 py-1.5 rounded-full border transition ${
+                                  className={`btn btn-sm btn-pill ${
                                     row.area === area
-                                      ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-200'
-                                      : 'bg-white/[0.05] border-white/10 text-white/55 hover:bg-white/[0.1]'
+                                      ? 'btn-primary'
+                                      : 'btn-secondary'
                                   }`}
                                 >
                                   {t(`area.${area}`)}
@@ -922,10 +922,10 @@ export default function PaperScanPage() {
                                   type="button"
                                   disabled={busy}
                                   onClick={() => void editRow(row.id, { teacher_final_status: s }, { teacher_final_status: s })}
-                                  className={`text-xs px-3 py-1.5 rounded-full border transition ${
+                                  className={`btn btn-sm btn-pill ${
                                     status === s
-                                      ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-200'
-                                      : 'bg-white/[0.05] border-white/10 text-white/55 hover:bg-white/[0.1]'
+                                      ? 'btn-primary'
+                                      : 'btn-secondary'
                                   }`}
                                 >
                                   {t(`status.${s}`)}
@@ -985,10 +985,10 @@ export default function PaperScanPage() {
                                 type="button"
                                 disabled={busy}
                                 onClick={() => void decide(row.id, 'approve')}
-                                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm transition disabled:opacity-50 ${
+                                className={`btn btn-sm flex-1 ${
                                   rowState === 'approved' || rowState === 'edited'
-                                    ? 'bg-emerald-600 text-white'
-                                    : 'bg-white/[0.06] border border-[rgba(52,211,153,0.25)] text-emerald-200 hover:bg-white/[0.12]'
+                                    ? 'btn-primary'
+                                    : 'btn-secondary'
                                 }`}
                               >
                                 <Check className="w-4 h-4" />
@@ -998,10 +998,10 @@ export default function PaperScanPage() {
                                 type="button"
                                 disabled={busy}
                                 onClick={() => void decide(row.id, 'reject')}
-                                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm transition disabled:opacity-50 ${
+                                className={`btn btn-sm flex-1 ${
                                   rowState === 'rejected'
-                                    ? 'bg-red-600/80 text-white'
-                                    : 'bg-white/[0.06] border border-white/10 text-white/60 hover:bg-white/[0.12]'
+                                    ? 'btn-danger'
+                                    : 'btn-secondary'
                                 }`}
                               >
                                 <X className="w-4 h-4" />
@@ -1024,7 +1024,7 @@ export default function PaperScanPage() {
                   <button
                     onClick={commit}
                     disabled={committing || approvedCount === 0}
-                    className="w-full px-6 py-3.5 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition disabled:opacity-40"
+                    className="btn btn-primary btn-lg btn-full"
                   >
                     {committing
                       ? t('paperScan.saving')
@@ -1057,7 +1057,7 @@ export default function PaperScanPage() {
             )}
             <button
               onClick={startOver}
-              className="px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition"
+              className="btn btn-primary btn-lg"
             >
               {t('paperScan.scanAnother')}
             </button>

@@ -536,7 +536,7 @@ export default function DashboardPage() {
         <div className="bg-gradient-to-r from-[#0D3330] to-[#164340] px-4 py-2 flex items-center gap-3">
           <button
             onClick={() => setGuruFirstView(false)}
-            className="text-white/70 hover:text-white text-sm"
+            className="btn btn-ghost btn-sm"
           >
             {t('common.back')}
           </button>
@@ -546,10 +546,10 @@ export default function DashboardPage() {
                 <button
                   key={c.id}
                   onClick={() => setSelectedChildId(c.id)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  className={`btn btn-sm btn-pill ${
                     c.id === selectedChild.id
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-white/15 text-white/70 hover:bg-white/25'
+                      ? 'btn-primary'
+                      : 'btn-secondary'
                   }`}
                 >
                   {c.name.split(' ')[0]}

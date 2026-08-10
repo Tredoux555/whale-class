@@ -372,10 +372,10 @@ export default function ProgressOverviewPage() {
             <button
               key={p.key}
               onClick={() => setPeriod(p.key)}
-              className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${
+              className={`btn btn-md flex-1 ${
                 period === p.key
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'bg-white/[0.06] text-white/60 border border-[rgba(52,211,153,0.15)] hover:bg-white/[0.1]'
+                  ? 'btn-primary'
+                  : 'btn-secondary'
               }`}
             >
               {locale === 'zh' ? p.labelZh : p.labelEn}
@@ -399,7 +399,7 @@ export default function ProgressOverviewPage() {
             <p className="text-sm text-red-300">{error}</p>
             <button
               onClick={() => fetchData(period)}
-              className="mt-2 text-xs text-red-300 underline"
+              className="btn btn-ghost btn-sm mt-2"
             >
               {locale === 'zh' ? '重试' : 'Try again'}
             </button>

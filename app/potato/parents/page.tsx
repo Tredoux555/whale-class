@@ -106,7 +106,7 @@ export default function ParentLoginPage() {
             <div className="pt-halo">
               <Mascot size={150} shadow={false} />
             </div>
-            <h1 className="pt-wordmark">Potato Snaps</h1>
+            <h1 className="pt-wordmark">PSS</h1>
             <div className="pt-wordrule" />
             <p className="pt-logintag">{'Little films of your child’s week'}</p>
           </>
@@ -132,7 +132,7 @@ export default function ParentLoginPage() {
 
         <div className="pt-madewith">
           <Mascot size={20} camera={false} shadow={false} />
-          made with Potato Snaps
+          made with PSS
         </div>
       </div>
     </div>

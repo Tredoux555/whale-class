@@ -273,7 +273,7 @@ export default function CurriculumBrowsePage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.back()}
-              className={`p-1 ${isParent ? 'text-white/60 hover:text-white' : 'text-white/50 hover:text-white/80'}`}
+              className="btn btn-ghost btn-icon btn-sm"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -344,7 +344,7 @@ export default function CurriculumBrowsePage() {
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className={`absolute right-3 top-1/2 -translate-y-1/2 ${isParent ? 'text-slate-400 hover:text-slate-600' : 'text-white/40 hover:text-white/70'}`}
+                className={`btn btn-ghost btn-icon btn-sm absolute right-3 top-1/2 -translate-y-1/2 ${isParent ? 'on-light' : ''}`}
               >
                 ✕
               </button>
@@ -367,10 +367,10 @@ export default function CurriculumBrowsePage() {
         {isParent && (
           <button
             onClick={() => setShowRecommended(!showRecommended)}
-            className={`mt-2 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+            className={`btn btn-sm btn-pill mt-2 ${
               showRecommended
-                ? 'bg-[#0D3330] text-white'
-                : 'bg-[#F5E6D3] text-[#0D3330] hover:bg-[#EDD5C0]'
+                ? 'btn-secondary'
+                : 'btn-secondary on-light'
             }`}
           >
             <span>{showRecommended ? '⭐' : '☆'}</span>

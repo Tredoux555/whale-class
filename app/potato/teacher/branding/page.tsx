@@ -249,7 +249,7 @@ export default function BrandingPage() {
                       marginTop: 9,
                     }}
                   >
-                    made with Potato Snaps
+                    made with PSS
                   </div>
                 </div>
               </div>

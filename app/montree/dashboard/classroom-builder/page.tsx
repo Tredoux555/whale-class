@@ -228,7 +228,7 @@ export default function ClassroomBuilderPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.push('/montree/dashboard')}
-              className="text-white/50 hover:text-white/80 transition-colors"
+              className="btn btn-ghost btn-icon btn-sm"
             >
               ←
             </button>
@@ -295,7 +295,7 @@ export default function ClassroomBuilderPage() {
             <button
               onClick={handlePreview}
               disabled={!namesText.trim()}
-              className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-white/10 disabled:text-white/30 text-[#04150c] font-medium rounded-xl transition-colors text-sm"
+              className="btn btn-primary btn-lg btn-full"
             >
               Preview →
             </button>
@@ -388,14 +388,14 @@ export default function ClassroomBuilderPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setStep('paste')}
-                className="flex-1 py-3 bg-white/[0.06] border border-[rgba(52,211,153,0.15)] hover:bg-white/[0.1] text-white/80 font-medium rounded-xl transition-colors text-sm"
+                className="btn btn-secondary btn-lg flex-1"
               >
                 ← Back to edit
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={submitting || stats.valid === 0}
-                className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-white/10 disabled:text-white/30 text-[#04150c] font-medium rounded-xl transition-colors text-sm"
+                className="btn btn-primary btn-lg flex-1"
               >
                 {submitting ? (
                   <span className="flex items-center justify-center gap-2">
@@ -429,13 +429,13 @@ export default function ClassroomBuilderPage() {
                   setStudents([]);
                   setCreatedCount(0);
                 }}
-                className="flex-1 py-2.5 bg-white/[0.06] border border-[rgba(52,211,153,0.15)] hover:bg-white/[0.1] text-white/80 font-medium rounded-xl transition-colors text-sm"
+                className="btn btn-secondary btn-md flex-1"
               >
                 Add more
               </button>
               <button
                 onClick={() => router.push('/montree/dashboard')}
-                className="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-[#04150c] font-medium rounded-xl transition-colors text-sm"
+                className="btn btn-primary btn-md flex-1"
               >
                 Go to Dashboard
               </button>

@@ -119,9 +119,9 @@ export default function ReportViewPage() {
       <header className="bg-[#0a1a0f] border-b border-emerald-400/15 text-white px-4 py-6">
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center gap-3 mb-4">
-            <Link 
+            <Link
               href="/montree/dashboard/weekly-wrap"
-              className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center"
+              className="btn btn-secondary btn-icon btn-md"
             >
               ←
             </Link>
@@ -133,7 +133,7 @@ export default function ReportViewPage() {
             </div>
             <button
               onClick={() => window.print()}
-              className="px-4 py-2 bg-white/20 rounded-xl text-sm font-medium hover:bg-white/30"
+              className="btn btn-secondary btn-md"
             >
               🖨️ {t('common.print')}
             </button>

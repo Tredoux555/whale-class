@@ -376,7 +376,7 @@ export default function CaptureBoardPage() {
           <Mascot size={40} shadow={false} />
         )}
         <div className="pt-topbar__txt">
-          <h1 className="pt-topbar__title">{board?.class.name ?? 'Potato Snaps'}</h1>
+          <h1 className="pt-topbar__title">{board?.class.name ?? 'PSS'}</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <button
               type="button"

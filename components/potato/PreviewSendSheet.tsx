@@ -116,7 +116,7 @@ export default function PreviewSendSheet({ film, onClose, onRemake, onSent }: Pr
           </div>
           <div className="pt-emptyhint" style={{ marginTop: 22 }}>
             <Mascot size={22} camera={false} shadow={false} />
-            made with Potato Snaps
+            made with PSS
           </div>
         </div>
       </div>

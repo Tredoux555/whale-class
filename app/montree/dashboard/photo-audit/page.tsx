@@ -692,7 +692,7 @@ function GetAdviceTab({ photos, classroomId }: { photos: AuditPhoto[]; classroom
                 {hasAdvice && !isLoading && (
                   <button
                     onClick={() => handleGetAdvice(child_id, child_name, photo.work_name!)}
-                    className="mt-3 text-xs text-emerald-600 hover:text-emerald-800 underline"
+                    className="btn btn-ghost btn-sm mt-3"
                   >
                     Ask again
                   </button>
@@ -3005,7 +3005,7 @@ export default function PhotoAuditPage() {
           onClick={() => setLightboxUrl(null)}
         >
           <button
-            className="absolute right-4 text-white/70 hover:text-white text-3xl font-light z-10"
+            className="btn btn-ghost btn-icon btn-md absolute right-4 z-10 text-3xl"
             /* Full-screen overlay sits ABOVE DashboardHeader, so --safe-top is 0 here —
                use the raw inset (CameraCapture pattern) or the ✕ hides under the notch. */
             style={{ top: 'max(16px, env(safe-area-inset-top, 16px))' }}

@@ -12,7 +12,7 @@ export default function PotatoHomePage() {
         <div className="pt-halo">
           <Mascot size={150} shadow={false} />
         </div>
-        <h1 className="pt-wordmark">Potato Snaps</h1>
+        <h1 className="pt-wordmark">PSS</h1>
         <div className="pt-wordrule" />
         <p className="pt-logintag">{'Little films of your child’s week'}</p>
 

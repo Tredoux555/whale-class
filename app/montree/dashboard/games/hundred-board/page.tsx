@@ -298,19 +298,19 @@ export default function HundredBoardGame() {
           <div className="space-y-3">
             <button
               onClick={() => startGame(level)}
-              className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl font-bold hover:shadow-lg transition-shadow"
+              className="btn btn-primary btn-lg btn-full"
             >
               Play Again
             </button>
             <button
               onClick={() => setPhase('menu')}
-              className="w-full py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200"
+              className="btn btn-secondary btn-lg btn-full on-light"
             >
               Change Level
             </button>
             <Link
               href="/montree/dashboard/games"
-              className="block w-full py-3 text-gray-500 hover:text-gray-700"
+              className="btn btn-ghost btn-lg btn-full on-light"
             >
               ← Back to Games
             </Link>
@@ -333,7 +333,7 @@ export default function HundredBoardGame() {
         <div className="flex items-center justify-between mb-4 pt-2">
           <button
             onClick={() => setPhase('menu')}
-            className="w-10 h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center text-white hover:bg-white/30"
+            className="btn btn-secondary btn-icon btn-md"
           >
             ←
           </button>
@@ -344,7 +344,7 @@ export default function HundredBoardGame() {
           </div>
           <button
             onClick={() => setShowHint(!showHint)}
-            className="w-10 h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center text-white hover:bg-white/30"
+            className="btn btn-secondary btn-icon btn-md"
           >
             💡
           </button>

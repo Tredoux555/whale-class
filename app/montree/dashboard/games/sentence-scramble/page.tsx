@@ -394,11 +394,11 @@ export default function SentenceScrambleGame() {
           <div className="space-y-3">
             <button
               onClick={() => startGame(difficulty)}
-              className="w-full p-4 bg-white text-purple-700 rounded-2xl font-bold text-xl shadow-lg hover:scale-105 active:scale-95 transition-transform"
+              className="btn btn-primary btn-lg btn-full"
             >
               Play Again! 🔄
             </button>
-            <Link href="/montree/dashboard/games" className="block w-full p-4 bg-white/20 text-white rounded-2xl font-bold text-xl">
+            <Link href="/montree/dashboard/games" className="btn btn-secondary btn-lg btn-full block">
               Back to Games
             </Link>
           </div>
@@ -481,7 +481,7 @@ export default function SentenceScrambleGame() {
                 key={`scrambled-${index}`}
                 onClick={() => handleWordClick(word, index)}
                 disabled={!!feedback}
-                className="px-4 py-2 bg-white rounded-xl font-bold text-lg text-gray-800 shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all"
+                className="btn btn-secondary btn-sm on-light"
               >
                 {word}
               </button>
@@ -497,17 +497,17 @@ export default function SentenceScrambleGame() {
           <button
             onClick={resetSentence}
             disabled={!!feedback || placedWords.length === 0}
-            className="flex-1 p-3 bg-white/20 text-white rounded-xl font-bold text-lg disabled:opacity-50 hover:bg-white/30 transition-colors"
+            className="btn btn-secondary btn-md flex-1"
           >
             🔄 Reset
           </button>
           <button
             onClick={checkAnswer}
             disabled={!canCheck || !!feedback}
-            className={`flex-1 p-3 rounded-xl font-bold text-lg transition-all
+            className={`btn btn-md flex-1
               ${canCheck && !feedback
-                ? 'bg-green-400 text-white hover:bg-green-300 hover:scale-105'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                ? 'btn-primary'
+                : 'btn-secondary'
               }`}
           >
             ✓ Check

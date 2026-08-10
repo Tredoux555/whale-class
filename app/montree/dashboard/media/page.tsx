@@ -283,7 +283,7 @@ function MediaPageContent() {
             <>
               <button
                 onClick={exitSelectionMode}
-                className="w-9 h-9 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white/80 rounded-lg transition-colors"
+                className="btn btn-secondary btn-icon btn-sm"
               >
                 <span className="text-sm">✕</span>
               </button>
@@ -333,13 +333,13 @@ function MediaPageContent() {
             <>
               <button
                 onClick={() => setSelectionMode(true)}
-                className="w-9 h-9 bg-emerald-500 text-[#04150c] rounded-lg flex items-center justify-center hover:bg-emerald-400 transition-colors"
+                className="btn btn-primary btn-icon btn-sm"
               >
                 <span className="text-sm">✓</span>
               </button>
               <Link
                 href="/montree/dashboard/capture"
-                className="w-9 h-9 bg-emerald-500 text-[#04150c] rounded-lg flex items-center justify-center hover:bg-emerald-400 transition-colors"
+                className="btn btn-primary btn-icon btn-sm"
               >
                 <span className="text-lg">+</span>
               </Link>
@@ -356,10 +356,10 @@ function MediaPageContent() {
           </span>
           <button
             onClick={() => selectEvent(null)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+            className={`btn btn-sm btn-pill ${
               !selectedEventId
-                ? 'bg-amber-500 text-[#04150c] shadow-md'
-                : 'bg-white/[0.06] text-white/60 border border-[rgba(245,158,11,0.20)] hover:bg-white/[0.1]'
+                ? 'btn-gold'
+                : 'btn-secondary'
             }`}
           >
             {t('media.all_events')}
@@ -368,10 +368,10 @@ function MediaPageContent() {
             <button
               key={event.id}
               onClick={() => selectEvent(event.id)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+              className={`btn btn-sm btn-pill ${
                 selectedEventId === event.id
-                  ? 'bg-amber-500 text-[#04150c] shadow-md'
-                  : 'bg-white/[0.06] text-white/60 border border-[rgba(245,158,11,0.20)] hover:bg-white/[0.1]'
+                  ? 'btn-gold'
+                  : 'btn-secondary'
               }`}
             >
               {event.name}
@@ -384,20 +384,20 @@ function MediaPageContent() {
       <div className="bg-[rgba(7,18,12,0.75)] border-b border-[rgba(52,211,153,0.1)] px-4 py-2 flex gap-2 overflow-x-auto">
         <button
           onClick={() => { setActiveTab('recent'); setSelectedChildId(null); setSelectedEventId(null); }}
-          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+          className={`btn btn-md btn-pill ${
             activeTab === 'recent' && !selectedChildId
-              ? 'bg-[rgba(52,211,153,0.15)] text-emerald-300'
-              : 'bg-white/5 text-white/60 hover:bg-white/10'
+              ? 'btn-primary'
+              : 'btn-secondary'
           }`}
         >
           🕐 {t('media.recent')}
         </button>
         <button
           onClick={() => { setActiveTab('untagged'); setSelectedChildId(null); setSelectedEventId(null); }}
-          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+          className={`btn btn-md btn-pill ${
             activeTab === 'untagged'
-              ? 'bg-amber-500/15 text-amber-300'
-              : 'bg-white/5 text-white/60 hover:bg-white/10'
+              ? 'btn-gold'
+              : 'btn-secondary'
           }`}
         >
           ⚠️ {t('media.untagged')}
@@ -411,10 +411,10 @@ function MediaPageContent() {
           <button
             key={child.id}
             onClick={() => { setActiveTab('all'); setSelectedChildId(child.id); setSelectedEventId(null); }}
-            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+            className={`btn btn-md btn-pill ${
               selectedChildId === child.id
-                ? 'bg-[rgba(52,211,153,0.15)] text-emerald-300'
-                : 'bg-white/5 text-white/60 hover:bg-white/10'
+                ? 'btn-primary'
+                : 'btn-secondary'
             }`}
           >
             {child.name.split(' ')[0]}
@@ -423,7 +423,7 @@ function MediaPageContent() {
 
         {children.length > 5 && (
           <button
-            className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap bg-white/5 text-white/60 hover:bg-white/10 transition-colors"
+            className="btn btn-md btn-pill btn-secondary"
           >
             +{children.length - 5} more
           </button>
@@ -439,10 +439,10 @@ function MediaPageContent() {
           <button
             key={area}
             onClick={() => setSelectedArea(area)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+            className={`btn btn-sm btn-pill ${
               selectedArea === area
-                ? 'bg-emerald-500 text-[#04150c] shadow-md'
-                : 'bg-white/[0.06] text-white/60 border border-[rgba(52,211,153,0.15)] hover:border-[rgba(52,211,153,0.35)] hover:bg-white/[0.1]'
+                ? 'btn-primary'
+                : 'btn-secondary'
             }`}
           >
             {t(AREA_LABELS[area])}
@@ -477,7 +477,7 @@ function MediaPageContent() {
       {!selectionMode && (
         <Link
           href="/montree/dashboard/capture"
-          className="fixed bottom-6 right-6 w-16 h-16 bg-emerald-500 text-[#04150c] rounded-full flex items-center justify-center shadow-xl hover:bg-emerald-400 transition-all hover:scale-105 active:scale-95"
+          className="fixed bottom-6 right-6 btn btn-primary btn-icon btn-lg btn-round"
         >
           <span className="text-3xl">📷</span>
         </Link>
@@ -501,14 +501,14 @@ function MediaPageContent() {
               <button
                 onClick={() => setShowDeleteConfirm(false)}
                 disabled={deleting}
-                className="flex-1 px-4 py-2.5 bg-white/[0.06] border border-[rgba(52,211,153,0.15)] text-white/80 rounded-lg font-medium hover:bg-white/[0.1] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn btn-secondary btn-md flex-1"
               >
                 {t('common.cancel')}
               </button>
               <button
                 onClick={handleBulkDelete}
                 disabled={deleting}
-                className="flex-1 px-4 py-2.5 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="btn btn-danger btn-md flex-1 flex items-center justify-center gap-2"
               >
                 {deleting ? (
                   <>

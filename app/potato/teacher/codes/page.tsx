@@ -162,7 +162,7 @@ export default function ParentCodesPage() {
       <div className="pt-printsheet" aria-hidden="true">
         {withCodes.map((row) => (
           <div className="pt-printcard" key={row.childId}>
-            <div className="pt-printcard__brand">POTATO SNAPS</div>
+            <div className="pt-printcard__brand">PSS</div>
             <div className="pt-printcard__name">{row.childName}</div>
             <div className="pt-printcard__code">{row.code}</div>
             <div className="pt-printcard__how">

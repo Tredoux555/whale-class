@@ -332,7 +332,7 @@ export default function PhonicsChallengePage() {
           <div className="flex items-center justify-between mb-6">
             <button
               onClick={() => router.back()}
-              className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-white text-xl"
+              className="btn btn-secondary btn-icon btn-md text-xl"
             >
               ←
             </button>
@@ -427,13 +427,13 @@ export default function PhonicsChallengePage() {
           <div className="flex gap-3">
             <button
               onClick={resetGame}
-              className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200"
+              className="btn btn-secondary btn-md flex-1 on-light"
             >
               Pick Another
             </button>
             <button
               onClick={() => gameState.stage && startGame(gameState.stage, 'wordMatch')}
-              className="flex-1 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold hover:shadow-lg"
+              className="btn btn-primary btn-md flex-1"
             >
               Play Again
             </button>
@@ -456,7 +456,7 @@ export default function PhonicsChallengePage() {
         <div className="flex items-center gap-4 mb-6">
           <button
             onClick={resetGame}
-            className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white"
+            className="btn btn-secondary btn-icon btn-sm"
           >
             ✕
           </button>
