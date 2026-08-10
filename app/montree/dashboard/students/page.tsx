@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { getSession, isHomeschoolParent, setSession as saveSession, type MontreeSession } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
+import { useFeatures } from '@/hooks/useFeatures';
 import { montreeApi } from '@/lib/montree/api';
 import { toast, Toaster } from 'sonner';
 import ProfilePhotoCapture from '@/components/montree/student/ProfilePhotoCapture';
@@ -261,6 +262,11 @@ function CurriculumPicker({
 export default function StudentsPage() {
   const router = useRouter();
   const { t, locale } = useI18n();
+  // Both destination pages already refuse to render when their flag is off
+  // (photo-onboarding/page.tsx, child-onboarding/page.tsx), so an ungated entry
+  // button here was a door onto a locked room — and made the switchboard toggle
+  // look like it had done nothing. Same provider as every other dashboard page.
+  const { isEnabled: isFeatureEnabled } = useFeatures();
   const areaNameT = (key: string) => t(`area.${key}` as any) || AREA_CONFIG[key]?.name || key;
 
   // Gender options - translated
@@ -627,7 +633,7 @@ export default function StudentsPage() {
           <h1 className="font-bold text-white/95" style={{ fontFamily: SERIF, fontWeight: 500 }}>{isHomeschoolParent(session) ? t('students.children') : t('students.title')}</h1>
         </div>
         <div className="flex items-center gap-2">
-          {!isHomeschoolParent(session) && (
+          {!isHomeschoolParent(session) && isFeatureEnabled('photo_onboarding') && (
             <button
               onClick={() => router.push('/montree/dashboard/photo-onboarding')}
               className="btn btn-secondary btn-sm"
@@ -635,7 +641,8 @@ export default function StudentsPage() {
               📷 {t('photoOnboarding.entryButton')}
             </button>
           )}
-          {!isHomeschoolParent(session) && (
+          {/* Same flag as the button above — this is the same page in update mode. */}
+          {!isHomeschoolParent(session) && isFeatureEnabled('photo_onboarding') && (
             <button
               onClick={() => router.push('/montree/dashboard/photo-onboarding?mode=update')}
               className="btn btn-secondary btn-sm"
@@ -643,7 +650,7 @@ export default function StudentsPage() {
               🔄 {t('photoOnboarding.updateClassButton')}
             </button>
           )}
-          {!isHomeschoolParent(session) && (
+          {!isHomeschoolParent(session) && isFeatureEnabled('child_onboarding') && (
             <button
               onClick={() => router.push('/montree/dashboard/child-onboarding')}
               className="btn btn-secondary btn-sm"

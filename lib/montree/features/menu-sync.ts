@@ -12,7 +12,15 @@
 // visibility into every teacher's saved menu.
 //
 // Teachers with NO saved config are deliberately skipped — they render through
-// DashboardHeader's legacy flag-gated branch, which already follows the flag.
+// DashboardHeader's legacy branch, which reads isEnabled() itself.
+//
+// ⚠️ That branch is NOT automatic: it only follows a flag for the keys that have
+// a literal `isEnabled('<key>') && <MenuRow …>` block written out in it. A pair
+// added to FEATURE_MENU_MAP below moves the row for teachers WITH a saved config
+// and does nothing at all for teachers without one until that block exists too.
+// paper_scan + work_rhythm were mapped here but had no block for months, so a
+// config-less teacher never saw either row however the school toggled it (fixed
+// Aug 2026). When you add a pair here, add the matching block there.
 
 import type { FeatureKey } from './types';
 import { MENU_CONFIG_VERSION, type MenuItemId } from '../menu/config';
@@ -193,7 +201,8 @@ export async function syncTeacherMenusForSchool(
     const menu = settings?.menu as { v?: number; items?: unknown } | undefined;
     const rawItems = menu?.items;
     if (!settings || !menu || !Array.isArray(rawItems)) {
-      // No saved config → legacy flag-gated menu, which already follows the flag.
+      // No saved config → legacy menu, which reads isEnabled() itself for the
+      // keys that have a row written out in DashboardHeader (see header note).
       result.teachersSkipped += 1;
       continue;
     }
