@@ -169,16 +169,8 @@ export default function ThreePartCardsPage() {
       }}>
         <button
           onClick={() => router.push('/montree/library/tools/phonics-fast')}
-          style={{
-            background: 'rgba(255,255,255,0.2)',
-            border: 'none',
-            color: '#fff',
-            padding: '6px 14px',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            marginBottom: '12px',
-          }}
+          className="btn btn-secondary btn-sm"
+          style={{ marginBottom: '12px' }}
         >
           ← Phonics Fast
         </button>
@@ -238,15 +230,7 @@ export default function ThreePartCardsPage() {
                 const allIds = currentPhase.groups.map(g => g.id);
                 setSelectedGroups(prev => prev.length === allIds.length ? [] : allIds);
               }}
-              style={{
-                padding: '4px 12px',
-                borderRadius: '6px',
-                border: '1px solid #d1d5db',
-                background: '#fff',
-                cursor: 'pointer',
-                fontSize: '12px',
-                color: '#6b7280',
-              }}
+              className="btn btn-secondary btn-sm on-light"
             >
               {selectedGroups.length === currentPhase.groups.length ? 'Deselect All' : 'Select All'}
             </button>

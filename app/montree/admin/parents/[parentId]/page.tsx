@@ -260,13 +260,13 @@ export default function ParentPage() {
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
               <Link
                 href={`/montree/admin/parents/${parentId}/onboard`}
-                style={primaryButtonStyle}
+                className="btn btn-primary btn-md"
               >
                 <Mic size={16} /> {info.profile ? 'Re-onboard' : 'Onboard via voice'}
               </Link>
               <Link
                 href={`/montree/admin/parents/${parentId}/meetings/new`}
-                style={secondaryButtonStyle}
+                className="btn btn-secondary btn-md"
               >
                 <Phone size={16} /> Record new meeting
               </Link>
@@ -323,24 +323,9 @@ export default function ParentPage() {
                     }
                   }}
                   disabled={consentBusy}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    padding: '8px 14px',
-                    borderRadius: 8,
-                    fontSize: 13,
-                    cursor: consentBusy ? 'wait' : 'pointer',
-                    background: info.parent.recording_consent_on_file
-                      ? 'rgba(52,211,153,0.18)'
-                      : 'rgba(255,255,255,0.04)',
-                    border: info.parent.recording_consent_on_file
-                      ? '1px solid rgba(52,211,153,0.55)'
-                      : '1px solid rgba(255,255,255,0.10)',
-                    color: info.parent.recording_consent_on_file
-                      ? T.emerald
-                      : T.textSecondary,
-                  }}
+                  className={`btn btn-sm ${
+                    info.parent.recording_consent_on_file ? 'btn-primary' : 'btn-secondary'
+                  }`}
                 >
                   {info.parent.recording_consent_on_file ? (
                     <>
@@ -356,19 +341,7 @@ export default function ParentPage() {
               <a
                 href={`/api/montree/admin/parents/${encodeURIComponent(parentId)}/export`}
                 download
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '8px 14px',
-                  borderRadius: 8,
-                  fontSize: 13,
-                  cursor: 'pointer',
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.10)',
-                  color: T.textSecondary,
-                  textDecoration: 'none',
-                }}
+                className="btn btn-secondary btn-sm"
               >
                 <Download size={14} /> Export data (GDPR)
               </a>
@@ -404,29 +377,13 @@ export default function ParentPage() {
                         }
                       }}
                       disabled={deleting}
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: 8,
-                        fontSize: 12,
-                        cursor: deleting ? 'wait' : 'pointer',
-                        background: 'rgba(220,50,50,0.20)',
-                        border: '1px solid rgba(220,50,50,0.55)',
-                        color: 'rgba(255,180,180,0.95)',
-                      }}
+                      className="btn btn-danger btn-soft btn-sm"
                     >
                       {deleting ? 'Deleting…' : 'Yes, delete'}
                     </button>
                     <button
                       onClick={() => setDeleteConfirm(false)}
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: 8,
-                        fontSize: 12,
-                        cursor: 'pointer',
-                        background: 'transparent',
-                        border: '1px solid rgba(255,255,255,0.10)',
-                        color: T.textSecondary,
-                      }}
+                      className="btn btn-ghost btn-outline btn-sm"
                     >
                       Cancel
                     </button>
@@ -434,18 +391,7 @@ export default function ParentPage() {
                 ) : (
                   <button
                     onClick={() => setDeleteConfirm(true)}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      padding: '8px 14px',
-                      borderRadius: 8,
-                      fontSize: 13,
-                      cursor: 'pointer',
-                      background: 'transparent',
-                      border: '1px solid rgba(255,255,255,0.10)',
-                      color: T.textMuted,
-                    }}
+                    className="btn btn-ghost btn-outline btn-sm"
                   >
                     <Trash2 size={14} /> Delete
                   </button>

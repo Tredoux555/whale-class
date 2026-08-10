@@ -73,7 +73,7 @@ export default function VideosPage() {
             <div className="flex gap-3">
               <Link
                 href="/admin"
-                className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors text-sm"
+                className="btn btn-secondary btn-md"
               >
                 Back to Dashboard
               </Link>
@@ -87,7 +87,7 @@ export default function VideosPage() {
         {error && (
           <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg flex justify-between">
             <span>{error}</span>
-            <button onClick={fetchVideos} className="underline">Retry</button>
+            <button onClick={fetchVideos} className="btn btn-ghost btn-sm on-light">Retry</button>
           </div>
         )}
 
@@ -194,7 +194,7 @@ export default function VideosPage() {
                       videoFile: null,
                     });
                   }}
-                  className="text-gray-500 hover:text-gray-700 text-2xl"
+                  className="btn btn-ghost btn-icon btn-sm text-2xl on-light"
                   disabled={uploading}
                 >
                   ×
@@ -334,14 +334,14 @@ export default function VideosPage() {
                       });
                     }}
                     disabled={uploading}
-                    className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 font-medium"
+                    className="btn btn-secondary btn-md flex-1 on-light"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={uploading || !uploadForm.videoFile || !uploadForm.title}
-                    className="flex-1 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                    className="btn btn-gold btn-md flex-1 on-light"
                   >
                     {uploading ? 'Uploading...' : 'Upload Video'}
                   </button>

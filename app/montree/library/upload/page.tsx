@@ -105,10 +105,10 @@ export default function UploadPage() {
             {t('library.submittedMessage')}
           </p>
           <div className="flex gap-3 mt-6">
-            <Link href="/montree/library/browse" className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium text-center hover:bg-gray-200 text-sm">
+            <Link href="/montree/library/browse" className="btn btn-secondary btn-md flex-1 on-light">
               {t('library.browse')}
             </Link>
-            <button onClick={() => { setSubmitted(false); setTitle(''); setDescription(''); setPhotos([]); setArea(''); }} className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600 text-sm">
+            <button onClick={() => { setSubmitted(false); setTitle(''); setDescription(''); setPhotos([]); setArea(''); }} className="btn btn-primary btn-md flex-1 on-light">
               {t('library.shareAnother')}
             </button>
           </div>
@@ -129,7 +129,7 @@ export default function UploadPage() {
             </Link>
             <LanguageToggle />
           </div>
-          <Link href="/montree/library/browse" className="text-emerald-300 text-sm hover:underline">← {t('library.back')}</Link>
+          <Link href="/montree/library/browse" className="btn btn-ghost btn-sm">← {t('library.back')}</Link>
           <h1 className="text-xl font-bold mt-1">{t('library.shareWork')}</h1>
         </div>
       </header>
@@ -198,7 +198,7 @@ export default function UploadPage() {
               {photos.map((photo, i) => (
                 <div key={i} className="relative">
                   <img src={URL.createObjectURL(photo)} alt="" className="w-20 h-20 object-cover rounded-lg border border-gray-200" />
-                  <button type="button" onClick={() => removePhoto(i)} className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center shadow-sm">×</button>
+                  <button type="button" onClick={() => removePhoto(i)} className="btn btn-danger btn-icon btn-round btn-sm absolute -top-1.5 -right-1.5">×</button>
                 </div>
               ))}
             </div>
@@ -228,7 +228,7 @@ export default function UploadPage() {
         <button
           type="submit"
           disabled={submitting || !title || !area}
-          className="w-full py-4 bg-[#0D3330] text-white rounded-xl font-medium text-lg disabled:opacity-40 hover:bg-[#164440] transition-colors"
+          className="btn btn-primary btn-lg btn-full on-light"
         >
           {submitting ? t('library.sharing') : t('library.shareWork')}
         </button>

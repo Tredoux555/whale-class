@@ -456,18 +456,7 @@ export default function ParentThreadDetailPage() {
           </Link>
           <button
             onClick={() => router.push('/montree/parent/messages')}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: T.textSecondary,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 4,
-              padding: '4px 8px',
-              fontSize: 12,
-              fontWeight: 500,
-            }}
+            className="btn btn-ghost btn-sm"
             aria-label={t('parentMessages.backToList') || 'Back to messages'}
           >
             <ArrowLeft size={14} strokeWidth={2} />
@@ -759,18 +748,7 @@ export default function ParentThreadDetailPage() {
             <button
               onClick={handleSend}
               disabled={sending || !reply.trim()}
-              style={{
-                padding: '12px 16px',
-                borderRadius: 14,
-                background: `linear-gradient(135deg, ${T.emerald}, ${T.emeraldDeep})`,
-                border: 'none',
-                color: '#0a1a0f',
-                cursor: sending || !reply.trim() ? 'not-allowed' : 'pointer',
-                opacity: sending || !reply.trim() ? 0.5 : 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+              className="btn btn-primary btn-icon btn-md"
               aria-label={t('parentMessages.send') || 'Send'}
             >
               <Send size={18} strokeWidth={1.75} />

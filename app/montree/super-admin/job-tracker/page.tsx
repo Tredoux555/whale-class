@@ -609,7 +609,7 @@ export default function JobTrackerPage() {
             onKeyDown={e => e.key === 'Enter' && handleLogin()}
             placeholder="Password" className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white mb-3 focus:outline-none focus:border-emerald-500" />
           {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
-          <button onClick={handleLogin} className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium">Unlock</button>
+          <button onClick={handleLogin} className="btn btn-primary btn-lg btn-full">Unlock</button>
         </div>
       </div>
     );
@@ -649,8 +649,8 @@ export default function JobTrackerPage() {
             { key: 3 as const, label: `${WAVE_LABELS[3]} (${schools.filter(s => s.wave === 3).length})` },
           ].map(tab => (
             <button key={String(tab.key)} onClick={() => setShowWave(tab.key)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                showWave === tab.key ? 'bg-emerald-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
+              className={`btn btn-sm ${
+                showWave === tab.key ? 'btn-primary' : 'btn-secondary'
               }`}>{tab.label}</button>
           ))}
         </div>
@@ -744,7 +744,7 @@ export default function JobTrackerPage() {
                         <div className="flex items-center justify-between mb-1">
                           <label className="text-xs text-gray-500 font-medium">TO: Email Address</label>
                           <button onClick={() => copyToClipboard(school.email, `email-${school.id}`)}
-                            className="text-xs px-2 py-0.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded transition-colors">
+                            className="btn btn-primary btn-sm">
                             {copiedField === `email-${school.id}` ? '✓ Copied!' : '📋 Copy'}
                           </button>
                         </div>
@@ -758,7 +758,7 @@ export default function JobTrackerPage() {
                         <div className="flex items-center justify-between mb-1">
                           <label className="text-xs text-gray-500 font-medium">Subject Line</label>
                           <button onClick={() => copyToClipboard(school.subject, `subject-${school.id}`)}
-                            className="text-xs px-2 py-0.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded transition-colors">
+                            className="btn btn-primary btn-sm">
                             {copiedField === `subject-${school.id}` ? '✓ Copied!' : '📋 Copy'}
                           </button>
                         </div>
@@ -772,7 +772,7 @@ export default function JobTrackerPage() {
                         <div className="flex items-center justify-between mb-1">
                           <label className="text-xs text-gray-500 font-medium">Email Body — personalized for {school.schoolName}</label>
                           <button onClick={() => copyToClipboard(school.emailBody, `body-${school.id}`)}
-                            className="text-xs px-2 py-0.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded transition-colors">
+                            className="btn btn-primary btn-sm">
                             {copiedField === `body-${school.id}` ? '✓ Copied!' : '📋 Copy Email'}
                           </button>
                         </div>
@@ -785,7 +785,7 @@ export default function JobTrackerPage() {
                       <button onClick={() => copyToClipboard(
                         `TO: ${school.email}\nSUBJECT: ${school.subject}\n\n${school.emailBody}`,
                         `all-${school.id}`
-                      )} className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors">
+                      )} className="btn btn-primary btn-md btn-full">
                         {copiedField === `all-${school.id}` ? '✓ Everything Copied!' : '📋 Copy Everything (Email + Subject + Body)'}
                       </button>
                     </div>

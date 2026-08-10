@@ -457,7 +457,7 @@ export default function LabelsPage() {
                 <button
                   onClick={handlePrint}
                   disabled={selectedWords.length === 0}
-                  className="w-full px-4 py-3 bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-lg font-bold text-sm hover:from-teal-700 hover:to-teal-800 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+                  className="btn btn-primary btn-lg btn-full mt-2"
                 >
                   🖨️ Print {selectedWords.length > 0 ? `(${selectedWords.length})` : ''}
                 </button>

@@ -138,40 +138,40 @@ export default function ParentSignupsPage() {
           <div className="flex gap-2">
             <button
               onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-lg font-semibold transition ${
+              className={`btn btn-md ${
                 filter === 'all'
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'btn-primary'
+                  : 'btn-secondary on-light'
               }`}
             >
               All ({signups.length})
             </button>
             <button
               onClick={() => setFilter('pending')}
-              className={`px-4 py-2 rounded-lg font-semibold transition ${
+              className={`btn btn-md ${
                 filter === 'pending'
-                  ? 'bg-yellow-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'btn-primary'
+                  : 'btn-secondary on-light'
               }`}
             >
               Pending
             </button>
             <button
               onClick={() => setFilter('approved')}
-              className={`px-4 py-2 rounded-lg font-semibold transition ${
+              className={`btn btn-md ${
                 filter === 'approved'
-                  ? 'bg-green-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'btn-primary'
+                  : 'btn-secondary on-light'
               }`}
             >
               Approved
             </button>
             <button
               onClick={() => setFilter('rejected')}
-              className={`px-4 py-2 rounded-lg font-semibold transition ${
+              className={`btn btn-md ${
                 filter === 'rejected'
-                  ? 'bg-red-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'btn-primary'
+                  : 'btn-secondary on-light'
               }`}
             >
               Rejected
@@ -293,7 +293,7 @@ export default function ParentSignupsPage() {
                     <button
                       onClick={() => handleApprove(signup.id)}
                       disabled={processingId === signup.id}
-                      className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2 transition"
+                      className="btn btn-primary btn-md on-light"
                     >
                       <CheckCircle size={20} />
                       Approve
@@ -301,7 +301,7 @@ export default function ParentSignupsPage() {
                     <button
                       onClick={() => handleReject(signup.id)}
                       disabled={processingId === signup.id || !rejectionNotes[signup.id]?.trim()}
-                      className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2 transition"
+                      className="btn btn-danger btn-md on-light"
                     >
                       <XCircle size={20} />
                       Reject

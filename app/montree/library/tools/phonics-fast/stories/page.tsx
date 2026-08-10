@@ -450,10 +450,10 @@ export default function PhonicsStoriesPage() {
                     setSelectedPhase(phase.id);
                     setSelectedStory(null);
                   }}
-                  className={`w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                  className={`btn btn-lg btn-full text-left ${
                     selectedPhase === phase.id
-                      ? 'bg-teal-600 text-white shadow-md transform scale-105'
-                      : 'bg-teal-50 text-teal-900 hover:bg-white border border-teal-200'
+                      ? 'btn-primary'
+                      : 'btn-secondary on-light'
                   }`}
                 >
                   <span className="flex items-center gap-2">
@@ -474,10 +474,10 @@ export default function PhonicsStoriesPage() {
                   <button
                     key={story.id}
                     onClick={() => setSelectedStory(story)}
-                    className={`w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                    className={`btn btn-lg btn-full text-left ${
                       selectedStory?.id === story.id
-                        ? 'bg-emerald-500 text-white shadow-md transform scale-105'
-                        : 'bg-emerald-50 text-teal-900 hover:bg-white border border-emerald-200'
+                        ? 'btn-primary'
+                        : 'btn-secondary on-light'
                     }`}
                   >
                     {story.title}
@@ -530,10 +530,10 @@ export default function PhonicsStoriesPage() {
                   <button
                     key={size}
                     onClick={() => setFontSize(size as FontSize)}
-                    className={`flex-1 px-3 py-2 rounded text-xs font-semibold transition-all ${
+                    className={`btn btn-sm flex-1 ${
                       fontSize === size
-                        ? 'bg-purple-500 text-white shadow'
-                        : 'bg-purple-50 text-purple-900 hover:bg-white border border-purple-200'
+                        ? 'btn-gold'
+                        : 'btn-secondary on-light'
                     }`}
                   >
                     {label}
@@ -589,7 +589,7 @@ export default function PhonicsStoriesPage() {
             {selectedStory && (
               <button
                 onClick={handlePrint}
-                className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition-all shadow-md hover:shadow-lg transform hover:scale-105 duration-200"
+                className="btn btn-primary btn-lg btn-full"
               >
                 🖨️ Print Now
               </button>

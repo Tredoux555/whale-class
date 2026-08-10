@@ -49,7 +49,7 @@ export default function AddChildModal({ onClose, onChildAdded }: Props) {
       <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md mx-4">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-slate-800">Add New Child</h2>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full">✕</button>
+          <button onClick={onClose} className="btn btn-ghost btn-icon btn-round btn-sm on-light">✕</button>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -81,11 +81,11 @@ export default function AddChildModal({ onClose, onChildAdded }: Props) {
 
           <div className="flex gap-3 mt-6">
             <button type="button" onClick={onClose}
-              className="flex-1 px-4 py-2 border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50">
+              className="btn btn-secondary btn-md flex-1 on-light">
               Cancel
             </button>
             <button type="submit" disabled={loading}
-              className="flex-1 px-4 py-2 bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-600 disabled:opacity-50">
+              className="btn btn-primary btn-md flex-1">
               {loading ? 'Adding...' : 'Add Child'}
             </button>
           </div>

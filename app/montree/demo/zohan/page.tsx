@@ -52,7 +52,7 @@ export default function ZohanWelcomePage() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={handleSetupSchool}
-            className="px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all flex items-center justify-center gap-3 group"
+            className="btn btn-secondary btn-lg group"
           >
             <span className="text-2xl group-hover:scale-110 transition-transform">🏫</span>
             <span>Set Up Your School</span>
@@ -60,7 +60,7 @@ export default function ZohanWelcomePage() {
 
           <button
             onClick={handlePreviewDemo}
-            className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-semibold rounded-2xl hover:from-emerald-600 hover:to-cyan-600 transition-all shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-3 group"
+            className="btn btn-primary btn-lg btn-glow group"
           >
             <span className="text-2xl group-hover:scale-110 transition-transform">👀</span>
             <span>Preview Demo</span>
@@ -112,13 +112,13 @@ export default function ZohanWelcomePage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowDisclaimer(false)}
-                  className="flex-1 px-6 py-3 bg-gray-100 text-gray-600 font-medium rounded-xl hover:bg-gray-200 transition-colors"
+                  className="btn btn-secondary btn-md flex-1 on-light"
                 >
                   Go Back
                 </button>
                 <button
                   onClick={handleContinue}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-semibold rounded-xl hover:from-emerald-600 hover:to-cyan-600 transition-all shadow-md"
+                  className="btn btn-primary btn-md flex-1 on-light"
                 >
                   I Understand →
                 </button>

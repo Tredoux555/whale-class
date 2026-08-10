@@ -98,7 +98,7 @@ export default function SequenceView({
         <div>
           <button
             onClick={() => setSelectedCategory(null)}
-            className="text-indigo-400 hover:text-indigo-300 mb-4 flex items-center gap-1"
+            className="btn btn-ghost btn-sm mb-4"
           >
             ← Back to sequence
           </button>
@@ -151,7 +151,7 @@ export default function SequenceView({
         <div>
           <button
             onClick={() => setSelectedWork(null)}
-            className="text-indigo-400 hover:text-indigo-300 mb-4 flex items-center gap-1"
+            className="btn btn-ghost btn-sm mb-4"
           >
             ← Back to {selectedCategoryData?.name}
           </button>

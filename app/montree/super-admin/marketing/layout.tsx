@@ -116,7 +116,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
 
           <button
             onClick={handleLogin}
-            className="mt-4 w-full py-3 bg-emerald-500 text-white font-semibold rounded-xl hover:bg-emerald-600"
+            className="btn btn-primary btn-lg btn-full mt-4"
           >
             Login
           </button>

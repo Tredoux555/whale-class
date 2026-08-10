@@ -354,21 +354,8 @@ function MeetingBriefCard({ brief }: { brief: MeetingBrief }) {
           <button
             type="button"
             onClick={() => setExpanded(v => !v)}
-            style={{
-              marginTop: 14,
-              padding: '6px 12px',
-              background: 'rgba(232,201,106,0.10)',
-              border: '1px solid rgba(232,201,106,0.30)',
-              borderRadius: 999,
-              color: '#E8C96A',
-              fontFamily: T.sans,
-              fontSize: 12.5,
-              fontWeight: 500,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-            }}
+            className="btn btn-gold btn-sm btn-pill"
+            style={{ marginTop: 14 }}
           >
             <span style={{ fontSize: 11 }}>{expanded ? '▴' : '▾'}</span>
             {expanded ? 'Hide the full thinking' : 'Show me the full thinking'}
@@ -1410,18 +1397,7 @@ export default function AdminAgentPage() {
             type="button"
             onClick={startNewConversation}
             disabled={submitting}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              background: 'transparent',
-              border: 'none',
-              color: T.textMuted,
-              cursor: submitting ? 'not-allowed' : 'pointer',
-              padding: 4,
-              fontSize: 12,
-              fontFamily: T.sans,
-            }}
+            className="btn btn-ghost btn-sm"
           >
             <RotateCcw size={12} strokeWidth={1.75} />
             {t('tracy.newConversation')}
@@ -1437,21 +1413,7 @@ export default function AdminAgentPage() {
             onClick={submit}
             disabled={submitting || !question.trim()}
             aria-label={t('tracy.sendAria')}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 38,
-              height: 38,
-              background: T.emerald,
-              color: '#0a1a0f',
-              border: 'none',
-              borderRadius: '50%',
-              cursor:
-                submitting || !question.trim() ? 'not-allowed' : 'pointer',
-              opacity: submitting || !question.trim() ? 0.4 : 1,
-              transition: 'opacity 120ms ease',
-            }}
+            className="btn btn-primary btn-icon btn-round btn-md"
           >
             <Send size={15} strokeWidth={2} />
           </button>

@@ -126,11 +126,8 @@ export default function AgentMessagesPage() {
       <main style={{ maxWidth: 720, margin: '0 auto', padding: '24px 20px 80px' }}>
         <button
           onClick={() => router.push('/montree/agent/dashboard')}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13,
-            color: T.textSecondary, background: 'none', border: 'none',
-            cursor: 'pointer', marginBottom: 12, padding: 0,
-          }}
+          className="btn btn-ghost btn-sm"
+          style={{ marginBottom: 12 }}
         >
           <ArrowLeft size={16} strokeWidth={1.75} />
           {t('common.back')}
@@ -228,14 +225,8 @@ export default function AgentMessagesPage() {
 
       <button
         onClick={() => setComposeOpen(true)}
-        style={{
-          position: 'fixed', right: 24, bottom: 24, zIndex: 30,
-          width: 56, height: 56, borderRadius: '50%',
-          background: `linear-gradient(135deg, ${T.emerald}, ${T.emeraldDeep})`,
-          border: 'none', color: '#0a1a0f', cursor: 'pointer',
-          boxShadow: '0 12px 32px rgba(52,211,153,0.35)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}
+        className="btn btn-primary btn-icon btn-lg btn-round btn-glow"
+        style={{ position: 'fixed', right: 24, bottom: 24, zIndex: 30 }}
         aria-label={t('agentMessages.newMessage')}
       >
         <Plus size={24} strokeWidth={2} />
@@ -351,10 +342,7 @@ function ComposeModal({
           </h2>
           <button
             onClick={onClose}
-            style={{
-              background: 'none', border: 'none', color: T.textMuted,
-              cursor: 'pointer', display: 'flex', padding: 4,
-            }}
+            className="btn btn-ghost btn-icon btn-sm"
           >
             <X size={18} strokeWidth={1.75} />
           </button>
@@ -449,25 +437,14 @@ function ComposeModal({
         }}>
           <button
             onClick={onClose}
-            style={{
-              padding: '8px 14px', borderRadius: 10,
-              background: 'transparent', border: T.cardBorder,
-              color: T.textSecondary, fontSize: 13, fontFamily: T.sans, cursor: 'pointer',
-            }}
+            className="btn btn-ghost btn-outline btn-sm"
           >
             {t('common.cancel')}
           </button>
           <button
             onClick={handleSend}
             disabled={!canSend}
-            style={{
-              padding: '8px 16px', borderRadius: 10,
-              background: canSend ? `linear-gradient(135deg, ${T.emerald}, ${T.emeraldDeep})` : 'rgba(52,211,153,0.2)',
-              border: 'none', color: canSend ? '#0a1a0f' : T.textMuted,
-              fontSize: 13, fontWeight: 600, fontFamily: T.sans,
-              cursor: canSend ? 'pointer' : 'not-allowed',
-              display: 'flex', alignItems: 'center', gap: 6,
-            }}
+            className="btn btn-primary btn-sm"
           >
             <Send size={14} strokeWidth={2} />
             {sending ? t('agentMessages.sending') : t('agentMessages.send')}

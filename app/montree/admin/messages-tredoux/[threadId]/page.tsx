@@ -315,17 +315,7 @@ export default function PrincipalThreadDetailPage() {
           <button
             type="submit"
             disabled={sending || !text.trim()}
-            style={{
-              padding: '10px 16px',
-              background: 'linear-gradient(180deg, #27815a 0%, #1D6B48 100%)',
-              color: '#fff',
-              border: '1px solid rgba(130,217,174,0.18)',
-              borderRadius: 999,
-              fontSize: 13,
-              cursor: 'pointer',
-              opacity: !text.trim() ? 0.5 : 1,
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-            }}
+            className="btn btn-primary btn-md btn-pill"
           >
             <Send size={13} />
             {sending ? 'Sending…' : 'Send'}

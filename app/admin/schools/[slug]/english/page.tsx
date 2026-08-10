@@ -369,7 +369,7 @@ export default function SchoolEnglishPage() {
             )}
             <button
               onClick={() => setShowAddModal(true)}
-              className="px-4 py-2 bg-red-500 text-white rounded-xl font-medium hover:bg-red-400 transition-colors text-sm"
+              className="btn btn-primary btn-md"
             >
               + Add Work
             </button>
@@ -526,10 +526,10 @@ export default function SchoolEnglishPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => toggleActive(work.id)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                        work.isActive 
-                          ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30' 
-                          : 'bg-slate-700 text-slate-500 hover:bg-slate-600'
+                      className={`btn btn-sm ${
+                        work.isActive
+                          ? 'btn-primary'
+                          : 'btn-secondary'
                       }`}
                     >
                       {work.isActive ? '✓ Active' : 'Hidden'}
@@ -537,7 +537,7 @@ export default function SchoolEnglishPage() {
                     
                     <button
                       onClick={() => deleteWork(work.id)}
-                      className="p-2 text-slate-600 hover:text-red-400 transition-colors"
+                      className="btn btn-ghost btn-icon btn-sm"
                       title="Remove work"
                     >
                       ✕
@@ -664,14 +664,14 @@ function AddWorkModal({ onClose, onAdd }: { onClose: () => void, onAdd: (work: N
         <div className="flex gap-3 mt-6">
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors"
+            className="btn btn-secondary btn-md flex-1"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={!code || !name}
-            className="flex-1 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-400 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn btn-primary btn-md flex-1"
           >
             Add Work
           </button>

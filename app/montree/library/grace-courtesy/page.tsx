@@ -241,8 +241,7 @@ function Pill({ href, children }: { href: string; children: ReactNode }) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="px-3 py-2 rounded-lg border text-xs transition-all hover:bg-white/[0.06]"
-      style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)' }}
+      className="btn btn-secondary btn-sm"
     >
       {children}
     </a>

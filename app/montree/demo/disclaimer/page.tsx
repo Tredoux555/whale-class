@@ -104,11 +104,7 @@ function DisclaimerContent() {
           <button
             onClick={handleContinue}
             disabled={!agreed}
-            className={`w-full mt-6 py-4 rounded-2xl font-semibold text-lg transition-all ${
-              agreed
-                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 hover:scale-[1.01] cursor-pointer'
-                : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-            }`}
+            className="btn btn-primary btn-lg btn-full btn-glow mt-6"
           >
             {agreed ? "Understood, Let's Continue →" : "Please agree to continue"}
           </button>
@@ -118,7 +114,7 @@ function DisclaimerContent() {
         <div className="text-center mt-6">
           <button
             onClick={() => router.back()}
-            className="text-slate-500 hover:text-slate-400 text-sm transition-colors"
+            className="btn btn-ghost btn-sm"
           >
             ← Go back
           </button>

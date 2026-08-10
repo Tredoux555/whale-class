@@ -203,13 +203,13 @@ export default function StudentsPage() {
           <div className="flex gap-2">
             <Link
               href="/montree/admin/import"
-              className="px-4 py-2 bg-white/10 text-emerald-300 border border-emerald-500/30 rounded-lg font-medium hover:bg-emerald-500/20 transition-colors"
+              className="btn btn-secondary btn-md"
             >
               📄 {t('admin.students.import')}
             </Link>
             <button
               onClick={openAddModal}
-              className="px-4 py-2 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600 transition-colors"
+              className="btn btn-primary btn-md"
             >
               {t('admin.students.addStudent')}
             </button>
@@ -220,10 +220,10 @@ export default function StudentsPage() {
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           <button
             onClick={() => setSelectedClassroom('all')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+            className={`btn btn-md ${
               selectedClassroom === 'all'
-                ? 'bg-emerald-500 text-white'
-                : 'bg-white/10 text-emerald-200 hover:bg-white/20'
+                ? 'btn-primary'
+                : 'btn-secondary'
             }`}
           >
             {t('admin.students.all').replace('{count}', students.length.toString())}
@@ -234,10 +234,10 @@ export default function StudentsPage() {
               <button
                 key={c.id}
                 onClick={() => setSelectedClassroom(c.id)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                className={`btn btn-md ${
                   selectedClassroom === c.id
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-white/10 text-emerald-200 hover:bg-white/20'
+                    ? 'btn-primary'
+                    : 'btn-secondary'
                 }`}
               >
                 {c.icon} {c.name} ({count})
@@ -254,7 +254,7 @@ export default function StudentsPage() {
             <p className="text-emerald-300 mb-6">{t('admin.students.addFirstStudent')}</p>
             <button
               onClick={openAddModal}
-              className="px-6 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600 transition-colors"
+              className="btn btn-primary btn-lg"
             >
               {t('admin.students.addStudent')}
             </button>
@@ -298,13 +298,13 @@ export default function StudentsPage() {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => openEditModal(student)}
-                            className="px-3 py-1.5 bg-white/10 text-white rounded-lg text-sm hover:bg-white/20 transition-colors"
+                            className="btn btn-secondary btn-sm"
                           >
                             {t('admin.students.edit')}
                           </button>
                           <button
                             onClick={() => handleDelete(student.id, student.name)}
-                            className="px-3 py-1.5 bg-red-500/20 text-red-300 rounded-lg text-sm hover:bg-red-500/30 transition-colors"
+                            className="btn btn-danger btn-soft btn-sm"
                           >
                             {t('admin.students.remove')}
                           </button>
@@ -379,14 +379,14 @@ export default function StudentsPage() {
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={closeModal}
-                  className="flex-1 py-3 bg-white/10 text-white rounded-lg font-medium hover:bg-white/20 transition-colors"
+                  className="btn btn-secondary btn-lg flex-1"
                 >
                   {t('admin.students.cancel')}
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={!formName.trim() || !formClassroom || saving}
-                  className="flex-1 py-3 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600 disabled:bg-emerald-800 disabled:cursor-not-allowed transition-colors"
+                  className="btn btn-primary btn-lg flex-1"
                 >
                   {saving ? t('admin.students.saving') : editingStudent ? t('admin.students.saveChanges') : t('admin.students.addStudentModal')}
                 </button>

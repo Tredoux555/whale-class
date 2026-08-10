@@ -109,7 +109,7 @@ export default function WorkDetailModal({
               <h2 className="text-2xl font-bold text-slate-800">{work.name}</h2>
               {work.chineseName && <p className="text-slate-600">{work.chineseName}</p>}
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-white/50 rounded-full text-xl">✕</button>
+            <button onClick={onClose} className="btn btn-ghost btn-icon btn-sm on-light text-xl">✕</button>
           </div>
           <div className="inline-flex items-center gap-2 mt-3 px-3 py-1 rounded-full text-sm font-medium"
             style={{ backgroundColor: statusColor.border, color: 'white' }}>
@@ -275,28 +275,28 @@ export default function WorkDetailModal({
         <div className="p-6 border-t bg-slate-50 flex gap-3">
           {status === 'not_started' && (
             <button onClick={() => handleQuickAction('start')} disabled={saving}
-              className="px-4 py-2 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600 disabled:opacity-50">
+              className="btn btn-gold btn-md">
               ▶ Start This Work
             </button>
           )}
           {status === 'in_progress' && (
             <button onClick={() => handleQuickAction('complete')} disabled={saving}
-              className="px-4 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 disabled:opacity-50">
+              className="btn btn-primary btn-md">
               ✓ Mark Complete
             </button>
           )}
           {status !== 'not_started' && (
             <button onClick={() => handleQuickAction('reset')} disabled={saving}
-              className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-300 disabled:opacity-50">
+              className="btn btn-secondary btn-md on-light">
               Reset
             </button>
           )}
           <div className="flex-1" />
-          <button onClick={onClose} className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-100">
+          <button onClick={onClose} className="btn btn-secondary btn-md on-light">
             Cancel
           </button>
           <button onClick={handleSave} disabled={saving}
-            className="px-6 py-2 bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-600 disabled:opacity-50">
+            className="btn btn-primary btn-md">
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
         </div>

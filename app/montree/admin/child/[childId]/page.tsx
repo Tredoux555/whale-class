@@ -245,19 +245,8 @@ export default function ChildBriefingPage() {
       <button
         type="button"
         onClick={() => router.push('/montree/admin')}
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 6,
-          background: 'transparent',
-          border: 'none',
-          color: T.emeraldDim,
-          cursor: 'pointer',
-          padding: 0,
-          fontSize: 13,
-          fontFamily: T.sans,
-          marginBottom: 22,
-        }}
+        className="btn btn-ghost btn-sm"
+        style={{ marginBottom: 22 }}
       >
         <ArrowLeft size={16} strokeWidth={1.75} />
         Find another child
@@ -391,27 +380,7 @@ export default function ChildBriefingPage() {
               disabled={
                 submitting || !question.trim() || !briefing || !!briefingError
               }
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '11px 22px',
-                background: T.emerald,
-                color: '#0a1a0f',
-                border: 'none',
-                borderRadius: 999,
-                fontFamily: T.sans,
-                fontSize: 14,
-                fontWeight: 600,
-                cursor:
-                  submitting || !question.trim() || !briefing || briefingError
-                    ? 'not-allowed'
-                    : 'pointer',
-                opacity:
-                  submitting || !question.trim() || !briefing || briefingError
-                    ? 0.4
-                    : 1,
-              }}
+              className="btn btn-primary btn-md btn-pill"
             >
               <Send size={14} strokeWidth={2} />
               {submitting ? 'Thinking…' : 'Get an answer'}
@@ -547,20 +516,7 @@ function BriefingProse({
           type="button"
           onClick={onRefresh}
           aria-label="Refresh briefing"
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: T.emeraldDim,
-            cursor: 'pointer',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 5,
-            fontSize: 11,
-            fontWeight: 600,
-            letterSpacing: 1.2,
-            padding: 4,
-            textTransform: 'uppercase',
-          }}
+          className="btn btn-ghost btn-sm"
         >
           <RefreshCw size={12} strokeWidth={1.75} />
           Refresh
@@ -654,17 +610,7 @@ function ErrorBlock({
       <button
         type="button"
         onClick={onRetry}
-        style={{
-          padding: '10px 22px',
-          background: T.emerald,
-          color: '#0a1a0f',
-          border: 'none',
-          borderRadius: 999,
-          fontFamily: T.sans,
-          fontSize: 13,
-          fontWeight: 600,
-          cursor: 'pointer',
-        }}
+        className="btn btn-primary btn-sm btn-pill"
       >
         Try again
       </button>

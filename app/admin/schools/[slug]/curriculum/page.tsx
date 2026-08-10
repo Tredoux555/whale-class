@@ -111,21 +111,17 @@ export default function SchoolCurriculumPage() {
           
           <div className="flex gap-2">
             {isEmpty && (
-              <button 
+              <button
                 onClick={seedCurriculum}
                 disabled={seeding}
-                className={`px-4 py-2 rounded-xl font-medium text-sm transition-colors ${
-                  seeding 
-                    ? 'bg-slate-700 text-slate-400 cursor-wait' 
-                    : 'bg-green-500 text-white hover:bg-green-400'
-                }`}
+                className={`btn btn-md ${seeding ? 'btn-secondary' : 'btn-primary'}`}
               >
                 {seeding ? '⏳ Seeding...' : '🌱 Seed Curriculum'}
               </button>
             )}
-            <button 
+            <button
               onClick={fetchCurriculumStats}
-              className="px-4 py-2 bg-amber-500 text-black rounded-xl font-medium hover:bg-amber-400 transition-colors text-sm"
+              className="btn btn-gold btn-md"
             >
               🔄 Refresh
             </button>

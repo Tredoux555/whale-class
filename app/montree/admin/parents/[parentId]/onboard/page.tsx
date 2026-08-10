@@ -764,16 +764,8 @@ export default function ParentOnboardPage() {
             </div>
             <button
               onClick={stopRecording}
-              style={{
-                width: 96,
-                height: 96,
-                borderRadius: '50%',
-                background: 'rgba(220,50,50,0.18)',
-                border: '2px solid rgba(220,50,50,0.85)',
-                cursor: 'pointer',
-                color: 'rgba(255,200,200,0.95)',
-                animation: 'm-pulse 1.6s ease-in-out infinite',
-              }}
+              className="btn btn-danger btn-soft btn-icon btn-lg btn-round"
+              style={{ animation: 'm-pulse 1.6s ease-in-out infinite' }}
               aria-label="Stop recording"
             >
               <Square size={32} />

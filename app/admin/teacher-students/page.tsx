@@ -199,7 +199,7 @@ export default function TeacherStudentsPage() {
                     <button
                       onClick={() => assignChild(child.id, null)}
                       disabled={saving === child.id}
-                      className="text-xs text-red-500 hover:text-red-700 px-2 py-1 hover:bg-red-50 rounded"
+                      className="btn btn-danger btn-soft btn-sm on-light"
                     >
                       Remove
                     </button>

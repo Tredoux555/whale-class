@@ -160,7 +160,7 @@ export default function StudentDetailPage() {
           <div className="flex items-center gap-4">
             <Link
               href="/admin/classroom"
-              className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30 transition-colors"
+              className="btn btn-secondary btn-icon btn-md"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -198,7 +198,7 @@ export default function StudentDetailPage() {
             <Link
               href={`/admin/classroom/report/${studentId}`}
               target="_blank"
-              className="hidden sm:flex items-center gap-2 bg-white/20 hover:bg-white/30 rounded-xl px-4 py-2 transition-colors"
+              className="btn btn-secondary btn-md hidden sm:flex"
             >
               <span>📄</span>
               <span className="text-sm">Report</span>
@@ -498,7 +498,7 @@ function ThisWeekTab({ childId, childName, childAge, onMediaUploaded }: {
 
                 <button
                   onClick={() => handleCaptureTap(assignment)}
-                  className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center text-white shadow-md hover:shadow-lg active:scale-95 transition-all"
+                  className="btn btn-primary btn-icon btn-md"
                 >
                   📸
                 </button>
@@ -637,7 +637,7 @@ function ProgressTab({ childId, childName }: { childId: string; childName: strin
           <button
             onClick={handleSync}
             disabled={syncing}
-            className="px-5 py-2.5 bg-white text-blue-600 rounded-xl font-bold hover:bg-blue-50 disabled:opacity-50 shadow"
+            className="btn btn-primary btn-md"
           >
             {syncing ? '⏳...' : '🚀 Sync'}
           </button>
@@ -854,7 +854,7 @@ function PortfolioTab({ childId, childName }: { childId: string; childName: stri
         >
           <button 
             onClick={() => setSelectedMedia(null)} 
-            className="absolute top-4 right-4 w-10 h-10 bg-white/20 hover:bg-white/40 rounded-full flex items-center justify-center text-white text-xl z-10"
+            className="btn btn-secondary btn-icon btn-round btn-md absolute top-4 right-4 z-10"
           >
             ✕
           </button>

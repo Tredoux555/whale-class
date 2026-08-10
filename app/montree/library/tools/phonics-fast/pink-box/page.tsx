@@ -644,8 +644,7 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: white; color:
               <div className="flex flex-col gap-2">
                 {PINK_PHASES.map(phase => (
                   <button key={phase.id} onClick={() => setSelectedPhase(phase.id)}
-                    className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition-all text-left ${selectedPhase === phase.id ? 'text-white shadow-md ring-2 ring-offset-2' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'}`}
-                    style={selectedPhase === phase.id ? { backgroundColor: phase.color, ringColor: phase.color } : undefined}>
+                    className={`btn btn-md text-left ${selectedPhase === phase.id ? 'btn-primary' : 'btn-secondary on-light'}`}>
                     <span className="font-bold block">{phase.name}</span>
                     <span className="text-xs opacity-90">{phase.groups.flatMap(g => g.words).length} words • {phase.groups.flatMap(g => g.words).filter(w => w.isNoun).length} objects</span>
                   </button>
@@ -683,7 +682,7 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: white; color:
               <div className="space-y-2">
                 {(Object.entries(modeLabels) as [PrintMode, typeof modeLabels[PrintMode]][]).map(([value, mode]) => (
                   <button key={value} onClick={() => setPrintMode(value)}
-                    className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all ${printMode === value ? 'bg-pink-50 border-2 border-pink-400 text-pink-800 font-bold' : 'bg-gray-50 border-2 border-gray-200 text-gray-700 hover:bg-gray-100'}`}>
+                    className={`btn btn-md btn-full text-left ${printMode === value ? 'btn-primary' : 'btn-secondary on-light'}`}>
                     <span className="mr-2">{mode.icon}</span>{mode.label}
                     <span className="block text-xs mt-0.5 opacity-60 font-normal">{mode.desc}</span>
                   </button>
@@ -709,7 +708,7 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: white; color:
               )}
 
               <button onClick={handlePrint} disabled={selectedWords.length === 0 || printing}
-                className="w-full px-4 py-3 bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-lg font-bold text-sm hover:from-pink-700 hover:to-pink-800 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed mt-4">
+                className="btn btn-primary btn-lg btn-full mt-4">
                 {printing ? '⏳ Generating...' : `🖨️ ${printMode === 'full-set' ? 'Print EVERYTHING' : `Print ${modeLabels[printMode].label}`}`}
               </button>
             </div>

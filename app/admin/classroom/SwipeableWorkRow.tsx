@@ -357,7 +357,7 @@ export default function SwipeableWorkRow({
         {/* Expand/Collapse Button */}
         <button
           onClick={togglePanel}
-          className="w-8 h-8 flex items-center justify-center text-gray-400 active:bg-gray-100 rounded-full"
+          className="btn btn-ghost btn-icon btn-round btn-sm on-light"
         >
           <svg 
             className={`w-5 h-5 transition-transform duration-200 ${isPanelOpen ? 'rotate-180' : ''}`} 

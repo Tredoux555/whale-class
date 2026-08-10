@@ -164,7 +164,7 @@ export default function OutreachHubPage() {
           {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
           <button
             onClick={handleLogin}
-            className="w-full bg-emerald-600 text-white rounded py-2 font-medium hover:bg-emerald-700"
+            className="btn btn-primary btn-md btn-full on-light"
           >
             Enter
           </button>
@@ -204,10 +204,10 @@ export default function OutreachHubPage() {
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`px-4 py-2 rounded-lg font-medium text-sm ${
+              className={`btn btn-md on-light ${
                 tab === t
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-white text-gray-600 hover:bg-gray-100'
+                  ? 'btn-primary'
+                  : 'btn-secondary'
               }`}
             >
               {t === 'pipeline' ? '📊 Pipeline' : t === 'contacts' ? '📋 Contacts' : '📝 Activity Log'}
@@ -326,7 +326,7 @@ export default function OutreachHubPage() {
               </select>
               <button
                 onClick={() => { setStatusFilter(''); setTypeFilter(''); }}
-                className="text-sm text-gray-500 hover:text-gray-700 px-2"
+                className="btn btn-ghost btn-sm on-light"
               >
                 Clear filters
               </button>

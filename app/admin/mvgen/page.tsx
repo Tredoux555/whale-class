@@ -908,7 +908,7 @@ export default function MvGenStudioPage() {
           </div>
           <Link
             href="/admin"
-            className="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+            className="btn btn-secondary btn-md"
           >
             ← Back to Admin
           </Link>
@@ -931,7 +931,7 @@ export default function MvGenStudioPage() {
                   setCopiedCmd(true);
                   setTimeout(() => setCopiedCmd(false), 1500);
                 })}
-                className="shrink-0 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-md text-xs font-medium"
+                className="btn btn-secondary btn-sm shrink-0"
               >
                 {copiedCmd ? '✓ Copied' : '📋 Copy'}
               </button>
@@ -979,7 +979,7 @@ export default function MvGenStudioPage() {
               <button
                 onClick={createProject}
                 disabled={daemonOnline === false}
-                className="shrink-0 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg text-sm font-medium"
+                className="btn btn-primary btn-md shrink-0"
               >
                 ＋ New project
               </button>
@@ -1001,7 +1001,7 @@ export default function MvGenStudioPage() {
                 {uploads.some((u) => u.status !== 'uploading') && (
                   <button
                     onClick={clearFinishedUploads}
-                    className="shrink-0 px-2.5 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs"
+                    className="btn btn-secondary btn-sm shrink-0"
                   >
                     Clear finished
                   </button>
@@ -1054,7 +1054,7 @@ export default function MvGenStudioPage() {
                     <button
                       onClick={() => openBrowser('audio')}
                       disabled={daemonOnline === false}
-                      className="shrink-0 px-3 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 rounded-lg text-sm"
+                      className="btn btn-secondary btn-md shrink-0"
                       title="Browse the filesystem instead"
                     >
                       📂 Browse
@@ -1072,7 +1072,7 @@ export default function MvGenStudioPage() {
                   <button
                     onClick={() => openBrowser('audio')}
                     disabled={daemonOnline === false}
-                    className="shrink-0 px-4 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg text-sm font-medium"
+                    className="btn btn-primary btn-md shrink-0"
                   >
                     📂 Pick audio
                   </button>
@@ -1097,7 +1097,7 @@ export default function MvGenStudioPage() {
                 <button
                   onClick={() => openBrowser('images')}
                   disabled={daemonOnline === false}
-                  className="shrink-0 px-4 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg text-sm font-medium"
+                  className="btn btn-primary btn-md shrink-0"
                 >
                   {selectedProject ? '📂 Browse' : '📂 Pick folder'}
                 </button>
@@ -1126,7 +1126,7 @@ export default function MvGenStudioPage() {
                   <div className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm truncate min-w-0 text-white">{subsPath}</div>
                   <button
                     onClick={() => setSubsPath('')}
-                    className="shrink-0 px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm"
+                    className="btn btn-secondary btn-md shrink-0"
                   >
                     Clear
                   </button>
@@ -1164,8 +1164,8 @@ export default function MvGenStudioPage() {
                     <button
                       key={t}
                       onClick={() => setTheme(t)}
-                      className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                        theme === t ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
+                      className={`btn btn-sm flex-1 ${
+                        theme === t ? 'btn-primary' : 'btn-ghost'
                       }`}
                     >
                       {t === 'kids' ? '🧒 Kids' : '🌳 Montree'}
@@ -1220,7 +1220,7 @@ export default function MvGenStudioPage() {
             <button
               onClick={submitRender}
               disabled={!canRender}
-              className="w-full px-4 py-3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg font-bold transition-colors"
+              className="btn btn-primary btn-lg btn-full"
             >
               {submitting ? '⏳ Submitting…' : '🎼 Render music video'}
             </button>
@@ -1269,14 +1269,14 @@ export default function MvGenStudioPage() {
                         {isActive && (
                           <button
                             onClick={() => cancelJob(job.job_id, job.song)}
-                            className="px-3 py-1 bg-red-900 hover:bg-red-800 rounded text-xs"
+                            className="btn btn-danger btn-sm"
                           >
                             🚫 Cancel
                           </button>
                         )}
                         <button
                           onClick={() => toggleJobLog(job.job_id)}
-                          className="px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs"
+                          className="btn btn-secondary btn-sm"
                         >
                           {expandedJobId === job.job_id ? 'Hide log' : 'View log'}
                         </button>
@@ -1318,14 +1318,14 @@ export default function MvGenStudioPage() {
                 <button
                   onClick={runAnalyze}
                   disabled={!audioPath || planAnalyzing || daemonOnline === false}
-                  className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg text-sm font-medium"
+                  className="btn btn-primary btn-md"
                 >
                   {planAnalyzing ? '🔍 Analyzing…' : '🔍 Analyze song'}
                 </button>
                 <button
                   onClick={fetchPlan}
                   disabled={!audioPath || !imagesDir || planLoading || daemonOnline === false}
-                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg text-sm"
+                  className="btn btn-secondary btn-md"
                 >
                   🔄 Refresh plan
                 </button>
@@ -1346,7 +1346,7 @@ export default function MvGenStudioPage() {
                   <button
                     onClick={runAnalyze}
                     disabled={!audioPath || planAnalyzing || daemonOnline === false}
-                    className="px-4 py-2 bg-amber-600 hover:bg-amber-500 disabled:opacity-40 rounded-lg text-sm font-medium"
+                    className="btn btn-gold btn-md"
                   >
                     {planAnalyzing ? '🔍 Analyzing…' : '🔍 Analyze song'}
                   </button>
@@ -1439,13 +1439,13 @@ export default function MvGenStudioPage() {
                                 </code>
                                 <button
                                   onClick={() => copyWithKey(m.suggested_filename, `fn-${m.word}`)}
-                                  className="shrink-0 px-2.5 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs"
+                                  className="btn btn-secondary btn-sm shrink-0"
                                 >
                                   {copiedKey === `fn-${m.word}` ? '✓ Copied' : '📋 Filename'}
                                 </button>
                                 <button
                                   onClick={() => copyWithKey(m.mj_prompt, `mj-${m.word}`)}
-                                  className="shrink-0 px-2.5 py-1 bg-violet-700 hover:bg-violet-600 rounded text-xs"
+                                  className="btn btn-gold btn-sm shrink-0"
                                 >
                                   {copiedKey === `mj-${m.word}` ? '✓ Copied' : '🎨 MJ prompt'}
                                 </button>
@@ -1491,7 +1491,7 @@ export default function MvGenStudioPage() {
             <button
               onClick={fetchLibrary}
               disabled={daemonOnline === false}
-              className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 rounded-lg text-sm"
+              className="btn btn-secondary btn-sm"
             >
               🔄 Refresh
             </button>
@@ -1530,13 +1530,13 @@ export default function MvGenStudioPage() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => copyToClipboard(video.path)}
-                        className="flex-1 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded text-xs"
+                        className="btn btn-secondary btn-sm flex-1"
                       >
                         📋 Copy path
                       </button>
                       <button
                         onClick={() => deleteVideo(video)}
-                        className="px-3 py-1.5 bg-red-900 hover:bg-red-800 rounded text-xs"
+                        className="btn btn-danger btn-sm"
                       >
                         🗑️
                       </button>
@@ -1557,7 +1557,7 @@ export default function MvGenStudioPage() {
               <h3 className="text-lg font-bold">
                 {browseKind === 'audio' ? '🎵 Pick an audio file' : '🖼️ Pick an images folder'}
               </h3>
-              <button onClick={closeBrowser} className="px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm">
+              <button onClick={closeBrowser} className="btn btn-secondary btn-sm">
                 ✕ Close
               </button>
             </div>
@@ -1567,7 +1567,7 @@ export default function MvGenStudioPage() {
               <button
                 onClick={() => { if (browseData?.parent) loadBrowse(browseKind, browseData.parent); }}
                 disabled={browseLoading || !browseData || browseData.parent === null || browseData.parent === browseData.path}
-                className="shrink-0 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg text-sm"
+                className="btn btn-secondary btn-sm shrink-0"
               >
                 ⬆️ Up
               </button>
@@ -1577,7 +1577,7 @@ export default function MvGenStudioPage() {
               {browseKind === 'images' && browseData && (
                 <button
                   onClick={() => selectImagesDir(browseData.path, null)}
-                  className="shrink-0 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-sm font-medium"
+                  className="btn btn-primary btn-sm shrink-0"
                 >
                   ✓ Use this folder
                 </button>
@@ -1618,7 +1618,7 @@ export default function MvGenStudioPage() {
                       {browseKind === 'images' && (
                         <button
                           onClick={() => selectImagesDir(dir.path, dir.image_count ?? null)}
-                          className="shrink-0 px-2.5 py-1 bg-emerald-700 hover:bg-emerald-600 rounded text-xs font-medium"
+                          className="btn btn-primary btn-sm shrink-0"
                         >
                           ✓ Use
                         </button>

@@ -394,14 +394,14 @@ export default function SiteTesterPage() {
             <button
               onClick={runTests}
               disabled={isRunning}
-              className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-600 rounded-lg font-bold transition-colors"
+              className="btn btn-primary btn-md"
             >
               {isRunning ? '⏳ Running...' : '🚀 Run All Tests'}
             </button>
             {report && (
               <button
                 onClick={copyReport}
-                className="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-bold transition-colors"
+                className="btn btn-primary btn-md"
               >
                 📋 Copy Report
               </button>
@@ -458,7 +458,7 @@ export default function SiteTesterPage() {
               📋 Claude Report
               <button
                 onClick={copyReport}
-                className="text-sm px-3 py-1 bg-green-600 hover:bg-green-700 rounded-lg font-medium"
+                className="btn btn-primary btn-sm"
               >
                 Copy
               </button>

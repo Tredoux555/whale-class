@@ -228,10 +228,7 @@ export default function AgentThreadDetailPage() {
         }}>
           <button
             onClick={() => router.push('/montree/agent/messages')}
-            style={{
-              background: 'none', border: 'none', color: T.textSecondary,
-              cursor: 'pointer', display: 'flex', padding: 4,
-            }}
+            className="btn btn-ghost btn-icon btn-sm"
             aria-label={t('common.back')}
           >
             <ArrowLeft size={18} strokeWidth={1.75} />
@@ -343,17 +340,8 @@ export default function AgentThreadDetailPage() {
             <button
               onClick={handleSend}
               disabled={!reply.trim() || sending}
-              style={{
-                width: 40, height: 40, borderRadius: '50%',
-                background: reply.trim() && !sending
-                  ? `linear-gradient(135deg, ${T.emerald}, ${T.emeraldDeep})`
-                  : 'rgba(52,211,153,0.2)',
-                border: 'none',
-                color: reply.trim() && !sending ? '#0a1a0f' : T.textMuted,
-                cursor: reply.trim() && !sending ? 'pointer' : 'not-allowed',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexShrink: 0,
-              }}
+              className="btn btn-primary btn-icon btn-round btn-md"
+              style={{ flexShrink: 0 }}
               aria-label={t('agentThread.send')}
             >
               <Send size={16} strokeWidth={2} />

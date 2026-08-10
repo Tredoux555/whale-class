@@ -79,9 +79,9 @@ export default function SessionsListPage() {
       {/* Header */}
       <header className="bg-gray-800 border-b border-gray-700 p-4">
         <div className="max-w-6xl mx-auto flex items-center gap-3">
-          <Link 
+          <Link
             href="/admin/test"
-            className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+            className="btn btn-ghost btn-icon btn-sm"
           >
             <ChevronLeft size={24} />
           </Link>
@@ -111,10 +111,10 @@ export default function SessionsListPage() {
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  filter === f 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                className={`btn btn-md ${
+                  filter === f
+                    ? 'btn-primary'
+                    : 'btn-secondary'
                 }`}
               >
                 {f === 'all' ? 'All' : f === 'completed' ? '✅ Completed' : '⏳ In Progress'}
@@ -187,13 +187,13 @@ export default function SessionsListPage() {
                       <div className="flex items-center justify-end gap-2">
                         <Link
                           href={`/admin/test/sessions/${session.id}`}
-                          className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition-colors"
+                          className="btn btn-secondary btn-sm"
                         >
                           View
                         </Link>
                         <button
                           onClick={() => deleteSession(session.id)}
-                          className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
+                          className="btn btn-danger btn-soft btn-icon btn-sm"
                         >
                           <Trash2 size={16} />
                         </button>

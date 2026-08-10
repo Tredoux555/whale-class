@@ -20,7 +20,7 @@ function CopyButton({ text }: { text: string }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       }}
-      className="px-3 py-1 bg-slate-700 text-slate-300 rounded-lg text-xs hover:bg-emerald-600 hover:text-white transition-all"
+      className="btn btn-secondary btn-sm"
     >
       {copied ? '✓ Copied' : 'Copy'}
     </button>
@@ -577,7 +577,7 @@ export default function ContentPack() {
 
   return (
     <div className="min-h-screen" style={{ background: "#0a0f0d", color: "#c8e0d0", fontFamily: "'DM Sans', sans-serif" }}>
-      <div className="p-4 border-b border-slate-700"><Link href="/montree/super-admin/marketing" className="text-emerald-400 hover:text-emerald-300 text-sm">← Back to Marketing Hub</Link></div>
+      <div className="p-4 border-b border-slate-700"><Link href="/montree/super-admin/marketing" className="btn btn-ghost btn-sm">← Back to Marketing Hub</Link></div>
       {/* Header */}
       <div className="p-5 border-b" style={{ borderColor: "rgba(255,255,255,0.04)" }}>
         <div className="flex items-center gap-3 mb-1">

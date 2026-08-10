@@ -57,7 +57,7 @@ export function TutorialOverlay({
               <button
                 onClick={onPrev}
                 disabled={stepNumber === 1}
-                className="text-sm text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="btn btn-ghost btn-sm on-light"
               >
                 ← Back
               </button>
@@ -65,7 +65,7 @@ export function TutorialOverlay({
               {step.nextOn === 'manual' && (
                 <button
                   onClick={onNext}
-                  className="px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all"
+                  className="btn btn-primary btn-md on-light"
                 >
                   {stepNumber === totalSteps - 1 ? 'Finish' : 'Next →'}
                 </button>

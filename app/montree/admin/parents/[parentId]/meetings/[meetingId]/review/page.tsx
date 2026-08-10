@@ -238,14 +238,7 @@ export default function MeetingReviewPage() {
       >
         <Link
           href={`/montree/admin/parents/${parentId}`}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            color: T.textSecondary,
-            textDecoration: 'none',
-            fontSize: 14,
-          }}
+          className="btn btn-ghost btn-sm"
         >
           <ChevronLeft size={16} /> Back
         </Link>
@@ -535,19 +528,19 @@ export default function MeetingReviewPage() {
                         <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
                           <button
                             onClick={() => setFieldAction(field, 'approved')}
-                            style={pillStyle(action === 'approved', T.emerald)}
+                            className={`btn btn-sm btn-pill ${action === 'approved' ? 'btn-primary' : 'btn-secondary'}`}
                           >
                             <Check size={14} /> Approve
                           </button>
                           <button
                             onClick={() => setFieldAction(field, 'edited')}
-                            style={pillStyle(action === 'edited', '#fbbf24')}
+                            className={`btn btn-sm btn-pill ${action === 'edited' ? 'btn-gold' : 'btn-secondary'}`}
                           >
                             <Edit3 size={14} /> Edit
                           </button>
                           <button
                             onClick={() => setFieldAction(field, 'dismissed')}
-                            style={pillStyle(action === 'dismissed', '#f87171')}
+                            className={`btn btn-sm btn-pill ${action === 'dismissed' ? 'btn-danger btn-soft' : 'btn-secondary'}`}
                           >
                             <X size={14} /> Dismiss
                           </button>
@@ -571,33 +564,13 @@ export default function MeetingReviewPage() {
               <button
                 onClick={submitDecisions}
                 disabled={saving}
-                style={{
-                  padding: '12px 24px',
-                  background: T.emerald,
-                  color: '#0a1a0f',
-                  border: 'none',
-                  borderRadius: 8,
-                  fontSize: 14,
-                  fontWeight: 600,
-                  cursor: saving ? 'wait' : 'pointer',
-                  opacity: saving ? 0.6 : 1,
-                }}
+                className="btn btn-primary btn-md"
               >
                 {saving ? 'Saving…' : 'Save decisions'}
               </button>
               <Link
                 href={`/montree/admin/parents/${parentId}`}
-                style={{
-                  padding: '12px 24px',
-                  background: 'transparent',
-                  color: T.textSecondary,
-                  border: '1px solid rgba(255,255,255,0.18)',
-                  borderRadius: 8,
-                  fontSize: 14,
-                  textDecoration: 'none',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                }}
+                className="btn btn-ghost btn-outline btn-md"
               >
                 Done
               </Link>

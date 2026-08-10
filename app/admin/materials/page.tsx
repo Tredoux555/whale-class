@@ -348,7 +348,7 @@ export default function MaterialsPage() {
             <h2 className="text-xl font-semibold">Materials</h2>
             <button
               onClick={() => setShowAddMaterial(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2"
+              className="btn btn-primary btn-md"
             >
               <Plus className="w-4 h-4" />
               Add Material
@@ -374,7 +374,7 @@ export default function MaterialsPage() {
                     </div>
                     <button
                       onClick={() => handleDeleteMaterial(material.id)}
-                      className="text-red-600 hover:text-red-800 p-1"
+                      className="btn btn-ghost btn-icon btn-sm on-light"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -403,7 +403,7 @@ export default function MaterialsPage() {
                           </a>
                           <button
                             onClick={() => handleFileDelete(material.id, file.path)}
-                            className="text-red-600 hover:text-red-800 p-1"
+                            className="btn btn-ghost btn-icon btn-sm on-light"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -417,7 +417,7 @@ export default function MaterialsPage() {
                       setSelectedMaterial(material);
                       setShowUploadModal(true);
                     }}
-                    className="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 flex items-center justify-center gap-2"
+                    className="btn btn-secondary btn-md btn-full on-light"
                   >
                     <Upload className="w-4 h-4" />
                     Upload File
@@ -444,7 +444,7 @@ export default function MaterialsPage() {
             <h2 className="text-xl font-semibold">Categories</h2>
             <button
               onClick={() => setShowAddCategory(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2"
+              className="btn btn-primary btn-md"
             >
               <Plus className="w-4 h-4" />
               Add Category
@@ -465,14 +465,14 @@ export default function MaterialsPage() {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => setEditingCategory(category)}
-                      className="text-blue-600 hover:text-blue-800 p-1"
+                      className="btn btn-ghost btn-icon btn-sm on-light"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
                     {category.id !== 'general' && (
                       <button
                         onClick={() => handleDeleteCategory(category.id)}
-                        className="text-red-600 hover:text-red-800 p-1"
+                        className="btn btn-ghost btn-icon btn-sm on-light"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -529,13 +529,13 @@ export default function MaterialsPage() {
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => setShowAddCategory(false)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                className="btn btn-ghost btn-md on-light"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreateCategory}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                className="btn btn-primary btn-md"
               >
                 Create
               </button>
@@ -581,13 +581,13 @@ export default function MaterialsPage() {
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => setEditingCategory(null)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                className="btn btn-ghost btn-md on-light"
               >
                 Cancel
               </button>
               <button
                 onClick={handleUpdateCategory}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                className="btn btn-primary btn-md"
               >
                 Update
               </button>
@@ -641,13 +641,13 @@ export default function MaterialsPage() {
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => setShowAddMaterial(false)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                className="btn btn-ghost btn-md on-light"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreateMaterial}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                className="btn btn-primary btn-md"
               >
                 Create
               </button>
@@ -688,7 +688,7 @@ export default function MaterialsPage() {
                     setSelectedMaterial(null);
                     setUploadError('');
                   }}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                  className="btn btn-ghost btn-md on-light"
                   disabled={uploadingFile}
                 >
                   Cancel
@@ -696,7 +696,7 @@ export default function MaterialsPage() {
                 <button
                   type="submit"
                   disabled={uploadingFile}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  className="btn btn-primary btn-md"
                 >
                   {uploadingFile ? 'Uploading...' : 'Upload'}
                 </button>

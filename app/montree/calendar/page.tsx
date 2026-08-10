@@ -238,7 +238,7 @@ export default function CalendarPage() {
                   (a) => new Date(Date.UTC(a.getUTCFullYear(), a.getUTCMonth() - 1, 1)),
                 )
               }
-              style={navBtn}
+              className="btn btn-secondary btn-icon btn-sm"
             >
               ‹
             </button>
@@ -260,7 +260,7 @@ export default function CalendarPage() {
                   (a) => new Date(Date.UTC(a.getUTCFullYear(), a.getUTCMonth() + 1, 1)),
                 )
               }
-              style={navBtn}
+              className="btn btn-secondary btn-icon btn-sm"
             >
               ›
             </button>
@@ -271,7 +271,8 @@ export default function CalendarPage() {
                 setAnchor(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)));
                 setSelectedDay(ymd(now));
               }}
-              style={{ ...navBtn, marginLeft: 8 }}
+              className="btn btn-secondary btn-sm"
+              style={{ marginLeft: 8 }}
             >
               {t('calendar.today') || 'Today'}
             </button>
@@ -383,13 +384,7 @@ export default function CalendarPage() {
                     setSummary(null);
                     setSummaryError(null);
                   }}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: '#9bd5b0',
-                    cursor: 'pointer',
-                    fontSize: 12,
-                  }}
+                  className="btn btn-ghost btn-icon btn-sm"
                 >
                   ✕
                 </button>
@@ -419,18 +414,7 @@ export default function CalendarPage() {
                 type="button"
                 onClick={fetchSummary}
                 disabled={summaryLoading || loading}
-                style={{
-                  background: 'rgba(232,201,106,0.14)',
-                  border: '1px solid rgba(232,201,106,0.4)',
-                  color: '#E8C96A',
-                  padding: '10px 16px',
-                  borderRadius: 10,
-                  cursor: summaryLoading || loading ? 'wait' : 'pointer',
-                  fontSize: 14,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 8,
-                }}
+                className="btn btn-gold btn-md"
               >
                 {summaryLoading
                   ? t('calendar.summary.loading') || 'Reading your calendar…'
@@ -441,18 +425,7 @@ export default function CalendarPage() {
               {role && role !== 'parent' ? (
                 <Link
                   href="/montree/dashboard/appointments"
-                  style={{
-                    background: 'rgba(52,211,153,0.10)',
-                    border: '1px solid rgba(52,211,153,0.35)',
-                    color: '#9bd5b0',
-                    padding: '10px 16px',
-                    borderRadius: 10,
-                    fontSize: 14,
-                    textDecoration: 'none',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 6,
-                  }}
+                  className="btn btn-secondary btn-md"
                 >
                   {t('calendar.manageAvailability') || 'Set my availability'} →
                 </Link>

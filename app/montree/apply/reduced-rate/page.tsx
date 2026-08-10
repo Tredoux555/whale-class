@@ -144,7 +144,7 @@ export default function ReducedRateApplicationPage() {
           <div className="mt-8">
             <Link
               href="/montree"
-              className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all text-center block"
+              className="btn btn-primary btn-lg btn-full btn-glow"
             >
               {t('reducedRate.returnToMontree' as TranslationKey)}
             </Link>
@@ -284,7 +284,7 @@ export default function ReducedRateApplicationPage() {
                 type="button"
                 onClick={() => setStep(2)}
                 disabled={!schoolName.trim() || !country.trim() || !city.trim() || !contactName.trim() || !contactEmail.trim() || !estimatedStudents}
-                className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 mt-6"
+                className="btn btn-primary btn-lg btn-full btn-glow mt-6"
               >
                 {t('common.continue' as TranslationKey)} →
               </button>
@@ -387,14 +387,14 @@ export default function ReducedRateApplicationPage() {
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="px-6 py-4 bg-white/10 backdrop-blur border border-white/20 text-white font-semibold rounded-xl hover:bg-white/20 transition-all"
+                  className="btn btn-secondary btn-lg"
                 >
                   ← {t('common.back' as TranslationKey)}
                 </button>
                 <button
                   type="submit"
                   disabled={loading || !reason || !reasonDescription.trim() || !monthlyBudget || !requestedTier || (requestedTier === 'custom' && !customAmount)}
-                  className="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="btn btn-primary btn-lg flex-1 btn-glow"
                 >
                   {loading ? t('reducedRate.submitting' as TranslationKey) : t('reducedRate.submitApplication' as TranslationKey)}
                 </button>

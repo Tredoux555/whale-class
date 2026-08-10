@@ -345,11 +345,7 @@ function CurriculumPhase({ classroomId, count, onLock }: {
       <button
         onClick={onLock}
         disabled={count === 0}
-        className={`w-full py-3 rounded-lg font-medium flex items-center justify-center ${
-          count > 0
-            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-            : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-        }`}
+        className="btn btn-primary btn-lg btn-full"
       >
         Lock Curriculum & Continue
         <ChevronRight className="w-5 h-5 ml-2" />
@@ -381,11 +377,7 @@ function StudentsPhase({ classroomId, count, onProceed }: {
       <button
         onClick={onProceed}
         disabled={count === 0}
-        className={`w-full py-3 rounded-lg font-medium flex items-center justify-center ${
-          count > 0
-            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-            : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-        }`}
+        className="btn btn-primary btn-lg btn-full"
       >
         Continue to Works Import
         <ChevronRight className="w-5 h-5 ml-2" />
@@ -494,14 +486,14 @@ function WorksPhase({ works, summary, uploading, onUpload, onWorkAction, onCompl
                   {work.student && work.curriculumItem && (
                     <button
                       onClick={() => onWorkAction(work.id, 'confirm')}
-                      className="text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+                      className="btn btn-primary btn-sm"
                     >
                       Confirm
                     </button>
                   )}
                   <button
                     onClick={() => onWorkAction(work.id, 'reject')}
-                    className="text-sm bg-red-100 text-red-600 px-3 py-1 rounded hover:bg-red-200"
+                    className="btn btn-danger btn-soft btn-sm"
                   >
                     Reject
                   </button>
@@ -516,11 +508,7 @@ function WorksPhase({ works, summary, uploading, onUpload, onWorkAction, onCompl
       <button
         onClick={onComplete}
         disabled={!canComplete}
-        className={`w-full py-3 rounded-lg font-medium flex items-center justify-center ${
-          canComplete
-            ? 'bg-green-600 text-white hover:bg-green-700'
-            : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-        }`}
+        className="btn btn-primary btn-lg btn-full"
       >
         <Check className="w-5 h-5 mr-2" />
         Complete Onboarding

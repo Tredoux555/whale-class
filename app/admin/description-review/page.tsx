@@ -298,7 +298,7 @@ export default function DescriptionReviewPage() {
               {selectedWork && !editMode && (
                 <button
                   onClick={handleStartEdit}
-                  className="text-sm text-blue-600 hover:underline"
+                  className="btn btn-ghost btn-sm on-light"
                 >
                   Edit
                 </button>
@@ -339,13 +339,13 @@ export default function DescriptionReviewPage() {
                     <button
                       onClick={handleSave}
                       disabled={saving}
-                      className="flex-1 bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50"
+                      className="btn btn-primary btn-md flex-1 on-light"
                     >
                       {saving ? 'Saving...' : '✓ Save Description'}
                     </button>
                     <button
                       onClick={() => setEditMode(false)}
-                      className="px-4 py-2 border rounded-lg text-slate-600 hover:bg-slate-50"
+                      className="btn btn-secondary btn-md on-light"
                     >
                       Cancel
                     </button>
@@ -394,7 +394,7 @@ export default function DescriptionReviewPage() {
                       <button
                         onClick={handleGenerate}
                         disabled={generating}
-                        className="bg-amber-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-amber-700 disabled:opacity-50"
+                        className="btn btn-gold btn-md on-light"
                       >
                         {generating ? 'Generating...' : '✨ Generate Description'}
                       </button>

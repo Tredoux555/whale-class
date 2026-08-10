@@ -431,7 +431,7 @@ export default function OrgDashboardPage() {
               <button type="button" onClick={() => void mintInvite()} disabled={minting} style={primaryBtn}>
                 {minting ? t('org.dash.creatingLink') : t('org.dash.createLink')}
               </button>
-              <button type="button" onClick={() => { setComposerOpen(false); setMintError(''); }} style={ghostBtn}>
+              <button type="button" onClick={() => { setComposerOpen(false); setMintError(''); }} className="btn btn-ghost btn-outline btn-md">
                 {t('common.cancel')}
               </button>
             </div>
@@ -508,9 +508,8 @@ export default function OrgDashboardPage() {
                         type="button"
                         onClick={() => void enterSchool(s.id)}
                         disabled={enteringId !== null}
+                        className="btn btn-ghost btn-outline btn-sm"
                         style={{
-                          ...ghostBtn,
-                          padding: '7px 14px',
                           opacity: enteringId !== null && enteringId !== s.id ? 0.5 : 1,
                           cursor: enteringId !== null ? 'default' : 'pointer',
                         }}
@@ -555,7 +554,7 @@ export default function OrgDashboardPage() {
                     </div>
                   </div>
                   {i.status === 'valid' || i.status === 'expired' ? (
-                    <button type="button" onClick={() => void revoke(i.id)} style={ghostBtn}>
+                    <button type="button" onClick={() => void revoke(i.id)} className="btn btn-ghost btn-outline btn-md">
                       {t('org.dash.revoke')}
                     </button>
                   ) : null}

@@ -225,19 +225,7 @@ function SidebarContent({ schoolName, isActive, onLogout, nav }: SidebarContentP
       <div style={{ padding: '12px 14px 20px 14px', borderTop: T.sidebarBorder }}>
         <button
           onClick={onLogout}
-          style={{
-            width: '100%',
-            padding: '10px 14px',
-            background: 'transparent',
-            border: '1px solid rgba(255,255,255,0.12)',
-            borderRadius: 10,
-            color: T.textMuted,
-            fontFamily: T.sans,
-            fontSize: 13,
-            fontWeight: 500,
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-          }}
+          className="btn btn-ghost btn-outline btn-sm btn-full"
         >
           {t('adminNav.signOut')}
         </button>
@@ -698,18 +686,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             type="button"
             onClick={() => void returnToOrganization()}
             disabled={returningToOrg}
-            style={{
-              background: 'rgba(232,201,106,0.16)',
-              border: '1px solid rgba(232,201,106,0.34)',
-              borderRadius: 8,
-              padding: '4px 12px',
-              color: '#f0d68a',
-              fontFamily: T.sans,
-              fontSize: 12,
-              fontWeight: 600,
-              cursor: returningToOrg ? 'default' : 'pointer',
-              opacity: returningToOrg ? 0.6 : 1,
-            }}
+            className="btn btn-gold btn-sm"
           >
             {returningToOrg ? 'Returning…' : 'Return to organisation'}
           </button>
@@ -738,15 +715,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <button
           onClick={() => setDrawerOpen(true)}
           aria-label="Open menu"
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: T.textPrimary,
-            cursor: 'pointer',
-            padding: 6,
-            display: 'flex',
-            alignItems: 'center',
-          }}
+          className="btn btn-ghost btn-icon btn-sm"
         >
           <Menu size={22} strokeWidth={1.75} />
         </button>
@@ -834,15 +803,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <button
               onClick={() => setDrawerOpen(false)}
               aria-label="Close menu"
+              className="btn btn-ghost btn-icon btn-sm"
               style={{
                 position: 'absolute',
                 top: 'calc(14px + env(safe-area-inset-top))',
                 right: 14,
-                background: 'transparent',
-                border: 'none',
-                color: T.textSecondary,
-                cursor: 'pointer',
-                padding: 4,
               }}
             >
               <X size={20} strokeWidth={1.75} />

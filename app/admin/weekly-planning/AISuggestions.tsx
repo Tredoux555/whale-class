@@ -82,9 +82,9 @@ export default function AISuggestions({ onAddWork }: AISuggestionsProps) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       {/* Header - Always visible */}
-      <button 
+      <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full px-6 py-4 flex items-center justify-between bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 transition-all"
+        className="btn btn-gold btn-lg btn-full flex items-center justify-between"
       >
         <div className="flex items-center gap-3">
           <span className="text-2xl">🧠</span>
@@ -114,10 +114,10 @@ export default function AISuggestions({ onAddWork }: AISuggestionsProps) {
                     setSelectedAge(preset.value);
                     setUseCustomAge(false);
                   }}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`btn btn-md ${
                     !useCustomAge && selectedAge === preset.value
-                      ? 'bg-indigo-600 text-white shadow-md'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'btn-primary'
+                      : 'btn-secondary on-light'
                   }`}
                 >
                   {preset.label}
@@ -157,11 +157,7 @@ export default function AISuggestions({ onAddWork }: AISuggestionsProps) {
           <button
             onClick={fetchRecommendations}
             disabled={loading}
-            className={`w-full py-3 rounded-lg font-semibold text-lg transition-all ${
-              loading 
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                : 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 shadow-md hover:shadow-lg'
-            }`}
+            className="btn btn-gold btn-lg btn-full"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
@@ -206,7 +202,7 @@ export default function AISuggestions({ onAddWork }: AISuggestionsProps) {
                         {onAddWork && (
                           <button
                             onClick={() => onAddWork(rec.work_id, rec.work_name)}
-                            className="opacity-0 group-hover:opacity-100 px-3 py-1.5 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition-all"
+                            className="btn btn-primary btn-sm opacity-0 group-hover:opacity-100"
                           >
                             + Add
                           </button>

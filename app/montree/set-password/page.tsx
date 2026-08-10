@@ -171,8 +171,7 @@ export default function SetPasswordPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-4 rounded-xl font-bold
-              shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+            className="btn btn-primary btn-lg btn-full on-light"
           >
             {loading ? t('setPassword.setting' as TranslationKey) : t('setPassword.button' as TranslationKey)}
           </button>
@@ -180,7 +179,7 @@ export default function SetPasswordPage() {
           <button
             type="button"
             onClick={handleSkip}
-            className="w-full text-gray-500 py-2 hover:text-gray-700"
+            className="btn btn-ghost btn-md btn-full on-light"
           >
             {t('setPassword.skipButton' as TranslationKey)}
           </button>

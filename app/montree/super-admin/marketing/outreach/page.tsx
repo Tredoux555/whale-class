@@ -107,12 +107,7 @@ function CopyButton({ text }) {
   return (
     <button
       onClick={handleCopy}
-      className="px-4 py-2 rounded-lg text-sm font-semibold transition-all"
-      style={{
-        background: copied ? "rgba(46,204,113,0.2)" : "rgba(46,204,113,0.1)",
-        border: `1px solid ${copied ? "rgba(46,204,113,0.4)" : "rgba(46,204,113,0.2)"}`,
-        color: copied ? "#2ecc71" : "#a8d8b8",
-      }}
+      className="btn btn-secondary btn-md"
     >
       {copied ? "✓ Copied!" : "📋 Copy"}
     </button>
@@ -186,12 +181,11 @@ export default function MontreeOutreach() {
                     <button
                       key={t.id}
                       onClick={() => setActiveTemplate(t.id)}
-                      className="w-full text-left px-4 py-3 rounded-lg text-sm transition-all"
-                      style={{
-                        background: activeTemplate === t.id ? "rgba(46,204,113,0.08)" : "rgba(255,255,255,0.02)",
-                        border: `1px solid ${activeTemplate === t.id ? "rgba(46,204,113,0.2)" : "rgba(255,255,255,0.04)"}`,
-                        color: activeTemplate === t.id ? "#e8f5e9" : "#8aaa9a",
-                      }}
+                      className={`btn btn-lg btn-full text-left ${
+                        activeTemplate === t.id
+                          ? 'btn-primary'
+                          : 'btn-secondary'
+                      }`}
                     >
                       {t.name}
                     </button>

@@ -332,7 +332,7 @@ export default function EnglishSetupPage() {
           <div className="flex justify-center gap-4 md:gap-8 mt-4 text-sm flex-wrap">
             <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full">← Progression Flow →</span>
             <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full">Ages 2.5 → 6</span>
-            <Link href="/admin/english-guide" className="px-3 py-1 bg-amber-200 text-amber-800 rounded-full hover:bg-amber-300 transition">
+            <Link href="/admin/english-guide" className="btn btn-gold btn-sm btn-pill on-light">
               📖 Teaching Guide
             </Link>
           </div>
@@ -591,9 +591,9 @@ export default function EnglishSetupPage() {
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold text-gray-800">{selectedItem.name}</h3>
-              <button 
+              <button
                 onClick={() => setSelectedItem(null)}
-                className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+                className="btn btn-ghost btn-icon btn-sm on-light text-2xl"
               >
                 ×
               </button>
@@ -937,7 +937,7 @@ export default function EnglishSetupPage() {
 
             <button
               onClick={() => setSelectedItem(null)}
-              className="mt-4 w-full py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium transition"
+              className="btn btn-gold btn-lg btn-full on-light mt-4"
             >
               Got it!
             </button>

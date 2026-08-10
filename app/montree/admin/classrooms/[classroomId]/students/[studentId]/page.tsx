@@ -205,7 +205,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
         style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))' }}
       >
         <div className="max-w-4xl mx-auto flex items-center gap-3">
-          <button onClick={() => router.push(`/montree/admin/classrooms/${classroomId}`)} className="p-2 rounded-lg bg-white/[0.06] border border-[rgba(52,211,153,0.15)] hover:bg-white/10 text-white">
+          <button onClick={() => router.push(`/montree/admin/classrooms/${classroomId}`)} className="btn btn-secondary btn-icon btn-sm">
             ←
           </button>
           {/* Student avatar */}
@@ -250,7 +250,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
         <button
           onClick={generateQuickReport}
           disabled={guruLoading}
-          className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-semibold text-lg hover:bg-emerald-500 active:scale-[0.98] transition-all disabled:opacity-60"
+          className="btn btn-primary btn-lg btn-full"
         >
           {guruLoading ? (
             <span className="flex items-center justify-center gap-2">
@@ -319,7 +319,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
                 <div className="flex gap-2 pt-2">
                   <button
                     onClick={() => copyToClipboard(formatGuruForCopy())}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium ${copied ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                    className={`btn btn-md ${copied ? 'btn-primary' : 'btn-secondary'}`}
                   >
                     {copied ? '✓ ' + t('admin.actions.copied') : '📋 ' + t('admin.actions.copySummary')}
                   </button>
@@ -339,7 +339,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
                     <button
                       onClick={() => askGuru(guruQuestion)}
                       disabled={guruLoading || !guruQuestion.trim()}
-                      className="px-4 py-2 bg-emerald-500 text-white rounded-xl text-sm font-medium disabled:opacity-50"
+                      className="btn btn-primary btn-md"
                     >
                       {t('admin.actions.ask')}
                     </button>
@@ -351,7 +351,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
             {guruResponse && !guruResponse.success && (
               <div className="text-center py-4">
                 <p className="text-red-300 text-sm">{guruResponse.error || t('admin.errors.somethingWentWrong')}</p>
-                <button onClick={generateQuickReport} className="mt-2 px-4 py-2 bg-white/10 text-white rounded-lg text-sm">{t('admin.actions.tryAgain')}</button>
+                <button onClick={generateQuickReport} className="btn btn-secondary btn-md mt-2">{t('admin.actions.tryAgain')}</button>
               </div>
             )}
           </div>
@@ -464,7 +464,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
                 <button
                   key={i}
                   onClick={() => { setShowGuru(true); setGuruQuestion(q); askGuru(q); }}
-                  className="text-left px-3 py-2 bg-white/[0.06] border border-[rgba(52,211,153,0.15)] rounded-lg text-white/70 text-sm hover:bg-white/10 transition-colors"
+                  className="btn btn-secondary btn-sm text-left"
                 >
                   {q}
                 </button>

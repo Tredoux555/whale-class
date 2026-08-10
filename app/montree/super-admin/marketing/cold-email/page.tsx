@@ -240,10 +240,10 @@ export default function ColdEmailPage() {
             <button
               key={key}
               onClick={() => setActiveEmail(key)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+              className={`btn btn-md ${
                 activeEmail === key
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-slate-800 text-slate-400 hover:text-white border border-slate-700'
+                  ? 'btn-primary'
+                  : 'btn-secondary'
               }`}
             >
               Touch {i + 1}
@@ -260,10 +260,10 @@ export default function ColdEmailPage() {
             </div>
             <button
               onClick={() => copyEmail(activeEmail)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`btn btn-md ${
                 copied === activeEmail
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                  ? 'btn-primary'
+                  : 'btn-secondary'
               }`}
             >
               {copied === activeEmail ? '✓ Copied!' : 'Copy Email'}
@@ -357,10 +357,10 @@ export default function ColdEmailPage() {
                     <button
                       key={t}
                       onClick={() => toggleSent(school.name, t)}
-                      className={`w-9 h-9 rounded-lg text-xs font-bold transition-all ${
+                      className={`btn btn-icon btn-sm ${
                         school.sent[t]
-                          ? 'bg-emerald-600 text-white'
-                          : 'bg-slate-700 text-slate-500 hover:bg-slate-600'
+                          ? 'btn-primary'
+                          : 'btn-secondary'
                       }`}
                       title={`Touch ${i + 1} ${school.sent[t] ? 'sent' : 'not sent'}`}
                     >

@@ -33,7 +33,7 @@ export function ClassroomView({
             {showOverlay && (
               <button
                 onClick={onSkipTutorial}
-                className="text-sm text-white/70 hover:text-white transition-colors"
+                className="btn btn-ghost btn-sm"
               >
                 Skip Tutorial
               </button>

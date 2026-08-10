@@ -156,12 +156,12 @@ export default function LibraryBrowsePage() {
           </div>
           <div className="flex items-center justify-between mb-3">
             <div>
-              <Link href="/montree/library" className="text-emerald-400/60 text-xs hover:text-emerald-300 transition-colors">{t('library.backToLibrary' as any)}</Link>
+              <Link href="/montree/library" className="btn btn-ghost btn-sm">{t('library.backToLibrary' as any)}</Link>
               <h1 className="text-lg font-bold text-white mt-0.5">{t('library.browseWorks')}</h1>
             </div>
             <Link
               href="/montree/library/upload"
-              className="bg-emerald-500/90 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+              className="btn btn-primary btn-sm"
             >
               + {t('library.shareWork')}
             </Link>
@@ -182,7 +182,7 @@ export default function LibraryBrowsePage() {
                 className="bg-transparent outline-none text-sm text-white placeholder-white/30 flex-1"
               />
               {searchQuery && (
-                <button onClick={() => { setSearchQuery(''); setSearchOpen(false); }} className="text-white/30 hover:text-white/60 text-xs">✕</button>
+                <button onClick={() => { setSearchQuery(''); setSearchOpen(false); }} className="btn btn-ghost btn-icon btn-sm">✕</button>
               )}
             </div>
 
@@ -288,7 +288,7 @@ export default function LibraryBrowsePage() {
               <>
                 <p className="text-gray-500 font-medium">{t('library.nothingHere')}</p>
                 <p className="text-gray-400 text-sm mt-1 max-w-xs mx-auto">{t('library.miscellaneousDescription')}</p>
-                <Link href="/montree/library/upload" className="inline-block mt-4 px-5 py-2 bg-slate-600 text-white rounded-lg text-sm font-medium hover:bg-slate-700 transition-colors">
+                <Link href="/montree/library/upload" className="btn btn-secondary btn-md on-light mt-4">
                   + {t('library.uploadSomething')}
                 </Link>
               </>

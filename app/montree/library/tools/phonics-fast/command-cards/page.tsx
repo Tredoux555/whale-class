@@ -343,7 +343,7 @@ export default function PhonicsCommandCardsGenerator() {
             </div>
             <Link
               href="/montree/library/tools/phonics-fast"
-              className="px-4 py-2 bg-teal-600 hover:bg-teal-500 rounded-lg text-sm font-semibold transition"
+              className="btn btn-secondary btn-md"
             >
               ← Back to Phonics Fast
             </Link>
@@ -364,10 +364,10 @@ export default function PhonicsCommandCardsGenerator() {
                   <button
                     key={p.id}
                     onClick={() => setSelectedPhase(p.id)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 ${
+                    className={`btn btn-md ${
                       selectedPhase === p.id
-                        ? 'bg-teal-700 text-white shadow-md'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? 'btn-primary'
+                        : 'btn-secondary on-light'
                     }`}
                   >
                     {p.name.split(' — ')[0]}
@@ -384,10 +384,10 @@ export default function PhonicsCommandCardsGenerator() {
                   <button
                     key={lvl}
                     onClick={() => setSelectedLevel(lvl as CardLevel)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 ${
+                    className={`btn btn-md ${
                       selectedLevel === lvl
-                        ? 'bg-emerald-600 text-white shadow-md'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? 'btn-primary'
+                        : 'btn-secondary on-light'
                     }`}
                   >
                     {lvl === 'all' ? 'All Levels' : `Level ${lvl.replace('level', '')}`}
@@ -485,11 +485,7 @@ export default function PhonicsCommandCardsGenerator() {
           <button
             onClick={handlePrint}
             disabled={commands.length === 0}
-            className={`w-full mt-6 px-6 py-3 rounded-lg font-semibold text-white transition duration-200 flex items-center justify-center gap-2 ${
-              commands.length === 0
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-teal-700 hover:bg-teal-600 shadow-lg hover:shadow-xl'
-            }`}
+            className="btn btn-primary btn-lg btn-full mt-6"
           >
             <span>🖨️</span>
             <span>{commands.length === 0 ? 'No cards to print' : `Print ${commands.length} Cards`}</span>

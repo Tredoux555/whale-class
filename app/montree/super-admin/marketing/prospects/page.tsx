@@ -173,12 +173,7 @@ function CopyBtn({ text, label }) {
   return (
     <button
       onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-      className="px-3 py-1.5 rounded text-xs font-semibold transition-all"
-      style={{
-        background: copied ? "rgba(46,204,113,0.2)" : "rgba(46,204,113,0.08)",
-        border: `1px solid ${copied ? "rgba(46,204,113,0.4)" : "rgba(46,204,113,0.15)"}`,
-        color: copied ? "#2ecc71" : "#8aaa9a",
-      }}
+      className="btn btn-secondary btn-sm"
     >
       {copied ? "✓" : label || "📋"}
     </button>
@@ -239,12 +234,11 @@ export default function ProspectHQ() {
                 <button
                   key={key}
                   onClick={() => setRegion(key)}
-                  className="px-4 py-2 rounded-lg text-xs font-medium"
-                  style={{
-                    background: region === key ? "rgba(46,204,113,0.08)" : "rgba(255,255,255,0.02)",
-                    border: `1px solid ${region === key ? "rgba(46,204,113,0.2)" : "rgba(255,255,255,0.04)"}`,
-                    color: region === key ? "#2ecc71" : "#5a7a6a",
-                  }}
+                  className={`btn btn-md ${
+                    region === key
+                      ? 'btn-primary'
+                      : 'btn-secondary'
+                  }`}
                 >
                   {val.label.split(" — ")[0]}
                 </button>
@@ -322,12 +316,11 @@ export default function ProspectHQ() {
                 <button
                   key={m.id}
                   onClick={() => setSelectedMsg(i)}
-                  className="w-full text-left px-3 py-2.5 rounded-lg text-xs transition-all"
-                  style={{
-                    background: selectedMsg === i ? "rgba(7,193,96,0.08)" : "rgba(255,255,255,0.02)",
-                    border: `1px solid ${selectedMsg === i ? "rgba(7,193,96,0.2)" : "rgba(255,255,255,0.04)"}`,
-                    color: selectedMsg === i ? "#07C160" : "#8aaa9a",
-                  }}
+                  className={`btn btn-sm btn-full text-left ${
+                    selectedMsg === i
+                      ? 'btn-primary'
+                      : 'btn-secondary'
+                  }`}
                 >
                   {m.name}
                 </button>

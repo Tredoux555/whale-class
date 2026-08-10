@@ -110,13 +110,13 @@ export default function ParentCodesPage() {
               <button
                 onClick={generateAllCodes}
                 disabled={generating}
-                className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
+                className="btn btn-primary btn-md"
               >
                 {generating ? `⏳ ${t('parentCodes.generating' as TranslationKey)}` : `🔄 ${t('parentCodes.generateMissing' as TranslationKey)}`}
               </button>
               <button
                 onClick={handlePrint}
-                className="px-4 py-2 bg-white/[0.06] border border-[rgba(52,211,153,0.15)] text-white/80 rounded-lg hover:bg-white/[0.1]"
+                className="btn btn-secondary btn-md"
               >
                 🖨️ {t('parentCodes.printCards' as TranslationKey)}
               </button>
@@ -141,7 +141,7 @@ export default function ParentCodesPage() {
             <button
               onClick={generateAllCodes}
               disabled={generating}
-              className="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
+              className="btn btn-primary btn-lg"
             >
               {generating ? `⏳ ${t('parentCodes.generating' as TranslationKey)}` : `✨ ${t('parentCodes.generateAll' as TranslationKey)}`}
             </button>

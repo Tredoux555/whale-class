@@ -261,10 +261,10 @@ export default function AreaPage() {
                   <button
                     key={age ?? 'all'}
                     onClick={() => setAgeFilter(age)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
-                      ageFilter === age 
-                        ? 'bg-blue-500 text-white' 
-                        : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
+                    className={`btn btn-sm ${
+                      ageFilter === age
+                        ? 'btn-primary'
+                        : 'btn-secondary'
                     }`}
                   >
                     {age ?? 'All'}
@@ -276,10 +276,10 @@ export default function AreaPage() {
             {/* Gateway Filter */}
             <button
               onClick={() => setShowGatewayOnly(!showGatewayOnly)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                showGatewayOnly 
-                  ? 'bg-amber-500 text-white' 
-                  : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
+              className={`btn btn-sm ${
+                showGatewayOnly
+                  ? 'btn-gold'
+                  : 'btn-secondary'
               }`}
             >
               <span>🌟</span>
@@ -583,8 +583,8 @@ export default function AreaPage() {
             
             {/* Close Button */}
             <button 
-              onClick={() => setSelectedWork(null)} 
-              className="mt-4 w-full py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
+              onClick={() => setSelectedWork(null)}
+              className="btn btn-primary btn-lg btn-full mt-4"
             >
               Got it!
             </button>

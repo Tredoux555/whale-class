@@ -220,7 +220,7 @@ export default function ActivitiesLibraryPage() {
             </div>
             <Link
               href="/admin/montessori"
-              className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors text-sm"
+              className="btn btn-secondary btn-md"
             >
               Back to Montessori
             </Link>
@@ -325,7 +325,7 @@ export default function ActivitiesLibraryPage() {
                 setSelectedSkillLevel("all");
                 setAgeFilter("all");
               }}
-              className="mt-4 text-sm text-blue-600 hover:text-blue-800 font-medium"
+              className="btn btn-ghost btn-sm on-light mt-4"
             >
               Clear all filters
             </button>
@@ -397,7 +397,7 @@ export default function ActivitiesLibraryPage() {
                             e.stopPropagation();
                             openAssignModal(activity);
                           }}
-                          className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
+                          className="btn btn-primary btn-sm"
                         >
                           <User className="w-4 h-4" />
                           Assign
@@ -495,14 +495,14 @@ export default function ActivitiesLibraryPage() {
             <div className="flex gap-3">
               <button
                 onClick={closeAssignModal}
-                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium transition-colors"
+                className="btn btn-secondary btn-md flex-1 on-light"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAssignActivity}
                 disabled={!selectedChild}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn btn-primary btn-md flex-1"
               >
                 Assign Activity
               </button>

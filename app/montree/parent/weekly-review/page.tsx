@@ -207,7 +207,7 @@ function ParentWeeklyReviewContent() {
           <div style={{ fontSize: "3.75rem", marginBottom: "1rem" }}>😕</div>
           <h2 style={{ fontSize: "1.25rem", fontWeight: "700", color: T.textPrimary, marginBottom: "0.5rem" }}>{t('parentWeeklyReview.errorTitle')}</h2>
           <p style={{ color: T.textSecondary, marginBottom: "1rem" }}>{error}</p>
-          <Link href="/montree/parent/dashboard" style={{ color: T.emerald, textDecoration: "underline" }}>
+          <Link href="/montree/parent/dashboard" className="btn btn-ghost btn-sm">
             ← {t('common.backToDashboard')}
           </Link>
         </div>
@@ -224,7 +224,7 @@ function ParentWeeklyReviewContent() {
           <p style={{ color: T.textSecondary, marginBottom: "1rem" }}>
             {t('parentWeeklyReview.noReportDescription')}
           </p>
-          <Link href="/montree/parent/dashboard" style={{ color: T.emerald, textDecoration: "underline" }}>
+          <Link href="/montree/parent/dashboard" className="btn btn-ghost btn-sm">
             ← {t('common.backToDashboard')}
           </Link>
         </div>
@@ -270,7 +270,7 @@ function ParentWeeklyReviewContent() {
                 }
               }}
               disabled={availableWeeks.indexOf(selectedWeek) >= availableWeeks.length - 1}
-              style={{ background: T.card, backdropFilter: T.blur, padding: "0.75rem 1rem", borderRadius: "12px", border: T.cardBorder, color: T.textSecondary, cursor: "pointer" }}
+              className="btn btn-secondary btn-icon btn-md"
             >
               ◀
             </button>
@@ -287,7 +287,7 @@ function ParentWeeklyReviewContent() {
                 }
               }}
               disabled={availableWeeks.indexOf(selectedWeek) <= 0}
-              style={{ background: T.card, backdropFilter: T.blur, padding: "0.75rem 1rem", borderRadius: "12px", border: T.cardBorder, color: T.textSecondary, cursor: "pointer" }}
+              className="btn btn-secondary btn-icon btn-md"
             >
               ▶
             </button>
@@ -465,7 +465,8 @@ function ParentWeeklyReviewContent() {
           </p>
           <Link
             href="/montree/parent/dashboard"
-            style={{ display: "inline-block", marginTop: "0.75rem", color: T.emerald, textDecoration: "underline", cursor: "pointer" }}
+            className="btn btn-ghost btn-sm"
+            style={{ marginTop: "0.75rem" }}
           >
             ← {t('common.backToDashboard')}
           </Link>

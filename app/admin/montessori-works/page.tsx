@@ -311,7 +311,7 @@ export default function MontessoriWorksPage() {
                       setShowForm(false);
                       resetForm();
                     }}
-                    className="text-gray-500 hover:text-gray-700"
+                    className="btn btn-ghost btn-icon btn-sm on-light"
                   >
                     <X className="w-6 h-6" />
                   </button>
@@ -384,7 +384,7 @@ export default function MontessoriWorksPage() {
                   <div className="flex gap-4 pt-4">
                     <button
                       type="submit"
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                      className="btn btn-primary btn-md flex-1 on-light"
                     >
                       {editingWork ? 'Update Work' : 'Create Work'}
                     </button>
@@ -394,7 +394,7 @@ export default function MontessoriWorksPage() {
                         setShowForm(false);
                         resetForm();
                       }}
-                      className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                      className="btn btn-secondary btn-md on-light"
                     >
                       Cancel
                     </button>

@@ -88,7 +88,7 @@ export default function AddVideoPage() {
               <h1 className="text-2xl font-bold text-gray-900">🎬 Add Videos to Works</h1>
               <p className="text-sm text-gray-600 mt-1">Paste YouTube URLs for demo videos</p>
             </div>
-            <Link href="/admin" className="px-4 py-2 border rounded-lg hover:bg-gray-50">← Back</Link>
+            <Link href="/admin" className="btn btn-secondary btn-md on-light">← Back</Link>
           </div>
         </div>
       </div>
@@ -117,18 +117,18 @@ export default function AddVideoPage() {
                 </div>
               )}
               <div className="flex gap-3">
-                <button onClick={saveVideo} disabled={saving || !youtubeUrl} className="flex-1 py-3 bg-green-600 text-white rounded-xl font-bold disabled:opacity-50">
+                <button onClick={saveVideo} disabled={saving || !youtubeUrl} className="btn btn-primary btn-lg flex-1 on-light">
                   {saving ? 'Saving...' : '✅ Save Video'}
                 </button>
-                <button onClick={() => { setSelectedWork(null); setYoutubeUrl(''); }} className="px-6 py-3 border rounded-xl">Cancel</button>
+                <button onClick={() => { setSelectedWork(null); setYoutubeUrl(''); }} className="btn btn-secondary btn-lg on-light">Cancel</button>
               </div>
             </div>
           </div>
         )}
 
         <div className="flex gap-4 mb-4">
-          <button onClick={() => setFilter('missing')} className={`px-4 py-2 rounded-lg ${filter === 'missing' ? 'bg-red-600 text-white' : 'bg-white'}`}>Missing Videos</button>
-          <button onClick={() => setFilter('all')} className={`px-4 py-2 rounded-lg ${filter === 'all' ? 'bg-blue-600 text-white' : 'bg-white'}`}>All Works</button>
+          <button onClick={() => setFilter('missing')} className={`btn btn-md ${filter === 'missing' ? 'btn-primary' : 'btn-secondary on-light'}`}>Missing Videos</button>
+          <button onClick={() => setFilter('all')} className={`btn btn-md ${filter === 'all' ? 'btn-primary' : 'btn-secondary on-light'}`}>All Works</button>
           <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search..." className="flex-1 px-4 py-2 border rounded-lg" />
         </div>
 
@@ -145,7 +145,7 @@ export default function AddVideoPage() {
                 {work.has_video ? (
                   <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">✅ Has Video</span>
                 ) : (
-                  <button onClick={() => setSelectedWork(work)} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">+ Add Video</button>
+                  <button onClick={() => setSelectedWork(work)} className="btn btn-primary btn-sm on-light">+ Add Video</button>
                 )}
               </div>
             ))}

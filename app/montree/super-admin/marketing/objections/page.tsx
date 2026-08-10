@@ -145,12 +145,7 @@ function CopyBtn({ text }) {
   const [c, setC] = useState(false);
   return (
     <button onClick={() => { navigator.clipboard.writeText(text); setC(true); setTimeout(() => setC(false), 2000); }}
-      className="px-2 py-1 rounded text-xs flex-shrink-0"
-      style={{
-        background: c ? "rgba(46,204,113,0.15)" : "rgba(255,255,255,0.04)",
-        color: c ? "#2ecc71" : "#5a7a6a",
-        border: `1px solid ${c ? "rgba(46,204,113,0.3)" : "rgba(255,255,255,0.06)"}`,
-      }}>{c ? "✓ Copied" : "Copy"}</button>
+      className={`btn btn-sm flex-shrink-0 ${c ? 'btn-primary' : 'btn-secondary'}`}>{c ? "✓ Copied" : "Copy"}</button>
   );
 }
 

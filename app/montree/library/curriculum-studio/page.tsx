@@ -553,7 +553,7 @@ export default function CurriculumStudioPage() {
                 {files.length > 0 && (
                   <div className="flex items-center justify-between mt-2 text-xs text-white/45">
                     <span>{files.length} file(s) loaded (in-memory)</span>
-                    <button onClick={clearFiles} className="text-rose-300/70 hover:text-rose-300">Clear</button>
+                    <button onClick={clearFiles} className="btn btn-ghost btn-sm">Clear</button>
                   </div>
                 )}
 
@@ -575,7 +575,7 @@ export default function CurriculumStudioPage() {
                         )}
                         {missing && a.mjPrompt && (
                           <button onClick={() => copy(a.mjPrompt, `mj-${a.file}`)}
-                            className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(232,201,106,0.14)', color: '#E8C96A' }}>
+                            className="btn btn-gold btn-sm">
                             {copied === `mj-${a.file}` ? 'copied' : 'MJ'}
                           </button>
                         )}
@@ -585,7 +585,7 @@ export default function CurriculumStudioPage() {
                 </div>
                 {spec.assets.length > 7 && (
                   <button onClick={() => setAssetsExpanded((v) => !v)}
-                    className="mt-2 text-[11px] text-emerald-300/70 hover:text-emerald-300 transition-colors">
+                    className="btn btn-ghost btn-sm mt-2">
                     {assetsExpanded ? 'Show less ▴' : `Show all ${spec.assets.length} ▾`}
                   </button>
                 )}
@@ -596,8 +596,7 @@ export default function CurriculumStudioPage() {
             <div>
               <div className="flex items-center justify-between mb-3">
                 <h2 className="font-semibold text-white/85">Materials</h2>
-                <button onClick={printFullPack} className={`${btn} px-3 py-2`}
-                  style={{ background: 'linear-gradient(135deg,#34d399,#10b981)', color: '#06140e' }}>
+                <button onClick={printFullPack} className="btn btn-primary btn-md">
                   🖨 Print full pack
                 </button>
               </div>
@@ -609,8 +608,8 @@ export default function CurriculumStudioPage() {
                     <div className="flex-1 min-w-0">
                       <div className="text-sm text-white/85 font-medium truncate">{m.label}</div>
                       <div className="flex gap-2 mt-1">
-                        <button onClick={() => preview(m.type)} className="text-xs px-2 py-1 rounded" style={{ background: 'rgba(255,255,255,0.08)', color: '#cfe8dc' }}>Preview</button>
-                        <button onClick={() => printMaterial(m.type)} className="text-xs px-2 py-1 rounded" style={{ background: 'rgba(52,211,153,0.14)', color: '#a7f3d0' }}>Print</button>
+                        <button onClick={() => preview(m.type)} className="btn btn-secondary btn-sm">Preview</button>
+                        <button onClick={() => printMaterial(m.type)} className="btn btn-primary btn-sm">Print</button>
                       </div>
                     </div>
                   </div>
@@ -626,8 +625,8 @@ export default function CurriculumStudioPage() {
                     <div className="flex-1 min-w-0">
                       <div className="text-sm text-white/85 font-medium truncate">Dark Phonics Flashcard</div>
                       <div className="flex gap-2 mt-1">
-                        <button onClick={() => preview('dark_phonics_card')} className="text-xs px-2 py-1 rounded" style={{ background: 'rgba(255,255,255,0.08)', color: '#cfe8dc' }}>Preview</button>
-                        <button onClick={() => printMaterial('dark_phonics_card')} className="text-xs px-2 py-1 rounded" style={{ background: 'rgba(52,211,153,0.14)', color: '#a7f3d0' }}>Print</button>
+                        <button onClick={() => preview('dark_phonics_card')} className="btn btn-secondary btn-sm">Preview</button>
+                        <button onClick={() => printMaterial('dark_phonics_card')} className="btn btn-primary btn-sm">Print</button>
                       </div>
                     </div>
                   </div>
@@ -654,8 +653,8 @@ export default function CurriculumStudioPage() {
                   <div className="flex items-center justify-between px-3 py-2" style={{ background: 'rgba(0,0,0,0.3)' }}>
                     <span className="text-sm text-white/70">Preview · {previewType === 'dark_phonics_card' ? 'Dark Phonics Flashcard' : materialList.find((x) => x.type === previewType)?.label}</span>
                     <div className="flex gap-2">
-                      <button onClick={() => printMaterial(previewType)} className="text-xs px-2 py-1 rounded" style={{ background: 'rgba(52,211,153,0.16)', color: '#a7f3d0' }}>Print this</button>
-                      <button onClick={() => { setPreviewType(null); setWarnings([]); }} className="text-xs px-2 py-1 rounded text-white/50 hover:text-white/80">Close</button>
+                      <button onClick={() => printMaterial(previewType)} className="btn btn-primary btn-sm">Print this</button>
+                      <button onClick={() => { setPreviewType(null); setWarnings([]); }} className="btn btn-ghost btn-sm">Close</button>
                     </div>
                   </div>
                   <iframe title="material-preview" srcDoc={previewHtml} style={{ width: '100%', height: '70vh', border: 'none', background: '#f0f0f0' }} />
@@ -690,10 +689,10 @@ export default function CurriculumStudioPage() {
                           <div className="text-white/85 text-sm font-semibold">{s.title}</div>
                         </div>
                         <div className="flex gap-1">
-                          <button onClick={() => copy(s.sunoStyle, `style-${i}`)} className="text-[10px] px-2 py-1 rounded" style={{ background: 'rgba(167,139,250,0.16)', color: '#c4b5fd' }}>
+                          <button onClick={() => copy(s.sunoStyle, `style-${i}`)} className="btn btn-gold btn-sm">
                             {copied === `style-${i}` ? '✓' : 'Suno style'}
                           </button>
-                          <button onClick={() => copy(s.lyrics, `lyr-${i}`)} className="text-[10px] px-2 py-1 rounded" style={{ background: 'rgba(167,139,250,0.16)', color: '#c4b5fd' }}>
+                          <button onClick={() => copy(s.lyrics, `lyr-${i}`)} className="btn btn-gold btn-sm">
                             {copied === `lyr-${i}` ? '✓' : 'Lyrics'}
                           </button>
                         </div>
@@ -726,7 +725,7 @@ export default function CurriculumStudioPage() {
                             if (next.has(i)) next.delete(i); else next.add(i);
                             return next;
                           })}
-                          className="mt-1 text-[11px] text-violet-300/70 hover:text-violet-300 transition-colors">
+                          className="btn btn-ghost btn-sm mt-1">
                           {lyricsExpanded ? 'Show less ▴' : `Show all ${lines.length} lines ▾`}
                         </button>
                       )}
@@ -759,11 +758,8 @@ export default function CurriculumStudioPage() {
             }}>
             <button
               type="button" onClick={() => setShowHelp(false)} aria-label="Close"
-              style={{
-                position: 'absolute', top: 12, right: 12, width: 30, height: 30, borderRadius: '50%',
-                border: '1px solid rgba(255,255,255,0.14)', background: 'rgba(255,255,255,0.04)',
-                color: 'rgba(255,255,255,0.7)', fontSize: 16, cursor: 'pointer', lineHeight: 1,
-              }}>×</button>
+              className="btn btn-secondary btn-icon btn-round btn-sm"
+              style={{ position: 'absolute', top: 12, right: 12 }}>×</button>
             <h2 style={{ margin: '0 0 4px', fontSize: 19, fontWeight: 700, color: '#a7f3d0' }}>How to use the Weekly Curriculum</h2>
             <p style={{ margin: '0 0 14px', fontSize: 14, color: 'rgba(255,255,255,0.72)' }}>One sound per week, in order. Just do the next week.</p>
             <ol style={{ margin: '0 0 14px', paddingLeft: 20, fontSize: 14, lineHeight: 1.6, color: 'rgba(255,255,255,0.82)' }}>

@@ -380,7 +380,7 @@ export default function PhotoBankPage() {
       <nav className="relative z-10 px-6 py-5 flex items-center justify-between">
         <Link
           href="/montree/library"
-          className="text-white/40 text-sm hover:text-white/70 transition-colors"
+          className="btn btn-ghost btn-sm"
         >
           {t('photoBank.backToLibrary')}
         </Link>
@@ -388,12 +388,7 @@ export default function PhotoBankPage() {
           <LanguageToggle />
           <button
           onClick={() => setUploadMode(!uploadMode)}
-          className="px-4 py-2 rounded-lg text-sm font-semibold transition-all"
-          style={{
-            backgroundColor: uploadMode ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)',
-            color: uploadMode ? '#fca5a5' : '#6ee7b7',
-            border: `1px solid ${uploadMode ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`,
-          }}
+          className={`btn btn-md ${uploadMode ? 'btn-danger btn-soft' : 'btn-primary'}`}
         >
           {uploadMode ? t('photoBank.closeUpload') : t('photoBank.uploadPictures')}
         </button>
@@ -429,18 +424,7 @@ export default function PhotoBankPage() {
               <button
                 key={tab.key}
                 onClick={() => selectTab(tab.key)}
-                style={{
-                  padding: '9px 18px',
-                  borderRadius: '12px',
-                  fontSize: '13px',
-                  fontWeight: active ? 700 : 500,
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  transition: 'all 0.15s',
-                  border: `1px solid ${active ? 'rgba(16,185,129,0.45)' : 'rgba(255,255,255,0.08)'}`,
-                  backgroundColor: active ? 'rgba(16,185,129,0.20)' : 'rgba(255,255,255,0.04)',
-                  color: active ? '#6ee7b7' : 'rgba(255,255,255,0.5)',
-                }}
+                className={`btn btn-md ${active ? 'btn-primary' : 'btn-secondary'}`}
               >
                 {tab.label}
                 {tab.key !== 'library' && selectedPhotos.size > 0 && (
@@ -545,17 +529,7 @@ export default function PhotoBankPage() {
                 <button
                   key={mode}
                   onClick={() => setSort(mode)}
-                  style={{
-                    padding: '4px 12px',
-                    borderRadius: '14px',
-                    border: 'none',
-                    fontSize: '11px',
-                    fontWeight: sort === mode ? '700' : '500',
-                    cursor: 'pointer',
-                    backgroundColor: sort === mode ? '#10b981' : '#f0f0f0',
-                    color: sort === mode ? '#fff' : '#555',
-                    transition: 'all 0.15s',
-                  }}
+                  className={`btn btn-sm btn-pill ${sort === mode ? 'btn-primary' : 'btn-secondary on-light'}`}
                 >
                   {mode === 'label' ? t('photoBank.sortName') : t('photoBank.sortRecent')}
                 </button>
@@ -654,17 +628,7 @@ export default function PhotoBankPage() {
               </span>
               <button
                 onClick={() => handleExport(BINGO_SRC)}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(16,185,129,0.4)',
-                  backgroundColor: 'rgba(16,185,129,0.12)',
-                  color: '#047857',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                }}
+                className="btn btn-secondary btn-sm on-light"
               >
                 Open full screen ↗
               </button>
@@ -720,14 +684,7 @@ export default function PhotoBankPage() {
               </span>
               <button
                 onClick={handleClearSelection}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'rgba(255,255,255,0.4)',
-                  fontSize: '12px',
-                  cursor: 'pointer',
-                  padding: '4px 8px',
-                }}
+                className="btn btn-ghost btn-sm"
               >
                 {t('photoBank.clear')}
               </button>
@@ -738,21 +695,8 @@ export default function PhotoBankPage() {
             <button
               onClick={handleDownloadSelected}
               disabled={downloading}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '10px',
-                border: '1px solid rgba(96,165,250,0.4)',
-                backgroundColor: 'rgba(96,165,250,0.15)',
-                color: '#bfdbfe',
-                fontSize: '13px',
-                fontWeight: '600',
-                cursor: downloading ? 'wait' : 'pointer',
-                opacity: downloading ? 0.6 : 1,
-                marginLeft: 'auto',
-                marginRight: '8px',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.15s',
-              }}
+              className="btn btn-secondary btn-md"
+              style={{ marginLeft: 'auto', marginRight: '8px' }}
               title={t('photoBank.downloadTitle')}
             >
               {downloading
@@ -766,17 +710,7 @@ export default function PhotoBankPage() {
             <div style={{ position: 'relative' }}>
               <button
                 onClick={() => setShowExportMenu(!showExportMenu)}
-                style={{
-                  padding: '8px 20px',
-                  borderRadius: '10px',
-                  border: '1px solid rgba(16,185,129,0.4)',
-                  backgroundColor: 'rgba(16,185,129,0.2)',
-                  color: '#6ee7b7',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s',
-                }}
+                className="btn btn-primary btn-md"
               >
                 {t('photoBank.exportTo')} ▾
               </button>

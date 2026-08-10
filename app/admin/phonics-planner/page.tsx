@@ -57,7 +57,7 @@ export default function PhonicsActivitiesPage() {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-700">
+              <button onClick={() => router.back()} className="btn btn-ghost btn-md on-light">
                 ← Back
               </button>
               <h1 className="text-2xl font-bold text-gray-900">
@@ -69,9 +69,9 @@ export default function PhonicsActivitiesPage() {
                 <span className="text-sm text-gray-600">
                   {selectedActivities.length} selected
                 </span>
-                <button 
+                <button
                   onClick={() => window.print()}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                  className="btn btn-primary btn-md"
                 >
                   🖨️ Print Selected
                 </button>
@@ -103,10 +103,10 @@ export default function PhonicsActivitiesPage() {
                 <button
                   key={btn.value}
                   onClick={() => setFilterType(btn.value)}
-                  className={`px-4 py-2 rounded-xl font-medium transition-all ${
+                  className={`btn btn-md ${
                     filterType === btn.value
-                      ? 'bg-blue-500 text-white shadow-md'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                      ? 'btn-primary'
+                      : 'btn-secondary on-light'
                   }`}
                 >
                   {btn.icon} {btn.label}
@@ -123,10 +123,10 @@ export default function PhonicsActivitiesPage() {
                 <button
                   key={btn.value}
                   onClick={() => setFilterSkill(btn.value)}
-                  className={`px-4 py-2 rounded-xl font-medium transition-all ${
+                  className={`btn btn-md ${
                     filterSkill === btn.value
-                      ? 'bg-indigo-500 text-white shadow-md'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                      ? 'btn-gold'
+                      : 'btn-secondary on-light'
                   }`}
                 >
                   {btn.label}

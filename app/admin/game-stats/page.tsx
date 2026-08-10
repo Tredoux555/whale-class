@@ -85,10 +85,10 @@ export default function AdminGameStatsPage() {
                 <button
                   key={period}
                   onClick={() => setSelectedPeriod(period as typeof selectedPeriod)}
-                  className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors
-                    ${selectedPeriod === period 
-                      ? 'bg-indigo-500 text-white' 
-                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  className={`btn btn-sm
+                    ${selectedPeriod === period
+                      ? 'btn-primary'
+                      : 'btn-secondary'
                     }`}
                 >
                   {period === 'week' ? 'This Week' : period === 'month' ? 'This Month' : 'All Time'}

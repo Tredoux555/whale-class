@@ -256,13 +256,13 @@ export default function CurriculumEditorPage() {
               <button
                 onClick={handleSyncAll}
                 disabled={saving}
-                className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 font-medium flex items-center gap-2"
+                className="btn btn-primary btn-md"
               >
                 {saving ? '⏳' : '🔄'} Sync All Children
               </button>
               <button
                 onClick={() => { setNewWork({ name: '', area: selectedArea }); setShowAddModal(true); }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                className="btn btn-primary btn-md"
               >
                 + Add Work
               </button>
@@ -290,7 +290,7 @@ export default function CurriculumEditorPage() {
                       key={orphan.id}
                       onClick={() => handleAddOrphanToCurriculum(orphan)}
                       disabled={saving}
-                      className="px-3 py-1.5 bg-white border border-amber-300 rounded-lg text-sm hover:bg-amber-100 disabled:opacity-50 flex items-center gap-2"
+                      className="btn btn-secondary btn-sm on-light"
                     >
                       <span className="font-medium truncate max-w-[150px]">{orphan.work_name}</span>
                       <span className="text-amber-600 whitespace-nowrap">+ Add</span>
@@ -313,10 +313,10 @@ export default function CurriculumEditorPage() {
             <button
               key={area.key}
               onClick={() => setSelectedArea(area.key)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium whitespace-nowrap transition-all ${
+              className={`btn btn-md ${
                 selectedArea === area.key
-                  ? `${area.color} text-white shadow-lg`
-                  : 'bg-white text-gray-700 hover:bg-gray-100 border'
+                  ? 'btn-primary'
+                  : 'btn-secondary on-light'
               }`}
             >
               <span>{area.icon}</span>
@@ -356,14 +356,14 @@ export default function CurriculumEditorPage() {
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => setEditingWork(work)}
-                    className="p-2 hover:bg-gray-100 rounded-lg text-gray-500"
+                    className="btn btn-ghost btn-icon btn-sm on-light"
                     title="Edit"
                   >
                     ✏️
                   </button>
                   <button
                     onClick={() => handleDeleteWork(work)}
-                    className="p-2 hover:bg-red-50 rounded-lg text-red-500"
+                    className="btn btn-danger btn-soft btn-icon btn-sm"
                     title="Delete"
                   >
                     🗑️
@@ -380,7 +380,7 @@ export default function CurriculumEditorPage() {
             <p>No works found {searchQuery ? `matching "${searchQuery}"` : 'in this area'}</p>
             <button
               onClick={() => { setNewWork({ name: '', area: selectedArea }); setShowAddModal(true); }}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="btn btn-primary btn-md mt-4"
             >
               + Add First Work
             </button>
@@ -429,14 +429,14 @@ export default function CurriculumEditorPage() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="flex-1 px-4 py-3 border rounded-xl hover:bg-gray-50"
+                className="btn btn-secondary btn-md flex-1 on-light"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddWork}
                 disabled={saving || !newWork.name.trim()}
-                className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50"
+                className="btn btn-primary btn-md flex-1"
               >
                 {saving ? 'Adding...' : 'Add Work'}
               </button>
@@ -485,14 +485,14 @@ export default function CurriculumEditorPage() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setEditingWork(null)}
-                className="flex-1 px-4 py-3 border rounded-xl hover:bg-gray-50"
+                className="btn btn-secondary btn-md flex-1 on-light"
               >
                 Cancel
               </button>
               <button
                 onClick={handleUpdateWork}
                 disabled={saving || !editingWork.name.trim()}
-                className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50"
+                className="btn btn-primary btn-md flex-1"
               >
                 {saving ? 'Saving...' : 'Save Changes'}
               </button>

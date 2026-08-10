@@ -126,13 +126,13 @@ export default function VideoManagementPage() {
               <button
                 onClick={runDiscovery}
                 disabled={searching}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="btn btn-primary btn-md"
               >
                 {searching ? 'Discovering...' : '🔍 Discover Videos'}
               </button>
               <button
                 onClick={() => router.push('/admin')}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="btn btn-secondary btn-md on-light"
               >
                 Back to Admin
               </button>
@@ -162,30 +162,30 @@ export default function VideoManagementPage() {
         <div className="mb-6 flex gap-2">
           <button
             onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-lg ${
+            className={`btn btn-md ${
               filter === 'all'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
+                ? 'btn-primary'
+                : 'btn-secondary on-light'
             }`}
           >
             All ({stats.total})
           </button>
           <button
             onClick={() => setFilter('approved')}
-            className={`px-4 py-2 rounded-lg ${
+            className={`btn btn-md ${
               filter === 'approved'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
+                ? 'btn-primary'
+                : 'btn-secondary on-light'
             }`}
           >
             Approved ({stats.approved})
           </button>
           <button
             onClick={() => setFilter('pending')}
-            className={`px-4 py-2 rounded-lg ${
+            className={`btn btn-md ${
               filter === 'pending'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
+                ? 'btn-primary'
+                : 'btn-secondary on-light'
             }`}
           >
             Pending ({stats.pending})
@@ -268,13 +268,13 @@ export default function VideoManagementPage() {
                         <>
                           <button
                             onClick={() => approveVideo(video.id)}
-                            className="text-green-600 hover:text-green-900 font-medium mr-3"
+                            className="btn btn-ghost btn-sm on-light mr-3"
                           >
                             Approve
                           </button>
                           <button
                             onClick={() => rejectVideo(video.id)}
-                            className="text-red-600 hover:text-red-900 font-medium"
+                            className="btn btn-danger btn-soft btn-sm on-light"
                           >
                             Reject
                           </button>
@@ -283,7 +283,7 @@ export default function VideoManagementPage() {
                       {video.is_approved && (
                         <button
                           onClick={() => rejectVideo(video.id)}
-                          className="text-gray-600 hover:text-gray-900 font-medium"
+                          className="btn btn-ghost btn-sm on-light"
                         >
                           Deactivate
                         </button>

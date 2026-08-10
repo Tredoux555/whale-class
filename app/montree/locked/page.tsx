@@ -163,15 +163,7 @@ function LockedContent() {
               <button
                 type="submit"
                 disabled={sending || !message.trim()}
-                className="w-full font-semibold rounded-xl transition-all disabled:opacity-50"
-                style={{
-                  padding: '14px 16px',
-                  fontSize: 16,
-                  color: '#ffffff',
-                  background: '#1D5C41',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  cursor: sending || !message.trim() ? 'not-allowed' : 'pointer',
-                }}
+                className="btn btn-primary btn-lg btn-full"
               >
                 {sending ? 'Sending…' : 'Send message'}
               </button>

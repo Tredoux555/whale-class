@@ -347,17 +347,7 @@ export default function MiraChatPage() {
             <button
               onClick={newConversation}
               disabled={streaming || turns.length === 0}
-              style={{
-                padding: '6px 12px',
-                background: 'transparent',
-                border: T.cardBorder,
-                borderRadius: 999,
-                color: T.textSecondary,
-                fontSize: 12,
-                fontWeight: 500,
-                cursor: streaming || turns.length === 0 ? 'not-allowed' : 'pointer',
-                opacity: streaming || turns.length === 0 ? 0.4 : 1,
-              }}
+              className="btn btn-ghost btn-outline btn-sm btn-pill"
             >
               New conversation
             </button>
@@ -400,17 +390,7 @@ export default function MiraChatPage() {
                   key={s}
                   onClick={() => void send(s)}
                   disabled={streaming}
-                  style={{
-                    padding: '8px 14px',
-                    background: T.cardBg,
-                    border: T.cardBorder,
-                    borderRadius: 999,
-                    color: T.textSecondary,
-                    fontFamily: T.sans,
-                    fontSize: 12,
-                    cursor: streaming ? 'not-allowed' : 'pointer',
-                    opacity: streaming ? 0.5 : 1,
-                  }}
+                  className="btn btn-secondary btn-sm btn-pill"
                 >
                   {s}
                 </button>
@@ -478,20 +458,7 @@ export default function MiraChatPage() {
               <button
                 onClick={() => void send(input)}
                 disabled={streaming || !input.trim()}
-                style={{
-                  padding: '8px 16px',
-                  background: T.gold,
-                  color: '#0a1a0f',
-                  border: 'none',
-                  borderRadius: 999,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: streaming || !input.trim() ? 'not-allowed' : 'pointer',
-                  opacity: streaming || !input.trim() ? 0.5 : 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                }}
+                className="btn btn-gold btn-sm btn-pill"
               >
                 <Send size={14} strokeWidth={1.75} />
                 Send

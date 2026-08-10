@@ -12,11 +12,7 @@ function CopyBtn({ text, label }) {
   const [c, setC] = useState(false);
   return (
     <button onClick={() => { navigator.clipboard.writeText(text); setC(true); setTimeout(() => setC(false), 2000); }}
-      className="px-3 py-1.5 rounded text-xs font-semibold" style={{
-        background: c ? "rgba(46,204,113,0.2)" : "rgba(46,204,113,0.08)",
-        border: `1px solid ${c ? "rgba(46,204,113,0.4)" : "rgba(46,204,113,0.15)"}`,
-        color: c ? "#2ecc71" : "#8aaa9a",
-      }}>{c ? "✓" : label || "📋"}</button>
+      className={`btn btn-sm ${c ? "btn-primary" : "btn-secondary"}`}>{c ? "✓" : label || "📋"}</button>
   );
 }
 
@@ -177,7 +173,7 @@ export default function CreativeStudio() {
 
   return (
     <div className="min-h-screen" style={{ background: "#0a0f0d", color: "#c8e0d0", fontFamily: "'DM Sans', sans-serif" }}>
-      <div className="p-4 border-b border-slate-700"><Link href="/montree/super-admin/marketing" className="text-emerald-400 hover:text-emerald-300 text-sm">← Back to Marketing Hub</Link></div>
+      <div className="p-4 border-b border-slate-700"><Link href="/montree/super-admin/marketing" className="btn btn-ghost btn-sm">← Back to Marketing Hub</Link></div>
       <div className="p-5 border-b" style={{ borderColor: "rgba(255,255,255,0.04)" }}>
         <div className="flex items-center gap-3 mb-1">
           <span className="text-xl">🎙️</span>
@@ -211,12 +207,7 @@ export default function CreativeStudio() {
             <div className="flex gap-2 overflow-x-auto pb-2">
               {VOICEOVERS.map((v, i) => (
                 <button key={i} onClick={() => setSelectedVO(i)}
-                  className="px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap"
-                  style={{
-                    background: selectedVO === i ? "rgba(46,204,113,0.08)" : "rgba(255,255,255,0.02)",
-                    border: `1px solid ${selectedVO === i ? "rgba(46,204,113,0.2)" : "rgba(255,255,255,0.04)"}`,
-                    color: selectedVO === i ? "#2ecc71" : "#5a7a6a",
-                  }}>
+                  className={`btn btn-sm whitespace-nowrap ${selectedVO === i ? "btn-primary" : "btn-secondary"}`}>
                   {v.name}
                 </button>
               ))}
@@ -257,12 +248,7 @@ export default function CreativeStudio() {
             <div className="flex gap-2 overflow-x-auto pb-2">
               {CARDS.map((c, i) => (
                 <button key={c.id} onClick={() => setSelectedCard(i)}
-                  className="px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap"
-                  style={{
-                    background: selectedCard === i ? "rgba(46,204,113,0.08)" : "rgba(255,255,255,0.02)",
-                    border: `1px solid ${selectedCard === i ? "rgba(46,204,113,0.2)" : "rgba(255,255,255,0.04)"}`,
-                    color: selectedCard === i ? "#2ecc71" : "#5a7a6a",
-                  }}>
+                  className={`btn btn-sm whitespace-nowrap ${selectedCard === i ? "btn-primary" : "btn-secondary"}`}>
                   {c.name}
                 </button>
               ))}

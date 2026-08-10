@@ -411,8 +411,7 @@ export default function WorkDetailPage() {
         <div className="flex gap-3 mt-6 pb-8">
           <button
             onClick={() => { setShowInject(true); setTeacherCode(''); setInjectResult(null); }}
-            className="flex-1 py-3 text-white rounded-xl font-medium text-lg transition-colors hover:opacity-90"
-            style={{ backgroundColor: '#0D3330' }}
+            className="btn btn-primary btn-lg flex-1 on-light"
           >
             {t('work.send_to_classroom')}
           </button>
@@ -422,9 +421,9 @@ export default function WorkDetailPage() {
       {/* Lightbox */}
       {showLightbox && photos.length > 0 && (
         <div className="fixed inset-0 bg-black z-50 flex items-center justify-center" onClick={() => setShowLightbox(false)}>
-          <button className="absolute top-4 right-4 text-white text-3xl z-10" onClick={() => setShowLightbox(false)}>×</button>
+          <button className="btn btn-ghost btn-icon btn-md absolute top-4 right-4 z-10 text-3xl" onClick={() => setShowLightbox(false)}>×</button>
           <button
-            className="absolute left-4 text-white text-4xl z-10"
+            className="btn btn-ghost btn-icon btn-md absolute left-4 z-10 text-4xl"
             onClick={(e) => { e.stopPropagation(); setActivePhoto(p => p > 0 ? p - 1 : photos.length - 1); }}
           >
             ‹
@@ -436,7 +435,7 @@ export default function WorkDetailPage() {
             onClick={e => e.stopPropagation()}
           />
           <button
-            className="absolute right-4 text-white text-4xl z-10"
+            className="btn btn-ghost btn-icon btn-md absolute right-4 z-10 text-4xl"
             onClick={(e) => { e.stopPropagation(); setActivePhoto(p => p < photos.length - 1 ? p + 1 : 0); }}
           >
             ›
@@ -452,7 +451,7 @@ export default function WorkDetailPage() {
               <div className="text-center">
                 <div className="text-5xl mb-4">✅</div>
                 <h3 className="text-xl font-bold text-gray-900">{injectResult.message}</h3>
-                <button onClick={() => setShowInject(false)} className="mt-6 w-full py-3 bg-emerald-500 text-white rounded-xl font-medium">
+                <button onClick={() => setShowInject(false)} className="btn btn-primary btn-lg btn-full mt-6">
                   {t('common.done')}
                 </button>
               </div>
@@ -475,14 +474,14 @@ export default function WorkDetailPage() {
                 <button
                   onClick={handleInject}
                   disabled={injecting || teacherCode.length < 4}
-                  className="w-full mt-4 py-3 bg-[#0D3330] text-white rounded-xl font-medium disabled:opacity-50"
+                  className="btn btn-primary btn-lg btn-full mt-4"
                 >
                   {injecting ? t('work.adding') : t('work.add_to_curriculum')}
                 </button>
                 <p className="text-center text-xs text-gray-400 mt-3">
                   {t('work.no_montree')} <Link href="/montree/try" className="text-emerald-600 underline">{t('work.try_free')}</Link>
                 </p>
-                <button onClick={() => setShowInject(false)} className="w-full mt-2 py-2 text-gray-500 text-sm">{t('common.cancel')}</button>
+                <button onClick={() => setShowInject(false)} className="btn btn-ghost btn-sm btn-full mt-2 on-light">{t('common.cancel')}</button>
               </>
             )}
           </div>

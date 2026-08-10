@@ -284,20 +284,8 @@ export default function AdminSettingsPage() {
             </div>
             <Link
               href="/montree/admin/billing"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '10px 14px',
-                background: 'rgba(52,211,153,0.10)',
-                border: '1px solid rgba(52,211,153,0.25)',
-                borderRadius: 12,
-                color: T.emerald,
-                fontSize: 13,
-                fontWeight: 500,
-                textDecoration: 'none',
-                marginTop: 8,
-              }}
+              className="btn btn-primary btn-sm"
+              style={{ justifyContent: 'space-between', marginTop: 8 }}
             >
               {t('admin.actions.manageSubscription')}
               <ArrowRight size={14} strokeWidth={2} />
@@ -336,20 +324,8 @@ export default function AdminSettingsPage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          style={{
-            width: '100%',
-            padding: '14px 22px',
-            background: T.emerald,
-            color: '#0a1a0f',
-            border: 'none',
-            borderRadius: 999,
-            fontFamily: T.sans,
-            fontSize: 14,
-            fontWeight: 600,
-            cursor: saving ? 'not-allowed' : 'pointer',
-            opacity: saving ? 0.5 : 1,
-            marginTop: 6,
-          }}
+          className="btn btn-primary btn-lg btn-full btn-pill"
+          style={{ marginTop: 6 }}
         >
           {saving ? t('admin.states.saving') : t('admin.actions.saveChanges')}
         </button>
@@ -467,19 +443,8 @@ function ManageLink({ href, icon, label }: { href: string; icon: React.ReactNode
   return (
     <Link
       href={href}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '10px 14px',
-        background: 'rgba(8,20,12,0.45)',
-        border: '1px solid rgba(52,211,153,0.12)',
-        borderRadius: 10,
-        color: T.textSecondary,
-        fontSize: 13,
-        fontWeight: 500,
-        textDecoration: 'none',
-      }}
+      className="btn btn-secondary btn-sm"
+      style={{ justifyContent: 'space-between' }}
     >
       <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <span style={{ color: T.emeraldDim }}>{icon}</span>

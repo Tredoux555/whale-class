@@ -263,7 +263,7 @@ export default function PhonicsVideosPage() {
     <div className="min-h-screen text-white" style={{ background: '#06140e' }}>
       <div className="max-w-2xl mx-auto px-5 py-8">
         <button onClick={() => router.push('/montree/super-admin')}
-          className="text-emerald-300/60 hover:text-emerald-200 text-sm mb-4">← Super Admin</button>
+          className="btn btn-ghost btn-sm mb-4">← Super Admin</button>
 
         <h1 className="text-2xl font-light mb-1">🎬 Phonics Song Videos</h1>
         <p className="text-emerald-200/50 text-sm mb-6">
@@ -298,7 +298,7 @@ export default function PhonicsVideosPage() {
                 {counts.failed > 0 && <span className="text-red-400"> · {counts.failed} failed</span>}
                 {counts.needs > 0 && <span className="text-amber-300"> · {counts.needs} need a lesson</span>}
               </span>
-              <button onClick={clearAll} disabled={running} className="text-white/40 hover:text-white/70 disabled:opacity-30">clear</button>
+              <button onClick={clearAll} disabled={running} className="btn btn-ghost btn-sm">clear</button>
             </div>
 
             <div className="divide-y divide-white/5 max-h-[46vh] overflow-y-auto">
@@ -326,7 +326,7 @@ export default function PhonicsVideosPage() {
                     ))}
                   </select>
                   {!running && (
-                    <button onClick={() => removeItem(it.id)} className="text-white/30 hover:text-red-400 text-lg leading-none">×</button>
+                    <button onClick={() => removeItem(it.id)} className="btn btn-ghost btn-icon btn-sm text-lg">×</button>
                   )}
                 </div>
               ))}
@@ -336,18 +336,18 @@ export default function PhonicsVideosPage() {
               <button
                 onClick={() => runQueue(false)}
                 disabled={running || counts.ready === 0}
-                className="flex-1 py-2.5 rounded-lg bg-emerald-500/30 border border-emerald-400/40 text-emerald-100 font-medium hover:bg-emerald-500/45 transition-colors disabled:opacity-40"
+                className="btn btn-primary btn-md flex-1"
               >
                 {running ? 'Uploading…' : `Upload ${counts.ready} video${counts.ready !== 1 ? 's' : ''}`}
               </button>
               {running ? (
                 <button onClick={() => { cancelRef.current = true; }}
-                  className="px-4 py-2.5 rounded-lg bg-white/10 border border-white/15 text-white/70 hover:bg-white/15">
+                  className="btn btn-secondary btn-md">
                   stop after this one
                 </button>
               ) : counts.failed > 0 ? (
                 <button onClick={() => runQueue(true)}
-                  className="px-4 py-2.5 rounded-lg bg-amber-500/20 border border-amber-400/40 text-amber-100 hover:bg-amber-500/30">
+                  className="btn btn-gold btn-md">
                   retry {counts.failed} failed
                 </button>
               ) : null}

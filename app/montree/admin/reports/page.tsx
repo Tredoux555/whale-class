@@ -101,10 +101,10 @@ export default function ReportsPage() {
               <button
                 key={range}
                 onClick={() => setTimeRange(range)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition ${
+                className={`btn btn-md ${
                   timeRange === range
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-white/10 text-white/70 hover:bg-white/20'
+                    ? 'btn-primary'
+                    : 'btn-secondary'
                 }`}
               >
                 {range === 'week' ? t('admin.reports.thisWeek') : range === 'month' ? t('admin.reports.thisMonth') : t('admin.reports.allTime')}

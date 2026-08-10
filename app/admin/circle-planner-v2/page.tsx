@@ -260,7 +260,7 @@ export default function CirclePlannerV2() {
       <header className="sticky top-0 z-20 bg-white border-b shadow-sm">
         <div className="max-w-lg mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <button onClick={() => router.back()} className="text-gray-400 text-sm">
+            <button onClick={() => router.back()} className="btn btn-ghost btn-sm on-light">
               ← Back
             </button>
             <h1 className="text-base font-bold text-gray-900">
@@ -268,7 +268,7 @@ export default function CirclePlannerV2() {
             </h1>
             <button
               onClick={() => setShowPrep(!showPrep)}
-              className="text-sm px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200"
+              className="btn btn-secondary btn-sm btn-pill on-light"
             >
               {showPrep ? '📋 Hide Prep' : '📋 Prep'}
             </button>
@@ -355,13 +355,13 @@ export default function CirclePlannerV2() {
               <div className="flex flex-wrap gap-2">
                 <Link
                   href={`/admin/vocabulary-flashcards`}
-                  className="px-3 py-1.5 bg-cyan-500 text-white text-sm rounded-lg hover:bg-cyan-600 inline-flex items-center gap-1"
+                  className="btn btn-secondary btn-sm on-light"
                 >
                   🃏 Flashcards
                 </Link>
                 <Link
                   href={`/admin/card-generator`}
-                  className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 inline-flex items-center gap-1"
+                  className="btn btn-primary btn-sm"
                 >
                   🎴 3-Part Cards
                 </Link>
@@ -369,7 +369,7 @@ export default function CirclePlannerV2() {
                   href={`/tools/picture-bingo-generator.html`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-1.5 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 inline-flex items-center gap-1"
+                  className="btn btn-gold btn-sm"
                 >
                   🎯 Picture Bingo
                 </a>
@@ -377,7 +377,7 @@ export default function CirclePlannerV2() {
                   href={`/tools/my-first-dictionary.html`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-1.5 bg-amber-500 text-white text-sm rounded-lg hover:bg-amber-600 inline-flex items-center gap-1"
+                  className="btn btn-gold btn-sm"
                 >
                   📖 Dictionary
                 </a>
@@ -392,10 +392,10 @@ export default function CirclePlannerV2() {
             <button
               key={d.day}
               onClick={() => setSelectedDayIndex(i)}
-              className={`flex-1 min-w-0 px-2 py-2.5 rounded-xl text-center transition-all ${
+              className={`btn btn-md flex-1 min-w-0 text-center ${
                 selectedDayIndex === i
-                  ? 'bg-gray-900 text-white shadow-lg scale-[1.02]'
-                  : 'bg-white text-gray-600 hover:bg-gray-100 shadow-sm'
+                  ? 'btn-primary'
+                  : 'btn-secondary on-light'
               }`}
             >
               <div className="text-[10px] font-medium uppercase tracking-wide opacity-70">
@@ -517,14 +517,14 @@ export default function CirclePlannerV2() {
           <button
             onClick={() => setSelectedDayIndex(Math.max(0, selectedDayIndex - 1))}
             disabled={selectedDayIndex === 0}
-            className="px-4 py-2 bg-white rounded-lg shadow-sm text-sm disabled:opacity-30"
+            className="btn btn-secondary btn-md on-light"
           >
             ← {selectedDayIndex > 0 ? week.days[selectedDayIndex - 1].dayLabel : ''}
           </button>
           <button
             onClick={() => setSelectedDayIndex(Math.min(4, selectedDayIndex + 1))}
             disabled={selectedDayIndex === 4}
-            className="px-4 py-2 bg-white rounded-lg shadow-sm text-sm disabled:opacity-30"
+            className="btn btn-secondary btn-md on-light"
           >
             {selectedDayIndex < 4 ? week.days[selectedDayIndex + 1].dayLabel : ''} →
           </button>
@@ -539,10 +539,10 @@ export default function CirclePlannerV2() {
                 <button
                   key={w.id}
                   onClick={() => { setSelectedWeekId(w.id); setSelectedDayIndex(0); }}
-                  className={`px-3 py-1.5 rounded-lg text-sm ${
+                  className={`btn btn-sm ${
                     w.id === selectedWeekId
-                      ? 'bg-gray-900 text-white'
-                      : 'bg-white text-gray-600 hover:bg-gray-100 shadow-sm'
+                      ? 'btn-primary'
+                      : 'btn-secondary on-light'
                   }`}
                 >
                   {w.themeIcon} {w.theme}

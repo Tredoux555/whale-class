@@ -201,7 +201,7 @@ export default function DaughterActivityPage() {
             </div>
             <Link
               href="/admin"
-              className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl transition-colors text-sm font-medium backdrop-blur-sm"
+              className="btn btn-secondary btn-md"
             >
               Back to Admin
             </Link>
@@ -223,7 +223,7 @@ export default function DaughterActivityPage() {
             <button
               onClick={generateActivity}
               disabled={generating}
-              className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white px-10 py-5 rounded-2xl text-xl font-bold hover:shadow-2xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 mx-auto"
+              className="btn btn-primary btn-lg mx-auto on-light"
             >
               {generating ? (
                 <>
@@ -331,7 +331,7 @@ export default function DaughterActivityPage() {
                     <>
                       <button
                         onClick={markComplete}
-                        className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-2xl text-xl font-bold hover:shadow-xl transition-all transform hover:scale-105 flex items-center justify-center gap-3"
+                        className="btn btn-primary btn-lg flex-1 on-light"
                       >
                         <CheckCircle className="w-6 h-6" />
                         We Did It! 🎉
@@ -339,7 +339,7 @@ export default function DaughterActivityPage() {
                       <button
                         onClick={generateActivity}
                         disabled={generating}
-                        className="flex-1 bg-gradient-to-r from-purple-500 to-blue-500 text-white px-8 py-4 rounded-2xl text-xl font-bold hover:shadow-xl transition-all transform hover:scale-105 flex items-center justify-center gap-3 disabled:opacity-50"
+                        className="btn btn-gold btn-lg flex-1 on-light"
                       >
                         <RefreshCw className={`w-6 h-6 ${generating ? 'animate-spin' : ''}`} />
                         Try Something Else
@@ -349,7 +349,7 @@ export default function DaughterActivityPage() {
                     <button
                       onClick={generateActivity}
                       disabled={generating}
-                      className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white px-8 py-4 rounded-2xl text-xl font-bold hover:shadow-xl transition-all transform hover:scale-105 flex items-center justify-center gap-3 disabled:opacity-50"
+                      className="btn btn-primary btn-lg btn-full on-light"
                     >
                       {generating ? (
                         <>
@@ -388,7 +388,7 @@ export default function DaughterActivityPage() {
             </p>
             <Link
               href="/admin/montessori/children"
-              className="inline-block bg-yellow-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-yellow-600 transition-colors"
+              className="btn btn-gold btn-lg on-light"
             >
               Add Child Profile
             </Link>

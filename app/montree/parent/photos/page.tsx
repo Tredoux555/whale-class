@@ -357,18 +357,7 @@ function ParentPhotosContent() {
                     const childId = childIdParam || JSON.parse(localStorage.getItem('montree_selected_child') || '{}').id;
                     if (childId) loadPhotos(childId, true);
                   }}
-                  style={{
-                    padding: '10px 24px',
-                    borderRadius: 12,
-                    background: T.emeraldStrong,
-                    border: '1px solid rgba(52,211,153,0.45)',
-                    color: T.emerald,
-                    fontFamily: T.sans,
-                    fontSize: 13,
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    transition: 'all 120ms ease',
-                  }}
+                  className="btn btn-primary btn-sm"
                 >
                   {t('common.loadMore')}
                 </button>

@@ -191,7 +191,7 @@ export default function WeeklyPlanningPage() {
           </div>
           <Link
             href="/admin/classroom"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
+            className="btn btn-primary btn-md"
           >
             🌳 Open Classroom View →
           </Link>
@@ -303,13 +303,13 @@ export default function WeeklyPlanningPage() {
               <Link
                 href={`/admin/classroom/print?week=${uploadResult.translatedContent?.weekNumber}&year=${new Date().getFullYear()}`}
                 target="_blank"
-                className="inline-block px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                className="btn btn-secondary btn-md on-light"
               >
                 🖨️ Print
               </Link>
               <Link
                 href={`/admin/classroom?week=${uploadResult.translatedContent?.weekNumber}&year=${new Date().getFullYear()}`}
-                className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                className="btn btn-primary btn-md"
               >
                 🌳 View Week {uploadResult.translatedContent?.weekNumber} in Classroom →
               </Link>
@@ -341,20 +341,20 @@ export default function WeeklyPlanningPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => deletePlan(plan.id)}
-                      className="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium text-sm"
+                      className="btn btn-danger btn-soft btn-sm"
                     >
                       🗑️ Delete
                     </button>
                     <Link
                       href={`/admin/classroom/print?week=${plan.week_number}&year=${plan.year}`}
                       target="_blank"
-                      className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm"
+                      className="btn btn-secondary btn-sm on-light"
                     >
                       🖨️ Print
                     </Link>
                     <Link
                       href={`/admin/classroom?week=${plan.week_number}&year=${plan.year}`}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                      className="btn btn-primary btn-md"
                     >
                       Open →
                     </Link>
