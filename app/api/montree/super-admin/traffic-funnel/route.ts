@@ -15,6 +15,7 @@ import type { NextRequest } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { deriveSource } from '@/lib/montree/attribution';
+import { fetchVisitorsSince, wantsInternalIncluded } from '@/lib/montree/visitors';
 
 interface FunnelCell {
   country: string; // country code (2-letter) or 'ZZ' unknown
@@ -32,6 +33,7 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const days = Math.min(Math.max(parseInt(searchParams.get('days') || '30', 10) || 30, 1), 90);
+  const includeInternal = wantsInternalIncluded(searchParams);
 
   const supabase = getSupabase();
   const since = new Date();
@@ -52,34 +54,37 @@ export async function GET(request: NextRequest) {
   };
 
   // ── Visits: montree_visitors → country_code × derived-source ──
-  // utm_source column is from migration 288; if it's missing the select 42703s,
-  // so fall back to a utm-less select (source derives from referrer only).
+  // 🚨 FIXED — this used to be a single `.limit(50000)` select, which
+  // PostgREST's server-side max-rows setting (commonly 1000) silently
+  // truncates regardless of the requested limit; a 90-day window with 3,000+
+  // visits was undercounted. fetchVisitorsSince pages past that cap and
+  // excludes internal traffic (migration 324) by default.
+  // utm_source column is from migration 288; if it's missing the select
+  // 42703s, so fall back to a utm-less select (source derives from referrer
+  // only) — fetchVisitorsSince's own is_internal fallback runs first, then
+  // this utm fallback runs on top of whichever shape came back.
   let visitors: Array<{
     country_code: string | null;
     utm_source: string | null;
     referrer: string | null;
-  }> | null = null;
-  {
-    const withUtm = await supabase
-      .from('montree_visitors')
-      .select('country_code, utm_source, referrer')
-      .gte('visited_at', sinceISO)
-      .limit(50000);
-    if (withUtm.error && withUtm.error.code === '42703') {
-      const noUtm = await supabase
-        .from('montree_visitors')
-        .select('country_code, referrer')
-        .gte('visited_at', sinceISO)
-        .limit(50000);
-      visitors = (noUtm.data || []).map((v) => ({
-        country_code: v.country_code,
-        utm_source: null,
-        referrer: v.referrer,
-      }));
-    } else if (withUtm.error) {
-      console.error('[traffic-funnel] visitors error:', withUtm.error.code);
+  }> = [];
+  try {
+    visitors = await fetchVisitorsSince<{
+      country_code: string | null;
+      utm_source: string | null;
+      referrer: string | null;
+    }>(supabase, 'country_code, utm_source, referrer', sinceISO, { includeInternal });
+  } catch (e) {
+    if ((e as { code?: string })?.code === '42703') {
+      const noUtm = await fetchVisitorsSince<{ country_code: string | null; referrer: string | null }>(
+        supabase,
+        'country_code, referrer',
+        sinceISO,
+        { includeInternal }
+      );
+      visitors = noUtm.map((v) => ({ country_code: v.country_code, utm_source: null, referrer: v.referrer }));
     } else {
-      visitors = withUtm.data;
+      console.error('[traffic-funnel] visitors error:', (e as { code?: string })?.code);
     }
   }
   for (const v of visitors || []) {
