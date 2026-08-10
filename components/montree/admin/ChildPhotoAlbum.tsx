@@ -40,18 +40,7 @@ function Chip({ label, active, onClick }: { label: string; active: boolean; onCl
     <button
       type="button"
       onClick={onClick}
-      style={{
-        padding: '5px 12px',
-        borderRadius: 999,
-        fontSize: 12.5,
-        fontWeight: active ? 600 : 500,
-        cursor: 'pointer',
-        whiteSpace: 'nowrap',
-        color: active ? '#0b1f17' : 'rgba(255,255,255,0.78)',
-        background: active ? '#7fd1a8' : 'rgba(255,255,255,0.07)',
-        border: `1px solid ${active ? '#7fd1a8' : 'rgba(255,255,255,0.14)'}`,
-        transition: 'background 0.15s, color 0.15s',
-      }}
+      className={`btn btn-sm btn-pill ${active ? 'btn-primary' : 'btn-secondary'}`}
     >
       {label}
     </button>

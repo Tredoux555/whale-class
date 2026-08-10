@@ -85,7 +85,7 @@ export default function EventPicker({
         <h2 className="text-white text-xl font-bold">
           {t('events.selectEvent')}
         </h2>
-        <button onClick={onClose} className="text-white/60 text-2xl px-2">✕</button>
+        <button onClick={onClose} className="btn btn-ghost btn-icon btn-sm text-2xl">✕</button>
       </div>
 
       {/* No Event option */}
@@ -163,14 +163,14 @@ export default function EventPicker({
             <div className="flex gap-2">
               <button
                 onClick={() => setShowCreate(false)}
-                className="flex-1 py-2 rounded-lg text-white/60 bg-white/5"
+                className="btn btn-secondary btn-md flex-1"
               >
                 {t('common.cancel') || 'Cancel'}
               </button>
               <button
                 onClick={handleCreate}
                 disabled={!newName.trim() || creating}
-                className="flex-1 py-2 rounded-lg bg-emerald-500 text-white font-medium disabled:opacity-40"
+                className="btn btn-primary btn-md flex-1"
               >
                 {creating ? '...' : t('events.createNew')}
               </button>
@@ -179,7 +179,7 @@ export default function EventPicker({
         ) : (
           <button
             onClick={() => setShowCreate(true)}
-            className="w-full py-4 rounded-2xl bg-white/10 text-white/70 font-medium active:bg-white/20"
+            className="btn btn-secondary btn-lg btn-full"
           >
             + {t('events.createNew')}
           </button>

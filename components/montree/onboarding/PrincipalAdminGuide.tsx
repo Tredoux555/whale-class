@@ -339,31 +339,15 @@ export default function PrincipalAdminGuide({ principalName }: PrincipalAdminGui
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 }}>
           <button
             onClick={handleSkip}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'rgba(255,255,255,0.5)',
-              fontSize: 11,
-              cursor: 'pointer',
-              textDecoration: 'underline',
-              padding: 0,
-            }}
+            className="btn btn-ghost btn-sm"
+            style={{ textDecoration: 'underline' }}
           >
             {t('principal.adminGuide.skipTour')}
           </button>
 
           <button
             onClick={handleNext}
-            style={{
-              background: 'white',
-              color: '#059669',
-              border: 'none',
-              borderRadius: 8,
-              padding: '6px 16px',
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
+            className="btn btn-secondary btn-sm"
           >
             {currentStep.buttonText} →
           </button>

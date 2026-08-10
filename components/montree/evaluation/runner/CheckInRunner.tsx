@@ -945,11 +945,7 @@ function Chip({ children, onClick, on }: { children: React.ReactNode; onClick: (
     <button
       type="button"
       onClick={onClick}
-      style={{
-        border: `1px solid ${on ? C.forest : C.line}`, borderRadius: 999, padding: '7px 14px',
-        background: on ? C.forest : C.paper, color: on ? '#fff' : 'inherit',
-        fontSize: 13, minHeight: 38, cursor: 'pointer',
-      }}
+      className={`btn btn-sm btn-pill on-light ${on ? 'btn-primary' : 'btn-secondary'}`}
     >
       {children}
     </button>
@@ -990,12 +986,8 @@ function Segmented({
             key={option.id}
             type="button"
             onClick={() => onChange(option.id)}
-            style={{
-              flex: '1 1 auto', minWidth: 92, minHeight: 64, borderRadius: 16,
-              border: `2px solid ${on ? C.forest : C.sandDark}`,
-              background: on ? C.forest : C.paper, color: on ? '#fff' : C.ink,
-              padding: '10px 14px', fontWeight: 600, fontSize: 15, cursor: 'pointer',
-            }}
+            className={`btn btn-md on-light ${on ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ flex: '1 1 auto', minWidth: 92, minHeight: 64 }}
           >
             {option.label}
           </button>
@@ -1015,14 +1007,8 @@ function PrimaryButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      style={{
-        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-        minHeight: 64, padding: '14px 30px', borderRadius: 18,
-        background: C.forest, color: '#fff', border: `2px solid ${C.forest}`,
-        fontFamily: SANS, fontSize: 17, fontWeight: 600,
-        width: wide ? '100%' : undefined, opacity: disabled ? 0.45 : 1,
-        cursor: disabled ? 'default' : 'pointer', touchAction: 'manipulation',
-      }}
+      className={`btn btn-primary btn-lg on-light${wide ? ' btn-full' : ''}`}
+      style={{ touchAction: 'manipulation' }}
     >
       {children}
     </button>
@@ -1034,12 +1020,7 @@ function GhostButton({ children, onClick }: { children: React.ReactNode; onClick
     <button
       type="button"
       onClick={onClick}
-      style={{
-        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-        minHeight: 64, padding: '14px 26px', borderRadius: 18,
-        background: C.paper, color: C.ink, border: `2px solid ${C.sandDark}`,
-        fontFamily: SANS, fontSize: 16, fontWeight: 600, cursor: 'pointer',
-      }}
+      className="btn btn-secondary btn-lg on-light"
     >
       {children}
     </button>

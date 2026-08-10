@@ -208,14 +208,14 @@ export default function BatchReportsCard({ classroomId, children }: Props) {
         {!generating ? (
           <button
             onClick={handleGenerateAll}
-            className="px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-500 text-white hover:bg-blue-600 active:scale-95 transition-all"
+            className="btn btn-primary btn-sm on-light"
           >
             {t('batchReports.generateAll' as any, 'Generate All')}
           </button>
         ) : (
           <button
             onClick={handleCancel}
-            className="px-3 py-1.5 rounded-lg text-sm font-medium bg-red-100 text-red-600 hover:bg-red-200 transition-all"
+            className="btn btn-danger btn-soft btn-sm on-light"
           >
             {t('batchReports.cancel' as any, 'Cancel')}
           </button>
@@ -248,7 +248,7 @@ export default function BatchReportsCard({ classroomId, children }: Props) {
               {successCount > 0 && (
                 <button
                   onClick={() => setExpanded(!expanded)}
-                  className="text-xs text-blue-500 hover:text-blue-700"
+                  className="btn btn-ghost btn-sm on-light"
                 >
                   {expanded
                     ? t('batchReports.hideDetails' as any, 'Hide details')
@@ -287,7 +287,7 @@ export default function BatchReportsCard({ classroomId, children }: Props) {
               {t('batchReports.failed' as any, 'Failed')}: {failedResults.map(r => r.childName).join(', ')}
               <button
                 onClick={handleRetryFailed}
-                className="ml-2 underline text-red-700 hover:text-red-900"
+                className="btn btn-ghost btn-sm on-light ml-2"
               >
                 {t('batchReports.retryFailed' as any, 'Retry')}
               </button>

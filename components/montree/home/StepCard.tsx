@@ -88,8 +88,7 @@ export default function StepCard({ card, onDidIt, childName }: {
             href={youtubeUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-3 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-[13px] font-medium transition-colors"
-            style={{ background: 'rgba(255,80,80,0.10)', border: '1px solid rgba(255,80,80,0.28)', color: '#FF9B9B' }}
+            className="btn btn-danger btn-soft btn-md btn-full mt-3"
           >
             ▶ Watch an example
           </a>
@@ -104,8 +103,7 @@ export default function StepCard({ card, onDidIt, childName }: {
             <>
               <button
                 onClick={onDidIt}
-                className="mt-4 w-full py-3 rounded-xl text-sm font-semibold transition-transform active:scale-[0.98]"
-                style={{ background: '#4ADE80', color: '#0A1F1C', boxShadow: BIO.glow.soft }}
+                className="btn btn-primary btn-lg btn-full mt-4"
               >
                 ✓ I did this with {childName || 'my child'} →
               </button>

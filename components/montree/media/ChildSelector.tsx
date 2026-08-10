@@ -112,7 +112,7 @@ export default function ChildSelector({
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="btn btn-ghost btn-icon btn-sm on-light absolute right-3 top-1/2 -translate-y-1/2"
               >
                 ✕
               </button>
@@ -129,7 +129,7 @@ export default function ChildSelector({
           </span>
           <button
             onClick={handleSelectAll}
-            className="text-sm text-blue-500 hover:text-blue-600 font-medium"
+            className="btn btn-ghost btn-sm on-light"
           >
             {selectedIds.length === filteredChildren.length ? t('childSelector.deselectAll') : t('childSelector.selectAll')}
           </button>

@@ -84,14 +84,13 @@ export default function InstallBanner() {
         <div className="flex-shrink-0 flex gap-2">
           <button
             onClick={handleDismiss}
-            className="text-sm px-2"
-            style={{ color: 'rgba(255,255,255,0.45)' }}
+            className="btn btn-ghost btn-sm"
           >
             {t('installBanner.later')}
           </button>
           <button
             onClick={handleInstall}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
+            className="btn btn-primary btn-md"
           >
             {t('installBanner.install')}
           </button>

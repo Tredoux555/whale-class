@@ -55,12 +55,7 @@ export default function PlaybookTab() {
         </div>
         <button
           onClick={copyAll}
-          className="shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-          style={{
-            background: 'rgba(52,211,153,0.15)',
-            border: '1px solid rgba(52,211,153,0.35)',
-            color: '#34d399',
-          }}
+          className="btn btn-primary btn-md shrink-0"
         >
           {copied ? 'Copied ✓' : 'Copy all'}
         </button>
@@ -93,7 +88,7 @@ export default function PlaybookTab() {
                   <a
                     href={url}
                     download={`${v.n}_${v.key}.mp4`}
-                    className="shrink-0 text-xs font-medium text-emerald-400 hover:text-emerald-300"
+                    className="btn btn-ghost btn-sm shrink-0"
                   >
                     Download
                   </a>

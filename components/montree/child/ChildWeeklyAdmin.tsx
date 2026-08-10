@@ -91,21 +91,7 @@ function CopyBtn({ text, label }: { text: string; label: string }) {
     <button
       onClick={handleCopy}
       title={`Copy ${label}`}
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 4,
-        padding: '3px 8px',
-        borderRadius: 6,
-        background: copied ? T.emeraldStrong : 'rgba(255,255,255,0.06)',
-        border: `1px solid ${copied ? 'rgba(52,211,153,0.40)' : 'rgba(255,255,255,0.10)'}`,
-        color: copied ? T.emerald : T.violet,
-        fontFamily: T.sans,
-        fontSize: 11,
-        fontWeight: 600,
-        cursor: 'pointer',
-        transition: 'all 120ms ease',
-      }}
+      className={`btn btn-icon btn-sm ${copied ? 'btn-primary' : 'btn-secondary'}`}
     >
       {copied ? <Check size={10} strokeWidth={2.5} /> : <Copy size={10} strokeWidth={1.75} />}
     </button>
@@ -239,23 +225,7 @@ export default function ChildWeeklyAdmin({
         <button
           onClick={handleGenerate}
           disabled={generating}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '7px 14px',
-            borderRadius: 9,
-            background: generating
-              ? 'rgba(255,255,255,0.06)'
-              : 'linear-gradient(180deg, #34d399, #10b981)',
-            border: `1px solid ${generating ? 'rgba(255,255,255,0.10)' : 'rgba(52,211,153,0.55)'}`,
-            color: generating ? T.textMuted : '#06281a',
-            fontFamily: T.sans,
-            fontSize: 12,
-            fontWeight: 700,
-            cursor: generating ? 'wait' : 'pointer',
-            boxShadow: generating ? 'none' : '0 4px 14px rgba(16,185,129,0.25)',
-          }}
+          className="btn btn-primary btn-sm"
         >
           {generating ? (
             <>
@@ -547,23 +517,8 @@ export default function ChildWeeklyAdmin({
         }}>
           <button
             onClick={() => setShowAdvice(!showAdvice)}
-            style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              fontFamily: T.sans,
-              fontSize: 11,
-              fontWeight: 700,
-              color: T.violet,
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              padding: 0,
-              textAlign: 'left',
-              textTransform: 'uppercase',
-              letterSpacing: 0.4,
-            }}
+            className="btn btn-ghost btn-sm btn-full"
+            style={{ display: 'flex', alignItems: 'center', gap: 6, textAlign: 'left' }}
           >
             <ChevronRight
               size={11}

@@ -300,24 +300,7 @@ export default function PulsePanel() {
           <button
             onClick={handleGenerate}
             disabled={generating || isInProgress}
-            style={{
-              width: '100%',
-              padding: '10px 14px',
-              borderRadius: 12,
-              background: T.violetStrong,
-              border: `1px solid ${T.violetBorder}`,
-              color: T.violet,
-              fontFamily: T.sans,
-              fontSize: 13,
-              fontWeight: 700,
-              cursor: (generating || isInProgress) ? 'not-allowed' : 'pointer',
-              opacity: (generating || isInProgress) ? 0.55 : 1,
-              transition: 'all 120ms ease',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 7,
-            }}
+            className="btn btn-gold btn-md btn-full"
           >
             <Sparkles size={14} strokeWidth={1.75} />
             {generating

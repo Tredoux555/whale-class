@@ -175,11 +175,11 @@ export default function DebugErrorMonitor() {
             <span style={{ color: '#fff', fontSize: 13, fontWeight: 700, flex: 1 }}>
               Error monitor · {errors.length}
             </span>
-            <button onClick={copyAll} style={pillBtn}>{copied ? '✓ Copied' : 'Copy all'}</button>
-            <button onClick={() => clearDebugErrors()} style={pillBtn}>Clear</button>
+            <button onClick={copyAll} className="btn btn-secondary btn-sm">{copied ? '✓ Copied' : 'Copy all'}</button>
+            <button onClick={() => clearDebugErrors()} className="btn btn-secondary btn-sm">Clear</button>
             <button
               onClick={() => { setDebugEnabled(false); setEnabled(false); }}
-              style={{ ...pillBtn, color: '#fca5a5' }}
+              className="btn btn-danger btn-soft btn-sm"
             >
               Hide
             </button>

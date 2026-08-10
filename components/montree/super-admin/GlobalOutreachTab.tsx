@@ -679,33 +679,21 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
             <button
               key={String(v.key)}
               onClick={() => setSocialView(v.key)}
-              style={{
-                ...inputStyle, cursor: 'pointer',
-                background: socialView === v.key ? T.emeraldSoft : T.inputBg,
-                color: socialView === v.key ? T.emerald : T.textSecondary,
-                borderColor: socialView === v.key ? T.emeraldDim : 'rgba(52,211,153,0.2)',
-                fontWeight: socialView === v.key ? 600 : 400,
-              }}
+              className={`btn btn-sm ${socialView === v.key ? 'btn-primary' : 'btn-secondary'}`}
             >
               {v.label}
             </button>
           ))}
           <button
             onClick={() => setDisadvantagedOnly(v => !v)}
-            style={{
-              ...inputStyle, cursor: 'pointer',
-              background: disadvantagedOnly ? T.emeraldSoft : T.inputBg,
-              color: disadvantagedOnly ? T.emerald : T.textSecondary,
-              borderColor: disadvantagedOnly ? T.emeraldDim : 'rgba(52,211,153,0.2)',
-              fontWeight: disadvantagedOnly ? 600 : 400,
-            }}
+            className={`btn btn-sm ${disadvantagedOnly ? 'btn-primary' : 'btn-secondary'}`}
           >
             🤲 Disadvantaged
           </button>
           {country && (
             <button
               onClick={() => setCountry('')}
-              style={{ ...inputStyle, cursor: 'pointer', color: T.emerald, borderColor: T.emeraldDim }}
+              className="btn btn-secondary btn-sm"
             >
               {country} ✕
             </button>
@@ -713,7 +701,8 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
           {!socialView && (
             <button
               onClick={doExport}
-              style={{ ...inputStyle, cursor: 'pointer', color: T.gold, borderColor: 'rgba(232,201,106,0.4)', marginLeft: 'auto' }}
+              className="btn btn-gold btn-sm"
+              style={{ marginLeft: 'auto' }}
             >
               ⬇ Export CSV
             </button>
@@ -826,7 +815,7 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
                             <button
                               onClick={() => changeSocial(c.id, 'dead')}
                               title="Mark dead"
-                              style={{ ...inputStyle, padding: '3px 8px', fontSize: 11, cursor: 'pointer', color: T.red, borderColor: 'rgba(239,68,68,0.3)' }}
+                              className="btn btn-danger btn-soft btn-sm"
                             >
                               ✕
                             </button>
@@ -891,13 +880,13 @@ export default function GlobalOutreachTab({ sessionToken }: { sessionToken: stri
           <button
             disabled={page === 0 || loadingContacts}
             onClick={() => setPage(p => Math.max(0, p - 1))}
-            style={{ ...inputStyle, cursor: page === 0 ? 'default' : 'pointer', opacity: page === 0 ? 0.4 : 1 }}
+            className="btn btn-secondary btn-sm"
           >← Prev</button>
           <span>Page {page + 1} / {totalPages} · {total.toLocaleString()} total {loadingContacts && '· loading…'}</span>
           <button
             disabled={page + 1 >= totalPages || loadingContacts}
             onClick={() => setPage(p => p + 1)}
-            style={{ ...inputStyle, cursor: page + 1 >= totalPages ? 'default' : 'pointer', opacity: page + 1 >= totalPages ? 0.4 : 1 }}
+            className="btn btn-secondary btn-sm"
           >Next →</button>
         </div>
       </div>

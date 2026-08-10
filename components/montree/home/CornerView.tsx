@@ -191,8 +191,7 @@ export default function CornerView({ childId, childName, onAskGuide, refreshTrig
           <p className={`text-sm ${BIO.text.secondary} mb-4`}>Could not load the corner. Please check your connection.</p>
           <button
             onClick={() => { setFetchError(false); setLoading(true); fetchShelf(); }}
-            className="px-6 py-2 rounded-xl text-sm font-medium"
-            style={{ background: 'rgba(74,222,128,0.15)', border: '1px solid rgba(74,222,128,0.3)', color: '#4ADE80' }}
+            className="btn btn-primary btn-md"
           >
             {t('common.tryAgain')}
           </button>
@@ -237,8 +236,7 @@ export default function CornerView({ childId, childName, onAskGuide, refreshTrig
               </p>
               <button
                 onClick={() => onAskGuide(t('home.shelf.suggestWork'))}
-                className="px-5 py-2.5 rounded-xl text-sm font-semibold"
-                style={{ background: '#4ADE80', color: '#0A1F1C', boxShadow: BIO.glow.soft }}
+                className="btn btn-primary btn-md btn-glow"
               >
                 ✨ Ask Ivy where to begin
               </button>
@@ -273,8 +271,7 @@ export default function CornerView({ childId, childName, onAskGuide, refreshTrig
                   )}
                   <button
                     onClick={() => onPresentWork?.({ work_name: spotlight.work_name, area: spotlight.area })}
-                    className="w-full py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5"
-                    style={{ background: '#4ADE80', color: '#0A1F1C', boxShadow: BIO.glow.soft }}
+                    className="btn btn-primary btn-lg btn-full btn-glow"
                   >
                     Show me how to present it →
                   </button>
@@ -345,14 +342,14 @@ export default function CornerView({ childId, childName, onAskGuide, refreshTrig
             {/* ── Hidden 'see all' escape hatch — tucked, never pushed ──────── */}
             <div className="pt-5 text-center">
               {!browseOpen ? (
-                <button onClick={() => setBrowseOpen(true)} className="text-[11px] text-white/30 underline underline-offset-2">
+                <button onClick={() => setBrowseOpen(true)} className="btn btn-ghost btn-sm">
                   see the full library
                 </button>
               ) : (
                 <div className="text-left mt-1 rounded-2xl p-3" style={{ background: 'rgba(13,30,26,0.6)', border: '1px solid rgba(255,255,255,0.08)' }}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] text-white/45">Add a work yourself</span>
-                    <button onClick={() => { setBrowseOpen(false); setSearchText(''); setSearchResults([]); }} className="text-white/30 text-xs">✕</button>
+                    <button onClick={() => { setBrowseOpen(false); setSearchText(''); setSearchResults([]); }} className="btn btn-ghost btn-icon btn-sm text-xs">✕</button>
                   </div>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-sm">🔍</span>

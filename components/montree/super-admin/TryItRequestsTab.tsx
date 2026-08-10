@@ -168,7 +168,7 @@ export default function TryItRequestsTab({ saToken }: TryItRequestsTabProps) {
       <div className="bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden">
         <div className="p-4 border-b border-slate-700 flex items-center justify-between gap-3 flex-wrap">
           <h2 className="text-lg font-semibold text-white">Try It gate</h2>
-          <button onClick={load} className="text-sm text-slate-400 hover:text-white">
+          <button onClick={load} className="btn btn-ghost btn-sm">
             ↻ Refresh
           </button>
         </div>
@@ -197,7 +197,7 @@ export default function TryItRequestsTab({ saToken }: TryItRequestsTabProps) {
         <div className="px-4 pb-4">
           <button
             onClick={() => setShowClicks(v => !v)}
-            className="text-sm text-slate-400 hover:text-white"
+            className="btn btn-ghost btn-sm"
           >
             {showClicks ? '▾' : '▸'} Recent clicks ({clicks.length} shown)
           </button>
@@ -289,7 +289,7 @@ export default function TryItRequestsTab({ saToken }: TryItRequestsTabProps) {
                     href={`mailto:${encodeURIComponent(m.email)}?subject=${encodeURIComponent(
                       'Montree'
                     )}&body=${encodeURIComponent(`Hi ${m.name.split(' ')[0] || m.name},\n\n`)}`}
-                    className="px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-sm font-medium hover:bg-emerald-500/30 transition-colors"
+                    className="btn btn-primary btn-sm"
                   >
                     ✉ Reply
                   </a>
@@ -297,7 +297,7 @@ export default function TryItRequestsTab({ saToken }: TryItRequestsTabProps) {
                     <button
                       onClick={() => setStatus(m.id, 'replied')}
                       disabled={busy === m.id}
-                      className="px-3 py-1.5 rounded-lg bg-slate-700/60 text-slate-200 border border-slate-600 text-sm font-medium hover:bg-slate-700 transition-colors disabled:opacity-40"
+                      className="btn btn-secondary btn-sm"
                     >
                       {busy === m.id ? 'Saving…' : '✓ Mark replied'}
                     </button>
@@ -305,7 +305,7 @@ export default function TryItRequestsTab({ saToken }: TryItRequestsTabProps) {
                     <button
                       onClick={() => setStatus(m.id, 'new')}
                       disabled={busy === m.id}
-                      className="px-3 py-1.5 rounded-lg bg-slate-700/40 text-slate-400 border border-slate-700 text-sm hover:bg-slate-700/60 transition-colors disabled:opacity-40"
+                      className="btn btn-secondary btn-sm"
                     >
                       {busy === m.id ? 'Saving…' : 'Reopen'}
                     </button>

@@ -240,7 +240,7 @@ export default function VoiceObservationRecorder({ state, onStart, onPause, onEn
 
         <button
           onClick={startRecording}
-          className="px-8 py-3 bg-red-500 text-white rounded-full text-lg font-semibold hover:bg-red-600 transition shadow-lg"
+          className="btn btn-danger btn-lg btn-pill on-light"
         >
           ● {t('voiceObs.startSession') || 'Start Recording'}
         </button>
@@ -287,10 +287,10 @@ export default function VoiceObservationRecorder({ state, onStart, onPause, onEn
       <div className="flex justify-center gap-4">
         <button
           onClick={handlePause}
-          className={`px-6 py-3 rounded-full font-medium transition ${
+          className={`btn btn-lg btn-pill on-light ${
             state === 'paused'
-              ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-              : 'bg-amber-500 text-white hover:bg-amber-600'
+              ? 'btn-primary'
+              : 'btn-gold'
           }`}
         >
           {state === 'paused'
@@ -301,7 +301,7 @@ export default function VoiceObservationRecorder({ state, onStart, onPause, onEn
         <button
           onClick={handleStop}
           disabled={stopping}
-          className="px-6 py-3 bg-gray-800 text-white rounded-full font-medium hover:bg-gray-900 transition disabled:opacity-50"
+          className="btn btn-secondary btn-lg btn-pill on-light"
         >
           {stopping
             ? (t('voiceObs.finishing') || '⏳ Finishing...')

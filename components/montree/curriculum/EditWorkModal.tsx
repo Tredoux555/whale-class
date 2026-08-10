@@ -126,11 +126,11 @@ export default function EditWorkModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white w-full max-w-lg max-h-[90vh] rounded-2xl flex flex-col" onClick={e => e.stopPropagation()}>
+      <div className="bg-white w-full max-w-lg max-h-[90vh] rounded-2xl flex flex-col on-light" onClick={e => e.stopPropagation()}>
         <div className="p-4 border-b bg-gradient-to-r from-blue-500 to-indigo-600 text-white flex-shrink-0">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-lg">{t('curriculum.editWork')}</h3>
-            <button onClick={onClose} className="text-white/80 hover:text-white text-2xl">×</button>
+            <button onClick={onClose} className="btn btn-ghost btn-icon btn-sm text-2xl">×</button>
           </div>
         </div>
 
@@ -176,7 +176,7 @@ export default function EditWorkModal({
               <button
                 onClick={handleGenerateAI}
                 disabled={generating || !editForm.name.trim()}
-                className="px-4 py-1.5 bg-purple-500 text-white text-sm font-medium rounded-lg hover:bg-purple-600 disabled:opacity-50 flex items-center gap-2"
+                className="btn btn-gold btn-sm"
               >
                 {generating ? (
                   <>
@@ -269,11 +269,11 @@ export default function EditWorkModal({
         {/* Actions */}
         <div className="p-4 border-t flex gap-3 flex-shrink-0">
           <button onClick={onClose}
-            className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200">
+            className="btn btn-secondary btn-md flex-1">
             {t('common.cancel')}
           </button>
           <button onClick={handleSaveEdit} disabled={saving}
-            className="flex-1 py-3 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 disabled:opacity-50">
+            className="btn btn-primary btn-md flex-1">
             {saving ? t('common.saving') : t('curriculum.saveChanges')}
           </button>
         </div>

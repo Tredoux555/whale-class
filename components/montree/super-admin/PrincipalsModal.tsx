@@ -223,7 +223,7 @@ export default function PrincipalsModal({ schoolId, schoolName, onClose, session
               {loading ? 'Loading…' : `${principals.length} ${principals.length === 1 ? 'principal' : 'principals'}`}
             </p>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white text-xl" aria-label="Close">✕</button>
+          <button onClick={onClose} className="btn btn-ghost btn-icon btn-sm text-xl" aria-label="Close">✕</button>
         </div>
 
         {/* Revealed code banner — only shows once after add/reset */}
@@ -241,13 +241,13 @@ export default function PrincipalsModal({ schoolId, schoolName, onClose, session
               </code>
               <button
                 onClick={copyCode}
-                className="px-3 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 rounded text-xs font-medium"
+                className="btn btn-primary btn-sm"
               >
                 {copied ? '✓ Copied' : 'Copy'}
               </button>
               <button
                 onClick={() => setRevealedCode(null)}
-                className="px-3 py-2 bg-slate-700/40 hover:bg-slate-700/60 text-slate-300 rounded text-xs font-medium"
+                className="btn btn-secondary btn-sm"
               >
                 Dismiss
               </button>
@@ -307,21 +307,21 @@ export default function PrincipalsModal({ schoolId, schoolName, onClose, session
                       <button
                         onClick={() => handleResetCode(p)}
                         disabled={busy}
-                        className="px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 disabled:opacity-50 text-emerald-300 rounded text-xs font-medium"
+                        className="btn btn-primary btn-sm"
                       >
                         🔑 Reset code
                       </button>
                       <button
                         onClick={() => handleToggleActive(p)}
                         disabled={busy}
-                        className={`px-2.5 py-1 disabled:opacity-50 rounded text-xs font-medium ${p.is_active ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300' : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300'}`}
+                        className={`btn btn-sm ${p.is_active ? 'btn-gold' : 'btn-primary'}`}
                       >
                         {p.is_active ? '🚫 Deactivate' : '✓ Activate'}
                       </button>
                       <button
                         onClick={() => handleDelete(p)}
                         disabled={busy}
-                        className="px-2.5 py-1 bg-red-500/20 hover:bg-red-500/30 disabled:opacity-50 text-red-300 rounded text-xs font-medium ml-auto"
+                        className="btn btn-danger btn-soft btn-sm ml-auto"
                       >
                         🗑️ Delete
                       </button>
@@ -378,7 +378,7 @@ export default function PrincipalsModal({ schoolId, schoolName, onClose, session
                       setNewEmail('');
                     }}
                     disabled={creating}
-                    className="px-3 py-2 bg-slate-700/40 hover:bg-slate-700/60 text-slate-300 rounded text-sm font-medium"
+                    className="btn btn-secondary btn-sm"
                   >
                     Cancel
                   </button>

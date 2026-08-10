@@ -399,7 +399,7 @@ export default function IvyChat({
           <div className="relative inline-block">
             {/* eslint-disable-next-line @next/next/no-img-element -- local object-URL preview, not a remote asset */}
             <img src={imagePreview} alt="Preview" className="h-16 rounded-lg object-cover" />
-            <button onClick={clearImage} className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">✕</button>
+            <button onClick={clearImage} className="btn btn-danger btn-icon btn-sm btn-round absolute -top-1.5 -right-1.5">✕</button>
           </div>
         </div>
       )}

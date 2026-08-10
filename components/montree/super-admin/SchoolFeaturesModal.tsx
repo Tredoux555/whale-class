@@ -263,7 +263,7 @@ export default function SchoolFeaturesModal({
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white text-xl leading-none w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 transition-colors"
+            className="btn btn-ghost btn-icon btn-sm text-xl"
             aria-label="Close"
           >
             ✕
@@ -309,14 +309,14 @@ export default function SchoolFeaturesModal({
           <button
             onClick={() => setAll(true)}
             disabled={busy}
-            className="px-3 py-1.5 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25 rounded-md text-xs font-medium transition-colors disabled:opacity-50"
+            className="btn btn-primary btn-sm"
           >
             {bulkBusy ? 'Working…' : 'Enable all'}
           </button>
           <button
             onClick={() => setAll(false)}
             disabled={busy}
-            className="px-3 py-1.5 bg-red-500/15 text-red-300 hover:bg-red-500/25 rounded-md text-xs font-medium transition-colors disabled:opacity-50"
+            className="btn btn-danger btn-soft btn-sm"
           >
             {bulkBusy ? 'Working…' : 'Disable all'}
           </button>

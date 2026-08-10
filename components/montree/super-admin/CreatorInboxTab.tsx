@@ -224,7 +224,7 @@ export default function CreatorInboxTab({ saToken, onRead }: CreatorInboxTabProp
           </div>
           <button
             onClick={() => setOpenId(null)}
-            className="text-sm text-slate-400 hover:text-white shrink-0"
+            className="btn btn-ghost btn-sm shrink-0"
           >
             ← Back
           </button>
@@ -269,7 +269,7 @@ export default function CreatorInboxTab({ saToken, onRead }: CreatorInboxTabProp
             <button
               onClick={sendReply}
               disabled={sending || reply.trim().length === 0}
-              className="px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-sm font-medium hover:bg-emerald-500/30 transition-colors disabled:opacity-40"
+              className="btn btn-primary btn-md"
             >
               {sending ? 'Sending…' : 'Send reply'}
             </button>
@@ -284,7 +284,7 @@ export default function CreatorInboxTab({ saToken, onRead }: CreatorInboxTabProp
     <div className="bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden">
       <div className="p-4 border-b border-slate-700 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-white">Creator inbox</h2>
-        <button onClick={load} className="text-sm text-slate-400 hover:text-white">
+        <button onClick={load} className="btn btn-ghost btn-sm">
           ↻ Refresh
         </button>
       </div>

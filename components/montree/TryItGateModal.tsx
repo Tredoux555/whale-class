@@ -217,20 +217,8 @@ export default function TryItGateModal({ isOpen, onClose }: TryItGateModalProps)
             type="button"
             onClick={onClose}
             aria-label={t('landing.tryitGate.close')}
-            style={{
-              position: 'absolute',
-              top: 12,
-              right: 12,
-              width: 30,
-              height: 30,
-              borderRadius: 8,
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.09)',
-              color: 'rgba(255,250,240,0.55)',
-              fontSize: '0.95rem',
-              lineHeight: 1,
-              cursor: 'pointer',
-            }}
+            className="btn btn-secondary btn-icon btn-sm"
+            style={{ position: 'absolute', top: 12, right: 12, fontSize: '0.95rem' }}
           >
             ×
           </button>

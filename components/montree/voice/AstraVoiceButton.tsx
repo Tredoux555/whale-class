@@ -56,11 +56,10 @@ export default function AstraVoiceButton({
         disabled={unsupported}
         aria-label={active ? 'Stop talking to Astra' : 'Talk to Astra'}
         className={[
-          'flex items-center gap-2 rounded-full px-5 py-3 text-sm font-medium shadow-sm transition',
+          'btn btn-pill btn-md',
           active
-            ? 'bg-red-500 text-white hover:bg-red-600'
-            : 'bg-amber-500 text-white hover:bg-amber-600',
-          unsupported ? 'opacity-50 cursor-not-allowed' : '',
+            ? 'btn-danger'
+            : 'btn-gold',
         ].join(' ')}
       >
         <Icon className={`h-4 w-4 ${status === 'thinking' ? 'animate-spin' : ''}`} />

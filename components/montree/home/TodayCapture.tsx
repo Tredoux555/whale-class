@@ -111,8 +111,7 @@ export default function TodayCapture({
         {spotlight && (
           <button
             onClick={() => onSpotlightTap(spotlight)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs transition-all active:scale-95"
-            style={{ border: '1px solid rgba(74,222,128,0.35)', color: '#8fe6c3', background: 'rgba(74,222,128,0.06)' }}
+            className="btn btn-primary btn-sm btn-pill"
           >
             <span>✨</span>
             <span>Today: {spotlight.work_name}</span>

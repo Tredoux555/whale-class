@@ -166,11 +166,11 @@ export default function VoiceDictate({
         type="button"
         onClick={handleClick}
         disabled={disabled}
-        className={`${dims} rounded-full flex items-center justify-center transition-all flex-shrink-0 ${
+        className={`btn btn-icon btn-round ${size === 'sm' ? 'btn-sm text-sm' : 'btn-md text-lg'} flex-shrink-0 ${
           recording
-            ? 'bg-red-500 animate-pulse shadow-lg shadow-red-200 text-white'
-            : 'bg-emerald-100 hover:bg-emerald-200 active:bg-emerald-300 text-emerald-700'
-        } disabled:opacity-40 disabled:cursor-not-allowed`}
+            ? 'btn-danger btn-glow'
+            : 'btn-secondary'
+        }`}
         title={title || (recording ? 'Tap to save' : 'Tap to speak')}
         aria-label={recording ? 'Stop recording' : 'Start recording'}
       >

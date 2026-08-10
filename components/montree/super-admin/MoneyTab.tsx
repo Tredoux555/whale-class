@@ -607,7 +607,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
             <button
               onClick={reopenPeriod}
               disabled={lockBusy}
-              className="px-2.5 py-1 bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 text-amber-200 rounded text-xs font-medium disabled:opacity-50"
+              className="btn btn-gold btn-sm"
               title={`Closed ${new Date(periodLocks.get(periodMonth) || '').toLocaleDateString()} — reopen to edit (audit-logged)`}
             >
               🔒 Reopen
@@ -616,7 +616,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
             <button
               onClick={closePeriod}
               disabled={lockBusy}
-              className="px-2.5 py-1 bg-slate-700/40 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded text-xs disabled:opacity-50"
+              className="btn btn-secondary btn-sm"
               title="Close this period so mutations are refused (audit-friendly immutability)"
             >
               🔓 Close month
@@ -626,7 +626,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
         <button
           onClick={calculate}
           disabled={calculating}
-          className="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-300 rounded-lg text-sm font-medium disabled:opacity-50"
+          className="btn btn-primary btn-sm"
           title={t('money.calculateNowTooltip')}
         >
           {calculating ? t('money.calculating') : t('money.calculateNow')}
@@ -634,7 +634,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
         <button
           onClick={fetchPayouts}
           disabled={loading}
-          className="px-3 py-1.5 bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded-lg text-sm font-medium disabled:opacity-50"
+          className="btn btn-secondary btn-sm"
         >
           {loading ? '⏳' : '🔄'} {t('common.refresh')}
         </button>
@@ -677,7 +677,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
             const url = `/api/montree/super-admin/finance/export/print?period_month=${encodeURIComponent(periodMonth)}&token=${encodeURIComponent(sessionToken)}`;
             window.open(url, '_blank', 'noopener');
           }}
-          className="px-3 py-1.5 bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 rounded-lg text-sm font-medium"
+          className="btn btn-gold btn-sm"
           title={t('money.printPdfTooltip')}
         >
           {t('money.printPdf')}
@@ -754,7 +754,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
             <button
               onClick={() => fetchInboundSchools(true)}
               disabled={inboundLoading}
-              className="text-xs text-slate-400 hover:text-slate-200 disabled:opacity-50"
+              className="btn btn-ghost btn-sm"
             >
               {inboundLoading ? '…' : '↻'} Refresh
             </button>
@@ -805,7 +805,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                         <td className="py-2.5 pr-1 text-right">
                           <button
                             onClick={() => setRecordWireSchool({ id: s.id, name: s.name })}
-                            className="px-3 py-1.5 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 rounded text-xs font-medium"
+                            className="btn btn-primary btn-sm"
                             title="Record incoming SWIFT wire from this school"
                           >
                             {t('money.inbound.recordWire')}
@@ -855,7 +855,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
             <button
               onClick={fetchReconciliation}
               disabled={reconLoading}
-              className="text-xs text-slate-400 hover:text-slate-200 disabled:opacity-50"
+              className="btn btn-ghost btn-sm"
             >
               {reconLoading ? '…' : '↻'} Refresh
             </button>
@@ -1046,7 +1046,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                           onClick={() => openManualWireModal(row)}
                           disabled={actionBusy === row.id}
                           title="You wire this manually (Wise / SWIFT). Click to record the wire reference and mark paid."
-                          className="px-2.5 py-1 bg-violet-500/15 hover:bg-violet-500/25 border border-violet-500/30 text-violet-200 rounded text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                          className="btn btn-gold btn-sm"
                         >
                           ⚡ Record manual wire
                         </button>
@@ -1065,7 +1065,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                                 ? t('money.wireTooltipNotReady')
                                 : t('money.wireTooltipReady')
                           }
-                          className="px-2.5 py-1 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-200 rounded text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                          className="btn btn-gold btn-sm"
                         >
                           {t('money.wireBtn')}
                         </button>
@@ -1077,7 +1077,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                           setPaidMethod('stripe_connect');
                         }}
                         disabled={actionBusy === row.id}
-                        className="px-2.5 py-1 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 rounded text-xs font-medium disabled:opacity-50"
+                        className="btn btn-primary btn-sm"
                         title={t('money.markPaidTooltip')}
                       >
                         {t('money.markPaidBtn')}
@@ -1089,7 +1089,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                           doPatch(row.id, 'cancel', { notes: note || null });
                         }}
                         disabled={actionBusy === row.id}
-                        className="px-2.5 py-1 bg-slate-700/40 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded text-xs font-medium disabled:opacity-50"
+                        className="btn btn-secondary btn-sm"
                       >
                         {t('money.cancelBtn')}
                       </button>
@@ -1099,7 +1099,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                           setOverrideValue(String(row.payout_usd));
                         }}
                         disabled={actionBusy === row.id}
-                        className="px-2.5 py-1 bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 rounded text-xs font-medium disabled:opacity-50"
+                        className="btn btn-gold btn-sm"
                       >
                         {t('money.overrideBtn')}
                       </button>
@@ -1110,7 +1110,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                           doPatch(row.id, 'mark_failed', { notes: note || null });
                         }}
                         disabled={actionBusy === row.id}
-                        className="px-2.5 py-1 bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-300 rounded text-xs font-medium disabled:opacity-50"
+                        className="btn btn-danger btn-soft btn-sm"
                         title={t('money.markFailedTooltip')}
                       >
                         {t('money.markFailedBtn')}
@@ -1121,7 +1121,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                     <button
                       onClick={() => doPatch(row.id, 'clear_override')}
                       disabled={actionBusy === row.id}
-                      className="px-2.5 py-1 bg-slate-700/40 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded text-xs font-medium disabled:opacity-50"
+                      className="btn btn-secondary btn-sm"
                     >
                       {t('money.clearOverrideBtn')}
                     </button>
@@ -1134,7 +1134,7 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                         await doPatch(row.id, 'reset_failed');
                       }}
                       disabled={actionBusy === row.id}
-                      className="px-2.5 py-1 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-200 rounded text-xs font-medium disabled:opacity-50"
+                      className="btn btn-gold btn-sm"
                       title={t('money.resetFailedTooltip')}
                     >
                       {t('money.resetFailedBtn')}
@@ -1231,13 +1231,13 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                       <button
                         onClick={() => submitManualWire(row)}
                         disabled={actionBusy === row.id || !mwWireRef.trim()}
-                        className="px-3 py-1 bg-violet-500/25 hover:bg-violet-500/40 border border-violet-500/40 text-violet-200 rounded text-xs font-semibold disabled:opacity-40"
+                        className="btn btn-gold btn-sm"
                       >
                         {actionBusy === row.id ? 'Recording…' : 'Confirm — mark paid'}
                       </button>
                       <button
                         onClick={() => setShowManualWireFor(null)}
-                        className="px-3 py-1 bg-slate-700/40 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded text-xs"
+                        className="btn btn-secondary btn-sm"
                       >
                         Cancel
                       </button>
@@ -1279,13 +1279,13 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                           }
                         }}
                         disabled={actionBusy === row.id}
-                        className="px-3 py-1 bg-emerald-500/25 hover:bg-emerald-500/40 border border-emerald-500/40 text-emerald-200 rounded text-xs font-semibold disabled:opacity-50"
+                        className="btn btn-primary btn-sm"
                       >
                         {t('money.confirmPaidBtn')}
                       </button>
                       <button
                         onClick={() => setShowPaidFor(null)}
-                        className="px-3 py-1 bg-slate-700/40 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded text-xs"
+                        className="btn btn-secondary btn-sm"
                       >
                         {t('common.cancel')}
                       </button>
@@ -1326,13 +1326,13 @@ export default function MoneyTab({ sessionToken }: MoneyTabProps) {
                           if (ok) setShowOverrideFor(null);
                         }}
                         disabled={actionBusy === row.id}
-                        className="px-3 py-1 bg-purple-500/25 hover:bg-purple-500/40 border border-purple-500/40 text-purple-200 rounded text-xs font-semibold disabled:opacity-50"
+                        className="btn btn-gold btn-sm"
                       >
                         {t('money.saveOverrideBtn')}
                       </button>
                       <button
                         onClick={() => setShowOverrideFor(null)}
-                        className="px-3 py-1 bg-slate-700/40 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded text-xs"
+                        className="btn btn-secondary btn-sm"
                       >
                         {t('common.cancel')}
                       </button>

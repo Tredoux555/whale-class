@@ -385,23 +385,7 @@ export default function ConferenceNotesPanel() {
                 setShowCreate(true);
                 if (children.length === 0) fetchChildren(selectedChildId);
               }}
-              style={{
-                width: '100%',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-                padding: '10px',
-                borderRadius: 12,
-                background: T.emeraldSoft,
-                border: `1px dashed ${T.emerald}`,
-                color: T.emerald,
-                fontFamily: T.sans,
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 120ms ease',
-              }}
+              className="btn btn-primary btn-md btn-full"
             >
               <Plus size={13} strokeWidth={2} />
               {t('conferenceNotes.addNote')}
@@ -470,38 +454,14 @@ export default function ConferenceNotesPanel() {
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                 <button
                   onClick={() => { setShowCreate(false); setNoteText(''); }}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: 8,
-                    background: 'rgba(255,255,255,0.06)',
-                    border: '1px solid rgba(255,255,255,0.10)',
-                    color: T.textSecondary,
-                    fontFamily: T.sans,
-                    fontSize: 12,
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                  }}
+                  className="btn btn-secondary btn-sm"
                 >
                   {t('common.cancel')}
                 </button>
                 <button
                   onClick={handleCreate}
                   disabled={creating || !noteText.trim() || !selectedChildId}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 4,
-                    padding: '6px 14px',
-                    borderRadius: 8,
-                    background: 'linear-gradient(180deg, #34d399, #10b981)',
-                    border: '1px solid rgba(52,211,153,0.55)',
-                    color: '#06281a',
-                    fontFamily: T.sans,
-                    fontSize: 12,
-                    fontWeight: 700,
-                    cursor: (creating || !noteText.trim() || !selectedChildId) ? 'not-allowed' : 'pointer',
-                    opacity: (creating || !noteText.trim() || !selectedChildId) ? 0.55 : 1,
-                  }}
+                  className="btn btn-primary btn-sm"
                 >
                   <Check size={11} strokeWidth={2.5} />
                   {creating ? '...' : t('common.save')}
@@ -606,37 +566,14 @@ export default function ConferenceNotesPanel() {
                     <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
                       <button
                         onClick={() => setEditingId(null)}
-                        style={{
-                          padding: '4px 10px',
-                          borderRadius: 7,
-                          background: 'rgba(255,255,255,0.06)',
-                          border: '1px solid rgba(255,255,255,0.10)',
-                          color: T.textSecondary,
-                          fontFamily: T.sans,
-                          fontSize: 11,
-                          cursor: 'pointer',
-                        }}
+                        className="btn btn-secondary btn-sm"
                       >
                         {t('common.cancel')}
                       </button>
                       <button
                         onClick={() => handleAction(note.id, 'edit', editText)}
                         disabled={actionId === note.id || !editText.trim()}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 3,
-                          padding: '4px 10px',
-                          borderRadius: 7,
-                          background: 'linear-gradient(180deg, #34d399, #10b981)',
-                          border: '1px solid rgba(52,211,153,0.55)',
-                          color: '#06281a',
-                          fontFamily: T.sans,
-                          fontSize: 11,
-                          fontWeight: 700,
-                          cursor: (actionId === note.id || !editText.trim()) ? 'not-allowed' : 'pointer',
-                          opacity: (actionId === note.id || !editText.trim()) ? 0.55 : 1,
-                        }}
+                        className="btn btn-primary btn-sm"
                       >
                         <Check size={10} strokeWidth={2.5} />
                         {actionId === note.id ? '...' : t('common.save')}

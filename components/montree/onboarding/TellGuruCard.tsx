@@ -231,7 +231,7 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
           </div>
           <button
             onClick={startRecording}
-            className="w-20 h-20 mx-auto bg-emerald-500 hover:bg-emerald-600 active:scale-95 rounded-full flex items-center justify-center transition-all"
+            className="btn btn-primary btn-icon btn-round btn-lg mx-auto"
           >
             <svg width="32" height="32" viewBox="0 0 24 24" fill="white" stroke="none">
               <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
@@ -247,8 +247,7 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
           {/* Also allow typing */}
           <button
             onClick={() => { setIsEditing(true); setStage('prompt'); }}
-            className="text-xs underline"
-            style={{ color: '#34d399', fontFamily: '"Inter", sans-serif' }}
+            className="btn btn-ghost btn-sm"
           >
             {t('tellGuru.orTypeInstead')}
           </button>
@@ -272,7 +271,7 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
               <button
                 onClick={handleSubmitEdited}
                 disabled={!editedTranscript.trim()}
-                className="w-full py-2.5 bg-emerald-500 text-white rounded-xl font-medium disabled:opacity-40 active:scale-[0.98] transition-all"
+                className="btn btn-primary btn-md btn-full"
               >
                 {t('tellGuru.submit')}
               </button>
@@ -293,7 +292,7 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
           {/* Pulsing ring */}
           <button
             onClick={stopRecording}
-            className="w-20 h-20 mx-auto bg-red-500 hover:bg-red-600 active:scale-95 rounded-full flex items-center justify-center transition-all animate-pulse"
+            className="btn btn-danger btn-icon btn-round btn-lg btn-glow mx-auto"
           >
             <div className="w-8 h-8 bg-white rounded-sm" />
           </button>
@@ -381,7 +380,7 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
           <p className="text-sm" style={{ color: '#f87171', fontFamily: '"Inter", sans-serif' }}>{errorMsg}</p>
           <button
             onClick={handleRetry}
-            className="px-4 py-2 bg-emerald-500 text-white rounded-xl text-sm font-medium active:scale-95 transition-all"
+            className="btn btn-primary btn-md"
           >
             {t('tellGuru.tryAgain')}
           </button>

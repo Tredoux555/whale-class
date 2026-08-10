@@ -351,21 +351,7 @@ export default function AttendanceWidget() {
                     <button
                       onClick={(e) => { e.stopPropagation(); handleMarkPresent(child.id); }}
                       disabled={marking === child.id}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 5,
-                        padding: '5px 12px',
-                        borderRadius: 999,
-                        background: 'linear-gradient(180deg, #34d399, #10b981)',
-                        border: '1px solid rgba(52,211,153,0.55)',
-                        color: '#06281a',
-                        fontFamily: T.sans,
-                        fontSize: 11,
-                        fontWeight: 700,
-                        cursor: marking === child.id ? 'wait' : 'pointer',
-                        opacity: marking === child.id ? 0.55 : 1,
-                      }}
+                      className="btn btn-primary btn-sm btn-pill"
                     >
                       <Check size={11} strokeWidth={2.5} />
                       {marking === child.id ? '...' : t('attendance.markPresent')}

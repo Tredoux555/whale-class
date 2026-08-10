@@ -325,7 +325,7 @@ export default function PhotoEditModal({
           <button
             onClick={onClose}
             disabled={isSaving}
-            className="w-10 h-10 flex items-center justify-center text-gray-500 hover:bg-white/50 rounded-full transition-colors disabled:opacity-50"
+            className="btn btn-ghost btn-icon btn-round btn-md on-light"
           >
             ✕
           </button>
@@ -443,7 +443,7 @@ export default function PhotoEditModal({
                 </div>
                 <button
                   onClick={handleClearWork}
-                  className="text-gray-400 hover:text-red-500 text-lg px-1"
+                  className="btn btn-ghost btn-icon btn-sm on-light text-lg"
                   aria-label="Clear work"
                 >
                   ✕
@@ -545,7 +545,7 @@ export default function PhotoEditModal({
               />
               <button
                 onClick={handleAddTag}
-                className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors"
+                className="btn btn-secondary btn-sm on-light"
               >
                 {t('photoEdit.addButton')}
               </button>
@@ -577,14 +577,14 @@ export default function PhotoEditModal({
           <button
             onClick={onClose}
             disabled={isSaving}
-            className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="btn btn-secondary btn-lg flex-1 on-light"
           >
             {t('photoEdit.cancel')}
           </button>
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="flex-1 px-4 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="btn btn-primary btn-lg flex-1 on-light"
           >
             {isSaving ? (
               <>

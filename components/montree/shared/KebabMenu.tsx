@@ -155,7 +155,7 @@ export default function KebabMenu({
         aria-label={title}
         aria-haspopup="menu"
         aria-expanded={open}
-        style={triggerStyle}
+        className={`btn btn-secondary btn-icon btn-sm flex-shrink-0 ${isFunnel ? 'btn-round' : ''}`}
       >
         <MoreHorizontal size={isFunnel ? 16 : 18} strokeWidth={1.75} color="#fff" />
       </button>

@@ -42,7 +42,7 @@ export default function EndOfDayNudge({ childId, childName }: EndOfDayNudgeProps
       {/* Dismiss */}
       <button
         onClick={() => setCollapsed(true)}
-        className="absolute top-3 right-3 w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-400 text-xs"
+        className="btn btn-secondary btn-icon btn-round btn-sm on-light absolute top-3 right-3"
         aria-label="Dismiss"
       >
         ✕

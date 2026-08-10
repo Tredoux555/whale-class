@@ -264,7 +264,7 @@ export default function AgentInboxTab({ saToken }: { saToken: string }) {
       <div className="flex items-center gap-3 pb-3 border-b border-slate-700">
         <button
           onClick={backToList}
-          className="text-emerald-300 hover:text-emerald-200 text-sm flex items-center gap-1"
+          className="btn btn-ghost btn-sm"
         >
           ← Inbox
         </button>
@@ -326,7 +326,7 @@ export default function AgentInboxTab({ saToken }: { saToken: string }) {
         <button
           type="submit"
           disabled={sending || !reply.trim()}
-          className="px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-b from-emerald-500 to-emerald-700 text-white disabled:opacity-50"
+          className="btn btn-primary btn-md btn-pill"
         >
           {sending ? 'Sending…' : 'Send'}
         </button>

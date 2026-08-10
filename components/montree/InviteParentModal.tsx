@@ -129,7 +129,7 @@ export default function InviteParentModal({
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl"
+            className="btn btn-ghost btn-icon btn-sm on-light text-xl"
           >
             ×
           </button>
@@ -169,7 +169,7 @@ export default function InviteParentModal({
                       <div className="flex gap-2 mb-3">
                         <button
                           onClick={() => copyToClipboard(invite.invite_code)}
-                          className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition"
+                          className="btn btn-primary btn-md flex-1 on-light"
                         >
                           {copied === invite.invite_code ? `✓ ${t('inviteParent.copied')}` : `📋 ${t('inviteParent.copyCode')}`}
                         </button>
@@ -179,7 +179,7 @@ export default function InviteParentModal({
                         <button
                           onClick={resetCode}
                           disabled={resetting}
-                          className="w-full text-red-600 hover:bg-red-50 px-3 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50"
+                          className="btn btn-danger btn-soft btn-md btn-full on-light"
                         >
                           {resetting ? t('inviteParent.resetting') : `🔄 ${t('inviteParent.resetCode')}`}
                         </button>
@@ -196,7 +196,7 @@ export default function InviteParentModal({
                   <button
                     onClick={createInvite}
                     disabled={creating}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-medium transition disabled:opacity-50"
+                    className="btn btn-primary btn-lg on-light"
                   >
                     {creating ? t('inviteParent.generating') : `✉️ ${t('inviteParent.generateAccessCode')}`}
                   </button>
@@ -233,7 +233,7 @@ export default function InviteParentModal({
         <div className="p-4 border-t border-gray-100 bg-gray-50">
           <button
             onClick={onClose}
-            className="w-full py-2 text-gray-600 hover:text-gray-800 font-medium"
+            className="btn btn-ghost btn-md btn-full on-light"
           >
             {t('common.close')}
           </button>

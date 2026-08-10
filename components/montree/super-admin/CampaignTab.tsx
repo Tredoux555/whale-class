@@ -227,13 +227,7 @@ export default function CampaignTab({ sessionToken }: { sessionToken: string }) 
               <button
                 key={v}
                 onClick={() => setView(v)}
-                style={{
-                  padding: '7px 14px', borderRadius: 999,
-                  background: view === v ? T.emerald : T.cardBg,
-                  color: view === v ? '#0a1a0f' : T.textSecondary,
-                  border: view === v ? 'none' : T.cardBorder,
-                  fontSize: 13, fontWeight: 500, cursor: 'pointer',
-                }}
+                className={`btn btn-sm btn-pill ${view === v ? 'btn-primary' : 'btn-secondary'}`}
               >
                 {v === 'list' ? '☰ List' : '🗓 Calendar'}
               </button>
@@ -333,7 +327,7 @@ function ItemRow({
         </select>
         <button
           onClick={onToggle}
-          style={{ background: 'none', border: 'none', color: T.textMuted, cursor: 'pointer', fontSize: 12, padding: 4 }}
+          className="btn btn-ghost btn-icon btn-sm"
         >
           {expanded ? '▲' : '▼'}
         </button>
@@ -357,12 +351,7 @@ function ItemRow({
                 <button
                   key={p}
                   onClick={() => togglePlatform(p)}
-                  style={{
-                    padding: '5px 10px', borderRadius: 999, fontSize: 12, cursor: 'pointer', fontFamily: T.sans,
-                    background: platforms.includes(p) ? T.emeraldSoft : 'transparent',
-                    color: platforms.includes(p) ? T.emerald : T.textMuted,
-                    border: platforms.includes(p) ? `1px solid ${T.emerald}` : T.cardBorder,
-                  }}
+                  className={`btn btn-sm btn-pill ${platforms.includes(p) ? 'btn-primary' : 'btn-secondary'}`}
                 >
                   {PLATFORM_LABELS[p]}
                 </button>
@@ -397,14 +386,14 @@ function ItemRow({
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12 }}>
             <button
               onClick={() => onDelete(item.id)}
-              style={{ background: 'none', border: '1px solid rgba(239,68,68,0.4)', color: T.red, borderRadius: 8, padding: '8px 12px', fontSize: 12, cursor: 'pointer' }}
+              className="btn btn-danger btn-soft btn-sm"
             >
               Delete
             </button>
             <button
               onClick={() => void save()}
               disabled={saving}
-              style={{ background: T.emerald, border: 'none', color: '#0a1a0f', borderRadius: 8, padding: '8px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: saving ? 0.5 : 1 }}
+              className="btn btn-primary btn-md"
             >
               {saving ? 'Saving…' : 'Save'}
             </button>
@@ -451,9 +440,9 @@ function CalendarView({ items }: { items: CampaignItem[] }) {
   return (
     <div style={{ background: T.cardBg, border: T.cardBorder, borderRadius: 14, padding: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <button onClick={() => setMonthOffset((m) => m - 1)} style={navBtn()}>‹</button>
+        <button onClick={() => setMonthOffset((m) => m - 1)} className="btn btn-secondary btn-icon btn-sm">‹</button>
         <span style={{ fontFamily: T.serif, fontSize: 17, fontWeight: 500 }}>{monthLabel}</span>
-        <button onClick={() => setMonthOffset((m) => m + 1)} style={navBtn()}>›</button>
+        <button onClick={() => setMonthOffset((m) => m + 1)} className="btn btn-secondary btn-icon btn-sm">›</button>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
         {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (

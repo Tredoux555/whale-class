@@ -219,7 +219,7 @@ export default function ProfilePhotoCapture({
             {/* Flip camera button */}
             <button
               onClick={flipCamera}
-              className="absolute top-4 right-4 w-10 h-10 bg-black/40 rounded-full flex items-center justify-center text-white"
+              className="btn btn-secondary btn-icon btn-md btn-round absolute top-4 right-4"
             >
               🔄
             </button>
@@ -256,7 +256,7 @@ export default function ProfilePhotoCapture({
               <p className="text-white/80 mb-4">{error}</p>
               <button
                 onClick={() => startCamera(facing)}
-                className="px-6 py-3 bg-white text-black rounded-xl font-medium"
+                className="btn btn-secondary btn-lg on-light"
               >
                 Try Again
               </button>
@@ -282,13 +282,13 @@ export default function ProfilePhotoCapture({
           <div className="flex gap-4">
             <button
               onClick={retake}
-              className="flex-1 py-4 bg-white/10 text-white rounded-2xl font-medium text-lg"
+              className="btn btn-secondary btn-lg flex-1"
             >
               ↻ Retake
             </button>
             <button
               onClick={confirmAndUpload}
-              className="flex-1 py-4 bg-emerald-500 text-white rounded-2xl font-bold text-lg"
+              className="btn btn-primary btn-lg flex-1"
             >
               ✓ Use Photo
             </button>

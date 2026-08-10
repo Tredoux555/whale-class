@@ -318,35 +318,13 @@ export default function PhotoBankPicker({
         }}>
           <button
             onClick={() => setKind('pictures')}
-            style={{
-              padding: '6px 14px',
-              borderRadius: '16px',
-              border: 'none',
-              fontSize: '12px',
-              fontWeight: kind === 'pictures' ? '700' : '500',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              backgroundColor: kind === 'pictures' ? '#10b981' : '#f0f0f0',
-              color: kind === 'pictures' ? '#fff' : '#555',
-              transition: 'all 0.2s',
-            }}
+            className={`btn btn-sm btn-pill on-light ${kind === 'pictures' ? 'btn-primary' : 'btn-secondary'}`}
           >
             📸 Pictures
           </button>
           <button
             onClick={() => setKind('coloring')}
-            style={{
-              padding: '6px 14px',
-              borderRadius: '16px',
-              border: 'none',
-              fontSize: '12px',
-              fontWeight: kind === 'coloring' ? '700' : '500',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              backgroundColor: kind === 'coloring' ? '#10b981' : '#f0f0f0',
-              color: kind === 'coloring' ? '#fff' : '#555',
-              transition: 'all 0.2s',
-            }}
+            className={`btn btn-sm btn-pill on-light ${kind === 'coloring' ? 'btn-primary' : 'btn-secondary'}`}
           >
             🎨 Coloring Pictures
           </button>
@@ -487,16 +465,8 @@ export default function PhotoBankPicker({
                             onClick={(e) => handleDeleteClick(e, photo)}
                             title={t('photoBank.delete')}
                             aria-label={t('photoBank.delete')}
-                            style={{
-                              position: 'absolute', top: '4px', left: '4px',
-                              width: '24px', height: '24px', borderRadius: '50%',
-                              border: '1px solid rgba(220,38,38,0.85)',
-                              backgroundColor: 'rgba(0,0,0,0.55)',
-                              color: '#fecaca', display: 'flex',
-                              alignItems: 'center', justifyContent: 'center',
-                              cursor: 'pointer', padding: 0, fontSize: '13px',
-                              lineHeight: 1, boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                            }}
+                            className="btn btn-danger btn-soft btn-icon btn-round btn-sm"
+                            style={{ position: 'absolute', top: '4px', left: '4px' }}
                           >
                             🗑
                           </button>
@@ -608,16 +578,8 @@ export default function PhotoBankPicker({
                       onClick={(e) => handleDeleteClick(e, photo)}
                       title={t('photoBank.delete')}
                       aria-label={t('photoBank.delete')}
-                      style={{
-                        position: 'absolute', top: '4px', left: '4px',
-                        width: '24px', height: '24px', borderRadius: '50%',
-                        border: '1px solid rgba(220,38,38,0.85)',
-                        backgroundColor: 'rgba(0,0,0,0.55)',
-                        color: '#fecaca', display: 'flex',
-                        alignItems: 'center', justifyContent: 'center',
-                        cursor: 'pointer', padding: 0, fontSize: '13px',
-                        lineHeight: 1, boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                      }}
+                      className="btn btn-danger btn-soft btn-icon btn-round btn-sm"
+                      style={{ position: 'absolute', top: '4px', left: '4px' }}
                     >
                       🗑
                     </button>
@@ -653,15 +615,7 @@ export default function PhotoBankPicker({
                 <button
                   onClick={handleLoadMore}
                   disabled={loading}
-                  style={{
-                    padding: '8px 24px',
-                    borderRadius: '8px',
-                    border: '1px solid #ddd',
-                    backgroundColor: '#fff',
-                    cursor: loading ? 'not-allowed' : 'pointer',
-                    fontSize: '13px',
-                    color: '#555',
-                  }}
+                  className="btn btn-secondary btn-md on-light"
                 >
                   {loading ? t('photoBank.loading') : t('photoBank.loadMore', { current: String(photos.length), total: String(total) })}
                 </button>

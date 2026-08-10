@@ -249,12 +249,7 @@ function PrimaryButton({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`${full ? 'w-full ' : ''}px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all hover:bg-white/[0.06] disabled:opacity-30 disabled:cursor-not-allowed`}
-      style={{
-        borderColor: `rgba(${ACCENT},0.35)`,
-        background: `rgba(${ACCENT},0.10)`,
-        color: `rgb(110,231,183)`,
-      }}
+      className={`btn btn-primary btn-md${full ? ' btn-full' : ''}`}
     >
       {children}
     </button>
@@ -272,7 +267,7 @@ function TextLink({
     <button
       type="button"
       onClick={onClick}
-      className="text-white/40 text-xs underline underline-offset-2 transition-colors hover:text-white/70"
+      className="btn btn-ghost btn-sm"
     >
       {children}
     </button>
@@ -471,7 +466,7 @@ function AuthModal({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="text-white/30 text-lg leading-none px-2 py-1 transition-colors hover:text-white/70"
+            className="btn btn-ghost btn-icon btn-sm text-lg"
           >
             &times;
           </button>
@@ -812,7 +807,7 @@ function CreatorMessageModal({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="text-white/30 text-lg leading-none px-2 py-1 transition-colors hover:text-white/70"
+            className="btn btn-ghost btn-icon btn-sm text-lg"
           >
             &times;
           </button>
@@ -974,7 +969,7 @@ function PostCard({
               onClick={() => onDelete(post.id)}
               disabled={deleting}
               aria-label="Delete message"
-              className="text-white/20 text-sm leading-none transition-colors hover:text-red-300/70 disabled:opacity-30"
+              className="btn btn-danger btn-soft btn-icon btn-sm"
             >
               &times;
             </button>
@@ -1028,7 +1023,7 @@ function MaterialCard({
             onClick={() => onDelete(material.id)}
             disabled={deleting}
             aria-label="Remove file"
-            className="text-white/20 text-sm leading-none shrink-0 transition-colors hover:text-red-300/70 disabled:opacity-30"
+            className="btn btn-danger btn-soft btn-icon btn-sm shrink-0"
           >
             &times;
           </button>
@@ -1473,12 +1468,7 @@ export default function TeachersRoom() {
             type="button"
             onClick={() => loadPosts(posts.length)}
             disabled={postsBusy}
-            className="mt-4 w-full px-4 py-2.5 rounded-xl border text-xs transition-all hover:bg-white/[0.06] disabled:opacity-30"
-            style={{
-              background: 'rgba(255,255,255,0.03)',
-              borderColor: 'rgba(255,255,255,0.07)',
-              color: 'rgba(255,255,255,0.5)',
-            }}
+            className="btn btn-secondary btn-md btn-full mt-4"
           >
             {postsBusy ? 'Loading…' : 'Load more'}
           </button>
@@ -1591,12 +1581,7 @@ export default function TeachersRoom() {
             type="button"
             onClick={() => loadMaterials(materials.length)}
             disabled={materialsBusy}
-            className="mt-4 w-full px-4 py-2.5 rounded-xl border text-xs transition-all hover:bg-white/[0.06] disabled:opacity-30"
-            style={{
-              background: 'rgba(255,255,255,0.03)',
-              borderColor: 'rgba(255,255,255,0.07)',
-              color: 'rgba(255,255,255,0.5)',
-            }}
+            className="btn btn-secondary btn-md btn-full mt-4"
           >
             {materialsBusy ? 'Loading…' : 'Load more'}
           </button>
@@ -1611,8 +1596,7 @@ export default function TeachersRoom() {
         <button
           type="button"
           onClick={() => setCreatorDmOpen(true)}
-          className="w-full rounded-xl border px-4 py-3.5 text-left transition-all hover:bg-white/[0.06]"
-          style={{ background: `rgba(${ACCENT},0.05)`, borderColor: `rgba(${ACCENT},0.22)` }}
+          className="btn btn-secondary btn-lg btn-full text-left"
         >
           <div className="text-sm font-semibold" style={{ color: 'rgb(110,231,183)' }}>
             Message the creator

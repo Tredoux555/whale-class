@@ -98,20 +98,8 @@ export default function BirthdayBanner() {
       <button
         onClick={handleDismiss}
         aria-label="Dismiss"
-        style={{
-          flexShrink: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: 24,
-          height: 24,
-          borderRadius: 8,
-          background: 'rgba(255,255,255,0.06)',
-          border: '1px solid rgba(255,255,255,0.10)',
-          color: 'rgba(255,255,255,0.55)',
-          cursor: 'pointer',
-          transition: 'all 120ms ease',
-        }}
+        className="btn btn-secondary btn-icon btn-sm"
+        style={{ flexShrink: 0 }}
       >
         <X size={12} strokeWidth={1.75} />
       </button>

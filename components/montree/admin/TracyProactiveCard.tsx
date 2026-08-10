@@ -86,15 +86,7 @@ export default function TracyProactiveCard() {
         <button
           onClick={() => setDismissed(true)}
           aria-label={t('common.dismiss')}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: 'rgba(255,255,255,0.4)',
-            fontSize: 18,
-            lineHeight: 1,
-            cursor: 'pointer',
-            padding: '2px 6px',
-          }}
+          className="btn btn-ghost btn-icon btn-sm text-lg"
         >
           ×
         </button>

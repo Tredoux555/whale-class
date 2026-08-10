@@ -61,7 +61,7 @@ export default function AgentRedemptionBanner({ schoolCount, newestSchoolName }:
     <div className="mb-6 bg-emerald-500/15 border-2 border-emerald-500/40 rounded-xl p-5 relative">
       <button
         onClick={dismiss}
-        className="absolute top-3 right-3 text-white/50 hover:text-white text-sm"
+        className="btn btn-ghost btn-icon btn-sm absolute top-3 right-3"
         aria-label="Dismiss"
       >
         ✕

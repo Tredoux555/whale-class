@@ -39,9 +39,9 @@ export default function TutorialOverlay({
           
           {/* Progress & Actions */}
           <div className="flex items-center justify-between mt-4 pt-3 border-t border-amber-200">
-            <button 
+            <button
               onClick={onSkip}
-              className="text-amber-600 hover:text-amber-800 text-sm font-medium"
+              className="btn btn-ghost btn-sm on-light"
             >
               Skip tutorial
             </button>
@@ -59,9 +59,9 @@ export default function TutorialOverlay({
                 ))}
               </div>
               
-              <button 
+              <button
                 onClick={onNext}
-                className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition-colors text-sm"
+                className="btn btn-gold btn-md on-light"
               >
                 Next →
               </button>

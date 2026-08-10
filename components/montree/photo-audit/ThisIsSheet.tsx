@@ -820,14 +820,7 @@ export default function ThisIsSheet({
           <button
             onClick={onClose}
             disabled={submitting}
-            style={{
-              background: 'none',
-              border: 'none',
-              fontSize: 22,
-              cursor: 'pointer',
-              padding: 4,
-              color: '#666',
-            }}
+            className="btn btn-ghost btn-icon btn-sm on-light text-xl"
             aria-label="Close"
           >
             ←
@@ -840,15 +833,7 @@ export default function ThisIsSheet({
             <button
               onClick={handleDiscussionFlag}
               title={t('thisIsSheet.flagForDiscussion')}
-              style={{
-                background: 'none',
-                border: '1px solid #ddd',
-                borderRadius: 8,
-                padding: '6px 10px',
-                cursor: 'pointer',
-                fontSize: 16,
-                color: '#3b82f6',
-              }}
+              className="btn btn-ghost btn-outline btn-icon btn-sm on-light"
             >
               💬
             </button>
@@ -1141,10 +1126,8 @@ export default function ThisIsSheet({
                             <button
                               type="button"
                               onClick={() => setShowCreateEvent(false)}
-                              style={{
-                                flex: 1, padding: '9px 0', borderRadius: 10, fontSize: 14,
-                                background: '#f3f4f6', border: '1px solid #e5e7eb', color: '#6b7280', cursor: 'pointer',
-                              }}
+                              className="btn btn-secondary btn-md on-light"
+                              style={{ flex: 1 }}
                             >
                               Cancel
                             </button>
@@ -1152,12 +1135,8 @@ export default function ThisIsSheet({
                               type="button"
                               onClick={handleCreateEvent}
                               disabled={!newEventName.trim() || creatingEvent}
-                              style={{
-                                flex: 1, padding: '9px 0', borderRadius: 10, fontSize: 14, fontWeight: 600,
-                                background: '#a855f7', border: '1px solid #a855f7', color: '#fff',
-                                opacity: !newEventName.trim() || creatingEvent ? 0.5 : 1,
-                                cursor: creatingEvent ? 'wait' : 'pointer',
-                              }}
+                              className="btn btn-gold btn-md on-light"
+                              style={{ flex: 1 }}
                             >
                               {creatingEvent ? 'Saving…' : 'Create + attach'}
                             </button>
@@ -1167,10 +1146,7 @@ export default function ThisIsSheet({
                         <button
                           type="button"
                           onClick={() => setShowCreateEvent(true)}
-                          style={{
-                            width: '100%', padding: '9px 0', borderRadius: 10, fontSize: 13, fontWeight: 600,
-                            background: '#f5f3ff', border: '1px dashed #c4b5fd', color: '#6b21a8', cursor: 'pointer',
-                          }}
+                          className="btn btn-gold btn-sm btn-full on-light"
                         >
                           + New event
                         </button>
@@ -1283,18 +1259,8 @@ export default function ThisIsSheet({
                     setNewWorkName(query.trim() || photo?.sonnet_draft?.proposed_name?.trim() || '');
                   }}
                   disabled={submitting}
-                  style={{
-                    padding: '0 16px',
-                    background: '#f5f3ff',
-                    border: '1.5px solid #8b5cf6',
-                    borderRadius: 12,
-                    cursor: 'pointer',
-                    color: '#8b5cf6',
-                    fontWeight: 700,
-                    fontSize: 14,
-                    whiteSpace: 'nowrap',
-                    flexShrink: 0,
-                  }}
+                  className="btn btn-gold btn-md on-light"
+                  style={{ flexShrink: 0 }}
                 >
                   ＋ New
                 </button>
@@ -1331,19 +1297,8 @@ export default function ThisIsSheet({
               {!worksLoading && results.length >= 2 && !mergeMode && (
                 <button
                   onClick={() => setMergeMode(true)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    padding: '6px 12px',
-                    marginBottom: 8,
-                    background: 'none',
-                    border: '1px solid #ddd',
-                    borderRadius: 8,
-                    fontSize: 12,
-                    color: '#888',
-                    cursor: 'pointer',
-                  }}
+                  className="btn btn-ghost btn-outline btn-sm on-light"
+                  style={{ marginBottom: 8 }}
                 >
                   🔀 Merge duplicates
                 </button>
@@ -1372,31 +1327,14 @@ export default function ThisIsSheet({
                     {mergeSelected.size >= 2 && (
                       <button
                         onClick={enterMergeConfirm}
-                        style={{
-                          padding: '6px 14px',
-                          background: '#f59e0b',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: 8,
-                          fontSize: 12,
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                        }}
+                        className="btn btn-gold btn-sm on-light"
                       >
                         Next →
                       </button>
                     )}
                     <button
                       onClick={exitMergeMode}
-                      style={{
-                        padding: '6px 10px',
-                        background: '#fff',
-                        border: '1px solid #ddd',
-                        borderRadius: 8,
-                        fontSize: 12,
-                        color: '#666',
-                        cursor: 'pointer',
-                      }}
+                      className="btn btn-secondary btn-icon btn-sm on-light"
                     >
                       ✕
                     </button>
@@ -1502,33 +1440,16 @@ export default function ThisIsSheet({
                     <button
                       onClick={() => setMergeStep('select')}
                       disabled={merging}
-                      style={{
-                        flex: 1,
-                        padding: '10px',
-                        background: '#fff',
-                        border: '1px solid #ddd',
-                        borderRadius: 10,
-                        fontSize: 13,
-                        cursor: 'pointer',
-                        color: '#555',
-                      }}
+                      className="btn btn-secondary btn-sm on-light"
+                      style={{ flex: 1 }}
                     >
                       ← Back
                     </button>
                     <button
                       onClick={handleMerge}
                       disabled={merging || !mergeWinnerId}
-                      style={{
-                        flex: 2,
-                        padding: '10px',
-                        background: merging || !mergeWinnerId ? '#ccc' : '#f59e0b',
-                        border: 'none',
-                        borderRadius: 10,
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: '#fff',
-                        cursor: merging || !mergeWinnerId ? 'not-allowed' : 'pointer',
-                      }}
+                      className="btn btn-gold btn-sm on-light"
+                      style={{ flex: 2 }}
                     >
                       {merging ? 'Merging…' : `Merge ${mergeSelected.size} works into one`}
                     </button>
@@ -1924,33 +1845,16 @@ export default function ThisIsSheet({
                 <button
                   onClick={() => setAddMode(false)}
                   disabled={submitting}
-                  style={{
-                    flex: 1,
-                    padding: '12px',
-                    background: '#fff',
-                    border: '1.5px solid #ddd',
-                    borderRadius: 12,
-                    fontSize: 15,
-                    cursor: 'pointer',
-                    color: '#555',
-                  }}
+                  className="btn btn-secondary btn-md on-light"
+                  style={{ flex: 1 }}
                 >
                   ← Back to search
                 </button>
                 <button
                   onClick={handleCreateNew}
                   disabled={submitting || !newWorkName.trim()}
-                  style={{
-                    flex: 2,
-                    padding: '12px',
-                    background: submitting || !newWorkName.trim() ? '#ccc' : '#8b5cf6',
-                    border: 'none',
-                    borderRadius: 12,
-                    fontSize: 15,
-                    fontWeight: 600,
-                    color: '#fff',
-                    cursor: submitting || !newWorkName.trim() ? 'not-allowed' : 'pointer',
-                  }}
+                  className="btn btn-gold btn-md on-light"
+                  style={{ flex: 2 }}
                 >
                   {submitting ? 'Creating…' : '✓ Create and attach'}
                 </button>

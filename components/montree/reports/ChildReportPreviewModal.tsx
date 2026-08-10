@@ -344,10 +344,10 @@ export default function ChildReportPreviewModal({
               {/* Exclude/Restore button */}
               <button
                 onClick={() => toggleExcludeWork(item.work_name)}
-                className={`absolute top-2 right-2 z-10 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-md transition-colors ${
+                className={`btn btn-icon btn-round btn-sm absolute top-2 right-2 z-10 text-sm ${
                   isExcluded
-                    ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-                    : 'bg-red-500/80 text-white hover:bg-red-600'
+                    ? 'btn-primary'
+                    : 'btn-danger'
                 }`}
                 title={isExcluded ? t('gallery.restore') : t('gallery.removeFromReport')}
               >
@@ -420,12 +420,11 @@ export default function ChildReportPreviewModal({
                   <h3 style={{ fontFamily: 'var(--font-lora), serif', fontWeight: 500, fontSize: 18, color: 'rgba(255,255,255,0.95)', margin: 0 }}>📋 {t('reports.reportPreview')}</h3>
                   <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(52,211,153,0.70)', margin: '2px 0 0' }}>{t('reports.thisIsWhatParentsSee')}</p>
                 </div>
-                <button onClick={closeModal} style={{ color: 'rgba(255,255,255,0.45)', fontSize: 22, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>×</button>
+                <button onClick={closeModal} className="btn btn-ghost btn-icon btn-sm text-xl">×</button>
               </div>
               <button
                 onClick={() => setShowPhotoModal(true)}
-                className="w-full flex items-center justify-center gap-2 rounded-lg active:scale-95 transition-all"
-                style={{ padding: '8px 12px', background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.30)', color: '#34d399', fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+                className="btn btn-primary btn-sm btn-full"
               >
                 ✏️ {t('reports.editPhotos')}
               </button>
@@ -512,8 +511,7 @@ export default function ChildReportPreviewModal({
                 <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
                   <button
                     onClick={() => setPreviewSelectedArea(null)}
-                    className="whitespace-nowrap flex-shrink-0"
-                    style={{ padding: '6px 12px', borderRadius: 999, fontFamily: '"Inter", sans-serif', fontSize: 12, fontWeight: 600, cursor: 'pointer', background: !previewSelectedArea ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.06)', border: `1px solid ${!previewSelectedArea ? 'rgba(52,211,153,0.50)' : 'rgba(52,211,153,0.12)'}`, color: !previewSelectedArea ? '#34d399' : 'rgba(255,255,255,0.55)' }}
+                    className={`btn btn-sm btn-pill flex-shrink-0 ${!previewSelectedArea ? 'btn-primary' : 'btn-secondary'}`}
                   >
                     {t('common.all')}
                   </button>
@@ -526,8 +524,7 @@ export default function ChildReportPreviewModal({
                       <button
                         key={area}
                         onClick={() => setPreviewSelectedArea(isActive ? null : area)}
-                        className="whitespace-nowrap flex-shrink-0 flex items-center gap-1.5"
-                        style={{ padding: '6px 12px', borderRadius: 999, fontFamily: '"Inter", sans-serif', fontSize: 12, fontWeight: 600, cursor: 'pointer', background: isActive ? 'rgba(52,211,153,0.10)' : 'rgba(255,255,255,0.06)', border: `1px solid ${isActive ? 'rgba(52,211,153,0.45)' : 'rgba(52,211,153,0.12)'}`, color: isActive ? '#34d399' : 'rgba(255,255,255,0.55)' }}
+                        className={`btn btn-sm btn-pill flex-shrink-0 ${isActive ? 'btn-primary' : 'btn-secondary'}`}
                       >
                         <div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px]" style={{ backgroundColor: config.color }}>{config.emoji}</div>
                         <span>{t(config.labelKey)}</span>
@@ -643,16 +640,14 @@ export default function ChildReportPreviewModal({
             <div className="flex gap-3" style={{ padding: 16, borderTop: '1px solid rgba(52,211,153,0.12)', background: 'rgba(7,18,12,0.60)' }}>
               <button
                 onClick={closeModal}
-                className="flex-1 rounded-xl"
-                style={{ padding: '12px 0', fontFamily: '"Inter", sans-serif', fontWeight: 600, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.60)', cursor: 'pointer' }}
+                className="btn btn-secondary btn-md flex-1"
               >
                 {t('common.close')}
               </button>
               <button
                 onClick={sendReport}
                 disabled={sending || includedItems.length === 0}
-                className="flex-1 rounded-xl disabled:opacity-50"
-                style={{ padding: '12px 0', fontFamily: '"Inter", sans-serif', fontWeight: 700, background: 'linear-gradient(180deg, #34d399, #10b981)', color: '#06281a', border: 'none', cursor: 'pointer' }}
+                className="btn btn-primary btn-md flex-1"
               >
                 {sending ? `⏳ ${t('reports.publishing')}` : includedItems.length === 0 ? t('gallery.noActivitiesToSend') : `✅ ${t('reports.publishReport')}`}
               </button>
@@ -684,7 +679,7 @@ export default function ChildReportPreviewModal({
                     {t('reports.sentOn')} {new Date(lastReport.sent_at || lastReport.published_at || lastReport.created_at).toLocaleDateString()}
                   </p>
                 </div>
-                <button onClick={closeModal} style={{ color: 'rgba(255,255,255,0.45)', fontSize: 22, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>×</button>
+                <button onClick={closeModal} className="btn btn-ghost btn-icon btn-sm text-xl">×</button>
               </div>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -767,7 +762,7 @@ export default function ChildReportPreviewModal({
               )}
             </div>
             <div className="p-4" style={{ borderTop: '1px solid rgba(52,211,153,0.12)', background: 'rgba(7,18,12,0.60)' }}>
-              <button onClick={closeModal} className="w-full rounded-xl" style={{ padding: '12px 0', fontFamily: '"Inter", sans-serif', fontWeight: 600, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.60)', cursor: 'pointer' }}>
+              <button onClick={closeModal} className="btn btn-secondary btn-md btn-full">
                 {t('common.close')}
               </button>
             </div>

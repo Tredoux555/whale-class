@@ -256,7 +256,7 @@ function ThinkingBlock({
     <div className="mb-2">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-300 transition-colors"
+        className="btn btn-ghost btn-sm flex items-center gap-1.5"
       >
         {isOpen ? (
           <ChevronDown className="w-3.5 h-3.5" />
@@ -550,7 +550,7 @@ export default function SuperAdminGuru({ saToken }: SuperAdminGuruProps) {
         {messages.length > 0 && (
           <button
             onClick={handleClearChat}
-            className="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded font-medium"
+            className="btn btn-secondary btn-sm"
           >
             Clear Chat
           </button>
@@ -577,7 +577,7 @@ export default function SuperAdminGuru({ saToken }: SuperAdminGuruProps) {
                   <button
                     key={example}
                     onClick={() => setInput(example)}
-                    className="text-left text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg px-3 py-2 text-slate-300 transition-colors"
+                    className="btn btn-secondary btn-sm text-left"
                   >
                     {example}
                   </button>
@@ -671,13 +671,13 @@ export default function SuperAdminGuru({ saToken }: SuperAdminGuruProps) {
                   handleSubmit(e, confirmationPending.confirmation_id)
                 }
                 disabled={loading}
-                className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm rounded font-medium disabled:opacity-50"
+                className="btn btn-gold btn-md"
               >
                 Confirm & Execute
               </button>
               <button
                 onClick={() => setConfirmationPending(null)}
-                className="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white text-sm rounded font-medium"
+                className="btn btn-secondary btn-md"
               >
                 Cancel
               </button>
@@ -712,7 +712,7 @@ export default function SuperAdminGuru({ saToken }: SuperAdminGuruProps) {
             <button
               type="button"
               onClick={handleCancel}
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium"
+              className="btn btn-danger btn-md"
             >
               Cancel
             </button>
@@ -720,7 +720,7 @@ export default function SuperAdminGuru({ saToken }: SuperAdminGuruProps) {
             <button
               type="submit"
               disabled={!input.trim() || loading}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium disabled:opacity-50 flex items-center gap-2"
+              className="btn btn-primary btn-md"
             >
               <SendHorizontal className="w-4 h-4" />
               Send

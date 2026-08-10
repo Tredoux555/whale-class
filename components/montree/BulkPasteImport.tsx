@@ -350,19 +350,8 @@ export default function BulkPasteImport({ classroomId, existingCount, onImported
             <button
               onClick={onClose}
               aria-label="Close"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 32,
-                height: 32,
-                borderRadius: 10,
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.10)',
-                color: T.textSecondary,
-                cursor: 'pointer',
-                flexShrink: 0,
-              }}
+              className="btn btn-secondary btn-icon btn-sm"
+              style={{ flexShrink: 0 }}
             >
               <X size={15} strokeWidth={1.75} />
             </button>
@@ -511,11 +500,7 @@ export default function BulkPasteImport({ classroomId, existingCount, onImported
               <button
                 onClick={handlePreview}
                 disabled={parseLines(namesText).length === 0}
-                style={{
-                  ...ctaPrimary,
-                  opacity: parseLines(namesText).length === 0 ? 0.45 : 1,
-                  cursor: parseLines(namesText).length === 0 ? 'not-allowed' : 'pointer',
-                }}
+                className="btn btn-primary btn-md"
               >
                 <Eye size={14} strokeWidth={1.75} />
                 {t('bulkImport.preview')}
@@ -548,20 +533,7 @@ export default function BulkPasteImport({ classroomId, existingCount, onImported
               </h3>
               <button
                 onClick={() => setShowPreview(false)}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 5,
-                  padding: '6px 12px',
-                  borderRadius: 8,
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.10)',
-                  color: T.emerald,
-                  fontFamily: T.sans,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
+                className="btn btn-secondary btn-sm"
               >
                 <ArrowLeft size={12} strokeWidth={1.75} />
                 {t('bulkImport.editList')}
@@ -682,22 +654,14 @@ export default function BulkPasteImport({ classroomId, existingCount, onImported
             <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
               <button
                 onClick={onClose}
-                style={{
-                  ...ghostBtn,
-                  flex: 1,
-                }}
+                className="btn btn-secondary btn-md flex-1"
               >
                 {t('common.cancel')}
               </button>
               <button
                 onClick={handleImport}
                 disabled={hasErrors || validCount === 0 || importing}
-                style={{
-                  ...ctaPrimary,
-                  flex: 1,
-                  opacity: (hasErrors || validCount === 0 || importing) ? 0.45 : 1,
-                  cursor: (hasErrors || validCount === 0 || importing) ? 'not-allowed' : 'pointer',
-                }}
+                className="btn btn-primary btn-md flex-1"
               >
                 <Upload size={14} strokeWidth={1.75} />
                 {importing

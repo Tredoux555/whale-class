@@ -330,18 +330,18 @@ export default function SchoolsTab({
           className="flex-1 min-w-[200px] px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-emerald-500 outline-none text-sm"
         />
         <div className="flex gap-1">
-          <button onClick={selectAll} className="px-3 py-1.5 bg-slate-700 text-slate-300 rounded-lg text-xs hover:bg-slate-600">All</button>
-          <button onClick={selectNone} className="px-3 py-1.5 bg-slate-700 text-slate-300 rounded-lg text-xs hover:bg-slate-600">None</button>
-          <button onClick={selectEmpty} className="px-3 py-1.5 bg-red-900/40 text-red-400 rounded-lg text-xs hover:bg-red-900/60 border border-red-800/50">
+          <button onClick={selectAll} className="btn btn-secondary btn-sm">All</button>
+          <button onClick={selectNone} className="btn btn-secondary btn-sm">None</button>
+          <button onClick={selectEmpty} className="btn btn-danger btn-soft btn-sm">
             Empty ({emptySchools.length})
           </button>
-          <button onClick={selectInactive} className="px-3 py-1.5 bg-amber-900/40 text-amber-400 rounded-lg text-xs hover:bg-amber-900/60 border border-amber-800/50">
+          <button onClick={selectInactive} className="btn btn-gold btn-sm">
             Inactive 30d+ ({inactiveSchools.length})
           </button>
           {agentReferredSchools.length > 0 && (
             <button
               onClick={() => setSelected(new Set(agentReferredSchools.map(s => s.id)))}
-              className="px-3 py-1.5 bg-amber-900/30 text-amber-300 rounded-lg text-xs hover:bg-amber-900/50 border border-amber-700/40"
+              className="btn btn-gold btn-sm"
               title="Schools referred by an agent"
             >
               🤝 Agent-referred ({agentReferredSchools.length})
@@ -352,7 +352,7 @@ export default function SchoolsTab({
           <button
             onClick={handleBatchDelete}
             disabled={batchDeleting}
-            className="px-4 py-1.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50"
+            className="btn btn-danger btn-sm"
           >
             {batchDeleting ? 'Deleting...' : `Delete Selected (${selected.size})`}
           </button>
@@ -373,7 +373,7 @@ export default function SchoolsTab({
                 {Math.round((batchDeleteProgress.completed / batchDeleteProgress.total) * 100)}%
               </span>
               {batchDeleteProgress.completed >= batchDeleteProgress.total && (
-                <button onClick={onClearBatchProgress} className="text-slate-400 hover:text-white text-xs">✕</button>
+                <button onClick={onClearBatchProgress} className="btn btn-ghost btn-icon btn-sm">✕</button>
               )}
             </div>
           </div>
@@ -426,14 +426,14 @@ export default function SchoolsTab({
             <div className="flex gap-3">
               <button
                 onClick={() => { setShowConfirm(false); setConfirmText(''); }}
-                className="flex-1 py-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600"
+                className="btn btn-secondary btn-md flex-1"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmBatchDelete}
                 disabled={confirmText !== 'DELETE'}
-                className="flex-1 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-30 disabled:cursor-not-allowed font-medium"
+                className="btn btn-danger btn-md flex-1"
               >
                 Delete {selected.size} Schools
               </button>
@@ -456,7 +456,7 @@ export default function SchoolsTab({
             <>
               <span className="text-5xl block mb-4">🔍</span>
               <h2 className="text-xl font-semibold text-white mb-2">No schools match &ldquo;{search}&rdquo;</h2>
-              <button onClick={() => setSearch('')} className="text-emerald-400 hover:underline">Clear search</button>
+              <button onClick={() => setSearch('')} className="btn btn-ghost btn-md">Clear search</button>
             </>
           ) : (
             <>
@@ -464,7 +464,7 @@ export default function SchoolsTab({
               <h2 className="text-xl font-semibold text-white mb-2">No schools registered yet</h2>
               <Link
                 href="/montree/onboarding"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600"
+                className="btn btn-primary btn-lg"
               >
                 Register First School
               </Link>
@@ -707,7 +707,7 @@ export default function SchoolsTab({
                                 {tier === 'free' ? 'Free' : tier === 'paid' ? 'Paid' : 'Trial'}
                               </button>
                             ))}
-                            <button onClick={() => setEditingSchool(null)} className="px-1.5 py-0.5 text-xs rounded bg-slate-700 text-slate-400">✕</button>
+                            <button onClick={() => setEditingSchool(null)} className="btn btn-secondary btn-sm">✕</button>
                           </div>
                         ) : (
                           <button
@@ -777,14 +777,14 @@ export default function SchoolsTab({
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => setPrincipalsSchool({ id: school.id, name: school.name })}
-                            className="px-2 py-1 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 rounded text-xs font-medium"
+                            className="btn btn-secondary btn-sm"
                             title="Manage principals"
                           >
                             👤
                           </button>
                           <button
                             onClick={() => setFeaturesSchool({ id: school.id, name: school.name })}
-                            className="px-2 py-1 bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 rounded text-xs font-medium"
+                            className="btn btn-secondary btn-sm"
                             title="Feature flags"
                           >
                             ⚙️
@@ -800,10 +800,10 @@ export default function SchoolsTab({
                                   current: effOverride,
                                   note: (school.id in billingOverrideUpdates ? billingOverrideUpdates[school.id].note : school.billing_override_note) ?? null,
                                 })}
-                                className={`px-2 py-1 rounded text-xs font-medium ${
+                                className={`btn btn-sm ${
                                   hasOverride
-                                    ? 'bg-amber-500/30 text-amber-300 hover:bg-amber-500/40'
-                                    : 'bg-slate-700/40 text-slate-400 hover:bg-slate-700/60'
+                                    ? 'btn-gold'
+                                    : 'btn-secondary'
                                 }`}
                                 title={hasOverride
                                   ? `Billing override: $${Number(effOverride).toFixed(2)}/student/month`
@@ -862,7 +862,7 @@ export default function SchoolsTab({
                                 {isManual && (
                                   <button
                                     onClick={() => setRecordWireSchool({ id: school.id, name: school.name })}
-                                    className="px-2 py-1 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 rounded text-xs font-medium"
+                                    className="btn btn-secondary btn-sm"
                                     title="Record incoming SWIFT wire from this school"
                                   >
                                     ⚡<span className="ml-1 text-[10px] uppercase tracking-wide">Wire</span>
@@ -873,7 +873,7 @@ export default function SchoolsTab({
                           })()}
                           <button
                             onClick={() => onLoginAs(school.id)}
-                            className="px-2 py-1 bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 rounded text-xs font-medium"
+                            className="btn btn-gold btn-sm"
                           >
                             Login →
                           </button>
@@ -886,10 +886,10 @@ export default function SchoolsTab({
                               <button
                                 onClick={() => handleToggleLock(school)}
                                 disabled={busy}
-                                className={`px-2 py-1 rounded text-xs font-medium disabled:opacity-50 ${
+                                className={`btn btn-sm ${
                                   isLocked
-                                    ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
-                                    : 'bg-red-500/15 text-red-300 hover:bg-red-500/25'
+                                    ? 'btn-secondary'
+                                    : 'btn-danger btn-soft'
                                 }`}
                                 title={isLocked ? 'Unlock this school' : 'Lock this school (login refused + AI killed)'}
                               >
@@ -899,7 +899,7 @@ export default function SchoolsTab({
                           })()}
                           <button
                             onClick={() => onDeleteSchool(school)}
-                            className="px-2 py-1 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded text-xs"
+                            className="btn btn-danger btn-soft btn-sm"
                           >
                             🗑️
                           </button>

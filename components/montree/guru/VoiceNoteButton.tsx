@@ -113,13 +113,13 @@ export default function VoiceNoteButton({ onTranscription, disabled }: VoiceNote
       <button
         onClick={handleClick}
         disabled={disabled || transcribing}
-        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+        className={`btn btn-icon btn-round btn-md ${
           recording
-            ? 'bg-red-500 animate-pulse shadow-lg shadow-red-200'
+            ? 'btn-danger animate-pulse'
             : transcribing
-            ? 'bg-gray-300 cursor-wait'
-            : 'bg-emerald-100 hover:bg-emerald-200 active:bg-emerald-300'
-        } disabled:opacity-50`}
+            ? 'btn-secondary'
+            : 'btn-primary'
+        }`}
         title={recording ? t('voice.tapToStop') : transcribing ? t('voice.transcribing') : t('voice.tapToSpeak')}
         aria-label={recording ? t('voice.stopRecording') : t('voice.startRecording')}
       >

@@ -129,8 +129,7 @@ export default function DeleteAccountSection({
           <button
             onClick={() => setOpen(true)}
             disabled={!preview}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50"
-            style={{ background: 'rgba(248,113,113,0.12)', border: '1px solid rgba(248,113,113,0.30)', color: '#f87171', fontFamily: '"Inter", sans-serif' }}
+            className="btn btn-danger btn-soft btn-md w-full sm:w-auto"
           >
             Delete my account
           </button>
@@ -165,16 +164,14 @@ export default function DeleteAccountSection({
               <button
                 onClick={handleDelete}
                 disabled={busy || !phraseOk}
-                className="px-4 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50"
-                style={{ background: 'rgba(220,38,38,0.85)', color: '#fff', fontFamily: '"Inter", sans-serif' }}
+                className="btn btn-danger btn-md"
               >
                 {busy ? 'Deleting…' : 'Permanently delete'}
               </button>
               <button
                 onClick={() => { setOpen(false); setError(null); setConfirmText(''); }}
                 disabled={busy}
-                className="px-4 py-2.5 rounded-lg font-medium transition-colors"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.15)', color: 'rgba(255,255,255,0.65)', fontFamily: '"Inter", sans-serif' }}
+                className="btn btn-secondary btn-md"
               >
                 Cancel
               </button>
@@ -196,7 +193,7 @@ export default function DeleteAccountSection({
         <button
           onClick={() => setOpen(true)}
           disabled={!preview}
-          className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-red-50 border border-red-200 text-red-700 font-medium hover:bg-red-100 transition-colors disabled:opacity-50"
+          className="btn btn-danger btn-soft btn-md on-light w-full sm:w-auto"
         >
           Delete my account
         </button>
@@ -229,14 +226,14 @@ export default function DeleteAccountSection({
             <button
               onClick={handleDelete}
               disabled={busy || !phraseOk}
-              className="px-4 py-2.5 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
+              className="btn btn-danger btn-md on-light"
             >
               {busy ? 'Deleting…' : 'Permanently delete'}
             </button>
             <button
               onClick={() => { setOpen(false); setError(null); setConfirmText(''); }}
               disabled={busy}
-              className="px-4 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+              className="btn btn-ghost btn-outline btn-md on-light"
             >
               Cancel
             </button>

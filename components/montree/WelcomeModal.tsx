@@ -101,22 +101,8 @@ export default function WelcomeModal({
           <button
             onClick={onClose}
             aria-label="Close"
-            style={{
-              position: 'absolute',
-              top: 14,
-              right: 14,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 32,
-              height: 32,
-              borderRadius: 10,
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.10)',
-              color: T.textSecondary,
-              cursor: 'pointer',
-              transition: 'all 120ms ease',
-            }}
+            className="btn btn-secondary btn-icon btn-sm"
+            style={{ position: 'absolute', top: 14, right: 14 }}
           >
             <X size={15} strokeWidth={1.75} />
           </button>
@@ -166,25 +152,7 @@ export default function WelcomeModal({
           {/* CTA */}
           <button
             onClick={onClose}
-            style={{
-              width: '100%',
-              padding: '14px 18px',
-              borderRadius: 14,
-              background: 'linear-gradient(180deg, #34d399, #10b981)',
-              border: '1px solid rgba(52,211,153,0.55)',
-              color: '#06281a',
-              fontFamily: T.sans,
-              fontSize: 15,
-              fontWeight: 700,
-              letterSpacing: 0.1,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              boxShadow: 'none',
-              transition: 'transform 120ms ease',
-            }}
+            className="btn btn-primary btn-lg btn-full"
           >
             {t('welcome.cta')}
             <ArrowRight size={16} strokeWidth={2} />

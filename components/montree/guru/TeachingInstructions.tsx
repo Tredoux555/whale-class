@@ -147,11 +147,7 @@ export default function TeachingInstructions({ childId, workName, area }: Teachi
       {/* Toggle button */}
       <button
         onClick={handleToggle}
-        className={`w-full py-2.5 font-bold rounded-xl text-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all ${
-          isOpen
-            ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md'
-            : 'bg-gradient-to-r from-violet-100 to-indigo-100 text-violet-700 hover:from-violet-200 hover:to-indigo-200 border border-violet-200'
-        }`}
+        className={`btn btn-gold btn-md btn-full on-light ${isOpen ? 'btn-glow' : ''}`}
       >
         🧠 {t('guru.teachingInstructions')}
         <span className={`text-xs transition-transform ${isOpen ? 'rotate-180' : ''}`}>▼</span>
@@ -176,7 +172,7 @@ export default function TeachingInstructions({ childId, workName, area }: Teachi
               <p className="text-sm text-gray-500 mb-2">{t('guru.instructionsError')}</p>
               <button
                 onClick={() => fetchInstructions()}
-                className="px-4 py-2 bg-violet-500 text-white text-sm font-semibold rounded-lg hover:bg-violet-600 active:scale-95"
+                className="btn btn-gold btn-md on-light"
               >
                 {t('guru.instructionsRetry')}
               </button>
@@ -194,7 +190,7 @@ export default function TeachingInstructions({ childId, workName, area }: Teachi
                 </span>
                 <button
                   onClick={handleRegenerate}
-                  className="px-3 py-1 text-xs font-semibold text-violet-600 bg-white/80 rounded-lg border border-violet-200 hover:bg-violet-50 active:scale-95"
+                  className="btn btn-gold btn-sm on-light"
                 >
                   🔄 {t('guru.instructionsRegenerate')}
                 </button>

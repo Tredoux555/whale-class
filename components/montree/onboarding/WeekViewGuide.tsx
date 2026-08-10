@@ -443,15 +443,7 @@ export default function WeekViewGuide({
           {step > 0 ? (
             <button
               onClick={handleBack}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'rgba(255,255,255,0.8)',
-                fontSize: 13,
-                cursor: 'pointer',
-                padding: 0,
-                fontWeight: 500,
-              }}
+              className="btn btn-ghost btn-sm"
             >
               ← {t('guide.common.back')}
             </button>
@@ -461,31 +453,15 @@ export default function WeekViewGuide({
 
           <button
             onClick={onSkip}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'rgba(255,255,255,0.5)',
-              fontSize: 11,
-              cursor: 'pointer',
-              textDecoration: 'underline',
-              padding: 0,
-            }}
+            className="btn btn-ghost btn-sm"
+            style={{ textDecoration: 'underline' }}
           >
             {t('guide.common.skipTour')}
           </button>
 
           <button
             onClick={handleNext}
-            style={{
-              background: 'white',
-              color: '#059669',
-              border: 'none',
-              borderRadius: 8,
-              padding: '6px 16px',
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
+            className="btn btn-secondary btn-sm"
           >
             {currentStep.buttonText} →
           </button>

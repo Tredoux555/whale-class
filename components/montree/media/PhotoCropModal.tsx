@@ -651,7 +651,7 @@ export default function PhotoCropModal({
           <button
             onClick={onClose}
             disabled={isSaving}
-            className="p-1 text-gray-500 hover:text-gray-700 disabled:opacity-50"
+            className="btn btn-ghost btn-icon btn-sm on-light"
             aria-label="Close"
           >
             <svg
@@ -680,10 +680,10 @@ export default function PhotoCropModal({
               <button
                 key={p}
                 onClick={() => handleAspectChange(p)}
-                className={`px-3 py-1 rounded text-sm transition-colors ${
+                className={`btn btn-sm on-light ${
                   aspect === p
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    ? 'btn-primary'
+                    : 'btn-secondary'
                 }`}
                 disabled={isSaving}
               >
@@ -697,7 +697,7 @@ export default function PhotoCropModal({
                   setPanX(0);
                   setPanY(0);
                 }}
-                className="ml-auto text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded border border-gray-200"
+                className="btn btn-secondary btn-sm ml-auto on-light"
               >
                 {zoom.toFixed(1)}x — Reset
               </button>
@@ -940,14 +940,14 @@ export default function PhotoCropModal({
           <button
             onClick={onClose}
             disabled={isSaving}
-            className="px-4 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="btn btn-secondary btn-md on-light"
           >
             {t('common.cancel')}
           </button>
           <button
             onClick={handleCrop}
             disabled={isSaving || !imgLoaded}
-            className="px-4 py-2 rounded bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+            className="btn btn-primary btn-md"
           >
             {isSaving ? (
               <>

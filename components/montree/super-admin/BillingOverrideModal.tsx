@@ -115,7 +115,7 @@ export default function BillingOverrideModal({
           <button
             onClick={onClose}
             disabled={saving}
-            className="text-slate-500 hover:text-white text-xl leading-none disabled:opacity-40"
+            className="btn btn-ghost btn-icon btn-sm text-xl"
             aria-label="Close"
           >
             ×
@@ -203,7 +203,7 @@ export default function BillingOverrideModal({
             <button
               onClick={() => submit(true)}
               disabled={saving}
-              className="text-xs text-red-300 hover:text-red-200 underline disabled:opacity-40"
+              className="btn btn-danger btn-soft btn-sm"
             >
               Clear override
             </button>
@@ -214,14 +214,14 @@ export default function BillingOverrideModal({
             <button
               onClick={onClose}
               disabled={saving}
-              className="px-4 py-2 text-sm text-slate-300 hover:text-white disabled:opacity-40"
+              className="btn btn-ghost btn-md"
             >
               Cancel
             </button>
             <button
               onClick={() => submit(false)}
               disabled={saving || !overrideIsValid || overrideStr.trim() === ''}
-              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm rounded-lg font-medium"
+              className="btn btn-primary btn-md"
             >
               {saving ? 'Saving…' : 'Save override'}
             </button>

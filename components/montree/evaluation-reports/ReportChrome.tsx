@@ -251,11 +251,7 @@ export function TableToggle({ open, onToggle }: { open: boolean; onToggle: () =>
       type="button"
       onClick={onToggle}
       aria-expanded={open}
-      style={{
-        background: 'transparent', border: '1px solid rgba(255,255,255,0.14)',
-        borderRadius: 999, padding: '6px 13px', color: T.textSecondary,
-        fontFamily: T.sans, fontSize: 12, cursor: 'pointer',
-      }}
+      className="btn btn-ghost btn-outline btn-sm btn-pill"
     >
       {open ? 'Hide the numbers' : 'Show the numbers'}
     </button>

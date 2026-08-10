@@ -372,18 +372,7 @@ export default function ExtractionCard({ extraction, childName, onAction }: Prop
                 <button
                   key={s}
                   onClick={() => setEditStatus(s)}
-                  style={{
-                    padding: '4px 12px',
-                    borderRadius: 8,
-                    background: editStatus === s ? T.emeraldStrong : 'rgba(255,255,255,0.04)',
-                    border: `1px solid ${editStatus === s ? 'rgba(52,211,153,0.45)' : 'rgba(255,255,255,0.10)'}`,
-                    color: editStatus === s ? T.emerald : T.textSecondary,
-                    fontFamily: T.sans,
-                    fontSize: 11,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 120ms ease',
-                  }}
+                  className={`btn btn-sm btn-pill ${editStatus === s ? 'btn-primary' : 'btn-secondary'}`}
                 >
                   {s}
                 </button>
@@ -427,37 +416,14 @@ export default function ExtractionCard({ extraction, childName, onAction }: Prop
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               onClick={handleSaveEdit}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-                padding: '5px 14px',
-                borderRadius: 8,
-                background: 'linear-gradient(180deg, #34d399, #10b981)',
-                border: '1px solid rgba(52,211,153,0.55)',
-                color: '#06281a',
-                fontFamily: T.sans,
-                fontSize: 11,
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
+              className="btn btn-primary btn-sm"
             >
               <Check size={11} strokeWidth={2.5} />
               Save
             </button>
             <button
               onClick={() => setEditing(false)}
-              style={{
-                padding: '5px 14px',
-                borderRadius: 8,
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.10)',
-                color: T.textSecondary,
-                fontFamily: T.sans,
-                fontSize: 11,
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
+              className="btn btn-secondary btn-sm"
             >
               Cancel
             </button>
@@ -470,23 +436,8 @@ export default function ExtractionCard({ extraction, childName, onAction }: Prop
         <div style={{ display: 'flex', gap: 6 }}>
           <button
             onClick={() => onAction(ext.id, 'approve')}
-            style={{
-              flex: 1,
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 5,
-              padding: '6px',
-              borderRadius: 8,
-              background: T.emeraldStrong,
-              border: '1px solid rgba(52,211,153,0.40)',
-              color: T.emerald,
-              fontFamily: T.sans,
-              fontSize: 11,
-              fontWeight: 600,
-              cursor: 'pointer',
-              transition: 'all 120ms ease',
-            }}
+            className="btn btn-primary btn-sm"
+            style={{ flex: 1 }}
           >
             <Check size={11} strokeWidth={2.5} />
             {t('voiceObs.approved') || 'Approve'}
@@ -494,32 +445,14 @@ export default function ExtractionCard({ extraction, childName, onAction }: Prop
           <button
             onClick={() => setEditing(true)}
             aria-label="Edit"
-            style={{
-              padding: '6px 12px',
-              borderRadius: 8,
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.10)',
-              color: T.textSecondary,
-              fontFamily: T.sans,
-              fontSize: 11,
-              cursor: 'pointer',
-            }}
+            className="btn btn-secondary btn-icon btn-sm"
           >
             <Pencil size={11} strokeWidth={1.75} />
           </button>
           <button
             onClick={() => onAction(ext.id, 'reject')}
             aria-label="Reject"
-            style={{
-              padding: '6px 12px',
-              borderRadius: 8,
-              background: T.redSoft,
-              border: `1px solid ${T.redBorder}`,
-              color: T.red,
-              fontFamily: T.sans,
-              fontSize: 11,
-              cursor: 'pointer',
-            }}
+            className="btn btn-danger btn-soft btn-icon btn-sm"
           >
             <X size={11} strokeWidth={2.5} />
           </button>

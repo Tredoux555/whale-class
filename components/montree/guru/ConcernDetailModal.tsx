@@ -122,7 +122,7 @@ export default function ConcernDetailModal({ childId, childName, concernId, onCl
       <div className={`${HOME_THEME.headerBg} text-white px-4 py-4 flex items-center gap-3 shrink-0`}>
         <button
           onClick={onClose}
-          className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+          className="btn btn-ghost btn-icon btn-md btn-round"
         >
           ←
         </button>

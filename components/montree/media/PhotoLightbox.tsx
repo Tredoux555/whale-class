@@ -356,7 +356,7 @@ export default function PhotoLightbox({
           {/* Close button */}
           <button
             onClick={onClose}
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white text-xl transition-colors"
+            className="btn btn-secondary btn-icon btn-round btn-md text-xl"
             aria-label="Close"
           >
             ✕
@@ -373,20 +373,20 @@ export default function PhotoLightbox({
           {/* Zoom controls */}
           <button
             onClick={zoomOut}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white text-lg transition-colors"
+            className="btn btn-secondary btn-icon btn-round btn-sm text-lg"
             aria-label="Zoom out"
           >
             −
           </button>
           <button
             onClick={resetZoom}
-            className="px-2 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-mono transition-colors min-w-[3rem]"
+            className="btn btn-secondary btn-sm btn-pill font-mono min-w-[3rem]"
           >
             {Math.round(scale * 100)}%
           </button>
           <button
             onClick={zoomIn}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white text-lg transition-colors"
+            className="btn btn-secondary btn-icon btn-round btn-sm text-lg"
             aria-label="Zoom in"
           >
             +
@@ -395,7 +395,7 @@ export default function PhotoLightbox({
           <button
             onClick={handleDownload}
             disabled={downloading}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white text-lg transition-colors disabled:opacity-50"
+            className="btn btn-secondary btn-icon btn-round btn-sm text-lg"
             aria-label="Download photo"
           >
             {downloading ? '...' : '⬇'}
@@ -405,7 +405,7 @@ export default function PhotoLightbox({
             <button
               onClick={() => onDelete(currentIndex)}
               disabled={deleting}
-              className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-red-500/80 text-white text-lg transition-colors disabled:opacity-50"
+              className="btn btn-danger btn-soft btn-icon btn-round btn-sm text-lg"
               aria-label={deleteLabel || 'Delete'}
               title={deleteLabel || 'Delete'}
             >
@@ -446,7 +446,7 @@ export default function PhotoLightbox({
         {hasPrev && (
           <button
             onClick={(e) => { e.stopPropagation(); onNavigate?.(currentIndex - 1); }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/60 text-white text-2xl transition-colors"
+            className="btn btn-secondary btn-icon btn-round btn-md text-2xl absolute left-4 top-1/2 -translate-y-1/2"
             aria-label="Previous photo"
           >
             ‹
@@ -455,7 +455,7 @@ export default function PhotoLightbox({
         {hasNext && (
           <button
             onClick={(e) => { e.stopPropagation(); onNavigate?.(currentIndex + 1); }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/60 text-white text-2xl transition-colors"
+            className="btn btn-secondary btn-icon btn-round btn-md text-2xl absolute right-4 top-1/2 -translate-y-1/2"
             aria-label="Next photo"
           >
             ›
@@ -470,13 +470,10 @@ export default function PhotoLightbox({
               if (!primaryActionDisabled) onPrimaryAction();
             }}
             disabled={primaryActionDisabled}
-            className="absolute z-10 px-4 py-2 rounded-full text-sm font-semibold transition-colors"
+            className="btn btn-primary btn-md btn-pill absolute z-10"
             style={{
               right: 16,
               bottom: 'calc(16px + env(safe-area-inset-bottom))',
-              backgroundColor: primaryActionDisabled ? 'rgba(52,211,153,0.30)' : '#34d399',
-              color: '#062015',
-              pointerEvents: primaryActionDisabled ? 'none' : 'auto',
             }}
           >
             {primaryActionLabel || 'Create'}
@@ -494,14 +491,10 @@ export default function PhotoLightbox({
           <button
             onClick={handleCropClick}
             disabled={cropping}
-            className="absolute z-10 px-4 py-2 rounded-full text-sm font-semibold transition-colors"
+            className="btn btn-secondary btn-md btn-pill absolute z-10"
             style={{
               left: 16,
               bottom: 'calc(16px + env(safe-area-inset-bottom))',
-              backgroundColor: 'rgba(255,255,255,0.14)',
-              color: '#fff',
-              opacity: cropping ? 0.6 : 1,
-              pointerEvents: cropping ? 'none' : 'auto',
             }}
             aria-label={cropLabel || 'Crop'}
             title={cropLabel || 'Crop'}

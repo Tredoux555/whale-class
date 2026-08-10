@@ -850,21 +850,8 @@ export default function GuruChatThread({
                 <button
                   onClick={() => setPendingImage(null)}
                   aria-label="Remove image"
-                  style={{
-                    position: 'absolute',
-                    top: -6,
-                    right: -6,
-                    width: 22,
-                    height: 22,
-                    borderRadius: '50%',
-                    background: T.red,
-                    color: '#1a0606',
-                    border: '2px solid #0a1a0f',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                  }}
+                  className="btn btn-danger btn-icon btn-sm btn-round"
+                  style={{ position: 'absolute', top: -6, right: -6 }}
                 >
                   <X size={11} strokeWidth={2.5} />
                 </button>
@@ -904,21 +891,8 @@ export default function GuruChatThread({
             onClick={() => imageInputRef.current?.click()}
             disabled={sending || !!pendingImage}
             title={t('guru.uploadImage') || 'Upload image'}
-            style={{
-              flexShrink: 0,
-              width: 38,
-              height: 38,
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'transparent',
-              border: '1px solid rgba(52,211,153,0.25)',
-              color: T.emerald,
-              cursor: (sending || !!pendingImage) ? 'not-allowed' : 'pointer',
-              opacity: (sending || !!pendingImage) ? 0.3 : 1,
-              transition: 'all 120ms ease',
-            }}
+            className="btn btn-ghost btn-outline btn-icon btn-md btn-round"
+            style={{ flexShrink: 0 }}
           >
             <Camera size={16} strokeWidth={1.75} />
           </button>
@@ -960,23 +934,8 @@ export default function GuruChatThread({
             onClick={handleSend}
             disabled={!inputText.trim() || sending}
             aria-label="Send"
-            style={{
-              flexShrink: 0,
-              width: 38,
-              height: 38,
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: (!inputText.trim() || sending)
-                ? 'rgba(52,211,153,0.20)'
-                : 'linear-gradient(180deg, #34d399, #10b981)',
-              border: `1px solid ${(!inputText.trim() || sending) ? 'rgba(52,211,153,0.20)' : 'rgba(52,211,153,0.55)'}`,
-              color: (!inputText.trim() || sending) ? 'rgba(52,211,153,0.50)' : '#06281a',
-              cursor: (!inputText.trim() || sending) ? 'not-allowed' : 'pointer',
-              boxShadow: 'none',
-              transition: 'all 120ms ease',
-            }}
+            className="btn btn-primary btn-icon btn-md btn-round"
+            style={{ flexShrink: 0 }}
           >
             <ArrowUp size={17} strokeWidth={2.25} />
           </button>

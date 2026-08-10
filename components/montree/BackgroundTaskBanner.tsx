@@ -78,7 +78,7 @@ function TaskCard({ task, onDismiss, onAbort }: {
       {isRunning ? (
         <button
           onClick={() => onAbort(task.id)}
-          className="text-gray-400 hover:text-red-500 text-xs flex-shrink-0 transition-colors"
+          className="btn btn-ghost btn-icon btn-sm on-light flex-shrink-0"
           title={t('bgTask.cancel')}
         >
           ✕
@@ -86,7 +86,7 @@ function TaskCard({ task, onDismiss, onAbort }: {
       ) : (
         <button
           onClick={() => onDismiss(task.id)}
-          className="text-gray-400 hover:text-gray-600 text-xs flex-shrink-0 transition-colors"
+          className="btn btn-ghost btn-icon btn-sm on-light flex-shrink-0"
           title={t('bgTask.dismiss')}
         >
           ✕
@@ -118,7 +118,7 @@ export default function BackgroundTaskBanner() {
         {collapsed ? (
           <button
             onClick={() => setCollapsed(false)}
-            className="pointer-events-auto w-full flex items-center justify-center gap-2 px-4 py-2 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-full shadow-lg text-sm font-medium text-gray-700 hover:bg-white transition-colors"
+            className="btn btn-secondary btn-md btn-full btn-pill on-light pointer-events-auto flex items-center justify-center gap-2"
           >
             {runningCount > 0 && (
               <>
@@ -140,7 +140,7 @@ export default function BackgroundTaskBanner() {
             {/* Header bar */}
             <button
               onClick={() => setCollapsed(true)}
-              className="w-full flex items-center justify-between px-3 py-2 hover:bg-gray-50 transition-colors"
+              className="btn btn-ghost btn-md btn-full on-light flex items-center justify-between"
             >
               <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
                 {runningCount > 0 && (

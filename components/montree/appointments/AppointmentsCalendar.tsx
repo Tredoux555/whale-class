@@ -608,7 +608,7 @@ export default function AppointmentsCalendar() {
             else setViewMonth({ year: viewMonth.year, month: m });
           }}
           aria-label={t('appt.prevMonth')}
-          style={navBtnStyle()}
+          className="btn btn-secondary btn-icon btn-sm"
         >
           <ChevronLeft size={18} strokeWidth={1.75} />
         </button>
@@ -645,18 +645,7 @@ export default function AppointmentsCalendar() {
                 setSelectedDay(t);
                 // (slotMenu state removed — no-op)
               }}
-              style={{
-                padding: '4px 10px',
-                borderRadius: 999,
-                background: T.emeraldSoft,
-                border: '1px solid rgba(52,211,153,0.30)',
-                color: T.emerald,
-                fontFamily: T.sans,
-                fontSize: 11,
-                fontWeight: 600,
-                letterSpacing: 0.3,
-                cursor: 'pointer',
-              }}
+              className="btn btn-secondary btn-sm btn-pill"
               aria-label={t('appt.jumpToToday')}
             >
               {t('appt.today')}
@@ -671,7 +660,7 @@ export default function AppointmentsCalendar() {
             else setViewMonth({ year: viewMonth.year, month: m });
           }}
           aria-label={t('appt.nextMonth')}
-          style={navBtnStyle()}
+          className="btn btn-secondary btn-icon btn-sm"
         >
           <ChevronRight size={18} strokeWidth={1.75} />
         </button>
@@ -751,19 +740,8 @@ export default function AppointmentsCalendar() {
               // (slotMenu state removed — no-op)
             }}
             aria-label={t('common.close')}
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.10)',
-              color: T.textSecondary,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
+            className="btn btn-secondary btn-icon btn-sm"
+            style={{ flexShrink: 0 }}
           >
             <X size={16} strokeWidth={1.75} />
           </button>
@@ -795,7 +773,7 @@ export default function AppointmentsCalendar() {
             <button
               type="button"
               onClick={() => deleteTimeAway(selectedDayAway.id)}
-              style={iconBtn(T.red)}
+              className="btn btn-danger btn-soft btn-icon btn-sm"
               aria-label={t('appt.removeTimeAway')}
               title={t('appt.removeTimeAway')}
             >
@@ -852,16 +830,7 @@ export default function AppointmentsCalendar() {
                 <button
                   type="button"
                   onClick={openAddSlotForToday}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: T.emerald,
-                    fontSize: 13,
-                    cursor: 'pointer',
-                    textDecoration: 'underline',
-                    textUnderlineOffset: 2,
-                    padding: 0,
-                  }}
+                  className="btn btn-ghost btn-sm"
                 >
                   {t('appt.openEveryDay', { day: t(DAY_FULL_KEYS[selectedDay.getDay()]) })} →
                 </button>
@@ -903,38 +872,14 @@ export default function AppointmentsCalendar() {
               onClick={() => {
                 setSetApptOpen(true);
               }}
-              style={{
-                width: '100%',
-                padding: '14px 16px',
-                borderRadius: 12,
-                background: T.emerald,
-                border: 'none',
-                color: '#0a1a0f',
-                fontWeight: 600,
-                fontSize: 15,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-              }}
+              className="btn btn-primary btn-md btn-full"
             >
               <Plus size={18} strokeWidth={1.75} /> {t('appt.setAppointment')}
             </button>
             <button
               type="button"
               onClick={selectedDayAway ? () => deleteTimeAway(selectedDayAway.id) : markDayAway}
-              style={{
-                width: '100%',
-                padding: '10px 14px',
-                borderRadius: 10,
-                background: 'transparent',
-                border: '1px solid rgba(255,255,255,0.10)',
-                color: T.textSecondary,
-                fontWeight: 500,
-                fontSize: 12,
-                cursor: 'pointer',
-              }}
+              className="btn btn-secondary btn-sm btn-full"
             >
               {selectedDayAway ? t('appt.cancelTimeAway') : t('appt.imAwayThisDay')}
             </button>
@@ -968,7 +913,7 @@ export default function AppointmentsCalendar() {
             <button
               type="button"
               onClick={() => setShowAddRule((v) => !v)}
-              style={btnPrimary()}
+              className="btn btn-primary btn-sm"
             >
               <Plus size={16} strokeWidth={1.75} /> {t('appt.addOpenSlot')}
             </button>
@@ -1036,10 +981,10 @@ export default function AppointmentsCalendar() {
               </Field>
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => setShowAddRule(false)} style={btnGhost()}>
+              <button onClick={() => setShowAddRule(false)} className="btn btn-secondary btn-sm">
                 {t('common.cancel')}
               </button>
-              <button onClick={addRule} style={btnPrimary()}>
+              <button onClick={addRule} className="btn btn-primary btn-sm">
                 {t('common.save')}
               </button>
             </div>
@@ -1104,7 +1049,7 @@ export default function AppointmentsCalendar() {
                     onClick={() => deleteRule(rule.id)}
                     title={t('common.delete')}
                     aria-label={t('appt.removeOpenSlot')}
-                    style={iconBtn(T.red)}
+                    className="btn btn-danger btn-soft btn-icon btn-sm"
                   >
                     <Trash2 size={16} strokeWidth={1.75} />
                   </button>
@@ -1137,7 +1082,7 @@ export default function AppointmentsCalendar() {
             <button
               type="button"
               onClick={() => setShowAddTimeAway((v) => !v)}
-              style={btnPrimary()}
+              className="btn btn-primary btn-sm"
             >
               <Plus size={16} strokeWidth={1.75} /> {t('appt.markTimeAway')}
             </button>
@@ -1173,10 +1118,10 @@ export default function AppointmentsCalendar() {
               />
             </Field>
             <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
-              <button onClick={() => setShowAddTimeAway(false)} style={btnGhost()}>
+              <button onClick={() => setShowAddTimeAway(false)} className="btn btn-secondary btn-sm">
                 {t('common.cancel')}
               </button>
-              <button onClick={addTimeAway} style={btnPrimary()}>
+              <button onClick={addTimeAway} className="btn btn-primary btn-sm">
                 {t('common.save')}
               </button>
             </div>
@@ -1203,7 +1148,7 @@ export default function AppointmentsCalendar() {
                   onClick={() => deleteTimeAway(b.id)}
                   title={t('common.delete')}
                   aria-label={t('appt.removeTimeAwayBlock')}
-                  style={iconBtn(T.red)}
+                  className="btn btn-danger btn-soft btn-icon btn-sm"
                 >
                   <Trash2 size={16} strokeWidth={1.75} />
                 </button>
@@ -1359,7 +1304,8 @@ function BookingRow({
         <button
           type="button"
           onClick={onJoinAgora}
-          style={joinBtn()}
+          className="btn btn-primary btn-sm"
+          style={{ marginTop: 8 }}
           aria-label={t('appt.joinVideoCall')}
         >
           <Video size={12} strokeWidth={1.75} /> {t('appt.joinVideoCall')}
@@ -1370,7 +1316,8 @@ function BookingRow({
           href={a.video_url}
           target="_blank"
           rel="noopener noreferrer"
-          style={joinBtn()}
+          className="btn btn-primary btn-sm"
+          style={{ marginTop: 8 }}
           aria-label={t('appt.joinVideoCallNewTab')}
         >
           <Video size={12} strokeWidth={1.75} /> {t('appt.joinVideoCall')}
@@ -1382,17 +1329,7 @@ function BookingRow({
         <button
           type="button"
           onClick={onTogglePrior}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: 'rgba(232,201,106,0.85)',
-            fontSize: 11,
-            fontWeight: 600,
-            cursor: 'pointer',
-            padding: 0,
-            textDecoration: 'underline',
-            textUnderlineOffset: 2,
-          }}
+          className="btn btn-ghost btn-sm"
         >
           {expanded ? t('appt.hidePriorConversations') : t('appt.showPriorConversations')}
         </button>

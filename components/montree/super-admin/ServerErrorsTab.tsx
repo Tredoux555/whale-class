@@ -135,7 +135,7 @@ export default function ServerErrorsTab({ sessionToken }: Props) {
         <button
           onClick={fetchRows}
           disabled={loading}
-          className="px-3 py-1.5 bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded-lg text-xs font-medium disabled:opacity-50"
+          className="btn btn-secondary btn-sm"
         >
           {loading ? '⏳' : '🔄'} {t('common.refresh')}
         </button>
@@ -147,10 +147,10 @@ export default function ServerErrorsTab({ sessionToken }: Props) {
           <button
             key={s}
             onClick={() => setStateFilter(s)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+            className={`btn btn-sm ${
               stateFilter === s
-                ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
-                : 'bg-slate-800/40 border-slate-700 text-slate-400 hover:text-slate-200'
+                ? 'btn-primary'
+                : 'btn-secondary'
             }`}
           >
             {t(`serverErrors.state.${s}` as Parameters<typeof t>[0])}
@@ -161,12 +161,12 @@ export default function ServerErrorsTab({ sessionToken }: Props) {
           <button
             key={sv}
             onClick={() => setSeverityFilter(severityFilter === sv ? null : sv)}
-            className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border ${
+            className={`btn btn-sm ${
               severityFilter === sv
-                ? sv === 'fatal' ? 'bg-red-500/20 border-red-500/40 text-red-300'
-                  : sv === 'warn' ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
-                  : 'bg-orange-500/20 border-orange-500/40 text-orange-300'
-                : 'bg-slate-800/40 border-slate-700 text-slate-500'
+                ? sv === 'fatal' ? 'btn-danger btn-soft'
+                  : sv === 'warn' ? 'btn-gold'
+                  : 'btn-gold'
+                : 'btn-secondary'
             }`}
           >
             {t(`serverErrors.severity.${sv}` as Parameters<typeof t>[0])}
@@ -244,7 +244,7 @@ export default function ServerErrorsTab({ sessionToken }: Props) {
                   <div className="flex flex-col gap-1 shrink-0">
                     <button
                       onClick={() => setExpandedId(isExpanded ? null : row.id)}
-                      className="px-2 py-1 bg-slate-800/40 hover:bg-slate-700/60 border border-slate-700 text-slate-300 rounded text-[11px]"
+                      className="btn btn-secondary btn-sm"
                     >
                       {isExpanded ? t('serverErrors.hide') : t('serverErrors.details')}
                     </button>
@@ -252,7 +252,7 @@ export default function ServerErrorsTab({ sessionToken }: Props) {
                       <button
                         onClick={() => handleResolve(row.id)}
                         disabled={busyId === row.id}
-                        className="px-2 py-1 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 rounded text-[11px] font-medium disabled:opacity-50"
+                        className="btn btn-primary btn-sm"
                       >
                         ✓ {t('serverErrors.resolve')}
                       </button>
@@ -260,7 +260,7 @@ export default function ServerErrorsTab({ sessionToken }: Props) {
                     <button
                       onClick={() => handleDelete(row.id)}
                       disabled={busyId === row.id}
-                      className="px-2 py-1 bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-300 rounded text-[11px] disabled:opacity-50"
+                      className="btn btn-danger btn-soft btn-sm"
                     >
                       🗑
                     </button>

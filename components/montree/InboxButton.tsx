@@ -180,7 +180,7 @@ export default function InboxButton({ conversationId, userName, floating }: Inbo
         <div className="fixed bottom-6 left-6 z-50">
           <button
             onClick={() => setOpen(!open)}
-            className="relative w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center text-2xl"
+            className="btn btn-primary btn-icon btn-lg btn-round relative text-2xl"
             title={t('inbox.title')}
           >
             ✉️
@@ -194,7 +194,7 @@ export default function InboxButton({ conversationId, userName, floating }: Inbo
       ) : (
         <button
           onClick={() => setOpen(!open)}
-          className="relative w-full flex items-center gap-3 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors font-medium text-white/85 text-sm"
+          className="btn btn-secondary btn-md btn-full relative flex items-center gap-3"
           title={t('inbox.helpTitle') || 'Help'}
           data-guide="nav-inbox"
         >
@@ -224,7 +224,7 @@ export default function InboxButton({ conversationId, userName, floating }: Inbo
               </div>
               <button
                 onClick={() => setOpen(false)}
-                className="text-slate-400 hover:text-white text-xl"
+                className="btn btn-ghost btn-icon btn-sm text-xl"
               >
                 ✕
               </button>
@@ -290,7 +290,7 @@ export default function InboxButton({ conversationId, userName, floating }: Inbo
                 <button
                   onClick={sendMessage}
                   disabled={sending || !newMessage.trim()}
-                  className="px-4 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 disabled:opacity-50 transition-colors"
+                  className="btn btn-primary btn-md"
                 >
                   {sending ? '...' : '→'}
                 </button>

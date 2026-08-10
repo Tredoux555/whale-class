@@ -293,7 +293,7 @@ export default function WorkDetailModal({
             </div>
             <button
               onClick={handleClose}
-              className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors ml-3 shrink-0"
+              className="btn btn-secondary btn-icon btn-sm btn-round ml-3 shrink-0"
             >
               ✕
             </button>
@@ -323,7 +323,7 @@ export default function WorkDetailModal({
               <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
                 <button
                   onClick={stopCamera}
-                  className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-full text-sm"
+                  className="btn btn-secondary btn-md btn-pill"
                 >
                   {t('common.cancel')}
                 </button>
@@ -358,7 +358,7 @@ export default function WorkDetailModal({
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={openYouTubeDemo}
-                className="flex items-center justify-center gap-2 py-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl shadow-sm active:scale-[0.98] transition-all"
+                className="btn btn-danger btn-lg on-light"
               >
                 <span className="text-xl">▶️</span>
                 <span>{t('action.watchDemo')}</span>
@@ -367,7 +367,7 @@ export default function WorkDetailModal({
               <button
                 onClick={startCamera}
                 disabled={capturing}
-                className="flex items-center justify-center gap-2 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl shadow-sm active:scale-[0.98] transition-all disabled:opacity-50"
+                className="btn btn-primary btn-lg on-light"
               >
                 <span className="text-xl">📷</span>
                 <span>{t('action.capture')}</span>
@@ -380,7 +380,7 @@ export default function WorkDetailModal({
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={capturing}
-              className="w-full py-3 text-gray-600 text-sm font-medium hover:bg-gray-100 rounded-xl transition-colors disabled:opacity-50"
+              className="btn btn-ghost btn-lg btn-full on-light"
             >
               🖼️ {t('action.chooseFromGallery')}
             </button>
@@ -425,7 +425,7 @@ export default function WorkDetailModal({
               <button
                 onClick={handleSaveNotes}
                 disabled={saving}
-                className="mt-2 px-4 py-2 bg-emerald-500 text-white text-sm font-medium rounded-lg hover:bg-emerald-600 disabled:opacity-50 transition-colors"
+                className="btn btn-primary btn-md mt-2 on-light"
               >
                 {saving ? t('common.saving') : `💾 ${t('action.saveNotes')}`}
               </button>
@@ -444,7 +444,7 @@ export default function WorkDetailModal({
         <div className="p-4 border-t bg-gray-50">
           <button
             onClick={handleClose}
-            className="w-full py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-xl transition-colors"
+            className="btn btn-secondary btn-lg btn-full on-light"
           >
             {t('common.done')}
           </button>

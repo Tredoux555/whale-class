@@ -282,7 +282,7 @@ export default function FoundingInbox({ saToken }: { saToken: string }) {
           {openThreadId && (
             <div style={{ display: 'flex', flexDirection: 'column', height: 440 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingBottom: 10, borderBottom: '1px solid rgba(148,163,184,0.16)' }}>
-                <button onClick={backToList} style={{ background: 'transparent', border: 'none', color: '#34d399', cursor: 'pointer', fontSize: 13 }}>
+                <button onClick={backToList} className="btn btn-ghost btn-sm">
                   ← Inbox
                 </button>
                 <span style={{ color: '#fff', fontWeight: 600, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -344,11 +344,8 @@ export default function FoundingInbox({ saToken }: { saToken: string }) {
                 <button
                   type="submit"
                   disabled={sending || !reply.trim()}
-                  style={{
-                    padding: '10px 16px', borderRadius: 999, fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                    border: 'none', color: '#fff', background: 'linear-gradient(180deg, #27815a 0%, #1D6B48 100%)',
-                    opacity: !reply.trim() ? 0.5 : 1,
-                  }}
+                  className="btn btn-primary btn-sm btn-pill"
+                  style={{ opacity: !reply.trim() ? 0.5 : 1 }}
                 >
                   {sending ? 'Sending…' : 'Send'}
                 </button>

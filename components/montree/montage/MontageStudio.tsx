@@ -295,15 +295,7 @@ export default function MontageStudio() {
               key={k.key}
               type="button"
               onClick={() => { setKind(k.key); setShortfall(null); }}
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '7px 14px', borderRadius: 999,
-                background: active ? T.emeraldSoft : 'rgba(255,255,255,0.04)',
-                border: `1px solid ${active ? T.emeraldBorder : T.cardBorder}`,
-                color: active ? T.emerald : T.textSecondary,
-                fontFamily: T.sans, fontSize: 13, fontWeight: 500,
-                cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 120ms ease',
-              }}
+              className={`btn btn-sm btn-pill ${active ? 'btn-primary' : 'btn-secondary'}`}
               aria-pressed={active}
             >
               {k.label}
@@ -323,14 +315,7 @@ export default function MontageStudio() {
                 key={s.key}
                 type="button"
                 onClick={() => { setScope(s.key); setShortfall(null); }}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 6,
-                  padding: '8px 14px', borderRadius: 999,
-                  background: active ? T.emeraldSoft : 'rgba(255,255,255,0.04)',
-                  border: `1px solid ${active ? T.emeraldBorder : T.cardBorder}`,
-                  color: active ? T.emerald : T.textSecondary,
-                  fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'all 120ms ease',
-                }}
+                className={`btn btn-sm btn-pill ${active ? 'btn-primary' : 'btn-secondary'}`}
                 aria-pressed={active}
               >
                 <span>{s.icon}</span>{s.label}
@@ -413,12 +398,7 @@ export default function MontageStudio() {
           type="button"
           onClick={handleCreate}
           disabled={creating}
-          style={{
-            width: '100%', padding: '13px 0', borderRadius: 12,
-            background: creating ? 'rgba(52,211,153,0.30)' : T.emerald,
-            border: 'none', color: '#062015', fontSize: 16, fontWeight: 700,
-            cursor: creating ? 'wait' : 'pointer', transition: 'all 120ms ease',
-          }}
+          className="btn btn-primary btn-lg btn-full"
         >
           {creating ? t('montage.creating') : `🎬 ${t('montage.create')}`}
         </button>
@@ -493,12 +473,7 @@ export default function MontageStudio() {
                 <button
                   type="button"
                   onClick={() => setWatching(m)}
-                  style={{
-                    padding: '7px 12px', borderRadius: 10,
-                    background: T.emeraldSoft, border: `1px solid ${T.emeraldBorder}`,
-                    color: T.emerald, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                  }}
+                  className="btn btn-primary btn-sm"
                 >
                   ▶ {t('montage.watch')}
                 </button>
@@ -534,11 +509,8 @@ export default function MontageStudio() {
             <button
               type="button"
               onClick={() => setWatching(null)}
-              style={{
-                width: '100%', marginTop: 12, padding: '11px 0', borderRadius: 12,
-                background: 'rgba(255,255,255,0.08)', border: `1px solid ${T.cardBorder}`,
-                color: T.textPrimary, fontSize: 14, cursor: 'pointer',
-              }}
+              className="btn btn-secondary btn-md btn-full"
+              style={{ marginTop: 12 }}
             >
               {t('montage.close')}
             </button>

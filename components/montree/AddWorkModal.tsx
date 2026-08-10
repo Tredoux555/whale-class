@@ -270,7 +270,7 @@ export default function AddWorkModal({
             </div>
             <button
               onClick={handleClose}
-              className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-xl transition-colors"
+              className="btn btn-secondary btn-icon btn-sm btn-round text-xl"
             >
               ×
             </button>
@@ -288,10 +288,10 @@ export default function AddWorkModal({
                   key={area.key}
                   type="button"
                   onClick={() => setForm({ ...form, area_key: area.key })}
-                  className={`p-2 rounded-xl flex flex-col items-center gap-1 transition-all ${
+                  className={`btn btn-sm flex-col gap-1 ${
                     form.area_key === area.key
-                      ? `bg-gradient-to-br ${area.color} text-white shadow-lg scale-105`
-                      : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                      ? 'btn-primary'
+                      : 'btn-secondary on-light'
                   }`}
                 >
                   <div
@@ -328,10 +328,10 @@ export default function AddWorkModal({
               <button
                 type="button"
                 onClick={() => setShowPositionPicker(true)}
-                className={`w-full px-3 py-2.5 rounded-xl border text-left flex items-center justify-between transition-colors ${
+                className={`btn btn-md btn-full text-left justify-between ${
                   insertAfterIndex !== null
-                    ? `bg-gradient-to-r ${selectedArea.color} text-white border-transparent`
-                    : 'bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100'
+                    ? 'btn-primary'
+                    : 'btn-secondary on-light'
                 }`}
               >
                 <span className="flex items-center gap-2">
@@ -433,7 +433,7 @@ export default function AddWorkModal({
               <button
                 onClick={handleGenerateAI}
                 disabled={generating || !form.name.trim()}
-                className="px-4 py-1.5 bg-purple-500 text-white text-sm font-medium rounded-lg hover:bg-purple-600 disabled:opacity-50 flex items-center gap-2 transition-colors"
+                className="btn btn-gold btn-sm"
               >
                 {generating ? (
                   <>
@@ -527,17 +527,17 @@ export default function AddWorkModal({
         <div className="p-4 border-t flex gap-3 flex-shrink-0 bg-gray-50 rounded-b-2xl">
           <button
             onClick={handleClose}
-            className="flex-1 py-3 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-colors"
+            className="btn btn-secondary btn-md flex-1 on-light"
           >
             {t('common.cancel')}
           </button>
           <button
             onClick={handleSubmit}
             disabled={saving || !form.name.trim()}
-            className={`flex-1 py-3 rounded-xl font-bold transition-all disabled:opacity-50 ${
+            className={`btn btn-md flex-1 ${
               form.name.trim()
-                ? `bg-gradient-to-r ${selectedArea.color} text-white hover:shadow-lg`
-                : 'bg-gray-300 text-gray-500'
+                ? 'btn-primary'
+                : 'btn-secondary on-light'
             }`}
           >
             {saving ? (

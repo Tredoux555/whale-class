@@ -353,21 +353,8 @@ export default function StaleWorksPanel() {
                           disabled={dismissing === key}
                           aria-label={t('staleWorks.dismiss')}
                           title={t('staleWorks.dismiss')}
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            width: 26,
-                            height: 26,
-                            borderRadius: 8,
-                            background: 'transparent',
-                            border: '1px solid rgba(255,255,255,0.10)',
-                            color: T.textMuted,
-                            cursor: dismissing === key ? 'wait' : 'pointer',
-                            opacity: dismissing === key ? 0.4 : 1,
-                            transition: 'all 120ms ease',
-                            flexShrink: 0,
-                          }}
+                          className="btn btn-ghost btn-icon btn-outline btn-sm"
+                          style={{ flexShrink: 0 }}
                         >
                           {dismissing === key ? '...' : <X size={12} strokeWidth={1.75} />}
                         </button>

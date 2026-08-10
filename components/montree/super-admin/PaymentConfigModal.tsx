@@ -244,7 +244,7 @@ export default function PaymentConfigModal({
           <button
             onClick={onClose}
             disabled={saving}
-            className="text-slate-500 hover:text-white text-xl leading-none disabled:opacity-40"
+            className="btn btn-ghost btn-icon btn-sm text-xl"
             aria-label="Close"
           >
             ×
@@ -413,14 +413,14 @@ export default function PaymentConfigModal({
                       setStripeWarning(null);
                     }}
                     disabled={saving}
-                    className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs rounded"
+                    className="btn btn-secondary btn-sm"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={() => submit(true)}
                     disabled={saving}
-                    className="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white text-xs rounded font-medium"
+                    className="btn btn-danger btn-sm"
                   >
                     {saving ? 'Saving…' : 'Confirm force flip'}
                   </button>
@@ -441,14 +441,14 @@ export default function PaymentConfigModal({
             <button
               onClick={onClose}
               disabled={saving}
-              className="px-4 py-2 text-sm text-slate-300 hover:text-white disabled:opacity-40"
+              className="btn btn-ghost btn-md"
             >
               Cancel
             </button>
             <button
               onClick={() => submit(false)}
               disabled={saving || !detailsValid}
-              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm rounded-lg font-medium"
+              className="btn btn-primary btn-md"
             >
               {saving ? 'Saving…' : 'Save'}
             </button>

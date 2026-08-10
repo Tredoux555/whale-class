@@ -118,7 +118,7 @@ export default function RecordIncomingWireModal({
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="text-white/40 hover:text-white p-1"
+            className="btn btn-ghost btn-icon btn-sm"
             aria-label="Close"
           >
             ✕
@@ -213,14 +213,14 @@ export default function RecordIncomingWireModal({
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-5 py-3 sm:py-2 bg-white/5 hover:bg-white/10 text-white/80 text-sm rounded-lg disabled:opacity-50"
+              className="btn btn-secondary btn-md"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-3 sm:py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-medium text-sm rounded-lg disabled:opacity-50 transition-colors"
+              className="btn btn-primary btn-md"
             >
               {submitting ? 'Recording…' : 'Record wire'}
             </button>

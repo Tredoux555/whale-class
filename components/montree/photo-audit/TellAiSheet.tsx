@@ -144,7 +144,8 @@ export default function TellAiSheet({ photo, onClose, onSaved }: Props) {
           </div>
           <button
             onClick={onClose}
-            style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#999' }}
+            className="btn btn-ghost btn-icon btn-sm on-light"
+            style={{ fontSize: 22 }}
             aria-label="Close"
           >
             ✕
@@ -276,16 +277,8 @@ export default function TellAiSheet({ photo, onClose, onSaved }: Props) {
 
               <button
                 onClick={() => { setProposal(null); setError(null); }}
-                style={{
-                  fontSize: 12,
-                  color: '#7c3aed',
-                  background: 'none',
-                  border: 'none',
-                  textDecoration: 'underline',
-                  cursor: 'pointer',
-                  alignSelf: 'flex-start',
-                  padding: 0,
-                }}
+                className="btn btn-ghost btn-sm on-light"
+                style={{ alignSelf: 'flex-start' }}
               >
                 ← Edit description and regenerate
               </button>
@@ -304,17 +297,8 @@ export default function TellAiSheet({ photo, onClose, onSaved }: Props) {
           <button
             onClick={onClose}
             disabled={generating || saving}
-            style={{
-              flex: '0 0 auto',
-              padding: '12px 18px',
-              borderRadius: 12,
-              border: '1px solid #ddd',
-              background: '#fff',
-              color: '#555',
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
+            className="btn btn-secondary btn-md on-light"
+            style={{ flex: '0 0 auto' }}
           >
             Cancel
           </button>
@@ -322,17 +306,8 @@ export default function TellAiSheet({ photo, onClose, onSaved }: Props) {
             <button
               onClick={handleGenerate}
               disabled={generating || context.trim().length < 5}
-              style={{
-                flex: 1,
-                padding: '12px 18px',
-                borderRadius: 12,
-                border: 'none',
-                background: generating || context.trim().length < 5 ? '#c4b5fd' : '#7c3aed',
-                color: '#fff',
-                fontSize: 14,
-                fontWeight: 700,
-                cursor: generating || context.trim().length < 5 ? 'not-allowed' : 'pointer',
-              }}
+              className="btn btn-gold btn-md on-light"
+              style={{ flex: 1 }}
             >
               {generating ? 'Generating…' : '✨ Generate Proposal'}
             </button>
@@ -340,17 +315,8 @@ export default function TellAiSheet({ photo, onClose, onSaved }: Props) {
             <button
               onClick={handleSave}
               disabled={saving}
-              style={{
-                flex: 1,
-                padding: '12px 18px',
-                borderRadius: 12,
-                border: 'none',
-                background: saving ? '#c4b5fd' : '#7c3aed',
-                color: '#fff',
-                fontSize: 14,
-                fontWeight: 700,
-                cursor: saving ? 'not-allowed' : 'pointer',
-              }}
+              className="btn btn-gold btn-md on-light"
+              style={{ flex: 1 }}
             >
               {saving ? 'Saving…' : '✓ Save as New Work'}
             </button>

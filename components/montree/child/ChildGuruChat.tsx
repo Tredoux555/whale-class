@@ -319,24 +319,8 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
       <button
         onClick={() => setIsOpen(true)}
         title={t('childGuru.aiAssistant')}
-        style={{
-          position: 'fixed',
-          bottom: 24,
-          right: 24,
-          width: 56,
-          height: 56,
-          borderRadius: '50%',
-          background: 'linear-gradient(135deg, #34d399, #059669)',
-          border: '1px solid rgba(52,211,153,0.55)',
-          color: '#06281a',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          boxShadow: 'none',
-          zIndex: 50,
-          transition: 'all 140ms ease',
-        }}
+        className="btn btn-primary btn-icon btn-lg btn-round"
+        style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 50 }}
       >
         <Brain size={22} strokeWidth={1.75} />
       </button>
@@ -402,19 +386,7 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
         <button
           onClick={() => setIsOpen(false)}
           aria-label="Collapse"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 28,
-            height: 28,
-            borderRadius: 8,
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.10)',
-            color: T.textPrimary,
-            cursor: 'pointer',
-            transition: 'all 120ms ease',
-          }}
+          className="btn btn-secondary btn-icon btn-sm"
         >
           <ChevronDown size={14} strokeWidth={1.75} />
         </button>
@@ -566,22 +538,8 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
             onClick={isRecording ? stopRecording : startRecording}
             disabled={isLoading && !isRecording}
             aria-label={isRecording ? 'Stop recording' : 'Start recording'}
-            style={{
-              flexShrink: 0,
-              width: 38,
-              height: 38,
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: isRecording ? T.redSoft : 'rgba(255,255,255,0.06)',
-              border: `1px solid ${isRecording ? T.redBorder : 'rgba(255,255,255,0.12)'}`,
-              color: isRecording ? T.red : T.textPrimary,
-              cursor: (isLoading && !isRecording) ? 'not-allowed' : 'pointer',
-              opacity: (isLoading && !isRecording) ? 0.4 : 1,
-              transition: 'all 120ms ease',
-              animation: isRecording ? 'cgc-pulse 1.4s ease-in-out infinite' : 'none',
-            }}
+            className={`btn btn-icon btn-md btn-round ${isRecording ? 'btn-danger btn-soft' : 'btn-secondary'}`}
+            style={{ flexShrink: 0, animation: isRecording ? 'cgc-pulse 1.4s ease-in-out infinite' : 'none' }}
           >
             {isRecording ? (
               <span style={{
@@ -630,23 +588,8 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
             onClick={() => sendMessage(input)}
             disabled={!input.trim() || isLoading}
             aria-label="Send"
-            style={{
-              flexShrink: 0,
-              width: 38,
-              height: 38,
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: (!input.trim() || isLoading)
-                ? 'rgba(52,211,153,0.20)'
-                : 'linear-gradient(180deg, #34d399, #10b981)',
-              border: `1px solid ${(!input.trim() || isLoading) ? 'rgba(52,211,153,0.20)' : 'rgba(52,211,153,0.55)'}`,
-              color: (!input.trim() || isLoading) ? 'rgba(52,211,153,0.50)' : '#06281a',
-              cursor: (!input.trim() || isLoading) ? 'not-allowed' : 'pointer',
-              boxShadow: 'none',
-              transition: 'all 120ms ease',
-            }}
+            className="btn btn-primary btn-icon btn-md btn-round"
+            style={{ flexShrink: 0 }}
           >
             <ArrowUp size={15} strokeWidth={2.25} />
           </button>

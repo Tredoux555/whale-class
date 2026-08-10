@@ -31,11 +31,8 @@ function Chip({ label, selected, onClick }: { label: string; selected?: boolean;
   return (
     <button
       onClick={onClick}
-      className="text-xs px-3 py-1.5 rounded-full transition-all active:scale-95"
+      className={`btn btn-sm btn-pill ${selected ? 'btn-primary' : 'btn-secondary'}`}
       style={{
-        border: `1px solid ${selected ? 'rgba(74,222,128,0.7)' : 'rgba(74,222,128,0.35)'}`,
-        background: selected ? 'rgba(74,222,128,0.18)' : 'transparent',
-        color: selected ? '#c9f5df' : '#a7ecd0',
         marginRight: 6,
         marginBottom: 6,
       }}

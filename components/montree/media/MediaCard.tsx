@@ -129,7 +129,7 @@ export default function MediaCard({
                   e.stopPropagation();
                   onEdit();
                 }}
-                className="flex-1 px-2 py-1 bg-emerald-500 text-white rounded text-xs font-medium hover:bg-emerald-600 transition-colors flex items-center justify-center gap-1"
+                className="btn btn-primary btn-sm flex-1"
               >
                 ✏️ Edit
               </button>
@@ -140,7 +140,7 @@ export default function MediaCard({
                   e.stopPropagation();
                   onDelete();
                 }}
-                className="flex-1 px-2 py-1 bg-red-500 text-white rounded text-xs font-medium hover:bg-red-600 transition-colors flex items-center justify-center gap-1"
+                className="btn btn-danger btn-sm flex-1"
               >
                 🗑️ Delete
               </button>

@@ -43,11 +43,7 @@ function CopyButton({ text, label }: { text: string; label: string }) {
   return (
     <button
       onClick={handleCopy}
-      className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all ${
-        copied
-          ? 'bg-emerald-100 text-emerald-700'
-          : 'bg-white/80 text-violet-600 hover:bg-violet-50 border border-violet-200'
-      }`}
+      className="btn btn-secondary btn-icon btn-sm on-light"
       title={`Copy ${label}`}
     >
       {copied ? '✓' : '📋'}
@@ -181,11 +177,7 @@ export default function GuruWeeklySummary({
           {/* Copy All button */}
           <button
             onClick={handleCopyAll}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              copyAllDone
-                ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-                : 'bg-white text-violet-600 border border-violet-200 hover:bg-violet-50 hover:border-violet-300'
-            }`}
+            className="btn btn-secondary btn-sm on-light"
           >
             {copyAllDone ? (
               <><span>✓</span> All copied!</>
@@ -199,7 +191,7 @@ export default function GuruWeeklySummary({
             <div className="mt-3 pt-3 border-t border-violet-200/50">
               <button
                 onClick={() => setAdviceExpanded(!adviceExpanded)}
-                className="flex items-center gap-1.5 text-xs font-semibold text-violet-700 hover:text-violet-900 transition-colors w-full text-left"
+                className="btn btn-ghost btn-sm on-light btn-full flex items-center gap-1.5 text-left"
               >
                 <span>{adviceExpanded ? '▼' : '▶'}</span>
                 <span>Guru Advice</span>

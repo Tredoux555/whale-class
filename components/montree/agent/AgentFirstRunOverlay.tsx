@@ -97,7 +97,7 @@ export default function AgentFirstRunOverlay() {
           {!isLast ? (
             <button
               onClick={() => setStep(s => Math.min(s + 1, CARDS.length - 1))}
-              className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-medium rounded-lg text-sm transition-colors"
+              className="btn btn-primary btn-md"
             >
               Next →
             </button>
@@ -107,14 +107,14 @@ export default function AgentFirstRunOverlay() {
                 <Link
                   href={card.cta.href}
                   onClick={dismiss}
-                  className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-white font-medium rounded-lg text-sm transition-colors"
+                  className="btn btn-gold btn-md"
                 >
                   {card.cta.label} →
                 </Link>
               )}
               <button
                 onClick={dismiss}
-                className="px-5 py-2.5 bg-white/10 hover:bg-white/15 text-white text-sm rounded-lg transition-colors"
+                className="btn btn-secondary btn-md"
               >
                 {card.cta ? 'Maybe later' : 'Got it'}
               </button>
@@ -124,7 +124,7 @@ export default function AgentFirstRunOverlay() {
           {step > 0 && !isLast && (
             <button
               onClick={() => setStep(s => Math.max(s - 1, 0))}
-              className="text-white/50 hover:text-white text-sm"
+              className="btn btn-ghost btn-sm"
             >
               ← Back
             </button>
@@ -132,7 +132,7 @@ export default function AgentFirstRunOverlay() {
           {!isLast && (
             <button
               onClick={dismiss}
-              className="ml-auto text-white/40 hover:text-white text-xs"
+              className="btn btn-ghost btn-sm ml-auto"
             >
               Skip
             </button>

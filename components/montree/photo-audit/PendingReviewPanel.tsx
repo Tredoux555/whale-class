@@ -251,18 +251,8 @@ export default function PendingReviewPanel({ childId, onProcessed, compact = fal
         </div>
         <button
           onClick={() => setCollapsed(c => !c)}
-          style={{
-            padding: '5px 10px',
-            borderRadius: 8,
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.10)',
-            color: T.amber,
-            fontFamily: T.sans,
-            fontSize: 11,
-            fontWeight: 600,
-            cursor: 'pointer',
-            flexShrink: 0,
-          }}
+          className="btn btn-secondary btn-sm"
+          style={{ flexShrink: 0 }}
         >
           {collapsed ? t('pendingReview.show') : t('pendingReview.hide')}
         </button>
@@ -283,17 +273,7 @@ export default function PendingReviewPanel({ childId, onProcessed, compact = fal
           }}>
             <button
               onClick={toggleAll}
-              style={{
-                padding: '6px 12px',
-                borderRadius: 8,
-                background: 'rgba(255,255,255,0.06)',
-                border: `1px solid ${T.amberBorder}`,
-                color: T.amber,
-                fontFamily: T.sans,
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
+              className="btn btn-secondary btn-sm"
             >
               {allSelected ? t('pendingReview.deselect') : t('pendingReview.selectAll')} ({selected.size}/{photos.length})
             </button>
@@ -301,21 +281,7 @@ export default function PendingReviewPanel({ childId, onProcessed, compact = fal
               <button
                 onClick={() => runBatch('delete')}
                 disabled={selected.size === 0 || busy !== null}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 5,
-                  padding: '6px 12px',
-                  borderRadius: 8,
-                  background: T.redSoft,
-                  border: `1px solid ${T.redBorder}`,
-                  color: T.red,
-                  fontFamily: T.sans,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  cursor: (selected.size === 0 || busy !== null) ? 'not-allowed' : 'pointer',
-                  opacity: (selected.size === 0 || busy !== null) ? 0.40 : 1,
-                }}
+                className="btn btn-danger btn-soft btn-sm"
               >
                 <Trash2 size={11} strokeWidth={1.75} />
                 {busy === 'delete' ? t('pendingReview.deleting') : t('pendingReview.deleteSelected')}
@@ -323,22 +289,7 @@ export default function PendingReviewPanel({ childId, onProcessed, compact = fal
               <button
                 onClick={() => runBatch('process')}
                 disabled={selected.size === 0 || busy !== null}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 5,
-                  padding: '6px 14px',
-                  borderRadius: 8,
-                  background: 'linear-gradient(180deg, #34d399, #10b981)',
-                  border: '1px solid rgba(52,211,153,0.55)',
-                  color: '#06281a',
-                  fontFamily: T.sans,
-                  fontSize: 12,
-                  fontWeight: 700,
-                  cursor: (selected.size === 0 || busy !== null) ? 'not-allowed' : 'pointer',
-                  opacity: (selected.size === 0 || busy !== null) ? 0.40 : 1,
-                  boxShadow: (selected.size === 0 || busy !== null) ? 'none' : '0 4px 14px rgba(16,185,129,0.25)',
-                }}
+                className="btn btn-primary btn-sm"
               >
                 <Sparkles size={11} strokeWidth={1.75} />
                 {busy === 'process' ? t('pendingReview.processing') : t('pendingReview.processSelected')}

@@ -247,7 +247,7 @@ export default function EventAttendanceModal({
         {/* Header */}
         <div className="px-4 pt-4 pb-3 border-b flex items-center justify-between">
           <h2 className="text-lg font-bold text-gray-900">{t('events.tagEvent')}</h2>
-          <button onClick={onClose} className="text-gray-400 text-2xl leading-none px-1">&times;</button>
+          <button onClick={onClose} className="btn btn-ghost btn-icon btn-sm text-2xl on-light">&times;</button>
         </div>
 
         {loading ? (
@@ -277,14 +277,14 @@ export default function EventAttendanceModal({
                   <div className="flex gap-2">
                     <button
                       onClick={() => setShowCreate(false)}
-                      className="flex-1 py-2 text-sm text-gray-500 bg-gray-100 rounded-lg"
+                      className="btn btn-secondary btn-md flex-1 on-light"
                     >
                       {t('events.cancel')}
                     </button>
                     <button
                       onClick={handleCreateEvent}
                       disabled={!newEventName.trim() || creating}
-                      className="flex-1 py-2 text-sm text-white bg-emerald-500 rounded-lg font-medium disabled:opacity-40"
+                      className="btn btn-primary btn-md flex-1 on-light"
                     >
                       {creating ? t('events.creating') : t('events.create')}
                     </button>
@@ -306,7 +306,7 @@ export default function EventAttendanceModal({
                   </select>
                   <button
                     onClick={() => setShowCreate(true)}
-                    className="px-3 py-2 text-sm bg-emerald-50 text-emerald-700 rounded-lg font-medium whitespace-nowrap"
+                    className="btn btn-primary btn-sm on-light"
                   >
                     + {t('events.createNew')}
                   </button>
@@ -332,7 +332,7 @@ export default function EventAttendanceModal({
                   </span>
                   <button
                     onClick={toggleAll}
-                    className="text-sm font-medium text-emerald-600 active:text-emerald-800"
+                    className="btn btn-ghost btn-sm on-light"
                   >
                     {allChecked ? t('events.clearAll') : t('events.tagAll')}
                   </button>
@@ -385,7 +385,7 @@ export default function EventAttendanceModal({
                 <button
                   onClick={handleSave}
                   disabled={saving || !hasChanges}
-                  className="w-full py-3 rounded-xl bg-emerald-500 text-white font-semibold text-sm disabled:opacity-40 active:bg-emerald-600 transition-colors"
+                  className="btn btn-primary btn-lg btn-full on-light"
                 >
                   {saving ? t('events.savingAttendance') : hasChanges ? `${t('events.saveTagged')} — ${checked.size} ${t('events.tagged')}` : `${checked.size} ${t('events.tagged')}`}
                 </button>

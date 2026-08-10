@@ -183,13 +183,7 @@ export default function QuickSetAppointmentModal({
             disabled={sending}
             type="button"
             aria-label={t('common.close')}
-            style={{
-              background: 'none',
-              border: 0,
-              cursor: sending ? 'wait' : 'pointer',
-              color: T.textMuted,
-              padding: 6,
-            }}
+            className="btn btn-ghost btn-icon btn-sm"
           >
             <X size={20} strokeWidth={1.75} />
           </button>
@@ -227,40 +221,14 @@ export default function QuickSetAppointmentModal({
                 <button
                   type="button"
                   onClick={() => setKind('video_call')}
-                  style={{
-                    padding: '12px 10px',
-                    borderRadius: 10,
-                    background: kind === 'video_call' ? T.emeraldSoft : 'rgba(255,255,255,0.04)',
-                    border: kind === 'video_call' ? '1px solid rgba(52,211,153,0.45)' : '1px solid rgba(255,255,255,0.12)',
-                    color: kind === 'video_call' ? T.emerald : T.textSecondary,
-                    fontWeight: 600,
-                    fontSize: 13,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 6,
-                  }}
+                  className={`btn btn-md ${kind === 'video_call' ? 'btn-primary' : 'btn-secondary'}`}
                 >
                   <Video size={14} /> {t('appt.videoCall')}
                 </button>
                 <button
                   type="button"
                   onClick={() => setKind('parent_meeting')}
-                  style={{
-                    padding: '12px 10px',
-                    borderRadius: 10,
-                    background: kind === 'parent_meeting' ? T.emeraldSoft : 'rgba(255,255,255,0.04)',
-                    border: kind === 'parent_meeting' ? '1px solid rgba(52,211,153,0.45)' : '1px solid rgba(255,255,255,0.12)',
-                    color: kind === 'parent_meeting' ? T.emerald : T.textSecondary,
-                    fontWeight: 600,
-                    fontSize: 13,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 6,
-                  }}
+                  className={`btn btn-md ${kind === 'parent_meeting' ? 'btn-primary' : 'btn-secondary'}`}
                 >
                   <Users size={14} /> {t('appt.inPerson')}
                 </button>
@@ -304,16 +272,7 @@ export default function QuickSetAppointmentModal({
                     key={d}
                     type="button"
                     onClick={() => setDuration(d)}
-                    style={{
-                      padding: '9px 8px',
-                      borderRadius: 8,
-                      background: duration === d ? T.emeraldSoft : 'rgba(255,255,255,0.04)',
-                      border: duration === d ? '1px solid rgba(52,211,153,0.45)' : '1px solid rgba(255,255,255,0.12)',
-                      color: duration === d ? T.emerald : T.textSecondary,
-                      fontWeight: 600,
-                      fontSize: 12,
-                      cursor: 'pointer',
-                    }}
+                    className={`btn btn-sm ${duration === d ? 'btn-primary' : 'btn-secondary'}`}
                   >
                     {t('appt.nMin', { n: d })}
                   </button>
@@ -367,22 +326,7 @@ export default function QuickSetAppointmentModal({
               type="button"
               onClick={handleSubmit}
               disabled={sending}
-              style={{
-                width: '100%',
-                padding: '14px 16px',
-                borderRadius: 12,
-                background: T.emerald,
-                color: '#06281a',
-                border: 0,
-                fontWeight: 700,
-                fontSize: 15,
-                cursor: sending ? 'wait' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                opacity: sending ? 0.7 : 1,
-              }}
+              className="btn btn-primary btn-lg btn-full"
             >
               {sending ? (
                 <>

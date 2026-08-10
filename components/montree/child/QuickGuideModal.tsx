@@ -163,19 +163,7 @@ export default function QuickGuideModal({
             <button
               onClick={onClose}
               aria-label="Close"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 32,
-                height: 32,
-                borderRadius: 10,
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.10)',
-                color: T.textSecondary,
-                cursor: 'pointer',
-                transition: 'all 120ms ease',
-              }}
+              className="btn btn-secondary btn-icon btn-sm"
             >
               <X size={15} strokeWidth={1.75} />
             </button>
@@ -362,7 +350,8 @@ export default function QuickGuideModal({
           <button
             data-guide="watch-video-btn"
             onClick={() => window.open(`https://youtube.com/results?search_query=${encodeURIComponent(guideData?.video_search_term || workName + ' Montessori presentation')}`, '_blank')}
-            style={ctaRed}
+            className="btn btn-danger btn-soft btn-md"
+            style={{ flex: 1 }}
           >
             <Youtube size={14} strokeWidth={1.75} />
             {t('modal.watchVideo')}
@@ -370,7 +359,8 @@ export default function QuickGuideModal({
           <button
             data-guide="full-details-btn"
             onClick={() => onOpenFullDetails?.()}
-            style={ctaPrimary}
+            className="btn btn-primary btn-md"
+            style={{ flex: 1 }}
           >
             <BookMarked size={14} strokeWidth={1.75} />
             {t('modal.fullDetails')}

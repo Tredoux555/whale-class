@@ -265,24 +265,7 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
           <button
             onClick={() => handleGenerate(false)}
             disabled={generating || children.length === 0}
-            style={{
-              width: '100%',
-              padding: '10px 16px',
-              borderRadius: 10,
-              background: 'linear-gradient(180deg, #34d399, #10b981)',
-              border: '1px solid rgba(52,211,153,0.55)',
-              color: '#06281a',
-              fontFamily: T.sans,
-              fontSize: 13,
-              fontWeight: 700,
-              cursor: (generating || children.length === 0) ? 'not-allowed' : 'pointer',
-              opacity: (generating || children.length === 0) ? 0.55 : 1,
-              boxShadow: '0 4px 14px rgba(16,185,129,0.25)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 7,
-            }}
+            className="btn btn-primary btn-md btn-full"
           >
             {generating ? (
               <>
@@ -343,17 +326,7 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
           <span style={{ flex: 1 }}>{error}</span>
           <button
             onClick={() => { setError(''); handleGenerate(false); }}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: T.red,
-              fontFamily: T.sans,
-              fontSize: 11,
-              fontWeight: 600,
-              textDecoration: 'underline',
-              cursor: 'pointer',
-              padding: 0,
-            }}
+            className="btn btn-ghost btn-sm"
           >
             Retry
           </button>
@@ -418,23 +391,8 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               onClick={handleReview}
-              style={{
-                flex: 1,
-                padding: '10px 14px',
-                borderRadius: 10,
-                background: 'linear-gradient(180deg, #34d399, #10b981)',
-                border: '1px solid rgba(52,211,153,0.55)',
-                color: '#06281a',
-                fontFamily: T.sans,
-                fontSize: 13,
-                fontWeight: 700,
-                cursor: 'pointer',
-                boxShadow: '0 4px 14px rgba(16,185,129,0.25)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-              }}
+              className="btn btn-primary btn-md"
+              style={{ flex: 1 }}
             >
               {t('weeklyWrap.reviewButton')}
               <ArrowRight size={14} strokeWidth={2} />
@@ -442,18 +400,7 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
             <button
               onClick={() => { setResult(null); handleGenerate(true); }}
               title={t('weeklyWrap.regenerateTitle')}
-              style={{
-                padding: '10px 12px',
-                borderRadius: 10,
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.10)',
-                color: T.textSecondary,
-                fontFamily: T.sans,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+              className="btn btn-secondary btn-icon btn-md"
             >
               <RotateCw size={14} strokeWidth={1.75} />
             </button>

@@ -94,14 +94,8 @@ function IconBtn({
       aria-label={title}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      className={`mt-icon-btn ${className}`.trim()}
-      style={{
-        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-        height: 36, padding: '8px 10px',
-        background: bg, border: 0, borderRadius: 10, color: '#fff',
-        cursor: 'pointer', position: 'relative', flexShrink: 0,
-        transition: 'background 140ms ease', fontFamily: SANS,
-      }}
+      className={`btn ${recording ? 'btn-danger' : 'btn-secondary'} btn-icon btn-sm mt-icon-btn ${className}`.trim()}
+      style={{ position: 'relative', flexShrink: 0 }}
     >
       {recording && (
         <span aria-hidden="true" style={{
@@ -679,17 +673,8 @@ function DashboardHeader() {
                         }}
                       />
                       <div style={{ display: 'flex', gap: 6 }}>
-                        <button onClick={() => setShowAddTeacher(false)} style={{
-                          flex: 1, padding: '5px 0', background: 'transparent',
-                          border: `1px solid ${C.divider}`, borderRadius: 6,
-                          color: C.textMute, fontSize: 12, cursor: 'pointer', fontFamily: SANS,
-                        }}>{t('common.cancel')}</button>
-                        <button onClick={handleAddTeacher} disabled={!newTeacherName.trim() || addingTeacher} style={{
-                          flex: 1, padding: '5px 0',
-                          background: 'rgba(52,211,153,0.15)', border: `1px solid ${C.border}`,
-                          borderRadius: 6, color: C.emerald, fontSize: 12, cursor: 'pointer',
-                          fontFamily: SANS, opacity: !newTeacherName.trim() || addingTeacher ? 0.45 : 1,
-                        }}>{addingTeacher ? t('common.adding') : t('common.add')}</button>
+                        <button onClick={() => setShowAddTeacher(false)} className="btn btn-ghost btn-outline btn-sm" style={{ flex: 1 }}>{t('common.cancel')}</button>
+                        <button onClick={handleAddTeacher} disabled={!newTeacherName.trim() || addingTeacher} className="btn btn-primary btn-sm" style={{ flex: 1 }}>{addingTeacher ? t('common.adding') : t('common.add')}</button>
                       </div>
                     </div>
                   )}
@@ -1077,11 +1062,7 @@ function DashboardHeader() {
               animation: 'montree-pulse-ring 1.4s ease-out infinite',
             }} />
             <span>{t('dashboard.recording')} {recordingSeconds}s</span>
-            <button onClick={stopRecording} style={{
-              marginLeft: 8, padding: '2px 10px', background: 'rgba(255,255,255,0.25)',
-              border: 0, borderRadius: 5, color: '#fff', fontSize: 12,
-              cursor: 'pointer', fontFamily: SANS,
-            }}>{t('dashboard.done')}</button>
+            <button onClick={stopRecording} className="btn btn-secondary btn-sm" style={{ marginLeft: 8 }}>{t('dashboard.done')}</button>
           </div>
         )}
 
@@ -1096,18 +1077,10 @@ function DashboardHeader() {
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
               {students.map(s => (
-                <button key={s.id} onClick={() => saveVoiceNote(s.id)} style={{
-                  padding: '4px 12px', background: C.emeraldSoft,
-                  border: `1px solid ${C.border}`, borderRadius: 20,
-                  color: C.emerald, fontSize: 12, fontWeight: 500,
-                  cursor: 'pointer', fontFamily: SANS,
-                }}>{s.name}</button>
+                <button key={s.id} onClick={() => saveVoiceNote(s.id)} className="btn btn-secondary btn-sm btn-pill">{s.name}</button>
               ))}
             </div>
-            <button onClick={() => saveVoiceNote(null)} style={{
-              background: 'none', border: 0, color: C.textMute,
-              fontSize: 12, cursor: 'pointer', fontFamily: SANS,
-            }}>{t('dashboard.skipTag')}</button>
+            <button onClick={() => saveVoiceNote(null)} className="btn btn-ghost btn-sm">{t('dashboard.skipTag')}</button>
           </div>
         )}
 
@@ -1137,10 +1110,7 @@ function DashboardHeader() {
                   }}
                 />
                 {searchQuery && (
-                  <button onClick={() => { setSearchQuery(''); setShowDropdown(false); }} style={{
-                    padding: '0 10px', background: 'none', border: 0,
-                    color: C.textMute, cursor: 'pointer', fontSize: 14,
-                  }}>✕</button>
+                  <button onClick={() => { setSearchQuery(''); setShowDropdown(false); }} className="btn btn-ghost btn-icon btn-sm">✕</button>
                 )}
               </div>
 

@@ -218,14 +218,14 @@ export default function VoiceObservationReview({ sessionId, onCommitted }: Props
           {highConfidence > 0 && (
             <button
               onClick={handleApproveHighConfidence}
-              className="px-3 py-1.5 text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition"
+              className="btn btn-primary btn-sm on-light"
             >
               {t('voiceObs.approveHighConfidence') || `✓ Approve High Confidence (${highConfidence})`}
             </button>
           )}
           <button
             onClick={handleApproveAll}
-            className="px-3 py-1.5 text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 transition"
+            className="btn btn-secondary btn-sm on-light"
           >
             {t('voiceObs.approveAll') || `✓ Approve All (${pending})`}
           </button>
@@ -262,7 +262,7 @@ export default function VoiceObservationReview({ sessionId, onCommitted }: Props
           <button
             onClick={handleCommit}
             disabled={committing || unmatched > 0}
-            className="w-full py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn btn-primary btn-lg btn-full on-light"
           >
             {committing
               ? (t('voiceObs.committing') || 'Committing...')

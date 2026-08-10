@@ -7,7 +7,6 @@
  */
 
 import { Fragment, useState, useEffect, useCallback, useRef } from 'react';
-import { INTERNAL_DEVICE_KEY } from '@/components/montree/VisitorTracker';
 
 interface Visitor {
   id: string;
@@ -22,7 +21,6 @@ interface Visitor {
   user_agent: string | null;
   fingerprint: string | null;
   visited_at: string;
-  is_internal?: boolean;
 }
 
 interface CountryBreakdown {
@@ -182,54 +180,6 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
   const [geoExpanded, setGeoExpanded] = useState<Set<string>>(new Set());
   const geoAbortRef = useRef<AbortController | null>(null);
 
-  // Internal-traffic exclusion (migration 324). Default: excluded — Tredoux's
-  // own devices, once marked, shouldn't inflate the numbers he's checking.
-  const [includeInternal, setIncludeInternal] = useState(false);
-  // Whether THIS browser is flagged as one of Tredoux's own devices
-  // (localStorage, read by VisitorTracker.tsx on every future beacon).
-  const [isMyDevice, setIsMyDevice] = useState(false);
-  const [markingFingerprint, setMarkingFingerprint] = useState<string | null>(null);
-
-  useEffect(() => {
-    try {
-      setIsMyDevice(window.localStorage.getItem(INTERNAL_DEVICE_KEY) === '1');
-    } catch {
-      // localStorage unavailable — leave default false.
-    }
-  }, []);
-
-  const toggleMyDevice = useCallback(() => {
-    try {
-      const next = !isMyDevice;
-      window.localStorage.setItem(INTERNAL_DEVICE_KEY, next ? '1' : '0');
-      setIsMyDevice(next);
-    } catch {
-      // localStorage unavailable — nothing to persist.
-    }
-  }, [isMyDevice]);
-
-  const markFingerprintInternal = useCallback(async (fingerprint: string | null) => {
-    if (!saToken || !fingerprint) return;
-    setMarkingFingerprint(fingerprint);
-    try {
-      const res = await fetch('/api/montree/super-admin/visitors-mark-internal', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-super-admin-token': saToken },
-        body: JSON.stringify({ fingerprint, internal: true }),
-      });
-      if (res.ok) {
-        // Reflect immediately in the current Live feed without a refetch.
-        setVisitors(prev => prev.map(v => (v.fingerprint === fingerprint ? { ...v, is_internal: true } : v)));
-      } else {
-        console.error('[VisitorsTab] mark-internal failed:', res.status);
-      }
-    } catch (err) {
-      console.error('[VisitorsTab] mark-internal error:', err);
-    } finally {
-      setMarkingFingerprint(null);
-    }
-  }, [saToken]);
-
   const fetchVisitors = useCallback(async () => {
     if (!saToken) {
       setLoading(false);
@@ -249,7 +199,6 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
         limit: '200',
       });
       if (countryFilter) params.set('country', countryFilter);
-      if (includeInternal) params.set('include_internal', '1');
 
       const res = await fetch(`/api/montree/visitors?${params}`, {
         headers: { 'x-super-admin-token': saToken },
@@ -273,7 +222,7 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
     } finally {
       setLoading(false);
     }
-  }, [saToken, days, countryFilter, includeInternal]);
+  }, [saToken, days, countryFilter]);
 
   useEffect(() => {
     fetchVisitors();
@@ -289,9 +238,7 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
     setFunnelLoading(true);
     setFunnelError(null);
     try {
-      const params = new URLSearchParams({ days: String(days) });
-      if (includeInternal) params.set('include_internal', '1');
-      const res = await fetch(`/api/montree/super-admin/traffic-funnel?${params}`, {
+      const res = await fetch(`/api/montree/super-admin/traffic-funnel?days=${days}`, {
         headers: { 'x-super-admin-token': saToken },
         signal: ac.signal,
       });
@@ -307,7 +254,7 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
     } finally {
       setFunnelLoading(false);
     }
-  }, [saToken, days, includeInternal]);
+  }, [saToken, days]);
 
   // Load the funnel lazily — only when the funnel view is open (or days change while open).
   useEffect(() => {
@@ -327,7 +274,6 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
     try {
       const params = new URLSearchParams({ days: String(days), min_visits: '1' });
       if (geoCountry) params.set('country', geoCountry);
-      if (includeInternal) params.set('include_internal', '1');
       const res = await fetch(`/api/montree/super-admin/geo-match?${params}`, {
         headers: { 'x-super-admin-token': saToken },
         signal: ac.signal,
@@ -351,7 +297,7 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
     } finally {
       setGeoLoading(false);
     }
-  }, [saToken, days, geoCountry, includeInternal]);
+  }, [saToken, days, geoCountry]);
 
   // Load geo match lazily — only when the geo view is open (or days/country change while open).
   useEffect(() => {
@@ -408,10 +354,10 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
             <button
               key={d}
               onClick={() => setDays(d)}
-              className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+              className={`btn btn-sm ${
                 days === d
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-slate-800 text-slate-400 hover:text-white'
+                  ? 'btn-primary'
+                  : 'btn-secondary'
               }`}
             >
               {d}d
@@ -425,10 +371,10 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
             <button
               key={v}
               onClick={() => setView(v)}
-              className={`px-3 py-1.5 rounded text-sm font-medium transition-colors capitalize ${
+              className={`btn btn-sm capitalize ${
                 view === v
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-slate-800 text-slate-400 hover:text-white'
+                  ? 'btn-primary'
+                  : 'btn-secondary'
               }`}
             >
               {v === 'live' ? '\u{1F4E1} Live' : v === 'countries' ? '\u{1F30D} Countries' : v === 'cities' ? '\u{1F3D9} Cities' : v === 'pages' ? '\u{1F4C4} Pages' : v === 'funnel' ? '\u{1F3AF} Funnel' : '\u{1F5FA}\u{FE0F} Geo Match'}
@@ -440,45 +386,16 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
         <button
           onClick={fetchVisitors}
           disabled={loading}
-          className="px-3 py-1.5 rounded text-sm font-medium bg-slate-800 text-slate-400 hover:text-white transition-colors disabled:opacity-50"
+          className="btn btn-secondary btn-sm"
         >
           {loading ? '\u{23F3}' : '\u{1F504}'} Refresh
-        </button>
-
-        {/* Internal-traffic exclusion (migration 324) — default excluded. */}
-        <label
-          className="flex items-center gap-1.5 text-xs text-slate-400 cursor-pointer select-none px-2"
-          title="Rows marked internal (Tredoux's own devices/VPN) are excluded from every number above by default."
-        >
-          <input
-            type="checkbox"
-            checked={includeInternal}
-            onChange={e => setIncludeInternal(e.target.checked)}
-            className="accent-emerald-500"
-          />
-          Include my devices
-        </label>
-
-        {/* Hidden-in-plain-sight self-marking toggle — sets a localStorage
-            flag on THIS browser so every future visit from it is inserted as
-            internal (VisitorTracker.tsx). Deliberately small/muted text, not
-            a prominent button — this is a super-admin-only maintenance
-            action, not a feature. */}
-        <button
-          onClick={toggleMyDevice}
-          title="Marks THIS browser as one of your own devices — future visits from it are excluded from the stats by default."
-          className={`px-2 py-1 rounded text-[11px] transition-colors ${
-            isMyDevice ? 'text-emerald-400' : 'text-slate-600 hover:text-slate-400'
-          }`}
-        >
-          {isMyDevice ? '\u{1F3E0} this device is mine' : 'mark this device as mine'}
         </button>
 
         {/* Country filter clear */}
         {countryFilter && (
           <button
             onClick={() => setCountryFilter(null)}
-            className="px-3 py-1.5 rounded text-sm font-medium bg-red-600/30 text-red-300 hover:bg-red-600/50 transition-colors"
+            className="btn btn-danger btn-soft btn-sm"
           >
             \u{2715} {countryFilter}
           </button>
@@ -491,7 +408,7 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
           <span>{error}</span>
           <button
             onClick={fetchVisitors}
-            className="ml-3 px-3 py-1 rounded text-xs font-medium bg-red-700/40 hover:bg-red-700/60 transition-colors"
+            className="btn btn-danger btn-soft btn-sm ml-3"
           >
             Retry
           </button>
@@ -533,7 +450,7 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
                   {v.country && (
                     <button
                       onClick={() => setCountryFilter(v.country)}
-                      className="text-slate-600 hover:text-emerald-400 text-xs transition-colors"
+                      className="btn btn-ghost btn-sm"
                       title="Filter by country"
                     >
                       [filter]
@@ -555,21 +472,6 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
                 <div className="text-xs text-slate-500">{shortenUA(v.user_agent)}</div>
                 <div className="text-xs text-slate-600">{formatTimeAgo(v.visited_at)}</div>
               </div>
-
-              {/* Mark internal — retroactively flags every row sharing this
-                  fingerprint as one of Tredoux's own devices (migration 324
-                  is_internal). Recognizable clusters (VPN cities etc.) get
-                  cleaned out of the stats without needing DB access. */}
-              <button
-                onClick={() => markFingerprintInternal(v.fingerprint)}
-                disabled={!v.fingerprint || markingFingerprint === v.fingerprint || v.is_internal === true}
-                title={v.is_internal ? 'Marked as internal' : 'Mark this device/fingerprint as internal (excludes it from the stats)'}
-                className={`flex-shrink-0 text-xs px-1.5 transition-colors disabled:cursor-default ${
-                  v.is_internal ? 'text-emerald-500' : 'text-slate-700 hover:text-amber-400 opacity-60 hover:opacity-100'
-                }`}
-              >
-                {markingFingerprint === v.fingerprint ? '\u{23F3}' : '\u{1F3E0}'}
-              </button>
             </div>
           ))}
         </div>
@@ -675,7 +577,7 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
               <span>{funnelError}</span>
               <button
                 onClick={fetchFunnel}
-                className="ml-3 px-3 py-1 rounded text-xs font-medium bg-red-700/40 hover:bg-red-700/60 transition-colors"
+                className="btn btn-danger btn-soft btn-sm ml-3"
               >
                 Retry
               </button>
@@ -792,7 +694,7 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
             <button
               onClick={fetchGeo}
               disabled={geoLoading}
-              className="px-3 py-1.5 rounded text-sm font-medium bg-slate-800 text-slate-400 hover:text-white transition-colors disabled:opacity-50"
+              className="btn btn-secondary btn-sm"
             >
               {geoLoading ? '\u{23F3}' : '\u{1F504}'} Refresh
             </button>
@@ -803,7 +705,7 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
               <span>{geoError}</span>
               <button
                 onClick={fetchGeo}
-                className="ml-3 px-3 py-1 rounded text-xs font-medium bg-red-700/40 hover:bg-red-700/60 transition-colors"
+                className="btn btn-danger btn-soft btn-sm ml-3"
               >
                 Retry
               </button>

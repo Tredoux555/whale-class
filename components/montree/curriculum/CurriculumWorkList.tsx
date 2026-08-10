@@ -173,7 +173,7 @@ export default function CurriculumWorkList({
                 </button>
                 {/* Delete button */}
                 <button onClick={() => onDeleteWork(work)}
-                  style={{ width: 32, height: 32, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 14 }}
+                  className="btn btn-secondary btn-icon btn-sm"
                   title={t('curriculum.deleteWork')}>
                   🗑️
                 </button>
@@ -286,8 +286,7 @@ function ExpandedWorkDetails({
             <img src={currentPhotoUrl} alt={work.name} width={128} height={96} loading="lazy" decoding="async" style={{ width: 128, height: 96, objectFit: 'cover', borderRadius: 12, border: '1px solid rgba(52,211,153,0.20)' }} />
             <button
               onClick={handleRemovePhoto}
-              className="absolute top-1 right-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
-              style={{ width: 24, height: 24, background: '#ef4444', color: 'white', borderRadius: '50%', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.4)' }}
+              className="btn btn-danger btn-icon btn-round btn-sm absolute top-1 right-1 sm:opacity-0 sm:group-hover:opacity-100"
               title={t('curriculum.removePhoto')}
             >
               ×
@@ -327,7 +326,7 @@ function ExpandedWorkDetails({
                   href={`https://youtube.com/results?search_query=${encodeURIComponent('montessori ' + work.name + ' presentation')}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px', background: '#ef4444', color: 'white', fontSize: 11, fontWeight: 700, borderRadius: 8, textDecoration: 'none' }}
+                  className="btn btn-danger btn-sm"
                 >
                   🎬 {t('curriculum.video')}
                 </a>
@@ -348,7 +347,7 @@ function ExpandedWorkDetails({
           href={`https://youtube.com/results?search_query=${encodeURIComponent('montessori ' + work.name + ' presentation')}`}
           target="_blank"
           rel="noopener noreferrer"
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px 16px', background: '#ef4444', color: 'white', fontFamily: '"Inter", sans-serif', fontWeight: 700, fontSize: 14, borderRadius: 12, textDecoration: 'none' }}
+          className="btn btn-danger btn-md"
         >
           🎬 {t('curriculum.watchPresentationVideo')}
         </a>
@@ -358,8 +357,7 @@ function ExpandedWorkDetails({
       {onOpenFullDetails && (
         <button
           onClick={() => onOpenFullDetails(work.name, work.name_chinese)}
-          className="w-full active:scale-[0.98] transition-all"
-          style={{ padding: '12px 16px', background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', borderRadius: 12, color: '#06281a', fontFamily: '"Inter", sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 4px 14px rgba(16,185,129,0.25)' }}
+          className="btn btn-primary btn-md btn-full"
         >
           📚 {t('curriculum.fullDetails')}
         </button>

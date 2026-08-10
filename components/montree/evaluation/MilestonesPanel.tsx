@@ -229,7 +229,7 @@ export function MilestonesPanel({ childId }: { childId: string }) {
     return (
       <Shell>
         <Notice title={t('milestones.loadFailed')} body={state.detail} />
-        <button onClick={() => void load()} style={btnStyle(true)}>{t('common.tryAgain')}</button>
+        <button onClick={() => void load()} className="btn btn-primary btn-md">{t('common.tryAgain')}</button>
       </Shell>
     );
   }
@@ -274,7 +274,7 @@ export function MilestonesPanel({ childId }: { childId: string }) {
             {t('milestones.intro')}
           </p>
         </div>
-        <Link href={startHref} style={{ ...btnStyle(true), textDecoration: 'none' }} data-guide="milestones-start">
+        <Link href={startHref} className="btn btn-primary btn-md" style={{ textDecoration: 'none' }} data-guide="milestones-start">
           {t('milestones.start')}
         </Link>
       </div>
@@ -321,7 +321,7 @@ export function MilestonesPanel({ childId }: { childId: string }) {
           <p style={{ color: T.textMd, fontSize: 13.5, lineHeight: 1.6, margin: '0 0 12px', maxWidth: 620 }}>
             {t('milestones.canopyReadyBody')}
           </p>
-          <Link href={startHref} style={{ ...btnStyle(false), textDecoration: 'none', fontSize: 14 }}>
+          <Link href={startHref} className="btn btn-secondary btn-md" style={{ textDecoration: 'none' }}>
             {t('milestones.canopyReadyCta')}
           </Link>
         </div>

@@ -507,20 +507,8 @@ export default function MiraFloat() {
         style={{
           position: 'fixed',
           zIndex: 35,
-          width: 56,
-          height: 56,
-          padding: 0,
-          background: 'rgba(8,20,12,0.85)',
-          border: '1px solid rgba(232,201,106,0.45)',
-          borderRadius: '50%',
-          cursor: 'pointer',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transition: 'transform 0.18s ease, box-shadow 0.18s ease',
         }}
-        className="mira-float-trigger"
+        className="btn btn-secondary btn-icon btn-round btn-lg mira-float-trigger"
       >
         <MiraAvatar size={42} />
         {hasUnread && (
@@ -619,15 +607,7 @@ export default function MiraFloat() {
         <button
           onClick={() => setOpen(false)}
           aria-label="Close Mira"
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: T.textMuted,
-            cursor: 'pointer',
-            padding: 4,
-            display: 'flex',
-            alignItems: 'center',
-          }}
+          className="btn btn-ghost btn-icon btn-sm"
         >
           <Minus size={18} strokeWidth={1.75} />
         </button>
@@ -732,20 +712,8 @@ export default function MiraFloat() {
             onClick={() => submit()}
             disabled={!question.trim() || submitting}
             aria-label="Send"
-            style={{
-              background: question.trim() ? T.gold : 'rgba(232,201,106,0.18)',
-              color: question.trim() ? '#07120c' : T.textMuted,
-              border: 'none',
-              borderRadius: 10,
-              width: 34,
-              height: 34,
-              cursor: question.trim() && !submitting ? 'pointer' : 'default',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              transition: 'background 0.15s ease',
-            }}
+            className={`btn btn-icon btn-sm ${question.trim() ? 'btn-gold' : 'btn-secondary'}`}
+            style={{ flexShrink: 0 }}
           >
             <Send size={16} strokeWidth={2} />
           </button>
@@ -854,35 +822,14 @@ function AssistantBubble({
             <button
               onClick={onAccept}
               disabled={disabled}
-              style={{
-                padding: '7px 14px',
-                background: T.gold,
-                color: '#07120c',
-                border: 'none',
-                borderRadius: 9,
-                fontFamily: T.sans,
-                fontSize: 13.5,
-                fontWeight: 600,
-                cursor: disabled ? 'default' : 'pointer',
-                opacity: disabled ? 0.6 : 1,
-              }}
+              className="btn btn-gold btn-sm"
             >
               Yes, please
             </button>
             <button
               onClick={onDecline}
               disabled={disabled}
-              style={{
-                padding: '7px 14px',
-                background: 'transparent',
-                color: T.textSecondary,
-                border: '1px solid rgba(255,255,255,0.16)',
-                borderRadius: 9,
-                fontFamily: T.sans,
-                fontSize: 13.5,
-                cursor: disabled ? 'default' : 'pointer',
-                opacity: disabled ? 0.6 : 1,
-              }}
+              className="btn btn-ghost btn-outline btn-sm"
             >
               Not now
             </button>
