@@ -9,6 +9,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
+import { fetchVisitorsSince, wantsInternalIncluded } from '@/lib/montree/visitors';
 
 export async function GET(request: NextRequest) {
   // Auth check
@@ -23,6 +24,7 @@ export async function GET(request: NextRequest) {
   const offset = Math.max(parseInt(searchParams.get('offset') || '0', 10), 0);
   const country = searchParams.get('country');
   const page = searchParams.get('page_url');
+  const includeInternal = wantsInternalIncluded(searchParams);
 
   const supabase = getSupabase();
 
@@ -30,43 +32,53 @@ export async function GET(request: NextRequest) {
   since.setDate(since.getDate() - days);
   const sinceISO = since.toISOString();
 
-  // Build query
-  let query = supabase
-    .from('montree_visitors')
-    .select('*', { count: 'exact' })
-    .gte('visited_at', sinceISO)
-    .order('visited_at', { ascending: false })
-    .range(offset, offset + limit - 1);
+  // Build query — a single page for the Live feed list (already paginated
+  // via limit/offset, so no 1,000-row cap concern here).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const buildListQuery = (filterInternal: boolean): any => {
+    let q = supabase
+      .from('montree_visitors')
+      .select('*', { count: 'exact' })
+      .gte('visited_at', sinceISO)
+      .order('visited_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+    if (country) q = q.eq('country', country);
+    if (page) {
+      // Escape SQL wildcards: %, _, and backslash
+      const escapedPage = page.replace(/[\\%_]/g, '\\$&');
+      q = q.ilike('page_url', `%${escapedPage}%`);
+    }
+    if (filterInternal) q = q.eq('is_internal', false);
+    return q;
+  };
 
-  if (country) {
-    query = query.eq('country', country);
+  let { data, error, count } = await buildListQuery(!includeInternal);
+  if (error?.code === '42703') {
+    // is_internal (migration 324) not run yet — retry unfiltered.
+    ({ data, error, count } = await buildListQuery(false));
   }
-  if (page) {
-    // Escape SQL wildcards: %, _, and backslash
-    const escapedPage = page.replace(/[\\%_]/g, '\\$&');
-    query = query.ilike('page_url', `%${escapedPage}%`);
-  }
-
-  const { data, error, count } = await query;
 
   if (error) {
     console.error('[VISITORS] Fetch error:', error.code);
     return NextResponse.json({ error: 'Failed to fetch visitors' }, { status: 500 });
   }
 
-  // Aggregate stats (cap at 50K rows to prevent unbounded memory)
-  let statsQuery = supabase
-    .from('montree_visitors')
-    .select('country, country_code, city, fingerprint, page_url')
-    .gte('visited_at', sinceISO)
-    .limit(50000);
-
-  // Apply country filter to stats too so numbers match the filtered view
-  if (country) {
-    statsQuery = statsQuery.eq('country', country);
-  }
-
-  const { data: statsData } = await statsQuery;
+  // 🚨 FIXED — this used to be a single `.limit(50000)` select, which
+  // Supabase/PostgREST's server-side max-rows setting (commonly 1000)
+  // silently truncates regardless of the requested limit. A 90-day window
+  // holding 3,000+ visits was undercounted and looked identical to a 30-day
+  // window. fetchVisitorsSince pages past that cap via .range() and applies
+  // the internal-traffic exclusion filter (drift-safe).
+  const statsData = await fetchVisitorsSince<{
+    country: string | null;
+    country_code: string | null;
+    city: string | null;
+    fingerprint: string | null;
+    page_url: string | null;
+  }>(supabase, 'country, country_code, city, fingerprint, page_url', sinceISO, {
+    includeInternal,
+    extra: country ? (q) => q.eq('country', country) : undefined,
+  });
 
   // Compute aggregates
   const uniqueVisitors = new Set((statsData?.map(v => v.fingerprint) || []).filter(Boolean)).size;
