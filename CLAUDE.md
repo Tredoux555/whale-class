@@ -38,6 +38,34 @@
    never executed directly). Authorized by Tredoux in chat on 2026-08-04, after being explicitly
    warned this removes the separate pre-deploy approval gate for a production app.
 
+## 🔒 DESIGN SYSTEM — LOCKED (2026-08-10)
+
+The Montree button system, **"Soft Elevation"**, is LOCKED IN by Tredoux as the mandatory
+standard for all future Montree UI. It was chosen from a 3-option proof
+(`proof/pss-button-options.html`) and rolled out across ~2,000 existing buttons
+(commits `4561158f`, `4e459134`, `2660c121`, `139804e2`, `da91a090`). It lives in
+`app/globals.css` ("MONTREE BUTTON SYSTEM — SOFT ELEVATION": `--mt-*` tokens + `.btn`
+rules) with mirrored tokens in `tailwind.config.ts`.
+
+**Rule: NEVER hand-roll button styling.** Every button/CTA/action link uses
+`className="btn btn-<variant> btn-<size>"` (variants: primary/secondary/ghost/danger/gold;
+sizes: sm/md/lg; modifiers: full/icon/round/pill/outline/soft/glow; add `on-light` on
+light surfaces) — no ad-hoc `bg-*`/`shadow-*`/`rounded-*` or inline `style={{ background:
+… }}`. Full class API, tokens, and copy-paste snippets: `docs/design/MONTREE_DESIGN_SYSTEM.md`.
+Mechanical conversion rules: `docs/design/CONVERSION_GUIDE.md`. Handoff:
+`HANDOFF_DESIGN_LOCKIN_2026-08-10.md`.
+
+**Protected separate brands — do NOT use `.btn` there, they keep their own systems:**
+PSS/Potato Snaps `pt-*` (`app/potato/**`), Montree Home `HOME_THEME`+`BIO`
+(`lib/montree/home-theme.ts`, `lib/montree/bioluminescent-theme.ts`), funnel `fn-*`/
+`FUNNEL_CSS` (`components/montree/funnel/funnel-theme.ts`), kids' games
+(`lib/games/design-system.ts`), personal platform "Sanctuary" (`lib/story/personal-theme.ts`),
+Milestones child palette `C` (`components/montree/evaluation/tokens.ts`).
+
+**PSS rename note:** "Potato Snaps" is now called **PSS** cosmetically (user-facing
+naming only) — routes (`/potato`, `/api/potato`), table prefixes (`tp_`), and all other
+identifiers are UNCHANGED.
+
 ## 🥔 SESSION — Aug 7, 2026 (Cowork/Fable directing Sonnet+Opus) — POTATO SNAPS BUILT (standalone montage app for teacherpotato.xyz)
 
 **Potato Snaps shipped to the repo: teacher photographs kids → per-child weekly bars toward 8 → "Make montage" → potato-worker renders → parents watch via per-child code. TOTALLY separate from Montree: tp_ tables only, private `potato-snaps` bucket, /potato + /api/potato routes, cookies potato_teacher/potato_parent, hardcoded English (no i18n keys), zero lib/montree imports (only lib/supabase-client). Canonical: `docs/handoffs/SESSION_POTATO_SNAPS_AUG7.md` + `docs/handoffs/potato-snaps/` (binding contract, build notes, Sonnet audit SHIP-WITH-NOTES 0 CRIT/1 HIGH fixed, Tredoux-approved design spec). ⏳ PENDING: migration 318 (SQL pasted in chat Aug 7), potato-worker Railway service creation (root dir potato-worker, 4vCPU/4GB, envs DATABASE_URL+SUPABASE_URL+SUPABASE_SERVICE_ROLE_KEY, blank start command), live walk on www.teacherpotato.xyz. 🚨 RULES: Potato Snaps never touches montree_ tables; proxy bucket allowlist stays exactly one bucket; parents never get raw photos; board count query and montage media_ids derivation stay the same query shape (WYSIWYG).**

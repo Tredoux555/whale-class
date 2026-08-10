@@ -1,5 +1,35 @@
 # Whale / Montree — Latest Handoff
 
+## 🔒 Aug 10 (Cowork) — MONTREE DESIGN SYSTEM LOCKED IN ("Soft Elevation" buttons)
+
+**LOCK-IN (Tredoux, binding):** the "Soft Elevation" button system — chosen from a
+3-option proof (`proof/pss-button-options.html`: Soft Elevation vs. Lunchbox Forest vs.
+Arcade Press) — is now the mandatory standard for all future Montree UI. It was already
+rolled out across ~2,000 existing buttons app-wide in 5 commits (`4561158f`, `4e459134`,
+`2660c121`, `139804e2`, `da91a090`); this session locks it in as permanent, not a draft.
+System lives in `app/globals.css` ("MONTREE BUTTON SYSTEM — SOFT ELEVATION": `--mt-*`
+tokens + `.btn` base/variants/sizes/modifiers) with mirrored tokens in
+`tailwind.config.ts`. **Rule going forward: never hand-roll button styling — every
+button/CTA uses `btn btn-<variant> btn-<size>` (+ modifiers), full stop.**
+
+**Docs written this session:**
+- `docs/design/MONTREE_DESIGN_SYSTEM.md` — canonical spec: class API reference, design
+  token recipe (soft shadow + hairline + gradient + press), protected separate brands
+  list, deliberate exclusions, open items (no blue/info variant, no soft-primary, no
+  sub-sm chip size), copy-paste starter snippets.
+- `docs/design/CONVERSION_GUIDE.md` — mechanical conversion rules (copied from repo root,
+  unchanged) for anyone still converting stragglers.
+- `HANDOFF_DESIGN_LOCKIN_2026-08-10.md` (repo root) — practical handoff for the next
+  builder/session: what happened, where it lives, what to do next, what's excluded.
+- Pointers added to `CLAUDE.md` (new locked-design section near the top) and
+  `PROJECT_CONTEXT.md` (Technical Stack section).
+
+**Protected separate brands (unchanged, not touched by this rollout):** PSS/Potato Snaps
+`pt-*`, Montree Home `HOME_THEME`+`BIO`, funnel `fn-*`/`FUNNEL_CSS`, kids' games
+`lib/games/design-system.ts`, personal platform `lib/story/personal-theme.ts`, Milestones
+child palette `C` in `components/montree/evaluation/tokens.ts` — see the design doc §4
+for the full file list.
+
 ## 🔒 Aug 1 (Cowork) — SEPARATION + ALPHABET SERIES
 
 **PRODUCT SEPARATION RULING (Tredoux, binding, do not relitigate)**: the montree SATPIN library
