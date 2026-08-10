@@ -1,3 +1,33 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# DOCKER BUILD CONTEXT FILTER
+#
+# This file is the single biggest lever on Railway deploy time. Before it was
+# expanded, the context was ~6 GB (asset kits, image corpora, archives, zips)
+# and every deploy re-uploaded all of it before Docker even started.
+#
+# MATCHING RULES (moby/patternmatcher — same engine BuildKit uses):
+#   • A leading "/" is stripped when the file is parsed, so "/docs" == "docs".
+#     We write the slash anyway to DOCUMENT that the pattern is root-anchored.
+#   • "*" does NOT cross "/". So "*.md" matches ONLY root-level .md files —
+#     it does NOT match lib/story/coach/knowledge/*.md. Use "**/" for any-depth.
+#   • Last matching line wins, so "!" exceptions must come after the exclusion.
+#
+# 🚨 THINGS THAT MUST NEVER BE EXCLUDED (verified by grepping the source):
+#   public/          — 3.8 GB, but the Dockerfile copies it into
+#                      .next/standalone; the app 404s everything without it.
+#   data/            — lib/data.ts and lib/montree/guru/knowledge-retriever.ts
+#                      read process.cwd()/data/{videos.json,guru_knowledge/…}.
+#   scripts/         — app/api/whale/reports/pdf spawns
+#                      process.cwd()/scripts/generate_parent_report.py.
+#   *.xlsx at root   — app/api/montree/super-admin/master-outreach/download
+#                      reads process.cwd()/Montree_Master_Outreach.xlsx.
+#   lib/**/*.md      — runtime knowledge bases (story coach, mira, tracy,
+#                      social-media-guru) are loaded by readdir/readFile.
+#   assets/          — app/api/guides/language-making-guide reads it.
+#   .env             — NOT excluded; next build may read it. Only *.local is.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Original exclusions (kept verbatim) ──────────────────────────────────────
 node_modules
 .next
 .git
@@ -13,5 +43,65 @@ coverage
 dist
 build
 
+# Defensive: the "*.md" line above is root-level-only by Docker's rules, but
+# these markdown trees are read at RUNTIME — make it impossible to lose them.
+!lib/**/*.md
+!app/**/*.md
+!components/**/*.md
 
+# ── Large asset corpora (zero references in app/ lib/ components/) ───────────
+/materials-out
+/phonics-images
+/docs
+/_video_assets
+/_assets_incoming
 
+# ── Native / Capacitor build outputs (web build is `next build` only; the
+#    native path is `npm run build:native`, which is never run in this image) ─
+/android
+/ios
+/native
+/native-assets
+/out
+
+# ── Marketing + one-off asset kits (zero references) ─────────────────────────
+/evaluation-kit
+/montage-kit
+/Montree Kit*
+/Montree Marketing Kit
+/resume-branding-kit
+/social
+
+# ── Sibling services, not part of this image ────────────────────────────────
+/potato-worker
+/montage-worker
+
+# ── Archives, scratch dirs, incoming staging ────────────────────────────────
+/archive
+/_ARCHIVE
+/_to_delete
+/_verify
+/_incoming-*
+/_tmp_*
+
+# ── Dev-only tooling and tests (not imported by the build) ──────────────────
+/tests
+/.github
+/.githooks
+/.claude
+/.cursor
+
+# ── Junk / generated files at the context root ──────────────────────────────
+/*.zip
+/*.tar.gz
+/*.tgz
+/*.patch
+/*.command
+/*.pdf
+/tsconfig.*.tmp.json
+/.tsc-*.json
+/verify_seed_tmp*
+
+# ── Python bytecode anywhere (scripts/ ships .py, never .pyc) ───────────────
+**/__pycache__
+**/*.pyc
