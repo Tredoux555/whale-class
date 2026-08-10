@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
+import { useFeatures } from '@/hooks/useFeatures';
 import { ChevronLeft, Lock } from 'lucide-react';
 
 const SANS = "'Inter', -apple-system, system-ui, sans-serif";
@@ -58,6 +59,11 @@ function categoryLabel(category: string): string {
 export default function SchoolFeaturesPage() {
   const router = useRouter();
   const { t } = useI18n();
+  // The SHARED client feature cache (lib/montree/features/cache.ts, 5-min TTL)
+  // that DashboardHeader's isEnabled() reads from. The POST only invalidates the
+  // SERVER cache, so without this the three-dot menu kept the pre-toggle answer
+  // until the TTL lapsed or the window was refocused — "nothing saves".
+  const { invalidate: refreshFeatures } = useFeatures();
   const [features, setFeatures] = useState<SchoolFeature[]>([]);
   const [menuSyncedKeys, setMenuSyncedKeys] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -123,6 +129,11 @@ export default function SchoolFeaturesPage() {
           sync?.mapped && sync.teachersUpdated > 0
             ? ` ${t('schoolFeatures.menuUpdated').replace('{count}', String(sync.teachersUpdated))}`
             : '';
+        // Drop the stale client cache and refetch, so every useFeatures()
+        // consumer still on screen (the header's menu above all) reflects the
+        // new state without a reload.
+        refreshFeatures();
+
         toast.success(`${base}${menuNote}`, { duration: 1800 });
         setStatus({ tone: 'ok', text: `${base}${menuNote}` });
       } catch {
@@ -135,7 +146,7 @@ export default function SchoolFeaturesPage() {
         setSaving(null);
       }
     },
-    [saving, t]
+    [saving, t, refreshFeatures]
   );
 
   // Group by category, then sort the sections into CATEGORY_ORDER (the API

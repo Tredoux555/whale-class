@@ -10,8 +10,8 @@
 // teacher has seen every proposed create / update / archive and pressed Apply.
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, useRef, type ChangeEvent, type DragEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback, useMemo, useRef, Suspense, type ChangeEvent, type DragEvent } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { Upload, Camera, FileText, UserPlus, RefreshCw, Archive } from 'lucide-react';
 import { getSession } from '@/lib/montree/auth';
@@ -80,10 +80,15 @@ const SLOW_AFTER_MS = 90 * 1000;
 /** A fuzzy match below this deserves the teacher's eye, not a silent update. */
 const CLOSE_MATCH_CEILING = 0.97;
 
-export default function PhotoOnboardingPage() {
+function PhotoOnboardingContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = useI18n();
   const { isEnabled, loading: featuresLoading } = useFeatures();
+
+  // ?mode=update — same flow, framed as "refresh the class for a new year".
+  // Copy only; the state machine and the diff are identical in both modes.
+  const isUpdateMode = searchParams.get('mode') === 'update';
 
   const [loading, setLoading] = useState(true);
   const [classroomId, setClassroomId] = useState('');
@@ -355,7 +360,7 @@ export default function PhotoOnboardingPage() {
         </button>
         <h1 className="text-lg font-semibold text-white/95 flex items-center gap-2">
           <Upload className="w-5 h-5 text-emerald-400" />
-          {t('photoOnboarding.title')}
+          {isUpdateMode ? t('photoOnboarding.updateTitle') : t('photoOnboarding.title')}
         </h1>
       </div>
 
@@ -374,8 +379,15 @@ export default function PhotoOnboardingPage() {
           >
             <FileText className="w-10 h-10 mx-auto mb-3 text-emerald-400" />
             <h2 className="text-xl font-bold text-white/95 mb-2">{t('photoOnboarding.uploadCta')}</h2>
-            <p className="text-sm text-white/60 mb-1">{t('photoOnboarding.subtitle')}</p>
-            <p className="text-xs text-white/40 mb-5">{t('photoOnboarding.acceptedFormats')}</p>
+            <p className="text-sm text-white/60 mb-1">
+              {isUpdateMode ? t('photoOnboarding.updateSubtitle') : t('photoOnboarding.subtitle')}
+            </p>
+            <p className="text-xs text-white/40 mb-3">{t('photoOnboarding.acceptedFormats')}</p>
+            {/* Spells out all three outcomes — teachers were not discovering
+                that this flow also archives children who have left. */}
+            <p className="text-xs text-emerald-200/70 mb-5 leading-snug">
+              {t('photoOnboarding.diffExplainer')}
+            </p>
 
             <input
               ref={cameraInputRef}
@@ -533,6 +545,16 @@ export default function PhotoOnboardingPage() {
         </div>
       )}
     </div>
+  );
+}
+
+// useSearchParams() (the ?mode=update entry point) requires a Suspense
+// boundary in the app router — same convention as the media/montage pages.
+export default function PhotoOnboardingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0a1a0f]" />}>
+      <PhotoOnboardingContent />
+    </Suspense>
   );
 }
 

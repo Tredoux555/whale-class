@@ -30,8 +30,9 @@ export type FeatureKey =
   | 'feature_self_serve'
   // Work Rhythm: per-child, per-area time distribution over a week or a month
   // (/montree/dashboard/work-rhythm). Reads approved Paper Scan rows + confirmed
-  // photos; writes nothing. NO MIGRATION FILE — one run-once INSERT into
-  // montree_feature_definitions (see below), default OFF.
+  // photos; writes nothing. Migration 327 inserts the definition row (it was
+  // originally hand-inserted in production only, so a fresh database came up
+  // without it and the flag could never be turned on). Default OFF.
   | 'work_rhythm'
   | 'voice_observations'
   | 'raz_reading_tracker'

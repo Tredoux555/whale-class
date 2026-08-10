@@ -12,6 +12,10 @@ import {
   LayoutGrid, CalendarDays,
   BookMarked, Globe, Settings2, Settings, LogOut,
   MessageSquare, KeyRound, Calendar, UploadCloud, ListChecks, Sprout,
+  // ScanLine / Activity — Paper Scan + Work Rhythm rows in the legacy branch.
+  // Same icons the config-driven branch renders via MENU_REGISTRY, so the two
+  // menu modes look identical for these two features.
+  ScanLine, Activity,
   // Target / Sparkles / FolderOpen / TrendingUp / Users / BarChart2 removed with
   // the twelve dead menu_* rows (see the 🪦 note in the More menu). Images went
   // with them — its only other reference is the commented-out Photo Gallery row.
@@ -980,9 +984,26 @@ function DashboardHeader() {
                       rewrites each teacher's saved settings.menu — that is where a
                       new flag→menu pair belongs, NOT here.
                       The rows below survive because their keys ARE registered
-                      (weekly_admin_docs, raz_reading_tracker, english_corner,
-                      paperwork_tracker) and this branch still renders for a teacher
-                      whose /api/montree/teacher/menu fetch fails. */}
+                      (paper_scan, work_rhythm, weekly_admin_docs,
+                      raz_reading_tracker, english_corner, paperwork_tracker) and
+                      this branch still renders for a teacher whose
+                      /api/montree/teacher/menu fetch fails. */}
+                  {/* Paper Scan + Work Rhythm — both own a menu item through
+                      FEATURE_MENU_MAP (lib/montree/features/menu-sync.ts), so a
+                      teacher WITH a saved config gets the row moved for them when
+                      the flag flips. These two blocks are the same promise for the
+                      teacher WITHOUT one, who renders through this branch: before
+                      them, toggling either feature moved nothing here at all.
+                      Route + icon + label are taken from the MENU_REGISTRY entries
+                      so both menu modes render identically. Active state reads
+                      pathname directly — activePage has no branch for these
+                      routes, same as the School Features row below. */}
+                  {isEnabled('paper_scan') && (
+                    <MenuRow icon={ScanLine} label={t('paperScan.menuLabel')} active={pathname === '/montree/dashboard/paper-scan'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/paper-scan'); }} />
+                  )}
+                  {isEnabled('work_rhythm') && (
+                    <MenuRow icon={Activity} label={t('workRhythm.menuLabel')} active={pathname === '/montree/dashboard/work-rhythm'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/work-rhythm'); }} />
+                  )}
                   {isEnabled('weekly_admin_docs') && (
                     <MenuRow icon={CalendarDays} label={t('dashboard.weeklyPlan')} active={activePage === 'weekly-plan'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/weekly-admin-docs'); }} />
                   )}

@@ -21,6 +21,8 @@
 // super-admin call site (SchoolsTab) byte-identical.
 
 import { useState, useEffect, useCallback } from 'react';
+import { useFeatures } from '@/hooks/useFeatures';
+import { invalidateFeatures } from '@/lib/montree/features/cache';
 
 interface Feature {
   feature_key: string;
@@ -84,6 +86,13 @@ export default function SchoolFeaturesModal({
 }: SchoolFeaturesModalProps) {
   // No super-admin token ⇒ the school is looking at its own switchboard.
   const schoolMode = !sessionToken;
+  // School mode mounts inside the dashboard's FeaturesProvider, so invalidate()
+  // clears + REFETCHES the shared client cache the header's isEnabled() reads.
+  // Super-admin mode has no provider above it: useFeaturesContext falls back to
+  // the default value whose invalidate() is a no-op, which is exactly right —
+  // the admin is editing SOMEONE ELSE'S school and must not have their own
+  // header rebuilt. See refreshFeatureCache below.
+  const { invalidate: refreshOwnSchoolFeatures } = useFeatures();
   const [features, setFeatures] = useState<Feature[]>([]);
   const [menuSyncedKeys, setMenuSyncedKeys] = useState<string[]>([]);
   const [selfServe, setSelfServe] = useState(false);
@@ -151,6 +160,20 @@ export default function SchoolFeaturesModal({
     [schoolId, sessionToken, apiBase, schoolMode]
   );
 
+  // Every write above changes what isEnabled() should answer for THIS modal's
+  // school. The POST only clears the SERVER cache, so the client cache
+  // (lib/montree/features/cache.ts, 5-min TTL) has to be dropped here or the
+  // three-dot menu keeps showing the pre-toggle menu until the TTL lapses.
+  //
+  // Always keyed on the modal's own `schoolId` — never a blanket clear — so a
+  // super admin toggling school B cannot wipe the cache for school A. The
+  // provider refetch only fires in school mode, where the modal's school IS the
+  // signed-in school behind the header.
+  const refreshFeatureCache = useCallback(() => {
+    invalidateFeatures(schoolId);
+    if (schoolMode) refreshOwnSchoolFeatures();
+  }, [schoolId, schoolMode, refreshOwnSchoolFeatures]);
+
   // "… menus updated for N teachers" — the whole point of the sync.
   const menuNote = (sync?: MenuSync): string => {
     if (!sync || !sync.mapped) return '';
@@ -173,6 +196,7 @@ export default function SchoolFeaturesModal({
       setFeatures(prev =>
         prev.map(f => (f.feature_key === featureKey ? { ...f, enabled: next, overridden: true } : f))
       );
+      refreshFeatureCache();
       setStatus({
         tone: 'ok',
         text: `${next ? 'Enabled' : 'Disabled'} ${featureKey}${menuNote(data.menuSync)}`,
@@ -193,6 +217,7 @@ export default function SchoolFeaturesModal({
     try {
       const data = await postAction({ type: 'set_all', enabled });
       setFeatures(prev => prev.map(f => ({ ...f, enabled, overridden: true })));
+      refreshFeatureCache();
       setStatus({
         tone: 'ok',
         text: `${enabled ? 'Enabled' : 'Disabled'} ${data.updated ?? features.length} features${menuNote(data.menuSync)}`,
@@ -213,6 +238,7 @@ export default function SchoolFeaturesModal({
     try {
       await postAction({ type: 'give_control', enabled: next });
       setSelfServe(next);
+      refreshFeatureCache();
       setStatus({
         tone: 'ok',
         text: next
