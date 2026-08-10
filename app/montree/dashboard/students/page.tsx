@@ -629,6 +629,14 @@ export default function StudentsPage() {
         <div className="flex items-center gap-2">
           {!isHomeschoolParent(session) && (
             <button
+              onClick={() => router.push('/montree/dashboard/photo-onboarding')}
+              className="btn btn-secondary btn-sm"
+            >
+              📷 {t('photoOnboarding.entryButton')}
+            </button>
+          )}
+          {!isHomeschoolParent(session) && (
+            <button
               onClick={() => router.push('/montree/dashboard/labels')}
               className="btn btn-secondary btn-sm"
             >

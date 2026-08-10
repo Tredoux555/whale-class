@@ -217,10 +217,16 @@ export async function GET(request: NextRequest) {
     // plus age/enrolled_at/classroom_id at most — caller sweep Jun 13, 2026).
     // Detail surfaces that need notes fetch /api/montree/children/[childId],
     // which selects '*'.
+    // Archived children (is_active = false, set by Photo Onboarding's archive
+    // action) must not appear in any teacher-facing roster. `.neq(false)`
+    // rather than `.eq(true)` on purpose: rows created before the column had a
+    // default can hold NULL, and .eq('is_active', true) would silently hide
+    // every one of them.
     const query = supabase
       .from('montree_children')
       .select('id, name, age, photo_url, classroom_id, enrolled_at')
       .in('classroom_id', allowedClassroomIds)
+      .neq('is_active', false)
       .order('name');
 
     const { data, error } = await query;

@@ -45,6 +45,9 @@ export async function GET(request: NextRequest) {
       .from('montree_children')
       .select('id, name, photo_url')
       .eq('classroom_id', classroomId)
+      // Archived children are off the roster — no focus-works row for them.
+      // .neq(false) not .eq(true): legacy rows can hold NULL.
+      .neq('is_active', false)
       .order('name', { ascending: true });
 
     if (childErr) {
