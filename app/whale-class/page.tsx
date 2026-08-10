@@ -128,7 +128,7 @@ export default function WhaleClassPage() {
           <p className="text-red-500 font-medium">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-purple-500 text-white rounded-lg text-sm hover:bg-purple-600 transition"
+            className="btn btn-primary btn-md mt-4"
           >
             Try Again
           </button>
@@ -194,7 +194,7 @@ export default function WhaleClassPage() {
               </span>
               <button
                 onClick={() => setShareTarget(highlightedSong)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-full shadow-sm transition-colors shrink-0"
+                className="btn btn-primary btn-sm btn-pill shrink-0"
                 title="Get a share link or QR for this song"
               >
                 <span>🔗</span>
@@ -260,7 +260,7 @@ export default function WhaleClassPage() {
                       )}
                       <button
                         onClick={() => setShareTarget(song)}
-                        className="ml-auto p-1.5 rounded-full bg-purple-100 hover:bg-purple-200 text-purple-700 transition-colors shrink-0"
+                        className="btn btn-secondary btn-icon btn-sm ml-auto shrink-0 on-light"
                         title="Share this song"
                         aria-label={`Share ${song.title}`}
                       >

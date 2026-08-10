@@ -77,7 +77,7 @@ export function VaultImageViewer({
         </div>
         <button
           onClick={onClose}
-          className="ml-4 text-white/70 hover:text-white transition-colors text-2xl font-light w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10"
+          className="ml-4 btn btn-ghost btn-icon btn-round btn-md text-2xl"
         >
           ×
         </button>
@@ -89,7 +89,7 @@ export function VaultImageViewer({
         {hasAlbum && onPrev && (
           <button
             onClick={(e) => { e.stopPropagation(); onPrev(); }}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-black/40 text-white/80 hover:bg-black/60 hover:text-white transition-all text-2xl"
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 btn btn-secondary btn-icon btn-round btn-md text-2xl"
             aria-label="Previous"
           >
             ‹
@@ -133,7 +133,7 @@ export function VaultImageViewer({
         {hasAlbum && onNext && (
           <button
             onClick={(e) => { e.stopPropagation(); onNext(); }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-black/40 text-white/80 hover:bg-black/60 hover:text-white transition-all text-2xl"
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 btn btn-secondary btn-icon btn-round btn-md text-2xl"
             aria-label="Next"
           >
             ›

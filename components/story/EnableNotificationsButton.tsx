@@ -160,7 +160,7 @@ export default function EnableNotificationsButton() {
       <button
         onClick={enable}
         disabled={state === 'enabling'}
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white text-sm font-semibold transition-colors"
+        className="btn btn-primary btn-md btn-pill"
       >
         🔔 {state === 'enabling' ? 'Enabling…' : 'Enable call notifications'}
       </button>

@@ -61,7 +61,7 @@ export function FilesTab({
                 </div>
                 <button
                   onClick={onClearSelectedFile}
-                  className="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-sm hover:bg-red-600"
+                  className="btn btn-danger btn-icon btn-sm btn-round"
                 >
                   ×
                 </button>
@@ -81,7 +81,7 @@ export function FilesTab({
               <button
                 onClick={onFileUpload}
                 disabled={uploadingFile}
-                className="w-full px-4 py-2 bg-emerald-500 text-[#0a1a0f] rounded-lg hover:bg-emerald-600 disabled:bg-white/15 disabled:text-white/40 transition-colors font-medium"
+                className="btn btn-primary btn-md btn-full"
               >
                 {uploadingFile ? '⟳ Uploading...' : '📤 Upload File'}
               </button>
@@ -127,19 +127,19 @@ export function FilesTab({
                     href={file.public_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 py-1 text-xs bg-[rgba(52,211,153,0.12)] text-emerald-300 border border-[rgba(52,211,153,0.25)] rounded hover:bg-[rgba(52,211,153,0.20)] transition-colors"
+                    className="btn btn-primary btn-sm"
                   >
                     ⬇ Download
                   </a>
                   <button
                     onClick={() => navigator.clipboard.writeText(file.public_url).then(() => alert('Link copied!'))}
-                    className="px-3 py-1 text-xs bg-white/10 text-white/70 border border-white/10 rounded hover:bg-white/15 transition-colors"
+                    className="btn btn-secondary btn-sm"
                   >
                     🔗 Copy Link
                   </button>
                   <button
                     onClick={() => onFileDelete(file.id, file.original_filename)}
-                    className="px-3 py-1 text-xs bg-red-500/15 text-red-300 border border-red-500/30 rounded hover:bg-red-500/25 transition-colors"
+                    className="btn btn-danger btn-soft btn-sm"
                   >
                     🗑 Delete
                   </button>

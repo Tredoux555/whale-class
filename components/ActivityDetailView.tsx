@@ -114,7 +114,7 @@ export const ActivityDetailView: React.FC<ActivityDetailViewProps> = ({
         {onBack && (
           <button
             onClick={onBack}
-            className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2 mx-auto"
+            className="btn btn-ghost btn-md on-light mx-auto"
           >
             <ArrowLeft className="w-4 h-4" />
             Go Back
@@ -130,7 +130,7 @@ export const ActivityDetailView: React.FC<ActivityDetailViewProps> = ({
       {onBack && (
         <button
           onClick={onBack}
-          className="mb-4 flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium transition-colors"
+          className="btn btn-ghost btn-md on-light mb-4"
         >
           <ArrowLeft className="w-4 h-4" />
           Back

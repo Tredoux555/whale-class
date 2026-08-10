@@ -193,8 +193,7 @@ export default function SoundBlendingGame() {
 
           <button
             onClick={startGame}
-            className="w-full p-4 bg-white text-indigo-600 rounded-2xl font-bold text-xl"
-            style={{ fontFamily: 'Comic Sans MS, cursive' }}
+            className="btn btn-primary btn-lg btn-full"
           >
             Start Blending! 🎮
           </button>
@@ -233,13 +232,13 @@ export default function SoundBlendingGame() {
           <div className="space-y-4">
             <button
               onClick={startGame}
-              className="w-full max-w-sm mx-auto p-4 bg-white text-indigo-600 rounded-2xl font-bold text-xl"
+              className="btn btn-primary btn-lg btn-full max-w-sm mx-auto"
             >
               Play Again! 🔄
             </button>
             <Link
               href="/games/sound-games"
-              className="block w-full max-w-sm mx-auto p-4 bg-white/20 text-white rounded-2xl font-bold text-xl"
+              className="btn btn-secondary btn-lg btn-full max-w-sm mx-auto"
             >
               Back to Sound Games
             </Link>
@@ -307,10 +306,7 @@ export default function SoundBlendingGame() {
           <button
             onClick={handleReplay}
             disabled={isPlaying}
-            className={`
-              px-6 py-3 bg-white/30 rounded-full text-white font-bold
-              ${isPlaying ? 'animate-pulse' : 'hover:bg-white/40'}
-            `}
+            className={`btn btn-secondary btn-md btn-pill ${isPlaying ? 'animate-pulse' : ''}`}
           >
             {isPlaying ? '🔊 Listening...' : '🔊 Hear Again'}
           </button>

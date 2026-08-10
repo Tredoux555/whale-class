@@ -150,7 +150,7 @@ export default function TeacherCurriculumPage() {
                                     </div>
                                     {work.customNotes && <p className="text-xs text-gray-500 mt-1">📝 {work.customNotes}</p>}
                                   </div>
-                                  <button onClick={() => setEditingWork(work)} className="text-gray-400 hover:text-gray-600 p-1">✏️</button>
+                                  <button onClick={() => setEditingWork(work)} className="btn btn-ghost btn-icon btn-sm on-light">✏️</button>
                                 </div>
                               ))}
                             </div>
@@ -171,9 +171,9 @@ export default function TeacherCurriculumPage() {
               <h3 className="font-semibold text-lg mb-4">Notes: {editingWork.name}</h3>
               <textarea id="work-notes" defaultValue={editingWork.customNotes || ''} placeholder="Add notes..." rows={4} className="w-full p-3 border rounded-lg mb-4" />
               <div className="flex gap-3">
-                <button onClick={() => setEditingWork(null)} className="flex-1 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
+                <button onClick={() => setEditingWork(null)} className="btn btn-secondary btn-md flex-1 on-light">Cancel</button>
                 <button onClick={() => saveNotes(editingWork, (document.getElementById('work-notes') as HTMLTextAreaElement).value)}
-                  disabled={saving} className="flex-1 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50">
+                  disabled={saving} className="btn btn-primary btn-md flex-1">
                   {saving ? 'Saving...' : 'Save'}
                 </button>
               </div>

@@ -147,7 +147,7 @@ export default function PhotoCapture({
             {childName && <p className="text-blue-200 text-sm">{childName}</p>}
           </div>
           {onClose && (
-            <button onClick={onClose} className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30">
+            <button onClick={onClose} className="btn btn-secondary btn-icon btn-sm btn-round">
               ✕
             </button>
           )}
@@ -190,7 +190,7 @@ export default function PhotoCapture({
             )}
             <button
               onClick={handleReset}
-              className="absolute top-2 right-2 w-8 h-8 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70"
+              className="btn btn-secondary btn-icon btn-sm btn-round absolute top-2 right-2"
             >
               ✕
             </button>
@@ -245,17 +245,17 @@ export default function PhotoCapture({
         <div className="flex gap-3">
           <button
             onClick={handleReset}
-            className="flex-1 py-3 rounded-xl font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+            className="btn btn-secondary btn-md flex-1 on-light"
           >
             Clear
           </button>
           <button
             onClick={handleUpload}
             disabled={!selectedFile || uploading}
-            className={`flex-1 py-3 rounded-xl font-bold text-white transition-all ${
+            className={`btn btn-md flex-1 on-light ${
               !selectedFile || uploading
-                ? 'bg-gray-300 cursor-not-allowed'
-                : 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:shadow-lg active:scale-95'
+                ? 'btn-secondary'
+                : 'btn-primary'
             }`}
           >
             {uploading ? 'Saving...' : '✓ Save'}

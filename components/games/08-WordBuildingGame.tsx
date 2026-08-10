@@ -250,8 +250,8 @@ const WordBuildingGame: React.FC = () => {
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <Link href="/games" 
-            className="text-white font-bold bg-white/20 px-4 py-2 rounded-xl hover:bg-white/30 transition-colors">
+          <Link href="/games"
+            className="btn btn-secondary btn-md">
             ← Back
           </Link>
           <div className="text-white font-bold bg-white/20 px-4 py-2 rounded-xl">
@@ -263,7 +263,7 @@ const WordBuildingGame: React.FC = () => {
         <div className="bg-white/20 rounded-2xl p-3 mb-6">
           <div className="flex justify-between items-center mb-2">
             <button onClick={goToPrevious} disabled={currentWordIndex === 0}
-              className="bg-white/30 hover:bg-white/40 disabled:opacity-50 text-white font-bold py-2 px-3 rounded-lg flex items-center gap-1 transition-colors">
+              className="btn btn-secondary btn-icon btn-sm">
               <ChevronLeft size={18} />
             </button>
             <div className="text-white font-bold text-center">
@@ -274,7 +274,7 @@ const WordBuildingGame: React.FC = () => {
               </div>
             </div>
             <button onClick={goToNext} disabled={currentWordIndex === wordSequence.length - 1}
-              className="bg-white/30 hover:bg-white/40 disabled:opacity-50 text-white font-bold py-2 px-3 rounded-lg flex items-center gap-1 transition-colors">
+              className="btn btn-secondary btn-icon btn-sm">
               <ChevronRight size={18} />
             </button>
           </div>
@@ -292,8 +292,8 @@ const WordBuildingGame: React.FC = () => {
               {currentWord.picture}
             </div>
             <p className="text-4xl font-bold text-indigo-600 mb-3">{currentWord.word}</p>
-            <button onClick={playWordSound} 
-              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-xl flex items-center gap-2 mx-auto transition-colors shadow-lg">
+            <button onClick={playWordSound}
+              className="btn btn-primary btn-md mx-auto">
               <Volume2 size={20} /> Hear Word
             </button>
           </div>
@@ -377,8 +377,8 @@ const WordBuildingGame: React.FC = () => {
           {/* Reset */}
           {!showCelebration && (
             <div className="text-center">
-              <button onClick={resetWord} 
-                className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-xl flex items-center gap-2 mx-auto transition-colors shadow-lg">
+              <button onClick={resetWord}
+                className="btn btn-gold btn-md mx-auto">
                 <RotateCcw size={20} /> Reset
               </button>
             </div>

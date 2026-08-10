@@ -147,14 +147,14 @@ export const ActivityVideoSection: React.FC<ActivityVideoSectionProps> = ({
           <div className="flex gap-3">
             <button
               onClick={handleRemoveVideo}
-              className="flex items-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg font-medium transition-colors"
+              className="btn btn-danger btn-soft btn-md on-light"
             >
               <Trash2 className="w-4 h-4" />
               Remove Video
             </button>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg font-medium transition-colors"
+              className="btn btn-secondary btn-md on-light"
             >
               <Upload className="w-4 h-4" />
               Replace Video

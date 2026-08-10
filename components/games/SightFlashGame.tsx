@@ -152,7 +152,7 @@ export default function SightFlashGame() {
           </div>
 
           <button onClick={() => router.push('/games')}
-            className="mt-8 w-full py-4 bg-white/20 hover:bg-white/30 text-white rounded-xl font-bold transition-colors">
+            className="btn btn-secondary btn-lg btn-full mt-8">
             ← Back to Games
           </button>
         </div>
@@ -187,15 +187,15 @@ export default function SightFlashGame() {
 
           <div className="space-y-3">
             <button onClick={() => startGame(selectedLevel)}
-              className="w-full py-4 bg-green-500 hover:bg-green-600 text-white rounded-2xl font-bold text-xl transition-colors shadow-lg">
+              className="btn btn-primary btn-lg btn-full">
               🔄 Play Again
             </button>
             <button onClick={() => setSelectedLevel(null)}
-              className="w-full py-4 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl font-bold text-xl transition-colors">
+              className="btn btn-primary btn-lg btn-full">
               ← Choose Level
             </button>
             <button onClick={() => router.push('/games')}
-              className="w-full py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-bold transition-colors">
+              className="btn btn-secondary btn-lg btn-full on-light">
               ← All Games
             </button>
           </div>
@@ -215,8 +215,8 @@ export default function SightFlashGame() {
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <button onClick={() => setSelectedLevel(null)} 
-            className="text-white font-bold bg-white/20 px-4 py-2 rounded-xl hover:bg-white/30 transition-colors">
+          <button onClick={() => setSelectedLevel(null)}
+            className="btn btn-secondary btn-md">
             ← Back
           </button>
           <div className="text-white font-bold bg-white/20 px-4 py-2 rounded-xl">
@@ -274,7 +274,7 @@ export default function SightFlashGame() {
                 {currentWord.word}
               </div>
               <button onClick={playAudio}
-                className="px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-full font-bold text-lg transition-colors shadow-lg">
+                className="btn btn-primary btn-lg btn-pill">
                 🔊 Hear It
               </button>
               <div className="mt-6 w-full bg-gray-200 rounded-full h-2">
@@ -287,7 +287,7 @@ export default function SightFlashGame() {
               <div className="text-center mb-6">
                 <p className="text-xl text-gray-600 mb-4">Which word did you see?</p>
                 <button onClick={playAudio}
-                  className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full font-bold transition-colors">
+                  className="btn btn-primary btn-md btn-pill">
                   🔊 Hear It Again
                 </button>
                 {tries >= 1 && tries < 2 && (

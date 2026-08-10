@@ -304,17 +304,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({
           {isRepositioned && (
             <button
               onClick={() => onUpdateOffset(card.id, 50, 50)}
-              style={{
-                marginLeft: '8px',
-                padding: '2px 8px',
-                borderRadius: '4px',
-                border: '1px solid #ddd',
-                backgroundColor: '#f5f5f5',
-                color: '#666',
-                cursor: 'pointer',
-                fontSize: '11px',
-                fontFamily: 'system-ui',
-              }}
+              className="btn btn-secondary btn-sm on-light"
+              style={{ marginLeft: '8px' }}
             >
               Reset
             </button>
@@ -350,7 +341,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({
           <button onClick={() => onDownloadCard(card, 'control')} style={btnStyle('#4CAF50')}>⬇ Control</button>
           <button onClick={() => onDownloadCard(card, 'picture')} style={btnStyle('#FF9800')}>⬇ Picture</button>
           <button onClick={() => onDownloadCard(card, 'label')} style={btnStyle('#9C27B0')}>⬇ {thirdLabel}</button>
-          <button onClick={() => onRemoveCard(card.id)} style={btnStyle('#f44336')}>🗑️</button>
+          <button onClick={() => onRemoveCard(card.id)} className="btn btn-danger btn-icon btn-sm">🗑️</button>
         </div>
       </div>
     );
@@ -475,17 +466,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({
         {isRepositioned && (
           <button
             onClick={() => onUpdateOffset(card.id, 50, 50)}
-            style={{
-              marginLeft: '8px',
-              padding: '2px 8px',
-              borderRadius: '4px',
-              border: '1px solid #ddd',
-              backgroundColor: '#f5f5f5',
-              color: '#666',
-              cursor: 'pointer',
-              fontSize: '11px',
-              fontFamily: 'system-ui',
-            }}
+            className="btn btn-secondary btn-sm on-light"
+            style={{ marginLeft: '8px' }}
           >
             Reset
           </button>
@@ -575,16 +557,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({
         </button>
         <button
           onClick={() => onRemoveCard(card.id)}
-          style={{
-            padding: '6px 12px',
-            borderRadius: '6px',
-            border: 'none',
-            backgroundColor: '#f44336',
-            color: '#fff',
-            cursor: 'pointer',
-            fontSize: '12px',
-            fontFamily: 'system-ui'
-          }}
+          className="btn btn-danger btn-icon btn-sm"
         >
           🗑️
         </button>

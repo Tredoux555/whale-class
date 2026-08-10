@@ -209,10 +209,7 @@ const CropOverlay: React.FC<CropOverlayProps> = ({ card, onClose, onApplyCrop })
           </h3>
           <button
             onClick={onClose}
-            style={{
-              background: 'none', border: 'none', color: '#fff',
-              fontSize: '24px', cursor: 'pointer'
-            }}
+            className="btn btn-ghost btn-icon btn-md text-2xl"
           >
             ✕
           </button>
@@ -281,12 +278,7 @@ const CropOverlay: React.FC<CropOverlayProps> = ({ card, onClose, onApplyCrop })
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <button
             onClick={() => handleZoomBtn(-1)}
-            style={{
-              width: '36px', height: '36px', borderRadius: '50%',
-              border: '1px solid #555', backgroundColor: 'transparent',
-              color: '#fff', fontSize: '18px', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}
+            className="btn btn-ghost btn-outline btn-icon btn-round btn-sm text-lg"
           >
             −
           </button>
@@ -295,12 +287,7 @@ const CropOverlay: React.FC<CropOverlayProps> = ({ card, onClose, onApplyCrop })
           </span>
           <button
             onClick={() => handleZoomBtn(1)}
-            style={{
-              width: '36px', height: '36px', borderRadius: '50%',
-              border: '1px solid #555', backgroundColor: 'transparent',
-              color: '#fff', fontSize: '18px', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}
+            className="btn btn-ghost btn-outline btn-icon btn-round btn-sm text-lg"
           >
             +
           </button>
@@ -310,22 +297,13 @@ const CropOverlay: React.FC<CropOverlayProps> = ({ card, onClose, onApplyCrop })
         <div style={{ display: 'flex', gap: '12px' }}>
           <button
             onClick={onClose}
-            style={{
-              padding: '10px 20px', borderRadius: '8px',
-              border: '1px solid #555', backgroundColor: 'transparent',
-              color: '#fff', cursor: 'pointer', fontFamily: 'system-ui'
-            }}
+            className="btn btn-ghost btn-outline btn-md"
           >
             Cancel
           </button>
           <button
             onClick={handleApply}
-            style={{
-              padding: '10px 20px', borderRadius: '8px',
-              border: 'none', backgroundColor: '#4CAF50',
-              color: '#fff', cursor: 'pointer', fontWeight: 'bold',
-              fontFamily: 'system-ui'
-            }}
+            className="btn btn-primary btn-md"
           >
             Apply Crop
           </button>

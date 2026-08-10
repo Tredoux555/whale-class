@@ -106,10 +106,10 @@ export default function ActivityHistory({ childId }: ActivityHistoryProps) {
         <Filter className="w-5 h-5 text-gray-600 flex-shrink-0" />
         <button
           onClick={() => setSelectedArea('all')}
-          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+          className={`btn btn-md btn-pill on-light whitespace-nowrap ${
             selectedArea === 'all'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'btn-primary'
+              : 'btn-secondary'
           }`}
         >
           All Areas ({summary?.total || 0})
@@ -118,10 +118,10 @@ export default function ActivityHistory({ childId }: ActivityHistoryProps) {
           <button
             key={area}
             onClick={() => setSelectedArea(area)}
-            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+            className={`btn btn-md btn-pill on-light whitespace-nowrap ${
               selectedArea === area
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'btn-primary'
+                : 'btn-secondary'
             }`}
           >
             {AREA_LABELS[area as CurriculumArea]} ({summary.byArea[area].total})

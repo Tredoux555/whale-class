@@ -17,7 +17,7 @@ export function Header({ onLogout }: HeaderProps) {
         </div>
         <button
           onClick={onLogout}
-          className="px-4 py-2 bg-red-500/15 text-red-300 border border-red-500/30 rounded-lg hover:bg-red-500/25 transition-colors font-medium"
+          className="btn btn-danger btn-soft btn-md"
         >
           Sign Out
         </button>

@@ -58,28 +58,28 @@ export function Screensaver({ onUnlock }: Props) {
           <span className="text-xs">▾</span>
         </div>
         <button
-          className="w-9 h-9 rounded-full bg-slate-800/80 flex items-center justify-center text-base"
+          className="btn btn-secondary btn-icon btn-sm btn-round text-base"
           aria-label="camera"
           onClick={(e) => e.preventDefault()}
         >
           <span>中文</span>
         </button>
         <button
-          className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-lg"
+          className="btn btn-secondary btn-icon btn-sm btn-round text-lg"
           aria-label="capture"
           onClick={(e) => e.preventDefault()}
         >
           📸
         </button>
         <button
-          className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-lg"
+          className="btn btn-secondary btn-icon btn-sm btn-round text-lg"
           aria-label="messages"
           onClick={(e) => e.preventDefault()}
         >
           ✉️
         </button>
         <button
-          className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white text-xl"
+          className="btn btn-secondary btn-icon btn-sm btn-round text-xl"
           aria-label="menu"
           onClick={(e) => e.preventDefault()}
         >

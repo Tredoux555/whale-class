@@ -134,8 +134,8 @@ export default function CombinedISpy({ roundCount = 10, onComplete, onBack }: Co
             <div className="mt-3 text-4xl">🐱</div>
             <p className="text-purple-600 font-bold">CAT!</p>
           </div>
-          <button onClick={startGame} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xl font-bold py-4 px-8 rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all">Let&apos;s Play! 🎮</button>
-          {onBack && <button onClick={onBack} className="mt-4 text-gray-500 hover:text-gray-700">← Back to Games</button>}
+          <button onClick={startGame} className="btn btn-primary btn-lg btn-full">Let&apos;s Play! 🎮</button>
+          {onBack && <button onClick={onBack} className="btn btn-ghost btn-md mt-4 on-light">← Back to Games</button>}
         </div>
       </div>
     );
@@ -157,8 +157,8 @@ export default function CombinedISpy({ roundCount = 10, onComplete, onBack }: Co
             <p className="text-gray-500">You found {roundCount} words!</p>
           </div>
           <div className="space-y-3">
-            <button onClick={() => { setGameState('start'); setCurrentRound(null); }} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xl font-bold py-4 px-8 rounded-2xl">Play Again! 🔄</button>
-            {onBack && <button onClick={onBack} className="w-full bg-gray-200 text-gray-700 text-lg font-bold py-3 px-6 rounded-2xl">← Back to Games</button>}
+            <button onClick={() => { setGameState('start'); setCurrentRound(null); }} className="btn btn-primary btn-lg btn-full">Play Again! 🔄</button>
+            {onBack && <button onClick={onBack} className="btn btn-secondary btn-lg btn-full on-light">← Back to Games</button>}
           </div>
         </div>
       </div>
@@ -184,7 +184,7 @@ export default function CombinedISpy({ roundCount = 10, onComplete, onBack }: Co
 
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        {onBack && <button onClick={onBack} className="bg-white/80 text-gray-600 px-4 py-2 rounded-full shadow hover:bg-white">← Back</button>}
+        {onBack && <button onClick={onBack} className="btn btn-secondary btn-md btn-pill on-light">← Back</button>}
         <div className="bg-white/80 px-4 py-2 rounded-full shadow"><span className="font-bold text-purple-600">{currentRoundIndex + 1} / {roundCount}</span></div>
         <div className="bg-white/80 px-4 py-2 rounded-full shadow"><span className="font-bold text-yellow-600">⭐ {score}</span></div>
       </div>
@@ -203,7 +203,7 @@ export default function CombinedISpy({ roundCount = 10, onComplete, onBack }: Co
             <button onClick={() => playSound(currentRound.targetWord.endSound)} className="bg-orange-500 text-white px-4 py-2 rounded-full font-bold text-xl shadow-lg hover:scale-110 active:scale-95 animate-pulse">{getPhonetic(currentRound.targetWord.endSound)}</button>
           </div>
         </div>
-        <button onClick={replayInstruction} className="mt-4 mx-auto flex items-center gap-2 bg-purple-100 text-purple-600 px-4 py-2 rounded-full hover:bg-purple-200">🔊 Hear again</button>
+        <button onClick={replayInstruction} className="btn btn-secondary btn-md mt-4 mx-auto on-light">🔊 Hear again</button>
       </div>
 
       {/* Answer Options */}

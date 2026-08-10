@@ -85,7 +85,7 @@ export function MessagesTab({
                     <button
                       onClick={onClearVaultSaveError}
                       aria-label="Dismiss"
-                      className="text-red-300 hover:text-red-200 font-bold leading-none"
+                      className="btn btn-ghost btn-icon btn-sm"
                     >
                       ×
                     </button>
@@ -117,7 +117,7 @@ export function MessagesTab({
                   <button
                     onClick={() => onSaveToVault(msg.id, msg.media_url!, msg.media_filename)}
                     disabled={savingToVault === msg.id || savedToVault.has(msg.id)}
-                    className="mt-2 px-3 py-1 text-xs bg-[rgba(52,211,153,0.12)] text-emerald-300 border border-[rgba(52,211,153,0.25)] rounded hover:bg-[rgba(52,211,153,0.20)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="btn btn-primary btn-sm mt-2"
                   >
                     {savedToVault.has(msg.id)
                       ? '✓ Saved to Vault'
@@ -134,7 +134,7 @@ export function MessagesTab({
                   <button
                     onClick={() => onSaveToVault(msg.id, msg.media_url!, msg.media_filename)}
                     disabled={savingToVault === msg.id || savedToVault.has(msg.id)}
-                    className="mt-2 px-3 py-1 text-xs bg-[rgba(52,211,153,0.12)] text-emerald-300 border border-[rgba(52,211,153,0.25)] rounded hover:bg-[rgba(52,211,153,0.20)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="btn btn-primary btn-sm mt-2"
                   >
                     {savedToVault.has(msg.id)
                       ? '✓ Saved to Vault'
@@ -180,7 +180,7 @@ export function MessagesTab({
                   <button
                     onClick={() => onSaveToVault(msg.id, msg.media_url!, msg.media_filename)}
                     disabled={savingToVault === msg.id || savedToVault.has(msg.id)}
-                    className="mt-2 px-3 py-1 text-xs bg-[rgba(52,211,153,0.12)] text-emerald-300 border border-[rgba(52,211,153,0.25)] rounded hover:bg-[rgba(52,211,153,0.20)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="btn btn-primary btn-sm mt-2"
                   >
                     {savedToVault.has(msg.id)
                       ? '✓ Saved to Vault'

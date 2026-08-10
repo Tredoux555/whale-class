@@ -51,7 +51,7 @@ export default function ChildSwitcher({ children, selectedId, onSelect }: Props)
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-3 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+        className="btn btn-secondary btn-md flex items-center gap-3 on-light"
       >
         <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
           {selectedChild?.name.charAt(0).toUpperCase()}

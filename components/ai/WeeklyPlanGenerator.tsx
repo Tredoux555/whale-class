@@ -45,7 +45,7 @@ export default function WeeklyPlanGenerator({ childId, childName }: Props) {
   const currentDayPlan = data?.plan?.days.find(d => d.day === activeDay);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm">
+    <div className="bg-white rounded-xl shadow-sm on-light">
       {/* Header */}
       <div className="p-6 border-b">
         <div className="flex items-center justify-between mb-4">
@@ -56,7 +56,7 @@ export default function WeeklyPlanGenerator({ childId, childName }: Props) {
           <button
             onClick={handleGenerate}
             disabled={loading}
-            className="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg hover:from-purple-600 hover:to-indigo-600 disabled:opacity-50 flex items-center gap-2"
+            className="btn btn-gold btn-md"
           >
             {loading ? (
               <>
@@ -80,10 +80,10 @@ export default function WeeklyPlanGenerator({ childId, childName }: Props) {
               <button
                 key={area.id}
                 onClick={() => toggleArea(area.id)}
-                className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
+                className={`btn btn-sm btn-pill ${
                   selectedAreas.includes(area.id)
-                    ? 'bg-purple-100 text-purple-700 ring-2 ring-purple-300'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'btn-primary'
+                    : 'btn-secondary'
                 }`}
               >
                 {area.icon} {area.name}
@@ -128,10 +128,10 @@ export default function WeeklyPlanGenerator({ childId, childName }: Props) {
                   <button
                     key={day}
                     onClick={() => setActiveDay(day)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                    className={`btn btn-md ${
                       activeDay === day
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? 'btn-primary'
+                        : 'btn-secondary'
                     }`}
                   >
                     {day}

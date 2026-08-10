@@ -92,7 +92,7 @@ export default function PrincipalOnboardingPage() {
                 <option value="China">China</option>
                 <option value="United States">United States</option>
               </select>
-              <button onClick={() => validateStep(1) && setStep(2)} className="w-full mt-8 bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700">Continue →</button>
+              <button onClick={() => validateStep(1) && setStep(2)} className="btn btn-primary btn-lg btn-full mt-8">Continue →</button>
             </div>
           )}
           
@@ -111,8 +111,8 @@ export default function PrincipalOnboardingPage() {
                 ✨ Your classroom will receive the full curriculum (268 works) automatically!
               </div>
               <div className="flex gap-4 mt-8">
-                <button onClick={() => setStep(1)} className="px-6 py-3 border rounded-lg">← Back</button>
-                <button onClick={() => validateStep(2) && setStep(3)} className="flex-1 bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700">Continue →</button>
+                <button onClick={() => setStep(1)} className="btn btn-ghost btn-outline btn-lg on-light">← Back</button>
+                <button onClick={() => validateStep(2) && setStep(3)} className="btn btn-primary btn-lg flex-1">Continue →</button>
               </div>
             </div>
           )}
@@ -129,8 +129,8 @@ export default function PrincipalOnboardingPage() {
               <input type="password" value={formData.confirmPassword} onChange={e => updateField('confirmPassword', e.target.value)}
                 placeholder="Confirm password" className="w-full p-3 border rounded-lg" />
               <div className="flex gap-4 mt-8">
-                <button onClick={() => setStep(2)} className="px-6 py-3 border rounded-lg">← Back</button>
-                <button onClick={handleSubmit} disabled={loading} className="flex-1 bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 disabled:opacity-50">
+                <button onClick={() => setStep(2)} className="btn btn-ghost btn-outline btn-lg on-light">← Back</button>
+                <button onClick={handleSubmit} disabled={loading} className="btn btn-primary btn-lg flex-1">
                   {loading ? 'Creating...' : 'Create School 🚀'}
                 </button>
               </div>
@@ -149,7 +149,7 @@ export default function PrincipalOnboardingPage() {
                   <li>✅ Curriculum: {result.classroom.curriculumWorks} works</li>
                 </ul>
               </div>
-              <button onClick={() => router.push('/admin')} className="w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700">
+              <button onClick={() => router.push('/admin')} className="btn btn-primary btn-lg btn-full">
                 Go to Dashboard →
               </button>
             </div>

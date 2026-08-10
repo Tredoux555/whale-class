@@ -916,21 +916,8 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({
         {showBackButton && (
           <button
             onClick={onBackClick}
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '12px',
-              border: 'none',
-              backgroundColor: 'rgba(255,255,255,0.2)',
-              color: '#fff',
-              fontSize: '18px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginRight: '12px',
-              flexShrink: 0
-            }}
+            className="btn btn-secondary btn-icon btn-md"
+            style={{ marginRight: '12px', flexShrink: 0 }}
           >
             {backButtonLabel}
           </button>
@@ -1227,16 +1214,8 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({
             />
             <button
               onClick={applyBulkLabels}
-              style={{
-                marginTop: '12px',
-                padding: '10px 24px',
-                borderRadius: '8px',
-                border: 'none',
-                backgroundColor: '#2196F3',
-                color: '#fff',
-                cursor: 'pointer',
-                fontWeight: '600'
-              }}
+              className="btn btn-primary btn-md"
+              style={{ marginTop: '12px' }}
             >
               {bulkButtonLabel}
             </button>
@@ -1290,32 +1269,14 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({
               <button
                 onClick={downloadAllCards}
                 disabled={generating}
-                style={{
-                  padding: '10px 20px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  backgroundColor: '#4CAF50',
-                  color: '#fff',
-                  cursor: generating ? 'not-allowed' : 'pointer',
-                  fontWeight: '600',
-                  opacity: generating ? 0.7 : 1
-                }}
+                className="btn btn-primary btn-md"
               >
                 {generating ? '⏳ Generating...' : '⬇️ Download All Cards'}
               </button>
               <button
                 onClick={generatePrintableSheet}
                 disabled={generating}
-                style={{
-                  padding: '10px 20px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  backgroundColor: '#9C27B0',
-                  color: '#fff',
-                  cursor: generating ? 'not-allowed' : 'pointer',
-                  fontWeight: '600',
-                  opacity: generating ? 0.7 : 1
-                }}
+                className="btn btn-gold btn-md"
               >
                 {generating ? '⏳ Preparing...' : '🖨️ Print All Cards'}
               </button>
@@ -1338,30 +1299,13 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({
               <button
                 onClick={generateLabelsOnlySheet}
                 disabled={generating}
-                style={{
-                  padding: '10px 20px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  backgroundColor: '#FF9800',
-                  color: '#fff',
-                  cursor: generating ? 'not-allowed' : 'pointer',
-                  fontWeight: '600',
-                  opacity: generating ? 0.7 : 1
-                }}
+                className="btn btn-gold btn-md"
               >
                 {generating ? '⏳ Preparing...' : '🏷️ Print Labels Only'}
               </button>
               <button
                 onClick={() => setCards([])}
-                style={{
-                  padding: '10px 20px',
-                  borderRadius: '8px',
-                  border: '2px solid #f44336',
-                  backgroundColor: 'transparent',
-                  color: '#f44336',
-                  cursor: 'pointer',
-                  fontWeight: '600'
-                }}
+                className="btn btn-danger btn-soft btn-md"
               >
                 🗑️ Clear All
               </button>

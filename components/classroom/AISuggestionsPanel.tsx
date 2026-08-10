@@ -122,7 +122,7 @@ export function AISuggestionsPanel({
         </div>
         <button
           onClick={fetchRecommendations}
-          className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 transition-colors"
+          className="mt-3 btn btn-danger btn-sm on-light"
         >
           Try Again
         </button>
@@ -230,7 +230,7 @@ export function AISuggestionsPanel({
               e.stopPropagation();
               fetchRecommendations();
             }}
-            className="w-full py-2 text-sm text-purple-600 hover:text-purple-800 hover:bg-white/50 rounded-lg transition-colors flex items-center justify-center gap-2"
+            className="btn btn-ghost btn-sm btn-full on-light"
           >
             <span>🔄</span> Refresh suggestions
           </button>

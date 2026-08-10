@@ -281,7 +281,7 @@ export default function VideoGenerator({ childId, childName, onClose }: VideoGen
             </div>
             <button
               onClick={onClose}
-              className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30"
+              className="btn btn-secondary btn-icon btn-md btn-round"
             >
               ✕
             </button>
@@ -342,7 +342,7 @@ export default function VideoGenerator({ childId, childName, onClose }: VideoGen
 
               <button
                 onClick={generateVideo}
-                className="w-full py-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl font-bold text-lg hover:shadow-lg transition-all active:scale-95"
+                className="btn btn-primary btn-lg btn-full"
               >
                 🎬 Generate Video
               </button>

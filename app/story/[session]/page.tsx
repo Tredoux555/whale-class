@@ -653,13 +653,13 @@ export default function StoryViewer() {
               <button
                 onClick={saveMessage}
                 disabled={isSaving || !messageInput.trim()}
-                className="ml-3 text-sm bg-emerald-500 text-[#0a1a0f] font-medium px-4 py-1 rounded hover:bg-emerald-600 disabled:bg-white/20 disabled:text-white/40 disabled:cursor-not-allowed transition-colors"
+                className="btn btn-primary btn-sm ml-3"
               >
                 {isSaving ? '⏳' : '💾'} Save
               </button>
               <button
                 onClick={() => { setIsEditing(false); setSaveError(''); }}
-                className="ml-2 text-sm bg-white/10 text-white/80 px-3 py-1 rounded hover:bg-white/20 transition-colors"
+                className="btn btn-secondary btn-sm ml-2"
               >
                 Cancel
               </button>
@@ -796,13 +796,13 @@ export default function StoryViewer() {
             <div className="flex items-center gap-2 flex-shrink-0">
               <button
                 onClick={() => router.push(`/story/call?call=${encodeURIComponent(incomingCall.id)}&as=user`)}
-                className="px-4 py-2 bg-white text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-50 transition-colors"
+                className="btn btn-primary btn-md btn-pill"
               >
                 Join
               </button>
               <button
                 onClick={() => declineCall(incomingCall.id)}
-                className="px-4 py-2 bg-emerald-700 text-white rounded-full text-sm font-semibold hover:bg-emerald-800 transition-colors"
+                className="btn btn-secondary btn-md btn-pill"
               >
                 Decline
               </button>

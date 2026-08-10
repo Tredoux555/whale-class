@@ -180,19 +180,8 @@ export default function BayanDoor() {
           <button
             type="submit"
             disabled={isLoading}
-            style={{
-              padding: '14px 18px',
-              borderRadius: 10,
-              background: 'linear-gradient(135deg, #34d399 0%, #1D6B48 100%)',
-              color: '#0a1a0f',
-              border: 'none',
-              fontSize: 15,
-              fontWeight: 600,
-              cursor: isLoading ? 'wait' : 'pointer',
-              opacity: isLoading ? 0.6 : 1,
-              boxShadow: '0 8px 24px rgba(52,211,153,0.30)',
-              marginTop: 4,
-            }}
+            className="btn btn-primary btn-lg"
+            style={{ marginTop: 4 }}
           >
             {isLoading ? 'Opening…' : 'Enter'}
           </button>

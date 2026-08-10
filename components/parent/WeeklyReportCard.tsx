@@ -106,7 +106,7 @@ export default function WeeklyReportCard({ childId }: Props) {
       {/* Toggle Details */}
       <button
         onClick={() => setShowDetails(!showDetails)}
-        className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+        className="btn btn-ghost btn-sm on-light"
       >
         {showDetails ? 'Hide details' : 'Show completed works'}
         <svg

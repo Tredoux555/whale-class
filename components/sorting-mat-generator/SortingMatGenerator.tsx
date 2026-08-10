@@ -144,21 +144,8 @@ const SortingMatGenerator: React.FC<SortingMatGeneratorProps> = ({ headerConfig 
         {showBackButton && (
           <button
             onClick={onBackClick}
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '12px',
-              border: 'none',
-              backgroundColor: 'rgba(255,255,255,0.2)',
-              color: '#fff',
-              fontSize: '18px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginRight: '12px',
-              flexShrink: 0,
-            }}
+            className="btn btn-secondary btn-icon btn-md text-lg"
+            style={{ marginRight: '12px', flexShrink: 0 }}
           >
             {backButtonLabel}
           </button>

@@ -33,7 +33,7 @@ export default function StudentDetailModal({ studentId, onClose, onAssignWork }:
                 </>
               )}
             </div>
-            <button onClick={onClose} className="text-white/80 hover:text-white">
+            <button onClick={onClose} className="btn btn-ghost btn-icon btn-sm">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -139,13 +139,13 @@ export default function StudentDetailModal({ studentId, onClose, onAssignWork }:
         <div className="border-t p-4 flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800"
+            className="btn btn-ghost btn-md on-light"
           >
             Close
           </button>
           <button
             onClick={onAssignWork}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            className="btn btn-primary btn-md on-light"
           >
             Assign Work
           </button>

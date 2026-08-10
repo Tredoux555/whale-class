@@ -127,14 +127,14 @@ export default function WhosPlayingPicker() {
         {selectedChild && (
           <button
             onClick={clearChild}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 text-slate-300 hover:bg-slate-600 transition-all"
+            className="btn btn-secondary btn-sm"
           >
             Clear
           </button>
         )}
         <button
           onClick={() => setExpanded(!expanded)}
-          className="px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500 text-white hover:bg-emerald-400 shadow-lg shadow-emerald-500/30 transition-all"
+          className="btn btn-primary btn-sm btn-glow"
         >
           {expanded ? 'Close' : selectedChild ? 'Switch' : 'Choose'}
         </button>
@@ -148,10 +148,10 @@ export default function WhosPlayingPicker() {
               <button
                 key={child.id}
                 onClick={() => selectChild(child)}
-                className={`flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                className={`btn btn-sm btn-pill flex items-center gap-2 ${
                   isSelected
-                    ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
-                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                    ? 'btn-primary btn-glow'
+                    : 'btn-secondary'
                 }`}
               >
                 <ChildAvatar child={child} size="w-6 h-6" />

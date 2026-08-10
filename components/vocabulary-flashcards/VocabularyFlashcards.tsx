@@ -355,7 +355,7 @@ const VocabularyFlashcardGenerator = ({ importPhotos, embedded = false }: Vocabu
       <div className="bg-white border-b border-cyan-200 px-6 py-4 sticky top-0 z-10" style={{ paddingTop: 'calc(1rem + var(--safe-top))' }}>
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={() => router.back()} className="text-cyan-600 hover:text-cyan-800">← Back</button>
+            <button onClick={() => router.back()} className="btn btn-ghost btn-md on-light">← Back</button>
             <h1 className="text-2xl font-bold text-gray-800">Vocabulary Flashcard Maker</h1>
             <LanguageToggle />
           </div>
@@ -363,7 +363,7 @@ const VocabularyFlashcardGenerator = ({ importPhotos, embedded = false }: Vocabu
             <button
               onClick={generatePrintableSheet}
               disabled={generating}
-              className="bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium"
+              className="btn btn-primary btn-md on-light"
             >
               {generating ? 'Generating...' : `Print ${cards.length} Cards`}
             </button>
@@ -496,7 +496,7 @@ const VocabularyFlashcardGenerator = ({ importPhotos, embedded = false }: Vocabu
                   </div>
                   <button
                     onClick={() => removeCard(card.word)}
-                    className="absolute top-1.5 right-1.5 bg-black/50 hover:bg-red-500 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center transition-colors"
+                    className="btn btn-danger btn-soft btn-icon btn-sm btn-round absolute top-1.5 right-1.5"
                   >
                     ✕
                   </button>
@@ -509,7 +509,7 @@ const VocabularyFlashcardGenerator = ({ importPhotos, embedded = false }: Vocabu
               <button
                 onClick={generatePrintableSheet}
                 disabled={generating}
-                className="bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="btn btn-primary btn-lg on-light"
               >
                 {generating ? 'Generating...' : `Generate ${cards.length} Flashcards`}
               </button>
