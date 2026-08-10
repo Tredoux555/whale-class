@@ -185,7 +185,7 @@ export default function VoiceObservationPage() {
       {/* Header */}
       <div className="relative bg-[rgba(7,18,12,0.9)] border-b border-[rgba(52,211,153,0.15)] px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={() => router.push('/montree/dashboard')} className="text-white/50 hover:text-white/80">
+          <button onClick={() => router.push('/montree/dashboard')} className="btn btn-ghost btn-md">
             ←
           </button>
           <h1 className="text-lg font-semibold text-white/95">
@@ -285,7 +285,7 @@ export default function VoiceObservationPage() {
             </p>
             <button
               onClick={handleNewSession}
-              className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
+              className="btn btn-primary btn-md"
             >
               {t('voiceObs.startSession') || 'Start New Session'}
             </button>

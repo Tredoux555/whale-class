@@ -30,13 +30,13 @@ export default function DashboardError({
         <div className="flex flex-col gap-3">
           <button
             onClick={reset}
-            className="w-full py-3 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors"
+            className="btn btn-primary btn-lg btn-full"
           >
             Try Again
           </button>
           <a
             href="/montree/dashboard"
-            className="w-full py-3 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-colors inline-block"
+            className="btn btn-secondary btn-lg btn-full on-light"
           >
             Back to Dashboard
           </a>

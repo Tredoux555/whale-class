@@ -415,11 +415,11 @@ export default function ReadAndRevealGame() {
           <div className="space-y-3">
             <button
               onClick={() => startGame(difficulty)}
-              className="w-full p-4 bg-white text-cyan-700 rounded-2xl font-bold text-xl shadow-lg hover:scale-105 active:scale-95 transition-transform"
+              className="btn btn-primary btn-lg btn-full"
             >
               Read More! 📚
             </button>
-            <Link href="/montree/dashboard/games" className="block w-full p-4 bg-white/20 text-white rounded-2xl font-bold text-xl">
+            <Link href="/montree/dashboard/games" className="btn btn-secondary btn-lg btn-full block">
               Back to Games
             </Link>
           </div>
@@ -476,7 +476,7 @@ export default function ReadAndRevealGame() {
                 
                 <button
                   onClick={(e) => { e.stopPropagation(); playWord(); }}
-                  className="text-blue-500 hover:text-blue-700 text-sm flex items-center gap-2"
+                  className="btn btn-ghost btn-sm on-light"
                 >
                   🔊 Need help?
                 </button>
@@ -495,7 +495,7 @@ export default function ReadAndRevealGame() {
                 
                 <button
                   onClick={playWord}
-                  className="mt-4 text-blue-500 hover:text-blue-700"
+                  className="btn btn-ghost btn-sm on-light mt-4"
                 >
                   🔊 Hear it
                 </button>
@@ -516,13 +516,13 @@ export default function ReadAndRevealGame() {
           <div className="flex gap-4">
             <button
               onClick={handleGotIt}
-              className="flex-1 p-5 bg-green-400 hover:bg-green-300 rounded-2xl text-white font-bold text-xl shadow-lg transition-all hover:scale-105 active:scale-95"
+              className="btn btn-primary btn-lg flex-1"
             >
               ✓ Got It!
             </button>
             <button
               onClick={handleTryAgain}
-              className="flex-1 p-5 bg-orange-400 hover:bg-orange-300 rounded-2xl text-white font-bold text-xl shadow-lg transition-all hover:scale-105 active:scale-95"
+              className="btn btn-secondary btn-lg flex-1"
             >
               ↻ Practice
             </button>

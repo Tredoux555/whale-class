@@ -249,7 +249,7 @@ export default function TeacherSummaryPage() {
           <p className="text-white/60 mb-4">{error || t('summary.loadError')}</p>
           <button
             onClick={() => router.back()}
-            className="px-4 py-2 bg-[#1D6B48] text-white rounded-lg hover:bg-[#236B4C]"
+            className="btn btn-primary btn-md"
           >
             {t('summary.goBack')}
           </button>
@@ -431,7 +431,7 @@ export default function TeacherSummaryPage() {
             <button
               onClick={generateAiInsight}
               disabled={loadingAi}
-              className="px-3 py-1.5 bg-[#1D6B48] text-white rounded-lg text-sm font-medium hover:bg-[#236B4C] disabled:opacity-50 flex items-center gap-1"
+              className="btn btn-primary btn-sm"
             >
               {loadingAi ? (
                 <>
@@ -495,7 +495,7 @@ export default function TeacherSummaryPage() {
       <div className="fixed bottom-6 right-6">
         <Link
           href={`/montree/dashboard/print?child=${childId}`}
-          className="w-14 h-14 bg-[#1D6B48] text-white rounded-full flex items-center justify-center shadow-xl hover:bg-[#236B4C] transition-all hover:scale-105"
+          className="btn btn-primary btn-icon btn-round btn-lg"
         >
           <span className="text-2xl">🖨️</span>
         </Link>

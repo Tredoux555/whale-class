@@ -527,7 +527,7 @@ export default function QuantityMatchGame() {
                   onClick={checkCounterAnswer}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-2xl font-bold text-lg shadow-lg"
+                  className="btn btn-primary btn-lg"
                 >
                   Check ✓
                 </motion.button>
@@ -680,7 +680,7 @@ export default function QuantityMatchGame() {
                   onClick={() => startGame(gameState.mode)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-2xl font-bold text-lg shadow-lg"
+                  className="btn btn-primary btn-lg"
                 >
                   Play Again 🔄
                 </motion.button>
@@ -688,7 +688,7 @@ export default function QuantityMatchGame() {
                   onClick={() => setGameState(getInitialState())}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-8 py-4 bg-white text-gray-700 rounded-2xl font-bold text-lg shadow-lg border-2 border-gray-200"
+                  className="btn btn-secondary btn-lg on-light"
                 >
                   Choose Mode
                 </motion.button>

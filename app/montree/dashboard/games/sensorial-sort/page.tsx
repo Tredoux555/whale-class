@@ -385,7 +385,7 @@ export default function SensorialSortGame() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={checkAnswer}
-                className="w-full py-4 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-xl font-bold rounded-xl shadow-lg"
+                className="btn btn-primary btn-lg btn-full"
               >
                 Check Order ✓
               </motion.button>
@@ -423,7 +423,7 @@ export default function SensorialSortGame() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={nextRound}
-                className="px-8 py-4 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-xl font-bold rounded-xl"
+                className="btn btn-primary btn-lg"
               >
                 {gameState.round >= gameState.totalRounds ? 'See Results' : 'Next Round →'}
               </motion.button>
@@ -477,7 +477,7 @@ export default function SensorialSortGame() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={backToMenu}
-                  className="px-6 py-3 bg-gray-200 text-gray-700 font-bold rounded-xl"
+                  className="btn btn-secondary btn-md on-light"
                 >
                   Back to Menu
                 </motion.button>
@@ -485,7 +485,7 @@ export default function SensorialSortGame() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => startGame(gameState.mode)}
-                  className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold rounded-xl"
+                  className="btn btn-primary btn-md"
                 >
                   Play Again
                 </motion.button>

@@ -111,7 +111,7 @@ export default function ParentHomePage() {
               </div>
             </>
           ) : (
-            <h1 className="pt-topbar__title">Potato Snaps</h1>
+            <h1 className="pt-topbar__title">PSS</h1>
           )}
         </div>
         <button
@@ -248,7 +248,7 @@ export default function ParentHomePage() {
 
         <div className="pt-emptyhint" style={{ justifyContent: 'center', marginTop: 22 }}>
           <Mascot size={20} camera={false} shadow={false} />
-          made with Potato Snaps
+          made with PSS
         </div>
       </div>
     </div>

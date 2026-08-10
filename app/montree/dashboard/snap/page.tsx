@@ -501,7 +501,7 @@ export default function SnapIdentifyPage() {
       <div className="relative" style={{ zIndex: 1 }}>
       {/* Header */}
       <div className="text-white px-4 py-3 flex items-center justify-between sticky top-0 z-40 border-b border-[rgba(52,211,153,0.15)]" style={{ paddingTop: 'calc(0.75rem + var(--safe-top))', /* SAFE AREA: status-bar inset — see the safe-area contract in app/globals.css */ background: 'rgba(8,20,12,0.92)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
-        <button onClick={() => { stopCamera(); router.back(); }} className="text-white/60 hover:text-white">
+        <button onClick={() => { stopCamera(); router.back(); }} className="btn btn-ghost btn-md">
           ← {t('common.back')}
         </button>
         <h1 className="font-bold text-lg text-white/95" style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontWeight: 500 }}>{t('snap.title') || '📸 Snap & Identify'}</h1>
@@ -529,7 +529,7 @@ export default function SnapIdentifyPage() {
           </div>
 
           <input ref={fileInputRef} type="file" accept="image/jpeg,.jpg,.jpeg" capture="environment" onChange={handleFileInput} className="hidden" />
-          <button onClick={() => fileInputRef.current?.click()} className="mt-3 text-sm text-[#34d399] hover:text-[#5fe0b0] underline">
+          <button onClick={() => fileInputRef.current?.click()} className="btn btn-ghost btn-sm mt-3">
             {t('snap.uploadFromGallery')}
           </button>
         </div>
@@ -541,10 +541,10 @@ export default function SnapIdentifyPage() {
           <div className="relative w-full max-w-lg">
             <img src={heldSnap.preview} alt="Captured" className="w-full aspect-[4/3] object-cover" />
             <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center justify-center gap-4 bg-gradient-to-t from-black/60">
-              <button onClick={retakePhoto} className="px-5 py-2.5 bg-white/[0.12] text-white/85 rounded-lg font-medium border border-white/15 hover:bg-white/[0.18]">
+              <button onClick={retakePhoto} className="btn btn-secondary btn-md">
                 {t('snap.retake')}
               </button>
-              <button onClick={proceedToTag} className="px-5 py-2.5 bg-[#1D6B48] text-white rounded-lg font-medium hover:bg-[#236B4C]">
+              <button onClick={proceedToTag} className="btn btn-primary btn-md">
                 {t('snap.tagChild') || 'Tag Child →'}
               </button>
             </div>
@@ -562,7 +562,7 @@ export default function SnapIdentifyPage() {
               <p className="text-sm font-medium text-white/90">{t('snap.whoIsThis') || 'Who is this?'}</p>
               <p className="text-xs text-white/50">{t('snap.tapToTag') || 'Tap the child to start analysis'}</p>
             </div>
-            <button onClick={retakePhoto} className="text-xs text-white/40 hover:text-white/70">
+            <button onClick={retakePhoto} className="btn btn-ghost btn-sm">
               {t('snap.retake')}
             </button>
           </div>
@@ -816,14 +816,14 @@ export default function SnapIdentifyPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={copyNarrative}
-                  className="text-xs px-3 py-1.5 bg-[#34d399]/15 text-[#34d399] rounded-lg hover:bg-[#34d399]/25 transition-colors"
+                  className="btn btn-ghost btn-sm"
                 >
                   {narrativeCopied ? `✓ ${t('snap.copied')}` : `📋 ${t('snap.copyNarrative')}`}
                 </button>
                 {result.weekly_narrative_zh && (
                   <button
                     onClick={() => setShowZh(!showZh)}
-                    className="text-xs px-3 py-1.5 bg-white/10 text-white/70 rounded-lg hover:bg-white/[0.16] transition-colors"
+                    className="btn btn-secondary btn-sm"
                   >
                     {showZh ? 'EN' : '中文'}
                   </button>
@@ -878,7 +878,7 @@ export default function SnapIdentifyPage() {
           <div className="flex gap-3 pt-2">
             <button
               onClick={backToCamera}
-              className="flex-1 py-3 bg-[#1D6B48] text-white rounded-xl font-medium hover:bg-[#236B4C] transition-colors"
+              className="btn btn-primary btn-lg flex-1"
             >
               📸 {t('snap.snapAnother') || 'Snap Another'}
             </button>
@@ -886,7 +886,7 @@ export default function SnapIdentifyPage() {
 
           <button
             onClick={() => router.push(`/montree/dashboard/${resultChild.id}/progress`)}
-            className="w-full py-2.5 text-sm text-[#34d399] hover:text-[#5fe0b0] underline"
+            className="btn btn-ghost btn-md btn-full"
           >
             {resultChild.name} — {t('snap.viewProgress')}
           </button>

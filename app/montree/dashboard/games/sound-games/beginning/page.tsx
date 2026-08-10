@@ -313,10 +313,10 @@ export default function ISpyBeginningGame() {
           </p>
 
           <div className="space-y-4">
-            <button onClick={() => startGame(selectedPhase!)} className="w-full max-w-sm mx-auto p-4 bg-white text-orange-600 rounded-2xl font-bold text-xl hover:bg-white/90 transition-all" >
+            <button onClick={() => startGame(selectedPhase!)} className="btn btn-primary btn-lg btn-full max-w-sm mx-auto" >
               Play Again! 🔄
             </button>
-            <Link href="/games/sound-games" className="block w-full max-w-sm mx-auto p-4 bg-white/20 text-white rounded-2xl font-bold text-xl hover:bg-white/30 transition-all" >
+            <Link href="/games/sound-games" className="btn btn-secondary btn-lg btn-full max-w-sm mx-auto block" >
               Back to Sound Games
             </Link>
           </div>

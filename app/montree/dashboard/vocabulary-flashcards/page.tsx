@@ -443,7 +443,7 @@ const VocabularyFlashcardGenerator = () => {
             <button
               onClick={generatePrintableSheet}
               disabled={generating}
-              className="bg-emerald-500 hover:bg-emerald-600 disabled:bg-white/10 disabled:text-white/30 text-[#04150c] px-4 py-2 rounded-lg text-sm font-medium"
+              className="btn btn-primary btn-md"
             >
               {generating ? `⏳ ${t('flashcard.generating')}` : `🖨️ ${t('flashcard.printCards').replace('{count}', String(readyCount))}`}
             </button>
@@ -499,7 +499,7 @@ const VocabularyFlashcardGenerator = () => {
                     setTimeout(() => { el.textContent = word; }, 1000);
                   }
                 }}
-                className="px-3 py-1 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium text-white/70 transition-all"
+                className="btn btn-secondary btn-sm"
               >
                 <span id={`word-${word}`}>{word}</span>
               </button>
@@ -617,7 +617,7 @@ const VocabularyFlashcardGenerator = () => {
                       <img src={card.image} alt={word} className="w-full h-full object-contain" />
                       <button
                         onClick={(e) => { e.stopPropagation(); removeCard(word); }}
-                        className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full text-sm hover:bg-red-600"
+                        className="btn btn-danger btn-icon btn-round btn-sm absolute top-1 right-1"
                       >
                         ✕
                       </button>
@@ -656,7 +656,7 @@ const VocabularyFlashcardGenerator = () => {
             <button
               onClick={generatePrintableSheet}
               disabled={generating}
-              className="bg-emerald-500 hover:bg-emerald-600 disabled:bg-white/10 disabled:text-white/30 text-[#04150c] px-8 py-4 rounded-xl font-bold text-lg shadow-lg flex items-center gap-2"
+              className="btn btn-primary btn-lg"
             >
               {generating ? <>⏳ {t('flashcard.generating')}</> : <>🎴 {t('flashcard.generateCards').replace('{count}', String(readyCount))}</>}
             </button>

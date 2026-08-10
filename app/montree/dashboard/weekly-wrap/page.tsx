@@ -987,7 +987,7 @@ export default function WeeklyWrapPage() {
                 <button
                   onClick={() => handleApprove(r)}
                   disabled={approvingId === r.child_id}
-                  className="flex-1 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                  className="btn btn-primary btn-md flex-1"
                 >
                   {approvingId === r.child_id ? t('weeklyWrap.approving') : t('weeklyWrap.agree')}
                 </button>
@@ -1001,7 +1001,7 @@ export default function WeeklyWrapPage() {
                 <button
                   onClick={() => handleUpdateShelf(r)}
                   disabled={shelfUpdatingId === r.child_id}
-                  className="px-4 py-2 rounded-lg border-2 border-emerald-500/30 text-emerald-300 text-sm font-semibold hover:bg-emerald-500/10 disabled:opacity-50 transition-colors"
+                  className="btn btn-ghost btn-outline btn-md"
                 >
                   {shelfUpdatingId === r.child_id ? '...' : t('weeklyWrap.updateShelf')}
                 </button>
@@ -1101,14 +1101,14 @@ export default function WeeklyWrapPage() {
                         setNarrativeEdits(prev => ({ ...prev, [r.child_id]: narrative }));
                       }
                     }}
-                    className="text-xs text-emerald-400 font-medium hover:underline"
+                    className="btn btn-ghost btn-sm"
                   >
                     {t('common.edit')}
                   </button>
                 ) : (
                   <button
                     onClick={() => setEditingNarrative(null)}
-                    className="text-xs text-white/50 font-medium hover:underline"
+                    className="btn btn-ghost btn-sm"
                   >
                     {t('common.done')}
                   </button>
@@ -1164,26 +1164,26 @@ export default function WeeklyWrapPage() {
                           <div className="absolute top-2 right-2 flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                             <button
                               onClick={(e) => { e.stopPropagation(); setCroppingPhoto({ childId: r.child_id, photo }); }}
-                              className="w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-sm shadow-md hover:bg-white"
+                              className="btn btn-secondary btn-icon btn-round btn-sm on-light"
                               title={t('weeklyWrap.crop')}
                             >✂️</button>
                             {idx > 0 && (
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleMovePhoto(r.child_id, photo.id, 'up'); }}
-                                className="w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-sm shadow-md hover:bg-white"
+                                className="btn btn-secondary btn-icon btn-round btn-sm on-light"
                                 title={t('weeklyWrap.moveUp')}
                               >↑</button>
                             )}
                             {idx < photos.length - 1 && (
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleMovePhoto(r.child_id, photo.id, 'down'); }}
-                                className="w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-sm shadow-md hover:bg-white"
+                                className="btn btn-secondary btn-icon btn-round btn-sm on-light"
                                 title={t('weeklyWrap.moveDown')}
                               >↓</button>
                             )}
                             <button
                               onClick={(e) => { e.stopPropagation(); handleRemovePhoto(r.child_id, photo.id); }}
-                              className="w-7 h-7 bg-red-500/90 rounded-full flex items-center justify-center text-white text-sm shadow-md hover:bg-red-600"
+                              className="btn btn-danger btn-icon btn-round btn-sm"
                               title={t('common.delete')}
                             >✕</button>
                           </div>
@@ -1250,7 +1250,7 @@ export default function WeeklyWrapPage() {
                 <button
                   onClick={() => handleSaveEdits(r)}
                   disabled={savingId === r.child_id}
-                  className="flex-1 py-2 rounded-lg bg-amber-500 text-white text-sm font-semibold hover:bg-amber-600 disabled:opacity-50 transition-colors"
+                  className="btn btn-gold btn-md flex-1"
                 >
                   {savingId === r.child_id ? t('common.saving') : t('weeklyWrap.saveChanges')}
                 </button>
@@ -1280,7 +1280,7 @@ export default function WeeklyWrapPage() {
                     }
                   }}
                   disabled={sendingChildId === r.child_id}
-                  className="flex-1 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                  className="btn btn-primary btn-md flex-1"
                 >
                   {sendingChildId === r.child_id ? t('weeklyWrap.sending') : t('weeklyWrap.sendToParent')}
                 </button>
@@ -1340,14 +1340,14 @@ export default function WeeklyWrapPage() {
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => navigateWeek(-1)}
-                    className="px-1.5 py-0.5 text-white/40 hover:bg-white/10 rounded text-xs"
+                    className="btn btn-ghost btn-icon btn-sm"
                   >
                     ◀
                   </button>
                   <p className="text-xs text-white/40">{weekDisplay} · {reports.length} {t('weeklyWrap.children')}</p>
                   <button
                     onClick={() => navigateWeek(1)}
-                    className="px-1.5 py-0.5 text-white/40 hover:bg-white/10 rounded text-xs"
+                    className="btn btn-ghost btn-icon btn-sm"
                   >
                     ▶
                   </button>
@@ -1370,10 +1370,10 @@ export default function WeeklyWrapPage() {
                     setSelectionMode(!selectionMode);
                     if (selectionMode) setSelectedChildIds(new Set());
                   }}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  className={`btn btn-sm ${
                     selectionMode
-                      ? 'bg-emerald-500/15 text-emerald-300'
-                      : 'bg-white/5 text-white/50 hover:bg-white/10'
+                      ? 'btn-primary'
+                      : 'btn-secondary'
                   }`}
                 >
                   {selectionMode
@@ -1387,7 +1387,7 @@ export default function WeeklyWrapPage() {
                 <button
                   onClick={() => handleGenerate(true, Array.from(selectedChildIds))}
                   disabled={generating}
-                  className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+                  className="btn btn-primary btn-sm"
                 >
                   {generating ? (
                     <>
@@ -1405,7 +1405,7 @@ export default function WeeklyWrapPage() {
                 <button
                   onClick={() => handleGenerate(reports.length > 0)}
                   disabled={generating}
-                  className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+                  className="btn btn-primary btn-sm"
                 >
                   {generating ? (
                     <>
@@ -1505,7 +1505,7 @@ export default function WeeklyWrapPage() {
                       setSelectedChildIds(new Set(reports.map(r => r.child_id)));
                     }
                   }}
-                  className="text-xs text-emerald-300 font-semibold hover:text-emerald-200"
+                  className="btn btn-ghost btn-sm"
                 >
                   {selectedChildIds.size === reports.length
                     ? t('weeklyWrap.deselectAll')
@@ -1562,7 +1562,7 @@ export default function WeeklyWrapPage() {
                     }
                     setApprovingId(null);
                   }}
-                  className="w-full py-3 rounded-lg border-2 border-emerald-500/30 text-emerald-300 text-sm font-semibold hover:bg-emerald-500/10 disabled:opacity-50 transition-colors"
+                  className="btn btn-ghost btn-outline btn-lg btn-full"
                 >
                   {approvingId
                     ? t('weeklyWrap.approvingAll')
@@ -1591,7 +1591,7 @@ export default function WeeklyWrapPage() {
                       setSelectedChildIds(new Set(reports.map(r => r.child_id)));
                     }
                   }}
-                  className="text-xs text-emerald-300 font-semibold hover:text-emerald-200"
+                  className="btn btn-ghost btn-sm"
                 >
                   {selectedChildIds.size === reports.length
                     ? t('weeklyWrap.deselectAll')
@@ -1621,7 +1621,7 @@ export default function WeeklyWrapPage() {
               <button
                 onClick={handleSendAll}
                 disabled={sending}
-                className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-semibold text-sm hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                className="btn btn-primary btn-md"
               >
                 {sending
                   ? t('weeklyWrap.sending')

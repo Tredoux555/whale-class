@@ -184,7 +184,7 @@ export default function SoundSegmentingGame() {
             <p className="text-white"><strong>Example:</strong><br />"cat" → tap tap tap (3 sounds: /c/ /a/ /t/)</p>
           </div>
 
-          <button onClick={startGame} className="w-full p-4 bg-white text-rose-600 rounded-2xl font-bold text-xl" >
+          <button onClick={startGame} className="btn btn-primary btn-lg btn-full" >
             Start Segmenting! 🎮
           </button>
 
@@ -207,8 +207,8 @@ export default function SoundSegmentingGame() {
           <p className="text-2xl text-white/90 mb-8">Score: <span className="font-bold text-yellow-300">{score}</span>/{totalRounds}</p>
 
           <div className="space-y-4">
-            <button onClick={startGame} className="w-full max-w-sm mx-auto p-4 bg-white text-rose-600 rounded-2xl font-bold text-xl">Play Again! 🔄</button>
-            <Link href="/games/sound-games" className="block w-full max-w-sm mx-auto p-4 bg-white/20 text-white rounded-2xl font-bold text-xl">Back to Sound Games</Link>
+            <button onClick={startGame} className="btn btn-primary btn-lg btn-full max-w-sm mx-auto">Play Again! 🔄</button>
+            <Link href="/games/sound-games" className="btn btn-secondary btn-lg btn-full max-w-sm mx-auto block">Back to Sound Games</Link>
           </div>
         </div>
       </div>
@@ -233,7 +233,7 @@ export default function SoundSegmentingGame() {
 
           <div className="text-9xl mb-4">{currentWord?.image}</div>
 
-          <button onClick={handleReplay} disabled={isPlaying} className={`px-6 py-3 bg-white/30 rounded-full text-white font-bold ${isPlaying ? 'animate-pulse' : 'hover:bg-white/40'}`}>
+          <button onClick={handleReplay} disabled={isPlaying} className={`btn btn-secondary btn-pill btn-md ${isPlaying ? 'animate-pulse' : ''}`}>
             {isPlaying ? '🔊 Listening...' : '🔊 Hear Again'}
           </button>
           
@@ -280,14 +280,14 @@ export default function SoundSegmentingGame() {
           <button
             onClick={resetTaps}
             disabled={tappedSounds.length === 0 || gameState !== 'playing'}
-            className="px-6 py-3 bg-white/20 text-white rounded-xl font-bold hover:bg-white/30 disabled:opacity-50"
+            className="btn btn-secondary btn-md"
           >
             ↩️ Reset
           </button>
           <button
             onClick={() => checkAnswer(tappedSounds.length)}
             disabled={tappedSounds.length === 0 || gameState !== 'playing'}
-            className="px-8 py-3 bg-green-500 text-white rounded-xl font-bold hover:bg-green-600 disabled:opacity-50"
+            className="btn btn-primary btn-md"
           >
             ✓ Check Answer
           </button>

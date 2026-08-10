@@ -8,6 +8,23 @@
   --color-whale-dark: #2C5F7C;
   --color-whale-light: #B8E0F0;
   --color-accent: #FFB84D;
+
+  /* ── Montree "Dark Forest" brand palette (see MONTREE_BRAND_PALETTE.md) ──
+     Added alongside the legacy whale tokens; nothing above was removed.
+     Usable as Tailwind utilities: bg-forest-bg, text-emerald-primary, … */
+  --color-forest-bg: #0A1A0F;
+  --color-forest-card: #08140C;
+  --color-forest-deep: #03261D;
+  --color-emerald-primary: #34D399;
+  --color-emerald-deep: #1D6B48;
+  --color-emerald-press: #17553A;
+  --color-forest-gold: #E8C96A;
+  --color-forest-gold-deep: #B9974A;
+  --color-forest-danger: #F87171;
+  --color-forest-danger-deep: #B4322F;
+  --color-forest-text: #E8F0EA;
+  --color-forest-muted: #9FC7B0;
+  --color-forest-ink: #06140C;
 }
 
 :root {
@@ -110,32 +127,12 @@ body, html {
   border: 1px solid rgb(241 245 249);
 }
 
-/* Button styles */
-.btn-primary {
-  padding: 0.5rem 1rem;
-  background-color: rgb(99 102 241);
-  color: white;
-  font-weight: 500;
-  border-radius: 0.5rem;
-  transition: background-color 0.2s;
-}
-
-.btn-primary:hover {
-  background-color: rgb(79 70 229);
-}
-
-.btn-secondary {
-  padding: 0.5rem 1rem;
-  background-color: rgb(241 245 249);
-  color: rgb(51 65 85);
-  font-weight: 500;
-  border-radius: 0.5rem;
-  transition: background-color 0.2s;
-}
-
-.btn-secondary:hover {
-  background-color: rgb(226 232 240);
-}
+/* Button styles
+   NOTE: the old flat indigo/slate .btn-primary + .btn-secondary rules that
+   lived here were REDEFINED as part of the Soft Elevation button system.
+   Both class names still exist and still work — see the
+   "MONTREE BUTTON SYSTEM — SOFT ELEVATION" section at the end of this
+   file, which is the single source of truth for all .btn* styling. */
 
 /* Form inputs */
 .input {
@@ -440,4 +437,486 @@ a, button, [role="button"], .clickable {
   * {
     scrollbar-width: none;
   }
+}
+
+/* ============================================================================
+   MONTREE BUTTON SYSTEM — "SOFT ELEVATION"
+   ============================================================================
+   Direction chosen by Tredoux from proof/pss-button-options.html (Option 2).
+   Palette is the Dark Forest brand (MONTREE_BRAND_PALETTE.md); the surface
+   treatment is quiet luxury rather than the chunky Potato Snaps slab.
+
+   THE RECIPE — every solid variant gets all four of these:
+     1. ONE soft directional shadow. A single, wide, hue-tinted fall with a
+        negative spread — no stacked contact layer, no ambient bloom. It should
+        read as the button floating a few millimetres off the surface.
+     2. 1px HAIRLINE BORDER. A light border on solid variants (a dark-tinted
+        one on light surfaces) is what gives the edge definition that the
+        removed contact shadow used to provide.
+     3. GENTLE 180° GRADIENT. Top-lit, low contrast between the two stops —
+        just enough to keep the face from reading as flat paint.
+     4. PRESS = translateY(1px) AND THE SHADOW TIGHTENS beneath it. Hover
+        lifts by 1px and the shadow spreads. The motion, not the ornament, is
+        what makes it feel pressable.
+   Type is 600 weight at neutral tracking; radius is 10px (8 / 12 at the size
+   extremes). Restraint is the point — if a change makes a button louder, it is
+   the wrong change.
+
+   CONTEXT: tokens default to the DARK FOREST surface (#0A1A0F / #08140C).
+   Light screens (app/admin/hub, most modals, print views) put `on-light` on the
+   button or ANY ancestor and the same classes re-tune themselves. `.btn-primary`
+   / `.btn-danger` / `.btn-gold` are solid and legible on both without help —
+   only `.btn-secondary` and `.btn-ghost` genuinely need `on-light`.
+
+   These rules are UNLAYERED plain CSS, so they beat Tailwind utilities (which
+   live in @layer utilities). A leftover `bg-blue-500` will not fight `.btn-*`.
+   Deliberately NOT set on `.btn`: width, margin, position, flex-grow — so
+   layout utilities (w-full, flex-1, mt-4, absolute…) keep working untouched.
+   ========================================================================== */
+
+:root {
+  /* ── palette ─────────────────────────────────────────────────────────── */
+  --mt-bg: #0A1A0F;
+  --mt-card: #08140C;
+  --mt-card-raised: #12291B;
+  --mt-line: rgba(52, 211, 153, 0.20);
+  --mt-line-strong: rgba(52, 211, 153, 0.40);
+
+  --mt-emerald: #34D399;
+  --mt-emerald-deep: #1D6B48;
+  --mt-emerald-press: #17553A;
+  --mt-gold: #E8C96A;
+  --mt-gold-deep: #B9974A;
+  --mt-danger: #F87171;
+  --mt-danger-deep: #B4322F;
+
+  --mt-text: #E8F0EA;
+  --mt-muted: #9FC7B0;
+  --mt-ink: #04160D;               /* label colour on emerald */
+
+  /* Gentle top-lit gradients — low contrast between stops, on purpose. */
+  --mt-grad-cta: linear-gradient(180deg, #35D89C 0%, #219A6D 100%);
+  --mt-grad-cta-hover: linear-gradient(180deg, #43E2A9 0%, #26A876 100%);
+  --mt-grad-cta-press: linear-gradient(180deg, #2CC38C 0%, #1B855D 100%);
+  --mt-grad-gold: linear-gradient(180deg, #EDD489 0%, #C0A055 100%);
+  --mt-grad-gold-hover: linear-gradient(180deg, #F4E2A2 0%, #CBAC62 100%);
+  --mt-grad-danger: linear-gradient(180deg, #F1706F 0%, #C0403C 100%);
+  --mt-grad-danger-hover: linear-gradient(180deg, #F98685 0%, #CE4B47 100%);
+
+  /* ── geometry ────────────────────────────────────────────────────────── */
+  --mt-r-btn: 10px;
+  --mt-r-btn-sm: 8px;
+  --mt-r-btn-lg: 12px;
+
+  /* ── hairline borders — the edge definition ──────────────────────────── */
+  --mt-hairline: rgba(255, 255, 255, 0.16);      /* on a solid colour face  */
+  --mt-hairline-quiet: rgba(232, 240, 234, 0.16); /* on a translucent face  */
+  --mt-hairline-light: rgba(15, 60, 38, 0.15);    /* on a light surface     */
+
+  /* ── the single soft shadow, per hue ─────────────────────────────────
+     rest → hover (spreads + lifts) → press (tightens under the button)   */
+  --mt-sh-emerald: 0 6px 18px -8px rgba(29, 107, 72, 0.95);
+  --mt-sh-emerald-lift: 0 10px 24px -9px rgba(52, 211, 153, 0.70);
+  --mt-sh-emerald-press: 0 2px 7px -3px rgba(29, 107, 72, 0.90);
+
+  --mt-sh-neutral: 0 4px 14px -8px rgba(0, 0, 0, 0.90);
+  --mt-sh-neutral-lift: 0 8px 20px -9px rgba(0, 0, 0, 0.95);
+  --mt-sh-neutral-press: 0 2px 6px -4px rgba(0, 0, 0, 0.90);
+
+  --mt-sh-danger: 0 6px 18px -8px rgba(180, 50, 47, 0.95);
+  --mt-sh-danger-lift: 0 10px 24px -9px rgba(248, 113, 113, 0.60);
+  --mt-sh-danger-press: 0 2px 7px -3px rgba(180, 50, 47, 0.90);
+
+  --mt-sh-gold: 0 6px 18px -8px rgba(185, 151, 74, 0.90);
+  --mt-sh-gold-lift: 0 10px 24px -9px rgba(232, 201, 106, 0.60);
+  --mt-sh-gold-press: 0 2px 7px -3px rgba(185, 151, 74, 0.90);
+
+  /* Soft Elevation has NO inset bevel — the hairline border does that job.
+     These two names are kept as no-ops so any stray reference stays valid. */
+  --mt-bevel: 0 0 0 0 rgba(0, 0, 0, 0);
+  --mt-bevel-soft: 0 0 0 0 rgba(0, 0, 0, 0);
+
+  --mt-focus: rgba(52, 211, 153, 0.85);
+  --mt-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* Light-context re-tune: the tinted falls stay (they carry the brand) but go
+   shallower and less opaque, because a soft shadow on white reads much louder
+   than the same shadow on near-black. */
+.on-light,
+.on-light .btn,
+.btn.on-light {
+  --mt-sh-emerald: 0 6px 16px -8px rgba(29, 107, 72, 0.75);
+  --mt-sh-emerald-lift: 0 10px 22px -9px rgba(29, 107, 72, 0.60);
+  --mt-sh-emerald-press: 0 2px 6px -3px rgba(29, 107, 72, 0.70);
+
+  --mt-sh-neutral: 0 4px 12px -7px rgba(15, 32, 22, 0.60);
+  --mt-sh-neutral-lift: 0 8px 18px -8px rgba(15, 32, 22, 0.55);
+  --mt-sh-neutral-press: 0 2px 5px -3px rgba(15, 32, 22, 0.55);
+
+  --mt-sh-danger: 0 6px 16px -8px rgba(180, 50, 47, 0.70);
+  --mt-sh-danger-lift: 0 10px 22px -9px rgba(180, 50, 47, 0.55);
+  --mt-sh-danger-press: 0 2px 6px -3px rgba(180, 50, 47, 0.65);
+
+  --mt-sh-gold: 0 6px 16px -8px rgba(185, 151, 74, 0.70);
+  --mt-sh-gold-lift: 0 10px 22px -9px rgba(185, 151, 74, 0.55);
+  --mt-sh-gold-press: 0 2px 6px -3px rgba(185, 151, 74, 0.65);
+
+  --mt-hairline: rgba(255, 255, 255, 0.20);
+  --mt-hairline-quiet: rgba(15, 60, 38, 0.15);
+}
+
+/* ── base ─────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-sizing: border-box;
+  font-family: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  border-radius: var(--mt-r-btn);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  appearance: none;
+  -webkit-appearance: none;
+  background-clip: padding-box;
+  transition:
+    transform 120ms var(--mt-ease),
+    box-shadow 180ms var(--mt-ease),
+    background-color 160ms var(--mt-ease),
+    background-image 160ms var(--mt-ease),
+    border-color 160ms var(--mt-ease),
+    color 160ms var(--mt-ease),
+    opacity 160ms var(--mt-ease);
+}
+
+/* THE PRESS — shared by every variant. Sits below the button's rest position;
+   each variant tightens its own shadow to match. */
+.btn:active:not(:disabled):not([aria-disabled='true']):not(.btn-disabled) {
+  transform: translateY(1px);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--mt-focus);
+  outline-offset: 2px;
+}
+
+.btn:disabled,
+.btn[aria-disabled='true'],
+.btn.btn-disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  filter: saturate(0.55);
+  box-shadow: none;
+  transform: none;
+}
+
+/* ── sizes ────────────────────────────────────────────────────────────── */
+.btn-sm {
+  min-height: 36px;
+  padding: 0 0.8125rem;
+  font-size: 0.8125rem;
+  gap: 0.4rem;
+  border-radius: var(--mt-r-btn-sm);
+}
+.btn-md {
+  min-height: 44px;
+  padding: 0 1.1875rem;
+  font-size: 0.90625rem;
+  border-radius: var(--mt-r-btn);
+}
+.btn-lg {
+  min-height: 54px;
+  padding: 0 1.625rem;
+  font-size: 1rem;
+  gap: 0.55rem;
+  border-radius: var(--mt-r-btn-lg);
+}
+/* Un-sized .btn falls back to md so a half-converted button never collapses. */
+.btn:not(.btn-sm):not(.btn-md):not(.btn-lg) {
+  min-height: 44px;
+  padding: 0 1.1875rem;
+  font-size: 0.90625rem;
+}
+
+/* ── PRIMARY — the emerald CTA ───────────────────────────────────────── */
+.btn-primary {
+  background-image: var(--mt-grad-cta);
+  background-color: var(--mt-emerald-deep);
+  color: var(--mt-ink);
+  border-color: var(--mt-hairline);
+  box-shadow: var(--mt-sh-emerald);
+}
+.btn-primary:hover:not(:disabled):not([aria-disabled='true']) {
+  background-image: var(--mt-grad-cta-hover);
+  box-shadow: var(--mt-sh-emerald-lift);
+  transform: translateY(-1px);
+}
+.btn-primary:active:not(:disabled):not([aria-disabled='true']) {
+  background-image: var(--mt-grad-cta-press);
+  box-shadow: var(--mt-sh-emerald-press);
+}
+
+/* ── SECONDARY — quiet raised surface ────────────────────────────────── */
+.btn-secondary {
+  background-image: none;
+  background-color: rgba(255, 255, 255, 0.045);
+  color: var(--mt-text);
+  border-color: var(--mt-hairline-quiet);
+  box-shadow: var(--mt-sh-neutral);
+}
+.btn-secondary:hover:not(:disabled):not([aria-disabled='true']) {
+  background-color: rgba(255, 255, 255, 0.085);
+  border-color: var(--mt-line-strong);
+  box-shadow: var(--mt-sh-neutral-lift);
+  transform: translateY(-1px);
+}
+.btn-secondary:active:not(:disabled):not([aria-disabled='true']) {
+  box-shadow: var(--mt-sh-neutral-press);
+}
+.on-light .btn-secondary,
+.btn-secondary.on-light {
+  background-color: #FFFFFF;
+  color: #123421;
+  border-color: var(--mt-hairline-light);
+}
+.on-light .btn-secondary:hover:not(:disabled):not([aria-disabled='true']),
+.btn-secondary.on-light:hover:not(:disabled):not([aria-disabled='true']) {
+  background-color: #F5FAF7;
+  border-color: rgba(29, 107, 72, 0.30);
+}
+
+/* ── GHOST — text-only action, no elevation at all ───────────────────── */
+.btn-ghost {
+  background-color: transparent;
+  background-image: none;
+  color: var(--mt-muted);
+  border-color: transparent;
+  box-shadow: none;
+}
+.btn-ghost:hover:not(:disabled):not([aria-disabled='true']) {
+  background-color: rgba(52, 211, 153, 0.07);
+  color: var(--mt-emerald);
+}
+.btn-ghost:active:not(:disabled):not([aria-disabled='true']) {
+  background-color: rgba(52, 211, 153, 0.12);
+}
+.on-light .btn-ghost,
+.btn-ghost.on-light {
+  color: #3F6B54;
+}
+.on-light .btn-ghost:hover:not(:disabled):not([aria-disabled='true']),
+.btn-ghost.on-light:hover:not(:disabled):not([aria-disabled='true']) {
+  background-color: rgba(29, 107, 72, 0.07);
+  color: #12563A;
+}
+/* Outlined ghost — for "cancel" next to a solid CTA. */
+.btn-ghost.btn-outline {
+  border-color: var(--mt-hairline-quiet);
+}
+.btn-ghost.btn-outline:hover:not(:disabled):not([aria-disabled='true']) {
+  border-color: var(--mt-line-strong);
+}
+.on-light .btn-ghost.btn-outline,
+.btn-ghost.btn-outline.on-light {
+  border-color: var(--mt-hairline-light);
+}
+
+/* ── DANGER ──────────────────────────────────────────────────────────── */
+.btn-danger {
+  background-image: var(--mt-grad-danger);
+  background-color: var(--mt-danger-deep);
+  color: #FFF4F4;
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: var(--mt-sh-danger);
+}
+.btn-danger:hover:not(:disabled):not([aria-disabled='true']) {
+  background-image: var(--mt-grad-danger-hover);
+  box-shadow: var(--mt-sh-danger-lift);
+  transform: translateY(-1px);
+}
+.btn-danger:active:not(:disabled):not([aria-disabled='true']) {
+  box-shadow: var(--mt-sh-danger-press);
+}
+/* Quiet danger — destructive but not the loudest thing on screen. */
+.btn-danger.btn-soft {
+  background-image: none;
+  background-color: rgba(248, 113, 113, 0.09);
+  color: #F2A0A0;
+  border-color: rgba(248, 113, 113, 0.26);
+  box-shadow: none;
+}
+.btn-danger.btn-soft:hover:not(:disabled):not([aria-disabled='true']) {
+  background-color: rgba(248, 113, 113, 0.16);
+  box-shadow: var(--mt-sh-danger-press);
+}
+.on-light .btn-danger.btn-soft,
+.btn-danger.btn-soft.on-light {
+  background-color: rgba(248, 113, 113, 0.10);
+  color: #A62E2B;
+  border-color: rgba(180, 50, 47, 0.26);
+}
+
+/* ── GOLD — the brand accent action ──────────────────────────────────── */
+.btn-gold {
+  background-image: var(--mt-grad-gold);
+  background-color: var(--mt-gold);
+  color: #251C02;
+  border-color: rgba(255, 255, 255, 0.20);
+  box-shadow: var(--mt-sh-gold);
+}
+.btn-gold:hover:not(:disabled):not([aria-disabled='true']) {
+  background-image: var(--mt-grad-gold-hover);
+  box-shadow: var(--mt-sh-gold-lift);
+  transform: translateY(-1px);
+}
+.btn-gold:active:not(:disabled):not([aria-disabled='true']) {
+  box-shadow: var(--mt-sh-gold-press);
+}
+
+/* ── modifiers ───────────────────────────────────────────────────────── */
+.btn-full {
+  width: 100%;
+}
+
+/* Square icon-only button. Sized off the matching .btn-* size class. */
+.btn-icon {
+  padding: 0;
+  gap: 0;
+  aspect-ratio: 1 / 1;
+  min-width: 44px;
+  width: 44px;
+  height: 44px;
+  flex: none;
+}
+.btn-icon.btn-sm {
+  min-width: 36px;
+  width: 36px;
+  height: 36px;
+}
+.btn-icon.btn-lg {
+  min-width: 54px;
+  width: 54px;
+  height: 54px;
+}
+.btn-icon.btn-round {
+  border-radius: 999px;
+}
+.btn-pill {
+  border-radius: 999px;
+}
+
+/* ── GLOW — a refined ring that breathes. Emphasis, not a siren. ─────── */
+.btn-glow:not(:disabled):not([aria-disabled='true']) {
+  position: relative;
+  animation: mt-btn-glow 3s ease-in-out infinite;
+}
+.btn-glow.btn-gold:not(:disabled):not([aria-disabled='true']) {
+  animation: mt-btn-glow-gold 3s ease-in-out infinite;
+}
+@keyframes mt-btn-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(52, 211, 153, 0.28),
+      0 6px 18px -8px rgba(29, 107, 72, 0.95);
+  }
+  50% {
+    box-shadow:
+      0 0 0 5px rgba(52, 211, 153, 0.14),
+      0 12px 26px -9px rgba(52, 211, 153, 0.70);
+  }
+}
+@keyframes mt-btn-glow-gold {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(232, 201, 106, 0.30),
+      0 6px 18px -8px rgba(185, 151, 74, 0.90);
+  }
+  50% {
+    box-shadow:
+      0 0 0 5px rgba(232, 201, 106, 0.15),
+      0 12px 26px -9px rgba(232, 201, 106, 0.65);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-glow:not(:disabled):not([aria-disabled='true']) {
+    animation: none;
+  }
+  .btn {
+    transition: none;
+  }
+}
+
+/* A .btn inside a flex row should not be squashed by its own white-space. */
+.btn > svg {
+  flex: none;
+}
+
+/* Legacy safety: pages that still say `.btn-primary` WITHOUT `.btn` (there were
+   a handful before the rollout) still get the base treatment. */
+.btn-primary:not(.btn),
+.btn-secondary:not(.btn),
+.btn-danger:not(.btn),
+.btn-gold:not(.btn),
+.btn-ghost:not(.btn) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0 1.1875rem;
+  font-size: 0.90625rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  border-radius: var(--mt-r-btn);
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 120ms var(--mt-ease), box-shadow 180ms var(--mt-ease);
+}
+.btn-primary:not(.btn):active:not(:disabled),
+.btn-secondary:not(.btn):active:not(:disabled),
+.btn-danger:not(.btn):active:not(:disabled),
+.btn-gold:not(.btn):active:not(:disabled),
+.btn-ghost:not(.btn):active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* ── card + input, re-tuned for the forest surface (opt-in classes) ───── */
+.card-forest {
+  background-color: rgba(8, 20, 12, 0.55);
+  border: 1px solid var(--mt-line);
+  border-radius: 14px;
+  padding: 1.25rem;
+  color: var(--mt-text);
+  box-shadow: var(--mt-sh-neutral);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.input-forest {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 0.875rem;
+  border-radius: 10px;
+  border: 1px solid var(--mt-line);
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--mt-text);
+  outline: none;
+  transition: border-color 160ms var(--mt-ease), box-shadow 160ms var(--mt-ease);
+}
+.input-forest::placeholder {
+  color: rgba(159, 199, 176, 0.55);
+}
+.input-forest:focus {
+  border-color: var(--mt-line-strong);
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.16);
 }

@@ -167,7 +167,7 @@ export default function MiddleSoundGame() {
             </div>
           </div>
 
-          <button onClick={startGame} className="w-full p-4 bg-white text-purple-600 rounded-2xl font-bold text-xl">
+          <button onClick={startGame} className="btn btn-primary btn-lg btn-full">
             Start Playing! 🎮
           </button>
 
@@ -194,10 +194,10 @@ export default function MiddleSoundGame() {
           </p>
 
           <div className="space-y-4">
-            <button onClick={startGame} className="w-full max-w-sm mx-auto p-4 bg-white text-purple-600 rounded-2xl font-bold text-xl">
+            <button onClick={startGame} className="btn btn-primary btn-lg btn-full max-w-sm mx-auto">
               Play Again! 🔄
             </button>
-            <Link href="/games/sound-games" className="block w-full max-w-sm mx-auto p-4 bg-white/20 text-white rounded-2xl font-bold text-xl">
+            <Link href="/games/sound-games" className="btn btn-secondary btn-lg btn-full max-w-sm mx-auto block">
               Back to Sound Games
             </Link>
           </div>

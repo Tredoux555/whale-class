@@ -17,7 +17,7 @@ import type { Metadata, Viewport } from 'next';
 import { POTATO_CSS, POTATO_FONTS_HREF } from '@/lib/potato/ui';
 
 export const metadata: Metadata = {
-  title: 'Potato Snaps',
+  title: 'PSS — Photo Sorting System',
   description: 'Little films of your child’s week.',
   robots: { index: false, follow: false },
 };

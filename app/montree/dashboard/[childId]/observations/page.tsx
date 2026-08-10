@@ -218,7 +218,7 @@ export default function ObservationsPage() {
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-[#1D6B48] text-white rounded-lg hover:bg-[#236B4C] transition-colors flex items-center gap-2"
+          className="btn btn-primary btn-md"
         >
           {showForm ? `✕ ${t('observations.close')}` : `+ ${t('observations.new')}`}
         </button>
@@ -399,8 +399,7 @@ export default function ObservationsPage() {
           <button
             onClick={handleSubmit}
             disabled={saving || !form.behavior_description.trim()}
-            className="w-full py-3 bg-[#1D6B48] text-white font-medium rounded-lg
-                     disabled:opacity-50 hover:bg-[#236B4C] transition-all"
+            className="btn btn-primary btn-lg btn-full"
           >
             {saving ? t('observations.saving') : t('observations.saveButton')}
           </button>
@@ -431,7 +430,7 @@ export default function ObservationsPage() {
           </div>
           <Link
             href={`/montree/dashboard/guru?child=${childId}`}
-            className="mt-3 inline-flex items-center gap-2 text-sm text-[#34d399] hover:text-[#5fe0b0]"
+            className="btn btn-ghost btn-sm mt-3"
           >
             🔮 {t('observations.askGuruPatterns')} →
           </Link>
@@ -450,7 +449,7 @@ export default function ObservationsPage() {
             <p>{t('observations.none')}</p>
             <button
               onClick={() => setShowForm(true)}
-              className="mt-3 text-[#34d399] hover:text-[#5fe0b0]"
+              className="btn btn-ghost btn-md mt-3"
             >
               {t('observations.addFirst')} →
             </button>
@@ -494,7 +493,7 @@ export default function ObservationsPage() {
                   </div>
                   <button
                     onClick={() => deleteObservation(obs.id)}
-                    className="text-white/40 hover:text-red-400 p-1"
+                    className="btn btn-ghost btn-icon btn-sm"
                   >
                     🗑️
                   </button>

@@ -487,17 +487,17 @@ export default function MatchAttackGame() {
           <div className="space-y-3">
             <button
               onClick={() => startGame(difficulty)}
-              className="w-full p-4 bg-white text-orange-700 rounded-2xl font-bold text-xl shadow-lg hover:scale-105 active:scale-95 transition-transform"
+              className="btn btn-primary btn-lg btn-full"
             >
               Play Again! 🔄
             </button>
             <button
               onClick={() => setGameState('menu')}
-              className="w-full p-4 bg-white/20 text-white rounded-2xl font-bold text-xl"
+              className="btn btn-secondary btn-lg btn-full"
             >
               Change Difficulty
             </button>
-            <Link href="/montree/dashboard/games" className="block w-full p-4 bg-white/10 text-white rounded-2xl font-bold text-xl">
+            <Link href="/montree/dashboard/games" className="btn btn-secondary btn-lg btn-full block">
               Back to Games
             </Link>
           </div>
@@ -548,9 +548,9 @@ export default function MatchAttackGame() {
         <div className={`bg-white rounded-3xl p-6 mb-6 shadow-2xl text-center transition-transform ${showWordFlash ? 'scale-110' : 'scale-100'}`}>
           <p className="text-gray-500 text-sm mb-2">Read & Match:</p>
           <p className="text-5xl font-bold text-gray-800 tracking-wide">{currentWord?.word}</p>
-          <button 
+          <button
             onClick={playWord}
-            className="mt-3 text-blue-500 hover:text-blue-700 text-sm"
+            className="btn btn-ghost btn-sm on-light mt-3"
           >
             🔊 Hear it
           </button>

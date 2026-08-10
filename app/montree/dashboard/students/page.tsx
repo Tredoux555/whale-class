@@ -226,7 +226,7 @@ function CurriculumPicker({
             {!isAddingCustom ? (
               <button
                 onClick={(e) => { e.stopPropagation(); setIsAddingCustom(true); }}
-                className="w-full px-3 py-2 text-left text-sm text-[#34d399] hover:bg-[#34d399]/10 rounded flex items-center gap-2"
+                className="btn btn-ghost btn-sm btn-full"
               >
                 <span>+</span>
                 <span>{t('students.addCustomWork')}</span>
@@ -245,7 +245,7 @@ function CurriculumPicker({
                 <button
                   onClick={handleAddCustomWork}
                   disabled={!customWorkName.trim() || isSubmitting}
-                  className="px-3 py-1.5 bg-[#1D6B48] text-white rounded text-sm font-medium disabled:opacity-50 hover:bg-[#236B4C]"
+                  className="btn btn-primary btn-sm"
                 >
                   {isSubmitting ? t('common.loading') : t('common.add')}
                 </button>
@@ -630,7 +630,7 @@ export default function StudentsPage() {
           {!isHomeschoolParent(session) && (
             <button
               onClick={() => router.push('/montree/dashboard/labels')}
-              className="px-3 py-1.5 bg-white/[0.08] text-white/70 rounded-lg text-sm font-medium hover:bg-white/[0.14] border border-[rgba(52,211,153,0.15)]"
+              className="btn btn-secondary btn-sm"
             >
               🏷️ {t('nav.labels')}
             </button>
@@ -639,7 +639,7 @@ export default function StudentsPage() {
             data-tutorial="add-student-button"
             data-copilot="add-students"
             onClick={openAddFlow}
-            className="px-3 py-1.5 bg-[#1D6B48] text-white rounded-lg text-sm font-medium hover:bg-[#236B4C]"
+            className="btn btn-primary btn-sm"
           >
             + {isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}
           </button>
@@ -656,7 +656,7 @@ export default function StudentsPage() {
             </p>
             <button
               onClick={openAddFlow}
-              className="px-4 py-2 bg-[#1D6B48] text-white rounded-lg font-medium hover:bg-[#236B4C]"
+              className="btn btn-primary btn-md"
             >
               {isHomeschoolParent(session) ? t('students.addFirstChild') : t('students.addFirst')}
             </button>
@@ -687,13 +687,13 @@ export default function StudentsPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => openEditForm(student)}
-                      className="px-3 py-1.5 bg-white/[0.08] text-white/70 rounded-lg text-sm hover:bg-white/[0.14] border border-[rgba(52,211,153,0.15)]"
+                      className="btn btn-secondary btn-sm"
                     >
                       {t('students.edit')}
                     </button>
                     <button
                       onClick={() => setDeleteConfirm(student.id)}
-                      className="px-3 py-1.5 bg-red-500/10 text-red-300 rounded-lg text-sm hover:bg-red-500/20"
+                      className="btn btn-danger btn-soft btn-sm"
                     >
                       {t('students.remove')}
                     </button>
@@ -709,13 +709,13 @@ export default function StudentsPage() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleDelete(student.id)}
-                        className="px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600"
+                        className="btn btn-danger btn-sm"
                       >
                         {t('students.yes')}
                       </button>
                       <button
                         onClick={() => setDeleteConfirm(null)}
-                        className="px-3 py-1.5 bg-white/[0.08] text-white/70 rounded-lg text-sm hover:bg-white/[0.14]"
+                        className="btn btn-secondary btn-sm"
                       >
                         {t('common.cancel')}
                       </button>
@@ -775,7 +775,7 @@ export default function StudentsPage() {
                   ? `${t('common.edit')} ${isHomeschoolParent(session) ? t('students.child') || 'Child' : t('students.student') || 'Student'}`
                   : `${t('common.add')} ${isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}`}
               </h2>
-              <button onClick={closeForm} className="text-white/40 hover:text-white/70 text-xl">
+              <button onClick={closeForm} className="btn btn-ghost btn-icon btn-sm text-xl">
                 ✕
               </button>
             </div>
@@ -809,7 +809,7 @@ export default function StudentsPage() {
                     <button
                       type="button"
                       onClick={() => setShowPhotoCapture(true)}
-                      className="flex-1 px-4 py-3 bg-[#34d399]/10 border border-[rgba(52,211,153,0.3)] text-[#34d399] rounded-xl font-medium hover:bg-[#34d399]/20 transition-colors text-sm"
+                      className="btn btn-secondary btn-lg flex-1"
                     >
                       📸 {editingStudent.photo_url ? t('students.changePhoto') : t('students.takePhoto')}
                     </button>
@@ -883,14 +883,14 @@ export default function StudentsPage() {
             <div className="p-4 border-t border-white/10 flex gap-3">
               <button
                 onClick={closeForm}
-                className="flex-1 py-3 bg-white/[0.08] text-white/70 rounded-xl font-medium hover:bg-white/[0.14]"
+                className="btn btn-secondary btn-lg flex-1"
               >
                 {t('common.cancel')}
               </button>
               <button
                 onClick={handleSave}
                 disabled={!formData.name.trim() || saving}
-                className="flex-1 py-3 bg-[#1D6B48] text-white rounded-xl font-medium disabled:opacity-50 hover:bg-[#236B4C]"
+                className="btn btn-primary btn-lg flex-1"
               >
                 {saving ? t('common.loading') : editingStudent
                   ? `${t('common.update')} ${isHomeschoolParent(session) ? t('students.child') || 'Child' : t('students.student') || 'Student'}`
@@ -927,7 +927,7 @@ export default function StudentsPage() {
               {/* Header */}
               <div className="p-6 border-b border-white/10 flex items-center justify-between sticky top-0 rounded-t-2xl" style={{ background: '#0c1f14' }}>
                 <h2 className="font-bold text-xl text-white/95" style={{ fontFamily: SERIF, fontWeight: 500 }}>{isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}</h2>
-                <button onClick={closeForm} className="text-white/40 hover:text-white/70 text-2xl">
+                <button onClick={closeForm} className="btn btn-ghost btn-icon btn-md text-2xl">
                   ✕
                 </button>
               </div>
@@ -955,7 +955,7 @@ export default function StudentsPage() {
                       {index > 0 && (
                         <button
                           onClick={() => removeStudent(index)}
-                          className="text-white/40 hover:text-red-400 text-2xl font-light"
+                          className="btn btn-ghost btn-icon btn-md text-2xl"
                         >
                           ✕
                         </button>
@@ -1089,7 +1089,7 @@ export default function StudentsPage() {
               <div className="p-6 border-t border-white/10 flex gap-3 rounded-b-2xl" style={{ background: 'rgba(255,255,255,0.02)' }}>
                 <button
                   onClick={closeForm}
-                  className="flex-1 py-3 bg-white/[0.08] text-white/70 rounded-lg font-medium hover:bg-white/[0.14] transition-colors"
+                  className="btn btn-secondary btn-lg flex-1"
                 >
                   {t('common.cancel')}
                 </button>
@@ -1097,7 +1097,7 @@ export default function StudentsPage() {
                   onClick={handleBulkSave}
                   data-guide="save-all"
                   disabled={bulkStudents.filter(s => s.name.trim()).length === 0 || saving}
-                  className="flex-1 py-3 bg-[#1D6B48] text-white rounded-lg font-medium disabled:opacity-50 hover:bg-[#236B4C] transition-colors"
+                  className="btn btn-primary btn-lg flex-1"
                 >
                   {saving ? t('common.loading') : `${t('students.saveAll')} (${bulkStudents.filter(s => s.name.trim()).length})`}
                 </button>

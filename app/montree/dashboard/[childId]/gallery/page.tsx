@@ -940,7 +940,7 @@ export default function GalleryPage() {
                 <button
                   onClick={() => saveCaption(photo.id)}
                   disabled={savingCaption}
-                  className="flex-1 px-3 py-1.5 text-sm text-white bg-emerald-500 rounded-lg hover:bg-emerald-600 disabled:opacity-50"
+                  className="btn btn-primary btn-sm flex-1"
                 >
                   {savingCaption ? '...' : t('common.save')}
                 </button>
@@ -995,7 +995,7 @@ export default function GalleryPage() {
               <button
                 onClick={() => handleSaveNote(photo.id)}
                 disabled={savingNote === photo.id}
-                className="mt-1 px-3 py-1 text-xs font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50 transition-colors"
+                className="btn btn-primary btn-sm mt-1"
               >
                 {savingNote === photo.id ? '...' : t('gallery.saveNote')}
               </button>

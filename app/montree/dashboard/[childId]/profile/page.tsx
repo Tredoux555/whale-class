@@ -242,7 +242,7 @@ export default function ProfilePage() {
         </div>
         <Link
           href={`/montree/dashboard/guru?child=${childId}`}
-          className="px-4 py-2 bg-[#1D6B48] text-white rounded-lg hover:bg-[#236B4C] transition-colors flex items-center gap-2"
+          className="btn btn-primary btn-md"
         >
           🔮 {t('profile.askGuru')}
         </Link>
@@ -489,7 +489,7 @@ export default function ProfilePage() {
             />
             <button
               onClick={addStrategy}
-              className="px-4 py-2 bg-[#1D6B48] text-white rounded-lg hover:bg-[#236B4C]"
+              className="btn btn-primary btn-md"
             >
               +
             </button>
@@ -525,7 +525,7 @@ export default function ProfilePage() {
             />
             <button
               onClick={addTrigger}
-              className="px-4 py-2 bg-red-500/80 text-white rounded-lg hover:bg-red-500"
+              className="btn btn-danger btn-md"
             >
               +
             </button>
@@ -552,8 +552,7 @@ export default function ProfilePage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="w-full py-3 bg-[#1D6B48] text-white font-medium rounded-lg
-                     disabled:opacity-50 hover:bg-[#236B4C] transition-all"
+            className="btn btn-primary btn-lg btn-full"
           >
             {saving ? t('profile.saving') : t('profile.saveButton')}
           </button>

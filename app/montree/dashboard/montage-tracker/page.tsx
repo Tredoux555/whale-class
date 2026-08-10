@@ -944,7 +944,7 @@ export default function MontageManagerPage() {
 
       {/* Header */}
       <div className="relative bg-[rgba(7,18,12,0.9)] border-b border-[rgba(52,211,153,0.15)] px-4 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-white/50 text-xl" aria-label="Back">←</button>
+        <button onClick={() => router.back()} className="btn btn-ghost btn-icon btn-sm text-xl" aria-label="Back">←</button>
         <div style={{ flex: 1, minWidth: 0 }}>
           <h1 className="text-lg font-bold text-white/95" style={{ fontFamily: T.serif }}>
             📸 {t('montageTracker.title')}

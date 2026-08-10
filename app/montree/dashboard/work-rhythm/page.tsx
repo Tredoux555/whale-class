@@ -179,7 +179,7 @@ export default function WorkRhythmPage() {
       <div className="relative bg-[rgba(7,18,12,0.9)] border-b border-[rgba(52,211,153,0.15)] px-4 py-3 flex items-center gap-3">
         <button
           onClick={() => router.push('/montree/dashboard')}
-          className="text-white/50 hover:text-white/80"
+          className="btn btn-ghost btn-md"
           aria-label={t('common.back')}
         >
           ←
@@ -202,8 +202,8 @@ export default function WorkRhythmPage() {
               aria-pressed={period === p}
               className={
                 period === p
-                  ? 'px-4 py-2 rounded-full text-sm font-semibold bg-emerald-600 text-white'
-                  : 'px-4 py-2 rounded-full text-sm font-medium bg-white/[0.06] border border-[rgba(52,211,153,0.2)] text-white/70 hover:bg-white/[0.1] transition'
+                  ? 'btn btn-primary btn-md btn-pill'
+                  : 'btn btn-secondary btn-md btn-pill'
               }
             >
               {p === 'week' ? t('workRhythm.periodWeek') : t('workRhythm.periodMonth')}
@@ -355,7 +355,7 @@ export default function WorkRhythmPage() {
               </div>
               <button
                 onClick={() => setSelectedId(null)}
-                className="text-white/50 hover:text-white/80 text-sm"
+                className="btn btn-ghost btn-icon btn-sm"
                 aria-label={t('common.back')}
               >
                 ✕

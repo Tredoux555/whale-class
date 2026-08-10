@@ -172,7 +172,7 @@ export default function HqPage() {
             HQ
           </h1>
           <div className="pt-wordrule" />
-          <p className="pt-logintag">Potato Snaps control</p>
+          <p className="pt-logintag">PSS control</p>
 
           {error ? <div className="pt-err">{error}</div> : null}
 

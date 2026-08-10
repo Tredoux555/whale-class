@@ -30,13 +30,13 @@ export default function CaptureError({
         <div className="flex flex-col gap-3">
           <button
             onClick={reset}
-            className="w-full py-3 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors"
+            className="btn btn-primary btn-lg btn-full"
           >
             Reopen Camera
           </button>
           <a
             href="/montree/dashboard"
-            className="w-full py-3 bg-white/10 text-white/80 rounded-xl font-medium hover:bg-white/20 transition-colors inline-block"
+            className="btn btn-secondary btn-lg btn-full"
           >
             Back to Dashboard
           </a>

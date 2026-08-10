@@ -256,7 +256,7 @@ export default function WeeklyReviewPage() {
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
           <Link
             href={`/montree/dashboard/${childId}`}
-            className="text-white/40 hover:text-white/70 text-xl"
+            className="btn btn-ghost btn-icon btn-sm text-xl"
           >
             ←
           </Link>
@@ -317,7 +317,7 @@ export default function WeeklyReviewPage() {
             </p>
             <button
               onClick={() => generateReport(activeTab)}
-              className="px-6 py-3 rounded-xl text-white font-medium text-sm bg-[#1D6B48] hover:bg-[#236B4C]"
+              className="btn btn-primary btn-lg"
             >
               {t('weeklyReview.generate' as any) || 'Generate Review'}
             </button>
@@ -424,10 +424,10 @@ export default function WeeklyReviewPage() {
                 <button
                   onClick={refineReport}
                   disabled={!feedback.trim() || currentStatus === 'refining'}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`btn btn-md ${
                     feedback.trim() && currentStatus !== 'refining'
-                      ? 'bg-[#1D6B48] text-white hover:bg-[#236B4C]'
-                      : 'bg-white/[0.06] text-white/40 cursor-not-allowed'
+                      ? 'btn-primary'
+                      : 'btn-secondary'
                   }`}
                 >
                   {currentStatus === 'refining'
@@ -444,7 +444,7 @@ export default function WeeklyReviewPage() {
               <button
                 onClick={() => generateReport(activeTab)}
                 disabled={currentStatus === 'refining' || currentStatus === 'applying' || currentStatus === 'sending'}
-                className="flex-1 py-3 rounded-xl border border-[rgba(52,211,153,0.2)] text-white/70 text-sm font-medium hover:bg-white/[0.06] disabled:opacity-50"
+                className="btn btn-secondary btn-lg flex-1"
               >
                 {t('weeklyReview.regenerate' as any) || 'Regenerate'}
               </button>
@@ -454,7 +454,7 @@ export default function WeeklyReviewPage() {
                 <button
                   onClick={applyShelf}
                   disabled={currentStatus === 'applying' || currentStatus === 'refining'}
-                  className="flex-1 py-3 rounded-xl bg-[#1D6B48] text-white text-sm font-medium hover:bg-[#236B4C] disabled:opacity-50"
+                  className="btn btn-primary btn-lg flex-1"
                 >
                   {currentStatus === 'applying'
                     ? (t('weeklyReview.updatingShelf' as any) || 'Updating Shelf...')
@@ -465,7 +465,7 @@ export default function WeeklyReviewPage() {
                 <button
                   onClick={sendReport}
                   disabled={currentStatus === 'sending' || currentStatus === 'refining'}
-                  className="flex-1 py-3 rounded-xl bg-[#1D6B48] text-white text-sm font-medium hover:bg-[#236B4C] disabled:opacity-50"
+                  className="btn btn-primary btn-lg flex-1"
                 >
                   {currentStatus === 'sending'
                     ? (t('weeklyReview.sendingReport' as any) || 'Sending...')

@@ -122,9 +122,9 @@ export default function OddEvenGame() {
         <div className="max-w-lg mx-auto">
           {/* Header */}
           <div className="flex items-center gap-4 mb-8 pt-4">
-            <Link 
+            <Link
               href="/montree/dashboard/games"
-              className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+              className="btn btn-secondary btn-icon btn-md"
             >
               ←
             </Link>
@@ -274,13 +274,13 @@ export default function OddEvenGame() {
             <div className="space-y-3">
               <button
                 onClick={startIdentifyPhase}
-                className="w-full py-4 bg-white text-emerald-600 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl"
+                className="btn btn-primary btn-lg btn-full"
               >
                 Test Your Knowledge! →
               </button>
               <button
                 onClick={() => setPhase('menu')}
-                className="w-full py-3 bg-white/20 text-white rounded-xl font-medium hover:bg-white/30"
+                className="btn btn-secondary btn-md btn-full"
               >
                 Back to Menu
               </button>
@@ -301,7 +301,7 @@ export default function OddEvenGame() {
           <div className="flex items-center justify-between mb-4 pt-4">
             <button
               onClick={() => setPhase('menu')}
-              className="w-10 h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center text-white hover:bg-white/30"
+              className="btn btn-secondary btn-icon btn-sm"
             >
               ←
             </button>
@@ -396,7 +396,7 @@ export default function OddEvenGame() {
           <div className="flex items-center justify-between mb-4 pt-4">
             <button
               onClick={() => setPhase('menu')}
-              className="w-10 h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center text-white hover:bg-white/30"
+              className="btn btn-secondary btn-icon btn-sm"
             >
               ←
             </button>
@@ -499,19 +499,19 @@ export default function OddEvenGame() {
         <div className="space-y-3">
           <button
             onClick={startIdentifyPhase}
-            className="w-full py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-xl font-bold hover:shadow-lg"
+            className="btn btn-primary btn-md btn-full"
           >
             Try Again
           </button>
           <button
             onClick={startBuildPhase}
-            className="w-full py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200"
+            className="btn btn-secondary btn-md btn-full on-light"
           >
             Build Pattern Again
           </button>
           <Link
             href="/montree/dashboard/games"
-            className="block w-full py-3 text-gray-500 hover:text-gray-700"
+            className="btn btn-ghost btn-md btn-full on-light block"
           >
             ← Back to Games
           </Link>

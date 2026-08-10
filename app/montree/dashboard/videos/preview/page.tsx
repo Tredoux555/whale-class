@@ -126,7 +126,7 @@ export default function VideoPreviewPage() {
           <button
             onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}
             disabled={currentIndex === 0}
-            className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-30 text-white rounded-lg"
+            className="btn btn-secondary btn-md"
           >
             ← {t('common.previous' as TranslationKey)}
           </button>
@@ -148,7 +148,7 @@ export default function VideoPreviewPage() {
           <button
             onClick={() => setCurrentIndex(i => Math.min(videos.length - 1, i + 1))}
             disabled={currentIndex === videos.length - 1}
-            className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-30 text-white rounded-lg"
+            className="btn btn-secondary btn-md"
           >
             {t('common.next' as TranslationKey)} →
           </button>
@@ -158,7 +158,7 @@ export default function VideoPreviewPage() {
         <button
           onClick={sendAllToParents}
           disabled={sending}
-          className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-700 text-white font-bold text-lg rounded-xl transition-colors"
+          className="btn btn-primary btn-lg btn-full"
         >
           {sending ? (
             <span className="flex items-center justify-center gap-2">
@@ -177,10 +177,10 @@ export default function VideoPreviewPage() {
               <button
                 key={v.studentId}
                 onClick={() => setCurrentIndex(i)}
-                className={`px-3 py-1 rounded-lg text-sm transition-colors ${
-                  i === currentIndex 
-                    ? 'bg-emerald-600 text-white' 
-                    : 'bg-gray-800 text-gray-400 hover:text-white'
+                className={`btn btn-sm ${
+                  i === currentIndex
+                    ? 'btn-primary'
+                    : 'btn-secondary'
                 }`}
               >
                 {v.studentName}

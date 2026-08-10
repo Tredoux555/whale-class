@@ -21,7 +21,7 @@ export default function DashboardNotFound() {
         </p>
         <Link
           href="/montree/dashboard"
-          className="block w-full py-3 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors text-center"
+          className="btn btn-primary btn-lg btn-full on-light"
         >
           Back to Dashboard
         </Link>

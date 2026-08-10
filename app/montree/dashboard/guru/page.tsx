@@ -221,7 +221,7 @@ function GuruContent() {
             >
               {checkoutLoading ? t('guru.openingCheckout') : t('guru.upgradeNow')}
             </button>
-            <button onClick={() => setShowPaywall(false)} className="mt-3 text-sm text-white/40 hover:text-white/70">
+            <button onClick={() => setShowPaywall(false)} className="btn btn-ghost btn-sm mt-3">
               {t('guru.maybeLater')}
             </button>
           </div>
@@ -233,7 +233,7 @@ function GuruContent() {
         <div className="bg-[#F5E6D3] border-b border-[#0D3330]/10 px-4 py-2 text-center text-sm text-[#0D3330]">
           <span className="font-medium">{guruStatus.prompts_remaining} {guruStatus.prompts_remaining === 1 ? t('guru.freeSessionRemaining') : t('guru.freeSessionsRemaining')}</span>
           <span className="mx-2">&bull;</span>
-          <button onClick={() => setShowPaywall(true)} className="underline font-medium hover:text-[#164340]">{t('guru.upgradeUnlimited')}</button>
+          <button onClick={() => setShowPaywall(true)} className="btn btn-ghost btn-sm on-light">{t('guru.upgradeUnlimited')}</button>
         </div>
       )}
 

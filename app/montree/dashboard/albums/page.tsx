@@ -165,7 +165,7 @@ export default function AlbumsPage() {
 
       {/* Header */}
       <div className="relative bg-[rgba(7,18,12,0.9)] border-b border-[rgba(52,211,153,0.15)] px-4 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-white/50 text-xl">←</button>
+        <button onClick={() => router.back()} className="btn btn-ghost btn-icon btn-sm text-xl">←</button>
         <h1 className="text-lg font-bold text-white/95">{t('albums.title')}</h1>
       </div>
 
@@ -210,7 +210,7 @@ export default function AlbumsPage() {
             { key: 'term', label: t('albums.thisTerm') },
           ].map(p => (
             <button key={p.key} onClick={() => setPreset(p.key)}
-              className="px-3 py-1.5 text-sm rounded-full border border-[rgba(52,211,153,0.15)] text-white/70 bg-white/[0.06] active:bg-white/[0.1]">
+              className="btn btn-secondary btn-sm btn-pill">
               {p.label}
             </button>
           ))}
@@ -252,7 +252,7 @@ export default function AlbumsPage() {
         <button
           onClick={handlePreview}
           disabled={!selectedChildId || !dateFrom || !dateTo || previewing}
-          className="w-full py-3 rounded-xl bg-emerald-500 text-white font-bold text-lg disabled:opacity-40 active:scale-[0.98] transition-all"
+          className="btn btn-primary btn-lg btn-full"
         >
           {previewing ? t('albums.generating') : `Preview Album${childName ? ` for ${childName}` : ''}`}
         </button>
