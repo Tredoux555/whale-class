@@ -66,6 +66,20 @@ Milestones child palette `C` (`components/montree/evaluation/tokens.ts`).
 naming only) — routes (`/potato`, `/api/potato`), table prefixes (`tp_`), and all other
 identifiers are UNCHANGED.
 
+## 📷 SESSION — Aug 10, 2026 pt2 (Cowork/Fable directing Sonnet) — PHOTO ONBOARDING SHIPPED (roster import via photo/PDF/DOCX/XLSX) — LIVE
+
+**Feature**: teacher uploads a class list (photo/PDF/DOCX/XLSX) on the dashboard students page (📷 "Photo Onboarding" button next to Labels); Claude extracts students (names, birthdays, notes — China-aware: Chinese/pinyin/English names, `2019年3月5日`-style dates) via `AI_MODEL` (not Haiku), temp 0, forced tool_use `CLASS_LIST_TOOL`. Images sent as sharp-downscaled vision blocks; PDFs as Anthropic document blocks (scanned PDFs work, SDK 0.71.2); DOCX via `mammoth`; XLSX via new dep `xlsx@^0.18.5` (SheetJS). Extracted names are deterministically reconciled against the classroom's active roster (Jaro-Winkler, `matchStudentName`) — teacher then reviews a full diff (create/update/archive/skip, every row editable) before ANYTHING is written. Archives are soft (`is_active=false`) + audit-logged; notes APPEND-only (never overwrite, 5000-char cap, dedupe); empty-extraction guard — 0 students extracted → import fails HTTP 422, so a bad scan can never archive a whole class.
+
+**Files**: `lib/montree/photo-onboarding/{types,extractor,document-text,reconcile}.ts`; `app/api/montree/photo-onboarding/{upload,[importId],[importId]/extract,[importId]/commit}/route.ts` (extract + commit `maxDuration=120`); `app/montree/dashboard/photo-onboarding/page.tsx` (5-state flow: upload → extract → review → commit → done); `tests/photo-onboarding-reconcile.test.ts` (14 tests); `migrations/325_photo_onboarding.sql` (`montree_roster_imports` + `montree_roster_import_entries`, RLS enabled no policies, feature flag `photo_onboarding` DEFAULT ON in `montree_feature_definitions`). **Migration 325 ALREADY RUN in Supabase by Tredoux Aug 10 — do not re-paste.**
+
+**Commit `48bd2041`** — 30 files, 3251 insertions. **LIVE at montree.xyz** (verified: page 200, upload API 401 auth-gated).
+
+**Side fix (same commit)**: `children` GET / attendance / focus-works-batch routes now filter `.neq('is_active', false)` — archived children no longer leak into teacher-facing lists (closed a pre-existing gap: admin soft-deletes were hidden admin-side but still showed teacher-side). **~220 other `montree_children` call sites deliberately left UNFILTERED** (guru/*, weekly-admin-docs/*, progress/*, messages, montage, appointments, analysis, shelf-autopilot, notify) — needs a product decision; single-child-by-id lookups are intentionally unfiltered so archived profiles stay reachable by direct link. `students/page.tsx` got the 📷 entry button; `features/types.ts` gained `'photo_onboarding'` FeatureKey; 56 i18n keys × 12 locales (en+zh hand-written, rest via `i18n:fill-ui`, `i18n:check` 100%).
+
+**⏳ OWED NEXT SESSION**: (a) `is_active` filtering product decision for the ~220 unfiltered `montree_children` list queries; (b) pre-existing mismatch — `children/bulk` route caps 30 students/request while `BulkPasteImport` UI allows 200; (c) real-world testing of extraction quality on actual class-list photos still pending.
+
+**🗄️ GIT HISTORY NOTE (read before regenerating print PDFs)**: main's history now contains three unusual commits — `b386a308` + `eab5d26f` "temp: stage large curriculum objects (1/2, 2/2)" and merge `e1af6e09` "Merge staged curriculum assets" (tree IDENTICAL to `80cbde93` — zero file changes, verified). Reason: unpushed commit `4fa363b0` (Aug 9 grey→black print regeneration) carried 3.19GB of PDFs, exceeding GitHub's 2GB per-push limit; content was staged to the remote in two <2GB slices on a temp branch (now deleted), then the merge made them ancestors so the final push only sent 0.71GB. **LESSON: regenerating all print PDFs in one commit will hit the 2GB limit again** — split such commits, or adopt Git LFS / move print packs to Supabase Storage (open, undecided).
+
 ## 🥔 SESSION — Aug 7, 2026 (Cowork/Fable directing Sonnet+Opus) — POTATO SNAPS BUILT (standalone montage app for teacherpotato.xyz)
 
 **Potato Snaps shipped to the repo: teacher photographs kids → per-child weekly bars toward 8 → "Make montage" → potato-worker renders → parents watch via per-child code. TOTALLY separate from Montree: tp_ tables only, private `potato-snaps` bucket, /potato + /api/potato routes, cookies potato_teacher/potato_parent, hardcoded English (no i18n keys), zero lib/montree imports (only lib/supabase-client). Canonical: `docs/handoffs/SESSION_POTATO_SNAPS_AUG7.md` + `docs/handoffs/potato-snaps/` (binding contract, build notes, Sonnet audit SHIP-WITH-NOTES 0 CRIT/1 HIGH fixed, Tredoux-approved design spec). ⏳ PENDING: migration 318 (SQL pasted in chat Aug 7), potato-worker Railway service creation (root dir potato-worker, 4vCPU/4GB, envs DATABASE_URL+SUPABASE_URL+SUPABASE_SERVICE_ROLE_KEY, blank start command), live walk on www.teacherpotato.xyz. 🚨 RULES: Potato Snaps never touches montree_ tables; proxy bucket allowlist stays exactly one bucket; parents never get raw photos; board count query and montage media_ids derivation stay the same query shape (WYSIWYG).**
@@ -2909,6 +2923,9 @@ Backfills NULL-pct agents to the new 20% default introduced in commit `cd33058a`
   passport scan, $99. Full resume script: HANDOFF_LATEST.md "Jun 12 late night".
   Key environment lesson: Apple SMS to +86 only works VPN-OFF (China routes); via
   VPN it rate-limits the number for ~90 min.
+
+**Session (Aug 10, 2026) — Photo Onboarding roster import. ✅ Migration RUN:**
+- ✅ `325_photo_onboarding.sql` — **RUN by Tredoux Aug 10, 2026.** `montree_roster_imports` + `montree_roster_import_entries` tables live (RLS enabled, no policies — deny-all for anon, service role only). Also inserts `photo_onboarding` into `montree_feature_definitions` with `default_enabled = TRUE`. Powers the 📷 Photo Onboarding upload→extract→review→commit flow at `/montree/dashboard/photo-onboarding`. Stop telling future sessions to run this — it's done.
 
 ---
 
