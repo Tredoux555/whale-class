@@ -247,7 +247,7 @@ export default function CurriculumPage() {
             />
             <button
               onClick={() => setShowDuplicates(true)}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 12, color: '#f59e0b', fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+              className="btn btn-gold btn-sm"
             >
               <span>🔗</span>
               <span className="hidden sm:inline">Duplicates</span>
@@ -264,7 +264,7 @@ export default function CurriculumPage() {
               <button
                 data-tutorial="curriculum-add-button"
                 onClick={() => setShowAddModal(true)}
-                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', borderRadius: 12, color: '#06281a', fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: 'none' }}
+                className="btn btn-primary btn-sm"
               >
                 <span>➕</span>
                 <span className="hidden sm:inline">{t('weekview.addWork')}</span>
@@ -281,7 +281,7 @@ export default function CurriculumPage() {
             <h2 style={{ fontFamily: 'var(--font-lora), Georgia, serif', fontSize: 22, fontWeight: 500, color: 'rgba(255,255,255,0.95)', marginBottom: 8 }}>{t('curriculum.noCurriculum')}</h2>
             <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 14, color: 'rgba(255,255,255,0.45)', marginBottom: 24 }}>{t('curriculum.noCurriculumDesc')}</p>
             <button onClick={handleImportCurriculum} disabled={importing}
-              style={{ background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', borderRadius: 14, padding: '14px 32px', color: '#06281a', fontFamily: '"Inter", sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer', boxShadow: 'none', opacity: importing ? 0.5 : 1 }}>
+              className="btn btn-primary btn-lg">
               {importing ? t('curriculum.importing') : `📥 ${t('curriculum.importMaster')}`}
             </button>
           </div>
@@ -291,7 +291,7 @@ export default function CurriculumPage() {
             <div className="mb-4 flex justify-between items-center">
               <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.35)' }}>{t('curriculum.tapToEdit')}</p>
               <button onClick={handleImportCurriculum} disabled={importing}
-                style={{ fontSize: 13, padding: '7px 14px', background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 12, color: '#f59e0b', fontFamily: '"Inter", sans-serif', cursor: 'pointer', opacity: importing ? 0.5 : 1 }}>
+                className="btn btn-gold btn-sm">
                 {importing ? t('curriculum.importing') : `📥 ${t('curriculum.reimportMaster')}`}
               </button>
             </div>
@@ -384,8 +384,7 @@ export default function CurriculumPage() {
       {curriculum.length > 0 && (
         <button
           onClick={() => setShowAddModal(true)}
-          className="fixed bottom-20 right-4 sm:hidden z-30 active:scale-95"
-          style={{ width: 56, height: 56, background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, boxShadow: '0 8px 32px rgba(0,0,0,0.45)', cursor: 'pointer' }}
+          className="btn btn-primary btn-icon btn-round btn-lg fixed bottom-20 right-4 sm:hidden z-30"
         >
           ➕
         </button>

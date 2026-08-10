@@ -334,21 +334,7 @@ export default function PresentAlbumPage() {
                 type="button"
                 onClick={() => setShowHiddenTray((v) => !v)}
                 aria-label={`Show ${hiddenCount} hidden photo${hiddenCount === 1 ? '' : 's'}`}
-                style={{
-                  minHeight: 36,
-                  padding: '0 12px',
-                  borderRadius: 999,
-                  border: '1px solid rgba(232,201,106,0.45)',
-                  background: showHiddenTray ? 'rgba(232,201,106,0.22)' : 'rgba(232,201,106,0.12)',
-                  color: '#E8C96A',
-                  fontSize: 12,
-                  fontWeight: 600,
-                  letterSpacing: 0.3,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                }}
+                className="btn btn-gold btn-sm btn-pill"
               >
                 ↺ {hiddenCount} hidden
               </button>
@@ -361,18 +347,7 @@ export default function PresentAlbumPage() {
                   hidePhoto(current.id);
                 }}
                 aria-label="Hide this photo"
-                style={{
-                  minHeight: 36,
-                  padding: '0 14px',
-                  borderRadius: 999,
-                  border: '1px solid rgba(255,255,255,0.30)',
-                  background: 'rgba(0,0,0,0.40)',
-                  color: '#fff',
-                  fontSize: 12,
-                  fontWeight: 500,
-                  letterSpacing: 0.3,
-                  cursor: 'pointer',
-                }}
+                className="btn btn-secondary btn-sm btn-pill"
               >
                 Hide
               </button>
@@ -392,19 +367,7 @@ export default function PresentAlbumPage() {
               type="button"
               onClick={closeAlbum}
               aria-label="Close"
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: '50%',
-                border: '1px solid rgba(255,255,255,0.25)',
-                background: 'rgba(0,0,0,0.35)',
-                color: '#fff',
-                fontSize: 20,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+              className="btn btn-secondary btn-icon btn-round btn-md"
             >
               ×
             </button>
@@ -448,16 +411,7 @@ export default function PresentAlbumPage() {
                 type="button"
                 onClick={() => setShowHiddenTray(false)}
                 aria-label="Close hidden tray"
-                style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: '50%',
-                  border: '1px solid rgba(255,255,255,0.20)',
-                  background: 'rgba(255,255,255,0.06)',
-                  color: '#fff',
-                  fontSize: 14,
-                  cursor: 'pointer',
-                }}
+                className="btn btn-secondary btn-icon btn-round btn-sm"
               >
                 ×
               </button>
@@ -588,25 +542,8 @@ export default function PresentAlbumPage() {
               }}
               aria-label="Previous photo"
               disabled={index === 0}
-              style={{
-                position: 'absolute',
-                left: 12,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: 52,
-                height: 52,
-                borderRadius: '50%',
-                border: '1px solid rgba(255,255,255,0.18)',
-                background: 'rgba(0,0,0,0.35)',
-                color: index === 0 ? 'rgba(255,255,255,0.25)' : '#fff',
-                fontSize: 26,
-                cursor: index === 0 ? 'default' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 3,
-                opacity: index === 0 ? 0.4 : 1,
-              }}
+              className="btn btn-secondary btn-icon btn-round btn-lg"
+              style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', zIndex: 3 }}
             >
               ‹
             </button>
@@ -618,25 +555,8 @@ export default function PresentAlbumPage() {
               }}
               aria-label="Next photo"
               disabled={index >= total - 1}
-              style={{
-                position: 'absolute',
-                right: 12,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: 52,
-                height: 52,
-                borderRadius: '50%',
-                border: '1px solid rgba(255,255,255,0.18)',
-                background: 'rgba(0,0,0,0.35)',
-                color: index >= total - 1 ? 'rgba(255,255,255,0.25)' : '#fff',
-                fontSize: 26,
-                cursor: index >= total - 1 ? 'default' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 3,
-                opacity: index >= total - 1 ? 0.4 : 1,
-              }}
+              className="btn btn-secondary btn-icon btn-round btn-lg"
+              style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', zIndex: 3 }}
             >
               ›
             </button>
@@ -664,19 +584,7 @@ export default function PresentAlbumPage() {
                 e.stopPropagation();
                 closeAlbum();
               }}
-              style={{
-                minHeight: 44,
-                padding: '10px 22px',
-                borderRadius: 999,
-                border: `1px solid ${EMERALD}`,
-                background: 'rgba(52,211,153,0.18)',
-                color: '#fff',
-                fontFamily: 'Inter, system-ui, sans-serif',
-                fontSize: 14,
-                fontWeight: 500,
-                letterSpacing: 0.2,
-                cursor: 'pointer',
-              }}
+              className="btn btn-primary btn-md btn-pill"
             >
               ← Pick next child
             </button>
@@ -712,16 +620,7 @@ export default function PresentAlbumPage() {
           <button
             type="button"
             onClick={() => router.push('/montree/dashboard')}
-            style={{
-              minHeight: 44,
-              padding: '8px 14px',
-              borderRadius: 10,
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              color: 'rgba(255,255,255,0.85)',
-              cursor: 'pointer',
-              fontSize: 14,
-            }}
+            className="btn btn-secondary btn-sm"
           >
             ← Dashboard
           </button>

@@ -428,19 +428,7 @@ export default function TeacherParentCodesPage() {
                 key={key}
                 data-copilot={key === 'codes' ? 'parent-codes' : key === 'reports' ? 'reports-pill' : undefined}
                 onClick={() => setActiveTab(key)}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '9px 16px',
-                  borderRadius: 999,
-                  background: active ? T.emeraldStrong : T.card,
-                  border: active ? T.cardBorderStrong : T.cardBorder,
-                  color: active ? T.emerald : T.textMuted,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
+                className={`btn btn-sm btn-pill ${active ? 'btn-primary' : 'btn-secondary'}`}
               >
                 <Icon size={15} strokeWidth={1.75} />
                 {label}
@@ -460,20 +448,7 @@ export default function TeacherParentCodesPage() {
               <button
                 onClick={allReady ? undefined : handleGenerateAll}
                 disabled={bulkGenerating || allReady}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '9px 16px',
-                  borderRadius: 10,
-                  background: allReady ? T.card : T.emerald,
-                  border: allReady ? T.cardBorder : 'none',
-                  color: allReady ? T.textSecondary : '#0a1a0f',
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: bulkGenerating || allReady ? 'default' : 'pointer',
-                  opacity: bulkGenerating ? 0.6 : 1,
-                }}
+                className={`btn btn-sm ${allReady ? 'btn-secondary' : 'btn-primary'}`}
               >
                 {allReady ? <Check size={15} strokeWidth={2} /> : <Zap size={15} strokeWidth={2} />}
                 {bulkGenerating
@@ -612,22 +587,8 @@ export default function TeacherParentCodesPage() {
                       <div className="print:hidden" style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                         <button
                           onClick={() => handleCopy(row.code!, copyId)}
-                          style={{
-                            flex: 1,
-                            minWidth: 92,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 6,
-                            padding: '8px 10px',
-                            borderRadius: 10,
-                            background: T.emeraldStrong,
-                            border: T.cardBorderStrong,
-                            color: T.emerald,
-                            fontSize: 12,
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                          }}
+                          className="btn btn-primary btn-sm"
+                          style={{ flex: 1, minWidth: 92 }}
                         >
                           {copiedId === copyId ? <Check size={14} /> : <Copy size={14} />}
                           {copiedId === copyId ? t('parentCodes.copied') : t('parentCodes.copyCode')}
@@ -643,23 +604,8 @@ export default function TeacherParentCodesPage() {
                           }}
                           disabled={!row.code}
                           title="Copy a ready-to-send welcome message"
-                          style={{
-                            flex: 1,
-                            minWidth: 92,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 6,
-                            padding: '8px 10px',
-                            borderRadius: 10,
-                            background: copiedId === `welcome-${row.child_id}` ? T.emerald : T.card,
-                            border: copiedId === `welcome-${row.child_id}` ? 'none' : T.cardBorder,
-                            color: copiedId === `welcome-${row.child_id}` ? '#0a1a0f' : T.textSecondary,
-                            fontSize: 12,
-                            fontWeight: 600,
-                            cursor: row.code ? 'pointer' : 'not-allowed',
-                            opacity: row.code ? 1 : 0.4,
-                          }}
+                          className={`btn btn-sm ${copiedId === `welcome-${row.child_id}` ? 'btn-primary' : 'btn-secondary'}`}
+                          style={{ flex: 1, minWidth: 92 }}
                         >
                           {copiedId === `welcome-${row.child_id}` ? (
                             <Check size={14} />
@@ -672,21 +618,8 @@ export default function TeacherParentCodesPage() {
                           onClick={() => handleResetCode(row.child_id)}
                           disabled={busy}
                           title={t('parentCodes.resetTooltip')}
-                          style={{
-                            flex: '0 0 auto',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            padding: '8px 10px',
-                            borderRadius: 10,
-                            background: T.card,
-                            border: T.cardBorder,
-                            color: T.textMuted,
-                            fontSize: 12,
-                            fontWeight: 500,
-                            cursor: busy ? 'wait' : 'pointer',
-                            opacity: busy ? 0.6 : 1,
-                          }}
+                          className="btn btn-secondary btn-icon btn-sm"
+                          style={{ flex: '0 0 auto' }}
                         >
                           <RefreshCw size={14} strokeWidth={1.75} />
                         </button>
@@ -696,17 +629,7 @@ export default function TeacherParentCodesPage() {
                     <button
                       onClick={() => handleCreateCode(row.child_id)}
                       disabled={busy}
-                      style={{
-                        padding: '14px 16px',
-                        borderRadius: 12,
-                        background: `linear-gradient(135deg, ${T.emerald}, ${T.emeraldDeep})`,
-                        border: 'none',
-                        color: '#0a1a0f',
-                        fontSize: 14,
-                        fontWeight: 700,
-                        cursor: busy ? 'wait' : 'pointer',
-                        opacity: busy ? 0.65 : 1,
-                      }}
+                      className="btn btn-primary btn-md"
                     >
                       {busy ? t('parentCodes.creating') : t('parentCodes.createCode')}
                     </button>

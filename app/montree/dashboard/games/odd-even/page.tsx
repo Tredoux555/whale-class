@@ -511,7 +511,7 @@ export default function OddEvenGame() {
           </button>
           <Link
             href="/montree/dashboard/games"
-            className="btn btn-ghost btn-md btn-full on-light block"
+            className="btn btn-ghost btn-md btn-full on-light"
           >
             ← Back to Games
           </Link>

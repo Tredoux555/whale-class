@@ -508,7 +508,7 @@ function MediaPageContent() {
               <button
                 onClick={handleBulkDelete}
                 disabled={deleting}
-                className="btn btn-danger btn-md flex-1 flex items-center justify-center gap-2"
+                className="btn btn-danger btn-md flex-1"
               >
                 {deleting ? (
                   <>

@@ -850,11 +850,7 @@ export default function WeekPage() {
             animation: 'montree-pulse-ring 1.4s ease-out infinite',
           }} />
           <span>{t('dashboard.recording')} {recordingSeconds}s</span>
-          <button onClick={stopRecording} style={{
-            marginLeft: 4, padding: '2px 10px', background: 'rgba(248,113,113,0.2)',
-            border: '1px solid rgba(248,113,113,0.3)', borderRadius: 6, color: '#f87171',
-            fontSize: 12, cursor: 'pointer', fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
-          }}>{t('dashboard.done')}</button>
+          <button onClick={stopRecording} className="btn btn-danger btn-soft btn-sm" style={{ marginLeft: 4 }}>{t('dashboard.done')}</button>
         </div>
       )}
 

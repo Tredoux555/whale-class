@@ -408,7 +408,7 @@ export default function ClassroomOverviewPage() {
             <button
               onClick={() => router.back()}
               aria-label={t('common.back')}
-              style={{ ...ghostBtn, padding: '8px 14px' }}
+              className="btn btn-secondary btn-sm"
             >
               <ArrowLeft size={15} strokeWidth={1.75} />
               {t('common.back')}
@@ -425,7 +425,7 @@ export default function ClassroomOverviewPage() {
               {t('print.classOverview')}
             </h1>
 
-            <button onClick={() => window.print()} style={ctaStyle}>
+            <button onClick={() => window.print()} className="btn btn-primary btn-sm">
               <Printer size={14} strokeWidth={2} />
               {t('print.printPage')}
             </button>
@@ -617,7 +617,7 @@ export default function ClassroomOverviewPage() {
                   <p style={{ margin: '0 0 14px', color: T.red, fontSize: 14 }}>
                     {t('classroomOverview.loadFailed')}
                   </p>
-                  <button onClick={() => loadSchedule(true)} style={ctaStyle}>
+                  <button onClick={() => loadSchedule(true)} className="btn btn-primary btn-sm">
                     <RefreshCw size={14} strokeWidth={2} />
                     {t('classroomOverview.generateSchedule')}
                   </button>
@@ -1024,7 +1024,7 @@ export default function ClassroomOverviewPage() {
                   <p style={{ margin: '0 0 14px', color: T.textMuted, fontSize: 14 }}>
                     {t('classroomOverview.noScheduleYet')}
                   </p>
-                  <button onClick={() => loadSchedule(true)} style={ctaStyle}>
+                  <button onClick={() => loadSchedule(true)} className="btn btn-primary btn-sm">
                     <RefreshCw size={14} strokeWidth={2} />
                     {t('classroomOverview.generateSchedule')}
                   </button>
@@ -1156,7 +1156,7 @@ function EnglishMissingPanel({
             <BookOpen size={16} strokeWidth={1.75} color={T.red} />
             <span>{t('classroomOverview.englishWeek.error')}</span>
           </div>
-          <button onClick={onRefresh} style={refreshBtn} disabled={loading}>
+          <button onClick={onRefresh} className="btn btn-secondary btn-sm" disabled={loading}>
             <RefreshCw size={11} strokeWidth={2} />
             {t('classroomOverview.englishWeek.refresh')}
           </button>
@@ -1203,7 +1203,7 @@ function EnglishMissingPanel({
         </div>
         <button
           onClick={onRefresh}
-          style={refreshBtn}
+          className="btn btn-secondary btn-sm"
           disabled={loading}
           aria-label={t('classroomOverview.englishWeek.refresh')}
         >
@@ -1425,15 +1425,8 @@ function EnglishProgressTab({
     return (
       <div style={{ maxWidth: 1024, margin: '0 auto', padding: '40px 16px', textAlign: 'center' }}>
         <p style={{ color: T.red, fontSize: 14 }}>{error}</p>
-        <button onClick={() => { setError(null); void load(); }} style={{
+        <button onClick={() => { setError(null); void load(); }} className="btn btn-secondary btn-sm" style={{
           marginTop: 14,
-          padding: '8px 16px',
-          borderRadius: 10,
-          background: 'rgba(255,255,255,0.06)',
-          border: '1px solid rgba(255,255,255,0.10)',
-          color: T.textPrimary,
-          fontSize: 13,
-          cursor: 'pointer',
         }}>Try again</button>
       </div>
     );
@@ -1650,20 +1643,10 @@ function ChildProgressCard({
               'noopener,noreferrer',
             )}
             title={`Open Lesson ${child.current_lesson} — word bank, phrases, heart words`}
+            className="btn btn-secondary btn-sm"
             style={{
               marginTop: 4,
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 7,
               maxWidth: '100%',
-              fontSize: 12,
-              color: T.textSecondary,
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              borderRadius: 8,
-              padding: '5px 9px',
-              cursor: 'pointer',
-              fontFamily: 'inherit',
             }}
           >
             <span style={{
@@ -1688,20 +1671,10 @@ function ChildProgressCard({
                 'noopener,noreferrer',
               )}
               title={`Open the materials launcher for Lesson ${child.current_lesson}`}
+              className="btn btn-secondary btn-sm"
               style={{
                 marginTop: 6,
                 marginLeft: 8,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 7,
-                fontSize: 12,
-                color: '#34d399',
-                background: 'rgba(52,211,153,0.10)',
-                border: '1px solid rgba(52,211,153,0.30)',
-                borderRadius: 8,
-                padding: '5px 9px',
-                cursor: 'pointer',
-                fontFamily: 'inherit',
               }}
             >
               <Printer size={13} strokeWidth={1.75} style={{ flexShrink: 0 }} />
@@ -1733,19 +1706,7 @@ function ChildProgressCard({
             disabled={busy}
             aria-label={`Set lesson for ${child.child_name}`}
             title="Set specific lesson"
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.10)',
-              color: T.textPrimary,
-              cursor: busy ? 'not-allowed' : 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              opacity: busy ? 0.5 : 1,
-            }}
+            className="btn btn-secondary btn-icon btn-sm"
           >
             <Settings2 size={15} strokeWidth={1.75} />
           </button>
@@ -1754,25 +1715,7 @@ function ChildProgressCard({
             disabled={busy || atFinal}
             aria-label={`Advance ${child.child_name} to next lesson`}
             title={atFinal ? 'Already at final lesson' : 'Advance to next lesson'}
-            style={{
-              padding: '0 14px',
-              height: 36,
-              borderRadius: 10,
-              background: atFinal
-                ? 'rgba(255,255,255,0.06)'
-                : 'linear-gradient(135deg, #34d399 0%, #1D6B48 100%)',
-              border: atFinal
-                ? '1px solid rgba(255,255,255,0.10)'
-                : '1px solid rgba(52,211,153,0.55)',
-              color: atFinal ? T.textMuted : '#06281a',
-              fontWeight: 700,
-              fontSize: 13,
-              cursor: (busy || atFinal) ? 'not-allowed' : 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 4,
-              opacity: busy ? 0.6 : 1,
-            }}
+            className={`btn btn-sm ${atFinal ? 'btn-secondary' : 'btn-primary'}`}
           >
             Advance <ChevronRight size={15} strokeWidth={2.25} />
           </button>
@@ -1903,30 +1846,13 @@ function LessonPickerInline({
         <button
           onClick={() => valid && onPick(parsed)}
           disabled={!valid || busy}
-          style={{
-            padding: '8px 14px',
-            borderRadius: 8,
-            background: valid ? 'linear-gradient(135deg, #34d399 0%, #1D6B48 100%)' : 'rgba(255,255,255,0.06)',
-            border: valid ? '1px solid rgba(52,211,153,0.55)' : '1px solid rgba(255,255,255,0.10)',
-            color: valid ? '#06281a' : T.textMuted,
-            fontWeight: 700,
-            fontSize: 13,
-            cursor: (valid && !busy) ? 'pointer' : 'not-allowed',
-          }}
+          className={`btn btn-sm ${valid ? 'btn-primary' : 'btn-secondary'}`}
         >
           Set
         </button>
         <button
           onClick={onClose}
-          style={{
-            padding: '8px 14px',
-            borderRadius: 8,
-            background: 'transparent',
-            border: '1px solid rgba(255,255,255,0.10)',
-            color: T.textMuted,
-            fontSize: 13,
-            cursor: 'pointer',
-          }}
+          className="btn btn-secondary btn-sm"
         >
           Cancel
         </button>
@@ -2382,16 +2308,7 @@ function ClassProgressTab({
         </p>
         <button
           onClick={() => { void load(); }}
-          style={{
-            padding: '8px 16px',
-            borderRadius: 10,
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.10)',
-            color: T.textPrimary,
-            fontSize: 13,
-            cursor: 'pointer',
-            fontFamily: T.sans,
-          }}
+          className="btn btn-secondary btn-sm"
         >
           Try again
         </button>

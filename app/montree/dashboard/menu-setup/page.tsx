@@ -104,11 +104,8 @@ export default function MenuSetupPage() {
 
       <button
         onClick={() => router.back()}
-        style={{
-          display: 'inline-flex', alignItems: 'center', gap: 4, background: 'none',
-          border: 0, color: 'rgba(255,255,255,0.5)', fontSize: 13, cursor: 'pointer',
-          padding: '8px 0', marginBottom: 8, fontFamily: SANS,
-        }}
+        className="btn btn-ghost btn-sm"
+        style={{ marginBottom: 8 }}
       >
         <ChevronLeft size={16} strokeWidth={1.75} /> Back
       </button>
@@ -143,10 +140,10 @@ export default function MenuSetupPage() {
               >
                 {/* Reorder arrows */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <button onClick={() => move(index, -1)} disabled={index === 0} aria-label="Move up" style={arrowBtn(index === 0)}>
+                  <button onClick={() => move(index, -1)} disabled={index === 0} aria-label="Move up" className="btn btn-secondary btn-icon btn-sm">
                     <ChevronUp size={15} strokeWidth={2} />
                   </button>
-                  <button onClick={() => move(index, 1)} disabled={index === items.length - 1} aria-label="Move down" style={arrowBtn(index === items.length - 1)}>
+                  <button onClick={() => move(index, 1)} disabled={index === items.length - 1} aria-label="Move down" className="btn btn-secondary btn-icon btn-sm">
                     <ChevronDown size={15} strokeWidth={2} />
                   </button>
                 </div>
@@ -170,13 +167,8 @@ export default function MenuSetupPage() {
                 <button
                   onClick={() => toggle(index)}
                   aria-label={visible ? 'Hide' : 'Show'}
-                  style={{
-                    width: 40, height: 32, borderRadius: 9, flexShrink: 0,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: visible ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.05)',
-                    border: 0, cursor: 'pointer',
-                    color: visible ? '#34d399' : 'rgba(255,255,255,0.4)',
-                  }}
+                  className={`btn btn-icon btn-md ${visible ? 'btn-primary' : 'btn-secondary'}`}
+                  style={{ flexShrink: 0 }}
                 >
                   {visible ? <Eye size={17} strokeWidth={1.75} /> : <EyeOff size={17} strokeWidth={1.75} />}
                 </button>
@@ -201,17 +193,8 @@ export default function MenuSetupPage() {
           <button
             onClick={save}
             disabled={saving || !dirty}
-            style={{
-              pointerEvents: 'auto',
-              maxWidth: 560, width: '100%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              padding: '14px', borderRadius: 12, border: 0,
-              background: dirty ? 'linear-gradient(135deg, #34d399, #14b8a6)' : 'rgba(255,255,255,0.08)',
-              color: dirty ? '#06140e' : 'rgba(255,255,255,0.4)',
-              fontSize: 15, fontWeight: 700, fontFamily: SANS,
-              cursor: saving || !dirty ? 'default' : 'pointer',
-              boxShadow: 'none',
-            }}
+            className={`btn btn-lg btn-full ${dirty ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ pointerEvents: 'auto', maxWidth: 560 }}
           >
             <Check size={18} strokeWidth={2.2} />
             {saving ? 'Saving…' : dirty ? 'Save menu' : 'Saved'}

@@ -398,7 +398,7 @@ export default function SentenceScrambleGame() {
             >
               Play Again! 🔄
             </button>
-            <Link href="/montree/dashboard/games" className="btn btn-secondary btn-lg btn-full block">
+            <Link href="/montree/dashboard/games" className="btn btn-secondary btn-lg btn-full">
               Back to Games
             </Link>
           </div>

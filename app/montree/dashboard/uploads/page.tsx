@@ -327,13 +327,8 @@ export default function UploadsPage() {
                         type="button"
                         onClick={(e) => { e.stopPropagation(); setConfirmDelete(file); }}
                         title="Delete"
-                        className="mt-file-del"
-                        style={{
-                          position: 'absolute', top: 6, right: 6, zIndex: 2,
-                          width: 28, height: 28, borderRadius: 8, border: 0, cursor: 'pointer',
-                          background: 'rgba(0,0,0,0.55)', color: '#fca5a5',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        }}
+                        className="btn btn-danger btn-soft btn-icon btn-sm mt-file-del"
+                        style={{ position: 'absolute', top: 6, right: 6, zIndex: 2 }}
                       >
                         <Trash2 size={15} strokeWidth={1.75} />
                       </button>
@@ -420,10 +415,7 @@ export default function UploadsPage() {
                 }}>
                   <Download size={15} /> Download
                 </a>
-                <button onClick={() => setPreview(null)} style={{
-                  width: 34, height: 34, borderRadius: 8, border: 0, cursor: 'pointer',
-                  background: 'rgba(255,255,255,0.12)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
+                <button onClick={() => setPreview(null)} className="btn btn-secondary btn-icon btn-sm">
                   <X size={18} />
                 </button>
               </div>
@@ -458,15 +450,8 @@ export default function UploadsPage() {
               <p style={{ margin: '0 0 18px', fontSize: 13, color: T.textMd, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{confirmDelete.name}</p>
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => setConfirmDelete(null)} disabled={deleting} style={{
-                flex: 1, padding: '10px', borderRadius: 10, cursor: 'pointer',
-                background: 'rgba(255,255,255,0.06)', border: `1px solid ${T.border}`, color: T.textHi, fontWeight: 600, fontSize: 14,
-              }}>Cancel</button>
-              <button onClick={doDelete} disabled={deleting} style={{
-                flex: 1, padding: '10px', borderRadius: 10, cursor: 'pointer',
-                background: '#ef4444', border: 0, color: '#fff', fontWeight: 600, fontSize: 14,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: deleting ? 0.6 : 1,
-              }}>
+              <button onClick={() => setConfirmDelete(null)} disabled={deleting} className="btn btn-secondary btn-md" style={{ flex: 1 }}>Cancel</button>
+              <button onClick={doDelete} disabled={deleting} className="btn btn-danger btn-md" style={{ flex: 1 }}>
                 {deleting ? <><Loader2 size={15} className="mt-spin" /> Deleting</> : 'Delete'}
               </button>
             </div>

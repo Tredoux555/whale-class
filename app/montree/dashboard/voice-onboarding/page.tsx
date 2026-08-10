@@ -902,7 +902,7 @@ export default function VoiceOnboardingPage() {
           <p style={{ ...bodyStyle, marginTop: 18, fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>
             {t('voiceOnboarding.welcome.duration')}
           </p>
-          <button onClick={() => setStage('idle')} style={{ ...primaryButtonStyle, marginTop: 36 }}>
+          <button onClick={() => setStage('idle')} className="btn btn-primary btn-lg btn-pill" style={{ marginTop: 36 }}>
             {t('voiceOnboarding.welcome.cta')}
           </button>
         </div>
@@ -915,7 +915,7 @@ export default function VoiceOnboardingPage() {
           <p style={{ ...bodyStyle, color: '#fca5a5' }}>
             {t('voiceOnboarding.error.permissionDenied')}
           </p>
-          <button onClick={() => setStage('idle')} style={{ ...primaryButtonStyle, marginTop: 24 }}>
+          <button onClick={() => setStage('idle')} className="btn btn-primary btn-lg btn-pill" style={{ marginTop: 24 }}>
             {t('voiceOnboarding.review.tryAgain')}
           </button>
         </div>
@@ -932,12 +932,12 @@ export default function VoiceOnboardingPage() {
             {upgradeInfo.message} You can upgrade to unlock voice setup, or set up your class by hand — no AI needed.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button onClick={() => router.push(upgradeInfo.upgradeUrl)} style={primaryButtonStyle}>
+            <button onClick={() => router.push(upgradeInfo.upgradeUrl)} className="btn btn-primary btn-lg btn-pill">
               Upgrade
             </button>
             <button
               onClick={() => router.replace('/montree/dashboard?skipOnboarding=1')}
-              style={secondaryButtonStyle}
+              className="btn btn-secondary btn-lg btn-pill"
             >
               Set up by hand
             </button>
@@ -991,13 +991,13 @@ export default function VoiceOnboardingPage() {
           <div style={{ display: 'flex', gap: 12, marginTop: 24, justifyContent: 'center' }}>
             <button
               onClick={() => { setDebugError(null); setStage('idle'); }}
-              style={primaryButtonStyle}
+              className="btn btn-primary btn-lg btn-pill"
             >
               Try recording again
             </button>
             <button
               onClick={() => router.replace('/montree/dashboard?skipOnboarding=1')}
-              style={secondaryButtonStyle}
+              className="btn btn-secondary btn-lg btn-pill"
             >
               Back to dashboard
             </button>
@@ -1014,7 +1014,8 @@ export default function VoiceOnboardingPage() {
           <p style={{ ...bodyStyle, marginTop: 20 }}>{t('voiceOnboarding.complete.subtitle')}</p>
           <button
             onClick={() => router.replace('/montree/dashboard')}
-            style={{ ...primaryButtonStyle, marginTop: 36 }}
+            className="btn btn-primary btn-lg btn-pill"
+            style={{ marginTop: 36 }}
           >
             {t('voiceOnboarding.complete.cta')}
           </button>
@@ -1106,7 +1107,7 @@ export default function VoiceOnboardingPage() {
           {/* Mic / Stop */}
           {stage === 'idle' && (
             <>
-              <button onClick={startRecording} style={micButtonStyle} aria-label="Record">
+              <button onClick={startRecording} className="btn btn-primary btn-icon btn-lg btn-round btn-glow" style={{ marginTop: 28 }} aria-label="Record">
                 <MicIcon />
               </button>
               <p style={{ ...bodyStyle, marginTop: 16, fontSize: 14, color: 'rgba(255,255,255,0.55)' }}>
@@ -1142,7 +1143,7 @@ export default function VoiceOnboardingPage() {
                   {formatTime(recordingTime)}
                 </p>
               </div>
-              <button onClick={stopRecording} style={stopButtonStyle} aria-label="Stop">
+              <button onClick={stopRecording} className="btn btn-danger btn-icon btn-lg btn-round" style={{ marginTop: 28, animation: 'voiceonb-pulse 1.5s ease-in-out infinite' }} aria-label="Stop">
                 <div style={{ width: 28, height: 28, background: 'white', borderRadius: 4 }} />
               </button>
             </>
@@ -1187,7 +1188,7 @@ export default function VoiceOnboardingPage() {
 
           {/* Skip — only available when idle */}
           {stage === 'idle' && (
-            <button onClick={onSkipChild} style={skipButtonStyle}>
+            <button onClick={onSkipChild} className="btn btn-ghost btn-sm" style={{ marginTop: 28 }}>
               {t('voiceOnboarding.recording.skip', { name: firstName })}
             </button>
           )}
@@ -1348,18 +1349,7 @@ export default function VoiceOnboardingPage() {
                     ) : (
                       <button
                         onClick={() => onAddCustomWorkInline(work)}
-                        style={{
-                          padding: '8px 16px',
-                          background: 'transparent',
-                          border: '1px solid rgba(167,243,208,0.5)',
-                          borderRadius: 999,
-                          color: '#a7f3d0',
-                          fontSize: 13,
-                          fontWeight: 500,
-                          cursor: 'pointer',
-                          fontFamily: "'Inter', -apple-system, sans-serif",
-                          whiteSpace: 'nowrap',
-                        }}
+                        className="btn btn-ghost btn-outline btn-sm btn-pill"
                       >
                         {t('voiceOnboarding.review.addToCurriculum')}
                       </button>
@@ -1371,10 +1361,10 @@ export default function VoiceOnboardingPage() {
           )}
 
           <div style={{ display: 'flex', gap: 12, marginTop: 32, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button onClick={onConfirmReview} style={primaryButtonStyle}>
+            <button onClick={onConfirmReview} className="btn btn-primary btn-lg btn-pill">
               {t('voiceOnboarding.review.confirm')}
             </button>
-            <button onClick={onUpdate} style={secondaryButtonStyle}>
+            <button onClick={onUpdate} className="btn btn-secondary btn-lg btn-pill">
               {t('voiceOnboarding.review.update')}
             </button>
           </div>
@@ -1536,7 +1526,7 @@ export default function VoiceOnboardingPage() {
             <button
               onClick={onConfirmShelfEditor}
               disabled={editorBusy}
-              style={{ ...primaryButtonStyle, opacity: editorBusy ? 0.5 : 1 }}
+              className="btn btn-primary btn-lg btn-pill"
             >
               {t('voiceOnboarding.shelfEditor.confirm')} →
             </button>
@@ -1636,16 +1626,7 @@ function CustomWorkCatchPanel({
           <button
             key={k}
             onClick={() => setSelectedArea(k)}
-            style={{
-              padding: '10px 16px',
-              borderRadius: 999,
-              border: `1.5px solid ${selectedArea === k ? '#34d399' : 'rgba(255,255,255,0.18)'}`,
-              background: selectedArea === k ? 'rgba(52,211,153,0.18)' : 'transparent',
-              color: selectedArea === k ? '#a7f3d0' : 'rgba(255,255,255,0.7)',
-              fontSize: 14,
-              fontWeight: 500,
-              cursor: 'pointer',
-            }}
+            className={`btn btn-md btn-pill ${selectedArea === k ? 'btn-primary' : 'btn-secondary'}`}
           >
             {areaLabel(k)}
           </button>
@@ -1654,11 +1635,11 @@ function CustomWorkCatchPanel({
       <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
         <button
           onClick={() => onAdd(work.work_name, selectedArea, work.teacher_phrase)}
-          style={primaryButtonStyle}
+          className="btn btn-primary btn-lg btn-pill"
         >
           {t('voiceOnboarding.customWork.add')}
         </button>
-        <button onClick={onSkip} style={secondaryButtonStyle}>
+        <button onClick={onSkip} className="btn btn-secondary btn-lg btn-pill">
           {t('voiceOnboarding.customWork.skipForNow')}
         </button>
       </div>

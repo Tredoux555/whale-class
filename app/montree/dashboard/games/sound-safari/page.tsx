@@ -466,7 +466,7 @@ export default function SoundSafariGame() {
 
             <Link
               href="/montree/dashboard/games"
-              className="btn btn-secondary btn-lg btn-full block"
+              className="btn btn-secondary btn-lg btn-full"
             >
               Back to Games
             </Link>

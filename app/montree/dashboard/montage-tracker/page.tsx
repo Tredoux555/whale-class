@@ -191,7 +191,7 @@ function ChildChip({
 
   if (onSelect) {
     return (
-      <button type="button" onClick={onSelect} style={{ ...shell, cursor: 'pointer', textAlign: 'left' }}>
+      <button type="button" onClick={onSelect} className={`btn btn-sm btn-pill ${tone === 'ok' ? 'btn-primary' : 'btn-gold'}`} style={{ maxWidth: '100%', textAlign: 'left' }}>
         {inner}
       </button>
     );
@@ -364,15 +364,8 @@ function PhotoThumb({
         aria-pressed={removed}
         aria-label={removed ? restoreLabel : removeLabel}
         title={removed ? restoreLabel : removeLabel}
-        style={{
-          position: 'absolute', top: 4, right: 4, zIndex: 2,
-          width: 22, height: 22, borderRadius: 999, padding: 0,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: removed ? T.emerald : 'rgba(2,8,5,0.78)',
-          border: `1px solid ${removed ? T.emeraldBorder : 'rgba(255,255,255,0.55)'}`,
-          color: removed ? '#062015' : '#fff',
-          fontSize: 12, fontWeight: 700, lineHeight: 1, cursor: 'pointer',
-        }}
+        className={`btn btn-icon btn-sm btn-round ${removed ? 'btn-primary' : 'btn-secondary'}`}
+        style={{ position: 'absolute', top: 4, right: 4, zIndex: 2 }}
       >
         {removed ? '↺' : '✕'}
       </button>
@@ -957,13 +950,8 @@ export default function MontageManagerPage() {
           onClick={() => setMontagesOpen(true)}
           aria-label={t('montageTracker.jobs.title')}
           title={t('montageTracker.jobs.title')}
-          style={{
-            flexShrink: 0,
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            width: 38, height: 38, borderRadius: 12, fontSize: 17, lineHeight: 1,
-            background: T.emeraldSoft, border: `1px solid ${T.emeraldBorder}`,
-            color: T.emerald, cursor: 'pointer',
-          }}
+          className="btn btn-secondary btn-icon btn-md text-lg"
+          style={{ flexShrink: 0 }}
         >
           🎬
         </button>
@@ -972,13 +960,13 @@ export default function MontageManagerPage() {
       <div className="relative px-4 py-4" style={{ maxWidth: 640, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
         {/* =================== TABS — first thing on the page =============== */}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <button type="button" onClick={() => choosePath('child')} style={pill(path === 'child')} aria-pressed={path === 'child'}>
+          <button type="button" onClick={() => choosePath('child')} className={`btn btn-sm btn-pill ${path === 'child' ? 'btn-primary' : 'btn-secondary'}`} aria-pressed={path === 'child'}>
             🧒 {t('montageTracker.create.child')}
           </button>
-          <button type="button" onClick={() => choosePath('class')} style={pill(path === 'class')} aria-pressed={path === 'class'}>
+          <button type="button" onClick={() => choosePath('class')} className={`btn btn-sm btn-pill ${path === 'class' ? 'btn-primary' : 'btn-secondary'}`} aria-pressed={path === 'class'}>
             🏫 {t('montageTracker.create.class')}
           </button>
-          <button type="button" onClick={() => choosePath('event')} style={pill(path === 'event')} aria-pressed={path === 'event'}>
+          <button type="button" onClick={() => choosePath('event')} className={`btn btn-sm btn-pill ${path === 'event' ? 'btn-primary' : 'btn-secondary'}`} aria-pressed={path === 'event'}>
             🎉 {t('montageTracker.create.event')}
           </button>
         </div>
@@ -1048,12 +1036,8 @@ export default function MontageManagerPage() {
                 onClick={() => { setChildId(''); setShortfall(null); setLightboxOpen(false); }}
                 aria-label={t('montageTracker.create.backToChildren')}
                 title={t('montageTracker.create.backToChildren')}
-                style={{
-                  width: 30, height: 30, borderRadius: 999, flexShrink: 0, padding: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: 'rgba(255,255,255,0.06)', border: `1px solid ${T.cardBorder}`,
-                  color: T.textPrimary, fontSize: 14, cursor: 'pointer',
-                }}
+                className="btn btn-secondary btn-icon btn-sm btn-round"
+                style={{ flexShrink: 0 }}
               >
                 ✕
               </button>
@@ -1067,7 +1051,7 @@ export default function MontageManagerPage() {
               <button
                 type="button"
                 onClick={() => { setChildId(''); setShortfall(null); setLightboxOpen(false); }}
-                style={linkButton}
+                className="btn btn-ghost btn-sm"
               >
                 {t('montageTracker.create.backToChildren')}
               </button>
@@ -1124,7 +1108,7 @@ export default function MontageManagerPage() {
                     key={p}
                     type="button"
                     onClick={() => { setPreset(p); setShortfall(null); }}
-                    style={pill(preset === p)}
+                    className={`btn btn-sm btn-pill ${preset === p ? 'btn-primary' : 'btn-secondary'}`}
                     aria-pressed={preset === p}
                   >
                     {t(`montageTracker.range.${p}` as 'montageTracker.range.day')}
@@ -1177,7 +1161,7 @@ export default function MontageManagerPage() {
                       {t('montageTracker.picker.kept', { kept: keptPhotos.length, total: photos.length })}
                     </div>
                     {removed.size > 0 && (
-                      <button type="button" onClick={restoreAll} style={linkButton}>
+                      <button type="button" onClick={restoreAll} className="btn btn-ghost btn-sm">
                         {t('montageTracker.picker.restoreAll')}
                       </button>
                     )}
@@ -1218,15 +1202,7 @@ export default function MontageManagerPage() {
             type="button"
             onClick={handleCreate}
             disabled={creating || photosLoading || keptPhotos.length < minPhotos}
-            style={{
-              width: '100%', padding: '13px 0', borderRadius: 12,
-              background: creating || photosLoading || keptPhotos.length < minPhotos
-                ? 'rgba(52,211,153,0.30)'
-                : T.emerald,
-              border: 'none', color: '#062015', fontSize: 16, fontWeight: 700,
-              cursor: creating ? 'wait' : keptPhotos.length < minPhotos ? 'not-allowed' : 'pointer',
-              transition: 'all 120ms ease',
-            }}
+            className="btn btn-primary btn-lg btn-full"
           >
             {creating
               ? t('montageTracker.create.creating')
@@ -1241,17 +1217,17 @@ export default function MontageManagerPage() {
 
         {/* --- view toggle --- */}
         <div style={{ display: 'flex', gap: 8 }}>
-          <button type="button" onClick={() => setView('daily')} style={pill(view === 'daily')} aria-pressed={view === 'daily'}>
+          <button type="button" onClick={() => setView('daily')} className={`btn btn-sm btn-pill ${view === 'daily' ? 'btn-primary' : 'btn-secondary'}`} aria-pressed={view === 'daily'}>
             {t('montageTracker.tab.daily')}
           </button>
-          <button type="button" onClick={() => setView('weekly')} style={pill(view === 'weekly')} aria-pressed={view === 'weekly'}>
+          <button type="button" onClick={() => setView('weekly')} className={`btn btn-sm btn-pill ${view === 'weekly' ? 'btn-primary' : 'btn-secondary'}`} aria-pressed={view === 'weekly'}>
             {t('montageTracker.tab.weekly')}
           </button>
           <div style={{ flex: 1 }} />
           <button
             type="button"
             onClick={loadCoverage}
-            style={{ ...pill(false), padding: '7px 12px' }}
+            className="btn btn-secondary btn-icon btn-sm"
             aria-label={t('montageTracker.refresh')}
           >
             ↻

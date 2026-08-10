@@ -932,8 +932,7 @@ export default function GalleryPage() {
                 />
                 <button
                   onClick={() => setEditingCaption(null)}
-                  className="flex-1 rounded-lg"
-                  style={{ padding: '6px 12px', fontSize: 14, color: 'rgba(255,255,255,0.60)', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.10)' }}
+                  className="btn btn-secondary btn-sm flex-1"
                 >
                   {t('common.cancel')}
                 </button>
@@ -1066,7 +1065,7 @@ export default function GalleryPage() {
           {filteredPhotos.length > 0 && (
             <button
               onClick={() => { setSelectionMode(!selectionMode); setSelectedIds(new Set()); }}
-              style={{ padding: '7px 12px', borderRadius: 10, fontFamily: '"Inter", sans-serif', fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 120ms ease', background: selectionMode ? 'rgba(52,211,153,0.15)' : 'rgba(255,255,255,0.08)', border: `1px solid ${selectionMode ? 'rgba(52,211,153,0.40)' : 'rgba(255,255,255,0.12)'}`, color: selectionMode ? '#34d399' : 'rgba(255,255,255,0.60)' }}
+              className={`btn btn-sm ${selectionMode ? 'btn-primary' : 'btn-secondary'}`}
             >
               {selectionMode ? `✓ ${t('gallery.select')}` : t('gallery.select')}
             </button>
@@ -1078,12 +1077,7 @@ export default function GalleryPage() {
       <div className="flex gap-2 overflow-x-auto pb-1">
         <button
           onClick={() => setSelectedArea(null)}
-          style={{
-            padding: '7px 14px', borderRadius: 999, whiteSpace: 'nowrap', fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'all 120ms ease', border: `1px solid ${!selectedArea ? 'rgba(52,211,153,0.55)' : 'rgba(52,211,153,0.15)'}`,
-            background: !selectedArea ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.06)',
-            color: !selectedArea ? '#34d399' : 'rgba(255,255,255,0.60)',
-            backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
-          }}
+          className={`btn btn-sm btn-pill ${!selectedArea ? 'btn-primary' : 'btn-secondary'}`}
         >
           {t('common.all')}
         </button>
@@ -1096,12 +1090,7 @@ export default function GalleryPage() {
             <button
               key={area}
               onClick={() => setSelectedArea(isActive ? null : area)}
-              style={{
-                padding: '7px 14px', borderRadius: 999, whiteSpace: 'nowrap', fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'all 120ms ease', display: 'flex', alignItems: 'center', gap: 6, border: `1px solid ${isActive ? 'rgba(52,211,153,0.50)' : 'rgba(52,211,153,0.15)'}`,
-                background: isActive ? 'rgba(52,211,153,0.10)' : 'rgba(255,255,255,0.06)',
-                color: isActive ? '#34d399' : 'rgba(255,255,255,0.60)',
-                backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
-              }}
+              className={`btn btn-sm btn-pill ${isActive ? 'btn-primary' : 'btn-secondary'}`}
             >
               <AreaBadge area={area} size="xs" />
               <span>{config.name}</span>
@@ -1126,14 +1115,14 @@ export default function GalleryPage() {
                   setSelectedIds(new Set(filteredPhotos.map(p => p.id)));
                 }
               }}
-              style={{ fontSize: 12, padding: '5px 12px', background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.30)', borderRadius: 8, color: '#34d399', fontFamily: '"Inter", sans-serif', cursor: 'pointer' }}
+              className="btn btn-secondary btn-sm"
             >
               {selectedIds.size === filteredPhotos.length ? t('gallery.deselectAll') : t('gallery.selectAll')}
             </button>
             <button
               onClick={handleBulkDownload}
               disabled={downloadingZip}
-              style={{ fontSize: 12, padding: '5px 12px', background: downloadingZip ? 'rgba(232,201,106,0.25)' : 'rgba(232,201,106,0.85)', border: 'none', borderRadius: 8, color: downloadingZip ? '#E8C96A' : '#0a1a0f', fontFamily: '"Inter", sans-serif', fontWeight: 600, cursor: downloadingZip ? 'wait' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+              className="btn btn-gold btn-sm"
               aria-label="Download selected photos as a ZIP"
             >
               {downloadingZip && downloadProgress
@@ -1142,7 +1131,7 @@ export default function GalleryPage() {
             </button>
             <button
               onClick={() => setShowBulkDeleteConfirm(true)}
-              style={{ fontSize: 12, padding: '5px 12px', background: 'rgba(239,68,68,0.80)', border: 'none', borderRadius: 8, color: 'white', fontFamily: '"Inter", sans-serif', cursor: 'pointer' }}
+              className="btn btn-danger btn-sm"
             >
               {t('gallery.deleteSelected')}
             </button>
@@ -1274,8 +1263,7 @@ export default function GalleryPage() {
               </h3>
               <button
                 onClick={() => setChildTagPhotoId(null)}
-                className="w-8 h-8 flex items-center justify-center rounded-full"
-                style={{ color: 'rgba(255,255,255,0.45)', background: 'none', border: 'none', cursor: 'pointer' }}
+                className="btn btn-ghost btn-icon btn-round btn-sm"
               >
                 ✕
               </button>
@@ -1319,16 +1307,14 @@ export default function GalleryPage() {
             <div className="flex gap-2" style={{ padding: '12px 16px', borderTop: '1px solid rgba(52,211,153,0.12)' }}>
               <button
                 onClick={() => setChildTagPhotoId(null)}
-                className="flex-1 rounded-xl transition-colors"
-                style={{ padding: '8px 16px', fontSize: 13, fontFamily: '"Inter", sans-serif', color: 'rgba(255,255,255,0.60)', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.10)', cursor: 'pointer' }}
+                className="btn btn-secondary btn-sm flex-1"
               >
                 {t('common.cancel')}
               </button>
               <button
                 onClick={saveChildTags}
                 disabled={savingChildTags}
-                className="flex-1 rounded-xl disabled:opacity-50 transition-colors"
-                style={{ padding: '8px 16px', fontSize: 13, fontFamily: '"Inter", sans-serif', color: 'white', background: 'rgba(139,92,246,0.75)', border: '1px solid rgba(139,92,246,0.40)', cursor: 'pointer' }}
+                className="btn btn-gold btn-sm flex-1"
               >
                 {savingChildTags ? '...' : t('common.save')}
               </button>

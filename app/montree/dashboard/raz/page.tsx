@@ -637,14 +637,8 @@ export default function RazTrackerPage() {
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={() => triggerFileInput()} style={{
-              background: '#22c55e', border: 'none', borderRadius: 8,
-              padding: '8px 14px', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-            }}>📷 {t('raz.openCamera')}</button>
-            <button onClick={endCameraFlow} style={{
-              background: '#334155', border: 'none', borderRadius: 8,
-              padding: '8px 14px', color: '#94a3b8', fontSize: 13, cursor: 'pointer',
-            }}>{t('common.cancel')}</button>
+            <button onClick={() => triggerFileInput()} className="btn btn-primary btn-sm">📷 {t('raz.openCamera')}</button>
+            <button onClick={endCameraFlow} className="btn btn-secondary btn-sm">{t('common.cancel')}</button>
           </div>
         </div>
       )}
@@ -663,10 +657,7 @@ export default function RazTrackerPage() {
             background: 'rgba(0,0,0,0.7)', zIndex: 2,
           }}>
             {/* Cancel / back button */}
-            <button onClick={endCameraFlow} style={{
-              background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px',
-              color: '#94a3b8', fontSize: 24, lineHeight: 1, flexShrink: 0,
-            }} aria-label={t('common.cancel')}>✕</button>
+            <button onClick={endCameraFlow} className="btn btn-ghost btn-icon btn-sm text-xl" style={{ flexShrink: 0 }} aria-label={t('common.cancel')}>✕</button>
 
             <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
               <div style={{ fontWeight: 700, fontSize: 16, color: '#fff' }}>{cameraFlow.childName}</div>
@@ -681,16 +672,10 @@ export default function RazTrackerPage() {
             <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
               {!cameraFlow.oneShot && (
                 <>
-                  <button onClick={() => showChildPicker(cameraFlow.childName)} style={{
-                    background: 'rgba(34,197,94,0.3)', border: '1px solid rgba(34,197,94,0.5)', borderRadius: 8,
-                    padding: '8px 14px', color: '#4ade80', fontSize: 13, cursor: 'pointer', fontWeight: 600,
-                  }}>
+                  <button onClick={() => showChildPicker(cameraFlow.childName)} className="btn btn-primary btn-sm">
                     {t('common.next')} →
                   </button>
-                  <button onClick={endCameraFlow} style={{
-                    background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 8,
-                    padding: '8px 16px', color: '#fff', fontSize: 14, cursor: 'pointer',
-                  }}>
+                  <button onClick={endCameraFlow} className="btn btn-secondary btn-md">
                     {t('common.done')}
                   </button>
                 </>
@@ -866,10 +851,7 @@ export default function RazTrackerPage() {
           </div>
 
           <div style={{ padding: '12px 16px', paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 24px)', display: 'flex', justifyContent: 'center' }}>
-            <button onClick={finishAll} style={{
-              background: '#334155', border: 'none', borderRadius: 10,
-              padding: '12px 32px', color: '#e2e8f0', fontSize: 15, fontWeight: 600, cursor: 'pointer',
-            }}>
+            <button onClick={finishAll} className="btn btn-secondary btn-md">
               {t('raz.doneBackToList')}
             </button>
           </div>
@@ -902,7 +884,7 @@ export default function RazTrackerPage() {
           </p>
         </div>
         <button onClick={() => router.push('/montree/dashboard')}
-          style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '8px 12px', color: '#94a3b8', cursor: 'pointer', fontSize: 13 }}>
+          className="btn btn-secondary btn-sm">
           ← {t('common.back')}
         </button>
       </div>
@@ -912,15 +894,15 @@ export default function RazTrackerPage() {
         <button onClick={() => {
           const d = new Date(selectedDate + 'T12:00:00'); d.setDate(d.getDate() - 1);
           setSelectedDate(d.toISOString().split('T')[0]);
-        }} style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '8px 12px', color: '#e2e8f0', cursor: 'pointer', fontSize: 16 }}>←</button>
+        }} className="btn btn-secondary btn-icon btn-sm">←</button>
         <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
           style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '8px 12px', color: '#e2e8f0', fontSize: 14, flex: 1 }} />
         <button onClick={() => {
           const d = new Date(selectedDate + 'T12:00:00'); d.setDate(d.getDate() + 1);
           setSelectedDate(d.toISOString().split('T')[0]);
-        }} style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '8px 12px', color: '#e2e8f0', cursor: 'pointer', fontSize: 16 }}>→</button>
+        }} className="btn btn-secondary btn-icon btn-sm">→</button>
         <button onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])}
-          style={{ background: '#334155', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#e2e8f0', cursor: 'pointer', fontSize: 13 }}>{t('raz.today')}</button>
+          className="btn btn-secondary btn-sm">{t('raz.today')}</button>
       </div>
 
       {/* Tab Bar */}

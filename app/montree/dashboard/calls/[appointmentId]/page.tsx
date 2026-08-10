@@ -162,15 +162,7 @@ function CallSplash({
       {action && (
         <button
           onClick={action.onClick}
-          style={{
-            padding: '10px 20px',
-            borderRadius: 10,
-            background: '#34d399',
-            border: 0,
-            color: '#06281a',
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
+          className="btn btn-primary btn-md"
         >
           {action.label}
         </button>
