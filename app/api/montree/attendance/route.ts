@@ -46,6 +46,9 @@ export async function GET(req: NextRequest) {
       .from('montree_children')
       .select('id, name, photo_url')
       .eq('classroom_id', auth.classroomId)
+      // Archived children are off the roster — never on the attendance sheet.
+      // .neq(false) not .eq(true): legacy rows can hold NULL.
+      .neq('is_active', false)
       .order('name')
       .limit(200);
 

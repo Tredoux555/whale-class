@@ -8,6 +8,13 @@ export type FeatureKey =
   // read, and only approved rows reach the children's profiles. Migration 308.
   // Default OFF — enable per school via montree_school_features until Phase-0 accuracy is proven.
   | 'paper_scan'
+  // Photo Onboarding — the teacher uploads whatever class list the school
+  // already has (photo / PDF / DOCX / XLSX). Claude reads the students,
+  // birthdays and notes, we reconcile against the classroom's active roster,
+  // and the teacher reviews every proposed create / update / archive before
+  // anything is written. Migration 325. Default ON — nothing is saved without
+  // an explicit review + Apply.
+  | 'photo_onboarding'
   // Give Control: school manages its own features from the dashboard
   // (/montree/dashboard/school-features + three-dot menu row).
   // No migration — montree_school_features override row only, default OFF.
