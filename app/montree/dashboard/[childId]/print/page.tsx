@@ -141,21 +141,13 @@ export default function PrintWeeklyPlan() {
         <div style={{ display: 'flex', gap: '12px' }}>
           <button
             onClick={() => window.print()}
-            style={{
-              background: '#10B981', color: '#fff', border: 'none',
-              padding: '8px 20px', borderRadius: '8px', fontWeight: 600,
-              cursor: 'pointer', fontFamily: 'system-ui', fontSize: '14px',
-            }}
+            className="btn btn-primary btn-md"
           >
             🖨️ {t('print.printPage' as TranslationKey)}
           </button>
           <button
             onClick={() => window.close()}
-            style={{
-              background: '#374151', color: '#fff', border: 'none',
-              padding: '8px 20px', borderRadius: '8px', fontWeight: 600,
-              cursor: 'pointer', fontFamily: 'system-ui', fontSize: '14px',
-            }}
+            className="btn btn-secondary btn-md"
           >
             {t('common.close' as TranslationKey)}
           </button>

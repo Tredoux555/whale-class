@@ -303,18 +303,7 @@ function Header({
             type="button"
             onClick={() => setView({ kind: 'list' })}
             aria-label={t('meetingNotes.backToList' as TranslationKey)}
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: '50%',
-              border: T.cardBorder,
-              background: T.cardBg,
-              color: T.textPrimary,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
+            className="btn btn-secondary btn-icon btn-sm btn-round"
           >
             <ArrowLeft size={18} strokeWidth={1.75} />
           </button>
@@ -357,22 +346,8 @@ function ListView({
       <button
         type="button"
         onClick={onNew}
-        style={{
-          width: '100%',
-          padding: '14px 18px',
-          borderRadius: 12,
-          background: T.emerald,
-          border: 'none',
-          color: '#0a1a0f',
-          fontWeight: 600,
-          fontSize: 15,
-          cursor: 'pointer',
-          marginBottom: 22,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 8,
-        }}
+        className="btn btn-primary btn-lg btn-full"
+        style={{ marginBottom: 22 }}
       >
         <Mic size={18} strokeWidth={1.75} />
         {t('meetingNotes.startNewMeeting' as TranslationKey)}
@@ -713,14 +688,15 @@ function NewMeetingFlow({
           <button
             type="button"
             onClick={onCancel}
-            style={ghostBtn()}
+            className="btn btn-secondary btn-md"
           >
             {t('common.cancel')}
           </button>
           <button
             type="button"
             onClick={startRecording}
-            style={primaryBtn()}
+            className="btn btn-primary btn-md"
+            style={{ flex: 1 }}
           >
             <Mic size={18} strokeWidth={1.75} />
             {t('meetingNotes.startRecordingConsent' as TranslationKey)}
@@ -780,7 +756,7 @@ function NewMeetingFlow({
         >
           {fmtDuration(recordingSeconds, t)}
         </div>
-        <button type="button" onClick={stopRecording} style={primaryBtn()}>
+        <button type="button" onClick={stopRecording} className="btn btn-primary btn-md" style={{ flex: 1 }}>
           <MicOff size={18} strokeWidth={1.75} />
           {t('meetingNotes.stopAndTranscribe' as TranslationKey)}
         </button>
@@ -931,14 +907,15 @@ function NewMeetingFlow({
       {errorMsg && <ErrorBox text={errorMsg} />}
 
       <div style={{ display: 'flex', gap: 10 }}>
-        <button type="button" onClick={onCancel} style={ghostBtn()}>
+        <button type="button" onClick={onCancel} className="btn btn-secondary btn-md">
           {t('meetingNotes.discard' as TranslationKey)}
         </button>
         <button
           type="button"
           onClick={saveMeeting}
           disabled={saving}
-          style={primaryBtn(saving)}
+          className="btn btn-primary btn-md"
+          style={{ flex: 1 }}
         >
           {saving ? (
             <>
@@ -1208,7 +1185,7 @@ function DetailView({
         <button
           type="button"
           onClick={togglevisible}
-          style={ghostBtn(false, { padding: '8px 14px', fontSize: 13 })}
+          className="btn btn-secondary btn-sm"
         >
           {local.parent_visible
             ? t('meetingNotes.makePrivate' as TranslationKey)
@@ -1235,18 +1212,13 @@ function DetailView({
       {error && <ErrorBox text={error} />}
 
       <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-        <button type="button" onClick={onClose} style={ghostBtn()}>
+        <button type="button" onClick={onClose} className="btn btn-secondary btn-md">
           {t('meetingNotes.backToList' as TranslationKey)}
         </button>
         <button
           type="button"
           onClick={removeMeeting}
-          style={{
-            ...ghostBtn(),
-            color: '#fecaca',
-            border: '1px solid rgba(239,68,68,0.45)',
-            background: 'rgba(239,68,68,0.10)',
-          }}
+          className="btn btn-danger btn-soft btn-md"
         >
           <Trash2 size={16} strokeWidth={1.75} />
           {t('common.delete')}

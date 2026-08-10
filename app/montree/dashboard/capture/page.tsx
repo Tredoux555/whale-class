@@ -698,26 +698,13 @@ function CaptureContent() {
         >
           <button
             onClick={() => setShowEventPicker(true)}
+            className={`btn btn-sm btn-pill ${selectedEvent ? 'btn-gold' : 'btn-secondary'}`}
             style={{
               pointerEvents: 'auto',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
               // leave the top-RIGHT clear: CameraCapture's own back/close
               // button sits at right:16 (44px wide) inside a lower stacking
               // context, so a long event name would swallow its taps.
               maxWidth: 'calc(100vw - 96px)',
-              padding: '8px 12px',
-              borderRadius: 999,
-              background: selectedEvent ? T.amberSoft : 'rgba(0,0,0,0.45)',
-              border: `1px solid ${selectedEvent ? T.amberBorder : 'rgba(255,255,255,0.20)'}`,
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              color: selectedEvent ? '#fbbf24' : 'rgba(255,255,255,0.85)',
-              fontFamily: T.sans,
-              fontSize: 12,
-              fontWeight: 600,
-              cursor: 'pointer',
             }}
           >
             <PartyPopper size={13} strokeWidth={1.75} />
@@ -837,23 +824,8 @@ function CaptureContent() {
         <button
           onClick={safeExit}
           aria-label="Cancel"
-          style={{
-            position: 'absolute',
-            left: 12,
-            top: 38,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 40,
-            height: 40,
-            borderRadius: 12,
-            background: 'rgba(255,255,255,0.10)',
-            border: '1px solid rgba(255,255,255,0.12)',
-            color: T.textPrimary,
-            cursor: 'pointer',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
-          }}
+          className="btn btn-secondary btn-icon btn-md"
+          style={{ position: 'absolute', left: 12, top: 38 }}
         >
           <ArrowLeft size={18} strokeWidth={1.75} />
         </button>
@@ -905,16 +877,7 @@ function CaptureContent() {
               setSelectedChildIds(children.map(c => c.id));
             }
           }}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: T.emerald,
-            fontFamily: T.sans,
-            fontSize: 13,
-            fontWeight: 600,
-            cursor: 'pointer',
-            padding: 0,
-          }}
+          className="btn btn-ghost btn-sm"
         >
           {allSelected ? t('capture.deselectAll') : t('capture.selectAll')}
         </button>
@@ -924,19 +887,7 @@ function CaptureContent() {
             not be conditioned on the (now always-null-here) sticky event. */}
         <button
           onClick={() => setShowEventPicker(true)}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: T.amber,
-            fontFamily: T.sans,
-            fontSize: 13,
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 5,
-            padding: 0,
-          }}
+          className="btn btn-ghost btn-sm"
         >
           <PartyPopper size={13} strokeWidth={1.75} />
           {t('events.selectEvent')}
@@ -1054,28 +1005,7 @@ function CaptureContent() {
         <button
           onClick={handleSaveWithTags}
           disabled={selectedChildIds.length === 0}
-          style={{
-            width: '100%',
-            padding: '14px',
-            borderRadius: 16,
-            background: selectedChildIds.length > 0
-              ? 'linear-gradient(180deg, #34d399, #10b981)'
-              : 'rgba(255,255,255,0.08)',
-            border: selectedChildIds.length > 0
-              ? '1px solid rgba(52,211,153,0.55)'
-              : '1px solid rgba(255,255,255,0.08)',
-            color: selectedChildIds.length > 0 ? '#06281a' : 'rgba(255,255,255,0.30)',
-            fontFamily: T.sans,
-            fontSize: 15,
-            fontWeight: 700,
-            cursor: selectedChildIds.length > 0 ? 'pointer' : 'not-allowed',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 7,
-            transition: 'all 120ms ease',
-            boxShadow: 'none',
-          }}
+          className={`btn btn-lg btn-full ${selectedChildIds.length > 0 ? 'btn-primary' : 'btn-secondary'}`}
         >
           {selectedChildIds.length === 0 ? (
             <>{t('capture.selectChild')}</>
@@ -1090,17 +1020,7 @@ function CaptureContent() {
         </button>
         <button
           onClick={handleSkipTagging}
-          style={{
-            width: '100%',
-            padding: '10px',
-            background: 'transparent',
-            border: 'none',
-            color: 'rgba(255,255,255,0.50)',
-            fontFamily: T.sans,
-            fontSize: 13,
-            fontWeight: 500,
-            cursor: 'pointer',
-          }}
+          className="btn btn-ghost btn-sm btn-full"
         >
           {t('capture.skipTagging')}
         </button>

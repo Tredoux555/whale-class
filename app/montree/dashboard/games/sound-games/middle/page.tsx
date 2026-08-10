@@ -197,7 +197,7 @@ export default function MiddleSoundGame() {
             <button onClick={startGame} className="btn btn-primary btn-lg btn-full max-w-sm mx-auto">
               Play Again! 🔄
             </button>
-            <Link href="/games/sound-games" className="btn btn-secondary btn-lg btn-full max-w-sm mx-auto block">
+            <Link href="/games/sound-games" className="btn btn-secondary btn-lg btn-full max-w-sm mx-auto">
               Back to Sound Games
             </Link>
           </div>

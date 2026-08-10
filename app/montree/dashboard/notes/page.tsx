@@ -132,20 +132,8 @@ export default function NotesPage() {
           <button
             onClick={() => router.back()}
             aria-label={t('common.back')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 40,
-              height: 40,
-              borderRadius: 12,
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.10)',
-              color: T.textPrimary,
-              cursor: 'pointer',
-              flexShrink: 0,
-              transition: 'background 140ms ease',
-            }}
+            className="btn btn-secondary btn-icon btn-md"
+            style={{ flexShrink: 0 }}
           >
             <ArrowLeft size={18} strokeWidth={1.75} />
           </button>

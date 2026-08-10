@@ -771,7 +771,7 @@ export default function DashboardPage() {
                   {searchQuery && (
                     <button
                       onClick={handleSearchClear}
-                      style={{ background: 'none', border: 0, color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: 14 }}
+                      className="btn btn-ghost btn-icon btn-sm"
                     >
                       ✕
                     </button>
@@ -793,21 +793,7 @@ export default function DashboardPage() {
                   {isEnabled('parent_night_present') && (
                     <Link
                       href="/montree/dashboard/present"
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        minHeight: 32,
-                        padding: '6px 12px',
-                        borderRadius: 999,
-                        background: 'rgba(52,211,153,0.10)',
-                        border: '1px solid rgba(52,211,153,0.35)',
-                        color: 'rgba(255,255,255,0.92)',
-                        fontSize: 12,
-                        fontFamily: 'Inter, system-ui, sans-serif',
-                        textDecoration: 'none',
-                        letterSpacing: 0.2,
-                      }}
+                      className="btn btn-secondary btn-sm btn-pill"
                     >
                       <span style={{ fontSize: 13 }}>🎞</span>
                       Present

@@ -562,18 +562,7 @@ export default function WeeklyAdminDocsPage() {
           <button
             onClick={() => router.push('/montree/dashboard')}
             aria-label={t('common.back')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.10)',
-              color: T.textPrimary,
-              cursor: 'pointer',
-            }}
+            className="btn btn-secondary btn-icon btn-sm"
           >
             <ArrowLeft size={16} strokeWidth={1.75} />
           </button>
@@ -591,11 +580,7 @@ export default function WeeklyAdminDocsPage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          style={{
-            ...ctaPrimary,
-            opacity: saving ? 0.55 : 1,
-            cursor: saving ? 'not-allowed' : 'pointer',
-          }}
+          className="btn btn-primary btn-sm"
         >
           <Save size={12} strokeWidth={2} />
           {saving ? t('common.loading') : t('common.save')}
@@ -626,12 +611,7 @@ export default function WeeklyAdminDocsPage() {
         <button
           onClick={() => setWeekStart(shiftWeek(weekStart, -1))}
           aria-label="Previous week"
-          style={{
-            ...ghostBtn,
-            width: 28,
-            height: 28,
-            padding: 0,
-          }}
+          className="btn btn-secondary btn-icon btn-sm"
         >
           <ChevronLeft size={14} strokeWidth={1.75} />
         </button>
@@ -657,14 +637,7 @@ export default function WeeklyAdminDocsPage() {
           }}
           disabled={isMaxWeek}
           aria-label="Next week"
-          style={{
-            ...ghostBtn,
-            width: 28,
-            height: 28,
-            padding: 0,
-            opacity: isMaxWeek ? 0.30 : 1,
-            cursor: isMaxWeek ? 'not-allowed' : 'pointer',
-          }}
+          className="btn btn-secondary btn-icon btn-sm"
         >
           <ChevronRight size={14} strokeWidth={1.75} />
         </button>
@@ -691,27 +664,7 @@ export default function WeeklyAdminDocsPage() {
             <button
               key={opt.id}
               onClick={() => setActiveTab(opt.id)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                padding: '8px 14px',
-                borderRadius: 10,
-                background: active
-                  ? (isViolet ? T.violetSoft : T.emeraldStrong)
-                  : 'rgba(255,255,255,0.06)',
-                border: `1px solid ${active
-                  ? (isViolet ? T.violetBorder : 'rgba(52,211,153,0.45)')
-                  : 'rgba(255,255,255,0.10)'}`,
-                color: active
-                  ? (isViolet ? T.violet : T.emerald)
-                  : T.textSecondary,
-                fontFamily: T.sans,
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 120ms ease',
-              }}
+              className={`btn btn-sm ${active ? (isViolet ? 'btn-gold' : 'btn-primary') : 'btn-secondary'}`}
             >
               <Icon size={14} strokeWidth={1.75} />
               {opt.label}
@@ -724,11 +677,7 @@ export default function WeeklyAdminDocsPage() {
         <button
           onClick={handleAutoFill}
           disabled={autoFilling}
-          style={{
-            ...ctaAmber,
-            opacity: autoFilling ? 0.55 : 1,
-            cursor: autoFilling ? 'not-allowed' : 'pointer',
-          }}
+          className="btn btn-gold btn-sm"
         >
           <Sparkles size={12} strokeWidth={1.75} />
           {autoFilling ? '...' : t('weeklyAdmin.autoFill')}
@@ -737,11 +686,7 @@ export default function WeeklyAdminDocsPage() {
         <button
           onClick={() => handleGenerate(activeTab)}
           disabled={generating !== null}
-          style={{
-            ...(activeTab === 'plan' ? ctaViolet : ctaPrimary),
-            opacity: generating !== null ? 0.55 : 1,
-            cursor: generating !== null ? 'not-allowed' : 'pointer',
-          }}
+          className={`btn btn-sm ${activeTab === 'plan' ? 'btn-gold' : 'btn-primary'}`}
         >
           <Download size={12} strokeWidth={2} />
           {generating === activeTab ? t('weeklyAdmin.generating') : t('weeklyAdmin.generate')}
@@ -806,22 +751,7 @@ export default function WeeklyAdminDocsPage() {
             <button
               onClick={handleAutoFill}
               disabled={autoFilling}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 5,
-                padding: '6px 12px',
-                background: T.amber,
-                border: 'none',
-                borderRadius: 999,
-                color: '#1a1206',
-                fontFamily: T.sans,
-                fontSize: 11,
-                fontWeight: 700,
-                cursor: autoFilling ? 'not-allowed' : 'pointer',
-                opacity: autoFilling ? 0.55 : 1,
-                whiteSpace: 'nowrap',
-              }}
+              className="btn btn-gold btn-sm btn-pill"
             >
               <Sparkles size={11} strokeWidth={1.75} />
               {t('weeklyAdmin.refreshAutoFill')}

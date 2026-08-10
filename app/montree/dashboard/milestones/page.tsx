@@ -61,11 +61,8 @@ export default function ClassMilestonesPage() {
     <div style={{ maxWidth: 560, margin: '0 auto', padding: '0 16px 60px' }}>
       <button
         onClick={() => router.back()}
-        style={{
-          display: 'inline-flex', alignItems: 'center', gap: 4, background: 'none',
-          border: 0, color: 'rgba(255,255,255,0.5)', fontSize: 13, cursor: 'pointer',
-          padding: '8px 0', marginBottom: 8, fontFamily: SANS,
-        }}
+        className="btn btn-ghost btn-sm"
+        style={{ marginBottom: 8 }}
       >
         <ChevronLeft size={16} strokeWidth={1.75} /> {t('common.back')}
       </button>

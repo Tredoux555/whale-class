@@ -411,7 +411,7 @@ function AreaPickerWithSearch({
               <button
                 onClick={handleSaveWork}
                 disabled={!addWorkName.trim() || addSaving}
-                style={{ width: '100%', padding: '10px 0', borderRadius: 10, background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', color: '#06281a', fontSize: 13, fontWeight: 600, cursor: !addWorkName.trim() || addSaving ? 'not-allowed' : 'pointer', opacity: !addWorkName.trim() || addSaving ? 0.5 : 1 }}
+                className="btn btn-primary btn-md btn-full"
               >
                 {addSaving ? (t('common.saving') || 'Saving...') : (previewData ? (t('audit.saveWithDescriptions') || 'Save with these descriptions') : (t('common.save') || 'Save'))}
               </button>
@@ -419,14 +419,14 @@ function AreaPickerWithSearch({
                 <button
                   onClick={handlePreview}
                   disabled={!addWorkName.trim() || previewLoading || addSaving}
-                  style={{ width: '100%', padding: '8px 0', fontSize: 13, color: '#34d399', background: 'none', border: 'none', cursor: !addWorkName.trim() || previewLoading || addSaving ? 'not-allowed' : 'pointer', opacity: !addWorkName.trim() || previewLoading || addSaving ? 0.5 : 1, fontWeight: 500 }}
+                  className="btn btn-ghost btn-sm btn-full"
                 >
                   {t('audit.previewAI') || 'Preview AI Descriptions'}
                 </button>
               )}
               <button
                 onClick={() => { previewAbortRef.current?.abort(); setShowAddForm(false); setShowPreview(false); setPreviewData(null); }}
-                style={{ width: '100%', padding: '8px 0', fontSize: 13, color: 'rgba(255,255,255,0.40)', background: 'none', border: 'none', cursor: 'pointer' }}
+                className="btn btn-ghost btn-sm btn-full"
               >
                 {t('common.back') || 'Back'}
               </button>
@@ -449,7 +449,8 @@ function AreaPickerWithSearch({
           />
           {query && (
             <button onClick={() => setQuery('')}
-              style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: 'rgba(255,255,255,0.35)', background: 'none', border: 'none', cursor: 'pointer' }}>
+              className="btn btn-ghost btn-sm"
+              style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)' }}>
               ✕
             </button>
           )}
@@ -463,7 +464,8 @@ function AreaPickerWithSearch({
                 <button
                   key={`${r.areaKey}-${r.work.name}-${i}`}
                   onClick={() => onSelectWork(r.work, r.areaKey)}
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid transparent', textAlign: 'left', cursor: 'pointer' }}
+                  className="btn btn-secondary btn-sm btn-full"
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left' }}
                 >
                   <span style={{ width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 10, fontWeight: 700, flexShrink: 0, backgroundColor: r.areaColor }}>
                     {r.areaKey[0].toUpperCase()}
@@ -477,7 +479,7 @@ function AreaPickerWithSearch({
               {/* "Add custom work" link below search results */}
               <button
                 onClick={() => openAddForm()}
-                style={{ width: '100%', textAlign: 'center', padding: '8px 0', fontSize: 13, color: '#34d399', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}
+                className="btn btn-ghost btn-sm btn-full"
               >
                 + {t('audit.addCustomWorkLink') || 'Add a custom work'}
               </button>
@@ -490,7 +492,7 @@ function AreaPickerWithSearch({
               <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.40)', marginBottom: 12 }}>{t('common.noResults') || 'No works found'}</p>
               <button
                 onClick={() => openAddForm(query.trim())}
-                style={{ width: '100%', padding: '12px 0', borderRadius: 10, background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', color: '#06281a', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+                className="btn btn-primary btn-md btn-full"
               >
                 ➕ {t('audit.addQueryAsWork') || `Add '${query.trim()}' as a custom work`}
               </button>
@@ -504,7 +506,8 @@ function AreaPickerWithSearch({
                 <button
                   key={a.key}
                   onClick={() => onSelectArea(a.key)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(52,211,153,0.12)', background: 'rgba(255,255,255,0.04)', textAlign: 'left', cursor: 'pointer' }}
+                  className="btn btn-secondary btn-md"
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left' }}
                 >
                   <span style={{ width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 12, fontWeight: 700, backgroundColor: a.color }}>
                     {a.key[0].toUpperCase()}
@@ -520,7 +523,8 @@ function AreaPickerWithSearch({
 
         <button
           onClick={() => { previewAbortRef.current?.abort(); onClose(); }}
-          style={{ marginTop: 12, width: '100%', padding: '8px 0', fontSize: 13, color: 'rgba(255,255,255,0.40)', background: 'none', border: 'none', cursor: 'pointer' }}
+          className="btn btn-ghost btn-sm btn-full"
+          style={{ marginTop: 12 }}
         >
           {t('common.cancel')}
         </button>
@@ -662,7 +666,8 @@ function GetAdviceTab({ photos, classroomId }: { photos: AuditPhoto[]; classroom
                   }
                 }}
                 disabled={isLoading}
-                style={{ flexShrink: 0, padding: '8px 12px', borderRadius: 10, fontSize: 13, fontWeight: 500, cursor: isLoading ? 'wait' : 'pointer', background: isLoading ? 'rgba(52,211,153,0.08)' : hasAdvice ? 'rgba(52,211,153,0.10)' : 'rgba(52,211,153,0.18)', border: `1px solid ${hasAdvice || isLoading ? 'rgba(52,211,153,0.25)' : 'rgba(52,211,153,0.50)'}`, color: isLoading ? 'rgba(52,211,153,0.50)' : hasAdvice ? '#34d399' : '#34d399', transition: 'all 120ms ease' }}
+                className="btn btn-primary btn-sm"
+                style={{ flexShrink: 0 }}
               >
                 {isLoading ? (
                   <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -2650,7 +2655,8 @@ export default function PhotoAuditPage() {
               onClick={handleSyncQueue}
               disabled={syncingQueue}
               title={t('photoAudit.syncButtonTitle')}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 8, background: syncingQueue ? 'rgba(245,158,11,0.12)' : 'rgba(255,255,255,0.06)', border: `1px solid ${syncingQueue ? 'rgba(245,158,11,0.35)' : 'rgba(255,255,255,0.12)'}`, color: syncingQueue ? '#f59e0b' : 'rgba(255,255,255,0.70)', fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 500, cursor: syncingQueue ? 'wait' : 'pointer', transition: 'all 120ms ease' }}
+              className={`btn btn-sm ${syncingQueue ? 'btn-gold' : 'btn-secondary'}`}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
             >
               <svg
                 className={`w-4 h-4 ${syncingQueue ? 'animate-spin' : ''}`}
@@ -2672,7 +2678,7 @@ export default function PhotoAuditPage() {
                 type="button"
                 onClick={() => setTodayFilter(v => !v)}
                 title={t('photoAudit.todayFilterTitle')}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '5px 10px', borderRadius: 8, background: todayFilter ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.06)', border: `1px solid ${todayFilter ? 'rgba(52,211,153,0.45)' : 'rgba(255,255,255,0.12)'}`, color: todayFilter ? '#34d399' : 'rgba(255,255,255,0.70)', fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'all 120ms ease' }}
+                className={`btn btn-sm ${todayFilter ? 'btn-primary' : 'btn-secondary'}`}
               >
                 {t('photoAudit.today')}
               </button>
@@ -2715,7 +2721,7 @@ export default function PhotoAuditPage() {
                 key={tab.key}
                 data-copilot={tab.key === 'all' ? 'confirm-tab' : undefined}
                 onClick={() => setZone(tab.key as Zone)}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 999, background: isActive ? 'rgba(52,211,153,0.10)' : 'rgba(255,255,255,0.04)', border: `1px solid ${isActive ? 'rgba(52,211,153,0.55)' : 'rgba(255,255,255,0.10)'}`, color: isActive ? '#34d399' : 'rgba(255,255,255,0.55)', fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 120ms ease' }}
+                className={`btn btn-sm btn-pill ${isActive ? 'btn-primary' : 'btn-secondary'}`}
               >
                 {tab.label}{tab.count !== null ? ` (${tab.count})` : ''}
               </button>
@@ -2732,7 +2738,7 @@ export default function PhotoAuditPage() {
               </span>
               <button
                 onClick={() => { reclassifyCancelledRef.current = true; }}
-                style={{ padding: '2px 8px', borderRadius: 6, fontSize: 11, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.60)', cursor: 'pointer' }}
+                className="btn btn-secondary btn-sm"
               >
                 {t('audit.reclassifyCancel') || 'Cancel'}
               </button>
@@ -2838,7 +2844,7 @@ export default function PhotoAuditPage() {
           <button
             disabled={page === 0}
             onClick={() => setPage(p => p - 1)}
-            style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.15)', color: 'rgba(255,255,255,0.65)', fontSize: 14, cursor: page === 0 ? 'not-allowed' : 'pointer', opacity: page === 0 ? 0.35 : 1 }}
+            className="btn btn-secondary btn-sm"
           >
             ←
           </button>
@@ -2848,7 +2854,7 @@ export default function PhotoAuditPage() {
           <button
             disabled={page >= totalPages - 1}
             onClick={() => setPage(p => p + 1)}
-            style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.15)', color: 'rgba(255,255,255,0.65)', fontSize: 14, cursor: page >= totalPages - 1 ? 'not-allowed' : 'pointer', opacity: page >= totalPages - 1 ? 0.35 : 1 }}
+            className="btn btn-secondary btn-sm"
           >
             →
           </button>
@@ -2870,7 +2876,7 @@ export default function PhotoAuditPage() {
             <button
               type="button"
               onClick={loadMorePhotos}
-              style={{ padding: '8px 18px', borderRadius: 8, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.25)', color: 'rgba(255,255,255,0.78)', fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'all 120ms ease' }}
+              className="btn btn-secondary btn-sm"
             >
               {t('audit.loadMore')}
             </button>
@@ -2886,7 +2892,7 @@ export default function PhotoAuditPage() {
             <div className="flex items-center justify-center">
               <button
                 onClick={selectAllVisible}
-                style={{ padding: '7px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.20)', color: 'rgba(255,255,255,0.70)', fontSize: 13, cursor: 'pointer' }}
+                className="btn btn-secondary btn-sm"
               >
                 {t('audit.selectAll')} ({filteredPhotos.length})
               </button>
@@ -2898,7 +2904,7 @@ export default function PhotoAuditPage() {
               <button
                 onClick={handleRunHaiku}
                 disabled={haikusRunning || batchProcessing}
-                style={{ padding: '7px 14px', borderRadius: 8, background: 'rgba(99,102,241,0.20)', border: '1px solid rgba(99,102,241,0.40)', color: 'rgba(165,180,252,0.90)', fontSize: 13, fontWeight: 500, cursor: haikusRunning || batchProcessing ? 'not-allowed' : 'pointer', opacity: haikusRunning || batchProcessing ? 0.5 : 1 }}
+                className="btn btn-gold btn-sm"
               >
                 {haikusRunning ? (
                   <span className="flex items-center gap-1.5">
@@ -2910,21 +2916,21 @@ export default function PhotoAuditPage() {
               <button
                 onClick={handleBatchConfirm}
                 disabled={haikusRunning || batchProcessing}
-                style={{ padding: '7px 14px', borderRadius: 8, background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', color: '#06281a', fontSize: 13, fontWeight: 600, cursor: haikusRunning || batchProcessing ? 'not-allowed' : 'pointer', opacity: haikusRunning || batchProcessing ? 0.5 : 1 }}
+                className="btn btn-primary btn-sm"
               >
                 {batchProcessing ? `Confirming...` : `✓ Confirm ${selectedIds.size}`}
               </button>
               {haikusRunning && (
                 <button
                   onClick={() => { haikuCancelledRef.current = true; }}
-                  style={{ padding: '7px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.60)', fontSize: 13, cursor: 'pointer' }}
+                  className="btn btn-secondary btn-sm"
                 >
                   Cancel
                 </button>
               )}
               <button
                 onClick={clearSelection}
-                style={{ padding: '7px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.50)', fontSize: 13, cursor: 'pointer' }}
+                className="btn btn-secondary btn-sm"
               >
                 Deselect
               </button>
@@ -2956,7 +2962,8 @@ export default function PhotoAuditPage() {
           <div className="fixed top-3 left-3 z-[60]">
             <button
               onClick={() => setPickerArea('')}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', background: 'rgba(7,18,12,0.90)', backdropFilter: 'blur(12px)', borderRadius: 999, border: '1px solid rgba(52,211,153,0.25)', color: 'rgba(255,255,255,0.85)', fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+              className="btn btn-secondary btn-sm btn-pill"
+              style={{ display: 'flex', alignItems: 'center', gap: 6, backdropFilter: 'blur(12px)' }}
             >
               <span>←</span>
               <span>{t('audit.changeArea')}</span>
@@ -3058,19 +3065,19 @@ export default function PhotoAuditPage() {
             <div className="space-y-2">
               <button
                 onClick={handleCropAndTeach}
-                style={{ width: '100%', padding: '12px 0', borderRadius: 10, background: 'rgba(99,102,241,0.18)', border: '1px solid rgba(99,102,241,0.40)', color: 'rgba(165,180,252,0.90)', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}
+                className="btn btn-gold btn-md btn-full"
               >
                 ✂️ {t('audit.cropAndTeach')}
               </button>
               <button
                 onClick={handleUseFullPhoto}
-                style={{ width: '100%', padding: '12px 0', borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.75)', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}
+                className="btn btn-secondary btn-md btn-full"
               >
                 🖼️ {t('audit.useFullPhoto')}
               </button>
               <button
                 onClick={() => setCropChoicePhoto(null)}
-                style={{ width: '100%', padding: '8px 0', fontSize: 13, color: 'rgba(255,255,255,0.35)', background: 'none', border: 'none', cursor: 'pointer' }}
+                className="btn btn-ghost btn-sm btn-full"
               >
                 {t('common.cancel')}
               </button>
@@ -3124,7 +3131,8 @@ export default function PhotoAuditPage() {
                   <button
                     key={child.id}
                     onClick={() => handleToggleChild(child.id)}
-                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '8px 10px', borderRadius: 10, textAlign: 'left', cursor: 'pointer', background: checked ? 'rgba(52,211,153,0.10)' : 'rgba(255,255,255,0.04)', border: `1px solid ${checked ? 'rgba(52,211,153,0.35)' : 'rgba(255,255,255,0.08)'}`, transition: 'all 100ms ease' }}
+                    className={`btn btn-sm btn-full ${checked ? 'btn-primary' : 'btn-secondary'}`}
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left' }}
                   >
                     <span style={{ width: 18, height: 18, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, background: checked ? 'rgba(52,211,153,0.25)' : 'transparent', border: `1.5px solid ${checked ? 'rgba(52,211,153,0.70)' : 'rgba(255,255,255,0.25)'}`, color: '#34d399', flexShrink: 0 }}>
                       {checked && '✓'}
@@ -3143,13 +3151,15 @@ export default function PhotoAuditPage() {
               <button
                 onClick={handleSaveChildTags}
                 disabled={taggingSaving}
-                style={{ flex: 1, padding: '10px 0', borderRadius: 10, background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', color: '#06281a', fontWeight: 600, fontSize: 13, cursor: taggingSaving ? 'wait' : 'pointer', opacity: taggingSaving ? 0.6 : 1 }}
+                className="btn btn-primary btn-md"
+                style={{ flex: 1 }}
               >
                 {taggingSaving ? '...' : t('common.save')}
               </button>
               <button
                 onClick={() => setTaggingPhoto(null)}
-                style={{ flex: 1, padding: '10px 0', borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.60)', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}
+                className="btn btn-secondary btn-md"
+                style={{ flex: 1 }}
               >
                 {t('common.cancel')}
               </button>
@@ -3208,13 +3218,15 @@ export default function PhotoAuditPage() {
                   <button
                     onClick={handleConfirmReference}
                     disabled={describeSaving}
-                    style={{ flex: 1, padding: '10px 0', borderRadius: 10, background: 'rgba(99,102,241,0.18)', border: '1px solid rgba(99,102,241,0.40)', color: 'rgba(165,180,252,0.90)', fontSize: 13, fontWeight: 500, cursor: describeSaving ? 'wait' : 'pointer', opacity: describeSaving ? 0.5 : 1 }}
+                    className="btn btn-gold btn-md"
+                    style={{ flex: 1 }}
                   >
                     {describeSaving ? '...' : t('audit.saveReference')}
                   </button>
                   <button
                     onClick={handleCancelReference}
-                    style={{ flex: 1, padding: '10px 0', borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+                    className="btn btn-secondary btn-md"
+                    style={{ flex: 1 }}
                   >
                     {t('common.cancel')}
                   </button>
@@ -3224,7 +3236,7 @@ export default function PhotoAuditPage() {
 
             {!describeLoading && !describeResult && (
               <button onClick={handleCancelReference}
-                style={{ width: '100%', padding: '8px 0', fontSize: 13, color: 'rgba(255,255,255,0.35)', background: 'none', border: 'none', cursor: 'pointer', marginTop: 16 }}>
+                className="btn btn-ghost btn-sm btn-full" style={{ marginTop: 16 }}>
                 {t('common.cancel')}
               </button>
             )}
@@ -3326,7 +3338,8 @@ function WorkInfoSheet({ info, onClose, t }: {
         </div>
         <button
           onClick={onClose}
-          style={{ width: '100%', padding: '8px 0', fontSize: 13, color: 'rgba(255,255,255,0.35)', background: 'none', border: 'none', cursor: 'pointer', marginTop: 10 }}
+          className="btn btn-ghost btn-sm btn-full"
+          style={{ marginTop: 10 }}
         >
           {t('common.close')}
         </button>
@@ -3483,7 +3496,8 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
       {/* Selection checkbox */}
       <button
         onClick={onToggle}
-        style={{ position: 'absolute', top: 10, left: 10, zIndex: 10, width: 24, height: 24, borderRadius: 6, background: selected ? 'rgba(52,211,153,0.30)' : 'rgba(7,18,12,0.82)', border: `1px solid ${selected ? 'rgba(52,211,153,0.70)' : 'rgba(255,255,255,0.25)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 120ms ease' }}
+        className={`btn btn-icon btn-sm ${selected ? 'btn-primary' : 'btn-secondary'}`}
+        style={{ position: 'absolute', top: 10, left: 10, zIndex: 10 }}
       >
         {selected && <span style={{ color: '#34d399', fontSize: 13, fontWeight: 700 }}>✓</span>}
       </button>
@@ -3586,13 +3600,8 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
                     <button
                       onClick={() => onConfirmCandidate(cand)}
                       disabled={processing}
-                      style={{
-                        fontSize: 10, padding: '4px 10px', borderRadius: 999,
-                        background: 'rgba(139,92,246,0.10)', border: '1px solid rgba(139,92,246,0.32)',
-                        color: 'rgba(233,213,255,0.92)', fontWeight: 500,
-                        cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1,
-                        maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      }}
+                      className="btn btn-gold btn-sm btn-pill"
+                      style={{ maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                       title={`${cand.workName} (${Math.round((cand.score || 0) * 100)}%)`}
                     >
                       {cand.workName}
@@ -3600,10 +3609,8 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
                     {/* 📖 — read the alternative's curriculum entry before switching to it */}
                     <button
                       onClick={() => onExplainWork(cand.workName, cand.area)}
-                      style={{
-                        fontSize: 9, padding: '4px 6px', borderRadius: 999, lineHeight: 1, flexShrink: 0,
-                        background: 'rgba(139,92,246,0.10)', border: '1px solid rgba(139,92,246,0.32)', color: 'rgba(233,213,255,0.92)', cursor: 'pointer',
-                      }}
+                      className="btn btn-gold btn-sm btn-pill"
+                      style={{ flexShrink: 0 }}
                       title={t('audit.whatIsThisWork')}
                       aria-label={t('audit.whatIsThisWork')}
                     >
@@ -3616,24 +3623,24 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
           })()}
           {unifiedTagger ? (
             <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-              <button onClick={onConfirmDraft} disabled={processing} style={{ flex: 1, fontSize: 11, padding: '8px 0', borderRadius: 8, background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', color: '#06281a', fontWeight: 600, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}>
+              <button onClick={onConfirmDraft} disabled={processing} className="btn btn-primary btn-sm" style={{ flex: 1 }}>
                 {processing ? '...' : '✓ Correct'}
               </button>
-              <button onClick={onAcceptDraft} disabled={processing} style={{ flex: 1, fontSize: 11, padding: '8px 0', borderRadius: 8, background: 'rgba(139,92,246,0.20)', border: '1px solid rgba(139,92,246,0.40)', color: 'rgba(196,181,253,0.90)', fontWeight: 600, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}>
+              <button onClick={onAcceptDraft} disabled={processing} className="btn btn-gold btn-sm" style={{ flex: 1 }}>
                 {processing ? '...' : '🏷️ This is…'}
               </button>
             </div>
           ) : (
             <>
               <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-                <button onClick={onConfirmDraft} disabled={processing} style={{ flex: 1, fontSize: 12, padding: '8px 0', borderRadius: 8, background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', color: '#06281a', fontWeight: 600, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}>
+                <button onClick={onConfirmDraft} disabled={processing} className="btn btn-primary btn-sm" style={{ flex: 1 }}>
                   {processing ? '...' : '✓ Correct'}
                 </button>
-                <button onClick={onCorrect} disabled={processing} style={{ flex: 1, fontSize: 12, padding: '8px 0', borderRadius: 8, background: 'rgba(139,92,246,0.10)', border: '1px solid rgba(139,92,246,0.35)', color: 'rgba(196,181,253,0.85)', fontWeight: 600, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}>
+                <button onClick={onCorrect} disabled={processing} className="btn btn-gold btn-sm" style={{ flex: 1 }}>
                   ✏️ Fix
                 </button>
               </div>
-              <button onClick={onTellAI} disabled={processing} style={{ width: '100%', fontSize: 10, padding: '6px 0', marginTop: 4, borderRadius: 8, background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.22)', color: 'rgba(196,181,253,0.70)', fontWeight: 500, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}>
+              <button onClick={onTellAI} disabled={processing} className="btn btn-gold btn-sm btn-full" style={{ marginTop: 4 }}>
                 🗣️ Tell AI what it is
               </button>
             </>
@@ -3685,13 +3692,8 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
                     <button
                       onClick={() => onConfirmCandidate(cand)}
                       disabled={processing}
-                      style={{
-                        fontSize: 10, padding: '4px 10px', borderRadius: 999,
-                        background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.30)',
-                        color: 'rgba(204,251,241,0.92)', fontWeight: 500,
-                        cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1,
-                        maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      }}
+                      className="btn btn-gold btn-sm btn-pill"
+                      style={{ maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                       title={`${cand.workName} (${Math.round((cand.score || 0) * 100)}%)`}
                     >
                       {cand.workName}
@@ -3699,10 +3701,8 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
                     {/* 📖 — read the alternative's curriculum entry before switching to it */}
                     <button
                       onClick={() => onExplainWork(cand.workName, cand.area)}
-                      style={{
-                        fontSize: 9, padding: '4px 6px', borderRadius: 999, lineHeight: 1, flexShrink: 0,
-                        background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.30)', color: 'rgba(204,251,241,0.92)', cursor: 'pointer',
-                      }}
+                      className="btn btn-gold btn-sm btn-pill"
+                      style={{ flexShrink: 0 }}
                       title={t('audit.whatIsThisWork')}
                       aria-label={t('audit.whatIsThisWork')}
                     >
@@ -3715,10 +3715,10 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
           })()}
           {/* Always show ✓ Correct + ✏️ Wrong — same pattern as haiku_matched */}
           <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-            <button onClick={onConfirmDraft} disabled={processing} style={{ flex: 1, fontSize: 12, padding: '8px 0', borderRadius: 8, background: 'rgba(20,184,166,0.20)', border: '1px solid rgba(20,184,166,0.40)', color: 'rgba(94,234,212,0.90)', fontWeight: 600, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}>
+            <button onClick={onConfirmDraft} disabled={processing} className="btn btn-primary btn-sm" style={{ flex: 1 }}>
               {processing ? '...' : '✓ Correct'}
             </button>
-            <button onClick={onAcceptDraft} disabled={processing} style={{ flex: 1, fontSize: 12, padding: '8px 0', borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(20,184,166,0.28)', color: 'rgba(94,234,212,0.80)', fontWeight: 600, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}>
+            <button onClick={onAcceptDraft} disabled={processing} className="btn btn-secondary btn-sm" style={{ flex: 1 }}>
               ✏️ Wrong
             </button>
           </div>
@@ -3751,7 +3751,8 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
               );
             }}
             disabled={processing}
-            style={{ width: '100%', fontSize: 10, padding: '6px 0', marginTop: 4, borderRadius: 8, background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.22)', color: 'rgba(94,234,212,0.70)', fontWeight: 500, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
+            className="btn btn-gold btn-sm btn-full"
+            style={{ marginTop: 4 }}
             title="Call Sonnet for richer analysis"
           >
             🧠 Ask Sonnet
@@ -3800,13 +3801,8 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
                     <button
                       onClick={() => onConfirmCandidate(cand)}
                       disabled={processing}
-                      style={{
-                        fontSize: 10, padding: '4px 10px', borderRadius: 999,
-                        background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.30)',
-                        color: 'rgba(254,243,199,0.92)', fontWeight: 500,
-                        cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1,
-                        maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      }}
+                      className="btn btn-gold btn-sm btn-pill"
+                      style={{ maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                       title={`${cand.workName} (${Math.round((cand.score || 0) * 100)}%)`}
                     >
                       {cand.workName}
@@ -3814,10 +3810,8 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
                     {/* 📖 — read the alternative's curriculum entry before switching to it */}
                     <button
                       onClick={() => onExplainWork(cand.workName, cand.area)}
-                      style={{
-                        fontSize: 9, padding: '4px 6px', borderRadius: 999, lineHeight: 1, flexShrink: 0,
-                        background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.30)', color: 'rgba(254,243,199,0.92)', cursor: 'pointer',
-                      }}
+                      className="btn btn-gold btn-sm btn-pill"
+                      style={{ flexShrink: 0 }}
                       title={t('audit.whatIsThisWork')}
                       aria-label={t('audit.whatIsThisWork')}
                     >
@@ -3829,10 +3823,10 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
             );
           })()}
           <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-            <button onClick={onConfirm} disabled={processing} style={{ flex: 1, fontSize: 12, padding: '8px 0', borderRadius: 8, background: 'rgba(245,158,11,0.20)', border: '1px solid rgba(245,158,11,0.40)', color: 'rgba(253,230,138,0.90)', fontWeight: 600, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}>
+            <button onClick={onConfirm} disabled={processing} className="btn btn-primary btn-sm" style={{ flex: 1 }}>
               {processing ? '...' : '✓ Correct'}
             </button>
-            <button onClick={onAcceptDraft} disabled={processing} style={{ flex: 1, fontSize: 12, padding: '8px 0', borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(245,158,11,0.28)', color: 'rgba(253,230,138,0.80)', fontWeight: 600, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}>
+            <button onClick={onAcceptDraft} disabled={processing} className="btn btn-secondary btn-sm" style={{ flex: 1 }}>
               ✏️ Wrong
             </button>
           </div>
@@ -3881,7 +3875,7 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
                   {rerunResult.confidence !== null && <span> · {Math.round(rerunResult.confidence * 100)}%</span>}
                 </p>
                 {rerunResult.work_id && (
-                  <button onClick={onAcceptResult} disabled={processing} style={{ marginTop: 6, width: '100%', fontSize: 10, padding: '5px 0', borderRadius: 6, background: 'rgba(99,102,241,0.20)', border: '1px solid rgba(99,102,241,0.40)', color: 'rgba(165,180,252,0.90)', fontWeight: 500, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}>
+                  <button onClick={onAcceptResult} disabled={processing} className="btn btn-gold btn-sm btn-full" style={{ marginTop: 6 }}>
                     {processing ? '...' : '✓ Accept this match'}
                   </button>
                 )}
@@ -3940,7 +3934,8 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
                 <button
                   onClick={onTellAI}
                   disabled={processing}
-                  style={{ width: '100%', fontSize: 10, padding: '6px 0', marginTop: 5, borderRadius: 8, background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.22)', color: 'rgba(196,181,253,0.70)', fontWeight: 500, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
+                  className="btn btn-gold btn-sm btn-full"
+                  style={{ marginTop: 5 }}
                 >
                   🗣️ Tell AI what it is
                 </button>
@@ -3969,7 +3964,8 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
                         <button
                           onClick={() => onConfirmCandidate(cand)}
                           disabled={processing}
-                          style={{ fontSize: 10, padding: '4px 10px', borderRadius: 999, background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.30)', color: 'rgba(204,251,241,0.92)', fontWeight: 500, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                          className="btn btn-gold btn-sm btn-pill"
+                          style={{ maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                           title={`${cand.workName} (${Math.round((cand.score || 0) * 100)}%)`}
                         >
                           {cand.workName}
@@ -3977,7 +3973,8 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
                         {/* 📖 — read the guess's curriculum entry before tagging with it */}
                         <button
                           onClick={() => onExplainWork(cand.workName, cand.area)}
-                          style={{ fontSize: 9, padding: '4px 6px', borderRadius: 999, lineHeight: 1, flexShrink: 0, background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.30)', color: 'rgba(204,251,241,0.92)', cursor: 'pointer' }}
+                          className="btn btn-gold btn-sm btn-pill"
+                          style={{ flexShrink: 0 }}
                           title={t('audit.whatIsThisWork')}
                           aria-label={t('audit.whatIsThisWork')}
                         >
@@ -3991,7 +3988,7 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
               <button
                 onClick={onAcceptDraft}
                 disabled={processing}
-                style={{ width: '100%', fontSize: 12, padding: '10px 0', borderRadius: 8, background: 'linear-gradient(180deg, #34d399, #10b981)', border: '1px solid rgba(52,211,153,0.55)', color: '#06281a', fontWeight: 700, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
+                className="btn btn-primary btn-md btn-full"
                 title="Link this photo to a curriculum work"
               >
                 {processing ? '...' : '🏷️ Tag a work'}
@@ -3999,14 +3996,16 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
               <button
                 onClick={onTellAI}
                 disabled={processing}
-                style={{ width: '100%', fontSize: 10, padding: '6px 0', marginTop: 5, borderRadius: 8, background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.22)', color: 'rgba(196,181,253,0.70)', fontWeight: 500, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
+                className="btn btn-gold btn-sm btn-full"
+                style={{ marginTop: 5 }}
               >
                 🗣️ Tell AI what it is
               </button>
               <button
                 onClick={onReidentify}
                 disabled={processing}
-                style={{ width: '100%', fontSize: 10, padding: '6px 0', marginTop: 5, borderRadius: 8, background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.22)', color: 'rgba(94,234,212,0.70)', fontWeight: 500, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
+                className="btn btn-gold btn-sm btn-full"
+                style={{ marginTop: 5 }}
                 title="Re-run AI identification with the latest model"
               >
                 {processing ? '...' : '↻ Re-identify'}
@@ -4030,7 +4029,7 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
             <button
               onClick={onToggleDiscussion}
               disabled={processing}
-              style={{ fontSize: 10, padding: '4px 7px', borderRadius: 6, background: photo.discussion_flag ? 'rgba(96,165,250,0.18)' : 'rgba(96,165,250,0.07)', border: `1px solid ${photo.discussion_flag ? 'rgba(96,165,250,0.45)' : 'rgba(96,165,250,0.18)'}`, cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
+              className={`btn btn-sm ${photo.discussion_flag ? 'btn-primary' : 'btn-secondary'}`}
               aria-label={photo.discussion_flag ? t('audit.toggleDiscussionRemove') : t('audit.toggleDiscussion')}
             >
               💬
@@ -4052,7 +4051,7 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
             <button
               onClick={onMarkAsPaperwork}
               disabled={processing}
-              style={{ fontSize: 10, padding: '4px 7px', borderRadius: 6, background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.18)', cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
+              className="btn btn-gold btn-sm"
               aria-label={t('audit.markPaperwork')}
             >
               📋
@@ -4071,7 +4070,7 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
             <button
               onClick={onDelete}
               disabled={processing}
-              style={{ fontSize: 10, padding: '4px 7px', borderRadius: 6, background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.18)', cursor: processing ? 'wait' : 'pointer', opacity: processing ? 0.5 : 1 }}
+              className="btn btn-danger btn-soft btn-sm"
               aria-label={t('audit.deletePhoto')}
             >
               🗑️

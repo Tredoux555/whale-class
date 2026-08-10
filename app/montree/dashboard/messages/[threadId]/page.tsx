@@ -423,15 +423,7 @@ export default function TeacherThreadDetailPage() {
         }}>
           <button
             onClick={() => router.push('/montree/dashboard/parent-chats')}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: T.textSecondary,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              padding: 4,
-            }}
+            className="btn btn-ghost btn-icon btn-sm"
             aria-label={t('common.back') || 'Back'}
           >
             <ArrowLeft size={18} strokeWidth={1.75} />
@@ -648,18 +640,7 @@ export default function TeacherThreadDetailPage() {
             <button
               onClick={handleSend}
               disabled={sending || !reply.trim()}
-              style={{
-                padding: '12px 16px',
-                borderRadius: 14,
-                background: `linear-gradient(135deg, ${T.emerald}, ${T.emeraldDeep})`,
-                border: 'none',
-                color: '#0a1a0f',
-                cursor: sending || !reply.trim() ? 'not-allowed' : 'pointer',
-                opacity: sending || !reply.trim() ? 0.5 : 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+              className="btn btn-primary btn-icon btn-md"
               aria-label={t('teacherMessages.send') || 'Send'}
             >
               <Send size={18} strokeWidth={1.75} />

@@ -314,7 +314,7 @@ export default function ParentChatStreamPage({ params }: { params: Promise<{ par
                 disabled={!!startingCall}
                 aria-label={`Voice call ${parent.name}`}
                 title="Voice call"
-                style={callBtnStyle(startingCall === 'voice')}
+                className={`btn btn-icon btn-sm ${startingCall === 'voice' ? 'btn-primary' : 'btn-secondary'}`}
               >
                 <Phone size={16} strokeWidth={1.75} />
               </button>
@@ -323,7 +323,7 @@ export default function ParentChatStreamPage({ params }: { params: Promise<{ par
                 disabled={!!startingCall}
                 aria-label={`Video call ${parent.name}`}
                 title="Video call"
-                style={callBtnStyle(startingCall === 'video')}
+                className={`btn btn-icon btn-sm ${startingCall === 'video' ? 'btn-primary' : 'btn-secondary'}`}
               >
                 <Video size={16} strokeWidth={1.75} />
               </button>
@@ -436,20 +436,8 @@ export default function ParentChatStreamPage({ params }: { params: Promise<{ par
             disabled={sending || drafting || !parent || !childAnchor}
             aria-label="Draft a reply with Guru"
             title={childAnchor ? 'Draft a reply with Guru' : 'Send a message first to anchor the thread to a child'}
-            style={{
-              flexShrink: 0,
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              border: '1px solid rgba(232,201,106,0.35)',
-              background: 'rgba(232,201,106,0.12)',
-              color: '#E8C96A',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: childAnchor && !drafting && !sending ? 'pointer' : 'not-allowed',
-              opacity: childAnchor ? 1 : 0.4,
-            }}
+            className="btn btn-gold btn-icon btn-md btn-round"
+            style={{ flexShrink: 0 }}
           >
             <Sparkles size={16} strokeWidth={2} style={drafting ? { animation: 'pulse 1s ease-in-out infinite' } : undefined} />
           </button>
@@ -458,21 +446,8 @@ export default function ParentChatStreamPage({ params }: { params: Promise<{ par
             disabled={sending || !parent || !childAnchor}
             aria-label="Set appointment"
             title={childAnchor ? 'Set an appointment' : 'Send a message first to anchor the thread to a child'}
-            style={{
-              flexShrink: 0,
-              width: 40,
-              height: 40,
-              borderRadius: '50%',
-              background: 'rgba(232,201,106,0.10)',
-              border: '1px solid rgba(232,201,106,0.32)',
-              color: childAnchor ? '#E8C96A' : T.textMuted,
-              cursor: childAnchor && !sending ? 'pointer' : 'not-allowed',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              opacity: childAnchor ? 1 : 0.45,
-              transition: 'background 120ms ease',
-            }}
+            className="btn btn-gold btn-icon btn-md btn-round"
+            style={{ flexShrink: 0 }}
           >
             <Calendar size={16} strokeWidth={2} />
           </button>
@@ -480,20 +455,8 @@ export default function ParentChatStreamPage({ params }: { params: Promise<{ par
             onClick={handleSend}
             disabled={sending || !draft.trim()}
             aria-label="Send"
-            style={{
-              flexShrink: 0,
-              width: 40,
-              height: 40,
-              borderRadius: '50%',
-              background: draft.trim() && !sending ? T.emerald : 'rgba(255,255,255,0.08)',
-              border: 0,
-              color: draft.trim() && !sending ? '#06281a' : T.textMuted,
-              cursor: draft.trim() && !sending ? 'pointer' : 'not-allowed',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'background 120ms ease',
-            }}
+            className="btn btn-primary btn-icon btn-md btn-round"
+            style={{ flexShrink: 0 }}
           >
             <Send size={16} strokeWidth={2} />
           </button>

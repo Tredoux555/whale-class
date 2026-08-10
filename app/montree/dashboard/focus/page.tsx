@@ -494,11 +494,7 @@ export default function FocusPage() {
                     <button
                       onClick={addAll}
                       disabled={mutating === 'bulk'}
-                      style={{
-                        ...ctaPrimary,
-                        opacity: mutating === 'bulk' ? 0.5 : 1,
-                        cursor: mutating === 'bulk' ? 'not-allowed' : 'pointer',
-                      }}
+                      className="btn btn-primary btn-md btn-full"
                     >
                       <Sparkles size={14} strokeWidth={1.75} />
                       {LABELS.pickTop10}

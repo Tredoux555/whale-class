@@ -847,14 +847,9 @@ export default function SnapIdentifyPage() {
           <button
             onClick={toggleParentVisible}
             disabled={togglingVisibility}
-            className={`w-full rounded-xl p-3 flex items-center justify-between transition-colors ${
-              togglingVisibility ? 'opacity-60 cursor-not-allowed' : ''
-            } ${
-              parentVisible
-                ? 'bg-white/[0.06] border border-[rgba(52,211,153,0.15)] hover:bg-white/[0.10]'
-                : 'border border-amber-500/30 hover:bg-amber-500/20'
+            className={`btn btn-md btn-full flex items-center justify-between ${
+              parentVisible ? 'btn-secondary' : 'btn-gold'
             }`}
-            style={parentVisible ? undefined : { background: 'rgba(245,158,11,0.12)' }}
           >
             <div className="flex items-center gap-2">
               <span className="text-lg">{parentVisible ? '👁' : '🙈'}</span>

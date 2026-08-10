@@ -161,21 +161,7 @@ function CopyBlock({ label, text }: { label: string; text: string }) {
         </p>
         <button
           onClick={copy}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 5,
-            padding: '4px 10px',
-            borderRadius: 8,
-            background: copied ? T.emeraldStrong : 'rgba(255,255,255,0.05)',
-            border: `1px solid ${copied ? 'rgba(52,211,153,0.40)' : 'rgba(255,255,255,0.10)'}`,
-            color: copied ? T.emerald : T.textSecondary,
-            fontFamily: T.sans,
-            fontSize: 11,
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: 'all 120ms ease',
-          }}
+          className={`btn btn-sm ${copied ? 'btn-primary' : 'btn-secondary'}`}
         >
           {copied ? <Check size={11} strokeWidth={2.5} /> : <Copy size={11} strokeWidth={1.75} />}
           {copied ? 'Copied' : 'Copy'}
@@ -446,19 +432,8 @@ export default function LanguageSemesterPage() {
           <button
             onClick={() => router.back()}
             aria-label={t('common.back')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 40,
-              height: 40,
-              borderRadius: 12,
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.10)',
-              color: T.textPrimary,
-              cursor: 'pointer',
-              flexShrink: 0,
-            }}
+            className="btn btn-secondary btn-icon btn-md"
+            style={{ flexShrink: 0 }}
           >
             <ArrowLeft size={18} strokeWidth={1.75} />
           </button>
@@ -501,25 +476,8 @@ export default function LanguageSemesterPage() {
               <button
                 key={m}
                 onClick={() => setMonths(m)}
-                style={{
-                  flex: 1,
-                  padding: '14px 16px',
-                  borderRadius: 14,
-                  background: active
-                    ? 'linear-gradient(135deg, rgba(52,211,153,0.18), rgba(52,211,153,0.10))'
-                    : T.card,
-                  border: `1px solid ${active ? 'rgba(52,211,153,0.55)' : 'rgba(52,211,153,0.15)'}`,
-                  backdropFilter: T.blur,
-                  WebkitBackdropFilter: T.blur,
-                  color: active ? T.textPrimary : T.textSecondary,
-                  fontFamily: T.sans,
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'all 140ms ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                }}
+                className={`btn btn-lg ${active ? 'btn-primary' : 'btn-secondary'}`}
+                style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left' }}
               >
                 <div style={{
                   width: 34,
@@ -593,16 +551,7 @@ export default function LanguageSemesterPage() {
               </span>
               <button
                 onClick={toggleAll}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: T.emerald,
-                  fontFamily: T.sans,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  padding: 0,
-                }}
+                className="btn btn-ghost btn-sm"
               >
                 {selected.size === children.length
                   ? t('languageSemester.deselectAll')
@@ -815,13 +764,8 @@ export default function LanguageSemesterPage() {
               <button
                 onClick={handleGetText}
                 disabled={selected.size === 0 || generating || gettingText}
-                style={{
-                  ...ctaSecondary,
-                  flex: 1,
-                  minWidth: 220,
-                  opacity: (selected.size === 0 || generating || gettingText) ? 0.45 : 1,
-                  cursor: (selected.size === 0 || generating || gettingText) ? 'not-allowed' : 'pointer',
-                }}
+                className="btn btn-gold btn-md"
+                style={{ flex: 1, minWidth: 220 }}
               >
                 <Sparkles size={15} strokeWidth={1.75} />
                 {gettingText ? 'Getting text…' : `Get Text (${selected.size})`}
@@ -830,13 +774,8 @@ export default function LanguageSemesterPage() {
                 <button
                   onClick={handleGenerate}
                   disabled={selected.size === 0 || generating || gettingText}
-                  style={{
-                    ...ctaPrimary,
-                    flex: 1,
-                    minWidth: 220,
-                    opacity: (selected.size === 0 || generating || gettingText) ? 0.45 : 1,
-                    cursor: (selected.size === 0 || generating || gettingText) ? 'not-allowed' : 'pointer',
-                  }}
+                  className="btn btn-primary btn-md"
+                  style={{ flex: 1, minWidth: 220 }}
                 >
                   <Download size={15} strokeWidth={2} />
                   {generating
