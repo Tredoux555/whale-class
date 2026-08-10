@@ -128,6 +128,16 @@ export default function ParentDashboardPage() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
+  // 🧾 Child Onboarding — the family's enrollment intake. Probe
+  // /api/montree/parent/intake: 403 feature_disabled when the school hasn't
+  // opted in, otherwise the intake row (or its absence) tells us whether this
+  // family still owes the school a completed form. Anything other than a
+  // 'committed' intake keeps the prompt visible.
+  const [onboardingPrompt, setOnboardingPrompt] = useState<{ show: boolean; started: boolean }>({
+    show: false,
+    started: false,
+  });
+
   // 🚨 Phase 1 — Parent ↔ principal messaging entry point.
   // Probe /api/montree/parent/messages/threads — Session 98's resolver returns
   // 404 when the `parent_messaging` feature flag is OFF, so we only surface
@@ -276,6 +286,37 @@ export default function ParentDashboardPage() {
       cancelled = true;
     };
   }, [router, t]);
+
+  // 🧾 Probe the enrollment intake. Fail-quiet: any error, or a disabled
+  // feature, simply leaves the prompt hidden — a broken probe must never cost
+  // the parent their weekly report.
+  useEffect(() => {
+    if (loading) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/montree/parent/intake', {
+          credentials: 'same-origin',
+          cache: 'no-store',
+        });
+        if (cancelled || !res.ok) return;
+        const data = await res.json().catch(() => null);
+        if (cancelled || !data?.success) return;
+        const intakes: Array<{ status?: string }> = Array.isArray(data.intakes) ? data.intakes : [];
+        const kids: unknown[] = Array.isArray(data.children) ? data.children : [];
+        if (kids.length === 0) return;
+        const outstanding = kids.length > intakes.length
+          || intakes.some((i) => i.status !== 'committed');
+        setOnboardingPrompt({
+          show: outstanding,
+          started: intakes.length > 0,
+        });
+      } catch {
+        // Non-critical.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [loading]);
 
   // 🚨 Phase 1 — Probe parent_messaging flag + unread count after auth lands.
   // 🚨 Phase 2 — Probe appointments flag in parallel. Both fail-quiet.
@@ -788,6 +829,41 @@ export default function ParentDashboardPage() {
         <div style={{ padding: '14px 20px 0' }}>
           <PendingAppointmentsBanner viewer="parent" />
         </div>
+
+        {/* ═══ 🧾 Child Onboarding — the family's enrollment intake ═══
+            Small and quiet by design: it disappears the moment the school has
+            accepted the form. */}
+        {onboardingPrompt.show && (
+          <div style={{ padding: '14px 20px 0' }}>
+            <Link
+              href="/montree/parent/onboarding"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '13px 15px',
+                borderRadius: 14,
+                background: 'rgba(52,211,153,0.09)',
+                border: '1px solid rgba(52,211,153,0.32)',
+                color: T.textPrimary,
+                textDecoration: 'none',
+              }}
+            >
+              <span style={{ fontSize: 20, flexShrink: 0 }}>🧾</span>
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: 'block', fontSize: 14, fontWeight: 600 }}>
+                  {onboardingPrompt.started
+                    ? t('childOnboarding.parentBannerResume')
+                    : t('childOnboarding.parentBannerStart')}
+                </span>
+                <span style={{ display: 'block', fontSize: 12, color: T.textMuted, marginTop: 2 }}>
+                  {t('childOnboarding.parentBannerHint')}
+                </span>
+              </span>
+              <span style={{ color: T.emerald, flexShrink: 0 }}>→</span>
+            </Link>
+          </div>
+        )}
 
         {/* ═══ Phase 3 — Featured announcement banner ═══
             Surfaces the most-recent UNREAD broadcast prominently. Tapping

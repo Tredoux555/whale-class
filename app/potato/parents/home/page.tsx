@@ -17,7 +17,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Mascot, Avatar, SchoolMark, EmblemMark, IconPlay, IconCheck } from '@/components/potato/PotatoBits';
+import Link from 'next/link';
+import { Mascot, Avatar, SchoolMark, EmblemMark, IconPlay, IconCheck, IconChevron } from '@/components/potato/PotatoBits';
 import { getJson, postJson, messageFrom, PotatoApiError } from '@/lib/potato/client';
 
 interface Branding {
@@ -52,6 +53,10 @@ export default function ParentHomePage() {
   const [loading, setLoading] = useState(true);
   const [fatal, setFatal] = useState<string | null>(null);
   const [playing, setPlaying] = useState<string | null>(null);
+  // Child Onboarding. Probed independently and FAIL-QUIET: before migration 327
+  // the endpoint 503s, and a family that has never heard of this feature must
+  // not see an error on the screen they came here for. null = show nothing.
+  const [intakeStatus, setIntakeStatus] = useState<'draft' | 'submitted' | 'committed' | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -72,6 +77,22 @@ export default function ParentHomePage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await getJson<{ status: 'draft' | 'submitted' | 'committed' }>('/api/potato/intake');
+        if (alive) setIntakeStatus(res.status ?? 'draft');
+      } catch {
+        // Feature not switched on, or not signed in — the films screen owns
+        // the 401 redirect. Either way: say nothing.
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const logout = useCallback(async () => {
     try {
@@ -133,6 +154,26 @@ export default function ParentHomePage() {
               : 'A new little film every Friday.'}
           </p>
         </div>
+
+        {/* Child Onboarding — only while there is still something to do. Once
+            the teacher has accepted the form this card disappears rather than
+            nagging a family that has already done the work. */}
+        {intakeStatus && intakeStatus !== 'committed' ? (
+          <Link href="/potato/parents/onboarding" className="pt-pending" style={{ textDecoration: 'none' }}>
+            <span className="pt-pending__dot" />
+            <span className="pt-pending__t">
+              {intakeStatus === 'submitted'
+                ? `${childName}’s profile is with the teacher`
+                : `Complete ${childName}’s profile`}
+              <small>
+                {intakeStatus === 'submitted'
+                  ? 'Tap to review or change what you sent.'
+                  : 'Contacts, allergies, who may collect them.'}
+              </small>
+            </span>
+            <IconChevron size={16} />
+          </Link>
+        ) : null}
 
         {loading ? (
           <div className="pt-empty">Loading…</div>
