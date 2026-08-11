@@ -1548,6 +1548,9 @@ export const nl: Record<string, string> = {
   'progress.by_area': 'Voortgang per gebied',
   'tools.photo_bank': 'Afbeeldingenbank',
   'tools.photo_bank_desc': 'Zoek, blader en draag bij met Engelse onderwijsafbeeldingen voor alle tools',
+  'tools.tracing_work': 'Natrekwerk',
+  'tools.tracing_work_desc': 'Maak natrekbladen voor namen en cijfers met gestippelde letters en schrijfrichting-pijltjes.',
+
   'tools.card_generator': '3-Delige Kaartgenerator',
   'tools.card_generator_desc': 'Maak prachtige Montessori nomenclatuurkaarten met afbeeldingen en labels',
   'tools.video_flashcard': 'Video Flashcard-generator',

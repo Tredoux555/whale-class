@@ -1830,6 +1830,9 @@ export const en = {
   // Audit — Library Tools Page
   'tools.photo_bank': 'Picture Bank',
   'tools.photo_bank_desc': 'Search, browse & contribute English teaching pictures for all tools',
+  'tools.tracing_work': 'Tracing Work',
+  'tools.tracing_work_desc': 'Create name and number tracing worksheets with dotted stroke-order letters.',
+
   'tools.card_generator': '3-Part Card Generator',
   'tools.card_generator_desc': 'Create beautiful Montessori nomenclature cards with images and labels',
   'tools.sentence_match_generator': 'Sentence Match Picture Generator',

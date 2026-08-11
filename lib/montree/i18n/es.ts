@@ -1613,6 +1613,9 @@ export const es: Record<string, string> = {
   'progress.by_area': 'Progreso por Área',
   'tools.photo_bank': 'Banco de Imágenes',
   'tools.photo_bank_desc': 'Buscá, explorá y contribuí imágenes de enseñanza en inglés para todas las herramientas',
+  'tools.tracing_work': 'Trazado de Nombres',
+  'tools.tracing_work_desc': 'Crea hojas de trazado de nombres y números con letras punteadas y flechas de trazo.',
+
   'tools.card_generator': 'Generador de Tarjetas de 3 Partes',
   'tools.card_generator_desc': 'Creá hermosas tarjetas de nomenclatura Montessori con imágenes y etiquetas',
   'tools.video_flashcard': 'Generador de Tarjetas de Video',
