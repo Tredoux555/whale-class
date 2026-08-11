@@ -2,7 +2,7 @@
 // Persistent top header shown on ALL dashboard screens — dark forest aesthetic
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, memo, Fragment } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -16,7 +16,11 @@ import {
   // Same icons the config-driven branch renders via MENU_REGISTRY, so the two
   // menu modes look identical for these two features.
   ScanLine, Activity,
-  // Target / Sparkles / FolderOpen / TrendingUp / Users / BarChart2 removed with
+  // Users — the pinned Students row (see the More menu). Same icon the
+  // config-driven branch renders for 'manage_students' via MENU_REGISTRY, so
+  // Students looks identical in both menu modes.
+  Users,
+  // Target / Sparkles / FolderOpen / TrendingUp / BarChart2 removed with
   // the twelve dead menu_* rows (see the 🪦 note in the More menu). Images went
   // with them — its only other reference is the commented-out Photo Gallery row.
   // Re-add any of these here when uncommenting the row that used it.
@@ -526,6 +530,21 @@ function DashboardHeader() {
     );
   }
 
+  // 🎓 Students — a CORE default of the "…" menu (Tredoux, Aug 2026): the
+  // school's own student list, reachable from nowhere else in the header.
+  // Gated by NOTHING — no feature flag, and no saved menu config can switch it
+  // off (the config-driven branch below drops its own 'manage_students' row so
+  // it renders exactly once). Declared here because BOTH menu branches render
+  // it, each time directly above their Parents row.
+  const studentsRow = (
+    <MenuRow
+      icon={Users}
+      label={t('students.title')}
+      active={activePage === 'manage-students'}
+      onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/students'); }}
+    />
+  );
+
   // ── Teacher dark forest header ─────────────────────────────────────────────
   return (
     <>
@@ -848,11 +867,20 @@ function DashboardHeader() {
                       items (Invite principal / Menu Management / Logout) below
                       the divider are always shown in both branches. */}
                   {menuConfig ? (
-                    // 'milestones' is filtered out here because it is pinned as the FIRST
-                    // row of this menu above. Rendering it from the config as well would
-                    // show it twice; its visibility still comes from the config, which is
-                    // what that pinned row checks.
-                    menuConfig.items.filter((i) => i.visible && i.id !== 'milestones').map((i) => {
+                    <>
+                    {/* Students has no anchor to sit above when this config hides
+                        (or drops) Parents — pin it at the head of the section so
+                        it is STILL there. It is a core default, not a config row. */}
+                    {!menuConfig.items.some((i) => i.visible && i.id === 'parent_manager') && studentsRow}
+                    {/* 'milestones' is filtered out here because it is pinned as the FIRST
+                        row of this menu above. Rendering it from the config as well would
+                        show it twice; its visibility still comes from the config, which is
+                        what that pinned row checks.
+                        'manage_students' is filtered out for the opposite reason: Students
+                        is pinned below (directly above Parents) REGARDLESS of the config,
+                        so rendering the config's own row too would double it up — and its
+                        visible:false must not be able to hide the pinned row. */}
+                    {menuConfig.items.filter((i) => i.visible && i.id !== 'milestones' && i.id !== 'manage_students').map((i) => {
                       const def = MENU_REGISTRY[i.id];
                       if (!def) return null;
                       const label = def.labelKey ? t(def.labelKey as TranslationKey) : def.label;
@@ -861,7 +889,7 @@ function DashboardHeader() {
                         : def.route;
                       const active = pathname === def.route
                         || (def.route !== '/montree/dashboard' && !!pathname?.startsWith(def.route));
-                      return (
+                      const row = (
                         <MenuRow
                           key={def.id}
                           icon={def.icon}
@@ -870,7 +898,13 @@ function DashboardHeader() {
                           onClick={() => { setShowMoreMenu(false); router.push(route); }}
                         />
                       );
-                    })
+                      // Students rides directly above Parents wherever the teacher
+                      // ordered Parents to be.
+                      return def.id === 'parent_manager'
+                        ? <Fragment key={def.id}>{studentsRow}{row}</Fragment>
+                        : row;
+                    })}
+                    </>
                   ) : (
                   <>
                   {/* Session 119: Classroom Overview pinned to the TOP of the
@@ -902,6 +936,10 @@ function DashboardHeader() {
                     active={activePage === 'messages'}
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/parent-chats'); }}
                   />
+
+                  {/* Students — pinned directly above Parent Manager, same as in
+                      the config-driven branch above. Ungated: every school sees it. */}
+                  {studentsRow}
 
                   {/* Parent Manager — Session 119 rename per Tredoux. The
                       page at /montree/dashboard/parent-codes handles per-child
