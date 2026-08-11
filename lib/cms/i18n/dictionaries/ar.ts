@@ -1,0 +1,191 @@
+// lib/cms/i18n/dictionaries/ar.ts
+// Arabic — a real, complete translation of the skeleton's strings, and the RTL
+// proof locale. The root layout sets dir="rtl" from lib/cms/i18n/config.ts, so this
+// dictionary is also the regression test that the shell survives a flip.
+
+import type { Dictionary } from './en';
+
+const ar: Dictionary = {
+  'app.name': 'CMS',
+  'app.fullName': 'نظام إدارة الفصول الدراسية',
+  'app.strapline': 'كل طفل تحت الرعاية، كل يوم.',
+  'app.description':
+    'يجمع النظام سجل الحضور والحساسيات وصلاحية الاستلام ومراسلات الأهل في مكان واحد — حتى تصبح الإجابة عن سؤال «من يستلم أمارا اليوم؟» في ثلاث ثوانٍ لا ثلاث مكالمات.',
+
+  'layer.parent': 'ولي الأمر',
+  'layer.teacher': 'المعلّم',
+  'layer.org': 'المؤسسة',
+  'layer.parent.role': 'ما تُدخله الأسرة',
+  'layer.teacher.role': 'ما يحصل عليه الفصل',
+  'layer.org.role': 'ما تراه الإدارة عبر المدارس',
+
+  'nav.dashboard': 'الرئيسية',
+  'nav.enroll': 'التسجيل',
+  'nav.messages': 'الرسائل',
+  'nav.updates': 'المستجدات',
+  'nav.today': 'اليوم',
+  'nav.documents': 'المستندات',
+  'nav.overview': 'نظرة عامة',
+  'nav.skipToContent': 'تخطَّ إلى المحتوى',
+  'nav.primary': 'التنقل الرئيسي',
+
+  'lang.label': 'اللغة',
+  'lang.change': 'تغيير اللغة',
+  'lang.incomplete': 'مترجَم جزئيًا',
+
+  'common.cancel': 'إلغاء',
+  'common.save': 'حفظ',
+  'common.saveDraft': 'حفظ كمسودة',
+  'common.continue': 'متابعة',
+  'common.back': 'رجوع',
+  'common.next': 'التالي',
+  'common.skip': 'تخطٍّ الآن',
+  'common.open': 'فتح',
+  'common.viewAll': 'عرض الكل',
+  'common.required': 'مطلوب',
+  'common.optional': 'اختياري',
+  'common.comingSoon': 'قريبًا',
+  'common.notBuiltYet': 'لم يُبنَ بعد',
+  'common.demoData': 'بيانات تجريبية',
+  'common.demoDataNote':
+    'سجلات تجريبية تمرّ عبر أنواع المحرّك — لم تُربط قاعدة بيانات بعد.',
+
+  'stub.title': 'هذه الشاشة مُهيّأة ولم تُبنَ بعد',
+  'stub.body':
+    'المسار والتنسيق والتعاقد مع المحرّك جاهزة. أما الواجهة العاملة فتأتي في مرحلة لاحقة — راجع ترتيب البناء في ملف CLAUDE.md.',
+  'stub.phase': 'مخطط لها في المرحلة {phase}',
+
+  'home.title': 'ثلاث طبقات، سجل واحد',
+  'home.subtitle':
+    'يملأ ولي الأمر النموذج مرة واحدة، فيحوّله المحرّك إلى كل ما يحتاجه الفصل. لا أحد يعيد الكتابة.',
+  'home.enter': 'دخول',
+  'home.engine.title': 'المحرّك',
+  'home.engine.body':
+    'بين الطرفين يقع خصر الساعة الرملية: سجلات مُنمّطة، وتوجيه للمراسلات، وتقييمات، ومولّد المستندات. لغة TypeScript خالصة، بلا واجهة خاصة.',
+
+  'parent.dashboard.title': 'أطفالك',
+  'parent.dashboard.subtitle': 'كل ما تحتفظ به المدرسة، وما ينتظر ردّك.',
+  'parent.dashboard.greeting': 'صباح الخير، {name}',
+  'parent.dashboard.enrolCta': 'ابدأ تسجيل طفل',
+  'parent.dashboard.messageSchool': 'مراسلة المدرسة',
+  'parent.dashboard.viewRecords': 'عرض السجلات',
+  'parent.dashboard.stat.children': 'الأطفال المسجّلون',
+  'parent.dashboard.stat.actions': 'يحتاج انتباهك',
+  'parent.dashboard.stat.updates': 'مستجدات جديدة',
+  'parent.dashboard.needsAttention': 'يحتاج انتباهك',
+  'parent.dashboard.needsAttentionBody':
+    'نموذج موافقة واحد غير موقّع، وسجل طبي واحد تجاوز موعد المراجعة السنوية.',
+  'parent.dashboard.resolve': 'عالِج الآن',
+
+  'child.room': 'القاعة',
+  'child.age': '{years} سنوات',
+  'child.guardian': 'وليّ الأمر',
+  'child.status.present': 'حاضر',
+  'child.status.absent': 'غائب',
+  'child.status.expected': 'مُنتظَر',
+  'child.medicalNote': 'ملاحظة طبية',
+  'child.pickup.authorised': 'مصرّح له بالاستلام',
+  'child.pickup.add': 'إضافة شخص',
+  'child.flags.none': 'لا ملاحظات',
+
+  'relationship.mother': 'الأم',
+  'relationship.father': 'الأب',
+  'relationship.aunt': 'الخالة',
+  'relationship.uncle': 'الخال',
+  'relationship.grandparent': 'الجد أو الجدة',
+  'relationship.guardian': 'الوصي',
+  'relationship.other': 'أخرى',
+
+  'enrol.title': 'التسجيل',
+  'enrol.subtitle': 'ست خطوات. كل ما تُدخله هنا يصبح سجل المدرسة الرسمي.',
+  'enrol.progress': 'الخطوة {current} من {total}',
+  'enrol.step.child': 'الطفل',
+  'enrol.step.child.desc': 'الاسم وتاريخ الميلاد والقاعة التي سينضم إليها.',
+  'enrol.step.medical': 'الطب والحساسيات',
+  'enrol.step.medical.desc': 'الحالات المرضية والأدوية داخل المدرسة وشدّة الحساسية.',
+  'enrol.step.dietary': 'الغذاء',
+  'enrol.step.dietary.desc': 'متطلبات الوجبات والقيود الدينية والثقافية.',
+  'enrol.step.school': 'المدرسة السابقة',
+  'enrol.step.school.desc': 'أين كان الطفل من قبل، وسبب الانتقال.',
+  'enrol.step.contacts': 'جهات الاتصال والاستلام',
+  'enrol.step.contacts.desc': 'من يحق له استلام الطفل، وترتيب الاتصال.',
+  'enrol.step.consents': 'الموافقات',
+  'enrol.step.consents.desc': 'التصوير والرحلات والعلاج الطبي الطارئ.',
+  'enrol.child.legalName': 'الاسم الكامل الرسمي',
+  'enrol.child.legalName.help': 'كما هو مكتوب في شهادة الميلاد تمامًا.',
+  'enrol.child.preferredName': 'الاسم المُفضَّل',
+  'enrol.child.preferredName.help': 'الاسم الذي يُنادى به الطفل داخل القاعة.',
+  'enrol.child.dateOfBirth': 'تاريخ الميلاد',
+  'enrol.child.homeLanguage': 'لغة التواصل في المنزل',
+  'enrol.child.homeLanguage.help': 'تُستخدم لتوجيه الرسائل ولإحاطة المعلّم.',
+  'enrol.child.startDate': 'تاريخ البدء المطلوب',
+  'enrol.child.classGroup': 'القاعة',
+  'enrol.child.classGroup.placeholder': 'اختر قاعة',
+  'enrol.child.notes': 'ما ينبغي أن يعرفه المعلّم في اليوم الأول',
+  'enrol.child.notes.placeholder': 'طقوس التهدئة، اللعبة المفضّلة، كيف يتعامل مع الوداع…',
+  'enrol.saveAndContinue': 'احفظ وتابع',
+  'enrol.stepDone': 'مكتملة',
+  'enrol.stepCurrent': 'قيد التعبئة',
+  'enrol.stepTodo': 'لم تبدأ',
+  'enrol.privacyNote':
+    'إجابات الطب والغذاء يراها فقط طاقم قاعة الطفل وإدارة المدرسة.',
+
+  'parent.messages.title': 'الرسائل',
+  'parent.messages.subtitle': 'محادثة واحدة لكل طفل، مع طاقم القاعة والإدارة.',
+
+  'parent.updates.title': 'المستجدات',
+  'parent.updates.subtitle':
+    'مجموعات الصور وتقارير التقدّم وملخّصات نهاية الفصل، يجمعها المحرّك.',
+
+  'teacher.today.title': 'اليوم',
+  'teacher.today.subtitle': '{room} · {date}',
+  'teacher.today.attendance': '{present} من {total} حاضرون',
+  'teacher.today.takeRegister': 'تسجيل الحضور',
+  'teacher.today.confirmAttendance': 'تأكيد الحضور',
+  'teacher.today.yesterday': 'أمس',
+  'teacher.today.roll': 'قائمة الفصل',
+  'teacher.today.stat.allergies': 'تنبيهات الحساسية',
+  'teacher.today.stat.dietary': 'متطلبات غذائية',
+  'teacher.today.stat.pickup': 'تغييرات الاستلام',
+  'teacher.today.legend': 'حساسية · غذاء · استلام',
+  'teacher.today.legend.body':
+    'كل تنبيه في هذه الصفحة جاء من نموذج ولي الأمر عبر المحرّك، دون أن يعيد المعلّم كتابته.',
+  'teacher.today.pickupBy': 'الاستلام {time} · {person}',
+  'teacher.today.droppedOff': 'وصل {time}',
+  'teacher.today.absentReason': 'غائب · {reason}',
+  'teacher.today.severity.severe': 'شديدة',
+  'teacher.today.severity.moderate': 'متوسطة',
+  'teacher.today.severity.mild': 'خفيفة',
+
+  'teacher.documents.title': 'المستندات',
+  'teacher.documents.subtitle':
+    'تُولَّد من السجل الحالي عند الطلب. لا شيء هنا يُحدَّث يدويًا.',
+  'teacher.documents.generate': 'توليد',
+  'doc.classList': 'قائمة الفصل',
+  'doc.classList.desc': 'كل أطفال القاعة مع القاعة والعمر ووليّ الأمر.',
+  'doc.pickupSheet': 'ورقة الاستلام',
+  'doc.pickupSheet.desc': 'من يستلم مَن اليوم، مع حالة التصريح.',
+  'doc.labels': 'بطاقات الأسماء',
+  'doc.labels.desc': 'بطاقات الخزانة والدرج والمعلّق في ورقة واحدة للطباعة.',
+  'doc.dietarySheet': 'ورقة الغذاء',
+  'doc.dietarySheet.desc': 'قائمة موجّهة للمطبخ بكل متطلبات القاعة.',
+  'doc.allergyPoster': 'ملصق الحساسية',
+  'doc.allergyPoster.desc': 'ملصق جداري: صورة، مُسبِّب، شدّة، إجراء.',
+  'doc.medicalSummary': 'الملخّص الطبي',
+  'doc.medicalSummary.desc': 'الحالات والأدوية داخل المدرسة وتواريخ المراجعة.',
+
+  'org.overview.title': 'نظرة عامة',
+  'org.overview.subtitle': 'كل مدرسة في المجموعة، في سطر واحد.',
+  'org.overview.col.school': 'المدرسة',
+  'org.overview.col.children': 'الأطفال',
+  'org.overview.col.classes': 'القاعات',
+  'org.overview.col.allergies': 'تنبيهات الحساسية',
+  'org.overview.col.enrolments': 'طلبات تسجيل مفتوحة',
+
+  'flag.allergy': 'حساسية',
+  'flag.dietary': 'غذاء',
+  'flag.pickup': 'استلام',
+  'flag.medical': 'طبي',
+};
+
+export default ar;

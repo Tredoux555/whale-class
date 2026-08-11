@@ -11,6 +11,14 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyAdminToken } from '@/lib/auth';
 import { localeForCountry, localeFromAcceptLanguage } from '@/lib/montree/i18n/country-locale';
+// CMS ("Harbor") locale plumbing. config.ts is pure constants with zero imports,
+// so it is safe in the edge runtime. Imported rather than re-listed here so the
+// CMS locale set has exactly one source of truth (lib/cms/i18n/config.ts).
+import {
+  LOCALE_HEADER as CMS_LOCALE_HEADER,
+  LOCALE_QUERY as CMS_LOCALE_QUERY,
+  isLocale as isCmsLocale,
+} from '@/lib/cms/i18n/config';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -217,7 +225,16 @@ export async function middleware(req: NextRequest) {
   requestHeaders.set('x-pathname', pathname);
   // Pass hostname to layouts for domain-aware rendering
   requestHeaders.set('x-hostname', hostname);
-  
+  // CMS only: let ?locale=xx override the cms_locale cookie for THIS request.
+  // A layout cannot read searchParams, but it can read a request header — this
+  // is the top rung of lib/cms/i18n/server.ts's resolution order, and it is what
+  // makes /cms/teacher/today?locale=ar work for screenshot/QA tooling. Scoped to
+  // /cms and to validated CMS locales, so no other surface can see this header.
+  if (pathname.startsWith('/cms')) {
+    const cmsLocale = req.nextUrl.searchParams.get(CMS_LOCALE_QUERY);
+    if (isCmsLocale(cmsLocale)) requestHeaders.set(CMS_LOCALE_HEADER, cmsLocale);
+  }
+
   const res = NextResponse.next({
     request: {
       headers: requestHeaders,
@@ -420,6 +437,17 @@ export async function middleware(req: NextRequest) {
     // this file silently 302s every anonymous visitor to '/', which reads as
     // "the page doesn't exist". Same reason '/montree' is on this list.
     '/potato',
+    // CMS (Classroom Management System) — the "Harbor" brand surface at
+    // /cms/**. Phase 1 is demo data with no auth of its own yet, so without
+    // this entry the legacy Supabase-role gate at the bottom of this file
+    // silently 302s every anonymous visitor to '/' — the same failure mode
+    // '/montree' and '/potato' are listed for. When CMS gets real auth
+    // (phase 2: Supabase schema + auth), this entry narrows rather than
+    // disappears — the /cms landing page must stay publicly reachable.
+    // NOTE: /api/cms/* needs no entry — the matcher below excludes `api` and
+    // only names specific /api groups, so CMS's API routes never run through
+    // this middleware at all.
+    '/cms',
   ];
   
   // Check if pathname matches exactly or starts with a public path
