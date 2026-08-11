@@ -45,7 +45,17 @@ export const CLASS_LIST_TOOL = {
             name: {
               type: 'string',
               description:
-                "The student's name exactly as written on the document, including the original script and any misspellings.",
+                "The student's name exactly as written on the document, including the original script and any misspellings. "
+                + 'When one entry carries the same child in two scripts, this is the Latin-script name.',
+            },
+            alternate_name: {
+              type: ['string', 'null'],
+              description:
+                'When ONE entry carries the same child in two scripts — "Amy 王小美", "王小美 Amy", "Amy (王小美)" — '
+                + 'put the Latin-script name in `name` and the other-script name here, each exactly as written. '
+                + 'Null when the entry gives a name in one script only. Never invent an alternate name, never '
+                + 'translate or transliterate one into existence, and never split a name that is simply two words '
+                + 'in the same script ("Zhang Wei", "Mary Anne").',
             },
             date_of_birth: {
               type: ['string', 'null'],
@@ -62,10 +72,12 @@ export const CLASS_LIST_TOOL = {
               type: ['string', 'null'],
               description:
                 'Everything else recorded about this child: parent-interview notes, allergies, a secondary '
-                + 'name ("Also: 李明"), an unparseable raw birthday, previous school, anything. Original language.',
+                + 'name that is NOT the other-script pairing already captured in alternate_name — a nickname or '
+                + 'a former name — as "Also: 李明", an unparseable raw birthday, previous school, anything. '
+                + 'Original language.',
             },
           },
-          required: ['name', 'date_of_birth', 'age', 'gender', 'notes'],
+          required: ['name', 'alternate_name', 'date_of_birth', 'age', 'gender', 'notes'],
         },
       },
     },
@@ -86,7 +98,9 @@ WHO COUNTS AS A STUDENT
 
 NAMES
 - This school operates in China. Names may be Chinese (张伟), English (Emily), pinyin (Zhang Wei), or a mix. Transcribe exactly as written, in the original script. Never translate or romanise a Chinese name, and never sinicise an English one.
-- If a child is given BOTH an English and a Chinese name, put the one the document uses as the primary/first name in \`name\`, and record the other in notes as "Also: <other name>".
+- If ONE entry carries the same child in TWO scripts — "Amy 王小美", "王小美 Amy", "Amy (王小美)", "Amy / 王小美" — split it: the Latin-script name goes in \`name\`, the other-script name goes in \`alternate_name\`, each exactly as written. Do not also copy either of them into notes.
+- \`alternate_name\` is ONLY for that pairing. If the entry gives a name in one script only, put it in \`name\` and leave \`alternate_name\` null. Never invent an alternate name, never translate or romanise one into existence, and never split a name that is simply two words in the SAME script ("Zhang Wei", "Mary Anne") across the two fields.
+- Any OTHER extra name — a nickname, a former name, a second name written in the same script — still goes in notes as "Also: <other name>".
 - Keep nicknames, initials and misspellings exactly as written. Do not normalise them.
 
 BIRTHDAYS — normalise to ISO yyyy-mm-dd. The source may be written any of these ways:
