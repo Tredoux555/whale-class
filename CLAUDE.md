@@ -66,6 +66,42 @@ Milestones child palette `C` (`components/montree/evaluation/tokens.ts`).
 naming only) — routes (`/potato`, `/api/potato`), table prefixes (`tp_`), and all other
 identifiers are UNCHANGED.
 
+## 🏫 CMS — CLASSROOM MANAGEMENT SYSTEM (new brand surface, 2026-08-11)
+
+**What it is:** an hourglass. **Parent intake → engine → teacher outputs**, standing on an
+**org layer**. Families enter everything once (child, contacts, allergies, dietary, medical,
+consents, previous school); `lib/cms/engine/**` derives from those records; teachers never
+type a value — the Today roster, flag chips and documents are all computed. Org sits under
+both ends for multi-school comparison and group-wide policy.
+
+**Where it lives:** pages `app/cms/**` (`/cms` landing · `/cms/parent/{dashboard,enroll,messages,updates}`
+· `/cms/teacher/{today,documents}` · `/cms/org/overview`) · components `components/cms/**` ·
+engine/i18n/demo `lib/cms/**` · API `app/api/cms/{health,demo/today}` · schema `db/cms-schema.sql`.
+One layout, `app/cms/layout.tsx`, owns the theme, the fonts and the AppShell.
+
+**🚨 HARBOR LAW — CMS is a PROTECTED BRAND, like PSS's `pt-*`.** Its design system is
+"Harbor" (light-first Harbor blue, Source Serif 4 + Inter): `docs/design/CMS_DESIGN_SYSTEM.md`,
+tokens in the "CMS BUTTON SYSTEM — SOFT ELEVATION / HARBOR" section at the bottom of
+`app/globals.css` + `harbor-*` in `tailwind.config.ts`. **Every class is `cms-`-prefixed
+(`.cms-btn`, `.cms-btn-primary`, `.cms-tone-danger`, `.cms-card`) and every surface rule is
+scoped to `.cms-root`** — Montree's `.btn` is dark-forest law and CMS must never shadow it,
+in either direction. Inside `app/cms/**` never use `btn btn-*`; outside it never use `cms-*`.
+
+**🚨 I18N LAW:** every CMS string goes through `lib/cms/i18n` `t()` — server via
+`getServerT()`, client via `useT()`. en/ru/ar are complete (ar is the RTL proof); fr/es/sw/zh
+are stubs that re-export English. A hardcoded string in a CMS component is a bug. This is
+separate from Montree's own 12-locale i18n — do not cross-import them.
+
+**🚨 REUSE-FIRST LAW:** CMS adds no dependencies. It reuses the repo's `lib/api-error`, the
+root layout's font mechanism, and the existing middleware `x-pathname` header. Before writing
+anything new in `lib/cms/`, check whether `lib/onboarding-core/` or an existing Montree module
+already does it — the long-term intent is convergence, not a second parallel product.
+
+**PHASE STATUS:** Phase 1 **DONE** (design law, engine data model, i18n, all pages, demo data,
+API, ported into this repo). Phase 2 **NEXT**: Supabase schema (from `db/cms-schema.sql`) +
+auth + real enrollment writes replacing `lib/cms/demo/seed.ts`. Future: Montree's own child
+onboarding adopts the shared engine so both products derive from one record.
+
 ## 🧒 SESSION — Aug 10, 2026 pt3 (Cowork/Fable directing Sonnet) — CHILD ONBOARDING SHIPPED (shared intake core + Montree & PSS adapters) — migrations PENDING
 
 **Feature**: parent fills a full enrollment intake for a child (identity, family, emergency contacts, authorized pickup people with photos, health/allergies, required documents — vaccination booklet 预防接种证, health check 入园体检, medical certs — and PIPL-style per-purpose consents) → submits → teacher reviews the full submission → **Commit** → child record updates (face photo promoted to canonical avatar) → teacher prints cubby/toothbrush/bed/table labels + pickup-authorization sheets from the same data. Re-submission after commit reopens the row to `submitted` but **never auto-applies** — a teacher must commit again. **Zero AI anywhere in this feature.**

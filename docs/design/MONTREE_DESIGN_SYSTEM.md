@@ -148,6 +148,7 @@ feature work — never `.btn`:
 | Surface | System | Files |
 |---|---|---|
 | PSS (formerly "Potato Snaps") teacher/parent app | "Lunchbox Modern" `pt-*` classes | `app/potato/**`, `components/potato/**`, `lib/potato/**` (canonical: `lib/potato/ui.ts`) |
+| CMS — Classroom Management System (parent intake → engine → teacher outputs, org layer) | "Harbor" `cms-*` classes (`.cms-btn`, `.cms-btn-primary`, `.cms-tone-*`, `.cms-card`, …) — light-first Harbor blue, Source Serif 4 + Inter. Scoped to `.cms-root`, set by `app/cms/layout.tsx`. | `app/cms/**`, `components/cms/**`, `lib/cms/**`; tokens in the "CMS BUTTON SYSTEM — SOFT ELEVATION / HARBOR" section at the bottom of `app/globals.css` + `harbor-*` in `tailwind.config.ts` (canonical: `docs/design/CMS_DESIGN_SYSTEM.md`) |
 | Montree Home — homeschool-parent screens | `HOME_THEME` ("Tender Cartography": cream/dark-teal) + `BIO` (Bioluminescent Depth: dark mint/jade) — teachers see neither | `lib/montree/home-theme.ts`, `lib/montree/bioluminescent-theme.ts` |
 | First-touch signup / funnel pages | "Lanternlight Ceremony" `fn-*` classes, `FUNNEL_CSS`, `FT` tokens | `components/montree/funnel/funnel-theme.ts` and consumers (`AstraNarrator.tsx`, `GoldenThread.tsx`, funnel/onboarding pages) |
 | Kids' games | `GAME_COLORS` / games design tokens | `lib/games/design-system.ts` |
