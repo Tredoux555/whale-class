@@ -1794,6 +1794,9 @@ export const zh = {
   // Audit — Library Tools Page
   'tools.photo_bank': '图片库',
   'tools.photo_bank_desc': '搜索、浏览和贡献英语教学图片，适用于所有工具',
+  'tools.tracing_work': '描红练习',
+  'tools.tracing_work_desc': '创建带有笔顺箭头和虚线字母的姓名与数字描红练习纸。',
+
   'tools.card_generator': '三段卡生成器',
   'tools.card_generator_desc': '创建精美的蒙特梭利命名卡片，包含图片和标签',
   'tools.video_flashcard': '视频闪卡生成器',

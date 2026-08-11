@@ -1548,6 +1548,9 @@ export const uk: Record<string, string> = {
   'progress.by_area': 'Прогрес за галузями',
   'tools.photo_bank': 'Фотобібліотека',
   'tools.photo_bank_desc': 'Пошук, огляд та внесення англійських навчальних зображень для всіх інструментів',
+  'tools.tracing_work': 'Обведення',
+  'tools.tracing_work_desc': 'Створюйте аркуші для обведення імен і цифр з пунктирними літерами та стрілками напрямку письма.',
+
   'tools.card_generator': 'Генератор 3-частинних карток',
   'tools.card_generator_desc': 'Створюйте красиві карти номенклатури Монтессорі з зображеннями та підписами',
   'tools.video_flashcard': 'Генератор відеокарток',

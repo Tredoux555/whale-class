@@ -1548,6 +1548,9 @@ export const de: Record<string, string> = {
   'progress.by_area': 'Fortschritt nach Bereich',
   'tools.photo_bank': 'Bildbank',
   'tools.photo_bank_desc': 'Durchsuchen, stöbern und tragen Sie englische Unterrichtsbilder für alle Tools bei',
+  'tools.tracing_work': 'Nachzeichnen',
+  'tools.tracing_work_desc': 'Erstelle Namens- und Zahlen-Nachzeichenblätter mit gepunkteten Buchstaben und Strichfolge-Pfeilen.',
+
   'tools.card_generator': '3-Teil-Kartengenerator',
   'tools.card_generator_desc': 'Erstellen Sie wunderschöne Montessori-Nomenklaturkarten mit Bildern und Etiketten',
   'tools.video_flashcard': 'Video-Lernkartengenerator',
