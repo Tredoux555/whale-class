@@ -14,6 +14,12 @@
 //
 // Partial failure is surfaced, never swallowed: `failed` in the response is the
 // count of rows that were meant to apply and errored.
+//
+// One extra thing happens here: ALIAS MEMORY. When the teacher answers "yes,
+// that is the same child" to a possible match, the spelling she just confirmed
+// (the other-script name, or the way this year's list wrote it) is saved as a
+// classroom alias, so next year's list matches on its own and never asks
+// again. Alias writes are strictly best-effort — see saveAliases().
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
@@ -36,6 +42,9 @@ export const maxDuration = 120;
 const NAME_MAX = 200;
 const VALID_ACTIONS: RosterEntryAction[] = ['create', 'update', 'archive', 'skip'];
 
+/** voice_observation_student_aliases.alias is TEXT; keep it name-sized anyway. */
+const ALIAS_MAX = 200;
+
 function cleanName(value: unknown, fallback: string | null): string | null {
   const raw = typeof value === 'string' ? value.trim() : '';
   const name = raw || (fallback || '').trim();
@@ -55,6 +64,17 @@ function cleanNotes(value: unknown, fallback: string | null): string | null {
   const raw = typeof value === 'string' ? value.trim() : '';
   const notes = raw || (fallback || '').trim();
   return notes ? notes.slice(0, CHILD_NOTES_MAX) : null;
+}
+
+/**
+ * The one new field on the commit payload. Anything that isn't a usable string
+ * — missing, null, a number, an object from a client we don't know about — is
+ * simply not an alias, and the row commits normally without one.
+ */
+function cleanAlias(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed ? trimmed.slice(0, ALIAS_MAX) : null;
 }
 
 function cleanGender(value: unknown, fallback: string | null): string | null {
@@ -91,6 +111,65 @@ export function mergeNotes(existing: string | null, incoming: string | null): st
   const room = CHILD_NOTES_MAX - have.length - NOTES_APPEND_SEPARATOR.length - 1;
   if (room <= 0) return have.slice(0, CHILD_NOTES_MAX);
   return `${have}${NOTES_APPEND_SEPARATOR}${add.slice(0, room)}…`;
+}
+
+/**
+ * Remember the spellings the teacher just confirmed, as classroom aliases.
+ *
+ * Same table and same shape as learnAlias() in voice/student-matcher.ts — that
+ * is deliberate, because it is the same table reconcile.ts reads back through
+ * matchStudentName(). Teaching it here makes next year's list auto-match.
+ *
+ * Two ways this differs from learnAlias, both on purpose:
+ *   • ignoreDuplicates — the table is UNIQUE(classroom_id, alias), and if that
+ *     spelling is already claimed by another child, the sibling who got there
+ *     first keeps it. An import must never silently re-point an existing alias
+ *     at a different child.
+ *   • source 'ai_learned' — a teacher confirmed it, but the candidate came
+ *     from the extractor, so it is not a hand-typed 'teacher_added' alias.
+ *
+ * 🚨 NEVER THROWS. The children are already written by the time this runs.
+ * Failing the commit over a memory aid would tell the teacher her roster
+ * didn't apply when it did — the worst possible lie for this screen. A failure
+ * is logged, counted as zero, and forgotten; next year she answers one more
+ * question.
+ */
+async function saveAliases(
+  supabase: ReturnType<typeof getSupabase>,
+  classroomId: string,
+  writes: Array<{ childId: string; alias: string }>
+): Promise<number> {
+  if (writes.length === 0) return 0;
+
+  // Dedupe on the unique key before the insert, so two rows of one import
+  // claiming the same spelling don't fight inside a single statement.
+  const byAlias = new Map<string, { classroom_id: string; child_id: string; alias: string; source: string }>();
+  for (const w of writes) {
+    const key = w.alias.toLowerCase();
+    if (byAlias.has(key)) continue;
+    byAlias.set(key, {
+      classroom_id: classroomId,
+      child_id: w.childId,
+      alias: w.alias,
+      source: 'ai_learned',
+    });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('voice_observation_student_aliases')
+      .upsert([...byAlias.values()], { onConflict: 'classroom_id,alias', ignoreDuplicates: true })
+      .select('id');
+
+    if (error) {
+      console.error('[PhotoOnboarding] Alias save failed:', error.message);
+      return 0;
+    }
+    return (data || []).length;
+  } catch (err) {
+    console.error('[PhotoOnboarding] Alias save threw:', err);
+    return 0;
+  }
 }
 
 export async function POST(
@@ -173,6 +252,8 @@ export async function POST(
       age: number | null;
       gender: string | null;
       notes: string | null;
+      /** A spelling to remember for this child, or null. Updates only. */
+      alias: string | null;
     };
 
     const resolved: Resolved[] = [];
@@ -212,6 +293,9 @@ export async function POST(
         age: cleanAge(input.age, entry.age, dob),
         gender: cleanGender(input.gender, entry.gender),
         notes: cleanNotes(input.notes, entry.notes),
+        // Only an update can teach us a name for an existing child. A create
+        // has no child to attach the alias to, and an archive is a goodbye.
+        alias: action === 'update' ? cleanAlias(input.save_alias) : null,
       });
     }
 
@@ -273,10 +357,29 @@ export async function POST(
     }
 
     // ----- UPDATE (per row — notes must merge against current DB state) -----
+    // Aliases are collected as we go and written once, after every child edit
+    // has landed — an alias for a child whose update failed is not memory
+    // worth keeping.
+    const aliasWrites: Array<{ childId: string; alias: string }> = [];
+
     for (const r of resolved.filter((x) => x.action === 'update')) {
       const childId = r.entry.matched_child_id as string;
       const current = existingById.get(childId);
       if (!current) { failed++; continue; }
+
+      // The teacher has just confirmed this spelling belongs to this child.
+      // Queued, not written yet — an alias is only worth keeping if the edit
+      // it came with actually lands. Spellings that teach nothing are dropped
+      // here: one already on the record, or the one we are about to write.
+      const remember = () => {
+        if (
+          r.alias &&
+          r.alias.toLowerCase() !== current.name.trim().toLowerCase() &&
+          r.alias.toLowerCase() !== (r.name || '').trim().toLowerCase()
+        ) {
+          aliasWrites.push({ childId, alias: r.alias });
+        }
+      };
 
       const patch: Record<string, unknown> = {};
       if (r.name && r.name !== current.name) patch.name = r.name;
@@ -286,7 +389,8 @@ export async function POST(
       const mergedNotes = mergeNotes(current.notes, r.notes);
       if (mergedNotes !== current.notes) patch.notes = mergedNotes;
 
-      if (Object.keys(patch).length === 0) { updated++; continue; } // nothing to change is success
+      // Nothing to change is success — and still worth remembering the name by.
+      if (Object.keys(patch).length === 0) { updated++; remember(); continue; }
 
       const { error: updateError } = await supabase
         .from('montree_children')
@@ -299,6 +403,7 @@ export async function POST(
         failed++;
       } else {
         updated++;
+        remember();
       }
     }
 
@@ -348,6 +453,9 @@ export async function POST(
       }
     }
 
+    // ----- ALIAS MEMORY (best-effort, never fatal) --------------------------
+    const aliasesSaved = await saveAliases(supabase, importRow.classroom_id, aliasWrites);
+
     await supabase
       .from('montree_roster_imports')
       .update({ status: 'committed', committed_at: new Date().toISOString() })
@@ -360,6 +468,7 @@ export async function POST(
       archived,
       skipped,
       failed,
+      aliases_saved: aliasesSaved,
     });
   } catch (error) {
     console.error('[PhotoOnboarding] Commit error:', error);

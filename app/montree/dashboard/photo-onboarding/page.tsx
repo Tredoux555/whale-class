@@ -8,12 +8,19 @@
 //
 // 🚨 The review step is the product. Nothing reaches montree_children until the
 // teacher has seen every proposed create / update / archive and pressed Apply.
+//
+// The review screen has FOUR sections, and "Possible matches" sits first on
+// purpose. A possible match is a row where reconcile found a candidate it
+// refuses to act on alone — the classic case being a bilingual list writing
+// "Amy 王小美" for the Amy already on the roster. The teacher answers one
+// question per row, and Apply stays disabled until she has, because the wrong
+// silent default here is exactly how a class ends up with two Amys.
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef, Suspense, type ChangeEvent, type DragEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
-import { Upload, Camera, FileText, UserPlus, RefreshCw, Archive } from 'lucide-react';
+import { Upload, Camera, FileText, UserPlus, RefreshCw, Archive, HelpCircle } from 'lucide-react';
 import { getSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
@@ -36,6 +43,8 @@ interface RosterEntry {
   id: string;
   kind: EntryKind;
   name_raw: string | null;
+  /** Migration 328 — absent on entries from an import older than it. */
+  alternate_name?: string | null;
   date_of_birth: string | null;
   age: number | null;
   gender: string | null;
@@ -46,18 +55,37 @@ interface RosterEntry {
   suggested_action: EntryAction;
 }
 
+/**
+ * What the teacher has said about a possible match.
+ *
+ * `null` means the row is not a possible match at all. 'undecided' is the
+ * deliberate default — there is no safe guess, so the screen asks.
+ */
+type PossibleDecision = 'undecided' | 'same' | 'new';
+
 /** The teacher's working copy of a row — action + editable fields. */
 interface DraftRow {
   id: string;
   kind: EntryKind;
   action: EntryAction;
   name: string;
+  /** The name as the list wrote it, kept unedited so it can become an alias. */
+  nameRaw: string;
+  /** The other-script name, when the list carried both. */
+  alternateName: string | null;
   dob: string;
   notes: string;
   matchedChildId: string | null;
   matchedName: string | null;
   matchConfidence: number | null;
   matchType: string | null;
+  possibleDecision: PossibleDecision | null;
+  /**
+   * A 'departed' row hidden because the possible match that claims this child
+   * was answered "same child" — she is not leaving, she is right there in the
+   * list under another spelling.
+   */
+  hiddenByMatch?: boolean;
 }
 
 interface CommitResult {
@@ -66,6 +94,7 @@ interface CommitResult {
   archived: number;
   skipped: number;
   failed: number;
+  aliasesSaved: number;
 }
 
 const ACCEPT =
@@ -79,6 +108,28 @@ const SLOW_AFTER_MS = 90 * 1000;
 
 /** A fuzzy match below this deserves the teacher's eye, not a silent update. */
 const CLOSE_MATCH_CEILING = 0.97;
+
+/**
+ * The spelling worth remembering for a row the teacher has just confirmed is
+ * an existing child — sent to /commit as `save_alias` and stored as a
+ * classroom alias, so next year's list matches this child without asking.
+ *
+ * Prefer the other-script name: it is the one the roster provably does not
+ * hold, and the one a future pure-Chinese (or pure-English) list will be
+ * written in. Otherwise the name as this list wrote it, which is only worth
+ * saving if it differs from what the record already says. Anything that would
+ * teach nothing returns null and the field is left off the payload entirely.
+ */
+function aliasFor(row: DraftRow): string | null {
+  if (row.possibleDecision !== 'same') return null;
+  const current = (row.matchedName || '').trim().toLowerCase();
+  const candidates = [row.alternateName, row.nameRaw];
+  for (const candidate of candidates) {
+    const value = (candidate || '').trim();
+    if (value && value.toLowerCase() !== current) return value;
+  }
+  return null;
+}
 
 function PhotoOnboardingContent() {
   const router = useRouter();
@@ -132,12 +183,21 @@ function PhotoOnboardingContent() {
       kind: e.kind,
       action: e.suggested_action,
       name: e.name_raw ?? '',
+      nameRaw: e.name_raw ?? '',
+      alternateName: e.alternate_name ?? null,
       dob: e.date_of_birth ?? '',
       notes: e.notes ?? '',
       matchedChildId: e.matched_child_id,
       matchedName: e.matched_child_id ? (children[e.matched_child_id]?.name ?? null) : null,
       matchConfidence: e.match_confidence,
       matchType: e.match_type,
+      // Only a possible match carries a decision, and it starts unanswered.
+      // An import written before this feature shipped has no 'possible' rows,
+      // so every one of its rows lands here as null and behaves as before.
+      possibleDecision:
+        e.kind === 'extracted' && e.match_type === 'possible' && e.matched_child_id
+          ? 'undecided'
+          : null,
     })));
 
     return row;
@@ -250,9 +310,67 @@ function PhotoOnboardingContent() {
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
   }, []);
 
-  const creates = useMemo(() => rows.filter((r) => r.kind === 'extracted' && !r.matchedChildId), [rows]);
-  const updates = useMemo(() => rows.filter((r) => r.kind === 'extracted' && !!r.matchedChildId), [rows]);
-  const departed = useMemo(() => rows.filter((r) => r.kind === 'departed'), [rows]);
+  /**
+   * Answer the one question a possible match asks, and keep its linked
+   * 'departed' row in step.
+   *
+   * 🚨 THE LINKAGE IS THE WHOLE POINT. reconcile deliberately emits BOTH rows
+   * for a possibly-matched child: this extracted row, and an archive proposal
+   * for the roster child it might be. Exactly one of them is right.
+   *   same child → this row updates that child, and her archive row is hidden
+   *                and set to skip; she never left.
+   *   new student → this row is a plain create, and her archive row comes back,
+   *                because if this is not her, she really is missing from the
+   *                list.
+   */
+  const decidePossible = useCallback((rowId: string, decision: PossibleDecision) => {
+    setRows((prev) => {
+      const row = prev.find((r) => r.id === rowId);
+      if (!row) return prev;
+      const childId = row.matchedChildId;
+
+      return prev.map((r) => {
+        if (r.id === rowId) {
+          return { ...r, possibleDecision: decision, action: decision === 'same' ? 'update' : 'create' };
+        }
+        if (childId && r.kind === 'departed' && r.matchedChildId === childId) {
+          if (decision === 'same') {
+            return { ...r, hiddenByMatch: true, action: 'skip' as EntryAction };
+          }
+          // Only undo what we did. If she had already set this archive row to
+          // Skip herself before answering, that choice is hers to keep.
+          return r.hiddenByMatch
+            ? { ...r, hiddenByMatch: false, action: 'archive' as EntryAction }
+            : r;
+        }
+        return r;
+      });
+    });
+  }, []);
+
+  // A possible match lives in its own section, so it must be filtered out of
+  // the create and update lists it would otherwise fall into by shape.
+  const possibles = useMemo(
+    () => rows.filter((r) => r.kind === 'extracted' && r.possibleDecision !== null),
+    [rows]
+  );
+  const creates = useMemo(
+    () => rows.filter((r) => r.kind === 'extracted' && r.possibleDecision === null && !r.matchedChildId),
+    [rows]
+  );
+  const updates = useMemo(
+    () => rows.filter((r) => r.kind === 'extracted' && r.possibleDecision === null && !!r.matchedChildId),
+    [rows]
+  );
+  const departed = useMemo(
+    () => rows.filter((r) => r.kind === 'departed' && !r.hiddenByMatch),
+    [rows]
+  );
+
+  const undecided = useMemo(
+    () => possibles.filter((r) => r.possibleDecision === 'undecided').length,
+    [possibles]
+  );
 
   const counts = useMemo(() => ({
     create: rows.filter((r) => r.action === 'create').length,
@@ -262,6 +380,11 @@ function PhotoOnboardingContent() {
 
   const applyChanges = useCallback(async () => {
     if (!importId) return;
+    // Never silently pick a side on a possible match — say why Apply is shut.
+    if (undecided > 0) {
+      toast.error(t('photoOnboarding.possibleBlocked'));
+      return;
+    }
     if (counts.create + counts.update + counts.archive === 0) {
       toast.error(t('photoOnboarding.nothingToApply'));
       return;
@@ -276,13 +399,20 @@ function PhotoOnboardingContent() {
       const res = await montreeApi(`/api/montree/photo-onboarding/${importId}/commit`, {
         method: 'POST',
         body: JSON.stringify({
-          entries: rows.map((r) => ({
-            id: r.id,
-            action: r.action,
-            name: r.name.trim() || null,
-            date_of_birth: r.dob.trim() || null,
-            notes: r.notes.trim() || null,
-          })),
+          entries: rows.map((r) => {
+            // Omitted rather than sent as null when there is nothing to learn,
+            // so the payload stays byte-identical to the old one for every row
+            // this feature doesn't touch.
+            const alias = aliasFor(r);
+            return {
+              id: r.id,
+              action: r.action,
+              name: r.name.trim() || null,
+              date_of_birth: r.dob.trim() || null,
+              notes: r.notes.trim() || null,
+              ...(alias ? { save_alias: alias } : {}),
+            };
+          }),
         }),
       });
       if (!res.ok) throw new Error(`Commit: ${res.status}`);
@@ -294,6 +424,7 @@ function PhotoOnboardingContent() {
         archived: data?.archived ?? 0,
         skipped: data?.skipped ?? 0,
         failed: data?.failed ?? 0,
+        aliasesSaved: data?.aliases_saved ?? 0,
       };
       setCommitResult(result);
       setPageState('done');
@@ -310,7 +441,7 @@ function PhotoOnboardingContent() {
     } finally {
       setCommitting(false);
     }
-  }, [importId, rows, counts, t]);
+  }, [importId, rows, counts, undecided, t]);
 
   // ── Render ──────────────────────────────────────────────────────────────
   const glow = (
@@ -463,6 +594,19 @@ function PhotoOnboardingContent() {
               <p className="text-sm text-white/55">{t('photoOnboarding.reviewSubtitle')}</p>
             </div>
 
+            {/* First, because every other section is provisional until these
+                are answered — and because Apply is disabled while any is. */}
+            <Section
+              icon={<HelpCircle className="w-4 h-4 text-violet-300" />}
+              title={t('photoOnboarding.sectionPossible')}
+              hint={t('photoOnboarding.sectionPossibleHint')}
+              rows={possibles}
+              actions={[]}
+              t={t}
+              onPatch={patchRow}
+              onDecide={decidePossible}
+            />
+
             <Section
               icon={<UserPlus className="w-4 h-4 text-emerald-400" />}
               title={t('photoOnboarding.sectionNew')}
@@ -510,6 +654,11 @@ function PhotoOnboardingContent() {
                   {t('photoOnboarding.doneSkipped').replace('{count}', String(commitResult.skipped))}
                 </p>
               )}
+              {commitResult.aliasesSaved > 0 && (
+                <p className="text-violet-200/70">
+                  {t('photoOnboarding.doneAliases').replace('{count}', String(commitResult.aliasesSaved))}
+                </p>
+              )}
               {commitResult.failed > 0 && (
                 <p className="text-amber-300">
                   {t('photoOnboarding.doneFailed').replace('{count}', String(commitResult.failed))}
@@ -532,13 +681,21 @@ function PhotoOnboardingContent() {
       {pageState === 'review' && (
         <div className="fixed bottom-0 inset-x-0 bg-[rgba(7,18,12,0.95)] border-t border-[rgba(52,211,153,0.15)] px-4 py-3 backdrop-blur">
           <div className="max-w-2xl mx-auto flex items-center justify-between gap-3">
-            <span className="text-xs text-white/55">
-              {t('photoOnboarding.summary')
-                .replace('{create}', String(counts.create))
-                .replace('{update}', String(counts.update))
-                .replace('{archive}', String(counts.archive))}
+            {/* While anything is undecided the count is the wrong thing to
+                read, so the bar says what is actually blocking instead. */}
+            <span className={`text-xs ${undecided > 0 ? 'text-violet-200/90' : 'text-white/55'}`}>
+              {undecided > 0
+                ? t('photoOnboarding.possibleUndecided').replace('{count}', String(undecided))
+                : t('photoOnboarding.summary')
+                    .replace('{create}', String(counts.create))
+                    .replace('{update}', String(counts.update))
+                    .replace('{archive}', String(counts.archive))}
             </span>
-            <button onClick={applyChanges} disabled={committing} className="btn btn-primary btn-md">
+            <button
+              onClick={applyChanges}
+              disabled={committing || undecided > 0}
+              className="btn btn-primary btn-md"
+            >
               {committing ? t('photoOnboarding.applying') : t('photoOnboarding.apply')}
             </button>
           </div>
@@ -576,7 +733,7 @@ const ACTION_LABEL_KEYS = {
 } as const;
 
 function Section({
-  icon, title, hint, rows, actions, warn, t, onPatch,
+  icon, title, hint, rows, actions, warn, t, onPatch, onDecide,
 }: {
   icon: React.ReactNode;
   title: string;
@@ -586,6 +743,13 @@ function Section({
   warn?: boolean;
   t: Translate;
   onPatch: (id: string, patch: Partial<DraftRow>) => void;
+  /**
+   * Present only for the Possible-matches section. When set, a row shows the
+   * two-way question instead of the action dropdown — an action dropdown here
+   * would let the teacher pick "Add" without ever seeing that the child it
+   * might be is sitting in the archive list further down.
+   */
+  onDecide?: (id: string, decision: PossibleDecision) => void;
 }) {
   if (rows.length === 0) return null;
 
@@ -609,11 +773,18 @@ function Section({
             <div
               key={row.id}
               className={`rounded-lg border p-3 ${
-                row.action === 'skip'
-                  ? 'border-white/10 bg-white/[0.02] opacity-60'
-                  : warn
-                    ? 'border-amber-500/25 bg-amber-500/[0.05]'
-                    : 'border-[rgba(52,211,153,0.15)] bg-white/[0.06]'
+                onDecide
+                  ? // An unanswered question is the only thing on this screen
+                    // allowed to demand attention, so it keeps its full weight
+                    // even though its action is nominally 'create'.
+                    row.possibleDecision === 'undecided'
+                    ? 'border-violet-400/40 bg-violet-400/[0.07]'
+                    : 'border-violet-400/20 bg-white/[0.05]'
+                  : row.action === 'skip'
+                    ? 'border-white/10 bg-white/[0.02] opacity-60'
+                    : warn
+                      ? 'border-amber-500/25 bg-amber-500/[0.05]'
+                      : 'border-[rgba(52,211,153,0.15)] bg-white/[0.06]'
               }`}
             >
               <div className="flex items-start justify-between gap-3 mb-2">
@@ -629,7 +800,12 @@ function Section({
                       className="w-full bg-transparent border-b border-white/10 focus:border-emerald-400 outline-none font-medium text-white/95 pb-1"
                     />
                   )}
-                  {row.matchedName && row.kind === 'extracted' && (
+                  {row.alternateName && (
+                    <p className="text-xs text-white/40 mt-1">
+                      {t('photoOnboarding.alsoWritten').replace('{name}', row.alternateName)}
+                    </p>
+                  )}
+                  {row.matchedName && row.kind === 'extracted' && !onDecide && (
                     <p className="text-xs text-white/40 mt-1">
                       {t('photoOnboarding.matchedWith').replace('{name}', row.matchedName)}
                       {uncertain && (
@@ -639,19 +815,64 @@ function Section({
                   )}
                 </div>
 
-                <select
-                  value={row.action}
-                  onChange={(e) => onPatch(row.id, { action: e.target.value as EntryAction })}
-                  aria-label={title}
-                  className="shrink-0 text-xs rounded-md bg-white/[0.08] border border-[rgba(52,211,153,0.2)] text-white/90 px-2 py-1"
-                >
-                  {actions.map((a) => (
-                    <option key={a} value={a} className="bg-[#0a1a0f]">
-                      {t(ACTION_LABEL_KEYS[a])}
-                    </option>
-                  ))}
-                </select>
+                {!onDecide && (
+                  <select
+                    value={row.action}
+                    onChange={(e) => onPatch(row.id, { action: e.target.value as EntryAction })}
+                    aria-label={title}
+                    className="shrink-0 text-xs rounded-md bg-white/[0.08] border border-[rgba(52,211,153,0.2)] text-white/90 px-2 py-1"
+                  >
+                    {actions.map((a) => (
+                      <option key={a} value={a} className="bg-[#0a1a0f]">
+                        {t(ACTION_LABEL_KEYS[a])}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
+
+              {/* The question, and the two answers. Neither is preselected —
+                  see PossibleDecision. */}
+              {onDecide && row.matchedName && (
+                <div className="mb-3">
+                  <p className="text-xs text-violet-100/85 mb-2 leading-snug">
+                    {t('photoOnboarding.possibleQuestion').replace('{name}', row.matchedName)}
+                  </p>
+                  <div className="flex gap-2" role="group" aria-label={title}>
+                    <button
+                      type="button"
+                      onClick={() => onDecide(row.id, 'same')}
+                      aria-pressed={row.possibleDecision === 'same'}
+                      className={`flex-1 text-xs rounded-md px-2 py-1.5 border transition ${
+                        row.possibleDecision === 'same'
+                          ? 'border-emerald-400 bg-emerald-500/20 text-white'
+                          : 'border-white/15 bg-white/[0.06] text-white/70 hover:border-emerald-400/50'
+                      }`}
+                    >
+                      {t('photoOnboarding.possibleSame')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onDecide(row.id, 'new')}
+                      aria-pressed={row.possibleDecision === 'new'}
+                      className={`flex-1 text-xs rounded-md px-2 py-1.5 border transition ${
+                        row.possibleDecision === 'new'
+                          ? 'border-emerald-400 bg-emerald-500/20 text-white'
+                          : 'border-white/15 bg-white/[0.06] text-white/70 hover:border-emerald-400/50'
+                      }`}
+                    >
+                      {t('photoOnboarding.possibleNew')}
+                    </button>
+                  </div>
+                  {row.possibleDecision !== 'undecided' && (
+                    <p className="text-[11px] text-white/45 mt-2">
+                      {row.possibleDecision === 'same'
+                        ? t('photoOnboarding.possibleResolvedSame').replace('{name}', row.matchedName)
+                        : t('photoOnboarding.possibleResolvedNew')}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {row.kind === 'extracted' && (
                 <div className="grid grid-cols-1 gap-2">
