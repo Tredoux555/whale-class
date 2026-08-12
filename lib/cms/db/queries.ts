@@ -40,6 +40,8 @@ import type {
   normaliseDietaryStep,
   normaliseMedicalStep,
   normalisePreviousSchoolStep,
+  normaliseRosterChild,
+  normaliseRosterImport,
 } from '@/lib/cms/validation';
 
 import {
@@ -1169,5 +1171,540 @@ export async function loadChildProfiles(childIds: string[]): Promise<Map<string,
     // A missing table (migration 330 not yet run) must not take down Today.
     safeErrorLog('cms/db/loadChildProfiles', error);
     return out;
+  }
+}
+
+// ============================================================================
+// PHASE 4 — THE TEACHER'S ROSTER
+// ============================================================================
+// The one place in CMS where a member of STAFF writes a child's standing
+// record. Everything below obeys the same two rules as the enrolment writes
+// above, and one more that is new:
+//
+//   1. TENANCY COMES FROM THE SESSION. A `classGroupId` in a request body is a
+//      REQUEST, never a fact — `resolveTeacherRoom` re-derives the rooms this
+//      membership actually teaches and refuses anything else. A `childId` is
+//      re-checked against those rooms the same way.
+//   2. LIST STEPS REPLACE. Allergies, dietary rows and contacts are sent whole
+//      and replace the previous set (soft-delete + insert), exactly as the
+//      wizard does. Saving twice must not double a child's allergies.
+//   3. 🚨 NEW — A TEACHER MAY ONLY EDIT AN UNCLAIMED RECORD. The moment a
+//      family account owns the child (a guardian linked to an ACTIVE PARENT
+//      MEMBERSHIP), the teacher goes back to read-only and the parent's words
+//      win. `loadChildOwnership` is the app-layer half of that rule; migration
+//      331's `cms_staff_entered_child_ids()` is the database half. Both exist
+//      on purpose: the app scopes, RLS defends.
+//
+// Note what is NOT here: no medical record write, no child profile write, no
+// enrolment. A teacher records what they can SEE (a name, an allergen at the
+// gate, who collects) — not a diagnosis and not the family's own words.
+
+/** One room a member of staff may stand in. */
+export interface TeacherRoom {
+  classGroup: ClassGroup;
+  /** True when this is a `cms_class_teachers` assignment rather than an
+   *  admin's school-wide reach — the roster page says which. */
+  assigned: boolean;
+}
+
+/**
+ * Every room this session may work in, in name order.
+ *
+ * A TEACHER gets exactly their `cms_class_teachers` assignments (none → an
+ * empty list, and the page says so rather than showing somebody else's room).
+ * A SCHOOL_ADMIN covering the floor gets every room in their school.
+ */
+export async function loadTeacherRooms(session: CmsSession): Promise<TeacherRoom[]> {
+  if (!session.schoolId) return [];
+  try {
+    const supabase = db();
+    const { data: assignments } = await supabase
+      .from('cms_class_teachers')
+      .select('class_group_id')
+      .eq('membership_id', session.membershipId);
+    const assignedIds = (assignments ?? []).map((a: Row) => a.class_group_id as string);
+
+    if (assignedIds.length > 0) {
+      const { data } = await supabase
+        .from('cms_class_groups')
+        .select('*')
+        .in('id', assignedIds)
+        .eq('school_id', session.schoolId)
+        .order('name', { ascending: true });
+      return (data ?? []).map((row: Row) => ({ classGroup: mapClassGroup(row), assigned: true }));
+    }
+
+    if (session.role === 'school_admin') {
+      const { data } = await supabase
+        .from('cms_class_groups')
+        .select('*')
+        .eq('school_id', session.schoolId)
+        .order('name', { ascending: true });
+      return (data ?? []).map((row: Row) => ({ classGroup: mapClassGroup(row), assigned: false }));
+    }
+
+    return [];
+  } catch (error) {
+    safeErrorLog('cms/db/loadTeacherRooms', error);
+    return [];
+  }
+}
+
+/**
+ * Turn a REQUESTED room id into a room this session provably owns.
+ *
+ * Blank/absent → their first room, which is what a single-room teacher always
+ * wants. Anything they do not teach → null, and the caller returns 403. This is
+ * the Jul-3 cross-tenant lesson written as a function: existence ≠ ownership.
+ */
+export async function resolveTeacherRoom(
+  session: CmsSession,
+  requestedClassGroupId: string | null | undefined
+): Promise<TeacherRoom | null> {
+  const rooms = await loadTeacherRooms(session);
+  if (rooms.length === 0) return null;
+  const wanted = String(requestedClassGroupId ?? '').trim();
+  if (!wanted) return rooms[0];
+  return rooms.find((r) => String(r.classGroup.id) === wanted) ?? null;
+}
+
+/**
+ * Which of these children a FAMILY ACCOUNT owns.
+ *
+ * 🚨 Ownership is an active PARENT MEMBERSHIP behind one of the child's
+ * guardians — not merely "has a guardian row". A teacher's own typed-in
+ * emergency contacts are guardian rows with nobody logged in behind them, and
+ * counting those would lock the teacher out of the record they are still
+ * filling in. Mirrors `cms_staff_entered_child_ids()` in migration 331.
+ */
+export async function loadChildOwnership(childIds: string[]): Promise<Set<string>> {
+  const owned = new Set<string>();
+  if (childIds.length === 0) return owned;
+  try {
+    const supabase = db();
+    const { data: links } = await supabase
+      .from('cms_child_guardians')
+      .select('child_id, guardian_id')
+      .in('child_id', childIds);
+    const rows: Row[] = links ?? [];
+    const guardianIds = Array.from(new Set(rows.map((l) => l.guardian_id as string)));
+    if (guardianIds.length === 0) return owned;
+
+    const { data: memberships } = await supabase
+      .from('cms_memberships')
+      .select('guardian_id')
+      .in('guardian_id', guardianIds)
+      .eq('role', 'parent')
+      .eq('is_active', true);
+    const parentGuardians = new Set(
+      (memberships ?? []).map((m: Row) => m.guardian_id as string)
+    );
+    for (const link of rows) {
+      if (parentGuardians.has(link.guardian_id)) owned.add(String(link.child_id));
+    }
+    return owned;
+  } catch (error) {
+    safeErrorLog('cms/db/loadChildOwnership', error);
+    // Fail CLOSED: on an unreadable ownership query every child is treated as
+    // family-owned, so the worst case is a teacher who cannot edit — never a
+    // teacher who overwrites a parent's record.
+    return new Set(childIds.map(String));
+  }
+}
+
+export interface RosterData {
+  school: School;
+  room: TeacherRoom;
+  children: Child[];
+  allergies: Allergy[];
+  dietary: DietaryRequirement[];
+  medical: MedicalRecord[];
+  /** Child ids a family account owns — read-only for the teacher. */
+  familyOwned: Set<string>;
+}
+
+/** The roster page's whole read, for ONE room. */
+export async function loadRoster(
+  session: CmsSession,
+  room: TeacherRoom
+): Promise<RosterData | null> {
+  if (!session.schoolId) return null;
+  try {
+    const supabase = db();
+    const [schoolRes, childRes] = await Promise.all([
+      supabase.from('cms_schools').select('*').eq('id', session.schoolId).maybeSingle(),
+      supabase
+        .from('cms_children')
+        .select('*')
+        .eq('class_group_id', String(room.classGroup.id))
+        .is('deleted_at', null)
+        .order('preferred_name', { ascending: true }),
+    ]);
+    if (!schoolRes.data) return null;
+
+    const childRows: Row[] = childRes.data ?? [];
+    const bundle = await hydrateChildren(childRows);
+    const familyOwned = await loadChildOwnership(childRows.map((c) => String(c.id)));
+
+    return { school: mapSchool(schoolRes.data), room, ...bundle, familyOwned };
+  } catch (error) {
+    safeErrorLog('cms/db/loadRoster', error);
+    return null;
+  }
+}
+
+// ── writes ──────────────────────────────────────────────────────────────────
+
+type RosterChildInput = ReturnType<typeof normaliseRosterChild>;
+type RosterImportInput = ReturnType<typeof normaliseRosterImport>;
+
+export interface RosterWriteResult {
+  ok: boolean;
+  error?: string;
+  childId?: string;
+  /** Import only. */
+  created?: number;
+  skipped?: { name: string; reason: 'already_in_room' }[];
+}
+
+/**
+ * The sentinel a staff-entered child carries when nobody knows the birthday
+ * yet. `cms_children.date_of_birth` is NOT NULL (329), and the alternative —
+ * defaulting to today — would print "0 years old" on a class list as if it were
+ * a fact. Every read path treats this exact value as "unknown".
+ */
+export const UNKNOWN_DOB = '1900-01-01';
+
+/** Is this child's date of birth a real one, or the unknown sentinel? */
+export function hasKnownDob(dateOfBirth: string | null | undefined): boolean {
+  return Boolean(dateOfBirth) && dateOfBirth !== UNKNOWN_DOB;
+}
+
+/** The de-duplication key an import matches on: room + folded name + dob. */
+function importKey(name: string, dateOfBirth: string | null): string {
+  return `${name.trim().toLocaleLowerCase()}|${dateOfBirth ?? ''}`;
+}
+
+/**
+ * Create many children in one room, idempotently.
+ *
+ * 🚨 RE-PASTING THE SAME LIST MUST NOT CREATE TWINS. A teacher will paste,
+ * notice a typo, fix the spreadsheet and paste the whole thing again — that is
+ * normal behaviour, not misuse. Existing rows are matched on
+ * (room, lower(preferred_name), date_of_birth) and SKIPPED, and the skipped
+ * names are reported so the teacher can see the import did what they meant.
+ *
+ * A child already in the room WITHOUT a date of birth also matches a pasted
+ * line that now carries one — same name, same room, no date on file is the
+ * same child gaining a birthday, not a second Amara.
+ */
+export async function importRosterChildren(
+  session: CmsSession,
+  room: TeacherRoom,
+  rows: RosterImportInput
+): Promise<RosterWriteResult> {
+  if (!session.schoolId) return { ok: false, error: 'no_school' };
+  if (rows.length === 0) return { ok: false, error: 'nothing_to_import' };
+  try {
+    const supabase = db();
+    const classGroupId = String(room.classGroup.id);
+
+    const { data: existingRows } = await supabase
+      .from('cms_children')
+      .select('preferred_name, date_of_birth')
+      .eq('class_group_id', classGroupId)
+      .is('deleted_at', null);
+
+    const existing = new Set<string>();
+    const namesOnly = new Set<string>();
+    for (const row of (existingRows ?? []) as Row[]) {
+      existing.add(importKey(String(row.preferred_name ?? ''), row.date_of_birth ?? null));
+      namesOnly.add(String(row.preferred_name ?? '').trim().toLocaleLowerCase());
+    }
+
+    const skipped: { name: string; reason: 'already_in_room' }[] = [];
+    const toInsert: Row[] = [];
+    // Within-paste duplicates are caught here too — the browser preview flags
+    // them, but a direct POST must not be able to bypass that.
+    const seen = new Set<string>();
+
+    for (const row of rows) {
+      const key = importKey(row.preferredName, row.dateOfBirth);
+      const folded = row.preferredName.trim().toLocaleLowerCase();
+      if (existing.has(key) || namesOnly.has(folded) || seen.has(key) || seen.has(folded)) {
+        skipped.push({ name: row.preferredName, reason: 'already_in_room' });
+        continue;
+      }
+      seen.add(key);
+      seen.add(folded);
+      toInsert.push({
+        school_id: session.schoolId,
+        class_group_id: classGroupId,
+        legal_name: row.legalName,
+        preferred_name: row.preferredName,
+        // `date_of_birth` is NOT NULL in migration 329 (a family application
+        // always has one). A staff-entered child may not, so an unknown date
+        // is parked on a sentinel the documents render as "—" rather than
+        // inventing today's date, which would print a plausible wrong age.
+        date_of_birth: row.dateOfBirth ?? UNKNOWN_DOB,
+        home_language: 'en',
+        created_by_user_id: session.userId,
+      });
+    }
+
+    let created = 0;
+    if (toInsert.length > 0) {
+      // 🚨 THE RACE THE READ-THEN-INSERT ABOVE CANNOT CLOSE ON ITS OWN. Two
+      // concurrent imports (a retried request racing the original, a second
+      // tab) can both pass the `existing`/`namesOnly` check before either
+      // commits. `ON CONFLICT ... DO NOTHING` against
+      // `idx_cms_children_room_name_dob` (migration 331) is the actual
+      // idempotency guarantee — the check above is what makes a normal,
+      // sequential re-paste report nice skip reasons; this is what makes it
+      // TRUE under a race. A losing row comes back out of `.select()` simply
+      // absent, never a 500.
+      const { data: insertedRows, error } = await supabase
+        .from('cms_children')
+        .upsert(toInsert, {
+          onConflict: 'class_group_id,preferred_name,date_of_birth',
+          ignoreDuplicates: true,
+        })
+        .select('preferred_name, date_of_birth');
+      if (error) throw error;
+
+      const actuallyInserted = new Set(
+        (insertedRows ?? []).map((r: Row) =>
+          importKey(String(r.preferred_name ?? ''), r.date_of_birth ?? null)
+        )
+      );
+      created = actuallyInserted.size;
+      for (const row of toInsert) {
+        const key = importKey(String(row.preferred_name), (row.date_of_birth as string) ?? null);
+        if (!actuallyInserted.has(key)) {
+          skipped.push({ name: String(row.preferred_name), reason: 'already_in_room' });
+        }
+      }
+    }
+
+    return { ok: true, created, skipped };
+  } catch (error) {
+    safeErrorLog('cms/db/importRosterChildren', error);
+    return { ok: false, error: 'write_failed' };
+  }
+}
+
+/** One child, added by hand. Same idempotency rule as the import. */
+export async function createRosterChild(
+  session: CmsSession,
+  room: TeacherRoom,
+  input: RosterChildInput
+): Promise<RosterWriteResult> {
+  const seed = await importRosterChildren(session, room, [
+    {
+      preferredName: input.preferredName,
+      legalName: input.legalName,
+      dateOfBirth: input.dateOfBirth,
+    },
+  ]);
+  if (!seed.ok) return seed;
+  if ((seed.created ?? 0) === 0) return { ok: false, error: 'already_in_room' };
+
+  try {
+    const supabase = db();
+    const { data } = await supabase
+      .from('cms_children')
+      .select('id')
+      .eq('class_group_id', String(room.classGroup.id))
+      .eq('preferred_name', input.preferredName)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+      .limit(1);
+    const childId = (data ?? [])[0]?.id as string | undefined;
+    if (!childId) return { ok: true, created: 1 };
+    // The rest of the form (language, note, allergies, diet, contacts) rides in
+    // through the ordinary update path, so there is exactly one place that
+    // knows how a roster child's lists are written.
+    const update = await updateRosterChild(session, room, childId, input);
+    return update.ok ? { ok: true, created: 1, childId } : update;
+  } catch (error) {
+    safeErrorLog('cms/db/createRosterChild', error);
+    return { ok: false, error: 'write_failed' };
+  }
+}
+
+/**
+ * The quick-edit save. REPLACE semantics on all three lists.
+ *
+ * Refuses outright if the child is not in this room, or if a family account
+ * owns the record. Both checks are re-done here rather than trusted from the
+ * page: the page renders the button, this decides.
+ */
+export async function updateRosterChild(
+  session: CmsSession,
+  room: TeacherRoom,
+  childId: string,
+  input: RosterChildInput
+): Promise<RosterWriteResult> {
+  if (!session.schoolId) return { ok: false, error: 'no_school' };
+  try {
+    const supabase = db();
+    const classGroupId = String(room.classGroup.id);
+
+    const { data: child } = await supabase
+      .from('cms_children')
+      .select('id, school_id, class_group_id')
+      .eq('id', childId)
+      .is('deleted_at', null)
+      .maybeSingle();
+    if (!child) return { ok: false, error: 'not_found' };
+    if (child.class_group_id !== classGroupId || child.school_id !== session.schoolId) {
+      return { ok: false, error: 'forbidden' };
+    }
+
+    // The authority rule. A school_admin keeps the phase-2 authority over every
+    // child in their school; a TEACHER's write window closes the moment a
+    // family account claims the record.
+    if (session.role === 'teacher') {
+      const owned = await loadChildOwnership([childId]);
+      if (owned.has(childId)) return { ok: false, error: 'family_owned' };
+    }
+
+    const { error: childError } = await supabase
+      .from('cms_children')
+      .update({
+        preferred_name: input.preferredName,
+        legal_name: input.legalName,
+        date_of_birth: input.dateOfBirth ?? UNKNOWN_DOB,
+        home_language: input.homeLanguage,
+        staff_note: input.staffNote,
+      })
+      .eq('id', childId);
+    if (childError) throw childError;
+
+    // ── allergies: replace ──────────────────────────────────────────────
+    const { error: clearAllergies } = await supabase
+      .from('cms_allergies')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('child_id', childId)
+      .is('deleted_at', null);
+    if (clearAllergies) throw clearAllergies;
+    if (input.allergies.length > 0) {
+      const { error } = await supabase.from('cms_allergies').insert(
+        input.allergies.map((row) => ({
+          child_id: childId,
+          school_id: session.schoolId,
+          allergen: row.allergen,
+          severity: row.severity,
+          reaction: row.reaction,
+          response_plan: row.responsePlan,
+          carries_epipen: row.carriesEpipen,
+          requires_poster: row.requiresPoster,
+        }))
+      );
+      if (error) throw error;
+    }
+
+    // ── dietary: replace ────────────────────────────────────────────────
+    const { error: clearDietary } = await supabase
+      .from('cms_dietary_requirements')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('child_id', childId)
+      .is('deleted_at', null);
+    if (clearDietary) throw clearDietary;
+    if (input.dietary.length > 0) {
+      const { error } = await supabase.from('cms_dietary_requirements').insert(
+        input.dietary.map((row) => ({
+          child_id: childId,
+          school_id: session.schoolId,
+          label: row.label,
+          reason: row.reason,
+          excluded_foods: row.excludedFoods,
+          notes: row.notes,
+        }))
+      );
+      if (error) throw error;
+    }
+
+    // ── contacts: replace ───────────────────────────────────────────────
+    // Guardian rows attached to a PARENT MEMBERSHIP are never touched: they
+    // are somebody's login, and the ownership check above means we only ever
+    // get here when there are none. The filter is belt-and-braces for the
+    // school_admin path, which legitimately edits claimed records.
+    const { data: links } = await supabase
+      .from('cms_child_guardians')
+      .select('guardian_id')
+      .eq('child_id', childId);
+    const linkedIds = (links ?? []).map((l: Row) => l.guardian_id as string);
+    const protectedIds = new Set<string>();
+    if (linkedIds.length > 0) {
+      const { data: parentMemberships } = await supabase
+        .from('cms_memberships')
+        .select('guardian_id')
+        .in('guardian_id', linkedIds)
+        .eq('role', 'parent');
+      for (const m of (parentMemberships ?? []) as Row[]) {
+        protectedIds.add(String(m.guardian_id));
+      }
+    }
+    const replaceable = linkedIds.filter((id) => !protectedIds.has(id));
+
+    if (replaceable.length > 0) {
+      await supabase
+        .from('cms_child_guardians')
+        .delete()
+        .eq('child_id', childId)
+        .in('guardian_id', replaceable);
+      await supabase
+        .from('cms_pickup_authorizations')
+        .delete()
+        .eq('child_id', childId)
+        .in('guardian_id', replaceable);
+      await supabase
+        .from('cms_guardians')
+        .update({ deleted_at: new Date().toISOString() })
+        .in('id', replaceable)
+        .eq('school_id', session.schoolId);
+    }
+
+    for (const contact of input.contacts) {
+      const { data: created, error } = await supabase
+        .from('cms_guardians')
+        .insert({
+          school_id: session.schoolId,
+          full_name: contact.fullName,
+          relationship: contact.relationship,
+          phone: contact.phone,
+          email: contact.email,
+          can_collect: contact.canCollect,
+          contact_priority: contact.contactPriority,
+        })
+        .select('id')
+        .single();
+      if (error) throw error;
+
+      const { error: linkError } = await supabase.from('cms_child_guardians').insert({
+        child_id: childId,
+        guardian_id: created.id,
+        is_primary: contact.contactPriority === 1,
+        can_collect: contact.canCollect,
+      });
+      if (linkError) throw linkError;
+
+      if (contact.canCollect) {
+        const { error: pickupError } = await supabase.from('cms_pickup_authorizations').insert({
+          child_id: childId,
+          school_id: session.schoolId,
+          guardian_id: created.id,
+          authorised: true,
+          note: contact.note,
+        });
+        if (pickupError) throw pickupError;
+      }
+    }
+
+    return { ok: true, childId };
+  } catch (error) {
+    safeErrorLog('cms/db/updateRosterChild', error);
+    return { ok: false, error: 'write_failed' };
   }
 }

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // scripts/cms/rls-test.mjs
 // ============================================================================
-// THE LOAD-BEARING TEST FOR migrations/329_cms_phase2.sql
-// AND migrations/330_cms_phase3.sql.
+// THE LOAD-BEARING TEST FOR migrations/329_cms_phase2.sql,
+// migrations/330_cms_phase3.sql AND migrations/331_cms_phase4_teacher_roster.sql.
 //
 // The CMS app talks to Postgres through the service role, which bypasses RLS —
 // so no amount of clicking the UI can tell you whether the policies are right.
@@ -19,6 +19,7 @@
 //   psql -d cms_test -f scripts/cms/local-supabase-shim.sql
 //   psql -d cms_test -v ON_ERROR_STOP=1 -f migrations/329_cms_phase2.sql
 //   psql -d cms_test -v ON_ERROR_STOP=1 -f migrations/330_cms_phase3.sql
+//   psql -d cms_test -v ON_ERROR_STOP=1 -f migrations/331_cms_phase4_teacher_roster.sql
 //   DATABASE_URL=postgres://user:pass@127.0.0.1:5432/cms_test node scripts/cms/rls-test.mjs
 //
 // Exit 0 = every assertion passed. Exit 1 = at least one failed.
@@ -210,7 +211,7 @@ async function main() {
   await client.connect();
   const ids = await seed();
 
-  console.log('\nCMS PHASE 2 + 3 — RLS INTEGRATION TEST');
+  console.log('\nCMS PHASE 2 + 3 + 4 — RLS INTEGRATION TEST');
   console.log('==================================\n');
 
   // ── 0. the claim plumbing itself ──────────────────────────────────────────
@@ -492,12 +493,262 @@ async function main() {
     check('teacher of another room CANNOT mark that child present', !att.ok);
   });
 
+  // ── 4b. PHASE 4: the teacher's own roster (migration 331) ────────────────
+  //
+  // The authority change this phase makes, asserted from both ends: a teacher
+  // may create and edit a child in their OWN room while NO FAMILY ACCOUNT owns
+  // the record, and loses that the instant one does. Section 4 above already
+  // proved the phase-2 half (a teacher cannot edit a PARENTED child) — these
+  // assertions prove the new lane exists and that its walls are where they
+  // should be.
+  console.log('\nteacher roster (phase 4 authority)');
+  const staffChildId = await uuid();
+  let staffGuardianId = null;
+
+  await asUser(ids.teacher1, async () => {
+    const create = await attempt(
+      `insert into cms_children (id, school_id, class_group_id, legal_name, preferred_name, date_of_birth, created_by_user_id)
+       values ($1,$2,$3,'Kofi Mensah','Kofi','2021-04-11',$4)`,
+      [staffChildId, ids.schoolA, ids.sunrise, ids.teacher1]
+    );
+    check('teacher CAN create a child in their OWN room', create.ok, create.error);
+
+    // The room, not the school, is the boundary. Meadow is in the same school
+    // and this teacher still may not put a child in it.
+    const otherRoom = await attempt(
+      `insert into cms_children (school_id, class_group_id, legal_name, preferred_name, date_of_birth, created_by_user_id)
+       values ($1,$2,'Ghost','Ghost','2021-01-01',$3)`,
+      [ids.schoolA, ids.meadow, ids.teacher1]
+    );
+    check('teacher CANNOT create a child in a room they do not teach', !otherRoom.ok);
+
+    const otherSchool = await attempt(
+      `insert into cms_children (school_id, class_group_id, legal_name, preferred_name, date_of_birth, created_by_user_id)
+       values ($1,$2,'Ghost','Ghost','2021-01-01',$3)`,
+      [ids.schoolB, ids.quayRoom, ids.teacher1]
+    );
+    check('teacher CANNOT create a child at another school', !otherSchool.ok);
+
+    // The school_id/class_group_id pair must agree, or every school-scoped read
+    // afterwards disagrees with every room-scoped one.
+    const mismatched = await attempt(
+      `insert into cms_children (school_id, class_group_id, legal_name, preferred_name, date_of_birth, created_by_user_id)
+       values ($1,$2,'Ghost','Ghost','2021-01-01',$3)`,
+      [ids.schoolB, ids.sunrise, ids.teacher1]
+    );
+    check('teacher CANNOT file a child under a school its room does not belong to', !mismatched.ok);
+
+    const forged = await attempt(
+      `insert into cms_children (school_id, class_group_id, legal_name, preferred_name, date_of_birth, created_by_user_id)
+       values ($1,$2,'Forged','Forged','2021-01-01',$3)`,
+      [ids.schoolA, ids.sunrise, ids.parentA]
+    );
+    check('teacher CANNOT create a child stamped as another user', !forged.ok);
+
+    const edit = await attempt(
+      `update cms_children set preferred_name = 'Kofi', staff_note = 'Naps after lunch.'
+       where id = $1`,
+      [staffChildId]
+    );
+    check('teacher CAN edit an own-room child no family owns', edit.ok && edit.count === 1,
+      edit.error || `${edit.count} rows`);
+
+    const allergy = await attempt(
+      `insert into cms_allergies (child_id, school_id, allergen, severity, carries_epipen)
+       values ($1,$2,'Sesame','severe',true)`,
+      [staffChildId, ids.schoolA]
+    );
+    check('teacher CAN record an allergy on a staff-entered child', allergy.ok, allergy.error);
+
+    const diet = await attempt(
+      `insert into cms_dietary_requirements (child_id, school_id, label, reason)
+       values ($1,$2,'No sesame','allergy')`,
+      [staffChildId, ids.schoolA]
+    );
+    check('teacher CAN record a dietary requirement on a staff-entered child', diet.ok, diet.error);
+
+    // An emergency contact is a guardian row with NOBODY logged in behind it.
+    // Creating one must not close the teacher's own write window — that is the
+    // whole reason cms_staff_entered_child_ids() joins on parent MEMBERSHIPS.
+    const guardian = await attempt(
+      `insert into cms_guardians (id, school_id, full_name, relationship, phone)
+       values (gen_random_uuid(),$1,'Ama Mensah','mother','+27 82 555 0190')`,
+      [ids.schoolA]
+    );
+    check('teacher CAN create an emergency-contact guardian at their school', guardian.ok,
+      guardian.error);
+  });
+
+  // Fetch the guardian id as owner (the insert above could not RETURNING it —
+  // the SELECT policy applies to RETURNING and the row is not linked yet).
+  staffGuardianId = (
+    await client.query(`select id from cms_guardians where full_name = 'Ama Mensah' limit 1`)
+  ).rows[0]?.id;
+
+  await asUser(ids.teacher1, async () => {
+    const link = await attempt(
+      `insert into cms_child_guardians (child_id, guardian_id, is_primary, can_collect)
+       values ($1,$2,true,true)`,
+      [staffChildId, staffGuardianId]
+    );
+    check('teacher CAN link that contact to their staff-entered child', link.ok, link.error);
+
+    const pickup = await attempt(
+      `insert into cms_pickup_authorizations (child_id, school_id, guardian_id, authorised)
+       values ($1,$2,$3,true)`,
+      [staffChildId, ids.schoolA, staffGuardianId]
+    );
+    check('teacher CAN authorise that contact to collect', pickup.ok, pickup.error);
+
+    const stillEditable = await attempt(
+      `update cms_children set staff_note = 'Still mine to edit.' where id = $1`,
+      [staffChildId]
+    );
+    check('a typed-in contact does NOT lock the teacher out',
+      stillEditable.ok && stillEditable.count === 1, stillEditable.error);
+
+    // 330's law is untouched: the family's own words are never staff-writable,
+    // not even on a child the teacher created.
+    const profile = await attempt(
+      `insert into cms_child_profiles (child_id, school_id, parent_notes)
+       values ($1,$2,'staff wrote this')`,
+      [staffChildId, ids.schoolA]
+    );
+    check('teacher STILL cannot write a child profile, even one they created', !profile.ok);
+
+    const del = await attempt('delete from cms_children where id = $1', [staffChildId]);
+    check('teacher CANNOT delete a child', del.ok && del.count === 0,
+      del.error || `${del.count} rows`);
+
+    // The phase-2 rule, re-asserted against the NEW policy: parent A's child is
+    // in this teacher's room AND is family-owned, so it stays read-only.
+    const parented = await attempt(
+      `update cms_children set preferred_name = 'Hijacked' where id = $1`, [childId]
+    );
+    check('teacher CANNOT edit a child a family account owns',
+      parented.ok && parented.count === 0, parented.error || `${parented.count} rows`);
+
+    const parentedAllergy = await attempt(
+      `update cms_allergies set allergen = 'Hijacked' where child_id = $1`, [childId]
+    );
+    check('teacher CANNOT edit a family-owned child\'s allergies',
+      parentedAllergy.ok && parentedAllergy.count === 0,
+      parentedAllergy.error || `${parentedAllergy.count} rows`);
+  });
+
+  await asUser(ids.teacher2, async () => {
+    const read = await attempt('select id from cms_children where id = $1', [staffChildId]);
+    check('teacher of another room CANNOT read the staff-entered child', read.count === 0,
+      `saw ${read.count}`);
+    const edit = await attempt(
+      `update cms_children set staff_note = 'not mine' where id = $1`, [staffChildId]
+    );
+    check('teacher of another room CANNOT edit the staff-entered child',
+      edit.ok && edit.count === 0, edit.error || `${edit.count} rows`);
+  });
+
+  await asUser(ids.parentB, async () => {
+    const read = await attempt('select id from cms_children where id = $1', [staffChildId]);
+    check('an unrelated parent CANNOT read a staff-entered child', read.count === 0,
+      `saw ${read.count}`);
+  });
+
+  // ── 4b2. THE DOUBLE-SUBMIT RACE — idx_cms_children_room_name_dob ─────────
+  // `importRosterChildren` (lib/cms/db/queries.ts) claims a re-paste is a
+  // no-op, but its own read-then-check is not atomic — only the DATABASE
+  // constraint makes that true under concurrency (a retried request racing
+  // the original, a second tab). This does not go through `asUser`: the
+  // constraint has to hold for the SERVICE ROLE too, which is what the app
+  // actually writes as (this file's own header: "the client is the SERVICE
+  // ROLE ... it bypasses RLS"), and a unique index is enforced for every role.
+  console.log('\ndouble-submit race (migration 331 idx_cms_children_room_name_dob)');
+  {
+    // Plain client.query, not attempt() — attempt()'s SAVEPOINT needs an open
+    // transaction, and this section (like 4c's hand-back below) runs as the
+    // owner between asUser() blocks, exactly the service role's own posture.
+    const insertLine = `
+      insert into cms_children
+        (school_id, class_group_id, legal_name, preferred_name, date_of_birth, created_by_user_id)
+      values ($1,$2,'Amara Retry','Amara Retry','2021-06-04',$3)
+      on conflict (class_group_id, preferred_name, date_of_birth)
+        where deleted_at is null and class_group_id is not null
+      do nothing
+      returning id`;
+    const params = [ids.schoolA, ids.sunrise, ids.teacher1];
+
+    const first = await client.query(insertLine, params);
+    check('first import of a pasted line creates the child', first.rowCount === 1,
+      `created ${first.rowCount} rows`);
+
+    // The exact write `importRosterChildren` issues a second time when a
+    // concurrent request races the first — same room, same folded name, same
+    // date of birth.
+    const race = await client.query(insertLine, params);
+    check('a concurrent re-import of the SAME line is silently absorbed, not a twin',
+      race.rowCount === 0, `created ${race.rowCount} rows`);
+
+    const total = await client.query(
+      `select count(*)::int as n from cms_children
+       where class_group_id = $1 and preferred_name = 'Amara Retry' and deleted_at is null`,
+      [ids.sunrise]
+    );
+    check('exactly one child exists after the race, never two',
+      total.rows[0].n === 1, `saw ${total.rows[0].n}`);
+
+    // Scratch row only — every later assertion in this file counts children by
+    // fixed fixture numbers, and leaving this one behind would fail them for a
+    // reason that has nothing to do with what they test.
+    await client.query(`delete from cms_children where preferred_name = 'Amara Retry'`);
+  }
+
+  // ── 4c. THE TRANSITION — a family connects and the teacher steps back ────
+  // Written as the owner, standing in for the office linking a new parent
+  // account to an existing staff-entered record.
+  console.log('\nthe hand-back (a family account claims a staff-entered child)');
+  await client.query(
+    `insert into cms_child_guardians (child_id, guardian_id, is_primary) values ($1,$2,false)`,
+    [staffChildId, ids.guardianB]
+  );
+
+  await asUser(ids.teacher1, async () => {
+    const edit = await attempt(
+      `update cms_children set staff_note = 'too late' where id = $1`, [staffChildId]
+    );
+    check('teacher LOSES edit access the moment a family account owns the record',
+      edit.ok && edit.count === 0, edit.error || `${edit.count} rows`);
+
+    const allergy = await attempt(
+      `update cms_allergies set allergen = 'too late' where child_id = $1`, [staffChildId]
+    );
+    check('teacher loses allergy write access on the same record',
+      allergy.ok && allergy.count === 0, allergy.error || `${allergy.count} rows`);
+
+    const stillReads = await attempt(
+      'select preferred_name from cms_children where id = $1', [staffChildId]
+    );
+    check('teacher STILL READS the record they handed back', stillReads.count === 1,
+      `saw ${stillReads.count}`);
+  });
+
+  await asUser(ids.parentB, async () => {
+    const read = await attempt('select id from cms_children where id = $1', [staffChildId]);
+    check('the newly-linked family CAN now read their child', read.count === 1,
+      `saw ${read.count}`);
+    const edit = await attempt(
+      `update cms_children set preferred_name = 'Kofi' where id = $1`, [staffChildId]
+    );
+    check('the newly-linked family CAN now edit their child', edit.ok && edit.count === 1,
+      edit.error || `${edit.count} rows`);
+  });
+
   // ── 5. school admin ───────────────────────────────────────────────────────
   console.log('\nschool admin');
   await asUser(ids.schoolAdmin, async () => {
     const kids = await attempt('select id, school_id from cms_children where deleted_at is null');
+    // Two now: parent A's child and the one teacher 1 typed in (phase 4).
     check('school admin sees every child in their school',
-      kids.count === 1 && kids.rows[0].school_id === ids.schoolA, `saw ${kids.count}`);
+      kids.count === 2 && kids.rows.every((r) => r.school_id === ids.schoolA),
+      `saw ${kids.count}`);
     check('school admin does NOT see the other school\'s child',
       !kids.rows.some((r) => r.id === ids.quayChild));
 
@@ -536,10 +787,11 @@ async function main() {
     const kids = await attempt('select id, school_id from cms_children where deleted_at is null');
     const bySchool = new Set(kids.rows.map((r) => r.school_id));
     check('org member sees the aggregate roll across both schools',
-      kids.count === 2 && bySchool.size === 2, `saw ${kids.count} children in ${bySchool.size} schools`);
+      kids.count === 3 && bySchool.size === 2, `saw ${kids.count} children in ${bySchool.size} schools`);
 
     const allergyCount = await attempt('select count(*)::int n from cms_allergies');
-    check('org member sees the group-wide allergy flag count', allergyCount.rows[0].n === 1);
+    check('org member sees the group-wide allergy flag count', allergyCount.rows[0].n === 2,
+      `saw ${allergyCount.rows[0].n}`);
 
     const med = await attempt('select id from cms_medical_records');
     check('org member CANNOT read raw medical records', med.count === 0, `saw ${med.count}`);
@@ -591,7 +843,7 @@ async function main() {
   const svcMed = await attempt('select id from cms_medical_records');
   await client.query('COMMIT');
   await client.query('RESET ROLE');
-  check('service role sees every child', svcKids.count === 2, `saw ${svcKids.count}`);
+  check('service role sees every child', svcKids.count === 3, `saw ${svcKids.count}`);
   check('service role sees every medical record', svcMed.count === 1);
   await client.query('BEGIN');
   await client.query('SET LOCAL ROLE service_role');

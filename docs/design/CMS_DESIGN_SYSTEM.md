@@ -484,3 +484,87 @@ caption ("Allergy 2"), a ghost **Remove** in the corner, the fields in a
 (medical, dietary, previous school, contacts) render from it, so a change to how
 a row looks is one edit. Use it for any future repeated group; do not build a
 second row chrome.
+
+---
+
+## 11. The paper exception (added phase 5)
+
+Phases 4 and 5 added the first CMS surface that is not a screen: the printable
+documents at `/cms/teacher/documents/<doc>`. They are the one place in CMS where
+Harbor does **not** apply, and the rules are worth stating so nobody "fixes"
+them back into brand.
+
+### 🚨 PAPER IS WHITE
+
+Montree's house rule, verbatim from `lib/onboarding-core/print/LabelSheets.tsx`:
+*"Paper is white. That is a house rule in both products and is not a theme."*
+CMS keeps it. Harbor blue is SCREEN chrome — a branded background on paper costs
+a teacher a cartridge and makes a wall poster harder to read across a room.
+
+Colour survives onto paper in exactly ONE place: the allergy **severity badges**
+(`.cms-doc-sev-severe` / `-moderate` / `-mild`) and the EpiPen badge. There the
+colour IS the information, and it carries the same hues as the screen's
+`cms-tone-danger` / `cms-tone-amber`, so a teacher who learned the scale on
+Today reads it unchanged on the wall.
+
+### Where the CSS lives, and why it is not in globals.css
+
+`components/cms/documents/PrintFrame.tsx` carries the whole `.cms-doc-*`
+stylesheet in a plain `<style dangerouslySetInnerHTML>` tag — the same pattern
+`lib/onboarding-core/print/*` uses, and for the same two reasons:
+
+1. **`@page` cannot be scoped to a selector.** A `@page { size: A4 }` rule in
+   `app/globals.css` would apply to every print in the whole repo — Montree's
+   label sheets, PSS's sheets, a parent printing a report. It has to be rendered
+   only by the pages that own the paper.
+2. **These are not Harbor classes.** `.cms-doc-*` describe INK. They have no
+   tokens, no hover states, no elevation, and no business sitting in the Harbor
+   section of globals.css next to `.cms-btn`.
+
+The screen toolbar wrapped around the sheet (Back, room picker, Print) uses
+ordinary Harbor `.cms-btn` classes, because the toolbar IS screen chrome and
+disappears at `@media print`.
+
+### The print route renders BARE
+
+`app/cms/layout.tsx`'s `layerFor()` returns `null` for
+`/cms/teacher/documents/<doc>`, so those routes get no AppShell — a sticky
+header, a nav and a footer would otherwise print. The route is still gated: the
+role check lives in `middleware.ts`, not in the layout. `/cms` (the landing
+page) already worked this way; documents are the second case.
+
+### RTL on paper
+
+Every rule uses logical properties (`text-align: start`, `padding-inline`,
+`border-inline-start`), and the sheet inherits `dir` from `.cms-root`. One
+non-obvious rule is load-bearing:
+
+```css
+.cms-doc-sheet [dir='auto'] { unicode-bidi: plaintext; }
+[dir='rtl'] .cms-doc-sheet [dir='auto'] { text-align: right; }
+```
+
+`dir="auto"` gives a Latin child's name its own LTR run (correct) but also makes
+that ELEMENT ltr — so `text-align: start` resolves to LEFT and the name flies to
+the far side of an Arabic page. `unicode-bidi: plaintext` keeps the per-paragraph
+direction for the TEXT, and the explicit `text-align: right` states the alignment
+against the SHEET's direction. **`start` is not enough here** — with
+`unicode-bidi: plaintext` the spec resolves `start` against the paragraph, not
+the element. Verified on the Arabic allergy poster and pickup sheet.
+
+### Two small print laws worth keeping
+
+* `thead { display: table-header-group }` on `.cms-doc-table` — a class list
+  that spills onto page 2 with no column headings is a page of anonymous
+  columns.
+* `break-inside: avoid` on every row, group and poster — a child's allergy must
+  never be split across two sheets.
+
+### 🚨 No plurals, ever
+
+`lib/cms/i18n` is a dictionary lookup plus `{named}` interpolation, by design —
+there is no plural machinery and CMS is not adding one. So every counted string
+is written in a form that is grammatical at 1 AND at 20, in all three complete
+locales: **`Contacts: {count}`**, not `{count} contacts`. "1 contacts" shipped
+once on the roster row and was caught in screenshot review; the label-first form
+is the fix and the convention.

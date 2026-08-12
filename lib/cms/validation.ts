@@ -674,3 +674,171 @@ export function normaliseConsentsStep(values: ConsentsStepValues) {
   }
   return { consents, signedName: clean(values.signedName) };
 }
+
+// ============================================================================
+// PHASE 4 — THE TEACHER'S ROSTER
+// ============================================================================
+// A teacher entering their own class is a DIFFERENT act from a family filling
+// in an enrolment, and these validators say so:
+//
+//   · The floor is LOWER. A family applying for a place must give a legal name,
+//     a date of birth and an emergency contact. A teacher typing twenty names
+//     off a printed list on a Sunday night has a NAME, and that is a real,
+//     useful record — the allergies and the phone numbers arrive over the next
+//     fortnight, one child at a time. A form that refuses the name until the
+//     phone number exists collects nothing at all.
+//   · The rules that remain are the SAFETY ones, and they are identical to the
+//     family's: a named allergen still needs a severity (the poster and the
+//     kitchen sheet are computed from it), a named dietary requirement still
+//     needs a reason, a contact still needs a phone. Those are re-used from the
+//     step validators above rather than re-stated, so the two ends of the
+//     hourglass can never disagree about what a valid allergy is.
+// ============================================================================
+
+/** Ceiling on ONE import. A room is not 200 children; a 200-line paste is a
+ *  mistake, and refusing it beats writing it. Mirrors the parser's own cap. */
+export const MAX_IMPORT_ROWS = 60;
+
+// ── one child, as a teacher types them ──────────────────────────────────────
+
+export interface RosterChildValues {
+  /** The name the room uses. The ONLY required field. */
+  preferredName: string;
+  /** As on the birth certificate. Blank → the preferred name is used. */
+  legalName: string;
+  dateOfBirth: string;
+  homeLanguage: string;
+  /** Staff's own line about the child. Never the family's words. */
+  staffNote: string;
+  allergies: AllergyRowValues[];
+  dietary: DietaryRowValues[];
+  contacts: ContactRowValues[];
+}
+
+export const EMPTY_ROSTER_CHILD: RosterChildValues = {
+  preferredName: '',
+  legalName: '',
+  dateOfBirth: '',
+  homeLanguage: '',
+  staffNote: '',
+  allergies: [],
+  dietary: [],
+  contacts: [],
+};
+
+/**
+ * The whole quick-edit form. Returns EVERY problem at once (the row editor
+ * shows them all inline), and stays silent about everything a teacher has
+ * simply not got to yet.
+ */
+export function validateRosterChild(
+  values: RosterChildValues,
+  now: Date = new Date()
+): ValidationResult {
+  const errors: FieldError[] = [];
+
+  if (isBlank(values.preferredName)) {
+    errors.push({ field: 'preferredName', message: "The child's name is required." });
+  }
+
+  // A date is optional here — but a date that IS given must be real, because
+  // every document computes an age from it.
+  if (!isBlank(values.dateOfBirth)) {
+    const dob = parseIsoDate(values.dateOfBirth.trim());
+    if (!dob) {
+      errors.push({ field: 'dateOfBirth', message: 'That date is not a real date.' });
+    } else if (dob.getTime() > now.getTime()) {
+      errors.push({ field: 'dateOfBirth', message: 'Date of birth is in the future.' });
+    } else {
+      const years = Math.floor((now.getTime() - dob.getTime()) / (365.25 * 24 * 3600 * 1000));
+      if (years > MAX_AGE_YEARS) {
+        errors.push({
+          field: 'dateOfBirth',
+          message: `That date would make the child ${years} years old — please check the year.`,
+        });
+      }
+    }
+  }
+
+  // The three list halves borrow the family-side validators verbatim, then
+  // re-label their fields so the row editor can point at the right box.
+  for (const e of validateMedicalStep({ ...EMPTY_MEDICAL, allergies: values.allergies }).errors) {
+    errors.push(e);
+  }
+  for (const e of validateDietaryStep({ requirements: values.dietary }).errors) {
+    errors.push({ ...e, field: e.field.replace(/^requirements/, 'dietary') });
+  }
+  // Contacts are OPTIONAL on the roster (the family step requires one) — so the
+  // "add at least one" error is dropped and the per-row rules are kept.
+  for (const e of validateContactsStep({ contacts: values.contacts }).errors) {
+    if (e.field === 'contacts') continue;
+    errors.push(e);
+  }
+
+  return { ok: errors.length === 0, errors };
+}
+
+export function normaliseRosterChild(values: RosterChildValues) {
+  const preferredName = clean(values.preferredName);
+  return {
+    preferredName,
+    // A teacher rarely knows the legal name on night one. Falling back to the
+    // preferred name keeps `legal_name NOT NULL` honest without inventing a
+    // different person, and the family corrects it when they connect.
+    legalName: clean(values.legalName) || preferredName,
+    dateOfBirth: parseIsoDate(clean(values.dateOfBirth, 10)) ? clean(values.dateOfBirth, 10) : null,
+    homeLanguage: clean(values.homeLanguage, 40) || 'en',
+    staffNote: clean(values.staffNote, MAX_NOTES) || null,
+    allergies: normaliseMedicalStep({ ...EMPTY_MEDICAL, allergies: values.allergies }).allergies,
+    dietary: normaliseDietaryStep({ requirements: values.dietary }).requirements,
+    contacts: normaliseContactsStep({ contacts: values.contacts }).contacts,
+  };
+}
+
+// ── the paste import ────────────────────────────────────────────────────────
+
+export interface RosterImportRow {
+  name: string;
+  dateOfBirth: string;
+}
+
+/**
+ * A pasted list, after the teacher has edited the preview. Rows with no name
+ * are dropped rather than refused — the preview already showed them, and the
+ * teacher leaving one blank means "skip this line", not "fail my import".
+ */
+export function validateRosterImport(rows: RosterImportRow[]): ValidationResult {
+  const errors: FieldError[] = [];
+  const usable = (rows ?? []).filter((r) => !isBlank(r.name));
+  if (usable.length === 0) {
+    errors.push({ field: 'rows', message: 'Nothing to import — add at least one name.' });
+  }
+  if (usable.length > MAX_IMPORT_ROWS) {
+    errors.push({
+      field: 'rows',
+      message: `That is ${usable.length} children in one import — the limit is ${MAX_IMPORT_ROWS}.`,
+    });
+  }
+  (rows ?? []).forEach((row, i) => {
+    if (isBlank(row.name)) return;
+    if (!isBlank(row.dateOfBirth) && !parseIsoDate(clean(row.dateOfBirth, 10))) {
+      errors.push({ field: `rows.${i}.dateOfBirth`, message: 'That date is not a real date.' });
+    }
+  });
+  return { ok: errors.length === 0, errors };
+}
+
+export function normaliseRosterImport(rows: RosterImportRow[]) {
+  return (rows ?? [])
+    .filter((row) => !isBlank(row.name))
+    .slice(0, MAX_IMPORT_ROWS)
+    .map((row) => {
+      const name = clean(row.name);
+      const dob = clean(row.dateOfBirth, 10);
+      return {
+        preferredName: name,
+        legalName: name,
+        dateOfBirth: parseIsoDate(dob) ? dob : null,
+      };
+    });
+}

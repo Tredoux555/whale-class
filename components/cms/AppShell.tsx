@@ -37,10 +37,20 @@ const NAV: Record<Layer, { href: string; key: TranslationKey }[]> = {
   ],
   teacher: [
     { href: '/cms/teacher/today', key: 'nav.today' },
+    // Phase 4/5, in the order a teacher uses them: put the class in, then
+    // print what the class needs. Documents last because it is the payoff.
+    { href: '/cms/teacher/roster', key: 'nav.roster' },
     { href: '/cms/teacher/documents', key: 'nav.documents' },
   ],
   org: [{ href: '/cms/org/overview', key: 'nav.overview' }],
 };
+
+/** Is this nav item the one we are standing on? A nested route counts —
+ *  `/cms/teacher/documents/class-list` should keep the Documents pill lit. */
+function isActive(active: string | undefined, href: string): boolean {
+  if (!active) return false;
+  return active === href || active.startsWith(`${href}/`);
+}
 
 export async function AppShell({
   layer,
@@ -97,7 +107,7 @@ export async function AppShell({
                 key={item.href}
                 href={item.href}
                 className={`cms-btn cms-btn-sm ${
-                  active === item.href ? 'cms-btn-primary cms-btn-soft' : 'cms-btn-ghost'
+                  isActive(active, item.href) ? 'cms-btn-primary cms-btn-soft' : 'cms-btn-ghost'
                 }`}
               >
                 {t(item.key)}
@@ -121,7 +131,9 @@ export async function AppShell({
               key={item.href}
               href={item.href}
               className={`cms-btn cms-btn-chip ${
-                active === item.href ? 'cms-btn-primary cms-btn-soft' : 'cms-btn-ghost cms-btn-outline'
+                isActive(active, item.href)
+                  ? 'cms-btn-primary cms-btn-soft'
+                  : 'cms-btn-ghost cms-btn-outline'
               }`}
             >
               {t(item.key)}

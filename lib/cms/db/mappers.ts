@@ -126,6 +126,9 @@ export function mapChild(
       })
       .map((g) => g.id),
     photoUrl: row.photo_url ?? null,
+    // Phase 4 column (migration 331). Absent pre-migration → null, which is
+    // exactly "no staff note", so the documents render identically.
+    staffNote: row.staff_note ?? null,
     createdAt: row.created_at,
   };
 }

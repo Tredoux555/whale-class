@@ -152,6 +152,15 @@ export interface Child {
   /** Whoever is allowed to collect today. Derived, never hand-maintained. */
   authorisedCollectors: GuardianId[];
   photoUrl: string | null;
+  /**
+   * The short line a TEACHER writes about this child on the roster page —
+   * "Naps after lunch", "Older brother in Meadow". Phase 4, `cms_children.staff_note`.
+   *
+   * Deliberately NOT `ChildProfile.parentNotes`: that is the family's voice and
+   * staff may not write it (migration 330). This is staff's own note, it says so
+   * on the page, and it prints on the class list.
+   */
+  staffNote: string | null;
   createdAt: IsoDateTime;
 }
 
