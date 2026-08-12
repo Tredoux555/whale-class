@@ -330,11 +330,19 @@ export default function DarkPhonicsPage() {
     // window.scrollTo ourselves — unambiguous, and re-asserted one frame
     // later in case media (video posters, images) still reflowing the layout
     // shortens the first pass.
+    //
+    // Instant, not smooth: the page is ~50,000px of 49 cards' worth of
+    // audio/video/img elements, and an animated multi-second scroll across
+    // that distance was observed getting cut short — likely the main thread
+    // getting busy with lazy-loading media as it scrolls past dozens of
+    // cards, which starves/cancels the smooth-scroll animation partway. A
+    // single instant jump sidesteps that entirely and matches "jump to"
+    // better than a multi-second animated scroll would anyway.
     const scrollToCard = () => {
       const el = document.getElementById(`lesson-${target.n}`);
       if (!el) return;
       const top = el.getBoundingClientRect().top + window.scrollY - 16;
-      window.scrollTo({ top, behavior: 'smooth' });
+      window.scrollTo({ top, behavior: 'auto' });
     };
     scrollToCard();
     requestAnimationFrame(() => requestAnimationFrame(scrollToCard));
