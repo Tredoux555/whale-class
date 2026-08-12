@@ -131,11 +131,12 @@ const ar: Dictionary = {
     'إجابات الطب والغذاء يراها فقط طاقم قاعة الطفل وإدارة المدرسة.',
 
   'parent.messages.title': 'الرسائل',
-  'parent.messages.subtitle': 'محادثة واحدة لكل طفل، مع طاقم القاعة والإدارة.',
+  'parent.messages.subtitle':
+    'مدرستكم تُدير محادثاتها مع العائلات عبر Montree. من هنا تدخلون.',
 
   'parent.updates.title': 'المستجدات',
   'parent.updates.subtitle':
-    'مجموعات الصور وتقارير التقدّم وملخّصات نهاية الفصل، يجمعها المحرّك.',
+    'أفلام الصور والتقارير الأسبوعية وسير الفصل — تُنشر في حساب وليّ الأمر في Montree.',
 
   'teacher.today.title': 'اليوم',
   'teacher.today.subtitle': '{room} · {date}',
@@ -601,6 +602,158 @@ const ar: Dictionary = {
 
   'doc.labels.cut': 'قصّ على الخطوط',
   'doc.classList.epipen': 'إبينفرين',
+
+  // ── المرحلة ٧ — المصافحة: الإدارة، والباب إلى Montree ──────────────────
+  'layer.office': 'الإدارة',
+  'layer.office.role': 'ما تقرّره المدرسة',
+  'nav.enrollments': 'طلبات التسجيل',
+
+  'office.enrollments.title': 'طلبات التسجيل',
+  'office.enrollments.subtitle': 'الطلبات التي تنتظر قراراً، والتي تقرّر أمرها بالفعل.',
+  'office.enrollments.waiting': 'بانتظار قرارك',
+  'office.enrollments.decided': 'تقرّر أمرها',
+  'office.enrollments.empty.title': 'لا توجد طلبات بعد',
+  'office.enrollments.empty.body':
+    'حين تُكمل عائلةٌ استمارة التسجيل وترسلها، يظهر الطلب هنا لتقبله الإدارة أو ترفضه.',
+  'office.stat.waiting': 'بانتظار قرار',
+  'office.stat.accepted': 'مقبولة',
+  'office.stat.connected': 'موصولة بـ Montree',
+
+  'office.status.submitted': 'مُرسَل',
+  'office.status.in_review': 'قيد المراجعة',
+  'office.status.accepted': 'مقبول',
+  'office.status.declined': 'مرفوض',
+  'office.status.waitlisted': 'قائمة الانتظار',
+  'office.status.withdrawn': 'مسحوب',
+
+  'office.steps': 'اكتمل {done} من {total} أقسام',
+  'office.submittedOn': 'أُرسل في {date}',
+  'office.decidedOn': 'تقرّر في {date}',
+  'office.startDate': 'البداية المطلوبة: {date}',
+  'office.room.none': 'لم تُطلب قاعة',
+  'office.family': 'العائلة',
+  'office.family.none': 'لا توجد جهات اتصال',
+  'office.review': 'فتح',
+  'office.dobUnknown': 'تاريخ الميلاد غير معروف',
+
+  'office.link.title': 'الاتصال بـ Montree',
+  'office.link.connected': 'هذه المدرسة موصولة بـ Montree.',
+  'office.link.notConnected': 'هذه المدرسة غير موصولة بـ Montree بعد.',
+  'office.link.rooms': 'وُصلت {linked} من {total} قاعات',
+  'office.link.note':
+    'قبول العائلة يُفعّل التواصل للقاعات الموصولة فقط. وصل مدرسة أو قاعة يتم عبر Montree — وليس إعداداً في هذه الصفحة، لأنه يسمّي سجلات في منتج آخر لا تراه هذه الإدارة.',
+  'office.link.roomBadge': 'القاعة موصولة',
+  'office.link.roomMissing': 'القاعة غير موصولة',
+  'office.link.childBadge': 'موصول',
+  'office.link.invitePending': 'رمز الدعوة معلّق',
+
+  'office.detail.back': 'كل الطلبات',
+  'office.detail.subtitle': 'الطلب كما ملأته العائلة تماماً.',
+  'office.detail.readOnly':
+    'للقراءة فقط. الإدارة تقرّر في الطلب ولا تعدّله أبداً — ما كتبته العائلة هو السجل.',
+  'office.detail.notFound.title': 'لا يوجد طلب بهذا الرقم',
+  'office.detail.notFound.body': 'ربما سُحب، أو أنه يخصّ مدرسة أخرى.',
+  'office.section.child': 'الطفل',
+  'office.section.about': 'عن طفلهم، بكلمات العائلة',
+  'office.section.medical': 'الطبّي',
+  'office.section.dietary': 'الغذاء',
+  'office.section.contacts': 'جهات الاتصال والاستلام',
+  'office.section.previous': 'الروضة السابقة',
+  'office.section.consents': 'الموافقات',
+  'office.section.settling': 'ملاحظات التأقلم',
+  'office.field.legalName': 'الاسم الرسمي',
+  'office.field.preferredName': 'يُنادى بـ',
+  'office.field.dob': 'تاريخ الميلاد',
+  'office.field.homeLanguage': 'لغة البيت',
+  'office.field.room': 'القاعة المطلوبة',
+  'office.field.startDate': 'البداية المطلوبة',
+  'office.field.likes': 'يحبّ',
+  'office.field.dislikes': 'لا يحبّ',
+  'office.field.interests': 'الاهتمامات',
+  'office.field.parentNotes': 'ما ينبغي أن يعرفه المعلّم',
+  'office.field.conditions': 'الحالات',
+  'office.field.medications': 'الأدوية',
+  'office.field.doctor': 'الطبيب',
+  'office.field.emergencyNote': 'ملاحظة الطوارئ',
+  'office.field.reason': 'سبب المغادرة',
+  'office.field.canCollect': 'يجوز له الاستلام',
+  'office.field.cannotCollect': 'يُمنع من الاستلام',
+  'office.consent.granted': 'مُمنوحة',
+  'office.consent.refused': 'غير مُمنوحة',
+  'office.empty': 'لا شيء مُسجَّل',
+
+  'office.decision.title': 'القرار',
+  'office.decision.body':
+    'القبول يُنشئ هذا الطفل في Montree داخل القاعة الموصولة، ويمنح العائلة الرمز الذي يفتح حساب وليّ الأمر في Montree.',
+  'office.decision.bodyUnlinked':
+    'القبول يثبّت المقعد. لا يمكن تفعيل التواصل لهذه العائلة قبل وصل المدرسة والقاعة بـ Montree.',
+  'office.decision.accept': 'قبول الطلب',
+  'office.decision.decline': 'رفض',
+  'office.decision.waitlist': 'قائمة الانتظار',
+  'office.decision.declineTitle': 'رفض هذا الطلب',
+  'office.decision.noteLabel': 'السبب (اختياري — يبقى في الإدارة ولا يُعرض للعائلة)',
+  'office.decision.notePlaceholder': 'لا مقاعد في قاعة الثلاث سنوات حتى يناير.',
+  'office.decision.confirmDecline': 'تأكيد الرفض',
+  'office.decision.cancel': 'إبقاؤه مفتوحاً',
+  'office.decision.working': 'جارٍ التنفيذ…',
+  'office.decision.declinedNote': 'ملاحظة الإدارة',
+
+  'office.result.accepted': 'قُبل. هذه العائلة موصولة الآن بـ Montree.',
+  'office.result.alreadyAccepted': 'مقبول من قبل — لم يتغيّر شيء.',
+  'office.result.acceptedUnlinked':
+    'قُبل. تفعيل التواصل غير متاح — هذه المدرسة غير موصولة بـ Montree.',
+  'office.result.acceptedRoomUnlinked':
+    'قُبل. تفعيل التواصل غير متاح — القاعة المطلوبة غير موصولة بقاعة في Montree.',
+  'office.result.invitePending':
+    'قُبل، وأُنشئ الطفل في Montree — لكن تعذّر إصدار رمز الدعوة. اضغط «قبول» مرة أخرى؛ لن يتكرّر شيء.',
+  'office.result.activationFailed':
+    'قُبل. تعذّر الوصول إلى Montree لتفعيل التواصل — اضغط «قبول» مرة أخرى لاحقاً.',
+  'office.result.declined': 'رُفض.',
+  'office.result.waitlisted':
+    'نُقل الطلب إلى قائمة الانتظار. لم يُنشأ شيء في Montree — وإذا قبلتموه لاحقاً فسيتم الربط كاملاً.',
+  'office.result.error': 'لم تتم العملية. لم يتغيّر شيء.',
+  'office.result.demo': 'وضع العرض — لا يُكتب شيء. اربط قاعدة بيانات لتصبح القرارات حقيقية.',
+  'office.result.retry': 'حاول مرة أخرى',
+
+  'office.code.label': 'رمز دعوة Montree',
+  'office.code.help':
+    'أعطِه للعائلة. يفتح حساب وليّ الأمر في Montree — الرسائل مع المعلّم والتقارير والصور والمكالمات.',
+  'office.code.link': 'مدخل أولياء الأمور',
+
+  'parent.doorway.messages.heading': 'مدرستكم تتواصل معكم عبر Montree',
+  'parent.doorway.messages.body':
+    'الرسائل مع معلّم طفلكم تعيش في Montree، إلى جانب صوره وتقاريره ولقاءاته — مكان واحد لا أربعة. الرمز أدناه يفتحه.',
+  'parent.doorway.updates.heading': 'أسبوع طفلكم بانتظاركم في Montree',
+  'parent.doorway.updates.body':
+    'أفلام الصور والتقارير الأسبوعية وما اشتغل عليه طفلكم تُنشر في حساب وليّ الأمر في Montree. الرمز أدناه يفتحه.',
+  'parent.doorway.codeFor': 'رمز {name}',
+  'parent.doorway.codeHint': 'احتفظوا به — الرمز نفسه يعمل في كل مرة تدخلون فيها.',
+  'parent.doorway.cta': 'افتح Montree',
+  'parent.doorway.step1': 'اضغطوا «افتح Montree» — الرابط يحمل رمزكم معه.',
+  'parent.doorway.step2':
+    'إذا طلب Montree الرمز، اكتبوا الأحرف الستة الظاهرة أعلاه في الحقل الوحيد على الشاشة.',
+  'parent.doorway.step3':
+    'ستصلون إلى صفحة طفلكم — الرسائل والتقارير والصور كلها هناك.',
+  'parent.doorway.whatYouFind': 'ما ينتظركم هناك',
+  'parent.doorway.feature.chat': 'رسائل مع المعلّم',
+  'parent.doorway.feature.chatBody':
+    'محادثة خاصة مع قاعة طفلكم، يردّ عليها من يقضون معه اليوم كلّه.',
+  'parent.doorway.feature.reports': 'تقارير أسبوعية',
+  'parent.doorway.feature.reportsBody':
+    'ما اختاره طفلكم ومارسه وأتقنه هذا الأسبوع، بقلم معلّمه.',
+  'parent.doorway.feature.photos': 'صور وأفلام',
+  'parent.doorway.feature.photosBody':
+    'صور من القاعة ومقاطع قصيرة لطفلكم أثناء العمل، تُشارَك معكم وحدكم.',
+  'parent.doorway.feature.calls': 'لقاءات ومكالمات',
+  'parent.doorway.feature.callsBody':
+    'احجزوا موعداً للحديث مع المعلّمة، وإذا فعّلت مدرستكم المكالمات فانضمّوا إليه بالفيديو أو الصوت من المكان نفسه.',
+  'parent.doorway.notReady.title': 'مدرستكم لم تُفعّل هذا بعد',
+  'parent.doorway.notReady.body':
+    'حين تقبل الإدارة طلبكم وتصل قاعة طفلكم، يظهر رمز الدعوة هنا وتصبح هذه الصفحة هي المدخل. لا ينقص شيء من جهتكم.',
+  'parent.doorway.pending.title': 'اقتربنا',
+  'parent.doorway.pending.body':
+    'مقعدكم مقبول وقاعة طفلكم موصولة — الإدارة تُنهي رمز الدعوة. سيظهر هنا.',
+  'parent.doorway.demo': 'وضع العرض — هكذا تراه عائلة موصولة. الرمز أدناه ليس حقيقياً.',
 };
 
 export default ar;

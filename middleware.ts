@@ -417,6 +417,9 @@ export async function middleware(req: NextRequest) {
   // /cms/parent/**           parent (or a school_admin covering the office)
   // /cms/teacher/**          teacher (or a school_admin covering the floor)
   // /cms/org/**              org_admin
+  // /cms/office/**           school_admin ONLY (phase 7 — accepting an enrolment
+  //                          creates a child in Montree and mints a family a
+  //                          login; a teacher and an org director may not)
   //
   // In DEMO MODE (no Supabase configured, or CMS_AUTH_ENFORCED=0) this block
   // does nothing at all and every layer stays walkable — that is the whole

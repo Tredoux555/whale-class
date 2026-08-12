@@ -88,6 +88,9 @@ function layerFor(pathname: string): Layer | null {
   if (pathname.startsWith('/cms/parent')) return 'parent';
   if (pathname.startsWith('/cms/teacher')) return 'teacher';
   if (pathname.startsWith('/cms/org')) return 'org';
+  // Phase 7 — the school office. Its own layer badge, because a school_admin
+  // standing in the office is doing something a teacher never does.
+  if (pathname.startsWith('/cms/office')) return 'office';
   return null;
 }
 

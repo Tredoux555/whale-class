@@ -130,6 +130,28 @@ export function UsersIcon({ className }: IconProps) {
   );
 }
 
+/** Phase 7 — the parent doorway names what is waiting in Montree, and "photos"
+ *  and "calls" are the two things no existing icon in this set can stand in for
+ *  without lying about which surface a family is being pointed at. Same 24×24
+ *  stroke grammar as every icon above; still no icon package. */
+export function CameraIcon({ className }: IconProps) {
+  return (
+    <svg {...base} strokeWidth={1.8} className={className}>
+      <path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h1.9l1.3-2.2h6.6L16.6 6h1.9A2.5 2.5 0 0 1 21 8.5v9A2.5 2.5 0 0 1 18.5 20h-13A2.5 2.5 0 0 1 3 17.5z" />
+      <circle cx="12" cy="12.8" r="3.6" />
+    </svg>
+  );
+}
+
+export function VideoIcon({ className }: IconProps) {
+  return (
+    <svg {...base} strokeWidth={1.8} className={className}>
+      <rect x="2.8" y="6" width="12.6" height="12" rx="2.4" />
+      <path d="M15.4 11.2 21.2 8v8l-5.8-3.2z" />
+    </svg>
+  );
+}
+
 /**
  * Inline icon box. `.cms-btn > svg` only sizes DIRECT svg children, so an icon that
  * needs a wrapper (for RTL flipping) must carry its own box or it collapses to

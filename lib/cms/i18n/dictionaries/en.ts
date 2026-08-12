@@ -143,12 +143,13 @@ const en = {
 
   // ── parent · messages ──────────────────────────────────────────────────
   'parent.messages.title': 'Messages',
-  'parent.messages.subtitle': 'One thread per child, with the room staff and the office.',
+  'parent.messages.subtitle':
+    'Your school runs its conversations with families through Montree. This is your way in.',
 
   // ── parent · updates ───────────────────────────────────────────────────
   'parent.updates.title': 'Updates',
   'parent.updates.subtitle':
-    'Photo montages, progress reports and end-of-term summaries, assembled by the engine.',
+    'Photo films, weekly reports and how the term is going — published to your Montree parent account.',
 
   // ── teacher · today ────────────────────────────────────────────────────
   'teacher.today.title': 'Today',
@@ -632,6 +633,167 @@ const en = {
 
   'doc.labels.cut': 'Cut along the lines',
   'doc.classList.epipen': 'EpiPen',
+  // ══════════════════════════════════════════════════════════════════════════
+  // PHASE 7 — THE HANDSHAKE: the office, and the doorway into Montree
+  // ══════════════════════════════════════════════════════════════════════════
+  'layer.office': 'Office',
+  'layer.office.role': 'What the school decides',
+  'nav.enrollments': 'Enrolments',
+
+  // ── office · the list ──────────────────────────────────────────────────
+  'office.enrollments.title': 'Enrolments',
+  'office.enrollments.subtitle':
+    'Applications waiting on a decision, and the ones already decided.',
+  'office.enrollments.waiting': 'Waiting on you',
+  'office.enrollments.decided': 'Already decided',
+  'office.enrollments.empty.title': 'No applications yet',
+  'office.enrollments.empty.body':
+    'When a family finishes the enrolment form and submits it, it appears here for the office to accept or decline.',
+  'office.stat.waiting': 'Waiting on a decision',
+  'office.stat.accepted': 'Accepted',
+  'office.stat.connected': 'Connected to Montree',
+
+  'office.status.submitted': 'Submitted',
+  'office.status.in_review': 'In review',
+  'office.status.accepted': 'Accepted',
+  'office.status.declined': 'Declined',
+  'office.status.waitlisted': 'Waiting list',
+  'office.status.withdrawn': 'Withdrawn',
+
+  'office.steps': '{done} of {total} sections filled in',
+  'office.submittedOn': 'Submitted {date}',
+  'office.decidedOn': 'Decided {date}',
+  'office.startDate': 'Requested start: {date}',
+  'office.room.none': 'No room requested',
+  'office.family': 'Family',
+  'office.family.none': 'No contacts on file',
+  'office.review': 'Open',
+  'office.dobUnknown': 'Birthday not known',
+
+  // ── office · the Montree link panel (read-only, always) ────────────────
+  'office.link.title': 'Montree connection',
+  'office.link.connected': 'This school is connected to Montree.',
+  'office.link.notConnected': 'This school is not connected to Montree yet.',
+  'office.link.rooms': '{linked} of {total} rooms connected',
+  'office.link.note':
+    'Accepting a family only switches communication on for rooms that are connected. Connecting a school or a room is done for you by Montree — it is not a setting on this page, because it names records in another product that this office cannot see.',
+  'office.link.roomBadge': 'Room connected',
+  'office.link.roomMissing': 'Room not connected',
+  'office.link.childBadge': 'Connected',
+  'office.link.invitePending': 'Invite pending',
+
+  // ── office · one application, read-only ────────────────────────────────
+  'office.detail.back': 'All enrolments',
+  'office.detail.subtitle': 'The application, exactly as the family filled it in.',
+  'office.detail.readOnly':
+    'Read-only. The office decides on an application; it never edits one — what the family wrote is the record.',
+  'office.detail.notFound.title': 'No such application',
+  'office.detail.notFound.body':
+    'It may have been withdrawn, or it belongs to another school.',
+  'office.section.child': 'The child',
+  'office.section.about': 'About their child, in the family’s words',
+  'office.section.medical': 'Medical',
+  'office.section.dietary': 'Dietary',
+  'office.section.contacts': 'Contacts and collection',
+  'office.section.previous': 'Previous setting',
+  'office.section.consents': 'Consents',
+  'office.section.settling': 'Settling notes',
+  'office.field.legalName': 'Legal name',
+  'office.field.preferredName': 'Known as',
+  'office.field.dob': 'Date of birth',
+  'office.field.homeLanguage': 'Language at home',
+  'office.field.room': 'Requested room',
+  'office.field.startDate': 'Requested start',
+  'office.field.likes': 'Likes',
+  'office.field.dislikes': 'Dislikes',
+  'office.field.interests': 'Interests',
+  'office.field.parentNotes': 'What the teacher should know',
+  'office.field.conditions': 'Conditions',
+  'office.field.medications': 'Medication',
+  'office.field.doctor': 'Doctor',
+  'office.field.emergencyNote': 'Emergency note',
+  'office.field.reason': 'Reason for leaving',
+  'office.field.canCollect': 'May collect',
+  'office.field.cannotCollect': 'Must not collect',
+  'office.consent.granted': 'Given',
+  'office.consent.refused': 'Not given',
+  'office.empty': 'Nothing recorded',
+
+  // ── office · the decision ──────────────────────────────────────────────
+  'office.decision.title': 'The decision',
+  'office.decision.body':
+    'Accepting creates this child in Montree, in the connected room, and gives the family the code that opens their Montree parent account.',
+  'office.decision.bodyUnlinked':
+    'Accepting records the place. Communication cannot be switched on for this family until the school and the room are connected to Montree.',
+  'office.decision.accept': 'Accept enrolment',
+  'office.decision.decline': 'Decline',
+  'office.decision.waitlist': 'Waiting list',
+  'office.decision.declineTitle': 'Decline this application',
+  'office.decision.noteLabel': 'Reason (optional — kept in the office, never shown to the family)',
+  'office.decision.notePlaceholder': 'No space in the three-year-old room until January.',
+  'office.decision.confirmDecline': 'Confirm decline',
+  'office.decision.cancel': 'Keep it open',
+  'office.decision.working': 'Working…',
+  'office.decision.declinedNote': 'Office note',
+
+  'office.result.accepted': 'Accepted. This family is now connected to Montree.',
+  'office.result.alreadyAccepted': 'Already accepted — nothing changed.',
+  'office.result.acceptedUnlinked':
+    'Accepted. Communication activation unavailable — this school is not connected to Montree.',
+  'office.result.acceptedRoomUnlinked':
+    'Accepted. Communication activation unavailable — the requested room is not connected to a Montree classroom.',
+  'office.result.invitePending':
+    'Accepted, and the child was created in Montree — but the invite code could not be minted. Press Accept again to try for the code; nothing will be duplicated.',
+  'office.result.activationFailed':
+    'Accepted. Montree could not be reached to switch communication on — press Accept again later.',
+  'office.result.declined': 'Declined.',
+  'office.result.waitlisted':
+    'Moved to the waiting list. Nothing was created in Montree — accepting later still runs the full connection.',
+  'office.result.error': 'That did not go through. Nothing was changed.',
+  'office.result.demo': 'Demo mode — nothing is written. Connect a database to make decisions real.',
+  'office.result.retry': 'Try again',
+
+  'office.code.label': 'Montree invite code',
+  'office.code.help':
+    'Give this to the family. It opens their Montree parent account — messages with the teacher, reports, photos and calls.',
+  'office.code.link': 'Parent entry',
+
+  // ── parent · the doorway into Montree ──────────────────────────────────
+  'parent.doorway.messages.heading': 'Your school talks with you through Montree',
+  'parent.doorway.messages.body':
+    'Messages with your child’s teacher live in Montree, alongside their photos, reports and meetings — one place, not four. Your code below opens it.',
+  'parent.doorway.updates.heading': 'Your child’s week is waiting in Montree',
+  'parent.doorway.updates.body':
+    'Photo films, weekly reports and what your child has been working on are published to your Montree parent account. Your code below opens it.',
+  'parent.doorway.codeFor': '{name}’s code',
+  'parent.doorway.codeHint': 'Keep it — the same code works every time you sign in.',
+  'parent.doorway.cta': 'Open Montree',
+  'parent.doorway.step1': 'Tap Open Montree. The link carries your code with it.',
+  'parent.doorway.step2':
+    'If Montree asks for a code, type the six characters above into the one box on the screen.',
+  'parent.doorway.step3':
+    'You land on your child’s page — messages, reports and photos are all in there.',
+  'parent.doorway.whatYouFind': 'What is waiting for you there',
+  'parent.doorway.feature.chat': 'Messages with the teacher',
+  'parent.doorway.feature.chatBody':
+    'A private thread with your child’s room, answered by the people who are with them all day.',
+  'parent.doorway.feature.reports': 'Weekly reports',
+  'parent.doorway.feature.reportsBody':
+    'What your child chose, practised and mastered this week, written by their teacher.',
+  'parent.doorway.feature.photos': 'Photos and films',
+  'parent.doorway.feature.photosBody':
+    'Photographs from the room and short montages of your child at work, shared only with you.',
+  'parent.doorway.feature.calls': 'Meetings and calls',
+  'parent.doorway.feature.callsBody':
+    'Book a conversation with the teacher — and where your school has calls turned on, join it by video or voice from the same place.',
+  'parent.doorway.notReady.title': 'Your school has not switched this on yet',
+  'parent.doorway.notReady.body':
+    'When the office accepts your enrolment and connects your child’s room, your invite code appears here and this page becomes the way in. Nothing is missing on your side.',
+  'parent.doorway.pending.title': 'Almost there',
+  'parent.doorway.pending.body':
+    'Your place is accepted and your child’s room is connected — the office is finishing your invite code. It will appear here.',
+  'parent.doorway.demo':
+    'Demo mode — this is what a connected family sees. The code below is not a real one.',
 } as const;
 
 export default en;
