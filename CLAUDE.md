@@ -66,6 +66,17 @@ Milestones child palette `C` (`components/montree/evaluation/tokens.ts`).
 naming only) — routes (`/potato`, `/api/potato`), table prefixes (`tp_`), and all other
 identifiers are UNCHANGED.
 
+## 🚢 SHIP RULE — COMMIT & PUSH (locked 2026-08-12)
+
+Work in this repo is NOT done until it is committed AND pushed. Every session
+(Claude, Cowork, any agent) that lands changes must, as its final step:
+1. `git commit` on the working branch with a descriptive message
+2. `git push` to origin (set upstream on first push of a branch)
+3. Report the commit hash in its summary
+Uncommitted edits or unpushed commits = unfinished work, no exceptions.
+Cowork note: run git on the Mac via Desktop Commander, NOT the device-bridge
+mount (the mount can't unlink git lock files and has no network for push).
+
 ## 🏫 CMS — CLASSROOM MANAGEMENT SYSTEM (new brand surface, 2026-08-11)
 
 **What it is:** an hourglass. **Parent intake → engine → teacher outputs**, standing on an
@@ -74,10 +85,11 @@ consents, previous school); `lib/cms/engine/**` derives from those records; teac
 type a value — the Today roster, flag chips and documents are all computed. Org sits under
 both ends for multi-school comparison and group-wide policy.
 
-**Where it lives:** pages `app/cms/**` (`/cms` landing · `/cms/parent/{dashboard,enroll,messages,updates}`
+**Where it lives:** pages `app/cms/**` (`/cms` landing · `/cms/login` · `/cms/parent/{dashboard,enroll,messages,updates}`
 · `/cms/teacher/{today,documents}` · `/cms/org/overview`) · components `components/cms/**` ·
-engine/i18n/demo `lib/cms/**` · API `app/api/cms/{health,demo/today}` · schema `db/cms-schema.sql`.
-One layout, `app/cms/layout.tsx`, owns the theme, the fonts and the AppShell.
+engine/i18n/demo/auth/db `lib/cms/**` · API `app/api/cms/{health,demo/today,auth/{login,signup,logout},enroll}` ·
+migration `migrations/329_cms_phase2.sql` (+ `_ROLLBACK`) · phase-1 schema draft `db/cms-schema.sql` (superseded,
+kept as the design record). One layout, `app/cms/layout.tsx`, owns the theme, the fonts and the AppShell.
 
 **🚨 HARBOR LAW — CMS is a PROTECTED BRAND, like PSS's `pt-*`.** Its design system is
 "Harbor" (light-first Harbor blue, Source Serif 4 + Inter): `docs/design/CMS_DESIGN_SYSTEM.md`,
@@ -98,9 +110,80 @@ anything new in `lib/cms/`, check whether `lib/onboarding-core/` or an existing 
 already does it — the long-term intent is convergence, not a second parallel product.
 
 **PHASE STATUS:** Phase 1 **DONE** (design law, engine data model, i18n, all pages, demo data,
-API, ported into this repo). Phase 2 **NEXT**: Supabase schema (from `db/cms-schema.sql`) +
-auth + real enrollment writes replacing `lib/cms/demo/seed.ts`. Future: Montree's own child
-onboarding adopts the shared engine so both products derive from one record.
+API). Phase 2 **BUILT, migration PENDING Tredoux's Supabase run** — see `APPLY_CMS_PHASE2.md`
+at the repo root for the founder's checklist. Future: Montree's own child onboarding adopts the
+shared engine so both products derive from one record.
+
+### PHASE 2 — the data layer is real
+
+**⏳ MIGRATION `migrations/329_cms_phase2.sql` PENDING (SQL pasted in chat per rule #4).**
+17 `cms_`-prefixed tables, purely additive, one transaction, idempotent, zero ALTER/DROP against
+any existing table. Rollback: `migrations/329_cms_phase2_ROLLBACK.sql` (drops only `cms_*`).
+Pre-run behaviour is safe: with no CMS tables the surface still runs in demo mode.
+
+**How to apply:** Supabase SQL Editor, paste the whole file, Run. Full checklist +
+first-parent/first-teacher seed SQL + verification URLs: `APPLY_CMS_PHASE2.md`.
+
+**🚨 DEMO vs LIVE — one switch, `lib/cms/auth/mode.ts`.** `isCmsLive()` returns true when a
+Supabase project is configured, false otherwise; `CMS_AUTH_ENFORCED=1|0` overrides either way.
+**Demo mode is not a fallback, it is a feature**: with no database the whole surface still walks
+on `lib/cms/demo/seed.ts` and the route gate is off, so the founder can demo CMS on a laptop with
+no env. Live mode reads `cms_*` tables and enforces roles. Every data path asks this module first
+— never read `process.env` for CMS mode at a call site.
+
+**AUTH MODEL.** Email + password → bcrypt (`lib/montree/password.ts`, reused verbatim) → a `jose`
+JWT in the httpOnly cookie `cms_session` (`lib/cms/auth/session.ts` = edge-safe, `server.ts` =
+next/headers). **Supabase Auth is deliberately NOT used** — Montree does not use it, so
+`auth.users` is empty; a second identity system for one surface would be the invention the
+reuse-first law forbids. The token's `sub` is `cms_users.id`, which is exactly what the database's
+`cms_current_user_id()` resolves, so the RLS policies already apply to this token unchanged if it
+is ever signed with the Supabase JWT secret and handed to PostgREST. Env: `CMS_JWT_SECRET`
+(falls back to `MONTREE_JWT_SECRET`/`ADMIN_SECRET`), `CMS_JWT_TTL_DAYS` (default 30 — deliberately
+shorter than Montree's 10-year teacher token: a CMS session can hold a medical record).
+
+**THE GATE lives in `middleware.ts`** (CMS ROLE GATE block, above `publicPaths`). `/cms` and
+`/cms/login` are public; `/cms/parent/**` needs parent (or school_admin), `/cms/teacher/**` needs
+teacher (or school_admin), `/cms/org/**` needs org_admin. Signed-out → `/cms/login?next=…`;
+signed-in-but-wrong-layer → their OWN layer, never the login form. **🚨 The `publicPaths` list no
+longer carries a bare `/cms` meaning "all of /cms is public" — do not re-add one, it would
+silently un-gate every child's record.**
+
+**ROLES = `cms_memberships`**, not Montree's role rails (which are all scoped to `montree_schools`
+and would make a CMS row undeletable without touching Montree data). One row = one person's
+authority in one school; a teacher who is also a parent holds two rows. Staff accounts are NEVER
+self-service — `/api/cms/auth/signup` only ever mints `role='parent'` (+ the `cms_guardians` row
+the child record links to), and RLS refuses membership writes from non-admins as well.
+
+**🚨 RLS IS REAL AND IS TESTED.** Policies are defence-in-depth (the app itself uses the service
+role and scopes by session, house pattern). Every policy is `TO authenticated` — never bare, which
+defaults to PUBLIC/anon and is the exact hole migration 313 had to close. Helper functions are
+`SECURITY DEFINER` with a pinned `search_path` (a policy on `cms_memberships` that reads
+`cms_memberships` would recurse). **`scripts/cms/rls-test.mjs` is the load-bearing test** — it
+impersonates each role the way PostgREST does (`SET ROLE authenticated` + `request.jwt.claims`)
+and asserts BOTH halves of every rule: 55 assertions, green against local Postgres
+(`scripts/cms/local-supabase-shim.sql` supplies `auth.uid()` + the three Supabase roles). It found
+two real holes on first run — an org director could read every medical record in the group, and
+any parent at a school could attach themselves as guardian to any other family's child. **Re-run
+it after ANY policy edit.** The `created_by_user_id` column on `cms_children` is load-bearing for
+that second fix, not audit decoration.
+
+**ENROLMENT WRITES.** Wizard step 1 POSTs `/api/cms/enroll` → `cms_children` +
+`cms_child_guardians` + `cms_enrollments(draft)` in one idempotent move (saving twice edits the
+draft, it never creates twins). Steps 2–6 stay scaffolds but park their answers in
+`cms_enrollments.draft_data` and the wizard reloads the open draft, so a family can leave and come
+back. **Tenancy comes from the session, never from the body** — the body cannot name a school, a
+guardian or a child (the Jul-3 cross-tenant lesson: existence ≠ ownership; the requested room is
+re-checked against the session's school).
+
+**THE ENGINE DID NOT CHANGE.** `buildDailyRoster` is still the same pure
+`(RosterInput, RosterLabels) → DailyRoster`. Teacher Today just builds the argument from DB rows
+in live mode and from the seed in demo mode; the rendering half of that page is untouched. Same
+for the parent dashboard's `ChildCard`. `lib/cms/db/{mappers,queries}.ts` is the ONLY place
+supabase-js appears in CMS — pages never import it.
+
+**Validation** is `lib/cms/validation.ts` (no zod — CMS adds no dependencies), rules lifted from
+`lib/onboarding-core/validation.ts`: round-tripping ISO dates, a plausible age window, forgiving
+elsewhere. Client validates for the message, the route validates for real.
 
 ## 🧒 SESSION — Aug 10, 2026 pt3 (Cowork/Fable directing Sonnet) — CHILD ONBOARDING SHIPPED (shared intake core + Montree & PSS adapters) — migrations PENDING
 

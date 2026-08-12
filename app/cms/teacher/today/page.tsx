@@ -1,11 +1,18 @@
 // app/cms/teacher/today/page.tsx
 // WORKING PAGE 2 of 3 — and the proof that the hourglass is real.
 //
-// This page holds no child data of its own. It takes the seeded records that a
-// PARENT would have entered (Child, Guardian, Allergy, DietaryRequirement,
-// MedicalRecord), passes them through `lib/cms/engine/roster.buildDailyRoster`, and
-// renders whatever comes out. Swap the seed for Supabase rows and this file
-// does not change by one line.
+// This page holds no child data of its own. It takes the records that a PARENT
+// entered (Child, Guardian, Allergy, DietaryRequirement, MedicalRecord), passes
+// them through `lib/cms/engine/roster.buildDailyRoster`, and renders whatever
+// comes out.
+//
+// PHASE 2 PROVED THE CLAIM. Phase 1's header said "swap the seed for Supabase
+// rows and this file does not change by one line" — and the rendering half
+// below is untouched. What was added is a source switch above it: live mode
+// reads cms_children / cms_allergies / cms_dietary_requirements /
+// cms_medical_records / cms_attendance for the teacher's own room, demo mode
+// reads the seed. `buildDailyRoster` was not modified, and its signature is
+// still a pure (RosterInput, RosterLabels) → DailyRoster.
 
 import { Avatar } from '@/components/cms/Avatar';
 import { Card } from '@/components/cms/Card';
@@ -20,7 +27,12 @@ import {
   IconBox,
   UtensilsIcon,
 } from '@/components/cms/icons';
-import { buildDailyRoster, countFlags, type RosterLabels } from '@/lib/cms/engine/roster';
+import {
+  buildDailyRoster,
+  countFlags,
+  type RosterInput,
+  type RosterLabels,
+} from '@/lib/cms/engine/roster';
 import {
   DEMO_DATE,
   DEMO_DATE_LABEL,
@@ -32,7 +44,41 @@ import {
   demoMedical,
   demoSchool,
 } from '@/lib/cms/demo/seed';
+import { isCmsLive } from '@/lib/cms/auth/mode';
+import { getCmsSession } from '@/lib/cms/auth/server';
+import { loadTeacherRoster } from '@/lib/cms/db/queries';
 import { getServerT } from '@/lib/cms/i18n/server';
+import type { Locale } from '@/lib/cms/i18n/config';
+
+export const dynamic = 'force-dynamic';
+
+/**
+ * Today, in the SCHOOL's timezone — never the server's. A register is cut on
+ * the day the room is living, and a Railway container in another hemisphere
+ * must not roll the day over early. (`en-CA` because it formats as YYYY-MM-DD,
+ * which is what a `date` column wants.)
+ */
+function schoolToday(timezone: string): string {
+  try {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: timezone }).format(new Date());
+  } catch {
+    return new Intl.DateTimeFormat('en-CA').format(new Date());
+  }
+}
+
+/** "Tuesday 11 August", in the reader's own language. */
+function formatDateLabel(isoDate: string, locale: Locale, timezone: string): string {
+  try {
+    return new Intl.DateTimeFormat(locale, {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      timeZone: timezone,
+    }).format(new Date(`${isoDate}T12:00:00Z`));
+  } catch {
+    return isoDate;
+  }
+}
 
 /**
  * Family name for the roster row. Returns null when it merely repeats the
@@ -44,7 +90,7 @@ function surnameOf(child: { legalName: string; preferredName: string }): string 
 }
 
 export default async function TeacherTodayPage() {
-  const { t } = await getServerT();
+  const { t, locale } = await getServerT();
 
   // The engine is i18n-free by design, so the page hands it the label fragments
   // it needs. This is the ONLY place UI language and engine logic meet.
@@ -60,19 +106,59 @@ export default async function TeacherTodayPage() {
     noFlags: t('child.flags.none'),
   };
 
-  const roster = buildDailyRoster(
-    {
-      school: demoSchool,
-      classGroup: demoClassGroup,
-      date: DEMO_DATE,
-      children: demoChildren,
-      allergies: demoAllergies,
-      dietary: demoDietary,
-      medical: demoMedical,
-      daily: demoDailyFacts,
-    },
-    labels
-  );
+  // ── the source switch — the ONLY thing phase 2 added to this page ──────
+  let input: RosterInput = {
+    school: demoSchool,
+    classGroup: demoClassGroup,
+    date: DEMO_DATE,
+    children: demoChildren,
+    allergies: demoAllergies,
+    dietary: demoDietary,
+    medical: demoMedical,
+    daily: demoDailyFacts,
+  };
+  let dateLabel = DEMO_DATE_LABEL;
+
+  if (isCmsLive()) {
+    const session = await getCmsSession();
+    const data = session ? await loadTeacherRoster(session, schoolToday('UTC')) : null;
+    if (!data) {
+      // A teacher with no room assignment. Showing somebody else's register
+      // would be worse than showing none.
+      return (
+        <>
+          <PageHeader title={t('teacher.today.title')} />
+          <Card className="text-center py-10">
+            <h2 className="font-head text-[18px] m-0">{t('teacher.today.noRoom.title')}</h2>
+            <p className="text-[13.5px] text-harbor-muted mt-2.5 mb-0 leading-relaxed max-w-[54ch] mx-auto">
+              {t('teacher.today.noRoom.body')}
+            </p>
+          </Card>
+        </>
+      );
+    }
+    // Re-read the day in the school's own zone now that we know it, then take
+    // the register for THAT day.
+    const onDate = schoolToday(data.school.timezone);
+    const forDay =
+      onDate === schoolToday('UTC')
+        ? data
+        : (session && (await loadTeacherRoster(session, onDate))) || data;
+
+    input = {
+      school: forDay.school,
+      classGroup: forDay.classGroup,
+      date: onDate,
+      children: forDay.children,
+      allergies: forDay.allergies,
+      dietary: forDay.dietary,
+      medical: forDay.medical,
+      daily: forDay.daily,
+    };
+    dateLabel = formatDateLabel(onDate, locale, forDay.school.timezone);
+  }
+
+  const roster = buildDailyRoster(input, labels);
 
   return (
     <>
@@ -84,7 +170,7 @@ export default async function TeacherTodayPage() {
         title={t('teacher.today.title')}
         subtitle={t('teacher.today.subtitle', {
           room: roster.classGroup.name,
-          date: DEMO_DATE_LABEL,
+          date: dateLabel,
         })}
         actions={
           <>
