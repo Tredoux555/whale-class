@@ -43,6 +43,10 @@ RAT13='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images
 # 'the-hot' (letter-book fourteen, the-sat cast is hot, fanning themselves under
 # a blazing sun; potato isn't — shaded in his deck chair) — same convention as PAT4.
 HOT14='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-hot'
+# 'the-bug' (letter-book fifteen, the-sat cast spots a bug; ending flips the
+# usual gag -- the bug spots the potato instead, relaxing in his deck chair
+# with an ice-cold drink, and the two are happy to see each other).
+BUG15='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-bug'
 # TEXT RULES (locked from the-pat onward, apply to every future book):
 # 1. CASE: a spread's `text` is body copy continuing the sentence its `nar`
 #    starts (e.g. nar='The star...'  text='can pat!'  reads as one sentence:
@@ -346,6 +350,21 @@ dict(slug='the-hot', title_lines=['The ___','Is Hot!'], title_accent='Hot!', tit
   dict(nar='The cat…', text='is hot.', size=84, art=HOT14+'/p6-cat.png'),
   dict(text=['Hot! Hot!','Hot!'], style='drop', size=64, art=HOT14+'/p7-recap.png'),
   dict(text=['The potato',"isn't hot!"], size=46, art=HOT14+'/p8-potato.png'),
+ ]),
+
+dict(slug='the-bug', title_lines=['The ___','Saw a Bug!'], title_accent='Bug!', title_size=44,
+ band='LETTER B  ·  s a t p i n m d g o c k e u r h b (the-sat cast)', booknum='LETTER BOOK FIFTEEN · BUG', cover=BUG15+'/p7-recap.png',
+ new='Bug', review=['sat  ·  spat  ·  pat  ·  pit  ·  nap  ·  mat  ·  sad', 'dig  ·  dog  ·  cot  ·  kit  ·  egg  ·  mud  ·  rat  ·  hot  ·  at'], heart='♥  heart words — a · the',
+ oral_note='the nouns live in the pictures — named aloud, never printed',
+ spreads=[
+  dict(nar='The ant…', text='saw a bug.', size=78, art=BUG15+'/p1-ant.png'),
+  dict(nar='The apple…', text='saw a bug.', size=78, art=BUG15+'/p2-apple.png'),
+  dict(nar='The sun…', text='saw a bug.', size=78, art=BUG15+'/p3-sun.png'),
+  dict(nar='The star…', text='saw a bug.', size=78, art=BUG15+'/p4-star.png'),
+  dict(nar='The snake…', text='saw a bug.', size=78, art=BUG15+'/p5-snake.png'),
+  dict(nar='The cat…', text='saw a bug.', size=78, art=BUG15+'/p6-cat.png'),
+  dict(text=['Bug! Bug!','Bug!'], style='drop', size=64, art=BUG15+'/p7-recap.png'),
+  dict(text=['The bug','saw a potato!'], size=44, art=BUG15+'/p8-potato.png'),
  ]),
 
 dict(slug='spat', title_lines=['SPAT!'], title_accent='SPAT!', title_size=64,
