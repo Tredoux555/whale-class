@@ -323,9 +323,21 @@ export default function DarkPhonicsPage() {
       LESSONS.find(l => l.sound.toLowerCase() === term) ??
       LESSONS.find(l => l.sound.toLowerCase().startsWith(term));
     if (!target) return;
-    const el = document.getElementById(`lesson-${target.n}`);
-    if (!el) return;
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Scroll the window directly rather than el.scrollIntoView(): on this
+    // page scrollIntoView's nearest-scrollable-ancestor walk can land on the
+    // 'overflow-hidden' background wrapper instead of the document, which
+    // silently no-ops the scroll. Compute the absolute offset and drive
+    // window.scrollTo ourselves — unambiguous, and re-asserted one frame
+    // later in case media (video posters, images) still reflowing the layout
+    // shortens the first pass.
+    const scrollToCard = () => {
+      const el = document.getElementById(`lesson-${target.n}`);
+      if (!el) return;
+      const top = el.getBoundingClientRect().top + window.scrollY - 16;
+      window.scrollTo({ top, behavior: 'smooth' });
+    };
+    scrollToCard();
+    requestAnimationFrame(() => requestAnimationFrame(scrollToCard));
     setJumpHighlight(target.n);
     if (jumpHighlightTimer.current) clearTimeout(jumpHighlightTimer.current);
     jumpHighlightTimer.current = setTimeout(() => setJumpHighlight(null), 1600);
@@ -551,44 +563,53 @@ export default function DarkPhonicsPage() {
         </div>
       </nav>
 
-      {/* Jump to a letter/sound — fixed so it stays reachable while scrolling
-          through 49 cards. Typing scrolls the matching card into view; it
-          never hides or filters the rest of the page. */}
+      {/* Jump to a letter/sound — fixed top-left so it stays reachable while
+          scrolling through 49 cards. Typing scrolls the matching card into
+          view; it never hides or filters the rest of the page. Green glow
+          ring makes it read as a live "utility" control, distinct from the
+          violet brand chrome. */}
       <div
-        className="fixed left-1/2 z-20"
-        style={{ bottom: 'calc(env(safe-area-inset-bottom) + 1rem)', transform: 'translateX(-50%)' }}
+        className="fixed left-4 z-20"
+        style={{ top: 'calc(env(safe-area-inset-top) + 4.5rem)' }}
       >
-        <div
-          className="flex items-center gap-2 pl-4 pr-2 py-2 rounded-full border backdrop-blur-md"
-          style={{
-            background: 'rgba(6,20,14,0.85)',
-            borderColor: 'rgba(167,139,250,0.35)',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
-          }}
-        >
-          <span className="text-violet-200/50 text-xs whitespace-nowrap">Jump to</span>
-          <input
-            type="text"
-            value={jumpTerm}
-            onChange={(e) => setJumpTerm(e.target.value)}
-            placeholder="b, sh, th…"
-            maxLength={16}
-            autoComplete="off"
-            autoCapitalize="off"
-            spellCheck={false}
-            aria-label="Jump to a letter or sound"
-            className="w-24 bg-transparent outline-none text-white text-sm placeholder-white/25"
+        <div className="relative">
+          <div
+            className="absolute -inset-1.5 rounded-full blur-md animate-pulse pointer-events-none"
+            style={{ background: 'rgba(52,211,153,0.55)' }}
+            aria-hidden="true"
           />
-          {jumpTerm && (
-            <button
-              type="button"
-              onClick={() => setJumpTerm('')}
-              aria-label="Clear"
-              className="w-6 h-6 rounded-full flex items-center justify-center text-white/40 hover:text-white/80 hover:bg-white/[0.08] text-sm leading-none"
-            >
-              ×
-            </button>
-          )}
+          <div
+            className="relative flex items-center gap-2 pl-4 pr-2 py-2 rounded-full border backdrop-blur-md"
+            style={{
+              background: 'rgba(6,20,14,0.9)',
+              borderColor: 'rgba(52,211,153,0.8)',
+              boxShadow: '0 0 18px 3px rgba(52,211,153,0.55), 0 8px 24px rgba(0,0,0,0.45)',
+            }}
+          >
+            <span className="text-emerald-200/60 text-xs whitespace-nowrap">Jump to</span>
+            <input
+              type="text"
+              value={jumpTerm}
+              onChange={(e) => setJumpTerm(e.target.value)}
+              placeholder="b, sh, th…"
+              maxLength={16}
+              autoComplete="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              aria-label="Jump to a letter or sound"
+              className="w-24 bg-transparent outline-none text-white text-sm placeholder-white/25"
+            />
+            {jumpTerm && (
+              <button
+                type="button"
+                onClick={() => setJumpTerm('')}
+                aria-label="Clear"
+                className="w-6 h-6 rounded-full flex items-center justify-center text-white/40 hover:text-white/80 hover:bg-white/[0.08] text-sm leading-none"
+              >
+                ×
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
