@@ -8,14 +8,14 @@ import {
   buildBirthdayCardsPdf, buildBirthdayTrackerPdf, type TrackerSize,
 } from '@/lib/montree/birthdays/pdfTemplates';
 import {
-  parseBirthdayList, birthdayFacts, sortByCalendar, MONTH_ABBR,
+  parseBirthdayList, birthdayFacts, sortByCalendar, MONTH_ABBR, type DateOrder,
 } from '@/lib/montree/birthdays/parse';
 import { fileToArrayBuffer } from '@/lib/montree/birthdays/assets';
 
 // ============================================
 // BIRTHDAYS
 // ============================================
-// Two printables off one pasted class list (`Name, YYYY-MM-DD` per line):
+// Two printables off one pasted class list:
 //
 //   • Birthday cards — one page per child in a single merged PDF, with the
 //     name, the birth date, the age they're turning, a photo slot and light
@@ -23,9 +23,15 @@ import { fileToArrayBuffer } from '@/lib/montree/birthdays/assets';
 //   • Birthday board — the whole class on ONE wall-chart page, twelve month
 //     boxes in a 3x4 grid, at A4 or A3.
 //
+
 // Structure mirrors the Tracing Work tool: pure maths/parsing in
 // lib/montree/birthdays/parse.ts, vector decoration primitives in
 // decorations.ts, jsPDF page builders in pdfTemplates.ts, this file is UI only.
+//
+// Parsing is the same format-agnostic engine (lib/cms/engine/paste-parser)
+// the class-list roster importer uses, so whatever a teacher pastes — a
+// spreadsheet column, a comma list, "Name  YYYY-MM-DD" with just a space —
+// gets read the same forgiving way here as it does onboarding a class.
 // ============================================
 
 function slugify(name: string) {
@@ -45,9 +51,9 @@ function downloadBlob(blob: Blob, filename: string) {
 
 const PLACEHOLDER = [
   'Joey, 2020-03-03',
-  'Henry, 2019-11-21',
-  'Segina, 2020-08-14',
-  'Kayla, 2021-01-09',
+  'Henry\t2019-11-21',
+  'Segina 2020-08-14',
+  'Kayla, 9 Jan 2021',
 ].join('\n');
 
 export default function BirthdaysPage() {
@@ -56,6 +62,7 @@ export default function BirthdaysPage() {
   const [className, setClassName] = useState('Whale Class');
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [listText, setListText] = useState('');
+  const [dateOrder, setDateOrder] = useState<DateOrder>('dmy');
   const [trackerSize, setTrackerSize] = useState<TrackerSize>('A4');
   const [busy, setBusy] = useState<null | 'cards' | 'tracker'>(null);
   const [error, setError] = useState<string | null>(null);
@@ -63,7 +70,10 @@ export default function BirthdaysPage() {
   // One clock for the whole session, so the previewed "turns N" and the
   // generated PDF can never disagree mid-render.
   const today = useMemo(() => new Date(), []);
-  const parsed = useMemo(() => parseBirthdayList(listText, today), [listText, today]);
+  const parsed = useMemo(
+    () => parseBirthdayList(listText, today, dateOrder),
+    [listText, today, dateOrder],
+  );
   const preview = useMemo(
     () => sortByCalendar(parsed.entries).map((e) => ({ entry: e, facts: birthdayFacts(e, today) })),
     [parsed.entries, today],
@@ -75,7 +85,8 @@ export default function BirthdaysPage() {
 
   function guard(): boolean {
     if (parsed.entries.length === 0) {
-      setError('Paste at least one line in the form “Name, YYYY-MM-DD”.');
+
+      setError('Paste at least one child’s name and birth date to get started.');
       return false;
     }
     setError(null);
@@ -129,6 +140,7 @@ export default function BirthdaysPage() {
             <Link href="/montree/library/tools" className="text-emerald-300 text-sm hover:underline">
               ← {t('tools.back_to_library')}
             </Link>
+
             <LanguageToggle />
           </div>
           <h1 className="text-2xl md:text-3xl font-bold mt-2">{t('tools.birthdays')}</h1>
@@ -165,7 +177,11 @@ export default function BirthdaysPage() {
           <div>
             <h2 className="text-sm font-bold text-[#0D3330] uppercase tracking-wide">Your class</h2>
             <p className="text-sm text-gray-500 mt-1">
-              One child per line, as <code className="bg-gray-100 rounded px-1">Name, YYYY-MM-DD</code>.
+              One child per line — paste it straight from a spreadsheet, a message, or type it out.
+              A comma, tab, or just a space between the name and the date all work, and the date can
+              be written as <code className="bg-gray-100 rounded px-1">2020-03-03</code>,
+              {' '}<code className="bg-gray-100 rounded px-1">03/03/2020</code> or
+              {' '}<code className="bg-gray-100 rounded px-1">3 March 2020</code>.
             </p>
           </div>
           <textarea
@@ -173,6 +189,17 @@ export default function BirthdaysPage() {
             rows={10} placeholder={PLACEHOLDER} spellCheck={false}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-400"
           />
+
+          <label className="flex items-center gap-2 text-sm text-gray-600">
+            <span>Read a date like 05/03 as</span>
+            <select
+              value={dateOrder} onChange={(e) => setDateOrder(e.target.value as DateOrder)}
+              className="rounded-lg border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+            >
+              <option value="dmy">Day first — 5 March</option>
+              <option value="mdy">Month first — 3 May</option>
+            </select>
+          </label>
 
           {parsed.issues.length > 0 && (
             <div className="rounded-lg border border-amber-300 bg-amber-50 p-3">
@@ -205,6 +232,16 @@ export default function BirthdaysPage() {
                     <span className="truncate">
                       <span className="font-semibold text-[#0D3330]">{entry.name}</span>
                       <span className="text-gray-500"> · {MONTH_ABBR[entry.month - 1]} {entry.day}</span>
+                      {entry.ambiguousDate && (
+                        <span className="text-amber-600" title="Both parts of the date could be a month — double-check day and month.">
+                          {' '}⚠︎ guessed
+                        </span>
+                      )}
+                      {entry.duplicate && (
+                        <span className="text-amber-600" title="Same name and birth date appear earlier in this list.">
+                          {' '}⚠︎ duplicate
+                        </span>
+                      )}
                     </span>
                     <span className="shrink-0 text-emerald-700">
                       {facts.isToday ? `turns ${facts.turning} today` : `turns ${facts.turning}`}
