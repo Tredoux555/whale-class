@@ -4,12 +4,26 @@
 // explicit `today`, which is what makes the age arithmetic testable (and what
 // stops "turns 5" quietly drifting depending on when the module is imported).
 //
-// Input format is one child per line: `Name, YYYY-MM-DD`. Parsing is
-// deliberately forgiving about whitespace, separator character (`-`, `/`, `.`)
-// and commas *inside* the name ("Willemse, Joey, 2020-03-03" splits on the
-// LAST comma), but never silently drops a line it cannot understand — every
-// bad line comes back in `issues` with a human-readable reason so the UI can
-// tell the teacher exactly which line to fix.
+// Parsing itself is NOT reimplemented here. It reuses the SAME format-agnostic
+// engine the class-list roster importer uses — lib/cms/engine/paste-parser —
+// so a teacher pasting a class list into the Birthdays tool gets the same
+// "figure out the name and the date, whatever the format" behaviour as
+// pasting it into the roster: comma, tab, semicolon or pipe separated, a
+// worded date ("5 March 2021"), a date with no separator at all
+// ("Amara Okonkwo 2021-03-05"), even a straight spreadsheet-column paste.
+// REUSE-FIRST LAW — one parsing engine, every caller.
+//
+// The roster engine treats a date of birth as OPTIONAL (a name alone is a
+// perfectly good roster row); a birthday card or wall-chart entry without a
+// date makes no sense, so this module adds that one extra requirement on top
+// and maps the richer `ParsedRosterLine` into the flat numeric shape the PDF
+// builders (`pdfTemplates.ts`) already expect. Nothing downstream of
+// `BirthdayEntry` changed shape, so the card/tracker generators did not need
+// to change at all.
+
+import { parseRoster, type DateOrder } from '../../cms/engine/paste-parser';
+
+export type { DateOrder } from '../../cms/engine/paste-parser';
 
 export const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -32,6 +46,15 @@ export interface BirthdayEntry {
   day: number;
   /** normalised YYYY-MM-DD */
   iso: string;
+  /**
+   * The date was numeric with both parts ≤12 ("05/03/2021") — the parser had
+   * to pick a convention (day-first by default) rather than read it for
+   * certain. Never blocks the row; the preview flags it so a teacher can
+   * double-check before printing.
+   */
+  ambiguousDate?: boolean;
+  /** Same name + date of birth appeared on an earlier line of this paste. */
+  duplicate?: boolean;
 }
 
 export interface BirthdayParseIssue {
@@ -45,85 +68,82 @@ export interface BirthdayParseResult {
   issues: BirthdayParseIssue[];
 }
 
-const DATE_RE = /^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/;
-
 export function daysInMonth(year: number, month: number): number {
   return new Date(Date.UTC(year, month, 0)).getUTCDate();
 }
 
-function pad2(n: number): string {
-  return n < 10 ? `0${n}` : String(n);
-}
-
-/** Calendar-day comparison that ignores time-of-day and time zones. */
-function compareYmd(a: [number, number, number], b: [number, number, number]): number {
-  return (a[0] - b[0]) || (a[1] - b[1]) || (a[2] - b[2]);
-}
-
 /**
- * Parse the pasted `Name, YYYY-MM-DD` list.
+ * Parse a pasted class list into birthday entries.
  *
- * Blank lines are skipped. Every other line either produces an entry or an
- * issue — nothing is dropped without explanation.
+ * One child per line, in essentially any format a teacher might paste:
+ * `Name, YYYY-MM-DD`, `Name<TAB>YYYY-MM-DD` (a spreadsheet column paste),
+ * `Name  DD/MM/YYYY`, `5 March 2021, Amara Okonkwo` — whatever order and
+ * separator, the same engine the class-list roster importer uses figures out
+ * the name and the date. A line with a name but no readable date, or a date
+ * but no name, comes back in `issues` with a plain-language reason rather
+ * than being silently dropped — nothing here guesses a birthday.
+ *
+ * `dateOrder` controls how an ambiguous all-numeric date (both parts <=12,
+ * e.g. "05/03/2021") is read: 'dmy' (default) reads it as 5 March,
+ * 'mdy' reads it as 3 May. Either way the row is flagged `ambiguousDate`
+ * rather than trusted silently.
  */
-export function parseBirthdayList(raw: string, today: Date = new Date()): BirthdayParseResult {
+
+export function parseBirthdayList(
+  raw: string,
+  today: Date = new Date(),
+  dateOrder: DateOrder = 'dmy'
+): BirthdayParseResult {
+  const { lines } = parseRoster(raw, { today, dateOrder });
+
   const entries: BirthdayEntry[] = [];
   const issues: BirthdayParseIssue[] = [];
-  const todayYmd: [number, number, number] = [today.getFullYear(), today.getMonth() + 1, today.getDate()];
 
-  raw.split(/\r?\n/).forEach((rawLine, index) => {
-    const line = index + 1;
-    const text = rawLine.trim();
-    if (!text) return;
+  for (const line of lines) {
+    const text = line.raw.trim();
 
-    const comma = text.lastIndexOf(',');
-    if (comma === -1) {
-      issues.push({ line, text, reason: 'no comma — write it as “Name, YYYY-MM-DD”' });
-      return;
+    if (!line.name) {
+      issues.push({ line: line.line, text, reason: 'no name on this line' });
+      continue;
     }
 
-    const name = text.slice(0, comma).trim().replace(/\s+/g, ' ');
-    const dateText = text.slice(comma + 1).trim();
-
-    if (!name) {
-      issues.push({ line, text, reason: 'missing a name before the comma' });
-      return;
-    }
-    if (!dateText) {
-      issues.push({ line, text, reason: 'missing a birth date after the comma' });
-      return;
-    }
-
-    const m = DATE_RE.exec(dateText);
-    if (!m) {
-      issues.push({ line, text, reason: `“${dateText}” isn’t a date — use YYYY-MM-DD, e.g. 2020-03-03` });
-      return;
+    if (!line.dateOfBirth) {
+      issues.push({
+        line: line.line,
+        text,
+        reason: line.dateText
+          ? `could not read the date “${line.dateText}” — try YYYY-MM-DD, e.g. 2020-03-03`
+          : 'missing a birth date — add it as “Name, YYYY-MM-DD”',
+      });
+      continue;
     }
 
-    const year = Number(m[1]);
-    const month = Number(m[2]);
-    const day = Number(m[3]);
-
-    if (month < 1 || month > 12) {
-      issues.push({ line, text, reason: `month ${month} doesn’t exist — months run 01–12` });
-      return;
-    }
-    const dim = daysInMonth(year, month);
-    if (day < 1 || day > dim) {
-      issues.push({ line, text, reason: `${MONTH_NAMES[month - 1]} ${year} only has ${dim} days` });
-      return;
-    }
-    if (year < 1900) {
-      issues.push({ line, text, reason: `${year} looks wrong — use the four-digit birth year` });
-      return;
-    }
-    if (compareYmd([year, month, day], todayYmd) > 0) {
-      issues.push({ line, text, reason: 'that birth date is in the future' });
-      return;
+    if (line.issues.includes('future_date')) {
+      issues.push({ line: line.line, text, reason: 'that birth date is in the future' });
+      continue;
     }
 
-    entries.push({ line, name, year, month, day, iso: `${year}-${pad2(month)}-${pad2(day)}` });
-  });
+    if (line.issues.includes('implausible_age')) {
+      issues.push({
+        line: line.line,
+        text,
+        reason: 'that birth date would make the child older than a primary school class — check the year',
+      });
+      continue;
+    }
+
+    const [yearStr, monthStr, dayStr] = line.dateOfBirth.split('-');
+    entries.push({
+      line: line.line,
+      name: line.name,
+      year: Number(yearStr),
+      month: Number(monthStr),
+      day: Number(dayStr),
+      iso: line.dateOfBirth,
+      ambiguousDate: line.issues.includes('ambiguous_date') || undefined,
+      duplicate: line.issues.includes('duplicate_in_paste') || undefined,
+    });
+  }
 
   return { entries, issues };
 }
@@ -135,6 +155,7 @@ export interface BirthdayFacts {
   nextBirthdayYear: number;
   /** The age the child turns on that birthday. This is the "turning N". */
   turning: number;
+
   /** Completed years of age as of `today`. */
   ageNow: number;
   /** The birthday is today. */
@@ -191,6 +212,7 @@ export function birthdayFacts(entry: BirthdayEntry, today: Date = new Date()): B
     ageNow,
     isToday,
     passedThisYear,
+
     monthDayOrdinal: `${monthName} ${ordinal(entry.day)}`,
     dayMonth: `${entry.day} ${monthName}`,
     bornOn: `${entry.day} ${monthName} ${entry.year}`,
