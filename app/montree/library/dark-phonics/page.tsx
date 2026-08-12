@@ -36,7 +36,7 @@
 // never pull a hundred media files on load.
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import LanguageToggle from '@/components/montree/LanguageToggle';
@@ -304,6 +304,39 @@ export default function DarkPhonicsPage() {
    *  rows shows '…' rather than the "no pictures yet" placeholder. */
   const [picturesLoading, setPicturesLoading] = useState(true);
 
+  /** "Jump to" box — type a letter or sound label ('b', 'sh', 'th (voiced)')
+   *  and the matching lesson card scrolls into view. No filtering, no hiding
+   *  other cards: just a fast way to skip the scroll on a 49-card page. */
+  const [jumpTerm, setJumpTerm] = useState('');
+  const [jumpHighlight, setJumpHighlight] = useState<number | null>(null);
+  const jumpHighlightTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const jumpToTerm = useCallback((raw: string) => {
+    const term = raw.trim().toLowerCase();
+    if (!term) return;
+    // Exact match on the sound label first (handles 'sh', 'ch', 'qu' and the
+    // longer review labels), then fall back to "starts with" for a single
+    // letter or the first few letters of a label.
+    const target =
+      LESSONS.find(l => l.sound.toLowerCase() === term) ??
+      LESSONS.find(l => l.sound.toLowerCase().startsWith(term));
+    if (!target) return;
+    const el = document.getElementById(`lesson-${target.n}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setJumpHighlight(target.n);
+    if (jumpHighlightTimer.current) clearTimeout(jumpHighlightTimer.current);
+    jumpHighlightTimer.current = setTimeout(() => setJumpHighlight(null), 1600);
+  }, []);
+
+  useEffect(() => {
+    jumpToTerm(jumpTerm);
+  }, [jumpTerm, jumpToTerm]);
+
+  useEffect(() => () => {
+    if (jumpHighlightTimer.current) clearTimeout(jumpHighlightTimer.current);
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -516,6 +549,47 @@ export default function DarkPhonicsPage() {
         </div>
       </nav>
 
+      {/* Jump to a letter/sound — fixed so it stays reachable while scrolling
+          through 49 cards. Typing scrolls the matching card into view; it
+          never hides or filters the rest of the page. */}
+      <div
+        className="fixed left-1/2 z-20"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom) + 1rem)', transform: 'translateX(-50%)' }}
+      >
+        <div
+          className="flex items-center gap-2 pl-4 pr-2 py-2 rounded-full border backdrop-blur-md"
+          style={{
+            background: 'rgba(6,20,14,0.85)',
+            borderColor: 'rgba(167,139,250,0.35)',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
+          }}
+        >
+          <span className="text-violet-200/50 text-xs whitespace-nowrap">Jump to</span>
+          <input
+            type="text"
+            value={jumpTerm}
+            onChange={(e) => setJumpTerm(e.target.value)}
+            placeholder="b, sh, th…"
+            maxLength={16}
+            autoComplete="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            aria-label="Jump to a letter or sound"
+            className="w-24 bg-transparent outline-none text-white text-sm placeholder-white/25"
+          />
+          {jumpTerm && (
+            <button
+              type="button"
+              onClick={() => setJumpTerm('')}
+              aria-label="Clear"
+              className="w-6 h-6 rounded-full flex items-center justify-center text-white/40 hover:text-white/80 hover:bg-white/[0.08] text-sm leading-none"
+            >
+              ×
+            </button>
+          )}
+        </div>
+      </div>
+
       <div className="relative z-10 flex-1 flex justify-center px-4 sm:px-6 pb-8">
         <div className="max-w-3xl w-full text-center">
 
@@ -547,13 +621,17 @@ export default function DarkPhonicsPage() {
               const video = media(`videos/lesson-${nn(l.n)}.mp4`);
               const picture = media(`pictures/lesson-${nn(l.n)}.png`);
 
+              const jumped = jumpHighlight === l.n;
               return (
                 <div
                   key={l.n}
-                  className="rounded-2xl border p-4 sm:p-6"
+                  id={`lesson-${l.n}`}
+                  className="rounded-2xl border p-4 sm:p-6 scroll-mt-6"
                   style={{
                     background: `linear-gradient(135deg, rgba(${l.accent},0.09), rgba(${l.accent},0.02))`,
-                    borderColor: `rgba(${l.accent},0.18)`,
+                    borderColor: jumped ? `rgb(${l.accent})` : `rgba(${l.accent},0.18)`,
+                    boxShadow: jumped ? `0 0 0 3px rgba(${l.accent},0.45)` : 'none',
+                    transition: 'border-color 0.3s ease, box-shadow 0.3s ease',
                   }}
                 >
                   {/* Sound tile + lesson line + catchphrase */}
