@@ -13,12 +13,20 @@
 // cms_medical_records / cms_attendance for the teacher's own room, demo mode
 // reads the seed. `buildDailyRoster` was not modified, and its signature is
 // still a pure (RosterInput, RosterLabels) → DailyRoster.
+//
+// PHASE 3 ADDED ONE THING: each roster row now UNFOLDS into what the family
+// wrote about their child ("About your child", migration 330). It is a native
+// <details> — no client component, no hydration, no state — so the page is
+// still a server component that renders whatever the engine hands it. The
+// engine STILL did not change: profiles are a second, separate read, joined to
+// rows by child id at render time, never folded into RosterInput.
 
 import { Avatar } from '@/components/cms/Avatar';
 import { Card } from '@/components/cms/Card';
 import { StatusTag, Tag } from '@/components/cms/Chip';
 import { PageHeader } from '@/components/cms/PageHeader';
 import { StatTile } from '@/components/cms/StatTile';
+import { ChildInsightPanel, type InsightProfile } from '@/components/cms/teacher/ChildInsight';
 import {
   AlertTriangleIcon,
   ArrowRightIcon,
@@ -40,13 +48,14 @@ import {
   demoChildren,
   demoClassGroup,
   demoDailyFacts,
+  demoChildProfiles,
   demoDietary,
   demoMedical,
   demoSchool,
 } from '@/lib/cms/demo/seed';
 import { isCmsLive } from '@/lib/cms/auth/mode';
 import { getCmsSession } from '@/lib/cms/auth/server';
-import { loadTeacherRoster } from '@/lib/cms/db/queries';
+import { loadChildProfiles, loadTeacherRoster } from '@/lib/cms/db/queries';
 import { getServerT } from '@/lib/cms/i18n/server';
 import type { Locale } from '@/lib/cms/i18n/config';
 
@@ -118,6 +127,12 @@ export default async function TeacherTodayPage() {
     daily: demoDailyFacts,
   };
   let dateLabel = DEMO_DATE_LABEL;
+  // Same source switch as the roster, one line lower: the family's own words in
+  // live mode, the seed in demo. Deliberately NOT part of RosterInput — the
+  // engine computes flags, and a child's likes are not a flag.
+  let profiles = new Map<string, InsightProfile>(
+    demoChildProfiles.map((profile) => [String(profile.childId), profile])
+  );
 
   if (isCmsLive()) {
     const session = await getCmsSession();
@@ -156,6 +171,10 @@ export default async function TeacherTodayPage() {
       daily: forDay.daily,
     };
     dateLabel = formatDateLabel(onDate, locale, forDay.school.timezone);
+    // One query for the whole room. RLS allows exactly these children's
+    // profiles to this teacher; the ids come from the room we just resolved,
+    // so this read cannot widen anybody's view.
+    profiles = await loadChildProfiles(forDay.children.map((c) => String(c.id)));
   }
 
   const roster = buildDailyRoster(input, labels);
@@ -224,43 +243,61 @@ export default async function TeacherTodayPage() {
           {roster.entries.map((entry) => (
             <li
               key={entry.child.id}
-              className="flex flex-wrap items-center gap-2.5 px-5 py-3 border-b border-harbor-border last:border-b-0"
+              className="border-b border-harbor-border last:border-b-0"
             >
-              <Avatar name={entry.child.preferredName} size="sm" quiet />
-              <span
-                dir="auto"
-                className="min-w-[9rem] flex-1 text-[13.5px] font-semibold truncate"
-              >
-                {entry.child.preferredName}
-                {surnameOf(entry.child) ? (
-                  <span className="font-normal text-harbor-muted"> {surnameOf(entry.child)}</span>
-                ) : null}
-              </span>
+              {/* Native disclosure: the row IS the summary. `list-none` plus the
+                  webkit marker rule removes the browser triangle — the "What to
+                  know" chip is the affordance, and it reads in every locale. */}
+              <details className="group">
+                <summary className="flex flex-wrap items-center gap-2.5 px-5 py-3 cursor-pointer list-none marker:hidden [&::-webkit-details-marker]:hidden hover:bg-harbor-sunk/70 transition-colors">
+                  <Avatar name={entry.child.preferredName} size="sm" quiet />
+                  <span
+                    dir="auto"
+                    className="min-w-[9rem] flex-1 text-[13.5px] font-semibold truncate"
+                  >
+                    {entry.child.preferredName}
+                    {surnameOf(entry.child) ? (
+                      <span className="font-normal text-harbor-muted"> {surnameOf(entry.child)}</span>
+                    ) : null}
+                  </span>
 
-              <span className="flex flex-wrap items-center justify-end gap-1.5">
-                {entry.flags.map((flag, i) =>
-                  flag.category === 'neutral' ? (
-                    <StatusTag
-                      key={`${entry.child.id}-${i}`}
-                      tone={entry.attendance === 'absent' ? 'muted' : 'success'}
-                    >
-                      {flag.label}
-                    </StatusTag>
-                  ) : (
-                    <Tag
-                      key={`${entry.child.id}-${i}`}
-                      category={flag.category}
-                      detail={flag.detail}
-                      withIcon={flag.category === 'allergy'}
-                    >
-                      {flag.label}
-                    </Tag>
-                  )
-                )}
-                {entry.attendance === 'expected' ? (
-                  <StatusTag tone="accent">{t('child.status.expected')}</StatusTag>
-                ) : null}
-              </span>
+                  <span className="flex flex-wrap items-center justify-end gap-1.5">
+                    {entry.flags.map((flag, i) =>
+                      flag.category === 'neutral' ? (
+                        <StatusTag
+                          key={`${entry.child.id}-${i}`}
+                          tone={entry.attendance === 'absent' ? 'muted' : 'success'}
+                        >
+                          {flag.label}
+                        </StatusTag>
+                      ) : (
+                        <Tag
+                          key={`${entry.child.id}-${i}`}
+                          category={flag.category}
+                          detail={flag.detail}
+                          withIcon={flag.category === 'allergy'}
+                        >
+                          {flag.label}
+                        </Tag>
+                      )
+                    )}
+                    {entry.attendance === 'expected' ? (
+                      <StatusTag tone="accent">{t('child.status.expected')}</StatusTag>
+                    ) : null}
+                    <span className="cms-tag cms-tone-quiet shrink-0">
+                      {t('teacher.insight.open')}
+                    </span>
+                  </span>
+                </summary>
+
+                <div className="px-5 pt-4 pb-5 bg-harbor-sunk border-t border-harbor-border">
+                  <ChildInsightPanel
+                    profile={profiles.get(String(entry.child.id))}
+                    name={entry.child.preferredName}
+                    t={t}
+                  />
+                </div>
+              </details>
             </li>
           ))}
         </ul>

@@ -29,6 +29,8 @@ export type MedicalRecordId = Brand<string, 'MedicalRecordId'>;
 export type AllergyId = Brand<string, 'AllergyId'>;
 export type DietaryRequirementId = Brand<string, 'DietaryRequirementId'>;
 export type MembershipId = Brand<string, 'MembershipId'>;
+export type ChildProfileId = Brand<string, 'ChildProfileId'>;
+export type PreviousSchoolId = Brand<string, 'PreviousSchoolId'>;
 
 /** Cast a raw string (a DB uuid, a form value) into a branded id. */
 export function id<T extends string>(raw: string): T {
@@ -169,6 +171,10 @@ export interface Allergy {
   responsePlan: string;
   /** Severe allergies must appear on the wall poster; mild ones need not. */
   requiresPoster: boolean;
+  /** Does the child carry adrenaline (EpiPen / Jext / Anapen)? The first
+   *  question a relief teacher asks, and — since migration 330 — a column
+   *  rather than a sentence buried in `responsePlan`. */
+  carriesEpipen: boolean;
 }
 
 export type DietaryReason =
@@ -223,9 +229,15 @@ export type EnrollmentStatus =
   | 'declined'
   | 'withdrawn';
 
-/** The wizard's steps, in order. The UI renders one component per member. */
+/** The wizard's steps, in order. The UI renders one component per member.
+ *
+ *  PHASE 3 inserted `about_child` at position 2 — deliberately BEFORE the
+ *  clinical steps. A family's first real answer about their child should be
+ *  "what do they love?", not "what are they allergic to". The database enum
+ *  `cms_enrollment_step` carries the same member (migration 330). */
 export const ENROLLMENT_STEPS = [
   'child',
+  'about_child',
   'medical',
   'dietary',
   'previous_school',
@@ -237,6 +249,11 @@ export type EnrollmentStep = (typeof ENROLLMENT_STEPS)[number];
 
 export type ConsentKind =
   | 'photography'
+  /** Public use — newsletter, website, social. Split from `photography` in
+   *  migration 330: a family happy with a picture on the classroom wall is
+   *  often not happy with one on a public page, and one checkbox for both
+   *  forces them to refuse both. */
+  | 'media'
   | 'outings'
   | 'emergency_medical'
   | 'data_processing'
@@ -257,6 +274,86 @@ export interface PreviousSchool {
   reasonForLeaving: string | null;
   /** Has a transfer/records release been received? */
   recordsReleased: boolean;
+}
+
+/**
+ * One row of the child's schooling history (migration 330, `cms_previous_schools`).
+ * Phase 2 kept a single `PreviousSchool` blob on the enrolment; a real family
+ * often has two or three settings behind them (a crèche, a move between
+ * countries), so phase 3 gives them rows.
+ */
+export interface PreviousSchoolRecord {
+  id: PreviousSchoolId;
+  childId: ChildId;
+  name: string;
+  /** ISO-3166 alpha-2 where the family knows it, free text where they don't. */
+  countryCode: string | null;
+  city: string | null;
+  attendedFrom: IsoDate | null;
+  attendedTo: IsoDate | null;
+  notes: string | null;
+}
+
+// ── about the child (phase 3 — the top of the hourglass) ────────────────────
+
+/**
+ * The temperament axes a PARENT is asked about. Each is a 1–5 pick between two
+ * ordinary, non-judgemental ends.
+ *
+ * 🚨 THIS IS NOT A DIAGNOSIS AND MUST NEVER READ AS ONE. There is no "score",
+ * no norm, no high/low. A 1 and a 5 are equally fine places for a child to be,
+ * and every label in the UI says so. The engine's job is to carry the family's
+ * own description to the person who meets the child on Monday.
+ */
+export type TemperamentAxis =
+  /** settles easily ↔ needs time to settle */
+  | 'settling'
+  /** happy alone ↔ seeks company */
+  | 'company'
+  /** cautious ↔ adventurous */
+  | 'adventure'
+  /** calm energy ↔ big energy */
+  | 'energy';
+
+export const TEMPERAMENT_AXES: readonly TemperamentAxis[] = [
+  'settling',
+  'company',
+  'adventure',
+  'energy',
+] as const;
+
+/** 1–5 along each axis. A missing axis means "the family did not say". */
+export type Temperament = Partial<Record<TemperamentAxis, number>>;
+
+/**
+ * What the family says about who their child IS — the record behind the
+ * "About your child" wizard step, the CMS teacher insight card, and the
+ * Montree Guru feed (`lib/cms/engine/guru-feed.ts`).
+ *
+ * Stored in `cms_child_profiles` (migration 330), which no org-layer role can
+ * read: a group office compares schools, it does not read a four-year-old's
+ * personality.
+ */
+export interface ChildProfile {
+  id: ChildProfileId;
+  childId: ChildId;
+  schoolId: SchoolId;
+  /** Free tags in the family's own words: "puddles", "Baba's singing". */
+  likes: string[];
+  dislikes: string[];
+  interests: string[];
+  temperament: Temperament;
+  /** "What should the teacher know about your child?" — the free-text answer. */
+  parentNotes: string | null;
+  /**
+   * May this profile inform the Montree Guru's picture of the child? Set by the
+   * family. False means the record still serves the classroom, but never leaves
+   * it for the teaching assistant.
+   */
+  guruSync: boolean;
+  guruSyncedAt: IsoDateTime | null;
+  createdAt: IsoDateTime;
+  updatedAt: IsoDateTime;
 }
 
 /**

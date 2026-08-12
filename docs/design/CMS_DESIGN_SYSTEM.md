@@ -369,3 +369,118 @@ Server routes return machine codes (`invalid_credentials`, `school_not_found`).
 The UI maps the code to a `TranslationKey` and renders `t(key)`. A raw code or a
 server-supplied English string on screen is an I18N LAW violation — the server's
 English messages exist for logs and API consumers, not for parents.
+
+---
+
+## 10. The two phase-3 primitives (added phase 3)
+
+Phase 3 built the rest of the intake wizard, and two of its questions could not
+be asked with anything already in this system. Both were therefore added
+CENTRALLY — the tokens in `app/globals.css` (the same
+`CMS BUTTON SYSTEM — SOFT ELEVATION / HARBOR` section), the behaviour in one
+component each — because a tag box or a scale hand-rolled at a call site is
+exactly the pattern §1 exists to replace.
+
+### `.cms-taginput` — the chip field
+
+`components/cms/enroll/TagInput.tsx`.
+
+Used wherever a family gives a **list of short things in their own words**:
+likes, dislikes, interests, medical conditions, excluded foods.
+
+> **It is not a picker, and it must never become one.** There is no controlled
+> vocabulary behind it. "Baba's singing" is a valid entry and will never appear
+> in a taxonomy. The moment this control grows a dropdown of suggestions it
+> stops collecting what the family actually meant.
+
+Visually it is **`.cms-input` grown to hold chips** — same 1px
+`--cms-border-strong` hairline, same 10px radius, same focus ring, auto height.
+That is deliberate: it has to *read as a field* or a parent will not know they
+can type in it. The inner `<input>` has no border of its own; the box is the
+border.
+
+| Part | Class | Notes |
+|---|---|---|
+| The box | `cms-taginput` | Flex-wrap, `min-height: 44px`, `cursor: text`, clicking anywhere focuses the field. |
+| One entry | `cms-taginput-chip` | Harbor accent at 9% with a 22% border — the `.cms-tone-accent` recipe, pill radius, with an 18px round ✕ hit area. |
+| The field | `cms-taginput > input` | Borderless, `flex: 1 1 7rem` so it always keeps a typing line. |
+
+Behaviour is fixed and is part of the spec:
+
+- **Enter** or **comma** commits the draft as a chip.
+- **Backspace** on an empty field removes the last chip.
+- **Blur with text still in the field commits it.** A half-typed tag is an
+  ANSWER; losing it on blur is the single most common way a form eats an answer.
+- Case-insensitive de-duplication, `MAX_TAGS` (12) and `MAX_TAG` (40) enforced
+  here *and* in `lib/cms/validation.ts` `cleanTags()`.
+
+```jsx
+<Field label={t('enrol.about.likes')} help={t('enrol.about.likes.help')}>
+  <TagInput label={t('enrol.about.likes')} value={value.likes}
+            onChange={(next) => set('likes', next)}
+            placeholder={t('enrol.about.likes.placeholder')} />
+</Field>
+```
+
+### `.cms-scale` — the five-point pick
+
+`components/cms/enroll/TraitScale.tsx`.
+
+The temperament question on "About your child": a position between two ordinary
+ends — *settles quickly ↔ needs time*, *happy alone ↔ seeks company*.
+
+> **🚨 THE COPY LAW.** Both ends of every line are fine places for a child to
+> be, and the UI says so out loud above the group. **No score, no norm, no
+> high/low, no colour that means "worse", no trait name that reads as a
+> diagnosis.** A parent is describing their four-year-old. The moment this
+> control feels clinical it stops collecting the truth. This is a design rule,
+> not a copy preference — see `TemperamentAxis` in `lib/cms/engine/types.ts`.
+
+**It is a `radiogroup` wearing a slider's clothes, and `<input type="range">`
+was rejected on purpose.** A range carries a default value and an implied
+quantity; this control must be able to express *"the family did not answer"*,
+which a range cannot. Five real stops, **none pre-selected**, and a **Clear**
+that returns to unanswered.
+
+| Part | Class | Notes |
+|---|---|---|
+| The rail | `cms-scale` | Flex row. The 2px line is a `::before` inset to **10%** — dot **centre** to dot **centre**, never edge to edge, or the scale reads as having two invisible extra positions. |
+| A stop | `cms-scale-stop` | 34px min touch height, `role="radio"`, 14px dot. |
+| The chosen stop | `cms-scale-stop[aria-checked='true'] > i` | Filled `--cms-accent`, `--cms-accent-deep` border, `scale(1.28)`, one soft accent shadow. The ONLY filled thing on the line. |
+
+- Keyboard is the standard radiogroup contract: **arrows** move along the line,
+  **Home/End** jump to the ends, the group takes one tab stop.
+- Every stop is named for a screen reader: `"Settling in — 2/5"`.
+- Clicking the chosen stop again **clears** it. Unanswered is a legitimate
+  answer and must always be reachable.
+- **Direction-agnostic.** The rail is a flex row, so RTL mirrors it for free —
+  the end labels use `justify-between` and land on the correct sides in Arabic
+  with no `dir` logic anywhere.
+
+```jsx
+<TraitScale labelKey="enrol.about.axis.settling"
+            leftKey="enrol.about.axis.settling.left"
+            rightKey="enrol.about.axis.settling.right"
+            value={value.temperament?.settling}
+            onChange={(next) => setAxis('settling', next)} />
+```
+
+### Reading a pick back
+
+A 1–2 renders as the left phrase, a 4–5 as the right phrase, and a **3 renders
+as `enrol.about.axis.mid` ("Somewhere in between")** — never as both ends joined
+with a separator. `"Calm and steady · Big and busy"` reads as a contradiction on
+the teacher's card; it is one answer, not two. Both `StepReview` and
+`components/cms/teacher/ChildInsight.tsx` use that rule, and any third reader
+must too.
+
+### The repeated row
+
+Phase 3 also added `components/cms/enroll/RowCard.tsx` — `RowCard`, `RowList`,
+`FieldError`, `inputClass` and `CheckField`. It is not a new visual pattern, it
+is the §9 field pattern applied to a list: a `.cms-card-sunk` plate, a `.cms-label`
+caption ("Allergy 2"), a ghost **Remove** in the corner, the fields in a
+2-column grid inside, and one **Add** button beneath the list. Four steps
+(medical, dietary, previous school, contacts) render from it, so a change to how
+a row looks is one edit. Use it for any future repeated group; do not build a
+second row chrome.

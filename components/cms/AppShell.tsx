@@ -64,7 +64,19 @@ export async function AppShell({
         {t('nav.skipToContent')}
       </a>
 
-      <header className="sticky top-0 z-30 border-b border-harbor-border bg-white/85 backdrop-blur-md">
+      {/* 🚨 SAFE-AREA CONTRACT (app/globals.css, "THE SAFE-AREA CONTRACT FOR TOP
+          BARS"). This bar is `sticky top-0` and IS the topmost element in the
+          viewport on every /cms/** route — nothing renders above it — so on an
+          iPhone with viewportFit:"cover" the status-bar clock would land on the
+          CMS wordmark. `var(--safe-top)` is the contract's variable, not a bare
+          env(): it collapses to 0 when a bar that already owns the inset sits
+          above, which is why it is safe here and stays correct if the CMS shell
+          is ever nested. The pre-commit hook's advisory checks for exactly this
+          mention. */}
+      <header
+        className="sticky top-0 z-30 border-b border-harbor-border bg-white/85 backdrop-blur-md"
+        style={{ paddingTop: 'var(--safe-top)' }}
+      >
         <div className="mx-auto max-w-[1180px] px-6 h-[68px] flex items-center gap-5">
           <Link href="/cms" className="flex items-center gap-3 shrink-0 no-underline">
             <span className="cms-avatar w-9 h-9 rounded-[10px] text-[15px]">C</span>

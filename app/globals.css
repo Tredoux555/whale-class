@@ -1523,3 +1523,140 @@ textarea.cms-input { min-height: 88px; padding: 0.6875rem 0.875rem; line-height:
 /* RTL: the shell must not break when dir=rtl (Arabic). Flip only what is
    directional; the token system itself is direction-agnostic. */
 .cms-root[dir='rtl'] .cms-flip { transform: scaleX(-1); }
+
+/* ── PHASE 3: the two new form primitives ────────────────────────────────────
+   Spec: docs/design/CMS_DESIGN_SYSTEM.md §10. Both are added CENTRALLY, per the
+   system's own rule — a tag box or a scale hand-rolled at a call site is the
+   pattern this file exists to replace.
+
+   `.cms-taginput` is a `.cms-input` that has grown to hold chips: same border,
+   same focus ring, same radius, but auto-height and a text field that fills the
+   remaining line. It must READ as an input, not as a card with chips in it —
+   otherwise a parent does not know they can type. */
+.cms-taginput {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--cms-border-strong);
+  background-color: var(--cms-surface);
+  transition: border-color 160ms var(--cms-ease), box-shadow 160ms var(--cms-ease);
+  cursor: text;
+}
+.cms-taginput:focus-within {
+  border-color: rgba(var(--cms-accent-rgb), 0.55);
+  box-shadow: 0 0 0 3px rgba(var(--cms-accent-rgb), 0.14);
+}
+/* The bare text field inside. No border of its own — the box IS the border. */
+.cms-taginput > input {
+  flex: 1 1 7rem;
+  min-width: 7rem;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--cms-text);
+  font-size: 0.90625rem;
+  min-height: 30px;
+  padding: 0 4px;
+}
+.cms-taginput > input::placeholder { color: rgba(97, 112, 130, 0.65); }
+/* One entered tag. Harbor-tinted like `.cms-chip`, with a hit-area for the ✕
+   that a thumb can actually land on. */
+.cms-taginput-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 4px 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.25;
+  background: rgba(var(--cms-accent-rgb), 0.09);
+  color: var(--cms-accent-deep);
+  border: 1px solid rgba(var(--cms-accent-rgb), 0.22);
+}
+.cms-taginput-chip > button {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 0;
+}
+.cms-taginput-chip > button:hover { opacity: 1; background: rgba(var(--cms-accent-rgb), 0.14); }
+.cms-taginput-chip > button:focus-visible {
+  outline: 2px solid rgba(var(--cms-accent-rgb), 0.55);
+  outline-offset: 1px;
+  opacity: 1;
+}
+
+/* `.cms-scale` — the five-point temperament pick. It is a RADIOGROUP wearing a
+   slider's clothes: a hairline rail with five stops, the chosen stop filled in
+   Harbor blue. Deliberately NOT an <input type=range>: a range has a numeric
+   "amount", and this is a position between two equally-fine ends, with no
+   default and an explicit "not answered" state (no stop filled at all).
+   Direction-agnostic — the rail is a flex row, so RTL mirrors it for free. */
+.cms-scale {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  position: relative;
+  padding: 10px 2px;
+}
+.cms-scale::before {
+  content: '';
+  position: absolute;
+  /* Dot CENTRE to dot CENTRE, not edge to edge. Five stops of equal width put
+     the outer centres at 10% and 90%; a rail that runs past them reads as a
+     scale with two invisible extra positions. */
+  inset-inline: 10%;
+  top: 50%;
+  height: 2px;
+  margin-top: -1px;
+  border-radius: 1px;
+  background: var(--cms-border-strong);
+}
+.cms-scale-stop {
+  position: relative;
+  flex: 1 1 0;
+  display: grid;
+  place-items: center;
+  min-height: 34px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+.cms-scale-stop > i {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--cms-surface);
+  border: 2px solid var(--cms-border-strong);
+  transition: transform 160ms var(--cms-ease), background-color 160ms var(--cms-ease),
+    border-color 160ms var(--cms-ease), box-shadow 160ms var(--cms-ease);
+}
+.cms-scale-stop:hover > i { border-color: rgba(var(--cms-accent-rgb), 0.5); }
+.cms-scale-stop:focus-visible { outline: none; }
+.cms-scale-stop:focus-visible > i {
+  box-shadow: 0 0 0 3px rgba(var(--cms-accent-rgb), 0.18);
+  border-color: rgba(var(--cms-accent-rgb), 0.55);
+}
+.cms-scale-stop[aria-checked='true'] > i {
+  background: var(--cms-accent);
+  border-color: var(--cms-accent-deep);
+  transform: scale(1.28);
+  box-shadow: 0 4px 10px -6px rgba(var(--cms-accent-deep-rgb), 0.9);
+}
