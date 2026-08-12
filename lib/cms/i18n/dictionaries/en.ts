@@ -263,6 +263,209 @@ const en = {
   'teacher.today.noRoom.body':
     'Your account is not attached to a class group yet, so there is no register to take. The school office can assign you one.',
   'org.overview.empty': 'No schools in this group yet.',
+  // ── common (phase 3) ───────────────────────────────────────────────────
+  'common.add': 'Add',
+  'common.remove': 'Remove',
+  'common.yes': 'Yes',
+  'common.no': 'No',
+  'common.notAnswered': 'Not answered',
+  'common.none': 'None',
+  'common.edit': 'Edit',
+  'common.submit': 'Submit',
+
+  // ── parent · enrolment, phase 3 steps ──────────────────────────────────
+  'enrol.subtitle.v3': 'Seven steps and a last look. Everything you enter here becomes the school’s record.',
+  'enrol.step.about': 'About your child',
+  'enrol.step.about.desc':
+    'The things that make them themselves — what they love, what unsettles them, how they meet a new room.',
+  'enrol.step.review': 'Review & submit',
+  'enrol.step.review.desc': 'Everything you have told us, in one place, before it becomes the record.',
+
+  // about your child
+  'enrol.about.likes': 'Things they love',
+  'enrol.about.likes.help': 'Add a few. Anything counts — puddles, a song, a particular blanket.',
+  'enrol.about.likes.placeholder': 'Type and press Enter',
+  'enrol.about.dislikes': 'Things they would rather avoid',
+  'enrol.about.dislikes.help': 'Loud hand dryers, sitting still, being rushed — whatever is true.',
+  'enrol.about.interests': 'What they are curious about right now',
+  'enrol.about.interests.help': 'Diggers, insects, cooking, drawing the same dinosaur every day.',
+  'enrol.about.temperament.title': 'How they meet the world',
+  'enrol.about.temperament.body':
+    'There is no better end of any of these lines. Put your child where they actually are — it helps the room meet them well on the first morning.',
+  'enrol.about.axis.settling': 'Settling in',
+  'enrol.about.axis.settling.left': 'Settles quickly',
+  'enrol.about.axis.settling.right': 'Needs time',
+  'enrol.about.axis.company': 'Company',
+  'enrol.about.axis.company.left': 'Happy alone',
+  'enrol.about.axis.company.right': 'Seeks company',
+  'enrol.about.axis.adventure': 'New things',
+  'enrol.about.axis.adventure.left': 'Watches first',
+  'enrol.about.axis.adventure.right': 'Dives straight in',
+  'enrol.about.axis.energy': 'Energy',
+  'enrol.about.axis.energy.left': 'Calm and steady',
+  'enrol.about.axis.energy.right': 'Big and busy',
+  'enrol.about.axis.clear': 'Clear',
+  'enrol.about.axis.mid': 'Somewhere in between',
+  'enrol.about.notes': 'What should the teacher know about your child?',
+  'enrol.about.notes.help': 'In your own words. This is the part teachers read twice.',
+  'enrol.about.notes.placeholder':
+    'How they say goodbye, what helps when they are upset, anything you would tell a new babysitter…',
+  'enrol.about.guruSync': 'Let this help the teacher’s planning assistant',
+  'enrol.about.guruSync.help':
+    'Your answers help the school’s planning tools suggest activities that suit your child. Untick and this stays with the room staff only.',
+  'enrol.about.privacyNote':
+    'This page is visible only to your child’s room staff and the school office — never to the group office.',
+
+  // medical & allergies
+  'enrol.medical.conditions': 'Conditions the school should know about',
+  'enrol.medical.conditions.help': 'Asthma, eczema, epilepsy… add one at a time.',
+  'enrol.medical.doctorName': 'Doctor or clinic',
+  'enrol.medical.doctorPhone': 'Doctor’s phone number',
+  'enrol.medical.emergencyNote': 'Anything staff must do in an emergency',
+  'enrol.medical.emergencyNote.help': 'Short and practical. This is read under pressure.',
+  'enrol.medical.allergies.title': 'Allergies',
+  'enrol.medical.allergies.body':
+    'One row per allergen. Severe allergies go on the room’s wall poster automatically.',
+  'enrol.medical.allergies.add': 'Add an allergy',
+  'enrol.medical.allergies.none': 'No allergies recorded yet.',
+  'enrol.medical.allergen': 'Allergen',
+  'enrol.medical.allergen.placeholder': 'Peanut, bee sting, penicillin…',
+  'enrol.medical.severity': 'Severity',
+  'enrol.medical.severity.placeholder': 'Choose',
+  'enrol.medical.reaction': 'What happens',
+  'enrol.medical.reaction.placeholder': 'Hives, swelling, anaphylaxis…',
+  'enrol.medical.responsePlan': 'What staff should do',
+  'enrol.medical.responsePlan.placeholder': 'Give the pen from the room cabinet, then call 112…',
+  'enrol.medical.epipen': 'Carries adrenaline (EpiPen, Jext, Anapen)',
+  'enrol.medical.allergyRow': 'Allergy {n}',
+
+  // dietary
+  'enrol.dietary.title': 'Meals',
+  'enrol.dietary.body':
+    'The kitchen works from this list. One row per requirement — halal, no dairy, vegetarian.',
+  'enrol.dietary.add': 'Add a requirement',
+  'enrol.dietary.none': 'No dietary requirements recorded yet.',
+  'enrol.dietary.label': 'Requirement',
+  'enrol.dietary.label.placeholder': 'Halal, no dairy, vegetarian…',
+  'enrol.dietary.reason': 'Reason',
+  'enrol.dietary.reason.placeholder': 'Choose',
+  'enrol.dietary.excluded': 'Foods that must never be served',
+  'enrol.dietary.excluded.help': 'Add one at a time. This is the list the kitchen checks.',
+  'enrol.dietary.notes': 'Anything else the kitchen should know',
+  'enrol.dietary.row': 'Requirement {n}',
+  'dietary.reason.allergy': 'Allergy',
+  'dietary.reason.medical': 'Medical',
+  'dietary.reason.religious': 'Religious',
+  'dietary.reason.cultural': 'Cultural',
+  'dietary.reason.preference': 'Family preference',
+
+  // previous school
+  'enrol.school.none': 'This is their first setting',
+  'enrol.school.add': 'Add a setting',
+  'enrol.school.empty': 'No previous settings recorded yet.',
+  'enrol.school.name': 'Name of the setting',
+  'enrol.school.country': 'Country',
+  'enrol.school.city': 'Town or city',
+  'enrol.school.from': 'From',
+  'enrol.school.to': 'Until',
+  'enrol.school.notes': 'Anything worth passing on',
+  'enrol.school.notes.help': 'Why they moved, how the settling went, a teacher who knew them well.',
+  'enrol.school.row': 'Setting {n}',
+
+  // contacts & pickup
+  'enrol.contacts.body':
+    'Who we call, and in what order. The first person on the list is the first we ring.',
+  'enrol.contacts.add': 'Add a person',
+  'enrol.contacts.empty': 'No contacts yet — add at least one.',
+  'enrol.contacts.name': 'Full name',
+  'enrol.contacts.relationship': 'Relationship to the child',
+  'enrol.contacts.relationship.placeholder': 'Choose',
+  'enrol.contacts.phone': 'Phone number',
+  'enrol.contacts.email': 'Email address',
+  'enrol.contacts.canCollect': 'May collect the child',
+  'enrol.contacts.canCollect.help':
+    'Tick only for people you authorise to take your child home unaccompanied.',
+  'enrol.contacts.note': 'Note for staff',
+  'enrol.contacts.note.placeholder': 'Wednesdays only, arrives by car, calls ahead…',
+  'enrol.contacts.row': 'Contact {n}',
+  'enrol.contacts.callOrder': 'Call {n}',
+
+  // consents
+  'enrol.consents.body':
+    'Each of these is a separate answer. Anything you leave unticked is recorded as a refusal, and the school works accordingly.',
+  'consent.photography': 'Photographs inside the school',
+  'consent.photography.desc':
+    'Photos of your child in the room, used in your own updates and in their learning record.',
+  'consent.media': 'Public use of photographs',
+  'consent.media.desc':
+    'Newsletters, the school website, social media. Separate from the answer above, on purpose.',
+  'consent.outings': 'Trips and outings',
+  'consent.outings.desc': 'Walks, the park, and organised trips away from the building.',
+  'consent.emergency_medical': 'Emergency medical treatment',
+  'consent.emergency_medical.desc':
+    'Staff may seek urgent medical help if you cannot be reached in time.',
+  'consent.sunscreen': 'Sun cream and basic first aid',
+  'consent.sunscreen.desc': 'Applying sun cream, plasters and cold compresses as needed.',
+  'consent.data_processing': 'Keeping your child’s record',
+  'consent.data_processing.desc':
+    'Holding the information on this form for as long as your child is enrolled.',
+  'enrol.consents.sign': 'Type your full name to sign',
+  'enrol.consents.sign.help': 'Your name here stands as your signature on this application.',
+
+  // review & submit
+  'enrol.review.body':
+    'Read it through. Once you submit, the form becomes the school’s record and you can no longer edit it — the office can, and will talk to you first.',
+  'enrol.review.section.child': 'Child',
+  'enrol.review.section.about': 'About your child',
+  'enrol.review.section.medical': 'Medical & allergies',
+  'enrol.review.section.dietary': 'Dietary',
+  'enrol.review.section.school': 'Previous school',
+  'enrol.review.section.contacts': 'Contacts & pickup',
+  'enrol.review.section.consents': 'Consents',
+  'enrol.review.edit': 'Edit',
+  'enrol.review.empty': 'Nothing entered.',
+  'enrol.review.submit': 'Submit application',
+  'enrol.review.submitting': 'Submitting…',
+  'enrol.review.lockNote': 'After submitting, this application is read-only for you.',
+  'enrol.review.done.title': 'Your application is with the school',
+  'enrol.review.done.body':
+    'The office has everything on this form. They will be in touch about a place, and you can still read the whole application from your dashboard.',
+  'enrol.review.done.dashboard': 'Back to your dashboard',
+  'enrol.review.error.incomplete':
+    'Some steps still need attention. Open the ones marked below and finish them first.',
+  'enrol.review.demoNote':
+    'Demo mode — this summary is built from what you typed in this session, and submitting is switched off.',
+  'enrol.review.firstSetting': 'This is their first setting.',
+
+  // step errors (phase 3)
+  'enrol.error.temperament': 'Choose a point on the line.',
+  'enrol.error.allergies.allergen': 'Name the allergen, or clear the row.',
+  'enrol.error.allergies.severity': 'Choose how severe this allergy is.',
+  'enrol.error.requirements.label': 'Name the requirement, or clear the row.',
+  'enrol.error.requirements.reason': 'Choose a reason.',
+  'enrol.error.schools.name': 'Name the setting, or clear the row.',
+  'enrol.error.schools.attendedFrom': 'That date is not a real date.',
+  'enrol.error.schools.attendedTo': 'The end date must not be before the start date.',
+  'enrol.error.contacts': 'Add at least one person we can call.',
+  'enrol.error.contacts.fullName': 'Enter this person’s name.',
+  'enrol.error.contacts.relationship': 'Choose how they are related to your child.',
+  'enrol.error.contacts.phone': 'Enter a phone number we can reach.',
+  'enrol.error.contacts.email': 'Enter a valid email address.',
+  'enrol.error.signedName': 'Type your full name to sign the application.',
+  'enrol.error.submit': 'We could not submit that. Please try again.',
+  'enrol.error.tooMany': 'That is more rows than we can keep. Please remove a few.',
+
+  // ── teacher · child insight (phase 3) ──────────────────────────────────
+  'teacher.insight.open': 'What to know',
+  'teacher.insight.title': 'About {name}',
+  'teacher.insight.likes': 'Loves',
+  'teacher.insight.dislikes': 'Would rather avoid',
+  'teacher.insight.interests': 'Curious about',
+  'teacher.insight.temperament': 'How they meet the world',
+  'teacher.insight.notes': 'From the family',
+  'teacher.insight.empty': 'The family has not filled this in yet.',
+  'teacher.insight.privacy':
+    'Written by the family for the people in this room. It is not visible at the group office.',
 } as const;
 
 export default en;

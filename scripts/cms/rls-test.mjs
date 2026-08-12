@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // scripts/cms/rls-test.mjs
 // ============================================================================
-// THE LOAD-BEARING TEST FOR migrations/329_cms_phase2.sql.
+// THE LOAD-BEARING TEST FOR migrations/329_cms_phase2.sql
+// AND migrations/330_cms_phase3.sql.
 //
 // The CMS app talks to Postgres through the service role, which bypasses RLS —
 // so no amount of clicking the UI can tell you whether the policies are right.
@@ -17,6 +18,7 @@
 //   createdb cms_test
 //   psql -d cms_test -f scripts/cms/local-supabase-shim.sql
 //   psql -d cms_test -v ON_ERROR_STOP=1 -f migrations/329_cms_phase2.sql
+//   psql -d cms_test -v ON_ERROR_STOP=1 -f migrations/330_cms_phase3.sql
 //   DATABASE_URL=postgres://user:pass@127.0.0.1:5432/cms_test node scripts/cms/rls-test.mjs
 //
 // Exit 0 = every assertion passed. Exit 1 = at least one failed.
@@ -208,7 +210,7 @@ async function main() {
   await client.connect();
   const ids = await seed();
 
-  console.log('\nCMS PHASE 2 — RLS INTEGRATION TEST');
+  console.log('\nCMS PHASE 2 + 3 — RLS INTEGRATION TEST');
   console.log('==================================\n');
 
   // ── 0. the claim plumbing itself ──────────────────────────────────────────
@@ -283,6 +285,24 @@ async function main() {
     );
     check('parent A records a medical record for their child', insMedical.ok, insMedical.error);
 
+    // ── phase 3 (migration 330) ───────────────────────────────────────────
+    const insProfile = await attempt(
+      `insert into cms_child_profiles
+         (child_id, school_id, likes, dislikes, interests, temperament, parent_notes)
+       values ($1,$2,'{puddles,"her red blanket"}','{"hand dryers"}','{bugs}',
+               '{"settling":4,"company":5}'::jsonb,
+               'Goodbyes are hard for five minutes and then she is fine.')`,
+      [childId, ids.schoolA]
+    );
+    check('parent A writes the About-your-child profile', insProfile.ok, insProfile.error);
+
+    const insSchool = await attempt(
+      `insert into cms_previous_schools (child_id, school_id, name, country_code, city)
+       values ($1,$2,'Little Acorns','ZA','Cape Town')`,
+      [childId, ids.schoolA]
+    );
+    check('parent A records a previous setting', insSchool.ok, insSchool.error);
+
     // The cross-tenant write attempt. Parent A has no parent membership at
     // school B, so the WITH CHECK must refuse.
     const crossSchool = await attempt(
@@ -313,6 +333,20 @@ async function main() {
 
     const med = await attempt('select id from cms_medical_records');
     check('parent A sees their child\'s medical record', med.count === 1);
+
+    const profile = await attempt(
+      'select likes, temperament from cms_child_profiles where child_id = $1', [childId]
+    );
+    check('parent A reads back their own child\'s profile', profile.count === 1);
+
+    const prev = await attempt('select name from cms_previous_schools where child_id = $1', [childId]);
+    check('parent A reads back their own child\'s previous setting', prev.count === 1);
+
+    const upd = await attempt(
+      `update cms_child_profiles set parent_notes = 'One long hug, then go.' where child_id = $1`,
+      [childId]
+    );
+    check('parent A can edit their own child\'s profile', upd.ok && upd.count === 1, upd.error);
 
     const resume = await attempt(
       `update cms_enrollments set draft_data = '{"medical":{"doctor":"Dr N. Pillay"}}'::jsonb,
@@ -359,6 +393,26 @@ async function main() {
 
     const enrol = await attempt('select id from cms_enrollments where id = $1', [enrollmentId]);
     check('parent B CANNOT read parent A\'s enrolment', enrol.count === 0);
+
+    // ── phase 3: personality data is the MOST private thing in the schema ──
+    const profile = await attempt('select id from cms_child_profiles where child_id = $1', [childId]);
+    check('parent B CANNOT read parent A\'s child\'s profile', profile.count === 0,
+      `saw ${profile.count}`);
+
+    const profileUpd = await attempt(
+      `update cms_child_profiles set parent_notes = 'hijacked' where child_id = $1`, [childId]
+    );
+    check('parent B CANNOT edit parent A\'s child\'s profile', profileUpd.ok && profileUpd.count === 0,
+      profileUpd.error || `${profileUpd.count} rows`);
+
+    const profileIns = await attempt(
+      `insert into cms_child_profiles (child_id, school_id, parent_notes)
+       values ($1,$2,'planted')`, [childId, ids.schoolA]
+    );
+    check('parent B CANNOT plant a profile on parent A\'s child', !profileIns.ok);
+
+    const prev = await attempt('select id from cms_previous_schools where child_id = $1', [childId]);
+    check('parent B CANNOT read parent A\'s child\'s schooling history', prev.count === 0);
   });
 
   // ── 4. teacher of the room vs teacher of another room ─────────────────────
@@ -385,6 +439,22 @@ async function main() {
     );
     check('teacher CANNOT edit a child\'s standing record', upd.ok && upd.count === 0);
 
+    // ── phase 3: the insight card ─────────────────────────────────────────
+    const profile = await attempt(
+      'select likes, parent_notes from cms_child_profiles where child_id = $1', [childId]
+    );
+    check('teacher of the room CAN read that child\'s profile (the insight card)',
+      profile.count === 1, `saw ${profile.count}`);
+
+    const profileUpd = await attempt(
+      `update cms_child_profiles set parent_notes = 'staff rewrite' where child_id = $1`, [childId]
+    );
+    check('teacher CANNOT rewrite the family\'s own words',
+      profileUpd.ok && profileUpd.count === 0, profileUpd.error || `${profileUpd.count} rows`);
+
+    const prev = await attempt('select name from cms_previous_schools where child_id = $1', [childId]);
+    check('teacher of the room CAN read that child\'s schooling history', prev.count === 1);
+
     const enrol = await attempt('select id from cms_enrollments');
     check('teacher CANNOT see enrolments at all', enrol.count === 0, `saw ${enrol.count}`);
 
@@ -407,6 +477,13 @@ async function main() {
     const med = await attempt('select id from cms_medical_records where child_id = $1', [childId]);
     check('teacher of another room CANNOT read that child\'s medical record', med.count === 0);
 
+    const profile = await attempt('select id from cms_child_profiles where child_id = $1', [childId]);
+    check('teacher of another room CANNOT read that child\'s profile', profile.count === 0,
+      `saw ${profile.count}`);
+
+    const prev = await attempt('select id from cms_previous_schools where child_id = $1', [childId]);
+    check('teacher of another room CANNOT read that child\'s schooling history', prev.count === 0);
+
     const att = await attempt(
       `insert into cms_attendance (child_id, school_id, class_group_id, on_date, state)
        values ($1,$2,$3,current_date + 1,'present')`,
@@ -423,6 +500,14 @@ async function main() {
       kids.count === 1 && kids.rows[0].school_id === ids.schoolA, `saw ${kids.count}`);
     check('school admin does NOT see the other school\'s child',
       !kids.rows.some((r) => r.id === ids.quayChild));
+
+    const profile = await attempt('select id from cms_child_profiles where child_id = $1', [childId]);
+    check('school admin CAN read a profile in their own school', profile.count === 1);
+
+    const otherProfile = await attempt(
+      'select id from cms_child_profiles where child_id = $1', [ids.quayChild]
+    );
+    check('school admin CANNOT read the other school\'s profiles', otherProfile.count === 0);
 
     const enrol = await attempt(`update cms_enrollments set status = 'submitted', submitted_at = now() where id = $1`,
       [enrollmentId]);
@@ -461,6 +546,22 @@ async function main() {
 
     const upd = await attempt(`update cms_children set preferred_name = 'Org edit' where id = $1`, [childId]);
     check('org member CANNOT edit a child (read-only layer)', upd.ok && upd.count === 0);
+
+    // ── phase 3: the org layer is BLIND to personality data ───────────────
+    // Stricter than medical, deliberately: cms_child_profiles has no org read
+    // clause at all. A group director must not be able to read a four-year-old's
+    // temperament from head office.
+    const profiles = await attempt('select id from cms_child_profiles');
+    check('org member CANNOT read any child profile', profiles.count === 0, `saw ${profiles.count}`);
+
+    const prev = await attempt('select id from cms_previous_schools');
+    check('org member CANNOT read schooling history', prev.count === 0, `saw ${prev.count}`);
+
+    const profileIns = await attempt(
+      `insert into cms_child_profiles (child_id, school_id, parent_notes)
+       values ($1,$2,'org planted')`, [childId, ids.schoolA]
+    );
+    check('org member CANNOT write a child profile', !profileIns.ok);
   });
 
   // ── 8. the public key ─────────────────────────────────────────────────────
@@ -469,6 +570,7 @@ async function main() {
     for (const table of [
       'cms_children', 'cms_guardians', 'cms_medical_records', 'cms_allergies',
       'cms_enrollments', 'cms_users', 'cms_memberships', 'cms_rate_limit_logs',
+      'cms_child_profiles', 'cms_previous_schools',
     ]) {
       const r = await attempt(`select * from ${table}`);
       check(`anon reads nothing from ${table}`, !r.ok || r.count === 0,
@@ -491,6 +593,14 @@ async function main() {
   await client.query('RESET ROLE');
   check('service role sees every child', svcKids.count === 2, `saw ${svcKids.count}`);
   check('service role sees every medical record', svcMed.count === 1);
+  await client.query('BEGIN');
+  await client.query('SET LOCAL ROLE service_role');
+  const svcProfiles = await attempt('select id from cms_child_profiles');
+  const svcPrev = await attempt('select id from cms_previous_schools');
+  await client.query('COMMIT');
+  await client.query('RESET ROLE');
+  check('service role sees every child profile', svcProfiles.count === 1, `saw ${svcProfiles.count}`);
+  check('service role sees every previous setting', svcPrev.count === 1);
 
   // ── result ────────────────────────────────────────────────────────────────
   console.log('\n==================================');

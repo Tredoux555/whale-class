@@ -87,9 +87,10 @@ both ends for multi-school comparison and group-wide policy.
 
 **Where it lives:** pages `app/cms/**` (`/cms` landing · `/cms/login` · `/cms/parent/{dashboard,enroll,messages,updates}`
 · `/cms/teacher/{today,documents}` · `/cms/org/overview`) · components `components/cms/**` ·
-engine/i18n/demo/auth/db `lib/cms/**` · API `app/api/cms/{health,demo/today,auth/{login,signup,logout},enroll}` ·
-migration `migrations/329_cms_phase2.sql` (+ `_ROLLBACK`) · phase-1 schema draft `db/cms-schema.sql` (superseded,
-kept as the design record). One layout, `app/cms/layout.tsx`, owns the theme, the fonts and the AppShell.
+engine/i18n/demo/auth/db `lib/cms/**` · API `app/api/cms/{health,demo/today,auth/{login,signup,logout},enroll,enroll/submit}` ·
+migrations `migrations/329_cms_phase2.sql` + `migrations/330_cms_phase3.sql` (both with `_ROLLBACK`) ·
+phase-1 schema draft `db/cms-schema.sql` (superseded, kept as the design record).
+One layout, `app/cms/layout.tsx`, owns the theme, the fonts and the AppShell.
 
 **🚨 HARBOR LAW — CMS is a PROTECTED BRAND, like PSS's `pt-*`.** Its design system is
 "Harbor" (light-first Harbor blue, Source Serif 4 + Inter): `docs/design/CMS_DESIGN_SYSTEM.md`,
@@ -110,17 +111,83 @@ anything new in `lib/cms/`, check whether `lib/onboarding-core/` or an existing 
 already does it — the long-term intent is convergence, not a second parallel product.
 
 **PHASE STATUS:** Phase 1 **DONE** (design law, engine data model, i18n, all pages, demo data,
-API). Phase 2 **BUILT, migration PENDING Tredoux's Supabase run** — see `APPLY_CMS_PHASE2.md`
-at the repo root for the founder's checklist. Future: Montree's own child onboarding adopts the
-shared engine so both products derive from one record.
+API). Phase 2 **BUILT, migration PENDING Tredoux's Supabase run** — `APPLY_CMS_PHASE2.md`.
+Phase 3 **BUILT, migration 330 PENDING Tredoux's Supabase run** — `APPLY_CMS_PHASE3.md`.
+Future: Montree's own child onboarding adopts the shared engine so both products derive from one
+record — the seam for that already exists (`cms_children.montree_child_id`, see the guru feed below).
 
-**Phase 3 requirement (locked 2026-08-12, from Tredoux):** The enrollment wizard
-must include an "About your child" step capturing likes, dislikes, interests, and
-personality/temperament. In the Montree surface, this data feeds directly into the
-Guru's psychological profile for the child (montree guru integration point:
-app/api/montree/guru/*). Schema: planned `cms_child_profiles` table in the Phase 3
-migration (likes, dislikes, interests, temperament, free-text parent notes,
-guru_sync flag). Same data powers CMS teacher insight cards.
+### PHASE 3 — the top of the hourglass is finished
+
+**⏳ MIGRATION `migrations/330_cms_phase3.sql` PENDING (SQL pasted in chat per rule #4).** Additive,
+one transaction, idempotent, `cms_`-prefixed only. Two new tables (`cms_child_profiles`,
+`cms_previous_schools`), two added columns (`cms_allergies.carries_epipen`,
+`cms_children.montree_child_id`), two added enum values (`cms_enrollment_step.about_child`,
+`cms_consent_kind.media`). Rollback: `migrations/330_cms_phase3_ROLLBACK.sql` — drops only phase-3
+objects and leaves 329 intact, so CMS falls back to phase-2 behaviour rather than to nothing.
+**Enum values cannot be dropped in Postgres**; the rollback says so and leaves them (harmless).
+
+**THE WHOLE WIZARD IS REAL.** Steps 2–7 no longer park their answers in `draft_data` — each writes
+its own tables through `POST /api/cms/enroll` (`about_child` → `cms_child_profiles`; `medical` →
+`cms_medical_records` + `cms_allergies`; `dietary` → `cms_dietary_requirements`; `previous_school`
+→ `cms_previous_schools`; `contacts` → `cms_guardians` + `cms_child_guardians` +
+`cms_pickup_authorizations`; `consents` → `cms_consents`). Every step ALSO parks its raw form values
+in `draft_data` and ticks `completed_steps`: **the typed rows are the RECORD, the parked blob is the
+FORM**, and a family must get their half-filled allergy row back, which clean rows cannot
+reconstruct. **List steps REPLACE, they never append** (soft-delete the old set, insert the new), or
+saving twice doubles a child's allergies.
+
+**🚨 "ABOUT YOUR CHILD" IS STEP 2, BEFORE ANYTHING CLINICAL** (Tredoux's requirement, locked
+2026-08-12). Likes / dislikes / interests as chips, four warm temperament picks
+(settling · company · adventure · energy, 1–5 with an explicit unanswered state), and "what should
+the teacher know about your child?". **NO CLINICAL LANGUAGE ON THAT PAGE, EVER** — no score, no
+norm, no high/low, no trait framed as a deficit. It is a parent describing their child, and the
+moment it reads as an assessment it stops collecting the truth. `ENROLLMENT_STEPS` in
+`lib/cms/engine/types.ts` and the `cms_enrollment_step` enum are one list in two languages; change
+both or neither.
+
+**REVIEW & SUBMIT is the one-way door.** `POST /api/cms/enroll/submit` (its own route, no body —
+folding it in as an eighth `step` would put an irreversible action behind the same handler as "save
+my half-finished dietary row"). It refuses an incomplete form, then moves the enrolment
+`draft → submitted`. **The lock is in the database, not the UI:** 329's update policy requires
+`status = 'draft'` in its USING clause, so after submit the family reads forever and writes never.
+The rail has EIGHT stops but the wizard counts SEVEN steps — review is the way out of the intake,
+not a step of it.
+
+**🏫 THE GURU FEED — `lib/cms/engine/guru-feed.ts`.** A PURE function mapping a CMS profile onto the
+Guru's existing `ParentIntakeContext` slot (the family-provided block added when Montree's own child
+onboarding shipped, Aug 10) — deliberately NOT the clinical `MentalProfile`, which belongs to an
+instrument a practitioner completes. Temperament is rendered as the family's own phrasing
+("needs time and a familiar adult before they settle"), never as numbers. The output type is
+declared structurally, not imported from `lib/montree/**`: **CMS never imports from Montree.**
+
+**THE MONTREE-SIDE WIRING IS REAL, AND DORMANT BY CONSTRUCTION.**
+`lib/montree/guru/context-builder.ts` gained ONE fail-soft parallel query (a 12th) and one merge
+block: it looks a CMS child up through the new `cms_children.montree_child_id` seam, filters on
+`guru_sync`, and merges the feed into `parent_intake` via `mergeGuruFeed`. **That column is NULL for
+every row today**, so the query resolves to null and the Guru's behaviour is bit-for-bit unchanged —
+it goes live the day Montree onboarding adopts the shared engine and starts setting it. Merge order
+is deliberate: a teacher-COMMITTED Montree intake WINS over an unreviewed CMS profile; CMS only
+fills holes; allergy lists are unioned. `guru_sync` is the family's own answer and is honoured twice
+(in the query AND inside the pure function).
+
+**TEACHER INSIGHT — `components/cms/teacher/ChildInsight.tsx`.** Each row on `/cms/teacher/today`
+unfolds into what the family wrote. It is a native `<details>`: **zero client JavaScript**, the page
+stays a server component, and a room of 24 costs 24 `<details>` rather than 24 pieces of state. The
+engine did NOT change — profiles are a second read joined by child id at render time, never folded
+into `RosterInput` (a child's likes are not a flag).
+
+**🚨 PERSONALITY DATA IS HELD TIGHTER THAN MEDICAL DATA.** `cms_child_profiles` has NO org-layer read
+clause at all — read set is exactly `cms_readable_child_ids()` (family + teacher of the child's OWN
+room + school office). A group director cannot read a four-year-old's temperament from head office.
+Teachers READ and never WRITE it: the words are the parent's, and a record staff can quietly rewrite
+is not the family's description any more. **`scripts/cms/rls-test.mjs` asserts all of it — 78
+assertions, green** (was 55 in phase 2).
+
+**New design primitives (CMS_DESIGN_SYSTEM.md §10):** `.cms-taginput` (the chip field — NOT a picker,
+there is no vocabulary and there must never be one) and `.cms-scale` (the five-point temperament
+pick — a radiogroup wearing a slider's clothes, because `<input type=range>` cannot express
+"unanswered"). Both live centrally in `app/globals.css`. `components/cms/enroll/RowCard.tsx` is the
+shared repeated-row chrome behind all four list steps.
 
 ### PHASE 2 — the data layer is real
 
@@ -168,7 +235,7 @@ defaults to PUBLIC/anon and is the exact hole migration 313 had to close. Helper
 `SECURITY DEFINER` with a pinned `search_path` (a policy on `cms_memberships` that reads
 `cms_memberships` would recurse). **`scripts/cms/rls-test.mjs` is the load-bearing test** — it
 impersonates each role the way PostgREST does (`SET ROLE authenticated` + `request.jwt.claims`)
-and asserts BOTH halves of every rule: 55 assertions, green against local Postgres
+and asserts BOTH halves of every rule: **78 assertions** (55 in phase 2, 23 added for phase 3), green against local Postgres
 (`scripts/cms/local-supabase-shim.sql` supplies `auth.uid()` + the three Supabase roles). It found
 two real holes on first run — an org director could read every medical record in the group, and
 any parent at a school could attach themselves as guardian to any other family's child. **Re-run
@@ -177,11 +244,11 @@ that second fix, not audit decoration.
 
 **ENROLMENT WRITES.** Wizard step 1 POSTs `/api/cms/enroll` → `cms_children` +
 `cms_child_guardians` + `cms_enrollments(draft)` in one idempotent move (saving twice edits the
-draft, it never creates twins). Steps 2–6 stay scaffolds but park their answers in
-`cms_enrollments.draft_data` and the wizard reloads the open draft, so a family can leave and come
-back. **Tenancy comes from the session, never from the body** — the body cannot name a school, a
-guardian or a child (the Jul-3 cross-tenant lesson: existence ≠ ownership; the requested room is
-re-checked against the session's school).
+draft, it never creates twins). **Phase 3 made steps 2–7 real too** — see the phase-3 section above;
+they still park their raw form values in `cms_enrollments.draft_data` so the wizard rehydrates the
+exact form a family left behind. **Tenancy comes from the session, never from the body** — the body
+cannot name a school, a guardian or a child (the Jul-3 cross-tenant lesson: existence ≠ ownership;
+the requested room is re-checked against the session's school).
 
 **THE ENGINE DID NOT CHANGE.** `buildDailyRoster` is still the same pure
 `(RosterInput, RosterLabels) → DailyRoster`. Teacher Today just builds the argument from DB rows
@@ -192,33 +259,6 @@ supabase-js appears in CMS — pages never import it.
 **Validation** is `lib/cms/validation.ts` (no zod — CMS adds no dependencies), rules lifted from
 `lib/onboarding-core/validation.ts`: round-tripping ISO dates, a plausible age window, forgiving
 elsewhere. Client validates for the message, the route validates for real.
-
-## 🌱 SESSION — Aug 12, 2026 (Cowork/Fable directing Sonnet) — NEW-CHILD SEEDING FIX (first-in-sequence focus works)
-
-**Bug (Tredoux, from Whale Class dashboard):** newly onboarded children (e.g. Roman) landed on
-advanced focus works — "Phonics 25: j /j/", Sandpaper Letters — instead of the matching/settling
-works a genuinely new child starts with. Three culprits: (1) `seedFocusWorks` in
-`app/api/montree/children/[childId]/onboard/route.ts` ran "regardless of experience_level" and
-trusted the AI pick, whose curriculum-level scale FLOORED at Pink Tower / Sandpaper Letters —
-no settling tier existed, so the AI could never land there; (2) the hardcoded FALLBACKS map went
-straight to formal materials; (3) `fill-shelf/route.ts` gap-fill picked a LITERALLY RANDOM work
-from the whole area (`Math.random()` — could hand a new child lesson 25 of 30 by chance).
-
-**Fix (Tredoux ruling: first-in-sequence, locked):**
-- `seedFocusWorks` gains an `expLevel` param. `expLevel === 'new'` → ignore the AI pick entirely
-  and seed the FIRST work in each area's classroom curriculum sequence, status forced 'presented'.
-  Empty area still falls through to the canonical Pass-3 fallback. Non-'new' path byte-identical.
-- Extraction prompt: new 0-15 settling tier line ("matching, sorting, pairing, simple
-  manipulatives — a brand-new child stays here for months") + new rule 3: AVAILABLE WORKS lists
-  are sequence-ordered, pick from the FIRST few when new/guessing, never mid-sequence.
-  (Old rules 3/4/5 → 4/5/6.)
-- fill-shelf gap-fill: `Math.random()` → earliest-in-sequence work the child hasn't mastered
-  (nulls-last sort; first-by-sequence if everything is mastered). One extra
-  `montree_child_progress` fetch, only when gap-filling.
-
-Verified: fresh-eyes Sonnet adversarial review PASS (zero findings); tsc diffed vs .orig — only
-pre-existing TS7006/TS2353 noise, nothing new. No migrations. ⚠️ Fix applies to FUTURE onboards
-only — already-seeded shelves (Roman) need a manual swap via the wheel picker.
 
 ## 🧒 SESSION — Aug 10, 2026 pt3 (Cowork/Fable directing Sonnet) — CHILD ONBOARDING SHIPPED (shared intake core + Montree & PSS adapters) — migrations PENDING
 

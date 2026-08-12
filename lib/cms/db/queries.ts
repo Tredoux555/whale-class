@@ -33,6 +33,15 @@ import type {
   School,
   SchoolSummary,
 } from '@/lib/cms/engine/types';
+import type {
+  normaliseAboutChildStep,
+  normaliseConsentsStep,
+  normaliseContactsStep,
+  normaliseDietaryStep,
+  normaliseMedicalStep,
+  normalisePreviousSchoolStep,
+} from '@/lib/cms/validation';
+
 import {
   mapAllergy,
   mapChild,
@@ -652,4 +661,513 @@ export async function loadMemberships(userId: string): Promise<MembershipRow[]> 
 /** Child ids for a set of children — small helper the API route uses. */
 export function childIdsOf(children: Child[]): ChildId[] {
   return children.map((c) => c.id);
+}
+
+// ============================================================================
+// PHASE 3 — the rest of the wizard writes
+// ============================================================================
+// Steps 2–7 stop parking their answers in `draft_data` and start writing their
+// own tables. Every one of them follows the SAME three-part move:
+//
+//   1. find the family's open draft (which is the only way this file learns a
+//      child id — never from the request body),
+//   2. write the step's real rows,
+//   3. park the raw form values in `draft_data` AND mark the step complete, so
+//      the wizard can rehydrate the exact form the family left behind.
+//
+// Step 3 is not redundant with step 2. The typed rows are the RECORD; the
+// parked blob is the FORM. A family that half-filled an allergy row and left
+// must get their half-filled row back, and no set of clean allergy rows can
+// reconstruct it.
+//
+// 🚨 LIST STEPS REPLACE, THEY DO NOT APPEND. The wizard always sends the whole
+// list, so saving twice must not double a child's allergies. Old rows are
+// soft-deleted (`deleted_at`), never hard-deleted — a removed allergy is a
+// clinically interesting fact and every read path already filters on it.
+
+type AboutChildInput = ReturnType<typeof normaliseAboutChildStep>;
+type MedicalInput = ReturnType<typeof normaliseMedicalStep>;
+type DietaryInput = ReturnType<typeof normaliseDietaryStep>;
+type PreviousSchoolInput = ReturnType<typeof normalisePreviousSchoolStep>;
+type ContactsInput = ReturnType<typeof normaliseContactsStep>;
+type ConsentsInput = ReturnType<typeof normaliseConsentsStep>;
+
+/** The three things every phase-3 write needs, or a reason it cannot proceed. */
+async function requireDraft(
+  session: CmsSession
+): Promise<
+  | { ok: true; draft: EnrollmentDraft; schoolId: string }
+  | { ok: false; error: string }
+> {
+  if (!session.schoolId) return { ok: false, error: 'no_school' };
+  const draft = await loadOpenDraft(session);
+  // No draft means step 1 has not been saved. The wizard enforces the order,
+  // but a direct POST must not be able to create an orphan medical record.
+  if (!draft) return { ok: false, error: 'no_draft' };
+  return { ok: true, draft, schoolId: session.schoolId };
+}
+
+/** Park the raw form values and tick the step. Called after every typed write. */
+async function completeStep(
+  session: CmsSession,
+  step: string,
+  raw: Record<string, unknown>
+): Promise<void> {
+  await saveDraftStep(session, step, raw, true);
+}
+
+// ── step 2 · about your child ───────────────────────────────────────────────
+
+/**
+ * One profile per child (the table has a UNIQUE on child_id), so this is an
+ * update-or-insert rather than an append. `guru_synced_at` is stamped only when
+ * the family leaves the sync tick in place — it is the audit trail for "when
+ * did this profile become visible to the planning assistant".
+ */
+export async function saveAboutChildStep(
+  session: CmsSession,
+  input: AboutChildInput,
+  raw: Record<string, unknown>
+): Promise<SaveChildStepResult> {
+  const gate = await requireDraft(session);
+  if (!gate.ok) return { ok: false, error: gate.error };
+  try {
+    const supabase = db();
+    const patch = {
+      likes: input.likes,
+      dislikes: input.dislikes,
+      interests: input.interests,
+      temperament: input.temperament,
+      parent_notes: input.parentNotes,
+      guru_sync: input.guruSync,
+      guru_synced_at: input.guruSync ? new Date().toISOString() : null,
+      deleted_at: null,
+    };
+
+    const { data: existing } = await supabase
+      .from('cms_child_profiles')
+      .select('id')
+      .eq('child_id', gate.draft.childId)
+      .maybeSingle();
+
+    if (existing) {
+      const { error } = await supabase
+        .from('cms_child_profiles')
+        .update(patch)
+        .eq('id', existing.id);
+      if (error) throw error;
+    } else {
+      const { error } = await supabase.from('cms_child_profiles').insert({
+        ...patch,
+        child_id: gate.draft.childId,
+        school_id: gate.schoolId,
+      });
+      if (error) throw error;
+    }
+
+    await completeStep(session, 'about_child', raw);
+    return { ok: true, enrollmentId: gate.draft.enrollmentId, childId: gate.draft.childId };
+  } catch (error) {
+    safeErrorLog('cms/db/saveAboutChildStep', error);
+    return { ok: false, error: 'write_failed' };
+  }
+}
+
+// ── step 3 · medical & allergies ────────────────────────────────────────────
+
+export async function saveMedicalStep(
+  session: CmsSession,
+  input: MedicalInput,
+  raw: Record<string, unknown>
+): Promise<SaveChildStepResult> {
+  const gate = await requireDraft(session);
+  if (!gate.ok) return { ok: false, error: gate.error };
+  try {
+    const supabase = db();
+    const childId = gate.draft.childId;
+
+    const medicalPatch = {
+      conditions: input.conditions,
+      doctor_name: input.doctorName,
+      doctor_phone: input.doctorPhone,
+      emergency_note: input.emergencyNote,
+      deleted_at: null,
+    };
+    const { data: existingMedical } = await supabase
+      .from('cms_medical_records')
+      .select('id')
+      .eq('child_id', childId)
+      .maybeSingle();
+
+    if (existingMedical) {
+      const { error } = await supabase
+        .from('cms_medical_records')
+        .update(medicalPatch)
+        .eq('id', existingMedical.id);
+      if (error) throw error;
+    } else {
+      const { error } = await supabase
+        .from('cms_medical_records')
+        .insert({ ...medicalPatch, child_id: childId, school_id: gate.schoolId });
+      if (error) throw error;
+    }
+
+    // Replace, don't append — see the header.
+    const { error: clearError } = await supabase
+      .from('cms_allergies')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('child_id', childId)
+      .is('deleted_at', null);
+    if (clearError) throw clearError;
+
+    if (input.allergies.length > 0) {
+      const { error } = await supabase.from('cms_allergies').insert(
+        input.allergies.map((row) => ({
+          child_id: childId,
+          school_id: gate.schoolId,
+          allergen: row.allergen,
+          severity: row.severity,
+          reaction: row.reaction,
+          response_plan: row.responsePlan,
+          carries_epipen: row.carriesEpipen,
+          requires_poster: row.requiresPoster,
+        }))
+      );
+      if (error) throw error;
+    }
+
+    await completeStep(session, 'medical', raw);
+    return { ok: true, enrollmentId: gate.draft.enrollmentId, childId };
+  } catch (error) {
+    safeErrorLog('cms/db/saveMedicalStep', error);
+    return { ok: false, error: 'write_failed' };
+  }
+}
+
+// ── step 4 · dietary ────────────────────────────────────────────────────────
+
+export async function saveDietaryStep(
+  session: CmsSession,
+  input: DietaryInput,
+  raw: Record<string, unknown>
+): Promise<SaveChildStepResult> {
+  const gate = await requireDraft(session);
+  if (!gate.ok) return { ok: false, error: gate.error };
+  try {
+    const supabase = db();
+    const childId = gate.draft.childId;
+
+    const { error: clearError } = await supabase
+      .from('cms_dietary_requirements')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('child_id', childId)
+      .is('deleted_at', null);
+    if (clearError) throw clearError;
+
+    if (input.requirements.length > 0) {
+      const { error } = await supabase.from('cms_dietary_requirements').insert(
+        input.requirements.map((row) => ({
+          child_id: childId,
+          school_id: gate.schoolId,
+          label: row.label,
+          reason: row.reason,
+          excluded_foods: row.excludedFoods,
+          notes: row.notes,
+        }))
+      );
+      if (error) throw error;
+    }
+
+    await completeStep(session, 'dietary', raw);
+    return { ok: true, enrollmentId: gate.draft.enrollmentId, childId };
+  } catch (error) {
+    safeErrorLog('cms/db/saveDietaryStep', error);
+    return { ok: false, error: 'write_failed' };
+  }
+}
+
+// ── step 5 · previous school ────────────────────────────────────────────────
+
+export async function savePreviousSchoolStep(
+  session: CmsSession,
+  input: PreviousSchoolInput,
+  raw: Record<string, unknown>
+): Promise<SaveChildStepResult> {
+  const gate = await requireDraft(session);
+  if (!gate.ok) return { ok: false, error: gate.error };
+  try {
+    const supabase = db();
+    const childId = gate.draft.childId;
+
+    const { error: clearError } = await supabase
+      .from('cms_previous_schools')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('child_id', childId)
+      .is('deleted_at', null);
+    if (clearError) throw clearError;
+
+    if (input.schools.length > 0) {
+      const { error } = await supabase.from('cms_previous_schools').insert(
+        input.schools.map((row) => ({
+          child_id: childId,
+          school_id: gate.schoolId,
+          name: row.name,
+          country_code: row.countryCode,
+          city: row.city,
+          attended_from: row.attendedFrom,
+          attended_to: row.attendedTo,
+          notes: row.notes,
+        }))
+      );
+      if (error) throw error;
+    }
+
+    // "This is their first setting" is an ANSWER, not an absence, and the only
+    // place it can live is the enrolment's own record of the step.
+    await completeStep(session, 'previous_school', raw);
+    return { ok: true, enrollmentId: gate.draft.enrollmentId, childId };
+  } catch (error) {
+    safeErrorLog('cms/db/savePreviousSchoolStep', error);
+    return { ok: false, error: 'write_failed' };
+  }
+}
+
+// ── step 6 · contacts & pickup ──────────────────────────────────────────────
+
+/**
+ * Emergency contacts become `cms_guardians` rows linked to the child, and the
+ * ones the family ticked as collectors additionally get a
+ * `cms_pickup_authorizations` row.
+ *
+ * 🚨 THE ACCOUNT HOLDER'S OWN GUARDIAN ROW IS NEVER TOUCHED. `session.guardianId`
+ * is what makes this family's children theirs (it is the spine of every
+ * parent-side RLS policy), so it is excluded from the replace: rewriting the
+ * contacts list must not be able to orphan the child from the person filling in
+ * the form.
+ */
+export async function saveContactsStep(
+  session: CmsSession,
+  input: ContactsInput,
+  raw: Record<string, unknown>
+): Promise<SaveChildStepResult> {
+  const gate = await requireDraft(session);
+  if (!gate.ok) return { ok: false, error: gate.error };
+  if (!session.guardianId) return { ok: false, error: 'no_guardian' };
+  try {
+    const supabase = db();
+    const childId = gate.draft.childId;
+
+    const { data: links } = await supabase
+      .from('cms_child_guardians')
+      .select('guardian_id')
+      .eq('child_id', childId);
+    const previousIds = (links ?? [])
+      .map((l: Row) => l.guardian_id as string)
+      .filter((id) => id !== session.guardianId);
+
+    if (previousIds.length > 0) {
+      // Drop the links first: the link is what "this person belongs to this
+      // child" means, and a stale link with a soft-deleted guardian would read
+      // as a missing contact rather than a removed one.
+      await supabase
+        .from('cms_child_guardians')
+        .delete()
+        .eq('child_id', childId)
+        .in('guardian_id', previousIds);
+      await supabase
+        .from('cms_pickup_authorizations')
+        .delete()
+        .eq('child_id', childId)
+        .in('guardian_id', previousIds);
+      await supabase
+        .from('cms_guardians')
+        .update({ deleted_at: new Date().toISOString() })
+        .in('id', previousIds)
+        .eq('school_id', gate.schoolId); // tenancy belt-and-braces
+    }
+
+    for (const contact of input.contacts) {
+      const { data: created, error } = await supabase
+        .from('cms_guardians')
+        .insert({
+          school_id: gate.schoolId,
+          full_name: contact.fullName,
+          relationship: contact.relationship,
+          phone: contact.phone,
+          email: contact.email,
+          can_collect: contact.canCollect,
+          contact_priority: contact.contactPriority,
+        })
+        .select('id')
+        .single();
+      if (error) throw error;
+
+      const { error: linkError } = await supabase.from('cms_child_guardians').insert({
+        child_id: childId,
+        guardian_id: created.id,
+        is_primary: false,
+        can_collect: contact.canCollect,
+      });
+      if (linkError) throw linkError;
+
+      // A permission, not a relationship — only for the people actually ticked.
+      if (contact.canCollect) {
+        const { error: pickupError } = await supabase.from('cms_pickup_authorizations').insert({
+          child_id: childId,
+          school_id: gate.schoolId,
+          guardian_id: created.id,
+          authorised: true,
+          note: contact.note,
+        });
+        if (pickupError) throw pickupError;
+      }
+    }
+
+    await completeStep(session, 'contacts', raw);
+    return { ok: true, enrollmentId: gate.draft.enrollmentId, childId };
+  } catch (error) {
+    safeErrorLog('cms/db/saveContactsStep', error);
+    return { ok: false, error: 'write_failed' };
+  }
+}
+
+// ── step 7 · consents ───────────────────────────────────────────────────────
+
+/**
+ * One row per kind, granted true or false — never "no row for a refusal".
+ * `lib/cms/engine/photo-filter.ts` reads a missing row as refusal, so writing
+ * the explicit false is what makes the difference between "they said no" and
+ * "we never asked", which is exactly the distinction an audit needs.
+ */
+export async function saveConsentsStep(
+  session: CmsSession,
+  input: ConsentsInput,
+  raw: Record<string, unknown>
+): Promise<SaveChildStepResult> {
+  const gate = await requireDraft(session);
+  if (!gate.ok) return { ok: false, error: gate.error };
+  try {
+    const supabase = db();
+    const childId = gate.draft.childId;
+    const now = new Date().toISOString();
+
+    for (const consent of input.consents) {
+      const { data: existing } = await supabase
+        .from('cms_consents')
+        .select('id')
+        .eq('child_id', childId)
+        .eq('kind', consent.kind)
+        .maybeSingle();
+
+      const patch = {
+        granted: consent.granted,
+        granted_by_guardian_id: consent.granted ? session.guardianId : null,
+        granted_at: consent.granted ? now : null,
+      };
+
+      if (existing) {
+        const { error } = await supabase.from('cms_consents').update(patch).eq('id', existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('cms_consents')
+          .insert({ ...patch, child_id: childId, school_id: gate.schoolId, kind: consent.kind });
+        if (error) throw error;
+      }
+    }
+
+    await completeStep(session, 'consents', raw);
+    return { ok: true, enrollmentId: gate.draft.enrollmentId, childId };
+  } catch (error) {
+    safeErrorLog('cms/db/saveConsentsStep', error);
+    return { ok: false, error: 'write_failed' };
+  }
+}
+
+// ── the one-way door ────────────────────────────────────────────────────────
+
+export interface SubmitResult {
+  ok: boolean;
+  enrollmentId?: string;
+  error?: string;
+  /** Steps still missing, when the submit was refused for that reason. */
+  missing?: string[];
+}
+
+/**
+ * Draft → submitted. This is the moment the family's write access ends: the
+ * RLS update policy on cms_enrollments requires `status = 'draft'` in its USING
+ * clause, so once this commits a parent can read the application forever and
+ * edit it never. The lock is in the database, not in the UI.
+ *
+ * Refuses on a half-finished form. The wizard walks the steps in order and will
+ * not reach this button early, but a direct POST must not be able to submit an
+ * application with no emergency contact on it.
+ */
+export async function submitEnrollment(session: CmsSession): Promise<SubmitResult> {
+  const gate = await requireDraft(session);
+  if (!gate.ok) return { ok: false, error: gate.error };
+  try {
+    const required = ['child', 'about_child', 'medical', 'dietary', 'previous_school', 'contacts', 'consents'];
+    const done = new Set(gate.draft.completedSteps);
+    const missing = required.filter((step) => !done.has(step));
+    if (missing.length > 0) return { ok: false, error: 'incomplete', missing };
+
+    const { error } = await db()
+      .from('cms_enrollments')
+      .update({ status: 'submitted', submitted_at: new Date().toISOString() })
+      .eq('id', gate.draft.enrollmentId)
+      .eq('status', 'draft'); // idempotent: a double-tap cannot re-stamp the date
+    if (error) throw error;
+
+    return { ok: true, enrollmentId: gate.draft.enrollmentId };
+  } catch (error) {
+    safeErrorLog('cms/db/submitEnrollment', error);
+    return { ok: false, error: 'write_failed' };
+  }
+}
+
+// ── teacher insight ─────────────────────────────────────────────────────────
+
+/** What the teacher's insight panel shows. Nothing clinical, nothing derived. */
+export interface ChildProfileSummary {
+  childId: string;
+  likes: string[];
+  dislikes: string[];
+  interests: string[];
+  temperament: Record<string, number>;
+  parentNotes: string | null;
+}
+
+/**
+ * Profiles for a room's children, in ONE query — a room of 24 costs one round
+ * trip, not 24. Scoped by the child ids the caller already resolved from their
+ * own room, so this function cannot widen anybody's view.
+ */
+export async function loadChildProfiles(childIds: string[]): Promise<Map<string, ChildProfileSummary>> {
+  const out = new Map<string, ChildProfileSummary>();
+  if (childIds.length === 0) return out;
+  try {
+    const { data } = await db()
+      .from('cms_child_profiles')
+      .select('child_id, likes, dislikes, interests, temperament, parent_notes')
+      .in('child_id', childIds)
+      .is('deleted_at', null);
+    for (const row of (data ?? []) as Row[]) {
+      out.set(row.child_id, {
+        childId: row.child_id,
+        likes: Array.isArray(row.likes) ? row.likes : [],
+        dislikes: Array.isArray(row.dislikes) ? row.dislikes : [],
+        interests: Array.isArray(row.interests) ? row.interests : [],
+        temperament:
+          row.temperament && typeof row.temperament === 'object' ? row.temperament : {},
+        parentNotes: row.parent_notes ?? null,
+      });
+    }
+    return out;
+  } catch (error) {
+    // A missing table (migration 330 not yet run) must not take down Today.
+    safeErrorLog('cms/db/loadChildProfiles', error);
+    return out;
+  }
 }

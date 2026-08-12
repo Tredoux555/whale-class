@@ -139,6 +139,11 @@ export function mapAllergy(row: Row): Allergy {
     reaction: row.reaction ?? '',
     responsePlan: row.response_plan ?? '',
     requiresPoster: row.requires_poster ?? true,
+    // Phase 3 column (migration 330). `?? false` is not a default so much as the
+    // pre-migration reading: before the column existed, "carries a pen" lived
+    // inside response_plan, and claiming a pen that is not there would be worse
+    // than claiming none.
+    carriesEpipen: row.carries_epipen ?? false,
   };
 }
 

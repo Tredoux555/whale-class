@@ -13,6 +13,7 @@
 import type {
   Allergy,
   Child,
+  ChildProfile,
   ClassGroup,
   DietaryRequirement,
   Guardian,
@@ -26,6 +27,7 @@ import type { DailyFacts } from '@/lib/cms/engine/roster';
 import type {
   AllergyId,
   ChildId,
+  ChildProfileId,
   ClassGroupId,
   DietaryRequirementId,
   GuardianId,
@@ -144,6 +146,7 @@ export const demoAllergies: Allergy[] = [
     reaction: 'Anaphylaxis',
     responsePlan: 'EpiPen in the Sunrise Room cabinet, then call emergency services.',
     requiresPoster: true,
+    carriesEpipen: true,
   },
   {
     id: id<AllergyId>('a-layla-egg'),
@@ -153,6 +156,7 @@ export const demoAllergies: Allergy[] = [
     reaction: 'Hives, swelling',
     responsePlan: 'Antihistamine on file. Call the guardian.',
     requiresPoster: true,
+    carriesEpipen: false,
   },
   {
     id: id<AllergyId>('a-tumelo-bee'),
@@ -162,6 +166,7 @@ export const demoAllergies: Allergy[] = [
     reaction: 'Local swelling',
     responsePlan: 'Cold compress. Note it in the day log.',
     requiresPoster: false,
+    carriesEpipen: false,
   },
 ];
 
@@ -302,5 +307,61 @@ export function ageInYears(dateOfBirth: string, on: Date = new Date('2026-08-11'
 }
 
 /** Fixed "today" so screenshots and the demo never drift. */
+// ── the family's own words (phase 3) ────────────────────────────────────────
+// Seeded `ChildProfile` records so the teacher's insight panel is walkable with
+// no database — and so the "About your child" step has something to be checked
+// against. Names, likes and notes are DATA, deliberately not routed through t().
+//
+// Note what is NOT here: three of the six children have no profile at all. That
+// is the honest demo — a room where some families have filled the step in and
+// some have not, which is what a teacher actually opens on a Monday.
+export const demoChildProfiles: ChildProfile[] = [
+  {
+    id: id<ChildProfileId>('p-amara'),
+    childId: amara.id,
+    schoolId: SCHOOL_ID,
+    likes: ['puddles', 'her red blanket', 'singing in the car'],
+    dislikes: ['hand dryers', 'being rushed'],
+    interests: ['bugs', 'pouring water', 'her baby cousin'],
+    temperament: { settling: 4, company: 5, adventure: 2, energy: 3 },
+    parentNotes:
+      'Goodbyes are hard for about five minutes and then she is fine — one long hug, then go, and please do not come back. She will tell you when she needs the toilet, but only if you ask twice.',
+    guruSync: true,
+    guruSyncedAt: '2026-08-01T09:12:00Z',
+    createdAt: '2026-08-01T09:12:00Z',
+    updatedAt: '2026-08-01T09:12:00Z',
+  },
+  {
+    id: id<ChildProfileId>('p-wei'),
+    childId: wei.id,
+    schoolId: SCHOOL_ID,
+    likes: ['trains', 'noodles', 'sweeping'],
+    dislikes: ['loud music'],
+    interests: ['maps', 'building tall things'],
+    temperament: { settling: 2, company: 2, adventure: 4, energy: 4 },
+    parentNotes:
+      'He speaks more Mandarin than English at home and understands far more than he says. Give him a job to do and he settles immediately.',
+    guruSync: true,
+    guruSyncedAt: '2026-07-28T16:40:00Z',
+    createdAt: '2026-07-28T16:40:00Z',
+    updatedAt: '2026-07-28T16:40:00Z',
+  },
+  {
+    id: id<ChildProfileId>('p-layla'),
+    childId: layla.id,
+    schoolId: SCHOOL_ID,
+    likes: ['drawing', 'her grandmother', 'cats'],
+    dislikes: ['sitting still for long', 'sudden noises'],
+    interests: ['animals', 'colours'],
+    temperament: { settling: 3, company: 4, adventure: 3, energy: 2 },
+    parentNotes:
+      'She is quiet for the first hour and then she is the loudest one in the room. Both are her.',
+    guruSync: false,
+    guruSyncedAt: null,
+    createdAt: '2026-08-04T11:05:00Z',
+    updatedAt: '2026-08-04T11:05:00Z',
+  },
+];
+
 export const DEMO_DATE = '2026-08-11';
 export const DEMO_DATE_LABEL = 'Tuesday 11 August';
