@@ -1550,6 +1550,8 @@ export const de: Record<string, string> = {
   'tools.photo_bank_desc': 'Durchsuchen, stöbern und tragen Sie englische Unterrichtsbilder für alle Tools bei',
   'tools.tracing_work': 'Nachzeichnen',
   'tools.tracing_work_desc': 'Erstelle Namens- und Zahlen-Nachzeichenblätter mit gepunkteten Buchstaben und Strichfolge-Pfeilen.',
+  'tools.birthdays': 'Geburtstage',
+  'tools.birthdays_desc': 'Geburtstagskarten für jedes Kind sowie eine einseitige Geburtstagsübersicht für die Wand.',
 
   'tools.card_generator': '3-Teil-Kartengenerator',
   'tools.card_generator_desc': 'Erstellen Sie wunderschöne Montessori-Nomenklaturkarten mit Bildern und Etiketten',

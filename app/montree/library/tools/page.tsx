@@ -22,6 +22,13 @@ const TOOLS = [
     gradient: 'from-teal-500 to-cyan-600',
   },
   {
+    href: '/montree/library/tools/birthdays',
+    icon: '🎂',
+    titleKey: 'tools.birthdays',
+    descKey: 'tools.birthdays_desc',
+    gradient: 'from-amber-500 to-rose-500',
+  },
+  {
     href: '/montree/library/tools/card-generator',
     icon: '🃏',
     titleKey: 'tools.card_generator',
