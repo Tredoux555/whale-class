@@ -77,6 +77,15 @@ Uncommitted edits or unpushed commits = unfinished work, no exceptions.
 Cowork note: run git on the Mac via Desktop Commander, NOT the device-bridge
 mount (the mount can't unlink git lock files and has no network for push).
 
+## 📋 SQL RULE — MIGRATIONS GO IN THE CHAT (locked 2026-08-12)
+
+Tredoux applies database migrations by copy-pasting SQL into the Supabase SQL
+editor. Therefore: whenever a session produces SQL he needs to run (migrations,
+seeds, fixes), ALWAYS paste the complete SQL directly in the chat message —
+never only reference a file path or attach a file. File + chat is fine; chat is
+mandatory. Applies to every migration in this repo, every time, no exceptions.
+This rule keeps getting lost between sessions — it is hard law, do not drop it.
+
 ## 🏫 CMS — CLASSROOM MANAGEMENT SYSTEM (new brand surface, 2026-08-11)
 
 **What it is:** an hourglass. **Parent intake → engine → teacher outputs**, standing on an
