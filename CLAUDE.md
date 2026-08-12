@@ -66,6 +66,33 @@ Milestones child palette `C` (`components/montree/evaluation/tokens.ts`).
 naming only) — routes (`/potato`, `/api/potato`), table prefixes (`tp_`), and all other
 identifiers are UNCHANGED.
 
+## 🌱 SESSION — Aug 12, 2026 (Cowork/Fable directing Sonnet) — NEW-CHILD SEEDING FIX (first-in-sequence focus works)
+
+**Bug (Tredoux, from Whale Class dashboard):** newly onboarded children (e.g. Roman) landed on
+advanced focus works — "Phonics 25: j /j/", Sandpaper Letters — instead of the matching/settling
+works a genuinely new child starts with. Three culprits: (1) `seedFocusWorks` in
+`app/api/montree/children/[childId]/onboard/route.ts` ran "regardless of experience_level" and
+trusted the AI pick, whose curriculum-level scale FLOORED at Pink Tower / Sandpaper Letters —
+no settling tier existed, so the AI could never land there; (2) the hardcoded FALLBACKS map went
+straight to formal materials; (3) `fill-shelf/route.ts` gap-fill picked a LITERALLY RANDOM work
+from the whole area (`Math.random()` — could hand a new child lesson 25 of 30 by chance).
+
+**Fix (Tredoux ruling: first-in-sequence, locked):**
+- `seedFocusWorks` gains an `expLevel` param. `expLevel === 'new'` → ignore the AI pick entirely
+  and seed the FIRST work in each area's classroom curriculum sequence, status forced 'presented'.
+  Empty area still falls through to the canonical Pass-3 fallback. Non-'new' path byte-identical.
+- Extraction prompt: new 0-15 settling tier line ("matching, sorting, pairing, simple
+  manipulatives — a brand-new child stays here for months") + new rule 3: AVAILABLE WORKS lists
+  are sequence-ordered, pick from the FIRST few when new/guessing, never mid-sequence.
+  (Old rules 3/4/5 → 4/5/6.)
+- fill-shelf gap-fill: `Math.random()` → earliest-in-sequence work the child hasn't mastered
+  (nulls-last sort; first-by-sequence if everything is mastered). One extra
+  `montree_child_progress` fetch, only when gap-filling.
+
+Verified: fresh-eyes Sonnet adversarial review PASS (zero findings); tsc diffed vs .orig — only
+pre-existing TS7006/TS2353 noise, nothing new. No migrations. ⚠️ Fix applies to FUTURE onboards
+only — already-seeded shelves (Roman) need a manual swap via the wheel picker.
+
 ## 🧒 SESSION — Aug 10, 2026 pt3 (Cowork/Fable directing Sonnet) — CHILD ONBOARDING SHIPPED (shared intake core + Montree & PSS adapters) — migrations PENDING
 
 **Feature**: parent fills a full enrollment intake for a child (identity, family, emergency contacts, authorized pickup people with photos, health/allergies, required documents — vaccination booklet 预防接种证, health check 入园体检, medical certs — and PIPL-style per-purpose consents) → submits → teacher reviews the full submission → **Commit** → child record updates (face photo promoted to canonical avatar) → teacher prints cubby/toothbrush/bed/table labels + pickup-authorization sheets from the same data. Re-submission after commit reopens the row to `submitted` but **never auto-applies** — a teacher must commit again. **Zero AI anywhere in this feature.**
