@@ -2,10 +2,12 @@
 // The chrome every screen wears. Server component: it resolves the locale and
 // its own strings, so a page never has to thread `t` into the header.
 //
-// The header carries a LAYER BADGE — Parent / Teacher / Org — because CMS is an
-// hourglass and a user should always know which end of it they are standing in.
-// Each layer gets its own tint: parent = Harbor blue, teacher = green,
-// org = amber.
+// The header carries a LAYER BADGE — Parent / Teacher / Org / Office — because
+// CMS is an hourglass and a user should always know which end of it they are
+// standing in. Each layer gets its own tint: parent = Harbor blue,
+// teacher = green, org = amber, office = slate (phase 7 — the office is the
+// institutional room, and deliberately the one layer with no colour of its own:
+// it is where the other three are decided about, not a fourth flavour of them).
 
 import Link from 'next/link';
 import { getServerT } from '@/lib/cms/i18n/server';
@@ -14,18 +16,20 @@ import { isCmsLive } from '@/lib/cms/auth/mode';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { SignOutButton } from './auth/SignOutButton';
 
-export type Layer = 'parent' | 'teacher' | 'org';
+export type Layer = 'parent' | 'teacher' | 'org' | 'office';
 
 const LAYER_TONE: Record<Layer, string> = {
   parent: 'cms-tone-accent',
   teacher: 'cms-tone-success',
   org: 'cms-tone-amber',
+  office: 'cms-tone-quiet',
 };
 
 const LAYER_LABEL: Record<Layer, TranslationKey> = {
   parent: 'layer.parent',
   teacher: 'layer.teacher',
   org: 'layer.org',
+  office: 'layer.office',
 };
 
 const NAV: Record<Layer, { href: string; key: TranslationKey }[]> = {
@@ -43,6 +47,9 @@ const NAV: Record<Layer, { href: string; key: TranslationKey }[]> = {
     { href: '/cms/teacher/documents', key: 'nav.documents' },
   ],
   org: [{ href: '/cms/org/overview', key: 'nav.overview' }],
+  // One room, one job. The office does not need a nav until it has a second
+  // screen, and a nav with one item is furniture pretending to be a choice.
+  office: [{ href: '/cms/office/enrollments', key: 'nav.enrollments' }],
 };
 
 /** Is this nav item the one we are standing on? A nested route counts —

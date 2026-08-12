@@ -133,14 +133,23 @@ export async function verifyCmsSession(
   }
 }
 
-/** The three gated areas of the surface, and who may stand in each. */
-export const CMS_AREA_ROLES: Record<'parent' | 'teacher' | 'org', readonly CmsRole[]> = {
+/** The four gated areas of the surface, and who may stand in each. */
+export const CMS_AREA_ROLES: Record<
+  'parent' | 'teacher' | 'org' | 'office',
+  readonly CmsRole[]
+> = {
   // A school admin walks the parent side to review an application, and the
   // teacher side to cover a room. An org director does neither — the org layer
   // is read-only aggregate by design (migration 329, cms_org_school_ids).
   parent: ['parent', 'school_admin'],
   teacher: ['teacher', 'school_admin'],
   org: ['org_admin'],
+  // 🚨 PHASE 7 — THE OFFICE, AND IT IS THE ONE AREA WITH A SINGLE ROLE.
+  // Accepting an enrolment creates a child in Montree and mints a family a
+  // credential. A teacher may not (an application is office business — the
+  // phase-4 rule), and an org director may not (their layer is read-only
+  // aggregate). Widening this list is widening who can hand out logins.
+  office: ['school_admin'],
 };
 
 /** Which gated area a /cms path belongs to, or null for the public shell. */
@@ -148,6 +157,7 @@ export function cmsAreaFor(pathname: string): keyof typeof CMS_AREA_ROLES | null
   if (pathname === '/cms/parent' || pathname.startsWith('/cms/parent/')) return 'parent';
   if (pathname === '/cms/teacher' || pathname.startsWith('/cms/teacher/')) return 'teacher';
   if (pathname === '/cms/org' || pathname.startsWith('/cms/org/')) return 'org';
+  if (pathname === '/cms/office' || pathname.startsWith('/cms/office/')) return 'office';
   return null;
 }
 
@@ -161,6 +171,11 @@ export function homePathForRole(role: CmsRole): string {
     case 'org_admin':
       return '/cms/org/overview';
     case 'school_admin':
-      return '/cms/teacher/today';
+      // 🚨 PHASE 7 changed this from `/cms/teacher/today`. A school_admin can
+      // still walk the teacher and parent layers (CMS_AREA_ROLES above), but
+      // their OWN room is the office: the queue of applications waiting on a
+      // decision. Landing them on a class roster they do not teach was the
+      // right answer only while the office did not exist.
+      return '/cms/office/enrollments';
   }
 }

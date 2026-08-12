@@ -2,7 +2,8 @@
 // scripts/cms/rls-test.mjs
 // ============================================================================
 // THE LOAD-BEARING TEST FOR migrations/329_cms_phase2.sql,
-// migrations/330_cms_phase3.sql AND migrations/331_cms_phase4_teacher_roster.sql.
+// migrations/330_cms_phase3.sql, migrations/331_cms_phase4_teacher_roster.sql
+// AND migrations/332_cms_phase7_handshake.sql.
 //
 // The CMS app talks to Postgres through the service role, which bypasses RLS —
 // so no amount of clicking the UI can tell you whether the policies are right.
@@ -20,6 +21,7 @@
 //   psql -d cms_test -v ON_ERROR_STOP=1 -f migrations/329_cms_phase2.sql
 //   psql -d cms_test -v ON_ERROR_STOP=1 -f migrations/330_cms_phase3.sql
 //   psql -d cms_test -v ON_ERROR_STOP=1 -f migrations/331_cms_phase4_teacher_roster.sql
+//   psql -d cms_test -v ON_ERROR_STOP=1 -f migrations/332_cms_phase7_handshake.sql
 //   DATABASE_URL=postgres://user:pass@127.0.0.1:5432/cms_test node scripts/cms/rls-test.mjs
 //
 // Exit 0 = every assertion passed. Exit 1 = at least one failed.
@@ -211,7 +213,7 @@ async function main() {
   await client.connect();
   const ids = await seed();
 
-  console.log('\nCMS PHASE 2 + 3 + 4 — RLS INTEGRATION TEST');
+  console.log('\nCMS PHASE 2 + 3 + 4 + 7 — RLS INTEGRATION TEST');
   console.log('==================================\n');
 
   // ── 0. the claim plumbing itself ──────────────────────────────────────────
@@ -853,6 +855,248 @@ async function main() {
   await client.query('RESET ROLE');
   check('service role sees every child profile', svcProfiles.count === 1, `saw ${svcProfiles.count}`);
   check('service role sees every previous setting', svcPrev.count === 1);
+
+  // ── 10. PHASE 7 — the Montree link columns (migration 332) ────────────────
+  //
+  // 🚨 READ THIS BEFORE ADDING A POLICY. RLS is ROW-level. It cannot express
+  // "you may update this row but not these four columns of it", and 329 already
+  // lets a parent edit their own child's row and a school_admin edit their own
+  // school's row. So the link columns are NOT defended by a policy — they are
+  // defended by `cms_guard_montree_link()`, a BEFORE INSERT OR UPDATE trigger
+  // that refuses any write from the `authenticated`/`anon` roles, plus by the
+  // API layer never accepting them from a request body.
+  //
+  // Every assertion below therefore comes in PAIRS: the link write is refused,
+  // AND the ordinary write on the very same row still succeeds. The second half
+  // is the regression test — a guard that also broke a parent's ability to fix
+  // their child's name would be a worse bug than the hole it closed.
+  console.log('\nphase 7 — the Montree link columns');
+
+  const fakeMontreeChild = await uuid();
+  const fakeMontreeSchool = await uuid();
+  const fakeMontreeSchool2 = await uuid();
+  const fakeMontreeRoom = await uuid();
+  const p7StaffChildId = await uuid();
+
+  await asUser(ids.parentA, async () => {
+    const linkChild = await attempt(
+      `update cms_children set montree_child_id = $2 where id = $1`,
+      [childId, fakeMontreeChild]
+    );
+    check('parent CANNOT write montree_child_id on their own child', !linkChild.ok,
+      linkChild.ok ? `updated ${linkChild.count}` : '');
+
+    const linkCode = await attempt(
+      `update cms_children set montree_parent_invite_code = 'HACKED' where id = $1`,
+      [childId]
+    );
+    check('parent CANNOT write montree_parent_invite_code on their own child', !linkCode.ok);
+
+    // The audit stamp is part of the same seam. A family that could set it
+    // could make an unlinked child LOOK activated on every office screen that
+    // reads "linked at …" — a lie told in the office's own words.
+    const linkStamp = await attempt(
+      `update cms_children set montree_linked_at = now() where id = $1`, [childId]
+    );
+    check('parent CANNOT stamp montree_linked_at on their own child', !linkStamp.ok);
+
+    // 332's family-side copy. A parent may edit their own guardian row (329),
+    // so without the guard on cms_guardians they could simply type a code in.
+    const guardianCode = await attempt(
+      `update cms_guardians set montree_parent_invite_code = 'HACKED' where id = $1`,
+      [ids.guardianA]
+    );
+    check('parent CANNOT write the invite code on their OWN guardian row', !guardianCode.ok);
+
+    // NO REGRESSION: the guardian row is still theirs to maintain.
+    const guardianPhone = await attempt(
+      `update cms_guardians set phone = '+27 82 555 0100' where id = $1`, [ids.guardianA]
+    );
+    check('parent CAN still edit their own guardian row (not regressed)',
+      guardianPhone.ok && guardianPhone.count === 1,
+      guardianPhone.error || `rows ${guardianPhone.count}`);
+
+    // NO REGRESSION: the row is still theirs to edit.
+    const ordinary = await attempt(
+      `update cms_children set preferred_name = 'Amara' where id = $1`, [childId]
+    );
+    check('parent CAN still edit their own child (update policy not regressed)',
+      ordinary.ok && ordinary.count === 1, ordinary.error || `rows ${ordinary.count}`);
+
+    // A fresh child carrying a link from birth is the same attack wearing an
+    // INSERT. `is distinct from` on the update branch would never see it.
+    const insLinked = await attempt(
+      `insert into cms_children (school_id, class_group_id, legal_name, preferred_name,
+                                 date_of_birth, created_by_user_id, montree_child_id)
+       values ($1,$2,'Trojan','Trojan','2021-01-01',$3,$4)`,
+      [ids.schoolA, ids.sunrise, ids.parentA, fakeMontreeChild]
+    );
+    check('parent CANNOT insert a child that arrives pre-linked', !insLinked.ok);
+
+    // The doorway needs the code to be READABLE by the family it belongs to —
+    // that is the whole point of caching it on the child.
+    const readCode = await attempt(
+      `select montree_parent_invite_code from cms_children where id = $1`, [childId]
+    );
+    check('parent CAN read their own child\'s invite code', readCode.ok && readCode.count === 1);
+  });
+
+  await asUser(ids.parentB, async () => {
+    const peek = await attempt(
+      `select montree_parent_invite_code from cms_children where id = $1`, [childId]
+    );
+    check('another family CANNOT read that invite code', peek.count === 0, `saw ${peek.count}`);
+  });
+
+  await asUser(ids.teacher1, async () => {
+    const ins = await attempt(
+      `insert into cms_children (id, school_id, class_group_id, legal_name, preferred_name,
+                                 date_of_birth, created_by_user_id)
+       values ($1,$2,$3,'Kofi Mensah','Kofi','2021-03-11',$4)`,
+      [p7StaffChildId, ids.schoolA, ids.sunrise, ids.teacher1]
+    );
+    check('teacher creates a staff-entered child (phase-4 lane still open)', ins.ok, ins.error);
+
+    const link = await attempt(
+      `update cms_children set montree_child_id = $2 where id = $1`,
+      [p7StaffChildId, fakeMontreeChild]
+    );
+    check('teacher CANNOT write montree_child_id, even on a child they created', !link.ok);
+
+    const note = await attempt(
+      `update cms_children set staff_note = 'Naps after lunch.' where id = $1`,
+      [p7StaffChildId]
+    );
+    check('teacher CAN still write staff_note (phase-4 not regressed)',
+      note.ok && note.count === 1, note.error || `rows ${note.count}`);
+  });
+
+  await asUser(ids.schoolAdmin, async () => {
+    const linkSchool = await attempt(
+      `update cms_schools set montree_school_id = $2 where id = $1`,
+      [ids.schoolA, fakeMontreeSchool]
+    );
+    check('school_admin CANNOT link their school to Montree (operator-only act)', !linkSchool.ok);
+
+    const rename = await attempt(
+      `update cms_schools set phone = '+27 21 000 0000' where id = $1`, [ids.schoolA]
+    );
+    check('school_admin CAN still edit their school (write policy not regressed)',
+      rename.ok && rename.count === 1, rename.error || `rows ${rename.count}`);
+
+    const linkRoom = await attempt(
+      `update cms_class_groups set montree_classroom_id = $2 where id = $1`,
+      [ids.sunrise, fakeMontreeRoom]
+    );
+    check('school_admin CANNOT link a room to a Montree classroom', !linkRoom.ok);
+
+    const capacity = await attempt(
+      `update cms_class_groups set capacity = 22 where id = $1`, [ids.sunrise]
+    );
+    check('school_admin CAN still edit their rooms (write policy not regressed)',
+      capacity.ok && capacity.count === 1, capacity.error || `rows ${capacity.count}`);
+
+    // The acceptance audit trail: the office decides, and the office is named.
+    const decide = await attempt(
+      `update cms_enrollments set status = 'accepted', decided_at = now(), decided_by_user_id = $2
+       where id = $1`,
+      [enrollmentId, ids.schoolAdmin]
+    );
+    check('school_admin CAN record the decision and who made it',
+      decide.ok && decide.count === 1, decide.error || `rows ${decide.count}`);
+  });
+
+  await asUser(ids.parentA, async () => {
+    // 329's lock, re-asserted from the new column's angle: once the office has
+    // decided, the family cannot rewrite the decision or its author.
+    const rewrite = await attempt(
+      `update cms_enrollments set decided_by_user_id = $2 where id = $1`,
+      [enrollmentId, ids.parentA]
+    );
+    check('parent CANNOT rewrite who decided their enrolment',
+      rewrite.ok && rewrite.count === 0, `rows ${rewrite.count}`);
+  });
+
+  await asAnon(async () => {
+    const r = await attempt(
+      `update cms_children set montree_child_id = $2 where id = $1`,
+      [childId, fakeMontreeChild]
+    );
+    check('anon CANNOT write a Montree link', !r.ok || r.count === 0);
+  });
+
+  // The accept route runs as the service role, and it MUST be able to do all of
+  // this — a guard that also blocked the handshake would be a locked front door
+  // with the house on fire behind it.
+  await client.query('BEGIN');
+  await client.query('SET LOCAL ROLE service_role');
+  const svcLinkSchool = await attempt(
+    `update cms_schools set montree_school_id = $2 where id = $1`,
+    [ids.schoolA, fakeMontreeSchool]
+  );
+  const svcLinkRoom = await attempt(
+    `update cms_class_groups set montree_classroom_id = $2 where id = $1`,
+    [ids.sunrise, fakeMontreeRoom]
+  );
+  const svcLinkChild = await attempt(
+    `update cms_children set montree_child_id = $2, montree_parent_invite_code = 'K7QP4M',
+            montree_linked_at = now()
+     where id = $1`,
+    [childId, fakeMontreeChild]
+  );
+  // The family-side copy, written by the same acceptance.
+  const svcGuardianCode = await attempt(
+    `update cms_guardians set montree_parent_invite_code = 'K7QP4M' where id = $1`,
+    [ids.guardianA]
+  );
+  // Two CMS schools may not both claim one Montree school — the partial unique
+  // index, which is the only thing standing between a mis-paste and one office
+  // fanning its acceptances into another school's rooms.
+  const svcDupe = await attempt(
+    `update cms_schools set montree_school_id = $2 where id = $1`,
+    [ids.schoolB, fakeMontreeSchool]
+  );
+  const svcSecond = await attempt(
+    `update cms_schools set montree_school_id = $2 where id = $1`,
+    [ids.schoolB, fakeMontreeSchool2]
+  );
+  await client.query('COMMIT');
+  await client.query('RESET ROLE');
+  check('service role CAN link a school', svcLinkSchool.ok && svcLinkSchool.count === 1,
+    svcLinkSchool.error);
+  check('service role CAN link a room', svcLinkRoom.ok && svcLinkRoom.count === 1,
+    svcLinkRoom.error);
+  check('service role CAN set the child link + invite code + linked_at (the accept path)',
+    svcLinkChild.ok && svcLinkChild.count === 1, svcLinkChild.error);
+  check('service role CAN write the guardian\'s copy of the code',
+    svcGuardianCode.ok && svcGuardianCode.count === 1, svcGuardianCode.error);
+  check('two CMS schools CANNOT claim the same Montree school', !svcDupe.ok);
+  check('a different Montree school links fine', svcSecond.ok && svcSecond.count === 1,
+    svcSecond.error);
+
+  await asUser(ids.parentA, async () => {
+    const readCode = await attempt(
+      `select montree_child_id, montree_parent_invite_code c from cms_children where id = $1`,
+      [childId]
+    );
+    check('the family can now read the code the handshake minted',
+      readCode.count === 1 && readCode.rows[0].c === 'K7QP4M',
+      String(readCode.rows[0]?.c));
+
+    const tamper = await attempt(
+      `update cms_children set montree_parent_invite_code = 'BETTER' where id = $1`,
+      [childId]
+    );
+    check('…and still cannot change it', !tamper.ok);
+
+    // The doorway at /cms/parent/messages reads the code off the guardian's own
+    // row, so that read must work for the person it belongs to — and only them.
+    const ownCode = await attempt(
+      `select montree_parent_invite_code c from cms_guardians where id = $1`, [ids.guardianA]
+    );
+    check('the family CAN read the code on their own guardian row',
+      ownCode.count === 1 && ownCode.rows[0].c === 'K7QP4M', String(ownCode.rows[0]?.c));
+  });
 
   // ── result ────────────────────────────────────────────────────────────────
   console.log('\n==================================');

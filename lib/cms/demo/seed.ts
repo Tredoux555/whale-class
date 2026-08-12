@@ -24,6 +24,15 @@ import type {
 } from '@/lib/cms/engine/types';
 import { id } from '@/lib/cms/engine/types';
 import type { DailyFacts } from '@/lib/cms/engine/roster';
+// PHASE 7 — type-only, so nothing from `lib/cms/db` (and no supabase-js) is
+// bundled with the seed. A demo shape that has drifted from the live one is
+// worse than no demo at all, so the office rows below are typed by the very
+// interfaces the live queries return.
+import type {
+  OfficeEnrollmentDetail,
+  OfficeEnrollmentSummary,
+  ParentDoorway,
+} from '@/lib/cms/db/queries';
 import type {
   AllergyId,
   ChildId,
@@ -366,3 +375,118 @@ export const demoChildProfiles: ChildProfile[] = [
 
 export const DEMO_DATE = '2026-08-11';
 export const DEMO_DATE_LABEL = 'Tuesday 11 August';
+
+// ── PHASE 7 · the office, and the doorway ───────────────────────────────────
+// The demo has to show the office at WORK, which means the queue cannot be all
+// one thing: one application waiting on a decision, one accepted-and-connected
+// (so the invite code and the parent doorway are walkable), and one accepted
+// whose invite has not been minted yet (so the "invite pending — retry" state
+// is a screen the founder can point at rather than a paragraph in a doc).
+//
+// The types are imported from the live query layer ON PURPOSE — type-only, so
+// nothing from `lib/cms/db` is bundled — because a demo shape that has drifted
+// from the real one is worse than no demo at all.
+
+
+/** A code shaped exactly like Montree's: 6 chars, no I/O/0/1 (migration 095). */
+export const DEMO_INVITE_CODE = 'K7QP4M';
+
+export const demoOfficeEnrollments: OfficeEnrollmentSummary[] = [
+  {
+    enrollmentId: 'e-tumelo',
+    childId: String(tumelo.id),
+    legalName: tumelo.legalName,
+    preferredName: tumelo.preferredName,
+    dateOfBirth: tumelo.dateOfBirth,
+    status: 'submitted',
+    submittedAt: '2026-08-10T09:14:00Z',
+    decidedAt: null,
+    requestedStartDate: '2026-09-01',
+    requestedRoomId: String(SUNRISE),
+    requestedRoomName: demoClassGroup.name,
+    requestedRoomLinked: true,
+    completedSteps: ['child', 'about_child', 'medical', 'dietary', 'contacts', 'consents'],
+    guardianNames: ['Grace Wanjiku'],
+    montreeChildId: null,
+    inviteCode: null,
+  },
+  {
+    enrollmentId: 'e-amara',
+    childId: String(amara.id),
+    legalName: amara.legalName,
+    preferredName: amara.preferredName,
+    dateOfBirth: amara.dateOfBirth,
+    status: 'accepted',
+    submittedAt: '2026-07-28T11:02:00Z',
+    decidedAt: '2026-07-29T08:40:00Z',
+    requestedStartDate: '2026-08-17',
+    requestedRoomId: String(SUNRISE),
+    requestedRoomName: demoClassGroup.name,
+    requestedRoomLinked: true,
+    completedSteps: [
+      'child', 'about_child', 'medical', 'dietary', 'previous_school', 'contacts', 'consents',
+    ],
+    guardianNames: ['Ngozi Okonkwo', 'Chiamaka Eze'],
+    montreeChildId: 'demo-montree-child-amara',
+    inviteCode: DEMO_INVITE_CODE,
+  },
+  {
+    enrollmentId: 'e-layla',
+    childId: String(layla.id),
+    legalName: layla.legalName,
+    preferredName: layla.preferredName,
+    dateOfBirth: layla.dateOfBirth,
+    status: 'accepted',
+    submittedAt: '2026-08-01T15:30:00Z',
+    decidedAt: '2026-08-02T07:55:00Z',
+    requestedStartDate: '2026-09-01',
+    requestedRoomId: String(SUNRISE),
+    requestedRoomName: demoClassGroup.name,
+    requestedRoomLinked: true,
+    completedSteps: ['child', 'about_child', 'medical', 'dietary', 'contacts', 'consents'],
+    guardianNames: ['Yusuf Haddad'],
+    // Linked, no code: the recoverable half-state the retry path exists for.
+    montreeChildId: 'demo-montree-child-layla',
+    inviteCode: null,
+  },
+];
+
+/** The detail view of the one waiting application — the office's actual job. */
+export const demoOfficeDetail: OfficeEnrollmentDetail = {
+  ...demoOfficeEnrollments[0],
+  homeLanguage: tumelo.homeLanguage,
+  settlingNotes:
+    'He has never been in a group before. Please let him keep the blue cup he brings from home for the first weeks.',
+  guardians: tumelo.guardians,
+  authorisedCollectorIds: tumelo.authorisedCollectors.map((g) => String(g)),
+  allergies: demoAllergies.filter((a) => a.childId === tumelo.id),
+  dietary: demoDietary.filter((d) => d.childId === tumelo.id),
+  medical: demoMedical.find((m) => m.childId === tumelo.id) ?? null,
+  profile: null,
+  previousSchools: [],
+  consents: [
+    { kind: 'photography', granted: true },
+    { kind: 'media', granted: false },
+    { kind: 'outings', granted: true },
+    { kind: 'emergency_medical', granted: true },
+    { kind: 'sunscreen', granted: true },
+    { kind: 'data_processing', granted: true },
+  ],
+  decisionNote: null,
+};
+
+/** The demo family's doorway: Amara is connected, Layla's code is pending. */
+export const demoParentDoorways: ParentDoorway[] = [
+  {
+    childId: String(amara.id),
+    preferredName: amara.preferredName,
+    montreeLinked: true,
+    inviteCode: DEMO_INVITE_CODE,
+  },
+  {
+    childId: String(layla.id),
+    preferredName: layla.preferredName,
+    montreeLinked: true,
+    inviteCode: null,
+  },
+];

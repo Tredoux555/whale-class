@@ -29,6 +29,7 @@ import type {
   Child,
   ClassGroup,
   DietaryRequirement,
+  Guardian,
   MedicalRecord,
   School,
   SchoolSummary,
@@ -1706,5 +1707,651 @@ export async function updateRosterChild(
   } catch (error) {
     safeErrorLog('cms/db/updateRosterChild', error);
     return { ok: false, error: 'write_failed' };
+  }
+}
+
+// ============================================================================
+// PHASE 7 — THE OFFICE. Reading applications, and the decision.
+// ============================================================================
+// The first surface in CMS that belongs to a `school_admin` and to nobody else.
+// Everything here is scoped by `session.schoolId`; an enrolment id in a URL is a
+// REQUEST, never a fact, and every read below re-proves the row is this
+// school's before it returns a single field of it (the Jul-3 rule).
+//
+// The office reads the family's application READ-ONLY. There is deliberately no
+// "edit their answers" path: the application is what the family said, and an
+// office that can quietly rewrite it is no longer evidence of anything.
+
+/** One row on the office list. */
+export interface OfficeEnrollmentSummary {
+  enrollmentId: string;
+  childId: string;
+  legalName: string;
+  preferredName: string;
+  dateOfBirth: string;
+  status: string;
+  submittedAt: string | null;
+  decidedAt: string | null;
+  requestedStartDate: string | null;
+  requestedRoomId: string | null;
+  requestedRoomName: string | null;
+  /** Is the requested room linked to a Montree classroom? */
+  requestedRoomLinked: boolean;
+  completedSteps: string[];
+  guardianNames: string[];
+  /** 330's seam — set means the handshake has run. */
+  montreeChildId: string | null;
+  /** 332's cache of the minted code. Null + a link = invite pending. */
+  inviteCode: string | null;
+}
+
+/** Everything the detail page shows. The application, as the family wrote it. */
+export interface OfficeEnrollmentDetail extends OfficeEnrollmentSummary {
+  homeLanguage: string;
+  settlingNotes: string | null;
+  guardians: Guardian[];
+  authorisedCollectorIds: string[];
+  allergies: Allergy[];
+  dietary: DietaryRequirement[];
+  medical: MedicalRecord | null;
+  profile: ChildProfileSummary | null;
+  previousSchools: { name: string; from: string | null; to: string | null; reason: string | null }[];
+  consents: { kind: string; granted: boolean }[];
+  /** The office's own note on a decline. Read out of `draft_data`. */
+  decisionNote: string | null;
+}
+
+/** Whether this school (and how many of its rooms) can activate comms at all. */
+export interface SchoolLinkStatus {
+  montreeSchoolId: string | null;
+  roomsTotal: number;
+  roomsLinked: number;
+}
+
+/**
+ * 🚨 THE DECLINE NOTE LIVES IN `draft_data.office_decision`, NOT IN
+ * `settling_notes` — and this is the cleaner of the two, not the lazier.
+ * `settling_notes` is the FAMILY'S free text ("she naps at one, please do not
+ * wake her"); it is written by the wizard, read by the teacher, and printed.
+ * Putting an office rejection in it would overwrite what a parent wrote and
+ * then show it back to them as their own words. `draft_data` is already the
+ * enrolment's untyped side-car by 329's own definition, the office key is
+ * namespaced, and nothing else reads it.
+ */
+const DECISION_KEY = 'office_decision';
+
+interface DecisionBlob {
+  note?: string;
+  decidedBy?: string;
+  at?: string;
+}
+
+function readDecision(draftData: unknown): DecisionBlob | null {
+  if (!draftData || typeof draftData !== 'object') return null;
+  const blob = (draftData as Record<string, unknown>)[DECISION_KEY];
+  return blob && typeof blob === 'object' ? (blob as DecisionBlob) : null;
+}
+
+/** Which Montree school/rooms this CMS school is linked to. Fail-soft: a
+ *  database without migration 332 reports "not linked", which is the truth. */
+export async function loadSchoolLinkStatus(schoolId: string): Promise<SchoolLinkStatus> {
+  const empty: SchoolLinkStatus = { montreeSchoolId: null, roomsTotal: 0, roomsLinked: 0 };
+  try {
+    const supabase = db();
+    const [schoolRes, roomRes] = await Promise.all([
+      supabase.from('cms_schools').select('montree_school_id').eq('id', schoolId).maybeSingle(),
+      supabase.from('cms_class_groups').select('id, montree_classroom_id').eq('school_id', schoolId),
+    ]);
+    const rooms: Row[] = roomRes.data ?? [];
+    return {
+      montreeSchoolId: schoolRes.data?.montree_school_id ?? null,
+      roomsTotal: rooms.length,
+      roomsLinked: rooms.filter((r) => r.montree_classroom_id).length,
+    };
+  } catch (error) {
+    safeErrorLog('cms/db/loadSchoolLinkStatus', error);
+    return empty;
+  }
+}
+
+/**
+ * The office list. Submitted applications first (they are the work), then the
+ * decided ones for reference — an office needs to find last week's acceptance
+ * to read a family their code back.
+ */
+export async function loadOfficeEnrollments(
+  session: CmsSession
+): Promise<OfficeEnrollmentSummary[]> {
+  if (!session.schoolId) return [];
+  try {
+    const supabase = db();
+    const { data: rows } = await supabase
+      .from('cms_enrollments')
+      .select('*')
+      .eq('school_id', session.schoolId)
+      .neq('status', 'draft')
+      .order('submitted_at', { ascending: false })
+      .limit(200);
+
+    const enrollments: Row[] = rows ?? [];
+    if (enrollments.length === 0) return [];
+
+    const childIds = enrollments.map((e) => String(e.child_id));
+    const [childRes, roomRes, linkRes] = await Promise.all([
+      supabase.from('cms_children').select('*').in('id', childIds),
+      supabase
+        .from('cms_class_groups')
+        .select('id, name, montree_classroom_id')
+        .eq('school_id', session.schoolId),
+      supabase
+        .from('cms_child_guardians')
+        .select('child_id, guardian_id, is_primary')
+        .in('child_id', childIds),
+    ]);
+
+    const children = new Map<string, Row>(
+      ((childRes.data ?? []) as Row[]).map((c) => [String(c.id), c])
+    );
+    const rooms = new Map<string, Row>(
+      ((roomRes.data ?? []) as Row[]).map((r) => [String(r.id), r])
+    );
+
+    const links: Row[] = linkRes.data ?? [];
+    const guardianIds = [...new Set(links.map((l) => String(l.guardian_id)))];
+    const guardianNames = new Map<string, string>();
+    if (guardianIds.length > 0) {
+      const { data: guardians } = await supabase
+        .from('cms_guardians')
+        .select('id, full_name')
+        .in('id', guardianIds);
+      for (const g of (guardians ?? []) as Row[]) {
+        guardianNames.set(String(g.id), String(g.full_name ?? ''));
+      }
+    }
+    const namesByChild = new Map<string, string[]>();
+    for (const link of links) {
+      const list = namesByChild.get(String(link.child_id)) ?? [];
+      const name = guardianNames.get(String(link.guardian_id));
+      // The primary guardian leads — the office rings them first, so they read
+      // first.
+      if (name) {
+        if (link.is_primary) list.unshift(name);
+        else list.push(name);
+      }
+      namesByChild.set(String(link.child_id), list);
+    }
+
+    const out: OfficeEnrollmentSummary[] = [];
+    for (const row of enrollments) {
+      const child = children.get(String(row.child_id));
+      if (!child) continue;
+      const room = row.requested_class_group_id
+        ? rooms.get(String(row.requested_class_group_id))
+        : undefined;
+      out.push({
+        enrollmentId: String(row.id),
+        childId: String(row.child_id),
+        legalName: String(child.legal_name ?? ''),
+        preferredName: String(child.preferred_name ?? ''),
+        dateOfBirth: String(child.date_of_birth ?? ''),
+        status: String(row.status ?? ''),
+        submittedAt: row.submitted_at ?? null,
+        decidedAt: row.decided_at ?? null,
+        requestedStartDate: row.requested_start_date ?? null,
+        requestedRoomId: row.requested_class_group_id ?? null,
+        requestedRoomName: room ? String(room.name) : null,
+        requestedRoomLinked: Boolean(room?.montree_classroom_id),
+        completedSteps: Array.isArray(row.completed_steps) ? row.completed_steps : [],
+        guardianNames: namesByChild.get(String(row.child_id)) ?? [],
+        montreeChildId: child.montree_child_id ?? null,
+        inviteCode: child.montree_parent_invite_code ?? null,
+      });
+    }
+
+    // Submitted first — the queue is the job. Then most recent decision.
+    const rank = (s: string) => (s === 'submitted' ? 0 : s === 'in_review' ? 1 : 2);
+    out.sort((a, b) => rank(a.status) - rank(b.status));
+    return out;
+  } catch (error) {
+    safeErrorLog('cms/db/loadOfficeEnrollments', error);
+    return [];
+  }
+}
+
+/** One application, in full. Null when it is not this school's. */
+export async function loadOfficeEnrollment(
+  session: CmsSession,
+  enrollmentId: string
+): Promise<OfficeEnrollmentDetail | null> {
+  if (!session.schoolId) return null;
+  try {
+    const supabase = db();
+    const { data: row } = await supabase
+      .from('cms_enrollments')
+      .select('*')
+      // 🚨 BOTH clauses. `id` alone would happily return another school's
+      // application to an office that guessed a uuid.
+      .eq('id', enrollmentId)
+      .eq('school_id', session.schoolId)
+      .maybeSingle();
+    if (!row) return null;
+
+    const childId = String(row.child_id);
+    const { data: childRow } = await supabase
+      .from('cms_children')
+      .select('*')
+      .eq('id', childId)
+      .maybeSingle();
+    if (!childRow) return null;
+
+    const [bundle, profiles, roomRes, prevRes, consentRes] = await Promise.all([
+      hydrateChildren([childRow]),
+      loadChildProfiles([childId]),
+      row.requested_class_group_id
+        ? supabase
+            .from('cms_class_groups')
+            .select('id, name, montree_classroom_id')
+            .eq('id', String(row.requested_class_group_id))
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+      supabase
+        .from('cms_previous_schools')
+        .select('school_name, attended_from, attended_to, reason_for_leaving')
+        .eq('child_id', childId)
+        .is('deleted_at', null),
+      supabase.from('cms_consents').select('kind, granted').eq('child_id', childId),
+    ]);
+
+    const child = bundle.children[0];
+    if (!child) return null;
+    const room = roomRes?.data as Row | null;
+
+    const guardianNames = child.guardians.map((g) => g.fullName);
+    const decision = readDecision(row.draft_data);
+
+    return {
+      enrollmentId: String(row.id),
+      childId,
+      legalName: child.legalName,
+      preferredName: child.preferredName,
+      dateOfBirth: child.dateOfBirth,
+      homeLanguage: child.homeLanguage,
+      status: String(row.status ?? ''),
+      submittedAt: row.submitted_at ?? null,
+      decidedAt: row.decided_at ?? null,
+      requestedStartDate: row.requested_start_date ?? null,
+      requestedRoomId: row.requested_class_group_id ?? null,
+      requestedRoomName: room ? String(room.name) : null,
+      requestedRoomLinked: Boolean(room?.montree_classroom_id),
+      completedSteps: Array.isArray(row.completed_steps) ? row.completed_steps : [],
+      guardianNames,
+      montreeChildId: childRow.montree_child_id ?? null,
+      inviteCode: childRow.montree_parent_invite_code ?? null,
+      settlingNotes: row.settling_notes ?? null,
+      guardians: child.guardians,
+      authorisedCollectorIds: child.authorisedCollectors.map((g) => String(g)),
+      allergies: bundle.allergies,
+      dietary: bundle.dietary,
+      medical: bundle.medical[0] ?? null,
+      profile: profiles.get(childId) ?? null,
+      previousSchools: ((prevRes?.data ?? []) as Row[]).map((p) => ({
+        name: String(p.school_name ?? ''),
+        from: p.attended_from ?? null,
+        to: p.attended_to ?? null,
+        reason: p.reason_for_leaving ?? null,
+      })),
+      consents: ((consentRes?.data ?? []) as Row[]).map((c) => ({
+        kind: String(c.kind ?? ''),
+        granted: Boolean(c.granted),
+      })),
+      decisionNote: decision?.note ?? null,
+    };
+  } catch (error) {
+    safeErrorLog('cms/db/loadOfficeEnrollment', error);
+    return null;
+  }
+}
+
+// ── the decision ────────────────────────────────────────────────────────────
+
+/** What the accept route needs before it may touch Montree at all. */
+export interface AcceptContext {
+  enrollmentId: string;
+  childId: string;
+  status: string;
+  legalName: string;
+  preferredName: string;
+  /** Null when the roster sentinel says nobody knows the birthday. */
+  dateOfBirth: string | null;
+  requestedStartDate: string | null;
+  montreeSchoolId: string | null;
+  montreeClassroomId: string | null;
+  montreeChildId: string | null;
+  inviteCode: string | null;
+}
+
+/**
+ * Load exactly the fields the acceptance turns on, re-proving tenancy. Returns
+ * null when the enrolment is not this school's — indistinguishable, on purpose,
+ * from "does not exist".
+ */
+export async function loadAcceptContext(
+  session: CmsSession,
+  enrollmentId: string
+): Promise<AcceptContext | null> {
+  if (!session.schoolId) return null;
+  try {
+    const supabase = db();
+    const { data: row } = await supabase
+      .from('cms_enrollments')
+      .select('id, child_id, school_id, status, requested_class_group_id, requested_start_date')
+      .eq('id', enrollmentId)
+      .eq('school_id', session.schoolId)
+      .maybeSingle();
+    if (!row) return null;
+
+    const [childRes, schoolRes, roomRes] = await Promise.all([
+      supabase
+        .from('cms_children')
+        .select('id, legal_name, preferred_name, date_of_birth, montree_child_id, montree_parent_invite_code, school_id')
+        .eq('id', String(row.child_id))
+        .maybeSingle(),
+      supabase.from('cms_schools').select('montree_school_id').eq('id', session.schoolId).maybeSingle(),
+      row.requested_class_group_id
+        ? supabase
+            .from('cms_class_groups')
+            .select('id, school_id, montree_classroom_id')
+            .eq('id', String(row.requested_class_group_id))
+            .eq('school_id', session.schoolId)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
+
+    const child = childRes.data as Row | null;
+    if (!child) return null;
+    const room = roomRes?.data as Row | null;
+    const dob = child.date_of_birth ? String(child.date_of_birth) : null;
+
+    return {
+      enrollmentId: String(row.id),
+      childId: String(child.id),
+      status: String(row.status ?? ''),
+      legalName: String(child.legal_name ?? ''),
+      preferredName: String(child.preferred_name ?? ''),
+      dateOfBirth: hasKnownDob(dob) ? dob : null,
+      requestedStartDate: row.requested_start_date ?? null,
+      montreeSchoolId: schoolRes.data?.montree_school_id ?? null,
+      // A room the office never requested cannot be linked, so this stays null
+      // and the acceptance lands in the "not linked" branch rather than
+      // inventing a classroom.
+      montreeClassroomId: room?.montree_classroom_id ?? null,
+      montreeChildId: child.montree_child_id ?? null,
+      inviteCode: child.montree_parent_invite_code ?? null,
+    };
+  } catch (error) {
+    safeErrorLog('cms/db/loadAcceptContext', error);
+    return null;
+  }
+}
+
+/**
+ * Save the Montree link onto the CMS child.
+ *
+ * 🚨 CALLED BEFORE THE INVITE IS KNOWN TO HAVE WORKED, on purpose. The Montree
+ * child exists the moment its insert commits; if we only stored the link on the
+ * fully-happy path, an invite failure would leave an orphan child in Montree
+ * and the retry would create a second one. Storing the link first makes the
+ * retry a mint, not a duplication.
+ */
+export async function saveMontreeLink(
+  childId: string,
+  schoolId: string,
+  montreeChildId: string,
+  inviteCode: string | null,
+  options: { stampLinkedAt?: boolean } = {}
+): Promise<boolean> {
+  try {
+    const patch: Record<string, unknown> = { montree_child_id: montreeChildId };
+    // Never blank an existing code with a null: a failed re-mint must not erase
+    // the code the family is already holding.
+    if (inviteCode) patch.montree_parent_invite_code = inviteCode;
+    // 332's audit stamp. Written ONCE, by the acceptance that actually created
+    // the Montree child — a retry that only mints the invite must not move it,
+    // or "when did this family get routed?" quietly becomes "when did someone
+    // last press the button?".
+    if (options.stampLinkedAt) patch.montree_linked_at = new Date().toISOString();
+    const { error } = await db()
+      .from('cms_children')
+      .update(patch)
+      .eq('id', childId)
+      .eq('school_id', schoolId);
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    safeErrorLog('cms/db/saveMontreeLink', error);
+    return false;
+  }
+}
+
+/**
+ * Put the family's copy of the code on the PRIMARY guardian's own row
+ * (332's `cms_guardians.montree_parent_invite_code`).
+ *
+ * Why a second home for one string: the doorway at /cms/parent/messages reads
+ * the signed-in guardian's row, which is the row that person's session already
+ * owns; the office reads the child's. `cms_children` stays authoritative — one
+ * code per CHILD is Montree's model, and a guardian with two children cannot
+ * hold both in one text column, so this holds the most recent and the doorway
+ * still lists per-child codes.
+ *
+ * NON-FATAL by design: the link and the child's own code are already saved by
+ * the time this runs. A failure here costs a fallback lookup, never an
+ * acceptance.
+ */
+export async function savePrimaryGuardianInviteCode(
+  childId: string,
+  schoolId: string,
+  inviteCode: string
+): Promise<boolean> {
+  try {
+    const supabase = db();
+    const { data: links } = await supabase
+      .from('cms_child_guardians')
+      .select('guardian_id, is_primary')
+      .eq('child_id', childId);
+    const rows = (links ?? []) as Row[];
+    // The primary guardian, or — when nobody was marked primary, which the
+    // wizard permits — the only one there is. With several unmarked guardians
+    // we write to none: guessing which parent "the" code belongs to is worse
+    // than leaving the doorway to fall back to the child's copy.
+    const chosen =
+      rows.find((r) => r.is_primary === true)?.guardian_id ??
+      (rows.length === 1 ? rows[0].guardian_id : null);
+    if (!chosen) return false;
+
+    const { error } = await supabase
+      .from('cms_guardians')
+      .update({ montree_parent_invite_code: inviteCode })
+      .eq('id', String(chosen))
+      .eq('school_id', schoolId);
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    safeErrorLog('cms/db/savePrimaryGuardianInviteCode', error);
+    return false;
+  }
+}
+
+/**
+ * Move an enrolment to its decided state and record WHO decided.
+ *
+ * Both writes are re-scoped to the session's school. `decided_by_user_id` is
+ * 332's column: "accepted at 14:02" with no name is not an audit trail for an
+ * act that creates a child in another product and mints a family a credential.
+ */
+export async function recordDecision(
+  session: CmsSession,
+  enrollmentId: string,
+  // `waitlisted` is a decision too — the office looked at the application and
+  // said "not now, but not no". Recording WHO held it is the same audit need,
+  // and it is reversible: a waitlisted enrolment can still be accepted, so
+  // nothing about it touches Montree.
+  status: 'accepted' | 'declined' | 'waitlisted',
+  note: string | null,
+  currentDraftData: Record<string, unknown> | null
+): Promise<boolean> {
+  if (!session.schoolId) return false;
+  try {
+    const now = new Date().toISOString();
+    const patch: Record<string, unknown> = {
+      status,
+      decided_at: now,
+      decided_by_user_id: session.userId,
+    };
+    if (note !== null) {
+      patch.draft_data = {
+        ...(currentDraftData ?? {}),
+        [DECISION_KEY]: { note, decidedBy: session.displayName || session.email, at: now },
+      };
+    }
+    const { error } = await db()
+      .from('cms_enrollments')
+      .update(patch)
+      .eq('id', enrollmentId)
+      .eq('school_id', session.schoolId);
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    safeErrorLog('cms/db/recordDecision', error);
+    return false;
+  }
+}
+
+/**
+ * 🚨 THE FIRST-ACCEPT MUTEX. Two school_admins (or one double-clicking tab and
+ * one retried fetch) can both pass the accept route's status check before
+ * either has written anything — the enrolment read and the eventual
+ * `recordDecision` write used to be two separate round trips with nothing
+ * between them, so both requests would call the Montree junction with no
+ * `montreeChildId` yet stored and BOTH would create a Montree child.
+ *
+ * This is a single conditional UPDATE, atomic at the row level: `eq('status',
+ * fromStatus)` means only the request that still sees the status it read gets
+ * to flip it. A request that loses the race affects zero rows and knows
+ * immediately, before it ever asks Montree for anything. The winner's own
+ * write is indistinguishable from the old `recordDecision` call it replaces
+ * for the fresh-accept path — same columns, same values.
+ */
+export async function claimEnrollmentForAccept(
+  session: CmsSession,
+  enrollmentId: string,
+  fromStatus: string
+): Promise<boolean> {
+  if (!session.schoolId) return false;
+  try {
+    const { data, error } = await db()
+      .from('cms_enrollments')
+      .update({
+        status: 'accepted',
+        decided_at: new Date().toISOString(),
+        decided_by_user_id: session.userId,
+      })
+      .eq('id', enrollmentId)
+      .eq('school_id', session.schoolId)
+      .eq('status', fromStatus)
+      .select('id');
+    if (error) throw error;
+    return Array.isArray(data) && data.length > 0;
+  } catch (error) {
+    safeErrorLog('cms/db/claimEnrollmentForAccept', error);
+    return false;
+  }
+}
+
+/** The current side-car blob, so a decision note merges rather than replaces. */
+export async function loadDraftData(
+  session: CmsSession,
+  enrollmentId: string
+): Promise<Record<string, unknown> | null> {
+  if (!session.schoolId) return null;
+  try {
+    const { data } = await db()
+      .from('cms_enrollments')
+      .select('draft_data')
+      .eq('id', enrollmentId)
+      .eq('school_id', session.schoolId)
+      .maybeSingle();
+    return data?.draft_data && typeof data.draft_data === 'object' ? data.draft_data : {};
+  } catch (error) {
+    safeErrorLog('cms/db/loadDraftData', error);
+    return null;
+  }
+}
+
+// ── the parent doorway (phase 7) ────────────────────────────────────────────
+
+/** What /cms/parent/messages and /updates need: is this family routed yet? */
+export interface ParentDoorway {
+  childId: string;
+  preferredName: string;
+  montreeLinked: boolean;
+  inviteCode: string | null;
+}
+
+/**
+ * One row per child this family holds, saying whether their school has switched
+ * communication on for them yet. Read through the SESSION's guardian id — a
+ * family can never ask about a child that is not theirs.
+ */
+export async function loadParentDoorways(session: CmsSession): Promise<ParentDoorway[]> {
+  if (!session.guardianId) return [];
+  try {
+    const supabase = db();
+    const { data: links } = await supabase
+      .from('cms_child_guardians')
+      .select('child_id')
+      .eq('guardian_id', session.guardianId);
+    const childIds = ((links ?? []) as Row[]).map((l) => String(l.child_id));
+    if (childIds.length === 0) return [];
+
+    const [childRes, guardianRes] = await Promise.all([
+      supabase
+        .from('cms_children')
+        .select('id, preferred_name, montree_child_id, montree_parent_invite_code')
+        .in('id', childIds)
+        .is('deleted_at', null)
+        .order('preferred_name', { ascending: true }),
+      // 332's family-side copy, on the row this session already owns. It is the
+      // FALLBACK, not the source: it holds one code and a family can have two
+      // children. When the child's own copy is missing (a link repaired by hand,
+      // a mid-migration row) this is what keeps the doorway from going blank.
+      supabase
+        .from('cms_guardians')
+        .select('montree_parent_invite_code')
+        .eq('id', session.guardianId)
+        .maybeSingle(),
+    ]);
+
+    const guardianCode = (guardianRes?.data as Row | null)?.montree_parent_invite_code;
+    const fallback = typeof guardianCode === 'string' && guardianCode ? guardianCode : null;
+    const children = childRes.data;
+    const linkedCount = ((children ?? []) as Row[]).filter((c) => c.montree_child_id).length;
+
+    return ((children ?? []) as Row[]).map((c) => ({
+      childId: String(c.id),
+      preferredName: String(c.preferred_name ?? ''),
+      montreeLinked: Boolean(c.montree_child_id),
+      inviteCode: c.montree_parent_invite_code
+        ? String(c.montree_parent_invite_code)
+        : // Only when there is exactly ONE linked child can the guardian's
+          // single stored code be attributed to them without guessing.
+          c.montree_child_id && linkedCount === 1
+          ? fallback
+          : null,
+    }));
+  } catch (error) {
+    // Migration 332 not run yet → no doorway, not a 500.
+    safeErrorLog('cms/db/loadParentDoorways', error);
+    return [];
   }
 }

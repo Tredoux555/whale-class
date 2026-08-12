@@ -138,10 +138,12 @@ type a value — the Today roster, flag chips and documents are all computed. Or
 both ends for multi-school comparison and group-wide policy.
 
 **Where it lives:** pages `app/cms/**` (`/cms` landing · `/cms/login` · `/cms/parent/{dashboard,enroll,messages,updates}`
-· `/cms/teacher/{today,roster,documents,documents/[doc]}` · `/cms/org/overview`) · components `components/cms/**` ·
-engine/i18n/demo/auth/db `lib/cms/**` · API `app/api/cms/{health,demo/today,auth/{login,signup,logout},enroll,enroll/submit,roster}` ·
-migrations `migrations/329_cms_phase2.sql` + `330_cms_phase3.sql` + `331_cms_phase4_teacher_roster.sql`
-(all three with `_ROLLBACK`) · phase-1 schema draft `db/cms-schema.sql` (superseded, kept as the design record).
+· `/cms/teacher/{today,roster,documents,documents/[doc]}` · `/cms/office/enrollments{,/[id]}` · `/cms/org/overview`) ·
+components `components/cms/**` · engine/i18n/demo/auth/db `lib/cms/**` ·
+API `app/api/cms/{health,demo/today,auth/{login,signup,logout},enroll,enroll/submit,roster,office/enrollments/[id]/{accept,decline}}` ·
+migrations `migrations/329_cms_phase2.sql` + `330_cms_phase3.sql` + `331_cms_phase4_teacher_roster.sql` +
+`332_cms_phase7_handshake.sql` (all four with `_ROLLBACK`) · phase-1 schema draft `db/cms-schema.sql`
+(superseded, kept as the design record).
 One layout, `app/cms/layout.tsx`, owns the theme, the fonts and the AppShell — **except on
 `/cms/teacher/documents/<doc>`, which renders BARE because it is a piece of paper** (see phase 5).
 
@@ -170,8 +172,212 @@ Phases 4 + 5 **BUILT, migration 331 PENDING Tredoux's Supabase run** (SQL pasted
 #4) — the teacher roster and the document engine; see the two sections below.
 Phase 6 **BUILT — THE BRIDGE, and it needs NO migration at all**: the document engine now runs on
 Tredoux's OWN Montree children, inside his normal teacher dashboard. See the section below.
+Phase 7 **BUILT — THE HANDSHAKE, migration 332 PENDING Tredoux's Supabase run** (SQL pasted in chat per
+rule #4): the office accepts an enrolment, the child becomes a real Montree child, and the family walks
+into Montree's existing parent stack. See the section immediately below.
 Future: Montree's own child onboarding adopts the shared engine so both products derive from one
-record — the seam for that already exists (`cms_children.montree_child_id`, see the guru feed below).
+record — the seam is now LIVE (`cms_children.montree_child_id` is set by the accept action, see the
+guru feed below).
+
+### PHASE 7 — THE HANDSHAKE: the office says yes, and the family walks into Montree
+
+**⏳ MIGRATION `migrations/332_cms_phase7_handshake.sql` PENDING (SQL pasted in chat per rule #4).**
+Additive, one transaction, idempotent, `cms_`-prefixed only. SIX columns
+(`cms_schools.montree_school_id`, `cms_class_groups.montree_classroom_id`,
+`cms_children.montree_parent_invite_code`, `cms_children.montree_linked_at` — the activation audit
+stamp, written ONCE by the acceptance that created the Montree child — `cms_guardians.montree_parent_invite_code`
+— the FAMILY-side copy, which is the row the doorway page reads — and `cms_enrollments.decided_by_user_id`),
+three indexes, ONE trigger function on FOUR tables, and **ZERO policies** — nothing from 329/330/331 is dropped, rewritten
+or widened. Rollback: `migrations/332_cms_phase7_handshake_ROLLBACK.sql` (drops triggers BEFORE the
+function they call, and **deliberately KEEPS 330's `montree_child_id`** — a phase-7 rollback means "stop
+making new links", not "sever the ones that exist and take the guru feed down with them").
+
+**🚨 THE PRINCIPLE, FOUNDER-CONFIRMED. MONTREE ALREADY HAS THE WHOLE PARENT COMMUNICATION STACK, and
+CMS must ROUTE families into it, never rebuild it.** Scouted and verified present in this repo:
+`montree_parent_invites` + the `generate_parent_invite_code()` DB function · the parent portal
+(`/montree/parent` dashboard, reports, photos, montages, milestones, weekly review, appointments,
+account) · encrypted parent↔teacher threads (`montree_message_threads` / `_thread_participants` /
+`montree_thread_messages`, AES-256-GCM via migration 226) · push notifications (`lib/montree/push/*`)
+· **and REAL parent↔teacher VIDEO AND VOICE CALLS** — Agora, hung off `montree_appointments`
+(`/api/montree/appointments/[id]/agora-token`, cloud recording start/stop, `video-call-invite`
+messages, an instant-call button on the teacher's parent-chats screen, and a dedicated parent join
+page at `/montree/parent/calls/[appointmentId]`). **`story_calls` is a SEPARATE system** belonging to
+Story/Lyf (`app/story/**`) and CMS is wired to none of it. The founder's "down to the video calls" is
+TRUE, for Montree, today.
+
+**🚨 THE JUNCTION PATTERN — THE SANCTIONED WAY THE TWO PRODUCTS TOUCH. Copy this shape for every
+future CMS↔Montree action; do not invent a second one.** The direction law says CMS may never import
+`lib/montree/**`, and phase 7 needs CMS to cause a MONTREE write. Those two facts are reconciled by a
+junction, not by an exception:
+
+> 1. **The work lives on the side that owns the rows.** `lib/montree/cms-bridge/activate.ts` writes
+>    `montree_children` and `montree_parent_invites` — Montree tables, Montree conventions, Montree
+>    directory, fixed by a Montree engineer.
+> 2. **The door is an API route in the OWNING product's namespace.**
+>    `app/api/montree/cms-bridge/activate`. Being a Montree file, it may import `lib/cms/auth` and
+>    `lib/cms/db/queries` (the permitted direction) — so it **AUTHENTICATES THE CMS SESSION ITSELF**:
+>    it reads the same signed `cms_session` cookie, demands role `school_admin`, and **re-derives every
+>    tenancy fact** (enrolment, child, school link, room link) from that session. The request body
+>    carries ONE field, the enrolment id. There is no service token and no trusted-caller mode: a
+>    shared-secret junction is answerable to anything that can reach it, a session-authenticating one
+>    is answerable to exactly the person who clicked.
+> 3. **The caller crosses over HTTP, and stays ignorant.**
+>    `app/api/cms/office/enrollments/[id]/accept` calls it through `lib/cms/montree-junction.ts`
+>    (origin from the incoming request, cookie forwarded, result type restated not imported). That
+>    route contains no Montree table name, no invite mechanics, and no import from `lib/montree/**`.
+> 4. **Ownership of writes follows meaning, not convenience.** The junction owns the Montree writes AND
+>    the `cms_children.montree_child_id` link — because the link MUST be stored the instant the Montree
+>    child exists or a failed mint orphans it. CMS keeps the DECISION (status, `decided_by_user_id`):
+>    Montree does not get to accept an application.
+> 5. **Every Montree-side fault returns 200 with a state**, never a throw: `not_linked`,
+>    `invite_pending`, `failed`. The acceptance behind it is real and must not be rolled back because
+>    the other product had a bad minute.
+
+The alternative that was rejected: putting the Montree writes in `lib/cms/db/*` and calling it a
+"shared database, not a shared module". It type-checks and it ships, and it puts Montree's schema
+knowledge in a directory Montree engineers do not read — the first `montree_children` column rename
+breaks CMS silently. The import law's PURPOSE is that each product's schema stays behind its own front
+door; a junction honours the purpose, a service-role reach-around honours only the letter.
+
+**THE ACCEPT ACTION — `POST /api/cms/office/enrollments/[id]/accept`** (school_admin session, tenancy
+re-derived from it, body ignored entirely). In order: the enrolment must belong to this school and be
+`submitted`/`in_review`/`accepted`; if the CMS school AND the requested room are both linked, create
+the `montree_children` row IN that classroom — **after re-proving the Montree classroom belongs to the
+linked Montree school on every single acceptance** (Jul-3: existence ≠ ownership; the two link columns
+are set by two separate hand-run UPDATEs and a mis-paste would otherwise file a child in a stranger's
+room) — then store the link, then mint the code.
+
+**🚨 IT IS IDEMPOTENT, BECAUSE IT WRITES INTO ANOTHER PRODUCT.** Re-accept = no-op
+(`state:'already_accepted'`, the code comes back so the office can read it out again). Accepted +
+linked + NO code = the RETRY PATH: mint only, never a second child. Accepted + not linked (school
+linked later) = activate now — pressing accept twice is how an office switches comms on for a family
+whose school was linked after the fact. Any other status = 409.
+
+**🚨 PARTIAL FAILURE IS RECOVERABLE BY CONSTRUCTION: the link is saved BEFORE the invite is known to
+have worked.** If minting fails the response is still `ok` with `state:'invite_pending'`, the office
+row shows an amber "Invite pending" badge and the Accept button becomes **Retry**. Treating a failed
+mint as a failed accept would leave an orphan Montree child that the next attempt duplicates. A
+Montree fault never un-accepts a child: the decision is recorded either way and the UI names the fault.
+
+**NOT LINKED IS A SUCCESS, NOT AN ERROR** — `state:'accepted_unlinked'` plus which half is missing, and
+the page says "communication activation unavailable" in words. CMS must run on a montree-less database.
+
+**THE INVITE MECHANISM IS REUSED, NOT REINVENTED** (`lib/montree/cms-bridge/activate.ts`): the exact call
+sequence all four Montree routes share — `rpc('generate_parent_invite_code')` then insert into
+`montree_parent_invites` with `expires_at` +365d and **`is_reusable:true, max_uses:null`** (migration
+096's defaults are SINGLE-USE; both Montree routes carry the same warning — drop these two fields and
+the family's code dies on first use). An already-active code is RETURNED, never replaced (re-minting
+would invalidate the slip the office already handed over). `created_by` stays NULL: it references
+`montree_teachers(id)` and a `cms_users.id` is a different identity space — who accepted is recorded in
+`cms_enrollments.decided_by_user_id`. The HTTP routes could not be called: every one is gated by
+`verifySchoolRequest`, which wants a Montree teacher/principal token, and minting Montree credentials
+for CMS staff is a much bigger door than this feature needs. The canonical thing reused is the DB
+function all four routes agree is how codes are made. **No AI, no seeding, no onboarding side-effects:**
+a child who arrives by acceptance gets a row and a code, nothing else — the Aug-12 seeding rules belong
+to the TEACHER-driven onboarding flow, and an office acceptance is not that flow.
+
+**🏫 THE GURU FEED NEEDED NO CODE AT ALL — it went live the moment accept set the seam.**
+`lib/montree/guru/context-builder.ts` already looks a CMS child up through
+`cms_children.montree_child_id` and merges the profile into `parent_intake`, filtered on `guru_sync`
+(honoured twice — in the query AND inside the pure function). Phase 3 shipped it dormant because the
+column was NULL for every row; phase 7 is the thing that sets it. Verified by reading, not assumed.
+
+**🚨 WHERE THE ENFORCEMENT LIVES (read before "fixing" anything).** RLS is ROW-level: it cannot say
+"you may update this row but not these four columns", and 329 already lets a parent edit their own
+child's row and a school_admin edit their own school's row. So the link columns are defended THREE
+times: (1) **the API layer** never accepts them from a request body — accept derives every one from the
+session and from rows it read itself; (2) **`cms_guard_montree_link()`**, a BEFORE INSERT OR UPDATE
+trigger on FOUR tables (`cms_children`, `cms_guardians`, `cms_schools`, `cms_class_groups`) that RAISES
+if the `authenticated` or `anon` role touches a link column, so only a trusted
+server role (service_role, or the operator's own session) may set them — this is column-level
+enforcement done the only way Postgres offers it; (3) **RLS, unchanged**, still decides who may touch
+the row at all. The trigger is **SECURITY INVOKER on purpose**: inside a SECURITY DEFINER body
+`current_user` is the function's OWNER, so the check would never match and would wave every attacker
+through while looking correct — the rls-test caught exactly that on first run.
+
+**`scripts/cms/rls-test.mjs` is now 133 assertions, green** (105 + 28 for phase 7). Every phase-7
+assertion comes in PAIRS: the link write is refused AND the ordinary write on the same row still
+succeeds — a guard that also broke a parent fixing their child's name would be worse than the hole it
+closed. It also asserts the partial unique index (two CMS schools cannot claim one Montree school), that
+the service role CAN do the whole handshake, and that a family can READ but never change their own code —
+on the child's row AND on their own guardian row, since 332 guards `cms_guardians.montree_parent_invite_code`
+and `cms_children.montree_linked_at` too (a family that could stamp `linked_at` could make an unlinked
+child look activated on every office screen).
+
+**🚨 LINKING A SCHOOL/ROOM IS AN OPERATOR ACT, NOT A PRODUCT FEATURE.** A CMS school_admin is not a
+Montree admin and has no legitimate way to browse Montree's schools, so there is NO linking UI and no
+cross-product admin lookup — the office page shows link status READ-ONLY. Link with two idempotent
+statements (reversible: set back to NULL):
+`UPDATE cms_schools SET montree_school_id = '<montree_schools.id>' WHERE id = '<cms_schools.id>';` then
+`UPDATE cms_class_groups SET montree_classroom_id = '<montree_classrooms.id>' WHERE id = '<cms_class_groups.id>' AND school_id = '<cms_schools.id>';`
+The classroom must belong to that Montree school — accept re-checks on every acceptance, so a mistyped
+uuid costs an error message, never a child in a stranger's room.
+
+**THE OFFICE SURFACE — `/cms/office/enrollments`** (+ `/[id]`). CMS's first school_admin room and the
+**one area with a single role**: `CMS_AREA_ROLES.office = ['school_admin']` (a teacher may not — an
+application is office business, the phase-4 rule; an org director may not — that layer is read-only
+aggregate). Middleware gate extended, `homePathForRole('school_admin')` now lands on the office instead
+of a class roster they do not teach, and the AppShell gained a fourth layer badge (slate — the office
+is where the other three are decided about, not a fourth flavour of them). The list = queue first, then
+decided; the detail page is the application **READ-ONLY** (no edit control anywhere: an office that can
+quietly rewrite what a parent wrote destroys the only thing an application is good for) with the
+decision panel FIRST, under the read-only note. **THREE answers, not two:** Accept (the handshake),
+**Waiting list** (`…/[id]/waitlist` — a pure CMS status move that mints nothing, so a later acceptance
+still runs the full handshake; it may not be applied to an accepted enrolment, whose family may already
+be holding a live Montree code) and Decline. All three are idempotent and all three record
+`decided_by_user_id`. **The decline note lives in
+`cms_enrollments.draft_data.office_decision`, NOT `settling_notes`** — settling_notes is the FAMILY's
+own text about their child, written by the wizard, read by the teacher and printed on the class list;
+an office rejection stored there would overwrite a parent's words and show them back as the parent's.
+
+**THE PARENT DOORWAY — `/cms/parent/{messages,updates}` stopped being stubs and did NOT become a
+messenger.** One component (`components/cms/parent/MontreeDoorway.tsx`), three honest states: CONNECTED
+(the code, big, with the entry link `/montree/parent?code=…` — the same URL every Montree QR code
+prints — and what is waiting there in specifics), PENDING (accepted and connected, code not minted yet,
+named per child), NOT READY ("your school has not switched this on yet", explicitly not the family's
+missing step). The feature list renders in all states: a family who cannot get in yet should still see
+what they are waiting for. Zero client JavaScript. The code the family sees is read per-child from
+`cms_children`, falling back to their OWN guardian row (332's family-side column) when a single linked
+child makes that attribution unambiguous. **The "calls" line is deliberately conditional** — Montree's
+parent↔teacher video/voice is real but sits behind the per-school `video_calls` / `agora_video_calls`
+feature flags, so the copy says "where your school has calls turned on" rather than promising a button
+that may not be there.
+
+**WHERE PHASE 7 LIVES.** Montree half: `lib/montree/cms-bridge/activate.ts` + the junction route
+`app/api/montree/cms-bridge/activate/route.ts`. CMS half: `lib/cms/montree-junction.ts` (the HTTP
+caller + the parent entry URL), `app/api/cms/office/enrollments/[id]/{accept,waitlist,decline}/route.ts`,
+`app/cms/office/enrollments/{page.tsx,[id]/page.tsx}`, `components/cms/office/DecisionPanel.tsx`,
+`components/cms/parent/MontreeDoorway.tsx`, queries in `lib/cms/db/queries.ts`
+(`loadOfficeEnrollments`, `loadAcceptContext`, `saveMontreeLink`, `savePrimaryGuardianInviteCode`,
+`recordDecision`, `loadParentDoorways`). Tests: `tests/cms-montree-activate.test.ts` (11 — the twin
+guard, the cross-tenant refusal, the single-use-default trap, the unreachable bridge) +
+`scripts/cms/rls-test.mjs`.
+
+**Not built, deliberately:** no "M" linked indicator on the teacher roster/today. `Child` has no
+`montreeLinked` field, adding one ripples through every demo literal and the client roster shapes for a
+badge whose real home is the office page — bloat, skipped, said out loud.
+
+**🚨 AUG-12 AUDIT, TWO FIXES — both in `app/api/cms/office/enrollments/[id]/accept/route.ts`, both
+narrowing an existing gap rather than changing the shape:**
+
+1. **The idempotency story above only covers a RETRY, not a RACE.** Two accepts that both read
+   `submitted`/`in_review` before either has written anything — two admins, or a retried fetch — used
+   to both pass every check with the same `montreeChildId: null` and both call the junction fresh,
+   creating two Montree children for one CMS child. `claimEnrollmentForAccept`
+   (`lib/cms/db/queries.ts`) closes the window with one conditional `UPDATE … WHERE status =
+   <the status just read>`, atomic at the row level, run BEFORE the junction is ever asked. The loser
+   affects zero rows, re-reads instead of guessing, and reports `invite_pending` rather than racing the
+   winner to Montree. `recordDecision` no longer runs on the fresh-accept path — the claim's own UPDATE
+   is that write now; `recordDecision` still owns waitlist and decline. Residual gap, not closed: a
+   caller hitting the Montree-side bridge directly and concurrently (bypassing this route) still races,
+   because the mutex lives on the CMS side, not inside `app/api/montree/cms-bridge/activate`.
+2. **The junction's `origin` was built from `request.url` — i.e. from whatever `Host` header reached the
+   server — and that value carries the caller's session cookie to wherever it points.** Now it prefers
+   `NEXT_PUBLIC_APP_URL` (the same deployment-pinned base URL every other cross-request link in this repo
+   already uses, `montreeParentEntryUrl` included), falling back to the request-derived origin only when
+   the env var is unset — preserving the original "works on localhost and preview deploys" reasoning
+   while a production deploy (where the env var is set) is no longer trusting an unvalidated Host header
+   to choose where its own cookie-bearing internal fetch goes.
 
 ### PHASE 6 — THE BRIDGE: the document engine, pointed at Whale Class
 
@@ -290,7 +496,8 @@ child they created); `cms_medical_records` stays out of a teacher's hands (aller
 the safety exception and are the one clinical thing a teacher has first-hand); enrolments stay
 invisible to teachers; deleting a child stays a school_admin act.
 
-**`scripts/cms/rls-test.mjs` is now 102 assertions, green** (78 + 24 for phase 4), including the
+**`scripts/cms/rls-test.mjs` was 105 assertions after phase 4, green** (and is 128 after phase 7 — see
+that section), including the
 one that matters most — **the hand-back**: a family account is linked to a staff-entered child
 mid-test, and the teacher's UPDATE goes to 0 rows on the next statement while their SELECT still
 works.
@@ -449,7 +656,8 @@ shorter than Montree's 10-year teacher token: a CMS session can hold a medical r
 
 **THE GATE lives in `middleware.ts`** (CMS ROLE GATE block, above `publicPaths`). `/cms` and
 `/cms/login` are public; `/cms/parent/**` needs parent (or school_admin), `/cms/teacher/**` needs
-teacher (or school_admin), `/cms/org/**` needs org_admin. Signed-out → `/cms/login?next=…`;
+teacher (or school_admin), `/cms/org/**` needs org_admin, and (phase 7) `/cms/office/**` needs
+school_admin AND NOBODY ELSE. Signed-out → `/cms/login?next=…`;
 signed-in-but-wrong-layer → their OWN layer, never the login form. **🚨 The `publicPaths` list no
 longer carries a bare `/cms` meaning "all of /cms is public" — do not re-add one, it would
 silently un-gate every child's record.**
@@ -466,8 +674,8 @@ defaults to PUBLIC/anon and is the exact hole migration 313 had to close. Helper
 `SECURITY DEFINER` with a pinned `search_path` (a policy on `cms_memberships` that reads
 `cms_memberships` would recurse). **`scripts/cms/rls-test.mjs` is the load-bearing test** — it
 impersonates each role the way PostgREST does (`SET ROLE authenticated` + `request.jwt.claims`)
-and asserts BOTH halves of every rule: **102 assertions** (55 in phase 2, 23 for phase 3, 24 for
-phase 4), green against local Postgres
+and asserts BOTH halves of every rule: **133 assertions** (105 through phase 4, +28 for phase 7),
+green against local Postgres
 (`scripts/cms/local-supabase-shim.sql` supplies `auth.uid()` + the three Supabase roles). It found
 two real holes on first run — an org director could read every medical record in the group, and
 any parent at a school could attach themselves as guardian to any other family's child. **Re-run

@@ -132,11 +132,12 @@ const ru: Dictionary = {
     'Ответы о здоровье и питании видят только сотрудники группы и канцелярия сада.',
 
   'parent.messages.title': 'Сообщения',
-  'parent.messages.subtitle': 'Одна переписка на ребёнка — с педагогами группы и канцелярией.',
+  'parent.messages.subtitle':
+    'Школа общается с семьями через Montree. Отсюда вы туда попадёте.',
 
   'parent.updates.title': 'Новости',
   'parent.updates.subtitle':
-    'Фотоподборки, отчёты о развитии и итоги четверти, собранные движком.',
+    'Фотофильмы, еженедельные отчёты и ход четверти — публикуются в вашем родительском аккаунте Montree.',
 
   'teacher.today.title': 'Сегодня',
   'teacher.today.subtitle': '{room} · {date}',
@@ -602,6 +603,160 @@ const ru: Dictionary = {
 
   'doc.labels.cut': 'Разрезать по линиям',
   'doc.classList.epipen': 'EpiPen',
+
+  // ── ФАЗА 7 — РУКОПОЖАТИЕ: канцелярия и дверь в Montree ─────────────────
+  'layer.office': 'Канцелярия',
+  'layer.office.role': 'Что решает школа',
+  'nav.enrollments': 'Заявления',
+
+  'office.enrollments.title': 'Заявления',
+  'office.enrollments.subtitle':
+    'Заявления, ожидающие решения, и те, по которым решение уже принято.',
+  'office.enrollments.waiting': 'Ждут вашего решения',
+  'office.enrollments.decided': 'Решение принято',
+  'office.enrollments.empty.title': 'Заявлений пока нет',
+  'office.enrollments.empty.body':
+    'Когда семья заполнит анкету и отправит её, заявление появится здесь — принять или отклонить.',
+  'office.stat.waiting': 'Ждут решения',
+  'office.stat.accepted': 'Приняты',
+  'office.stat.connected': 'Подключены к Montree',
+
+  'office.status.submitted': 'Отправлено',
+  'office.status.in_review': 'На рассмотрении',
+  'office.status.accepted': 'Принято',
+  'office.status.declined': 'Отклонено',
+  'office.status.waitlisted': 'Лист ожидания',
+  'office.status.withdrawn': 'Отозвано',
+
+  'office.steps': 'Заполнено разделов: {done} из {total}',
+  'office.submittedOn': 'Отправлено {date}',
+  'office.decidedOn': 'Решение {date}',
+  'office.startDate': 'Желаемое начало: {date}',
+  'office.room.none': 'Группа не выбрана',
+  'office.family': 'Семья',
+  'office.family.none': 'Контактов нет',
+  'office.review': 'Открыть',
+  'office.dobUnknown': 'Дата рождения неизвестна',
+
+  'office.link.title': 'Связь с Montree',
+  'office.link.connected': 'Эта школа связана с Montree.',
+  'office.link.notConnected': 'Эта школа ещё не связана с Montree.',
+  'office.link.rooms': 'Связано групп: {linked} из {total}',
+  'office.link.note':
+    'Приём заявления включает общение только для связанных групп. Связать школу или группу помогает Montree — это не настройка на этой странице, потому что она указывает на записи в другом продукте, которых канцелярия не видит.',
+  'office.link.roomBadge': 'Группа связана',
+  'office.link.roomMissing': 'Группа не связана',
+  'office.link.childBadge': 'Связан',
+  'office.link.invitePending': 'Код ещё не создан',
+
+  'office.detail.back': 'Все заявления',
+  'office.detail.subtitle': 'Заявление в точности так, как его заполнила семья.',
+  'office.detail.readOnly':
+    'Только чтение. Канцелярия принимает решение по заявлению, но никогда его не редактирует — записью считается то, что написала семья.',
+  'office.detail.notFound.title': 'Такого заявления нет',
+  'office.detail.notFound.body': 'Возможно, оно отозвано или принадлежит другой школе.',
+  'office.section.child': 'Ребёнок',
+  'office.section.about': 'О ребёнке — словами семьи',
+  'office.section.medical': 'Медицина',
+  'office.section.dietary': 'Питание',
+  'office.section.contacts': 'Контакты и кто забирает',
+  'office.section.previous': 'Прежний сад',
+  'office.section.consents': 'Согласия',
+  'office.section.settling': 'Заметки об адаптации',
+  'office.field.legalName': 'Полное имя',
+  'office.field.preferredName': 'Как зовут дома',
+  'office.field.dob': 'Дата рождения',
+  'office.field.homeLanguage': 'Язык дома',
+  'office.field.room': 'Желаемая группа',
+  'office.field.startDate': 'Желаемое начало',
+  'office.field.likes': 'Любит',
+  'office.field.dislikes': 'Не любит',
+  'office.field.interests': 'Интересы',
+  'office.field.parentNotes': 'Что важно знать педагогу',
+  'office.field.conditions': 'Состояния',
+  'office.field.medications': 'Лекарства',
+  'office.field.doctor': 'Врач',
+  'office.field.emergencyNote': 'Экстренная заметка',
+  'office.field.reason': 'Причина ухода',
+  'office.field.canCollect': 'Может забирать',
+  'office.field.cannotCollect': 'Забирать нельзя',
+  'office.consent.granted': 'Дано',
+  'office.consent.refused': 'Не дано',
+  'office.empty': 'Ничего не указано',
+
+  'office.decision.title': 'Решение',
+  'office.decision.body':
+    'Приём создаёт ребёнка в Montree, в связанной группе, и выдаёт семье код, который открывает их родительский аккаунт Montree.',
+  'office.decision.bodyUnlinked':
+    'Приём фиксирует место. Общение нельзя включить, пока школа и группа не связаны с Montree.',
+  'office.decision.accept': 'Принять заявление',
+  'office.decision.decline': 'Отклонить',
+  'office.decision.waitlist': 'В лист ожидания',
+  'office.decision.declineTitle': 'Отклонить это заявление',
+  'office.decision.noteLabel': 'Причина (необязательно — остаётся в канцелярии, семье не показывается)',
+  'office.decision.notePlaceholder': 'В группе трёхлеток нет мест до января.',
+  'office.decision.confirmDecline': 'Подтвердить отказ',
+  'office.decision.cancel': 'Оставить открытым',
+  'office.decision.working': 'Выполняется…',
+  'office.decision.declinedNote': 'Заметка канцелярии',
+
+  'office.result.accepted': 'Принято. Семья подключена к Montree.',
+  'office.result.alreadyAccepted': 'Уже принято — ничего не изменилось.',
+  'office.result.acceptedUnlinked':
+    'Принято. Включить общение нельзя — школа не связана с Montree.',
+  'office.result.acceptedRoomUnlinked':
+    'Принято. Включить общение нельзя — желаемая группа не связана с группой Montree.',
+  'office.result.invitePending':
+    'Принято, ребёнок создан в Montree, но код приглашения не удалось выпустить. Нажмите «Принять» ещё раз — ничего не продублируется.',
+  'office.result.activationFailed':
+    'Принято. Montree недоступен, общение включить не удалось — попробуйте нажать «Принять» позже.',
+  'office.result.declined': 'Отклонено.',
+  'office.result.waitlisted':
+    'Заявка перенесена в лист ожидания. В Montree ничего не создано — если позже вы её примете, подключение пройдёт полностью.',
+  'office.result.error': 'Не получилось. Ничего не изменено.',
+  'office.result.demo': 'Демо-режим — ничего не записывается. Подключите базу, чтобы решения стали реальными.',
+  'office.result.retry': 'Попробовать снова',
+
+  'office.code.label': 'Код приглашения Montree',
+  'office.code.help':
+    'Передайте его семье. Он открывает родительский аккаунт Montree — переписку с педагогом, отчёты, фото и звонки.',
+  'office.code.link': 'Вход для родителей',
+
+  'parent.doorway.messages.heading': 'Школа общается с вами через Montree',
+  'parent.doorway.messages.body':
+    'Переписка с педагогом вашего ребёнка живёт в Montree — рядом с фотографиями, отчётами и встречами. Одно место, а не четыре. Код ниже открывает его.',
+  'parent.doorway.updates.heading': 'Неделя вашего ребёнка ждёт в Montree',
+  'parent.doorway.updates.body':
+    'Фотофильмы, еженедельные отчёты и то, чем занимался ваш ребёнок, публикуются в вашем родительском аккаунте Montree. Код ниже открывает его.',
+  'parent.doorway.codeFor': 'Код для {name}',
+  'parent.doorway.codeHint': 'Сохраните его — этот же код работает при каждом входе.',
+  'parent.doorway.cta': 'Открыть Montree',
+  'parent.doorway.step1': 'Нажмите «Открыть Montree» — ссылка уже содержит ваш код.',
+  'parent.doorway.step2':
+    'Если Montree попросит код, введите шесть символов, указанных выше, в единственное поле на экране.',
+  'parent.doorway.step3':
+    'Вы попадёте на страницу ребёнка — сообщения, отчёты и фотографии находятся там.',
+  'parent.doorway.whatYouFind': 'Что вас там ждёт',
+  'parent.doorway.feature.chat': 'Переписка с педагогом',
+  'parent.doorway.feature.chatBody':
+    'Личная переписка с группой вашего ребёнка — отвечают те, кто рядом с ним весь день.',
+  'parent.doorway.feature.reports': 'Еженедельные отчёты',
+  'parent.doorway.feature.reportsBody':
+    'Что ребёнок выбирал, отрабатывал и освоил за неделю — написано его педагогом.',
+  'parent.doorway.feature.photos': 'Фото и фильмы',
+  'parent.doorway.feature.photosBody':
+    'Снимки из группы и короткие montage-ролики о вашем ребёнке за работой — только для вас.',
+  'parent.doorway.feature.calls': 'Встречи и звонки',
+  'parent.doorway.feature.callsBody':
+    'Запишитесь на разговор с педагогом, а если школа включила звонки — присоединяйтесь по видео или голосом там же.',
+  'parent.doorway.notReady.title': 'Школа ещё не включила это',
+  'parent.doorway.notReady.body':
+    'Когда канцелярия примет ваше заявление и свяжет группу ребёнка, ваш код появится здесь, и эта страница станет входом. С вашей стороны ничего не упущено.',
+  'parent.doorway.pending.title': 'Почти готово',
+  'parent.doorway.pending.body':
+    'Место подтверждено, группа ребёнка связана — канцелярия доделывает ваш код приглашения. Он появится здесь.',
+  'parent.doorway.demo':
+    'Демо-режим — так это видит подключённая семья. Код ниже не настоящий.',
 };
 
 export default ru;
