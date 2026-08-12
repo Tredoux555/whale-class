@@ -15,6 +15,13 @@ const TOOLS = [
     gradient: 'from-blue-500 to-indigo-600',
   },
   {
+    href: '/montree/library/tools/tracing-work',
+    icon: '🐋',
+    titleKey: 'tools.tracing_work',
+    descKey: 'tools.tracing_work_desc',
+    gradient: 'from-teal-500 to-cyan-600',
+  },
+  {
     href: '/montree/library/tools/card-generator',
     icon: '🃏',
     titleKey: 'tools.card_generator',
