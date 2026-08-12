@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
-import { buildTracingDocx, type TracingTemplate } from '@/lib/montree/tracing/docxTemplates';
+import { buildTracingPdf, type TracingTemplate } from '@/lib/montree/tracing/pdfTemplates';
 import { loadDefaultLogo, loadDefaultWatermark, fileToArrayBuffer } from '@/lib/montree/tracing/assets';
 
 // ============================================
@@ -65,11 +65,11 @@ export default function TracingWorkPage() {
     setBusy(true);
     try {
       const { defaultLogoBytes, defaultWatermarkBytes, logoBytes, pictureBytes } = await assetBytes();
-      const blob = await buildTracingDocx({
+      const blob = await buildTracingPdf({
         template, childName: childName.trim(), className: className.trim() || 'Whale Class',
         logoBytes, pictureBytes, defaultLogoBytes, defaultWatermarkBytes,
       });
-      downloadBlob(blob, `tracing-work-${slugify(childName)}-${template}.docx`);
+      downloadBlob(blob, `tracing-work-${slugify(childName)}-${template}.pdf`);
     } catch (e) {
       console.error(e);
       setError('Something went wrong generating the worksheet. Please try again.');
@@ -88,11 +88,11 @@ export default function TracingWorkPage() {
       const zip = new JSZip();
       const { defaultLogoBytes, defaultWatermarkBytes, logoBytes, pictureBytes } = await assetBytes();
       for (const name of names) {
-        const blob = await buildTracingDocx({
+        const blob = await buildTracingPdf({
           template, childName: name, className: className.trim() || 'Whale Class',
           logoBytes, pictureBytes, defaultLogoBytes, defaultWatermarkBytes,
         });
-        zip.file(`${slugify(name)}.docx`, blob);
+        zip.file(`${slugify(name)}.pdf`, blob);
       }
       const zipBlob = await zip.generateAsync({ type: 'blob' });
       downloadBlob(zipBlob, `tracing-work-${slugify(className)}-${template}.zip`);
@@ -202,7 +202,7 @@ export default function TracingWorkPage() {
               <button
                 type="button" onClick={handleSingle} disabled={busy}
                 className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-sm hover:bg-emerald-700 disabled:opacity-50"
-              >{busy ? 'Generating…' : 'Generate & download .docx'}</button>
+              >{busy ? 'Generating…' : 'Generate & download .pdf'}</button>
             </div>
           ) : (
             <div className="space-y-3">
