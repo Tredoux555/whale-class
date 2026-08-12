@@ -86,6 +86,49 @@ never only reference a file path or attach a file. File + chat is fine; chat is
 mandatory. Applies to every migration in this repo, every time, no exceptions.
 This rule keeps getting lost between sessions — it is hard law, do not drop it.
 
+## 📖 DARK PHONICS — HOW TO PUBLISH A NEW LETTER BOOK (locked 2026-08-12)
+
+Learned the hard way shipping Book 15 (the-bug, Letter B): the book built and committed
+fine but rendered wrong on the site and 502'd its PDF link, because of two silent
+mismatches. Both are fixed for the-bug now; do it right the first time on every future
+book (F is next in the letter sequence):
+
+1. **`app/montree/library/dark-phonics/page.tsx`'s `RAW` array has TWO separate fields
+   per lesson, `reader` and `books` — they are NOT interchangeable and a new Letter Book
+   must NEVER touch an existing `reader`.**
+   - `reader: { slug, title }` is the Easy Reader gate slot (11 of 49 lessons carry one —
+     a separate content system entirely, served from the Supabase `dark-phonics` bucket
+     via `/api/montree/media/proxy/readers/<slug>.pdf`). If a lesson already has one, it's
+     real — leave it exactly as-is.
+   - `books: [{ slug, title, description, cover, materials, works }]` is the array a new
+     Letter Book (the `books_def.py` cast-book series) goes into. A lesson can carry both
+     a `reader` and a `books` array at once (see n=19, `mud-pup` reader + `the-mud` book) —
+     they render as two separate rows, no conflict.
+   - Overwriting `reader`'s slug with the new book (what happened with the-bug/hen-in-bed)
+     makes the page render the book as a bare "EASY READER" stub instead of the full book
+     card, AND 502s the PDF link, since it points the bucket-proxied Easy Reader path at a
+     file that was never uploaded to that bucket (Letter Books don't use the bucket at all
+     — see point 3).
+2. **The 4 book-works PDFs must be copied to `public/dark-phonics-books/works/<slug>/`,
+   not left sitting in `materials-out/book-works/<slug>/`.** `materials-out/` is
+   gitignored and dev-only; the site's `WorksRow` component reads straight from the
+   `public/` copy. `scripts/curriculum/book-works/build_book_works.py` only writes to
+   `materials-out/` — copying the 4 files over to `public/dark-phonics-books/works/<slug>/`
+   is a separate, required step every single time, easy to forget.
+3. Everything else is a plain static file under `public/`, served directly — Letter Books
+   need NO Supabase bucket upload at all (unlike Easy Readers):
+   `public/dark-phonics-books/print/<slug>-A5-{reading,booklet-print}.pdf`,
+   `public/dark-phonics-books/covers/<slug>.png`,
+   `public/dark-phonics-materials/<slug>/{paperwork-pack,build-it-sheet,tracing-workbook,
+   sentence-strips,three-part-cards-{control,pictures,labels}}.pdf`. Always set the
+   `books[]` entry's `cover` field explicitly to the local `/dark-phonics-books/covers/
+   <slug>.png` path — leaving it unset falls back to an unpopulated bucket path.
+4. `materials: true, works: true` on the `books[]` entry gate whether the Paperwork/Works
+   rows render at all. Set both true only once the files in point 3 actually exist at
+   those paths — a true flag with missing files doesn't break the page, it just makes
+   that one Pill 404 on click (e.g. the-bug currently ships without the three-part-cards
+   trio, which needs the separate DB-backed `make-material.mjs` tool, not this pipeline).
+
 ## 🏫 CMS — CLASSROOM MANAGEMENT SYSTEM (new brand surface, 2026-08-11)
 
 **What it is:** an hourglass. **Parent intake → engine → teacher outputs**, standing on an
