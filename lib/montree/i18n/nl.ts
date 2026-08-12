@@ -1550,6 +1550,8 @@ export const nl: Record<string, string> = {
   'tools.photo_bank_desc': 'Zoek, blader en draag bij met Engelse onderwijsafbeeldingen voor alle tools',
   'tools.tracing_work': 'Natrekwerk',
   'tools.tracing_work_desc': 'Maak natrekbladen voor namen en cijfers met gestippelde letters en schrijfrichting-pijltjes.',
+  'tools.birthdays': 'Verjaardagen',
+  'tools.birthdays_desc': 'Verjaardagskaarten voor elk kind plus een verjaardagsposter van de hele klas op één pagina.',
 
   'tools.card_generator': '3-Delige Kaartgenerator',
   'tools.card_generator_desc': 'Maak prachtige Montessori nomenclatuurkaarten met afbeeldingen en labels',
