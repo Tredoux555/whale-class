@@ -114,6 +114,14 @@ API). Phase 2 **BUILT, migration PENDING Tredoux's Supabase run** — see `APPLY
 at the repo root for the founder's checklist. Future: Montree's own child onboarding adopts the
 shared engine so both products derive from one record.
 
+**Phase 3 requirement (locked 2026-08-12, from Tredoux):** The enrollment wizard
+must include an "About your child" step capturing likes, dislikes, interests, and
+personality/temperament. In the Montree surface, this data feeds directly into the
+Guru's psychological profile for the child (montree guru integration point:
+app/api/montree/guru/*). Schema: planned `cms_child_profiles` table in the Phase 3
+migration (likes, dislikes, interests, temperament, free-text parent notes,
+guru_sync flag). Same data powers CMS teacher insight cards.
+
 ### PHASE 2 — the data layer is real
 
 **⏳ MIGRATION `migrations/329_cms_phase2.sql` PENDING (SQL pasted in chat per rule #4).**
