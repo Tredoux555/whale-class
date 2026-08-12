@@ -873,6 +873,28 @@ export default function MontreeLanding() {
             >
               {t('landing.nav.library')}
             </Link>
+            {/* CMS — the Classroom Management System ("Harbor" brand surface at
+                /cms): parent intake → engine → teacher outputs, plus the org
+                layer. Styled with THIS nav's own m-nav-link idiom and the same
+                dark-forest ink/hover values as Library and About — the Harbor
+                theme boundary starts at /cms, never before it. Label is
+                hardcoded like the neighbouring "About" link, since CMS is a
+                product name rather than a translatable noun. */}
+            <Link
+              className="m-nav-link m-nav-link-cms"
+              href="/cms"
+              style={{
+                fontSize: '0.85rem',
+                color: 'rgba(255,250,240,0.58)',
+                textDecoration: 'none',
+                letterSpacing: '0.01em',
+                transition: 'color 200ms ease',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,250,240,0.92)' )}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,250,240,0.58)')}
+            >
+              CMS
+            </Link>
             {/* Explainer nav link hidden 2026-08-03 per Tredoux's request
                 (follow-up to the Pricing hide in 5b2f2f49). Commented out,
                 not deleted — for reinstatement later.

@@ -30,7 +30,12 @@ export async function checkRateLimit(
   // audit-fix (Jun 2026): callers guarding credentials can opt into failing
   // CLOSED — if the rate-limit table is unreachable we deny rather than letting
   // brute-force run unmetered. Default stays 'open' so nothing else changes.
-  failMode: 'open' | 'closed' = 'open'
+  failMode: 'open' | 'closed' = 'open',
+  // CMS (Aug 2026): the counter table is now a parameter so a separate brand
+  // surface can meter into its own table (cms_rate_limit_logs) instead of
+  // either importing Montree's table or forking this file. Same columns, same
+  // logic. Default is unchanged, so every existing caller is byte-identical.
+  table: string = 'montree_rate_limit_logs'
 ): Promise<RateLimitResult> {
   const onFailure = (): RateLimitResult =>
     failMode === 'closed'
@@ -42,7 +47,7 @@ export async function checkRateLimit(
 
     // Count recent attempts from this IP for this endpoint
     const { count, error: countError } = await supabase
-      .from('montree_rate_limit_logs')
+      .from(table)
       .select('*', { count: 'exact', head: true })
       .eq('key', ip)
       .eq('endpoint', endpoint)
@@ -62,7 +67,7 @@ export async function checkRateLimit(
 
     // Log this attempt (fire-and-forget — never fail the auth request)
     await supabase
-      .from('montree_rate_limit_logs')
+      .from(table)
       .insert({ key: ip, endpoint, created_at: new Date().toISOString() })
       .then(({ error }) => {
         if (error) console.error('[RateLimit] Insert failed:', error);

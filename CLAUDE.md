@@ -66,6 +66,209 @@ Milestones child palette `C` (`components/montree/evaluation/tokens.ts`).
 naming only) — routes (`/potato`, `/api/potato`), table prefixes (`tp_`), and all other
 identifiers are UNCHANGED.
 
+## 🚢 SHIP RULE — COMMIT & PUSH (locked 2026-08-12)
+
+Work in this repo is NOT done until it is committed AND pushed. Every session
+(Claude, Cowork, any agent) that lands changes must, as its final step:
+1. `git commit` on the working branch with a descriptive message
+2. `git push` to origin (set upstream on first push of a branch)
+3. Report the commit hash in its summary
+Uncommitted edits or unpushed commits = unfinished work, no exceptions.
+Cowork note: run git on the Mac via Desktop Commander, NOT the device-bridge
+mount (the mount can't unlink git lock files and has no network for push).
+
+## 📋 SQL RULE — MIGRATIONS GO IN THE CHAT (locked 2026-08-12)
+
+Tredoux applies database migrations by copy-pasting SQL into the Supabase SQL
+editor. Therefore: whenever a session produces SQL he needs to run (migrations,
+seeds, fixes), ALWAYS paste the complete SQL directly in the chat message —
+never only reference a file path or attach a file. File + chat is fine; chat is
+mandatory. Applies to every migration in this repo, every time, no exceptions.
+This rule keeps getting lost between sessions — it is hard law, do not drop it.
+
+## 🏫 CMS — CLASSROOM MANAGEMENT SYSTEM (new brand surface, 2026-08-11)
+
+**What it is:** an hourglass. **Parent intake → engine → teacher outputs**, standing on an
+**org layer**. Families enter everything once (child, contacts, allergies, dietary, medical,
+consents, previous school); `lib/cms/engine/**` derives from those records; teachers never
+type a value — the Today roster, flag chips and documents are all computed. Org sits under
+both ends for multi-school comparison and group-wide policy.
+
+**Where it lives:** pages `app/cms/**` (`/cms` landing · `/cms/login` · `/cms/parent/{dashboard,enroll,messages,updates}`
+· `/cms/teacher/{today,documents}` · `/cms/org/overview`) · components `components/cms/**` ·
+engine/i18n/demo/auth/db `lib/cms/**` · API `app/api/cms/{health,demo/today,auth/{login,signup,logout},enroll,enroll/submit}` ·
+migrations `migrations/329_cms_phase2.sql` + `migrations/330_cms_phase3.sql` (both with `_ROLLBACK`) ·
+phase-1 schema draft `db/cms-schema.sql` (superseded, kept as the design record).
+One layout, `app/cms/layout.tsx`, owns the theme, the fonts and the AppShell.
+
+**🚨 HARBOR LAW — CMS is a PROTECTED BRAND, like PSS's `pt-*`.** Its design system is
+"Harbor" (light-first Harbor blue, Source Serif 4 + Inter): `docs/design/CMS_DESIGN_SYSTEM.md`,
+tokens in the "CMS BUTTON SYSTEM — SOFT ELEVATION / HARBOR" section at the bottom of
+`app/globals.css` + `harbor-*` in `tailwind.config.ts`. **Every class is `cms-`-prefixed
+(`.cms-btn`, `.cms-btn-primary`, `.cms-tone-danger`, `.cms-card`) and every surface rule is
+scoped to `.cms-root`** — Montree's `.btn` is dark-forest law and CMS must never shadow it,
+in either direction. Inside `app/cms/**` never use `btn btn-*`; outside it never use `cms-*`.
+
+**🚨 I18N LAW:** every CMS string goes through `lib/cms/i18n` `t()` — server via
+`getServerT()`, client via `useT()`. en/ru/ar are complete (ar is the RTL proof); fr/es/sw/zh
+are stubs that re-export English. A hardcoded string in a CMS component is a bug. This is
+separate from Montree's own 12-locale i18n — do not cross-import them.
+
+**🚨 REUSE-FIRST LAW:** CMS adds no dependencies. It reuses the repo's `lib/api-error`, the
+root layout's font mechanism, and the existing middleware `x-pathname` header. Before writing
+anything new in `lib/cms/`, check whether `lib/onboarding-core/` or an existing Montree module
+already does it — the long-term intent is convergence, not a second parallel product.
+
+**PHASE STATUS:** Phase 1 **DONE** (design law, engine data model, i18n, all pages, demo data,
+API). Phase 2 **BUILT, migration PENDING Tredoux's Supabase run** — `APPLY_CMS_PHASE2.md`.
+Phase 3 **BUILT, migration 330 PENDING Tredoux's Supabase run** — `APPLY_CMS_PHASE3.md`.
+Future: Montree's own child onboarding adopts the shared engine so both products derive from one
+record — the seam for that already exists (`cms_children.montree_child_id`, see the guru feed below).
+
+### PHASE 3 — the top of the hourglass is finished
+
+**⏳ MIGRATION `migrations/330_cms_phase3.sql` PENDING (SQL pasted in chat per rule #4).** Additive,
+one transaction, idempotent, `cms_`-prefixed only. Two new tables (`cms_child_profiles`,
+`cms_previous_schools`), two added columns (`cms_allergies.carries_epipen`,
+`cms_children.montree_child_id`), two added enum values (`cms_enrollment_step.about_child`,
+`cms_consent_kind.media`). Rollback: `migrations/330_cms_phase3_ROLLBACK.sql` — drops only phase-3
+objects and leaves 329 intact, so CMS falls back to phase-2 behaviour rather than to nothing.
+**Enum values cannot be dropped in Postgres**; the rollback says so and leaves them (harmless).
+
+**THE WHOLE WIZARD IS REAL.** Steps 2–7 no longer park their answers in `draft_data` — each writes
+its own tables through `POST /api/cms/enroll` (`about_child` → `cms_child_profiles`; `medical` →
+`cms_medical_records` + `cms_allergies`; `dietary` → `cms_dietary_requirements`; `previous_school`
+→ `cms_previous_schools`; `contacts` → `cms_guardians` + `cms_child_guardians` +
+`cms_pickup_authorizations`; `consents` → `cms_consents`). Every step ALSO parks its raw form values
+in `draft_data` and ticks `completed_steps`: **the typed rows are the RECORD, the parked blob is the
+FORM**, and a family must get their half-filled allergy row back, which clean rows cannot
+reconstruct. **List steps REPLACE, they never append** (soft-delete the old set, insert the new), or
+saving twice doubles a child's allergies.
+
+**🚨 "ABOUT YOUR CHILD" IS STEP 2, BEFORE ANYTHING CLINICAL** (Tredoux's requirement, locked
+2026-08-12). Likes / dislikes / interests as chips, four warm temperament picks
+(settling · company · adventure · energy, 1–5 with an explicit unanswered state), and "what should
+the teacher know about your child?". **NO CLINICAL LANGUAGE ON THAT PAGE, EVER** — no score, no
+norm, no high/low, no trait framed as a deficit. It is a parent describing their child, and the
+moment it reads as an assessment it stops collecting the truth. `ENROLLMENT_STEPS` in
+`lib/cms/engine/types.ts` and the `cms_enrollment_step` enum are one list in two languages; change
+both or neither.
+
+**REVIEW & SUBMIT is the one-way door.** `POST /api/cms/enroll/submit` (its own route, no body —
+folding it in as an eighth `step` would put an irreversible action behind the same handler as "save
+my half-finished dietary row"). It refuses an incomplete form, then moves the enrolment
+`draft → submitted`. **The lock is in the database, not the UI:** 329's update policy requires
+`status = 'draft'` in its USING clause, so after submit the family reads forever and writes never.
+The rail has EIGHT stops but the wizard counts SEVEN steps — review is the way out of the intake,
+not a step of it.
+
+**🏫 THE GURU FEED — `lib/cms/engine/guru-feed.ts`.** A PURE function mapping a CMS profile onto the
+Guru's existing `ParentIntakeContext` slot (the family-provided block added when Montree's own child
+onboarding shipped, Aug 10) — deliberately NOT the clinical `MentalProfile`, which belongs to an
+instrument a practitioner completes. Temperament is rendered as the family's own phrasing
+("needs time and a familiar adult before they settle"), never as numbers. The output type is
+declared structurally, not imported from `lib/montree/**`: **CMS never imports from Montree.**
+
+**THE MONTREE-SIDE WIRING IS REAL, AND DORMANT BY CONSTRUCTION.**
+`lib/montree/guru/context-builder.ts` gained ONE fail-soft parallel query (a 12th) and one merge
+block: it looks a CMS child up through the new `cms_children.montree_child_id` seam, filters on
+`guru_sync`, and merges the feed into `parent_intake` via `mergeGuruFeed`. **That column is NULL for
+every row today**, so the query resolves to null and the Guru's behaviour is bit-for-bit unchanged —
+it goes live the day Montree onboarding adopts the shared engine and starts setting it. Merge order
+is deliberate: a teacher-COMMITTED Montree intake WINS over an unreviewed CMS profile; CMS only
+fills holes; allergy lists are unioned. `guru_sync` is the family's own answer and is honoured twice
+(in the query AND inside the pure function).
+
+**TEACHER INSIGHT — `components/cms/teacher/ChildInsight.tsx`.** Each row on `/cms/teacher/today`
+unfolds into what the family wrote. It is a native `<details>`: **zero client JavaScript**, the page
+stays a server component, and a room of 24 costs 24 `<details>` rather than 24 pieces of state. The
+engine did NOT change — profiles are a second read joined by child id at render time, never folded
+into `RosterInput` (a child's likes are not a flag).
+
+**🚨 PERSONALITY DATA IS HELD TIGHTER THAN MEDICAL DATA.** `cms_child_profiles` has NO org-layer read
+clause at all — read set is exactly `cms_readable_child_ids()` (family + teacher of the child's OWN
+room + school office). A group director cannot read a four-year-old's temperament from head office.
+Teachers READ and never WRITE it: the words are the parent's, and a record staff can quietly rewrite
+is not the family's description any more. **`scripts/cms/rls-test.mjs` asserts all of it — 78
+assertions, green** (was 55 in phase 2).
+
+**New design primitives (CMS_DESIGN_SYSTEM.md §10):** `.cms-taginput` (the chip field — NOT a picker,
+there is no vocabulary and there must never be one) and `.cms-scale` (the five-point temperament
+pick — a radiogroup wearing a slider's clothes, because `<input type=range>` cannot express
+"unanswered"). Both live centrally in `app/globals.css`. `components/cms/enroll/RowCard.tsx` is the
+shared repeated-row chrome behind all four list steps.
+
+### PHASE 2 — the data layer is real
+
+**⏳ MIGRATION `migrations/329_cms_phase2.sql` PENDING (SQL pasted in chat per rule #4).**
+17 `cms_`-prefixed tables, purely additive, one transaction, idempotent, zero ALTER/DROP against
+any existing table. Rollback: `migrations/329_cms_phase2_ROLLBACK.sql` (drops only `cms_*`).
+Pre-run behaviour is safe: with no CMS tables the surface still runs in demo mode.
+
+**How to apply:** Supabase SQL Editor, paste the whole file, Run. Full checklist +
+first-parent/first-teacher seed SQL + verification URLs: `APPLY_CMS_PHASE2.md`.
+
+**🚨 DEMO vs LIVE — one switch, `lib/cms/auth/mode.ts`.** `isCmsLive()` returns true when a
+Supabase project is configured, false otherwise; `CMS_AUTH_ENFORCED=1|0` overrides either way.
+**Demo mode is not a fallback, it is a feature**: with no database the whole surface still walks
+on `lib/cms/demo/seed.ts` and the route gate is off, so the founder can demo CMS on a laptop with
+no env. Live mode reads `cms_*` tables and enforces roles. Every data path asks this module first
+— never read `process.env` for CMS mode at a call site.
+
+**AUTH MODEL.** Email + password → bcrypt (`lib/montree/password.ts`, reused verbatim) → a `jose`
+JWT in the httpOnly cookie `cms_session` (`lib/cms/auth/session.ts` = edge-safe, `server.ts` =
+next/headers). **Supabase Auth is deliberately NOT used** — Montree does not use it, so
+`auth.users` is empty; a second identity system for one surface would be the invention the
+reuse-first law forbids. The token's `sub` is `cms_users.id`, which is exactly what the database's
+`cms_current_user_id()` resolves, so the RLS policies already apply to this token unchanged if it
+is ever signed with the Supabase JWT secret and handed to PostgREST. Env: `CMS_JWT_SECRET`
+(falls back to `MONTREE_JWT_SECRET`/`ADMIN_SECRET`), `CMS_JWT_TTL_DAYS` (default 30 — deliberately
+shorter than Montree's 10-year teacher token: a CMS session can hold a medical record).
+
+**THE GATE lives in `middleware.ts`** (CMS ROLE GATE block, above `publicPaths`). `/cms` and
+`/cms/login` are public; `/cms/parent/**` needs parent (or school_admin), `/cms/teacher/**` needs
+teacher (or school_admin), `/cms/org/**` needs org_admin. Signed-out → `/cms/login?next=…`;
+signed-in-but-wrong-layer → their OWN layer, never the login form. **🚨 The `publicPaths` list no
+longer carries a bare `/cms` meaning "all of /cms is public" — do not re-add one, it would
+silently un-gate every child's record.**
+
+**ROLES = `cms_memberships`**, not Montree's role rails (which are all scoped to `montree_schools`
+and would make a CMS row undeletable without touching Montree data). One row = one person's
+authority in one school; a teacher who is also a parent holds two rows. Staff accounts are NEVER
+self-service — `/api/cms/auth/signup` only ever mints `role='parent'` (+ the `cms_guardians` row
+the child record links to), and RLS refuses membership writes from non-admins as well.
+
+**🚨 RLS IS REAL AND IS TESTED.** Policies are defence-in-depth (the app itself uses the service
+role and scopes by session, house pattern). Every policy is `TO authenticated` — never bare, which
+defaults to PUBLIC/anon and is the exact hole migration 313 had to close. Helper functions are
+`SECURITY DEFINER` with a pinned `search_path` (a policy on `cms_memberships` that reads
+`cms_memberships` would recurse). **`scripts/cms/rls-test.mjs` is the load-bearing test** — it
+impersonates each role the way PostgREST does (`SET ROLE authenticated` + `request.jwt.claims`)
+and asserts BOTH halves of every rule: **78 assertions** (55 in phase 2, 23 added for phase 3), green against local Postgres
+(`scripts/cms/local-supabase-shim.sql` supplies `auth.uid()` + the three Supabase roles). It found
+two real holes on first run — an org director could read every medical record in the group, and
+any parent at a school could attach themselves as guardian to any other family's child. **Re-run
+it after ANY policy edit.** The `created_by_user_id` column on `cms_children` is load-bearing for
+that second fix, not audit decoration.
+
+**ENROLMENT WRITES.** Wizard step 1 POSTs `/api/cms/enroll` → `cms_children` +
+`cms_child_guardians` + `cms_enrollments(draft)` in one idempotent move (saving twice edits the
+draft, it never creates twins). **Phase 3 made steps 2–7 real too** — see the phase-3 section above;
+they still park their raw form values in `cms_enrollments.draft_data` so the wizard rehydrates the
+exact form a family left behind. **Tenancy comes from the session, never from the body** — the body
+cannot name a school, a guardian or a child (the Jul-3 cross-tenant lesson: existence ≠ ownership;
+the requested room is re-checked against the session's school).
+
+**THE ENGINE DID NOT CHANGE.** `buildDailyRoster` is still the same pure
+`(RosterInput, RosterLabels) → DailyRoster`. Teacher Today just builds the argument from DB rows
+in live mode and from the seed in demo mode; the rendering half of that page is untouched. Same
+for the parent dashboard's `ChildCard`. `lib/cms/db/{mappers,queries}.ts` is the ONLY place
+supabase-js appears in CMS — pages never import it.
+
+**Validation** is `lib/cms/validation.ts` (no zod — CMS adds no dependencies), rules lifted from
+`lib/onboarding-core/validation.ts`: round-tripping ISO dates, a plausible age window, forgiving
+elsewhere. Client validates for the message, the route validates for real.
+
 ## 🌱 SESSION — Aug 12, 2026 (Cowork/Fable directing Sonnet) — NEW-CHILD SEEDING FIX (first-in-sequence focus works)
 
 **Bug (Tredoux, from Whale Class dashboard):** newly onboarded children (e.g. Roman) landed on
