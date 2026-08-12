@@ -108,6 +108,17 @@ export function DocumentIcon({ className }: IconProps) {
   );
 }
 
+/** Phase 5 — the one action a document page offers. */
+export function PrinterIcon({ className }: IconProps) {
+  return (
+    <svg {...base} strokeWidth={1.8} className={className}>
+      <path d="M7 8V3.5h10V8" />
+      <path d="M7 17H5.5A2.5 2.5 0 0 1 3 14.5v-4A2.5 2.5 0 0 1 5.5 8h13A2.5 2.5 0 0 1 21 10.5v4a2.5 2.5 0 0 1-2.5 2.5H17" />
+      <rect x="7" y="14" width="10" height="6.5" rx="1" />
+    </svg>
+  );
+}
+
 export function UsersIcon({ className }: IconProps) {
   return (
     <svg {...base} strokeWidth={1.8} className={className}>

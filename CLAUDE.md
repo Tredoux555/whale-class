@@ -138,11 +138,12 @@ type a value — the Today roster, flag chips and documents are all computed. Or
 both ends for multi-school comparison and group-wide policy.
 
 **Where it lives:** pages `app/cms/**` (`/cms` landing · `/cms/login` · `/cms/parent/{dashboard,enroll,messages,updates}`
-· `/cms/teacher/{today,documents}` · `/cms/org/overview`) · components `components/cms/**` ·
-engine/i18n/demo/auth/db `lib/cms/**` · API `app/api/cms/{health,demo/today,auth/{login,signup,logout},enroll,enroll/submit}` ·
-migrations `migrations/329_cms_phase2.sql` + `migrations/330_cms_phase3.sql` (both with `_ROLLBACK`) ·
-phase-1 schema draft `db/cms-schema.sql` (superseded, kept as the design record).
-One layout, `app/cms/layout.tsx`, owns the theme, the fonts and the AppShell.
+· `/cms/teacher/{today,roster,documents,documents/[doc]}` · `/cms/org/overview`) · components `components/cms/**` ·
+engine/i18n/demo/auth/db `lib/cms/**` · API `app/api/cms/{health,demo/today,auth/{login,signup,logout},enroll,enroll/submit,roster}` ·
+migrations `migrations/329_cms_phase2.sql` + `330_cms_phase3.sql` + `331_cms_phase4_teacher_roster.sql`
+(all three with `_ROLLBACK`) · phase-1 schema draft `db/cms-schema.sql` (superseded, kept as the design record).
+One layout, `app/cms/layout.tsx`, owns the theme, the fonts and the AppShell — **except on
+`/cms/teacher/documents/<doc>`, which renders BARE because it is a piece of paper** (see phase 5).
 
 **🚨 HARBOR LAW — CMS is a PROTECTED BRAND, like PSS's `pt-*`.** Its design system is
 "Harbor" (light-first Harbor blue, Source Serif 4 + Inter): `docs/design/CMS_DESIGN_SYSTEM.md`,
@@ -165,8 +166,100 @@ already does it — the long-term intent is convergence, not a second parallel p
 **PHASE STATUS:** Phase 1 **DONE** (design law, engine data model, i18n, all pages, demo data,
 API). Phase 2 **BUILT, migration PENDING Tredoux's Supabase run** — `APPLY_CMS_PHASE2.md`.
 Phase 3 **BUILT, migration 330 PENDING Tredoux's Supabase run** — `APPLY_CMS_PHASE3.md`.
+Phases 4 + 5 **BUILT, migration 331 PENDING Tredoux's Supabase run** (SQL pasted in chat per rule
+#4) — the teacher roster and the document engine; see the two sections below.
 Future: Montree's own child onboarding adopts the shared engine so both products derive from one
 record — the seam for that already exists (`cms_children.montree_child_id`, see the guru feed below).
+
+### PHASES 4 + 5 — the teacher can put their class in, and print everything
+
+**Tredoux, Aug 12 2026: "I'm itching to put my class list in and be able to get everything I
+need."** Phase 4 is the first half of that sentence; phase 5 is the second.
+
+**⏳ MIGRATION `migrations/331_cms_phase4_teacher_roster.sql` PENDING (SQL pasted in chat per rule
+#4).** Additive, one transaction, idempotent, `cms_`-prefixed only. ONE new column
+(`cms_children.staff_note`), THREE helper functions, SIX new permissive policies. **No policy from
+329 or 330 is dropped or rewritten** — the teacher policies are NEW and SEPARATE, which Postgres
+ORs with the existing ones, so a mistake here can only widen the teacher's own narrow lane and can
+never touch what a parent or an admin could already do. Rollback:
+`migrations/331_cms_phase4_teacher_roster_ROLLBACK.sql` (drops policies BEFORE the functions they
+depend on — Postgres refuses the other order).
+
+**🚨 THE AUTHORITY RULE — a deliberate narrowing of a phase-2/3 principle. Do not re-litigate it,
+and do not "restore" the old one.** Phase 2 said flatly *"teachers never write a child's standing
+record"*. That is right when a family account exists, and useless on day one of a real Montessori
+room, which has a teacher, a printed list and twenty children who start on Monday. The rule now is:
+
+> A teacher may **CREATE** a child in a room they teach, and may **EDIT** a child in a room they
+> teach **ONLY WHILE NO FAMILY ACCOUNT OWNS THE RECORD**. The moment a family connects, the teacher
+> is read-only again and the parent's words win.
+
+**"Owns" is not "has a guardian row."** A teacher typing in an emergency contact creates a
+`cms_guardians` row and links it — counting that as ownership would lock the teacher out of the
+record they are still filling in. Ownership means a guardian on this child is attached to an
+**ACTIVE PARENT MEMBERSHIP**: a real person with a real login who can speak for the child. That is
+`cms_staff_entered_child_ids()` in 331 and `loadChildOwnership()` in `lib/cms/db/queries.ts` — the
+app scopes, RLS defends, and BOTH exist on purpose.
+
+**What did NOT change:** `cms_child_profiles` stays parent-write-only (a staff-written "about your
+child" would be staff opinion wearing a parent's voice — a teacher may not write it even for a
+child they created); `cms_medical_records` stays out of a teacher's hands (allergies were ALWAYS
+the safety exception and are the one clinical thing a teacher has first-hand); enrolments stay
+invisible to teachers; deleting a child stays a school_admin act.
+
+**`scripts/cms/rls-test.mjs` is now 102 assertions, green** (78 + 24 for phase 4), including the
+one that matters most — **the hand-back**: a family account is linked to a staff-entered child
+mid-test, and the teacher's UPDATE goes to 0 rows on the next statement while their SELECT still
+works.
+
+**PHASE 4 — `/cms/teacher/roster`.** A paste box (`lib/cms/engine/paste-parser.ts`, PURE) reads a
+teacher's clipboard — Word table, WhatsApp message, spreadsheet column, last year's register — into
+a **PREVIEW TABLE that writes nothing**. The teacher fixes the two lines it got wrong and only then
+confirms. It never refuses a line: every line comes back annotated with ISSUES (`bad_date`,
+`ambiguous_date`, `duplicate_in_paste`, `no_name`, `future_date`, `implausible_age`) rather than
+dropped, because a parser that rejects "Amara, 5/3/21" teaches a teacher to stop pasting. Three
+date formats, two-digit years that expand BACKWARDS (98 → 1998, never 2098), list furniture
+stripped, CJK names and the full-width/ideographic commas a CJK spreadsheet emits, and **a TAB is
+a COLUMN BOUNDARY, not whitespace** (collapsing it before splitting turned a four-column row into
+one very long name — a real bug, caught by `tests/cms-paste-parser.test.ts`, which is the reason
+that file exists). **Import is IDEMPOTENT**: re-pasting the same list matches on
+`(room, lower(preferred_name), date_of_birth)`, skips, and REPORTS the skips.
+
+Each roster row expands into a quick-edit holding **exactly the fields the phase-5 documents feed
+on** — allergies (allergen + severity + EpiPen), dietary (label + reason + excluded foods),
+contacts (name + relationship + phone + can-collect) and a staff note — reusing the phase-3
+`RowCard`/`RowList`/`TagInput` primitives verbatim, because it is the same allergy at both ends of
+the hourglass. **List steps REPLACE, never append** (the phase-3 law). Ctrl/⌘+Enter saves, Esc
+closes; a bare Enter deliberately does nothing (the tag inputs own it). Demo mode renders the seed
+read-only with a banner.
+
+`cms_children.date_of_birth` is NOT NULL, so a staff-entered child with no known birthday carries
+the sentinel `UNKNOWN_DOB = '1900-01-01'` and every read path renders it as "Not known" —
+defaulting to today would print a plausible WRONG age on a class list.
+
+**PHASE 5 — the document engine.** `lib/cms/engine/doc-generator.ts` is real: six PURE functions
+(`class_list`, `pickup_sheet`, `allergy_poster`, `dietary_sheet`, `emergency_contacts`,
+`name_labels`) taking a `DocumentSource` and returning typed document MODELS — no HTML, no PDF, no
+locale. Phase 3's flat `rows: Record<string,string>[]` stub shape was replaced deliberately: a
+poster is not a table, a label sheet is not a table, and flattening four collectors into a string
+column forces the view to re-parse its own data. `medical_summary` became `emergency_contacts`.
+
+**🚨 THE SAFETY ORDERING IS THE ENGINE'S JOB, NOT THE VIEW'S** — EpiPen children first on the
+poster, then severity, then name; severe allergens before mild everywhere; the poster shows ONLY
+`requiresPoster` allergies (a wall of twenty mild pollen notes is a wall nobody reads); the pickup
+sheet filters on the DERIVED `authorisedCollectors` so a court order can never be undone by a
+document; the dietary sheet carries an **allergy-only block** for children with a food allergy and
+no dietary row, which is the single most dangerous thing that document could omit. All of it is
+pinned in `tests/cms-doc-generator.test.ts` (vitest, the house runner — no new dependency).
+
+Pages: `/cms/teacher/documents` is a real index with live counts per card ("Allergies: 3 · EpiPen:
+1") and an empty state that points at the roster; `/cms/teacher/documents/[doc]` renders the sheet
+print-ready. **Paper is white** and the print CSS lives in a `<style>` tag inside
+`components/cms/documents/PrintFrame.tsx`, NOT in globals.css — `@page` cannot be scoped to a
+selector, so a global A4 rule would hijack every print in the repo. Full rationale, the RTL
+`unicode-bidi: plaintext` rule, and the no-plurals convention: **`CMS_DESIGN_SYSTEM.md` §11**.
+
+Nav: **Today · Roster · Documents** in the teacher AppShell.
 
 ### PHASE 3 — the top of the hourglass is finished
 
@@ -232,8 +325,8 @@ into `RosterInput` (a child's likes are not a flag).
 clause at all — read set is exactly `cms_readable_child_ids()` (family + teacher of the child's OWN
 room + school office). A group director cannot read a four-year-old's temperament from head office.
 Teachers READ and never WRITE it: the words are the parent's, and a record staff can quietly rewrite
-is not the family's description any more. **`scripts/cms/rls-test.mjs` asserts all of it — 78
-assertions, green** (was 55 in phase 2).
+is not the family's description any more. **`scripts/cms/rls-test.mjs` asserts all of it — now 102
+assertions, green** (55 in phase 2, 78 after phase 3, 102 after phase 4).
 
 **New design primitives (CMS_DESIGN_SYSTEM.md §10):** `.cms-taginput` (the chip field — NOT a picker,
 there is no vocabulary and there must never be one) and `.cms-scale` (the five-point temperament
@@ -287,7 +380,8 @@ defaults to PUBLIC/anon and is the exact hole migration 313 had to close. Helper
 `SECURITY DEFINER` with a pinned `search_path` (a policy on `cms_memberships` that reads
 `cms_memberships` would recurse). **`scripts/cms/rls-test.mjs` is the load-bearing test** — it
 impersonates each role the way PostgREST does (`SET ROLE authenticated` + `request.jwt.claims`)
-and asserts BOTH halves of every rule: **78 assertions** (55 in phase 2, 23 added for phase 3), green against local Postgres
+and asserts BOTH halves of every rule: **102 assertions** (55 in phase 2, 23 for phase 3, 24 for
+phase 4), green against local Postgres
 (`scripts/cms/local-supabase-shim.sql` supplies `auth.uid()` + the three Supabase roles). It found
 two real holes on first run — an org director could read every medical record in the group, and
 any parent at a school could attach themselves as guardian to any other family's child. **Re-run

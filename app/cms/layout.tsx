@@ -77,6 +77,14 @@ export const viewport: Viewport = {
  * shell, because it is its own front door.
  */
 function layerFor(pathname: string): Layer | null {
+  // 🚨 PHASE 5 — A PRINT SURFACE WEARS NO CHROME. `/cms/teacher/documents/<doc>`
+  // is a piece of PAPER: it renders its own screen-only Harbor toolbar and an
+  // A4 sheet, and the AppShell's sticky header, nav and footer would print with
+  // it. Hiding them with `@media print` from inside the page would mean a page
+  // reaching up to restyle its own layout — so the layout decides instead, the
+  // same way `/cms` (the landing page, its own front door) already does. The
+  // route is still GATED: the role check lives in middleware.ts, not here.
+  if (/^\/cms\/teacher\/documents\/[^/]+/.test(pathname)) return null;
   if (pathname.startsWith('/cms/parent')) return 'parent';
   if (pathname.startsWith('/cms/teacher')) return 'teacher';
   if (pathname.startsWith('/cms/org')) return 'org';

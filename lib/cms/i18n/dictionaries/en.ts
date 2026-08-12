@@ -177,7 +177,7 @@ const en = {
     'Generated from the current record, on demand. Nothing here is maintained by hand.',
   'teacher.documents.generate': 'Generate',
   'doc.classList': 'Class list',
-  'doc.classList.desc': 'Every child in the room with room, age and guardian.',
+  'doc.classList.desc': 'Every child in the room, with age, allergies and meals.',
   'doc.pickupSheet': 'Pickup sheet',
   'doc.pickupSheet.desc': 'Who may collect whom today, with authorisation status.',
   'doc.labels': 'Name labels',
@@ -185,9 +185,7 @@ const en = {
   'doc.dietarySheet': 'Dietary sheet',
   'doc.dietarySheet.desc': 'Kitchen-facing list of every requirement in the room.',
   'doc.allergyPoster': 'Allergy poster',
-  'doc.allergyPoster.desc': 'Wall poster: photo, allergen, severity, response.',
-  'doc.medicalSummary': 'Medical summary',
-  'doc.medicalSummary.desc': 'Conditions, medication on site and review dates.',
+  'doc.allergyPoster.desc': 'One page per child: allergen, severity, EpiPen, what to do.',
 
   // ── org · overview ─────────────────────────────────────────────────────
   'org.overview.title': 'Overview',
@@ -466,6 +464,174 @@ const en = {
   'teacher.insight.empty': 'The family has not filled this in yet.',
   'teacher.insight.privacy':
     'Written by the family for the people in this room. It is not visible at the group office.',
+
+  // ── phase 4 · the teacher's roster ─────────────────────────────────────
+  'nav.roster': 'Roster',
+
+  'teacher.roster.title': 'Roster',
+  'teacher.roster.subtitle':
+    'The children in {room}. Everything the documents print comes from here.',
+  'teacher.roster.count': 'Children: {count}',
+  'teacher.roster.room': 'Room',
+  'teacher.roster.noRoom.title': 'No room assigned yet',
+  'teacher.roster.noRoom.body':
+    'Ask the office to add you to a class group. Until then there is no roster to show — somebody else’s room would be worse than none.',
+  'teacher.roster.empty.title': 'No children yet',
+  'teacher.roster.empty.body':
+    'Paste your class list below, or add children one at a time. Nothing is saved until you confirm.',
+  'teacher.roster.demoBanner':
+    'Demo roster — sample children, read-only. Connect a database to enter your own class.',
+
+  'teacher.roster.paste.title': 'Paste your class list',
+  'teacher.roster.paste.body':
+    'One child per line. A date of birth is optional — “Amara Okonkwo”, “Amara Okonkwo, 2021-03-05” and “Amara Okonkwo, 05/03/2021” all work.',
+  'teacher.roster.paste.placeholder': 'Amara Okonkwo, 2021-06-04\nZhang Wei\nSofía Marín, 27/03/2021',
+  'teacher.roster.paste.read': 'Read the list',
+  'teacher.roster.paste.clear': 'Clear',
+  'teacher.roster.paste.dateOrder': 'Read dates as',
+  'teacher.roster.paste.dmy': 'Day first — 05/03 is 5 March',
+  'teacher.roster.paste.mdy': 'Month first — 05/03 is 3 May',
+
+  'teacher.roster.preview.title': 'Check this before anything is saved',
+  'teacher.roster.preview.body':
+    'Lines read: {count}. Edit or remove any row — nothing is written until you confirm.',
+  'teacher.roster.preview.attention': 'Needs a look: {count}',
+  'teacher.roster.preview.name': 'Name',
+  'teacher.roster.preview.dob': 'Date of birth',
+  'teacher.roster.preview.age': 'Age',
+  'teacher.roster.preview.line': 'Line {n}',
+  'teacher.roster.preview.confirm': 'Add to the roster ({count})',
+  'teacher.roster.preview.cancel': 'Start again',
+  'teacher.roster.preview.remove': 'Remove',
+
+  'teacher.roster.issue.no_name': 'No name on this line',
+  'teacher.roster.issue.bad_date': 'Could not read the date “{text}”',
+  'teacher.roster.issue.ambiguous_date': 'Read as {date} — check the day and month',
+  'teacher.roster.issue.future_date': 'That date is in the future',
+  'teacher.roster.issue.implausible_age': 'That would make them {years} years old',
+  'teacher.roster.issue.duplicate_in_paste': 'Same name earlier in this list',
+
+  'teacher.roster.imported': 'Added {count} to the roster.',
+  'teacher.roster.importedSkipped': 'Added {count}. Skipped {skipped} already in this room.',
+  'teacher.roster.importedNone': 'Everybody on that list is already in this room.',
+  'teacher.roster.importing': 'Adding…',
+
+  'teacher.roster.addChild': 'Add a child',
+  'teacher.roster.addChild.save': 'Add child',
+
+  'teacher.roster.open': 'Edit',
+  'teacher.roster.close': 'Close',
+  'teacher.roster.save': 'Save',
+  'teacher.roster.saving': 'Saving…',
+  'teacher.roster.saved': 'Saved',
+  'teacher.roster.saveError': 'That did not save. Check the fields marked below and try again.',
+  'teacher.roster.locked': 'Family record',
+  'teacher.roster.locked.body':
+    'A family has connected to this child, so their answers are the record now. Ask the office if something here needs to change.',
+  'teacher.roster.dobUnknown': 'Not known',
+  'teacher.roster.keyboardHint': 'Ctrl+Enter saves · Esc closes',
+
+  'teacher.roster.field.preferredName': 'What the room calls them',
+  'teacher.roster.field.legalName': 'Legal name',
+  'teacher.roster.field.legalName.help': 'Leave blank to use the name above.',
+  'teacher.roster.field.dateOfBirth': 'Date of birth',
+  'teacher.roster.field.homeLanguage': 'Language at home',
+  'teacher.roster.field.staffNote': 'Staff note',
+  'teacher.roster.field.staffNote.help':
+    'Your own line about this child. It prints on the class list, and it is never the family’s words.',
+
+  'teacher.roster.allergies': 'Allergies',
+  'teacher.roster.allergies.add': 'Add an allergy',
+  'teacher.roster.allergies.none': 'No allergies recorded.',
+  'teacher.roster.allergyRow': 'Allergy {n}',
+  'teacher.roster.epipen': 'Carries an EpiPen',
+  'teacher.roster.dietary': 'Meals',
+  'teacher.roster.dietary.add': 'Add a requirement',
+  'teacher.roster.dietary.none': 'No dietary requirements recorded.',
+  'teacher.roster.dietaryRow': 'Requirement {n}',
+  'teacher.roster.contacts': 'Contacts & pickup',
+  'teacher.roster.contacts.add': 'Add a person',
+  'teacher.roster.contacts.none': 'No contacts recorded.',
+  'teacher.roster.contactRow': 'Contact {n}',
+  'teacher.roster.nothingYet': 'Nothing recorded yet',
+  'teacher.roster.error.preferredName': 'Enter the name the room uses for this child.',
+  'teacher.roster.error.rows': 'Nothing to import — add at least one name.',
+
+  // ── phase 5 · the document engine ──────────────────────────────────────
+  'doc.emergencyContacts': 'Emergency contacts',
+  'doc.emergencyContacts.desc': 'Every contact in call order, plus doctor and medical notes.',
+
+  'teacher.documents.open': 'Open',
+  'teacher.documents.print': 'Print',
+  'teacher.documents.back': 'All documents',
+  'teacher.documents.room': 'Room',
+  'teacher.documents.goToRoster': 'Open Roster',
+  'teacher.documents.needData': 'Add {what} in Roster first',
+  'teacher.documents.need.children': 'children',
+  'teacher.documents.need.allergies': 'allergies',
+  'teacher.documents.need.dietary': 'dietary requirements',
+  'teacher.documents.need.contacts': 'contacts',
+  'teacher.documents.count.children': 'Children: {count}',
+  'teacher.documents.count.allergies': 'Allergies: {count}',
+  'teacher.documents.count.epipen': 'EpiPen: {count}',
+  'teacher.documents.count.dietary': 'Meals: {count}',
+  'teacher.documents.count.collectors': 'Collectors: {count}',
+  'teacher.documents.count.contacts': 'Contacts: {count}',
+  'teacher.documents.count.missingCollector': 'Nobody to collect: {count}',
+
+  'doc.generatedBy': 'Generated by CMS',
+  'doc.generatedOn': 'Generated {date}',
+  'doc.printedBy': 'Printed by {name}',
+  'doc.empty': 'Nothing to print yet.',
+  'doc.none': '—',
+  'doc.unknown': 'Not known',
+  'doc.age': '{years}y {months}m',
+  'doc.ageYears': '{years}y',
+
+  'doc.col.name': 'Name',
+  'doc.col.dob': 'Date of birth',
+  'doc.col.age': 'Age',
+  'doc.col.language': 'Home language',
+  'doc.col.allergies': 'Allergies',
+  'doc.col.dietary': 'Meals',
+  'doc.col.note': 'Note',
+  'doc.col.child': 'Child',
+  'doc.col.collectors': 'May be collected by',
+  'doc.col.phone': 'Phone',
+  'doc.col.collectedBy': 'Collected by',
+  'doc.col.time': 'Time',
+  'doc.col.signature': 'Signature',
+  'doc.col.excluded': 'Never serve',
+  'doc.col.notes': 'Notes',
+  'doc.col.contacts': 'Contacts, in call order',
+  'doc.col.medical': 'Doctor & medical',
+
+  'doc.pickup.noCollector': 'NOBODY AUTHORISED — check with the office',
+  'doc.pickup.watch': 'Watch',
+
+  'doc.dietary.group': '{label}',
+  'doc.dietary.allergyOnly': 'Food allergy, no dietary row on file',
+  'doc.dietary.allergyOnly.body':
+    'These children have a food allergy but no dietary requirement recorded. The kitchen must still exclude the allergen.',
+
+  'doc.allergyPoster.heading': 'ALLERGY ALERT',
+  'doc.allergyPoster.epipen': 'EPIPEN',
+  'doc.allergyPoster.reaction': 'Reaction',
+  'doc.allergyPoster.plan': 'What to do',
+  'doc.allergyPoster.medication': 'Medication kept at',
+  'doc.allergyPoster.footer':
+    'Severe allergies and children carrying adrenaline only. Every other allergy is on the class list.',
+
+  'doc.emergency.doctor': 'Doctor',
+  'doc.emergency.conditions': 'Conditions',
+  'doc.emergency.medication': 'Medication on site',
+  'doc.emergency.note': 'Emergency note',
+  'doc.emergency.canCollect': 'may collect',
+  'doc.emergency.restriction': 'MUST NOT COLLECT',
+  'doc.emergency.allergy': 'Allergy',
+
+  'doc.labels.cut': 'Cut along the lines',
+  'doc.classList.epipen': 'EpiPen',
 } as const;
 
 export default en;

@@ -111,6 +111,7 @@ function child(
     guardians,
     authorisedCollectors: guardians.filter((g) => g.canCollect).map((g) => g.id),
     photoUrl: null,
+    staffNote: null,
     createdAt: '2025-01-10T08:00:00Z',
   };
 }

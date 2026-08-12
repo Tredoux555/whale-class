@@ -162,7 +162,7 @@ const ar: Dictionary = {
     'تُولَّد من السجل الحالي عند الطلب. لا شيء هنا يُحدَّث يدويًا.',
   'teacher.documents.generate': 'توليد',
   'doc.classList': 'قائمة الفصل',
-  'doc.classList.desc': 'كل أطفال القاعة مع القاعة والعمر ووليّ الأمر.',
+  'doc.classList.desc': 'كل أطفال الفصل: العمر والحساسيات والوجبات.',
   'doc.pickupSheet': 'ورقة الاستلام',
   'doc.pickupSheet.desc': 'من يستلم مَن اليوم، مع حالة التصريح.',
   'doc.labels': 'بطاقات الأسماء',
@@ -170,9 +170,7 @@ const ar: Dictionary = {
   'doc.dietarySheet': 'ورقة الغذاء',
   'doc.dietarySheet.desc': 'قائمة موجّهة للمطبخ بكل متطلبات القاعة.',
   'doc.allergyPoster': 'ملصق الحساسية',
-  'doc.allergyPoster.desc': 'ملصق جداري: صورة، مُسبِّب، شدّة، إجراء.',
-  'doc.medicalSummary': 'الملخّص الطبي',
-  'doc.medicalSummary.desc': 'الحالات والأدوية داخل المدرسة وتواريخ المراجعة.',
+  'doc.allergyPoster.desc': 'صفحة لكل طفل: المُسبِّب والشدّة والإبينفرين وما يجب فعله.',
 
   'org.overview.title': 'نظرة عامة',
   'org.overview.subtitle': 'كل مدرسة في المجموعة، في سطر واحد.',
@@ -435,6 +433,174 @@ const ar: Dictionary = {
   'teacher.insight.empty': 'لم تملأ الأسرة هذا بعد.',
   'teacher.insight.privacy':
     'كتبته الأسرة لمن في هذه الغرفة. ولا يظهر لإدارة المجموعة.',
+
+  // ── المرحلة ٤ · قائمة الفصل ────────────────────────────────────────────
+  'nav.roster': 'قائمة الفصل',
+
+  'teacher.roster.title': 'قائمة الفصل',
+  'teacher.roster.subtitle':
+    'الأطفال في {room}. كل ما تطبعه المستندات يأتي من هنا.',
+  'teacher.roster.count': 'الأطفال: {count}',
+  'teacher.roster.room': 'الفصل',
+  'teacher.roster.noRoom.title': 'لم يُسنَد إليك فصل بعد',
+  'teacher.roster.noRoom.body':
+    'اطلب من الإدارة إضافتك إلى فصل. حتى ذلك الحين لا توجد قائمة لعرضها — وعرض فصل شخص آخر أسوأ من عدم العرض.',
+  'teacher.roster.empty.title': 'لا يوجد أطفال بعد',
+  'teacher.roster.empty.body':
+    'الصق قائمة فصلك أدناه، أو أضف الأطفال واحداً تلو الآخر. لا يُحفظ شيء قبل التأكيد.',
+  'teacher.roster.demoBanner':
+    'قائمة تجريبية — أطفال نموذجيون للقراءة فقط. اربط قاعدة بيانات لإدخال فصلك.',
+
+  'teacher.roster.paste.title': 'الصق قائمة فصلك',
+  'teacher.roster.paste.body':
+    'طفل واحد في كل سطر. تاريخ الميلاد اختياري — تعمل الصيغ «أمارا أوكونكو» و«أمارا أوكونكو، 2021-03-05» و«أمارا أوكونكو، 05/03/2021».',
+  'teacher.roster.paste.placeholder': 'أمارا أوكونكو، 2021-06-04\nتشانغ وي\nصوفيا مارين، 27/03/2021',
+  'teacher.roster.paste.read': 'اقرأ القائمة',
+  'teacher.roster.paste.clear': 'مسح',
+  'teacher.roster.paste.dateOrder': 'اقرأ التواريخ بصيغة',
+  'teacher.roster.paste.dmy': 'اليوم أولاً — 05/03 تعني ٥ مارس',
+  'teacher.roster.paste.mdy': 'الشهر أولاً — 05/03 تعني ٣ مايو',
+
+  'teacher.roster.preview.title': 'تحقّق قبل حفظ أي شيء',
+  'teacher.roster.preview.body':
+    'تمت قراءة {count} سطراً. يمكنك تعديل أو حذف أي صف — لا يُكتب شيء قبل التأكيد.',
+  'teacher.roster.preview.attention': 'تحتاج مراجعة: {count}',
+  'teacher.roster.preview.name': 'الاسم',
+  'teacher.roster.preview.dob': 'تاريخ الميلاد',
+  'teacher.roster.preview.age': 'العمر',
+  'teacher.roster.preview.line': 'السطر {n}',
+  'teacher.roster.preview.confirm': 'أضف إلى القائمة ({count})',
+  'teacher.roster.preview.cancel': 'ابدأ من جديد',
+  'teacher.roster.preview.remove': 'إزالة',
+
+  'teacher.roster.issue.no_name': 'لا يوجد اسم في هذا السطر',
+  'teacher.roster.issue.bad_date': 'تعذّرت قراءة التاريخ «{text}»',
+  'teacher.roster.issue.ambiguous_date': 'قُرئ على أنه {date} — تحقّق من اليوم والشهر',
+  'teacher.roster.issue.future_date': 'هذا التاريخ في المستقبل',
+  'teacher.roster.issue.implausible_age': 'هذا يجعل عمره {years} سنة',
+  'teacher.roster.issue.duplicate_in_paste': 'الاسم نفسه ورد سابقاً في القائمة',
+
+  'teacher.roster.imported': 'تمت الإضافة إلى القائمة: {count}.',
+  'teacher.roster.importedSkipped': 'تمت إضافة {count}. وتُخطّي {skipped} موجودين في هذا الفصل.',
+  'teacher.roster.importedNone': 'جميع من في القائمة موجودون في هذا الفصل بالفعل.',
+  'teacher.roster.importing': 'جارٍ الإضافة…',
+
+  'teacher.roster.addChild': 'أضف طفلاً',
+  'teacher.roster.addChild.save': 'إضافة الطفل',
+
+  'teacher.roster.open': 'تعديل',
+  'teacher.roster.close': 'إغلاق',
+  'teacher.roster.save': 'حفظ',
+  'teacher.roster.saving': 'جارٍ الحفظ…',
+  'teacher.roster.saved': 'تم الحفظ',
+  'teacher.roster.saveError': 'لم يتم الحفظ. راجع الحقول المعلّمة أدناه وحاول مرة أخرى.',
+  'teacher.roster.locked': 'سجل الأسرة',
+  'teacher.roster.locked.body':
+    'ارتبطت أسرة بهذا الطفل، وأصبحت إجاباتها هي السجل. راجع الإدارة إذا لزم تغيير شيء هنا.',
+  'teacher.roster.dobUnknown': 'غير معروف',
+  'teacher.roster.keyboardHint': 'Ctrl+Enter للحفظ · Esc للإغلاق',
+
+  'teacher.roster.field.preferredName': 'ما ينادونه به في الفصل',
+  'teacher.roster.field.legalName': 'الاسم الرسمي',
+  'teacher.roster.field.legalName.help': 'اتركه فارغاً لاستخدام الاسم أعلاه.',
+  'teacher.roster.field.dateOfBirth': 'تاريخ الميلاد',
+  'teacher.roster.field.homeLanguage': 'لغة المنزل',
+  'teacher.roster.field.staffNote': 'ملاحظة المعلّم',
+  'teacher.roster.field.staffNote.help':
+    'سطرك أنت عن هذا الطفل. يُطبع في قائمة الفصل، وهو ليس كلام الأسرة أبداً.',
+
+  'teacher.roster.allergies': 'الحساسيات',
+  'teacher.roster.allergies.add': 'أضف حساسية',
+  'teacher.roster.allergies.none': 'لا توجد حساسيات مسجّلة.',
+  'teacher.roster.allergyRow': 'حساسية {n}',
+  'teacher.roster.epipen': 'يحمل حقنة إبينفرين',
+  'teacher.roster.dietary': 'الوجبات',
+  'teacher.roster.dietary.add': 'أضف متطلباً',
+  'teacher.roster.dietary.none': 'لا توجد متطلبات غذائية مسجّلة.',
+  'teacher.roster.dietaryRow': 'متطلب {n}',
+  'teacher.roster.contacts': 'جهات الاتصال والاستلام',
+  'teacher.roster.contacts.add': 'أضف شخصاً',
+  'teacher.roster.contacts.none': 'لا توجد جهات اتصال مسجّلة.',
+  'teacher.roster.contactRow': 'جهة اتصال {n}',
+  'teacher.roster.nothingYet': 'لم يُسجَّل شيء بعد',
+  'teacher.roster.error.preferredName': 'أدخل الاسم الذي ينادونه به في الفصل.',
+  'teacher.roster.error.rows': 'لا شيء للاستيراد — أضف اسماً واحداً على الأقل.',
+
+  // ── المرحلة ٥ · محرّك المستندات ────────────────────────────────────────
+  'doc.emergencyContacts': 'جهات اتصال الطوارئ',
+  'doc.emergencyContacts.desc': 'كل جهات الاتصال بترتيب الاتصال، مع الطبيب والملاحظات الطبية.',
+
+  'teacher.documents.open': 'فتح',
+  'teacher.documents.print': 'طباعة',
+  'teacher.documents.back': 'كل المستندات',
+  'teacher.documents.room': 'الفصل',
+  'teacher.documents.goToRoster': 'فتح قائمة الفصل',
+  'teacher.documents.needData': 'أضف {what} في قائمة الفصل أولاً',
+  'teacher.documents.need.children': 'الأطفال',
+  'teacher.documents.need.allergies': 'الحساسيات',
+  'teacher.documents.need.dietary': 'المتطلبات الغذائية',
+  'teacher.documents.need.contacts': 'جهات الاتصال',
+  'teacher.documents.count.children': 'الأطفال: {count}',
+  'teacher.documents.count.allergies': 'الحساسيات: {count}',
+  'teacher.documents.count.epipen': 'حقن الإبينفرين: {count}',
+  'teacher.documents.count.dietary': 'الوجبات: {count}',
+  'teacher.documents.count.collectors': 'المستلِمون: {count}',
+  'teacher.documents.count.contacts': 'جهات الاتصال: {count}',
+  'teacher.documents.count.missingCollector': 'بلا مستلِم مصرّح: {count}',
+
+  'doc.generatedBy': 'أُنشئ بواسطة CMS',
+  'doc.generatedOn': 'أُنشئ في {date}',
+  'doc.printedBy': 'طبعه {name}',
+  'doc.empty': 'لا يوجد ما يُطبع بعد.',
+  'doc.none': '—',
+  'doc.unknown': 'غير معروف',
+  'doc.age': '{years} سنة و{months} شهراً',
+  'doc.ageYears': '{years} سنة',
+
+  'doc.col.name': 'الاسم',
+  'doc.col.dob': 'تاريخ الميلاد',
+  'doc.col.age': 'العمر',
+  'doc.col.language': 'لغة المنزل',
+  'doc.col.allergies': 'الحساسيات',
+  'doc.col.dietary': 'الوجبات',
+  'doc.col.note': 'ملاحظة',
+  'doc.col.child': 'الطفل',
+  'doc.col.collectors': 'يُسمح باستلامه من قِبَل',
+  'doc.col.phone': 'الهاتف',
+  'doc.col.collectedBy': 'استلمه',
+  'doc.col.time': 'الوقت',
+  'doc.col.signature': 'التوقيع',
+  'doc.col.excluded': 'لا يُقدَّم أبداً',
+  'doc.col.notes': 'ملاحظات',
+  'doc.col.contacts': 'جهات الاتصال، بترتيب الاتصال',
+  'doc.col.medical': 'الطبيب والمعلومات الطبية',
+
+  'doc.pickup.noCollector': 'لا يوجد شخص مصرّح — راجع الإدارة',
+  'doc.pickup.watch': 'انتبه',
+
+  'doc.dietary.group': '{label}',
+  'doc.dietary.allergyOnly': 'حساسية غذائية بلا متطلب غذائي مسجّل',
+  'doc.dietary.allergyOnly.body':
+    'لدى هؤلاء الأطفال حساسية غذائية دون متطلب غذائي مسجّل. على المطبخ استبعاد المُسبِّب رغم ذلك.',
+
+  'doc.allergyPoster.heading': 'تنبيه حساسية',
+  'doc.allergyPoster.epipen': 'إبينفرين',
+  'doc.allergyPoster.reaction': 'رد الفعل',
+  'doc.allergyPoster.plan': 'ما يجب فعله',
+  'doc.allergyPoster.medication': 'مكان حفظ الدواء',
+  'doc.allergyPoster.footer':
+    'الحساسيات الشديدة والأطفال الحاملون للأدرينالين فقط. بقية الحساسيات في قائمة الفصل.',
+
+  'doc.emergency.doctor': 'الطبيب',
+  'doc.emergency.conditions': 'الحالات الصحية',
+  'doc.emergency.medication': 'أدوية محفوظة في المدرسة',
+  'doc.emergency.note': 'ملاحظة الطوارئ',
+  'doc.emergency.canCollect': 'يُسمح بالاستلام',
+  'doc.emergency.restriction': 'يُمنع من الاستلام',
+  'doc.emergency.allergy': 'حساسية',
+
+  'doc.labels.cut': 'قصّ على الخطوط',
+  'doc.classList.epipen': 'إبينفرين',
 };
 
 export default ar;

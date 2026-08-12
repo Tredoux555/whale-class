@@ -163,7 +163,7 @@ const ru: Dictionary = {
     'Формируются из текущих записей по запросу. Ничего здесь не ведётся вручную.',
   'teacher.documents.generate': 'Сформировать',
   'doc.classList': 'Список группы',
-  'doc.classList.desc': 'Все дети группы с указанием комнаты, возраста и представителя.',
+  'doc.classList.desc': 'Все дети группы: возраст, аллергии, питание.',
   'doc.pickupSheet': 'Лист выдачи',
   'doc.pickupSheet.desc': 'Кто кого может забрать сегодня и статус разрешения.',
   'doc.labels': 'Именные наклейки',
@@ -171,9 +171,7 @@ const ru: Dictionary = {
   'doc.dietarySheet': 'Лист питания',
   'doc.dietarySheet.desc': 'Список всех требований группы для кухни.',
   'doc.allergyPoster': 'Плакат об аллергиях',
-  'doc.allergyPoster.desc': 'Настенный плакат: фото, аллерген, тяжесть, действия.',
-  'doc.medicalSummary': 'Медицинская сводка',
-  'doc.medicalSummary.desc': 'Заболевания, лекарства в саду и даты пересмотра.',
+  'doc.allergyPoster.desc': 'Одна страница на ребёнка: аллерген, тяжесть, EpiPen, что делать.',
 
   'org.overview.title': 'Обзор',
   'org.overview.subtitle': 'Каждый сад группы — одной строкой.',
@@ -436,6 +434,174 @@ const ru: Dictionary = {
   'teacher.insight.empty': 'Семья пока это не заполнила.',
   'teacher.insight.privacy':
     'Написано семьёй для людей в этой группе. Управлению сети это не видно.',
+
+  // ── фаза 4 · список группы ─────────────────────────────────────────────
+  'nav.roster': 'Список',
+
+  'teacher.roster.title': 'Список группы',
+  'teacher.roster.subtitle':
+    'Дети в группе «{room}». Всё, что печатается в документах, берётся отсюда.',
+  'teacher.roster.count': 'Детей: {count}',
+  'teacher.roster.room': 'Группа',
+  'teacher.roster.noRoom.title': 'Группа пока не назначена',
+  'teacher.roster.noRoom.body':
+    'Попросите администрацию добавить вас в группу. Пока этого нет, списка нет — показать чужую группу было бы хуже, чем не показать ничего.',
+  'teacher.roster.empty.title': 'Детей пока нет',
+  'teacher.roster.empty.body':
+    'Вставьте список группы ниже или добавляйте детей по одному. Ничего не сохраняется до подтверждения.',
+  'teacher.roster.demoBanner':
+    'Демонстрационный список — примерные дети, только для чтения. Подключите базу данных, чтобы внести свою группу.',
+
+  'teacher.roster.paste.title': 'Вставьте список группы',
+  'teacher.roster.paste.body':
+    'По одному ребёнку в строке. Дата рождения не обязательна — подойдут «Амара Оконкво», «Амара Оконкво, 2021-03-05» и «Амара Оконкво, 05.03.2021».',
+  'teacher.roster.paste.placeholder': 'Амара Оконкво, 2021-06-04\nЧжан Вэй\nСофия Марин, 27/03/2021',
+  'teacher.roster.paste.read': 'Разобрать список',
+  'teacher.roster.paste.clear': 'Очистить',
+  'teacher.roster.paste.dateOrder': 'Читать даты как',
+  'teacher.roster.paste.dmy': 'Сначала день — 05/03 это 5 марта',
+  'teacher.roster.paste.mdy': 'Сначала месяц — 05/03 это 3 мая',
+
+  'teacher.roster.preview.title': 'Проверьте, прежде чем что-либо сохранится',
+  'teacher.roster.preview.body':
+    'Прочитано строк: {count}. Любую строку можно изменить или удалить — ничего не записывается до подтверждения.',
+  'teacher.roster.preview.attention': 'требуют внимания: {count}',
+  'teacher.roster.preview.name': 'Имя',
+  'teacher.roster.preview.dob': 'Дата рождения',
+  'teacher.roster.preview.age': 'Возраст',
+  'teacher.roster.preview.line': 'Строка {n}',
+  'teacher.roster.preview.confirm': 'Добавить в список ({count})',
+  'teacher.roster.preview.cancel': 'Начать заново',
+  'teacher.roster.preview.remove': 'Убрать',
+
+  'teacher.roster.issue.no_name': 'В этой строке нет имени',
+  'teacher.roster.issue.bad_date': 'Не удалось прочитать дату «{text}»',
+  'teacher.roster.issue.ambiguous_date': 'Прочитано как {date} — проверьте день и месяц',
+  'teacher.roster.issue.future_date': 'Эта дата в будущем',
+  'teacher.roster.issue.implausible_age': 'Ребёнку было бы {years} лет',
+  'teacher.roster.issue.duplicate_in_paste': 'Такое же имя уже есть выше в списке',
+
+  'teacher.roster.imported': 'Добавлено в список: {count}.',
+  'teacher.roster.importedSkipped': 'Добавлено: {count}. Пропущено: {skipped} — они уже в этой группе.',
+  'teacher.roster.importedNone': 'Все из этого списка уже есть в группе.',
+  'teacher.roster.importing': 'Добавляем…',
+
+  'teacher.roster.addChild': 'Добавить ребёнка',
+  'teacher.roster.addChild.save': 'Добавить',
+
+  'teacher.roster.open': 'Изменить',
+  'teacher.roster.close': 'Закрыть',
+  'teacher.roster.save': 'Сохранить',
+  'teacher.roster.saving': 'Сохраняем…',
+  'teacher.roster.saved': 'Сохранено',
+  'teacher.roster.saveError': 'Не сохранилось. Проверьте отмеченные поля и попробуйте снова.',
+  'teacher.roster.locked': 'Запись семьи',
+  'teacher.roster.locked.body':
+    'Семья подключилась к этому ребёнку, и теперь запись — это их ответы. Если здесь нужно что-то изменить, обратитесь в администрацию.',
+  'teacher.roster.dobUnknown': 'Неизвестно',
+  'teacher.roster.keyboardHint': 'Ctrl+Enter — сохранить · Esc — закрыть',
+
+  'teacher.roster.field.preferredName': 'Как ребёнка зовут в группе',
+  'teacher.roster.field.legalName': 'Полное имя по документам',
+  'teacher.roster.field.legalName.help': 'Оставьте пустым, чтобы использовать имя выше.',
+  'teacher.roster.field.dateOfBirth': 'Дата рождения',
+  'teacher.roster.field.homeLanguage': 'Язык дома',
+  'teacher.roster.field.staffNote': 'Заметка педагога',
+  'teacher.roster.field.staffNote.help':
+    'Ваша собственная строка об этом ребёнке. Печатается в списке группы и никогда не является словами семьи.',
+
+  'teacher.roster.allergies': 'Аллергии',
+  'teacher.roster.allergies.add': 'Добавить аллергию',
+  'teacher.roster.allergies.none': 'Аллергий не записано.',
+  'teacher.roster.allergyRow': 'Аллергия {n}',
+  'teacher.roster.epipen': 'Носит с собой EpiPen',
+  'teacher.roster.dietary': 'Питание',
+  'teacher.roster.dietary.add': 'Добавить требование',
+  'teacher.roster.dietary.none': 'Требований к питанию не записано.',
+  'teacher.roster.dietaryRow': 'Требование {n}',
+  'teacher.roster.contacts': 'Контакты и кто забирает',
+  'teacher.roster.contacts.add': 'Добавить человека',
+  'teacher.roster.contacts.none': 'Контактов не записано.',
+  'teacher.roster.contactRow': 'Контакт {n}',
+  'teacher.roster.nothingYet': 'Пока ничего не записано',
+  'teacher.roster.error.preferredName': 'Введите имя, которым ребёнка зовут в группе.',
+  'teacher.roster.error.rows': 'Нечего импортировать — добавьте хотя бы одно имя.',
+
+  // ── фаза 5 · генератор документов ──────────────────────────────────────
+  'doc.emergencyContacts': 'Экстренные контакты',
+  'doc.emergencyContacts.desc': 'Все контакты в порядке обзвона, врач и медицинские заметки.',
+
+  'teacher.documents.open': 'Открыть',
+  'teacher.documents.print': 'Печать',
+  'teacher.documents.back': 'Все документы',
+  'teacher.documents.room': 'Группа',
+  'teacher.documents.goToRoster': 'Открыть список',
+  'teacher.documents.needData': 'Сначала добавьте {what} в списке группы',
+  'teacher.documents.need.children': 'детей',
+  'teacher.documents.need.allergies': 'аллергии',
+  'teacher.documents.need.dietary': 'требования к питанию',
+  'teacher.documents.need.contacts': 'контакты',
+  'teacher.documents.count.children': 'Дети: {count}',
+  'teacher.documents.count.allergies': 'Аллергии: {count}',
+  'teacher.documents.count.epipen': 'EpiPen: {count}',
+  'teacher.documents.count.dietary': 'Питание: {count}',
+  'teacher.documents.count.collectors': 'Забирают: {count}',
+  'teacher.documents.count.contacts': 'Контакты: {count}',
+  'teacher.documents.count.missingCollector': 'Некому забрать: {count}',
+
+  'doc.generatedBy': 'Сформировано в CMS',
+  'doc.generatedOn': 'Сформировано {date}',
+  'doc.printedBy': 'Напечатал(а) {name}',
+  'doc.empty': 'Печатать пока нечего.',
+  'doc.none': '—',
+  'doc.unknown': 'Неизвестно',
+  'doc.age': '{years} г. {months} мес.',
+  'doc.ageYears': '{years} г.',
+
+  'doc.col.name': 'Имя',
+  'doc.col.dob': 'Дата рождения',
+  'doc.col.age': 'Возраст',
+  'doc.col.language': 'Язык дома',
+  'doc.col.allergies': 'Аллергии',
+  'doc.col.dietary': 'Питание',
+  'doc.col.note': 'Заметка',
+  'doc.col.child': 'Ребёнок',
+  'doc.col.collectors': 'Кому разрешено забирать',
+  'doc.col.phone': 'Телефон',
+  'doc.col.collectedBy': 'Кто забрал',
+  'doc.col.time': 'Время',
+  'doc.col.signature': 'Подпись',
+  'doc.col.excluded': 'Никогда не подавать',
+  'doc.col.notes': 'Примечания',
+  'doc.col.contacts': 'Контакты, в порядке обзвона',
+  'doc.col.medical': 'Врач и медицинские сведения',
+
+  'doc.pickup.noCollector': 'НИКТО НЕ УПОЛНОМОЧЕН — уточните в администрации',
+  'doc.pickup.watch': 'Внимание',
+
+  'doc.dietary.group': '{label}',
+  'doc.dietary.allergyOnly': 'Пищевая аллергия, требований к питанию нет',
+  'doc.dietary.allergyOnly.body':
+    'У этих детей есть пищевая аллергия, но требование к питанию не записано. Кухня всё равно обязана исключить аллерген.',
+
+  'doc.allergyPoster.heading': 'ВНИМАНИЕ: АЛЛЕРГИЯ',
+  'doc.allergyPoster.epipen': 'EPIPEN',
+  'doc.allergyPoster.reaction': 'Реакция',
+  'doc.allergyPoster.plan': 'Что делать',
+  'doc.allergyPoster.medication': 'Лекарство хранится',
+  'doc.allergyPoster.footer':
+    'Только тяжёлые аллергии и дети, носящие адреналин. Все остальные аллергии — в списке группы.',
+
+  'doc.emergency.doctor': 'Врач',
+  'doc.emergency.conditions': 'Диагнозы',
+  'doc.emergency.medication': 'Лекарства на месте',
+  'doc.emergency.note': 'Экстренная заметка',
+  'doc.emergency.canCollect': 'может забирать',
+  'doc.emergency.restriction': 'ЗАБИРАТЬ НЕЛЬЗЯ',
+  'doc.emergency.allergy': 'Аллергия',
+
+  'doc.labels.cut': 'Разрезать по линиям',
+  'doc.classList.epipen': 'EpiPen',
 };
 
 export default ru;
