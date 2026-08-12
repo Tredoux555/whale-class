@@ -243,7 +243,9 @@ const RAW: RawLesson[] = [
   { n: 21, sound: 'h', title: 'H, the Panting Pup', catchphrase: '“ha-ha, hairy hippo!”', decodable: ['hat', 'hen'], words: ['hippo'], books: [
     { slug: 'the-hot', title: 'The ___ Is Hot!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — all fanning themselves under a blazing sun. The potato isn’t hot — he’s in the shade of his umbrella, cold drink in hand.', cover: '/dark-phonics-books/covers/the-hot.png', materials: true, works: true },
   ] },
-  { n: 22, sound: 'b', title: 'B for the Bobbing Boat', catchphrase: '“big baby burp!”', decodable: ['bed', 'bug'], words: ['baby'], reader: { slug: 'the-bug', title: 'The ___ Saw a Bug!' } },
+  { n: 22, sound: 'b', title: 'B for the Bobbing Boat', catchphrase: '“big baby burp!”', decodable: ['bed', 'bug'], words: ['baby'], reader: { slug: 'hen-in-bed', title: 'Hen in Bed' }, books: [
+    { slug: 'the-bug', title: 'The ___ Saw a Bug!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each spots a bug. The bug then spots the potato, relaxing in his deck chair with an ice-cold drink, and the two are happy to meet.', cover: '/dark-phonics-books/covers/the-bug.png', materials: true, works: true },
+  ] },
   { n: 23, sound: 'f', title: 'Ffff Like a Fan', catchphrase: '“funny fox in my fan!”', decodable: ['fan', 'off'], words: ['fox', 'fan'] },
   { n: 24, sound: 'l', title: 'La-La-La Goes L', catchphrase: '“lazy lion licks!”', decodable: ['log', 'run', 'croc'], words: ['lion'] },
   { n: 25, sound: 'j', title: 'Jump for J', catchphrase: '“jump in the jelly jam!”', decodable: ['jug', 'jam'], words: ['jam'] },
