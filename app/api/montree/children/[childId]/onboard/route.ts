@@ -296,6 +296,7 @@ TEACHER'S DESCRIPTION:
 ${availableWorksBlock ? `AVAILABLE WORKS (the actual curriculum in this teacher's classroom — you MUST pick from this list when filling focus_* fields):\n\n${availableWorksBlock}\n` : ''}
 
 Extract as much as you can infer. For curriculum levels, use the 0-100 scale based on what works the teacher mentioned:
+- ANY area, child new/settling: matching, sorting, pairing, simple manipulatives = 0-15 (a brand-new child stays here for months)
 - Practical Life: pouring/spooning/cutting = 25-40, folding/sewing/food prep = 50-70, complex multi-step = 75-100
 - Sensorial: pink tower/brown stair = 20-35, colour tablets/geometric solids = 40-60, binomial cube/complex = 70-100
 - Language: sandpaper letters = 15-25, movable alphabet = 30-45, reading = 50-70, writing fluently = 75-100
@@ -313,9 +314,10 @@ The teacher's shelf editor will display ONE focus work per area. You MUST pick o
 Rules for picking:
 1. If the teacher EXPLICITLY mentioned a work in that area (e.g. "she's working on Pink Tower", "he's just started Sandpaper Letters"), match it to the closest exact name in AVAILABLE WORKS for that area. Status: "practicing" if they're working on it, "mastered" if teacher said proficient/done, "presented" if just introduced.
 2. If the teacher did NOT mention a work in that area, take a confident BEST GUESS based on the child's age, experience_level, and the typical Montessori progression. Status: "presented" (you are inferring, not observing).
-3. Match by MEANING, not just literal text. "the pink tower" → "Pink Tower", "she pours water" → "Pouring Water", "letter sounds" → "Sandpaper Letters" or first phonics work in the curriculum.
-4. NEVER invent a work name. Use the EXACT spelling from AVAILABLE WORKS.
-5. If AVAILABLE WORKS is empty for an area, pick a canonical Montessori starting work for that area (e.g. "Pouring Water", "Pink Tower", "Number Rods", "Sandpaper Letters", "Land and Water Forms"). The system will auto-create the curriculum row.
+3. The AVAILABLE WORKS lists are in curriculum sequence order. If the child is new to Montessori or you are guessing for an area the teacher did not mention, pick from the FIRST few works of that area's list — never jump to the middle of a sequence.
+4. Match by MEANING, not just literal text. "the pink tower" → "Pink Tower", "she pours water" → "Pouring Water", "letter sounds" → "Sandpaper Letters" or first phonics work in the curriculum.
+5. NEVER invent a work name. Use the EXACT spelling from AVAILABLE WORKS.
+6. If AVAILABLE WORKS is empty for an area, pick a canonical Montessori starting work for that area (e.g. "Pouring Water", "Pink Tower", "Number Rods", "Sandpaper Letters", "Land and Water Forms"). The system will auto-create the curriculum row.
 
 Listen carefully to the transcript — teachers often mention works in passing ("she just loves the brown stair", "he's getting into spindle boxes"). Don't miss those.
 
@@ -498,7 +500,7 @@ Create a warm summary that confirms back to the teacher what you understood. The
     // Auto-creates curriculum rows for picks that aren't yet in the curriculum.
     if (cid) {
       try {
-        await seedFocusWorks(supabase, childId, cid, extracted);
+        await seedFocusWorks(supabase, childId, cid, extracted, expLevel);
         console.log(`[Onboard] Focus works seeded for ${childName}`);
       } catch (focusSeedErr) {
         console.error('[Onboard] Focus works seed error (non-fatal):', focusSeedErr);
@@ -714,6 +716,7 @@ async function seedFocusWorks(
   childId: string,
   classroomId: string,
   extracted: Record<string, unknown>,
+  expLevel: string,
 ) {
   const FALLBACKS: Record<string, string> = {
     practical_life: 'Pouring Water',
@@ -730,7 +733,7 @@ async function seedFocusWorks(
     const sonnetPickRaw = extracted[`focus_${areaKey}`];
     const sonnetStatusRaw = extracted[`focus_${areaKey}_status`];
     const sonnetPick = typeof sonnetPickRaw === 'string' ? sonnetPickRaw.trim() : '';
-    const status = typeof sonnetStatusRaw === 'string' && VALID_STATUSES.has(sonnetStatusRaw)
+    let status = typeof sonnetStatusRaw === 'string' && VALID_STATUSES.has(sonnetStatusRaw)
       ? sonnetStatusRaw
       : 'presented';
 
@@ -748,9 +751,32 @@ async function seedFocusWorks(
     }
 
     // Try to match Sonnet's pick to an existing curriculum row.
-    // Pass 1: exact name match (case-insensitive).
     let matchedName: string | null = null;
-    if (sonnetPick) {
+
+    // Brand-new children (expLevel === 'new') start at the very beginning of
+    // the teacher's own curriculum sequence, not wherever the AI guessed.
+    // The AI's focus_<area> pick was landing mid-sequence (e.g. "Phonics 25:
+    // j /j/", "Sandpaper Letters") for kids who need months of matching and
+    // settling work first, so we ignore the AI pick and take the first work
+    // in this area's sequence instead.
+    if (expLevel === 'new') {
+      const { data: firstWork } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .select('name')
+        .eq('classroom_id', classroomId)
+        .eq('area_id', areaRow.id)
+        .order('sequence', { ascending: true })
+        .limit(1)
+        .maybeSingle() as { data: { name: string } | null };
+      if (firstWork?.name) {
+        matchedName = firstWork.name;
+        status = 'presented';
+        console.log(`[Onboard] New child — seeding first-in-sequence "${matchedName}" for ${areaKey}`);
+      }
+    }
+
+    // Pass 1: exact name match (case-insensitive).
+    if (!matchedName && sonnetPick && expLevel !== 'new') {
       const escaped = sonnetPick.replace(/[%_\\]/g, '\\$&');
       const { data: exactMatch } = await supabase
         .from('montree_classroom_curriculum_works')
@@ -765,7 +791,7 @@ async function seedFocusWorks(
     }
 
     // Pass 2: fuzzy ILIKE on either side ("Pink Tower" matches "the Pink Tower").
-    if (!matchedName && sonnetPick) {
+    if (!matchedName && sonnetPick && expLevel !== 'new') {
       const escaped = sonnetPick.replace(/[%_\\]/g, '\\$&');
       const { data: fuzzyMatch } = await supabase
         .from('montree_classroom_curriculum_works')

@@ -72,12 +72,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // can map to Chinese via name_chinese lookup.
     const { data: curriculumWorks } = await supabase
       .from('montree_classroom_curriculum_works')
-      .select('name, name_chinese, area_id')
+      .select('name, name_chinese, area_id, sequence')
       .eq('classroom_id', child.classroom_id);
 
     const workToArea: Record<string, string> = {};
     const lookupToCanonical: Record<string, string> = {}; // any name (EN/ZH) -> canonical English name
-    const allCurrWorks = (curriculumWorks || []) as Array<{ name: string; name_chinese: string | null; area_id: string }>;
+    const allCurrWorks = (curriculumWorks || []) as Array<{ name: string; name_chinese: string | null; area_id: string; sequence: number | null }>;
     for (const w of allCurrWorks) {
       const areaKey = areaIdToKey[w.area_id];
       if (!areaKey) continue;
@@ -169,6 +169,18 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const missingAreas = CORE_AREAS.filter((a) => !allFilled.has(a));
 
     if (missingAreas.length > 0) {
+      // Fetch the child's mastered work names once so the gap-fill pick below
+      // can skip works the child has already completed.
+      const { data: progressRows } = await supabase
+        .from('montree_child_progress')
+        .select('work_name, status')
+        .eq('child_id', childId);
+      const masteredNames = new Set(
+        (progressRows || [])
+          .filter((p: { status: string }) => p.status === 'mastered' || p.status === 'completed')
+          .map((p: { work_name: string }) => p.work_name.toLowerCase())
+      );
+
       for (const missingArea of missingAreas) {
         const candidates = allCurrWorks.filter((w) => {
           const ak = areaIdToKey[w.area_id];
@@ -176,7 +188,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
         });
         if (candidates.length === 0) continue;
 
-        const pick = candidates[Math.floor(Math.random() * candidates.length)];
+        // Was Math.random() over the whole area — could hand a brand-new
+        // child lesson 25 of 30. Now pick the earliest-in-sequence work the
+        // child hasn't already mastered (falling back to the first by
+        // sequence if everything in the area is already mastered).
+        const bySequence = [...candidates].sort((a, b) => {
+          const sa = a.sequence ?? Number.MAX_SAFE_INTEGER;
+          const sb = b.sequence ?? Number.MAX_SAFE_INTEGER;
+          return sa - sb;
+        });
+        const pick = bySequence.find((c) => !masteredNames.has(c.name.toLowerCase())) || bySequence[0];
 
         await supabase
           .from('montree_child_focus_works')
@@ -194,7 +215,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
         filled.push({ work_name: pick.name, area: missingArea });
         filledAreas.add(missingArea);
-        console.log(`[FillShelf] Gap-filled ${missingArea} with "${pick.name}" for child ${childId}`);
+        console.log(`[FillShelf] Gap-filled ${missingArea} with earliest-unmastered "${pick.name}" for child ${childId}`);
       }
     }
 
