@@ -9,15 +9,21 @@
 // `computeTracingLayout()` derives every trace-image box from the real image
 // dimensions returned by renderTraceStrip/renderBlankGuide, sums the whole
 // page top-to-bottom, and defensively scales the trace art down if the
-// projected total would ever exceed the printable height. `doc.addPage()` is
-// never called — one child, one page, always.
+// projected total would ever exceed the printable height. One child is always
+// exactly one page — `drawTracingPage()` never calls `doc.addPage()`.
+//
+// Two public builders sit on top of that single-page routine:
+//   • `buildTracingPdf(opts)`        — one child, a one-page PDF.
+//   • `buildTracingPdfBatch(items)`  — a whole class as ONE multi-page PDF
+//     (one page per child, `addPage()` between them) so a teacher sends a
+//     single print job instead of unzipping 18 files.
 //
 // Design reference: ./docxTemplates.ts (do not edit that file; it is the
 // source of truth for colours/copy and is kept for the .docx export path).
 'use client';
 
 import { jsPDF } from 'jspdf';
-import { renderTraceStrip, renderBlankGuide } from './traceRender';
+import { renderTraceStrip, renderBlankGuide, type StripResult } from './traceRender';
 
 // ---------------------------------------------------------------- brand ---
 // (identical values to docxTemplates.ts, expressed as CSS hex for jsPDF)
@@ -410,7 +416,56 @@ export interface TracingPdfOptions {
   defaultWatermarkBytes: ArrayBuffer; // fallback whale emblem (faded, for watermark use)
 }
 
-export async function buildTracingPdf(opts: TracingPdfOptions): Promise<Blob> {
+/**
+ * Per-run memo so a whole-class batch decodes each shared asset once instead of
+ * once per child. The numbers strip, both blank guides, the badge and the
+ * watermark are byte-identical on every page of a batch; only the name strip
+ * actually differs. Optional — a single-child build passes no cache.
+ */
+export interface TracingRenderCache {
+  /** keyed by the ArrayBuffer identity of the source bytes */
+  bytes: Map<ArrayBuffer, Promise<Art>>;
+  /** keyed by the render parameters of the strip */
+  strips: Map<string, Promise<Art>>;
+}
+
+export function createTracingRenderCache(): TracingRenderCache {
+  return { bytes: new Map(), strips: new Map() };
+}
+
+function memoArt<K>(map: Map<K, Promise<Art>> | undefined, key: K, make: () => Promise<Art>): Promise<Art> {
+  if (!map) return make();
+  const hit = map.get(key);
+  if (hit) return hit;
+  const made = make();
+  map.set(key, made);
+  return made;
+}
+
+async function stripArt(result: StripResult): Promise<Art> {
+  return {
+    dataUrl: await blobToDataUrl(result.blob),
+    format: 'PNG',
+    dims: { width: result.width, height: result.height },
+  };
+}
+
+function newTracingDoc(): jsPDF {
+  return new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'letter' });
+}
+
+/**
+ * Draw one child's worksheet onto the *current* page of `doc`.
+ *
+ * This is the whole per-child routine, deliberately split out of
+ * `buildTracingPdf` so the batch builder can run it against successive pages of
+ * a single document. It never calls `addPage()` itself — one call, one page.
+ */
+export async function drawTracingPage(
+  doc: jsPDF,
+  opts: TracingPdfOptions,
+  cache?: TracingRenderCache,
+): Promise<void> {
   const {
     template, childName, className = 'Whale Class',
     logoBytes, pictureBytes, defaultLogoBytes, defaultWatermarkBytes,
@@ -419,39 +474,36 @@ export async function buildTracingPdf(opts: TracingPdfOptions): Promise<Blob> {
   const geo = GEOMETRY[template];
   const name = childName.trim() || 'Name';
 
-  const [nameTrace, nameGuide, numbersTrace, numbersGuide] = await Promise.all([
-    renderTraceStrip(name, { size: geo.nameSize }),
-    renderBlankGuide({ size: geo.nameSize, widthEm: NAME_GUIDE_EM }),
-    renderTraceStrip(NUMBERS_TEXT, { size: NUMBERS_SIZE, tracking: NUMBERS_TRACKING }),
-    renderBlankGuide({ size: NUMBERS_SIZE, widthEm: NUMBERS_GUIDE_EM }),
+  const [nameTraceArt, nameGuideArt, numbersTraceArt, numbersGuideArt] = await Promise.all([
+    memoArt(cache?.strips, `trace|${geo.nameSize}|${name}`,
+      async () => stripArt(await renderTraceStrip(name, { size: geo.nameSize }))),
+    memoArt(cache?.strips, `guide|${geo.nameSize}|${NAME_GUIDE_EM}`,
+      async () => stripArt(await renderBlankGuide({ size: geo.nameSize, widthEm: NAME_GUIDE_EM }))),
+    memoArt(cache?.strips, `trace|${NUMBERS_SIZE}|${NUMBERS_TRACKING}|${NUMBERS_TEXT}`,
+      async () => stripArt(await renderTraceStrip(NUMBERS_TEXT, { size: NUMBERS_SIZE, tracking: NUMBERS_TRACKING }))),
+    memoArt(cache?.strips, `guide|${NUMBERS_SIZE}|${NUMBERS_GUIDE_EM}`,
+      async () => stripArt(await renderBlankGuide({ size: NUMBERS_SIZE, widthEm: NUMBERS_GUIDE_EM }))),
   ]);
 
-  const [nameTraceArt, nameGuideArt, numbersTraceArt, numbersGuideArt] = await Promise.all(
-    [nameTrace, nameGuide, numbersTrace, numbersGuide].map(async (r) => ({
-      dataUrl: await blobToDataUrl(r.blob),
-      format: 'PNG' as const,
-      dims: { width: r.width, height: r.height },
-    })),
-  );
-
-  const badgeArt = await artFromBytes(logoBytes ?? defaultLogoBytes);
-  const watermarkArt = await artFromBytes(logoBytes ?? defaultWatermarkBytes);
+  const badgeBytes = logoBytes ?? defaultLogoBytes;
+  const watermarkBytes = logoBytes ?? defaultWatermarkBytes;
+  const badgeArt = await memoArt(cache?.bytes, badgeBytes, () => artFromBytes(badgeBytes));
+  const watermarkArt = await memoArt(cache?.bytes, watermarkBytes, () => artFromBytes(watermarkBytes));
   // The shipped watermark asset is already faded; a teacher's own logo is not,
   // so it gets knocked back here instead of swamping the worksheet.
   const watermarkOpacity = logoBytes ? 0.1 : 1;
-  const pictureArt = template === 'A' && pictureBytes ? await artFromBytes(pictureBytes) : null;
+  const pictureArt = template === 'A' && pictureBytes
+    ? await memoArt(cache?.bytes, pictureBytes, () => artFromBytes(pictureBytes))
+    : null;
 
   const layout = computeTracingLayout({
     template,
-    nameTrace: { width: nameTrace.width, height: nameTrace.height },
-    nameGuide: { width: nameGuide.width, height: nameGuide.height },
-    numbersTrace: { width: numbersTrace.width, height: numbersTrace.height },
-    numbersGuide: { width: numbersGuide.width, height: numbersGuide.height },
+    nameTrace: nameTraceArt.dims,
+    nameGuide: nameGuideArt.dims,
+    numbersTrace: numbersTraceArt.dims,
+    numbersGuide: numbersGuideArt.dims,
     picture: pictureArt?.dims ?? null,
   });
-
-  // One child == one page. `addPage()` is never called anywhere below.
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'letter' });
 
   const ctx = {
     doc, layout, className, name, badgeArt, watermarkArt, watermarkOpacity, pictureArt,
@@ -460,7 +512,27 @@ export async function buildTracingPdf(opts: TracingPdfOptions): Promise<Blob> {
   if (template === 'A') drawTemplateA(ctx);
   else if (template === 'B') drawTemplateB(ctx);
   else drawTemplateC(ctx);
+}
 
+/** One child, one page. */
+export async function buildTracingPdf(opts: TracingPdfOptions): Promise<Blob> {
+  const doc = newTracingDoc();
+  await drawTracingPage(doc, opts);
+  return doc.output('blob');
+}
+
+/**
+ * A whole class as ONE merged PDF — page 1 is the first child, page 2 the
+ * second, and so on, in the order given. Teachers print this as a single job.
+ */
+export async function buildTracingPdfBatch(items: TracingPdfOptions[]): Promise<Blob> {
+  if (items.length === 0) throw new Error('buildTracingPdfBatch: at least one child is required');
+  const doc = newTracingDoc();
+  const cache = createTracingRenderCache();
+  for (let i = 0; i < items.length; i++) {
+    if (i > 0) doc.addPage('letter', 'portrait');
+    await drawTracingPage(doc, items[i], cache);
+  }
   return doc.output('blob');
 }
 

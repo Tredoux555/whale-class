@@ -1832,6 +1832,8 @@ export const en = {
   'tools.photo_bank_desc': 'Search, browse & contribute English teaching pictures for all tools',
   'tools.tracing_work': 'Tracing Work',
   'tools.tracing_work_desc': 'Create name and number tracing worksheets with dotted stroke-order letters.',
+  'tools.birthdays': 'Birthdays',
+  'tools.birthdays_desc': 'Birthday cards for every child plus a one-page class birthday board for the wall.',
 
   'tools.card_generator': '3-Part Card Generator',
   'tools.card_generator_desc': 'Create beautiful Montessori nomenclature cards with images and labels',

@@ -1550,6 +1550,8 @@ export const fr: Record<string, string> = {
   'tools.photo_bank_desc': 'Recherchez, parcourez et contribuez des images d\'enseignement en anglais pour tous les outils',
   'tools.tracing_work': 'Traçage', 
   'tools.tracing_work_desc': 'Créez des fiches de traçage de prénoms et de chiffres avec lettres pointillées et flèches de tracé.',
+  'tools.birthdays': 'Anniversaires',
+  'tools.birthdays_desc': 'Des cartes d’anniversaire pour chaque enfant et un tableau des anniversaires de la classe sur une page.',
 
   'tools.card_generator': 'Générateur de Cartes 3 Parties',
   'tools.card_generator_desc': 'Créez de belles cartes de nomenclature Montessori avec images et étiquettes',

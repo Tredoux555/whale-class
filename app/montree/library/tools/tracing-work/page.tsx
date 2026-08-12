@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
-import { buildTracingPdf, type TracingTemplate } from '@/lib/montree/tracing/pdfTemplates';
+import { buildTracingPdf, buildTracingPdfBatch, type TracingTemplate } from '@/lib/montree/tracing/pdfTemplates';
 import { loadDefaultLogo, loadDefaultWatermark, fileToArrayBuffer } from '@/lib/montree/tracing/assets';
 
 // ============================================
@@ -15,7 +15,7 @@ import { loadDefaultLogo, loadDefaultWatermark, fileToArrayBuffer } from '@/lib/
 // scripts/curriculum/satpin-paperwork/stroke_font.py). Renders the dotted,
 // stroke-order-arrowed TRACE IT letterforms live in the browser for any name,
 // across three template designs, with optional logo/photo drop-in and a
-// whole-class batch/zip mode.
+// whole-class batch mode that merges every child into ONE multi-page PDF.
 // ============================================
 
 const TEMPLATES: { id: TracingTemplate; name: string; blurb: string; preview: string }[] = [
@@ -84,18 +84,16 @@ export default function TracingWorkPage() {
     setError(null);
     setBusy(true);
     try {
-      const { default: JSZip } = await import('jszip');
-      const zip = new JSZip();
       const { defaultLogoBytes, defaultWatermarkBytes, logoBytes, pictureBytes } = await assetBytes();
-      for (const name of names) {
-        const blob = await buildTracingPdf({
+      // One merged document — a page per child — so the whole class is a single
+      // print job rather than a zip the teacher has to unpack and print one by one.
+      const blob = await buildTracingPdfBatch(
+        names.map((name) => ({
           template, childName: name, className: className.trim() || 'Whale Class',
           logoBytes, pictureBytes, defaultLogoBytes, defaultWatermarkBytes,
-        });
-        zip.file(`${slugify(name)}.pdf`, blob);
-      }
-      const zipBlob = await zip.generateAsync({ type: 'blob' });
-      downloadBlob(zipBlob, `tracing-work-${slugify(className)}-${template}.zip`);
+        })),
+      );
+      downloadBlob(blob, `tracing-work-${slugify(className)}-${template}.pdf`);
     } catch (e) {
       console.error(e);
       setError('Something went wrong generating the batch. Please try again.');
@@ -186,7 +184,7 @@ export default function TracingWorkPage() {
             <button
               type="button" onClick={() => setMode('batch')}
               className={`px-4 py-2 rounded-lg text-sm font-bold ${mode === 'batch' ? 'bg-[#0D3330] text-white' : 'bg-gray-100 text-gray-600'}`}
-            >Whole class (zip)</button>
+            >Whole class (one PDF)</button>
           </div>
 
           {mode === 'single' ? (
@@ -207,7 +205,7 @@ export default function TracingWorkPage() {
           ) : (
             <div className="space-y-3">
               <label className="block">
-                <span className="text-sm text-gray-600">One name per line</span>
+                <span className="text-sm text-gray-600">One name per line — you get a single PDF with one page per child</span>
                 <textarea
                   value={batchText} onChange={(e) => setBatchText(e.target.value)}
                   rows={8} placeholder={'Joey\nHenry\nSegina\nKayla\n...'}
@@ -217,7 +215,7 @@ export default function TracingWorkPage() {
               <button
                 type="button" onClick={handleBatch} disabled={busy}
                 className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-sm hover:bg-emerald-700 disabled:opacity-50"
-              >{busy ? 'Generating…' : 'Generate & download .zip'}</button>
+              >{busy ? 'Generating…' : 'Generate & download one .pdf'}</button>
             </div>
           )}
 
