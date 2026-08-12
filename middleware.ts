@@ -19,6 +19,18 @@ import {
   LOCALE_QUERY as CMS_LOCALE_QUERY,
   isLocale as isCmsLocale,
 } from '@/lib/cms/i18n/config';
+// CMS phase 2 — the role gate. Both modules are edge-safe on purpose:
+// mode.ts reads env and imports nothing, session.ts uses `jose` only (the same
+// library verifyAdminToken already uses in this file). Neither pulls in
+// next/headers or supabase-js, which would not run here.
+import { isCmsLive } from '@/lib/cms/auth/mode';
+import {
+  CMS_AREA_ROLES,
+  CMS_SESSION_COOKIE,
+  cmsAreaFor,
+  homePathForRole,
+  verifyCmsSession,
+} from '@/lib/cms/auth/session';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -397,6 +409,41 @@ export async function middleware(req: NextRequest) {
 
   // Static files already handled above (before CSRF check)
   
+  // ============================================
+  // CMS ROLE GATE (phase 2)
+  // ============================================
+  // /cms                     public — the front door, three doors on it
+  // /cms/login               public — the lock itself
+  // /cms/parent/**           parent (or a school_admin covering the office)
+  // /cms/teacher/**          teacher (or a school_admin covering the floor)
+  // /cms/org/**              org_admin
+  //
+  // In DEMO MODE (no Supabase configured, or CMS_AUTH_ENFORCED=0) this block
+  // does nothing at all and every layer stays walkable — that is the whole
+  // point of demo mode, and it is why the check is `isCmsLive()` first.
+  //
+  // A signed-out visitor is sent to /cms/login?next=… so the door they knocked
+  // on is the door they land on afterwards. A signed-IN visitor standing in the
+  // wrong layer is sent to their OWN layer, never to the login page — being
+  // bounced to a login form you are already through reads as "broken", not as
+  // "not yours".
+  if (pathname === '/cms' || pathname.startsWith('/cms/')) {
+    const area = cmsAreaFor(pathname);
+    if (area && isCmsLive()) {
+      const session = await verifyCmsSession(req.cookies.get(CMS_SESSION_COOKIE)?.value);
+      if (!session) {
+        const target = new URL('/cms/login', req.url);
+        target.searchParams.set('next', pathname);
+        return NextResponse.redirect(target);
+      }
+      if (!CMS_AREA_ROLES[area].includes(session.role)) {
+        return NextResponse.redirect(new URL(homePathForRole(session.role), req.url));
+      }
+    }
+    // Falls through to the public-path list below, which carries '/cms' and
+    // '/cms/login' so the legacy Supabase gate never sees a CMS request.
+  }
+
   // Public pages - NO AUTH REQUIRED, NO REDIRECTS
   // These routes should load directly without any authentication checks
   const publicPaths = [
@@ -438,16 +485,25 @@ export async function middleware(req: NextRequest) {
     // "the page doesn't exist". Same reason '/montree' is on this list.
     '/potato',
     // CMS (Classroom Management System) — the "Harbor" brand surface at
-    // /cms/**. Phase 1 is demo data with no auth of its own yet, so without
-    // this entry the legacy Supabase-role gate at the bottom of this file
-    // silently 302s every anonymous visitor to '/' — the same failure mode
-    // '/montree' and '/potato' are listed for. When CMS gets real auth
-    // (phase 2: Supabase schema + auth), this entry narrows rather than
-    // disappears — the /cms landing page must stay publicly reachable.
+    // /cms/**. Without an entry here the legacy Supabase-role gate at the
+    // bottom of this file silently 302s every anonymous visitor to '/' — the
+    // same failure mode '/montree' and '/potato' are listed for.
+    //
+    // 🚨 PHASE 2 NARROWED THIS, exactly as the phase-1 comment promised it
+    // would: the bare '/cms' entry used to make the WHOLE surface public,
+    // because the matcher below treats a listed path as covering all its
+    // children. Now only the two public doors are listed, and the CMS gate
+    // block above this list decides /cms/parent|teacher|org. Do not re-add a
+    // bare '/cms' entry — it would silently un-gate every child's record.
     // NOTE: /api/cms/* needs no entry — the matcher below excludes `api` and
     // only names specific /api groups, so CMS's API routes never run through
-    // this middleware at all.
+    // this middleware at all. They gate themselves.
+    // Both entries below mean "not the LEGACY gate's business". Role checks for
+    // /cms/parent|teacher|org already happened in the CMS gate above and
+    // returned a redirect if they failed, so reaching this list means the
+    // request is either public or already authorised.
     '/cms',
+    '/cms/login',
   ];
   
   // Check if pathname matches exactly or starts with a public path

@@ -203,6 +203,66 @@ const en = {
   'flag.dietary': 'Dietary',
   'flag.pickup': 'Pickup',
   'flag.medical': 'Medical',
+
+  // ── auth (phase 2) ─────────────────────────────────────────────────────
+  'auth.title': 'Sign in',
+  'auth.subtitle': 'One account per family. Everything you enter stays with your child’s school.',
+  'auth.signUpTitle': 'Create your family account',
+  'auth.signUpSubtitle': 'Parents only. Staff accounts are created by the school office.',
+  'auth.tab.signIn': 'Sign in',
+  'auth.tab.signUp': 'Create account',
+  'auth.email': 'Email address',
+  'auth.password': 'Password',
+  'auth.password.help': 'At least 8 characters.',
+  'auth.fullName': 'Your full name',
+  'auth.fullName.help': 'As the school should address you.',
+  'auth.schoolCode': 'School code',
+  'auth.schoolCode.help': 'The short code on your invitation. Leave blank if the school gave you none.',
+  'auth.submit.signIn': 'Sign in',
+  'auth.submit.signUp': 'Create account',
+  'auth.working': 'One moment…',
+  'auth.signOut': 'Sign out',
+  'auth.backToStart': 'Back to the front door',
+  'auth.staffNote': 'Teachers and office staff: use the credentials your school issued you.',
+  'auth.error.invalid': 'That email and password do not match an account.',
+  'auth.error.rateLimited': 'Too many attempts. Please wait a few minutes and try again.',
+  'auth.error.server': 'Something went wrong at our end. Please try again.',
+  'auth.error.network': 'Could not reach the school. Check your connection and try again.',
+  'auth.error.emailTaken': 'An account already exists for that email. Sign in instead.',
+  'auth.error.schoolNotFound': 'We could not find that school code. Check it against your invitation.',
+  'auth.error.noMembership': 'Your account is not attached to a school yet. Please contact the office.',
+  'auth.error.emailInvalid': 'Enter a valid email address.',
+  'auth.error.passwordShort': 'Use at least 8 characters.',
+  'auth.error.nameRequired': 'Your full name is required.',
+  'auth.demo.title': 'Demo mode',
+  'auth.demo.body':
+    'No database is configured, so there is nothing to sign in to. Every screen below is walkable with seeded records.',
+  'auth.demo.parent': 'Open the parent side',
+  'auth.demo.teacher': 'Open the teacher side',
+  'auth.demo.org': 'Open the organisation side',
+
+  // ── enrolment (phase 2 — real writes) ──────────────────────────────────
+  'enrol.saving': 'Saving…',
+  'enrol.saved': 'Saved.',
+  'enrol.draftResumed': 'Picking up where you left off.',
+  'enrol.demoNote': 'Demo mode — this form does not save. Connect a school to keep what you enter.',
+  'enrol.stepNotBuilt': 'This step is not built yet. Anything you type here is kept with your draft.',
+  'enrol.error.save': 'We could not save that. Please try again.',
+  'enrol.error.session': 'Your session has ended. Sign in again to keep your draft.',
+  'enrol.error.legalName': 'Please enter the child’s full legal name.',
+  'enrol.error.dateOfBirth': 'Please enter a real date of birth.',
+  'enrol.error.homeLanguage': 'Please tell us the language spoken at home.',
+  'enrol.error.classGroupId': 'Please choose a room.',
+  'enrol.error.requestedStartDate': 'That start date is not a real date.',
+
+  // ── empty states (live mode with no rows yet) ──────────────────────────
+  'parent.dashboard.empty.title': 'No children on file yet',
+  'parent.dashboard.empty.body':
+    'Start an enrolment and your child’s record appears here the moment you save the first step.',
+  'teacher.today.noRoom.title': 'No room assigned',
+  'teacher.today.noRoom.body':
+    'Your account is not attached to a class group yet, so there is no register to take. The school office can assign you one.',
+  'org.overview.empty': 'No schools in this group yet.',
 } as const;
 
 export default en;

@@ -292,3 +292,80 @@ Inherited from Montree's §5, unchanged in spirit. Do not force these into `.cms
 <Chip category="allergy" detail={t('teacher.today.severity.severe')}>{allergy.allergen}</Chip>
 <Tag category="dietary">{requirement.label}</Tag>
 ```
+
+---
+
+## 9. Forms, errors and the auth card (added phase 2)
+
+Phase 2 added the surface's first credential form (`/cms/login`) and its first
+**validating** form (enrolment step 1). Both introduced patterns that are now law,
+because a school portal is mostly forms and they must all look like one system.
+
+### The field is always `<Field>`
+
+`components/cms/enroll/StepScaffold.tsx` exports `Field` — label, the
+Required/Optional marker, help text, and the control. **Every labelled input in
+CMS is built from it, including the auth form**, which is why the login card and
+the enrolment wizard read as the same product. Never hand-roll a `<label>` +
+`.cms-input` pair.
+
+```jsx
+<Field label={t('auth.email')} required>
+  <input type="email" className="cms-input" value={email}
+         onChange={(e) => setEmail(e.target.value)} dir="ltr" />
+</Field>
+```
+
+`dir` is a decision, not a default: user-authored content (names, notes) gets
+`dir="auto"` so an Arabic name renders right-to-left inside an English form;
+machine-shaped values (email, password, a school code) get `dir="ltr"` so they
+never flip in the RTL locale.
+
+### The invalid field
+
+No new class. A field in error swaps to `cms-input !border-harbor-danger`, sets
+`aria-invalid`, and grows one line of `text-harbor-danger-deep` beneath it —
+the same 11.5px scale as the help text it replaces in the reading order.
+
+```jsx
+<input className={errors.legalName ? 'cms-input !border-harbor-danger' : 'cms-input'}
+       aria-invalid={Boolean(errors.legalName)} />
+<span className="block text-[11.5px] text-harbor-danger-deep mt-1.5 leading-snug">
+  {t('enrol.error.legalName')}
+</span>
+```
+
+### The form-level message
+
+One shape for every "something went wrong" line, at the bottom of the card,
+above the submit button. Sunk panel, danger rule on the leading edge,
+`role="alert"` so it is announced:
+
+```jsx
+<p role="alert" className="cms-card-sunk mt-5 mb-0 px-3.5 py-3 text-[13px]
+   leading-relaxed text-harbor-danger-deep border-s-[3px] border-s-harbor-danger">
+  {t('auth.error.invalid')}
+</p>
+```
+
+The same shape with `border-s-harbor-success` is the positive notice (the
+"picking up where you left off" line on a resumed draft), and with no rule at
+all it is the neutral note (the demo-mode banner). Three states, one component
+shape.
+
+### The auth card
+
+`/cms/login` is a `cms-card` at `max-w-[520px]`, optically centred in the
+viewport, with a two-button segmented control at the top for sign-in vs
+create-account. The segments are ordinary buttons — `cms-btn-primary
+cms-btn-soft` when selected, `cms-btn-ghost` when not — which is the same
+selected-state pair the AppShell nav and the wizard rail already use. **A tab bar
+in CMS is a row of buttons in those two states; there is no `cms-tab` class and
+there should not be one.**
+
+### 🚨 Error copy never renders a code
+
+Server routes return machine codes (`invalid_credentials`, `school_not_found`).
+The UI maps the code to a `TranslationKey` and renders `t(key)`. A raw code or a
+server-supplied English string on screen is an I18N LAW violation — the server's
+English messages exist for logs and API consumers, not for parents.

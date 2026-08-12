@@ -10,7 +10,9 @@
 import Link from 'next/link';
 import { getServerT } from '@/lib/cms/i18n/server';
 import type { TranslationKey } from '@/lib/cms/i18n/t';
+import { isCmsLive } from '@/lib/cms/auth/mode';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { SignOutButton } from './auth/SignOutButton';
 
 export type Layer = 'parent' | 'teacher' | 'org';
 
@@ -51,6 +53,10 @@ export async function AppShell({
   children: React.ReactNode;
 }) {
   const { t } = await getServerT();
+  // Phase 2: the shell tells the truth about which mode it is in. A sign-out
+  // button with no session behind it, or a "Demo data" tag over real children,
+  // are both lies the chrome must not tell.
+  const live = isCmsLive();
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -87,8 +93,9 @@ export async function AppShell({
             ))}
           </nav>
 
-          <div className="ms-auto md:ms-0 shrink-0">
+          <div className="ms-auto md:ms-0 shrink-0 flex items-center gap-1.5">
             <LanguageSwitcher />
+            {live ? <SignOutButton /> : null}
           </div>
         </div>
 
@@ -118,7 +125,9 @@ export async function AppShell({
       <footer className="border-t border-harbor-border mt-6">
         <div className="mx-auto max-w-[1180px] px-6 py-5 flex flex-wrap items-center gap-x-4 gap-y-1.5">
           <span className="font-head text-[13px] text-harbor-text">{t('app.strapline')}</span>
-          <span className="cms-tag cms-tone-quiet ms-auto">{t('common.demoData')}</span>
+          {live ? null : (
+            <span className="cms-tag cms-tone-quiet ms-auto">{t('common.demoData')}</span>
+          )}
         </div>
       </footer>
     </div>

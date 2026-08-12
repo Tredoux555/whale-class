@@ -1,21 +1,43 @@
 // app/cms/org/overview/page.tsx
-// STUB — phase 7. The organisational layer: every school in the group on one
-// line. Rows are `SchoolSummary` values from lib/cms/engine/types; the aggregation
-// query that produces them for real is not written yet.
+// The organisational layer: every school in the group on one line. Rows are
+// `SchoolSummary` values from lib/cms/engine/types.
+//
+// PHASE 2 gave it real counts — and only counts. The org layer reads children,
+// rooms, allergy flags and open enrolments across the group; it can never read
+// a medical record, a condition or a note, and that is enforced in the database
+// as well as here (migration 329: cms_org_school_ids grants no read on
+// cms_medical_records). A group office compares schools; it does not read a
+// diagnosis. The rest of the org surface is still phase 7.
 
 import { Card } from '@/components/cms/Card';
 import { PageHeader } from '@/components/cms/PageHeader';
 import { StubPanel } from '@/components/cms/StubPanel';
 import { demoOrganisation, demoSchoolSummaries } from '@/lib/cms/demo/seed';
+import { isCmsLive } from '@/lib/cms/auth/mode';
+import { getCmsSession } from '@/lib/cms/auth/server';
+import { loadSchoolSummaries } from '@/lib/cms/db/queries';
 import { getServerT } from '@/lib/cms/i18n/server';
+
+export const dynamic = 'force-dynamic';
 
 export default async function OrgOverviewPage() {
   const { t } = await getServerT();
 
+  let orgName = demoOrganisation.name;
+  let rows = demoSchoolSummaries;
+
+  if (isCmsLive()) {
+    const session = await getCmsSession();
+    if (session) {
+      rows = await loadSchoolSummaries(session);
+      orgName = session.displayName || demoOrganisation.name;
+    }
+  }
+
   return (
     <>
       <PageHeader
-        eyebrow={demoOrganisation.name}
+        eyebrow={orgName}
         title={t('org.overview.title')}
         subtitle={t('org.overview.subtitle')}
       />
@@ -43,7 +65,7 @@ export default async function OrgOverviewPage() {
             </tr>
           </thead>
           <tbody>
-            {demoSchoolSummaries.map((row) => (
+            {rows.map((row) => (
               <tr key={row.school.id} className="border-b border-harbor-border last:border-b-0">
                 <td className="px-5 py-3.5 font-semibold">{row.school.name}</td>
                 <td className="px-5 py-3.5 text-end tabular-nums">{row.childCount}</td>
@@ -56,6 +78,11 @@ export default async function OrgOverviewPage() {
             ))}
           </tbody>
         </table>
+        {rows.length === 0 ? (
+          <p className="px-5 py-8 text-center text-[13.5px] text-harbor-muted m-0">
+            {t('org.overview.empty')}
+          </p>
+        ) : null}
       </Card>
 
       <StubPanel phase={7} />
