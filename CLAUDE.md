@@ -168,8 +168,91 @@ API). Phase 2 **BUILT, migration PENDING Tredoux's Supabase run** — `APPLY_CMS
 Phase 3 **BUILT, migration 330 PENDING Tredoux's Supabase run** — `APPLY_CMS_PHASE3.md`.
 Phases 4 + 5 **BUILT, migration 331 PENDING Tredoux's Supabase run** (SQL pasted in chat per rule
 #4) — the teacher roster and the document engine; see the two sections below.
+Phase 6 **BUILT — THE BRIDGE, and it needs NO migration at all**: the document engine now runs on
+Tredoux's OWN Montree children, inside his normal teacher dashboard. See the section below.
 Future: Montree's own child onboarding adopts the shared engine so both products derive from one
 record — the seam for that already exists (`cms_children.montree_child_id`, see the guru feed below).
+
+### PHASE 6 — THE BRIDGE: the document engine, pointed at Whale Class
+
+**The founder is a Montessori teacher with twenty real children already in `montree_children`.** The
+phase-5 engine was perfect and unreachable: it only knew how to read `cms_*` tables, so using it meant
+a second login and retyping a class he has been teaching all year. Phase 6 points it at the room he
+actually stands in. **`/cms` is untouched and stays fully usable standalone.**
+
+**🚨 THE DIRECTION-LAW AMENDMENT (this supersedes nothing above it — it adds the other direction).**
+The old law was one sentence: *CMS never imports from `lib/montree/**`.* **That half is UNCHANGED and
+is still absolute.** What phase 6 adds:
+
+> **Montree MAY import the PURE ENGINE (`lib/cms/engine/*`) and the PAPER
+> (`components/cms/documents/*`).** The engine is pure by law — no I/O, no locale, no React — so it is
+> shareable by construction. The document BODY components are declared **brand-neutral "paper"**: paper
+> is white in both brands by house rule, and a printed class list is not a brand surface.
+> **SCREEN CHROME IS NOT SHARED, IN EITHER DIRECTION.** `PrintFrame`'s toolbar is Harbor (`.cms-btn`,
+> `bg-harbor-canvas`) and must never render outside `app/cms/**`; Montree's `.btn` must never render
+> inside it. The Montree surface builds its OWN dark-forest toolbar
+> (`components/montree/class-documents/DocumentPaper.tsx`).
+> The paper's LABELS travel with the paper: the body components' strings are CMS translation keys, so
+> the Montree page renders them through `lib/cms/i18n`'s `getT`. That is a consequence of sharing the
+> components, not a second i18n system in Montree.
+
+**The ink was extracted, byte-identical, to `components/cms/documents/print-css.ts`** (`DOCUMENT_PRINT_CSS`).
+`PrintFrame` imports it and is otherwise unchanged; `DocumentPaper` imports it and appends four Montree
+lines. It is STILL injected as a `<style>` tag on the page and still NOT in globals.css — `@page` cannot
+be scoped to a selector, so a global A4 rule would hijack every print in the repo.
+
+**Where the Montree surface lives:** adapter `lib/montree/cms-bridge/{document-source,catalogue}.ts` ·
+API `app/api/montree/class-documents/route.ts` · pages `app/montree/dashboard/class-documents/{page.tsx,[doc]/page.tsx}` ·
+wrapper `components/montree/class-documents/DocumentPaper.tsx` · tests `tests/montree-cms-bridge.test.ts`
+(25 assertions) · 42 `classDocs.*` i18n keys × 12 locales (en + zh hand-written, the other
+10 translated — an adversarial audit caught all ten shipping as literal, untranslated English
+copies under a real locale's file, contradicting this section's own claim that a German,
+Japanese or Korean teacher gets a "native SCREEN"; fixed same session).
+
+**🚨 THE ADAPTER IS PURE** (`buildDocumentSource`): Montree rows in, a CMS `DocumentSource` out, no
+supabase and no clock. Children come from `montree_children` (`is_active` filtered, the Aug-10 rule);
+allergies / dietary / medical / contacts / pickup people come from **COMMITTED `montree_child_intake`
+rows only** — the review gate is the record, and a document that printed an unreviewed allergy would be
+worse than one that printed none. Drafts and unreviewed submissions are dropped TWICE (route + adapter).
+
+**🚨 SPARSE IS THE NORMAL CASE.** On day one Whale Class has twenty children and zero intakes. The class
+list and the labels are perfect from `name` + `nickname` + `date_of_birth` + `notes` alone; the health
+sheets come back honestly empty and the index says *"17 children have no committed intake yet"* and
+points at `/montree/parent/onboarding` + the Child Onboarding review page. No birthday on file →
+the `UNKNOWN_DOB = '1900-01-01'` sentinel, so the paper prints "Not known" — **`montree_children.age` is
+deliberately NEVER converted into a birthday**, an integer cannot produce a date and a plausible wrong
+age is the exact bug the sentinel exists to prevent.
+
+**Judgement calls that are load-bearing, documented in the code, and should not be silently "fixed":**
+authorised collectors = guardians **+** explicit pickup people, NOT emergency-only contacts (the person
+you ring at 11am is not the person allowed to take the child home — and Montree's own printed
+authorisation sheet already draws that line) · free-text `health.dietaryRestrictions` maps to
+`reason: 'medical'` because Montree collects it INSIDE `health`, beside allergies and medications ·
+parsed medications are marked `heldOnSite: true` with a NULL location, because the emergency sheet
+prints only on-site medications and silently dropping a child's inhaler is worse than an unclaimed
+cupboard · an unreadable allergy severity fails to **severe**, never to mild · `carriesEpipen` is READ
+out of the response text (`epipen|jext|anapen|adrenal|epinephrin|肾上腺素…`) because Montree's intake has
+no boolean for it and the poster's whole ordering rule is "EpiPen children first" — a false positive
+costs a child a place at the top of a poster they were already on.
+
+**Locale:** Montree chrome speaks all 12 Montree locales; the PAPER speaks CMS's, and CMS ships en/ru/ar
+complete with fr/es/sw/zh as English stubs. So a Russian teacher gets Russian paper and a German,
+Japanese or Korean teacher gets a native SCREEN and ENGLISH paper. The index page says so, in the
+teacher's own language (`classDocs.paperLocaleNote`).
+
+**Nav — NO feature flag, NO migration, and that is the point.** "Class Documents" is a **PINNED row** in
+DashboardHeader's More menu, outside the config/legacy branch, exactly like Uploads, Curriculum Browser
+and Montage Tracker. It is deliberately **NOT** in `MENU_ITEM_IDS` / `MENU_REGISTRY` / `FEATURE_MENU_MAP`:
+`sanitizeMenuConfig` appends unknown ids as `visible:false`, so registering it would hide it from every
+teacher who has a saved config — and Menu Management has been hidden since Jul 3 2026, so they could
+never unhide it. **Consequence, stated plainly: every teacher sees the row immediately, and no teacher
+can hide it** (the same deal as the pinned Students row). A feature flag would need a
+`montree_feature_definitions` row, i.e. a migration and a Supabase run, for a surface that reads tables
+every school already has and is useful with zero parent intake.
+
+**Migration-pending safe:** `montree_child_intake` (migration 326) may not exist yet. The intake read
+fails SOFT — the roster still prints, `intakeAvailable:false` comes back, and the page says the health
+sheets are empty because intake is not set up. It never 500s on a missing table.
 
 ### PHASES 4 + 5 — the teacher can put their class in, and print everything
 
@@ -254,10 +337,13 @@ pinned in `tests/cms-doc-generator.test.ts` (vitest, the house runner — no new
 
 Pages: `/cms/teacher/documents` is a real index with live counts per card ("Allergies: 3 · EpiPen:
 1") and an empty state that points at the roster; `/cms/teacher/documents/[doc]` renders the sheet
-print-ready. **Paper is white** and the print CSS lives in a `<style>` tag inside
+print-ready. **Paper is white** and the print CSS lives in a `<style>` tag rendered by
 `components/cms/documents/PrintFrame.tsx`, NOT in globals.css — `@page` cannot be scoped to a
-selector, so a global A4 rule would hijack every print in the repo. Full rationale, the RTL
-`unicode-bidi: plaintext` rule, and the no-plurals convention: **`CMS_DESIGN_SYSTEM.md` §11**.
+selector, so a global A4 rule would hijack every print in the repo. (Phase 6 moved the rules
+themselves one file across, to `components/cms/documents/print-css.ts`, byte-identical, so the
+Montree bridge surface can render the same paper; the `<style>`-tag reasoning is unchanged.) Full
+rationale, the RTL `unicode-bidi: plaintext` rule, and the no-plurals convention:
+**`CMS_DESIGN_SYSTEM.md` §11**.
 
 Nav: **Today · Roster · Documents** in the teacher AppShell.
 

@@ -20,6 +20,9 @@ import {
   // config-driven branch renders for 'manage_students' via MENU_REGISTRY, so
   // Students looks identical in both menu modes.
   Users,
+  // Printer — the pinned Class Documents row (see the More menu). A brand-new
+  // surface with no MENU_ITEM_IDS entry on purpose; see the note on the row.
+  Printer,
   // Target / Sparkles / FolderOpen / TrendingUp / BarChart2 removed with
   // the twelve dead menu_* rows (see the 🪦 note in the More menu). Images went
   // with them — its only other reference is the commented-out Photo Gallery row.
@@ -856,6 +859,29 @@ function DashboardHeader() {
                     label={t('montageTracker.title')}
                     active={activePage === 'montage-tracker'}
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/montage-tracker'); }}
+                  />
+
+                  {/* Class Documents (CMS phase 6 — the bridge) — pinned OUTSIDE
+                      the config/legacy branch for exactly the reason Montage
+                      Tracker and Uploads are: a brand-new surface is in NO
+                      teacher's saved menu config, and `sanitizeMenuConfig`
+                      appends unknown ids as visible:false, so registering it in
+                      MENU_ITEM_IDS would make it invisible to every school that
+                      has one — with Menu Management hidden (Jul 3 2026) they
+                      could never unhide it. Deliberately NOT in MENU_ITEM_IDS /
+                      MENU_REGISTRY / FEATURE_MENU_MAP: a registry row whose
+                      visible flag does nothing would be a lie in the data model,
+                      and a feature flag would need a migration + a Supabase run.
+                      No flag — it reads tables every school already has and is
+                      useful with zero parent intake (a class list and a sheet of
+                      cubby labels need names and birthdays, nothing more).
+                      Active state reads pathname directly (activePage has no
+                      branch for this route), same as the rows above. */}
+                  <MenuRow
+                    icon={Printer}
+                    label={t('classDocs.menuLabel')}
+                    active={pathname?.startsWith('/montree/dashboard/class-documents') || false}
+                    onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/class-documents'); }}
                   />
                   <Divider />
 
