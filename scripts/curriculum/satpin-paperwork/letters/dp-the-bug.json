@@ -1,0 +1,105 @@
+{
+  "letter": "b",
+  "week": 17,
+  "slug": "dp-the-bug",
+  "bookSlug": "the-bug",
+  "bookTitle": "The ___ Saw a Bug!",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-the-bug.py",
+  "artDir": "phonics-images/dark-phonics-books/the-bug",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "ant",
+      "sentence": "The ant saw a bug.",
+      "art": "p1-ant.png"
+    },
+    {
+      "order": 2,
+      "word": "snake",
+      "sentence": "The snake saw a bug.",
+      "art": "p5-snake.png"
+    },
+    {
+      "order": 3,
+      "word": "cat",
+      "sentence": "The cat saw a bug.",
+      "art": "p6-cat.png"
+    },
+    {
+      "order": 4,
+      "word": "potato",
+      "sentence": "The bug saw a potato!",
+      "art": "p8-potato.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    2,
+    3,
+    4,
+    1
+  ],
+  "matchDisplayOrder": [
+    3,
+    4,
+    1,
+    2
+  ],
+  "yesno": [
+    {
+      "question": "did the ant see a bug?",
+      "answer": true,
+      "imageArt": "p1-ant.png"
+    },
+    {
+      "question": "did the apple see a bug?",
+      "answer": true,
+      "imageArt": "p2-apple.png"
+    },
+    {
+      "question": "did the sun see a bug?",
+      "answer": true,
+      "imageArt": "p3-sun.png"
+    },
+    {
+      "question": "did the star see a bug?",
+      "answer": true,
+      "imageArt": "p4-star.png"
+    },
+    {
+      "question": "did the snake see a bug?",
+      "answer": true,
+      "imageArt": "p5-snake.png"
+    },
+    {
+      "question": "did the potato see a bug?",
+      "answer": false,
+      "imageArt": "p8-potato.png"
+    },
+    {
+      "question": "did the fox see a bug?",
+      "answer": false,
+      "imageArt": "../fox-in-a-box/p1-fox.png"
+    },
+    {
+      "question": "did the horse see a bug?",
+      "answer": false,
+      "imageArt": "../horse-in-my-hat/p4-horse.png"
+    },
+    {
+      "question": "did the frog see a bug?",
+      "answer": false,
+      "imageArt": "../frog-on-the-fan/p1-frog.png"
+    },
+    {
+      "question": "did the fish see a bug?",
+      "answer": false,
+      "imageArt": "../frog-on-the-fan/p2-fish.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Generated 2026-08-12 for letter-book fifteen (the-bug), following dp-the-hot.json conventions -- do not hand-edit blindly, keep in sync with books_def.py's the-bug entry.",
+    "recap": "pages[] selects a 4-page subset of this book's 6-strong the-sat cast (ant, snake, cat) plus the potato finale page, same exclusion rule as dp-the-hot (apple/sun/star sit out). Recap (style='drop') page always excluded. Note this book's finale sentence reverses subject/object ('The bug saw a potato!' rather than a negation) -- still carries the target word 'bug' as its subject.",
+    "yesno": "10 items (5 true, 5 false). 5 true from this book's own 6 cast pages (ant/apple/sun/star/snake). 5 false: the book's own potato page ('did the potato see a bug?' -- false, since the bug saw the potato, not the reverse) plus 4 borrowed decoy characters (fox/horse/frog/fish) via relative ../<slug>/ imageArt paths, verified those source files exist."
+  }
+}
