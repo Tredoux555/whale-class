@@ -136,6 +136,16 @@ export function chromeHeight(template: TracingTemplate): number {
 interface TemplateGeometry {
   /** x-height passed to renderTraceStrip for the child's name. */
   nameSize: number;
+  /**
+   * x-height passed to renderTraceStrip/renderBlankGuide for the 1–9 numbers
+   * row. Optional — templates that omit it use the shared `NUMBERS_SIZE`.
+   * Template B renders the row larger (see GEOMETRY.B): its badge layout leaves
+   * enough vertical slack for a taller numbers band, and rendering the strip at
+   * a matching natural size keeps the dotted stroke art crisp at that size and
+   * shrinks the strip's fixed padding as a share of its width, so the band
+   * height (not the width cap) is what limits the glyphs.
+   */
+  numbersSize?: number;
   /** display width cap for the name strip/guide (docx px → pt). */
   nameMaxW: number;
   /** display width cap for the numbers strip/guide (docx px → pt). */
@@ -150,16 +160,30 @@ interface TemplateGeometry {
 
 export const GEOMETRY: Record<TracingTemplate, TemplateGeometry> = {
   A: { nameSize: 100, nameMaxW: 480 * PX_TO_PT, numbersMaxW: 620 * PX_TO_PT, nameBandH: 120, numbersBandH: 60, align: 'center' },
-  B: { nameSize: 100, nameMaxW: 420 * PX_TO_PT, numbersMaxW: 520 * PX_TO_PT, nameBandH: 122, numbersBandH: 60, align: 'center' },
+  // Template B's chrome (284.5) + a full-height name band (2 × 122) leaves
+  // 712.8 − 18 − 284.5 − 244 = 166.3pt for the two numbers rows, i.e. up to
+  // 83.15pt each. 80 spends most of that and still lands the page 24.3pt clear
+  // of the bottom margin (MIN_SLACK is 18), and a longer name only ever makes
+  // the name band *shorter*, so 24.3 is the worst case, not the best one.
+  // The numbers strip is ~6.22× as wide as it is tall, so an 80pt band draws
+  // 497.8pt wide — hence the wider 680px cap (520px would have clipped it back
+  // to 61.5pt, barely above the old 60).
+  B: { nameSize: 100, numbersSize: 100, nameMaxW: 420 * PX_TO_PT, numbersMaxW: 680 * PX_TO_PT, nameBandH: 122, numbersBandH: 80, align: 'center' },
   C: { nameSize: 110, nameMaxW: 560 * PX_TO_PT, numbersMaxW: 680 * PX_TO_PT, nameBandH: 145, numbersBandH: 70, align: 'left' },
 };
 
-/** Numbers row is identical on every template (see docxTemplates.ts). */
+/** Numbers row copy/tracking is identical on every template (see docxTemplates.ts). */
 export const NUMBERS_TEXT = '1 2 3 4 5 6 7 8 9';
+/** Default numbers x-height; `GEOMETRY.<t>.numbersSize` overrides it per template. */
 export const NUMBERS_SIZE = 70;
 export const NUMBERS_TRACKING = 0.55;
 export const NAME_GUIDE_EM = 8.5;
 export const NUMBERS_GUIDE_EM = 15;
+
+/** The x-height the numbers row is rendered at for `template`. */
+export function numbersSizeFor(template: TracingTemplate): number {
+  return GEOMETRY[template].numbersSize ?? NUMBERS_SIZE;
+}
 
 /** Template A photo box: docx draws the photo 300px wide. */
 const PICTURE_MAX_W = 300 * PX_TO_PT;   // 225
@@ -177,9 +201,9 @@ export interface TracingLayoutInput {
   nameTrace: ImageDims;
   /** natural dims from renderBlankGuide({ size: nameSize, widthEm: 8.5 }) */
   nameGuide: ImageDims;
-  /** natural dims from renderTraceStrip('1 2 …9', { size: 70, tracking: 0.55 }) */
+  /** natural dims from renderTraceStrip('1 2 …9', { size: numbersSizeFor(t), tracking: 0.55 }) */
   numbersTrace: ImageDims;
-  /** natural dims from renderBlankGuide({ size: 70, widthEm: 15 }) */
+  /** natural dims from renderBlankGuide({ size: numbersSizeFor(t), widthEm: 15 }) */
   numbersGuide: ImageDims;
   /** Template A only — natural pixel dims of the teacher's photo, if any. */
   picture?: ImageDims | null;
@@ -473,16 +497,20 @@ export async function drawTracingPage(
 
   const geo = GEOMETRY[template];
   const name = childName.trim() || 'Name';
+  // Per-template (Template B renders the numbers row larger), so it has to be
+  // part of every numbers cache key — a mixed-template batch shares one cache
+  // and must never hand a page the other template's differently-sized strip.
+  const numbersSize = numbersSizeFor(template);
 
   const [nameTraceArt, nameGuideArt, numbersTraceArt, numbersGuideArt] = await Promise.all([
     memoArt(cache?.strips, `trace|${geo.nameSize}|${name}`,
       async () => stripArt(await renderTraceStrip(name, { size: geo.nameSize }))),
     memoArt(cache?.strips, `guide|${geo.nameSize}|${NAME_GUIDE_EM}`,
       async () => stripArt(await renderBlankGuide({ size: geo.nameSize, widthEm: NAME_GUIDE_EM }))),
-    memoArt(cache?.strips, `trace|${NUMBERS_SIZE}|${NUMBERS_TRACKING}|${NUMBERS_TEXT}`,
-      async () => stripArt(await renderTraceStrip(NUMBERS_TEXT, { size: NUMBERS_SIZE, tracking: NUMBERS_TRACKING }))),
-    memoArt(cache?.strips, `guide|${NUMBERS_SIZE}|${NUMBERS_GUIDE_EM}`,
-      async () => stripArt(await renderBlankGuide({ size: NUMBERS_SIZE, widthEm: NUMBERS_GUIDE_EM }))),
+    memoArt(cache?.strips, `trace|${numbersSize}|${NUMBERS_TRACKING}|${NUMBERS_TEXT}`,
+      async () => stripArt(await renderTraceStrip(NUMBERS_TEXT, { size: numbersSize, tracking: NUMBERS_TRACKING }))),
+    memoArt(cache?.strips, `guide|${numbersSize}|${NUMBERS_GUIDE_EM}`,
+      async () => stripArt(await renderBlankGuide({ size: numbersSize, widthEm: NUMBERS_GUIDE_EM }))),
   ]);
 
   const badgeBytes = logoBytes ?? defaultLogoBytes;
