@@ -2,6 +2,11 @@
 // Gathers all relevant child context for the Guru AI
 
 import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
+// 🏫 CMS phase 3. `lib/cms/engine/**` is pure TypeScript with no Next, React or
+// Supabase in it — importing the adapter here is the convergence the CMS
+// section of CLAUDE.md describes, in the only direction that is allowed: CMS
+// never imports from lib/montree/**.
+import { buildGuruFeed, mergeGuruFeed } from '@/lib/cms/engine/guru-feed';
 
 export interface ChildContext {
   // Basic info
@@ -246,6 +251,7 @@ export async function buildChildContext(
     { data: childSettings },
     eslResult,
     intakeResult,
+    cmsProfileResult,
   ] = await Promise.all([
     // 2. Mental profile
     supabase
@@ -326,6 +332,39 @@ export async function buildChildContext(
           .eq('status', 'committed')
           .maybeSingle();
         return data as { data?: unknown } | null;
+      } catch {
+        return null;
+      }
+    })(),
+    // 12. 🏫 CMS child profile (CMS phase 3, migration 330). What the FAMILY
+    // wrote about who their child is in the CMS intake wizard's "About your
+    // child" step. Reached through the convergence seam
+    // `cms_children.montree_child_id` — NULL for every row today, so this
+    // resolves to null and the Guru behaves exactly as it did before. It
+    // becomes live the day Montree's own onboarding adopts the shared engine
+    // and starts setting that column.
+    //
+    // 🚨 `guru_sync` is the family's own answer to "may this help the teacher's
+    // planning assistant". Filtered here AND honoured again inside
+    // buildGuruFeed — both, deliberately.
+    // Fails soft to null (the CMS tables may not exist in this project at all).
+    (async () => {
+      try {
+        const { data: link } = await supabase
+          .from('cms_children')
+          .select('id')
+          .eq('montree_child_id', childId)
+          .is('deleted_at', null)
+          .maybeSingle();
+        if (!link?.id) return null;
+        const { data } = await supabase
+          .from('cms_child_profiles')
+          .select('likes, dislikes, interests, temperament, parent_notes, guru_sync')
+          .eq('child_id', link.id)
+          .eq('guru_sync', true)
+          .is('deleted_at', null)
+          .maybeSingle();
+        return data as Record<string, unknown> | null;
       } catch {
         return null;
       }
@@ -492,6 +531,41 @@ export async function buildChildContext(
     }
   } catch {
     // Non-critical — the Guru has always worked without this.
+  }
+
+  // 🏫 CMS profile → the same parent-intake slot. The adapter is a pure
+  // function in the CMS engine (lib/cms/engine/guru-feed.ts) so the mapping has
+  // one definition and CMS's teacher insight card renders from it too.
+  //
+  // MERGE ORDER IS DELIBERATE: a Montree intake that a teacher COMMITTED wins
+  // over a CMS profile nobody has reviewed; CMS only fills the holes, and
+  // allergy lists are unioned. See mergeGuruFeed.
+  //
+  // No CMS profile (the case today, always) ⇒ mergeGuruFeed returns the
+  // existing value untouched, so this block is a no-op and the Guru's behaviour
+  // is bit-for-bit what it was.
+  try {
+    const row = cmsProfileResult as Record<string, unknown> | null;
+    if (row) {
+      const feed = buildGuruFeed({
+        profile: {
+          likes: Array.isArray(row.likes) ? (row.likes as string[]) : [],
+          dislikes: Array.isArray(row.dislikes) ? (row.dislikes as string[]) : [],
+          interests: Array.isArray(row.interests) ? (row.interests as string[]) : [],
+          temperament:
+            row.temperament && typeof row.temperament === 'object'
+              ? (row.temperament as Record<string, number>)
+              : {},
+          parentNotes: typeof row.parent_notes === 'string' ? row.parent_notes : null,
+          guruSync: row.guru_sync !== false,
+        },
+        allergies: parentIntake?.allergies ?? [],
+      });
+      const merged = mergeGuruFeed(parentIntake, feed);
+      if (merged) parentIntake = merged as ParentIntakeContext;
+    }
+  } catch {
+    // Non-critical — a shape surprise in a CMS row must never break the Guru.
   }
 
   return {

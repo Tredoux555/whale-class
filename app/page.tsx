@@ -244,6 +244,17 @@ export default function Home() {
                 <span>📸</span>
                 <span className="hidden sm:inline">PSS</span>
               </Link>
+              {/* CMS — the Classroom Management System ("Harbor" brand surface
+                  at /cms). Parent intake → engine → teacher outputs, plus the
+                  org layer. Uses THIS header's dark-forest .btn classes, not
+                  Harbor's .cms-btn — the theme boundary starts at /cms. */}
+              <Link
+                href="/cms"
+                className="btn btn-secondary btn-md"
+              >
+                <span>🏫</span>
+                <span className="hidden sm:inline">CMS</span>
+              </Link>
             </div>
           </div>
         </div>

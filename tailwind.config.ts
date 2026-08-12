@@ -34,6 +34,30 @@ const config: Config = {
         'forest-text': '#E8F0EA',
         'forest-muted': '#9FC7B0',
         'forest-ink': '#06140C',
+
+        // ── CMS "Harbor" palette (protected brand — docs/design/CMS_DESIGN_SYSTEM.md) ──
+        // ADDITIVE, exactly like the forest block above: no name here collides
+        // with a whale-* or forest-* token, and nothing above was touched.
+        // Mirrors the `harbor-*` @theme entries in the CMS section at the bottom
+        // of app/globals.css (that block is what actually generates the
+        // utilities under Tailwind v4 — if you change one, change both).
+        'harbor-canvas': '#F1F5FA',
+        'harbor-canvas-deep': '#E7EFF7',
+        'harbor-surface': '#FFFFFF',
+        'harbor-sunk': '#F5F8FC',
+        'harbor-border': '#DCE4EF',
+        'harbor-border-strong': '#C1D0E2',
+        'harbor-accent': '#336FAF',
+        'harbor-accent-hi': '#4A85C3',
+        'harbor-accent-deep': '#245483',
+        'harbor-accent-press': '#1D456B',
+        'harbor-text': '#131C27',
+        'harbor-muted': '#617082',
+        'harbor-success': '#15916A',
+        'harbor-danger': '#C9483F',
+        'harbor-danger-deep': '#9E342D',
+        'harbor-amber': '#C08A2A',
+        'harbor-amber-deep': '#976A18',
       },
       backgroundImage: {
         'cta-forest': 'linear-gradient(135deg, #34D399 0%, #1D6B48 100%)',
@@ -46,11 +70,26 @@ const config: Config = {
         'forest-neutral': '0 4px 14px -8px rgba(0,0,0,0.9)',
         'forest-danger': '0 6px 18px -8px rgba(180,50,47,0.95)',
         'forest-gold': '0 6px 18px -8px rgba(185,151,74,0.9)',
+
+        // CMS "Harbor" — same law, one soft directional fall per hue.
+        'harbor-accent': '0 6px 16px -8px rgba(36,84,131,0.75)',
+        'harbor-neutral': '0 4px 12px -8px rgba(21,38,60,0.55)',
+        'harbor-danger': '0 6px 16px -8px rgba(158,52,45,0.70)',
+        'harbor-amber': '0 6px 16px -8px rgba(151,106,24,0.70)',
+        'harbor-card': '0 1px 2px rgba(21,38,60,0.04), 0 10px 26px -20px rgba(21,38,60,0.35)',
       },
       borderRadius: {
         btn: '10px',
         'btn-sm': '8px',
         'btn-lg': '12px',
+      },
+      fontFamily: {
+        // CMS "Harbor" type pairing. Set as CSS variables by next/font in
+        // app/cms/layout.tsx under CMS-only names, so the root layout's
+        // --font-inter / --font-lora are never shadowed. Additive: Tailwind's
+        // own sans/serif/mono defaults are untouched.
+        head: ['var(--font-cms-head)', 'Georgia', 'serif'],
+        body: ['var(--font-cms-body)', 'system-ui', 'sans-serif'],
       },
       animation: {
         'slide-up': 'slideUp 0.3s ease-out',
