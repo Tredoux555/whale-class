@@ -195,6 +195,18 @@ const RAW: RawLesson[] = [
     },
     song: true,
   },
+  {
+    n: 3,
+    title: 'Gentle Hands',
+    why: 'So friends feel safe.',
+    cast: ['Cat', 'Ant', 'Apple', 'Star', 'Snake', 'Potato'],
+    book: {
+      slug: 'gentle-hands',
+      title: 'Gentle Hands',
+      cover: '/grace-courtesy-books/covers/gentle-hands.png',
+    },
+    song: true,
+  },
 ];
 
 /** Same list, with a colour stamped on each card. */

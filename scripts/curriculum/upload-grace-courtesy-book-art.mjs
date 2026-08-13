@@ -81,6 +81,16 @@ const KEY_MAP = {
     ['page-07.jpg', 'p7-blocks'],
     ['page-08.jpg', 'p8-song'],
   ],
+  'gentle-hands': [
+    ['page-01-cover.jpg', 'p1-cover'],
+    ['page-02.jpg', 'p2-pat'],
+    ['page-03.jpg', 'p3-squeeze'],
+    ['page-04.jpg', 'p4-dizzy'],
+    ['page-05.jpg', 'p5-lesson'],
+    ['page-06.jpg', 'p6-gentle'],
+    ['page-07.jpg', 'p7-share'],
+    ['page-08.jpg', 'p8-friends'],
+  ],
 };
 
 /** 'p2-ant' -> 'ant'; falls back to the key itself. */

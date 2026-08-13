@@ -60,6 +60,10 @@ NUMWORDS = ['ZERO', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGH
 
 FOREST = (0.24, 0.42, 0.23)   # house "forest" palette slot -- the rule accent
 MOSS = (122/255, 168/255, 88/255)   # site's "moss" palette slot -- Book 2's accent
+# Book 3's accent: a warm honey/amber earth tone (176,124,54), nudged toward
+# page.tsx's PALETTE[2] "pine" (84,150,134) -- the color the web card actually
+# gets (RAW's 3rd entry, i=2 % 4) -- so print band + web card eyeball-match.
+HONEY = (144/255, 133/255, 82/255)
 
 # --- composed pages (cloned from build_booklets, only the label text and
 #     the tail page differ -- painters/layout untouched) -----------------
@@ -166,6 +170,27 @@ BOOKS = [
             ('Soft and low.', 'page-06.jpg'),
             ('Soft voice. Gentle hands.', 'page-07.jpg'),
             ('Quiet and peaceful. Everyone’s happy.', 'page-08.jpg'),
+        ],
+    ),
+    dict(
+        num=3,
+        slug='gentle-hands',
+        title_lines=['Gentle Hands'],
+        title_accent='Gentle',
+        title_size=44,
+        band_text='GRACE & COURTESY  ·  RULE 3  ·  GENTLE HANDS',
+        band_color=HONEY,
+        booknum='BOOK THREE',
+        cover_art='page-01-cover.jpg',
+        why='So friends feel safe.',
+        pages=[
+            ('Soft, soft. Pat, pat.', 'page-02.jpg'),
+            ('Here comes Potato! SQUEEZE!', 'page-03.jpg'),
+            ('Too tight! Poor Snake!', 'page-04.jpg'),
+            ('Oh, Potato. Gentle hands.', 'page-05.jpg'),
+            ('Soft and slow. Pat, pat, pat.', 'page-06.jpg'),
+            ('Hands that help. Hands that share.', 'page-07.jpg'),
+            ('Gentle hands, happy friends!', 'page-08.jpg'),
         ],
     ),
 ]
