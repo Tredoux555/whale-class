@@ -328,8 +328,27 @@ const CHROME = {
   // the three *PanelFrame numbers above, and the `before` argument passed to
   // sectionLabel() must equal numbersLabel's lead (4), or the drawn panels and
   // the audited arithmetic drift apart.
+  //
+  // Round 4 spends chrome instead of saving it: the teacher's ask was that the
+  // badge is the one thing on this sheet that is too small to read (the
+  // MONTREE seal is fine engraved linework and a ring of 6pt-equivalent type —
+  // at the round-3 40pt it does not resolve on a classroom printer). It goes
+  // 40 → 64 (+24), which the layout's own single-page-fit guarantee absorbs
+  // automatically (computeTracingLayout) rather than by hand-trimming another
+  // chrome line: chrome rises 124 → 148, so the flexible budget the trace
+  // bands draw from shrinks from 434.0 to 410.0pt and the defensive down-scale
+  // (previously idle — round 3 landed at 556.39 of a 558.0 ceiling, 1.61pt of
+  // headroom) now engages at 0.9482×. Both bands land ABOVE the round-2
+  // baseline this round-3 growth started from (name 163.60pt vs 162, numbers
+  // 123.20pt vs 122), so the trade is real but small: −5.2% off round 3's
+  // glyph size to buy +60% badge diameter (+156% area). Total height lands
+  // exactly on the MIN_SLACK=18 floor (558.0 of 576.0) — by construction,
+  // since the down-scale solves for exactly that budget, not a sign of
+  // anything cutting it close. See drawTemplateB for the matching solid-colour
+  // backdrop plate that makes the bigger badge read as a medallion rather
+  // than a bigger version of the same small logo.
   B: {
-    badge: 40,            // 53px emblem circle @96dpi
+    badge: 64,            // 85px emblem circle @96dpi — round 4, see above
     headerAfter: 6,       // 120 twips under the header band
     namePanelFrame: 9,    // 4 pad-top + 4 pad-bottom + 1 border
     numbersLabel: 16,     // 4 before + 11 line (9pt caps) + 1 after
@@ -363,7 +382,7 @@ export function chromeHeight(template: TracingTemplate): number {
       + c.ruledLine + c.footer;
   }
   if (template === 'B') {
-    // 40 + 6 + 9 + 16 + 9 + 2 + 4 + 9 + 18 + 11 = 124
+    // 64 + 6 + 9 + 16 + 9 + 2 + 4 + 9 + 18 + 11 = 148 (round 4 — see CHROME.B)
     const c = CHROME.B;
     return c.badge + c.headerAfter + c.namePanelFrame + c.numbersLabel
       + c.numbersPanelFrame + c.gapNumbersPanel
@@ -536,6 +555,15 @@ export const GEOMETRY: Record<TracingTemplate, TemplateGeometry> = {
   //     1 × nameBandH  (strip and guide sit side by side)
   //   + 2 × numbersBandH
   //   = 172.53 + 2 × 129.93 = 432.39   ⇒ total 556.39, slack 19.61 ≥ 18  ✔
+  //
+  // Round 4 (see CHROME.B) spent that 19.61pt of headroom, and 5.61pt more, on
+  // a bigger badge: chrome is now 148, not 124, so computeTracingLayout's own
+  // down-scale engages at 0.9482× and the two band heights below are TARGETS
+  // fed into that scale, not what prints. Drawn: name 172.53 × 0.9482 =
+  // 163.60pt (x-height 38.05pt), numbers 129.93 × 0.9482 = 123.20pt (x-height
+  // 28.65pt) — both still above the round-2 baseline (162 / 122) this section
+  // derives GEOMETRY.B from, so the constants below are left exactly as round
+  // 3 set them; only CHROME.B and the resulting scale changed.
   //
   // Every strip is 4.30 × its render `size` tall (traceRender.ts: 0.85 + 2 +
   // 0.3 + DESCENDER_EM 1.15), so displayed x-height = bandH / 4.30:
@@ -959,6 +987,13 @@ export interface TracingPdfOptions {
   template: TracingTemplate;
   childName: string;
   className?: string;                 // e.g. "Whale Class" — header/subtitle
+  // A school's own name, shown wherever "Montree Phonics" branding used to be
+  // hardcoded (header kicker on A/B, the quiet kicker on C, all three
+  // footers). Optional and blank by default: an empty schoolName removes that
+  // text entirely rather than falling back to "Montree Phonics" — the sheet
+  // is meant to carry the school's own identity, not ours, once they've told
+  // us what it is.
+  schoolName?: string;
   logoBytes?: ArrayBuffer | null;     // replaces the default whale emblem everywhere
   pictureBytes?: ArrayBuffer | null;  // Template A's picture-box photo (optional)
   defaultLogoBytes: ArrayBuffer;      // fallback whale emblem (badge, opaque)
@@ -1021,7 +1056,7 @@ export async function drawTracingPage(
   cache?: TracingRenderCache,
 ): Promise<void> {
   const {
-    template, childName, className = 'Whale Class',
+    template, childName, className = 'Whale Class', schoolName = '',
     logoBytes, pictureBytes, defaultLogoBytes, defaultWatermarkBytes,
   } = opts;
 
@@ -1080,7 +1115,7 @@ export async function drawTracingPage(
   });
 
   const ctx = {
-    doc, layout, className, name, badgeArt, watermarkArt, watermarkOpacity, pictureArt,
+    doc, layout, className, schoolName: schoolName.trim(), name, badgeArt, watermarkArt, watermarkOpacity, pictureArt,
     nameTraceArt, nameGuideArt, numbersTraceArt, numbersGuideArt,
   };
   if (template === 'A') drawTemplateA(ctx);
@@ -1121,6 +1156,7 @@ interface DrawCtx {
   doc: jsPDF;
   layout: TracingLayout;
   className: string;
+  schoolName: string;
   name: string;
   badgeArt: Art;
   watermarkArt: Art;
@@ -1169,7 +1205,7 @@ function drawTraceBlocks(ctx: DrawCtx, y: number, opts: {
 
 // ---- Template A — Classic Montree ----
 function drawTemplateA(ctx: DrawCtx) {
-  const { doc, layout, className } = ctx;
+  const { doc, layout, className, schoolName } = ctx;
   const c = CHROME.A;
   const centre = MARGIN_X + CONTENT_W / 2;
 
@@ -1181,7 +1217,15 @@ function drawTemplateA(ctx: DrawCtx) {
 
   let y = MARGIN_Y;
 
-  drawText(doc, 'MONTREE PHONICS', MARGIN_X, y, { size: 9, bold: true, color: INK, charSpace: 1.2, font: FONT_LABEL });
+  // The left slot used to be a hardcoded "MONTREE PHONICS" — that's Montree's
+  // own branding on a sheet a school is printing under their own name, which
+  // reads as friction rather than polish. It now shows the school's name if
+  // they've given us one, and is simply blank (not a fallback label) if not —
+  // the right-aligned subtitle is unaffected either way, so an empty left
+  // slot is a deliberately quiet header, not a layout hole.
+  if (schoolName) {
+    drawText(doc, schoolName.toUpperCase(), MARGIN_X, y, { size: 9, bold: true, color: INK, charSpace: 1.2, font: FONT_LABEL });
+  }
   drawText(doc, `Name Tracing · ${className}`, MARGIN_X + CONTENT_W, y, { size: 9, italic: true, color: SUBTITLE_GRAY, align: 'right' });
   y += c.headerRow;
 
@@ -1233,50 +1277,74 @@ function drawTemplateA(ctx: DrawCtx) {
   y += c.ruledLine;
 
   // 6pt lead — CHROME.A.footer is 14 (6 before + 8pt line); see the audit there.
-  drawText(doc, `${className} · Montree Phonics`, centre, y + 6, { size: 7.5, italic: true, color: FOOTER_GRAY, align: 'center' });
+  // "Montree Phonics" attribution replaced by the school's own name — see the
+  // header slot above for the reasoning; same rule, same fallback (just the
+  // class name, no dangling separator) when no school name is set.
+  drawText(doc, schoolName ? `${className} · ${schoolName}` : className, centre, y + 6, { size: 7.5, italic: true, color: FOOTER_GRAY, align: 'center' });
 }
 
 // ---- Template B — Whale Badge (LANDSCAPE) ----
 /**
  * 792 × 612, 0.30in on three edges and 0.20in at the bottom (see
  * LANDSCAPE_MARGIN_BOTTOM). Same design language as the portrait version it
- * replaces — whale emblem, MONTREE PHONICS · <CLASS> kicker, an emerald title,
- * teal name panel, gold numbers panel, gold "now you try" panel, italic footer
- * — reflowed and then tightened over two rounds so the glyphs a five-year-old
- * actually traces get bigger:
+ * replaces — whale emblem, a kicker over an emerald title, teal name panel,
+ * gold numbers panel, gold "now you try" panel, italic footer — reflowed and
+ * then tightened over three rounds so the glyphs a five-year-old actually
+ * traces get bigger, then widened once more (round 4) for the badge itself:
  *
  *  L_MARGIN_Y 21.6 ┌───────────────────────────────────────────────────────┐
- *      badge   40  │ (emblem)  MONTREE PHONICS · WHALE CLASS                │
- *                  │           My Name Is Joey                             │
+ *      badge   64  │ ((emblem))  [SCHOOL NAME ·] WHALE CLASS                │
+ *                  │             My Name Is Joey                          │
  *     +after    6  │                                                       │
- * name panel 181.5 │ ┌ teal ────────────────────────────────────────────┐  │
- *   (9 + 172.53)   │ │  [ J o e y  model ]  [ blank practice line ]     │  │
+ * name panel 172.6 │ ┌ teal ────────────────────────────────────────────┐  │
+ *   (9 + 163.6)    │ │  [ J o e y  model ]  [ blank practice line ]     │  │
  *                  │ └──────────────────────────────────────────────────┘  │
  *      label   16  │ NUMBERS 0–9                                           │
- *  num panel 270.9 │ ┌ white/gold ──────────────────────────────────────┐  │
- *  (9+2·129.93+2)  │ │            0 1 2 3 4 5 6 7 8 9  (model)          │  │
+ *  num panel 257.4 │ ┌ white/gold ──────────────────────────────────────┐  │
+ *  (9+2·123.2+2)   │ │            0 1 2 3 4 5 6 7 8 9  (model)          │  │
  *                  │ │            ─────────────────── (practice)        │  │
  *                  │ └──────────────────────────────────────────────────┘  │
  *     spacer    4  │                                                       │
  *   try panel   27 │ ┌ gold ── NOW YOU TRY! ────────────────────────────┐  │
- *     footer   11  │            Whale Class · Montree Phonics              │
- *      slack ~19.6 └───────────────────────────────────────────────────────┘
+ *     footer   11  │       Whale Class [· School Name]                     │
+ *   slack 18 (MIN) └───────────────────────────────────────────────────────┘
  *  L_MARGIN_BOT 14.4
  *
- * 40 + 6 + 181.53 + 16 + 270.86 + 4 + 27 + 11 = 556.39 of 576.0 printable.
+ * 64 + 6 + 172.60 + 16 + 257.40 + 4 + 27 + 11 = 558.0 of 576.0 printable
+ * (round 4 — see the round-4 note on CHROME.B; the badge went 40 → 64 and the
+ * two panel heights above are the auto-scaled *drawn* sizes, 0.9482× of their
+ * GEOMETRY.B targets, not the targets themselves).
+ *
+ * The badge itself is drawn on a solid emerald medallion plate, not bare on
+ * white — the MONTREE seal is fine engraved linework on a transparent PNG, so
+ * at any size it needs contrast, not just area, to read as a feature rather
+ * than a small logo that happens to be bigger. See the circle fill right
+ * before `place(doc, ctx.badgeArt, ...)` below; same technique as Template
+ * A's no-photo fallback (drawTemplateA), same EMERALD, same +4pt margin.
+ *
+ * The kicker no longer hardcodes "MONTREE PHONICS" — that was our branding on
+ * a sheet the school prints under their own name. It now reads
+ * "{SCHOOL NAME} · {CLASS}" if the school has told us their name, or just
+ * "{CLASS}" alone if not (schoolName is opt-in, see TracingPdfOptions); the
+ * footer drops the same way. Both are built with plain string concatenation
+ * against `ctx.schoolName`, not baked into CHROME/GEOMETRY, so an empty
+ * schoolName costs nothing in the vertical budget above — only the *width*
+ * of the kicker line changes, and that is measured live (see `textW` below),
+ * never assumed.
  *
  * The title is the child's own name — "My Name Is Joey" — not a static label.
  * Template A says a nameless "My Name Is…" above a photo box; B has no photo,
  * so its header is where the sheet gets personalised, and a five-year-old who
  * cannot yet read the trace strip can still recognise their name in the title.
  * Overflow is not a practical concern: at 17pt bold Helvetica "My Name Is " is
- * 97.9pt and the header group has 748.8 − 40 (badge) − 16 (gap) = 692.8pt, so
- * the name itself gets 594.9pt — 41 characters even if every one of them were
- * a capital M (14.17pt, the widest glyph in the face), and ~65 for a normal
+ * 97.9pt and the header group has 748.8 − 64 (badge) − 16 (gap) = 668.8pt, so
+ * the name itself gets 570.9pt — 40 characters even if every one of them were
+ * a capital M (14.17pt, the widest glyph in the face), and ~63 for a normal
  * mixed-case name. The whole roster is 3–6 letters. If a name ever did exceed
  * that, the lockup is centred, so it would spill evenly both ways rather than
- * run off one edge; the kicker line (170.9pt for "MONTREE PHONICS · WHALE
- * CLASS") is never the wider of the two.
+ * run off one edge; the kicker line is measured (`textW`), not assumed, and a
+ * school name long enough to out-run the title would simply widen the header
+ * group symmetrically around centre rather than clip.
  *
  * There is no watermark on this template: the faded grey emblem does not print
  * on the classroom printer this is used with, and the bottom-right one read as
@@ -1286,7 +1354,7 @@ function drawTemplateA(ctx: DrawCtx) {
  * fully-opaque device RGB in the content stream.
  */
 function drawTemplateB(ctx: DrawCtx) {
-  const { doc, layout, className, name } = ctx;
+  const { doc, layout, className, schoolName, name } = ctx;
   const c = CHROME.B;
   const { contentW, marginX, marginY } = layout.page;
   const centre = marginX + contentW / 2;
@@ -1298,19 +1366,29 @@ function drawTemplateB(ctx: DrawCtx) {
 
   // ---- header band: emblem beside the kicker/title, group centred ---------
   // Portrait stacked these (155.5pt); side by side they cost the badge's own
-  // 40pt, which is the single biggest chunk of vertical the landscape reflow
-  // buys back.
+  // 64pt (round 4 — was 40pt), which is the single biggest chunk of vertical
+  // the landscape reflow buys back.
   const badge = c.badge;
-  const kicker = `MONTREE PHONICS · ${className.toUpperCase()}`;
+  // No hardcoded "MONTREE PHONICS" — see the docstring's round-4 note. Blank
+  // schoolName just drops that segment, no dangling separator.
+  const kicker = schoolName
+    ? `${schoolName.toUpperCase()} · ${className.toUpperCase()}`
+    : className.toUpperCase();
   const title = `My Name Is ${name}`;
   const kickerOpts = { size: 8, bold: true, color: INK, charSpace: 1, font: FONT_LABEL } as const;
   const titleOpts = { size: 17, bold: true, color: EMERALD, font: FONT_LABEL } as const;
   const textW = Math.max(measure(doc, kicker, kickerOpts), measure(doc, title, titleOpts));
   const headGap = 16;
   const headX = centre - (badge + headGap + textW) / 2;
+  // Solid colour medallion behind the badge — same technique as Template A's
+  // no-photo fallback (drawTemplateA): the MONTREE seal is transparent-PNG
+  // linework, so it needs a plate under it for contrast/weight, not just a
+  // bigger box, or a bigger badge just reads as a bigger small logo.
+  doc.setFillColor(EMERALD);
+  doc.circle(headX + badge / 2, y + badge / 2, badge / 2 + 4, 'F');
   place(doc, ctx.badgeArt, headX, y, badge, badge);
   // kicker (11pt line) + 1pt + title (22pt line) = 34pt, optically centred on
-  // the 40pt emblem.
+  // the badge.
   const textTop = y + (badge - 34) / 2;
   drawText(doc, kicker, headX + badge + headGap, textTop, kickerOpts);
   drawText(doc, title, headX + badge + headGap, textTop + 12, titleOpts);
@@ -1361,12 +1439,12 @@ function drawTemplateB(ctx: DrawCtx) {
     y + PANEL_PAD_Y + c.tryRow - 5, GOLD, 0.75);
   y += tryPanelH;
 
-  drawText(doc, `${className} · Montree Phonics`, centre, y + 6, { size: 7.5, italic: true, color: FOOTER_GRAY, align: 'center' });
+  drawText(doc, schoolName ? `${className} · ${schoolName}` : className, centre, y + 6, { size: 7.5, italic: true, color: FOOTER_GRAY, align: 'center' });
 }
 
 // ---- Template C — Minimalist Line ----
 function drawTemplateC(ctx: DrawCtx) {
-  const { doc, className } = ctx;
+  const { doc, className, schoolName } = ctx;
   const c = CHROME.C;
 
   // docx: 210×147px emblem, flush bottom-right.
@@ -1377,7 +1455,12 @@ function drawTemplateC(ctx: DrawCtx) {
 
   let y = MARGIN_Y;
 
-  drawText(doc, 'montree phonics', MARGIN_X, y, { size: 8, color: QUIET_GRAY, charSpace: 1.5, font: FONT_LABEL });
+  // Was a hardcoded 'montree phonics' kicker — now the school's own name in
+  // the same quiet lowercase treatment, or nothing at all (the line stays,
+  // just blank) if they haven't told us one. See TracingPdfOptions.schoolName.
+  if (schoolName) {
+    drawText(doc, schoolName.toLowerCase(), MARGIN_X, y, { size: 8, color: QUIET_GRAY, charSpace: 1.5, font: FONT_LABEL });
+  }
   y += c.kicker;
 
   drawText(doc, 'Name practice', MARGIN_X, y, { size: 22, color: INK, font: FONT_LABEL });
@@ -1406,5 +1489,5 @@ function drawTemplateC(ctx: DrawCtx) {
   hline(doc, MARGIN_X, MARGIN_X + CONTENT_W, y + c.ruledLine, RULE_GRAY, 0.375);
   y += c.ruledLine;
 
-  drawText(doc, 'Montree Phonics — Name Practice', MARGIN_X, y + 15, { size: 7, italic: true, color: FAINT_GRAY });
+  drawText(doc, schoolName ? `${schoolName} — Name Practice` : 'Name Practice', MARGIN_X, y + 15, { size: 7, italic: true, color: FAINT_GRAY });
 }
