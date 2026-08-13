@@ -45,6 +45,7 @@ export default function TracingWorkPage() {
   const [template, setTemplate] = useState<TracingTemplate>('A');
   const [childName, setChildName] = useState('');
   const [className, setClassName] = useState('Whale Class');
+  const [schoolName, setSchoolName] = useState('');
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [pictureFile, setPictureFile] = useState<File | null>(null);
   const [batchText, setBatchText] = useState('');
@@ -67,6 +68,7 @@ export default function TracingWorkPage() {
       const { defaultLogoBytes, defaultWatermarkBytes, logoBytes, pictureBytes } = await assetBytes();
       const blob = await buildTracingPdf({
         template, childName: childName.trim(), className: className.trim() || 'Whale Class',
+        schoolName: schoolName.trim(),
         logoBytes, pictureBytes, defaultLogoBytes, defaultWatermarkBytes,
       });
       downloadBlob(blob, `tracing-work-${slugify(childName)}-${template}.pdf`);
@@ -90,6 +92,7 @@ export default function TracingWorkPage() {
       const blob = await buildTracingPdfBatch(
         names.map((name) => ({
           template, childName: name, className: className.trim() || 'Whale Class',
+          schoolName: schoolName.trim(),
           logoBytes, pictureBytes, defaultLogoBytes, defaultWatermarkBytes,
         })),
       );
@@ -154,7 +157,14 @@ export default function TracingWorkPage() {
                 className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
               />
             </label>
-            <div />
+            <label className="block">
+              <span className="text-sm text-gray-600">School name (optional — shown instead of any Montree branding)</span>
+              <input
+                type="text" value={schoolName} onChange={(e) => setSchoolName(e.target.value)}
+                placeholder="e.g. Sunshine Preschool"
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              />
+            </label>
             <label className="block">
               <span className="text-sm text-gray-600">Your own logo (optional — replaces the whale emblem)</span>
               <input
