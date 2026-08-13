@@ -222,7 +222,10 @@ export default function Home() {
                 <p className="text-sm text-blue-100">Montessori Progress Tracking</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            {/* Teachers / PSS / CMS header buttons hidden per Tredoux (Aug 13,
+                2026) — routes + links stay wired below, just not shown in
+                the header. Remove `hidden` to bring them back. */}
+            <div className="hidden items-center gap-2">
               {/* Teachers door: the FULL Library (Dark Phonics, Curriculum
                   Studio, generators…) — middleware exempts /montree/library
                   on this host so teachers never land on montree.xyz. */}
