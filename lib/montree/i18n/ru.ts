@@ -216,6 +216,8 @@ export const ru: Record<string, string> = {
   'students.remove': 'Удалить',
   'students.name': 'Имя',
   'students.age': 'Возраст',
+  'students.birthday': 'Дата рождения',
+  'students.ageFromBirthday': '(по дате рождения)',
   'students.gender': 'Пол',
   'students.genderBoy': 'Мальчик',
   'students.genderGirl': 'Девочка',

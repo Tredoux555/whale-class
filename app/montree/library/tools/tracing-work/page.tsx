@@ -6,6 +6,9 @@ import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import { buildTracingPdf, buildTracingPdfBatch, type TracingTemplate } from '@/lib/montree/tracing/pdfTemplates';
 import { loadDefaultLogo, loadDefaultWatermark, fileToArrayBuffer } from '@/lib/montree/tracing/assets';
+// Same roster loader the Birthdays tool uses — cookie auth, the teacher's own
+// school only. This tool needs nothing but the names.
+import { loadClassRoster, RosterAuthError } from '@/lib/montree/birthdays/roster';
 
 // ============================================
 // TRACING WORK
@@ -53,6 +56,13 @@ export default function TracingWorkPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // "Load my class" — the signed-in path. The paste box stays the universal
+  // one: it works for a teacher who has never signed in, or whose list lives
+  // in a WhatsApp message.
+  const [rosterBusy, setRosterBusy] = useState(false);
+  const [rosterNote, setRosterNote] = useState<string | null>(null);
+  const [rosterCount, setRosterCount] = useState<number | null>(null);
+
   async function assetBytes() {
     const [defaultLogoBytes, defaultWatermarkBytes] = await Promise.all([loadDefaultLogo(), loadDefaultWatermark()]);
     const logoBytes = logoFile ? await fileToArrayBuffer(logoFile) : null;
@@ -77,6 +87,39 @@ export default function TracingWorkPage() {
       setError('Something went wrong generating the worksheet. Please try again.');
     } finally {
       setBusy(false);
+    }
+  }
+
+  /**
+   * Pull the signed-in teacher's roster into the batch box.
+   *
+   * Names only — this tool has no use for birthdays or photographs. The names
+   * land in the textarea rather than in a separate hidden list on purpose: the
+   * teacher can see exactly what will print, and fix a spelling or drop a child
+   * who is away without loading anything again.
+   */
+  async function handleLoadClass() {
+    setRosterBusy(true);
+    setError(null);
+    try {
+      const children = await loadClassRoster();
+      const names = children.map((c) => c.name.trim()).filter(Boolean);
+      if (names.length === 0) {
+        setRosterCount(null);
+        setRosterNote('Your class list is empty — add your students in Montree first, or type the names below.');
+        return;
+      }
+      setBatchText(names.join('\n'));
+      setMode('batch');
+      setRosterCount(names.length);
+      setRosterNote(null);
+    } catch (e) {
+      setRosterCount(null);
+      setRosterNote(e instanceof RosterAuthError
+        ? 'Log in to Montree as a teacher to load your class automatically. You can still paste your list below.'
+        : 'Couldn’t reach your class list just now. You can still paste your list below.');
+    } finally {
+      setRosterBusy(false);
     }
   }
 
@@ -186,16 +229,41 @@ export default function TracingWorkPage() {
 
         {/* Single vs batch */}
         <section className="bg-white rounded-2xl border border-gray-200 p-5 space-y-4">
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex gap-2">
+              <button
+                type="button" onClick={() => setMode('single')}
+                className={`px-4 py-2 rounded-lg text-sm font-bold ${mode === 'single' ? 'bg-[#0D3330] text-white' : 'bg-gray-100 text-gray-600'}`}
+              >One student</button>
+              <button
+                type="button" onClick={() => setMode('batch')}
+                className={`px-4 py-2 rounded-lg text-sm font-bold ${mode === 'batch' ? 'bg-[#0D3330] text-white' : 'bg-gray-100 text-gray-600'}`}
+              >Whole class (one PDF)</button>
+            </div>
             <button
-              type="button" onClick={() => setMode('single')}
-              className={`px-4 py-2 rounded-lg text-sm font-bold ${mode === 'single' ? 'bg-[#0D3330] text-white' : 'bg-gray-100 text-gray-600'}`}
-            >One student</button>
-            <button
-              type="button" onClick={() => setMode('batch')}
-              className={`px-4 py-2 rounded-lg text-sm font-bold ${mode === 'batch' ? 'bg-[#0D3330] text-white' : 'bg-gray-100 text-gray-600'}`}
-            >Whole class (one PDF)</button>
+              type="button" onClick={handleLoadClass} disabled={rosterBusy || busy}
+              className="btn btn-secondary btn-sm on-light"
+            >
+              {rosterBusy ? 'Loading…' : 'Load my class'}
+            </button>
           </div>
+
+          {rosterNote && (
+            <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3">
+              {rosterNote}
+            </p>
+          )}
+
+          {/* Batch-only: the confirmation points at the list it filled, and
+              that list isn't on screen in single-student mode. */}
+          {rosterCount !== null && mode === 'batch' && (
+            <p className="text-sm text-[#0D3330] bg-emerald-50 border border-emerald-300 rounded-lg p-3">
+              <span className="font-bold">
+                {rosterCount} {rosterCount === 1 ? 'child' : 'children'} loaded from your class
+              </span>
+              {' — '}edit the list below before you generate if anyone is missing or away.
+            </p>
+          )}
 
           {mode === 'single' ? (
             <div className="space-y-3">

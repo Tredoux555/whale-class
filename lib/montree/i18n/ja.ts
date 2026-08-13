@@ -216,6 +216,8 @@ export const ja: Record<string, string> = {
   'students.remove': '削除',
   'students.name': '名前',
   'students.age': '年齢',
+  'students.birthday': '生年月日',
+  'students.ageFromBirthday': '（生年月日から計算）',
   'students.gender': '性別',
   'students.genderBoy': '男の子',
   'students.genderGirl': '女の子',

@@ -216,6 +216,8 @@ export const ko: Record<string, string> = {
   'students.remove': '제거',
   'students.name': '이름',
   'students.age': '나이',
+  'students.birthday': '생년월일',
+  'students.ageFromBirthday': '(생년월일 기준)',
   'students.gender': '성별',
   'students.genderBoy': '남아',
   'students.genderGirl': '여아',

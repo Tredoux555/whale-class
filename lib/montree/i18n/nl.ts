@@ -216,6 +216,8 @@ export const nl: Record<string, string> = {
   'students.remove': 'Verwijderen',
   'students.name': 'Naam',
   'students.age': 'Leeftijd',
+  'students.birthday': 'Geboortedatum',
+  'students.ageFromBirthday': '(op basis van de geboortedatum)',
   'students.gender': 'Geslacht',
   'students.genderBoy': 'Jongen',
   'students.genderGirl': 'Meisje',

@@ -248,6 +248,8 @@ export const zh = {
   'students.remove': '移除',
   'students.name': '姓名',
   'students.age': '年龄',
+  'students.birthday': '出生日期',
+  'students.ageFromBirthday': '（根据出生日期计算）',
   'students.gender': '性别',
   'students.genderBoy': '男孩',
   'students.genderGirl': '女孩',

@@ -7,7 +7,8 @@ import { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { getSession, isHomeschoolParent, setSession as saveSession, type MontreeSession } from '@/lib/montree/auth';
-import { useI18n } from '@/lib/montree/i18n';
+import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
+import { ageFromDob, isRealDob, realDobOrNull } from '@/lib/montree/dob';
 import { useFeatures } from '@/hooks/useFeatures';
 import { montreeApi } from '@/lib/montree/api';
 import { toast, Toaster } from 'sonner';
@@ -42,6 +43,28 @@ const AGE_OPTIONS = [
   { value: 5.5, label: '5½' },
   { value: 6, label: '6' },
 ];
+
+// Birthday helpers.
+//
+// `montree_children.date_of_birth` may be NULL, may hold the '1900-01-01'
+// "not known" sentinel, and (for legacy rows) may hold something that isn't a
+// date at all — isRealDob()/realDobOrNull() collapse all three to "no birthday",
+// so a date input starts empty and the roster card prints nothing rather than
+// announcing a 126th birthday.
+function dobForInput(value: string | null | undefined): string {
+  return realDobOrNull(value) ?? '';
+}
+
+/** "19 May 2022" in the teacher's language. UTC — a date column has no time. */
+function formatBirthday(iso: string, locale: string): string {
+  try {
+    return new Intl.DateTimeFormat(getIntlLocale(locale), {
+      day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
+    }).format(new Date(`${iso}T00:00:00Z`));
+  } catch {
+    return iso;
+  }
+}
 
 // Helper type for tenure options
 type TenureOption = { value: string; label: string; months: number };
@@ -83,12 +106,16 @@ type Student = {
   age: number;
   photo_url?: string;
   enrolled_at?: string;
+  /** YYYY-MM-DD, NULL, or the '1900-01-01' sentinel. Never trusted raw. */
+  date_of_birth?: string | null;
   progress?: { [areaId: string]: { workId: string | null; workName?: string } };
 };
 
 type BulkStudentForm = {
   name: string;
   age: number;
+  /** Optional YYYY-MM-DD from the row's date input; '' means "not given". */
+  dob: string;
   gender: string;
   tenure: string;
   progress: { [areaId: string]: { workId: string | null; workName?: string } };
@@ -298,11 +325,13 @@ export default function StudentsPage() {
   const [formData, setFormData] = useState({
     name: '',
     age: 3.5,
+    // YYYY-MM-DD as the <input type="date"> holds it; '' means "no birthday".
+    dob: '',
     tenure: 'new' as string,
     progress: {} as { [k: string]: { workId: string | null; workName?: string } }
   });
   const [bulkStudents, setBulkStudents] = useState<BulkStudentForm[]>([
-    { name: '', age: 3, gender: 'boy', tenure: 'new', progress: {}, notes: '' }
+    { name: '', age: 3, dob: '', gender: 'boy', tenure: 'new', progress: {}, notes: '' }
   ]);
   const [saving, setSaving] = useState(false);
   const [showPhotoCapture, setShowPhotoCapture] = useState(false);
@@ -398,7 +427,7 @@ export default function StudentsPage() {
     setEditingStudent(null);
     setBulkMode(true);
     setBulkStudents([
-      { name: '', age: 3, gender: 'boy', tenure: 'new', progress: {}, notes: '' }
+      { name: '', age: 3, dob: '', gender: 'boy', tenure: 'new', progress: {}, notes: '' }
     ]);
     setShowForm(true);
   };
@@ -409,6 +438,8 @@ export default function StudentsPage() {
     setFormData({
       name: student.name,
       age: student.age || 3.5,
+      // Sentinel and NULL both open the field empty — never as 1900-01-01.
+      dob: dobForInput(student.date_of_birth),
       tenure: getTenureFromEnrolledAt(student.enrolled_at || null, TENURE_OPTIONS),
       progress: student.progress || {},
     });
@@ -420,9 +451,9 @@ export default function StudentsPage() {
     setShowPhotoCapture(false);
     setEditingStudent(null);
     setBulkMode(false);
-    setFormData({ name: '', age: 3.5, tenure: 'new', progress: {} });
+    setFormData({ name: '', age: 3.5, dob: '', tenure: 'new', progress: {} });
     setBulkStudents([
-      { name: '', age: 3, gender: 'boy', tenure: 'new', progress: {}, notes: '' }
+      { name: '', age: 3, dob: '', gender: 'boy', tenure: 'new', progress: {}, notes: '' }
     ]);
   };
 
@@ -440,6 +471,10 @@ export default function StudentsPage() {
           body: JSON.stringify({
             name: formData.name,
             age: formData.age,
+            // '' clears the birthday (the API stores NULL); a real date makes
+            // the API re-derive age, which is why the select above is locked
+            // to the derived value while a birthday is set.
+            date_of_birth: formData.dob || null,
             enrolled_at: enrolledAt,
           }),
         });
@@ -509,6 +544,12 @@ export default function StudentsPage() {
       const payload = validStudents.map(student => ({
         name: student.name,
         age: student.age,
+        // Only sent when the teacher actually filled the row's date field: the
+        // bulk API rejects an unparseable date_of_birth for the WHOLE import,
+        // and '' is unparseable. When it is sent, that API derives the age from
+        // it, so the birthday wins over the age select — same rule as the
+        // single-child update.
+        ...(student.dob ? { date_of_birth: student.dob } : {}),
         gender: student.gender,
         tenure: student.tenure,
         progress: Object.fromEntries(
@@ -585,7 +626,7 @@ export default function StudentsPage() {
     if (bulkStudents.length < 30) {
       setBulkStudents([
         ...bulkStudents,
-        { name: '', age: 3, gender: 'boy', tenure: 'new', progress: {}, notes: '' }
+        { name: '', age: 3, dob: '', gender: 'boy', tenure: 'new', progress: {}, notes: '' }
       ]);
     }
   };
@@ -713,6 +754,14 @@ export default function StudentsPage() {
                       <p className="text-xs text-white/40">
                         {student.age ? `${student.age} ${t('students.yearsOld')}` : t('students.ageNotSet')}
                       </p>
+                      {/* Birthday, only when one is really on file. A missing
+                          date and the '1900-01-01' sentinel both print nothing —
+                          a card that said "1 January 1900" would be a lie. */}
+                      {isRealDob(student.date_of_birth) && (
+                        <p className="text-xs text-white/30">
+                          🎂 {formatBirthday(student.date_of_birth, locale)}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -848,15 +897,50 @@ export default function StudentsPage() {
                 </div>
               )}
 
+              {/* Birthday — optional. Empty means "not on file"; the API
+                  stores NULL for it and never invents a date. */}
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-1">{t('students.birthday')}</label>
+                <input
+                  type="date"
+                  value={formData.dob}
+                  max={new Date().toISOString().split('T')[0]}
+                  onChange={(e) => {
+                    const dob = e.target.value;
+                    // Keep the age select in step with the date the moment it
+                    // is picked, using the SAME arithmetic the API uses to
+                    // write the age — so the two can never disagree on screen.
+                    const derived = ageFromDob(dob);
+                    setFormData({ ...formData, dob, age: derived ?? formData.age });
+                  }}
+                  className="w-full p-3 bg-black/30 border border-[rgba(52,211,153,0.18)] rounded-xl text-white/90 focus:border-[#34d399] outline-none"
+                />
+              </div>
+
               {/* Age */}
               <div>
-                <label className="block text-sm font-medium text-white/70 mb-1">{t('students.age')}</label>
+                <label className="block text-sm font-medium text-white/70 mb-1">
+                  {t('students.age')}
+                  {isRealDob(formData.dob) && (
+                    <span className="text-white/40 font-normal ml-1">{t('students.ageFromBirthday')}</span>
+                  )}
+                </label>
                 <select
                   value={formData.age}
+                  // A real birthday owns the age (the API re-derives it on
+                  // save), so the picker is read-only rather than a control
+                  // whose value would be silently overwritten.
+                  disabled={isRealDob(formData.dob)}
                   onChange={(e) => setFormData({ ...formData, age: parseFloat(e.target.value) })}
-                  className="w-full p-3 bg-black/30 border border-[rgba(52,211,153,0.18)] rounded-xl text-white/90 focus:border-[#34d399] outline-none"
+                  className="w-full p-3 bg-black/30 border border-[rgba(52,211,153,0.18)] rounded-xl text-white/90 focus:border-[#34d399] outline-none disabled:opacity-60"
                 >
-                  {AGE_OPTIONS.map((opt) => (
+                  {/* A derived age can land outside the 2½–6 shelf list (a
+                      sibling, an older child). Show it rather than leaving the
+                      select blank and looking broken. */}
+                  {(AGE_OPTIONS.some((opt) => opt.value === formData.age)
+                    ? AGE_OPTIONS
+                    : [...AGE_OPTIONS, { value: formData.age, label: String(formData.age) }]
+                  ).map((opt) => (
                     <option key={opt.value} value={opt.value}>{opt.label} {t('students.yearsOld')}</option>
                   ))}
                 </select>
@@ -1039,19 +1123,35 @@ export default function StudentsPage() {
                       </div>
                     </div>
 
-                    {/* Row 2: Tenure */}
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-white/70 mb-1">{isHomeschoolParent(session) ? t('students.tenure') : t('students.tenureSchool')}</label>
-                      <select
-                        value={student.tenure}
-                        onChange={(e) => updateBulkStudent(index, 'tenure', e.target.value)}
-                        className="w-full p-2.5 bg-black/30 border border-[rgba(52,211,153,0.18)] rounded-lg text-white/90 focus:border-[#34d399] outline-none text-sm"
-                        {...(index === 0 ? { 'data-guide': 'tenure' } : {})}
-                      >
-                        {TENURE_OPTIONS.map((opt) => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
+                    {/* Row 2: Tenure + optional birthday */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <label className="block text-sm font-medium text-white/70 mb-1">{isHomeschoolParent(session) ? t('students.tenure') : t('students.tenureSchool')}</label>
+                        <select
+                          value={student.tenure}
+                          onChange={(e) => updateBulkStudent(index, 'tenure', e.target.value)}
+                          className="w-full p-2.5 bg-black/30 border border-[rgba(52,211,153,0.18)] rounded-lg text-white/90 focus:border-[#34d399] outline-none text-sm"
+                          {...(index === 0 ? { 'data-guide': 'tenure' } : {})}
+                        >
+                          {TENURE_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Birthday — optional. Left blank the child is created
+                          with no birthday; filled, the bulk API derives the
+                          age from it and the Age select above is ignored. */}
+                      <div>
+                        <label className="block text-sm font-medium text-white/70 mb-1">{t('students.birthday')}</label>
+                        <input
+                          type="date"
+                          value={student.dob}
+                          max={new Date().toISOString().split('T')[0]}
+                          onChange={(e) => updateBulkStudent(index, 'dob', e.target.value)}
+                          className="w-full p-2.5 bg-black/30 border border-[rgba(52,211,153,0.18)] rounded-lg text-white/90 focus:border-[#34d399] outline-none text-sm"
+                        />
+                      </div>
                     </div>
 
                     {/* Row 3: Curriculum */}

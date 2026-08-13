@@ -276,6 +276,8 @@ export const en = {
   'students.remove': 'Remove',
   'students.name': 'Name',
   'students.age': 'Age',
+  'students.birthday': 'Birthday',
+  'students.ageFromBirthday': '(from the birthday)',
   'students.gender': 'Gender',
   'students.genderBoy': 'Boy',
   'students.genderGirl': 'Girl',

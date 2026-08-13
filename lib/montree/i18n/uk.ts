@@ -216,6 +216,8 @@ export const uk: Record<string, string> = {
   'students.remove': 'Видалити',
   'students.name': 'Ім\'я',
   'students.age': 'Вік',
+  'students.birthday': 'Дата народження',
+  'students.ageFromBirthday': '(за датою народження)',
   'students.gender': 'Стать',
   'students.genderBoy': 'Хлопчик',
   'students.genderGirl': 'Дівчинка',

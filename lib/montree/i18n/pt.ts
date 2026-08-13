@@ -216,6 +216,8 @@ export const pt: Record<string, string> = {
   'students.remove': 'Remover',
   'students.name': 'Nome',
   'students.age': 'Idade',
+  'students.birthday': 'Data de nascimento',
+  'students.ageFromBirthday': '(a partir da data de nascimento)',
   'students.gender': 'Gênero',
   'students.genderBoy': 'Menino',
   'students.genderGirl': 'Menina',

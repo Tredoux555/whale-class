@@ -7,6 +7,7 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
+import { parseDobInput, ageFromDob } from '@/lib/montree/dob';
 
 interface RouteContext {
   params: Promise<{ childId: string }>;
@@ -127,6 +128,26 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     if (body.photo_url !== undefined) updates.photo_url = body.photo_url;
     if (body.notes !== undefined) updates.notes = body.notes;
     if (body.enrolled_at !== undefined) updates.enrolled_at = body.enrolled_at;
+
+    // Birthday. Validated, never coerced: a date the teacher typed and the
+    // server silently dropped is worse than one it refused. '' / null / the
+    // '1900-01-01' sentinel all mean "no birthday on file" and store NULL.
+    if (body.date_of_birth !== undefined) {
+      const parsed = parseDobInput(body.date_of_birth);
+      if (!parsed.ok) {
+        return NextResponse.json({ error: parsed.error }, { status: 400 });
+      }
+      updates.date_of_birth = parsed.dob;
+
+      // A real birthday is the source of truth for age — same precedence as
+      // cleanAge() in the photo-onboarding commit and the bulk children route.
+      // Written AFTER the `age` line above on purpose, so editing the birthday
+      // can never leave a stale typed age behind to contradict it.
+      if (parsed.dob) {
+        const derived = ageFromDob(parsed.dob);
+        if (derived !== null) updates.age = derived;
+      }
+    }
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: 'No updates provided' }, { status: 400 });
