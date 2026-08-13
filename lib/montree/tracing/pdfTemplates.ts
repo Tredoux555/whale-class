@@ -18,9 +18,10 @@
 //     (one page per child, `addPage()` between them) so a teacher sends a
 //     single print job instead of unzipping 18 files.
 //
-// Orientation is per template, not per document: Template B is landscape US
-// Letter (792×612), A and C are portrait (612×792). A mixed batch interleaves
-// the two in one file — see `orientationFor()` and `buildTracingPdfBatch()`.
+// Orientation is per template, not per document: Templates A and B are
+// landscape US Letter (792×612); C is portrait (612×792). A mixed batch
+// interleaves orientations in one file — see `orientationFor()` and
+// `buildTracingPdfBatch()`.
 //
 // Design reference: ./docxTemplates.ts (do not edit that file; it is the
 // source of truth for colours/copy and is kept for the .docx export path).
@@ -37,8 +38,6 @@ export const GOLD = '#C98A2C';
 const PANEL_TEAL = '#EAF4F1';
 const PANEL_GOLD = '#FBF1E1';
 const RULE_GRAY = '#D8DEDC';
-const SUBTITLE_GRAY = '#4B5A57';
-const CAPTION_GRAY = '#6B7A77';
 const FOOTER_GRAY = '#7C8A87';
 const QUIET_GRAY = '#9AA6A3';
 const FAINT_GRAY = '#AEB8B5';
@@ -140,16 +139,23 @@ export type TracingTemplate = 'A' | 'B' | 'C';
 
 // ---------------------------------------------------------- orientation ---
 /**
- * Template B is a LANDSCAPE worksheet; A and C stay portrait.
+ * Templates A and B are LANDSCAPE worksheets; C stays portrait.
  *
- * B's whole point is the size of the glyphs a five-year-old traces with a fat
- * marker, and the two things that limit those glyphs pull in opposite
- * directions: the name strip is only ~1.8:1 (it wants height) while the
- * 0–9 numbers strip is ~6.5:1 (it wants width). Landscape US Letter gives the
- * numbers row 698.4pt of usable width instead of 518.4 (+35%), and B claws the
- * lost vertical back by setting the name's model strip and its blank practice
- * guide *side by side* on one line — the classic "trace it, then write it"
- * row — so the name costs one band height instead of two. See GEOMETRY.B.
+ * The whole point of going landscape is the size of the glyphs a five-year-
+ * old traces with a fat marker, and the two things that limit those glyphs
+ * pull in opposite directions: the name strip is only ~1.8:1 (it wants
+ * height) while the 0–9 numbers strip is ~6.5:1 (it wants width). Landscape
+ * US Letter gives the numbers row 698.4pt of usable width instead of 518.4
+ * (+35%), and the lost vertical comes back by setting the name's model strip
+ * and its blank practice guide *side by side* on one line — the classic
+ * "trace it, then write it" row — so the name costs one band height instead
+ * of two. See GEOMETRY.B (and GEOMETRY.A, which now shares those numbers).
+ *
+ * A moved from portrait to landscape after B's four rounds of live tuning had
+ * already answered "what size should this text be" — rather than re-deriving
+ * a second, slightly different answer for A, its CHROME and GEOMETRY entries
+ * reuse B's exactly. See the drawTemplateA docstring for the layout that made
+ * that possible.
  *
  * Orientation is a property of the template, never of the caller, so a mixed
  * batch just interleaves page orientations (see `buildTracingPdfBatch`).
@@ -157,7 +163,7 @@ export type TracingTemplate = 'A' | 'B' | 'C';
 export type PageOrientation = 'portrait' | 'landscape';
 
 export function orientationFor(template: TracingTemplate): PageOrientation {
-  return template === 'B' ? 'landscape' : 'portrait';
+  return template === 'C' ? 'portrait' : 'landscape';
 }
 
 export interface PageMetrics {
@@ -209,55 +215,35 @@ export function pageMetrics(template: TracingTemplate): PageMetrics {
  * docx half-points /2 = pt; docx border sizes are eighths of a pt.
  */
 const CHROME = {
-  // Template A's chrome went 212 → 181 (−31) to fund the round-4 band growth
-  // (see GEOMETRY.A). Unlike landscape B, A had no structural fat to reclaim —
-  // it is a portrait document and its header/title/picture frame are the design
-  // — so the audit only took points from spacing that sits *next to a trace
-  // image*, which carries a large amount of its own internal white:
-  // renderTraceStrip draws 1.15 em of blank above the top ruled line and 1.15 em
-  // below the baseline, i.e. ~36pt at each end of every strip at the round-4
-  // name band. Chrome spacing adjacent to a strip is therefore a *typographic*
-  // inset, not clearance, and 4–6pt of it reads the same as 9–10pt.
-  //   label   25 → 16  (−9 × 3 = −27)  4 before + 11 line (9pt caps) + 1 after,
-  //                                    which is exactly the label block landscape
-  //                                    B has shipped since round 3 and the
-  //                                    teacher approved. `sectionLabel()` is
-  //                                    passed the matching 4pt lead in
-  //                                    drawTemplateA / drawTraceBlocks — the two
-  //                                    must stay equal or the label drifts off
-  //                                    its own row.
-  //   footer  18 → 14  (−4)            10 before → 6. The footer is *drawn* at
-  //                                    cap-line y+10 with a 7.5pt italic, so its
-  //                                    ink ends ~y+17.6 and already overhangs an
-  //                                    18pt budget; the point of the cut is to
-  //                                    move the line up, and it still sits on
-  //                                    MARGIN_Y (39.6) + slack (32.9) = 72.5pt of
-  //                                    white, the roomiest edge on the sheet.
-  // Audited and deliberately NOT cut:
-  //   ruledLine 19 — the "now you try!" rule is drawn at y+19, so 19pt is the
-  //                  child's actual writing space. Cutting it is the one trim
-  //                  that would make the sheet worse at its job.
-  //   headerRow 11 / headerRule 12 / title 28 / pictureFrame 39 — the document
-  //                  header and the picture box are the "Classic Montree" design
-  //                  the teacher picked A for, none of them touch a trace strip,
-  //                  and together they would only yield ~14pt of visibly tighter
-  //                  typography. Left alone.
-  //   gapNameTrace 1 / gapNumbersTrace 1 — a strip and its guide are already
-  //                  1pt apart; there is nothing in them to take.
+  // Template A moved from portrait to landscape (see orientationFor) so its
+  // trace glyphs could grow to match B's rather than stay capped by a
+  // portrait page that had no more chrome left to cut (the old A audit —
+  // 212 → 181pt — already took everything adjacent to a trace strip; the
+  // header/title/picture frame were the "Classic Montree" design itself and
+  // deliberately left alone). Landscape doesn't just add width, it removes
+  // the reason A's chrome was ever a separate budget: A's structure now
+  // borrows B's directly — picture/logo beside a kicker+title lockup instead
+  // of three stacked header pieces, the name row side by side instead of two
+  // stacked bands, "now you try" beside its rule instead of above it — the
+  // same three compressions that paid for B's growth. The result is CHROME.A
+  // below being field-for-field identical in value to CHROME.B: same chrome
+  // (180), same flexible budget, same defensive-scale target, same drawn
+  // band sizes. That's intentional, not a coincidence to prune away — it's
+  // what makes A's trace strips exactly as large as the ones B's four rounds
+  // of live tuning already settled on, rather than a second, independently-
+  // rounded answer. See the drawTemplateA docstring for the full layout and
+  // GEOMETRY.A for where the shared numbers come from.
   A: {
-    headerRow: 11,        // 9pt caps line
-    headerRule: 12,       // 1pt rule box + 10pt spacing-after (200 twips)
-    title: 28,            // 15pt bold line (20) + 8pt after (160 twips)
-    pictureFrame: 39,     // 13 pad-top + 4 gap + 9 caption + 13 pad-bottom
-    label: 16,            // 4 before + 11 line + 1 after  (×3 labels)
-    labelBefore: 4,       // MUST equal the lead half of `label` (see above)
-    labels: 3,
-    gapNameTrace: 1,      // 20 twips
-    gapNameGuide: 4,      // 80 twips
-    gapNumbersTrace: 1,   // 10 twips (rounded up)
-    gapNumbersGuide: 4,   // 80 twips
-    ruledLine: 19,        // 380 twips
-    footer: 14,           // 6 before (120 twips) + 8pt line
+    picture: 96,          // photo/logo header slot — same size as B's badge
+    headerAfter: 6,       // 120 twips under the header band
+    namePanelFrame: 9,    // 4 pad-top + 4 pad-bottom + 1 border
+    numbersLabel: 16,     // 4 before + 11 line (9pt caps) + 1 after
+    numbersPanelFrame: 9,
+    gapNumbersPanel: 2,   // 40 twips between numbers trace + guide
+    spacerBeforeTry: 4,   // 80 twips
+    tryPanelFrame: 9,
+    tryRow: 18,           // 11pt heading line, ruled line on the same row
+    footer: 11,           // 3 before (60 twips) + 8pt line
   },
   // Template B is landscape (792×612) on a 0.30in frame: 568.8pt of printable
   // height instead of portrait's 712.8, so every chrome item is re-costed for
@@ -383,10 +369,12 @@ const CHROME = {
 
 export function chromeHeight(template: TracingTemplate): number {
   if (template === 'A') {
+    // 96 + 6 + 9 + 16 + 9 + 2 + 4 + 9 + 18 + 11 = 180 — same formula as B,
+    // field for field (see the CHROME.A comment above).
     const c = CHROME.A;
-    return c.headerRow + c.headerRule + c.title + c.pictureFrame + c.label * c.labels
-      + c.gapNameTrace + c.gapNameGuide + c.gapNumbersTrace + c.gapNumbersGuide
-      + c.ruledLine + c.footer;
+    return c.picture + c.headerAfter + c.namePanelFrame + c.numbersLabel
+      + c.numbersPanelFrame + c.gapNumbersPanel
+      + c.spacerBeforeTry + c.tryPanelFrame + c.tryRow + c.footer;
   }
   if (template === 'B') {
     // 96 + 6 + 9 + 16 + 9 + 2 + 4 + 9 + 18 + 11 = 180 (round 4 — see CHROME.B)
@@ -438,26 +426,25 @@ const B_ROUND2_NUMBERS_BAND = 122;
 const B_BAND_GROWTH = 1.065;
 
 /**
- * Round-4 growth step for the two PORTRAIT templates, A and C.
+ * Round-4 growth step for portrait Template C, the one template still sized
+ * on its own terms.
  *
  * Same rule as B_BAND_GROWTH and for the same reason: the teacher asked for the
- * name and the numbers to grow "by the same ratio", so each template's two band
- * heights are one shared multiplier over the values they shipped with, rather
- * than two hand-rounded integers that would differ in the third digit. A and C
- * get their own multipliers because they are limited by different things — A by
- * vertical budget it had to buy with a chrome trim, C by the width of the page
- * its 0–9 row is drawn across. See GEOMETRY.A and GEOMETRY.C for the audits.
+ * name and the numbers to grow "by the same ratio", so C's two band heights
+ * are one shared multiplier over the values it shipped with, rather than two
+ * hand-rounded integers that would differ in the third digit. C gets its own
+ * multiplier because it is limited by something neither A nor B is — the
+ * width of the page its 0–9 row is drawn across. See GEOMETRY.C for the audit.
+ * (A used to have its own multiplier here too; now that it's landscape it
+ * reuses B_ROUND2_NAME_BAND / B_ROUND2_NUMBERS_BAND / B_BAND_GROWTH directly
+ * — see GEOMETRY.A.)
  *
- * Both also silently *lost* ~7% when traceRender.ts widened its descender
+ * C also silently *lost* ~7% when traceRender.ts widened its descender
  * budget (strip height 4.00 → 4.30 × size, so a fixed band height draws a
- * proportionally smaller glyph). The first 4.30/4.00 = 1.075 of each multiplier
+ * proportionally smaller glyph). The first 4.30/4.00 = 1.075 of the multiplier
  * below therefore only puts the glyphs back where they were before that fix;
  * everything above it is the real growth the teacher asked for.
  */
-const A_BASE_NAME_BAND = 120;
-const A_BASE_NUMBERS_BAND = 60;
-const A_BAND_GROWTH = 1.14;
-
 const C_BASE_NAME_BAND = 145;
 const C_BASE_NUMBERS_BAND = 70;
 const C_BAND_GROWTH = 1.135;
@@ -499,62 +486,29 @@ interface TemplateGeometry {
 }
 
 export const GEOMETRY: Record<TracingTemplate, TemplateGeometry> = {
-  // ---- Template A, portrait 612×792, 0.65in/0.55in frame -----------------
-  // Printable box 518.4 × 712.8; chrome 181 (see CHROME.A); MIN_SLACK 18.
-  // A spends its flexible budget on FOUR blocks, not three — the picture box is
-  // in the same pot as the trace art:
-  //     2 × nameBandH + 2 × numbersBandH + pictureH
-  //   = 2 × 136.80 + 2 × 68.40 + 88.50 = 498.90   ⇒ total 679.90, slack 32.90
-  // Every strip is 4.30 × its render `size` tall (traceRender.ts), so displayed
-  // x-height = bandH / 4.30:
-  //     name     136.80 / 4.30 = 31.814pt   was 120 / 4.30 = 27.907pt
-  //     numbers   68.40 / 4.30 = 15.907pt   was  60 / 4.30 = 13.953pt
-  // Both are exactly ×A_BAND_GROWTH = 1.14. Of that, 1.075 is the descender-fix
-  // refund and 1.060 is new growth, so a traced digit (2 em) goes 0.78in → 0.88in.
+  // ---- Template A, landscape 792×612, 0.30in frame / 0.20in bottom -------
+  // Same page, same CHROME budget (180), same GEOMETRY targets as B — see the
+  // CHROME.A comment for why. A reuses B's constants directly (rather than a
+  // copy that could quietly drift) so name/numbersBandH, the width caps, the
+  // side-by-side name row and the tightened numbers tracking are byte-for-
+  // byte what B's four rounds of live tuning arrived at: drawn name x-height
+  // 35.08pt, numbers x-height 26.42pt, at the same 0.8742× defensive scale.
+  // See the GEOMETRY.B comment immediately below for the full derivation.
   //
-  // Where the 1.14 came from — the flexible spend is 437.6pt of a 712.8pt page,
-  // so ~3.6pt of budget per 1% of growth:
-  //     +52.3  the slack the sheet already had (660.5 of 712.8 used)
-  //     +31.0  chrome 212 → 181 (see CHROME.A: three label blocks and the
-  //            footer lead, all of them spacing that abuts a trace strip)
-  //     −32.9  slack kept back — 14.9pt above MIN_SLACK. A is not structurally
-  //            starved the way landscape B was, so it does not need to run at
-  //            B's 1.6pt of headroom.
-  //   ⇒ 50.4pt of new band height, i.e. 360 → 410.4 = ×1.14.
-  //
-  // The picture box and the with-photo case:
-  //   • pictureH is 88.5 (the fallback badge, BADGE_IN_BOX) on a sheet with no
-  //     photo, and PICTURE_MAX_H = 110 as soon as a teacher drops in anything
-  //     less than 2.05:1 — i.e. any ordinary 4:3 or square photo. That case is
-  //     21.5pt heavier and is the one that actually binds: 181 + 410.4 + 110 =
-  //     701.4 against the 694.8 the MIN_SLACK guarantee allows, so it lands on
-  //     `computeTracingLayout`'s defensive down-scale at 0.9873 — the photo is
-  //     drawn 108.6pt instead of 110 and the name x-height comes out 31.41
-  //     instead of 31.814. This is deliberate, not an oversight: sizing the
-  //     bands so the photo case never scales would mean A_BAND_GROWTH 1.1217,
-  //     which is *smaller in both cases* (31.30pt x-height with and without a
-  //     photo) — the down-scale costs the photo 1.3% and buys every no-photo
-  //     sheet, which is the default the tool ships with, 1.6% more glyph.
-  //   • Nothing about the picture maths is touched by the growth: pictureW/H
-  //     still come from PICTURE_MAX_W/H and the drawn frame is still
-  //     CHROME.A.pictureFrame + pictureBox.h.
-  //
-  // Width checks against the 518.4pt content width (nothing needed widening):
-  //   • numbers row — the '0 1 … 9' strip is 6.494 : 1 at the shared
-  //     NUMBERS_TRACKING 0.55, so the 68.4pt band draws 444.2pt against
-  //     `numbersMaxW` 465: still height-limited, with 20.8pt to spare. The cap
-  //     would not bite until a band of 71.6pt (×1.193), well past this round, so
-  //     A needs neither a wider cap nor B's tightened tracking.
-  //   • name row — the blank guide is the binding one of the pair (8.5 em wide,
-  //     1.9767 : 1) and caps the band at 360 / 1.9767 = 182.1pt, 33% above the
-  //     136.8 taken here. The model strip only reaches the 360pt cap at an
-  //     aspect above 2.63, i.e. names of roughly 8+ letters, which width-cap by
-  //     design and so use *less* page and leave more slack, never less.
+  // What's genuinely A-specific is the picture/logo slot, and it is sized as
+  // a fixed CHROME.A.picture (96, same as B's badge) rather than as a
+  // flexible budget item the way portrait A's picture box used to be: the
+  // photo or fallback logo is placed with its own aspect ratio preserved
+  // inside that fixed square, exactly like B's badge, so its size no longer
+  // depends on — or competes with — the trace band budget above. See the
+  // drawTemplateA docstring.
   A: {
-    nameSize: 100, nameMaxW: 480 * PX_TO_PT, numbersMaxW: 620 * PX_TO_PT,
-    nameBandH: A_BASE_NAME_BAND * A_BAND_GROWTH,          // 136.80
-    numbersBandH: A_BASE_NUMBERS_BAND * A_BAND_GROWTH,    // 68.40
-    align: 'center',
+    nameSize: 100, numbersSize: 100,
+    nameMaxW: 470, numbersMaxW: B_PANEL_INNER_W,
+    nameBandH: B_ROUND2_NAME_BAND * B_BAND_GROWTH,          // 172.53
+    numbersBandH: B_ROUND2_NUMBERS_BAND * B_BAND_GROWTH,    // 129.93
+    align: 'center', nameRow: 'sideBySide',
+    nameGuideEm: 12, numbersGuideEm: 23, numbersTracking: 0.32,
   },
   // ---- Template B, landscape 792×612, 0.30in frame / 0.20in bottom -------
   // Printable box 748.8 × 576.0; chrome 124 (see CHROME.B); MIN_SLACK 18.
@@ -708,10 +662,6 @@ export function numbersTrackingFor(template: TracingTemplate): number {
   return GEOMETRY[template].numbersTracking ?? NUMBERS_TRACKING;
 }
 
-/** Template A photo box: docx draws the photo 300px wide. */
-const PICTURE_MAX_W = 300 * PX_TO_PT;   // 225
-const PICTURE_MAX_H = 110;
-
 // --------------------------------------------------------------- layout ---
 export interface ImageDims { width: number; height: number }
 export interface Box { w: number; h: number }
@@ -726,8 +676,6 @@ export interface TracingLayoutInput {
   numbersTrace: ImageDims;
   /** natural dims from renderBlankGuide({ size: numbersSizeFor(t), widthEm: numbersGuideEmFor(t) }) */
   numbersGuide: ImageDims;
-  /** Template A only — natural pixel dims of the teacher's photo, if any. */
-  picture?: ImageDims | null;
 }
 
 export interface TracingLayout {
@@ -737,8 +685,6 @@ export interface TracingLayout {
   nameGuideBox: Box;
   numbersTraceBox: Box;
   numbersGuideBox: Box;
-  /** Template A only: the drawn size of the photo / fallback emblem. */
-  pictureBox: Box | null;
   /** defensive down-scale that had to be applied (1 = none needed). */
   scale: number;
   /** projected top-to-bottom height of everything on the page. */
@@ -796,37 +742,21 @@ export function computeTracingLayout(input: TracingLayoutInput): TracingLayout {
   let nameH = bandHeight(geo.nameBandH, geo.nameMaxW, input.nameTrace, sideBySide ? null : input.nameGuide);
   let numbersH = bandHeight(geo.numbersBandH, geo.numbersMaxW, input.numbersTrace, input.numbersGuide);
 
-  // Template A's picture box is the other flexible block.
-  let pictureH = 0;
-  let pictureW = 0;
-  if (template === 'A') {
-    if (input.picture) {
-      const s = Math.min(PICTURE_MAX_W / input.picture.width, PICTURE_MAX_H / input.picture.height);
-      pictureW = input.picture.width * s;
-      pictureH = input.picture.height * s;
-    } else {
-      // No photo yet — the class emblem *is* the picture here, so it earns
-      // the same ceiling a real photo gets (PICTURE_MAX_H) instead of
-      // floating small and alone in an otherwise-empty frame.
-      pictureW = PICTURE_MAX_H;
-      pictureH = PICTURE_MAX_H;
-    }
-  }
-
   // ---- single-page-fit guarantee -----------------------------------------
   // Everything flexible scales together so the art stays visually coherent.
   // A side-by-side name row occupies one band height on the page, not two.
+  // Template A's picture/logo slot is NOT part of this — like B's badge, it's
+  // a fixed CHROME.A.picture square (see the CHROME.A comment), so it never
+  // competes with the trace bands for budget.
   const nameRows = sideBySide ? 1 : 2;
   let scale = 1;
-  const flexible = () => nameRows * nameH + 2 * numbersH + pictureH;
+  const flexible = () => nameRows * nameH + 2 * numbersH;
   const projected = chrome + flexible();
   if (projected > page.availH - MIN_SLACK) {
     const budget = page.availH - MIN_SLACK - chrome;
     scale = Math.max(MIN_TRACE_SCALE, Math.min(1, budget / flexible()));
     nameH *= scale;
     numbersH *= scale;
-    pictureH *= scale;
-    pictureW *= scale;
   }
 
   const strip = (h: number, img: ImageDims): Box => ({ w: (img.width * h) / img.height, h });
@@ -845,7 +775,7 @@ export function computeTracingLayout(input: TracingLayoutInput): TracingLayout {
   const numbersTraceBox = strip(numbersH, input.numbersTrace);
   const numbersGuideBox = guideBox(numbersH, input.numbersGuide, numbersTraceBox.w, geo.numbersMaxW);
 
-  const totalHeight = chrome + nameRows * nameH + 2 * numbersH + pictureH;
+  const totalHeight = chrome + nameRows * nameH + 2 * numbersH;
   const slack = page.availH - totalHeight;
 
   return {
@@ -855,7 +785,6 @@ export function computeTracingLayout(input: TracingLayoutInput): TracingLayout {
     nameGuideBox,
     numbersTraceBox,
     numbersGuideBox,
-    pictureBox: template === 'A' ? { w: pictureW, h: pictureH } : null,
     scale,
     totalHeight,
     page,
@@ -905,14 +834,14 @@ function hline(doc: jsPDF, x0: number, x1: number, y: number, color: string, wid
  * docx `sectionLabel()` — tracked 9pt caps.
  *
  * `before` is a parameter because the lead has to match whatever CHROME.<t>
- * budgeted or the label drifts off its own row. Both A and landscape B now
+ * budgeted or the label drifts off its own row. Both landscape A and B now
  * charge this block 16pt (4 + 11 + 1); the 9pt default is what the original
  * docx port used and is kept only so a caller that has no opinion still gets
  * the docx spacing.
  */
 function sectionLabel(doc: jsPDF, text: string, x: number, y: number, color = INK, before = 9): number {
   drawText(doc, text.toUpperCase(), x, y + before, { size: 9, bold: true, color, charSpace: 0.8, font: FONT_LABEL });
-  return CHROME.A.label; // 16 — Template A's label block height (callers ignore it)
+  return 16; // landscape A/B's shared label block height (callers ignore it)
 }
 
 function alignedX(align: 'center' | 'left', boxW: number, contentW: number, marginX: number): number {
@@ -1120,7 +1049,6 @@ export async function drawTracingPage(
     nameGuide: nameGuideArt.dims,
     numbersTrace: numbersTraceArt.dims,
     numbersGuide: numbersGuideArt.dims,
-    picture: pictureArt?.dims ?? null,
   });
 
   const ctx = {
@@ -1191,7 +1119,7 @@ function drawTraceBlocks(ctx: DrawCtx, y: number, opts: {
   const { doc, layout } = ctx;
   const { align, labels, gaps, labelHeight, labelBefore } = opts;
   const [c1, c2] = opts.labelColors ?? [INK, INK];
-  // A and C are the only callers and both are portrait.
+  // C is the only remaining caller, portrait.
   const { contentW, marginX } = layout.page;
   const label = opts.drawLabel ?? ((text: string, ly: number, color: string) => { sectionLabel(doc, text, marginX, ly, color, labelBefore); });
 
@@ -1212,84 +1140,157 @@ function drawTraceBlocks(ctx: DrawCtx, y: number, opts: {
   return y;
 }
 
-// ---- Template A — Classic Montree ----
+// ---- Template A — Classic Montree (LANDSCAPE) ----
+/**
+ * 792 × 612, same 0.30in/0.30in/0.20in frame as B (LANDSCAPE_METRICS). A
+ * moved here from portrait so its trace glyphs could grow to match B's:
+ * portrait A's picture band, header row and title were three separately
+ * stacked pieces on a 712.8pt page, and that page had no chrome left to cut
+ * (the old CHROME.A audit already took every point adjacent to a trace
+ * strip). Landscape doesn't just add width — it removes the reason A needed
+ * its own budget at all, by borrowing B's structure directly:
+ *
+ *  L_MARGIN_Y 21.6 ┌───────────────────────────────────────────────────────┐
+ *    picture   96  │ [ photo/logo ]  [SCHOOL NAME ·] NAME TRACING · CLASS  │
+ *                  │                 My Name Is…                          │
+ *   +after      6  │                                                       │
+ *  name frame 159.8│ ┌ ink hairline ──────────────────────────────────────┐│
+ *   (9+150.8)      │ │  [ name model ]  [ blank practice line ]           ││
+ *                  │ └──────────────────────────────────────────────────┘  │
+ *     label     16 │ NUMBERS 0–9                                           │
+ *  num frame  238.2│ ┌ ink hairline ──────────────────────────────────────┐│
+ *  (9+2·113.6+2)   │ │            0 1 2 3 4 5 6 7 8 9  (model)            ││
+ *                  │ │            ─────────────────── (practice)          ││
+ *                  │ └──────────────────────────────────────────────────┘  │
+ *    spacer      4 │                                                       │
+ *  now-you-try  27 │ NOW YOU TRY!  ─────────────────────────────────────    │
+ *    footer     11 │       Whale Class [· School Name]                     │
+ *  slack 18 (MIN)  └───────────────────────────────────────────────────────┘
+ *  L_MARGIN_BOT 14.4
+ *
+ * 96 + 6 + 159.83 + 16 + 238.17 + 4 + 27 + 11 = 558.0 of 576.0 printable —
+ * identical to B's total, because CHROME.A and GEOMETRY.A are now field-for-
+ * field the same as B's (see those comments). "The text the right size" is
+ * B's four rounds of live tuning; A reuses that answer exactly rather than
+ * re-deriving a second, slightly different one.
+ *
+ * Three compressions make the landscape page fit, borrowed straight from B:
+ * the picture/logo sits beside the kicker+title lockup instead of above it
+ * (was header row + rule + title, three stacked pieces); the name row is the
+ * model strip and its blank practice line side by side on one row instead of
+ * stacked on two; and "now you try" runs its heading beside the rule instead
+ * of above it.
+ *
+ * Where A deliberately does NOT copy B, on purpose: style, not size. A stays
+ * the plain, uncoloured "Classic Montree" sheet — thin ink hairline frames,
+ * no teal/gold fills, a generic "My Name Is…" instead of a personalised
+ * title — so the two templates still read as different products, not just
+ * different orientations of the same one.
+ *
+ * The picture slot shows the teacher's uploaded batch photo if one is set,
+ * else the school's logo (the same badgeArt B's header uses) — the same
+ * fallback rule Template A always had, just moved into the header row. It is
+ * placed with its own aspect ratio preserved and centred in the
+ * picture×picture box (see `picFit` below), never stretched: the same fix
+ * applied to B's badge, and for the same reason — a class photo or a
+ * non-square logo upload would otherwise be forced into a square and
+ * visibly distorted. There is no colour backdrop behind it either, for the
+ * same round-4 reason B's badge lost its plate: against real artwork (not
+ * just a flat seal) a solid-colour backing reads as an unwanted background,
+ * not a feature.
+ */
 function drawTemplateA(ctx: DrawCtx) {
   const { doc, layout, className, schoolName } = ctx;
   const c = CHROME.A;
-  const centre = MARGIN_X + CONTENT_W / 2;
+  const { contentW, marginX, marginY } = layout.page;
+  const centre = marginX + contentW / 2;
+  // Must equal the pad half of CHROME.A's *PanelFrame entries (4 + 4 + 1 = 9).
+  const PANEL_PAD_Y = 4;
 
-  // docx: 700×490px emblem rotated 325°, centred on the page, behind the text.
-  watermark(ctx.doc, ctx.watermarkArt, {
-    w: 700 * PX_TO_PT, h: 490 * PX_TO_PT, cx: PAGE_W / 2, cy: PAGE_H / 2, pageH: PAGE_H,
+  let y = marginY;
+
+  // The faded emblem is still the "Classic Montree" look; only B (a full-
+  // bleed colour sheet) dropped its watermark.
+  watermark(doc, ctx.watermarkArt, {
+    w: 700 * PX_TO_PT, h: 490 * PX_TO_PT, cx: layout.page.w / 2, cy: layout.page.h / 2, pageH: layout.page.h,
     rotationDeg: 35, opacity: ctx.watermarkOpacity,
   });
 
-  let y = MARGIN_Y;
+  // ---- header row: picture/logo beside the kicker/title, group centred ---
+  const picture = c.picture;
+  // No hardcoded "MONTREE PHONICS" — the school's own name if they've given
+  // us one, otherwise just "NAME TRACING · {CLASS}"; a long combination
+  // simply widens the centred header group symmetrically, never clips (see
+  // the equivalent note in drawTemplateB).
+  const kicker = schoolName
+    ? `${schoolName.toUpperCase()} · NAME TRACING · ${className.toUpperCase()}`
+    : `NAME TRACING · ${className.toUpperCase()}`;
+  const title = 'My Name Is…';
+  const kickerOpts = { size: 8, bold: true, color: INK, charSpace: 1, font: FONT_LABEL } as const;
+  const titleOpts = { size: 17, bold: true, color: INK, font: FONT_LABEL } as const;
+  const textW = Math.max(measure(doc, kicker, kickerOpts), measure(doc, title, titleOpts));
+  const headGap = 16;
+  const headX = centre - (picture + headGap + textW) / 2;
 
-  // The left slot used to be a hardcoded "MONTREE PHONICS" — that's Montree's
-  // own branding on a sheet a school is printing under their own name, which
-  // reads as friction rather than polish. It now shows the school's name if
-  // they've given us one, and is simply blank (not a fallback label) if not —
-  // the right-aligned subtitle is unaffected either way, so an empty left
-  // slot is a deliberately quiet header, not a layout hole.
-  if (schoolName) {
-    drawText(doc, schoolName.toUpperCase(), MARGIN_X, y, { size: 9, bold: true, color: INK, charSpace: 1.2, font: FONT_LABEL });
-  }
-  drawText(doc, `Name Tracing · ${className}`, MARGIN_X + CONTENT_W, y, { size: 9, italic: true, color: SUBTITLE_GRAY, align: 'right' });
-  y += c.headerRow;
-
-  hline(doc, MARGIN_X, MARGIN_X + CONTENT_W, y + 1, INK, 1);
-  y += c.headerRule;
-
-  drawText(doc, 'My Name Is…', centre, y, { size: 15, bold: true, color: INK, align: 'center', font: FONT_LABEL });
-  y += c.title;
-
-  // Picture box
-  const pic = layout.pictureBox!;
-  const boxH = c.pictureFrame + pic.h;
-  const hasPhoto = !!ctx.pictureArt;
-  doc.setDrawColor(INK);
-  doc.setLineWidth(0.75);
-  if (hasPhoto) {
-    doc.rect(MARGIN_X, y, CONTENT_W, boxH, 'S');
-  } else {
-    // No photo yet — the class emblem is the whole picture here. A soft
-    // tinted panel plus a solid colour plate behind the badge give it real
-    // weight instead of a small logo floating alone on white.
-    doc.setFillColor(PANEL_TEAL);
-    doc.rect(MARGIN_X, y, CONTENT_W, boxH, 'FD');
-    doc.setFillColor(EMERALD);
-    doc.circle(centre, y + 13 + pic.h / 2, pic.h / 2 + 4, 'F');
-  }
+  // Aspect-safe contain placement, no backdrop — see the docstring above.
   const picArt = ctx.pictureArt ?? ctx.badgeArt;
-  place(doc, picArt, centre - pic.w / 2, y + 13, pic.w, pic.h);
-  drawText(
-    doc,
-    ctx.pictureArt ? ' ' : '[ drop in a class photo or sticker here ]',
-    centre, y + 13 + pic.h + 4,
-    { size: 8, italic: true, color: CAPTION_GRAY, align: 'center' },
-  );
-  y += boxH;
+  const pd = picArt.dims;
+  const picFit = Math.min(picture / pd.width, picture / pd.height);
+  const picW = pd.width * picFit;
+  const picH = pd.height * picFit;
+  const picX = headX + (picture - picW) / 2;
+  const picY = y + (picture - picH) / 2;
+  place(doc, picArt, picX, picY, picW, picH);
 
-  y = drawTraceBlocks(ctx, y, {
-    align: 'center',
-    labels: ['Trace it', 'Numbers 0–9'],
-    gaps: [c.gapNameTrace, c.gapNameGuide, c.gapNumbersTrace, c.gapNumbersGuide],
-    labelHeight: c.label,
-    labelBefore: c.labelBefore,
-  });
+  // kicker (11pt line) + 1pt + title (22pt line) = 34pt, optically centred on
+  // the picture — same lockup maths as drawTemplateB.
+  const textTop = y + (picture - 34) / 2;
+  drawText(doc, kicker, headX + picture + headGap, textTop, kickerOpts);
+  drawText(doc, title, headX + picture + headGap, textTop + 12, titleOpts);
+  y += picture + c.headerAfter;
 
-  sectionLabel(doc, 'Now you try!', MARGIN_X, y, EMERALD, c.labelBefore);
-  y += c.label;
+  const frame = (top: number, h: number) => {
+    doc.setDrawColor(INK);
+    doc.setLineWidth(0.75);
+    doc.rect(marginX, top, contentW, h, 'S');
+  };
 
-  hline(doc, MARGIN_X, MARGIN_X + CONTENT_W, y + c.ruledLine, RULE_GRAY, 0.75);
-  y += c.ruledLine;
+  // ---- name frame: model strip | blank practice line, side by side -------
+  const namePanelH = c.namePanelFrame + layout.nameTraceBox.h;
+  frame(y, namePanelH);
+  const nameY = y + PANEL_PAD_Y;
+  const nameX = marginX + B_PANEL_PAD_X;
+  place(doc, ctx.nameTraceArt, nameX, nameY, layout.nameTraceBox.w, layout.nameTraceBox.h);
+  place(doc, ctx.nameGuideArt, nameX + layout.nameTraceBox.w + B_NAME_ROW_GAP, nameY,
+    layout.nameGuideBox.w, layout.nameGuideBox.h);
+  y += namePanelH;
 
-  // 6pt lead — CHROME.A.footer is 14 (6 before + 8pt line); see the audit there.
-  // "Montree Phonics" attribution replaced by the school's own name — see the
-  // header slot above for the reasoning; same rule, same fallback (just the
-  // class name, no dangling separator) when no school name is set.
-  drawText(doc, schoolName ? `${className} · ${schoolName}` : className, centre, y + 6, { size: 7.5, italic: true, color: FOOTER_GRAY, align: 'center' });
+  // The `4` is CHROME.A.numbersLabel's lead (4 + 11 line + 1 after = 16).
+  sectionLabel(doc, 'Numbers 0–9', marginX, y, INK, 4);
+  y += c.numbersLabel;
+
+  // ---- numbers frame: model over practice, full width --------------------
+  const numPanelH = c.numbersPanelFrame + 2 * layout.numbersTraceBox.h + c.gapNumbersPanel;
+  frame(y, numPanelH);
+  let inner = y + PANEL_PAD_Y;
+  place(doc, ctx.numbersTraceArt, alignedX('center', layout.numbersTraceBox.w, contentW, marginX), inner,
+    layout.numbersTraceBox.w, layout.numbersTraceBox.h);
+  inner += layout.numbersTraceBox.h + c.gapNumbersPanel;
+  place(doc, ctx.numbersGuideArt, alignedX('center', layout.numbersGuideBox.w, contentW, marginX), inner,
+    layout.numbersGuideBox.w, layout.numbersGuideBox.h);
+  y += numPanelH + c.spacerBeforeTry;
+
+  // ---- "now you try" row: heading left, rule running right ---------------
+  const tryOpts = { size: 9, bold: true, color: EMERALD, charSpace: 0.8, font: FONT_LABEL } as const;
+  drawText(doc, 'NOW YOU TRY!', marginX, y + PANEL_PAD_Y, tryOpts);
+  hline(doc, marginX + measure(doc, 'NOW YOU TRY!', tryOpts) + 14, marginX + contentW,
+    y + PANEL_PAD_Y + c.tryRow - 5, RULE_GRAY, 0.75);
+  y += c.tryPanelFrame + c.tryRow;
+
+  // "Montree Phonics" attribution replaced by the school's own name — same
+  // rule, same fallback as the header, when no school name is set.
+  drawText(doc, schoolName ? `${className} · ${schoolName}` : className, centre, y + 6,
+    { size: 7.5, italic: true, color: FOOTER_GRAY, align: 'center' });
 }
 
 // ---- Template B — Whale Badge (LANDSCAPE) ----
