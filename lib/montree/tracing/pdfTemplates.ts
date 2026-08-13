@@ -674,8 +674,6 @@ export function numbersTrackingFor(template: TracingTemplate): number {
 /** Template A photo box: docx draws the photo 300px wide. */
 const PICTURE_MAX_W = 300 * PX_TO_PT;   // 225
 const PICTURE_MAX_H = 110;
-/** Template A fallback emblem: docx draws it 118×118px. */
-const BADGE_IN_BOX = 118 * PX_TO_PT;    // 88.5
 
 // --------------------------------------------------------------- layout ---
 export interface ImageDims { width: number; height: number }
@@ -770,8 +768,11 @@ export function computeTracingLayout(input: TracingLayoutInput): TracingLayout {
       pictureW = input.picture.width * s;
       pictureH = input.picture.height * s;
     } else {
-      pictureW = BADGE_IN_BOX;
-      pictureH = BADGE_IN_BOX;
+      // No photo yet — the class emblem *is* the picture here, so it earns
+      // the same ceiling a real photo gets (PICTURE_MAX_H) instead of
+      // floating small and alone in an otherwise-empty frame.
+      pictureW = PICTURE_MAX_H;
+      pictureH = PICTURE_MAX_H;
     }
   }
 
@@ -1193,9 +1194,20 @@ function drawTemplateA(ctx: DrawCtx) {
   // Picture box
   const pic = layout.pictureBox!;
   const boxH = c.pictureFrame + pic.h;
+  const hasPhoto = !!ctx.pictureArt;
   doc.setDrawColor(INK);
   doc.setLineWidth(0.75);
-  doc.rect(MARGIN_X, y, CONTENT_W, boxH, 'S');
+  if (hasPhoto) {
+    doc.rect(MARGIN_X, y, CONTENT_W, boxH, 'S');
+  } else {
+    // No photo yet — the class emblem is the whole picture here. A soft
+    // tinted panel plus a solid colour plate behind the badge give it real
+    // weight instead of a small logo floating alone on white.
+    doc.setFillColor(PANEL_TEAL);
+    doc.rect(MARGIN_X, y, CONTENT_W, boxH, 'FD');
+    doc.setFillColor(EMERALD);
+    doc.circle(centre, y + 13 + pic.h / 2, pic.h / 2 + 4, 'F');
+  }
   const picArt = ctx.pictureArt ?? ctx.badgeArt;
   place(doc, picArt, centre - pic.w / 2, y + 13, pic.w, pic.h);
   drawText(
