@@ -23,6 +23,9 @@ import {
   // Printer — the pinned Class Documents row (see the More menu). A brand-new
   // surface with no MENU_ITEM_IDS entry on purpose; see the note on the row.
   Printer,
+  // Wand2 — the pinned Content Creation Tools row (see the More menu). Same
+  // "brand-new surface, no MENU_ITEM_IDS entry" story as Printer above.
+  Wand2,
   // Target / Sparkles / FolderOpen / TrendingUp / BarChart2 removed with
   // the twelve dead menu_* rows (see the 🪦 note in the More menu). Images went
   // with them — its only other reference is the commented-out Photo Gallery row.
@@ -1107,6 +1110,23 @@ function DashboardHeader() {
                       stays on disk (hide-don't-delete). To restore:
                   <MenuRow icon={Settings2} label="Menu Management" active={activePage === 'menu-setup'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/menu-setup'); }} />
                   */}
+                  {/* Content Creation Tools — pinned OUTSIDE the config/legacy
+                      branch for the same reason as Uploads / Curriculum Browser /
+                      Montage Tracker / Class Documents above: a brand-new surface
+                      is in no teacher's saved menu config, so registering it in
+                      MENU_ITEM_IDS would make it invisible to every school that
+                      has one. Sits in the bottom utility cluster (above School
+                      Features / Logout) rather than the top cluster since it's a
+                      Library sub-surface, not a dashboard tracker. Label reuses
+                      the existing 'library.contentCreationTools' key (the same
+                      string the Library landing page's card uses) rather than
+                      adding a new one. */}
+                  <MenuRow
+                    icon={Wand2}
+                    label={t('library.contentCreationTools')}
+                    active={pathname?.startsWith('/montree/library/tools') || false}
+                    onClick={() => { setShowMoreMenu(false); router.push('/montree/library/tools'); }}
+                  />
                   {/* School Features — the self-serve Feature Switchboard. Only
                       appears once Montree flips Give Control ('feature_self_serve')
                       for this school from the super-admin panel. Active state is

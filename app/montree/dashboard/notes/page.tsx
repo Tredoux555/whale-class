@@ -160,11 +160,15 @@ export default function NotesPage() {
         </div>
 
         {/* notes component */}
+        {/* showFilters is on here only — the dedicated page is where a teacher
+            comes to *read back* notes, so it gets the student filter chips.
+            Any compact/embedded placement leaves the prop off and stays as-is. */}
         <TeacherNotes
           classroomId={classroomId}
           teacherId={teacherId}
           teacherName={teacherName}
           children={children}
+          showFilters
         />
       </main>
     </div>

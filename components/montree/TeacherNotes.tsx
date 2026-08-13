@@ -1,6 +1,7 @@
 // components/montree/TeacherNotes.tsx
 // Classroom-level teacher notes — always visible at top of dashboard
 // Features: text notes, edit/delete, voice recording with auto-transcribe + auto-save
+// Optional (showFilters): "All notes / Class notes / per-child" filter chips over the list
 // NON-BLOCKING: Record → stop → immediately return to idle → transcribe in background → auto-save
 // Dark forest visual treatment — all wiring intact
 'use client';
@@ -30,6 +31,11 @@ interface TeacherNotesProps {
   teacherId: string;
   teacherName: string;
   children?: Child[];
+  // Opt-in filter chip row ("All notes" / "Class notes" / one chip per child)
+  // above the notes list. OFF by default so any compact/embedded placement
+  // (e.g. a dashboard card) keeps exactly the surface area it has today —
+  // only the dedicated Notes page turns it on.
+  showFilters?: boolean;
 }
 
 interface Note {
@@ -93,13 +99,17 @@ const ctaStyle: CSSProperties = {
   transition: 'transform 120ms ease, box-shadow 120ms ease',
 };
 
-export default function TeacherNotes({ classroomId, teacherId, teacherName, children = [] }: TeacherNotesProps) {
+export default function TeacherNotes({ classroomId, teacherId, teacherName, children = [], showFilters = false }: TeacherNotesProps) {
   const { t } = useI18n();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
+
+  // Which notes the list shows. 'all' = everything, 'class' = untagged
+  // (child_id null) notes only, anything else = that child's id.
+  const [noteFilter, setNoteFilter] = useState<string>('all');
 
   // Edit state
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
@@ -119,7 +129,16 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
       // browser HTTP cache serves the pre-write snapshot for ~10-60s after a
       // POST, so a just-saved note doesn't appear on refetch or reload.
       // Same fix pattern as the Jul-4 child-gallery staleness (commit 8c658754).
-      const res = await montreeApi(`/api/montree/teacher-notes?classroom_id=${classroomId}&limit=20`, {
+      //
+      // Per-child filter is applied SERVER-side (child_id=…) so picking a
+      // student surfaces that child's full recent history, not just whichever
+      // of their notes happened to land in the last 20 classroom notes.
+      // 'all' and 'class' both fetch the unfiltered list — 'class' is then
+      // narrowed client-side to the untagged (child_id null) rows.
+      const childParam = noteFilter !== 'all' && noteFilter !== 'class'
+        ? `&child_id=${encodeURIComponent(noteFilter)}`
+        : '';
+      const res = await montreeApi(`/api/montree/teacher-notes?classroom_id=${classroomId}&limit=20${childParam}`, {
         cache: 'no-store',
       });
       const data = await res.json();
@@ -131,7 +150,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
     } finally {
       setLoading(false);
     }
-  }, [classroomId]);
+  }, [classroomId, noteFilter]);
 
   useEffect(() => {
     fetchNotes();
@@ -161,6 +180,20 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
     };
   }, []);
 
+  // Post-save refresh, shared by BOTH save paths (typed + voice). A note that
+  // falls outside the active filter would save fine and never appear in the
+  // list, which reads as a failure — so in that case drop back to "All notes"
+  // (the filter change refetches by itself). savedChildId is the note's own
+  // child_id: null = class note.
+  const revealSavedNote = useCallback((savedChildId: string | null) => {
+    const savedFilterKey = savedChildId ?? 'class';
+    if (noteFilter !== 'all' && noteFilter !== savedFilterKey) {
+      setNoteFilter('all');
+    } else {
+      fetchNotes();
+    }
+  }, [noteFilter, fetchNotes]);
+
   // Auto-save a voice note directly to the API (called after transcription completes)
   const autoSaveVoiceNote = useCallback(async (transcript: string) => {
     try {
@@ -176,7 +209,9 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
       });
 
       if (res.ok) {
-        fetchNotes();
+        // Same child_id we just POSTed — a dictated note for another child (or
+        // an untagged one) must not vanish behind the active filter.
+        revealSavedNote(selectedChildId || null);
       } else {
         console.error('[teacher-notes] Auto-save failed:', res.status);
         setContent(prev => prev ? `${prev}\n${transcript}` : transcript);
@@ -187,7 +222,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
       setContent(prev => prev ? `${prev}\n${transcript}` : transcript);
       toast.error(t('teacherNotes.autoSaveFailed'));
     }
-  }, [classroomId, selectedChildId, fetchNotes, t]);
+  }, [classroomId, selectedChildId, revealSavedNote, t]);
 
   // Fire-and-forget background transcription + auto-save
   const processInBackground = useCallback((blob: Blob) => {
@@ -323,7 +358,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
         toast.success(t('teacherNotes.saved'));
         setContent('');
         setSelectedChildId(null);
-        fetchNotes();
+        revealSavedNote(selectedChildId);
       } else {
         const data = await res.json();
         toast.error(data.error || t('teacherNotes.saveFailed'));
@@ -333,7 +368,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
     } finally {
       setSaving(false);
     }
-  }, [content, saving, classroomId, selectedChildId, fetchNotes, t]);
+  }, [content, saving, classroomId, selectedChildId, revealSavedNote, t]);
 
   const handleStartEdit = useCallback((note: Note) => {
     setEditingNoteId(note.id);
@@ -419,6 +454,12 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
     ? children.find(c => c.id === selectedChildId)?.name || ''
     : '';
 
+  // 'class' is the only filter not expressible as a child_id query param, so it
+  // narrows the fetched list here. Every other value is already applied server-side.
+  const visibleNotes = noteFilter === 'class'
+    ? notes.filter(n => !n.child_id)
+    : notes;
+
   return (
     <div style={{
       background: T.card,
@@ -466,7 +507,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
         }}>
           {t('teacherNotes.title')}
         </span>
-        {notes.length > 0 && (
+        {visibleNotes.length > 0 && (
           <span style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -479,7 +520,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
             fontWeight: 600,
             letterSpacing: 0.3,
           }}>
-            {notes.length}
+            {visibleNotes.length}
           </span>
         )}
       </div>
@@ -519,6 +560,33 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
             })}
           </div>
         )}
+
+        {/* Type-or-speak affordances — labelled because the typed path was
+            invisible before: teachers saw the mic and assumed notes were
+            voice-only. The two labels sit in the same left-to-right order as
+            the controls under them (textarea, then mic). */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          flexWrap: 'wrap',
+          marginBottom: -6,
+          fontSize: 10.5,
+          fontWeight: 600,
+          letterSpacing: 0.4,
+          textTransform: 'uppercase',
+          color: T.textMuted,
+        }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+            <Pencil size={11} strokeWidth={2} />
+            {t('teacherNotes.typeLabel')}
+          </span>
+          <span style={{ color: 'rgba(255,255,255,0.20)' }}>·</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+            <Mic size={11} strokeWidth={2} />
+            {t('teacherNotes.speakLabel')}
+          </span>
+        </div>
 
         {/* Input row */}
         <div style={{
@@ -587,6 +655,44 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
           </button>
         </div>
 
+        {/* Filter chip row — opt-in (Notes page only). Same pill vocabulary as
+            the composer's child selector above, separated by a rule so it reads
+            as "which notes am I looking at" rather than "who am I tagging".
+            flexWrap keeps a 20+ child classroom readable. */}
+        {showFilters && children.length > 0 && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            flexWrap: 'wrap',
+            paddingTop: 12,
+            borderTop: `1px solid ${T.divider}`,
+          }}>
+            <button
+              onClick={() => setNoteFilter('all')}
+              className={`btn btn-sm btn-pill ${noteFilter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
+            >
+              {t('teacherNotes.filterAll')}
+            </button>
+            <button
+              onClick={() => setNoteFilter('class')}
+              className={`btn btn-sm btn-pill ${noteFilter === 'class' ? 'btn-primary' : 'btn-secondary'}`}
+            >
+              <Users size={11} strokeWidth={1.75} />
+              {t('teacherNotes.classNote')}
+            </button>
+            {children.map((child) => (
+              <button
+                key={child.id}
+                onClick={() => setNoteFilter(child.id)}
+                className={`btn btn-sm btn-pill ${noteFilter === child.id ? 'btn-primary' : 'btn-secondary'}`}
+              >
+                {child.name}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Notes list */}
         {loading ? (
           <div style={{
@@ -597,7 +703,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
           }}>
             ...
           </div>
-        ) : notes.length === 0 ? (
+        ) : visibleNotes.length === 0 ? (
           <div style={{
             display: 'flex',
             flexDirection: 'column',
@@ -641,7 +747,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
               marginRight: -4,
             }}
           >
-            {notes.map((note) => {
+            {visibleNotes.map((note) => {
               const editing = editingNoteId === note.id;
               const ownsNote = note.teacher_id === teacherId;
               return (

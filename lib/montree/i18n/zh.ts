@@ -3899,6 +3899,10 @@ export const zh = {
   'teacherNotes.updated': '笔记已更新',
   'teacherNotes.updateFailed': '更新笔记失败',
   'teacherNotes.classNote': '班级笔记',
+  'teacherNotes.typeLabel': '输入笔记',
+  'teacherNotes.speakLabel': '语音笔记',
+  'teacherNotes.filterAll': '全部笔记',
+  'teacherNotes.showAll': '显示全部 {count} 条',
   'teacherNotes.childNotePlaceholder': '关于{name}的快速笔记...',
 
   // 脉搏生成

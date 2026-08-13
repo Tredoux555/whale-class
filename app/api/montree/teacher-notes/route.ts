@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
-// GET /api/montree/teacher-notes?classroom_id=UUID&limit=50&offset=0
+// GET /api/montree/teacher-notes?classroom_id=UUID&limit=50&offset=0&child_id=UUID
 // Returns recent notes for the classroom (all teachers)
+// child_id is optional — when present the result is narrowed to that child's
+// tagged notes (used by the Notes page student filter and the child page
+// Notes panel). Omitted = every note in the classroom, exactly as before.
 export async function GET(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
@@ -16,6 +19,7 @@ export async function GET(request: NextRequest) {
 
     const limit = Math.min(parseInt(request.nextUrl.searchParams.get('limit') || '50', 10), 100);
     const offset = parseInt(request.nextUrl.searchParams.get('offset') || '0', 10);
+    const childId = request.nextUrl.searchParams.get('child_id');
 
     const supabase = getSupabase();
 
@@ -35,11 +39,19 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch notes — only the current teacher's own notes (private per teacher)
-    const { data: notes, error: notesError } = await supabase
+    let notesQuery = supabase
       .from('montree_teacher_notes')
       .select('id, teacher_id, child_id, content, transcription, created_at, montree_teachers(name), montree_children(name)')
       .eq('classroom_id', classroomId)
-      .eq('teacher_id', auth.userId)
+      .eq('teacher_id', auth.userId);
+
+    // Optional per-child narrowing. Auth scoping above is untouched — this only
+    // ever removes rows from an already school+teacher+classroom scoped set.
+    if (childId) {
+      notesQuery = notesQuery.eq('child_id', childId);
+    }
+
+    const { data: notes, error: notesError } = await notesQuery
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 

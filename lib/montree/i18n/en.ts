@@ -3940,6 +3940,10 @@ export const en = {
   'teacherNotes.updated': 'Note updated',
   'teacherNotes.updateFailed': 'Failed to update note',
   'teacherNotes.classNote': 'Class Note',
+  'teacherNotes.typeLabel': 'Type a note',
+  'teacherNotes.speakLabel': 'Speak a note',
+  'teacherNotes.filterAll': 'All notes',
+  'teacherNotes.showAll': 'Show all {count}',
   'teacherNotes.childNotePlaceholder': 'Quick note about {name}...',
 
   // Pulse Generation

@@ -22,6 +22,7 @@ import { useWorkOperations } from '@/hooks/useWorkOperations';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import type { GamePlan } from '@/components/montree/child/GamePlanCard';
 import WeeklyActivitySummary from '@/components/montree/child/WeeklyActivitySummary';
+import ChildNotesPanel from '@/components/montree/child/ChildNotesPanel';
 import { useFeatures } from '@/hooks/useFeatures';
 
 // Tier 4 perf: code-split modal/onboarding/conditional components (~2.6k lines)
@@ -170,6 +171,9 @@ export default function WeekPage() {
   // Quick voice note — auto-tagged to this child (no child picker needed)
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
+  // Bumped after a voice note saves so ChildNotesPanel below refetches and the
+  // teacher sees the note they just dictated without leaving the page.
+  const [notesRefreshKey, setNotesRefreshKey] = useState(0);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -209,6 +213,7 @@ export default function WeekPage() {
               }),
             });
             toast.success(t('dashboard.noteSaved'), { duration: 2000 });
+            setNotesRefreshKey(k => k + 1);
           } catch (err) {
             console.error('[VoiceNote] Save failed:', err);
             toast.error(t('dashboard.saveFailed'));
@@ -908,6 +913,18 @@ export default function WeekPage() {
 
       {/* Stats row removed Apr 30 2026 — user feedback: redundant, the focus list
           and ◐/✓ status badges already convey mastered/practicing/photos counts. */}
+
+      {/* Notes about this child — read-only. Notes are written on the Notes page
+          (or by the mic in the action bar above, which auto-tags this child);
+          this panel is the "read them back per student" half the app was missing.
+          Sits below the shelf so focus works stay the page's headline. */}
+      {session?.classroom?.id && (
+        <ChildNotesPanel
+          classroomId={session.classroom.id}
+          childId={childId}
+          refreshKey={notesRefreshKey}
+        />
+      )}
 
       {/* Weekly Admin — collapsed by default, Whale Class only (government doc copy-paste) */}
       {!isHomeschoolParent(session) && session?.classroom?.id === '945c846d-fb33-4370-8a95-a29b7767af54' && (
