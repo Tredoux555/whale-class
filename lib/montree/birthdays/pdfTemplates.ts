@@ -30,9 +30,10 @@
 // same ink/emerald/gold, so the two tools print as one family.
 'use client';
 
-import { jsPDF } from 'jspdf';
+import { GState, jsPDF } from 'jspdf';
 import {
-  balloonCluster, bunting, cake, confetti, pageFrame, seedFromString, sparkle,
+  balloonCluster, boardFrame, bunting, cake, confetti, scallops,
+  seedFromString, sparkle, star4, whale,
   BIRTHDAY_PALETTE, INK, EMERALD, GOLD, PANEL_TEAL, PANEL_GOLD, RULE_GRAY,
   SUBTITLE_GRAY, CAPTION_GRAY, FOOTER_GRAY, QUIET_GRAY,
 } from './decorations';
@@ -437,19 +438,24 @@ export async function buildBirthdayCardsPdf(opts: BirthdayCardsOptions): Promise
  * The class photo board: every child on ONE decorated page, in calendar order.
  *
  * Geometry, all in pt on the same US Letter sheet as the cards:
- *   • a double hairline frame 16pt in from the paper edge,
- *   • bunting hung just inside its top rail,
- *   • a centred title block ending at y=138,
- *   • the tile grid from y=138 to y=706,
- *   • a footer strip below it, with a balloon cluster in each bottom corner.
+ *   • a dressed frame 16pt in from the paper edge — mat band, gold rule,
+ *     emerald hairline, pearl chain, a medallion pinning each corner,
+ *   • bunting strung between the two top medallions,
+ *   • the header lockup — emblem, class name, title, subtitle — ending at y=192,
+ *   • the emblem again, half the page wide at 8% opacity, behind the grid,
+ *   • the tile grid from y=200 to y=706,
+ *   • a footer strip below it, with a balloon cluster in each bottom corner
+ *     and a scallop run along the bottom of the frame.
  *
  * The single-page guarantee is structural rather than defensive: the grid's
  * box is a constant, and the number of ROWS is derived from the child count,
- * so the tiles shrink to fit rather than the page growing.
+ * so the tiles shrink to fit rather than the page growing. Everything the
+ * border and header draw sits OUTSIDE that box, so no amount of decoration can
+ * push a tile off the sheet.
  */
 export const BOARD_FRAME_INSET = 16;
 export const BOARD_MARGIN_X = 54;
-export const BOARD_GRID_TOP = 138;
+export const BOARD_GRID_TOP = 200;
 export const BOARD_GRID_BOTTOM = 706;
 const BOARD_GUTTER_X = 12;
 const BOARD_GUTTER_Y = 8;
@@ -462,6 +468,29 @@ const BOARD_MIN_PHOTO_D = 22;
  * the same "+N more" honesty the wall chart uses for a crowded month.
  */
 export const BOARD_MAX_TILES = 40;
+
+// ---- header lockup ---------------------------------------------------------
+/**
+ * The emblem is the second-largest thing on the sheet after a photograph, and
+ * the title sits beside it rather than under it. Stacking them would have cost
+ * another ~60pt of page and taken it straight out of the tiles; side by side,
+ * the header is hero-scale and the grid keeps the photo size it had when the
+ * header was a 34pt corner stamp.
+ */
+const BOARD_EMBLEM_D = 110;
+const BOARD_LOCKUP_TOP = 70;
+const BOARD_LOCKUP_GAP = 20;
+/**
+ * The watermark: the same emblem, 62% of the page wide, centred on the grid.
+ *
+ * The opacity was set by looking at renders, not by taste in the abstract.
+ * Below ~6% the emblem vanishes into the gutters between tiles and reads as a
+ * printing fault; above ~9% it starts to tint the pale photo discs and compete
+ * with the month-coloured dates. 8% is the value at which the crest is plainly
+ * there and every name, date and ring still reads at arm's length.
+ */
+const BOARD_WATERMARK_W = 0.62 * CARD_PAGE_W;
+const BOARD_WATERMARK_OPACITY = 0.08;
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.min(hi, Math.max(lo, v));
@@ -663,8 +692,15 @@ function drawBoardTile(
   const textW = layout.tileW - 4;
   let ty = top + layout.photoD + 6;
 
-  const nameOpts: TextOpts = { size: layout.nameSize, bold: true, color: INK, align: 'center' };
-  drawText(doc, truncate(doc, label, textW, nameOpts), cx, ty, nameOpts);
+  // A name is the one thing on this sheet that must never be abbreviated: a
+  // child reading "Maximilian-Alex…" under their own photograph is a worse
+  // sheet than one tile of slightly smaller type. So the label shrinks to fit
+  // its tile first, down to 72% of the grid's size, and only truncates if even
+  // that will not do. The line ADVANCE stays on layout.nameSize, so every date
+  // in the grid still sits on the same baseline.
+  const nameSize = fitSize(doc, label, textW, layout.nameSize, layout.nameSize * 0.72, { bold: true });
+  const nameOpts: TextOpts = { size: nameSize, bold: true, color: INK, align: 'center' };
+  drawText(doc, truncate(doc, label, textW, nameOpts), cx, ty + (layout.nameSize - nameSize) * 0.5, nameOpts);
   ty += layout.nameSize * 1.22;
 
   if (child.entry) {
@@ -675,6 +711,53 @@ function drawBoardTile(
     const noteOpts: TextOpts = { size: layout.dateSize, italic: true, color: QUIET_GRAY, align: 'center' };
     drawText(doc, truncate(doc, 'not on file', textW, noteOpts), cx, ty, noteOpts);
   }
+}
+
+/**
+ * The emblem at hero scale in the header.
+ *
+ * A teacher's own emblem is already a finished mark — the shipped Montree one
+ * is a ruled roundel — so it is given the whole box and nothing else. Ringing a
+ * crest that already has a ring is what makes a sheet look assembled rather
+ * than designed. With no logo on file the house whale gets the medallion
+ * treatment instead, so the header carries the same weight either way and the
+ * lockup never collapses to a title floating on its own.
+ */
+function drawBoardEmblem(doc: jsPDF, art: Art | null, cx: number, cy: number, d: number) {
+  if (art) {
+    placeContained(doc, art, cx - d / 2, cy - d / 2, d, d);
+    return;
+  }
+  const r = d / 2;
+  doc.setFillColor(PANEL_TEAL);
+  doc.circle(cx, cy, r, 'F');
+  whale(doc, { cx, cy: cy + d * 0.03, w: d * 0.8, color: EMERALD, detail: true });
+  doc.setDrawColor(GOLD);
+  doc.setLineWidth(1.6);
+  doc.circle(cx, cy, r, 'S');
+  doc.setDrawColor(EMERALD);
+  doc.setLineWidth(0.5);
+  doc.circle(cx, cy, r + 3.4, 'S');
+}
+
+/**
+ * The emblem again, huge and almost invisible, behind the photo grid.
+ *
+ * Drawn inside a saved graphics state with a low-alpha GState so the tiles,
+ * names and dates that land on top of it are completely unaffected — the
+ * watermark is the only thing in the document that is ever transparent, and it
+ * is restored immediately so nothing downstream inherits the alpha.
+ */
+function drawBoardWatermark(doc: jsPDF, art: Art | null, cx: number, cy: number, w: number) {
+  doc.saveGraphicsState();
+  doc.setGState(new GState({ opacity: BOARD_WATERMARK_OPACITY }));
+  if (art) {
+    const h = w * (art.dims.height / art.dims.width);
+    doc.addImage(art.dataUrl, art.format, cx - w / 2, cy - h / 2, w, h, undefined, 'FAST');
+  } else {
+    whale(doc, { cx, cy, w, color: EMERALD });
+  }
+  doc.restoreGraphicsState();
 }
 
 export interface BirthdayBoardOptions {
@@ -702,26 +785,47 @@ export async function buildBirthdayBoardPdf(opts: BirthdayBoardOptions): Promise
   const fi = BOARD_FRAME_INSET;
 
   // ---- frame + bunting ----------------------------------------------------
-  pageFrame(doc, { pageW: CARD_PAGE_W, pageH: CARD_PAGE_H, inset: fi });
-  bunting(doc, fi + 12, CARD_PAGE_W - fi - 12, 30, { flags: 13, droop: 9, flagH: 12 });
+  const frame = boardFrame(doc, {
+    pageW: CARD_PAGE_W, pageH: CARD_PAGE_H, inset: fi, band: 11, radius: 20, pearlStep: 15,
+  });
+  const [topLeft, topRight] = frame.corners;
+  bunting(doc, topLeft[0] + 2, topRight[0] - 2, topLeft[1] + 4, { flags: 13, droop: 10, flagH: 13 });
 
-  // ---- header -------------------------------------------------------------
-  let hy = 62;
-  if (logoArt) placeContained(doc, logoArt, BOARD_MARGIN_X, hy - 6, 34, 34);
-  drawText(doc, className.toUpperCase(), centre, hy,
-    { size: 10, bold: true, color: EMERALD, charSpace: 1.8, align: 'center' });
-  hy += 16;
+  // ---- header lockup ------------------------------------------------------
+  // Emblem left, type right, the pair centred as one block. The block's width
+  // is measured rather than assumed, so a long class name pushes the emblem
+  // left instead of shoving the title off centre.
+  const classOpts: TextOpts = { size: 10, bold: true, color: EMERALD, charSpace: 2.0 };
+  const titleOpts: TextOpts = { size: 34, bold: true, color: INK };
+  const subOpts: TextOpts = { size: 9, italic: true, color: SUBTITLE_GRAY };
+  const classText = className.toUpperCase();
+  const subText = 'every birthday in our class, January to December';
+  const textW = Math.max(
+    measure(doc, classText, classOpts),
+    measure(doc, 'Birthdays', titleOpts),
+    measure(doc, subText, subOpts),
+  );
+  const groupW = BOARD_EMBLEM_D + BOARD_LOCKUP_GAP + textW;
+  const gx = (CARD_PAGE_W - groupW) / 2;
+  const lt = BOARD_LOCKUP_TOP;
 
-  drawText(doc, 'Birthdays', centre, hy, { size: 30, bold: true, color: INK, align: 'center' });
-  const titleW = measure(doc, 'Birthdays', { size: 30, bold: true });
-  sparkle(doc, centre - titleW / 2 - 16, hy + 12, 5.5, GOLD);
-  sparkle(doc, centre + titleW / 2 + 16, hy + 12, 5.5, GOLD);
-  hy += 36;
+  drawBoardEmblem(doc, logoArt, gx + BOARD_EMBLEM_D / 2, lt + BOARD_EMBLEM_D / 2, BOARD_EMBLEM_D);
 
-  drawText(doc, 'every birthday in our class, January to December', centre, hy,
-    { size: 9, italic: true, color: SUBTITLE_GRAY, align: 'center' });
-  hy += 14;
-  hline(doc, centre - 74, centre + 74, hy, RULE_GRAY, 0.8);
+  const tx = gx + BOARD_EMBLEM_D + BOARD_LOCKUP_GAP;
+  const ty = lt + 18;
+  drawText(doc, classText, tx, ty, classOpts);
+  drawText(doc, 'Birthdays', tx, ty + 16, titleOpts);
+  hline(doc, tx, tx + 54, ty + 62, GOLD, 1.2);
+  drawText(doc, subText, tx, ty + 70, subOpts);
+
+  // A rule closing the header, broken by a single gold star on the page axis.
+  const oy = lt + BOARD_EMBLEM_D + 12;
+  hline(doc, centre - 150, centre - 14, oy, RULE_GRAY, 0.6);
+  hline(doc, centre + 14, centre + 150, oy, RULE_GRAY, 0.6);
+  star4(doc, centre, oy, 5, GOLD);
+
+  // ---- watermark ----------------------------------------------------------
+  drawBoardWatermark(doc, logoArt, centre, (BOARD_GRID_TOP + BOARD_GRID_BOTTOM) / 2, BOARD_WATERMARK_W);
 
   // ---- the grid -----------------------------------------------------------
   // The last row is usually short (22 children over 5 columns leaves two), and
@@ -743,8 +847,11 @@ export async function buildBirthdayBoardPdf(opts: BirthdayBoardOptions): Promise
   });
 
   // ---- footer -------------------------------------------------------------
-  balloonCluster(doc, fi + 34, BOARD_GRID_BOTTOM + 2, 0.55, [EMERALD, GOLD, BIRTHDAY_PALETTE[2]]);
-  balloonCluster(doc, CARD_PAGE_W - fi - 34, BOARD_GRID_BOTTOM + 6, 0.5, [GOLD, BIRTHDAY_PALETTE[3], EMERALD]);
+  balloonCluster(doc, fi + 46, BOARD_GRID_BOTTOM + 12, 0.62, [EMERALD, GOLD, BIRTHDAY_PALETTE[2]]);
+  balloonCluster(doc, CARD_PAGE_W - fi - 46, BOARD_GRID_BOTTOM + 16, 0.56, [GOLD, BIRTHDAY_PALETTE[3], EMERALD]);
+  // A scallop run answering the bunting, so the frame reads top and bottom.
+  const [, , bottomRight, bottomLeft] = frame.corners;
+  scallops(doc, bottomLeft[0] + 14, bottomRight[0] - 14, CARD_PAGE_H - frame.inner - 9, 4.5, GOLD, true);
 
   const dated = all.length - undatedCount;
   const footParts = [className, `${dated} ${dated === 1 ? 'birthday' : 'birthdays'}`];
@@ -754,29 +861,34 @@ export async function buildBirthdayBoardPdf(opts: BirthdayBoardOptions): Promise
   if (layout.overflow > 0) footParts.push(`+${layout.overflow} more not shown`);
   footParts.push('Montree');
 
-  const footY = 732;
-  hline(doc, centre - 150, centre + 150, footY - 6, RULE_GRAY, 0.6);
+  const footY = 736;
+  hline(doc, centre - 150, centre + 150, footY - 8, RULE_GRAY, 0.6);
   const footText = footParts.join(' · ');
   const footSize = fitSize(doc, footText, CARD_PAGE_W - 2 * BOARD_MARGIN_X - 40, 8.5, 6, { italic: true });
   drawText(doc, footText, centre, footY, { size: footSize, italic: true, color: FOOTER_GRAY, align: 'center' });
 
-  // ---- confetti, in the margins only --------------------------------------
-  // The scatter is generated across the whole sheet and then filtered by the
-  // avoid rects, so the count is ATTEMPTS, not dots: most land on the grid and
-  // are discarded, and the margin bands are narrow. Hence the high number for
-  // a deliberately quiet sprinkle.
-  confetti(doc, { x: fi + 8, y: fi + 8, w: CARD_PAGE_W - 2 * (fi + 8), h: CARD_PAGE_H - 2 * (fi + 8) }, {
-    count: 150,
-    seed: seedFromString(`${className}|board|${all.length}`),
-    avoid: [
-      // header type, the whole grid, the footer strip and both balloon corners
-      { x: BOARD_MARGIN_X - 10, y: 26, w: CARD_PAGE_W - 2 * BOARD_MARGIN_X + 20, h: BOARD_GRID_TOP - 20 },
-      { x: layout.gridX - 8, y: layout.gridY - 6, w: layout.gridW + 16, h: layout.gridH + 12 },
-      { x: centre - 170, y: footY - 18, w: 340, h: 40 },
-      { x: fi + 8, y: BOARD_GRID_BOTTOM - 6, w: 64, h: 46 },
-      { x: CARD_PAGE_W - fi - 72, y: BOARD_GRID_BOTTOM - 6, w: 64, h: 46 },
-    ],
-  });
+  // ---- confetti, where confetti would actually be --------------------------
+  // Two panels either side of the header lockup, under the bunting it fell
+  // from. An even sprinkle over the whole border reads as noise; a scatter with
+  // a source reads as a party. Both panels are bounded by the lockup's measured
+  // width, so they can never encroach on the type.
+  const seed = seedFromString(`${className}|board|${all.length}`);
+  const fallY = 76;
+  const fallH = 100;
+  confetti(doc, { x: frame.inner + 10, y: fallY, w: gx - frame.inner - 30, h: fallH },
+    { count: 9, seed, scale: 0.72 });
+  confetti(doc, { x: gx + groupW + 20, y: fallY, w: CARD_PAGE_W - frame.inner - 10 - (gx + groupW + 20), h: fallH },
+    { count: 9, seed: seed ^ 0x9e37, scale: 0.72 });
+
+  // One sparkle per grid row in each side band, on the row's own centre line —
+  // placed rather than scattered, so the margins read as composed.
+  const bandL = (frame.inner + BOARD_MARGIN_X - 14) / 2;
+  const bandR = CARD_PAGE_W - bandL;
+  for (let row = 0; row < layout.rows; row++) {
+    const sy = layout.gridY + (row + 0.5) * layout.tileH + row * layout.gutterY;
+    star4(doc, row % 2 === 0 ? bandL : bandR, sy, 4.6, GOLD);
+    star4(doc, row % 2 === 0 ? bandR : bandL, sy, 2.8, EMERALD);
+  }
 
   return doc.output('blob');
 }

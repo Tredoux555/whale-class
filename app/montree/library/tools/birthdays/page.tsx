@@ -16,7 +16,7 @@ import {
   loadClassRoster, rosterToBirthdays, fetchRosterPhotos, RosterAuthError,
   type RosterChild,
 } from '@/lib/montree/birthdays/roster';
-import { fileToArrayBuffer } from '@/lib/montree/birthdays/assets';
+import { fileToArrayBuffer, loadDefaultLogo } from '@/lib/montree/birthdays/assets';
 
 // ============================================
 // BIRTHDAYS
@@ -118,6 +118,23 @@ export default function BirthdaysPage() {
     return logoFile ? await fileToArrayBuffer(logoFile) : null;
   }
 
+  /**
+   * The board's emblem is a hero element — it fills the header and ghosts
+   * behind the whole photo grid as the watermark — so an empty logo field
+   * falls back to the shipped Montree crest rather than leaving the sheet
+   * emblem-less, exactly as the Tracing Work sheets do. If even that cannot be
+   * fetched (offline), the builder draws its own vector whale instead, so the
+   * board never fails over a decoration.
+   */
+  async function boardLogoBytes() {
+    if (logoFile) return fileToArrayBuffer(logoFile);
+    try {
+      return await loadDefaultLogo();
+    } catch {
+      return null;
+    }
+  }
+
   function guard(): boolean {
     if (entries.length === 0) {
       setError(roster
@@ -190,7 +207,7 @@ export default function BirthdaysPage() {
       const blob = await buildBirthdayBoardPdf({
         children,
         className: className.trim() || 'Our Class',
-        logoBytes: await logoBytes(),
+        logoBytes: await boardLogoBytes(),
         today,
       });
       downloadBlob(blob, `birthday-board-${slugify(className)}.pdf`);

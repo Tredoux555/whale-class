@@ -302,3 +302,230 @@ export function sparkle(doc: jsPDF, x: number, y: number, r: number, color: stri
     doc.line(x - Math.cos(a) * r, y - Math.sin(a) * r, x + Math.cos(a) * r, y + Math.sin(a) * r);
   }
 }
+
+// ------------------------------------------------------------- vector paths
+//
+// jsPDF has circles, ellipses, triangles and rounded rects, and nothing that
+// draws a curve you designed yourself. These three helpers close that gap: a
+// shape is authored as a chain of cubic beziers in whatever coordinate box is
+// convenient, flattened to a polygon here, and handed to `doc.lines()` as
+// relative segments. Flattening rather than emitting real curve operators is
+// deliberate — 16 samples per segment is smooth past 600 DPI, and it keeps the
+// call site free of jsPDF's relative-control-point bookkeeping.
+
+export type Pt = readonly [number, number];
+
+/** Sample one cubic bezier; the start point is assumed already emitted. */
+function cubicSamples(p0: Pt, p1: Pt, p2: Pt, p3: Pt, steps: number): Pt[] {
+  const out: Pt[] = [];
+  for (let i = 1; i <= steps; i++) {
+    const t = i / steps;
+    const u = 1 - t;
+    out.push([
+      u * u * u * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t * t * t * p3[0],
+      u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1],
+    ]);
+  }
+  return out;
+}
+
+/**
+ * Flatten `[start, c1, c2, end, c1, c2, end, …]` into a polygon.
+ * Each triple continues from wherever the previous one finished.
+ */
+export function bezierPolygon(spec: Pt[], steps = 16): Pt[] {
+  const pts: Pt[] = [spec[0]];
+  let cur = spec[0];
+  for (let i = 1; i + 2 < spec.length; i += 3) {
+    pts.push(...cubicSamples(cur, spec[i], spec[i + 1], spec[i + 2], steps));
+    cur = spec[i + 2];
+  }
+  return pts;
+}
+
+/** Fill or stroke a closed polygon through absolute points. */
+export function polygon(doc: jsPDF, pts: Pt[], style: 'F' | 'S' | 'FD') {
+  const deltas: number[][] = [];
+  for (let i = 1; i < pts.length; i++) {
+    deltas.push([pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]]);
+  }
+  doc.lines(deltas, pts[0][0], pts[0][1], [1, 1], style, true);
+}
+
+// --------------------------------------------------------------------- whale
+/**
+ * The house whale, outlined in a 200 × 100 box: blunt head to the left, the
+ * tail lifted and the flukes spread across the top right.
+ *
+ * It exists so the birthday board still has an emblem when no logo has been
+ * uploaded — as a medallion in the header and, blown up to half the sheet at a
+ * few per cent opacity, as the watermark behind the photo grid. Being a path
+ * rather than a bitmap, it is exact at 20pt and at 400pt, and it costs nothing
+ * to the file size.
+ */
+const WHALE_BODY: Pt[] = [
+  [8, 60],
+  [12, 36], [34, 19], [72, 21],
+  [100, 23], [128, 28], [150, 36],
+  [148, 24], [148, 10], [152, 0],
+  [158, 10], [164, 20], [172, 30],
+  [180, 22], [188, 13], [200, 6],
+  [201, 20], [192, 36], [178, 50],
+  [166, 64], [142, 77], [108, 83],
+  [72, 89], [26, 82], [8, 60],
+];
+
+export interface WhaleOpts {
+  /** centre of the 200 × 100 box */
+  cx: number;
+  cy: number;
+  /** width of the box; the whale is half as tall */
+  w: number;
+  color: string;
+  /** draw the eye — worth it at emblem size, invisible at watermark size */
+  detail?: boolean;
+}
+
+export function whale(doc: jsPDF, o: WhaleOpts) {
+  const s = o.w / 200;
+  const map = (p: Pt): Pt => [o.cx + (p[0] - 100) * s, o.cy + (p[1] - 50) * s];
+  doc.setFillColor(o.color);
+  doc.setDrawColor(o.color);
+  polygon(doc, bezierPolygon(WHALE_BODY).map(map), 'F');
+  if (o.detail) {
+    doc.setFillColor('#FFFFFF');
+    doc.circle(o.cx + (26 - 100) * s, o.cy + (52 - 50) * s, 3.1 * s, 'F');
+  }
+}
+
+// ------------------------------------------------------------------ sparkles
+/**
+ * A filled four-point star. `sparkle()` above is three crossed strokes, which
+ * reads as an asterisk once it drops below ~5pt; this one keeps its shape all
+ * the way down to the 3pt marks that sit in the board's margins.
+ */
+export function star4(doc: jsPDF, x: number, y: number, r: number, color: string, waist = 0.42) {
+  const pts: Pt[] = [];
+  for (let i = 0; i < 8; i++) {
+    const a = (Math.PI / 4) * i - Math.PI / 2;
+    const rad = i % 2 === 0 ? r : r * waist;
+    pts.push([x + Math.cos(a) * rad, y + Math.sin(a) * rad]);
+  }
+  pts.push(pts[0]);
+  doc.setFillColor(color);
+  polygon(doc, pts, 'F');
+}
+
+/** A run of shallow scallops — a bookbinder's edge, drawn as short chords. */
+export function scallops(doc: jsPDF, x0: number, x1: number, y: number, r: number, color: string, up = true) {
+  const n = Math.max(1, Math.round((x1 - x0) / (r * 2)));
+  const step = (x1 - x0) / n;
+  doc.setDrawColor(color);
+  doc.setLineWidth(0.5);
+  for (let i = 0; i < n; i++) {
+    const cx = x0 + step * (i + 0.5);
+    const rr = step / 2;
+    let px = cx - rr;
+    let py = y;
+    for (let k = 1; k <= 10; k++) {
+      const a = Math.PI * (k / 10);
+      const nx = cx - Math.cos(a) * rr;
+      const ny = y + (up ? -1 : 1) * Math.sin(a) * r;
+      doc.line(px, py, nx, ny);
+      px = nx;
+      py = ny;
+    }
+  }
+}
+
+// ---------------------------------------------------------------- board frame
+export interface BoardFrameOpts {
+  pageW: number;
+  pageH: number;
+  /** distance from the paper edge to the outer gold rule */
+  inset?: number;
+  /** width of the mat band between the gold rule and the emerald hairline */
+  band?: number;
+  radius?: number;
+  /** spacing of the gold pearl chain just inside the hairline (0 = none) */
+  pearlStep?: number;
+}
+
+export interface BoardFrameGeometry {
+  /** centre of each corner medallion, clockwise from top-left */
+  corners: Pt[];
+  /** inset of the inner emerald rule — the edge of the usable page */
+  inner: number;
+}
+
+/**
+ * The birthday board's frame: a warm mat band held between a gold rule and an
+ * emerald hairline, a chain of gold pearls running just inside it, and a small
+ * medallion pinning each corner.
+ *
+ * `pageFrame()` above is the plain two-rule version and is left alone; this is
+ * the dressed one, and it returns its geometry so the sheet can hang things off
+ * it — the bunting is strung between the two top medallions rather than floated
+ * near them, which is the whole difference between decoration and a border.
+ */
+export function boardFrame(doc: jsPDF, o: BoardFrameOpts): BoardFrameGeometry {
+  const inset = o.inset ?? 16;
+  const band = o.band ?? 11;
+  const r = o.radius ?? 20;
+  const W = o.pageW;
+  const H = o.pageH;
+  const i2 = inset + band;
+  const r2 = Math.max(2, r - band);
+
+  // the mat, painted before either rule so both sit crisply on its edges
+  doc.setFillColor(PANEL_GOLD);
+  doc.roundedRect(inset, inset, W - 2 * inset, H - 2 * inset, r, r, 'F');
+  doc.setFillColor('#FFFFFF');
+  doc.roundedRect(i2, i2, W - 2 * i2, H - 2 * i2, r2, r2, 'F');
+
+  doc.setDrawColor(GOLD);
+  doc.setLineWidth(1.9);
+  doc.roundedRect(inset, inset, W - 2 * inset, H - 2 * inset, r, r, 'S');
+  doc.setDrawColor(EMERALD);
+  doc.setLineWidth(0.7);
+  doc.roundedRect(i2, i2, W - 2 * i2, H - 2 * i2, r2, r2, 'S');
+
+  // pearl chain — straight runs only, so it never fights the corner radii
+  const step = o.pearlStep ?? 0;
+  if (step > 0) {
+    const g = i2 + 5;
+    doc.setFillColor(GOLD);
+    const run = (x0: number, y0: number, x1: number, y1: number) => {
+      const n = Math.max(1, Math.round(Math.hypot(x1 - x0, y1 - y0) / step));
+      for (let i = 0; i <= n; i++) {
+        doc.circle(x0 + (x1 - x0) * (i / n), y0 + (y1 - y0) * (i / n), 0.75, 'F');
+      }
+    };
+    run(g + r2, g, W - g - r2, g);
+    run(g + r2, H - g, W - g - r2, H - g);
+    run(g, g + r2, g, H - g - r2);
+    run(W - g, g + r2, W - g, H - g - r2);
+  }
+
+  // medallions, sitting on the band's mid-line where the corner arc bisects it
+  const mid = inset + band / 2;
+  const rm = Math.max(2, r - band / 2);
+  const d = rm * (1 - Math.SQRT1_2);
+  const corners: Pt[] = [
+    [mid + d, mid + d], [W - mid - d, mid + d],
+    [W - mid - d, H - mid - d], [mid + d, H - mid - d],
+  ];
+  for (const [cx, cy] of corners) {
+    doc.setFillColor('#FFFFFF');
+    doc.circle(cx, cy, 8.4, 'F');
+    doc.setDrawColor(GOLD);
+    doc.setLineWidth(1.2);
+    doc.circle(cx, cy, 8.4, 'S');
+    doc.setDrawColor(EMERALD);
+    doc.setLineWidth(0.4);
+    doc.circle(cx, cy, 6, 'S');
+    star4(doc, cx, cy, 3.6, GOLD);
+  }
+
+  return { corners, inner: i2 };
+}
