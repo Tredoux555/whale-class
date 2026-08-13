@@ -332,23 +332,30 @@ const CHROME = {
   // Round 4 spends chrome instead of saving it: the teacher's ask was that the
   // badge is the one thing on this sheet that is too small to read (the
   // MONTREE seal is fine engraved linework and a ring of 6pt-equivalent type —
-  // at the round-3 40pt it does not resolve on a classroom printer). It goes
-  // 40 → 64 (+24), which the layout's own single-page-fit guarantee absorbs
+  // at the round-3 40pt it does not resolve on a classroom printer). First cut
+  // went 40 → 64 with a solid-colour backdrop plate for contrast; live
+  // testing with a school's own uploaded (full-colour, non-square) logo
+  // showed the plate read as an unwanted green background rather than a
+  // feature — a custom logo already carries its own colour and identity, it
+  // doesn't need one behind it — and the badge itself still wanted to be
+  // bigger. Final: 40 → 96 (+56, ×2.4), no backdrop, badgeArt placed with its
+  // own aspect ratio preserved (see drawTemplateB) so a non-square upload
+  // doesn't get stretched the way a flat `badge×badge` box would force.
+  //
+  // The layout's own single-page-fit guarantee absorbs the extra chrome
   // automatically (computeTracingLayout) rather than by hand-trimming another
-  // chrome line: chrome rises 124 → 148, so the flexible budget the trace
-  // bands draw from shrinks from 434.0 to 410.0pt and the defensive down-scale
+  // chrome line: chrome rises 124 → 180, so the flexible budget the trace
+  // bands draw from shrinks from 434.0 to 378.0pt and the defensive down-scale
   // (previously idle — round 3 landed at 556.39 of a 558.0 ceiling, 1.61pt of
-  // headroom) now engages at 0.9482×. Both bands land ABOVE the round-2
-  // baseline this round-3 growth started from (name 163.60pt vs 162, numbers
-  // 123.20pt vs 122), so the trade is real but small: −5.2% off round 3's
-  // glyph size to buy +60% badge diameter (+156% area). Total height lands
-  // exactly on the MIN_SLACK=18 floor (558.0 of 576.0) — by construction,
-  // since the down-scale solves for exactly that budget, not a sign of
-  // anything cutting it close. See drawTemplateB for the matching solid-colour
-  // backdrop plate that makes the bigger badge read as a medallion rather
-  // than a bigger version of the same small logo.
+  // headroom) now engages at 0.8742×. Unlike the first (64pt) cut, this one
+  // does dip both bands BELOW the round-2 baseline (name 150.83pt vs 162,
+  // numbers 113.59pt vs 122 — about −6.9% each): a real cost, accepted
+  // because it's what was explicitly asked for, badge size over glyph size.
+  // Total height lands exactly on the MIN_SLACK=18 floor (558.0 of 576.0) —
+  // by construction, since the down-scale solves for exactly that budget, not
+  // a sign of anything cutting it close.
   B: {
-    badge: 64,            // 85px emblem circle @96dpi — round 4, see above
+    badge: 96,            // 128px emblem @96dpi — round 4, see above
     headerAfter: 6,       // 120 twips under the header band
     namePanelFrame: 9,    // 4 pad-top + 4 pad-bottom + 1 border
     numbersLabel: 16,     // 4 before + 11 line (9pt caps) + 1 after
@@ -382,7 +389,7 @@ export function chromeHeight(template: TracingTemplate): number {
       + c.ruledLine + c.footer;
   }
   if (template === 'B') {
-    // 64 + 6 + 9 + 16 + 9 + 2 + 4 + 9 + 18 + 11 = 148 (round 4 — see CHROME.B)
+    // 96 + 6 + 9 + 16 + 9 + 2 + 4 + 9 + 18 + 11 = 180 (round 4 — see CHROME.B)
     const c = CHROME.B;
     return c.badge + c.headerAfter + c.namePanelFrame + c.numbersLabel
       + c.numbersPanelFrame + c.gapNumbersPanel
@@ -556,14 +563,16 @@ export const GEOMETRY: Record<TracingTemplate, TemplateGeometry> = {
   //   + 2 × numbersBandH
   //   = 172.53 + 2 × 129.93 = 432.39   ⇒ total 556.39, slack 19.61 ≥ 18  ✔
   //
-  // Round 4 (see CHROME.B) spent that 19.61pt of headroom, and 5.61pt more, on
-  // a bigger badge: chrome is now 148, not 124, so computeTracingLayout's own
-  // down-scale engages at 0.9482× and the two band heights below are TARGETS
-  // fed into that scale, not what prints. Drawn: name 172.53 × 0.9482 =
-  // 163.60pt (x-height 38.05pt), numbers 129.93 × 0.9482 = 123.20pt (x-height
-  // 28.65pt) — both still above the round-2 baseline (162 / 122) this section
-  // derives GEOMETRY.B from, so the constants below are left exactly as round
-  // 3 set them; only CHROME.B and the resulting scale changed.
+  // Round 4 (see CHROME.B) spent that 19.61pt of headroom, and a lot more, on
+  // a bigger badge: chrome is now 180, not 124, so computeTracingLayout's own
+  // down-scale engages at 0.8742× and the two band heights below are TARGETS
+  // fed into that scale, not what prints. Drawn: name 172.53 × 0.8742 =
+  // 150.83pt (x-height 35.08pt), numbers 129.93 × 0.8742 = 113.59pt (x-height
+  // 26.42pt) — both now BELOW the round-2 baseline (162 / 122, about −6.9%
+  // each) this section derives GEOMETRY.B from. That's an explicit, accepted
+  // trade-off (badge size over glyph size, on direct request), not an
+  // oversight; the constants below are left exactly as round 3 set them —
+  // only CHROME.B and the resulting scale changed.
   //
   // Every strip is 4.30 × its render `size` tall (traceRender.ts: 0.85 + 2 +
   // 0.3 + DESCENDER_EM 1.15), so displayed x-height = bandH / 4.30:
@@ -1293,15 +1302,15 @@ function drawTemplateA(ctx: DrawCtx) {
  * traces get bigger, then widened once more (round 4) for the badge itself:
  *
  *  L_MARGIN_Y 21.6 ┌───────────────────────────────────────────────────────┐
- *      badge   64  │ ((emblem))  [SCHOOL NAME ·] WHALE CLASS                │
- *                  │             My Name Is Joey                          │
+ *      badge   96  │ ((( emblem )))  [SCHOOL NAME ·] WHALE CLASS           │
+ *                  │                 My Name Is Joey                      │
  *     +after    6  │                                                       │
- * name panel 172.6 │ ┌ teal ────────────────────────────────────────────┐  │
- *   (9 + 163.6)    │ │  [ J o e y  model ]  [ blank practice line ]     │  │
+ * name panel 159.8 │ ┌ teal ────────────────────────────────────────────┐  │
+ *   (9 + 150.8)    │ │  [ J o e y  model ]  [ blank practice line ]     │  │
  *                  │ └──────────────────────────────────────────────────┘  │
  *      label   16  │ NUMBERS 0–9                                           │
- *  num panel 257.4 │ ┌ white/gold ──────────────────────────────────────┐  │
- *  (9+2·123.2+2)   │ │            0 1 2 3 4 5 6 7 8 9  (model)          │  │
+ *  num panel 238.2 │ ┌ white/gold ──────────────────────────────────────┐  │
+ *  (9+2·113.6+2)   │ │            0 1 2 3 4 5 6 7 8 9  (model)          │  │
  *                  │ │            ─────────────────── (practice)        │  │
  *                  │ └──────────────────────────────────────────────────┘  │
  *     spacer    4  │                                                       │
@@ -1310,17 +1319,22 @@ function drawTemplateA(ctx: DrawCtx) {
  *   slack 18 (MIN) └───────────────────────────────────────────────────────┘
  *  L_MARGIN_BOT 14.4
  *
- * 64 + 6 + 172.60 + 16 + 257.40 + 4 + 27 + 11 = 558.0 of 576.0 printable
- * (round 4 — see the round-4 note on CHROME.B; the badge went 40 → 64 and the
- * two panel heights above are the auto-scaled *drawn* sizes, 0.9482× of their
- * GEOMETRY.B targets, not the targets themselves).
+ * 96 + 6 + 159.83 + 16 + 238.17 + 4 + 27 + 11 = 558.0 of 576.0 printable
+ * (round 4 — see the round-4 note on CHROME.B; the badge went 40 → 64 → 96
+ * across live iteration, and the two panel heights above are the auto-scaled
+ * *drawn* sizes, 0.8742× of their GEOMETRY.B targets — now below the round-2
+ * baseline, an accepted trade for badge size — not the targets themselves).
  *
- * The badge itself is drawn on a solid emerald medallion plate, not bare on
- * white — the MONTREE seal is fine engraved linework on a transparent PNG, so
- * at any size it needs contrast, not just area, to read as a feature rather
- * than a small logo that happens to be bigger. See the circle fill right
- * before `place(doc, ctx.badgeArt, ...)` below; same technique as Template
- * A's no-photo fallback (drawTemplateA), same EMERALD, same +4pt margin.
+ * The badge has no colour backdrop plate: an early cut added a solid emerald
+ * circle behind it for contrast against the MONTREE seal's fine engraved
+ * linework, but a school's own uploaded logo already carries its own colour
+ * and identity, and the plate read as an unwanted green background rather
+ * than a feature. It's placed instead with its own aspect ratio preserved,
+ * fit to and centred in the badge×badge box (see the `badgeFit` maths right
+ * before `place(doc, ctx.badgeArt, ...)` below) rather than stretched to fill
+ * it — `place()` otherwise forces its target box exactly, which would distort
+ * any badgeArt that isn't a perfect square (the default seal is; a school's
+ * own upload usually isn't).
  *
  * The kicker no longer hardcodes "MONTREE PHONICS" — that was our branding on
  * a sheet the school prints under their own name. It now reads
@@ -1337,9 +1351,9 @@ function drawTemplateA(ctx: DrawCtx) {
  * so its header is where the sheet gets personalised, and a five-year-old who
  * cannot yet read the trace strip can still recognise their name in the title.
  * Overflow is not a practical concern: at 17pt bold Helvetica "My Name Is " is
- * 97.9pt and the header group has 748.8 − 64 (badge) − 16 (gap) = 668.8pt, so
- * the name itself gets 570.9pt — 40 characters even if every one of them were
- * a capital M (14.17pt, the widest glyph in the face), and ~63 for a normal
+ * 97.9pt and the header group has 748.8 − 96 (badge) − 16 (gap) = 636.8pt, so
+ * the name itself gets 538.9pt — 38 characters even if every one of them were
+ * a capital M (14.17pt, the widest glyph in the face), and ~59 for a normal
  * mixed-case name. The whole roster is 3–6 letters. If a name ever did exceed
  * that, the lockup is centred, so it would spill evenly both ways rather than
  * run off one edge; the kicker line is measured (`textW`), not assumed, and a
@@ -1366,8 +1380,9 @@ function drawTemplateB(ctx: DrawCtx) {
 
   // ---- header band: emblem beside the kicker/title, group centred ---------
   // Portrait stacked these (155.5pt); side by side they cost the badge's own
-  // 64pt (round 4 — was 40pt), which is the single biggest chunk of vertical
-  // the landscape reflow buys back.
+  // 96pt (round 4 — was 40pt, then briefly 64pt before the teacher asked for
+  // 50% more), which is the single biggest chunk of vertical the landscape
+  // reflow buys back.
   const badge = c.badge;
   // No hardcoded "MONTREE PHONICS" — see the docstring's round-4 note. Blank
   // schoolName just drops that segment, no dangling separator.
@@ -1380,13 +1395,20 @@ function drawTemplateB(ctx: DrawCtx) {
   const textW = Math.max(measure(doc, kicker, kickerOpts), measure(doc, title, titleOpts));
   const headGap = 16;
   const headX = centre - (badge + headGap + textW) / 2;
-  // Solid colour medallion behind the badge — same technique as Template A's
-  // no-photo fallback (drawTemplateA): the MONTREE seal is transparent-PNG
-  // linework, so it needs a plate under it for contrast/weight, not just a
-  // bigger box, or a bigger badge just reads as a bigger small logo.
-  doc.setFillColor(EMERALD);
-  doc.circle(headX + badge / 2, y + badge / 2, badge / 2 + 4, 'F');
-  place(doc, ctx.badgeArt, headX, y, badge, badge);
+  // No colour backdrop plate — a school's own uploaded logo already carries
+  // its own colour and identity, and a plate behind it read as an unwanted
+  // green background rather than a feature (see the round-4 note). The badge
+  // is instead placed with its own aspect ratio preserved and centred in the
+  // badge×badge box, not stretched to fill it: `place()` forces its target
+  // box exactly, so a non-square badgeArt (any custom upload that isn't a
+  // perfect square, unlike the default seal) would otherwise distort.
+  const bd = ctx.badgeArt.dims;
+  const badgeFit = Math.min(badge / bd.width, badge / bd.height);
+  const badgeW = bd.width * badgeFit;
+  const badgeH = bd.height * badgeFit;
+  const badgeX = headX + (badge - badgeW) / 2;
+  const badgeY = y + (badge - badgeH) / 2;
+  place(doc, ctx.badgeArt, badgeX, badgeY, badgeW, badgeH);
   // kicker (11pt line) + 1pt + title (22pt line) = 34pt, optically centred on
   // the badge.
   const textTop = y + (badge - 34) / 2;
