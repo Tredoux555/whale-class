@@ -1548,6 +1548,11 @@ export const ko: Record<string, string> = {
   'progress.by_area': '영역별 진행 현황',
   'tools.photo_bank': 'Picture Bank',
   'tools.photo_bank_desc': '모든 교구를 위한 영어 교육 사진을 검색, 탐색 및 기여하세요',
+  'tools.tracing_work': 'Tracing Work',
+  'tools.tracing_work_desc': 'Create name and number tracing worksheets with dotted stroke-order letters.',
+  'tools.birthdays': 'Birthdays',
+  'tools.birthdays_desc': 'Birthday cards for every child plus a one-page class birthday board for the wall.',
+
   'tools.card_generator': '3-Part Card Generator',
   'tools.card_generator_desc': '이미지와 라벨이 있는 아름다운 Montessori 용어 카드를 만드세요',
   'tools.video_flashcard': 'Video Flashcard Generator',

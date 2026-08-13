@@ -1548,6 +1548,11 @@ export const ja: Record<string, string> = {
   'progress.by_area': '領域別進捗',
   'tools.photo_bank': 'ピクチャーバンク',
   'tools.photo_bank_desc': 'すべてのツール用の英語教材画像を検索、閲覧、および投稿します',
+  'tools.tracing_work': 'なぞり書き',
+  'tools.tracing_work_desc': '点線のストローク順の文字で名前と数字のなぞり書きワークシートを作成します。',
+  'tools.birthdays': 'お誕生日',
+  'tools.birthdays_desc': '一人ひとりのバースデーカードと、クラス全員の誕生日を1ページにまとめた掲示ボードを作成します。',
+
   'tools.card_generator': '3パートカードジェネレーター',
   'tools.card_generator_desc': '画像とラベル付きの美しいモンテッソーリ命名カードを作成します',
   'tools.video_flashcard': 'ビデオフラッシュカードジェネレーター',

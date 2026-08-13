@@ -55,6 +55,27 @@ export interface BirthdayEntry {
   ambiguousDate?: boolean;
   /** Same name + date of birth appeared on an earlier line of this paste. */
   duplicate?: boolean;
+  /**
+   * Storage path of the child's photo, when the entry came from the real
+   * class roster ("Load my class") rather than a pasted list. Optional on
+   * purpose: a pasted list has no photos, and every builder that predates the
+   * photo board (cards, wall chart) ignores this field entirely.
+   */
+  photoUrl?: string;
+}
+
+/**
+ * A child who is on the roster but has no readable birthday — either the
+ * field is empty or it carries the house `1900-01-01` "not known" sentinel.
+ *
+ * These are deliberately NOT `BirthdayEntry`s: there is no date to sort, no
+ * age to compute, and inventing one would print a wrong birthday on a wall.
+ * They are carried alongside so the class photo board can still show the
+ * child (flagged, listed last) instead of quietly dropping them.
+ */
+export interface BirthdayUnknown {
+  name: string;
+  photoUrl?: string;
 }
 
 export interface BirthdayParseIssue {

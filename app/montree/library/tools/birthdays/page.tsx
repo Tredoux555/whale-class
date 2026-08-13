@@ -5,23 +5,38 @@ import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import {
-  buildBirthdayCardsPdf, buildBirthdayTrackerPdf, type TrackerSize,
+  buildBirthdayBoardPdf, buildBirthdayCardsPdf, buildBirthdayTrackerPdf,
+  type BirthdayBoardChild, type TrackerSize,
 } from '@/lib/montree/birthdays/pdfTemplates';
 import {
-  parseBirthdayList, birthdayFacts, sortByCalendar, MONTH_ABBR, type DateOrder,
+  parseBirthdayList, birthdayFacts, sortByCalendar, MONTH_ABBR,
+  type DateOrder, type BirthdayUnknown,
 } from '@/lib/montree/birthdays/parse';
+import {
+  loadClassRoster, rosterToBirthdays, fetchRosterPhotos, RosterAuthError,
+  type RosterChild,
+} from '@/lib/montree/birthdays/roster';
 import { fileToArrayBuffer } from '@/lib/montree/birthdays/assets';
 
 // ============================================
 // BIRTHDAYS
 // ============================================
-// Two printables off one pasted class list:
+// Three printables off one class list — pasted, or pulled straight off the
+// teacher's own roster with "Load my class":
 //
+//   • Class birthday board — the whole class on ONE festive page, every child
+//     as a circular photo in calendar order inside a decorated border. The
+//     primary output; the only one that uses the children's photographs.
 //   • Birthday cards — one page per child in a single merged PDF, with the
 //     name, the birth date, the age they're turning, a photo slot and light
 //     vector party decoration.
-//   • Birthday board — the whole class on ONE wall-chart page, twelve month
+//   • Birthday wall chart — the whole class on ONE page, twelve month
 //     boxes in a 3x4 grid, at A4 or A3.
+//
+// "Load my class" reads /api/montree/children with the teacher's own session
+// cookie, so it only ever sees their own school. It fills the entry list with
+// real names, birthdays and photos; the paste box stays as the path for anyone
+// who isn't signed in, or whose list lives in a message rather than the app.
 //
 
 // Structure mirrors the Tracing Work tool: pure maths/parsing in
@@ -64,8 +79,17 @@ export default function BirthdaysPage() {
   const [listText, setListText] = useState('');
   const [dateOrder, setDateOrder] = useState<DateOrder>('dmy');
   const [trackerSize, setTrackerSize] = useState<TrackerSize>('A4');
-  const [busy, setBusy] = useState<null | 'cards' | 'tracker'>(null);
+  const [busy, setBusy] = useState<null | 'board' | 'cards' | 'tracker'>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // "Load my class". `roster === null` means the tool is running off the paste
+  // box; once a roster is loaded it takes over as the source of entries, and
+  // "use a pasted list instead" puts it back. The two are never merged — a
+  // half-roster-half-paste class list is a duplicate waiting to be printed.
+  const [roster, setRoster] = useState<RosterChild[] | null>(null);
+  const [rosterBusy, setRosterBusy] = useState(false);
+  const [rosterNote, setRosterNote] = useState<string | null>(null);
+  const [photoProgress, setPhotoProgress] = useState<{ done: number; total: number } | null>(null);
 
   // One clock for the whole session, so the previewed "turns N" and the
   // generated PDF can never disagree mid-render.
@@ -74,23 +98,109 @@ export default function BirthdaysPage() {
     () => parseBirthdayList(listText, today, dateOrder),
     [listText, today, dateOrder],
   );
-  const preview = useMemo(
-    () => sortByCalendar(parsed.entries).map((e) => ({ entry: e, facts: birthdayFacts(e, today) })),
-    [parsed.entries, today],
+  const fromRoster = useMemo(() => (roster ? rosterToBirthdays(roster) : null), [roster]);
+
+  const entries = fromRoster ? fromRoster.entries : parsed.entries;
+  const unknownChildren: BirthdayUnknown[] = useMemo(
+    () => (fromRoster ? fromRoster.unknown : []),
+    [fromRoster],
   );
+
+  const preview = useMemo(
+    () => sortByCalendar(entries).map((e) => ({ entry: e, facts: birthdayFacts(e, today) })),
+    [entries, today],
+  );
+
+  // The board is the one output that keeps a child with no birthday on file.
+  const boardCount = entries.length + unknownChildren.length;
 
   async function logoBytes() {
     return logoFile ? await fileToArrayBuffer(logoFile) : null;
   }
 
   function guard(): boolean {
-    if (parsed.entries.length === 0) {
-
-      setError('Paste at least one child’s name and birth date to get started.');
+    if (entries.length === 0) {
+      setError(roster
+        ? 'None of the children on your class list have a birthday on file yet — add their birth dates, or paste a list below.'
+        : 'Paste at least one child’s name and birth date to get started.');
       return false;
     }
     setError(null);
     return true;
+  }
+
+  async function handleLoadClass() {
+    setRosterBusy(true);
+    setError(null);
+    try {
+      const children = await loadClassRoster();
+      if (children.length === 0) {
+        setRoster(null);
+        setRosterNote('Your class list is empty — add your students in Montree first, or paste a list below.');
+        return;
+      }
+      setRoster(children);
+      setRosterNote(null);
+    } catch (e) {
+      setRoster(null);
+      setRosterNote(e instanceof RosterAuthError
+        ? 'Log in to Montree as a teacher to load your class automatically. You can still paste your list below.'
+        : 'Couldn’t reach your class list just now. You can still paste your list below.');
+    } finally {
+      setRosterBusy(false);
+    }
+  }
+
+  function handleUsePastedList() {
+    setRoster(null);
+    setRosterNote(null);
+    setError(null);
+  }
+
+  async function handleBoard() {
+    if (entries.length === 0 && unknownChildren.length === 0) {
+      setError(roster
+        ? 'Your class list came back empty.'
+        : 'Paste at least one child’s name and birth date, or load your class.');
+      return;
+    }
+    setError(null);
+    setBusy('board');
+    try {
+      // Photos are fetched here, not inside the builder: the builder is a pure
+      // jsPDF page and the network belongs to the screen that can show a
+      // progress line while a class of two dozen downloads.
+      const paths = [
+        ...entries.map((e) => e.photoUrl),
+        ...unknownChildren.map((c) => c.photoUrl),
+      ];
+      let photos = new Map<string, string>();
+      if (paths.some(Boolean)) {
+        setPhotoProgress({ done: 0, total: paths.filter(Boolean).length });
+        photos = await fetchRosterPhotos(paths, 5, (done, total) => setPhotoProgress({ done, total }));
+      }
+      setPhotoProgress(null);
+
+      const photoOf = (path?: string) => (path ? photos.get(path) ?? null : null);
+      const children: BirthdayBoardChild[] = [
+        ...entries.map((e) => ({ name: e.name, entry: e, photoDataUrl: photoOf(e.photoUrl) })),
+        ...unknownChildren.map((c) => ({ name: c.name, entry: null, photoDataUrl: photoOf(c.photoUrl) })),
+      ];
+
+      const blob = await buildBirthdayBoardPdf({
+        children,
+        className: className.trim() || 'Our Class',
+        logoBytes: await logoBytes(),
+        today,
+      });
+      downloadBlob(blob, `birthday-board-${slugify(className)}.pdf`);
+    } catch (e) {
+      console.error(e);
+      setError('Something went wrong generating the birthday board. Please try again.');
+    } finally {
+      setPhotoProgress(null);
+      setBusy(null);
+    }
   }
 
   async function handleCards() {
@@ -98,7 +208,7 @@ export default function BirthdaysPage() {
     setBusy('cards');
     try {
       const blob = await buildBirthdayCardsPdf({
-        entries: parsed.entries,
+        entries,
         className: className.trim() || 'Our Class',
         logoBytes: await logoBytes(),
         today,
@@ -117,7 +227,7 @@ export default function BirthdaysPage() {
     setBusy('tracker');
     try {
       const blob = await buildBirthdayTrackerPdf({
-        entries: parsed.entries,
+        entries,
         className: className.trim() || 'Our Class',
         logoBytes: await logoBytes(),
         size: trackerSize,
@@ -126,7 +236,7 @@ export default function BirthdaysPage() {
       downloadBlob(blob, `birthday-tracker-${slugify(className)}-${trackerSize}.pdf`);
     } catch (e) {
       console.error(e);
-      setError('Something went wrong generating the birthday board. Please try again.');
+      setError('Something went wrong generating the wall chart. Please try again.');
     } finally {
       setBusy(null);
     }
@@ -174,15 +284,54 @@ export default function BirthdaysPage() {
 
         {/* The class list */}
         <section className="bg-white rounded-2xl border border-gray-200 p-5 space-y-4">
-          <div>
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <h2 className="text-sm font-bold text-[#0D3330] uppercase tracking-wide">Your class</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              One child per line — paste it straight from a spreadsheet, a message, or type it out.
-              A comma, tab, or just a space between the name and the date all work, and the date can
-              be written as <code className="bg-gray-100 rounded px-1">2020-03-03</code>,
-              {' '}<code className="bg-gray-100 rounded px-1">03/03/2020</code> or
-              {' '}<code className="bg-gray-100 rounded px-1">3 March 2020</code>.
+            <button
+              type="button" onClick={handleLoadClass} disabled={rosterBusy || busy !== null}
+              className="btn btn-secondary btn-sm on-light"
+            >
+              {rosterBusy ? 'Loading…' : 'Load my class'}
+            </button>
+          </div>
+
+          {rosterNote && (
+            <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3">
+              {rosterNote}
             </p>
+          )}
+
+          {roster && (
+            <div className="rounded-lg border border-emerald-300 bg-emerald-50 p-3 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-[#0D3330]">
+                <span className="font-bold">
+                  {roster.length} {roster.length === 1 ? 'child' : 'children'} loaded from your class
+                </span>
+                {' — '}names, birthdays and photos come straight from Montree.
+              </p>
+              <button
+                type="button" onClick={handleUsePastedList}
+                className="btn btn-ghost btn-sm on-light"
+              >
+                Use a pasted list instead
+              </button>
+            </div>
+          )}
+
+          <div>
+            {roster ? (
+              <p className="text-sm text-gray-500 mt-1">
+                Your loaded class is being used. Anything typed below is ignored until you switch
+                back to a pasted list.
+              </p>
+            ) : (
+              <p className="text-sm text-gray-500 mt-1">
+                One child per line — paste it straight from a spreadsheet, a message, or type it out.
+                A comma, tab, or just a space between the name and the date all work, and the date can
+                be written as <code className="bg-gray-100 rounded px-1">2020-03-03</code>,
+                {' '}<code className="bg-gray-100 rounded px-1">03/03/2020</code> or
+                {' '}<code className="bg-gray-100 rounded px-1">3 March 2020</code>.
+              </p>
+            )}
           </div>
           <textarea
             value={listText} onChange={(e) => setListText(e.target.value)}
@@ -190,7 +339,7 @@ export default function BirthdaysPage() {
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-400"
           />
 
-          <label className="flex items-center gap-2 text-sm text-gray-600">
+          <label className={`flex items-center gap-2 text-sm text-gray-600 ${roster ? 'hidden' : ''}`}>
             <span>Read a date like 05/03 as</span>
             <select
               value={dateOrder} onChange={(e) => setDateOrder(e.target.value as DateOrder)}
@@ -201,7 +350,7 @@ export default function BirthdaysPage() {
             </select>
           </label>
 
-          {parsed.issues.length > 0 && (
+          {!roster && parsed.issues.length > 0 && (
             <div className="rounded-lg border border-amber-300 bg-amber-50 p-3">
               <p className="text-sm font-bold text-amber-900">
                 {parsed.issues.length} line{parsed.issues.length === 1 ? '' : 's'} couldn&apos;t be read —
@@ -221,7 +370,7 @@ export default function BirthdaysPage() {
             </div>
           )}
 
-          {preview.length > 0 && (
+          {(preview.length > 0 || unknownChildren.length > 0) && (
             <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3">
               <p className="text-sm font-bold text-[#0D3330]">
                 {preview.length} {preview.length === 1 ? 'child' : 'children'} ready
@@ -249,11 +398,58 @@ export default function BirthdaysPage() {
                   </li>
                 ))}
               </ul>
+
+              {unknownChildren.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-emerald-200">
+                  <p className="text-sm font-bold text-gray-600">
+                    {unknownChildren.length}{' '}
+                    {unknownChildren.length === 1 ? 'child has' : 'children have'} no birthday on file
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    They still appear on the class board, last, marked &ldquo;not on file&rdquo; — they
+                    can&apos;t appear on the cards or the wall chart, which need a date.
+                  </p>
+                  <p className="text-sm text-gray-700 mt-1">
+                    {unknownChildren.map((c) => c.name).join(' · ')}
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </section>
 
-        {/* Output A — cards */}
+        {/* Output A — the class board (primary) */}
+        <section className="bg-white rounded-2xl border-2 border-emerald-200 p-5 space-y-4">
+          <div>
+            <h2 className="text-sm font-bold text-[#0D3330] uppercase tracking-wide">
+              Class birthday board — one page
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Every child on a single decorated page, photo by photo, in calendar order from
+              January to December. Load your class and the photos come from Montree; a pasted
+              list prints the same board with an initial in place of each face.
+            </p>
+          </div>
+
+          <button
+            type="button" onClick={handleBoard} disabled={busy !== null || rosterBusy}
+            className="btn btn-primary btn-lg"
+          >
+            {busy === 'board'
+              ? (photoProgress
+                ? `Fetching photos… ${photoProgress.done}/${photoProgress.total}`
+                : 'Generating…')
+              : `Generate the class board${boardCount ? ` (${boardCount})` : ''}`}
+          </button>
+
+          {busy === 'board' && photoProgress && (
+            <p className="text-xs text-gray-500">
+              Downloading each child&apos;s photo — this takes a moment the first time.
+            </p>
+          )}
+        </section>
+
+        {/* Output B — cards */}
         <section className="bg-white rounded-2xl border border-gray-200 p-5 space-y-4">
           <div>
             <h2 className="text-sm font-bold text-[#0D3330] uppercase tracking-wide">Birthday cards</h2>
@@ -263,8 +459,8 @@ export default function BirthdaysPage() {
             </p>
           </div>
           <button
-            type="button" onClick={handleCards} disabled={busy !== null}
-            className="btn btn-primary btn-lg"
+            type="button" onClick={handleCards} disabled={busy !== null || rosterBusy}
+            className="btn btn-secondary btn-lg on-light"
           >
             {busy === 'cards'
               ? 'Generating…'
@@ -272,10 +468,10 @@ export default function BirthdaysPage() {
           </button>
         </section>
 
-        {/* Output B — tracker */}
+        {/* Output C — tracker */}
         <section className="bg-white rounded-2xl border border-gray-200 p-5 space-y-4">
           <div>
-            <h2 className="text-sm font-bold text-[#0D3330] uppercase tracking-wide">Birthday board</h2>
+            <h2 className="text-sm font-bold text-[#0D3330] uppercase tracking-wide">Birthday wall chart</h2>
             <p className="text-sm text-gray-500 mt-1">
               The whole class on one page — twelve month boxes, every child under their month
               and day. Made to be pinned on the wall.
@@ -300,10 +496,10 @@ export default function BirthdaysPage() {
           </div>
 
           <button
-            type="button" onClick={handleTracker} disabled={busy !== null}
+            type="button" onClick={handleTracker} disabled={busy !== null || rosterBusy}
             className="btn btn-gold btn-lg"
           >
-            {busy === 'tracker' ? 'Generating…' : `Generate birthday board (${trackerSize})`}
+            {busy === 'tracker' ? 'Generating…' : `Generate wall chart (${trackerSize})`}
           </button>
         </section>
 

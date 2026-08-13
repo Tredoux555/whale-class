@@ -1,6 +1,8 @@
 // Birthdays — PDF builders.
 //
-// Two printables, both built with jsPDF from vector primitives only:
+// Three printables, all built with jsPDF (vector primitives throughout; the
+// only raster ink is the class emblem and, on the board, the children's own
+// photos):
 //
 //   1. `buildBirthdayCardsPdf()` — a birthday card per child, merged into ONE
 //      document (page 1 = first child, page 2 = second, …) so a teacher prints
@@ -10,7 +12,14 @@
 //      chrome is measured top-to-bottom and the flexible photo slot absorbs the
 //      difference, with a defensive uniform down-scale as the last resort.
 //
-//   2. `buildBirthdayTrackerPdf()` — the whole class as a single-page wall
+//   2. `buildBirthdayBoardPdf()` — the whole class on ONE festive page as a
+//      photo grid running January → December, inside a decorated border.
+//      Children with no birthday on file are kept and shown last, flagged,
+//      never dropped. The column count is chosen to make the photos as big as
+//      the page allows, so a class of 12 gets much larger tiles than a class
+//      of 24 — and the page is a hard constraint, so it can never spill.
+//
+//   3. `buildBirthdayTrackerPdf()` — the whole class as a single-page wall
 //      chart: twelve month boxes in a 3×4 grid, each child filed under their
 //      birth month and day. A4 or A3, teacher's choice. The row height and
 //      type size are derived from the busiest month so the grid always fits the
@@ -23,12 +32,12 @@
 
 import { jsPDF } from 'jspdf';
 import {
-  balloonCluster, bunting, cake, confetti, seedFromString, sparkle,
+  balloonCluster, bunting, cake, confetti, pageFrame, seedFromString, sparkle,
   BIRTHDAY_PALETTE, INK, EMERALD, GOLD, PANEL_TEAL, PANEL_GOLD, RULE_GRAY,
   SUBTITLE_GRAY, CAPTION_GRAY, FOOTER_GRAY, QUIET_GRAY,
 } from './decorations';
 import {
-  birthdayFacts, groupByMonth, sortByCalendar, MONTH_NAMES,
+  birthdayFacts, groupByMonth, sortByCalendar, MONTH_ABBR, MONTH_NAMES,
   type BirthdayEntry,
 } from './parse';
 
@@ -419,6 +428,356 @@ export async function buildBirthdayCardsPdf(opts: BirthdayCardsOptions): Promise
     if (i > 0) doc.addPage('letter', 'portrait');
     drawBirthdayCard(doc, entry, { className, logoArt, today });
   });
+  return doc.output('blob');
+}
+
+// ============================================================== BIRTHDAY BOARD
+
+/**
+ * The class photo board: every child on ONE decorated page, in calendar order.
+ *
+ * Geometry, all in pt on the same US Letter sheet as the cards:
+ *   • a double hairline frame 16pt in from the paper edge,
+ *   • bunting hung just inside its top rail,
+ *   • a centred title block ending at y=138,
+ *   • the tile grid from y=138 to y=706,
+ *   • a footer strip below it, with a balloon cluster in each bottom corner.
+ *
+ * The single-page guarantee is structural rather than defensive: the grid's
+ * box is a constant, and the number of ROWS is derived from the child count,
+ * so the tiles shrink to fit rather than the page growing.
+ */
+export const BOARD_FRAME_INSET = 16;
+export const BOARD_MARGIN_X = 54;
+export const BOARD_GRID_TOP = 138;
+export const BOARD_GRID_BOTTOM = 706;
+const BOARD_GUTTER_X = 12;
+const BOARD_GUTTER_Y = 8;
+/** Photo diameter as a share of the tile width — leaves room for the ring. */
+const BOARD_PHOTO_SHARE = 0.84;
+const BOARD_MIN_PHOTO_D = 22;
+/**
+ * Past this many children a tile stops being a photo and starts being a dot.
+ * Anyone beyond it is counted in the footer instead of printed illegibly —
+ * the same "+N more" honesty the wall chart uses for a crowded month.
+ */
+export const BOARD_MAX_TILES = 40;
+
+function clamp(v: number, lo: number, hi: number): number {
+  return Math.min(hi, Math.max(lo, v));
+}
+
+export interface BirthdayBoardLayout {
+  cols: number;
+  rows: number;
+  tileW: number;
+  tileH: number;
+  gutterX: number;
+  gutterY: number;
+  gridX: number;
+  gridY: number;
+  gridW: number;
+  gridH: number;
+  /** diameter of the circular photo */
+  photoD: number;
+  nameSize: number;
+  dateSize: number;
+  /** name + date + their gaps, measured below the photo */
+  textBlockH: number;
+  /** how many children actually get a tile */
+  shown: number;
+  /** how many did not fit and are reported in the footer instead */
+  overflow: number;
+  fits: boolean;
+}
+
+/**
+ * Choose the grid.
+ *
+ * Column count is not a constant and not a guess: every candidate from 2 to 7
+ * columns is costed and the one that yields the LARGEST photo wins, ties going
+ * to the fewer columns. That is what makes a class of 12 print big portraits
+ * and a class of 24 print smaller ones off the same code path — with 4 columns
+ * hard-coded, 12 children would waste half the page and 22 would be squeezed
+ * by the extra row rather than by the extra column.
+ */
+export function computeBirthdayBoardLayout(count: number): BirthdayBoardLayout {
+  const shown = clamp(count, 1, BOARD_MAX_TILES);
+  const overflow = Math.max(0, count - shown);
+
+  const gridX = BOARD_MARGIN_X;
+  const gridW = CARD_PAGE_W - 2 * BOARD_MARGIN_X;     // 504
+  const gridY = BOARD_GRID_TOP;
+  const gridH = BOARD_GRID_BOTTOM - BOARD_GRID_TOP;   // 568
+
+  const cost = (cols: number) => {
+    const rows = Math.ceil(shown / cols);
+    const tileW = (gridW - (cols - 1) * BOARD_GUTTER_X) / cols;
+    const tileH = (gridH - (rows - 1) * BOARD_GUTTER_Y) / rows;
+    const nameSize = clamp(tileW * 0.11, 6.5, 11);
+    const dateSize = nameSize * 0.82;
+    const textBlockH = 6 + nameSize * 1.22 + dateSize * 1.2 + 2;
+    const photoD = Math.min(tileW * BOARD_PHOTO_SHARE, tileH - textBlockH);
+    return { cols, rows, tileW, tileH, nameSize, dateSize, textBlockH, photoD };
+  };
+
+  let best = cost(2);
+  for (let cols = 3; cols <= 7; cols++) {
+    const c = cost(cols);
+    if (c.photoD > best.photoD + 0.01) best = c;
+  }
+
+  // Defensive floor. Unreachable at BOARD_MAX_TILES=40 (7 columns still leaves
+  // a ~52pt photo), but the guarantee must not depend on that constant never
+  // being raised: shrink the type until the minimum photo fits the tile.
+  let { nameSize, dateSize, textBlockH, photoD } = best;
+  let fits = true;
+  if (photoD < BOARD_MIN_PHOTO_D) {
+    photoD = Math.min(BOARD_MIN_PHOTO_D, best.tileH * 0.55);
+    const room = Math.max(0, best.tileH - photoD);
+    const shrink = textBlockH > 0 ? Math.min(1, room / textBlockH) : 0;
+    nameSize = Math.max(4.5, nameSize * shrink);
+    dateSize = Math.max(3.8, dateSize * shrink);
+    textBlockH = room;
+    fits = photoD >= BOARD_MIN_PHOTO_D * 0.75;
+  }
+
+  return {
+    cols: best.cols,
+    rows: best.rows,
+    tileW: best.tileW,
+    tileH: best.tileH,
+    gutterX: BOARD_GUTTER_X,
+    gutterY: BOARD_GUTTER_Y,
+    gridX, gridY, gridW, gridH,
+    photoD, nameSize, dateSize, textBlockH,
+    shown, overflow, fits,
+  };
+}
+
+/** One tile's worth of child: a name, a birthday (or none), and a photo. */
+export interface BirthdayBoardChild {
+  name: string;
+  /**
+   * The child's birthday, or null/undefined when none is on file. A null
+   * entry is never a reason to leave the child off the board.
+   */
+  entry?: BirthdayEntry | null;
+  /**
+   * Square JPEG data URL, already fetched and cover-cropped by the caller
+   * (see lib/montree/birthdays/roster.ts). Missing or failed photos fall back
+   * to an initial-letter disc, so one broken image never fails the sheet.
+   */
+  photoDataUrl?: string | null;
+}
+
+/** January → December, then the children with no birthday on file. */
+export function sortBoardChildren(children: BirthdayBoardChild[]): BirthdayBoardChild[] {
+  const dated = children.filter((c) => c.entry);
+  const undated = children.filter((c) => !c.entry);
+  dated.sort((a, b) =>
+    (a.entry!.month - b.entry!.month) ||
+    (a.entry!.day - b.entry!.day) ||
+    a.name.localeCompare(b.name));
+  undated.sort((a, b) => a.name.localeCompare(b.name));
+  return [...dated, ...undated];
+}
+
+/** The colour a tile's ring, initial and month accent take. */
+function boardAccent(entry: BirthdayEntry | null | undefined): string {
+  if (!entry) return QUIET_GRAY;
+  return BIRTHDAY_PALETTE[(entry.month - 1) % BIRTHDAY_PALETTE.length];
+}
+
+/**
+ * Tile captions: first names, except where the class has two of them.
+ *
+ * A first name is what a three-year-old recognises on a wall, so it is the
+ * default — but a room with two Emmas would get two circles both labelled
+ * "Emma", which is a wrong sheet rather than a plain one. Only the clashing
+ * names gain a surname initial; everyone else stays first-name-only.
+ */
+export function boardLabels(children: BirthdayBoardChild[]): string[] {
+  const parts = children.map((c) => c.name.trim().split(/\s+/));
+  const counts = new Map<string, number>();
+  for (const p of parts) {
+    const key = (p[0] ?? '').toLowerCase();
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return parts.map((p) => {
+    const first = p[0] ?? '';
+    if (!first) return '?';
+    if ((counts.get(first.toLowerCase()) ?? 0) < 2 || p.length < 2) return first;
+    return `${first} ${p[p.length - 1][0].toUpperCase()}.`;
+  });
+}
+
+/**
+ * Draw one child's tile: a circular photo with a month-coloured ring, the
+ * first name under it and the birthday under that.
+ *
+ * The circle is a REAL crop, not a rounded frame over a square: the photo is
+ * painted inside a jsPDF clipping path (`circle(..., null)` → `clip()` →
+ * `discardPath()`), which is why the caller must hand over an already-square
+ * image — a square drawn edge-to-edge in a circular clip is an exact cover
+ * fill with no aspect-ratio maths left to get wrong.
+ */
+function drawBoardTile(
+  doc: jsPDF,
+  child: BirthdayBoardChild,
+  label: string,
+  x: number,
+  y: number,
+  layout: BirthdayBoardLayout,
+) {
+  const accent = boardAccent(child.entry);
+  const cx = x + layout.tileW / 2;
+  const blockH = layout.photoD + layout.textBlockH;
+  const top = y + Math.max(0, (layout.tileH - blockH) / 2);
+  const r = layout.photoD / 2;
+  const cy = top + r;
+
+  if (child.photoDataUrl) {
+    doc.saveGraphicsState();
+    doc.circle(cx, cy, r, null);      // path only — no painting operator
+    doc.clip();
+    doc.discardPath();
+    doc.addImage(child.photoDataUrl, 'JPEG', cx - r, cy - r, r * 2, r * 2, undefined, 'FAST');
+    doc.restoreGraphicsState();
+  } else {
+    // Initial-letter disc. A child with no photo still gets a real tile —
+    // a hole in the grid would read as "this child was forgotten".
+    doc.setFillColor(child.entry && child.entry.month % 2 === 0 ? PANEL_GOLD : PANEL_TEAL);
+    doc.circle(cx, cy, r, 'F');
+    const initial = (child.name.trim()[0] || '?').toUpperCase();
+    drawText(doc, initial, cx, cy - layout.photoD * 0.21, {
+      size: Math.max(6, layout.photoD * 0.42), bold: true, color: accent, align: 'center',
+    });
+  }
+
+  doc.setDrawColor(accent);
+  doc.setLineWidth(Math.max(1, layout.photoD * 0.028));
+  doc.circle(cx, cy, r + 1.2, 'S');
+
+  // ---- name + birthday ----------------------------------------------------
+  const textW = layout.tileW - 4;
+  let ty = top + layout.photoD + 6;
+
+  const nameOpts: TextOpts = { size: layout.nameSize, bold: true, color: INK, align: 'center' };
+  drawText(doc, truncate(doc, label, textW, nameOpts), cx, ty, nameOpts);
+  ty += layout.nameSize * 1.22;
+
+  if (child.entry) {
+    drawText(doc, `${child.entry.day} ${MONTH_ABBR[child.entry.month - 1]}`, cx, ty, {
+      size: layout.dateSize, bold: true, color: accent, align: 'center',
+    });
+  } else {
+    const noteOpts: TextOpts = { size: layout.dateSize, italic: true, color: QUIET_GRAY, align: 'center' };
+    drawText(doc, truncate(doc, 'not on file', textW, noteOpts), cx, ty, noteOpts);
+  }
+}
+
+export interface BirthdayBoardOptions {
+  children: BirthdayBoardChild[];
+  className?: string;
+  logoBytes?: ArrayBuffer | null;
+  /** injectable for tests; defaults to now */
+  today?: Date;
+}
+
+/** The whole class on ONE festive page — photos, calendar order, one sheet. */
+export async function buildBirthdayBoardPdf(opts: BirthdayBoardOptions): Promise<Blob> {
+  const all = sortBoardChildren(opts.children.filter((c) => c.name?.trim()));
+  if (all.length === 0) throw new Error('buildBirthdayBoardPdf: at least one child is required');
+
+  const className = (opts.className ?? '').trim() || 'Our Class';
+  const logoArt = opts.logoBytes ? await artFromBytes(opts.logoBytes) : null;
+
+  const layout = computeBirthdayBoardLayout(all.length);
+  const children = all.slice(0, layout.shown);
+  const undatedCount = all.filter((c) => !c.entry).length;
+
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'letter' });
+  const centre = CARD_PAGE_W / 2;
+  const fi = BOARD_FRAME_INSET;
+
+  // ---- frame + bunting ----------------------------------------------------
+  pageFrame(doc, { pageW: CARD_PAGE_W, pageH: CARD_PAGE_H, inset: fi });
+  bunting(doc, fi + 12, CARD_PAGE_W - fi - 12, 30, { flags: 13, droop: 9, flagH: 12 });
+
+  // ---- header -------------------------------------------------------------
+  let hy = 62;
+  if (logoArt) placeContained(doc, logoArt, BOARD_MARGIN_X, hy - 6, 34, 34);
+  drawText(doc, className.toUpperCase(), centre, hy,
+    { size: 10, bold: true, color: EMERALD, charSpace: 1.8, align: 'center' });
+  hy += 16;
+
+  drawText(doc, 'Birthdays', centre, hy, { size: 30, bold: true, color: INK, align: 'center' });
+  const titleW = measure(doc, 'Birthdays', { size: 30, bold: true });
+  sparkle(doc, centre - titleW / 2 - 16, hy + 12, 5.5, GOLD);
+  sparkle(doc, centre + titleW / 2 + 16, hy + 12, 5.5, GOLD);
+  hy += 36;
+
+  drawText(doc, 'every birthday in our class, January to December', centre, hy,
+    { size: 9, italic: true, color: SUBTITLE_GRAY, align: 'center' });
+  hy += 14;
+  hline(doc, centre - 74, centre + 74, hy, RULE_GRAY, 0.8);
+
+  // ---- the grid -----------------------------------------------------------
+  // The last row is usually short (22 children over 5 columns leaves two), and
+  // a short row left-aligned reads as a mistake rather than a design — so every
+  // row is centred on its own width. Full rows are unaffected (offset 0).
+  const rowIndent = (row: number) => {
+    const inRow = Math.min(layout.cols, children.length - row * layout.cols);
+    const rowW = inRow * layout.tileW + (inRow - 1) * layout.gutterX;
+    return (layout.gridW - rowW) / 2;
+  };
+
+  const labels = boardLabels(children);
+  children.forEach((child, i) => {
+    const col = i % layout.cols;
+    const row = Math.floor(i / layout.cols);
+    const x = layout.gridX + rowIndent(row) + col * (layout.tileW + layout.gutterX);
+    const y = layout.gridY + row * (layout.tileH + layout.gutterY);
+    drawBoardTile(doc, child, labels[i], x, y, layout);
+  });
+
+  // ---- footer -------------------------------------------------------------
+  balloonCluster(doc, fi + 34, BOARD_GRID_BOTTOM + 2, 0.55, [EMERALD, GOLD, BIRTHDAY_PALETTE[2]]);
+  balloonCluster(doc, CARD_PAGE_W - fi - 34, BOARD_GRID_BOTTOM + 6, 0.5, [GOLD, BIRTHDAY_PALETTE[3], EMERALD]);
+
+  const dated = all.length - undatedCount;
+  const footParts = [className, `${dated} ${dated === 1 ? 'birthday' : 'birthdays'}`];
+  if (undatedCount > 0) {
+    footParts.push(`${undatedCount} ${undatedCount === 1 ? 'birthday' : 'birthdays'} not on file yet`);
+  }
+  if (layout.overflow > 0) footParts.push(`+${layout.overflow} more not shown`);
+  footParts.push('Montree');
+
+  const footY = 732;
+  hline(doc, centre - 150, centre + 150, footY - 6, RULE_GRAY, 0.6);
+  const footText = footParts.join(' · ');
+  const footSize = fitSize(doc, footText, CARD_PAGE_W - 2 * BOARD_MARGIN_X - 40, 8.5, 6, { italic: true });
+  drawText(doc, footText, centre, footY, { size: footSize, italic: true, color: FOOTER_GRAY, align: 'center' });
+
+  // ---- confetti, in the margins only --------------------------------------
+  // The scatter is generated across the whole sheet and then filtered by the
+  // avoid rects, so the count is ATTEMPTS, not dots: most land on the grid and
+  // are discarded, and the margin bands are narrow. Hence the high number for
+  // a deliberately quiet sprinkle.
+  confetti(doc, { x: fi + 8, y: fi + 8, w: CARD_PAGE_W - 2 * (fi + 8), h: CARD_PAGE_H - 2 * (fi + 8) }, {
+    count: 150,
+    seed: seedFromString(`${className}|board|${all.length}`),
+    avoid: [
+      // header type, the whole grid, the footer strip and both balloon corners
+      { x: BOARD_MARGIN_X - 10, y: 26, w: CARD_PAGE_W - 2 * BOARD_MARGIN_X + 20, h: BOARD_GRID_TOP - 20 },
+      { x: layout.gridX - 8, y: layout.gridY - 6, w: layout.gridW + 16, h: layout.gridH + 12 },
+      { x: centre - 170, y: footY - 18, w: 340, h: 40 },
+      { x: fi + 8, y: BOARD_GRID_BOTTOM - 6, w: 64, h: 46 },
+      { x: CARD_PAGE_W - fi - 72, y: BOARD_GRID_BOTTOM - 6, w: 64, h: 46 },
+    ],
+  });
+
   return doc.output('blob');
 }
 

@@ -222,9 +222,13 @@ export async function GET(request: NextRequest) {
     // rather than `.eq(true)` on purpose: rows created before the column had a
     // default can hold NULL, and .eq('is_active', true) would silently hide
     // every one of them.
+    // `date_of_birth` (a 10-char date, unlike `notes`) IS selected: the
+    // Birthdays tool's "Load my class" builds every birthday off it, and a
+    // roster row without it is useless there. Consumers must treat the
+    // '1900-01-01' sentinel as "not known" and never compute an age from it.
     const query = supabase
       .from('montree_children')
-      .select('id, name, age, photo_url, classroom_id, enrolled_at')
+      .select('id, name, age, photo_url, classroom_id, enrolled_at, date_of_birth')
       .in('classroom_id', allowedClassroomIds)
       .neq('is_active', false)
       .order('name');

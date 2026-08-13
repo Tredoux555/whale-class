@@ -120,6 +120,39 @@ export function balloonCluster(doc: jsPDF, x: number, y: number, scale: number, 
   balloon(doc, { x, y, w, color: colors[0], stringLength: 36 * scale, stringSway: 2 * scale });
 }
 
+// ---------------------------------------------------------------- page frame
+
+export interface PageFrameOpts {
+  pageW: number;
+  pageH: number;
+  /** distance from the paper edge to the outer rule */
+  inset: number;
+  /** corner radius of the outer rule */
+  radius?: number;
+  /** gap between the outer gold rule and the inner emerald hairline */
+  gap?: number;
+}
+
+/**
+ * A double hairline frame around the whole page — a gold outer rule with an
+ * emerald hairline just inside it. Everything festive on a bordered sheet
+ * (bunting, corner balloons, confetti) hangs off this frame, so it is drawn
+ * FIRST and nothing else is allowed to cross it.
+ */
+export function pageFrame(doc: jsPDF, o: PageFrameOpts) {
+  const r = o.radius ?? 14;
+  const gap = o.gap ?? 5;
+
+  doc.setDrawColor(GOLD);
+  doc.setLineWidth(1.8);
+  doc.roundedRect(o.inset, o.inset, o.pageW - 2 * o.inset, o.pageH - 2 * o.inset, r, r, 'S');
+
+  const i2 = o.inset + gap;
+  doc.setDrawColor(EMERALD);
+  doc.setLineWidth(0.6);
+  doc.roundedRect(i2, i2, o.pageW - 2 * i2, o.pageH - 2 * i2, Math.max(2, r - gap), Math.max(2, r - gap), 'S');
+}
+
 // ------------------------------------------------------------------- bunting
 
 /**

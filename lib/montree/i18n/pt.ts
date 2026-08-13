@@ -1548,6 +1548,11 @@ export const pt: Record<string, string> = {
   'progress.by_area': 'Progresso por Área',
   'tools.photo_bank': 'Banco de Imagens',
   'tools.photo_bank_desc': 'Pesquise, navegue e contribua com imagens de ensino em inglês para todas as ferramentas',
+  'tools.tracing_work': 'Traçado de Nomes',
+  'tools.tracing_work_desc': 'Crie fichas de traçado de nomes e números com letras pontilhadas e setas de traço.',
+  'tools.birthdays': 'Aniversários',
+  'tools.birthdays_desc': 'Cartões de aniversário para cada criança e um quadro de aniversários da turma numa página.',
+
   'tools.card_generator': 'Gerador de Cartões em 3 Partes',
   'tools.card_generator_desc': 'Crie lindos cartões de nomenclatura Montessori com imagens e rótulos',
   'tools.video_flashcard': 'Gerador de Cartões de Vídeo',
