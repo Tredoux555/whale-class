@@ -658,6 +658,7 @@ function drawBoardTile(
   x: number,
   y: number,
   layout: BirthdayBoardLayout,
+  emblem: Art | null,
 ) {
   const accent = boardAccent(child.entry);
   const cx = x + layout.tileW / 2;
@@ -673,9 +674,28 @@ function drawBoardTile(
     doc.discardPath();
     doc.addImage(child.photoDataUrl, 'JPEG', cx - r, cy - r, r * 2, r * 2, undefined, 'FAST');
     doc.restoreGraphicsState();
+  } else if (emblem) {
+    // No photograph on file: the class emblem stands in for it. A child with
+    // no picture gets the same circle, the same month-coloured ring and the
+    // class's own mark inside it — which reads as "this is one of ours",
+    // where an initial on a tinted disc read as a hole in the grid.
+    //
+    // CONTAINED, not covered, and at 78% of the disc: the shipped emblem is a
+    // ruled roundel, and covering would crop its outer rule into the child's
+    // ring, leaving two concentric circles fighting at 60pt. The inset keeps a
+    // ring of tint around it so the emblem reads as a plate, not a photo.
+    doc.setFillColor(child.entry && child.entry.month % 2 === 0 ? PANEL_GOLD : PANEL_TEAL);
+    doc.circle(cx, cy, r, 'F');
+    const inner = layout.photoD * 0.78;
+    doc.saveGraphicsState();
+    doc.circle(cx, cy, r, null);
+    doc.clip();
+    doc.discardPath();
+    placeContained(doc, emblem, cx - inner / 2, cy - inner / 2, inner, inner);
+    doc.restoreGraphicsState();
   } else {
-    // Initial-letter disc. A child with no photo still gets a real tile —
-    // a hole in the grid would read as "this child was forgotten".
+    // Last resort — no photo and no emblem art of any kind. A child still gets
+    // a real tile; a hole in the grid would read as "this child was forgotten".
     doc.setFillColor(child.entry && child.entry.month % 2 === 0 ? PANEL_GOLD : PANEL_TEAL);
     doc.circle(cx, cy, r, 'F');
     const initial = (child.name.trim()[0] || '?').toUpperCase();
@@ -843,7 +863,7 @@ export async function buildBirthdayBoardPdf(opts: BirthdayBoardOptions): Promise
     const row = Math.floor(i / layout.cols);
     const x = layout.gridX + rowIndent(row) + col * (layout.tileW + layout.gutterX);
     const y = layout.gridY + row * (layout.tileH + layout.gutterY);
-    drawBoardTile(doc, child, labels[i], x, y, layout);
+    drawBoardTile(doc, child, labels[i], x, y, layout, logoArt);
   });
 
   // ---- footer -------------------------------------------------------------
