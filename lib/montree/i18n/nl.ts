@@ -1574,6 +1574,8 @@ export const nl: Record<string, string> = {
   'tools.label_generator_desc': 'Maak afdrukbare woordlabels voor objecten, werken en lesmateriaal',
   'tools.name_labels': 'Naamlabels & Etiketten',
   'tools.name_labels_desc': 'Afdrukbare naamlabels, kastje- en vakjeslabels voor je klaslijst',
+  'tools.helper_strips': 'Naamstrookjes voor Hulpjes',
+  'tools.helper_strips_desc': "Uitknipbare naamstrookjes met foto's voor het Klassendienst-poster",
   'tools.sign_in_sheet': 'Aanwezigheidslijst',
   'tools.sign_in_sheet_desc': 'Afdrukbare aanwezigheidslijst voor evenementen met je klasnamen — open dagen, oudergesprekken, ophaalmomenten',
   'tools.vocab_flashcard': 'Woordenschat Flashcard-generator',

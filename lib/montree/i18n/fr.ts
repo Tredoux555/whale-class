@@ -1574,6 +1574,8 @@ export const fr: Record<string, string> = {
   'tools.label_generator_desc': 'Créez des étiquettes de mots imprimables pour les objets, les travaux et le matériel de classe',
   'tools.name_labels': 'Étiquettes de Nom',
   'tools.name_labels_desc': 'Étiquettes de nom, de casier et de vestiaire imprimables pour votre liste de classe',
+  'tools.helper_strips': 'Bandes de Nom pour Responsables',
+  'tools.helper_strips_desc': "Bandes de nom découpables avec photos pour l'affiche des Tâches de Classe",
   'tools.sign_in_sheet': 'Feuille de Présence',
   'tools.sign_in_sheet_desc': 'Liste de présence imprimable pour les événements avec les noms de votre classe — portes ouvertes, réunions, départs',
   'tools.vocab_flashcard': 'Générateur de Flashcards Vocabulaire',

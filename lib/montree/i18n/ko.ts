@@ -1574,6 +1574,8 @@ export const ko: Record<string, string> = {
   'tools.label_generator_desc': '물건, 교구, 교실 자료를 위한 인쇄 가능한 단어 라벨을 만드세요',
   'tools.name_labels': '이름표 및 라벨',
   'tools.name_labels_desc': '학급 명단용 인쇄 가능한 이름표, 사물함 및 개인함 라벨',
+  'tools.helper_strips': '도우미 이름표 스트립',
+  'tools.helper_strips_desc': '학급 당번 포스터용 사진이 있는 오려낼 이름표',
   'tools.sign_in_sheet': '출석 서명지',
   'tools.sign_in_sheet_desc': '학급 명단이 포함된 인쇄 가능한 행사 서명지 — 공개 수업일, 학부모 모임, 하원',
   'tools.vocab_flashcard': 'Vocabulary Flashcard Generator',

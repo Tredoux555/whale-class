@@ -1860,6 +1860,8 @@ export const en = {
   'tools.label_generator_desc': 'Create printable word labels for objects, works, and classroom materials',
   'tools.name_labels': 'Name Labels & Tags',
   'tools.name_labels_desc': 'Printable name tags, locker and cubby labels for your class list',
+  'tools.helper_strips': 'Helper Name Strips',
+  'tools.helper_strips_desc': 'Cut-out name strips with photos for the Classroom Jobs poster',
   'tools.sign_in_sheet': 'Sign-In Sheet',
   'tools.sign_in_sheet_desc': 'Printable event sign-in list with your class names — open days, meetings, pickups',
   'tools.vocab_flashcard': 'Vocabulary Flashcard Generator',

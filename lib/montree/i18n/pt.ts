@@ -1574,6 +1574,8 @@ export const pt: Record<string, string> = {
   'tools.label_generator_desc': 'Crie rótulos de palavras imprimíveis para objetos, trabalhos e materiais da sala de aula',
   'tools.name_labels': 'Etiquetas de Nome',
   'tools.name_labels_desc': 'Etiquetas de nome, armário e cubículo imprimíveis para a lista da sua turma',
+  'tools.helper_strips': 'Tiras de Nome para Ajudantes',
+  'tools.helper_strips_desc': 'Tiras de nome recortáveis com fotos para o cartaz de Tarefas da Turma',
   'tools.sign_in_sheet': 'Folha de Presença',
   'tools.sign_in_sheet_desc': 'Lista de presença imprimível para eventos com os nomes da sua turma — dias de portas abertas, reuniões, saídas',
   'tools.vocab_flashcard': 'Gerador de Cartões de Vocabulário',

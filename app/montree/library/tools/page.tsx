@@ -127,7 +127,14 @@ const TOOLS = [
     descKey: 'tools.phonics_fast_desc',
     gradient: 'from-emerald-500 to-green-600',
   },
-];
+  {
+    href: '/montree/library/tools/helper-strips',
+    icon: '✂️',
+    titleKey: 'tools.helper_strips',
+    descKey: 'tools.helper_strips_desc',
+    gradient: 'from-sky-500 to-blue-700',
+  },
+] as const;
 
 export default function LibraryToolsPage() {
   const { t } = useI18n();

@@ -23,10 +23,29 @@
 // dashboard header uses it, which is why the app shell does not print) and
 // `cms-doc-screen` (the shared stylesheet's own hook). Either alone would do;
 // both together mean neither convention can be quietly dropped.
+//
+// ── SCHOOL BRAND KIT (added with the School Brand Kit feature) ──────────────
+// A school that has uploaded a logo gets its own paper: a crest in the
+// masthead, tinted rules and hairlines, and the crest ghosted behind the sheet.
+//
+// 🚨 THE UN-THEMED PATH IS BYTE-IDENTICAL TO WHAT IT ALWAYS WAS. With no
+// `brandKit` prop — or a kit that is switched off — this component renders the
+// exact same DOM it rendered before the feature existed: no `.mt-branded`
+// class, no extra <style>, no wrapper around the children, no <img> elements.
+// Every themed behaviour hangs off `.mt-branded`, which only exists when a kit
+// is active (see lib/montree/brand-kit/css.ts).
+//
+// 🚨 THE CREST AND THE GHOST ARE <img>, NOT CSS BACKGROUNDS. `background-image`
+// is the first thing a browser drops when "Background graphics" is unticked in
+// the print dialog, and a crest that vanishes on half the world's printers is
+// worse than no crest. The washes and tints in the theme layer ARE backgrounds
+// and do degrade that way — correctly, because they are decoration.
 
 import type { ReactNode } from 'react';
 import { Printer, ArrowLeft } from 'lucide-react';
 import { DOCUMENT_PRINT_CSS } from '@/components/cms/documents/print-css';
+import { brandKitCss } from '@/lib/montree/brand-kit/css';
+import { isBrandKitActive, type BrandKit } from '@/lib/montree/brand-kit/types';
 import type { DocumentMeta } from '@/lib/cms/engine/doc-generator';
 import type { TFunction } from '@/lib/cms/i18n/t';
 
@@ -67,6 +86,21 @@ export interface DocumentPaperProps {
   rooms?: { id: string; name: string }[];
   activeRoomId?: string;
   onSelectRoom?: (roomId: string) => void;
+  /**
+   * The school's stored theme (`/api/montree/brand-kit`, carried on the
+   * class-documents read). Absent, null, or switched off → plain paper.
+   */
+  brandKit?: BrandKit | null;
+  /**
+   * Name-label sheets pass `true`.
+   *
+   * 🚨 A label sheet's body is a CUT GRID, not text. A ghost behind it lands in
+   * the gutters between cards and inside cards that are about to be cut out and
+   * laminated — the exact "reads as a printing fault" the birthday board's own
+   * watermark note warns about. The watermark belongs on documents whose body
+   * is text; on labels the crest's job is done by the framed cards themselves.
+   */
+  suppressWatermark?: boolean;
   children: ReactNode;
 }
 
@@ -83,11 +117,43 @@ export default function DocumentPaper({
   rooms = [],
   activeRoomId,
   onSelectRoom,
+  brandKit = null,
+  suppressWatermark = false,
   children,
 }: DocumentPaperProps) {
+  // One decision, made once: is this sheet themed at all? `isBrandKitActive`
+  // also rejects a kit that is enabled but paints nothing, so "configured but
+  // empty" behaves like off rather than like a theme made of default greys.
+  const branded = isBrandKitActive(brandKit) ? brandKit : null;
+  const themeCss = branded ? brandKitCss(branded) : '';
+  const logoUrl = branded?.logoUrl ?? null;
+  // Whisper sets the opacity to 0, which would render an invisible <img> for no
+  // reason — so the ghost is not rendered at all rather than rendered at zero.
+  const showWatermark =
+    !!logoUrl && !suppressWatermark && (branded?.tokens.watermarkOpacity ?? 0) > 0;
+
+  const titleBlock = (
+    <div className="min-w-0">
+      <h1 className="cms-doc-title" dir="auto">
+        {title}
+      </h1>
+      <p className="cms-doc-sub" dir="auto">
+        {meta.schoolName}
+      </p>
+    </div>
+  );
+
   return (
-    <div className="mt-doc-shell min-h-screen bg-[#0a1a0f] py-5 px-4 sm:px-6 relative">
-      <style dangerouslySetInnerHTML={{ __html: DOCUMENT_PRINT_CSS + MONTREE_PRINT_CSS }} />
+    <div
+      className={
+        branded
+          ? 'mt-doc-shell mt-branded min-h-screen bg-[#0a1a0f] py-5 px-4 sm:px-6 relative'
+          : 'mt-doc-shell min-h-screen bg-[#0a1a0f] py-5 px-4 sm:px-6 relative'
+      }
+      // Read by the theme layer's "Full" rules only. Absent on the plain path.
+      data-doc-intensity={branded ? branded.intensity : undefined}
+    >
+      <style dangerouslySetInnerHTML={{ __html: DOCUMENT_PRINT_CSS + MONTREE_PRINT_CSS + themeCss }} />
 
       <div
         aria-hidden
@@ -134,22 +200,34 @@ export default function DocumentPaper({
 
       {/* ── the paper ──────────────────────────────────────────────────── */}
       <article className="cms-doc-sheet relative">
+        {/* The ghost. First child so it is behind everything that follows;
+            decorative, so it is hidden from assistive technology and carries no
+            alt text — the school's name is already on the masthead in words. */}
+        {showWatermark && logoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img className="mt-doc-watermark" src={logoUrl} alt="" aria-hidden="true" />
+        )}
+
         <header className="cms-doc-head">
-          <div className="min-w-0">
-            <h1 className="cms-doc-title" dir="auto">
-              {title}
-            </h1>
-            <p className="cms-doc-sub" dir="auto">
-              {meta.schoolName}
-            </p>
-          </div>
+          {logoUrl ? (
+            <div className="mt-doc-headlockup">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="mt-doc-emblem" src={logoUrl} alt="" aria-hidden="true" />
+              {titleBlock}
+            </div>
+          ) : (
+            titleBlock
+          )}
           <div className="cms-doc-stamp">
             <b dir="auto">{meta.roomName}</b>
             {dateLabel}
           </div>
         </header>
 
-        {children}
+        {/* The wrapper exists only to sit ABOVE the ghost in the stacking
+            order. On the plain path the children are rendered exactly as they
+            always were — no extra element in the DOM. */}
+        {branded ? <div className="mt-doc-content">{children}</div> : children}
 
         <footer className="cms-doc-foot">
           <span>{generatedByLabel}</span>

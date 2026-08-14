@@ -1574,6 +1574,8 @@ export const de: Record<string, string> = {
   'tools.label_generator_desc': 'Erstellen Sie druckbare Wörter-Etiketten für Gegenstände, Arbeiten und Klassenmaterialien',
   'tools.name_labels': 'Namensschilder & Etiketten',
   'tools.name_labels_desc': 'Druckbare Namensschilder, Spind- und Fächeretiketten für Ihre Klassenliste',
+  'tools.helper_strips': 'Helfer-Namensstreifen',
+  'tools.helper_strips_desc': 'Ausschneidbare Namensstreifen mit Fotos für das Klassendienst-Poster',
   'tools.sign_in_sheet': 'Anwesenheitsliste',
   'tools.sign_in_sheet_desc': 'Druckbare Anwesenheitsliste für Veranstaltungen mit Ihren Klassennamen — Tage der offenen Tür, Elternabende, Abholzeiten',
   'tools.vocab_flashcard': 'Vokabel-Lernkartengenerator',

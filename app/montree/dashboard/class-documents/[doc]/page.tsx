@@ -17,6 +17,13 @@
 // Print: the shared ink (`components/cms/documents/print-css.ts`) is injected as
 // a <style> tag by DocumentPaper — never globals.css, because `@page` cannot be
 // scoped and a global A4 rule would hijack every print in the repo.
+//
+// 🚨 THE SCHOOL'S OWN BRAND IS A THIRD LAYER, AND IT IS THE PAPER'S. The kit
+// comes down with the same read as the roster (`school.brandKit`), so a themed
+// sheet renders in one pass and never flashes unbranded first. It is passed
+// through untouched: this page decides nothing about the theme except which
+// document is being printed, because that is the one thing the theme cannot
+// know for itself.
 
 'use client';
 
@@ -30,6 +37,7 @@ import DocumentPaper from '@/components/montree/class-documents/DocumentPaper';
 import { DocumentBody } from '@/components/cms/documents/DocumentBody';
 import { documentBySlug, paperLocaleFor } from '@/lib/montree/cms-bridge/catalogue';
 import type { IntakeCoverage } from '@/lib/montree/cms-bridge/document-source';
+import type { BrandKit } from '@/lib/montree/brand-kit/types';
 import { generate, type DocumentSource } from '@/lib/cms/engine/doc-generator';
 import { getT } from '@/lib/cms/i18n/t';
 
@@ -40,6 +48,15 @@ interface ClassDocumentsResponse {
   source: DocumentSource | null;
   coverage: IntakeCoverage | null;
   intakeAvailable: boolean;
+  /** Added with the School Brand Kit. Optional on purpose: a cached response
+   *  from before the feature — or a project whose school row could not be read
+   *  — simply has no `school`, and the sheet prints plain. */
+  school?: {
+    id: string;
+    name: string | null;
+    logoUrl: string | null;
+    brandKit: BrandKit | null;
+  } | null;
 }
 
 /** "Tuesday 11 August 2026", in the PAPER's language — it is printed. */
@@ -113,6 +130,7 @@ export default function ClassDocumentPage() {
   const paperT = useMemo(() => getT(paperLocale), [paperLocale]);
 
   const source = data?.source ?? null;
+  const brandKit = data?.school?.brandKit ?? null;
 
   const model = useMemo(() => {
     if (!entry || !source) return null;
@@ -198,6 +216,11 @@ export default function ClassDocumentPage() {
         rooms={data?.classrooms ?? []}
         activeRoomId={roomId}
         onSelectRoom={selectRoom}
+        brandKit={brandKit}
+        // 🚨 The one theme decision this page owns, because it is the only one
+        // that depends on WHICH document is printing: a sheet of cut-out labels
+        // gets no ghost behind it. See DocumentPaper's prop for the why.
+        suppressWatermark={entry.kind === 'name_labels'}
       >
         <DocumentBody doc={model} t={paperT} />
       </DocumentPaper>
