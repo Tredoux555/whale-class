@@ -1818,6 +1818,8 @@ export const en = {
   'labels.none': 'None',
   'labels.preview': 'Preview',
   'labels.select_to_preview': 'Select students above to see the preview',
+  'labels.meet_greet': 'Meet & Greet Tags',
+  'labels.meet_greet_desc': '"Hello, my name is…" sticker badges with your class emblem',
 
   // Audit — Progress Detail
   'progress.load_error': 'Failed to load',
@@ -1847,6 +1849,8 @@ export const en = {
   'tools.video_flashcard_desc': 'Upload a video, pick the best frames, and print flashcards',
   'tools.label_generator': 'Label Generator',
   'tools.label_generator_desc': 'Create printable word labels for objects, works, and classroom materials',
+  'tools.name_labels': 'Name Labels & Tags',
+  'tools.name_labels_desc': 'Printable name tags, locker and cubby labels for your class list',
   'tools.vocab_flashcard': 'Vocabulary Flashcard Generator',
   'tools.vocab_flashcard_desc': 'Generate vocabulary flashcards with images and words',
   'tools.word_bingo': 'Word Bingo Generator',

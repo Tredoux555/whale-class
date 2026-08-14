@@ -1782,6 +1782,8 @@ export const zh = {
   'labels.none': '无',
   'labels.preview': '预览',
   'labels.select_to_preview': '选择上方的学生查看预览',
+  'labels.meet_greet': '见面会名牌',
+  'labels.meet_greet_desc': '「你好，我叫……」贴纸徽章，配班级徽标',
 
   // Audit — Progress Detail
   'progress.load_error': '加载失败',
@@ -1807,6 +1809,8 @@ export const zh = {
   'tools.video_flashcard_desc': '上传视频，选取最佳帧，打印闪卡',
   'tools.label_generator': '标签生成器',
   'tools.label_generator_desc': '创建可打印的文字标签，用于物品、工作和教室材料',
+  'tools.name_labels': '姓名标签',
+  'tools.name_labels_desc': '为班级名单打印姓名标签、储物柜和小格标签',
   'tools.vocab_flashcard': '词汇闪卡生成器',
   'tools.vocab_flashcard_desc': '生成包含图片和文字的词汇闪卡',
   'tools.word_bingo': '单词宾果生成器',

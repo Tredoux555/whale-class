@@ -57,6 +57,13 @@ const TOOLS = [
     gradient: 'from-blue-500 to-cyan-600',
   },
   {
+    href: '/montree/dashboard/labels',
+    icon: '📛',
+    titleKey: 'tools.name_labels',
+    descKey: 'tools.name_labels_desc',
+    gradient: 'from-emerald-500 to-teal-600',
+  },
+  {
     href: '/montree/library/tools/label-maker',
     icon: '🏷️',
     titleKey: 'tools.label_generator',

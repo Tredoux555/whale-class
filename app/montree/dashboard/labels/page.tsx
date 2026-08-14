@@ -6,6 +6,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/montree/i18n';
 import { getSession } from '@/lib/montree/auth';
+import { Quicksand } from 'next/font/google';
 
 type Student = {
   id: string;
@@ -13,9 +14,12 @@ type Student = {
   photo_url?: string;
 };
 
-type Template = 'locker' | 'nametag' | 'cubby';
+type Template = 'locker' | 'nametag' | 'cubby' | 'meetgreet';
+
+const quicksand = Quicksand({ subsets: ['latin'], weight: ['600', '700'] });
 
 const TEMPLATES: { id: Template; name: string; nameKey: string; icon: string; descKey: string; cols: number }[] = [
+  { id: 'meetgreet', name: '', nameKey: 'labels.meet_greet', icon: '👋', descKey: 'labels.meet_greet_desc', cols: 2 },
   { id: 'locker', name: '', nameKey: 'labels.locker_labels', icon: '🚪', descKey: 'labels.locker_desc', cols: 2 },
   { id: 'nametag', name: '', nameKey: 'labels.name_tags', icon: '📛', descKey: 'labels.nametag_desc', cols: 3 },
   { id: 'cubby', name: '', nameKey: 'labels.cubby_bed_tags', icon: '🛏️', descKey: 'labels.cubby_desc', cols: 4 },
@@ -35,6 +39,7 @@ export default function LabelsPage() {
   const [template, setTemplate] = useState<Template>('locker');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [schoolName, setSchoolName] = useState('');
+  const [classroomName, setClassroomName] = useState('');
   const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
   const [logoDragging, setLogoDragging] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -53,6 +58,7 @@ export default function LabelsPage() {
       const sess = await getSession();
       if (!sess?.classroom?.id) { router.push('/montree/login'); return; }
       setSchoolName(sess.school?.name || '');
+      setClassroomName(sess.classroom?.name || '');
 
       try {
         const res = await fetch(`/api/montree/children?classroom_id=${sess.classroom.id}`);
@@ -251,14 +257,23 @@ export default function LabelsPage() {
                   style={{ gridTemplateColumns: `repeat(${currentTemplate.cols}, 1fr)` }}
                 >
                   {selectedStudents.map((student, idx) => (
-                    <LabelCard
-                      key={student.id}
-                      student={student}
-                      template={template}
-                      colorIdx={students.indexOf(student)}
-                      schoolName={schoolName}
-                      logoUrl={logoDataUrl}
-                    />
+                    template === 'meetgreet' ? (
+                      <MeetGreetCard
+                        key={student.id}
+                        student={student}
+                        emblemSrc={logoDataUrl || '/tools/labels/whale-class-emblem.png'}
+                        footerText={classroomName || schoolName || ''}
+                      />
+                    ) : (
+                      <LabelCard
+                        key={student.id}
+                        student={student}
+                        template={template}
+                        colorIdx={students.indexOf(student)}
+                        schoolName={schoolName}
+                        logoUrl={logoDataUrl}
+                      />
+                    )
                   ))}
                 </div>
               </div>
@@ -277,32 +292,54 @@ export default function LabelsPage() {
       <div className="hidden print:block">
         <div
           className="print-grid"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(${currentTemplate.cols}, 1fr)`,
-            gap: template === 'locker' ? '24px' : template === 'nametag' ? '16px' : '12px',
-            padding: '20px',
-          }}
+          style={
+            template === 'meetgreet'
+              ? {
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, 96mm)',
+                  gap: '2.3mm 6mm',
+                  justifyContent: 'center',
+                  padding: '0',
+                }
+              : {
+                  display: 'grid',
+                  gridTemplateColumns: `repeat(${currentTemplate.cols}, 1fr)`,
+                  gap: template === 'locker' ? '24px' : template === 'nametag' ? '16px' : '12px',
+                  padding: '20px',
+                }
+          }
         >
           {selectedStudents.map((student, idx) => (
-            <LabelCard
-              key={student.id}
-              student={student}
-              template={template}
-              colorIdx={students.indexOf(student)}
-              schoolName={schoolName}
-              logoUrl={logoDataUrl}
-              print
-            />
+            template === 'meetgreet' ? (
+              <MeetGreetCard
+                key={student.id}
+                student={student}
+                emblemSrc={logoDataUrl || '/tools/labels/whale-class-emblem.png'}
+                footerText={classroomName || schoolName || ''}
+              />
+            ) : (
+              <LabelCard
+                key={student.id}
+                student={student}
+                template={template}
+                colorIdx={students.indexOf(student)}
+                schoolName={schoolName}
+                logoUrl={logoDataUrl}
+                print
+              />
+            )
           ))}
         </div>
       </div>
 
-      {/* Print styles */}
+      {/* Print styles — @page rule branches on template via string interpolation,
+          NOT a conditional JSX wrapper (Turbopack rejects <style jsx> nested inside
+          a conditional render branch — see the May-29 2026 locked rule). */}
       <style jsx global>{`
         @media print {
           @page {
-            margin: 10mm;
+            size: ${template === 'meetgreet' ? 'A4' : 'auto'};
+            margin: ${template === 'meetgreet' ? '10mm 0' : '10mm'};
           }
           body {
             -webkit-print-color-adjust: exact !important;
@@ -327,7 +364,7 @@ function LabelCard({
   print = false,
 }: {
   student: Student;
-  template: Template;
+  template: Exclude<Template, 'meetgreet'>;
   colorIdx: number;
   schoolName: string;
   logoUrl?: string | null;
@@ -381,6 +418,157 @@ function LabelCard({
       {template !== 'cubby' && schoolName && (
         <p className="text-xs text-slate-400 mt-1 truncate max-w-full">{schoolName}</p>
       )}
+    </div>
+  );
+}
+
+// "Meet & Greet" name-label — HELLO! sticker badge with class emblem
+function MeetGreetCard({
+  student,
+  emblemSrc,
+  footerText,
+}: {
+  student: Student;
+  emblemSrc: string;
+  footerText: string;
+}) {
+  const firstName = student.name.trim().split(/\s+/)[0] || student.name;
+  const nameFontSize =
+    firstName.length <= 6 ? '30pt' :
+    firstName.length <= 9 ? '24pt' :
+    firstName.length <= 13 ? '19pt' :
+    '15pt';
+
+  return (
+    <div
+      style={{
+        position: 'relative',
+        width: '100%',
+        aspectRatio: '96 / 64',
+        background: '#FFFDF8',
+        border: '1.5px solid #DCE7DF',
+        borderRadius: '4.5mm',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        breakInside: 'avoid',
+      }}
+    >
+      {/* Header band */}
+      <div
+        style={{
+          position: 'relative',
+          flex: 'none',
+          height: '35%',
+          background: 'linear-gradient(135deg,#14503A 0%,#1D6B48 45%,#2E9B6B 100%)',
+          paddingTop: '5%',
+          paddingLeft: '7.5%',
+          color: '#fff',
+        }}
+      >
+        <div
+          className={quicksand.className}
+          style={{ fontWeight: 700, fontSize: '22pt', letterSpacing: '0.06em', lineHeight: 1 }}
+        >
+          HELLO!
+        </div>
+        <div
+          style={{
+            fontFamily: 'var(--font-lora), Georgia, serif',
+            fontStyle: 'italic',
+            fontSize: '11.5pt',
+            lineHeight: 1,
+            marginTop: '1.2mm',
+            opacity: 0.92,
+          }}
+        >
+          my name is
+        </div>
+
+        {/* Wave carved into the bottom edge of the gradient band */}
+        <svg
+          preserveAspectRatio="none"
+          viewBox="0 0 100 6"
+          style={{ position: 'absolute', bottom: -1, left: 0, width: '100%', height: '3.2mm' }}
+        >
+          <path d="M0 3 Q 12.5 0, 25 3 T 50 3 T 75 3 T 100 3 L100 6.2 L0 6.2 Z" fill="#FFFDF8" />
+        </svg>
+
+        {/* Class emblem */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '4.5mm',
+            right: '5.5mm',
+            width: '26mm',
+            height: '26mm',
+            borderRadius: '50%',
+            background: '#fff',
+            border: '1mm solid #fff',
+            boxShadow: '0 0.6mm 1.8mm rgba(10,26,15,0.18)',
+            overflow: 'hidden',
+            zIndex: 2,
+          }}
+        >
+          <img
+            src={emblemSrc}
+            alt=""
+            style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+          />
+        </div>
+      </div>
+
+      {/* Name area */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 6mm' }}>
+        <span
+          className={quicksand.className}
+          style={{
+            fontWeight: 700,
+            color: '#123528',
+            fontSize: nameFontSize,
+            lineHeight: 1.05,
+            textAlign: 'center',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {firstName}
+        </span>
+      </div>
+
+      {/* Footer */}
+      <div
+        style={{
+          flex: 'none',
+          paddingBottom: '3.4mm',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '1.4mm',
+        }}
+      >
+        <svg width="70" height="7" viewBox="0 0 70 7">
+          <path
+            d="M1 4 Q 9.75 -1, 18.5 4 T 36 4 T 53.5 4 T 71 4"
+            fill="none"
+            stroke="#9FC7B0"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+          />
+        </svg>
+        {footerText && (
+          <div
+            style={{
+              fontWeight: 600,
+              fontSize: '7pt',
+              letterSpacing: '0.28em',
+              color: '#6B8F7C',
+              textTransform: 'uppercase',
+            }}
+          >
+            {footerText}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
