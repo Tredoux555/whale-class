@@ -74,6 +74,17 @@ const media = (path: string, v?: number) =>
 const STORYBOOK_PRINT_VERSION = 3; // bumped 2026-08-14: gentle-hands page-08 re-rolled to full-cast finale (adds Apple)
 const printPdf = (path: string) => `${path}?v=${STORYBOOK_PRINT_VERSION}`;
 
+/**
+ * Cache-buster for the song mp3s in the `grace-courtesy` bucket, same
+ * mechanism as STORYBOOK_PRINT_VERSION but a separate constant so songs and
+ * print PDFs bust independently. The media proxy sets a 7-day Cloudflare
+ * edge cache (CDN-Cache-Control max-age=604800) keyed on the full request
+ * URL, so replacing a bucket object in place (same storage path) does NOT
+ * bust the edge HIT on its own — bump this whenever a songs/lesson-NN.mp3
+ * file is replaced in place.
+ */
+const SONG_VERSION = 2; // bumped 2026-08-14: lesson-02 (Indoor Voice) + lesson-03 (Gentle Hands) re-recorded
+
 /** Trimmed-down photo-bank row — only the fields this page renders/forwards. */
 interface BankPhoto {
   id: string;
@@ -302,7 +313,7 @@ function LessonCard({ lesson }: { lesson: Lesson }) {
   const { accent, tint } = lesson;
   const router = useRouter();
 
-  const songUrl = lesson.song ? media(`songs/lesson-${nn(lesson.n)}.mp3`) : null;
+  const songUrl = lesson.song ? media(`songs/lesson-${nn(lesson.n)}.mp3`, SONG_VERSION) : null;
   const pictureUrl = media(`pictures/lesson-${nn(lesson.n)}.png`);
 
   const song = useAssetPresence(songUrl);
