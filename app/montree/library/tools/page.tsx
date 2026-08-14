@@ -64,6 +64,13 @@ const TOOLS = [
     gradient: 'from-emerald-500 to-teal-600',
   },
   {
+    href: '/montree/library/tools/sign-in-sheet',
+    icon: '✍️',
+    titleKey: 'tools.sign_in_sheet',
+    descKey: 'tools.sign_in_sheet_desc',
+    gradient: 'from-teal-500 to-cyan-600',
+  },
+  {
     href: '/montree/library/tools/label-maker',
     icon: '🏷️',
     titleKey: 'tools.label_generator',
