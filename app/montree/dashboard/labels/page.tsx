@@ -348,6 +348,9 @@ export default function LabelsPage() {
           .print-grid {
             page-break-inside: auto;
           }
+          .mg-emblem {
+            box-shadow: none !important;
+          }
         }
       `}</style>
     </>
@@ -496,6 +499,7 @@ function MeetGreetCard({
 
         {/* Class emblem */}
         <div
+          className="mg-emblem"
           style={{
             position: 'absolute',
             top: '4.5mm',
