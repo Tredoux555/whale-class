@@ -61,6 +61,8 @@ POTATO holding out APPLE with both stubby arms toward ANT reaching up happily, c
 
 ## page-08.jpg
 **Page text:** "Gentle hands, happy friends!"
-**Scene:** potato with one stubby arm in a loose gentle hug around snake, beside them the cat, the star, and the ant, all gathered close and smiling
+**Scene:** potato with one stubby arm in a loose gentle hug around the snake, beside them the cat, the apple, the star, and the ant, all six gathered close together and smiling
 **Prompt:**
-POTATO with one stubby arm in a loose gentle hug around SNAKE, beside them CAT, STAR, and ANT, all gathered close and smiling, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 3:2
+POTATO with one stubby arm in a loose gentle hug around SNAKE, beside them CAT, APPLE, STAR, and ANT, all six gathered close together and smiling, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. --ar 3:2
+
+**Note:** re-rolled 2026-08-14 — original page-08 art omitted Apple; this version adds Apple so the full six-character cast appears in the finale.
