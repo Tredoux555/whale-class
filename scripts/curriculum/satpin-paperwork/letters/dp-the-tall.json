@@ -1,0 +1,114 @@
+{
+  "letter": "t",
+  "week": 3,
+  "slug": "dp-the-tall",
+  "bookSlug": "the-tall",
+  "bookTitle": "The Tall ___!",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-the-tall.py",
+  "artDir": "phonics-images/dark-phonics-books/the-tall",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "turtle",
+      "sentence": "A tall turtle!",
+      "art": "p1-turtle.png"
+    },
+    {
+      "order": 2,
+      "word": "tomato",
+      "sentence": "A tall tomato!",
+      "art": "p2-tomato.png"
+    },
+    {
+      "order": 3,
+      "word": "toothbrush",
+      "sentence": "A tall toothbrush!",
+      "art": "p3-toothbrush.png"
+    },
+    {
+      "order": 4,
+      "word": "tiger",
+      "sentence": "A tall tiger!",
+      "art": "p4-tiger.png"
+    },
+    {
+      "order": 5,
+      "word": "taxi",
+      "sentence": "A tall taxi!",
+      "art": "p5-taxi.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    2,
+    3,
+    4,
+    5,
+    1
+  ],
+  "matchDisplayOrder": [
+    4,
+    5,
+    1,
+    2,
+    3
+  ],
+  "yesno": [
+    {
+      "question": "is the turtle tall?",
+      "answer": true,
+      "imageArt": "p1-turtle.png"
+    },
+    {
+      "question": "is the tomato tall?",
+      "answer": true,
+      "imageArt": "p2-tomato.png"
+    },
+    {
+      "question": "is the toothbrush tall?",
+      "answer": true,
+      "imageArt": "p3-toothbrush.png"
+    },
+    {
+      "question": "is the tiger tall?",
+      "answer": true,
+      "imageArt": "p4-tiger.png"
+    },
+    {
+      "question": "is the taxi tall?",
+      "answer": true,
+      "imageArt": "p5-taxi.png"
+    },
+    {
+      "question": "is the ant tall?",
+      "answer": false,
+      "imageWord": "ant"
+    },
+    {
+      "question": "is the egg tall?",
+      "answer": false,
+      "imageWord": "egg"
+    },
+    {
+      "question": "is the coin tall?",
+      "answer": false,
+      "imageWord": "coin"
+    },
+    {
+      "question": "is the cup tall?",
+      "answer": false,
+      "imageWord": "cup"
+    },
+    {
+      "question": "is the bee tall?",
+      "answer": false,
+      "imageWord": "bee"
+    }
+  ],
+  "_notes": {
+    "generated": "Generated 2026-08-14 as the paperwork config for the-tall, a companion pattern book to the-sat's letter-t slot (turtle/tomato/toothbrush/tiger/taxi cast, shared art set with dp-tiger-in-the-taxi) -- do not hand-edit blindly, keep in sync with any future books_def.py entry for the-tall.",
+    "sentences": "CONFIRMED 2026-08-14 from the-tall's own A5 reading PDF (public/dark-phonics-books/print/the-tall-A5-reading.pdf, 16pp, staged by the coordinator; verified via pdftotext) -- text pulled directly from the printed book, not derived. The pattern is 'A tall ___!' (NOT 'The tall ___!' as first guessed before the reading PDF was found) -- cover title stays 'The Tall ___!' (title-case, blank at the end) per the book's own cover page, but every page sentence reads 'A tall <word>!'. letter/week set to 't'/3 to match this book's own slot, the same as dp-the-sat and dp-tiger-in-the-taxi (both letter t, week 3) -- the original brief's 'lesson 7' figure could not be corroborated against any repo numbering (week 7 is letter m / the-sat cast's the-mat, a different book), so week 3 was kept for internal consistency with the letter-t siblings.",
+    "recap": "p6-recap.png is this book's finale/recap page -- confirmed by the reading PDF as 'A turtle, a tomato, a toothbrush, a tiger, and a taxi -- all tall?!', an unresolved cliffhanger-style summary sentence naming all five swap words at once, not a single-topic page -- excluded from pages[] per the recap-fragment exclusion rule used by dp-the-sat / dp-tiger-in-the-taxi. pages[] uses all five of this book's single-topic cast pages: turtle, tomato, toothbrush, tiger, taxi.",
+    "yesno": "10 items (5 true, 5 false) per the 2026-08-08 the-sat-rollout brief's 5/5 convention. 5 true from this book's own five pages via imageArt, questioned as 'is the <word> tall?' (true per the book). 5 false use imageWord -> docs/picture-bank/photos/<word>/<word>.jpg for small, clearly-not-tall objects (ant, egg, coin, cup, bee) rather than other Dark Phonics books' art, because this container only has the-tall's own art staged under phonics-images/dark-phonics-books/ -- verified each chosen word's jpg exists on disk."
+  }
+}

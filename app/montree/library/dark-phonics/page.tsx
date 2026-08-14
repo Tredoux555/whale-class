@@ -131,8 +131,8 @@ type Book = {
    *  dark-phonics bucket at books/covers/<slug>.png. */
   cover?: string;
   /** Set false for books that don't have the paperwork/tracing/three-part-card
-   *  pack built yet. Defaults to true — the-spat and the-pit have full packs in
-   *  public/dark-phonics-materials/<slug>/; the-sat and the-tall do not yet. */
+   *  pack built yet. Defaults to true — every letter book (incl. the-sat and
+   *  the-tall) now has a full pack in public/dark-phonics-materials/<slug>/. */
   materials?: boolean;
   /** Set true for books that have the 4 printable book-works (picture match,
    *  sentence + picture, sentence builder guided/free) built at
@@ -144,6 +144,10 @@ type Reader = {
   title: string;
   /** Same as Book.works, above — set true where the reader's works pack exists. */
   works?: boolean;
+  /** Same as Book.materials, but opt-in: set true where the reader's full
+   *  paperwork/tracing/three-part pack exists at
+   *  public/dark-phonics-materials/<slug>/ (the-cat-sat today). */
+  materials?: boolean;
 };
 
 type RawLesson = {
@@ -200,7 +204,7 @@ const RAW: RawLesson[] = [
   { n: 6, sound: 'a', title: 'A Is for Apple', catchphrase: '“ant on my apple!”', words: ['ant', 'apple'] },
   { n: 7, sound: 't', title: 'Tick-Tock, T!', catchphrase: '“tick-tock, stinky sock!”', decodable: ['sat', 'at'], heartWords: ['a'], words: ['clock', 'sock'], books: [
     { slug: 'the-sat', title: 'The ___ Sat!', description: 'Hybrid decodable — teacher reads the set-up, the child shouts “Sat!” on every page.', cover: '/dark-phonics-books/covers/the-sat.png', materials: true, works: true },
-    { slug: 'the-tall', title: 'The Tall ___!', description: 'Companion pattern book, same cast — the child shouts the picture word.', cover: '/dark-phonics-books/covers/the-tall.png', materials: false },
+    { slug: 'the-tall', title: 'The Tall ___!', description: 'Companion pattern book, same cast — the child shouts the picture word.', cover: '/dark-phonics-books/covers/the-tall.png', materials: true, works: true },
   ] },
   { n: 8, sound: 'p', title: 'Pop, Pop, P!', catchphrase: '“pop, pop, puppy poop!”', decodable: ['sap', 'pat', 'tap', 'spat'], words: ['pup'], books: [
     { slug: 'the-spat', title: 'The ___ Spat!', description: 'Letter P initial-sound book — cast: basin, penguin, pig, pelican, potato.', cover: '/dark-phonics-books/covers/the-spat.png', works: true },
@@ -230,7 +234,7 @@ const RAW: RawLesson[] = [
   { n: 16, sound: 'k', title: 'K Says It Too', catchphrase: '“kooky king kicks!”', decodable: ['kit', 'Kim'], words: ['king'], books: [
     { slug: 'the-kit', title: 'The ___ Has a Kit!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each with a first-aid kit. The potato has none — until a grazed knee brings the whole crew running to help.', cover: '/dark-phonics-books/covers/the-kit.png', materials: true, works: true },
   ] },
-  { n: 17, sound: 'ck', title: 'Two Letters, One Kick', catchphrase: '“kick the stinky sock!”', decodable: ['sock', 'sick'], heartWords: ['ate'], words: ['sock'], reader: { slug: 'the-cat-sat', title: 'The Cat Sat', works: true } },
+  { n: 17, sound: 'ck', title: 'Two Letters, One Kick', catchphrase: '“kick the stinky sock!”', decodable: ['sock', 'sick'], heartWords: ['ate'], words: ['sock'], reader: { slug: 'the-cat-sat', title: 'The Cat Sat', works: true, materials: true } },
   { n: 18, sound: 'e', title: 'Crack the Egg, E!', catchphrase: '“ten messy hens!”', decodable: ['egg'], words: ['hen'], books: [
     { slug: 'the-egg', title: 'The ___ Has an Egg!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each with an egg. The potato had one too — until he cracked it.', cover: '/dark-phonics-books/covers/the-egg.png', materials: true, works: true },
   ] },
@@ -831,7 +835,7 @@ export default function DarkPhonicsPage() {
                       that have one (public/dark-phonics-materials/<slug>/,
                       built by the satpin printable generators — the-spat and
                       the-pit today). */}
-                  {has('flashcards', l.n) || (l.words && l.words.length > 0) || (l.books && l.books.length > 0) ? (
+                  {has('flashcards', l.n) || (l.words && l.words.length > 0) || (l.books && l.books.length > 0) || l.reader?.materials ? (
                     <Row accent={l.accent} label="Printables">
                       <div className="flex flex-wrap gap-2">
                         {has('flashcards', l.n) && (
@@ -840,7 +844,10 @@ export default function DarkPhonicsPage() {
                         {l.words && l.words.length > 0 && (
                           <Pill href={media(`vocab-packs/lesson-${nn(l.n)}.pdf`)}>Vocab cards</Pill>
                         )}
-                        {l.books?.filter(b => b.materials !== false).map(book => (
+                        {[
+                          ...(l.books?.filter(b => b.materials !== false) ?? []),
+                          ...(l.reader?.materials ? [l.reader] : []),
+                        ].map(book => (
                           <React.Fragment key={book.slug}>
                             <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
                             <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/build-it-sheet.pdf`)}>Build-it sheet</Pill>

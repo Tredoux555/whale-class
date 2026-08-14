@@ -47,6 +47,14 @@ HOT14='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images
 # usual gag -- the bug spots the potato instead, relaxing in his deck chair
 # with an ice-cold drink, and the two are happy to see each other).
 BUG15='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-bug'
+# 'the-tall' -- a companion pattern reader for letter T's own slot (NOT part
+# of the-sat cast/numbering chain -- it sits alongside the-sat and
+# tiger-in-the-taxi at letter T, week 3). Cast = turtle, tomato, toothbrush,
+# tiger, taxi (the child shouts the picture word each page), same art set as
+# the dark-phonics-storybooks reader tiger-in-the-taxi. Sentences confirmed
+# 2026-08-14 from the book's own A5 reading PDF
+# (public/dark-phonics-books/print/the-tall-A5-reading.pdf): 'A tall ___!'.
+TALL='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-tall'
 # TEXT RULES (locked from the-pat onward, apply to every future book):
 # 1. CASE: a spread's `text` is body copy continuing the sentence its `nar`
 #    starts (e.g. nar='The star...'  text='can pat!'  reads as one sentence:
@@ -365,6 +373,20 @@ dict(slug='the-bug', title_lines=['The ___','Saw a Bug!'], title_accent='Bug!', 
   dict(nar='The cat…', text='saw a bug.', size=78, art=BUG15+'/p6-cat.png'),
   dict(text=['Bug! Bug!','Bug!'], style='drop', size=64, art=BUG15+'/p7-recap.png'),
   dict(text=['The bug','saw a potato!'], size=44, art=BUG15+'/p8-potato.png'),
+ ]),
+
+dict(slug='the-tall', title_lines=['The Tall','___!'], title_accent='Tall', title_size=46,
+ band='LETTER T  ·  s a t (companion reader)', booknum='LETTER BOOK · TALL', cover=TALL+'/p6-recap.png',
+ new='Tall  ·  turtle  ·  tomato  ·  toothbrush  ·  tiger  ·  taxi', review='at', heart='♥  heart words — a · the',
+ oral_note='the nouns live in the pictures — named aloud, never printed',
+ spreads=[
+  dict(nar='A tall…', text='turtle!', size=90, art=TALL+'/p1-turtle.png'),
+  dict(nar='A tall…', text='tomato!', size=90, art=TALL+'/p2-tomato.png'),
+  dict(nar='A tall…', text='toothbrush!', size=64, art=TALL+'/p3-toothbrush.png'),
+  dict(nar='A tall…', text='tiger!', size=90, art=TALL+'/p4-tiger.png'),
+  dict(nar='A tall…', text='taxi!', size=90, art=TALL+'/p5-taxi.png'),
+  dict(text=['A turtle, a tomato,','a toothbrush, a tiger,','and a taxi — all tall?!'],
+       style='drop', size=38, art=TALL+'/p6-recap.png'),
  ]),
 
 dict(slug='spat', title_lines=['SPAT!'], title_accent='SPAT!', title_size=64,

@@ -1,0 +1,103 @@
+{
+  "letter": "ck",
+  "week": 13,
+  "slug": "dp-the-cat-sat",
+  "bookSlug": "the-cat-sat",
+  "bookTitle": "The Cat Sat",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-the-cat-sat.py",
+  "artDir": "phonics-images/easy-readers/the-cat-sat",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "cat",
+      "sentence": "A cat.",
+      "art": "p1.jpg"
+    },
+    {
+      "order": 2,
+      "word": "sat",
+      "sentence": "The cat sat.",
+      "art": "p2.jpg"
+    },
+    {
+      "order": 3,
+      "word": "on",
+      "sentence": "A cat sat on a cat.",
+      "art": "p3.jpg"
+    },
+    {
+      "order": 4,
+      "word": "cats",
+      "sentence": "A cat on a cat on a cat!",
+      "art": "p4.jpg"
+    },
+    {
+      "order": 5,
+      "word": "tip-top",
+      "sentence": "Tip-top cats!",
+      "art": "p5.jpg"
+    }
+  ],
+  "sequencingDisplayOrder": [2, 1, 4, 5, 3],
+  "matchDisplayOrder": [5, 3, 1, 2, 4],
+  "yesno": [
+    {
+      "question": "is there a cat?",
+      "answer": true,
+      "imageArt": "p1.jpg"
+    },
+    {
+      "question": "did the cat sit?",
+      "answer": true,
+      "imageArt": "p2.jpg"
+    },
+    {
+      "question": "did a cat sit on a cat?",
+      "answer": true,
+      "imageArt": "p3.jpg"
+    },
+    {
+      "question": "did a cat sit on a cat on a cat?",
+      "answer": true,
+      "imageArt": "p4.jpg"
+    },
+    {
+      "question": "were the cats tip-top?",
+      "answer": true,
+      "imageArt": "p5.jpg"
+    },
+    {
+      "question": "did the dog sit?",
+      "answer": false,
+      "imageWord": "dog"
+    },
+    {
+      "question": "did the pig sit?",
+      "answer": false,
+      "imageWord": "pig"
+    },
+    {
+      "question": "did the duck sit?",
+      "answer": false,
+      "imageWord": "duck"
+    },
+    {
+      "question": "did the owl sit?",
+      "answer": false,
+      "imageWord": "owl"
+    },
+    {
+      "question": "did the rabbit sit?",
+      "answer": false,
+      "imageWord": "rabbit"
+    }
+  ],
+  "_notes": {
+    "generated": "Authored 2026-08-14 for the-cat-sat Easy Reader (easy-readers-manifest-v2.json), following dp-the-sat.json's structural conventions precisely per README.md's 5-step recipe. This reader has no cast-book bookScript of its own (it isn't one of the books_def.py / dark-phonics-readers bookX.py titles) -- a data-only shim (shims/dp-the-cat-sat.py) was authored specifically for it, exposing spreads[] straight from easy-readers-manifest-v2.json's 5 page texts, exactly mirroring dp-the-sat.py's shape (dict(text=..., art=...) per spread, no 'nar' field, since none of this book's lines split into a narration + shouted-word pair).",
+    "letterAndWeek": "letter='ck', week=13. This reader gates dark-phonics library lesson n=17 (sound 'ck', app/montree/library/dark-phonics/page.tsx RAW array: '{ n: 17, sound: \"ck\", ... reader: { slug: \"the-cat-sat\" ... } }'). The site's own displayN(n) = n - 4 rule (documented in CLAUDE.md's Dark Phonics Page Structure Ruling) converts that to displayed Lesson 13 -- and week=13 also matches the existing precedent letters/dp-on-a-rock.json, which already uses letter='ck', week=13 for the same digraph. Picked 'ck' over a single letter because the gating sound for this reader is the two-letter digraph, not a single phoneme letter.",
+    "pages": "Word-card choice: the book's only non-stopword ('a'/'the') content vocabulary is exactly 5 words -- cat, sat, on, cats, tip-top -- which map cleanly one-per-page in story order for pages 1-3 (cat/sat/on, each a genuinely new word on its page) and page 5 ('tip-top', the book's shouted finale word). Page 4 ('A cat on a cat on a cat!') introduces no new vocabulary at all -- it's pure cumulative repetition of 'cat'/'on' for comic effect, which is the book's own joke (the picture, not new text, carries the escalation). Rather than default to a duplicate 'cat' word card for page 4 (flat and non-distinct), 'cats' was assigned to page 4 instead of page 5: it is still in-book vocabulary (first printed on page 5, 'Tip-top cats!'), it is pedagogically apt for page 4's picture (three cats stacked -- the first clearly-plural scene), and it keeps all 5 word cards distinct for the three-part-cards / sequencing / match materials. 'tip-top' then stays on page 5 where it is actually printed.",
+    "sequencingDisplayOrder_matchDisplayOrder": "Two different full derangements of [1,2,3,4,5] (no page's `order` value sits in its own position, position-by-position, in either list -- verified: seq=[2,1,4,5,3] vs identity [1,2,3,4,5] differs at every index; match=[5,3,1,2,4] vs identity differs at every index; seq vs match also differ at every index) -- so neither work sheet lets a row answer itself and rebuilds stay deterministic, per README.md step 2.",
+    "yesno": "10 items (5 true, 5 false) per the dp-the-sat.json / Jul-30 rollout convention (5/5 split, 'did the X sit?' phrasing). 5 true items are drawn straight from the book's own 5 pages (imageArt = p1.jpg..p5.jpg), one question per page, worded to describe exactly what that page's picture shows (single cat / cat sitting / two cats stacked / three cats stacked / four cats tip-top) so a teacher can visually verify book fidelity. 5 false items reuse the exact 'did the X sit?' phrasing on animals that never appear in this book (dog, pig, duck, owl, rabbit) -- clearly false since the-cat-sat's cast is a single cat, never any other animal -- via imageWord -> docs/picture-bank/photos/<word>/<word>.jpg (all 5 files verified present on disk before writing this JSON: dog/dog.jpg, pig/pig.jpg, duck/duck.jpg, owl/owl.jpg, rabbit/rabbit.jpg). Per the 2026-07-30 ruling, false-item words are NOT restricted to prior-week vocabulary -- picked for clear falseness relative to this specific book instead."
+  }
+}
