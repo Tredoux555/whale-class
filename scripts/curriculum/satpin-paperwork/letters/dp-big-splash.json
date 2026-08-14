@@ -1,0 +1,104 @@
+{
+  "letter": "spl",
+  "week": 49,
+  "slug": "dp-big-splash",
+  "bookSlug": "big-splash",
+  "bookTitle": "Big Splash",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-big-splash.py",
+  "artDir": "phonics-images/easy-readers/big-splash",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "splash",
+      "sentence": "Splash!",
+      "art": "p1.jpg"
+    },
+    {
+      "order": 2,
+      "word": "big",
+      "sentence": "A big splash.",
+      "art": "p2.jpg"
+    },
+    {
+      "order": 3,
+      "word": "tub",
+      "sentence": "Splash in the tub.",
+      "art": "p3.jpg"
+    },
+    {
+      "order": 4,
+      "word": "cat",
+      "sentence": "Splash, splash, splash!",
+      "art": "p4.jpg"
+    },
+    {
+      "order": 5,
+      "word": "wet",
+      "sentence": "The cat is wet!",
+      "art": "p5.jpg"
+    }
+  ],
+  "sequencingDisplayOrder": [2, 4, 5, 1, 3],
+  "matchDisplayOrder": [5, 3, 4, 2, 1],
+  "yesno": [
+    {
+      "question": "is there a splash?",
+      "answer": true,
+      "imageArt": "p1.jpg"
+    },
+    {
+      "question": "is the splash big?",
+      "answer": true,
+      "imageArt": "p2.jpg"
+    },
+    {
+      "question": "is there a tub?",
+      "answer": true,
+      "imageArt": "p3.jpg"
+    },
+    {
+      "question": "does the cat splash again and again?",
+      "answer": true,
+      "imageArt": "p4.jpg"
+    },
+    {
+      "question": "is the cat wet?",
+      "answer": true,
+      "imageArt": "p5.jpg"
+    },
+    {
+      "question": "is there a frog?",
+      "answer": false,
+      "imageWord": "frog"
+    },
+    {
+      "question": "is there a crab?",
+      "answer": false,
+      "imageWord": "crab"
+    },
+    {
+      "question": "is there a dog?",
+      "answer": false,
+      "imageWord": "dog"
+    },
+    {
+      "question": "is there a fish?",
+      "answer": false,
+      "imageWord": "fish"
+    },
+    {
+      "question": "is there a spider?",
+      "answer": false,
+      "imageWord": "spider"
+    }
+  ],
+  "_notes": {
+    "generated": "Authored 2026-08-14 for big-splash Easy Reader (easy-readers-manifest-v2.json, gate n=53), following dp-the-cat-sat.json's structural conventions precisely per README.md's 5-step recipe. This reader has no cast-book bookScript of its own (it isn't one of the books_def.py / dark-phonics-readers bookX.py titles) -- a data-only shim (shims/dp-big-splash.py) was authored specifically for it, exposing spreads[] straight from easy-readers-manifest-v2.json's 5 page texts, exactly mirroring dp-the-cat-sat.py's shape (dict(text=..., art=...) per spread, no 'nar' field). Sentences copied verbatim from the manifest: 'Splash!' / 'A big splash.' / 'Splash in the tub.' / 'Splash, splash, splash!' / 'The cat is wet!' -- confirmed identical to the task's published sentences before writing this file, so no manifest diff exists for this book.",
+    "letterAndWeek": "week=49 = the displayed Dark Phonics lesson this reader gates (app/montree/library/dark-phonics/page.tsx RAW entry '{ n: 53, sound: \"triple blends\", ... reader: { slug: \"big-splash\" ... } }'; the site's displayN(n) = n - 4 rule from CLAUDE.md's Dark Phonics Page Structure Ruling converts internal n=53 to displayed Lesson 49). 'letter' is repurposed here as the small circle badge label rather than a single phonics letter, because the gating sound is the triple-blend family ('spl'), not one letter.",
+    "badge": "'spl' is the natural, un-abbreviated triple-blend cluster this lesson targets (the lesson's own catchphrase is '\"big splash, scrub-a-dub!\"' and its words list is exactly ['splash']), so unlike frog-and-crab there was no need to invent a shorthand. Measured against the paperwork badge circle (build_paperwork.py: 8mm-radius circle, Outfit-Bold 20pt, drawCentredString, no auto-shrink) and the tracing-workbook cover badge (build_tracing.py: 9mm-radius circle, Outfit-Bold 23pt): 'spl' comes to ~58% of the badge's diameter at both sizes -- plain lowercase letters (consistent with every existing letters/*.json badge, none of which use punctuation), comfortably inside the ring with clear margin, close in proportion to precedent badges like 'qu' (~50%).",
+    "pages": "Word-card choice: 'splash' (p1) is the book's own gate word (RAW n=53 words: ['splash']) and its first printed occurrence, so it anchors p1's card. p2 ('A big splash.') introduces 'big' -- the book's own escalation word (small splash -> big splash), a clean new card. p3 ('Splash in the tub.') introduces 'tub', a concrete, easily-pictured noun (and confirmed present in docs/picture-bank/photos/tub/tub.jpg for cross-checking); the alternative new word 'in' was passed over as a bare preposition with no picture-bank anchor. p4 ('Splash, splash, splash!') introduces no new vocabulary at all -- pure repetition for comic effect, exactly like dp-the-cat-sat.json's page 4 ('A cat on a cat on a cat!'), which faced the identical problem and solved it by borrowing a word first printed on the following page. Following that precedent exactly: 'cat' (first printed on p5, 'The cat is wet!') was assigned to p4 instead, since p4's picture is the clearest, most energetic view of the cat mid-splash -- pedagogically apt, still in-book vocabulary, and keeps all 5 cards distinct. p5 then keeps its own new word 'wet', the story's punchline and clearly depicted end-state (soggy, dripping cat).",
+    "sequencingDisplayOrder_matchDisplayOrder": "Two different full derangements of [1,2,3,4,5], verified programmatically: seq=[2,4,5,1,3] has no index i with seq[i]==i+1; match=[5,3,4,2,1] likewise; and seq vs match differ at every one of the 5 positions too, so no work sheet lets a row answer itself and rebuilds stay deterministic, per README.md step 2.",
+    "yesno": "10 items (5 true, 5 false), following the dp-the-cat-sat.json / Jul-30 rollout 5/5 split convention. The 5 true items are drawn straight from the book's own 5 pages (imageArt = p1.jpg..p5.jpg), one tailored question per page describing exactly what that page's picture and text show (a splash / the splash is big / a tub / the cat splashing again and again / the cat wet), mirroring dp-the-cat-sat.json's page-specific true-question style. The 5 false items use one uniform 'is there a __?' template over five animals that never appear in this book (frog, crab, dog, fish, spider) -- clearly false since big-splash's only character is the cat -- via imageWord -> docs/picture-bank/photos/<word>/<word>.jpg (all 5 files verified present on disk before writing this JSON: frog/frog.jpg, crab/crab.jpg, dog/dog.jpg, fish/fish.jpg, spider/spider.jpg). 'frog' and 'crab' were deliberately included since they are this same rollout's other new reader's cast, making the false items doubly unambiguous for this book. Per the 2026-07-30 ruling, false-item words are not restricted to prior-week vocabulary -- picked for clear falseness relative to this specific book instead."
+  }
+}

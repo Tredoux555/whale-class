@@ -1,0 +1,104 @@
+{
+  "letter": "rbl",
+  "week": 47,
+  "slug": "dp-frog-and-crab",
+  "bookSlug": "frog-and-crab",
+  "bookTitle": "Frog and Crab",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-frog-and-crab.py",
+  "artDir": "phonics-images/easy-readers/frog-and-crab",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "frog",
+      "sentence": "A frog.",
+      "art": "p1.jpg"
+    },
+    {
+      "order": 2,
+      "word": "crab",
+      "sentence": "A crab.",
+      "art": "p2.jpg"
+    },
+    {
+      "order": 3,
+      "word": "and",
+      "sentence": "The frog and the crab.",
+      "art": "p3.jpg"
+    },
+    {
+      "order": 4,
+      "word": "sat",
+      "sentence": "The frog sat on the crab!",
+      "art": "p4.jpg"
+    },
+    {
+      "order": 5,
+      "word": "mad",
+      "sentence": "The crab is mad!",
+      "art": "p5.jpg"
+    }
+  ],
+  "sequencingDisplayOrder": [3, 4, 1, 5, 2],
+  "matchDisplayOrder": [4, 1, 5, 2, 3],
+  "yesno": [
+    {
+      "question": "is there a frog?",
+      "answer": true,
+      "imageArt": "p1.jpg"
+    },
+    {
+      "question": "is there a crab?",
+      "answer": true,
+      "imageArt": "p2.jpg"
+    },
+    {
+      "question": "are the frog and the crab together?",
+      "answer": true,
+      "imageArt": "p3.jpg"
+    },
+    {
+      "question": "did the frog sit on the crab?",
+      "answer": true,
+      "imageArt": "p4.jpg"
+    },
+    {
+      "question": "is the crab mad?",
+      "answer": true,
+      "imageArt": "p5.jpg"
+    },
+    {
+      "question": "is there a dog?",
+      "answer": false,
+      "imageWord": "dog"
+    },
+    {
+      "question": "is there a cat?",
+      "answer": false,
+      "imageWord": "cat"
+    },
+    {
+      "question": "is there a fish?",
+      "answer": false,
+      "imageWord": "fish"
+    },
+    {
+      "question": "is there a snail?",
+      "answer": false,
+      "imageWord": "snail"
+    },
+    {
+      "question": "is there a turtle?",
+      "answer": false,
+      "imageWord": "turtle"
+    }
+  ],
+  "_notes": {
+    "generated": "Authored 2026-08-14 for frog-and-crab Easy Reader (easy-readers-manifest-v2.json, gate n=51), following dp-the-cat-sat.json's structural conventions precisely per README.md's 5-step recipe. This reader has no cast-book bookScript of its own (it isn't one of the books_def.py / dark-phonics-readers bookX.py titles) -- a data-only shim (shims/dp-frog-and-crab.py) was authored specifically for it, exposing spreads[] straight from easy-readers-manifest-v2.json's 5 page texts, exactly mirroring dp-the-cat-sat.py's shape (dict(text=..., art=...) per spread, no 'nar' field, since none of this book's lines split into a narration + shouted-word pair). Sentences copied verbatim from the manifest: 'A frog.' / 'A crab.' / 'The frog and the crab.' / 'The frog sat on the crab!' / 'The crab is mad!' -- confirmed identical to the task's published sentences before writing this file, so no manifest diff exists for this book.",
+    "letterAndWeek": "week=47 = the displayed Dark Phonics lesson this reader gates (app/montree/library/dark-phonics/page.tsx RAW entry '{ n: 51, sound: \"r-blends\", ... reader: { slug: \"frog-and-crab\" ... } }'; the site's displayN(n) = n - 4 rule from CLAUDE.md's Dark Phonics Page Structure Ruling converts internal n=51 to displayed Lesson 47). 'letter' is repurposed here as the small circle badge label rather than a single phonics letter, because the gating sound is the r-blends family, not one letter -- see 'badge' note below for the choice and why.",
+    "badge": "Considered 'fr·cr' (two cast-initial digraphs joined by a middle dot) and 'r-bl' (the task's own suggested shorthand for r-blends), but measured both against the paperwork-pack badge circle (build_paperwork.py: 8mm-radius circle, Outfit-Bold 20pt, drawCentredString with no auto-shrink) and the tracing-workbook cover badge (build_tracing.py: 9mm-radius circle, Outfit-Bold 23pt). 'fr·cr' measured ~88% of the paperwork badge's 16mm diameter and 'r-bl' ~78% -- both uncomfortably tight against the ring with almost no margin, and neither punctuation mark (middle dot, hyphen) has any precedent in the existing letters/*.json badges (every shipped badge, from 'a' to 'ck'/'ll'/'qu', is plain lowercase letters, no punctuation). Picked 'rbl' instead (plain letters, r-blends abbreviated) -- it measures ~58% of the badge diameter at both sizes, comfortably inside the ring with clear margin (closer to precedent letters like 'qu' at ~50% than to the cramped punctuated options), and it still reads clearly as 'r-blends' given the adjacent WEEK 47 label and the book's own frog/crab r-blend cast.",
+    "pages": "Word-card choice: frog (p1) and crab (p2) are the book's own cast names and both genuine r-blend words (fr-, cr-) -- they also match the Dark Phonics lesson's own words list (RAW n=51 entry: words: ['frog', 'drum']), so p1/p2's cards double as this lesson's core vocabulary. p3 ('The frog and the crab.') introduces exactly one new non-stopword word, 'and' (frog/crab/the already used) -- kept as the card, paralleling dp-the-cat-sat.json's precedent of picking a page's sole new function word (that book used 'on' on its page 3) rather than skipping the page. p4 ('The frog sat on the crab!') introduces two new words, 'sat' and 'on'; 'sat' was chosen as the more vivid, book-defining action word (the whole joke is the frog sitting ON the crab) and because 'on' as a page-3-style preposition pick was already used for this reader's own p3 slot ('and'), so picking 'sat' keeps the five cards varied in part of speech rather than preposition-heavy. p5 ('The crab is mad!') introduces 'is' and 'mad'; 'mad' was chosen over the stopword-adjacent 'is' as the clear, high-payoff content/emotion word that resolves the story. All 5 cards (frog, crab, and, sat, mad) are distinct and each is that page's own first printed occurrence of the word.",
+    "sequencingDisplayOrder_matchDisplayOrder": "Two different full derangements of [1,2,3,4,5], verified programmatically: seq=[3,4,1,5,2] has no index i with seq[i]==i+1; match=[4,1,5,2,3] likewise; and seq vs match differ at every one of the 5 positions too, so no work sheet lets a row answer itself and rebuilds stay deterministic, per README.md step 2.",
+    "yesno": "10 items (5 true, 5 false), following the dp-the-cat-sat.json / Jul-30 rollout 5/5 split convention. The 5 true items are drawn straight from the book's own 5 pages (imageArt = p1.jpg..p5.jpg), one tailored question per page describing exactly what that page's picture and text show (lone frog / lone crab / frog and crab together / frog sitting on crab / mad crab), so a teacher can visually verify book fidelity -- mirroring dp-the-cat-sat.json's page-specific true-question style rather than one repeated template. The 5 false items use one uniform 'is there a __?' template over five animals that never appear in this book (dog, cat, fish, snail, turtle) -- clearly false since frog-and-crab's cast is only a frog and a crab, never any other animal -- via imageWord -> docs/picture-bank/photos/<word>/<word>.jpg (all 5 files verified present on disk before writing this JSON: dog/dog.jpg, cat/cat.jpg, fish/fish.jpg, snail/snail.jpg, turtle/turtle.jpg). Per the 2026-07-30 ruling, false-item words are not restricted to prior-week vocabulary -- picked for clear falseness relative to this specific book instead."
+  }
+}

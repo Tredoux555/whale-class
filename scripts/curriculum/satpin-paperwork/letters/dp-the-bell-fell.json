@@ -1,0 +1,103 @@
+{
+  "letter": "ll",
+  "week": 37,
+  "slug": "dp-the-bell-fell",
+  "bookSlug": "the-bell-fell",
+  "bookTitle": "The Bell Fell",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-the-bell-fell.py",
+  "artDir": "phonics-images/easy-readers/the-bell-fell",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "bell",
+      "sentence": "A bell.",
+      "art": "p1.jpg"
+    },
+    {
+      "order": 2,
+      "word": "hill",
+      "sentence": "A bell on a hill.",
+      "art": "p2.jpg"
+    },
+    {
+      "order": 3,
+      "word": "fell",
+      "sentence": "The bell fell!",
+      "art": "p3.jpg"
+    },
+    {
+      "order": 4,
+      "word": "off",
+      "sentence": "Off the hill it fell.",
+      "art": "p4.jpg"
+    },
+    {
+      "order": 5,
+      "word": "bonk",
+      "sentence": "Bonk! Bad bell.",
+      "art": "p5.jpg"
+    }
+  ],
+  "sequencingDisplayOrder": [2, 3, 4, 5, 1],
+  "matchDisplayOrder": [3, 5, 2, 1, 4],
+  "yesno": [
+    {
+      "question": "is there a bell?",
+      "answer": true,
+      "imageArt": "p1.jpg"
+    },
+    {
+      "question": "is the bell on a hill?",
+      "answer": true,
+      "imageArt": "p2.jpg"
+    },
+    {
+      "question": "did the bell fall?",
+      "answer": true,
+      "imageArt": "p3.jpg"
+    },
+    {
+      "question": "did the bell roll off the hill?",
+      "answer": true,
+      "imageArt": "p4.jpg"
+    },
+    {
+      "question": "did the bell go bonk at the bottom?",
+      "answer": true,
+      "imageArt": "p5.jpg"
+    },
+    {
+      "question": "did a duck fall off the hill?",
+      "answer": false,
+      "imageWord": "duck"
+    },
+    {
+      "question": "was a pig sitting on the hill?",
+      "answer": false,
+      "imageWord": "pig"
+    },
+    {
+      "question": "did a cat go bonk?",
+      "answer": false,
+      "imageWord": "cat"
+    },
+    {
+      "question": "did a dog roll down the hill?",
+      "answer": false,
+      "imageWord": "dog"
+    },
+    {
+      "question": "is there an owl in this book?",
+      "answer": false,
+      "imageWord": "owl"
+    }
+  ],
+  "_notes": {
+    "generated": "Authored 2026-08-14 for the-bell-fell Easy Reader (easy-readers-manifest-v2.json, gate=41, title/pages verbatim match against the manifest verified before writing this file), following dp-the-cat-sat.json's structural conventions per README.md's 5-step recipe. This reader has no cast-book bookScript of its own (not a books_def.py / dark-phonics-readers bookX.py title) -- a data-only shim (shims/dp-the-bell-fell.py) was authored specifically for it, exposing spreads[] straight from the manifest's 5 page texts, mirroring dp-the-cat-sat.py's shape (dict(text=..., art=...) per spread, no 'nar' field -- none of this book's lines split into a narration + shouted-word pair).",
+    "letterAndWeek": "letter='ll', week=37. This reader gates dark-phonics library lesson n=41 (sound 'FLSZ doubling', app/montree/library/dark-phonics/page.tsx RAW array: '{ n: 41, sound: \"FLSZ doubling\", title: \"Two at the End\", ... reader: { slug: \"the-bell-fell\" ... } }'). The site's displayN(n) = n - 4 rule (CLAUDE.md's Dark Phonics Page Structure Ruling) converts that to displayed Lesson 37, matching the task brief exactly. 'FLSZ doubling' is a spelling-pattern review (final f/l/s/z doubles after a short vowel: bell, fell, hill, off all end in a doubled consonant) rather than a single letter or digraph, so there is no one canonical 1-2 character label the way 'ck' or 'ch' work for a true digraph gate. 'll' was picked over 'ff'/'ss'/'zz' as the badge label because it is the doubled letter that appears the most times across this specific book's own vocabulary (bell, hill, fell, bell again on page 5 -- 'off' is the book's only ff-word) and reads cleanly as two glyphs inside the ~8mm badge circle (font 'Word'/Outfit-Bold at size 20, same circle radius the-cat-sat's two-character 'ck' badge already proved fits).",
+    "pages": "Word-card choice: unlike the-cat-sat (which needed a workaround on page 4), every one of this book's 5 pages introduces a genuinely new, distinct content word in story order with no repeats and no substitutions needed -- bell (p1, the character itself), hill (p2, the setting the bell sits on), fell (p3, the story's first pivotal action -- the bell falling), off (p4, the preposition describing the bell's route down the hillside, a genuinely new word not used on pages 1-3), bonk (p5, the book's shouted finale sound-effect word, directly under the BONK starburst in the manifest's own page-5 art prompt). All 5 words map one-per-page to that page's own picture with no ambiguity.",
+    "sequencingDisplayOrder_matchDisplayOrder": "Two different full derangements of [1,2,3,4,5] (no page's `order` value sits in its own position in either list, and the two lists differ from each other at every index too, matching dp-the-cat-sat.json's stricter precedent) -- verified: seq=[2,3,4,5,1] vs identity [1,2,3,4,5] differs at every index; match=[3,5,2,1,4] vs identity differs at every index; seq vs match also differ at every index (2/3, 3/5, 4/2, 5/1, 1/4) -- so neither work sheet lets a row answer itself and rebuilds stay deterministic, per README.md step 2.",
+    "yesno": "10 items (5 true, 5 false) per the dp-the-cat-sat.json / Jul-30 rollout convention (5/5 split). 5 true items are drawn straight from the book's own 5 pages (imageArt = p1.jpg..p5.jpg), one question per page, worded to describe exactly what that page's picture shows (a bell alone / the bell atop a hill / the bell tipping and falling / the bell rolling off the hillside / the bell crash-landed with a BONK) so a teacher can visually verify book fidelity. 5 false items reuse a similar per-page phrasing style on animals that never appear in this book at all -- this reader's entire cast is a single anthropomorphic bell, no animal ever appears -- via imageWord -> docs/picture-bank/photos/<word>/<word>.jpg (all 5 files verified present on disk before writing this JSON: duck/duck.jpg, pig/pig.jpg, cat/cat.jpg, dog/dog.jpg, owl/owl.jpg). Per the 2026-07-30 ruling, false-item words are NOT restricted to prior-week vocabulary -- picked for clear falseness relative to this specific book instead."
+  }
+}

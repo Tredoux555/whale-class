@@ -1,0 +1,103 @@
+{
+  "letter": "a·o·u",
+  "week": 36,
+  "slug": "dp-cat-cot-cut",
+  "bookSlug": "cat-cot-cut",
+  "bookTitle": "Cat? Cot? Cut?",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-cat-cot-cut.py",
+  "artDir": "phonics-images/easy-readers/cat-cot-cut",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "cat",
+      "sentence": "A cat.",
+      "art": "p1.jpg"
+    },
+    {
+      "order": 2,
+      "word": "cot",
+      "sentence": "A cot.",
+      "art": "p2.jpg"
+    },
+    {
+      "order": 3,
+      "word": "cut",
+      "sentence": "A cut.",
+      "art": "p3.jpg"
+    },
+    {
+      "order": 4,
+      "word": "on",
+      "sentence": "The cat is on the cot.",
+      "art": "p4.jpg"
+    },
+    {
+      "order": 5,
+      "word": "cat-cot-cut",
+      "sentence": "Cat? Cot? Cut!",
+      "art": "p5.jpg"
+    }
+  ],
+  "sequencingDisplayOrder": [3, 1, 5, 2, 4],
+  "matchDisplayOrder": [4, 5, 2, 3, 1],
+  "yesno": [
+    {
+      "question": "is there a cat?",
+      "answer": true,
+      "imageArt": "p1.jpg"
+    },
+    {
+      "question": "is there a cot?",
+      "answer": true,
+      "imageArt": "p2.jpg"
+    },
+    {
+      "question": "is there a cut?",
+      "answer": true,
+      "imageArt": "p3.jpg"
+    },
+    {
+      "question": "is the cat on the cot?",
+      "answer": true,
+      "imageArt": "p4.jpg"
+    },
+    {
+      "question": "can you see a cat, a cot, and a cut, all together?",
+      "answer": true,
+      "imageArt": "p5.jpg"
+    },
+    {
+      "question": "is there a duck?",
+      "answer": false,
+      "imageWord": "duck"
+    },
+    {
+      "question": "is there a cake?",
+      "answer": false,
+      "imageWord": "cake"
+    },
+    {
+      "question": "is there a hat?",
+      "answer": false,
+      "imageWord": "hat"
+    },
+    {
+      "question": "is there a boat?",
+      "answer": false,
+      "imageWord": "boat"
+    },
+    {
+      "question": "is there a spoon?",
+      "answer": false,
+      "imageWord": "spoon"
+    }
+  ],
+  "_notes": {
+    "generated": "Authored 2026-08-14 for cat-cot-cut Easy Reader (easy-readers-manifest-v2.json, gate=40), following dp-the-cat-sat.json's structural conventions per README.md's 5-step recipe. Sentences verified verbatim against both easy-readers-manifest-v2.json's pages[].text AND the shipped PDF cross-check at /mnt/user-data/uploads/montree/_claude_stage/reader-pdfs/cat-cot-cut.pdf (pdftotext extraction matches exactly, incl. punctuation) -- no manifest diff, so the full paperwork+works pipeline runs unmodified. No filename collision for this slug (dp-cat-cot-cut.json/.py did not previously exist).",
+    "letterAndWeek": "letter='a·o·u', week=36. This reader gates dark-phonics library lesson n=40 (sound 'minimal pairs', RAW array: '{ n: 40, sound: \\'minimal pairs\\', title: \\'Cat? Cot? Cut?\\', ... reader: { slug: \\'cat-cot-cut\\', title: \\'Cat? Cot? Cut?\\' } }'). displayN(n) = n - 4 converts n=40 to displayed Lesson 36, matching the task brief's stated 'gate lesson displayed 36' exactly. This lesson gates a minimal-pairs vowel-contrast REVIEW ('cat? cot? cut? - which one!'), not a single letter/digraph like every other reader gate -- so there is no single letter/digraph to put in the small circle badge. Chose the compact 3-character-plus-separators label 'a·o·u' (the three contrasted short-vowel sounds, separated by interpunct/middle-dot U+00B7, present in WorkSans and rendered by build_paperwork.py's badge at fixed 20pt in an 8mm-radius circle and build_tracing.py's cover badge at fixed 23pt in a 9mm-radius circle) -- measured with reportlab's stringWidth against the actual embedded Outfit-Bold badge font: 'a·o·u' is 41.48pt wide at 20pt (half-width 20.74pt fits inside the 8mm/22.68pt paperwork-pack badge radius) and ~47.7pt wide at 23pt (half-width 23.85pt fits inside the 9mm/25.5pt tracing-workbook cover badge radius) -- confirmed to fit both badge circles by direct measurement before building, and re-verified visually in the QA rasterization pass.",
+    "pages": "Word-card choice: cat/cot/cut are the book's three literal minimal-pair title words, introduced one per page in story order (p1-p3), each a genuinely new word on its page. Page 4 ('The cat is on the cot.') introduces the preposition 'on' -- the first new content word since the triad, and the word that actually resolves the confusion (cat sits ON the cot, disambiguating the two nouns) -- so 'on' was assigned to page 4, mirroring dp-the-cat-sat.json's precedent of assigning page 3's preposition word 'on' to its own page. Page 5 ('Cat? Cot? Cut!') introduces no new vocabulary at all -- it is pure recap of the three title words with punctuation, exactly the same 'no new word' situation dp-the-cat-sat.json hit on its own page 4. Following that book's precedent of inventing a distinct-but-thematically-apt compound label for a pure-recap page (it used the hyphenated 'tip-top' for its own finale page), page 5's word card here is the hyphenated compound 'cat-cot-cut' -- it names exactly what page 5's picture shows (the three look-alike objects lined up together with question marks) and is guaranteed distinct from the other 4 word cards. Hyphenated compound word-cards are an established pattern in this pipeline (build_three_part.mjs lower-cases and renders any label string, including hyphens, unmodified) so this renders cleanly on the three-part-cards/sequencing/match materials exactly as dp-the-cat-sat.json's 'tip-top' did.",
+    "sequencingDisplayOrder_matchDisplayOrder": "Two different full derangements of [1,2,3,4,5] (no page's order value sits in its own position in either list, verified position-by-position): seq=[3,1,5,2,4] vs identity [1,2,3,4,5] differs at every index; match=[4,5,2,3,1] vs identity differs at every index; seq vs match also differ at every index (3v4, 1v5, 5v2, 2v3, 4v1) -- so neither work sheet lets a row answer itself, and rebuilds stay deterministic, per README.md step 2.",
+    "yesno": "10 items (5 true, 5 false), following the dp-the-cat-sat.json / Jul-30 rollout convention. 5 true items are drawn straight from the book's own 5 pages (imageArt = p1.jpg..p5.jpg), one question per page, worded to describe exactly what that page's picture shows (a cat alone / a cot alone / a bandaged paw, a cut / the cat lounging on the cot / all three objects lined up with question marks) so a teacher can visually verify book fidelity. 5 false items use a consistent 'is there a <object>?' phrasing on objects that never appear in this book (duck, cake, hat, boat, spoon) -- deliberately chosen to be unambiguously UNRELATED to cat/cot/cut (a duck, a cake, a hat, a boat and a spoon are none of the three near-homophone objects this book is testing, so there is no risk of a child confusing a distractor with the book's own minimal-pair set) -- via imageWord -> docs/picture-bank/photos/<word>/<word>.jpg (all 5 files verified present on disk before writing this JSON). Per the 2026-07-30 ruling, false-item words are NOT restricted to prior-week vocabulary -- picked purely for clear falseness relative to this specific book."
+  }
+}

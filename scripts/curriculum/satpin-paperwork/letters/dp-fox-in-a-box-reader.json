@@ -1,0 +1,104 @@
+{
+  "letter": "x",
+  "week": 24,
+  "slug": "dp-fox-in-a-box-reader",
+  "bookSlug": "fox-in-a-box",
+  "bookTitle": "Fox in a Box",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-fox-in-a-box-reader.py",
+  "artDir": "phonics-images/easy-readers/fox-in-a-box",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "fox",
+      "sentence": "A fox.",
+      "art": "p1.jpg"
+    },
+    {
+      "order": 2,
+      "word": "box",
+      "sentence": "A fox in a box.",
+      "art": "p2.jpg"
+    },
+    {
+      "order": 3,
+      "word": "six",
+      "sentence": "Six fox in a box!",
+      "art": "p3.jpg"
+    },
+    {
+      "order": 4,
+      "word": "mix",
+      "sentence": "A big fox, a big mix.",
+      "art": "p4.jpg"
+    },
+    {
+      "order": 5,
+      "word": "fix",
+      "sentence": "Fix the box, fox!",
+      "art": "p5.jpg"
+    }
+  ],
+  "sequencingDisplayOrder": [2, 3, 4, 5, 1],
+  "matchDisplayOrder": [5, 4, 1, 2, 3],
+  "yesno": [
+    {
+      "question": "is there a fox?",
+      "answer": true,
+      "imageArt": "p1.jpg"
+    },
+    {
+      "question": "is the fox in a box?",
+      "answer": true,
+      "imageArt": "p2.jpg"
+    },
+    {
+      "question": "are there six fox in the box?",
+      "answer": true,
+      "imageArt": "p3.jpg"
+    },
+    {
+      "question": "is there a big fox, and a big mix?",
+      "answer": true,
+      "imageArt": "p4.jpg"
+    },
+    {
+      "question": "is the fox fixing the box?",
+      "answer": true,
+      "imageArt": "p5.jpg"
+    },
+    {
+      "question": "is there a bear in the box?",
+      "answer": false,
+      "imageWord": "bear"
+    },
+    {
+      "question": "is there a cow in the box?",
+      "answer": false,
+      "imageWord": "cow"
+    },
+    {
+      "question": "is there a hen in the box?",
+      "answer": false,
+      "imageWord": "hen"
+    },
+    {
+      "question": "is there a sheep in the box?",
+      "answer": false,
+      "imageWord": "sheep"
+    },
+    {
+      "question": "is there a goat in the box?",
+      "answer": false,
+      "imageWord": "goat"
+    }
+  ],
+  "_notes": {
+    "generated": "Authored 2026-08-14 for fox-in-a-box Easy Reader (easy-readers-manifest-v2.json, gate=28), following dp-the-cat-sat.json's structural conventions per README.md's 5-step recipe. Sentences verified verbatim against both easy-readers-manifest-v2.json's pages[].text AND the shipped PDF cross-check at /mnt/user-data/uploads/montree/_claude_stage/reader-pdfs/fox-in-a-box.pdf (pdftotext extraction matches exactly, incl. punctuation) -- no manifest diff, so the full paperwork+works pipeline runs unmodified.",
+    "filenameCollision": "IMPORTANT: this reader's bookSlug ('fox-in-a-box') collides with a PRE-EXISTING, unrelated file: letters/dp-fox-in-a-box.json (and shims/dp-fox-in-a-box.py) already exist on disk for a DIFFERENT, older 3-page Dark Phonics pattern-storybook also titled around 'A Fox in a Box' (letter='x', week=24, sentences 'A fox in a box!'/'An ox in a box!'/'A xylophone in a box!', artDir phonics-images/dark-phonics-books/fox-in-a-box -- a different directory from this reader's phonics-images/easy-readers/fox-in-a-box). Per CLAUDE.md, that old 27-book pattern-storybook series is RETIRED from the Dark Phonics page but its files were left untouched on disk, not deleted. Per this task's explicit instruction not to touch 'any other book's files', that legacy JSON/shim pair was left completely alone. This NEW 5-page Easy Reader's paperwork files were instead authored under the disambiguated slug dp-fox-in-a-box-reader (letters/dp-fox-in-a-box-reader.json + shims/dp-fox-in-a-box-reader.py) -- --letter dp-fox-in-a-box-reader is the correct CLI argument for build_paperwork.py/build_tracing.py. bookSlug inside this JSON correctly stays 'fox-in-a-box' (matching the reader's real slug in the RAW lessons array in app/montree/library/dark-phonics/page.tsx and in easy-readers-manifest-v2.json) so artDir/photoDir resolve correctly; only the top-level 'slug' field (used for default --out and CLI --letter matching) was renamed to avoid the collision.",
+    "letterAndWeek": "letter='x', week=24. This reader gates dark-phonics library lesson n=28 (sound 'x', RAW array: '{ n: 28, sound: \\'x\\', title: \\'X Marks the Box\\', ... reader: { slug: \\'fox-in-a-box\\', title: \\'Fox in a Box\\' } }'). displayN(n) = n - 4 (documented in CLAUDE.md's Dark Phonics Page Structure Ruling) converts n=28 to displayed Lesson 24, matching the task brief's stated 'gate lesson displayed 24' exactly.",
+    "pages": "Word-card choice: all 5 pages contribute a genuinely new, distinct content word in story order -- fox (p1, the character introduced), box (p2, the container introduced), six (p3, the counting/plural joke), mix (p4, the big-fox-vs-little-foxes-and-boxes pile), fix (p5, the repair finale). All 5 are real decodable words for the 'x' gate sound family (box/six/mix/fix all rhyme/rime with the -ix/-ox pattern this lesson teaches) and stay distinct across the 5 word-card/three-part-card/sequencing/match slots.",
+    "sequencingDisplayOrder_matchDisplayOrder": "Two different full derangements of [1,2,3,4,5] (no page's order value sits in its own position in either list, verified position-by-position): seq=[2,3,4,5,1] vs identity [1,2,3,4,5] differs at every index (cyclic shift); match=[5,4,1,2,3] vs identity differs at every index; seq vs match also differ at every index (2v5, 3v4, 4v1, 5v2, 1v3) -- so neither work sheet lets a row answer itself, and rebuilds stay deterministic, per README.md step 2.",
+    "yesno": "10 items (5 true, 5 false), following the dp-the-cat-sat.json / Jul-30 rollout convention. 5 true items are drawn straight from the book's own 5 pages (imageArt = p1.jpg..p5.jpg), one question per page, worded to describe exactly what that page's picture shows (single fox / fox peeking from a box / six tiny foxes crammed in a box / one big fox beside a pile of little foxes+boxes / the fox mid-repair with tape on a torn box) so a teacher can visually verify book fidelity. 5 false items reuse a consistent 'is there a <animal> in the box?' phrasing on animals that never appear in this book (bear, cow, hen, sheep, goat) -- clearly false since fox-in-a-box's only character is a single fox, never any other animal -- via imageWord -> docs/picture-bank/photos/<word>/<word>.jpg (all 5 files verified present on disk before writing this JSON). Per the 2026-07-30 ruling, false-item words are NOT restricted to prior-week vocabulary -- picked purely for clear falseness relative to this specific book."
+  }
+}

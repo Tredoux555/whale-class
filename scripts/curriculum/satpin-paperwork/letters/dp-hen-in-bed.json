@@ -1,0 +1,103 @@
+{
+  "letter": "b",
+  "week": 18,
+  "slug": "dp-hen-in-bed",
+  "bookSlug": "hen-in-bed",
+  "bookTitle": "Hen in Bed",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-hen-in-bed.py",
+  "artDir": "phonics-images/easy-readers/hen-in-bed",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "hen",
+      "sentence": "A hen.",
+      "art": "p1.jpg"
+    },
+    {
+      "order": 2,
+      "word": "big",
+      "sentence": "A big red hen.",
+      "art": "p2.jpg"
+    },
+    {
+      "order": 3,
+      "word": "ran",
+      "sentence": "The hen ran.",
+      "art": "p3.jpg"
+    },
+    {
+      "order": 4,
+      "word": "bed",
+      "sentence": "The hen ran to the bed.",
+      "art": "p4.jpg"
+    },
+    {
+      "order": 5,
+      "word": "my",
+      "sentence": "A hen in my bed!",
+      "art": "p5.jpg"
+    }
+  ],
+  "sequencingDisplayOrder": [4, 5, 1, 2, 3],
+  "matchDisplayOrder": [5, 1, 2, 3, 4],
+  "yesno": [
+    {
+      "question": "is there a hen?",
+      "answer": true,
+      "imageArt": "p1.jpg"
+    },
+    {
+      "question": "is the hen big?",
+      "answer": true,
+      "imageArt": "p2.jpg"
+    },
+    {
+      "question": "did the hen run?",
+      "answer": true,
+      "imageArt": "p3.jpg"
+    },
+    {
+      "question": "did the hen run to the bed?",
+      "answer": true,
+      "imageArt": "p4.jpg"
+    },
+    {
+      "question": "is the hen in the bed?",
+      "answer": true,
+      "imageArt": "p5.jpg"
+    },
+    {
+      "question": "is the pig big?",
+      "answer": false,
+      "imageWord": "pig"
+    },
+    {
+      "question": "did the cow run?",
+      "answer": false,
+      "imageWord": "cow"
+    },
+    {
+      "question": "is the sheep in the bed?",
+      "answer": false,
+      "imageWord": "sheep"
+    },
+    {
+      "question": "did the duck run to the bed?",
+      "answer": false,
+      "imageWord": "duck"
+    },
+    {
+      "question": "is there a rabbit?",
+      "answer": false,
+      "imageWord": "rabbit"
+    }
+  ],
+  "_notes": {
+    "generated": "Authored 2026-08-14 for hen-in-bed Easy Reader (easy-readers-manifest-v2.json), following dp-the-cat-sat.json's structural conventions precisely per README.md's 5-step recipe. This reader has no cast-book bookScript of its own (it isn't a books_def.py / dark-phonics-readers bookX.py title) -- a data-only shim (shims/dp-hen-in-bed.py) was authored specifically for it, exposing spreads[] straight from easy-readers-manifest-v2.json's 5 page texts, mirroring dp-the-cat-sat.py's shape (dict(text=..., art=...) per spread, no 'nar' field -- none of this book's lines split into a narration + shouted-word pair).",
+    "letterAndWeek": "letter='b', week=18. This reader gates dark-phonics library lesson n=22 (sound 'b', app/montree/library/dark-phonics/page.tsx RAW array: '{ n: 22, sound: \"b\", ... reader: { slug: \"hen-in-bed\" ... } }'). The site's own displayN(n) = n - 4 rule (CLAUDE.md's Dark Phonics Page Structure Ruling) converts that to displayed Lesson 18, which matches the task's given lesson number.",
+    "pages": "Unlike mud-pup, this book's 5 pages each introduce a genuinely new content word in story order, so no reassignment/derivation was needed: p1 'hen' (the character's first appearance), p2 'big' (the sentence adds 'big red', and the art prompt deliberately draws the hen 'extra big, round and puffed up... to show how BIG it is' -- 'big' was picked over 'red' because the illustration's own emphasis is on scale, not colour), p3 'ran' (the action word -- hen sprinting, feathers flying), p4 'bed' (the object is introduced, large and central per the art prompt), p5 'my' -- the book's punchline word. The final page's joke is that a generic 'the bed' (p4) turns out to be the child's own bed ('A hen in my bed!'), so 'my' carries the whole finale twist, mirroring how dp-the-cat-sat reserved its most distinctive word ('tip-top') for the last page rather than repeating 'bed' or 'hen'.",
+    "sequencingDisplayOrder_matchDisplayOrder": "Two different full derangements of [1,2,3,4,5] (no page's `order` value sits in its own position in either list): seq=[4,5,1,2,3] (cyclic shift by 3) vs identity [1,2,3,4,5] differs at every index; match=[5,1,2,3,4] (cyclic shift by 4) vs identity differs at every index; seq vs match also differ at every index (4/5, 5/1, 1/2, 2/3, 3/4) -- so neither work sheet lets a row answer itself and rebuilds stay deterministic, per README.md step 2.",
+    "yesno": "10 items (5 true, 5 false) per the dp-the-cat-sat convention. 5 true items are drawn straight from the book's own 5 pages (imageArt = p1.jpg..p5.jpg), one question per page, worded to describe exactly what that page's picture shows (single hen / hen drawn extra big / hen running / hen running to the bed / hen snuggled in the bed) so a teacher can visually verify book fidelity. 5 false items reuse the book's own 'is/did the X ...?' phrasing (big / run / in the bed / run to the bed) on farm animals that never appear in hen-in-bed (pig, cow, sheep, duck, rabbit) -- clearly false since the book's only character is a single hen -- via imageWord -> docs/picture-bank/photos/<word>/<word>.jpg (all 5 files verified present on disk before writing this JSON: pig/pig.jpg, cow/cow.jpg, sheep/sheep.jpg, duck/duck.jpg, rabbit/rabbit.jpg). Per the 2026-07-30 ruling, false-item words are NOT restricted to prior-week vocabulary -- picked for clear falseness relative to this specific book instead."
+  }
+}

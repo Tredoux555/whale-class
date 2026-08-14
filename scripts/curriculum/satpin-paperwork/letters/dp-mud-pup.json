@@ -1,0 +1,103 @@
+{
+  "letter": "u",
+  "week": 15,
+  "slug": "dp-mud-pup",
+  "bookSlug": "mud-pup",
+  "bookTitle": "Mud Pup",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-mud-pup.py",
+  "artDir": "phonics-images/easy-readers/mud-pup",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "pup",
+      "sentence": "A pup.",
+      "art": "p1.jpg"
+    },
+    {
+      "order": 2,
+      "word": "mud",
+      "sentence": "The pup is in mud.",
+      "art": "p2.jpg"
+    },
+    {
+      "order": 3,
+      "word": "muddy",
+      "sentence": "Mud, mud, mud!",
+      "art": "p3.jpg"
+    },
+    {
+      "order": 4,
+      "word": "mud pup",
+      "sentence": "The pup is a mud pup.",
+      "art": "p4.jpg"
+    },
+    {
+      "order": 5,
+      "word": "sit",
+      "sentence": "Mud pup, sit!",
+      "art": "p5.jpg"
+    }
+  ],
+  "sequencingDisplayOrder": [2, 3, 4, 5, 1],
+  "matchDisplayOrder": [3, 4, 5, 1, 2],
+  "yesno": [
+    {
+      "question": "is there a pup?",
+      "answer": true,
+      "imageArt": "p1.jpg"
+    },
+    {
+      "question": "is the pup in mud?",
+      "answer": true,
+      "imageArt": "p2.jpg"
+    },
+    {
+      "question": "is the pup covered in mud?",
+      "answer": true,
+      "imageArt": "p3.jpg"
+    },
+    {
+      "question": "is the pup a mud pup?",
+      "answer": true,
+      "imageArt": "p4.jpg"
+    },
+    {
+      "question": "did the mud pup sit?",
+      "answer": true,
+      "imageArt": "p5.jpg"
+    },
+    {
+      "question": "is the tiger in mud?",
+      "answer": false,
+      "imageWord": "tiger"
+    },
+    {
+      "question": "is the elephant a mud pup?",
+      "answer": false,
+      "imageWord": "elephant"
+    },
+    {
+      "question": "did the zebra sit?",
+      "answer": false,
+      "imageWord": "zebra"
+    },
+    {
+      "question": "is the penguin in mud?",
+      "answer": false,
+      "imageWord": "penguin"
+    },
+    {
+      "question": "is the dinosaur a mud pup?",
+      "answer": false,
+      "imageWord": "dinosaur"
+    }
+  ],
+  "_notes": {
+    "generated": "Authored 2026-08-14 for mud-pup Easy Reader (easy-readers-manifest-v2.json), following dp-the-cat-sat.json's structural conventions precisely per README.md's 5-step recipe. This reader has no cast-book bookScript of its own (it isn't a books_def.py / dark-phonics-readers bookX.py title) -- a data-only shim (shims/dp-mud-pup.py) was authored specifically for it, exposing spreads[] straight from easy-readers-manifest-v2.json's 5 page texts, mirroring dp-the-cat-sat.py's shape (dict(text=..., art=...) per spread, no 'nar' field -- none of this book's lines split into a narration + shouted-word pair).",
+    "letterAndWeek": "letter='u', week=15. This reader gates dark-phonics library lesson n=19 (sound 'u', app/montree/library/dark-phonics/page.tsx RAW array: '{ n: 19, sound: \"u\", ... reader: { slug: \"mud-pup\" ... } }'). The site's own displayN(n) = n - 4 rule (CLAUDE.md's Dark Phonics Page Structure Ruling) converts that to displayed Lesson 15, which matches the task's given lesson number.",
+    "pages": "This book has only THREE distinct content lexemes across all 5 pages (pup, mud, sit -- even sparser than dp-the-cat-sat's cat/sat/on/cats/tip-top), so getting 5 genuinely distinct cards required the same kind of deliberate, documented deviation dp-the-cat-sat's _notes describes for its page 4. p1 'pup' and p2 'mud' are each that page's first-appearance content word, straightforward. p3 ('Mud, mud, mud!') introduces no new vocabulary at all -- it is pure repetition for comic intensity (the art prompt: 'mud flying everywhere in cartoon splats filling the frame'), so rather than default to a duplicate 'mud' card (flat, non-distinct, and would collide with page 2's card), 'muddy' was used: a plain morphological derivative of the page's own repeated word 'mud', naming exactly what the picture shows (the pup at peak muddiness) without inventing an unrelated word. p4 ('The pup is a mud pup.') uses the literal two-word phrase 'mud pup' printed verbatim in that sentence -- the moment the character's name becomes true, matching the art (a walking mud-monster). p5 keeps 'sit', the book's own shouted command word and title's finale beat, mirroring how dp-the-cat-sat reserved its most distinctive word ('tip-top') for the last page.",
+    "sequencingDisplayOrder_matchDisplayOrder": "Two different full derangements of [1,2,3,4,5] (no page's `order` value sits in its own position in either list): seq=[2,3,4,5,1] (cyclic shift by 1) vs identity [1,2,3,4,5] differs at every index; match=[3,4,5,1,2] (cyclic shift by 2) vs identity differs at every index; seq vs match also differ at every index (2/3, 3/4, 4/5, 5/1, 1/2) -- so neither work sheet lets a row answer itself and rebuilds stay deterministic, per README.md step 2.",
+    "yesno": "10 items (5 true, 5 false) per the dp-the-cat-sat convention. 5 true items are drawn straight from the book's own 5 pages (imageArt = p1.jpg..p5.jpg), one question per page, worded to describe exactly what that page's picture shows (single clean pup / pup sitting in a mud puddle / pup rolling, covered in mud / pup as a walking mud-monster / muddy pup sitting on command) so a teacher can visually verify book fidelity. 5 false items reuse a plain 'is/did the X ...?' phrasing keyed to this book's own actions (in mud / a mud pup / sit) on animals that never appear in mud-pup (tiger, elephant, zebra, penguin, dinosaur) -- clearly false since the book's only character is a single puppy -- via imageWord -> docs/picture-bank/photos/<word>/<word>.jpg (all 5 files verified present on disk before writing this JSON: tiger/tiger.jpg, elephant/elephant.jpg, zebra/zebra.jpg, penguin/penguin.jpg, dinosaur/dinosaur.jpg). Per the 2026-07-30 ruling, false-item words are NOT restricted to prior-week vocabulary -- picked for clear falseness relative to this specific book instead."
+  }
+}

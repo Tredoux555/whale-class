@@ -146,8 +146,13 @@ type Reader = {
   works?: boolean;
   /** Same as Book.materials, but opt-in: set true where the reader's full
    *  paperwork/tracing/three-part pack exists at
-   *  public/dark-phonics-materials/<slug>/ (the-cat-sat today). */
+   *  public/dark-phonics-materials/<materialsSlug ?? slug>/. */
   materials?: boolean;
+  /** Override for the materials directory name — only needed where the reader's
+   *  slug collides with a retired pattern-storybook's pack (fox-in-a-box: the
+   *  reader's pack lives at dark-phonics-materials/fox-in-a-box-reader/ so the
+   *  old book's untouched pack keeps its directory). */
+  materialsSlug?: string;
 };
 
 type RawLesson = {
@@ -238,7 +243,7 @@ const RAW: RawLesson[] = [
   { n: 18, sound: 'e', title: 'Crack the Egg, E!', catchphrase: '“ten messy hens!”', decodable: ['egg'], words: ['hen'], books: [
     { slug: 'the-egg', title: 'The ___ Has an Egg!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each with an egg. The potato had one too — until he cracked it.', cover: '/dark-phonics-books/covers/the-egg.png', materials: true, works: true },
   ] },
-  { n: 19, sound: 'u', title: 'Up Goes the Umbrella', catchphrase: '“yummy bug in my cup!”', decodable: ['duck', 'mud', 'stuck'], words: ['bug', 'cup'], reader: { slug: 'mud-pup', title: 'Mud Pup' }, books: [
+  { n: 19, sound: 'u', title: 'Up Goes the Umbrella', catchphrase: '“yummy bug in my cup!”', decodable: ['duck', 'mud', 'stuck'], words: ['bug', 'cup'], reader: { slug: 'mud-pup', title: 'Mud Pup', works: true, materials: true }, books: [
     { slug: 'the-mud', title: 'The ___ Is in the Mud!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each splashing in the mud. The potato isn’t — he’s chilling in his deck chair.', cover: '/dark-phonics-books/covers/the-mud.png', materials: true, works: true },
   ] },
   { n: 20, sound: 'r', title: 'Rrr Goes the Engine', catchphrase: '“run, run, red rat!”', decodable: ['rug', 'rat', 'under'], words: ['rat'], books: [
@@ -247,7 +252,7 @@ const RAW: RawLesson[] = [
   { n: 21, sound: 'h', title: 'H, the Panting Pup', catchphrase: '“ha-ha, hairy hippo!”', decodable: ['hat', 'hen'], words: ['hippo'], books: [
     { slug: 'the-hot', title: 'The ___ Is Hot!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — all fanning themselves under a blazing sun. The potato isn’t hot — he’s in the shade of his umbrella, cold drink in hand.', cover: '/dark-phonics-books/covers/the-hot.png', materials: true, works: true },
   ] },
-  { n: 22, sound: 'b', title: 'B for the Bobbing Boat', catchphrase: '“big baby burp!”', decodable: ['bed', 'bug'], words: ['baby'], reader: { slug: 'hen-in-bed', title: 'Hen in Bed' }, books: [
+  { n: 22, sound: 'b', title: 'B for the Bobbing Boat', catchphrase: '“big baby burp!”', decodable: ['bed', 'bug'], words: ['baby'], reader: { slug: 'hen-in-bed', title: 'Hen in Bed', works: true, materials: true }, books: [
     { slug: 'the-bug', title: 'The ___ Saw a Bug!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each spots a bug. The bug then spots the potato, relaxing in his deck chair with an ice-cold drink, and the two are happy to meet.', cover: '/dark-phonics-books/covers/the-bug.png', materials: true, works: true },
   ] },
   { n: 23, sound: 'f', title: 'Ffff Like a Fan', catchphrase: '“funny fox in my fan!”', decodable: ['fan', 'off'], words: ['fox', 'fan'] },
@@ -255,7 +260,7 @@ const RAW: RawLesson[] = [
   { n: 25, sound: 'j', title: 'Jump for J', catchphrase: '“jump in the jelly jam!”', decodable: ['jug', 'jam'], words: ['jam'] },
   { n: 26, sound: 'v', title: 'Vvvv Goes the Van', catchphrase: '“vroom-vroom van!”', decodable: ['van'], words: ['van'] },
   { n: 27, sound: 'w', title: 'W for the Windy Day', catchphrase: '“wiggly wet worm!”', decodable: ['wig'], words: ['worm'] },
-  { n: 28, sound: 'x', title: 'X Marks the Box', catchphrase: '“six fox in a box!”', decodable: ['box', 'fox'], words: ['fox', 'box'], reader: { slug: 'fox-in-a-box', title: 'Fox in a Box' } },
+  { n: 28, sound: 'x', title: 'X Marks the Box', catchphrase: '“six fox in a box!”', decodable: ['box', 'fox'], words: ['fox', 'box'], reader: { slug: 'fox-in-a-box', title: 'Fox in a Box', works: true, materials: true, materialsSlug: 'fox-in-a-box-reader' } },
   { n: 29, sound: 'y', title: 'Yes! Yum! Y!', catchphrase: '“yummy yellow yo-yo!”', decodable: ['yam', 'big'], words: ['yoyo'] },
   { n: 30, sound: 'z', title: 'Zzz Like a Buzzing Bee', catchphrase: '“zippy zebra, zzz!”', decodable: ['zip', 'bag'], words: ['zebra'] },
   { n: 31, sound: 'qu', title: 'The Queen Says Qu', catchphrase: '“quick quacky duck!”', decodable: ['quilt', 'squid'], words: ['duck'] },
@@ -267,20 +272,20 @@ const RAW: RawLesson[] = [
   { n: 37, sound: 'short O', title: 'Round and Fast, O!', catchphrase: '“hop on a hot log!”', words: ['log'] },
   { n: 38, sound: 'short E', title: 'Steady E', catchphrase: '“wet pet in my bed!”', words: ['pet', 'bed'] },
   { n: 39, sound: 'short U', title: 'Sunny Fast U', catchphrase: '“big bug hug!”', words: ['bug'] },
-  { n: 40, sound: 'minimal pairs', title: 'Cat? Cot? Cut?', catchphrase: '“cat? cot? cut? - which one!”', words: ['cat', 'cot', 'cut'], reader: { slug: 'cat-cot-cut', title: 'Cat? Cot? Cut?' } },
-  { n: 41, sound: 'FLSZ doubling', title: 'Two at the End', catchphrase: '“buzz off, fuzzy bee!”', words: ['bee'], reader: { slug: 'the-bell-fell', title: 'The Bell Fell' } },
+  { n: 40, sound: 'minimal pairs', title: 'Cat? Cot? Cut?', catchphrase: '“cat? cot? cut? - which one!”', words: ['cat', 'cot', 'cut'], reader: { slug: 'cat-cot-cut', title: 'Cat? Cot? Cut?', works: true, materials: true } },
+  { n: 41, sound: 'FLSZ doubling', title: 'Two at the End', catchphrase: '“buzz off, fuzzy bee!”', words: ['bee'], reader: { slug: 'the-bell-fell', title: 'The Bell Fell', works: true, materials: true } },
   { n: 42, sound: 'sh', title: 'Sh! Be Still', catchphrase: '“sheep go baba!”', words: ['sheep'] },
-  { n: 43, sound: 'ch', title: 'Ch-Ch Goes the Train', catchphrase: '“cheeky little chick!”', words: ['chick'], reader: { slug: 'fish-and-chick', title: 'Fish and Chick' } },
+  { n: 43, sound: 'ch', title: 'Ch-Ch Goes the Train', catchphrase: '“cheeky little chick!”', words: ['chick'], reader: { slug: 'fish-and-chick', title: 'Fish and Chick', works: true, materials: true } },
   { n: 44, sound: 'th (voiceless)', title: 'Tongue Peeks Out', catchphrase: '“moth in my bath!”', words: ['moth', 'bath'] },
   { n: 45, sound: 'wh', title: 'the Asking Sound', catchphrase: '“wheee, big fat whale!”', words: ['whale'] },
-  { n: 46, sound: 'th (voiced)', title: 'Now It Buzzes', catchphrase: '“this, that, this, that, BOO!”', reader: { slug: 'this-and-that', title: 'This and That' } },
+  { n: 46, sound: 'th (voiced)', title: 'Now It Buzzes', catchphrase: '“this, that, this, that, BOO!”', reader: { slug: 'this-and-that', title: 'This and That', works: true, materials: true } },
   { n: 47, sound: 'ending blends', title: 'Snap It at the End', catchphrase: '“jump, jump, fast hands!”', words: ['hand'] },
-  { n: 48, sound: 'ending blends', title: 'Pink, Tent, Belt', catchphrase: '“pink sock in the sink!”', words: ['sock', 'sink'], reader: { slug: 'jump-in-the-sand', title: 'Jump in the Sand' } },
+  { n: 48, sound: 'ending blends', title: 'Pink, Tent, Belt', catchphrase: '“pink sock in the sink!”', words: ['sock', 'sink'], reader: { slug: 'jump-in-the-sand', title: 'Jump in the Sand', works: true, materials: true } },
   { n: 49, sound: 's-blends', title: 'S Blends Off We Go', catchphrase: '“slip, slip, slimy snail!”', words: ['snail'] },
   { n: 50, sound: 'l-blends', title: 'L Blends Hold On', catchphrase: '“clap, clap, silly clown!”', words: ['clown'] },
-  { n: 51, sound: 'r-blends', title: 'R Blends, Strong and True', catchphrase: '“green frog on a drum!”', words: ['frog', 'drum'], reader: { slug: 'frog-and-crab', title: 'Frog and Crab' } },
+  { n: 51, sound: 'r-blends', title: 'R Blends, Strong and True', catchphrase: '“green frog on a drum!”', words: ['frog', 'drum'], reader: { slug: 'frog-and-crab', title: 'Frog and Crab', works: true, materials: true } },
   { n: 52, sound: 'tw / dw blends', title: 'Twist and Twirl', catchphrase: '“two twins twist!”', words: ['twins'] },
-  { n: 53, sound: 'triple blends', title: 'Three Sounds Strong', catchphrase: '“big splash, scrub-a-dub!”', words: ['splash'], reader: { slug: 'big-splash', title: 'Big Splash' } },
+  { n: 53, sound: 'triple blends', title: 'Three Sounds Strong', catchphrase: '“big splash, scrub-a-dub!”', words: ['splash'], reader: { slug: 'big-splash', title: 'Big Splash', works: true, materials: true } },
 ];
 
 /** Same list, with a colour stamped on each card. */
@@ -846,7 +851,9 @@ export default function DarkPhonicsPage() {
                         )}
                         {[
                           ...(l.books?.filter(b => b.materials !== false) ?? []),
-                          ...(l.reader?.materials ? [l.reader] : []),
+                          ...(l.reader?.materials
+                            ? [{ ...l.reader, slug: l.reader.materialsSlug ?? l.reader.slug }]
+                            : []),
                         ].map(book => (
                           <React.Fragment key={book.slug}>
                             <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>

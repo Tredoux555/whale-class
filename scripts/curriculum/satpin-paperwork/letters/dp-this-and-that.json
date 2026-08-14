@@ -1,0 +1,103 @@
+{
+  "letter": "th",
+  "week": 42,
+  "slug": "dp-this-and-that",
+  "bookSlug": "this-and-that",
+  "bookTitle": "This and That",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-this-and-that.py",
+  "artDir": "phonics-images/easy-readers/this-and-that",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "this",
+      "sentence": "This.",
+      "art": "p1.jpg"
+    },
+    {
+      "order": 2,
+      "word": "that",
+      "sentence": "That.",
+      "art": "p2.jpg"
+    },
+    {
+      "order": 3,
+      "word": "moth",
+      "sentence": "This is a moth.",
+      "art": "p3.jpg"
+    },
+    {
+      "order": 4,
+      "word": "is",
+      "sentence": "That is a moth!",
+      "art": "p4.jpg"
+    },
+    {
+      "order": 5,
+      "word": "moths",
+      "sentence": "This, that... moths!",
+      "art": "p5.jpg"
+    }
+  ],
+  "sequencingDisplayOrder": [3, 5, 1, 2, 4],
+  "matchDisplayOrder": [2, 4, 5, 3, 1],
+  "yesno": [
+    {
+      "question": "is there one moth?",
+      "answer": true,
+      "imageArt": "p1.jpg"
+    },
+    {
+      "question": "is the moth far away?",
+      "answer": true,
+      "imageArt": "p2.jpg"
+    },
+    {
+      "question": "does the moth glow?",
+      "answer": true,
+      "imageArt": "p3.jpg"
+    },
+    {
+      "question": "are there two moths?",
+      "answer": true,
+      "imageArt": "p4.jpg"
+    },
+    {
+      "question": "are there lots of moths?",
+      "answer": true,
+      "imageArt": "p5.jpg"
+    },
+    {
+      "question": "is the bee a moth?",
+      "answer": false,
+      "imageWord": "bee"
+    },
+    {
+      "question": "is the fly a moth?",
+      "answer": false,
+      "imageWord": "fly"
+    },
+    {
+      "question": "is the spider a moth?",
+      "answer": false,
+      "imageWord": "spider"
+    },
+    {
+      "question": "is the bird a moth?",
+      "answer": false,
+      "imageWord": "bird"
+    },
+    {
+      "question": "is the worm a moth?",
+      "answer": false,
+      "imageWord": "worm"
+    }
+  ],
+  "_notes": {
+    "generated": "Authored 2026-08-14 for this-and-that Easy Reader (easy-readers-manifest-v2.json, gate=46, title/pages verbatim-checked against BOTH the manifest and the shipped PDF's text layer -- pdftotext on /mnt/user-data/uploads/montree/_claude_stage/reader-pdfs/this-and-that.pdf was run and confirmed the printed p5 line is the literal three-dot ellipsis 'This, that... moths!' (ASCII '...', not a unicode ellipsis glyph), matching the manifest exactly -- before writing this file, following dp-the-cat-sat.json's structural conventions per README.md's 5-step recipe. This reader has no cast-book bookScript of its own (not a books_def.py / dark-phonics-readers bookX.py title) -- a data-only shim (shims/dp-this-and-that.py) was authored specifically for it, exposing spreads[] straight from the manifest's 5 page texts, mirroring dp-the-cat-sat.py's shape (dict(text=..., art=...) per spread, no 'nar' field -- none of this book's lines split into a narration + shouted-word pair).",
+    "letterAndWeek": "letter='th', week=42. This reader gates dark-phonics library lesson n=46 (sound 'th (voiced)', app/montree/library/dark-phonics/page.tsx RAW array: '{ n: 46, sound: \"th (voiced)\", title: \"Now It Buzzes\", catchphrase: \"\\u201cthis, that, this, that, BOO!\\u201d\", reader: { slug: \"this-and-that\" ... } }'). The site's own displayN(n) = n - 4 rule (CLAUDE.md's Dark Phonics Page Structure Ruling) converts that to displayed Lesson 42, matching the task brief exactly. 'th' is the unambiguous badge label -- a genuine two-letter digraph gate, same shape as the-cat-sat's 'ck' and fish-and-chick's 'ch' precedents -- and fits cleanly in the ~8mm badge circle at font size 20.",
+    "pages": "Word-card choice: p1 'This.' and p2 'That.' are exactly their own one-word sentences -- this/that -- per the task brief's own note. p3 ('This is a moth.') introduces the book's title character, 'moth', its first and most natural card. p4 ('That is a moth!') introduces no word that hasn't already been printed by an earlier page (that/is/a/moth all seen on p2-p3) -- rather than force a duplicate 'moth' card (which would collide with p3 and be non-distinct), the leftover word 'is' was carded instead of the weaker article 'a': 'is' is the sentence's actual pivot verb (the word that turns pointing into a claim -- 'that IS a moth'), more decodable and substantive than 'a', and mirrors dp-the-cat-sat's preference for the preposition 'on' and dp-fish-and-chick's preference for 'and'/'on' over bare articles when a page has no fresh content noun. p5 ('This, that... moths!') introduces 'moths', the plural finale word and the book's own comic payoff (the manifest's own page-5 art prompt: 'a whole goofy swarm of identical fuzzy moths filling the frame') -- reserved for its own page, matching how dp-the-cat-sat kept 'tip-top', dp-mud-pup kept 'sit', and dp-the-bell-fell kept 'bonk' on their finale pages. All 5 words (this, that, moth, is, moths) are distinct.",
+    "sequencingDisplayOrder_matchDisplayOrder": "Two different full derangements of [1,2,3,4,5] (no page's `order` value sits in its own position in either list, and the two lists differ from each other at every index too, matching dp-the-cat-sat.json's stricter precedent) -- verified programmatically: seq=[3,5,1,2,4] vs identity [1,2,3,4,5] differs at every index; match=[2,4,5,3,1] vs identity differs at every index; seq vs match also differ at every index (3/2, 5/4, 1/5, 2/3, 4/1) -- so neither work sheet lets a row answer itself and rebuilds stay deterministic, per README.md step 2.",
+    "yesno": "10 items (5 true, 5 false), 5/5 split per the dp-the-cat-sat.json / Jul-30 rollout convention. 5 true items are drawn straight from the book's own 5 pages (imageArt = p1.jpg..p5.jpg), one question per page, each worded to distinguish that page's own picture from the others (single moth close-up / moth far across the frame / single glowing moth / two moths side-by-side comic double-take / whole swarm of moths) rather than reusing one generic template, so a teacher can visually verify book fidelity page-by-page. 5 false items use a consistent 'is the X a moth?' frame on animals that never appear in this book at all -- this reader's entire cast is a single moth character, no other creature ever appears -- via imageWord -> docs/picture-bank/photos/<word>/<word>.jpg (all 5 files verified present on disk before writing this JSON: bee/bee.jpg, fly/fly.jpg, spider/spider.jpg, bird/bird.jpg, worm/worm.jpg). Words were chosen for plausible visual confusability with a moth (small flying/crawling creatures) while remaining unambiguously false, which also makes the item pedagogically sharper than an arbitrary false animal. Per the 2026-07-30 ruling, false-item words are NOT restricted to prior-week vocabulary -- picked for clear falseness relative to this specific book instead."
+  }
+}

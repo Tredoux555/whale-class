@@ -1,0 +1,103 @@
+{
+  "letter": "ch",
+  "week": 39,
+  "slug": "dp-fish-and-chick",
+  "bookSlug": "fish-and-chick",
+  "bookTitle": "Fish and Chick",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-fish-and-chick.py",
+  "artDir": "phonics-images/easy-readers/fish-and-chick",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "fish",
+      "sentence": "A fish.",
+      "art": "p1.jpg"
+    },
+    {
+      "order": 2,
+      "word": "chick",
+      "sentence": "A chick.",
+      "art": "p2.jpg"
+    },
+    {
+      "order": 3,
+      "word": "and",
+      "sentence": "The fish and the chick.",
+      "art": "p3.jpg"
+    },
+    {
+      "order": 4,
+      "word": "on",
+      "sentence": "The chick is on the fish!",
+      "art": "p4.jpg"
+    },
+    {
+      "order": 5,
+      "word": "chip",
+      "sentence": "Chip-chip, chick!",
+      "art": "p5.jpg"
+    }
+  ],
+  "sequencingDisplayOrder": [4, 1, 5, 2, 3],
+  "matchDisplayOrder": [5, 3, 4, 1, 2],
+  "yesno": [
+    {
+      "question": "is there a fish?",
+      "answer": true,
+      "imageArt": "p1.jpg"
+    },
+    {
+      "question": "is there a chick?",
+      "answer": true,
+      "imageArt": "p2.jpg"
+    },
+    {
+      "question": "are the fish and the chick together?",
+      "answer": true,
+      "imageArt": "p3.jpg"
+    },
+    {
+      "question": "is the chick on the fish?",
+      "answer": true,
+      "imageArt": "p4.jpg"
+    },
+    {
+      "question": "is the chick pecking chips?",
+      "answer": true,
+      "imageArt": "p5.jpg"
+    },
+    {
+      "question": "is there a pig in this book?",
+      "answer": false,
+      "imageWord": "pig"
+    },
+    {
+      "question": "did a duck ride on the fish?",
+      "answer": false,
+      "imageWord": "duck"
+    },
+    {
+      "question": "is there a frog in this book?",
+      "answer": false,
+      "imageWord": "frog"
+    },
+    {
+      "question": "did a cat peck at the chips?",
+      "answer": false,
+      "imageWord": "cat"
+    },
+    {
+      "question": "is there an owl in this book?",
+      "answer": false,
+      "imageWord": "owl"
+    }
+  ],
+  "_notes": {
+    "generated": "Authored 2026-08-14 for fish-and-chick Easy Reader (easy-readers-manifest-v2.json, gate=43, title/pages verbatim match against the manifest verified before writing this file), following dp-the-cat-sat.json's structural conventions per README.md's 5-step recipe. This reader has no cast-book bookScript of its own (not a books_def.py / dark-phonics-readers bookX.py title) -- a data-only shim (shims/dp-fish-and-chick.py) was authored specifically for it, exposing spreads[] straight from the manifest's 5 page texts, mirroring dp-the-cat-sat.py's shape (dict(text=..., art=...) per spread, no 'nar' field -- none of this book's lines split into a narration + shouted-word pair).",
+    "letterAndWeek": "letter='ch', week=39. This reader gates dark-phonics library lesson n=43 (sound 'ch', app/montree/library/dark-phonics/page.tsx RAW array: '{ n: 43, sound: \"ch\", title: \"Ch-Ch Goes the Train\", ... reader: { slug: \"fish-and-chick\" ... } }'). The site's displayN(n) = n - 4 rule (CLAUDE.md's Dark Phonics Page Structure Ruling) converts that to displayed Lesson 39, matching the task brief exactly. 'ch' is a true two-letter digraph gate (same shape as the-cat-sat's 'ck'), so it is the unambiguous badge label -- fits cleanly in the ~8mm badge circle at font size 20 exactly like the-cat-sat's 'ck' precedent.",
+    "pages": "Word-card choice: pages 1 and 2 each introduce their own title character cleanly (fish, chick). Page 3 ('The fish and the chick.') introduces no new CONTENT noun -- both characters already have cards -- so, mirroring dp-the-cat-sat.json's page-3 precedent (which carded the preposition 'on' rather than repeat 'cat'), the genuinely new word on that page is the connector 'and', the word that actually changes the sentence from two separate character-pages into a joint scene. Page 4 ('The chick is on the fish!') introduces the preposition 'on', which is also the book's picture-payoff word (the chick literally standing on the fish, surfboard-style, per the manifest's own page-4 art prompt). Page 5 ('Chip-chip, chick!') introduces 'chip', the book's shouted finale word and the direct source of the page's picture (a pile of chips with the chick pecking one) -- the same shouted-word-card pattern as the-cat-sat's 'tip-top' and the-bell-fell's 'bonk'. All 5 words are distinct and each maps to that page's own picture.",
+    "sequencingDisplayOrder_matchDisplayOrder": "Two different full derangements of [1,2,3,4,5] (no page's `order` value sits in its own position in either list, and the two lists differ from each other at every index too, matching dp-the-cat-sat.json's stricter precedent) -- verified: seq=[4,1,5,2,3] vs identity [1,2,3,4,5] differs at every index; match=[5,3,4,1,2] vs identity differs at every index; seq vs match also differ at every index (4/5, 1/3, 5/4, 2/1, 3/2) -- so neither work sheet lets a row answer itself and rebuilds stay deterministic, per README.md step 2.",
+    "yesno": "10 items (5 true, 5 false) per the dp-the-cat-sat.json / Jul-30 rollout convention (5/5 split). 5 true items are drawn straight from the book's own 5 pages (imageArt = p1.jpg..p5.jpg), one question per page, worded to describe exactly what that page's picture shows (fish alone / chick alone / fish and chick side by side / chick standing on the fish / chick pecking a pile of chips) so a teacher can visually verify book fidelity. 5 false items reuse a similar per-page phrasing style on animals that never appear in this book at all -- this reader's entire cast is one fish and one chick -- via imageWord -> docs/picture-bank/photos/<word>/<word>.jpg (all 5 files verified present on disk before writing this JSON: pig/pig.jpg, duck/duck.jpg, frog/frog.jpg, cat/cat.jpg, owl/owl.jpg). Per the 2026-07-30 ruling, false-item words are NOT restricted to prior-week vocabulary -- picked for clear falseness relative to this specific book instead."
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "letter": "nd",
+  "week": 44,
+  "slug": "dp-jump-in-the-sand",
+  "bookSlug": "jump-in-the-sand",
+  "bookTitle": "Jump in the Sand",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-jump-in-the-sand.py",
+  "artDir": "phonics-images/easy-readers/jump-in-the-sand",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "jump",
+      "sentence": "Jump!",
+      "art": "p1.jpg"
+    },
+    {
+      "order": 2,
+      "word": "sand",
+      "sentence": "Jump in the sand.",
+      "art": "p2.jpg"
+    },
+    {
+      "order": 3,
+      "word": "in",
+      "sentence": "Jump, jump, jump!",
+      "art": "p3.jpg"
+    },
+    {
+      "order": 4,
+      "word": "big",
+      "sentence": "A big jump in the sand.",
+      "art": "p4.jpg"
+    },
+    {
+      "order": 5,
+      "word": "pup",
+      "sentence": "Sand on the pup!",
+      "art": "p5.jpg"
+    }
+  ],
+  "sequencingDisplayOrder": [4, 1, 5, 2, 3],
+  "matchDisplayOrder": [3, 4, 1, 5, 2],
+  "yesno": [
+    {
+      "question": "is the pup jumping?",
+      "answer": true,
+      "imageArt": "p1.jpg"
+    },
+    {
+      "question": "is the pup jumping into the sand?",
+      "answer": true,
+      "imageArt": "p2.jpg"
+    },
+    {
+      "question": "does the pup jump three times?",
+      "answer": true,
+      "imageArt": "p3.jpg"
+    },
+    {
+      "question": "is it a big jump?",
+      "answer": true,
+      "imageArt": "p4.jpg"
+    },
+    {
+      "question": "is the pup covered in sand?",
+      "answer": true,
+      "imageArt": "p5.jpg"
+    },
+    {
+      "question": "is the cat jumping in the sand?",
+      "answer": false,
+      "imageWord": "cat"
+    },
+    {
+      "question": "is the frog jumping in the sand?",
+      "answer": false,
+      "imageWord": "frog"
+    },
+    {
+      "question": "is the rabbit jumping in the sand?",
+      "answer": false,
+      "imageWord": "rabbit"
+    },
+    {
+      "question": "is the duck jumping in the sand?",
+      "answer": false,
+      "imageWord": "duck"
+    },
+    {
+      "question": "is the owl jumping in the sand?",
+      "answer": false,
+      "imageWord": "owl"
+    }
+  ],
+  "_notes": {
+    "generated": "Authored 2026-08-14 for jump-in-the-sand Easy Reader (easy-readers-manifest-v2.json, gate=48, title/pages verbatim-checked against BOTH the manifest and the shipped PDF's text layer -- pdftotext on /mnt/user-data/uploads/montree/_claude_stage/reader-pdfs/jump-in-the-sand.pdf was run and confirmed all 5 lines match the manifest exactly -- before writing this file, following dp-the-cat-sat.json's structural conventions per README.md's 5-step recipe. This reader has no cast-book bookScript of its own (not a books_def.py / dark-phonics-readers bookX.py title) -- a data-only shim (shims/dp-jump-in-the-sand.py) was authored specifically for it, exposing spreads[] straight from the manifest's 5 page texts, mirroring dp-the-cat-sat.py's shape (dict(text=..., art=...) per spread, no 'nar' field -- none of this book's lines split into a narration + shouted-word pair).",
+    "letterAndWeek": "letter='nd', week=44. This reader gates dark-phonics library lesson n=48 (sound 'ending blends', app/montree/library/dark-phonics/page.tsx RAW array: '{ n: 48, sound: \"ending blends\", title: \"Pink, Tent, Belt\", catchphrase: \"\\u201cpink sock in the sink!\\u201d\", words: [\"sock\",\"sink\"], reader: { slug: \"jump-in-the-sand\" ... } }'). The site's own displayN(n) = n - 4 rule (CLAUDE.md's Dark Phonics Page Structure Ruling) converts that to displayed Lesson 44, matching the task brief exactly. 'ending blends' is a spelling-pattern review, not a single letter or true digraph, so -- exactly as with dp-the-bell-fell.json's 'FLSZ doubling' -> 'll' precedent -- there is no one canonical 1-2 character label the way 'ck'/'ch'/'th' work for a real digraph gate; a specific ending blend actually present in this book's own vocabulary had to be picked. This book's words end in either '-mp' (jump, appearing 5x across p1/p3(x3)/p4) or '-nd' (sand, appearing 3x across p2/p4/p5). 'nd' was picked over 'mp' for two reasons: (1) it is the title's own location noun ('the Sand') and the book's visual/thematic payoff (p5's picture is the pup buried IN the sand), whereas 'mp' just repeats the book's title verb which the ending-blends unit doesn't specifically foreground; (2) continuity with the immediately preceding lesson n=47 ('Snap It at the End', displayed 43), whose own vocab word is 'hand' -- also an '-nd' ending blend -- so 'nd' reinforces the ending blend the curriculum already introduced one lesson earlier, giving the badge pedagogical continuity that 'mp' (untaught elsewhere in the sequence) would not. 'nd' reads cleanly as two glyphs inside the ~8mm badge circle, same as the-cat-sat's 'ck' and the-bell-fell's 'll' precedents.",
+    "pages": "This book has only FOUR distinct content lexemes across all 5 pages (jump, sand, big, pup), one short of the 5 needed for distinct word cards, so -- as with dp-mud-pup's three-lexeme case -- one page needed a deliberate, documented substitution. p1 'jump' (own, first appearance, the book's own title verb and the picture's single clear action). p2 'sand' (own, first appearance, the wide sandy-ground scene). p3 ('Jump, jump, jump!') introduces no new vocabulary at all -- pure repetition of 'jump' for comic triple-bounce effect (art: 'three side-by-side leap poses') -- rather than a duplicate 'jump' card (would collide with p1) or reaching forward to steal p4's 'big' or p5's 'pup' (which each pair ideally with their own page's picture -- see below), the already-printed preposition 'in' (first seen on p2's own sentence, 'Jump in the sand') was carded instead, mirroring dp-fish-and-chick's page-3 precedent of carding a connector/preposition word when a page has no fresh content noun. p4 'big' (own, first appearance, and the picture's own payoff -- 'one huge dramatic leap above a big burst of golden SAND'). p5 'pup' (own, first appearance as a bare noun on this exact page, and the picture's literal subject -- 'the puppy almost completely buried in sand, only its nose and eyes poking out' -- so 'pup' was kept on its own finale page, matching how dp-the-cat-sat kept 'tip-top', dp-mud-pup kept 'sit', and dp-the-bell-fell kept 'bonk' on their own finale pages). All 5 words (jump, sand, in, big, pup) are distinct and each maps cleanly to its own page's picture.",
+    "sequencingDisplayOrder_matchDisplayOrder": "Two different full derangements of [1,2,3,4,5] (no page's `order` value sits in its own position in either list, and the two lists differ from each other at every index too, matching dp-the-cat-sat.json's stricter precedent) -- verified programmatically: seq=[4,1,5,2,3] vs identity [1,2,3,4,5] differs at every index; match=[3,4,1,5,2] vs identity differs at every index; seq vs match also differ at every index (4/3, 1/4, 5/1, 2/5, 3/2) -- so neither work sheet lets a row answer itself and rebuilds stay deterministic, per README.md step 2.",
+    "yesno": "10 items (5 true, 5 false), 5/5 split per the dp-the-cat-sat.json / Jul-30 rollout convention. 5 true items are drawn straight from the book's own 5 pages (imageArt = p1.jpg..p5.jpg), one question per page, each worded to distinguish that page's own picture (single upward leap / leaping into the sand / three side-by-side leaps / one huge dramatic leap / pup nearly buried in sand) rather than reusing one generic template, so a teacher can visually verify book fidelity page-by-page. 5 false items use a consistent 'is the X jumping in the sand?' frame on animals that never appear in this book at all -- this reader's entire cast is a single golden-brown puppy, no other animal ever appears (dog/pup itself was deliberately avoided as a false-item word to keep the contrast unambiguous) -- via imageWord -> docs/picture-bank/photos/<word>/<word>.jpg (all 5 files verified present on disk before writing this JSON: cat/cat.jpg, frog/frog.jpg, rabbit/rabbit.jpg, duck/duck.jpg, owl/owl.jpg). Per the 2026-07-30 ruling, false-item words are NOT restricted to prior-week vocabulary -- picked for clear falseness relative to this specific book instead."
+  }
+}
