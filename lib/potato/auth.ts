@@ -33,6 +33,23 @@ export const PARENT_COOKIE = 'potato_parent';
 const TEACHER_AUD = 'potato-teacher';
 const PARENT_AUD = 'potato-parent';
 
+// ------------------------------------------------------------ v1.4 staff ---
+// The fixed 4-person team. Not a table — four people is not a table's worth
+// of problem, and it lets HQ (Tredoux) change the roster with a one-line
+// deploy instead of a database write.
+export const STAFF_NAMES = ['Dana', 'Jenny', 'Vanessa', 'Tredoux'] as const;
+export type StaffName = (typeof STAFF_NAMES)[number];
+
+/** Case-insensitive match against the fixed roster, canonicalised to the
+ * casing above. Anything else — a typo, an empty string, a stranger's name —
+ * returns null rather than guessing. */
+export function normalizeStaffName(raw: unknown): StaffName | null {
+  if (typeof raw !== 'string') return null;
+  const trimmed = raw.trim().toLowerCase();
+  const match = STAFF_NAMES.find((name) => name.toLowerCase() === trimmed);
+  return match ?? null;
+}
+
 /** ~10 years. A teacher on her own phone should never be silently logged out. */
 const TTL_DAYS = 3650;
 const TTL_SECONDS = TTL_DAYS * 24 * 60 * 60;
@@ -59,10 +76,19 @@ function cookieOptions() {
 
 export interface PotatoTeacherSession {
   classId: string;
+  /**
+   * v1.4 name-picker login. Absent on every token minted before this shipped,
+   * and on a token minted through the old code-door fallback — the code door
+   * has no notion of "who". `staffName` is an EXTRA claim on the same
+   * { classId } shape the code door has always minted, so every existing
+   * reader of this cookie (they all destructure `.classId` and ignore
+   * everything else) keeps working untouched.
+   */
+  staffName?: StaffName;
 }
 
-export async function createTeacherToken(classId: string): Promise<string> {
-  return new SignJWT({ classId })
+export async function createTeacherToken(classId: string, staffName?: StaffName): Promise<string> {
+  return new SignJWT({ classId, ...(staffName ? { staffName } : {}) })
     .setProtectedHeader({ alg: 'HS256' })
     .setAudience(TEACHER_AUD)
     .setIssuedAt()
@@ -79,7 +105,11 @@ export async function verifyPotatoTeacher(
     const { payload } = await jwtVerify(token, secretKey(), { audience: TEACHER_AUD });
     const classId = payload.classId;
     if (typeof classId !== 'string' || !UUID_RE.test(classId)) return null;
-    return { classId };
+    // Re-validated against the live roster, not just "was a string at mint
+    // time" — if HQ ever drops a name from STAFF_NAMES, old cookies bearing it
+    // quietly stop attributing rather than trusting a stale claim forever.
+    const staffName = normalizeStaffName(payload.staffName);
+    return staffName ? { classId, staffName } : { classId };
   } catch {
     return null;
   }

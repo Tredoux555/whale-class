@@ -141,6 +141,25 @@ const nextConfig: NextConfig = {
           { key: 'Cache-Control', value: 'private, no-store' },
         ],
       },
+      // PSS ("Potato Snaps" / "PSS by Teacher Potato") is a private tool for a
+      // fixed 4-person team, not a public product surface — it should never
+      // show up in search results. app/potato/layout.tsx already sets a
+      // page-level `robots` meta tag for the HTML routes, but that does
+      // nothing for the /api/potato/* JSON responses, so this adds the header
+      // form (which a crawler honours even without ever rendering the page)
+      // across both.
+      {
+        source: '/potato/:path*',
+        headers: [
+          { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
+        ],
+      },
+      {
+        source: '/api/potato/:path*',
+        headers: [
+          { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
+        ],
+      },
       {
         source: '/(.*)',
         headers: [

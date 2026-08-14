@@ -32,7 +32,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'node:crypto';
 import { verifyPotatoTeacher, UUID_RE } from '@/lib/potato/auth';
-import { potatoDb, loadClass, isSetupPending, proxyUrl, POTATO_BUCKET } from '@/lib/potato/db';
+import {
+  potatoDb,
+  loadClass,
+  isSetupPending,
+  proxyUrl,
+  POTATO_BUCKET,
+  potatoCapabilities,
+} from '@/lib/potato/db';
 import { storageDateFolders } from '@/lib/potato/week';
 import { resolveCapturedAt } from '@/lib/potato/captured-at';
 
@@ -159,13 +166,19 @@ export async function POST(request: NextRequest) {
       .upload(storagePath, bytes, { contentType: mime, upsert: true });
     if (uploadError) throw uploadError;
 
+    // v1.4: stamp who took it — feature-detected, so an upload before
+    // migration 333 is pasted still saves the photo, just without a name.
+    const caps = await potatoCapabilities(supabase);
+    const insertRow: Record<string, unknown> = {
+      class_id: session.classId,
+      storage_path: storagePath,
+      captured_at: capturedAt.toISOString(),
+    };
+    if (caps.attribution && session.staffName) insertRow.uploaded_by = session.staffName;
+
     const { data: photo, error: insertError } = await supabase
       .from('tp_photos')
-      .insert({
-        class_id: session.classId,
-        storage_path: storagePath,
-        captured_at: capturedAt.toISOString(),
-      })
+      .insert(insertRow)
       .select('id, storage_path, captured_at')
       .maybeSingle();
     if (insertError) {

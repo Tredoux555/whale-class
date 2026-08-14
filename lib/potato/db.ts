@@ -115,6 +115,13 @@ interface Capabilities {
    * the gate switches on for everything rendered from then.
    */
   send: boolean;
+  /**
+   * v1.4 — tp_photos.uploaded_by exists (migration 333). Gates whether the
+   * upload route stamps who took the photo. Without it, uploads work exactly
+   * as they did in v1.3 — no name attached — rather than 503ing the whole
+   * upload for a column that has nothing to do with whether the photo saves.
+   */
+  attribution: boolean;
 }
 
 const NEGATIVE_TTL_MS = 30_000;
@@ -136,15 +143,20 @@ async function probeColumn(
 export async function potatoCapabilities(supabase: UntypedClient): Promise<Capabilities> {
   const now = Date.now();
   if (capsCache) {
-    const fresh = capsCache.value.jobs && capsCache.value.classes && capsCache.value.send;
+    const fresh =
+      capsCache.value.jobs &&
+      capsCache.value.classes &&
+      capsCache.value.send &&
+      capsCache.value.attribution;
     if (fresh || now - capsCache.at < NEGATIVE_TTL_MS) return capsCache.value;
   }
-  const [jobs, classes, send] = await Promise.all([
+  const [jobs, classes, send, attribution] = await Promise.all([
     probeColumn(supabase, 'tp_montage_jobs', 'kind, excused_child_ids'),
     probeColumn(supabase, 'tp_classes', 'school_name, school_logo_path, emblem_path'),
     probeColumn(supabase, 'tp_montage_jobs', 'sent_at'),
+    probeColumn(supabase, 'tp_photos', 'uploaded_by'),
   ]);
-  const value: Capabilities = { jobs, classes, send };
+  const value: Capabilities = { jobs, classes, send, attribution };
   capsCache = { value, at: now };
   return value;
 }
