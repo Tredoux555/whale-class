@@ -277,44 +277,57 @@ const nextConfig: NextConfig = {
   //
   // These rewrites keep every existing in-app reference
   // (`/dark-phonics-books/...`, `/satpin-materials/...`,
-  // `/montree-splash-video.mp4`, etc.) working unchanged — the request path
-  // is proxied straight through to the bucket's public object URL, so no
-  // component/page code had to change.
+  // `/montree-splash-video.mp4`, etc.) working unchanged — no component/page
+  // code had to change.
+  //
+  // 🚨 Destinations point at the app's OWN /api/montree/media/proxy route,
+  // NOT straight at supabase.co. An external rewrite destination (the
+  // original approach) is fetched directly by the requester's browser in
+  // production, and montree.xyz sits behind Cloudflare: pointing an
+  // afterFiles rewrite at *.supabase.co made Cloudflare return
+  // "Error 1000: DNS points to prohibited IP" naming the supabase host,
+  // even though the same supabase.co URL loads fine when hit directly
+  // (verified 200s outside the rewrite). Routing through
+  // /api/montree/media/proxy instead makes the ORIGIN (Railway) do the
+  // supabase.co fetch server-side — the exact same proxy already used in
+  // production for montree-media/story-uploads/etc — so the browser/
+  // Cloudflare never talks to supabase.co directly for these paths.
+  // `static-assets` was added to that route's bucket allowlist for this.
   //
   // `afterFiles` placement: Next.js checks the filesystem (public/, pages)
   // FIRST and only falls through to these rewrites on a miss. That means if
   // any of these files are ever restored locally under public/ (e.g. during
-  // rollback), they win over the proxy to Supabase automatically.
+  // rollback), they win over the proxy automatically.
   async rewrites() {
     return {
       afterFiles: [
         {
           source: '/dark-phonics-books/:path*',
-          destination: 'https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/static-assets/dark-phonics-books/:path*',
+          destination: '/api/montree/media/proxy/dark-phonics-books/:path*?bucket=static-assets',
         },
         {
           source: '/dark-phonics-materials/:path*',
-          destination: 'https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/static-assets/dark-phonics-materials/:path*',
+          destination: '/api/montree/media/proxy/dark-phonics-materials/:path*?bucket=static-assets',
         },
         {
           source: '/satpin-books/:path*',
-          destination: 'https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/static-assets/satpin-books/:path*',
+          destination: '/api/montree/media/proxy/satpin-books/:path*?bucket=static-assets',
         },
         {
           source: '/satpin-materials/:path*',
-          destination: 'https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/static-assets/satpin-materials/:path*',
+          destination: '/api/montree/media/proxy/satpin-materials/:path*?bucket=static-assets',
         },
         {
           source: '/shelf-packs/:path*',
-          destination: 'https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/static-assets/shelf-packs/:path*',
+          destination: '/api/montree/media/proxy/shelf-packs/:path*?bucket=static-assets',
         },
         {
           source: '/montree-splash-video.mp4',
-          destination: 'https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/static-assets/videos/montree-splash-video.mp4',
+          destination: '/api/montree/media/proxy/videos/montree-splash-video.mp4?bucket=static-assets',
         },
         {
           source: '/montree-splash-video-zh.mp4',
-          destination: 'https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/static-assets/videos/montree-splash-video-zh.mp4',
+          destination: '/api/montree/media/proxy/videos/montree-splash-video-zh.mp4?bucket=static-assets',
         },
       ],
     };

@@ -25,6 +25,11 @@ const ALLOWED_BUCKETS = new Set([
   'photo-bank',
   'dark-phonics', // public — Dark Phonics films/pictures for the curriculum Studio
   'grace-courtesy', // public — Grace & Courtesy songs/pictures/storybooks
+  // public — books/materials/packs + splash videos formerly under public/, now
+  // routed through this proxy instead of a Next external rewrite (Cloudflare
+  // Error 1000 "DNS points to prohibited IP" on the supabase.co host when an
+  // external rewrite destination was hit directly). See next.config.ts.
+  'static-assets',
 ]);
 const DEFAULT_BUCKET = 'montree-media';
 
