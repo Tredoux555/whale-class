@@ -82,7 +82,7 @@ COPY package*.json ./
 # The --mount=type=cache persists npm's download/extract cache across builds
 # (keyed by this stage) without baking it into the image layer itself — a
 # lockfile change no longer means re-fetching every package from the registry.
-RUN --mount=type=cache,target=/root/.npm \
+RUN --mount=type=cache,id=npm-cache,target=/root/.npm \
     npm ci --include=optional
 # 🚨 PIN THE VERSION ON THIS LINE. It must match package.json exactly.
 # 2026-07-27 build failure: this line used to be a bare `npm install sharp`, i.e.
@@ -100,7 +100,7 @@ RUN --mount=type=cache,target=/root/.npm \
 # point is that unpinned + --force + no lockfile made the sharp<->libvips
 # pairing non-deterministic. Pinning both sides removes the variable: exactly
 # one sharp and its matching libvips. The verification line below is the guard.
-RUN --mount=type=cache,target=/root/.npm \
+RUN --mount=type=cache,id=npm-cache,target=/root/.npm \
     npm install --no-save --include=optional --os=linux --cpu=x64 sharp@0.34.5
 # Fail LOUDLY and EARLY if the native binding is broken. Without this the first
 # symptom is `next build` dying deep inside "Collecting page data" for an
@@ -147,7 +147,7 @@ ARG STRIPE_WEBHOOK_SECRET_GURU
 # Build Next.js app (creates .next/standalone with output: 'standalone').
 # The cache mount persists Turbopack's incremental build cache across builds
 # even when the `build` layer itself gets invalidated by a source change.
-RUN --mount=type=cache,target=/app/.next/cache \
+RUN --mount=type=cache,id=next-cache,target=/app/.next/cache \
     npm run build
 
 # CRITICAL: Copy static files to standalone folder for production
