@@ -95,8 +95,40 @@ async function hasSupabaseAdminRole(req: NextRequest): Promise<boolean> {
 
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
+
+  // ============================================
+  // STATIC-ASSET REWRITE PASSTHROUGH (Aug 2026)
+  // The five asset directories + two splash-video files below used to be real
+  // files under public/ and were moved out into Supabase Storage this week —
+  // next.config.ts now serves them via afterFiles rewrites to
+  // /api/montree/media/proxy/... (see the comment there). The broad matcher
+  // below already excludes common image extensions (svg/png/jpg/...), but it
+  // does NOT list pdf/mp4/etc., so non-image files under these prefixes (and
+  // both splash videos, which are .mp4) still reach this function and fall
+  // through every redirect/CSRF/CMS/auth branch below — turning a plain
+  // public-media request into a 502 the moment any of that logic mishandles
+  // an unmapped path. None of that logic applies to a public static asset, so
+  // return immediately and let next.config.ts's rewrite do its job. Kept as
+  // an exact literal match to the next.config.ts rewrite sources — extend
+  // both together if a new asset prefix is ever added.
+  // ============================================
+  const STATIC_ASSET_PREFIXES = [
+    '/dark-phonics-books/',
+    '/dark-phonics-materials/',
+    '/satpin-books/',
+    '/satpin-materials/',
+    '/shelf-packs/',
+  ];
+  if (
+    STATIC_ASSET_PREFIXES.some((p) => pathname.startsWith(p)) ||
+    pathname === '/montree-splash-video.mp4' ||
+    pathname === '/montree-splash-video-zh.mp4'
+  ) {
+    return NextResponse.next();
+  }
+
   const hostname = req.headers.get('host') || '';
-  
+
   // ============================================
   // DOMAIN ISOLATION — Separate teacherpotato.xyz and montree.xyz
   // teacherpotato.xyz = Whale Class (videos, games, admin, teacher, story,
@@ -688,7 +720,13 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     // All non-API routes (pages, etc.)
-    '/((?!api|_next/static|_next/image|favicon.ico|games|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html|avif|json|webmanifest)$).*)',
+    // 🚨 Aug 2026: added the five static-asset directories + two splash-video
+    // filenames (see next.config.ts afterFiles rewrites / STATIC_ASSET_PREFIXES
+    // above) — pdf/mp4 files under them don't match the extension exclusion
+    // below, so without this they still triggered a middleware invocation for
+    // every public media request. The in-function early-return above is the
+    // real safety net; this keeps them from invoking middleware at all.
+    '/((?!api|_next/static|_next/image|favicon.ico|games|dark-phonics-books|dark-phonics-materials|satpin-books|satpin-materials|shelf-packs|montree-splash-video\\.mp4|montree-splash-video-zh\\.mp4|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html|avif|json|webmanifest)$).*)',
     // Whale admin API routes — middleware enforces admin JWT auth
     '/api/whale/:path*',
     // 🚨 Session 113 V2 Whale-Class admin audit CRITICAL — also gate

@@ -298,36 +298,47 @@ const nextConfig: NextConfig = {
   // FIRST and only falls through to these rewrites on a miss. That means if
   // any of these files are ever restored locally under public/ (e.g. during
   // rollback), they win over the proxy automatically.
+  //
+  // 🚨 Destinations route through /api/montree/media/proxy/bucket/static-assets/...
+  // (a `[bucket]/[...path]` route), NOT .../proxy/:path*?bucket=static-assets.
+  // The query-string form 502'd every one of these paths in production: a
+  // rewritten request's `request.url`/`request.nextUrl` reflects the ORIGINAL
+  // client URL, so `?bucket=static-assets` tacked onto a rewrite destination
+  // never reached the route handler — confirmed for both this afterFiles form
+  // and a middleware NextResponse.rewrite(), with or without a `:path*`
+  // wildcard in the destination. Route PARAMS (path segments), unlike query
+  // strings, DO survive a rewrite, so the bucket now travels as a path segment
+  // instead. See app/api/montree/media/proxy/bucket/[bucket]/[...path]/route.ts.
   async rewrites() {
     return {
       afterFiles: [
         {
           source: '/dark-phonics-books/:path*',
-          destination: '/api/montree/media/proxy/dark-phonics-books/:path*?bucket=static-assets',
+          destination: '/api/montree/media/proxy/bucket/static-assets/dark-phonics-books/:path*',
         },
         {
           source: '/dark-phonics-materials/:path*',
-          destination: '/api/montree/media/proxy/dark-phonics-materials/:path*?bucket=static-assets',
+          destination: '/api/montree/media/proxy/bucket/static-assets/dark-phonics-materials/:path*',
         },
         {
           source: '/satpin-books/:path*',
-          destination: '/api/montree/media/proxy/satpin-books/:path*?bucket=static-assets',
+          destination: '/api/montree/media/proxy/bucket/static-assets/satpin-books/:path*',
         },
         {
           source: '/satpin-materials/:path*',
-          destination: '/api/montree/media/proxy/satpin-materials/:path*?bucket=static-assets',
+          destination: '/api/montree/media/proxy/bucket/static-assets/satpin-materials/:path*',
         },
         {
           source: '/shelf-packs/:path*',
-          destination: '/api/montree/media/proxy/shelf-packs/:path*?bucket=static-assets',
+          destination: '/api/montree/media/proxy/bucket/static-assets/shelf-packs/:path*',
         },
         {
           source: '/montree-splash-video.mp4',
-          destination: '/api/montree/media/proxy/videos/montree-splash-video.mp4?bucket=static-assets',
+          destination: '/api/montree/media/proxy/bucket/static-assets/videos/montree-splash-video.mp4',
         },
         {
           source: '/montree-splash-video-zh.mp4',
-          destination: '/api/montree/media/proxy/videos/montree-splash-video-zh.mp4?bucket=static-assets',
+          destination: '/api/montree/media/proxy/bucket/static-assets/videos/montree-splash-video-zh.mp4',
         },
       ],
     };

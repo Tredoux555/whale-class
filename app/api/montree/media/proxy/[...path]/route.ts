@@ -65,10 +65,23 @@ function attachmentDisposition(storagePath: string): string {
   return `attachment; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(last || ascii)}`;
 }
 
-async function handleRequest(
+// 🚨 `bucketOverride` exists ONLY for the sibling proxy/bucket/[bucket]/[...path]
+// route (static-asset rewrites in next.config.ts). Next.js Route Handlers do
+// NOT see a rewrite destination's literal query string on `request.url` /
+// `request.nextUrl` — confirmed for both next.config.ts `rewrites()` and a
+// middleware `NextResponse.rewrite()`, with or without a `:path*` wildcard in
+// the destination. A `?bucket=static-assets` baked into a rewrite destination
+// is silently dropped before this handler ever sees it, so it falls back to
+// DEFAULT_BUCKET and 502s. Route PARAMS (the dynamic-segment kind, like
+// `path` below) survive a rewrite correctly, so the sibling route passes the
+// bucket that way instead. Ordinary callers that pass `?bucket=` on a direct,
+// non-rewritten request (used throughout the rest of the app) are completely
+// unaffected — this parameter is additive and only ever set by that one route.
+export async function handleRequest(
   request: NextRequest,
   path: string[],
-  method: 'GET' | 'HEAD'
+  method: 'GET' | 'HEAD',
+  bucketOverride?: string
 ) {
   try {
     const storagePath = path.join('/');
@@ -83,7 +96,7 @@ async function handleRequest(
     }
 
     const { searchParams } = new URL(request.url);
-    const bucket = resolveBucket(searchParams.get('bucket'));
+    const bucket = resolveBucket(bucketOverride ?? searchParams.get('bucket'));
 
     // Optional image transforms: ?w=N (width in px), ?q=N (quality 20-100).
     // Uses Supabase's render endpoint when params present; falls back to raw
