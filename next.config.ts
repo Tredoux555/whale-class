@@ -266,7 +266,60 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  
+
+  // ────────────────────────────────────────────────────────────────────
+  // STATIC ASSET MIGRATION — public/ → Supabase Storage (Aug 2026)
+  // The five large asset directories below (books, materials, packs) and the
+  // two splash video files were moved out of git/public and into the
+  // `static-assets` bucket on the same Supabase project already configured
+  // in images.remotePatterns (dmfncjjtsoxrnvcdnvjq.supabase.co). They are no
+  // longer shipped in the Docker build context (see .dockerignore).
+  //
+  // These rewrites keep every existing in-app reference
+  // (`/dark-phonics-books/...`, `/satpin-materials/...`,
+  // `/montree-splash-video.mp4`, etc.) working unchanged — the request path
+  // is proxied straight through to the bucket's public object URL, so no
+  // component/page code had to change.
+  //
+  // `afterFiles` placement: Next.js checks the filesystem (public/, pages)
+  // FIRST and only falls through to these rewrites on a miss. That means if
+  // any of these files are ever restored locally under public/ (e.g. during
+  // rollback), they win over the proxy to Supabase automatically.
+  async rewrites() {
+    return {
+      afterFiles: [
+        {
+          source: '/dark-phonics-books/:path*',
+          destination: 'https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/static-assets/dark-phonics-books/:path*',
+        },
+        {
+          source: '/dark-phonics-materials/:path*',
+          destination: 'https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/static-assets/dark-phonics-materials/:path*',
+        },
+        {
+          source: '/satpin-books/:path*',
+          destination: 'https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/static-assets/satpin-books/:path*',
+        },
+        {
+          source: '/satpin-materials/:path*',
+          destination: 'https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/static-assets/satpin-materials/:path*',
+        },
+        {
+          source: '/shelf-packs/:path*',
+          destination: 'https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/static-assets/shelf-packs/:path*',
+        },
+        {
+          source: '/montree-splash-video.mp4',
+          destination: 'https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/static-assets/videos/montree-splash-video.mp4',
+        },
+        {
+          source: '/montree-splash-video-zh.mp4',
+          destination: 'https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/static-assets/videos/montree-splash-video-zh.mp4',
+        },
+      ],
+    };
+  },
+
   // Enable Turbopack
   turbopack: {},
 

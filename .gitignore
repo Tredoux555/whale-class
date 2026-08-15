@@ -193,3 +193,13 @@ tsconfig.partnerfix.tmp.tsbuildinfo
 # Generated printable materials (make-material.mjs)
 materials-out/
 _to_delete/
+
+# Static assets migrated to Supabase storage bucket `static-assets` (Aug 2026)
+# — served via next.config.ts rewrites; see MIGRATION_NOTES_static-assets.md
+/public/dark-phonics-books/
+/public/dark-phonics-materials/
+/public/satpin-books/
+/public/satpin-materials/
+/public/shelf-packs/
+/public/montree-splash-video.mp4
+/public/montree-splash-video-zh.mp4

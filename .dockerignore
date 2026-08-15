@@ -15,6 +15,15 @@
 # 🚨 THINGS THAT MUST NEVER BE EXCLUDED (verified by grepping the source):
 #   public/          — 3.8 GB, but the Dockerfile copies it into
 #                      .next/standalone; the app 404s everything without it.
+#                      EXCEPTION (Aug 2026): the seven paths in the
+#                      "MIGRATED TO SUPABASE STORAGE" block below. Those were
+#                      audited (zero fs.*/generateStaticParams reads — every
+#                      reference is a browser-side href/src/fetch), moved to
+#                      the `static-assets` bucket, and are now served via
+#                      next.config.ts `rewrites()` (afterFiles). They are the
+#                      ONLY public/ subpaths safe to drop from the build
+#                      context — do not add siblings here without the same
+#                      audit.
 #   data/            — lib/data.ts and lib/montree/guru/knowledge-retriever.ts
 #                      read process.cwd()/data/{videos.json,guru_knowledge/…}.
 #   scripts/         — app/api/whale/reports/pdf spawns
@@ -48,6 +57,25 @@ build
 !lib/**/*.md
 !app/**/*.md
 !components/**/*.md
+
+# ── MIGRATED TO SUPABASE STORAGE (Aug 2026) ───────────────────────────────────
+# These five directories + two video files were the git/public
+# static-asset store for the Dark Phonics / SATPIN library and the landing
+# splash film. They now live in the Supabase `static-assets` bucket
+# (same subpaths) and are proxied back to their original public/ URLs by
+# next.config.ts `rewrites()`, so no page/component code changed. They stay
+# on disk on the dev machine (not deleted, not git-removed here) but are
+# safe to drop from the Docker build context because nothing reads them off
+# the filesystem — confirmed by grepping the whole app for fs.*/readFile/
+# path.join(process.cwd()/generateStaticParams hits against these names
+# (pre-migration audit, see MIGRATION_NOTES_static-assets.md).
+/public/dark-phonics-books
+/public/dark-phonics-materials
+/public/satpin-books
+/public/satpin-materials
+/public/shelf-packs
+/public/montree-splash-video.mp4
+/public/montree-splash-video-zh.mp4
 
 # ── Large asset corpora (zero references in app/ lib/ components/) ───────────
 /materials-out
