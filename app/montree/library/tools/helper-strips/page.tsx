@@ -59,9 +59,9 @@ type SizeConfig = {
   photo: number; // mm — photo circle diameter
   nameFontPt: number;
   gap: number; // mm — vertical space between strips when stacked
-  outerPad: number; // mm — inset between the dashed cut line and the card
-  outerRadius: number;
-  innerRadius: number;
+  outerRadius: number; // mm — corner rounding of the dashed cut line
+  cardRadius: number; // mm — corner rounding of the colored frame + its white inset (same value on both, matching the three-part card generator's technique)
+  cardBorder: number; // mm — thickness of the solid-color frame. This IS the "border": a filled color panel with padding, not a stroke — same technique components/card-generator/print-utils.ts uses for three-part cards, so the color reaches every edge of the card and touches the dashed cut line directly (no floating gap).
   innerGap: number; // mm — gap between photo and name inside the card
   innerPadX: number; // mm — left/right padding inside the card
   scissorsOffset: number;
@@ -75,9 +75,9 @@ const SIZE_CONFIG: Record<StripSize, SizeConfig> = {
     photo: 26,
     nameFontPt: 26,
     gap: 5,
-    outerPad: 1.3,
     outerRadius: 2.4,
-    innerRadius: 3,
+    cardRadius: 3,
+    cardBorder: 2.2,
     innerGap: 4,
     innerPadX: 4,
     scissorsOffset: 2,
@@ -89,9 +89,9 @@ const SIZE_CONFIG: Record<StripSize, SizeConfig> = {
     photo: 16,
     nameFontPt: 15,
     gap: 4,
-    outerPad: 1,
     outerRadius: 1.8,
-    innerRadius: 2.2,
+    cardRadius: 2.2,
+    cardBorder: 1.6,
     innerGap: 2.5,
     innerPadX: 3,
     scissorsOffset: 1.6,
@@ -397,7 +397,6 @@ function NameStrip({
         boxSizing: 'border-box',
         border: `0.35mm dashed ${CUT_GUIDE_COLOR}`,
         borderRadius: `${cfg.outerRadius}mm`,
-        padding: `${cfg.outerPad}mm`,
         marginBottom: `${cfg.gap}mm`,
         breakInside: 'avoid',
       }}
@@ -418,44 +417,62 @@ function NameStrip({
         ✂️
       </span>
 
-      {/* Card — the visible content the strip carries once cut out */}
+      {/* Colored frame — the "border," built the same way the three-part
+         card generator builds its border: the color IS the background of
+         this box, and the box is padded (not stroked) so it reads as a
+         thick solid band. No outer padding sits between this and the
+         dashed cut line above, so the color fills the strip edge-to-edge
+         and touches the cut line directly instead of floating inside it. */}
       <div
-        className={quicksand.className}
         style={{
           width: '100%',
           height: '100%',
           boxSizing: 'border-box',
-          display: 'flex',
-          alignItems: 'center',
-          gap: `${cfg.innerGap}mm`,
-          padding: `0 ${cfg.innerPadX}mm`,
-          border: `0.45mm solid ${borderColor}`,
-          borderRadius: `${cfg.innerRadius}mm`,
-          background: '#fff',
+          background: borderColor,
+          borderRadius: `${cfg.cardRadius}mm`,
+          padding: `${cfg.cardBorder}mm`,
         }}
       >
-        <PhotoOrInitials
-          photoUrl={student.photo_url}
-          name={firstName}
-          size={`${cfg.photo}mm`}
-          borderColor={borderColor}
-          bgColor={`${borderColor}26`}
-          textColor={nameColor}
-          fontSize={`${cfg.photo * 0.42}mm`}
-        />
-        <span
+        {/* White inset — the actual card content, sitting inside the
+           colored frame exactly like print-utils.ts's .image-area /
+           .label-area sit inside .card. */}
+        <div
+          className={quicksand.className}
           style={{
-            fontWeight: 700,
-            fontSize: `${cfg.nameFontPt}pt`,
-            color: nameColor,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            lineHeight: 1,
+            width: '100%',
+            height: '100%',
+            boxSizing: 'border-box',
+            display: 'flex',
+            alignItems: 'center',
+            gap: `${cfg.innerGap}mm`,
+            padding: `0 ${cfg.innerPadX}mm`,
+            background: '#fff',
+            borderRadius: `${cfg.cardRadius}mm`,
           }}
         >
-          {firstName}
-        </span>
+          <PhotoOrInitials
+            photoUrl={student.photo_url}
+            name={firstName}
+            size={`${cfg.photo}mm`}
+            borderColor={borderColor}
+            bgColor={`${borderColor}26`}
+            textColor={nameColor}
+            fontSize={`${cfg.photo * 0.42}mm`}
+          />
+          <span
+            style={{
+              fontWeight: 700,
+              fontSize: `${cfg.nameFontPt}pt`,
+              color: nameColor,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              lineHeight: 1,
+            }}
+          >
+            {firstName}
+          </span>
+        </div>
       </div>
     </div>
   );
