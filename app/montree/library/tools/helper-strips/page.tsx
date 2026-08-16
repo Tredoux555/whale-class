@@ -431,7 +431,7 @@ function NameStrip({
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            lineHeight: 1,
+            lineHeight: 1.25, // extra room so descenders (y/g/j/p/q) don't get clipped by overflow:hidden
           }}
         >
           {firstName}
