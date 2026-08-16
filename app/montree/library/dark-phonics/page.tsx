@@ -67,7 +67,7 @@ const media = (path: string, v?: number) =>
  * rebuild project touches every book eventually); a stale value here is
  * exactly the "book still shows the old art" bug filed 2026-08-02.
  */
-const STORYBOOK_PRINT_VERSION = 5; // bumped 2026-08-09: grey print elements -> solid black
+const STORYBOOK_PRINT_VERSION = 6; // bumped 2026-08-16: snake-in-my-sock rebuilt (soap+seal cast, potato twist)
 const printPdf = (path: string) => `${path}?v=${STORYBOOK_PRINT_VERSION}`;
 
 /** Trimmed-down photo-bank row — only the fields this page renders/forwards. */
@@ -205,7 +205,9 @@ const PALETTE: Array<[string, string]> = [
 /** The 49 lessons, in teaching order. `n` is the curriculum's own number (5–53)
  *  and drives every media key; the page shows displayN(n) = n − 4, i.e. 1–49. */
 const RAW: RawLesson[] = [
-  { n: 5, sound: 's', title: 'The Snake Says Ssss', catchphrase: '“snake in my sock!”', words: ['snake', 'sock'] },
+  { n: 5, sound: 's', title: 'The Snake Says Ssss', catchphrase: '“snake in my sock!”', words: ['snake', 'sock'], books: [
+    { slug: 'snake-in-my-sock', title: 'Snake in My Sock', description: 'Initial-sound pattern book — the child shouts the picture word. The potato sits this one out, chilling in his deck chair.', cover: '/dark-phonics-books/covers/snake-in-my-sock.png', materials: true },
+  ] },
   { n: 6, sound: 'a', title: 'A Is for Apple', catchphrase: '“ant on my apple!”', words: ['ant', 'apple'] },
   { n: 7, sound: 't', title: 'Tick-Tock, T!', catchphrase: '“tick-tock, stinky sock!”', decodable: ['sat', 'at'], heartWords: ['a'], words: ['clock', 'sock'], books: [
     { slug: 'the-sat', title: 'The ___ Sat!', description: 'Hybrid decodable — teacher reads the set-up, the child shouts “Sat!” on every page.', cover: '/dark-phonics-books/covers/the-sat.png', materials: true, works: true },

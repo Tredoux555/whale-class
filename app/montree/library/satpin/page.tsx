@@ -142,6 +142,9 @@ const WEEKS: WeekBlock[] = [
     week: 1, letter: 'S', slug: 's',
     words: ['sock', 'snake', 'star', 'soap', 'seal'],
     accent: '52,211,153', tint: '167,243,208',
+    // Snake in My Sock lives in Dark Phonics now (lesson 5 there), not here —
+    // moved 2026-08-16 per Tredoux. Do not re-add a `book:` entry to this
+    // week without checking with him first.
   },
   {
     week: 2, letter: 'A', slug: 'a',

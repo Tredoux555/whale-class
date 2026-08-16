@@ -4,19 +4,21 @@ book's spreads[] for build_tracing.py's bookScript loader. Do not hand-edit;
 regenerate from scripts/curriculum/dark-phonics-storybooks/manifest.json
 instead.
 
-NOTE (2026-08-01 curated rebuild): gen_dp_paperwork.py no longer exists in
-the repo; this shim was hand-edited to match its established output exactly
-when soap+seal were dropped for sloth (p1-sock is the new establishing page
-and is intentionally excluded here, same as the frame noun was always
-excluded before; p5-recap is excluded too, matching every other book's shim)."""
+NOTE (2026-08-16 rebuild): gen_dp_paperwork.py no longer exists in the repo;
+this shim was hand-edited again, reverting the 2026-08-01 sloth
+simplification back to the original snake/star/soap/seal cast (p1-sock is
+the establishing page and is intentionally excluded here, same as the frame
+noun was always excluded before; p6-recap and the new p7-potato-twist bonus
+page are excluded too, matching every other book's shim)."""
 from dpbuild import build
 
 BOOK = dict(
     slug='snake-in-my-sock',
     spreads=[
-        dict(text='A snake in my sock!', art='p2-snake.png'),
-        dict(text='A star in my sock!', art='p3-star.png'),
-        dict(text='A sloth in my sock!', art='p4-sloth.png'),
+        dict(text='Snake in my sock!', art='p2-snake.png'),
+        dict(text='Star in my sock!', art='p3-star.png'),
+        dict(text='Soap in my sock!', art='p4-soap.png'),
+        dict(text='Seal in my sock!', art='p5-seal.png'),
     ],
 )
 

@@ -13,28 +13,33 @@
         },
         {
           "key": "p2-snake",
-          "text": "A snake in my sock!",
+          "text": "Snake in my sock!",
           "mj_prompt": "a friendly green snake with a slim curving neck and big round googly eyes and a wide happy smile, peeking out of a tall knitted sock with bold red and white horizontal stripes and a fluffy white cuff, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         },
         {
           "key": "p3-star",
-          "text": "A star in my sock!",
+          "text": "Star in my sock!",
           "mj_prompt": "a smiling golden five-pointed star with big round googly eyes, peeking out of a tall knitted sock with bold red and white horizontal stripes and a fluffy white cuff, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         },
         {
-          "key": "p4-sloth",
-          "text": "A sloth in my sock!",
-          "mj_prompt": "a sleepy brown sloth with shaggy fur and big round googly eyes, peeking out of a tall knitted sock with bold red and white horizontal stripes and a fluffy white cuff, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+          "key": "p4-soap",
+          "text": "Soap in my sock!",
+          "mj_prompt": "a smiling white bar of soap with soft rounded corners, a few glistening bubble suds clinging to its edges, and big round googly eyes, peeking out of a tall knitted sock with bold red and white horizontal stripes and a fluffy white cuff, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         },
         {
-          "key": "p5-potato",
-          "text": "A potato in my sock!",
-          "mj_prompt": "a round brown potato with two small eye-sprouts and big round googly eyes, peeking out of a tall knitted sock with bold red and white horizontal stripes and a fluffy white cuff, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+          "key": "p5-seal",
+          "text": "Seal in my sock!",
+          "mj_prompt": "a plump grey harbor seal with smooth round flippers, a shiny wet nose, and big round googly eyes, peeking out of a tall knitted sock with bold red and white horizontal stripes and a fluffy white cuff, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         },
         {
           "key": "p6-recap",
-          "text": "A snake, a star, a sloth, and a potato in my sock?!",
-          "mj_prompt": "a friendly green snake, a smiling golden five-pointed star, a sleepy brown sloth with shaggy fur, and a round brown potato with two small eye-sprouts, all peeking out together of a tall knitted sock with bold red and white horizontal stripes and a fluffy white cuff, all with big round googly eyes, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+          "text": "Snake, star, soap, and seal in my sock?!",
+          "mj_prompt": "a friendly green snake, a smiling golden five-pointed star, a smiling white bar of soap with glistening bubble suds, and a plump grey harbor seal with a shiny wet nose, all peeking out together of a tall knitted sock with bold red and white horizontal stripes and a fluffy white cuff, all with big round googly eyes, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        },
+        {
+          "key": "p7-potato-twist",
+          "text": "The potato in my sock?",
+          "mj_prompt": "a round brown potato with two small eye-sprouts and big round googly eyes, wearing tiny round sunglasses, leaning back happily in a small striped wooden deck chair, a tall glass of ice-cold lemonade with ice cubes and a bendy straw resting on a little side table beside him, a single empty knitted sock with bold red and white horizontal stripes sitting off in the corner, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         }
       ]
     },
