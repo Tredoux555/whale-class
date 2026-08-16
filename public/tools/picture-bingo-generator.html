@@ -8,7 +8,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-  @page { size: A4 portrait; margin: 6mm; }
+  /* 🔒 DUPLEX REGISTRATION FIX — @page's margin MUST be 0, and .page's own
+     height MUST be the real A4 height (297mm, not an under-height
+     min-height), or front/back pages silently print at different
+     effective sizes and the duplex flip lands off by a couple of mm. */
+  @page { size: A4 portrait; margin: 0; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -52,6 +56,64 @@
   }
 
   .mode-tab:hover { background: rgba(255,255,255,0.14); color: white; }
+
+  /* 🎯 Duplex calibration — shared across all 3 modes, a property of the
+     physical printer rather than any one print job, so it lives outside
+     the per-mode panels. Sits inside .toolbar so it's already hidden at
+     print time by the existing ".toolbar { display: none !important }"
+     rule below — no extra print CSS needed. */
+  .duplex-calibration {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 10px;
+    padding: 9px 16px;
+    margin-bottom: 16px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.9);
+  }
+  .duplex-calibration-label {
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: white;
+    white-space: nowrap;
+  }
+  .duplex-calibration label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .duplex-calibration input[type="number"] {
+    width: 52px;
+    padding: 4px 6px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.25);
+    font-size: 12px;
+    background: rgba(255,255,255,0.95);
+    color: #1f2937;
+  }
+  .duplex-calibration .unit { opacity: 0.7; }
+  .duplex-reset-btn {
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.1);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .duplex-reset-btn:hover { background: rgba(255,255,255,0.2); }
+  .duplex-calibration-hint {
+    flex-basis: 100%;
+    opacity: 0.7;
+    line-height: 1.4;
+  }
 
   .mode-content { display: none; }
   .mode-content.active { display: block; }
@@ -282,7 +344,7 @@
   /* Page shared */
   .page {
     width: 210mm;
-    min-height: 280mm;
+    height: 297mm;
     margin: 18px auto;
     background: white;
     padding: 8mm;
@@ -561,6 +623,24 @@
     <button class="mode-tab" onclick="switchMode('bank')">📸 Picture Bank</button>
   </div>
 
+  <!-- 🎯 Duplex calibration — one shared control for all 3 modes, since
+       it's a per-printer setting, not a per-word-set one. -->
+  <div class="duplex-calibration" id="duplexCalibration">
+    <span class="duplex-calibration-label">🎯 Duplex Calibration</span>
+    <label>
+      <span>X</span>
+      <input type="number" id="duplexOffsetX" value="0" min="-3" max="3" step="0.5" oninput="updateDuplexOffsetX(this.value)">
+      <span class="unit">mm</span>
+    </label>
+    <label>
+      <span>Y</span>
+      <input type="number" id="duplexOffsetY" value="0" min="-3" max="3" step="0.5" oninput="updateDuplexOffsetY(this.value)">
+      <span class="unit">mm</span>
+    </label>
+    <button type="button" class="duplex-reset-btn" onclick="resetDuplexCalibration()">Reset</button>
+    <span class="duplex-calibration-hint">Print duplex with <strong>flip on the LONG edge</strong> (your printer's automatic default). If the words on the back land a mm or two off from the pictures on the front, nudge X/Y here once — it's saved on this device for next time. +X moves the word right, +Y moves it down (held picture-side up).</span>
+  </div>
+
   <!-- PRESET MODE -->
   <div id="mode-preset" class="mode-content active">
     <div class="controls">
@@ -788,6 +868,67 @@
 
 <script>
 const IMAGE_BASE = '/images/pink-series';
+
+// ===== 🎯 DUPLEX CALIBRATION =====
+// A small manual X/Y correction (mm) applied to the BACK page of duplex
+// calling cards only, to absorb whatever mechanical registration offset a
+// specific printer still has after the CSS-level fix above (@page margin 0
+// + .page height:297mm). This is a property of the PRINTER, not of any one
+// print job, so — unlike every other option on this page — it persists
+// across sessions in localStorage.
+const DUPLEX_CALIBRATION_STORAGE_KEY = 'montree-picture-bingo-duplex-calibration';
+let duplexOffsetX = 0;
+let duplexOffsetY = 0;
+
+function clampDuplexOffset(mm) {
+  const clamped = Math.min(3, Math.max(-3, mm));
+  return Math.round(clamped * 2) / 2; // snap to the 0.5mm step the UI uses
+}
+
+function loadDuplexCalibration() {
+  try {
+    const raw = localStorage.getItem(DUPLEX_CALIBRATION_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (typeof parsed.x === 'number') duplexOffsetX = clampDuplexOffset(parsed.x);
+      if (typeof parsed.y === 'number') duplexOffsetY = clampDuplexOffset(parsed.y);
+    }
+  } catch (err) {
+    // Corrupt or unavailable storage — safe to ignore, defaults to 0mm.
+  }
+  const xInput = document.getElementById('duplexOffsetX');
+  const yInput = document.getElementById('duplexOffsetY');
+  if (xInput) xInput.value = duplexOffsetX;
+  if (yInput) yInput.value = duplexOffsetY;
+}
+
+function saveDuplexCalibration() {
+  try {
+    localStorage.setItem(DUPLEX_CALIBRATION_STORAGE_KEY, JSON.stringify({ x: duplexOffsetX, y: duplexOffsetY }));
+  } catch (err) {
+    // Ignore write failures (private browsing / storage quota, etc).
+  }
+}
+
+function updateDuplexOffsetX(value) {
+  duplexOffsetX = clampDuplexOffset(parseFloat(value) || 0);
+  saveDuplexCalibration();
+}
+
+function updateDuplexOffsetY(value) {
+  duplexOffsetY = clampDuplexOffset(parseFloat(value) || 0);
+  saveDuplexCalibration();
+}
+
+function resetDuplexCalibration() {
+  duplexOffsetX = 0;
+  duplexOffsetY = 0;
+  saveDuplexCalibration();
+  const xInput = document.getElementById('duplexOffsetX');
+  const yInput = document.getElementById('duplexOffsetY');
+  if (xInput) xInput.value = 0;
+  if (yInput) yInput.value = 0;
+}
 
 // ===== MODE SWITCHING =====
 function switchMode(mode) {
@@ -1047,8 +1188,10 @@ function generateCallingCardsCore(wordPool, title, borderColor, borderW, radius,
 
   document.getElementById('info').innerHTML =
     `<strong>Generated calling cards</strong> for ${wordPool.length} items. ` +
-    `<strong>Print duplex with FLIP ON SHORT EDGE</strong> (the printer default — pictures on front, words on back). ` +
-    `<em>Do not use long-edge flip — words will end up on the wrong pictures.</em> Cut along the indent guides.`;
+    `<strong>Print duplex with FLIP ON LONG EDGE</strong> (the printer default — pictures on front, words on back). ` +
+    `<em>Do not use short-edge flip — words will end up on the wrong pictures.</em> ` +
+    `If the words print a little off from the pictures on your printer, use the <strong>Duplex Calibration</strong> ` +
+    `control above the tabs to nudge it right once — it's remembered for next time. Cut along the indent guides.`;
 
   const label = document.createElement('div');
   label.className = 'section-label calling-label';
@@ -1106,8 +1249,10 @@ function generateCallingCardsCore(wordPool, title, borderColor, borderW, radius,
     // BACK PAGE — words only.
     //
     // Duplex alignment: this code mirrors COLUMNS within each row, which is
-    // correct for SHORT-EDGE flip on a portrait page (the default on most
-    // printers). DO NOT use long-edge flip — words will end up on the wrong
+    // correct for LONG-EDGE flip on a portrait page (the printer's automatic
+    // default — a book-style flip about the left/right edge, so the back's
+    // columns land reversed while rows stay in the same top-to-bottom
+    // order). DO NOT use short-edge flip — words will end up on the wrong
     // pictures.
     //
     // The header below uses identical structure + word count to the front
@@ -1121,6 +1266,22 @@ function generateCallingCardsCore(wordPool, title, borderColor, borderW, radius,
         <p>Word Side · Page ${p + 1} of ${pages}</p>
       </div>
     `;
+
+    // 🎯 Duplex calibration nudge — defined in the TEACHER's frame: +X moves
+    // the printed word RIGHT and +Y moves it DOWN, as seen holding the
+    // picture (front) side up (see the hint under the Duplex Calibration
+    // control). duplexOffsetX/Y themselves always keep that meaning — they
+    // are never negated in what's persisted to localStorage. Physically,
+    // this is applied to the BACK page's own (pre-flip) draw coordinates,
+    // and under LONG-EDGE duplex the physical flip mirrors the horizontal
+    // axis but NOT the vertical one — so translating the back's own X by
+    // +1mm actually lands the word 1mm further LEFT once the sheet is
+    // flipped and compared to the front (the mirror inverts it), while Y
+    // carries straight through unmirrored. The fix is to negate ONLY X,
+    // right here at the point of use — never in the stored state.
+    if (duplexOffsetX !== 0 || duplexOffsetY !== 0) {
+      backPage.style.transform = `translate(${-duplexOffsetX}mm, ${duplexOffsetY}mm)`;
+    }
 
     const backGrid = document.createElement('div');
     backGrid.className = 'calling-cards-grid' + (cols === 3 ? ' cols-3' : '');
@@ -1525,6 +1686,7 @@ function generateCircleTimeCardsCore(wordPool, title, borderColor, borderW, radi
 
 // Auto-generate preset on load
 window.addEventListener('DOMContentLoaded', function() {
+  loadDuplexCalibration();
   generate();
   importFromPhotoBankExport();
   // Tell a hosting hub we're ready to receive its selection. Harmless no-op
