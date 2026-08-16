@@ -48,6 +48,14 @@ const COPY: Record<string, string> = {
 const DEFAULT_NAME_COLOR = '#1e3a5f';
 const DEFAULT_BORDER_COLOR = '#7ab8d9';
 
+/** Emblem shown opposite the photo (see NameStrip). A school's own Brand Kit
+ *  logo (`activeKit.logoUrl`, same field `dashboard/labels/page.tsx` and
+ *  `class-documents` already render) takes priority; this static asset —
+ *  already shipped in the repo and used the same way as the fallback on
+ *  `dashboard/labels/page.tsx` — is the default for schools with no logo
+ *  uploaded yet, so the emblem slot is never empty. */
+const WHALE_EMBLEM_FALLBACK = '/tools/labels/whale-class-emblem.png';
+
 /** The strip's border weight and corner rounding — fixed constants, not
  *  scaled per size variant. This is the exact recipe the Movable Alphabet
  *  Label Maker uses (app/montree/library/tools/label-maker/page.tsx:
@@ -156,6 +164,7 @@ export default function HelperNameStripsPage() {
   const activeKit = isBrandKitActive(brandKit) ? brandKit : null;
   const nameColor = activeKit ? activeKit.tokens.accent : DEFAULT_NAME_COLOR;
   const borderColor = activeKit ? activeKit.tokens.border : DEFAULT_BORDER_COLOR;
+  const emblemUrl = activeKit?.logoUrl || WHALE_EMBLEM_FALLBACK;
 
   if (loading) {
     return (
@@ -281,6 +290,7 @@ export default function HelperNameStripsPage() {
                     size={size}
                     nameColor={nameColor}
                     borderColor={borderColor}
+                    emblemUrl={emblemUrl}
                   />
                 </div>
               </div>
@@ -300,6 +310,7 @@ export default function HelperNameStripsPage() {
           size={size}
           nameColor={nameColor}
           borderColor={borderColor}
+          emblemUrl={emblemUrl}
         />
       </div>
 
@@ -333,11 +344,13 @@ function StripsColumn({
   size,
   nameColor,
   borderColor,
+  emblemUrl,
 }: {
   students: Student[];
   size: StripSize;
   nameColor: string;
   borderColor: string;
+  emblemUrl: string;
 }) {
   const cfg = SIZE_CONFIG[size];
 
@@ -359,6 +372,7 @@ function StripsColumn({
           size={size}
           nameColor={nameColor}
           borderColor={borderColor}
+          emblemUrl={emblemUrl}
         />
       ))}
     </div>
@@ -370,16 +384,24 @@ function StripsColumn({
 // Label Maker's printed labels: background = border color, padding =
 // border thickness, white inset holds the content. Strips stack with zero
 // gap (see StripsColumn), so consecutive frames touch directly.
+//
+// Content is a 3-column grid — photo | name | emblem — with the two outer
+// columns the SAME width (cfg.photo), so the name sits dead-center in the
+// strip whether or not an emblem renders. This replaces the old left-anchored
+// flex row, whose dead space on the right (worst on short names) was the
+// "off" look Tredoux flagged.
 function NameStrip({
   student,
   size,
   nameColor,
   borderColor,
+  emblemUrl,
 }: {
   student: Student;
   size: StripSize;
   nameColor: string;
   borderColor: string;
+  emblemUrl: string;
 }) {
   const cfg = SIZE_CONFIG[size];
   const firstName = student.name.trim().split(/\s+/)[0] || student.name;
@@ -406,7 +428,8 @@ function NameStrip({
           width: '100%',
           height: '100%',
           boxSizing: 'border-box',
-          display: 'flex',
+          display: 'grid',
+          gridTemplateColumns: `${cfg.photo}mm 1fr ${cfg.photo}mm`,
           alignItems: 'center',
           gap: `${cfg.innerGap}mm`,
           padding: `0 ${cfg.innerPadX}mm`,
@@ -428,15 +451,40 @@ function NameStrip({
             fontWeight: 700,
             fontSize: `${cfg.nameFontPt}pt`,
             color: nameColor,
+            textAlign: 'center',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             lineHeight: 1.25, // extra room so descenders (y/g/j/p/q) don't get clipped by overflow:hidden
+            minWidth: 0, // grid items default to min-width:auto — without this, ellipsis never kicks in
           }}
         >
           {firstName}
         </span>
+        <Emblem src={emblemUrl} size={`${cfg.photo}mm`} />
       </div>
+    </div>
+  );
+}
+
+// Class emblem — sits in the column mirroring the photo, same reserved
+// width whether or not it actually has an image (see NameStrip). Prefers
+// the school's own Brand Kit logo; falls back to the shipped whale emblem
+// (see WHALE_EMBLEM_FALLBACK) so the slot is never empty. If even that
+// 404s, it quietly disappears rather than showing a broken-image icon —
+// same graceful-degrade contract as PhotoOrInitials below.
+function Emblem({ src, size }: { src: string; size: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return null;
+
+  return (
+    <div style={{ width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <img
+        src={src}
+        alt=""
+        onError={() => setFailed(true)}
+        style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+      />
     </div>
   );
 }
