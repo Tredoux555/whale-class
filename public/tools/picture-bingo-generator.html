@@ -477,6 +477,17 @@
     font-size: 36px;
   }
 
+  /* 2×2 Large (duplex) — the card is 2x the linear size of Small (4×4), so
+     4x the area, matching the "Large = 4x the size" system. Word font-size
+     scales with it (28px base * 2 = 56px) so it stays legible at that size. */
+  .calling-cards-grid.cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .calling-cards-grid.cols-2 .card-word {
+    font-size: 56px;
+  }
+
   .calling-card {
     display: flex;
     flex-direction: column;
@@ -696,7 +707,8 @@
         <select id="callingCardSize">
           <option value="4x4">4×4 Small (duplex)</option>
           <option value="3x3">3×3 Medium (duplex)</option>
-          <option value="2x2">2×2 Large (circle time)</option>
+          <option value="2x2-duplex">2×2 Large (duplex)</option>
+          <option value="2x2">2×2 Large (circle time, single-sided)</option>
         </select>
       </div>
       <div class="btn-group">
@@ -709,7 +721,7 @@
     <div class="how-to">
       <strong>How to play:</strong>
       1) Print the <strong>Bingo Boards</strong> — each board has pictures with words (single-sided, one page per board).<br>
-      2) Print the <strong>Calling Cards</strong> — 4×4 Small prints duplex (picture front, word back). 2×2 Large prints single-sided (picture + word) for circle time.<br>
+      2) Print the <strong>Calling Cards</strong> — Small, Medium and Large (duplex) print picture on front, word on back, flip on the long edge. Large (circle time) prints single-sided (picture + word together) for holding up in class.<br>
       3) The caller draws a card, shows the picture. Players find and cover the matching picture on their board.
     </div>
   </div>
@@ -758,7 +770,8 @@
         <select id="customCallingCardSize">
           <option value="4x4">4×4 Small (duplex)</option>
           <option value="3x3">3×3 Medium (duplex)</option>
-          <option value="2x2">2×2 Large (circle time)</option>
+          <option value="2x2-duplex">2×2 Large (duplex)</option>
+          <option value="2x2">2×2 Large (circle time, single-sided)</option>
         </select>
       </div>
     </div>
@@ -834,7 +847,8 @@
         <select id="bankCallingCardSize">
           <option value="4x4">4×4 Small (duplex)</option>
           <option value="3x3">3×3 Medium (duplex)</option>
-          <option value="2x2">2×2 Large (circle time)</option>
+          <option value="2x2-duplex">2×2 Large (duplex)</option>
+          <option value="2x2">2×2 Large (circle time, single-sided)</option>
         </select>
       </div>
     </div>
@@ -1202,6 +1216,11 @@ function generateCallingCardsCore(wordPool, title, borderColor, borderW, radius,
   const cardsPerPage = cols * cols;
   const pages = Math.ceil(wordPool.length / cardsPerPage);
 
+  // Small (4×4) / Medium (3×3) / Large (2×2, duplex) — shown on both the
+  // front and back page headers so pages stay identifiable when a teacher
+  // prints more than one size.
+  const sizeLabel = cols === 2 ? 'Large' : cols === 3 ? 'Medium' : 'Small';
+
   // Per-card styles (like 3-Part Card Generator) — double borderW to match board padding
   const callCardBorderW = borderW * 2;
   const cardStyle = `background:${borderColor}; padding:${callCardBorderW}mm; border-radius:${radius}px;`;
@@ -1224,12 +1243,12 @@ function generateCallingCardsCore(wordPool, title, borderColor, borderW, radius,
     frontPage.innerHTML = `
       <div class="calling-header">
         <h2>✂️ Calling Cards — ${title}</h2>
-        <p>Picture Side · Page ${p + 1} of ${pages}</p>
+        <p>Picture Side · Page ${p + 1} of ${pages} · ${sizeLabel}</p>
       </div>
     `;
 
     const frontGrid = document.createElement('div');
-    frontGrid.className = 'calling-cards-grid' + (cols === 3 ? ' cols-3' : '');
+    frontGrid.className = 'calling-cards-grid' + (cols === 3 ? ' cols-3' : cols === 2 ? ' cols-2' : '');
 
     for (const item of pageItems) {
       const card = document.createElement('div');
@@ -1263,7 +1282,7 @@ function generateCallingCardsCore(wordPool, title, borderColor, borderW, radius,
     backPage.innerHTML = `
       <div class="calling-header">
         <h2>✂️ Calling Cards — ${title}</h2>
-        <p>Word Side · Page ${p + 1} of ${pages}</p>
+        <p>Word Side · Page ${p + 1} of ${pages} · ${sizeLabel}</p>
       </div>
     `;
 
@@ -1284,7 +1303,7 @@ function generateCallingCardsCore(wordPool, title, borderColor, borderW, radius,
     }
 
     const backGrid = document.createElement('div');
-    backGrid.className = 'calling-cards-grid' + (cols === 3 ? ' cols-3' : '');
+    backGrid.className = 'calling-cards-grid' + (cols === 3 ? ' cols-3' : cols === 2 ? ' cols-2' : '');
 
     // Mirror each row horizontally for proper duplex alignment
     const rows = Math.ceil(pageItems.length / cols);
@@ -1334,7 +1353,10 @@ function generateCallingCards() {
   if (cardSize === '2x2') {
     generateCircleTimeCardsCore(getWordPool(), getTitle(), borderColor, borderW, radius, imgFn);
   } else {
-    const gridCols = cardSize === '3x3' ? 3 : 4;
+    // '2x2-duplex' is the true duplex Large card (2 cols → card is 2x the
+    // linear size of Small, i.e. 4x the area) — NOT the same as '2x2',
+    // which is the single-sided Circle Time layout handled above.
+    const gridCols = cardSize === '3x3' ? 3 : cardSize === '2x2-duplex' ? 2 : 4;
     generateCallingCardsCore(getWordPool(), getTitle(), borderColor, borderW, radius, imgFn, gridCols);
   }
 }
@@ -1366,7 +1388,10 @@ function generateCustomCallingCards() {
   if (cardSize === '2x2') {
     generateCircleTimeCardsCore(customItems, 'Custom', borderColor, borderW, radius, imgFn);
   } else {
-    const gridCols = cardSize === '3x3' ? 3 : 4;
+    // '2x2-duplex' is the true duplex Large card (2 cols → card is 2x the
+    // linear size of Small, i.e. 4x the area) — NOT the same as '2x2',
+    // which is the single-sided Circle Time layout handled above.
+    const gridCols = cardSize === '3x3' ? 3 : cardSize === '2x2-duplex' ? 2 : 4;
     generateCallingCardsCore(customItems, 'Custom', borderColor, borderW, radius, imgFn, gridCols);
   }
 }
@@ -1553,7 +1578,10 @@ function generateBankCallingCards() {
   if (cardSize === '2x2') {
     generateCircleTimeCardsCore(bankItems, 'Picture Bank', borderColor, borderW, radius, imgFn);
   } else {
-    const gridCols = cardSize === '3x3' ? 3 : 4;
+    // '2x2-duplex' is the true duplex Large card (2 cols → card is 2x the
+    // linear size of Small, i.e. 4x the area) — NOT the same as '2x2',
+    // which is the single-sided Circle Time layout handled above.
+    const gridCols = cardSize === '3x3' ? 3 : cardSize === '2x2-duplex' ? 2 : 4;
     generateCallingCardsCore(bankItems, 'Picture Bank', borderColor, borderW, radius, imgFn, gridCols);
   }
 }
