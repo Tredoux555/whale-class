@@ -134,6 +134,13 @@ const TOOLS = [
     descKey: 'tools.helper_strips_desc',
     gradient: 'from-sky-500 to-blue-700',
   },
+  {
+    href: '/montree/library/tools/daily-schedule',
+    icon: '🗓️',
+    titleKey: 'tools.daily_schedule',
+    descKey: 'tools.daily_schedule_desc',
+    gradient: 'from-teal-600 to-emerald-700',
+  },
 ] as const;
 
 export default function LibraryToolsPage() {

@@ -58,7 +58,6 @@ type SizeConfig = {
   height: number;
   photo: number; // mm — photo circle diameter
   nameFontPt: number;
-  gap: number; // mm — vertical space between strips when stacked
   outerRadius: number; // mm — corner rounding of the dashed cut line
   cardRadius: number; // mm — corner rounding of the colored frame + its white inset (same value on both, matching the three-part card generator's technique)
   cardBorder: number; // mm — thickness of the solid-color frame. This IS the "border": a filled color panel with padding, not a stroke — same technique components/card-generator/print-utils.ts uses for three-part cards, so the color reaches every edge of the card and touches the dashed cut line directly (no floating gap).
@@ -74,7 +73,6 @@ const SIZE_CONFIG: Record<StripSize, SizeConfig> = {
     height: 34,
     photo: 26,
     nameFontPt: 26,
-    gap: 5,
     outerRadius: 2.4,
     cardRadius: 3,
     cardBorder: 2.2,
@@ -88,7 +86,6 @@ const SIZE_CONFIG: Record<StripSize, SizeConfig> = {
     height: 22,
     photo: 16,
     nameFontPt: 15,
-    gap: 4,
     outerRadius: 1.8,
     cardRadius: 2.2,
     cardBorder: 1.6,
@@ -334,8 +331,11 @@ export default function HelperNameStripsPage() {
   );
 }
 
-// Shared screen preview + print column — one strip per child, stacked and
-// centered within its printable content area.
+// Shared screen preview + print column — one strip per child, stacked in a
+// zero-gap grid so each strip's colored frame touches the next one's
+// directly (same technique the 3-part card generator's label grid uses:
+// gap: 0 + no per-cell margin means adjacent colored edges meet exactly,
+// with nothing floating between them).
 function StripsColumn({
   students,
   size,
@@ -353,8 +353,9 @@ function StripsColumn({
     <div
       className="helper-strips-column"
       style={{
-        display: 'flex',
-        flexDirection: 'column',
+        display: 'grid',
+        gridTemplateColumns: `${cfg.width}mm`,
+        gap: 0,
         width: `${cfg.width}mm`,
         margin: '0 auto',
       }}
@@ -397,7 +398,7 @@ function NameStrip({
         boxSizing: 'border-box',
         border: `0.35mm dashed ${CUT_GUIDE_COLOR}`,
         borderRadius: `${cfg.outerRadius}mm`,
-        marginBottom: `${cfg.gap}mm`,
+        margin: 0,
         breakInside: 'avoid',
       }}
     >

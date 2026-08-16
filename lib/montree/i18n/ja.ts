@@ -1576,6 +1576,8 @@ export const ja: Record<string, string> = {
   'tools.name_labels_desc': 'クラス名簿用の印刷可能な名札、ロッカー・キュビーラベル',
   'tools.helper_strips': 'お当番名前カード',
   'tools.helper_strips_desc': 'クラスの当番ポスター用、写真付きの切り取り名前カード',
+  'tools.daily_schedule': 'Daily Schedule',
+  'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': '受付サインシート',
   'tools.sign_in_sheet_desc': 'クラスの名前を記載した印刷可能な受付サインシート — 参観日、面談、お迎え',
   'tools.vocab_flashcard': '語彙フラッシュカードジェネレーター',

@@ -1576,6 +1576,8 @@ export const fr: Record<string, string> = {
   'tools.name_labels_desc': 'Étiquettes de nom, de casier et de vestiaire imprimables pour votre liste de classe',
   'tools.helper_strips': 'Bandes de Nom pour Responsables',
   'tools.helper_strips_desc': "Bandes de nom découpables avec photos pour l'affiche des Tâches de Classe",
+  'tools.daily_schedule': 'Daily Schedule',
+  'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Feuille de Présence',
   'tools.sign_in_sheet_desc': 'Liste de présence imprimable pour les événements avec les noms de votre classe — portes ouvertes, réunions, départs',
   'tools.vocab_flashcard': 'Générateur de Flashcards Vocabulaire',

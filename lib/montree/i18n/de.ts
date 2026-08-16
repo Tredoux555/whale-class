@@ -1576,6 +1576,8 @@ export const de: Record<string, string> = {
   'tools.name_labels_desc': 'Druckbare Namensschilder, Spind- und Fächeretiketten für Ihre Klassenliste',
   'tools.helper_strips': 'Helfer-Namensstreifen',
   'tools.helper_strips_desc': 'Ausschneidbare Namensstreifen mit Fotos für das Klassendienst-Poster',
+  'tools.daily_schedule': 'Daily Schedule',
+  'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Anwesenheitsliste',
   'tools.sign_in_sheet_desc': 'Druckbare Anwesenheitsliste für Veranstaltungen mit Ihren Klassennamen — Tage der offenen Tür, Elternabende, Abholzeiten',
   'tools.vocab_flashcard': 'Vokabel-Lernkartengenerator',

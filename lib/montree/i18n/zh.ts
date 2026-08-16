@@ -1822,6 +1822,8 @@ export const zh = {
   'tools.name_labels_desc': '为班级名单打印姓名标签、储物柜和小格标签',
   'tools.helper_strips': '值日生姓名条',
   'tools.helper_strips_desc': '带照片的可剪裁姓名条，用于"班级值日"海报',
+  'tools.daily_schedule': 'Daily Schedule',
+  'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': '签到表',
   'tools.sign_in_sheet_desc': '包含班级名单的可打印活动签到表 — 开放日、家长会、接送',
   'tools.vocab_flashcard': '词汇闪卡生成器',

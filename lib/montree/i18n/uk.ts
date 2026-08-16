@@ -1576,6 +1576,8 @@ export const uk: Record<string, string> = {
   'tools.name_labels_desc': 'Друковані іменні бирки, підписи для шафок і поличок для списку вашого класу',
   'tools.helper_strips': 'Іменні смужки для чергових',
   'tools.helper_strips_desc': 'Смужки з іменем і фото для плаката "Чергування в класі" (для вирізання)',
+  'tools.daily_schedule': 'Daily Schedule',
+  'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Лист реєстрації',
   'tools.sign_in_sheet_desc': 'Друкований лист реєстрації заходу з іменами вашого класу — дні відкритих дверей, зустрічі, забирання дітей',
   'tools.vocab_flashcard': 'Генератор словникових карток',

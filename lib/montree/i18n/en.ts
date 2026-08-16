@@ -1862,6 +1862,8 @@ export const en = {
   'tools.name_labels_desc': 'Printable name tags, locker and cubby labels for your class list',
   'tools.helper_strips': 'Helper Name Strips',
   'tools.helper_strips_desc': 'Cut-out name strips with photos for the Classroom Jobs poster',
+  'tools.daily_schedule': 'Daily Schedule',
+  'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Sign-In Sheet',
   'tools.sign_in_sheet_desc': 'Printable event sign-in list with your class names — open days, meetings, pickups',
   'tools.vocab_flashcard': 'Vocabulary Flashcard Generator',

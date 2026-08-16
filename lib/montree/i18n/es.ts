@@ -1641,6 +1641,8 @@ export const es: Record<string, string> = {
   'tools.name_labels_desc': 'Etiquetas de nombre, casillero y cubículo imprimibles para tu lista de clase',
   'tools.helper_strips': 'Tiras de Nombre para Ayudantes',
   'tools.helper_strips_desc': 'Tiras de nombre recortables con fotos para el póster de Tareas de Clase',
+  'tools.daily_schedule': 'Daily Schedule',
+  'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Hoja de Registro',
   'tools.sign_in_sheet_desc': 'Lista de registro imprimible para eventos con los nombres de tu clase — jornadas de puertas abiertas, reuniones, retiros',
   'tools.vocab_flashcard': 'Generador de Tarjetas de Vocabulario',

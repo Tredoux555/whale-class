@@ -1576,6 +1576,8 @@ export const ru: Record<string, string> = {
   'tools.name_labels_desc': 'Печатные именные бирки, подписи для шкафчиков и полок для списка вашего класса',
   'tools.helper_strips': 'Именные полоски для дежурных',
   'tools.helper_strips_desc': 'Вырезные именные полоски с фото для плаката "Дежурства по классу"',
+  'tools.daily_schedule': 'Daily Schedule',
+  'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Лист регистрации',
   'tools.sign_in_sheet_desc': 'Печатный лист регистрации мероприятия с именами вашего класса — дни открытых дверей, собрания, встречи',
   'tools.vocab_flashcard': 'Генератор лексических флешкарт',
