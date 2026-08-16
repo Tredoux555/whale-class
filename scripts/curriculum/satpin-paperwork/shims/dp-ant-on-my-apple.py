@@ -4,12 +4,11 @@ book's spreads[] for build_tracing.py's bookScript loader. Do not hand-edit;
 regenerate from scripts/curriculum/dark-phonics-storybooks/manifest.json
 instead.
 
-NOTE (2026-08-02 curated rebuild): gen_dp_paperwork.py no longer exists in
-the repo; this shim was hand-edited to match its established output exactly
-when anchor+ambulance were dropped for anteater (p1-apple is the new
-establishing page and is intentionally excluded here, same as the frame noun
-was always excluded before; p5-recap is excluded too, matching every other
-book's shim)."""
+NOTE (2026-08-16 rebuild): gen_dp_paperwork.py no longer exists in the repo;
+this shim was hand-edited again, restoring the ambulance spread that a
+2026-08-02 edit had dropped (p1-apple is the establishing page and is
+intentionally excluded here, same as the frame noun was always excluded
+before; p6-recap is excluded too, matching every other book's shim)."""
 from dpbuild import build
 
 BOOK = dict(
@@ -18,6 +17,7 @@ BOOK = dict(
         dict(text='An ant on my apple!', art='p2-ant.png'),
         dict(text='An alligator on my apple!', art='p3-alligator.png'),
         dict(text='An anteater on my apple!', art='p4-anteater.png'),
+        dict(text='An ambulance on my apple!', art='p5-ambulance.png'),
     ],
 )
 
