@@ -47,6 +47,8 @@ const COPY: Record<string, string> = {
   'dailySchedule.picture': 'Picture',
   'dailySchedule.print': 'Print',
   'dailySchedule.pagesSummary': 'per page',
+  'dailySchedule.page': 'Page',
+  'dailySchedule.of': 'of',
   'dailySchedule.empty': 'Add a step to see your schedule build up here.',
 };
 
@@ -585,7 +587,7 @@ function SchedulePagePreview({
   return (
     <div>
       <div className="text-[11px] font-semibold text-[#8a9c98] mb-1.5">
-        Page {pageIndex + 1} of {pageCount}
+        {tx('dailySchedule.page', 'Page')} {pageIndex + 1} {tx('dailySchedule.of', 'of')} {pageCount}
       </div>
       <div
         className="relative mx-auto bg-white rounded shadow-[0_20px_60px_rgba(13,51,48,0.18)] overflow-hidden"
