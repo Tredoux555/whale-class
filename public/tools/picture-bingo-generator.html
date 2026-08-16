@@ -1192,6 +1192,31 @@ function generateBoards(wordPool, title, gridSize, boardCount, borderColor, bord
   }
 }
 
+// Auto-size each calling card's word to fill the available space on the
+// card — short words (e.g. "star") grow to use the whole card, long words
+// or phrases (e.g. "ant-on-my-apple") shrink and/or wrap to still fit.
+// Replaces the old fixed per-size font (28px Small / 36px Medium / 56px
+// Large), which under-filled short words on bigger cards (and, for long
+// words, had no fit check at all). Must run AFTER the grid is appended to
+// the visible output element — it measures real, laid-out pixel sizes, so
+// it can't work on detached/hidden nodes.
+function autoFitCardWords(gridEl) {
+  const words = gridEl.querySelectorAll('.card-word');
+  words.forEach(function(el) {
+    const inner = el.parentElement; // .card-inner — the white box the word sits in
+    if (!inner) return;
+    const maxW = inner.clientWidth * 0.88;
+    const maxH = inner.clientHeight * 0.7;
+    if (maxW <= 0 || maxH <= 0) return; // not laid out yet — bail rather than guess
+    let fontSize = 150;
+    el.style.fontSize = fontSize + 'px';
+    while (fontSize > 8 && (el.scrollWidth > maxW || el.scrollHeight > maxH)) {
+      fontSize -= 2;
+      el.style.fontSize = fontSize + 'px';
+    }
+  });
+}
+
 // ===== CALLING CARDS — 3-Part Card style with indent cutting guides =====
 // Each card: background = borderColor, padding = borderW, border-radius = radius
 // Inner white area: background white, border-radius = radius
@@ -1327,6 +1352,11 @@ function generateCallingCardsCore(wordPool, title, borderColor, borderW, radius,
 
     backPage.appendChild(backGrid);
     output.appendChild(backPage);
+
+    // Auto-size the words on this page's back grid now that it's laid out
+    // in the (visible) DOM — see autoFitCardWords for why this has to run
+    // after appendChild, not before.
+    autoFitCardWords(backGrid);
   }
 }
 
