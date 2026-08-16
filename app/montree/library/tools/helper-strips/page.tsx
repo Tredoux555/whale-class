@@ -38,7 +38,7 @@ const COPY: Record<string, string> = {
     'Sized for the Classroom Jobs poster — print, cut, and pop one on each job.',
   'helperStrips.sizeLabel': 'Strip size',
   'helperStrips.sizePoster': 'Poster strips (180×34mm)',
-  'helperStrips.sizeSmall': 'Small strips (120×22mm, photo 16mm)',
+  'helperStrips.sizeSmall': 'Small strips (120×22mm, photo 12mm)',
   'helperStrips.noChildren': 'No children in your class yet.',
   'helperStrips.selectToPreview': 'Select at least one child above to see the preview.',
 };
@@ -48,51 +48,43 @@ const COPY: Record<string, string> = {
 const DEFAULT_NAME_COLOR = '#1e3a5f';
 const DEFAULT_BORDER_COLOR = '#7ab8d9';
 
-/** Cut-guide dashed line and the scissors hint are deliberately kept a
- *  neutral, un-branded grey — a die line is a printing convention, not a
- *  place for a school's colours. */
-const CUT_GUIDE_COLOR = '#B9C4C9';
+/** The strip's border weight and corner rounding — fixed constants, not
+ *  scaled per size variant. This is the exact recipe the Movable Alphabet
+ *  Label Maker uses (app/montree/library/tools/label-maker/page.tsx:
+ *  BORDER_CM = 0.4cm, BORDER_RADIUS = 0.3cm, held constant across its
+ *  small/medium/large size variants). Strips are laid out with zero gap
+ *  between them (see StripsColumn below), so adjacent colored frames touch
+ *  directly — no dashed die line, no scissors hint. The touching rounded
+ *  corners are the cut guide: where four corners meet, a small diamond of
+ *  white page shows through, exactly like the label maker's printed sheet. */
+const STRIP_BORDER_MM = 4;
+const STRIP_RADIUS_MM = 3;
 
 type SizeConfig = {
-  width: number; // mm — the strip's exact footprint, i.e. the cut line
+  width: number; // mm — the strip's exact footprint
   height: number;
   photo: number; // mm — photo circle diameter
   nameFontPt: number;
-  outerRadius: number; // mm — corner rounding of the dashed cut line
-  cardRadius: number; // mm — corner rounding of the colored frame + its white inset (same value on both, matching the three-part card generator's technique)
-  cardBorder: number; // mm — thickness of the solid-color frame. This IS the "border": a filled color panel with padding, not a stroke — same technique components/card-generator/print-utils.ts uses for three-part cards, so the color reaches every edge of the card and touches the dashed cut line directly (no floating gap).
   innerGap: number; // mm — gap between photo and name inside the card
   innerPadX: number; // mm — left/right padding inside the card
-  scissorsOffset: number;
-  scissorsSize: number;
 };
 
 const SIZE_CONFIG: Record<StripSize, SizeConfig> = {
   poster: {
     width: 180,
     height: 34,
-    photo: 26,
-    nameFontPt: 26,
-    outerRadius: 2.4,
-    cardRadius: 3,
-    cardBorder: 2.2,
+    photo: 22,
+    nameFontPt: 24,
     innerGap: 4,
     innerPadX: 4,
-    scissorsOffset: 2,
-    scissorsSize: 3.4,
   },
   small: {
     width: 120,
     height: 22,
-    photo: 16,
-    nameFontPt: 15,
-    outerRadius: 1.8,
-    cardRadius: 2.2,
-    cardBorder: 1.6,
+    photo: 12,
+    nameFontPt: 13,
     innerGap: 2.5,
     innerPadX: 3,
-    scissorsOffset: 1.6,
-    scissorsSize: 2.6,
   },
 };
 
@@ -333,9 +325,9 @@ export default function HelperNameStripsPage() {
 
 // Shared screen preview + print column — one strip per child, stacked in a
 // zero-gap grid so each strip's colored frame touches the next one's
-// directly (same technique the 3-part card generator's label grid uses:
-// gap: 0 + no per-cell margin means adjacent colored edges meet exactly,
-// with nothing floating between them).
+// directly (same technique the Movable Alphabet Label Maker's print grid
+// uses: gap: 0 + no per-cell margin means adjacent colored edges meet
+// exactly, with nothing floating between them).
 function StripsColumn({
   students,
   size,
@@ -373,8 +365,11 @@ function StripsColumn({
   );
 }
 
-// A single cut-out strip: dashed die line + scissors hint on the outside,
-// a solid rounded-rect card (photo circle + first name) on the inside.
+// A single cut-out strip: the colored frame IS the outer edge of the
+// strip (no separate dashed wrapper) — same recipe as the Movable Alphabet
+// Label Maker's printed labels: background = border color, padding =
+// border thickness, white inset holds the content. Strips stack with zero
+// gap (see StripsColumn), so consecutive frames touch directly.
 function NameStrip({
   student,
   size,
@@ -392,88 +387,55 @@ function NameStrip({
   return (
     <div
       style={{
-        position: 'relative',
         width: `${cfg.width}mm`,
         height: `${cfg.height}mm`,
         boxSizing: 'border-box',
-        border: `0.35mm dashed ${CUT_GUIDE_COLOR}`,
-        borderRadius: `${cfg.outerRadius}mm`,
+        background: borderColor,
+        borderRadius: `${STRIP_RADIUS_MM}mm`,
+        padding: `${STRIP_BORDER_MM}mm`,
         margin: 0,
         breakInside: 'avoid',
       }}
     >
-      {/* Scissors cut hint — sits on the dashed line's top-left corner */}
-      <span
-        aria-hidden
-        style={{
-          position: 'absolute',
-          top: `-${cfg.scissorsOffset}mm`,
-          left: `-${cfg.scissorsOffset}mm`,
-          fontSize: `${cfg.scissorsSize}mm`,
-          lineHeight: 1,
-          background: '#fff',
-          padding: '0 0.3mm',
-        }}
-      >
-        ✂️
-      </span>
-
-      {/* Colored frame — the "border," built the same way the three-part
-         card generator builds its border: the color IS the background of
-         this box, and the box is padded (not stroked) so it reads as a
-         thick solid band. No outer padding sits between this and the
-         dashed cut line above, so the color fills the strip edge-to-edge
-         and touches the cut line directly instead of floating inside it. */}
+      {/* White inset — the actual card content, sitting inside the colored
+         frame exactly like the label maker's .label-area sits inside
+         .label. */}
       <div
+        className={quicksand.className}
         style={{
           width: '100%',
           height: '100%',
           boxSizing: 'border-box',
-          background: borderColor,
-          borderRadius: `${cfg.cardRadius}mm`,
-          padding: `${cfg.cardBorder}mm`,
+          display: 'flex',
+          alignItems: 'center',
+          gap: `${cfg.innerGap}mm`,
+          padding: `0 ${cfg.innerPadX}mm`,
+          background: '#fff',
+          borderRadius: `${STRIP_RADIUS_MM}mm`,
         }}
       >
-        {/* White inset — the actual card content, sitting inside the
-           colored frame exactly like print-utils.ts's .image-area /
-           .label-area sit inside .card. */}
-        <div
-          className={quicksand.className}
+        <PhotoOrInitials
+          photoUrl={student.photo_url}
+          name={firstName}
+          size={`${cfg.photo}mm`}
+          borderColor={borderColor}
+          bgColor={`${borderColor}26`}
+          textColor={nameColor}
+          fontSize={`${cfg.photo * 0.42}mm`}
+        />
+        <span
           style={{
-            width: '100%',
-            height: '100%',
-            boxSizing: 'border-box',
-            display: 'flex',
-            alignItems: 'center',
-            gap: `${cfg.innerGap}mm`,
-            padding: `0 ${cfg.innerPadX}mm`,
-            background: '#fff',
-            borderRadius: `${cfg.cardRadius}mm`,
+            fontWeight: 700,
+            fontSize: `${cfg.nameFontPt}pt`,
+            color: nameColor,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            lineHeight: 1,
           }}
         >
-          <PhotoOrInitials
-            photoUrl={student.photo_url}
-            name={firstName}
-            size={`${cfg.photo}mm`}
-            borderColor={borderColor}
-            bgColor={`${borderColor}26`}
-            textColor={nameColor}
-            fontSize={`${cfg.photo * 0.42}mm`}
-          />
-          <span
-            style={{
-              fontWeight: 700,
-              fontSize: `${cfg.nameFontPt}pt`,
-              color: nameColor,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              lineHeight: 1,
-            }}
-          >
-            {firstName}
-          </span>
-        </div>
+          {firstName}
+        </span>
       </div>
     </div>
   );
