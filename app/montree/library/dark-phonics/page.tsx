@@ -67,7 +67,7 @@ const media = (path: string, v?: number) =>
  * rebuild project touches every book eventually); a stale value here is
  * exactly the "book still shows the old art" bug filed 2026-08-02.
  */
-const STORYBOOK_PRINT_VERSION = 6; // bumped 2026-08-16: snake-in-my-sock rebuilt (soap+seal cast, potato twist)
+const STORYBOOK_PRINT_VERSION = 7; // bumped 2026-08-16: snake-in-my-sock assets re-uploaded to Supabase static-assets bucket (v6 URL had already cached the stale sloth/potato PDF at Cloudflare's edge)
 const printPdf = (path: string) => `${path}?v=${STORYBOOK_PRINT_VERSION}`;
 
 /** Trimmed-down photo-bank row — only the fields this page renders/forwards. */
