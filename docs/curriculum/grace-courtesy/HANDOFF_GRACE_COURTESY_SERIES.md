@@ -94,6 +94,18 @@ Art side of the per-book recipe (§4) is done:
    `RawLesson` in `RAW` (`page.tsx`), scoped typecheck, update this table's row 4 to
    `SHIPPED`, commit, verify live.
 
+## 2c. Founder override (2026-08-17): Book 5 art prep started early
+
+Standing rule in §3 is "one book at a time" -- don't batch-author books
+5-20 ahead of the founder's go-ahead on the current book. Tredoux
+explicitly authorized starting Book 5 (Roll the Mat) art prep now, in
+parallel with Book 4's song still being pending (see §2b) -- this is a
+deliberate, founder-approved exception, not a drift from the rule. Book 4
+still does not ship (UPCOMING -> RAW) until its song is live; Book 5
+likewise won't ship until both its song and storybook are real. Do not
+treat this as blanket permission to batch further books without asking
+again.
+
 ## 3. The locked rules
 
 - **Cast:** Cat, Ant, Apple, Star, Snake, Potato — reused verbatim from the
