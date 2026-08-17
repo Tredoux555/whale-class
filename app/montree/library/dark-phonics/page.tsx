@@ -67,8 +67,20 @@ const media = (path: string, v?: number) =>
  * rebuild project touches every book eventually); a stale value here is
  * exactly the "book still shows the old art" bug filed 2026-08-02.
  */
-const STORYBOOK_PRINT_VERSION = 9; // bumped 2026-08-16: ant-on-my-apple paperwork pack/build-it sheet/tracing workbook/sentence strips rebuilt (the Aug 2 originals were missing the ambulance page) and re-uploaded
+const STORYBOOK_PRINT_VERSION = 10; // bumped 2026-08-17: added A5 tracing booklet pills for the 16 sat-cast letter books (build_tracing_booklet.py)
 const printPdf = (path: string) => `${path}?v=${STORYBOOK_PRINT_VERSION}`;
+
+// Sat-cast letter books with a built companion A5 tracing booklet
+// (public/dark-phonics-books/print/<slug>-A5-tracing-booklet-print.pdf),
+// via scripts/curriculum/flashcards/build_tracing_booklet.py --all. Excludes
+// the-tall (not part of the sat-cast chain, see is_sat_cast_letter_book() in
+// that script) and the non-sat-cast pattern books (snake-in-my-sock,
+// ant-on-my-apple), which don't have one.
+const TRACING_BOOKLET_SLUGS = new Set([
+  'the-sat', 'the-spat', 'the-pit', 'the-pat', 'the-nap', 'the-mat',
+  'the-sad', 'the-dig', 'the-dog', 'the-cot', 'the-kit', 'the-egg',
+  'the-mud', 'the-rat', 'the-hot', 'the-bug',
+]);
 
 /** Trimmed-down photo-bank row — only the fields this page renders/forwards. */
 interface BankPhoto {
@@ -813,6 +825,9 @@ export default function DarkPhonicsPage() {
                           <div className="mt-3 flex flex-wrap gap-2">
                             <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-reading.pdf`)}>Read-along</Pill>
                             <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-booklet-print.pdf`)}>Print booklet A5</Pill>
+                            {TRACING_BOOKLET_SLUGS.has(book.slug) && (
+                              <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-tracing-booklet-print.pdf`)}>Tracing booklet A5</Pill>
+                            )}
                           </div>
                         </div>
                       </div>
