@@ -64,6 +64,9 @@ MOSS = (122/255, 168/255, 88/255)   # site's "moss" palette slot -- Book 2's acc
 # page.tsx's PALETTE[2] "pine" (84,150,134) -- the color the web card actually
 # gets (RAW's 3rd entry, i=2 % 4) -- so print band + web card eyeball-match.
 HONEY = (144/255, 133/255, 82/255)
+# Book 4's accent, nudged toward page.tsx PALETTE[3] "olive" (166,158,80) --
+# i=3 (4th book, zero-based index in RAW) % 4 == 3.
+OLIVE = (150/255, 140/255, 62/255)
 
 # --- composed pages (cloned from build_booklets, only the label text and
 #     the tail page differ -- painters/layout untouched) -----------------
@@ -191,6 +194,27 @@ BOOKS = [
             ('Soft and slow. Pat, pat, pat.', 'page-06.jpg'),
             ('Hands that help. Hands that share.', 'page-07.jpg'),
             ('Gentle hands, happy friends!', 'page-08.jpg'),
+        ],
+    ),
+    dict(
+        num=4,
+        slug='wash-your-hands',
+        title_lines=['Wash Your Hands'],
+        title_accent='Wash',
+        title_size=44,
+        band_text='GRACE & COURTESY  ·  RULE 4  ·  WASH YOUR HANDS',
+        band_color=OLIVE,
+        booknum='BOOK FOUR',
+        cover_art='page-01-cover.png',
+        why='So germs wash away.',
+        pages=[
+            ('Scrub, scrub. Rinse, rinse.', 'page-02.png'),
+            ('Here comes Potato! No time to wash!', 'page-03.png'),
+            ('Yuck! Dirty hands! Dirty apple!', 'page-04.png'),
+            ('Oh, Potato. Wash your hands.', 'page-05.png'),
+            ('Soap and water. Scrub, scrub, scrub.', 'page-06.png'),
+            ('Rinse and dry. Nice and clean!', 'page-07.png'),
+            ('Now let’s sing it! (Potato sat this one out.)', 'page-08.png'),
         ],
     ),
 ]

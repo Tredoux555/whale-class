@@ -33,7 +33,7 @@ not what the planning doc merely describes.
 | 1 | Walking Feet | `walking-feet` | Live in bucket (`songs/lesson-01.mp3`, 200) | **SHIPPED** |
 | 2 | Indoor Voice | `indoor-voice` | Live in bucket (`songs/lesson-02.mp3`, 200) | **SHIPPED** |
 | 3 | Gentle Hands | `gentle-hands` | Live in bucket (`songs/lesson-03.mp3`, 200) | **SHIPPED** |
-| 4 | Wash Your Hands | `wash-your-hands` | Lyrics written (Jul-16 doc, "Day 5 — Wash, Wash, Wash") — mp3 **NOT yet produced/uploaded** (verified 502 at `songs/lesson-04.mp3`) | **NEXT** |
+| 4 | Wash Your Hands | `wash-your-hands` | Lyrics written (Jul-16 doc, "Day 5 — Wash, Wash, Wash") — mp3 **NOT yet produced/uploaded** (verified 502 at `songs/lesson-04.mp3` on 2026-08-17) | **NEXT — art done, song pending** |
 | 5 | Roll the Mat | `roll-the-mat` | Lyrics written (Day 6 — "Roll the Mat") — mp3 not yet produced | planned |
 | 6 | Push In Your Chair | `push-in-your-chair` | Lyrics written (Day 7 — "Push In Your Chair") — mp3 not yet produced | planned |
 | 7 | May I Watch? | `may-i-watch` | Lyrics written (Day 8 — "May I Watch?") — mp3 not yet produced | planned |
@@ -66,6 +66,33 @@ wire in:
 curl -sI "https://montree.xyz/api/montree/media/proxy/songs/lesson-NN.mp3?bucket=grace-courtesy"
 ```
 200 = present. 502 = not uploaded yet.
+
+## 2b. Book 4 (Wash Your Hands) — in-progress status (2026-08-17)
+
+Art side of the per-book recipe (§4) is done:
+
+- MJ prompt pack delivered in chat and run by Tredoux (MJ v8.2, no `--cref`/`--oref`).
+- 8 winners filed at `phonics-images/grace-courtesy-books/wash-your-hands/` (`page-01-cover.png` … `page-08.png`).
+- `BOOKS` entry added to `scripts/curriculum/grace-courtesy-books/build_a5_readers.py`
+  (`OLIVE` accent, nudged toward `page.tsx` `PALETTE[3]`).
+- `wash-your-hands-A5-reading.pdf` + `wash-your-hands-A5-booklet-print.pdf` built and
+  eyeballed page-by-page (both the reading order and the booklet imposition) — clean.
+- Cover copied to `public/grace-courtesy-books/covers/wash-your-hands.png`.
+- `KEY_MAP['wash-your-hands']` added to `scripts/curriculum/upload-grace-courtesy-book-art.mjs`;
+  all 8 pages ingested into the Picture Bank (verified via dry run, then live run — 8
+  uploaded, 0 failures).
+
+**Still blocking ship (do NOT move this book from `UPCOMING` to `RAW` until both are done):**
+
+1. Song mp3 — lyrics exist (Day 5, "Wash, Wash, Wash" in
+   `GRACE_AND_COURTESY_SONGS_JUL16.md`) but no take has been produced in Suno yet.
+   Generate with the locked Suno style v2 (§5.2), pick a winner, then upload to the
+   `grace-courtesy` Supabase bucket at `songs/lesson-04.mp3` via the dashboard Storage UI
+   (no upload script exists for this — see §4 step 9). Confirmed still 502 as of
+   2026-08-17 09:54 UTC.
+2. Once the song is live, finish recipe steps 11-15: move the `UPCOMING` entry to a real
+   `RawLesson` in `RAW` (`page.tsx`), scoped typecheck, update this table's row 4 to
+   `SHIPPED`, commit, verify live.
 
 ## 3. The locked rules
 
