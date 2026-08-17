@@ -307,13 +307,13 @@ export default function Home() {
                 key={video.id}
                 className="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-100 group"
               >
-                <div className="aspect-video bg-gradient-to-br from-blue-500 to-indigo-600 relative">
+                <div className="aspect-video bg-slate-900 relative">
                   <video
                     ref={(el) => { if (el) videoRefs.current[video.id] = el; }}
                     data-src={resolveVideoUrl(video.videoUrl)}
                     controls
                     playsInline
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                     preload="none"
                     loop={repeatModes[video.id] || false}
                     onPlay={() => handleVideoPlay(video.id)}

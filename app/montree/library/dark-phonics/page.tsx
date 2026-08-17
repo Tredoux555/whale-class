@@ -760,7 +760,7 @@ export default function DarkPhonicsPage() {
                         src={video}
                         poster={has('pictures', l.n) ? picture : undefined}
                         className="w-full rounded-lg"
-                        style={{ aspectRatio: '16 / 9', background: '#000' }}
+                        style={{ aspectRatio: '1 / 1', background: '#000', objectFit: 'contain' }}
                       />
                     </Row>
                   ) : (
