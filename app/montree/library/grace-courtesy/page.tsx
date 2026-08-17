@@ -180,6 +180,11 @@ const PALETTE: Array<[string, string]> = [
  * badge, the placeholders) depends on this array describing only real work.
  * A new entry needs nothing but its own object: colour, media URLs and the
  * placeholder gating all follow from `n`.
+ *
+ * The one sanctioned exception is the `UPCOMING` roadmap strip below
+ * (founder-approved Aug 17 2026) — planned rule titles rendered as muted,
+ * non-clickable placeholder slots, never as real lesson cards. Shipping a
+ * rule means moving its entry OUT of `UPCOMING` and INTO this array for real.
  */
 const RAW: RawLesson[] = [
   {
@@ -218,6 +223,31 @@ const RAW: RawLesson[] = [
     },
     song: true,
   },
+];
+
+// ─── THE ROAD AHEAD (founder-approved spine, locked Aug 17 2026) ───────────
+// These are PLACEHOLDERS ONLY — approved future rules in production order.
+// They render as muted "coming next" slots, never as lesson cards. When a
+// rule ships (song + book made), move it OUT of UPCOMING into RAW as a real
+// entry. The one-at-a-time / nothing-fake rule for RAW still stands.
+const UPCOMING: { n: number; title: string; why: string }[] = [
+  { n: 4, title: 'Wash Your Hands', why: 'So germs wash away.' },
+  { n: 5, title: 'Roll the Mat', why: "So it's ready for a friend." },
+  { n: 6, title: 'Push In Your Chair', why: 'So nobody bumps.' },
+  { n: 7, title: 'May I Watch?', why: 'Eyes watch. Hands wait.' },
+  { n: 8, title: 'Everything Has a Home', why: 'So friends can find it.' },
+  { n: 9, title: 'Hello, Hello!', why: 'So friends feel seen.' },
+  { n: 10, title: 'Please and Thank You', why: 'Magic words open doors.' },
+  { n: 11, title: 'My Turn, Your Turn', why: 'Waiting makes it fair.' },
+  { n: 12, title: 'Excuse Me', why: 'The polite way in.' },
+  { n: 13, title: 'Kind Words', why: 'Words can hug.' },
+  { n: 14, title: 'Helping Hands', why: 'We help our friends.' },
+  { n: 15, title: 'Sorry', why: 'Sorry mends it.' },
+  { n: 16, title: 'Cover Your Cough', why: 'Catch it in your elbow.' },
+  { n: 17, title: 'Line Up', why: 'One behind one.' },
+  { n: 18, title: 'Walk Around the Mat', why: 'Work needs space.' },
+  { n: 19, title: 'Careful Carrying', why: 'Two hands, slow feet.' },
+  { n: 20, title: 'The Whale Class Way', why: 'All the rules, one song.' },
 ];
 
 /** Same list, with a colour stamped on each card. */
@@ -581,6 +611,43 @@ export default function GraceAndCourtesyPage() {
             More rules are on the way, one book at a time. Nothing goes up here
             until it&rsquo;s actually been made.
           </p>
+
+          {/* THE ROAD AHEAD — founder-approved roadmap, placeholders only.
+              Every slot here is planned, not made: no cover art, no player,
+              not clickable. See the UPCOMING const above for the rule. */}
+          <div className="mt-10 text-left">
+            <div className="text-white/25 text-[10px] tracking-wider uppercase text-center sm:text-left">
+              The road ahead
+            </div>
+            <p className="text-white/20 text-xs mt-1.5 mb-4 text-center sm:text-left">
+              Planned and in order &mdash; each one goes up only when its song
+              and book are real.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {UPCOMING.map((item) => (
+                <div
+                  key={item.n}
+                  className="rounded-xl border border-dashed border-white/[0.06] px-4 py-3"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-white/20 text-[10px] tracking-wider uppercase">
+                      Book {item.n}
+                    </span>
+                    {item.n === UPCOMING[0].n && (
+                      <span
+                        className="px-2 py-0.5 rounded-full text-[9px] tracking-wider uppercase"
+                        style={{ background: 'rgba(62,142,101,0.14)', color: 'rgba(154,214,178,0.7)' }}
+                      >
+                        in production
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-white/35 text-sm font-medium mt-1">{item.title}</div>
+                  <div className="text-white/15 text-xs mt-0.5">{item.why}</div>
+                </div>
+              ))}
+            </div>
+          </div>
 
         </div>
       </div>
