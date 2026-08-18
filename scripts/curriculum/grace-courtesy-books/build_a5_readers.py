@@ -67,6 +67,9 @@ HONEY = (144/255, 133/255, 82/255)
 # Book 4's accent, nudged toward page.tsx PALETTE[3] "olive" (166,158,80) --
 # i=3 (4th book, zero-based index in RAW) % 4 == 3.
 OLIVE = (150/255, 140/255, 62/255)
+# Book 5's accent: cycles back to page.tsx PALETTE[0] "forest" (62,142,101)
+# -- i=4 (5th book, zero-based index in RAW) % 4 == 0. Reuse FOREST rather
+# than introducing a near-duplicate hue.
 
 # --- composed pages (cloned from build_booklets, only the label text and
 #     the tail page differ -- painters/layout untouched) -----------------
@@ -214,6 +217,27 @@ BOOKS = [
             ('Oh, Potato. Wash your hands.', 'page-05.png'),
             ('Soap and water. Scrub, scrub, scrub.', 'page-06.png'),
             ('Rinse and dry. Nice and clean!', 'page-07.png'),
+            ('Now let’s sing it! (Potato sat this one out.)', 'page-08.png'),
+        ],
+    ),
+    dict(
+        num=5,
+        slug='roll-the-mat',
+        title_lines=['Roll the Mat'],
+        title_accent='Roll',
+        title_size=44,
+        band_text='GRACE & COURTESY  ·  RULE 5  ·  ROLL THE MAT',
+        band_color=FOREST,
+        booknum='BOOK FIVE',
+        cover_art='page-01-cover.png',
+        why="So it's ready for a friend.",
+        pages=[
+            ('Slow and careful. Roll it out.', 'page-02.png'),
+            ('Here comes Potato! Toss and tumble!', 'page-03.png'),
+            ('Oh no! Blocks everywhere!', 'page-04.png'),
+            ('Oh, Potato. The mat is an island.', 'page-05.png'),
+            ('Roll it up, corner to corner.', 'page-06.png'),
+            ('Neat and tidy. Ready for a friend.', 'page-07.png'),
             ('Now let’s sing it! (Potato sat this one out.)', 'page-08.png'),
         ],
     ),

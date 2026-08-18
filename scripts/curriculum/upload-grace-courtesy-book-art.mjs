@@ -101,6 +101,16 @@ const KEY_MAP = {
     ['page-07.png', 'p7-clean'],
     ['page-08.png', 'p8-song'],
   ],
+  'roll-the-mat': [
+    ['page-01-cover.png', 'p1-cover'],
+    ['page-02.png', 'p2-unroll'],
+    ['page-03.png', 'p3-toss'],
+    ['page-04.png', 'p4-blocks'],
+    ['page-05.png', 'p5-lesson'],
+    ['page-06.png', 'p6-roll'],
+    ['page-07.png', 'p7-friend'],
+    ['page-08.png', 'p8-song'],
+  ],
 };
 
 /** 'p2-ant' -> 'ant'; falls back to the key itself. */

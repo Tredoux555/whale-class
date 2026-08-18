@@ -34,12 +34,12 @@ not what the planning doc merely describes.
 | 2 | Indoor Voice | `indoor-voice` | Live in bucket (`songs/lesson-02.mp3`, 200) | **SHIPPED** |
 | 3 | Gentle Hands | `gentle-hands` | Live in bucket (`songs/lesson-03.mp3`, 200) | **SHIPPED** |
 | 4 | Wash Your Hands | `wash-your-hands` | Lyrics written (Jul-16 doc, "Day 5 — Wash, Wash, Wash") — mp3 **NOT yet produced/uploaded** (verified 502 at `songs/lesson-04.mp3` on 2026-08-17) | **NEXT — art done, song pending** |
-| 5 | Roll the Mat | `roll-the-mat` | Lyrics written (Day 6 — "Roll the Mat") — mp3 not yet produced | planned |
+| 5 | Roll the Mat | `roll-the-mat` | v3-shaped lyrics written (2026-08-17, ukulele/TPR) — mp3 **NOT yet produced/uploaded** (verified 502 at `songs/lesson-05.mp3` on 2026-08-17) | art done, song pending |
 | 6 | Push In Your Chair | `push-in-your-chair` | Lyrics written (Day 7 — "Push In Your Chair") — mp3 not yet produced | planned |
 | 7 | May I Watch? | `may-i-watch` | Lyrics written (Day 8 — "May I Watch?") — mp3 not yet produced | planned |
 | 8 | Everything Has a Home | `everything-has-a-home` | Lyrics written (Day 9 — "Everything Has a Home") — mp3 not yet produced | planned |
 | 9 | Hello, Hello! | `hello-hello` | Lyrics written (Day 1 — "Hello, Hello!") — mp3 not yet produced | planned |
-| 10 | Please and Thank You | `please-and-thank-you` | Needs NEW lyrics (Suno, locked style v2) | planned |
+| 10 | Please and Thank You | `please-and-thank-you` | Needs NEW lyrics (Suno, locked style v3 -- ukulele/TPR) | planned |
 | 11 | My Turn, Your Turn | `my-turn-your-turn` | Needs NEW lyrics | planned |
 | 12 | Excuse Me | `excuse-me` | Needs NEW lyrics | planned |
 | 13 | Kind Words | `kind-words` | Needs NEW lyrics | planned |
@@ -86,13 +86,37 @@ Art side of the per-book recipe (§4) is done:
 
 1. Song mp3 — lyrics exist (Day 5, "Wash, Wash, Wash" in
    `GRACE_AND_COURTESY_SONGS_JUL16.md`) but no take has been produced in Suno yet.
-   Generate with the locked Suno style v2 (§5.2), pick a winner, then upload to the
+   Generate with the locked Suno style v3 (§5.2), pick a winner, then upload to the
    `grace-courtesy` Supabase bucket at `songs/lesson-04.mp3` via the dashboard Storage UI
    (no upload script exists for this — see §4 step 9). Confirmed still 502 as of
    2026-08-17 09:54 UTC.
 2. Once the song is live, finish recipe steps 11-15: move the `UPCOMING` entry to a real
    `RawLesson` in `RAW` (`page.tsx`), scoped typecheck, update this table's row 4 to
    `SHIPPED`, commit, verify live.
+
+## 2d. Book 5 (Roll the Mat) — in-progress status (2026-08-17)
+
+Art side of the per-book recipe (§4) is done, same shape as Book 4 (§2b):
+
+- MJ prompt pack delivered in chat and run by Tredoux (MJ v8.2). New prop:
+  a work mat. page-06 needed one revision (first pass had Potato sitting
+  ON the mat while rolling it, with a cluttered floor -- corrected to
+  Potato standing beside the mat, floor clean).
+- 8 winners filed at `phonics-images/grace-courtesy-books/roll-the-mat/`.
+- `BOOKS` entry added to `build_a5_readers.py` (`FOREST` accent, cycles
+  back to `page.tsx` `PALETTE[0]`, i=4 % 4 == 0).
+- `roll-the-mat-A5-reading.pdf` + `roll-the-mat-A5-booklet-print.pdf` built
+  and eyeballed page-by-page (reading order + booklet imposition) -- clean.
+- Cover copied to `public/grace-courtesy-books/covers/roll-the-mat.png`.
+- `KEY_MAP['roll-the-mat']` added; all 8 pages ingested into the Picture
+  Bank (dry run then live run -- 8 uploaded, 0 failures).
+
+**Still blocking ship:** song mp3. Lyrics were rewritten in the new v3
+ukulele/TPR style (see §5.2's changelog) rather than reused verbatim from
+the Jul-16 doc's Day 6 (which was v2/dark-trap shaped) -- delivered to
+Tredoux in chat 2026-08-17. Once Suno take is picked and uploaded to
+`songs/lesson-05.mp3` via the Supabase dashboard, finish recipe steps
+11-15 same as Book 4.
 
 ## 2c. Founder override (2026-08-17): Book 5 art prep started early
 
@@ -269,8 +293,23 @@ recap — see §2's mapping). For books 10–19:
    X", never "don't do Y"), whole-words (no syllable-splitting), and a
    potato-gag breakdown section for at least 1–2 of these songs (design
    ruling #4 in that doc: the potato is the rule-breaker who learns).
-2. **Use the locked Suno style v2, unchanged:**
-   `dark trap, 68 bpm, heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant on hook, playful spooky, minimal, clean vocals, nursery trap`
+2. **Use the locked Suno style v3:**
+   `warm acoustic ukulele, bright cheerful strum, simple singalong nursery pop, call-and-response chorus, kids choir vocals, light claps/percussion, playful and friendly, very repetitive, minimal lyrics, easy for toddlers to echo`
+
+   **Style changelog (2026-08-17, founder decision):** v2 (`dark trap, 68 bpm,
+   heavy 808 bass, sparse hi-hats, deep whisper-rap verses, kids choir chant
+   on hook, playful spooky, minimal, clean vocals, nursery trap`) is
+   RETIRED for all new song production. Books 1-3's shipped songs stay as
+   they are (v2, not being redone). v3 also changes the LYRIC shape, not
+   just the production tag: heavy repetition of the chorus/rule-phrase,
+   as few words as possible, verses trimmed to short TPR (Total Physical
+   Response) action cues the kids act out live, rather than the v2
+   intro-whisper -> hook -> verse -> hook -> breakdown -> final-hook shape.
+   Books 4 and 5's Day 5/6 lyrics from the Jul-16 doc were written for v2
+   and were rewritten to v3 shape before their Suno takes were generated
+   (see the books' own commits for the final lyrics actually used). When
+   writing books 6-9 and 10-19, write directly in v3 shape -- do not reuse
+   the Jul-16 doc's Day 7-10 lyrics verbatim, they're v2-shaped.
 3. **Tredoux generates in Suno** (2 takes per song is the house convention
    from the Jul-16 doc), picks the winning take.
 4. **Then follow the per-book recipe in §4** starting from step 3 (art) —
