@@ -67,7 +67,7 @@ const media = (path: string, v?: number) =>
  * rebuild project touches every book eventually); a stale value here is
  * exactly the "book still shows the old art" bug filed 2026-08-02.
  */
-const STORYBOOK_PRINT_VERSION = 10; // bumped 2026-08-17: added A5 tracing booklet pills for the 16 sat-cast letter books (build_tracing_booklet.py)
+const STORYBOOK_PRINT_VERSION = 11; // bumped 2026-08-18: added A5 sentence-tracing booklet pills for the 16 sat-cast letter books (build_tracing_booklet.py --sentences)
 const printPdf = (path: string) => `${path}?v=${STORYBOOK_PRINT_VERSION}`;
 
 // Sat-cast letter books with a built companion A5 tracing booklet
@@ -827,6 +827,9 @@ export default function DarkPhonicsPage() {
                             <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-booklet-print.pdf`)}>Print booklet A5</Pill>
                             {TRACING_BOOKLET_SLUGS.has(book.slug) && (
                               <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-tracing-booklet-print.pdf`)}>Tracing booklet A5</Pill>
+                            )}
+                            {TRACING_BOOKLET_SLUGS.has(book.slug) && (
+                              <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-sentence-tracing-booklet-print.pdf`)}>Sentence tracing A5</Pill>
                             )}
                           </div>
                         </div>

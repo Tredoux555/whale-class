@@ -24,12 +24,24 @@ Target word + celebration line are derived from the book dict itself
 (`book['new']`'s first token), so this works for every book in the sat-cast
 letter-book chain, not just 'the-sat' — see is_sat_cast_letter_book() below.
 
+A second mode, --sentences, builds an ADVANCED edition for stronger readers:
+instead of tracing just the hero word, the child traces the WHOLE printed
+sentence for each spread (composed with sentence_of(), see its docstring —
+the exact nar+text merge rule build_tracing.py's A4 tracing workbook uses,
+verified byte-for-byte against its own hand-authored the-sat sentences).
+Same A5 booklet shape, same page-for-page mirror, same imposition; only the
+per-spread trace page (make_sentence_trace_page()) and the cover badge
+(page_trace_cover_sentences()) differ from word mode — everything else
+(page_words, page_halftitle, art pages, page_back, folio, imposition) is
+shared, unmodified, between both modes.
+
 Usage:
     python3 build_tracing_booklet.py                 # builds the-sat only
     python3 build_tracing_booklet.py the-sat the-spat # builds these slugs
     python3 build_tracing_booklet.py --all            # every sat-cast
                                                        # letter-book chain title
     python3 build_tracing_booklet.py the-sat --out /path/to/outdir
+    python3 build_tracing_booklet.py the-sat --sentences   # advanced edition
 """
 import argparse
 import os
@@ -85,6 +97,19 @@ ROW1_BASE  = 78 * mm      # baseline of the traced row (fixed across all
                           # the book)
 LABEL_GAP  = 6 * mm       # 'TRACE IT' label above row 1's headline
 
+# ---- --sentences mode: whole-sentence tracing for stronger readers --------
+# Per user feedback on the first draft: sentence-mode trace pages show ONLY
+# the traced row(s) — no empty free-writing row ("not enough space"; word
+# mode's empty row is unchanged). Up to 3 wrap lines are now allowed (was
+# 2), since dropping the empty row frees up the vertical room a 3rd line
+# needs. Because the row count varies per page (1-3, decided by
+# sf.fit_wrap), the block is centred on a fixed vertical point rather than
+# hung off a fixed top baseline (which would leave short blocks hugging the
+# top) — SENT_BAND_CENTER is the vertical centre the OLD traced+empty
+# 3-row block (2 traced + 1 empty, at the 10mm ceiling) used to occupy, so
+# the page's visual weight lands in the same place as the first draft.
+SENT_BAND_CENTER = 124 * mm
+
 
 def target_word(book):
     """The book's hero word, lowercase, from book['new'] ('Sat  ·  at' -> 'sat').
@@ -137,12 +162,17 @@ def draw_guide_row(c, base, u, word=None):
                        tracking=TRACE_TRACK, arrows=True)
 
 
-def make_trace_page(spec, word, u, row1_base, row2_base, celebration=None):
+def make_trace_page(spec, word, u, row1_base, row2_base, celebration=None,
+                     skip_empty_row=False):
     """Mirrors make_text_page()'s narration placement exactly (same PH*0.68
     / PH*0.55 split on whether the ORIGINAL spread carried both nar+text),
     then adds the traced + empty guide rows below. `u`, `row1_base` and
     `row2_base` are computed once per book (see build_trace_booklet) so both
-    rows share the same auto-shrunk x-height and consistent geometry."""
+    rows share the same auto-shrunk x-height and consistent geometry.
+    `skip_empty_row` drops the second (empty, free-writing) row — used only
+    by --sentences mode's celebration page, for consistency with the rest
+    of that mode's pages, which have no empty row at all; word mode always
+    keeps both rows (skip_empty_row stays False there), unchanged."""
     def _p(c, book):
         nar_text = celebration or spec.get('nar')
         if nar_text:
@@ -156,7 +186,96 @@ def make_trace_page(spec, word, u, row1_base, row2_base, celebration=None):
         draw_tracked(c, PW / 2, row1_base + 2 * u + LABEL_GAP,
                     'T R A C E   I T', 'Label', 8, 0.3, GREY)
         draw_guide_row(c, row1_base, u, word)
-        draw_guide_row(c, row2_base, u, None)
+        if not skip_empty_row:
+            draw_guide_row(c, row2_base, u, None)
+    return _p
+
+
+def _lower_first(s):
+    return (s[0].lower() + s[1:]) if s else s
+
+
+def sentence_of(spec):
+    """The sentence a child traces on this spread in --sentences mode,
+    composed with the exact nar+text merge RULE
+    satpin-paperwork/build_tracing.py's own sentence_of() uses for the A4
+    tracing workbook: nar (minus a trailing ellipsis) joined to the shouted
+    word --
+
+        nar = (spread.get('nar') or '').strip()
+        for tail in ('…', '...'):
+            if nar.endswith(tail): nar = nar[:-len(tail)].strip()
+        word = (spread.get('text') or '').strip()
+        return (nar + ' ' + word).strip() if nar else word
+
+    -- extended for two shapes books_def.py's spreads use that the A4
+    script's hand-curated shims (satpin-paperwork/shims/dp-the-sat.py etc.)
+    never need to, because they were pre-composed by hand:
+
+      * `text` as a list (the drop-style recap chant, e.g.
+        ['Sat! Sat!','Sat!'], and the no-nar potato-punchline pages, e.g.
+        ['The potato', "doesn't nap!"]) — joined with spaces into one
+        line, same reading order as the printed page. The original
+        sentence_of() would raise (str.strip() on a list) if it ever saw
+        one of these; this is the "sensible fallback" for that case.
+      * continuing a nar clause: when `nar` is present, books_def.py's
+        `text` for the pre-the-pat books (the-sat, the-spat, the-pit) is
+        capitalised for its own big-shout DISPLAY emphasis ('Sat!'), not
+        for grammar — concatenating verbatim reads as 'The ant Sat!'.
+        books_def.py's own TEXT_RULES comment (locked from the-pat
+        onward) states the correct rule: text continuing a nar clause is
+        never a fresh sentence, so only its first letter needs
+        lower-casing to read naturally. Verified byte-for-byte against
+        satpin-paperwork/shims/dp-the-sat.py's 4 hand-authored sentences
+        ('The ant sat!', 'The snake sat!', 'The star sat!', 'The cat
+        sat!') — this rule reproduces every one of them exactly.
+
+    A spread with no `text` at all (e.g. the-sat's final cliffhanger,
+    nar='And the…?!') falls straight out of the same merge: word='' so the
+    sentence is just the (ellipsis-stripped) nar, exactly like
+    build_tracing.py's own fallback.
+    """
+    nar = (spec.get('nar') or '').strip()
+    for tail in ('…', '...'):
+        if nar.endswith(tail):
+            nar = nar[:-len(tail)].strip()
+    raw = spec.get('text')
+    if raw is None:
+        word = ''
+    elif isinstance(raw, list):
+        word = ' '.join(raw)
+    else:
+        word = raw.strip()
+    if nar and word:
+        word = _lower_first(word)
+    return (nar + ' ' + word).strip() if nar else word
+
+
+def make_sentence_trace_page(sentence):
+    """--sentences mode trace page: no narration line at all (the sentence
+    IS the content, per spec), and — per user feedback on the first draft —
+    ONLY traced rows, no empty free-writing row. sf.fit_wrap() finds the
+    largest x-height (<= TRACE_U, the same 10mm ceiling word mode's
+    compute_trace_u() uses as its own ceiling) that lays `sentence` across
+    at most 3 guide rows (raised from 2 now that the empty row's gone —
+    there's room) within the guide's usable width — the same auto-shrink
+    principle as compute_trace_u(), just wrap-aware. However many rows the
+    wrap actually needs (1-3), they're stacked at the same word-mode row
+    pitch (3*u + TRACE_GAP) and the whole block is vertically centred on
+    SENT_BAND_CENTER, so a short (1-row) block doesn't hug the top of the
+    page the way a fixed top anchor would."""
+    def _p(c, book):
+        guide_w = (PW - M) - M
+        u, rows = sf.fit_wrap(sentence, guide_w, TRACE_U, maxlines=3,
+                              tracking=TRACE_TRACK)
+        n = len(rows)
+        block_h = 2 * u + (n - 1) * (3 * u + TRACE_GAP)
+        base0 = SENT_BAND_CENTER + block_h / 2 - 2 * u
+        bases = [base0 - i * (3 * u + TRACE_GAP) for i in range(n)]
+        draw_tracked(c, PW / 2, bases[0] + 2 * u + LABEL_GAP,
+                    'T R A C E   I T', 'Label', 8, 0.3, GREY)
+        for i, base in enumerate(bases):
+            draw_guide_row(c, base, u, rows[i])
     return _p
 
 
@@ -172,14 +291,10 @@ def right_tracked(c, x, y, text, font, size, tracking, color):
         cx += c.stringWidth(ch, font, size) + tracking * size
 
 
-def page_trace_cover(c, book):
-    """Same page_cover() art/title/band untouched, plus a small TRACE badge
-    in the top margin strip (never competes with page_cover's centred
-    content) and a 'written by ___' line in the gap page_cover already
-    leaves around its red dot."""
-    page_cover(c, book)
-    right_tracked(c, PW - M, PH - 7 * mm, 'TRACE  &  WRITE', 'LabelB', 7.5,
-                 0.18, RED)
+def _written_by_line(c):
+    """The 'written by ___' line in the gap page_cover leaves around its red
+    dot — shared by both cover badges below (word mode and --sentences
+    mode); only the corner badge text differs between them."""
     c.setFont('Label', 8)
     c.setFillColorRGB(*GREY)
     label = 'written by'
@@ -192,6 +307,27 @@ def page_trace_cover(c, book):
     c.setLineWidth(0.7)
     c.setDash()
     c.line(lx0, ly - 1 * mm, lx1, ly - 1 * mm)
+
+
+def page_trace_cover(c, book):
+    """Same page_cover() art/title/band untouched, plus a small TRACE badge
+    in the top margin strip (never competes with page_cover's centred
+    content) and a 'written by ___' line in the gap page_cover already
+    leaves around its red dot."""
+    page_cover(c, book)
+    right_tracked(c, PW - M, PH - 7 * mm, 'TRACE  &  WRITE', 'LabelB', 7.5,
+                 0.18, RED)
+    _written_by_line(c)
+
+
+def page_trace_cover_sentences(c, book):
+    """Same as page_trace_cover() (same page_cover() art/title/band, same
+    'written by ___' line, same house colors/fonts) — only the corner badge
+    text changes, to signal the advanced whole-sentence edition."""
+    page_cover(c, book)
+    right_tracked(c, PW - M, PH - 7 * mm, 'TRACE  THE  STORY', 'LabelB', 7.5,
+                 0.18, RED)
+    _written_by_line(c)
 
 
 def missing_art(book):
@@ -215,7 +351,14 @@ def missing_art(book):
     return missing
 
 
-def build_trace_booklet(book, outdir):
+def build_trace_booklet(book, outdir, mode='word'):
+    """mode='word' (default): trace the hero word only (unchanged from the
+    original single-mode script). mode='sentence': the --sentences
+    "advanced edition" — trace the WHOLE sentence per spread instead, via
+    make_sentence_trace_page()/sentence_of(). Both modes share every other
+    page (words, half-title, art, back cover) and the whole imposition
+    loop below, unmodified — only the cover badge and the per-spread trace
+    page painter differ between them."""
     missing = missing_art(book)
     if missing:
         raise RuntimeError(
@@ -223,18 +366,45 @@ def build_trace_booklet(book, outdir):
 
     os.makedirs(outdir, exist_ok=True)
     word = target_word(book)
-    u = compute_trace_u(word)
-    row1_base = ROW1_BASE
-    row2_base = row1_base - (3 * u + TRACE_GAP)
+    # word mode's fixed x-height/row-base register — also reused, unchanged,
+    # for --sentences mode's final celebration page (see below), since that
+    # one page traces the key word, not the sentence, "as in word mode".
+    word_u = compute_trace_u(word)
+    word_row1_base = ROW1_BASE
+    word_row2_base = word_row1_base - (3 * word_u + TRACE_GAP)
     spreads = book['spreads']
     n = len(spreads)
 
-    pages = [(page_trace_cover, False), (page_words, False),
+    if mode == 'word':
+        cover_painter = page_trace_cover
+    elif mode == 'sentence':
+        cover_painter = page_trace_cover_sentences
+    else:
+        raise ValueError('unknown mode %r' % mode)
+
+    pages = [(cover_painter, False), (page_words, False),
              (page_halftitle, False)]
     for i, sp in enumerate(spreads):
-        celebration = ('I can write %s!' % word) if i == n - 1 else None
-        pages.append((make_trace_page(sp, word, u, row1_base, row2_base,
-                                       celebration=celebration), True))
+        is_last = (i == n - 1)
+        if mode == 'word':
+            celebration = ('I can write %s!' % word) if is_last else None
+            pages.append((make_trace_page(sp, word, word_u, word_row1_base,
+                                           word_row2_base,
+                                           celebration=celebration), True))
+        elif is_last:
+            # Final celebration page: literally word mode's own page
+            # painter (same key-word trace row, same celebration-line
+            # placement), just with the whole-book celebration line instead
+            # of word mode's per-book one — and, per user feedback, its
+            # empty row dropped too, for consistency with the rest of
+            # --sentences mode's pages (none of which have an empty row).
+            pages.append((make_trace_page(sp, word, word_u, word_row1_base,
+                                           word_row2_base,
+                                           celebration='I can write the whole book!',
+                                           skip_empty_row=True),
+                          True))
+        else:
+            pages.append((make_sentence_trace_page(sentence_of(sp)), True))
         pages.append((make_art_page(sp['art']), True))
     T = -(-(len(pages) + 1) // 4) * 4
     while len(pages) < T - 1:
@@ -242,7 +412,8 @@ def build_trace_booklet(book, outdir):
     pages.append((page_back, False))
     N = len(pages)
 
-    reading_path = os.path.join(outdir, '%s-A5-tracing.pdf' % book['slug'])
+    suffix = 'tracing' if mode == 'word' else 'sentence-tracing'
+    reading_path = os.path.join(outdir, '%s-A5-%s.pdf' % (book['slug'], suffix))
     c = rl_canvas.Canvas(reading_path, pagesize=(PW, PH))
     for i, (painter, is_story) in enumerate(pages):
         painter(c, book)
@@ -252,7 +423,7 @@ def build_trace_booklet(book, outdir):
     c.save()
 
     sheetW, sheetH = landscape(A4)
-    print_path = os.path.join(outdir, '%s-A5-tracing-booklet-print.pdf' % book['slug'])
+    print_path = os.path.join(outdir, '%s-A5-%s-booklet-print.pdf' % (book['slug'], suffix))
     c = rl_canvas.Canvas(print_path, pagesize=(sheetW, sheetH))
     order = []
     for k in range(N // 2):
@@ -320,7 +491,12 @@ def main():
                           'chain (see is_sat_cast_letter_book())')
     ap.add_argument('--out', default=os.path.join(REPO, 'public', 'dark-phonics-books', 'print'),
                      help='output directory (default: <repo>/public/dark-phonics-books/print)')
+    ap.add_argument('--sentences', action='store_true',
+                     help='advanced edition: trace the whole sentence per '
+                          'spread instead of just the hero word')
     a = ap.parse_args()
+
+    mode = 'sentence' if a.sentences else 'word'
 
     # Resolve --out against the caller's cwd BEFORE we chdir(HERE) below.
     out_dir = os.path.abspath(a.out)
@@ -350,7 +526,7 @@ def main():
             book = next((b for b in BOOKS if b['slug'] == slug), None)
             if book is None:
                 raise ValueError('no book with slug=%r in BOOKS' % slug)
-            build_trace_booklet(book, out_dir)
+            build_trace_booklet(book, out_dir, mode=mode)
             print('[ok]', slug)
         except Exception as e:
             print('[FAIL] %s: %s' % (slug, e))
