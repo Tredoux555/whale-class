@@ -28,7 +28,7 @@ jobs:
       - name: Call engagement endpoint
         run: |
           set -e
-          RESPONSE=$(curl -sS -X POST "https://montree.xyz/api/montree/cron/engagement" \
+          RESPONSE=$(curl -sSL -X POST "https://montree.xyz/api/montree/cron/engagement" \
             -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
             --max-time 150 \
             -w "\nHTTP %{http_code}")

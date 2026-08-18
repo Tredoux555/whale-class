@@ -63,6 +63,15 @@ export async function logAudit(supabase: SupabaseClient, entry: AuditEntry): Pro
  *
  * Signature is unchanged, so every existing caller keeps working — they just get a value that
  * cannot be forged from the request body.
+ *
+ * ── Re-affirmed Aug 18 2026 (health check) ──────────────────────────────────────────────
+ * A stale test still pinned the OLD first-hop contract (tests/vault-unlock-keying.test.ts);
+ * the test was corrected to match this function, NOT the reverse. Keying on the leftmost hop
+ * would hand an attacker a free bucket-rotation primitive — forge a new XFF prefix per
+ * attempt and the fail-closed limiter never trips.
+ * Extra urgency: montree.xyz is moving to grey-cloud (DNS-only), so `cf-connecting-ip` will
+ * stop being sent and branch 2 becomes the LIVE path rather than a fallback. Do not "simplify"
+ * this to [0] — see the vault-unlock keying test, which locks the contract down.
  */
 export function getClientIP(headers: Headers): string {
   const cfConnecting = headers.get('cf-connecting-ip')?.trim();

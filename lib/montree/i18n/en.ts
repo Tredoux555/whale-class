@@ -1423,6 +1423,12 @@ export const en = {
   'parentMessages.overview': 'Overview',
   'parentMessages.totalMessages': 'Total Messages',
   'parentMessages.unread': 'Unread',
+  'parentMessages.today': 'Today',
+  'parentMessages.backToList': 'Back to messages',
+  'parentMessages.joinCall': 'Join',
+  'parentMessages.meetingLive': 'Meeting ready',
+  'parentMessages.openMeeting': 'Open',
+  'parentMessages.upcomingMeeting': 'Upcoming meeting',
 
   // Phase 8 — Parent Weekly Review
   'parentWeeklyReview.loadingReport': 'Loading report...',
@@ -2071,6 +2077,7 @@ export const en = {
   'parent.dashboard.statusMastered': '✓ Mastered',
   'parent.dashboard.statusPracticing': 'Practicing',
   'parent.dashboard.statusStarted': 'Started',
+  'parent.dashboard.rsvpFailed': 'Could not save RSVP',
 
   // Home Portal Chat
   'home.portal.greetingDefault': 'Hi there! I\'m your Montessori guide. How can I help today?',

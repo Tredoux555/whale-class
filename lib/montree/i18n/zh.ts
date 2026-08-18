@@ -1396,6 +1396,12 @@ export const zh = {
   'parentMessages.overview': '概览',
   'parentMessages.totalMessages': '总消息数',
   'parentMessages.unread': '未读',
+  'parentMessages.today': '今天',
+  'parentMessages.backToList': '返回消息列表',
+  'parentMessages.joinCall': '加入',
+  'parentMessages.meetingLive': '会议已就绪',
+  'parentMessages.openMeeting': '打开',
+  'parentMessages.upcomingMeeting': '即将开始的会议',
 
   // Phase 8 — Parent Weekly Review
   'parentWeeklyReview.loadingReport': '加载报告中...',
@@ -2031,6 +2037,7 @@ export const zh = {
   'parent.dashboard.statusMastered': '✓ 已掌握',
   'parent.dashboard.statusPracticing': '练习中',
   'parent.dashboard.statusStarted': '已开始',
+  'parent.dashboard.rsvpFailed': '无法保存回复',
 
   // Home Portal Chat
   'home.portal.greetingDefault': '你好！我是您的蒙特梭利指导老师。今天有什么可以帮您的吗？',

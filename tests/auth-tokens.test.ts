@@ -99,8 +99,8 @@ describe('auth-domain isolation (parent vs montree)', () => {
   });
 });
 
-describe('token TTL (step 4 — no more 365-day tokens)', () => {
-  it('issues a ~30-day token by default, not a year', async () => {
+describe('token TTL (deliberate effectively-permanent default)', () => {
+  it('issues an effectively-permanent ~10-year token by default (Tredoux, Jul 5 2026 — see server-auth.ts)', async () => {
     const token = await createMontreeToken({
       sub: 'teacher-1',
       schoolId: 'school-A',
@@ -110,9 +110,11 @@ describe('token TTL (step 4 — no more 365-day tokens)', () => {
     expect(iat).toBeTypeOf('number');
     expect(exp).toBeTypeOf('number');
     const days = ((exp as number) - (iat as number)) / 86400;
-    // Default is 30 days. Guard: must be well under the old 365-day value.
-    expect(days).toBeGreaterThan(0);
-    expect(days).toBeLessThanOrEqual(31);
-    expect(days).toBeLessThan(90);
+    // MONTREE_JWT_TTL_DAYS defaults to 3650 (~10 years) ON PURPOSE — a teacher on
+    // their own classroom device must never be silently logged out. See the
+    // "🚨 Deliberately effectively-permanent" rationale in lib/montree/server-auth.ts.
+    // ±1 day of slack absorbs leap-second / rounding noise.
+    expect(days).toBeGreaterThanOrEqual(3649);
+    expect(days).toBeLessThanOrEqual(3651);
   });
 });

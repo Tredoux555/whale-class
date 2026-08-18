@@ -86,6 +86,46 @@ const nextConfig: NextConfig = {
           { key: 'Service-Worker-Allowed', value: '/story/' },
         ],
       },
+      // (Session 140 convention, extended to coach-sw + workbox — health check
+      // Aug 18.) The three workers below were missed by the original pass and
+      // were still being edge-cached with the default TTL, so they carry the
+      // exact same no-cache treatment as montree-sw/story-sw above.
+      //   /coach-sw.js       — Lyf Coach web-push worker, registered with
+      //                        scope '/lyf-coach/' (components/story/lyf-coach/
+      //                        EnableRemindersBell.tsx), so it needs the
+      //                        matching Service-Worker-Allowed to claim it.
+      //   /sw.js             — the next-pwa generated root worker. Root scope
+      //                        is its default; the header is stated explicitly
+      //                        to match the entries above.
+      //   /workbox-:hash.js  — the runtime sw.js pulls in via importScripts.
+      //                        Content-hashed per build, so the ':hash' named
+      //                        param (standard Next.js header source syntax,
+      //                        same family as ':path*' used further down)
+      //                        matches whichever hash the current build emits.
+      //                        Not a registered worker itself → no
+      //                        Service-Worker-Allowed. Without no-cache a stale
+      //                        edge copy can pair a NEW sw.js with an OLD
+      //                        workbox runtime.
+      {
+        source: '/coach-sw.js',
+        headers: [
+          { key: 'Cache-Control', value: 'no-cache, must-revalidate' },
+          { key: 'Service-Worker-Allowed', value: '/lyf-coach/' },
+        ],
+      },
+      {
+        source: '/sw.js',
+        headers: [
+          { key: 'Cache-Control', value: 'no-cache, must-revalidate' },
+          { key: 'Service-Worker-Allowed', value: '/' },
+        ],
+      },
+      {
+        source: '/workbox-:hash.js',
+        headers: [
+          { key: 'Cache-Control', value: 'no-cache, must-revalidate' },
+        ],
+      },
       // ────────────────────────────────────────────────────────────────────
       // EDGE-CACHE PUBLIC, PER-USER-FREE PAGES (Session: SSR locale-cookie pass)
       // The root app/layout.tsx reads headers() (x-hostname) for domain-aware

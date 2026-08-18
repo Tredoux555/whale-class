@@ -3,8 +3,12 @@
 // down the security-critical contract of how the route calls the shared rate
 // limiter, WITHOUT exercising the real limiter / bcrypt / jose:
 //   • key = `${authenticatedAdmin}|${ip}` — derived from the verified admin
-//     identity + the app-standard getClientIP (FIRST x-forwarded-for hop),
-//     NOT the raw attacker-rotatable header blob.
+//     identity + the app-standard getClientIP (LAST x-forwarded-for hop — the
+//     entry our trusted edge appended, which a client cannot forge), NOT the
+//     raw attacker-rotatable header blob and NOT the client-supplied first hop.
+//     See the trust-order block in lib/montree/audit-logger.ts. This assertion
+//     was corrected Aug 18 2026: it had pinned the pre-hardening first-hop
+//     contract, which would let an attacker rotate limiter buckets at will.
 //   • failMode 'closed' — a limiter backend error denies (429), not allows.
 //   • a 429 from the limiter short-circuits BEFORE any bcrypt password check.
 //
@@ -27,6 +31,9 @@ vi.mock('@/lib/story-db', () => ({
   getSupabase: vi.fn(() => ({ from: () => ({ insert: () => Promise.resolve({ error: null }) }) })),
   verifyAdminToken: vi.fn(),
   getJWTSecret: vi.fn(() => new TextEncoder().encode('test-only-vault-secret-1234567890')),
+  // Added Jun 15 2026 (commit 467f64b35): the route now also imports the hard
+  // vault-owner gate. Real signature is async (authHeader) => Promise<boolean>.
+  isVaultOwner: vi.fn(async () => true),
 }));
 
 import { checkRateLimit } from '@/lib/rate-limiter';
@@ -53,16 +60,18 @@ beforeEach(() => {
 });
 
 describe('vault unlock — limiter keying (M2)', () => {
-  it('calls checkRateLimit keyed on authenticated admin + first XFF hop, failMode closed', async () => {
+  it('calls checkRateLimit keyed on authenticated admin + last XFF hop (trusted-edge-appended, anti-spoof), failMode closed', async () => {
     vi.mocked(checkRateLimit).mockResolvedValue({ allowed: false, retryAfterSeconds: 900 });
-    // Multiple XFF hops — getClientIP must take the FIRST, not the raw blob.
+    // Multiple XFF hops — getClientIP must take the LAST (appended by our own
+    // edge), not the raw blob and not the client-controlled leading entries.
     await POST(req({ xff: '198.51.100.9, 10.0.0.1, 70.0.0.1' }));
 
     expect(checkRateLimit).toHaveBeenCalledTimes(1);
     const [, key, endpoint, max, win, failMode] = vi.mocked(checkRateLimit).mock.calls[0];
-    expect(key).toBe(`${ADMIN}|198.51.100.9`);
-    expect(key).not.toContain('10.0.0.1');   // downstream hops excluded
-    expect(key).not.toContain(', ');          // not the raw header blob
+    expect(key).toBe(`${ADMIN}|70.0.0.1`);
+    expect(key).not.toContain('198.51.100.9'); // spoofable client-supplied hop excluded
+    expect(key).not.toContain('10.0.0.1');     // intermediate hops excluded
+    expect(key).not.toContain(', ');           // not the raw header blob
     expect(endpoint).toBe('/api/story/admin/vault/unlock');
     expect(max).toBe(5);
     expect(win).toBe(15);

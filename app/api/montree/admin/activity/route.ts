@@ -78,27 +78,57 @@ export async function GET(request: NextRequest) {
     const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     // Fetch all activity data in parallel (was 4 sequential queries)
+    //
+    // ── Why there is NO .gte() date filter here (health check, Aug 18 2026) ──
+    // It looks like these four could be narrowed to `monthAgo` (the widest
+    // window the counting code below uses) and have the JS post-filtering
+    // become redundant. They CANNOT: every one of these result sets also feeds
+    // an ALL-TIME "most recent activity" lookup, and a date filter would
+    // silently corrupt it.
+    //   • latest{Photo,Update,Obs,Session}ByTeacher → teacher_activity[].
+    //     last_active_at / last_activity_type. A teacher idle for 45 days
+    //     currently reports that date; under a 30-day filter they'd report
+    //     null ("never active").
+    //   • latest{Photo,Update}ByChild → student_coverage[].last_photo_at /
+    //     last_update_at / days_without_activity. A child untouched for 45
+    //     days currently reports 45; under a 30-day filter days_without_activity
+    //     falls back to the -1 "no baseline data" sentinel — which is NOT >= 7,
+    //     so summary.students_without_activity would DROP exactly the most
+    //     neglected children from the count it exists to raise. That is the
+    //     opposite of what the dashboard is for.
+    //   • activity_feed takes the newest 20 events all-time; a sparse school
+    //     would render fewer than 20 rows.
+    // So the date filtering stays in JS and these queries stay time-unbounded.
+    // What IS safe is a defensive row cap: combined with the existing
+    // `.order(<date>, desc)` each query keeps the NEWEST rows, so 5000 is far
+    // above any real school's volume and cannot change today's numbers, while
+    // bounding worst-case memory/payload if a tenant's data ever explodes.
+    const ACTIVITY_ROW_CAP = 5000;
     const [photosResult, workUpdatesResult, observationsResult, sessionsResult] = await Promise.all([
       supabase
         .from('montree_media')
         .select('id, captured_by, captured_at, child_id')
         .in('captured_by', teacherIds)
-        .order('captured_at', { ascending: false }),
+        .order('captured_at', { ascending: false })
+        .limit(ACTIVITY_ROW_CAP),
       supabase
         .from('montree_child_progress')
         .select('id, teacher_id, updated_at, child_id, work_name')
         .in('teacher_id', teacherIds)
-        .order('updated_at', { ascending: false }),
+        .order('updated_at', { ascending: false })
+        .limit(ACTIVITY_ROW_CAP),
       supabase
         .from('montree_behavioral_observations')
         .select('id, observed_by, observed_at, child_id')
         .in('observed_by', teacherIds)
-        .order('observed_at', { ascending: false }),
+        .order('observed_at', { ascending: false })
+        .limit(ACTIVITY_ROW_CAP),
       supabase
         .from('montree_work_sessions')
         .select('id, teacher_id, observed_at, child_id')
         .in('teacher_id', teacherIds)
-        .order('observed_at', { ascending: false }),
+        .order('observed_at', { ascending: false })
+        .limit(ACTIVITY_ROW_CAP),
     ]);
 
     const photos = photosResult.data;
