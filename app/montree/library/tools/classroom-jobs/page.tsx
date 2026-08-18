@@ -32,6 +32,7 @@ import { getSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
 import { isBrandKitActive, PLAIN_TOKENS, type BrandKit } from '@/lib/montree/brand-kit/types';
 import {
+  DEFAULT_JOBS,
   JOBS_POSTER_VERSION,
   MAX_JOBS,
   MAX_ICON_LEN,
@@ -96,6 +97,14 @@ const COPY: Record<string, string> = {
   'classroomJobs.sheetMany': 'Prints on about {n} A4 sheets',
   'classroomJobs.newJob': 'New job',
   'classroomJobs.remove': 'Remove',
+  'classroomJobs.confirmRemove': 'Remove this job?',
+  'classroomJobs.confirmYes': 'Remove',
+  'classroomJobs.confirmNo': 'Keep',
+  'classroomJobs.moveUp': 'Move up',
+  'classroomJobs.moveDown': 'Move down',
+  'classroomJobs.restoreDefaults': 'Restore default jobs',
+  'classroomJobs.restoreHint': 'Adds back the starting jobs you removed. Your own jobs stay.',
+  'classroomJobs.needOneJob': 'A chart needs at least one job.',
   'classroomJobs.jobsFull': 'That is as many jobs as one chart holds.',
   'classroomJobs.blankName': 'Every job needs a name before the chart can be saved.',
 };
@@ -496,6 +505,22 @@ export default function ClassroomJobsPage() {
    */
   const hasBlankName = jobs.some((j) => !j.name.trim());
 
+  /**
+   * How many of the starting jobs have been deleted. Drives whether the
+   * restore affordance is offered at all — a teacher who still has all twelve
+   * does not need a button that would do nothing.
+   *
+   * 🚨 A DELETED DEFAULT STAYS DELETED. Nothing in the load path, the parser or
+   * the route re-merges DEFAULT_JOBS into a saved chart — `defaultJobsPoster()`
+   * is only ever reached when a room has NEVER saved one. This count is the
+   * only place the default list is consulted after first load, and it is read,
+   * never applied, unless the teacher taps.
+   */
+  const missingDefaults = useMemo(() => {
+    const have = new Set(jobs.map((j) => j.id));
+    return DEFAULT_JOBS.filter((d) => !have.has(d.id)).length;
+  }, [jobs]);
+
   // ── edits ─────────────────────────────────────────────────────────────────
 
   const patchJob = useCallback((id: string, patch: Partial<ClassroomJob>) => {
@@ -506,6 +531,28 @@ export default function ClassroomJobsPage() {
   const removeJob = useCallback((id: string) => {
     setSaveState('idle');
     setJobs((prev) => prev.filter((j) => j.id !== id));
+  }, []);
+
+  /**
+   * Move one job a single place up or down. Print order IS stored order — the
+   * poster maps the array as it stands — so this is the whole feature; nothing
+   * downstream sorts.
+   *
+   * Swap rather than splice-and-insert: a swap is its own inverse, so tapping
+   * ▲ then ▼ lands exactly where you started, which is what somebody nudging a
+   * list expects. Out-of-range taps return `prev` UNCHANGED (the same object,
+   * not a copy) so the top and bottom rows cannot manufacture a dirty chart.
+   */
+  const moveJob = useCallback((id: string, delta: -1 | 1) => {
+    setSaveState('idle');
+    setJobs((prev) => {
+      const i = prev.findIndex((j) => j.id === id);
+      const k = i + delta;
+      if (i === -1 || k < 0 || k >= prev.length) return prev;
+      const next = [...prev];
+      [next[i], next[k]] = [next[k], next[i]];
+      return next;
+    });
   }, []);
 
   const addJob = useCallback(() => {
@@ -529,6 +576,31 @@ export default function ClassroomJobsPage() {
   const clearAll = useCallback(() => {
     setSaveState('idle');
     setJobs((prev) => prev.map((j) => ({ ...j, childId: null })));
+  }, []);
+
+  /**
+   * Put back the starting jobs that have been deleted — and ONLY those.
+   *
+   * 🚨 THIS IS ADDITIVE, NOT A RESET, and that is the whole design. A reset
+   * would need a confirm prompt because it would throw away every custom job
+   * and every assignment; an additive restore needs no prompt because it
+   * cannot lose anything a teacher typed. A default that has been RENAMED is
+   * still present by id, so it is left exactly as renamed rather than being
+   * reverted underneath somebody. The restored ones land at the end, where new
+   * things belong, and the reorder arrows move them from there.
+   */
+  const restoreDefaults = useCallback(() => {
+    setSaveState('idle');
+    setJobs((prev) => {
+      const have = new Set(prev.map((j) => j.id));
+      const missing = DEFAULT_JOBS.filter((d) => !have.has(d.id)).map((d) => ({
+        ...d,
+        active: true,
+        childId: null,
+      }));
+      if (missing.length === 0) return prev;
+      return [...prev, ...missing].slice(0, MAX_JOBS);
+    });
   }, []);
 
   /**
@@ -576,6 +648,19 @@ export default function ClassroomJobsPage() {
       setSaveState('error');
     }
   }, [classroomId, canSave, jobs]);
+
+  /** Built once rather than per row — every JobRow shows the same six. */
+  const rowLabels = useMemo(
+    () => ({
+      remove: tx('classroomJobs.remove'),
+      confirmRemove: tx('classroomJobs.confirmRemove'),
+      confirmYes: tx('classroomJobs.confirmYes'),
+      confirmNo: tx('classroomJobs.confirmNo'),
+      moveUp: tx('classroomJobs.moveUp'),
+      moveDown: tx('classroomJobs.moveDown'),
+    }),
+    [tx]
+  );
 
   // ── the theme ─────────────────────────────────────────────────────────────
   // `isBrandKitActive` also rejects a kit that is switched on but paints
@@ -759,23 +844,26 @@ export default function ClassroomJobsPage() {
               <p className="text-center py-8 text-white/40">{tx('classroomJobs.noJobs')}</p>
             ) : (
               <div className="space-y-2">
-                {jobs.map((job) => (
+                {jobs.map((job, i) => (
                   <JobRow
                     key={job.id}
                     job={job}
+                    index={i}
+                    total={jobs.length}
                     students={students}
                     warn={!!job.childId && job.active && doubleBooked.has(job.childId)}
                     warnText={tx('classroomJobs.doubleBooked')}
                     unassignedLabel={tx('classroomJobs.unassigned')}
-                    removeLabel={tx('classroomJobs.remove')}
+                    labels={rowLabels}
                     onPatch={patchJob}
                     onRemove={removeJob}
+                    onMove={moveJob}
                   />
                 ))}
               </div>
             )}
 
-            <div className="flex items-center gap-3 mt-3">
+            <div className="flex items-center flex-wrap gap-3 mt-3">
               <button
                 onClick={addJob}
                 disabled={jobs.length >= MAX_JOBS}
@@ -783,6 +871,17 @@ export default function ClassroomJobsPage() {
               >
                 ＋ {tx('classroomJobs.addJob')}
               </button>
+              {/* Offered only when there is something to restore — see the
+                  `missingDefaults` note. Additive, so it needs no confirm. */}
+              {missingDefaults > 0 && (
+                <button
+                  onClick={restoreDefaults}
+                  title={tx('classroomJobs.restoreHint')}
+                  className="btn btn-ghost btn-sm"
+                >
+                  ↺ {tx('classroomJobs.restoreDefaults')} ({missingDefaults})
+                </button>
+              )}
               {jobs.length >= MAX_JOBS && (
                 <span className="text-xs text-white/40">{tx('classroomJobs.jobsFull')}</span>
               )}
@@ -793,11 +892,29 @@ export default function ClassroomJobsPage() {
           <section className="flex items-center flex-wrap gap-3">
             <button
               onClick={save}
-              disabled={!canSave || saveState === 'saving' || !dirty || hasBlankName}
+              disabled={
+                !canSave ||
+                saveState === 'saving' ||
+                !dirty ||
+                hasBlankName ||
+                jobs.length === 0
+              }
               className="btn btn-primary btn-sm"
             >
               {saveState === 'saving' ? tx('classroomJobs.saving') : tx('classroomJobs.save')}
             </button>
+            {/*
+              🚨 THE ONE WAY DELETED DEFAULTS COULD COME BACK, CLOSED HERE.
+              `parseJobsPoster` reads an EMPTY job list as "not a chart" and
+              returns null, and a null read falls back to `defaultJobsPoster()`
+              — so saving an empty chart would hand the teacher all twelve
+              starting jobs again on the next load. The save is held instead.
+              Deleting eleven of twelve persists perfectly; deleting the twelfth
+              asks for one job back first.
+            */}
+            {jobs.length === 0 && (
+              <span className="text-xs text-amber-300/90">{tx('classroomJobs.needOneJob')}</span>
+            )}
             {hasBlankName && (
               <span className="text-xs text-amber-300/90">{tx('classroomJobs.blankName')}</span>
             )}
@@ -846,29 +963,54 @@ export default function ClassroomJobsPage() {
 }
 
 // ── the editor row ──────────────────────────────────────────────────────────
-// Icon, name, on/off and who holds it — the four things a teacher changes.
-// Switching a job OFF keeps it: the wording and the emoji survive a term.
+// Everything about a job is editable here: its emoji, its name, whether it runs
+// this term, who holds it, where it sits in the order, and whether it exists at
+// all. Nothing is special-cased for the twelve starting jobs — a default is a
+// row like any other, because a teacher who does not run a Line Leader should
+// not have to look at one forever.
+//
+// Switching a job OFF is the gentler move and is still offered: it keeps the
+// wording and the emoji for the term it comes back.
 
 function JobRow({
   job,
+  index,
+  total,
   students,
   warn,
   warnText,
   unassignedLabel,
-  removeLabel,
+  labels,
   onPatch,
   onRemove,
+  onMove,
 }: {
   job: ClassroomJob;
+  index: number;
+  total: number;
   students: Student[];
   warn: boolean;
   warnText: string;
   unassignedLabel: string;
-  removeLabel: string;
+  labels: {
+    remove: string;
+    confirmRemove: string;
+    confirmYes: string;
+    confirmNo: string;
+    moveUp: string;
+    moveDown: string;
+  };
   onPatch: (id: string, patch: Partial<ClassroomJob>) => void;
   onRemove: (id: string) => void;
+  onMove: (id: string, delta: -1 | 1) => void;
 }) {
   const held = job.childId ? students.find((s) => s.id === job.childId) : undefined;
+
+  /** Deleting a default is now allowed, so deleting anything asks once. Two
+   *  taps rather than a `confirm()` dialog: this screen is used on a phone at
+   *  the back of a classroom, and a native modal there is a bigger interruption
+   *  than the thing it is guarding. */
+  const [confirming, setConfirming] = useState(false);
 
   return (
     <div
@@ -898,28 +1040,60 @@ function JobRow({
           onChange={(e) => onPatch(job.id, { name: e.target.value })}
           className="flex-1 min-w-0 rounded-lg bg-white/[0.06] border border-[rgba(52,211,153,0.15)] text-white/90 text-sm px-2.5 py-1.5"
         />
+        {/* Order. Disabled at the ends rather than hidden, so the row's controls
+            do not shift position as a job travels up the list. */}
         <button
-          onClick={() => onRemove(job.id)}
-          title={removeLabel}
-          aria-label={removeLabel}
+          onClick={() => onMove(job.id, -1)}
+          disabled={index === 0}
+          title={labels.moveUp}
+          aria-label={labels.moveUp}
+          className="btn btn-ghost btn-icon btn-sm shrink-0"
+        >
+          ▲
+        </button>
+        <button
+          onClick={() => onMove(job.id, 1)}
+          disabled={index === total - 1}
+          title={labels.moveDown}
+          aria-label={labels.moveDown}
+          className="btn btn-ghost btn-icon btn-sm shrink-0"
+        >
+          ▼
+        </button>
+        <button
+          onClick={() => setConfirming(true)}
+          title={labels.remove}
+          aria-label={labels.remove}
           className="btn btn-ghost btn-icon btn-sm shrink-0"
         >
           ✕
         </button>
       </div>
 
-      <select
-        value={job.childId ?? ''}
-        onChange={(e) => onPatch(job.id, { childId: e.target.value || null })}
-        className="w-full rounded-lg bg-[#0f2417] border border-[rgba(52,211,153,0.15)] text-white/90 text-sm px-2.5 py-1.5"
-      >
-        <option value="">{unassignedLabel}</option>
-        {students.map((s) => (
-          <option key={s.id} value={s.id}>
-            {s.name}
-          </option>
-        ))}
-      </select>
+      {confirming ? (
+        <div className="flex items-center flex-wrap gap-2 rounded-lg border border-rose-400/30 bg-rose-500/10 px-2.5 py-2">
+          <span className="text-xs text-white/80">{labels.confirmRemove}</span>
+          <button onClick={() => onRemove(job.id)} className="btn btn-danger btn-sm">
+            {labels.confirmYes}
+          </button>
+          <button onClick={() => setConfirming(false)} className="btn btn-ghost btn-sm">
+            {labels.confirmNo}
+          </button>
+        </div>
+      ) : (
+        <select
+          value={job.childId ?? ''}
+          onChange={(e) => onPatch(job.id, { childId: e.target.value || null })}
+          className="w-full rounded-lg bg-[#0f2417] border border-[rgba(52,211,153,0.15)] text-white/90 text-sm px-2.5 py-1.5"
+        >
+          <option value="">{unassignedLabel}</option>
+          {students.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+        </select>
+      )}
 
       {warn && held && (
         <p className="text-xs text-amber-300/90">
