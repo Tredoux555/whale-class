@@ -12,8 +12,18 @@
 // about the school, not a fact about class documents — anything else that ever
 // wants to show a school's mark reads that column, not this feature's blob.
 //
-// 🚨 NO MIGRATION. Both `logo_url` and `settings` (JSONB) already exist on
-// `montree_schools`. Nothing here creates a table, a column or a bucket.
+// A CLASSROOM may hold its own, one folder down and one table across:
+//
+//   montree_classrooms.settings.brand_kit   the room's kit, if it has one
+//
+// An ACTIVE room kit beats the school's; anything else falls back to it (the
+// rule lives in lib/montree/brand-kit/resolve.ts, and only there). Scope is
+// chosen by ONE optional `classroomId` on every verb — absent, this route is
+// byte-for-byte the school-only route it has always been.
+//
+// 🚨 NO MIGRATION. `logo_url` and `settings` (JSONB) already exist on
+// `montree_schools`, and `settings` (JSONB) has been on `montree_classrooms`
+// since migration 067. Nothing here creates a table, a column or a bucket.
 //
 // 🚨 THE SERVER NEVER EXTRACTS. Palette extraction is a canvas job and runs in
 // the browser of the person who chose the logo (lib/montree/brand-kit/extract).
@@ -42,6 +52,10 @@ import {
   parseBrandKit,
   type BrandKit,
 } from '@/lib/montree/brand-kit/types';
+import {
+  readBrandKitFromSettings,
+  resolveBrandKit,
+} from '@/lib/montree/brand-kit/resolve';
 
 export const dynamic = 'force-dynamic';
 
@@ -73,6 +87,28 @@ const ALLOWED_MIME: Record<string, string> = {
 
 function folderFor(schoolId: string): string {
   return `brand/${schoolId}`;
+}
+
+/**
+ * A classroom's own folder, nested UNDER its school's.
+ *
+ * 🚨 THE NESTING IS THE POINT. Every delete in this file guards on a prefix
+ * built from the SESSION's school id, and a classroom folder that lived beside
+ * the school's rather than inside it would need a second, separate guard that
+ * somebody would eventually forget to write.
+ */
+function classroomFolderFor(schoolId: string, classroomId: string): string {
+  return `brand/${schoolId}/classroom/${classroomId}`;
+}
+
+/** A classroom id arrives from a query string or a form field. Anything that
+ *  is not a uuid is rejected before it reaches Postgres, which would otherwise
+ *  raise `invalid input syntax for type uuid` and be read here as "the row is
+ *  unreadable" — a much vaguer answer than "you sent nonsense". */
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isUuid(value: string): boolean {
+  return UUID_RE.test(value);
 }
 
 /** Only teachers, principals and homeschool parents configure a school's own
@@ -149,7 +185,66 @@ function kitFromRow(row: SchoolBrandRow | null): BrandKit | null {
   return kit;
 }
 
-// ── GET: the caller's school kit ────────────────────────────────────────────
+// ── the classroom half (2026-08) ────────────────────────────────────────────
+//
+// A room may carry its own emblem, stored the same way one folder down:
+// `montree_classrooms.settings.brand_kit` (the column has existed since
+// migration 067 — NO MIGRATION). There is deliberately NO classroom-level
+// `logo_url` column: a school's mark is a fact about the school and other
+// features read that column, whereas a room's emblem is a fact about this
+// feature alone and lives entirely inside the kit.
+
+interface ClassroomBrandRow {
+  id: string;
+  school_id: string;
+  settings: Record<string, unknown> | null;
+}
+
+/**
+ * The classroom, re-proved to belong to the SESSION's school.
+ *
+ * 🚨 EXISTENCE IS NOT OWNERSHIP — the Jul-3 lesson, and the only reason this
+ * function exists rather than a bare select. The id comes off a query string
+ * or a form field, so it is checked against `auth.schoolId` on EVERY call, and
+ * a row belonging to another school reads identically to a row that is not
+ * there: `'forbidden'`. Telling a caller which of the two it was is a tenant
+ * enumeration oracle.
+ *
+ * `null` means "could not read" (a soft failure, e.g. the column is missing on
+ * some ancient project) — the callers decide what that costs them, and they do
+ * not agree: a READ degrades to "no classroom kit", a WRITE must refuse,
+ * because silently writing to the school instead would rebrand the building.
+ */
+async function loadClassroomBrand(
+  supabase: ReturnType<typeof getSupabase>,
+  schoolId: string,
+  classroomId: string
+): Promise<ClassroomBrandRow | 'forbidden' | null> {
+  const { data, error } = await supabase
+    .from('montree_classrooms')
+    .select('id, school_id, settings')
+    .eq('id', classroomId)
+    .maybeSingle();
+
+  if (error) {
+    console.warn('[brand-kit] classroom read soft-failed:', error.message);
+    return null;
+  }
+  const row = (data as ClassroomBrandRow | null) ?? null;
+  if (!row || row.school_id !== schoolId) return 'forbidden';
+  return row;
+}
+
+// ── GET: the kits in play for this caller ───────────────────────────────────
+//
+// `?classroomId=` is OPTIONAL and purely additive. Without it this is byte-for
+// byte the read it has always been: the school's own kit on `brandKit`, raw,
+// disabled ones included — Settings renders its off state from that object, so
+// it must never be filtered through `isBrandKitActive` on the way out.
+//
+// With it, three more fields come back: the room's own kit, the school's, and
+// `kit`/`scope` — the ANSWER, already resolved. A renderer reads `kit`; only a
+// screen that EDITS a theme reads the two raw ones.
 
 export async function GET(request: NextRequest) {
   try {
@@ -157,22 +252,68 @@ export async function GET(request: NextRequest) {
     if (auth instanceof NextResponse) return auth;
 
     const supabase = getSupabase();
-    const row = await loadSchoolBrand(supabase, auth.schoolId);
+    const { searchParams } = new URL(request.url);
+    const classroomId =
+      searchParams.get('classroomId') || searchParams.get('classroom_id') || '';
+
+    if (classroomId && !isUuid(classroomId)) {
+      return NextResponse.json({ error: 'Invalid classroomId' }, { status: 400 });
+    }
+
+    const [row, classroomRow] = await Promise.all([
+      loadSchoolBrand(supabase, auth.schoolId),
+      classroomId
+        ? loadClassroomBrand(supabase, auth.schoolId, classroomId)
+        : Promise.resolve(null as ClassroomBrandRow | 'forbidden' | null),
+    ]);
+
+    if (classroomRow === 'forbidden') {
+      return NextResponse.json({ error: 'Classroom not found' }, { status: 403 });
+    }
+
+    const schoolKit = kitFromRow(row);
+    const classroomKit = classroomRow ? readBrandKitFromSettings(classroomRow.settings) : null;
+    const resolved = resolveBrandKit(classroomKit, schoolKit);
 
     return NextResponse.json({
+      // 🚨 LEGACY FIELD, UNCHANGED MEANING: the SCHOOL's own kit, raw. Settings
+      // has always read this and needs a disabled kit to come back disabled, so
+      // it is never swapped for the resolved one — new callers read `kit`.
       success: true,
-      brandKit: kitFromRow(row),
+      brandKit: schoolKit,
       logoUrl: row && isSafeLogoUrl(row.logo_url) ? row.logo_url : null,
       /** False when the school row could not be read at all — the settings
        *  screen shows "not available on this school" instead of an empty form
        *  that silently fails to save. */
       available: row !== null,
+      // ── additive ──────────────────────────────────────────────────────────
+      /** The kit that would actually print, already proven active. */
+      kit: resolved.kit,
+      scope: resolved.scope,
+      /** The two RAW kits, for the screens that edit them. */
+      schoolKit,
+      classroomKit,
+      classroomId: classroomId || null,
+      /** False when a classroom WAS asked for and its row could not be read —
+       *  the card says so instead of offering a save that will 500. */
+      classroomAvailable: classroomId ? classroomRow !== null : true,
     });
   } catch (error) {
     console.error('[brand-kit] GET error:', error);
     // Even here: a settings page that cannot read the kit should render the
     // empty state, not an error screen.
-    return NextResponse.json({ success: true, brandKit: null, logoUrl: null, available: false });
+    return NextResponse.json({
+      success: true,
+      brandKit: null,
+      logoUrl: null,
+      available: false,
+      kit: null,
+      scope: 'none',
+      schoolKit: null,
+      classroomKit: null,
+      classroomId: null,
+      classroomAvailable: false,
+    });
   }
 }
 
@@ -185,6 +326,11 @@ export async function GET(request: NextRequest) {
 // The second exists because changing intensity re-solves the wash from the two
 // SOURCE colours already on the kit; asking a school to re-upload their logo to
 // move a slider would be absurd.
+//
+// EITHER shape may carry a `classroomId` — as a form field, a JSON property or
+// a query parameter — and that single value is the whole difference between
+// "this room's emblem" and "the building's". Absent, every line below behaves
+// exactly as it did before classrooms could be themed.
 
 export async function POST(request: NextRequest) {
   try {
@@ -196,12 +342,17 @@ export async function POST(request: NextRequest) {
 
     const supabase = getSupabase();
     const contentType = request.headers.get('content-type') || '';
+    const { searchParams } = new URL(request.url);
 
     let incoming: unknown = null;
     let file: File | null = null;
+    let classroomId =
+      searchParams.get('classroomId') || searchParams.get('classroom_id') || '';
 
     if (contentType.includes('multipart/form-data')) {
       const formData = await request.formData();
+      const formRoom = formData.get('classroomId');
+      if (typeof formRoom === 'string' && formRoom.length > 0) classroomId = formRoom;
       const raw = formData.get('kit');
       if (typeof raw === 'string' && raw.length > 0) {
         try {
@@ -219,6 +370,8 @@ export async function POST(request: NextRequest) {
       } catch {
         return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
       }
+      const bodyRoom = (body as { classroomId?: unknown } | null)?.classroomId;
+      if (typeof bodyRoom === 'string' && bodyRoom.length > 0) classroomId = bodyRoom;
       // 🚨 THE BARE BODY IS ONLY A KIT IF IT LOOKS LIKE ONE. Falling back from
       // `body.kit` to `body` is a convenience for clients that post the kit
       // unwrapped — but `parseBrandKit` fills every missing field with a plain
@@ -245,14 +398,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (classroomId && !isUuid(classroomId)) {
+      return NextResponse.json({ error: 'Invalid classroomId' }, { status: 400 });
+    }
+
     const existingRow = await loadSchoolBrand(supabase, auth.schoolId);
-    if (!existingRow) {
+
+    // 🚨 THE ROOM IS RE-PROVED ON EVERY SAVE, from the session — never from the
+    // body. And a classroom row that cannot be READ must not fall through to
+    // the school: a save that silently rebrands the whole building because one
+    // select hiccuped is the worst outcome this route has.
+    let classroomRow: ClassroomBrandRow | null = null;
+    if (classroomId) {
+      const found = await loadClassroomBrand(supabase, auth.schoolId, classroomId);
+      if (found === 'forbidden') {
+        return NextResponse.json({ error: 'Classroom not found' }, { status: 403 });
+      }
+      if (!found) {
+        return NextResponse.json(
+          { error: 'This classroom cannot store a brand kit.' },
+          { status: 500 }
+        );
+      }
+      classroomRow = found;
+    } else if (!existingRow) {
       return NextResponse.json(
         { error: 'This school cannot store a brand kit.' },
         { status: 500 }
       );
     }
-    const existingKit = kitFromRow(existingRow);
+
+    const existingKit = classroomRow
+      ? readBrandKitFromSettings(classroomRow.settings)
+      : kitFromRow(existingRow);
+    const toClassroom = classroomRow !== null;
+    const targetFolder = toClassroom
+      ? classroomFolderFor(auth.schoolId, classroomId)
+      : folderFor(auth.schoolId);
 
     // ── the file, if there is one ──────────────────────────────────────────
     // 🚨 THE SERVER OWNS THE LOGO URL. The posted kit's `logoUrl`/`logoPath`
@@ -280,7 +462,7 @@ export async function POST(request: NextRequest) {
       // Timestamped key, never a fixed name: a fixed key would be served stale
       // from the Cloudflare cache for as long as its TTL, and the school would
       // print their OLD logo for a week after replacing it.
-      const key = `${folderFor(auth.schoolId)}/logo-${Date.now()}-${Math.random()
+      const key = `${targetFolder}/logo-${Date.now()}-${Math.random()
         .toString(36)
         .slice(2, 8)}.${ext}`;
 
@@ -308,34 +490,69 @@ export async function POST(request: NextRequest) {
 
     // Merge, never replace. `settings` is a shared JSONB bag — menu config,
     // feature preferences, whatever a future feature parks there — and writing
-    // `{ brand_kit }` over it would quietly delete all of it.
-    const settings = {
-      ...settingsBag(existingRow.settings),
-      brand_kit: kit,
-    };
+    // `{ brand_kit }` over it would quietly delete all of it. True of BOTH
+    // rows: a classroom's settings bag is just as shared as a school's.
+    if (classroomRow) {
+      const settings = { ...settingsBag(classroomRow.settings), brand_kit: kit };
+      // 🚨 `montree_schools.logo_url` IS NOT TOUCHED HERE. That column is the
+      // school's mark of record and other features read it; a single room
+      // choosing a whale for its own sheets must not restamp the building.
+      // The `school_id` filter is belt-and-braces on top of loadClassroomBrand.
+      const { error: updateError } = await supabase
+        .from('montree_classrooms')
+        .update({ settings })
+        .eq('id', classroomRow.id)
+        .eq('school_id', auth.schoolId);
 
-    const { error: updateError } = await supabase
-      .from('montree_schools')
-      .update({ logo_url: logoUrl, settings })
-      .eq('id', auth.schoolId);
+      if (updateError) {
+        console.error('[brand-kit] classroom save error:', updateError.message);
+        return NextResponse.json({ error: 'Could not save the brand kit' }, { status: 500 });
+      }
+    } else {
+      const settings = {
+        ...settingsBag(existingRow?.settings),
+        brand_kit: kit,
+      };
 
-    if (updateError) {
-      console.error('[brand-kit] save error:', updateError.message);
-      return NextResponse.json({ error: 'Could not save the brand kit' }, { status: 500 });
+      const { error: updateError } = await supabase
+        .from('montree_schools')
+        .update({ logo_url: logoUrl, settings })
+        .eq('id', auth.schoolId);
+
+      if (updateError) {
+        console.error('[brand-kit] save error:', updateError.message);
+        return NextResponse.json({ error: 'Could not save the brand kit' }, { status: 500 });
+      }
     }
 
     // The old file, once the new one is safely referenced. Best-effort and
     // strictly after the update: a failed cleanup costs a few KB, whereas
     // deleting first and then failing to save costs the school its logo.
+    // The prefix guard is the TARGET folder's, so a classroom save can only
+    // ever delete out of its own room's folder.
     if (file && previousPath && previousPath !== logoPath) {
-      const prefix = `${folderFor(auth.schoolId)}/`;
+      const prefix = `${targetFolder}/`;
       if (previousPath.startsWith(prefix) && !previousPath.includes('..')) {
         const { error: removeError } = await supabase.storage.from(BUCKET).remove([previousPath]);
         if (removeError) console.warn('[brand-kit] old logo cleanup failed:', removeError.message);
       }
     }
 
-    return NextResponse.json({ success: true, brandKit: kit });
+    const schoolKit = toClassroom ? kitFromRow(existingRow) : kit;
+    const classroomKit = toClassroom ? kit : null;
+    const resolved = resolveBrandKit(classroomKit, schoolKit);
+
+    return NextResponse.json({
+      // Legacy: the kit that was just saved, whichever scope it belongs to.
+      success: true,
+      brandKit: kit,
+      // Additive, same vocabulary as GET.
+      kit: resolved.kit,
+      scope: resolved.scope,
+      schoolKit,
+      classroomKit,
+      classroomId: toClassroom ? classroomId : null,
+    });
   } catch (error) {
     console.error('[brand-kit] POST error:', error);
     return NextResponse.json(
@@ -354,6 +571,11 @@ export async function POST(request: NextRequest) {
 // stored file and the kit. The default is the quiet one on purpose: a school
 // that turns the theme off for one term should get their crest back with one
 // tap, not have to find the logo file again.
+//
+// `?classroomId=` narrows all of that to ONE ROOM and touches nothing else —
+// the school's kit, its `logo_url` column and its stored file are all left
+// exactly as they were, and the room falls back to the school's theme the
+// moment its own is gone. Clearing a room is never a way to clear a building.
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -364,7 +586,29 @@ export async function DELETE(request: NextRequest) {
     }
 
     const supabase = getSupabase();
-    const purge = new URL(request.url).searchParams.get('purge') === '1';
+    const requestUrl = new URL(request.url);
+    const purge = requestUrl.searchParams.get('purge') === '1';
+    const classroomId =
+      requestUrl.searchParams.get('classroomId') ||
+      requestUrl.searchParams.get('classroom_id') ||
+      '';
+
+    if (classroomId) {
+      if (!isUuid(classroomId)) {
+        return NextResponse.json({ error: 'Invalid classroomId' }, { status: 400 });
+      }
+      const found = await loadClassroomBrand(supabase, auth.schoolId, classroomId);
+      if (found === 'forbidden') {
+        return NextResponse.json({ error: 'Classroom not found' }, { status: 403 });
+      }
+      if (!found) {
+        return NextResponse.json(
+          { error: 'This classroom cannot store a brand kit.' },
+          { status: 500 }
+        );
+      }
+      return classroomDelete(supabase, auth.schoolId, found, purge);
+    }
 
     const row = await loadSchoolBrand(supabase, auth.schoolId);
     if (!row) return NextResponse.json({ success: true, brandKit: null });
@@ -413,4 +657,84 @@ export async function DELETE(request: NextRequest) {
     console.error('[brand-kit] DELETE error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
+}
+
+// ── DELETE, the classroom half ──────────────────────────────────────────────
+//
+// The same two moves as the school path — disable by default, forget on
+// `?purge=1` — pointed at one room's `settings.brand_kit` and one room's
+// storage folder. Split out rather than threaded through the school handler
+// with flags: the two writes touch different tables and different columns, and
+// a shared body would be one `if` away from clearing `montree_schools.logo_url`
+// because somebody was removing a classroom emblem.
+
+async function classroomDelete(
+  supabase: ReturnType<typeof getSupabase>,
+  schoolId: string,
+  row: ClassroomBrandRow,
+  purge: boolean
+): Promise<NextResponse> {
+  const existingKit = readBrandKitFromSettings(row.settings);
+  const settings = { ...settingsBag(row.settings) };
+  const prefix = `${classroomFolderFor(schoolId, row.id)}/`;
+
+  /** The room is themed by whatever survives this call, falling back to the
+   *  school — so the caller learns the ANSWER, not just what was removed. */
+  const answer = async (classroomKit: BrandKit | null) => {
+    const schoolKit = kitFromRow(await loadSchoolBrand(supabase, schoolId));
+    const resolved = resolveBrandKit(classroomKit, schoolKit);
+    return NextResponse.json({
+      success: true,
+      brandKit: classroomKit,
+      kit: resolved.kit,
+      scope: resolved.scope,
+      schoolKit,
+      classroomKit,
+      classroomId: row.id,
+    });
+  };
+
+  if (purge) {
+    delete settings.brand_kit;
+    const { error } = await supabase
+      .from('montree_classrooms')
+      .update({ settings })
+      .eq('id', row.id)
+      .eq('school_id', schoolId);
+    if (error) {
+      console.error('[brand-kit] classroom purge error:', error.message);
+      return NextResponse.json({ error: 'Could not remove the brand kit' }, { status: 500 });
+    }
+
+    // Best-effort, and only ever inside this room's own folder.
+    if (existingKit?.logoPath?.startsWith(prefix) && !existingKit.logoPath.includes('..')) {
+      const { error: removeError } = await supabase.storage
+        .from(BUCKET)
+        .remove([existingKit.logoPath]);
+      if (removeError) {
+        console.warn('[brand-kit] classroom logo removal failed:', removeError.message);
+      }
+    }
+    return answer(null);
+  }
+
+  if (!existingKit) return answer(null);
+
+  const disabled: BrandKit = { ...existingKit, enabled: false };
+  settings.brand_kit = disabled;
+
+  const { error } = await supabase
+    .from('montree_classrooms')
+    .update({ settings })
+    .eq('id', row.id)
+    .eq('school_id', schoolId);
+
+  if (error) {
+    console.error('[brand-kit] classroom disable error:', error.message);
+    return NextResponse.json({ error: 'Could not switch the theme off' }, { status: 500 });
+  }
+
+  // The room's kit is kept but inert, so the room reverts to the SCHOOL's
+  // theme — see the fall-through rule in lib/montree/brand-kit/resolve.ts.
+  return answer(disabled);
 }

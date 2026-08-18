@@ -30,6 +30,7 @@ import {
   ClipboardList,
   Cake,
   Scissors,
+  ListChecks,
   LayoutGrid,
 } from 'lucide-react';
 import { getSession } from '@/lib/montree/auth';
@@ -43,6 +44,7 @@ import {
   type BrandIntensity,
   type BrandKit,
 } from '@/lib/montree/brand-kit/types';
+import { resolveBrandKit, type BrandScope } from '@/lib/montree/brand-kit/resolve';
 import {
   DOCUMENTS,
   MONTREE_DOCUMENT_LABELS,
@@ -73,7 +75,19 @@ interface ClassDocumentsResponse {
     logoUrl: string | null;
     brandKit: BrandKit | null;
   } | null;
+  /** Added when classrooms gained their own emblem. `classroomBrandKit` is the
+   *  selected room's OWN kit, raw — this card edits it, so it must arrive
+   *  disabled-and-all rather than filtered through `isBrandKitActive`.
+   *  `brandKit`/`brandScope` are the server's resolution of the two, and are
+   *  recomputed locally as well so an older API build still reads right. */
+  classroomBrandKit?: BrandKit | null;
+  brandKit?: BrandKit | null;
+  brandScope?: BrandScope;
 }
+
+/** The two things a teacher can be editing. Never `'none'` — that is an ANSWER
+ *  (`BrandScope`, what prints), not a place to save a logo. */
+type EditScope = 'classroom' | 'school';
 
 /**
  * 🚨 LOCAL COPY, SAME PATTERN AS THE SETTINGS BRAND CARD. Montree's i18n hook
@@ -89,14 +103,20 @@ const COPY: Record<string, string> = {
   'classDocs.tools.labels': 'Name Labels & Tags',
   'classDocs.tools.signInSheet': 'Sign-In Sheet',
   'classDocs.tools.birthdays': 'Birthday Board & Cards',
+  'classDocs.tools.classroomJobs': 'Classroom Jobs Poster',
   'classDocs.tools.helperStrips': 'Helper Name Strips',
   'classDocs.tools.cardGenerator': 'Card Generator',
   'classDocs.tools.all': 'All tools →',
   'classDocs.brand.title': 'Class emblem',
   'classDocs.brand.subtitle':
     'Add your emblem once — every document below prints with it top-left, a soft watermark and matched borders.',
-  'classDocs.brand.statusOn': 'Branded — the documents below print with your emblem and colours.',
-  'classDocs.brand.statusOff': 'Not branded yet — documents print plain.',
+  'classDocs.brand.scopeLabel': 'Applies to',
+  'classDocs.brand.scopeClassroom': 'This classroom',
+  'classDocs.brand.scopeSchool': 'Whole school',
+  'classDocs.brand.printingClassroom':
+    'The documents below print with this classroom emblem.',
+  'classDocs.brand.printingSchool': 'The documents below print with the school emblem.',
+  'classDocs.brand.printingNone': 'No emblem yet — the documents below print plain.',
   'classDocs.brand.drop': 'Drop your class emblem here or tap to choose',
   'classDocs.brand.fileTypes': 'PNG, JPG or WebP · up to 4MB',
   'classDocs.brand.intensity': 'Intensity',
@@ -133,6 +153,9 @@ const CREATION_TOOLS: { key: string; href: string; Icon: typeof Tag }[] = [
   { key: 'classDocs.tools.labels', href: '/montree/dashboard/labels', Icon: Tag },
   { key: 'classDocs.tools.signInSheet', href: '/montree/library/tools/sign-in-sheet', Icon: ClipboardList },
   { key: 'classDocs.tools.birthdays', href: '/montree/library/tools/birthdays', Icon: Cake },
+  // The chart and the strips that pop into it — kept next to each other on
+  // purpose, because a teacher who prints one wants the other.
+  { key: 'classDocs.tools.classroomJobs', href: '/montree/library/tools/classroom-jobs', Icon: ListChecks },
   { key: 'classDocs.tools.helperStrips', href: '/montree/library/tools/helper-strips', Icon: Scissors },
   { key: 'classDocs.tools.cardGenerator', href: '/montree/library/tools/card-generator', Icon: LayoutGrid },
   { key: 'classDocs.tools.all', href: '/montree/library/tools', Icon: Wand2 },
@@ -208,6 +231,23 @@ export default function ClassDocumentsPage() {
   const [processing, setProcessing] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [justProcessed, setJustProcessed] = useState(false);
+  /** Which record this card is EDITING. A room is the common case — a teacher
+   *  standing in one — so it is the default whenever there is a room to edit.
+   *  A school with no classroom at all can still set the building's emblem. */
+  const [scope, setScope] = useState<EditScope>('classroom');
+
+  /** The room every save is aimed at: the one the API resolved for this read,
+   *  never a value this page invents. Empty → school scope is the only option. */
+  const roomId = data?.classroom?.id ?? '';
+  const roomName = data?.classroom?.name ?? '';
+
+  /** School scope is FORCED when there is no room, so the card can never post a
+   *  classroom save with an empty id (which would silently rebrand the school). */
+  const effectiveScope: EditScope = roomId ? scope : 'school';
+
+  /** One query string, one source of truth for every verb below. */
+  const scopeQuery =
+    effectiveScope === 'classroom' ? `?classroomId=${encodeURIComponent(roomId)}` : '';
 
   /** `t()` with an English fallback — the settings brand card's pattern.
    *  Montree's translator returns the raw key when it has no entry, so
@@ -221,12 +261,19 @@ export default function ClassDocumentsPage() {
     [t]
   );
 
+  /** The kit this card is EDITING — raw, disabled ones included, because the
+   *  editor has to show what is stored rather than what happens to print. */
+  const scopedKit =
+    effectiveScope === 'classroom'
+      ? data?.classroomBrandKit ?? null
+      : data?.school?.brandKit ?? null;
+
   // Keep the intensity pills honest against the saved kit (a save elsewhere,
-  // a refetch). A pending pick owns the control until processed or cancelled.
+  // a refetch, a scope switch). A pending pick owns the control until processed
+  // or cancelled.
   useEffect(() => {
-    const kit = data?.school?.brandKit;
-    if (kit && !pendingFile) setIntensity(kit.intensity);
-  }, [data, pendingFile]);
+    if (scopedKit && !pendingFile) setIntensity(scopedKit.intensity);
+  }, [scopedKit, pendingFile]);
 
   // Revoke the preview object URL on unmount — never leak a blob per pick.
   useEffect(() => {
@@ -302,7 +349,10 @@ export default function ClassDocumentsPage() {
       const form = new FormData();
       form.append('logo', pendingFile);
       form.append('kit', JSON.stringify(kit));
-      const res = await montreeApi('/api/montree/brand-kit', { method: 'POST', body: form });
+      const res = await montreeApi(`/api/montree/brand-kit${scopeQuery}`, {
+        method: 'POST',
+        body: form,
+      });
       if (!res.ok) {
         // The route names its own failures; surface the real one.
         const detail = (await res.json().catch(() => null)) as { error?: string } | null;
@@ -317,7 +367,7 @@ export default function ClassDocumentsPage() {
     } finally {
       setProcessing(false);
     }
-  }, [pendingFile, processing, intensity, tx, clearPending, load]);
+  }, [pendingFile, processing, intensity, tx, clearPending, load, scopeQuery]);
 
   /** Intensity on a saved kit re-solves the wash from the two source colours
    *  already stored — kit-only JSON POST, no re-upload, no canvas. */
@@ -325,12 +375,14 @@ export default function ClassDocumentsPage() {
     async (next: BrandIntensity) => {
       setIntensity(next);
       if (pendingFile) return; // the pending pick extracts with this at process time
-      const current = data?.school?.brandKit ?? null;
+      // The kit being retuned is the one for the SELECTED scope — pulling the
+      // school's here would re-save the building's theme from a room's pills.
+      const current = scopedKit;
       if (!isBrandKitActive(current) || current.intensity === next || processing) return;
       setProcessing(true);
       try {
         const retuned = retuneBrandKit(current, next);
-        const res = await montreeApi('/api/montree/brand-kit', {
+        const res = await montreeApi(`/api/montree/brand-kit${scopeQuery}`, {
           method: 'POST',
           body: JSON.stringify({ kit: retuned }),
         });
@@ -346,7 +398,7 @@ export default function ClassDocumentsPage() {
         setProcessing(false);
       }
     },
-    [pendingFile, data, processing, tx, load]
+    [pendingFile, scopedKit, scopeQuery, processing, tx, load]
   );
 
   const onRemove = useCallback(async () => {
@@ -354,7 +406,14 @@ export default function ClassDocumentsPage() {
     if (!window.confirm(tx('classDocs.brand.removeConfirm'))) return;
     setProcessing(true);
     try {
-      const res = await montreeApi('/api/montree/brand-kit?purge=1', { method: 'DELETE' });
+      // `purge` FORGETS rather than disables (see the route's DELETE note), and
+      // the scope decides whose emblem is forgotten — removing a room's never
+      // touches the school's file, kit or `logo_url` column.
+      const url =
+        effectiveScope === 'classroom'
+          ? `/api/montree/brand-kit?purge=1&classroomId=${encodeURIComponent(roomId)}`
+          : '/api/montree/brand-kit?purge=1';
+      const res = await montreeApi(url, { method: 'DELETE' });
       if (!res.ok) throw new Error(`brand-kit: ${res.status}`);
       setJustProcessed(false);
       clearPending();
@@ -365,7 +424,19 @@ export default function ClassDocumentsPage() {
     } finally {
       setProcessing(false);
     }
-  }, [processing, tx, clearPending, load]);
+  }, [processing, tx, clearPending, load, effectiveScope, roomId]);
+
+  /** Switching scope never carries a save across — it only re-points the card.
+   *  A pick that is still pending stays pending on purpose: "wrong scope" is
+   *  the most likely reason to touch these pills mid-upload. */
+  const onScope = useCallback(
+    (next: EditScope) => {
+      if (processing) return;
+      setScope(next);
+      setJustProcessed(false);
+    },
+    [processing]
+  );
 
   const glow = (
     <div
@@ -388,11 +459,28 @@ export default function ClassDocumentsPage() {
   const source = data?.source ?? null;
   const coverage = data?.coverage ?? null;
   const counts = source ? countDocumentData(source) : null;
-  // Survives `data.school` being null/undefined (older API): both resolve to
-  // "no theme", which renders the upload flow and the plain-status line.
-  const activeKit = data?.school?.brandKit ?? null;
+  // Survives `data.school` / `data.classroomBrandKit` being null or undefined
+  // (older API): everything resolves to "no theme", which renders the upload
+  // flow and the plain line.
+  const activeKit = scopedKit;
   const brandActive = isBrandKitActive(activeKit);
   const emblemSrc = pendingPreview || (brandActive && activeKit ? activeKit.logoUrl : null);
+
+  // 🚨 WHAT PRINTS ≠ WHAT IS BEING EDITED. The line under the title reports the
+  // RESOLVED theme for this room, so a teacher looking at the empty school tab
+  // is still told, truthfully, that their room's own emblem is on the sheets.
+  // Resolved locally with the shared pure rule rather than read off the
+  // response, so an older API build (no `brandScope`) still reads correctly.
+  const printing: BrandScope = resolveBrandKit(
+    roomId ? data?.classroomBrandKit ?? null : null,
+    data?.school?.brandKit ?? null
+  ).scope;
+  const printingKey =
+    printing === 'classroom'
+      ? 'classDocs.brand.printingClassroom'
+      : printing === 'school'
+        ? 'classDocs.brand.printingSchool'
+        : 'classDocs.brand.printingNone';
 
   return (
     <div className="min-h-screen bg-[#0a1a0f] relative">
@@ -466,16 +554,53 @@ export default function ClassDocumentsPage() {
           <p className="text-[12.5px] text-white/55 mt-1 leading-relaxed">
             {tx('classDocs.brand.subtitle')}
           </p>
-          {/* The one-line branded-status cue for the document cards below. */}
+          {/* What ACTUALLY prints on the cards below — the resolved answer, not
+              whichever tab happens to be open. */}
           <p
             className={
-              brandActive
-                ? 'text-[11.5px] text-emerald-300/90 mt-1.5'
-                : 'text-[11.5px] text-white/40 mt-1.5'
+              printing === 'none'
+                ? 'text-[11.5px] text-white/40 mt-1.5'
+                : 'text-[11.5px] text-emerald-300/90 mt-1.5'
             }
           >
-            {brandActive ? tx('classDocs.brand.statusOn') : tx('classDocs.brand.statusOff')}
+            {tx(printingKey)}
           </p>
+
+          {/* Scope — only worth showing when there IS a room to choose. */}
+          {roomId && (
+            <div className="flex flex-wrap items-center gap-1.5 mt-3">
+              <span className="text-[10.5px] uppercase tracking-wide text-white/45 mr-1">
+                {tx('classDocs.brand.scopeLabel')}
+              </span>
+              <button
+                type="button"
+                aria-pressed={effectiveScope === 'classroom'}
+                title={roomName || undefined}
+                onClick={() => onScope('classroom')}
+                disabled={processing}
+                className={
+                  effectiveScope === 'classroom'
+                    ? 'btn btn-primary btn-sm btn-pill'
+                    : 'btn btn-secondary btn-sm btn-pill'
+                }
+              >
+                {tx('classDocs.brand.scopeClassroom')}
+              </button>
+              <button
+                type="button"
+                aria-pressed={effectiveScope === 'school'}
+                onClick={() => onScope('school')}
+                disabled={processing}
+                className={
+                  effectiveScope === 'school'
+                    ? 'btn btn-primary btn-sm btn-pill'
+                    : 'btn btn-secondary btn-sm btn-pill'
+                }
+              >
+                {tx('classDocs.brand.scopeSchool')}
+              </button>
+            </div>
+          )}
 
           {justProcessed && brandActive && (
             <p className="text-[12px] text-emerald-200/90 bg-[rgba(52,211,153,0.08)] border border-[rgba(52,211,153,0.25)] rounded-lg px-2.5 py-2 mt-3 leading-relaxed">

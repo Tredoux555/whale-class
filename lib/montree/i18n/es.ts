@@ -1641,6 +1641,8 @@ export const es: Record<string, string> = {
   'tools.name_labels_desc': 'Etiquetas de nombre, casillero y cubículo imprimibles para tu lista de clase',
   'tools.helper_strips': 'Tiras de Nombre para Ayudantes',
   'tools.helper_strips_desc': 'Tiras de nombre recortables con fotos para el póster de Tareas de Clase',
+  'tools.classroom_jobs': 'Cartel de responsabilidades',
+  'tools.classroom_jobs_desc': 'Un cartel imprimible de responsabilidades con un niño asignado a cada una',
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Hoja de Registro',
@@ -6138,5 +6140,11 @@ export const es: Record<string, string> = {
   'classDocs.doc.emergencyContacts.desc': 'Todos los contactos de cada niño, además del médico y lo primero que pide un equipo de ambulancia.',
   'classDocs.doc.labels': 'Etiquetas con nombre',
   'classDocs.doc.labels.desc': 'Etiquetas de casillero, percha y bandeja para toda el aula, tres por fila.',
+  'classDocs.brand.scopeLabel': 'Se aplica a',
+  'classDocs.brand.scopeClassroom': 'Esta aula',
+  'classDocs.brand.scopeSchool': 'Todo el centro',
+  'classDocs.brand.printingClassroom': 'Los documentos de abajo se imprimen con el emblema de esta aula.',
+  'classDocs.brand.printingSchool': 'Los documentos de abajo se imprimen con el emblema del centro.',
+  'classDocs.brand.printingNone': 'Todavía no hay emblema: los documentos de abajo se imprimen sin decoración.',
 
 };

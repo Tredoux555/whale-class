@@ -18,12 +18,17 @@
 // a <style> tag by DocumentPaper — never globals.css, because `@page` cannot be
 // scoped and a global A4 rule would hijack every print in the repo.
 //
-// 🚨 THE SCHOOL'S OWN BRAND IS A THIRD LAYER, AND IT IS THE PAPER'S. The kit
-// comes down with the same read as the roster (`school.brandKit`), so a themed
-// sheet renders in one pass and never flashes unbranded first. It is passed
-// through untouched: this page decides nothing about the theme except which
-// document is being printed, because that is the one thing the theme cannot
-// know for itself.
+// 🚨 THE BRAND IS A THIRD LAYER, AND IT IS THE PAPER'S. The kit comes down with
+// the same read as the roster, so a themed sheet renders in one pass and never
+// flashes unbranded first. It is passed through untouched: this page decides
+// nothing about the theme except which document is being printed, because that
+// is the one thing the theme cannot know for itself.
+//
+// 🚨 IT READS `brandKit`, NOT `school.brandKit` — the field the API has ALREADY
+// RESOLVED for the selected room (an active classroom emblem, else the
+// school's). Re-deriving that here would put the classroom-wins rule in a
+// second place, and the room switcher would then be one refactor away from
+// printing a sheet with the wrong school's crest on it.
 
 'use client';
 
@@ -57,6 +62,15 @@ interface ClassDocumentsResponse {
     logoUrl: string | null;
     brandKit: BrandKit | null;
   } | null;
+  /** 🚨 THE ONE THE PAPER USES. Added when classrooms gained their own emblem:
+   *  the ALREADY-RESOLVED kit for the room being printed (an active classroom
+   *  kit, else the school's). The room switcher below re-fetches per room, so
+   *  this changes with the selection without this page knowing the rule.
+   *  Optional — an older API build has neither field and the sheet falls back
+   *  to `school.brandKit`, which is exactly what it printed yesterday. */
+  brandKit?: BrandKit | null;
+  brandScope?: 'classroom' | 'school' | 'none';
+  classroomBrandKit?: BrandKit | null;
 }
 
 /** "Tuesday 11 August 2026", in the PAPER's language — it is printed. */
@@ -130,7 +144,12 @@ export default function ClassDocumentPage() {
   const paperT = useMemo(() => getT(paperLocale), [paperLocale]);
 
   const source = data?.source ?? null;
-  const brandKit = data?.school?.brandKit ?? null;
+  // The resolved room theme when the API offers one; the school's when it does
+  // not. `undefined` is "this build has no classroom kits", which is a
+  // different thing from `null` ("resolved, and the answer is plain paper") —
+  // hence the `in`-style check rather than `??` chaining through both.
+  const brandKit =
+    data && data.brandKit !== undefined ? data.brandKit : data?.school?.brandKit ?? null;
 
   const model = useMemo(() => {
     if (!entry || !source) return null;

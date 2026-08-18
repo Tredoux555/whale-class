@@ -1576,6 +1576,8 @@ export const it: Record<string, string> = {
   'tools.name_labels_desc': 'Etichette nominative, per armadietti e cubby stampabili per la tua lista classe',
   'tools.helper_strips': 'Strisce Nome per Aiutanti',
   'tools.helper_strips_desc': 'Strisce di nome ritagliabili con foto per il poster degli Incarichi di Classe',
+  'tools.classroom_jobs': 'Cartellone degli incarichi',
+  'tools.classroom_jobs_desc': 'Un cartellone stampabile degli incarichi con un bambino per ciascuno',
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Foglio Firme',
@@ -6141,5 +6143,11 @@ export const it: Record<string, string> = {
   'classDocs.doc.emergencyContacts.desc': 'Ogni contatto di ogni bambino, più il medico e tutto ciò che un\'ambulanza chiede per prima cosa.',
   'classDocs.doc.labels': 'Etichette con Nome',
   'classDocs.doc.labels.desc': 'Etichette per armadietto, gancio e vassoio per tutta la classe, tre per fila.',
+  'classDocs.brand.scopeLabel': 'Si applica a',
+  'classDocs.brand.scopeClassroom': 'Questa classe',
+  'classDocs.brand.scopeSchool': 'Tutta la scuola',
+  'classDocs.brand.printingClassroom': 'I documenti qui sotto vengono stampati con l’emblema di questa classe.',
+  'classDocs.brand.printingSchool': 'I documenti qui sotto vengono stampati con l’emblema della scuola.',
+  'classDocs.brand.printingNone': 'Nessun emblema per ora — i documenti qui sotto vengono stampati senza decorazioni.',
 
 };

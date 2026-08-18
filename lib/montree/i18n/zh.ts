@@ -1822,6 +1822,8 @@ export const zh = {
   'tools.name_labels_desc': '为班级名单打印姓名标签、储物柜和小格标签',
   'tools.helper_strips': '值日生姓名条',
   'tools.helper_strips_desc': '带照片的可剪裁姓名条，用于"班级值日"海报',
+  'tools.classroom_jobs': '班级值日表',
+  'tools.classroom_jobs_desc': '可打印的值日岗位表，每个岗位都写上孩子的名字',
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': '签到表',
@@ -6548,5 +6550,11 @@ export const zh = {
   'classDocs.doc.emergencyContacts.desc': '每个孩子的全部联系人，以及医生和急救人员最先询问的信息。',
   'classDocs.doc.labels': '姓名标签',
   'classDocs.doc.labels.desc': '全班的柜格、挂钩和托盘标签，每行三个。',
+  'classDocs.brand.scopeLabel': '应用于',
+  'classDocs.brand.scopeClassroom': '本班级',
+  'classDocs.brand.scopeSchool': '全校',
+  'classDocs.brand.printingClassroom': '下方的文档将使用本班级的徽标打印。',
+  'classDocs.brand.printingSchool': '下方的文档将使用全校徽标打印。',
+  'classDocs.brand.printingNone': '尚未添加徽标 — 下方的文档将以无装饰样式打印。',
 
 } as const;

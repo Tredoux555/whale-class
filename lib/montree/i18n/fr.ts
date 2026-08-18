@@ -1576,6 +1576,8 @@ export const fr: Record<string, string> = {
   'tools.name_labels_desc': 'Étiquettes de nom, de casier et de vestiaire imprimables pour votre liste de classe',
   'tools.helper_strips': 'Bandes de Nom pour Responsables',
   'tools.helper_strips_desc': "Bandes de nom découpables avec photos pour l'affiche des Tâches de Classe",
+  'tools.classroom_jobs': 'Tableau des responsabilités',
+  'tools.classroom_jobs_desc': 'Un tableau imprimable des responsabilités, avec un enfant pour chacune',
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Feuille de Présence',
@@ -6141,5 +6143,11 @@ export const fr: Record<string, string> = {
   'classDocs.doc.emergencyContacts.desc': 'Tous les contacts de chaque enfant, plus le médecin et tout ce qu\'une équipe d\'ambulance demande en premier.',
   'classDocs.doc.labels': 'Étiquettes de nom',
   'classDocs.doc.labels.desc': 'Étiquettes de casier, de patère et de bac pour toute la classe, trois par rangée.',
+  'classDocs.brand.scopeLabel': 'S’applique à',
+  'classDocs.brand.scopeClassroom': 'Cette classe',
+  'classDocs.brand.scopeSchool': 'Toute l’école',
+  'classDocs.brand.printingClassroom': 'Les documents ci-dessous sont imprimés avec l’emblème de cette classe.',
+  'classDocs.brand.printingSchool': 'Les documents ci-dessous sont imprimés avec l’emblème de l’école.',
+  'classDocs.brand.printingNone': 'Pas encore d’emblème — les documents ci-dessous sont imprimés sans décor.',
 
 };

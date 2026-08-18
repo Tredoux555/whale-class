@@ -1576,6 +1576,8 @@ export const nl: Record<string, string> = {
   'tools.name_labels_desc': 'Afdrukbare naamlabels, kastje- en vakjeslabels voor je klaslijst',
   'tools.helper_strips': 'Naamstrookjes voor Hulpjes',
   'tools.helper_strips_desc': "Uitknipbare naamstrookjes met foto's voor het Klassendienst-poster",
+  'tools.classroom_jobs': 'Takenposter van de klas',
+  'tools.classroom_jobs_desc': 'Een printbare takenkaart met bij elke taak een kind',
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Aanwezigheidslijst',
@@ -6141,5 +6143,11 @@ export const nl: Record<string, string> = {
   'classDocs.doc.emergencyContacts.desc': 'Elk contact van elk kind, plus de arts en alles wat een ambulanceteam als eerste vraagt.',
   'classDocs.doc.labels': 'Naamlabels',
   'classDocs.doc.labels.desc': 'Labels voor kastje, haakje en bakje voor de hele klas, drie per rij.',
+  'classDocs.brand.scopeLabel': 'Geldt voor',
+  'classDocs.brand.scopeClassroom': 'Deze klas',
+  'classDocs.brand.scopeSchool': 'Hele school',
+  'classDocs.brand.printingClassroom': 'De documenten hieronder worden met het embleem van deze klas afgedrukt.',
+  'classDocs.brand.printingSchool': 'De documenten hieronder worden met het schoolembleem afgedrukt.',
+  'classDocs.brand.printingNone': 'Nog geen embleem — de documenten hieronder worden zonder opmaak afgedrukt.',
 
 };

@@ -123,9 +123,17 @@ export default function HelperNameStripsPage() {
       if (!sess?.classroom?.id) { router.push('/montree/login'); return; }
 
       try {
+        // 🚨 THE ROOM IS NAMED, SO THE ROOM'S OWN EMBLEM WINS. These strips are
+        // cut for one classroom, so they ask the brand route about that
+        // classroom and read `kit` — the ALREADY-RESOLVED answer (an active
+        // classroom emblem, else the school's). `brandKit` on that response is
+        // the SCHOOL's raw kit and would silently ignore a room that has its
+        // own; the fallback below only exists for an older API build.
         const [childrenRes, brandRes] = await Promise.all([
           fetch(`/api/montree/children?classroom_id=${sess.classroom.id}`),
-          montreeApi('/api/montree/brand-kit').catch(() => null),
+          montreeApi(
+            `/api/montree/brand-kit?classroomId=${encodeURIComponent(sess.classroom.id)}`
+          ).catch(() => null),
         ]);
 
         const childrenData = await childrenRes.json();
@@ -136,8 +144,11 @@ export default function HelperNameStripsPage() {
         setSelected(new Set(kids.map((s: Student) => s.id)));
 
         if (brandRes && brandRes.ok) {
-          const brandData = (await brandRes.json()) as { brandKit: BrandKit | null };
-          setBrandKit(brandData.brandKit ?? null);
+          const brandData = (await brandRes.json()) as {
+            kit?: BrandKit | null;
+            brandKit: BrandKit | null;
+          };
+          setBrandKit(brandData.kit !== undefined ? brandData.kit : brandData.brandKit ?? null);
         }
       } catch {
         // Failed to load — students/brandKit stay at their empty defaults.

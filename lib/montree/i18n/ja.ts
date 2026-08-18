@@ -1576,6 +1576,8 @@ export const ja: Record<string, string> = {
   'tools.name_labels_desc': 'クラス名簿用の印刷可能な名札、ロッカー・キュビーラベル',
   'tools.helper_strips': 'お当番名前カード',
   'tools.helper_strips_desc': 'クラスの当番ポスター用、写真付きの切り取り名前カード',
+  'tools.classroom_jobs': 'クラスのお仕事ボード',
+  'tools.classroom_jobs_desc': '当番ごとに子どもの名前を入れて印刷できる当番表',
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': '受付サインシート',
@@ -6141,5 +6143,11 @@ export const ja: Record<string, string> = {
   'classDocs.doc.emergencyContacts.desc': '各子どものすべての連絡先に加え、かかりつけ医と救急隊がまず尋ねる情報。',
   'classDocs.doc.labels': '名前ラベル',
   'classDocs.doc.labels.desc': 'クラス全員分のロッカー・フック・トレイ用ラベル。1列に3枚。',
+  'classDocs.brand.scopeLabel': '適用範囲',
+  'classDocs.brand.scopeClassroom': 'このクラス',
+  'classDocs.brand.scopeSchool': '学校全体',
+  'classDocs.brand.printingClassroom': '下の書類はこのクラスのエンブレムで印刷されます。',
+  'classDocs.brand.printingSchool': '下の書類は学校のエンブレムで印刷されます。',
+  'classDocs.brand.printingNone': 'エンブレムはまだありません — 下の書類は装飾なしで印刷されます。',
 
 };

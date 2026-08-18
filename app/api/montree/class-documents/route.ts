@@ -27,19 +27,30 @@
 // the roster with no health data and `intakeAvailable: false`, and the page
 // says so. It never 500s because a table is missing.
 //
-// 🚨 THE SCHOOL BRAND KIT RIDES ALONG, AND IS NEVER LOAD-BEARING. `school.
-// brandKit` is the parsed, validated theme a school configured in Settings
-// (see /api/montree/brand-kit). It is attached to this response so a document
-// page can render themed paper in ONE round trip instead of two — a print
-// screen that flashes an unbranded sheet and then repaints it is worse than an
-// unbranded sheet. Every failure path here resolves to `brandKit: null`, which
-// means "print exactly what this school printed before the feature existed".
+// 🚨 THE BRAND KIT RIDES ALONG, AND IS NEVER LOAD-BEARING. It is attached to
+// this response so a document page renders themed paper in ONE round trip
+// instead of two — a print screen that flashes an unbranded sheet and then
+// repaints it is worse than an unbranded sheet. Three fields, three meanings:
+//
+//   school.brandKit      the SCHOOL's own theme (unchanged meaning, ever)
+//   classroomBrandKit    the selected room's own theme, raw, or null
+//   brandKit             what ACTUALLY prints for that room — already resolved
+//                        (+ `brandScope`, naming which of the two it came from)
+//
+// Every failure path resolves to `brandKit: null`, which means "print exactly
+// what this school printed before the feature existed". A room's theme is read
+// out of the SAME classroom row the roster is already keyed on, so it costs no
+// extra query — see `loadClassrooms`.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSchoolTimezone } from '@/lib/montree/school-time';
 import { isSafeLogoUrl, parseBrandKit, type BrandKit } from '@/lib/montree/brand-kit/types';
+import {
+  readBrandKitFromSettings,
+  resolveBrandKit,
+} from '@/lib/montree/brand-kit/resolve';
 import {
   buildDocumentSource,
   summariseIntakeCoverage,
@@ -58,6 +69,8 @@ interface ClassroomRow {
   name: string | null;
   age_group: string | null;
   school_id: string;
+  /** Optional because the narrow fallback select below does not ask for it. */
+  settings?: Record<string, unknown> | null;
 }
 
 interface SchoolRow {
@@ -114,6 +127,41 @@ async function loadSchool(
   return (narrow.data as SchoolRow | null) ?? null;
 }
 
+/**
+ * This school's rooms, with the `settings` bag their own emblem lives in.
+ *
+ * 🚨 SAME TWO-SELECT POSTURE AS `loadSchool`, AND FOR A HARDER REASON. The
+ * roster query cannot be allowed to die because of a THEME column: if the wide
+ * select errors, the narrow one runs and every document still prints — plain.
+ * Folding `settings` into the original select without a fallback would have
+ * made a decorative feature capable of 500-ing the class list.
+ */
+async function loadClassrooms(
+  supabase: ReturnType<typeof getSupabase>,
+  schoolId: string
+): Promise<{ rows: ClassroomRow[] } | { error: string }> {
+  const wide = await supabase
+    .from('montree_classrooms')
+    .select('id, name, age_group, school_id, settings')
+    .eq('school_id', schoolId)
+    .neq('is_active', false)
+    .order('name', { ascending: true });
+
+  if (!wide.error) return { rows: (wide.data || []) as ClassroomRow[] };
+
+  console.warn('[class-documents] classroom settings unreadable:', wide.error.message);
+
+  const narrow = await supabase
+    .from('montree_classrooms')
+    .select('id, name, age_group, school_id')
+    .eq('school_id', schoolId)
+    .neq('is_active', false)
+    .order('name', { ascending: true });
+
+  if (narrow.error) return { error: narrow.error.message };
+  return { rows: (narrow.data || []) as ClassroomRow[] };
+}
+
 /** The stored kit, parsed and validated. Never throws; null means plain paper. */
 function brandKitFor(school: SchoolRow | null): BrandKit | null {
   if (!school) return null;
@@ -146,22 +194,16 @@ export async function GET(request: NextRequest) {
       searchParams.get('classroomId') || searchParams.get('classroom_id') || '';
 
     // ── the rooms this school actually has ─────────────────────────────────
-    const { data: classroomData, error: classroomError } = await supabase
-      .from('montree_classrooms')
-      .select('id, name, age_group, school_id')
-      .eq('school_id', auth.schoolId)
-      .neq('is_active', false)
-      .order('name', { ascending: true });
-
-    if (classroomError) {
-      console.error('[class-documents] classrooms failed:', classroomError.message);
+    const loaded = await loadClassrooms(supabase, auth.schoolId);
+    if ('error' in loaded) {
+      console.error('[class-documents] classrooms failed:', loaded.error);
       return NextResponse.json(
         { success: false, error: 'Could not load classrooms' },
         { status: 500 }
       );
     }
 
-    const classrooms = (classroomData || []) as ClassroomRow[];
+    const classrooms = loaded.rows;
     if (classrooms.length === 0) {
       return NextResponse.json({
         success: true,
@@ -171,6 +213,9 @@ export async function GET(request: NextRequest) {
         coverage: null,
         intakeAvailable: true,
         school: null,
+        brandKit: null,
+        classroomBrandKit: null,
+        brandScope: 'none',
       });
     }
 
@@ -250,6 +295,14 @@ export async function GET(request: NextRequest) {
       date: schoolToday(timezone),
     };
 
+    // ── whose emblem prints on THIS room's sheets ──────────────────────────
+    // The school's kit and the RESOLVED room kit both ride along. `school.
+    // brandKit` keeps its original meaning (the school's own) so nothing that
+    // already reads it changes; `brandKit` is the answer a renderer wants.
+    const schoolKit = brandKitFor(schoolRow);
+    const classroomKit = readBrandKitFromSettings(classroom.settings);
+    const resolved = resolveBrandKit(classroomKit, schoolKit);
+
     return NextResponse.json({
       success: true,
       classroom: { id: classroom.id, name: classroom.name || '' },
@@ -263,8 +316,13 @@ export async function GET(request: NextRequest) {
         id: auth.schoolId,
         name: schoolRow?.name ?? null,
         logoUrl: schoolRow && isSafeLogoUrl(schoolRow.logo_url) ? schoolRow.logo_url : null,
-        brandKit: brandKitFor(schoolRow),
+        brandKit: schoolKit,
       },
+      /** What actually prints for the room in `classroom` — already resolved. */
+      brandKit: resolved.kit,
+      brandScope: resolved.scope,
+      /** The room's OWN kit, raw, for the card that edits it. */
+      classroomBrandKit: classroomKit,
     });
   } catch (error) {
     console.error('[class-documents] GET error:', error);

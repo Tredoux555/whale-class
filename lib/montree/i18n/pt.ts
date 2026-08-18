@@ -1576,6 +1576,8 @@ export const pt: Record<string, string> = {
   'tools.name_labels_desc': 'Etiquetas de nome, armário e cubículo imprimíveis para a lista da sua turma',
   'tools.helper_strips': 'Tiras de Nome para Ajudantes',
   'tools.helper_strips_desc': 'Tiras de nome recortáveis com fotos para o cartaz de Tarefas da Turma',
+  'tools.classroom_jobs': 'Cartaz de tarefas da turma',
+  'tools.classroom_jobs_desc': 'Um cartaz imprimível de tarefas com uma criança em cada função',
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Folha de Presença',
@@ -6141,5 +6143,11 @@ export const pt: Record<string, string> = {
   'classDocs.doc.emergencyContacts.desc': 'Todos os contatos de cada criança, além do médico e do que uma equipe de ambulância pergunta primeiro.',
   'classDocs.doc.labels': 'Etiquetas com Nome',
   'classDocs.doc.labels.desc': 'Etiquetas de armário, cabide e bandeja para toda a turma, três por fileira.',
+  'classDocs.brand.scopeLabel': 'Aplica-se a',
+  'classDocs.brand.scopeClassroom': 'Esta turma',
+  'classDocs.brand.scopeSchool': 'Toda a escola',
+  'classDocs.brand.printingClassroom': 'Os documentos abaixo são impressos com o emblema desta turma.',
+  'classDocs.brand.printingSchool': 'Os documentos abaixo são impressos com o emblema da escola.',
+  'classDocs.brand.printingNone': 'Ainda sem emblema — os documentos abaixo são impressos sem decoração.',
 
 };

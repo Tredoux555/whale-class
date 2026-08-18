@@ -1862,6 +1862,8 @@ export const en = {
   'tools.name_labels_desc': 'Printable name tags, locker and cubby labels for your class list',
   'tools.helper_strips': 'Helper Name Strips',
   'tools.helper_strips_desc': 'Cut-out name strips with photos for the Classroom Jobs poster',
+  'tools.classroom_jobs': 'Classroom Jobs Poster',
+  'tools.classroom_jobs_desc': 'A printable jobs chart with a child on every job',
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Sign-In Sheet',
@@ -6607,6 +6609,12 @@ export const en = {
   'classDocs.doc.emergencyContacts.desc': 'Every contact for every child, plus the doctor and anything an ambulance crew asks first.',
   'classDocs.doc.labels': 'Name Labels',
   'classDocs.doc.labels.desc': 'Cubby, peg and tray labels for the whole room, three to a row.',
+  'classDocs.brand.scopeLabel': 'Applies to',
+  'classDocs.brand.scopeClassroom': 'This classroom',
+  'classDocs.brand.scopeSchool': 'Whole school',
+  'classDocs.brand.printingClassroom': 'The documents below print with this classroom emblem.',
+  'classDocs.brand.printingSchool': 'The documents below print with the school emblem.',
+  'classDocs.brand.printingNone': 'No emblem yet — the documents below print plain.',
 
 } as const;
 

@@ -1,0 +1,1044 @@
+// /montree/library/tools/classroom-jobs/page.tsx
+// The Classroom Jobs Poster — one printable chart for the wall, with a child
+// on every job. Sibling of the Helper Name Strips tool, and deliberately its
+// other half: this page prints the CHART, that one prints the STRIPS that pop
+// into the chart's slots.
+//
+// 🚨 THE TWO SLOT SIZES ARE HELPER-STRIPS' OWN SIZES, TO THE MILLIMETRE. They
+// are mirrored in STRIP_SIZES below from that tool's SIZE_CONFIG (poster
+// 180×34mm, small 120×22mm). If either changes there, it changes here — a slot
+// that is "about right" is a slot the strip does not sit in.
+//
+// 🚨 THE BRAND KIT IS READ AS TOKENS, NOT THROUGH `brandKitCss()`. That
+// stylesheet themes the SHARED class-document markup: every selector in it is
+// `.mt-branded .cms-doc-*`, and its token block is scoped to `.cms-doc-sheet`.
+// This poster is not that sheet and has none of those classes, so the theme
+// arrives the way the sibling tool takes it — `kit.tokens` + `kit.logoUrl`,
+// with `PLAIN_TOKENS` as the unthemed fallback. The colours are then set as
+// CSS custom properties through React's `style` prop and never interpolated
+// into the injected stylesheet, so no school-supplied value ever reaches raw
+// CSS text.
+//
+// 🚨 THE EMBLEM IS AN <img>, NEVER A CSS BACKGROUND — `background-image` is
+// the first thing a browser drops when "Background graphics" is unticked in
+// the print dialog, and a crest that vanishes on half the world's printers is
+// worse than no crest. Same call, same reason, as DocumentPaper.
+'use client';
+
+import { useState, useEffect, useCallback, useMemo, useRef, type CSSProperties } from 'react';
+import { useRouter } from 'next/navigation';
+import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
+import { getSession } from '@/lib/montree/auth';
+import { montreeApi } from '@/lib/montree/api';
+import { isBrandKitActive, PLAIN_TOKENS, type BrandKit } from '@/lib/montree/brand-kit/types';
+import {
+  JOBS_POSTER_VERSION,
+  MAX_JOBS,
+  MAX_ICON_LEN,
+  MAX_NAME_LEN,
+  defaultJobsPoster,
+  newCustomJobId,
+  parseJobsPoster,
+  type ClassroomJob,
+  type JobsPoster,
+} from '@/lib/montree/classroom-jobs/types';
+import { Quicksand } from 'next/font/google';
+
+const quicksand = Quicksand({ subsets: ['latin'], weight: ['500', '600', '700'] });
+
+type Student = { id: string; name: string };
+type PosterMode = 'names' | 'slots';
+type SlotSize = 'poster' | 'small';
+type SaveState = 'idle' | 'saving' | 'saved' | 'error';
+
+/**
+ * 🚨 THE COPY, AND WHY IT LIVES HERE. Montree's i18n hook is strict across all
+ * twelve locales — a new key must exist in every locale file before it may be
+ * committed. So this tool ships its own English through `tx()` (below), the
+ * same way the Helper Name Strips page and the Class Documents screen already
+ * do: the moment these keys land in the twelve locale files, every string here
+ * becomes translated with no further code change, and until then a teacher on
+ * another locale reads clean English rather than a raw `classroomJobs.title`
+ * token. The key list is exactly this object — hand it to the i18n pass as-is.
+ */
+const COPY: Record<string, string> = {
+  'classroomJobs.title': 'Classroom Jobs Poster',
+  'classroomJobs.subtitle':
+    'One chart for the wall — a job, and the child who holds it this week.',
+  'classroomJobs.posterTitle': 'Our Classroom Jobs',
+  'classroomJobs.modeLabel': 'Poster style',
+  'classroomJobs.modeNames': 'Names printed on',
+  'classroomJobs.modeNamesHint': 'A4 portrait · a card per job, each with a child’s name',
+  'classroomJobs.modeSlots': 'For name strips',
+  'classroomJobs.modeSlotsHint':
+    'Empty slots sized for the Helper Name Strips — print once, swap the strips each week',
+  'classroomJobs.slotSizeLabel': 'Strip size',
+  'classroomJobs.slotSizePoster': 'Poster strips · 180×34mm · A4 landscape',
+  'classroomJobs.slotSizeSmall': 'Small strips · 120×22mm · A4 portrait',
+  'classroomJobs.stripsLink': 'Print the name strips →',
+  'classroomJobs.jobsLabel': 'Jobs',
+  'classroomJobs.addJob': 'Add a job',
+  'classroomJobs.shuffle': 'Shuffle',
+  'classroomJobs.clearAll': 'Clear all',
+  'classroomJobs.save': 'Save chart',
+  'classroomJobs.saving': 'Saving…',
+  'classroomJobs.saved': 'Saved',
+  'classroomJobs.saveFailed': 'Could not save — try again',
+  'classroomJobs.unsaved': 'Unsaved changes',
+  'classroomJobs.unassigned': 'Nobody yet',
+  'classroomJobs.doubleBooked': 'holds more than one job',
+  'classroomJobs.noChildren': 'No children in your class yet.',
+  'classroomJobs.noJobs': 'No jobs yet — add one to start the chart.',
+  'classroomJobs.noActiveJobs': 'Every job is switched off — switch one on to see the poster.',
+  'classroomJobs.startingSet': 'This is the starting set. Change it, then save to make it yours.',
+  'classroomJobs.notAvailable': 'This class cannot save a chart yet — you can still print one.',
+  'classroomJobs.sheetOne': 'Prints on 1 A4 sheet',
+  'classroomJobs.sheetMany': 'Prints on about {n} A4 sheets',
+  'classroomJobs.newJob': 'New job',
+  'classroomJobs.remove': 'Remove',
+  'classroomJobs.jobsFull': 'That is as many jobs as one chart holds.',
+  'classroomJobs.blankName': 'Every job needs a name before the chart can be saved.',
+};
+
+// ── paper ───────────────────────────────────────────────────────────────────
+// A4 is 210×297mm. The content box below is the page minus its margins, and
+// every width on this sheet is measured against it — a poster that is 2mm too
+// wide does not warn, it silently drops a column onto a second sheet.
+
+const PORTRAIT_MARGIN_MM = 12;
+const LANDSCAPE_MARGIN_MM = 10;
+const PORTRAIT_W_MM = 210 - PORTRAIT_MARGIN_MM * 2; // 186
+const PORTRAIT_H_MM = 297 - PORTRAIT_MARGIN_MM * 2; // 273
+const LANDSCAPE_W_MM = 297 - LANDSCAPE_MARGIN_MM * 2; // 277
+const LANDSCAPE_H_MM = 210 - LANDSCAPE_MARGIN_MM * 2; // 190
+
+/** Roughly what the masthead costs on the first sheet. Used only by the sheet
+ *  estimate, which is a promise to the teacher, not a layout constraint. */
+const HEAD_H_MM = 32;
+
+// ── the slots ───────────────────────────────────────────────────────────────
+/**
+ * 🚨 MIRRORS `SIZE_CONFIG` IN app/montree/library/tools/helper-strips/page.tsx.
+ * `width`/`height` are that tool's strip footprint EXACTLY, so a strip printed
+ * at 100% drops into a slot printed at 100%.
+ *
+ * The orientation is not a preference, it is arithmetic. A 180mm slot plus any
+ * legible job label does not fit inside A4 portrait's 186mm content box, so the
+ * poster-size chart is landscape; the 120mm strip leaves room for a label in
+ * portrait and stacks nearly twice as many rows per sheet, so the small chart
+ * is portrait.
+ */
+const STRIP_SIZES: Record<
+  SlotSize,
+  { width: number; height: number; label: number; landscape: boolean }
+> = {
+  poster: { width: 180, height: 34, label: 88, landscape: true },
+  small: { width: 120, height: 22, label: 56, landscape: false },
+};
+
+/** Names mode: two columns inside the portrait content box. */
+const CARD_GAP_MM = 5;
+const CARD_W_MM = (PORTRAIT_W_MM - CARD_GAP_MM) / 2; // 90.5
+const CARD_H_MM = 34;
+const SLOT_GAP_MM = 4;
+
+/** 6-digit hex or `transparent` only — the same narrow gate brand-kit/css.ts
+ *  applies at ITS point of injection. These values arrive over JSON and end up
+ *  as CSS custom property values, so they are re-checked here rather than
+ *  trusted because a parser upstream once looked at them. */
+function safeColor(value: string | undefined, fallback: string): string {
+  return value && (value === 'transparent' || /^#[0-9a-fA-F]{6}$/.test(value))
+    ? value
+    : fallback;
+}
+
+/** First name only — a jobs chart is read across a room, and a card that has
+ *  to fit "Alexandrina Van Der Merwe" fits nothing else. */
+function firstName(name: string): string {
+  return name.trim().split(/\s+/)[0] || name;
+}
+
+/**
+ * The sheet's geometry and its @page rule, as one string.
+ *
+ * 🚨 IT CARRIES NO COLOURS. Every colour on this poster is a CSS custom
+ * property set through React's `style` prop on the poster root (see
+ * `JobsPosterSheet`), so a school's stored token can never be interpolated
+ * into raw CSS text. What is injected here is geometry, and geometry is ours.
+ *
+ * 🚨 `@page` CANNOT BE SCOPED TO A SELECTOR, which is why this lives in a
+ * <style> tag on the page and never in globals.css — a global A4 rule would
+ * hijack every other print in the repo. Same rule, same reason, as
+ * components/cms/documents/print-css.ts.
+ */
+function posterCss(mode: PosterMode, slotSize: SlotSize): string {
+  const landscape = mode === 'slots' && STRIP_SIZES[slotSize].landscape;
+  const margin = landscape ? LANDSCAPE_MARGIN_MM : PORTRAIT_MARGIN_MM;
+  const width = landscape ? LANDSCAPE_W_MM : PORTRAIT_W_MM;
+
+  return `
+.jp-poster {
+  width: ${width}mm;
+  max-width: 100%;
+  margin: 0 auto;
+  position: relative;
+  box-sizing: border-box;
+  background: #fff;
+  color: var(--jp-ink);
+}
+.jp-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 62%;
+  transform: translate(-50%, -50%);
+  opacity: var(--jp-watermark);
+  z-index: 0;
+  pointer-events: none;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.jp-poster > .jp-head,
+.jp-poster > .jp-body { position: relative; z-index: 1; }
+
+.jp-head {
+  display: flex;
+  align-items: center;
+  gap: 5mm;
+  padding-bottom: 3mm;
+  margin-bottom: 6mm;
+  border-bottom: 0.8mm solid var(--jp-accent);
+}
+.jp-emblem {
+  height: 16mm;
+  width: auto;
+  max-width: 46mm;
+  object-fit: contain;
+  display: block;
+  flex: 0 0 auto;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.jp-headtext { min-width: 0; }
+.jp-title {
+  margin: 0;
+  font-family: var(--jp-display);
+  font-size: 26pt;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--jp-ink);
+}
+.jp-room {
+  margin: 1.6mm 0 0;
+  font-size: 9.5pt;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--jp-accent);
+}
+
+/* ── names mode ─────────────────────────────────────────────────────────── */
+.jp-grid {
+  display: grid;
+  grid-template-columns: repeat(2, ${CARD_W_MM}mm);
+  gap: ${CARD_GAP_MM}mm;
+}
+.jp-card {
+  height: ${CARD_H_MM}mm;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 3.5mm;
+  padding: 0 4mm;
+  border: 0.5mm solid var(--jp-border);
+  border-radius: 3mm;
+  background: var(--jp-wash);
+  break-inside: avoid;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.jp-icon { flex: 0 0 auto; line-height: 1; text-align: center; }
+.jp-card .jp-icon { width: 12mm; font-size: 20pt; }
+.jp-cardtext { flex: 1 1 auto; min-width: 0; }
+.jp-job {
+  font-size: 7.5pt;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--jp-accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.jp-child {
+  margin-top: 0.6mm;
+  font-size: 17pt;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--jp-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* An unassigned job prints as a ruled line rather than as a gap — the chart
+   still works on the wall while the teacher decides, and a marker finishes it. */
+.jp-blank {
+  display: block;
+  height: 7mm;
+  margin-top: 1mm;
+  border-bottom: 0.4mm solid var(--jp-border);
+}
+
+/* ── slots mode ─────────────────────────────────────────────────────────── */
+.jp-slots { display: flex; flex-direction: column; gap: ${SLOT_GAP_MM}mm; }
+.jp-slotrow { display: flex; align-items: center; gap: 5mm; break-inside: avoid; }
+.jp-slotlabel { display: flex; align-items: center; gap: 3mm; flex: 0 0 auto; min-width: 0; }
+.jp-slotname {
+  font-size: 11pt;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--jp-accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* The slot itself. Dashed, because it is a place to put something rather than
+   a box around something — the same language the label maker's cut guides use. */
+.jp-slot {
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  border: 0.5mm dashed var(--jp-border);
+  border-radius: 3mm;
+  background: var(--jp-wash);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+@media print {
+  @page { size: A4 ${landscape ? 'landscape' : 'portrait'}; margin: ${margin}mm; }
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+`;
+}
+
+/**
+ * How many A4 sheets this comes out on. An honest number shown on screen, not
+ * a layout constraint — a chart of twelve 34mm slots is 400mm of strip and no
+ * orientation makes that one page. Telling a teacher before they print beats
+ * them finding out at the printer.
+ */
+function sheetEstimate(mode: PosterMode, slotSize: SlotSize, count: number): number {
+  if (count <= 0) return 1;
+
+  if (mode === 'names') {
+    const rowH = CARD_H_MM + CARD_GAP_MM;
+    const first = Math.max(1, Math.floor((PORTRAIT_H_MM - HEAD_H_MM) / rowH));
+    const rest = Math.max(1, Math.floor(PORTRAIT_H_MM / rowH));
+    const rows = Math.ceil(count / 2);
+    return rows <= first ? 1 : 1 + Math.ceil((rows - first) / rest);
+  }
+
+  const size = STRIP_SIZES[slotSize];
+  const rowH = size.height + SLOT_GAP_MM;
+  const pageH = size.landscape ? LANDSCAPE_H_MM : PORTRAIT_H_MM;
+  const first = Math.max(1, Math.floor((pageH - HEAD_H_MM) / rowH));
+  const rest = Math.max(1, Math.floor(pageH / rowH));
+  return count <= first ? 1 : 1 + Math.ceil((count - first) / rest);
+}
+
+/** A stable string for "has this chart changed since it was saved". */
+function signature(jobs: ClassroomJob[]): string {
+  return JSON.stringify(jobs);
+}
+
+export default function ClassroomJobsPage() {
+  const { t } = useI18n();
+  const router = useRouter();
+
+  const [jobs, setJobs] = useState<ClassroomJob[]>(() => defaultJobsPoster().jobs);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [brandKit, setBrandKit] = useState<BrandKit | null>(null);
+  const [classroomId, setClassroomId] = useState('');
+  const [classroomName, setClassroomName] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saveState, setSaveState] = useState<SaveState>('idle');
+  const [isStartingSet, setIsStartingSet] = useState(true);
+  const [canSave, setCanSave] = useState(true);
+  const [mode, setMode] = useState<PosterMode>('names');
+  const [slotSize, setSlotSize] = useState<SlotSize>('poster');
+
+  /** The signature of what the server last confirmed. Compared against the
+   *  live chart to answer "unsaved changes" without a second copy of the list. */
+  const savedRef = useRef<string>('');
+
+  /** `t()` with an English fallback. Montree's translator returns the raw key
+   *  when it has no entry, so `value === key` is exactly "not translated yet"
+   *  — see the COPY note above. */
+  const tx = useCallback(
+    (key: string, fallback?: string): string => {
+      const value = t(key as TranslationKey);
+      if (!value || value === key) return fallback ?? COPY[key] ?? key;
+      return value;
+    },
+    [t]
+  );
+
+  useEffect(() => {
+    const sess = getSession();
+    if (!sess?.classroom?.id) {
+      router.push('/montree/login');
+      return;
+    }
+    const roomId = sess.classroom.id;
+    setClassroomId(roomId);
+    setClassroomName(sess.classroom.name || '');
+
+    let cancelled = false;
+
+    const init = async () => {
+      try {
+        // 🚨 THE ROOM IS NAMED, SO THE ROOM'S OWN EMBLEM WINS. The brand route
+        // is asked about this classroom and `kit` is read — the ALREADY-RESOLVED
+        // answer (an active classroom emblem, else the school's). `brandKit` on
+        // that response is the SCHOOL's raw kit and would silently ignore a room
+        // that has its own; the fallback below only exists for an older build.
+        const [childrenRes, brandRes, jobsRes] = await Promise.all([
+          fetch(`/api/montree/children?classroom_id=${encodeURIComponent(roomId)}`),
+          montreeApi(
+            `/api/montree/brand-kit?classroomId=${encodeURIComponent(roomId)}`
+          ).catch(() => null),
+          montreeApi(
+            `/api/montree/classroom-jobs?classroomId=${encodeURIComponent(roomId)}`
+          ).catch(() => null),
+        ]);
+
+        if (cancelled) return;
+
+        const childrenData = await childrenRes.json();
+        const kids: Student[] = ((childrenData.children || []) as Student[])
+          .map((c) => ({ id: c.id, name: c.name }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+        if (!cancelled) setStudents(kids);
+
+        if (brandRes && brandRes.ok) {
+          const brandData = (await brandRes.json()) as {
+            kit?: BrandKit | null;
+            brandKit: BrandKit | null;
+          };
+          if (!cancelled) {
+            setBrandKit(brandData.kit !== undefined ? brandData.kit : brandData.brandKit ?? null);
+          }
+        }
+
+        if (jobsRes && jobsRes.ok) {
+          const jobsData = (await jobsRes.json()) as {
+            poster?: unknown;
+            isDefault?: boolean;
+            available?: boolean;
+          };
+          // Parsed on the way in as well as on the way out — the screen must
+          // not be the one place a malformed chart gets to render.
+          const parsed = parseJobsPoster(jobsData.poster) ?? defaultJobsPoster();
+          if (!cancelled) {
+            setJobs(parsed.jobs);
+            setIsStartingSet(jobsData.isDefault !== false);
+            setCanSave(jobsData.available !== false);
+            savedRef.current = jobsData.isDefault === false ? signature(parsed.jobs) : '';
+          }
+        }
+      } catch {
+        // Failed to load — the default chart stands, and the teacher can still
+        // print one. Nothing about this tool needs the network to be useful.
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    init();
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
+
+  // ── derived ───────────────────────────────────────────────────────────────
+
+  const activeJobs = useMemo(() => jobs.filter((j) => j.active), [jobs]);
+
+  const studentById = useMemo(
+    () => new Map(students.map((s) => [s.id, s])),
+    [students]
+  );
+
+  /** Children holding more than one ACTIVE job. A soft warning, never a block:
+   *  a small room genuinely doubles up, and a tool that refused would be wrong
+   *  about the classroom rather than the classroom being wrong about itself. */
+  const doubleBooked = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const j of activeJobs) {
+      if (j.childId) counts.set(j.childId, (counts.get(j.childId) ?? 0) + 1);
+    }
+    return new Set([...counts.entries()].filter(([, n]) => n > 1).map(([id]) => id));
+  }, [activeJobs]);
+
+  const dirty = savedRef.current !== signature(jobs);
+  const sheets = sheetEstimate(mode, slotSize, activeJobs.length);
+
+  /**
+   * 🚨 A JOB WITH NO NAME IS DROPPED BY THE PARSER, NOT SAVED EMPTY — which is
+   * right for a blob arriving from anywhere, and would be a nasty surprise for
+   * a teacher who cleared the box to retype it. So the save is held until every
+   * job is named, rather than the row quietly disappearing on the round trip.
+   */
+  const hasBlankName = jobs.some((j) => !j.name.trim());
+
+  // ── edits ─────────────────────────────────────────────────────────────────
+
+  const patchJob = useCallback((id: string, patch: Partial<ClassroomJob>) => {
+    setSaveState('idle');
+    setJobs((prev) => prev.map((j) => (j.id === id ? { ...j, ...patch } : j)));
+  }, []);
+
+  const removeJob = useCallback((id: string) => {
+    setSaveState('idle');
+    setJobs((prev) => prev.filter((j) => j.id !== id));
+  }, []);
+
+  const addJob = useCallback(() => {
+    setSaveState('idle');
+    setJobs((prev) =>
+      prev.length >= MAX_JOBS
+        ? prev
+        : [
+            ...prev,
+            {
+              id: newCustomJobId(),
+              icon: '⭐',
+              name: COPY['classroomJobs.newJob'],
+              active: true,
+              childId: null,
+            },
+          ]
+    );
+  }, []);
+
+  const clearAll = useCallback(() => {
+    setSaveState('idle');
+    setJobs((prev) => prev.map((j) => ({ ...j, childId: null })));
+  }, []);
+
+  /**
+   * Fill the empty ACTIVE jobs from the children who do not already hold one.
+   * Computed from the current list rather than inside the state updater, so a
+   * double-invoked updater cannot deal the same child twice.
+   */
+  const shuffle = useCallback(() => {
+    setSaveState('idle');
+    const taken = new Set(
+      jobs.filter((j) => j.active && j.childId).map((j) => j.childId as string)
+    );
+    const pool = students.filter((s) => !taken.has(s.id));
+    for (let i = pool.length - 1; i > 0; i--) {
+      const k = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[k]] = [pool[k], pool[i]];
+    }
+    let n = 0;
+    setJobs(
+      jobs.map((j) =>
+        j.active && !j.childId && n < pool.length ? { ...j, childId: pool[n++].id } : j
+      )
+    );
+  }, [jobs, students]);
+
+  const save = useCallback(async () => {
+    if (!classroomId || !canSave) return;
+    setSaveState('saving');
+    try {
+      const res = await montreeApi('/api/montree/classroom-jobs', {
+        method: 'POST',
+        body: JSON.stringify({ classroomId, poster: { version: JOBS_POSTER_VERSION, jobs } }),
+      });
+      if (!res.ok) throw new Error(`save failed: ${res.status}`);
+      const data = (await res.json()) as { poster?: unknown };
+      // The server's answer wins — it is the one that scrubbed assignments
+      // against the room's own roster, so echoing the local list back would
+      // show a name the saved chart no longer holds.
+      const saved: JobsPoster = parseJobsPoster(data.poster) ?? { version: JOBS_POSTER_VERSION, jobs };
+      setJobs(saved.jobs);
+      savedRef.current = signature(saved.jobs);
+      setIsStartingSet(false);
+      setSaveState('saved');
+    } catch {
+      setSaveState('error');
+    }
+  }, [classroomId, canSave, jobs]);
+
+  // ── the theme ─────────────────────────────────────────────────────────────
+  // `isBrandKitActive` also rejects a kit that is switched on but paints
+  // nothing, so "configured but empty" behaves like off rather than like a
+  // theme made of default greys.
+  const kit = isBrandKitActive(brandKit) ? brandKit : null;
+  const tokens = kit ? kit.tokens : PLAIN_TOKENS;
+  const watermarkOpacity = kit && kit.logoUrl ? tokens.watermarkOpacity : 0;
+
+  const posterVars = {
+    '--jp-ink': safeColor(tokens.ink, PLAIN_TOKENS.ink),
+    '--jp-accent': safeColor(tokens.accent, PLAIN_TOKENS.accent),
+    '--jp-border': safeColor(tokens.border, PLAIN_TOKENS.border),
+    '--jp-wash': safeColor(tokens.wash, PLAIN_TOKENS.wash),
+    '--jp-watermark': String(Math.max(0, Math.min(0.2, watermarkOpacity || 0))),
+    '--jp-display': "var(--font-lora), 'Lora', Georgia, 'Times New Roman', serif",
+  } as CSSProperties;
+
+  const sheet = (
+    <JobsPosterSheet
+      jobs={activeJobs}
+      studentById={studentById}
+      mode={mode}
+      slotSize={slotSize}
+      logoUrl={kit?.logoUrl ?? null}
+      showWatermark={watermarkOpacity > 0}
+      title={tx('classroomJobs.posterTitle')}
+      roomName={classroomName}
+      vars={posterVars}
+    />
+  );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a1a0f] flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-3 animate-pulse">🪧</div>
+          <p className="text-white/40">{t('labels.loading')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {/* Screen UI — hidden when printing */}
+      <div className="min-h-screen bg-[#0a1a0f] print:hidden relative">
+        {/* Dark-register: one fixed radial emerald glow */}
+        <div
+          aria-hidden
+          className="fixed inset-0 pointer-events-none"
+          style={{
+            background:
+              'radial-gradient(circle at 50% 0%, rgba(39,129,90,0.32), transparent 60%)',
+          }}
+        />
+
+        <div className="relative bg-[rgba(7,18,12,0.9)] border-b border-[rgba(52,211,153,0.15)] px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 min-w-0">
+            <button
+              onClick={() => router.push('/montree/library/tools')}
+              className="btn btn-ghost btn-icon btn-sm"
+            >
+              ←
+            </button>
+            <span className="text-xl">🪧</span>
+            <h1 className="font-bold text-white/95 truncate">{tx('classroomJobs.title')}</h1>
+          </div>
+          <button
+            onClick={() => window.print()}
+            disabled={activeJobs.length === 0}
+            className="btn btn-primary btn-sm"
+          >
+            🖨️ {t('common.print')}
+          </button>
+        </div>
+
+        <main className="relative p-4 max-w-3xl mx-auto space-y-6">
+          <p className="text-sm text-white/60">{tx('classroomJobs.subtitle')}</p>
+
+          {!canSave && (
+            <p className="text-sm text-amber-300/80">{tx('classroomJobs.notAvailable')}</p>
+          )}
+          {canSave && isStartingSet && (
+            <p className="text-sm text-white/45">{tx('classroomJobs.startingSet')}</p>
+          )}
+
+          {/* Poster style */}
+          <section>
+            <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wide mb-3">
+              {tx('classroomJobs.modeLabel')}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {(['names', 'slots'] as PosterMode[]).map((opt) => (
+                <button
+                  key={opt}
+                  onClick={() => setMode(opt)}
+                  className={`p-3 rounded-xl border-2 text-left transition-all ${
+                    mode === opt
+                      ? 'border-[#34d399] bg-[rgba(52,211,153,0.1)]'
+                      : 'border-[rgba(52,211,153,0.15)] bg-white/[0.06] hover:border-[rgba(52,211,153,0.3)]'
+                  }`}
+                >
+                  <div
+                    className={`text-sm font-medium ${mode === opt ? 'text-white/95' : 'text-white/70'}`}
+                  >
+                    {opt === 'names'
+                      ? tx('classroomJobs.modeNames')
+                      : tx('classroomJobs.modeSlots')}
+                  </div>
+                  <div className="text-xs text-white/45 mt-1">
+                    {opt === 'names'
+                      ? tx('classroomJobs.modeNamesHint')
+                      : tx('classroomJobs.modeSlotsHint')}
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {mode === 'slots' && (
+              <div className="mt-3 space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {(['poster', 'small'] as SlotSize[]).map((opt) => (
+                    <button
+                      key={opt}
+                      onClick={() => setSlotSize(opt)}
+                      className={`p-3 rounded-xl border-2 text-left text-sm font-medium transition-all ${
+                        slotSize === opt
+                          ? 'border-[#34d399] bg-[rgba(52,211,153,0.1)] text-white/95'
+                          : 'border-[rgba(52,211,153,0.15)] bg-white/[0.06] text-white/70 hover:border-[rgba(52,211,153,0.3)]'
+                      }`}
+                    >
+                      {opt === 'poster'
+                        ? tx('classroomJobs.slotSizePoster')
+                        : tx('classroomJobs.slotSizeSmall')}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => router.push('/montree/library/tools/helper-strips')}
+                  className="btn btn-ghost btn-sm"
+                >
+                  ✂️ {tx('classroomJobs.stripsLink')}
+                </button>
+              </div>
+            )}
+
+            <p className="text-xs text-white/40 mt-3">
+              {sheets === 1
+                ? tx('classroomJobs.sheetOne')
+                : tx('classroomJobs.sheetMany').replace('{n}', String(sheets))}
+            </p>
+          </section>
+
+          {/* Jobs */}
+          <section>
+            <div className="flex items-center justify-between mb-3 gap-2">
+              <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wide">
+                {tx('classroomJobs.jobsLabel')} ({activeJobs.length}/{jobs.length})
+              </h2>
+              <div className="flex gap-2">
+                <button
+                  onClick={shuffle}
+                  disabled={students.length === 0}
+                  className="btn btn-ghost btn-sm"
+                >
+                  🎲 {tx('classroomJobs.shuffle')}
+                </button>
+                <span className="text-white/20">|</span>
+                <button onClick={clearAll} className="btn btn-ghost btn-sm">
+                  {tx('classroomJobs.clearAll')}
+                </button>
+              </div>
+            </div>
+
+            {students.length === 0 && (
+              <p className="text-sm text-white/40 mb-3">{tx('classroomJobs.noChildren')}</p>
+            )}
+
+            {jobs.length === 0 ? (
+              <p className="text-center py-8 text-white/40">{tx('classroomJobs.noJobs')}</p>
+            ) : (
+              <div className="space-y-2">
+                {jobs.map((job) => (
+                  <JobRow
+                    key={job.id}
+                    job={job}
+                    students={students}
+                    warn={!!job.childId && job.active && doubleBooked.has(job.childId)}
+                    warnText={tx('classroomJobs.doubleBooked')}
+                    unassignedLabel={tx('classroomJobs.unassigned')}
+                    removeLabel={tx('classroomJobs.remove')}
+                    onPatch={patchJob}
+                    onRemove={removeJob}
+                  />
+                ))}
+              </div>
+            )}
+
+            <div className="flex items-center gap-3 mt-3">
+              <button
+                onClick={addJob}
+                disabled={jobs.length >= MAX_JOBS}
+                className="btn btn-secondary btn-sm"
+              >
+                ＋ {tx('classroomJobs.addJob')}
+              </button>
+              {jobs.length >= MAX_JOBS && (
+                <span className="text-xs text-white/40">{tx('classroomJobs.jobsFull')}</span>
+              )}
+            </div>
+          </section>
+
+          {/* Save */}
+          <section className="flex items-center flex-wrap gap-3">
+            <button
+              onClick={save}
+              disabled={!canSave || saveState === 'saving' || !dirty || hasBlankName}
+              className="btn btn-primary btn-sm"
+            >
+              {saveState === 'saving' ? tx('classroomJobs.saving') : tx('classroomJobs.save')}
+            </button>
+            {hasBlankName && (
+              <span className="text-xs text-amber-300/90">{tx('classroomJobs.blankName')}</span>
+            )}
+            {saveState === 'error' && (
+              <span className="text-xs text-rose-300">{tx('classroomJobs.saveFailed')}</span>
+            )}
+            {saveState === 'saved' && !dirty && (
+              <span className="text-xs text-emerald-300">✓ {tx('classroomJobs.saved')}</span>
+            )}
+            {saveState !== 'saved' && dirty && canSave && (
+              <span className="text-xs text-white/40">{tx('classroomJobs.unsaved')}</span>
+            )}
+          </section>
+
+          {/* Preview */}
+          <section>
+            <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wide mb-3">
+              {t('labels.preview')}
+            </h2>
+            {activeJobs.length === 0 ? (
+              <p className="text-center py-8 text-white/40">
+                {tx('classroomJobs.noActiveJobs')}
+              </p>
+            ) : (
+              <div className="bg-white rounded-xl border border-[rgba(52,211,153,0.15)] p-6 shadow-sm overflow-x-auto">
+                {sheet}
+              </div>
+            )}
+          </section>
+        </main>
+      </div>
+
+      {/* Print-only layout */}
+      <div className="hidden print:block">{sheet}</div>
+
+      {/*
+        Print styles — top-level, never inside a conditional render branch
+        (the locked Turbopack rule in CLAUDE.md). Injected as a plain string
+        rather than styled-jsx because `@page` has to change with the chosen
+        mode, and because nothing in it is school-supplied: the colours travel
+        as CSS custom properties on the element, not as CSS text.
+      */}
+      <style dangerouslySetInnerHTML={{ __html: posterCss(mode, slotSize) }} />
+    </>
+  );
+}
+
+// ── the editor row ──────────────────────────────────────────────────────────
+// Icon, name, on/off and who holds it — the four things a teacher changes.
+// Switching a job OFF keeps it: the wording and the emoji survive a term.
+
+function JobRow({
+  job,
+  students,
+  warn,
+  warnText,
+  unassignedLabel,
+  removeLabel,
+  onPatch,
+  onRemove,
+}: {
+  job: ClassroomJob;
+  students: Student[];
+  warn: boolean;
+  warnText: string;
+  unassignedLabel: string;
+  removeLabel: string;
+  onPatch: (id: string, patch: Partial<ClassroomJob>) => void;
+  onRemove: (id: string) => void;
+}) {
+  const held = job.childId ? students.find((s) => s.id === job.childId) : undefined;
+
+  return (
+    <div
+      className={`rounded-xl border p-3 space-y-2 transition-opacity ${
+        job.active
+          ? 'border-[rgba(52,211,153,0.15)] bg-white/[0.06]'
+          : 'border-[rgba(52,211,153,0.08)] bg-white/[0.02] opacity-55'
+      }`}
+    >
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          checked={job.active}
+          onChange={() => onPatch(job.id, { active: !job.active })}
+          className="w-4 h-4 shrink-0 accent-[#34d399]"
+          aria-label={job.name}
+        />
+        <input
+          value={job.icon}
+          maxLength={MAX_ICON_LEN}
+          onChange={(e) => onPatch(job.id, { icon: e.target.value })}
+          className="w-11 shrink-0 text-center text-lg rounded-lg bg-white/[0.06] border border-[rgba(52,211,153,0.15)] text-white/90 py-1.5"
+        />
+        <input
+          value={job.name}
+          maxLength={MAX_NAME_LEN}
+          onChange={(e) => onPatch(job.id, { name: e.target.value })}
+          className="flex-1 min-w-0 rounded-lg bg-white/[0.06] border border-[rgba(52,211,153,0.15)] text-white/90 text-sm px-2.5 py-1.5"
+        />
+        <button
+          onClick={() => onRemove(job.id)}
+          title={removeLabel}
+          aria-label={removeLabel}
+          className="btn btn-ghost btn-icon btn-sm shrink-0"
+        >
+          ✕
+        </button>
+      </div>
+
+      <select
+        value={job.childId ?? ''}
+        onChange={(e) => onPatch(job.id, { childId: e.target.value || null })}
+        className="w-full rounded-lg bg-[#0f2417] border border-[rgba(52,211,153,0.15)] text-white/90 text-sm px-2.5 py-1.5"
+      >
+        <option value="">{unassignedLabel}</option>
+        {students.map((s) => (
+          <option key={s.id} value={s.id}>
+            {s.name}
+          </option>
+        ))}
+      </select>
+
+      {warn && held && (
+        <p className="text-xs text-amber-300/90">
+          ⚠ {firstName(held.name)} {warnText}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ── the paper ───────────────────────────────────────────────────────────────
+// Shared by the screen preview and the print block, so what a teacher approves
+// is literally the element that goes to the printer.
+
+function JobsPosterSheet({
+  jobs,
+  studentById,
+  mode,
+  slotSize,
+  logoUrl,
+  showWatermark,
+  title,
+  roomName,
+  vars,
+}: {
+  jobs: ClassroomJob[];
+  studentById: Map<string, Student>;
+  mode: PosterMode;
+  slotSize: SlotSize;
+  logoUrl: string | null;
+  showWatermark: boolean;
+  title: string;
+  roomName: string;
+  vars: CSSProperties;
+}) {
+  return (
+    <div className={`jp-poster ${quicksand.className}`} style={vars}>
+      {/* The ghost. First child so it sits behind everything that follows;
+          decorative, so it carries no alt text — the room is already named in
+          words on the masthead. */}
+      {showWatermark && logoUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img className="jp-watermark" src={logoUrl} alt="" aria-hidden="true" />
+      )}
+
+      <header className="jp-head">
+        {logoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img className="jp-emblem" src={logoUrl} alt="" aria-hidden="true" />
+        )}
+        <div className="jp-headtext">
+          <h2 className="jp-title" dir="auto">
+            {title}
+          </h2>
+          {roomName && (
+            <p className="jp-room" dir="auto">
+              {roomName}
+            </p>
+          )}
+        </div>
+      </header>
+
+      <div className="jp-body">
+        {mode === 'names' ? (
+          <div className="jp-grid">
+            {jobs.map((job) => {
+              const child = job.childId ? studentById.get(job.childId) : undefined;
+              return (
+                <div className="jp-card" key={job.id}>
+                  {/* Always rendered, even when empty: the icon column is what
+                      keeps every job name on the same left edge across cards. */}
+                  <span className="jp-icon">{job.icon}</span>
+                  <div className="jp-cardtext">
+                    <div className="jp-job" dir="auto">
+                      {job.name}
+                    </div>
+                    {child ? (
+                      <div className="jp-child" dir="auto">
+                        {firstName(child.name)}
+                      </div>
+                    ) : (
+                      // An unassigned job prints as a line to write on rather
+                      // than as a hole in the chart.
+                      <span className="jp-blank" />
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="jp-slots">
+            {jobs.map((job) => (
+              <div className="jp-slotrow" key={job.id}>
+                <div
+                  className="jp-slotlabel"
+                  style={{ flex: `0 0 ${STRIP_SIZES[slotSize].label}mm` }}
+                >
+                  <span className="jp-icon" style={{ width: '9mm', fontSize: '15pt' }}>
+                    {job.icon}
+                  </span>
+                  <span className="jp-slotname" style={{ minWidth: 0 }} dir="auto">
+                    {job.name}
+                  </span>
+                </div>
+                {/* The empty slot, at exactly the Helper Name Strips footprint
+                    for this size — see STRIP_SIZES. */}
+                <div
+                  className="jp-slot"
+                  style={{
+                    width: `${STRIP_SIZES[slotSize].width}mm`,
+                    height: `${STRIP_SIZES[slotSize].height}mm`,
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

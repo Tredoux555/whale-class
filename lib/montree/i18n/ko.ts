@@ -1576,6 +1576,8 @@ export const ko: Record<string, string> = {
   'tools.name_labels_desc': '학급 명단용 인쇄 가능한 이름표, 사물함 및 개인함 라벨',
   'tools.helper_strips': '도우미 이름표 스트립',
   'tools.helper_strips_desc': '학급 당번 포스터용 사진이 있는 오려낼 이름표',
+  'tools.classroom_jobs': '학급 역할 포스터',
+  'tools.classroom_jobs_desc': '역할마다 아이 이름을 넣어 인쇄할 수 있는 역할 게시판',
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': '출석 서명지',
@@ -6141,5 +6143,11 @@ export const ko: Record<string, string> = {
   'classDocs.doc.emergencyContacts.desc': '각 아동의 모든 연락처와 담당 의사, 구급대가 가장 먼저 묻는 정보.',
   'classDocs.doc.labels': '이름표',
   'classDocs.doc.labels.desc': '반 전체를 위한 사물함·고리·트레이용 이름표, 한 줄에 3개.',
+  'classDocs.brand.scopeLabel': '적용 대상',
+  'classDocs.brand.scopeClassroom': '이 학급',
+  'classDocs.brand.scopeSchool': '학교 전체',
+  'classDocs.brand.printingClassroom': '아래 문서는 이 학급의 엠블럼으로 인쇄됩니다.',
+  'classDocs.brand.printingSchool': '아래 문서는 학교 엠블럼으로 인쇄됩니다.',
+  'classDocs.brand.printingNone': '아직 엠블럼이 없습니다 — 아래 문서는 장식 없이 인쇄됩니다.',
 
 };

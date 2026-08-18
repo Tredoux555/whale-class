@@ -1576,6 +1576,8 @@ export const uk: Record<string, string> = {
   'tools.name_labels_desc': 'Друковані іменні бирки, підписи для шафок і поличок для списку вашого класу',
   'tools.helper_strips': 'Іменні смужки для чергових',
   'tools.helper_strips_desc': 'Смужки з іменем і фото для плаката "Чергування в класі" (для вирізання)',
+  'tools.classroom_jobs': 'Плакат класних обов’язків',
+  'tools.classroom_jobs_desc': 'Друкований плакат обов’язків, де до кожного призначено дитину',
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Лист реєстрації',
@@ -6138,5 +6140,11 @@ export const uk: Record<string, string> = {
   'classDocs.doc.emergencyContacts.desc': 'Усі контакти кожної дитини, а також лікар і все, про що спершу запитує бригада швидкої.',
   'classDocs.doc.labels': 'Іменні наліпки',
   'classDocs.doc.labels.desc': 'Наліпки для шафки, гачка й лотка для всієї групи, по три в ряд.',
+  'classDocs.brand.scopeLabel': 'Застосовується до',
+  'classDocs.brand.scopeClassroom': 'Ця група',
+  'classDocs.brand.scopeSchool': 'Уся школа',
+  'classDocs.brand.printingClassroom': 'Документи нижче друкуються з емблемою цієї групи.',
+  'classDocs.brand.printingSchool': 'Документи нижче друкуються зі шкільною емблемою.',
+  'classDocs.brand.printingNone': 'Емблеми ще немає — документи нижче друкуються без оформлення.',
 
 };

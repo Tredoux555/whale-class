@@ -128,6 +128,13 @@ const TOOLS = [
     gradient: 'from-emerald-500 to-green-600',
   },
   {
+    href: '/montree/library/tools/classroom-jobs',
+    icon: '🪧',
+    titleKey: 'tools.classroom_jobs',
+    descKey: 'tools.classroom_jobs_desc',
+    gradient: 'from-sky-600 to-indigo-700',
+  },
+  {
     href: '/montree/library/tools/helper-strips',
     icon: '✂️',
     titleKey: 'tools.helper_strips',

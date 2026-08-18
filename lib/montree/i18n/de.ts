@@ -1576,6 +1576,8 @@ export const de: Record<string, string> = {
   'tools.name_labels_desc': 'Druckbare Namensschilder, Spind- und Fächeretiketten für Ihre Klassenliste',
   'tools.helper_strips': 'Helfer-Namensstreifen',
   'tools.helper_strips_desc': 'Ausschneidbare Namensstreifen mit Fotos für das Klassendienst-Poster',
+  'tools.classroom_jobs': 'Ämterplan der Klasse',
+  'tools.classroom_jobs_desc': 'Eine druckbare Ämtertafel mit einem Kind für jedes Amt',
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Anwesenheitsliste',
@@ -6141,5 +6143,11 @@ export const de: Record<string, string> = {
   'classDocs.doc.emergencyContacts.desc': 'Jeder Kontakt für jedes Kind, dazu der Arzt und alles, wonach ein Rettungsteam zuerst fragt.',
   'classDocs.doc.labels': 'Namensetiketten',
   'classDocs.doc.labels.desc': 'Etiketten für Fach, Haken und Ablage für die ganze Gruppe, drei pro Reihe.',
+  'classDocs.brand.scopeLabel': 'Gilt für',
+  'classDocs.brand.scopeClassroom': 'Diese Gruppe',
+  'classDocs.brand.scopeSchool': 'Ganze Schule',
+  'classDocs.brand.printingClassroom': 'Die Dokumente unten werden mit dem Emblem dieser Gruppe gedruckt.',
+  'classDocs.brand.printingSchool': 'Die Dokumente unten werden mit dem Schulemblem gedruckt.',
+  'classDocs.brand.printingNone': 'Noch kein Emblem — die Dokumente unten werden schlicht gedruckt.',
 
 };

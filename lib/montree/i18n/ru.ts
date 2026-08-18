@@ -1576,6 +1576,8 @@ export const ru: Record<string, string> = {
   'tools.name_labels_desc': 'Печатные именные бирки, подписи для шкафчиков и полок для списка вашего класса',
   'tools.helper_strips': 'Именные полоски для дежурных',
   'tools.helper_strips_desc': 'Вырезные именные полоски с фото для плаката "Дежурства по классу"',
+  'tools.classroom_jobs': 'Плакат классных обязанностей',
+  'tools.classroom_jobs_desc': 'Печатный плакат обязанностей, где к каждой закреплён ребёнок',
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Лист регистрации',
@@ -6138,5 +6140,11 @@ export const ru: Record<string, string> = {
   'classDocs.doc.emergencyContacts.desc': 'Все контакты каждого ребёнка, плюс врач и всё, о чём в первую очередь спрашивает бригада скорой.',
   'classDocs.doc.labels': 'Именные наклейки',
   'classDocs.doc.labels.desc': 'Наклейки для шкафчика, крючка и подноса для всей группы, по три в ряд.',
+  'classDocs.brand.scopeLabel': 'Применяется к',
+  'classDocs.brand.scopeClassroom': 'Эта группа',
+  'classDocs.brand.scopeSchool': 'Вся школа',
+  'classDocs.brand.printingClassroom': 'Документы ниже печатаются с эмблемой этой группы.',
+  'classDocs.brand.printingSchool': 'Документы ниже печатаются со школьной эмблемой.',
+  'classDocs.brand.printingNone': 'Эмблемы пока нет — документы ниже печатаются без оформления.',
 
 };
