@@ -81,6 +81,7 @@ var LESSONS = [{"n": 5, "sound": "s", "title": "The Snake Says Ssss", "catch": "
 
 function pad(n){ return String(n).padStart(2,'0'); }
 function videoUrl(n){ return '/api/montree/media/proxy/videos/lesson-'+pad(n)+'.mp4?bucket=dark-phonics'; }
+function pictureUrl(n){ return '/api/montree/media/proxy/pictures/lesson-'+pad(n)+'.png?bucket=dark-phonics'; }
 
 var player=document.getElementById('player');
 var nowLesson=document.getElementById('now-lesson');
@@ -94,6 +95,23 @@ var playBtn=document.getElementById('playpause');
 var progressEl=document.getElementById('progress');
 var autonext=document.getElementById('autonext');
 var upnextEl=document.getElementById('upnext');
+
+var HAS_MEDIA_SESSION = 'mediaSession' in navigator;
+
+// Hidden warm-up element: tracks are video files (see videoUrl() — .mp4 via
+// the media proxy), so the VISIBLE #player stays a <video> for foreground UX
+// (poster frame, controls, playsinline). This second, never-shown <video> is
+// only ever used to pre-fetch/pre-decode the NEXT lesson's src into the
+// browser's HTTP + media cache while the current one is playing, so that the
+// 'ended' handler's src-swap-and-play() on the visible player is served from
+// cache instead of triggering a cold network fetch right at the transition —
+// exactly the gap that stalls auto-advance on iOS when the screen is locked.
+var preloadBuffer=document.createElement('video');
+preloadBuffer.setAttribute('playsinline','');
+preloadBuffer.muted=true;
+preloadBuffer.preload='auto';
+preloadBuffer.style.cssText='position:absolute;width:0;height:0;opacity:0;pointer-events:none;';
+document.body.appendChild(preloadBuffer);
 
 var uploaded=null; // Set of lesson numbers confirmed to have a video, or null = unknown yet
 var order=[]; // indices into LESSONS that are playable, in order
@@ -140,6 +158,37 @@ function highlightCurrent(){
   if(onEl) onEl.scrollIntoView({block:'nearest'});
 }
 
+function updateMediaSession(l){
+  if(!HAS_MEDIA_SESSION) return;
+  try{
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: l.title,
+      artist: 'Dark Phonics',
+      album: l.sound,
+      // Pictures aren't existence-checked on this page (only `uploaded`, for
+      // videos, is) — offer the URL regardless; a 404'd artwork entry is just
+      // silently ignored by the OS media UI, same as a missing poster.
+      artwork: [
+        { src: pictureUrl(l.n), sizes: '96x96',   type: 'image/png' },
+        { src: pictureUrl(l.n), sizes: '512x512', type: 'image/png' }
+      ]
+    });
+  }catch(e){ /* MediaMetadata unsupported/rejected — non-fatal */ }
+}
+
+// Warms the browser cache with the NEXT playable track's video so the src
+// swap in the 'ended' handler below can be served from cache instead of
+// opening a fresh network request right at the transition.
+function warmNext(){
+  var nextIdx=order[pos+1];
+  if(nextIdx===undefined){ preloadBuffer.removeAttribute('src'); return; }
+  var url=videoUrl(LESSONS[nextIdx].n);
+  if(preloadBuffer.getAttribute('src')!==url){
+    preloadBuffer.src=url;
+    preloadBuffer.load();
+  }
+}
+
 function loadCurrent(autoplay){
   if(!order.length) return;
   var l=LESSONS[order[pos]];
@@ -154,17 +203,53 @@ function loadCurrent(autoplay){
   var nx=LESSONS[order[pos+1]];
   upnextEl.innerHTML = nx ? ('Up next: <b>Lesson '+nx.n+' — '+escapeHtml(nx.title)+'</b>') : 'Last song in the playlist — nice work! 🎉';
   highlightCurrent();
-  if(autoplay){ player.play().catch(function(){}); }
+  updateMediaSession(l);
+  warmNext();
+  // No await/fetch between this and play(): keeps the call synchronously
+  // inside the caller's event handler (click, or media 'ended') so iOS still
+  // treats it as continuing an active/user-permitted playback session rather
+  // than a fresh, ungestured play() request.
+  if(autoplay){
+    player.play().catch(function(){});
+    if(HAS_MEDIA_SESSION) navigator.mediaSession.playbackState='playing';
+  }
 }
 
-player.addEventListener('play',function(){ playBtn.textContent='⏸ Pause'; });
-player.addEventListener('pause',function(){ playBtn.textContent='▶ Play'; });
-playBtn.addEventListener('click',function(){ if(player.paused) player.play().catch(function(){}); else player.pause(); });
-prevBtn.addEventListener('click',function(){ if(pos>0){ pos--; loadCurrent(true); } });
-nextBtn.addEventListener('click',function(){ if(pos<order.length-1){ pos++; loadCurrent(true); } });
-player.addEventListener('ended',function(){
-  if(autonext.checked && pos<order.length-1){ pos++; loadCurrent(true); }
+function goPrev(){ if(pos>0){ pos--; loadCurrent(true); } }
+function goNext(){ if(pos<order.length-1){ pos++; loadCurrent(true); } }
+
+player.addEventListener('play',function(){
+  playBtn.textContent='⏸ Pause';
+  if(HAS_MEDIA_SESSION) navigator.mediaSession.playbackState='playing';
 });
+player.addEventListener('pause',function(){
+  playBtn.textContent='▶ Play';
+  if(HAS_MEDIA_SESSION) navigator.mediaSession.playbackState='paused';
+});
+playBtn.addEventListener('click',function(){ if(player.paused) player.play().catch(function(){}); else player.pause(); });
+prevBtn.addEventListener('click',goPrev);
+nextBtn.addEventListener('click',goNext);
+// Synchronous, no awaits before loadCurrent()/play(): 'ended' is itself a
+// trusted media event, and calling play() directly in this handler (rather
+// than after any async gap) is what keeps iOS treating the next track as a
+// continuation of the same permitted playback session instead of a fresh,
+// ungestured play() call — the latter is what gets silently blocked when the
+// screen is locked.
+player.addEventListener('ended',function(){
+  if(autonext.checked && pos<order.length-1){
+    pos++;
+    loadCurrent(true);
+  } else if(HAS_MEDIA_SESSION){
+    navigator.mediaSession.playbackState='paused';
+  }
+});
+
+if(HAS_MEDIA_SESSION){
+  navigator.mediaSession.setActionHandler('play', function(){ player.play().catch(function(){}); });
+  navigator.mediaSession.setActionHandler('pause', function(){ player.pause(); });
+  navigator.mediaSession.setActionHandler('previoustrack', goPrev);
+  navigator.mediaSession.setActionHandler('nexttrack', goNext);
+}
 
 // Existence check — same endpoint the Songs page uses — so the playlist never
 // tries to play a lesson whose file hasn't been uploaded yet.
