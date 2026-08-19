@@ -178,7 +178,11 @@ export type FeatureKey =
   | 'menu_manage_students'
   | 'menu_class_progress'
   | 'menu_language_semester'
-  | 'menu_classroom_setup';
+  | 'menu_classroom_setup'
+  // Dark Phonics Live — 1-on-1 online phonics classroom (Agora video +
+  // interactive whiteboard, credits-based booking). Migration 334.
+  // Default OFF — enable per school once Whiteboard credentials are provisioned.
+  | 'dark_phonics_live';
 
 export interface MontreeFeature {
   feature_key: FeatureKey;

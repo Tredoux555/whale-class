@@ -1,0 +1,17 @@
+# Dark Phonics Live — frontend slice, integration TODOs
+
+1. **AgoraVideoCall**: `VideoRail` takes `teacherSlot` / `studentSlot` ReactNodes — zero import coupling. In both live pages, replace the commented lines with `import AgoraVideoCall from '@/components/montree/appointments/AgoraVideoCall'` and pass `<AgoraVideoCall appointmentId={appointmentId} role="teacher" | "parent" />`. **Verify its real prop names** — `{ appointmentId, role }` is assumed from the contract, not read. Do not edit that file.
+2. **Google Fonts**: add the Space Grotesk + Inter `<link>` (or `next/font/google`) to the real `app/layout.tsx` — snippet is in the header comment of `styles/dark-phonics-live-tokens.css`. Untouched by this slice; falls back to system-ui until done.
+3. **Tokens import**: both pages do `import '@/styles/dark-phonics-live-tokens.css'`. If the repo forbids CSS imports outside the root layout, move it to a new `app/montree/(live)/layout.tsx` instead — keep it scoped, not global.
+4. **Tailwind assumptions**: styling uses arbitrary values reading CSS vars (`bg-[var(--dpl-chrome2)]`), so **no tailwind.config change is required**. Assumes Tailwind v3+/v4 with JIT and `@/*` path alias. An optional `theme.extend` snippet is in the tokens file if named utilities are preferred.
+5. **`LiveLessonScene`**: `Stage.tsx` re-declares the union locally to stay decoupled. It was copied to match `lib/montree/dark-phonics/live-lesson.ts` **as written by the backend slice** (discriminant key is `type`, not `kind`). Once merged, delete the local block and `import type { LiveLessonScene }` instead — a human should re-check `letter-card.imageUrl`, `tracing.guideUrl`, `decodable-page.pageAssetUrl` names.
+6. **Letter glyph derivation**: `Stage` renders the big letter as `Ss` from `letterScene.sound`. Fails for digraphs (`sh` → `SHsh`). Needs a real `letter`/`display` field from the adapter, or a mapping table.
+7. **Live sync**: `activeSceneIndex` / `activeWordIndex` / `tracingCompleted` are server props. Parent must follow the teacher in realtime (Fastboard scene state or Supabase channel keyed by `appointmentId`) — not built here.
+8. **End Class**: teacher page passes a Server Action stub; wire it to `POST /api/montree/appointments/[id]/recap` and add a confirm dialog (destructive).
+9. **Toolbar**: pen/highlight/eraser must be handed to the Fastboard instance from the `whiteboard-token` route. Dice/spinner/timer are visual-only per contract. Star-stamp should share `StarJar`'s award mutation.
+10. **StarJar `onAwardStar`**: stub only. Needs a stars endpoint/realtime push; parent surface intentionally omits it (read-only jar).
+11. **`ParentRecapCard`** is built but **not yet mounted** — the recap route `app/montree/parent/recap/[appointmentId]/page.tsx` is outside this slice. Its props map 1:1 onto the recap API payload; check `wordsRead`, `heroWordIndex`, `starsAllTime` exist there.
+12. **QR is a non-scannable placeholder** — pass `qrImageUrl`, ideally built from the referral-code pattern in `lib/montree/referral/code-gen.ts`.
+13. **Timezone**: `ParentRecapCard` formats dates in the render environment's locale; pass a pre-formatted Beijing-time string from the server.
+14. **Auth/flag gates** are commented, not implemented, on both pages (`verifySchoolRequest` / `getParentSession` + `isFeatureEnabled('dark_phonics_live')`).
+15. **Layout is fixed-width-ish** (1440 mockup): the 72/28 grid and 49-segment strip don't collapse. No responsive/mobile pass was in scope.

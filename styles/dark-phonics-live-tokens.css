@@ -1,0 +1,292 @@
+/* ============================================================================
+ * Dark Phonics Live — "Midnight Studio" design tokens
+ * ----------------------------------------------------------------------------
+ * Source of truth: mockups/draft-a-midnight-studio.html (approved draft A).
+ * Every value below is lifted verbatim from that mockup's :root block, renamed
+ * with a `--dpl-` prefix so it cannot collide with existing Montree globals.
+ *
+ * HOW THIS IS CONSUMED
+ *   The dark-phonics-live components style themselves with Tailwind utilities
+ *   using arbitrary values that read these vars, e.g.
+ *     className="bg-[var(--dpl-chrome2)] border-[var(--dpl-line)] rounded-[var(--dpl-r-lg)]"
+ *   That keeps the whole skin swappable from one file and requires ZERO changes
+ *   to the repo's existing tailwind.config.
+ *
+ * TODO (integration): import this file once, from the nearest layout that owns
+ * the live surface — preferably a NEW `app/montree/(live)/layout.tsx` or the
+ * two live pages themselves — with:  import '@/styles/dark-phonics-live-tokens.css';
+ * Do NOT add it to the global root layout; the skin should stay scoped.
+ *
+ * TODO (root layout, human must do this): the display/body fonts need the
+ * Google Fonts link. Add to `app/layout.tsx` <head> (or next/font/google):
+ *   <link rel="preconnect" href="https://fonts.googleapis.com" />
+ *   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+ *   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" />
+ * Until then the stacks below fall back to system-ui and the skin still reads
+ * correctly, just without Space Grotesk's character.
+ *
+ * OPTIONAL tailwind.config extension (only if a human prefers named utilities
+ * like `bg-dpl-chrome` over arbitrary values — not required by these files):
+ *   theme: { extend: {
+ *     colors: {
+ *       dpl: {
+ *         chrome: 'var(--dpl-chrome)', chrome2: 'var(--dpl-chrome2)',
+ *         violet: 'var(--dpl-accent)', lime: 'var(--dpl-accent2)',
+ *         danger: 'var(--dpl-danger)', stage: 'var(--dpl-slide-bg)',
+ *       },
+ *     },
+ *     borderRadius: { 'dpl-sm': 'var(--dpl-r-sm)', 'dpl-md': 'var(--dpl-r-md)',
+ *                     'dpl-lg': 'var(--dpl-r-lg)', 'dpl-xl': 'var(--dpl-r-xl)' },
+ *     fontFamily: { 'dpl-display': 'var(--dpl-font-display)',
+ *                   'dpl-body': 'var(--dpl-font-body)' },
+ *   }}
+ * ========================================================================== */
+
+:root {
+  /* ---- type ---- */
+  --dpl-font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --dpl-font-body: 'Inter', 'Space Grotesk', system-ui, sans-serif;
+  --dpl-w-med: 500;
+  --dpl-w-bold: 600;
+  --dpl-brand-ls: 0.16em;
+
+  /* ---- spacing scale (mockup s3/s4/s5) ---- */
+  --dpl-s1: 6px;
+  --dpl-s2: 10px;
+  --dpl-s3: 14px;
+  --dpl-s4: 18px;
+  --dpl-s5: 24px;
+  --dpl-s6: 32px;
+
+  /* ---- radius scale ---- */
+  --dpl-r-sm: 12px;
+  --dpl-r-md: 16px;
+  --dpl-r-lg: 20px;
+  --dpl-r-xl: 26px;
+  --dpl-r-pill: 999px;
+
+  /* ---- chrome (near-black shell) ---- */
+  --dpl-bg: #07070c;
+  --dpl-chrome: #0b0b12;
+  --dpl-chrome2: #12121c;
+  --dpl-line: rgba(139, 92, 246, 0.22);
+  --dpl-bw: 1px;
+
+  /* ---- ink on chrome ---- */
+  --dpl-ink: #f3f1ff;
+  --dpl-ink2: #9c97bd;
+  --dpl-ink3: #6a6588;
+
+  /* ---- brand accents ---- */
+  --dpl-accent: #8b5cf6; /* violet */
+  --dpl-accent-ink: #0b0b12;
+  --dpl-accent2: #c8ff3d; /* lime */
+  --dpl-accent-text: #a78bfa;
+  --dpl-danger: #ff4d6d; /* end-class red */
+  --dpl-danger-ink: #12030a;
+  --dpl-danger-line: #ff4d6d;
+  --dpl-danger-grad: linear-gradient(180deg, #ff6b87, #ff4d6d);
+  --dpl-ok: #8acf2e;
+  --dpl-ok-ink: #14210a;
+
+  /* ---- ambient glows / shadows ---- */
+  --dpl-glow-1: rgba(139, 92, 246, 0.55);
+  --dpl-glow-2: rgba(200, 255, 61, 0.2);
+  --dpl-glow-op: 0.42;
+  --dpl-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.9);
+  --dpl-btn-shadow: 0 6px 18px -8px rgba(255, 86, 120, 0.7);
+  --dpl-pill-shadow: 0 18px 44px -22px rgba(139, 92, 246, 0.85),
+    0 0 0 1px rgba(139, 92, 246, 0.1) inset;
+  --dpl-tool-on-shadow: 0 0 22px -4px rgba(139, 92, 246, 0.85);
+
+  /* ---- brand lockup / equalizer mark ---- */
+  --dpl-mark-bg: #15112a;
+  --dpl-mark-line: rgba(139, 92, 246, 0.4);
+
+  /* ---- lesson badge + progress strip ---- */
+  --dpl-badge-bg: rgba(139, 92, 246, 0.1);
+  --dpl-badge-line: rgba(139, 92, 246, 0.3);
+  --dpl-live-bg: rgba(200, 255, 61, 0.14);
+  --dpl-live-ink: #c8ff3d;
+  --dpl-seg-off: rgba(255, 255, 255, 0.13);
+  --dpl-seg-on: #8b5cf6;
+  --dpl-seg-now-glow: 0 0 14px rgba(200, 255, 61, 0.75);
+  --dpl-timer-bg: rgba(255, 255, 255, 0.04);
+  --dpl-dot-1: rgba(255, 255, 255, 0.16);
+  --dpl-dot-2: rgba(139, 92, 246, 0.5);
+  --dpl-dot-3: rgba(200, 255, 61, 0.5);
+
+  /* ---- stage (stays LIGHT/cream even though chrome is near-black) ---- */
+  --dpl-stage-bg: #14101f;
+  --dpl-stage-shadow: 0 0 0 1px rgba(139, 92, 246, 0.14),
+    0 40px 90px -50px rgba(139, 92, 246, 0.9);
+  --dpl-slide-bg: #fffcf4; /* the cream */
+  --dpl-slide-edge: #ede6d6;
+  --dpl-slide-shadow: 0 0 60px -14px rgba(200, 255, 61, 0.22),
+    0 20px 50px -30px rgba(0, 0, 0, 0.8);
+  --dpl-slide-ink: #171325;
+  --dpl-slide-ink2: #6b6482;
+  --dpl-slide-ink3: #9b93ae;
+  --dpl-slide-accent: #6d28d9;
+  --dpl-slide-accent-2: #5a8a00;
+  --dpl-slide-on-accent: #ffffff;
+  --dpl-slide-line: #e7e0ce;
+  --dpl-step-bg: #f6f1e3;
+
+  /* ---- letter card ---- */
+  --dpl-lc-bg: #fbf6e9;
+  --dpl-lc-line: #e7dfc9;
+  --dpl-lc-shadow: 0 12px 30px -22px rgba(109, 40, 217, 0.5);
+  --dpl-snake-1: #7c3aed;
+  --dpl-snake-2: #5b21b6;
+  --dpl-snake-3: #ff4d6d;
+
+  /* ---- word chips + hand-drawn annotation ---- */
+  --dpl-chip-bg: #f7f2e4;
+  --dpl-chip-line: #e4dcc6;
+  --dpl-chip-on-bg: #6d28d9;
+  --dpl-chip-on-ink: #ffffff;
+  --dpl-chip-on-line: #6d28d9;
+  --dpl-chip-on-shadow: 0 10px 24px -14px rgba(109, 40, 217, 0.9);
+  --dpl-annot: #ff4d6d;
+  --dpl-squig: #6d28d9;
+  --dpl-squig-op: 0.35;
+
+  /* ---- tracing strip ---- */
+  --dpl-trace-bg: #fbf7ec;
+  --dpl-trace-cell: #ffffff;
+  --dpl-trace-cell-done: #f4f7e4;
+  --dpl-trace-done-line: #b9d64a;
+  --dpl-trace-ghost: #d8d1be;
+  --dpl-trace-ink: #6d28d9;
+
+  /* ---- video rail tiles ---- */
+  --dpl-vid-1: linear-gradient(150deg, #2a1b54 0%, #5b21b6 55%, #8b5cf6 100%);
+  --dpl-vid-2: linear-gradient(150deg, #123047 0%, #1e5f6b 55%, #3fa796 100%);
+  --dpl-av-bg: rgba(255, 255, 255, 0.15);
+  --dpl-av-ink: #ffffff;
+  --dpl-av-line: rgba(255, 255, 255, 0.35);
+  --dpl-av-shadow: 0 10px 26px -14px rgba(0, 0, 0, 0.9);
+  --dpl-tile-foot: linear-gradient(180deg, rgba(8, 6, 16, 0) 0%, rgba(8, 6, 16, 0.85) 60%);
+  --dpl-tag-bg: rgba(11, 11, 18, 0.7);
+  --dpl-tag-ink: #c8ff3d;
+  --dpl-tag2-bg: rgba(11, 11, 18, 0.7);
+  --dpl-tag2-ink: #ffc93c;
+
+  /* ---- star jar ---- */
+  --dpl-jar-lid: #5b21b6;
+  --dpl-jar-bg: rgba(139, 92, 246, 0.08);
+  --dpl-jar-line: rgba(139, 92, 246, 0.3);
+  --dpl-jar-empty: rgba(255, 255, 255, 0.16);
+  --dpl-star-glow: 0 0 10px rgba(200, 255, 61, 0.85);
+
+  /* ---- "AT HOME" 3D-kit prompt chip ---- */
+  --dpl-athome-bg: rgba(200, 255, 61, 0.08);
+  --dpl-athome-line: rgba(200, 255, 61, 0.32);
+  --dpl-athome-ic-bg: rgba(200, 255, 61, 0.14);
+  --dpl-athome-ic: #c8ff3d;
+  --dpl-athome-label: #93b34a;
+  --dpl-athome-ink: #eaffc0;
+  --dpl-kit-bg: rgba(255, 255, 255, 0.07);
+  --dpl-kit-ink: #9c97bd;
+
+  /* ---- parent recap card ---- */
+  --dpl-recap-bg: #07070c;
+  --dpl-recap-cap: #6a6588;
+  --dpl-card-bg: #14121f;
+  --dpl-card-line: rgba(139, 92, 246, 0.22);
+  --dpl-card-ink: #f3f1ff;
+  --dpl-card-ink2: #b7b2d2;
+  --dpl-card-ink3: #7c7699;
+  --dpl-card-shadow: 0 24px 60px -34px rgba(0, 0, 0, 0.95),
+    0 0 0 1px rgba(200, 255, 61, 0.06) inset;
+  --dpl-card-hero-bg: rgba(139, 92, 246, 0.12);
+  --dpl-card-hero-line: rgba(139, 92, 246, 0.26);
+  --dpl-kid-bg: #8b5cf6;
+  --dpl-kid-ink: #ffffff;
+  --dpl-word-bg: rgba(255, 255, 255, 0.05);
+  --dpl-word-line: rgba(255, 255, 255, 0.1);
+  --dpl-word-on-bg: #8b5cf6;
+  --dpl-word-on-ink: #0b0b12;
+  --dpl-word-on-line: #8b5cf6;
+  --dpl-note-bg: rgba(200, 255, 61, 0.07);
+  --dpl-note-mark: rgba(200, 255, 61, 0.3);
+  --dpl-rung-off: rgba(255, 255, 255, 0.12);
+  --dpl-rung-on: #8b5cf6;
+  --dpl-stars-bg: rgba(255, 255, 255, 0.04);
+  --dpl-stars-line: rgba(255, 255, 255, 0.09);
+  --dpl-qr-bg: #ffffff;
+  --dpl-qr-ink: #0b0b12;
+  --dpl-confetti: #c8ff3d;
+  --dpl-confetti-op: 0.16;
+}
+
+/* ============================================================================
+ * Signature motion. Kept here (not in Tailwind config) because both animations
+ * are part of the approved visual language, not incidental styling.
+ * ========================================================================== */
+
+/* Equalizer bars in the brand lockup — a nod to the trap-beat lesson songs.
+   ClassroomChrome renders 5 <rect>s and tags them .dpl-eq-bar with an index. */
+@keyframes dpl-eq {
+  0%,
+  100% {
+    transform: scaleY(0.32);
+  }
+  45% {
+    transform: scaleY(1);
+  }
+  70% {
+    transform: scaleY(0.55);
+  }
+}
+
+.dpl-eq-bar {
+  transform-origin: 50% 100%;
+  animation: dpl-eq 1.15s ease-in-out infinite;
+}
+.dpl-eq-bar:nth-child(1) { animation-delay: 0s; }
+.dpl-eq-bar:nth-child(2) { animation-delay: 0.12s; }
+.dpl-eq-bar:nth-child(3) { animation-delay: 0.26s; }
+.dpl-eq-bar:nth-child(4) { animation-delay: 0.38s; }
+.dpl-eq-bar:nth-child(5) { animation-delay: 0.5s; }
+
+/* Slower, calmer variant for the small mark inside the recap card. */
+.dpl-eq-slow .dpl-eq-bar {
+  animation-duration: 1.4s;
+}
+
+/* Glow-pulse on the most recently earned star in the jar. */
+@keyframes dpl-star-pop {
+  0%,
+  64%,
+  100% {
+    transform: scale(1);
+  }
+  72% {
+    transform: scale(1.22) rotate(-6deg);
+  }
+  80% {
+    transform: scale(1.06) rotate(3deg);
+  }
+  88% {
+    transform: scale(1.14);
+  }
+}
+
+.dpl-star-pop {
+  transform-origin: 50% 55%;
+  animation: dpl-star-pop 2.6s ease-in-out infinite;
+  filter: drop-shadow(var(--dpl-star-glow));
+}
+
+/* Respect reduced-motion: the skin still reads, it just stops moving. */
+@media (prefers-reduced-motion: reduce) {
+  .dpl-eq-bar,
+  .dpl-star-pop {
+    animation: none;
+  }
+  .dpl-star-pop {
+    filter: drop-shadow(var(--dpl-star-glow));
+  }
+}
