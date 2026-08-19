@@ -34,6 +34,7 @@ import {
   parseJobsPoster,
   readJobsPosterFromSettings,
   scrubAssignments,
+  type ClassroomJob,
   type JobsPoster,
 } from '@/lib/montree/classroom-jobs/types';
 
@@ -131,6 +132,34 @@ async function loadKnownChildIds(
     return null;
   }
   return new Set(((data as { id: string }[] | null) ?? []).map((r) => r.id));
+}
+
+/**
+ * Drop a job's `imageUrl`/`imagePath` if the path does not belong to THIS
+ * classroom's own storage folder.
+ *
+ * 🚨 THIS CANNOT LIVE IN THE PURE PARSER — `parseJobsPoster` has no schoolId
+ * or classroomId to check a path against, and it must not: that parser also
+ * runs on data this route has no auth context for (a settings-column read).
+ * Here, on a save, the auth context IS the classroom being saved to, so this
+ * is the one place a forged path — pointing at another tenant's uploaded file
+ * — gets caught before it can be stored. Same Jul-3 posture as the brand-kit
+ * upload cleanup, applied to a READ path rather than a delete.
+ */
+function scrubJobImagePaths(
+  poster: JobsPoster,
+  schoolId: string,
+  classroomId: string
+): JobsPoster {
+  const prefix = `brand/${schoolId}/classroom/${classroomId}/jobs/`;
+  return {
+    ...poster,
+    jobs: poster.jobs.map((j): ClassroomJob => {
+      if (!j.imagePath) return j;
+      if (j.imagePath.startsWith(prefix) && !j.imagePath.includes('..')) return j;
+      return { id: j.id, icon: j.icon, name: j.name, active: j.active, childId: j.childId };
+    }),
+  };
 }
 
 // ── GET: the room's chart ───────────────────────────────────────────────────
@@ -256,8 +285,9 @@ export async function POST(request: NextRequest) {
     // the ids came from a screen that had just listed this room's children, and
     // an unreadable roster is not evidence that they are wrong.
     const known = await loadKnownChildIds(supabase, classroomId);
+    const assignmentScrubbed = known ? scrubAssignments(posted, known) : posted;
     const poster: JobsPoster = {
-      ...(known ? scrubAssignments(posted, known) : posted),
+      ...scrubJobImagePaths(assignmentScrubbed, auth.schoolId, classroomId),
       version: JOBS_POSTER_VERSION,
       updatedAt: new Date().toISOString(),
     };

@@ -33,10 +33,12 @@ import { montreeApi } from '@/lib/montree/api';
 import { isBrandKitActive, PLAIN_TOKENS, type BrandKit } from '@/lib/montree/brand-kit/types';
 import {
   DEFAULT_JOBS,
+  DEFAULT_POSTER_TITLE,
   JOBS_POSTER_VERSION,
   MAX_JOBS,
   MAX_ICON_LEN,
   MAX_NAME_LEN,
+  MAX_TITLE_LEN,
   defaultJobsPoster,
   newCustomJobId,
   parseJobsPoster,
@@ -67,6 +69,12 @@ const COPY: Record<string, string> = {
   'classroomJobs.subtitle':
     'One chart for the wall — a job, and the child who holds it this week.',
   'classroomJobs.posterTitle': 'Our Classroom Jobs',
+  'classroomJobs.titleLabel': 'Poster title',
+  'classroomJobs.titleHint': 'Prints on the masthead. Leave it blank to use the starting title.',
+  'classroomJobs.uploadPicture': 'Upload picture',
+  'classroomJobs.removePicture': 'Remove picture',
+  'classroomJobs.uploading': 'Uploading…',
+  'classroomJobs.iconUploadFailed': 'Could not upload the picture — try again',
   'classroomJobs.modeLabel': 'Poster style',
   'classroomJobs.modeNames': 'Names printed on',
   'classroomJobs.modeNamesHint': 'A4 portrait · a card per job, each with a child’s name',
@@ -269,6 +277,18 @@ function posterCss(mode: PosterMode, slotSize: SlotSize): string {
 }
 .jp-icon { flex: 0 0 auto; line-height: 1; text-align: center; }
 .jp-card .jp-icon { width: 12mm; font-size: 20pt; }
+/* A teacher-uploaded picture in place of the emoji. Always an <img>, never a
+   CSS background — see the header note on why. Sized to the same footprint
+   the emoji occupies at each mode's scale, with print-color-adjust so the
+   picture survives "background graphics off" the same way the emblem does. */
+.jp-icon-img {
+  display: block;
+  object-fit: cover;
+  border-radius: 2mm;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.jp-card .jp-icon.jp-icon-img { height: 12mm; }
 .jp-cardtext { flex: 1 1 auto; min-width: 0; }
 .jp-job {
   font-size: 7.5pt;
@@ -360,9 +380,11 @@ function sheetEstimate(mode: PosterMode, slotSize: SlotSize, count: number): num
   return count <= first ? 1 : 1 + Math.ceil((count - first) / rest);
 }
 
-/** A stable string for "has this chart changed since it was saved". */
-function signature(jobs: ClassroomJob[]): string {
-  return JSON.stringify(jobs);
+/** A stable string for "has this chart changed since it was saved" — the
+ *  title travels in the same signature as the jobs, so editing one dirties
+ *  the chart exactly like editing the other. */
+function signature(jobs: ClassroomJob[], title: string): string {
+  return JSON.stringify({ jobs, title });
 }
 
 export default function ClassroomJobsPage() {
@@ -370,6 +392,12 @@ export default function ClassroomJobsPage() {
   const router = useRouter();
 
   const [jobs, setJobs] = useState<ClassroomJob[]>(() => defaultJobsPoster().jobs);
+  /** The room's own poster title, raw and unedited — "" means nobody has
+   *  typed one, and the effective title falls back to the default (see
+   *  `defaultTitle`/`effectiveTitle` below). Never store the default text
+   *  itself here: that would make a later locale change of the default stop
+   *  reaching rooms that never customised theirs. */
+  const [title, setTitle] = useState('');
   const [students, setStudents] = useState<Student[]>([]);
   const [brandKit, setBrandKit] = useState<BrandKit | null>(null);
   const [classroomId, setClassroomId] = useState('');
@@ -380,6 +408,10 @@ export default function ClassroomJobsPage() {
   const [canSave, setCanSave] = useState(true);
   const [mode, setMode] = useState<PosterMode>('names');
   const [slotSize, setSlotSize] = useState<SlotSize>('poster');
+  /** The job currently mid-upload, if any — drives the spinner/disabled state
+   *  on exactly that row's icon menu, never the whole list. */
+  const [iconUploadingId, setIconUploadingId] = useState<string | null>(null);
+  const [iconError, setIconError] = useState('');
 
   /** The signature of what the server last confirmed. Compared against the
    *  live chart to answer "unsaved changes" without a second copy of the list. */
@@ -455,9 +487,11 @@ export default function ClassroomJobsPage() {
           const parsed = parseJobsPoster(jobsData.poster) ?? defaultJobsPoster();
           if (!cancelled) {
             setJobs(parsed.jobs);
+            setTitle(parsed.title ?? '');
             setIsStartingSet(jobsData.isDefault !== false);
             setCanSave(jobsData.available !== false);
-            savedRef.current = jobsData.isDefault === false ? signature(parsed.jobs) : '';
+            savedRef.current =
+              jobsData.isDefault === false ? signature(parsed.jobs, parsed.title ?? '') : '';
           }
         }
       } catch {
@@ -494,7 +528,7 @@ export default function ClassroomJobsPage() {
     return new Set([...counts.entries()].filter(([, n]) => n > 1).map(([id]) => id));
   }, [activeJobs]);
 
-  const dirty = savedRef.current !== signature(jobs);
+  const dirty = savedRef.current !== signature(jobs, title);
   const sheets = sheetEstimate(mode, slotSize, activeJobs.length);
 
   /**
@@ -632,22 +666,93 @@ export default function ClassroomJobsPage() {
     try {
       const res = await montreeApi('/api/montree/classroom-jobs', {
         method: 'POST',
-        body: JSON.stringify({ classroomId, poster: { version: JOBS_POSTER_VERSION, jobs } }),
+        body: JSON.stringify({
+          classroomId,
+          poster: { version: JOBS_POSTER_VERSION, jobs, title },
+        }),
       });
       if (!res.ok) throw new Error(`save failed: ${res.status}`);
       const data = (await res.json()) as { poster?: unknown };
       // The server's answer wins — it is the one that scrubbed assignments
-      // against the room's own roster, so echoing the local list back would
-      // show a name the saved chart no longer holds.
-      const saved: JobsPoster = parseJobsPoster(data.poster) ?? { version: JOBS_POSTER_VERSION, jobs };
+      // (and any forged image path) against the room's own roster and
+      // storage folder, so echoing the local list back would show a name, or
+      // a picture, the saved chart no longer holds.
+      const saved: JobsPoster =
+        parseJobsPoster(data.poster) ?? { version: JOBS_POSTER_VERSION, jobs, title };
       setJobs(saved.jobs);
-      savedRef.current = signature(saved.jobs);
+      setTitle(saved.title ?? '');
+      savedRef.current = signature(saved.jobs, saved.title ?? '');
       setIsStartingSet(false);
       setSaveState('saved');
     } catch {
       setSaveState('error');
     }
-  }, [classroomId, canSave, jobs]);
+  }, [classroomId, canSave, jobs, title]);
+
+  /**
+   * Upload a job's icon picture and, on success, set it on the job in state —
+   * the same round trip a name or an emoji edit takes: nothing is saved to
+   * the poster until the teacher hits Save. A REPLACED picture's old file is
+   * cleaned up afterwards, best-effort and never blocking the edit the
+   * teacher is already looking at.
+   */
+  const uploadJobIcon = useCallback(
+    async (job: ClassroomJob, file: File) => {
+      if (!classroomId) return;
+      setIconError('');
+      setIconUploadingId(job.id);
+      try {
+        const fd = new FormData();
+        fd.append('classroomId', classroomId);
+        fd.append('jobId', job.id);
+        fd.append('file', file);
+        const res = await montreeApi('/api/montree/classroom-jobs/icon', {
+          method: 'POST',
+          body: fd,
+        });
+        if (!res.ok) throw new Error(`upload failed: ${res.status}`);
+        const data = (await res.json()) as { imageUrl?: string; imagePath?: string };
+        if (!data.imageUrl || !data.imagePath) throw new Error('bad response');
+        const { imageUrl, imagePath } = data;
+        const previousPath = job.imagePath;
+        setSaveState('idle');
+        setJobs((prev) =>
+          prev.map((j) => (j.id === job.id ? { ...j, imageUrl, imagePath } : j))
+        );
+        if (previousPath && previousPath !== imagePath) {
+          montreeApi('/api/montree/classroom-jobs/icon', {
+            method: 'DELETE',
+            body: JSON.stringify({ classroomId, imagePath: previousPath }),
+          }).catch(() => {});
+        }
+      } catch {
+        setIconError(tx('classroomJobs.iconUploadFailed'));
+      } finally {
+        setIconUploadingId(null);
+      }
+    },
+    [classroomId, tx]
+  );
+
+  /** Drop a job's picture back to its emoji. The file itself is cleaned up
+   *  best-effort, same as a replacement's old file — see `uploadJobIcon`. */
+  const removeJobIcon = useCallback(
+    (job: ClassroomJob) => {
+      if (!job.imageUrl && !job.imagePath) return;
+      const previousPath = job.imagePath;
+      setSaveState('idle');
+      setJobs((prev) =>
+        prev.map((j) => (j.id === job.id ? { ...j, imageUrl: undefined, imagePath: undefined } : j))
+      );
+      if (classroomId && previousPath) {
+        montreeApi('/api/montree/classroom-jobs/icon', {
+          method: 'DELETE',
+          body: JSON.stringify({ classroomId, imagePath: previousPath }),
+        }).catch(() => {});
+      }
+    },
+    [classroomId]
+  );
 
   /** Built once rather than per row — every JobRow shows the same six. */
   const rowLabels = useMemo(
@@ -658,6 +763,9 @@ export default function ClassroomJobsPage() {
       confirmNo: tx('classroomJobs.confirmNo'),
       moveUp: tx('classroomJobs.moveUp'),
       moveDown: tx('classroomJobs.moveDown'),
+      uploadPicture: tx('classroomJobs.uploadPicture'),
+      removePicture: tx('classroomJobs.removePicture'),
+      uploading: tx('classroomJobs.uploading'),
     }),
     [tx]
   );
@@ -679,6 +787,13 @@ export default function ClassroomJobsPage() {
     '--jp-display': "var(--font-lora), 'Lora', Georgia, 'Times New Roman', serif",
   } as CSSProperties;
 
+  // The translated starting title, and what actually prints: a blank or
+  // whitespace-only edit reads as "nobody has chosen one" (mirrors
+  // `parseJobsPoster`'s own rule for `title`), never as a poster deliberately
+  // headed with nothing.
+  const defaultTitle = tx('classroomJobs.posterTitle', DEFAULT_POSTER_TITLE);
+  const effectiveTitle = title.trim() ? title.trim() : defaultTitle;
+
   const sheet = (
     <JobsPosterSheet
       jobs={activeJobs}
@@ -687,7 +802,7 @@ export default function ClassroomJobsPage() {
       slotSize={slotSize}
       logoUrl={kit?.logoUrl ?? null}
       showWatermark={watermarkOpacity > 0}
-      title={tx('classroomJobs.posterTitle')}
+      title={effectiveTitle}
       roomName={classroomName}
       vars={posterVars}
     />
@@ -747,6 +862,24 @@ export default function ClassroomJobsPage() {
           {canSave && isStartingSet && (
             <p className="text-sm text-white/45">{tx('classroomJobs.startingSet')}</p>
           )}
+
+          {/* Poster title */}
+          <section>
+            <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wide mb-3">
+              {tx('classroomJobs.titleLabel')}
+            </h2>
+            <input
+              value={title}
+              maxLength={MAX_TITLE_LEN}
+              placeholder={defaultTitle}
+              onChange={(e) => {
+                setSaveState('idle');
+                setTitle(e.target.value);
+              }}
+              className="w-full rounded-lg bg-white/[0.06] border border-[rgba(52,211,153,0.15)] text-white/90 text-sm px-3 py-2"
+            />
+            <p className="text-xs text-white/40 mt-1.5">{tx('classroomJobs.titleHint')}</p>
+          </section>
 
           {/* Poster style */}
           <section>
@@ -858,10 +991,15 @@ export default function ClassroomJobsPage() {
                     onPatch={patchJob}
                     onRemove={removeJob}
                     onMove={moveJob}
+                    uploading={iconUploadingId === job.id}
+                    onUploadIcon={(file) => uploadJobIcon(job, file)}
+                    onRemoveIcon={() => removeJobIcon(job)}
                   />
                 ))}
               </div>
             )}
+
+            {iconError && <p className="text-xs text-rose-300 mt-2">{iconError}</p>}
 
             <div className="flex items-center flex-wrap gap-3 mt-3">
               <button
@@ -984,6 +1122,9 @@ function JobRow({
   onPatch,
   onRemove,
   onMove,
+  uploading,
+  onUploadIcon,
+  onRemoveIcon,
 }: {
   job: ClassroomJob;
   index: number;
@@ -999,10 +1140,18 @@ function JobRow({
     confirmNo: string;
     moveUp: string;
     moveDown: string;
+    uploadPicture: string;
+    removePicture: string;
+    uploading: string;
   };
   onPatch: (id: string, patch: Partial<ClassroomJob>) => void;
   onRemove: (id: string) => void;
   onMove: (id: string, delta: -1 | 1) => void;
+  /** True while THIS job's picture is mid-upload — drives the spinner/disabled
+   *  state on this row's menu alone. */
+  uploading: boolean;
+  onUploadIcon: (file: File) => void;
+  onRemoveIcon: () => void;
 }) {
   const held = job.childId ? students.find((s) => s.id === job.childId) : undefined;
 
@@ -1011,6 +1160,11 @@ function JobRow({
    *  the back of a classroom, and a native modal there is a bigger interruption
    *  than the thing it is guarding. */
   const [confirming, setConfirming] = useState(false);
+
+  /** The icon cell's own upload/remove menu — a small popover rather than a
+   *  modal, so tapping it does not lose the teacher's place in the list. */
+  const [iconMenuOpen, setIconMenuOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <div
@@ -1028,12 +1182,78 @@ function JobRow({
           className="w-4 h-4 shrink-0 accent-[#34d399]"
           aria-label={job.name}
         />
-        <input
-          value={job.icon}
-          maxLength={MAX_ICON_LEN}
-          onChange={(e) => onPatch(job.id, { icon: e.target.value })}
-          className="w-11 shrink-0 text-center text-lg rounded-lg bg-white/[0.06] border border-[rgba(52,211,153,0.15)] text-white/90 py-1.5"
-        />
+        {/* The icon cell: a picture once one is set, otherwise the emoji box —
+            either way, a tap opens the upload/remove menu. */}
+        <div className="relative shrink-0">
+          {job.imageUrl ? (
+            <button
+              type="button"
+              onClick={() => setIconMenuOpen((v) => !v)}
+              title={labels.uploadPicture}
+              aria-label={labels.uploadPicture}
+              className="w-11 h-11 rounded-lg overflow-hidden border border-[rgba(52,211,153,0.15)] bg-white/[0.06] block"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={job.imageUrl} alt="" className="w-full h-full object-cover" />
+            </button>
+          ) : (
+            <div className="flex items-center gap-1">
+              <input
+                value={job.icon}
+                maxLength={MAX_ICON_LEN}
+                onChange={(e) => onPatch(job.id, { icon: e.target.value })}
+                className="w-11 shrink-0 text-center text-lg rounded-lg bg-white/[0.06] border border-[rgba(52,211,153,0.15)] text-white/90 py-1.5"
+              />
+              <button
+                type="button"
+                onClick={() => setIconMenuOpen((v) => !v)}
+                title={labels.uploadPicture}
+                aria-label={labels.uploadPicture}
+                className="btn btn-ghost btn-icon btn-sm shrink-0"
+              >
+                🖼️
+              </button>
+            </div>
+          )}
+
+          {iconMenuOpen && (
+            <div className="absolute z-10 top-full left-0 mt-1 w-40 rounded-lg border border-[rgba(52,211,153,0.2)] bg-[#0f2417] p-1.5 shadow-lg space-y-1">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="btn btn-ghost btn-sm w-full justify-start"
+              >
+                {uploading ? labels.uploading : labels.uploadPicture}
+              </button>
+              {job.imageUrl && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onRemoveIcon();
+                    setIconMenuOpen(false);
+                  }}
+                  className="btn btn-ghost btn-sm w-full justify-start"
+                >
+                  {labels.removePicture}
+                </button>
+              )}
+            </div>
+          )}
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = '';
+              setIconMenuOpen(false);
+              if (file) onUploadIcon(file);
+            }}
+          />
+        </div>
         <input
           value={job.name}
           maxLength={MAX_NAME_LEN}
@@ -1164,8 +1384,20 @@ function JobsPosterSheet({
               return (
                 <div className="jp-card" key={job.id}>
                   {/* Always rendered, even when empty: the icon column is what
-                      keeps every job name on the same left edge across cards. */}
-                  <span className="jp-icon">{job.icon}</span>
+                      keeps every job name on the same left edge across cards.
+                      An `<img>`, never a CSS background — see the header
+                      note on why. */}
+                  {job.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      className="jp-icon jp-icon-img"
+                      src={job.imageUrl}
+                      alt=""
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <span className="jp-icon">{job.icon}</span>
+                  )}
                   <div className="jp-cardtext">
                     <div className="jp-job" dir="auto">
                       {job.name}
@@ -1192,9 +1424,20 @@ function JobsPosterSheet({
                   className="jp-slotlabel"
                   style={{ flex: `0 0 ${STRIP_SIZES[slotSize].label}mm` }}
                 >
-                  <span className="jp-icon" style={{ width: '9mm', fontSize: '15pt' }}>
-                    {job.icon}
-                  </span>
+                  {job.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      className="jp-icon jp-icon-img"
+                      style={{ width: '9mm', height: '9mm' }}
+                      src={job.imageUrl}
+                      alt=""
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <span className="jp-icon" style={{ width: '9mm', fontSize: '15pt' }}>
+                      {job.icon}
+                    </span>
+                  )}
                   <span className="jp-slotname" style={{ minWidth: 0 }} dir="auto">
                     {job.name}
                   </span>

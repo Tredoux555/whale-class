@@ -28,7 +28,8 @@ export const JOBS_POSTER_VERSION = 1;
 export interface ClassroomJob {
   /** Stable slug. One of the DEFAULT_JOBS ids, or `custom-<random>`. */
   id: string;
-  /** A single emoji, drawn big on the card. May be empty. */
+  /** A single emoji, drawn big on the card. May be empty. Ignored on the
+   *  printed card once `imageUrl` is set — see `imageUrl` below. */
   icon: string;
   /** What the job is called, in the teacher's own words. */
   name: string;
@@ -38,11 +39,29 @@ export interface ClassroomJob {
   /** `montree_children.id`, or null for an unassigned job (which prints as a
    *  ruled blank line the teacher can write on). */
   childId: string | null;
+  /** A teacher-uploaded picture in place of the emoji, at the icon spot on the
+   *  card. Written as a PAIR with `imagePath` by
+   *  `POST /api/montree/classroom-jobs/icon` — same pairing, same reasoning,
+   *  as `logoUrl`/`logoPath` on `BrandKit`. The API route re-proves the path
+   *  belongs to THIS classroom's own storage folder before a save may keep
+   *  it (see the route's `scrubJobImagePaths` — that check cannot live in
+   *  this pure parser, which has no schoolId or classroomId to check
+   *  against). */
+  imageUrl?: string;
+  /** Storage object key for `imageUrl`, kept so a replacement upload — or a
+   *  removal — can clean up the file it replaces. Never rendered. */
+  imagePath?: string;
 }
 
 export interface JobsPoster {
   version: number;
   jobs: ClassroomJob[];
+  /** The poster's own heading, in the teacher's words — "Classroom Helpers",
+   *  "Room 4 Jobs". Absent (or blank) means the room has not chosen one, and
+   *  `DEFAULT_POSTER_TITLE` prints instead; the two are never confused by
+   *  storing the default as text, so a later locale change of the default
+   *  moves every room that never customised theirs. */
+  title?: string;
   /** ISO stamp of the save that produced this. Advisory only. */
   updatedAt?: string;
 }
@@ -59,6 +78,18 @@ export const MAX_NAME_LEN = 40;
 /** An emoji plus its modifiers and a ZWJ — enough for a two-part glyph, not
  *  for a sentence somebody has typed into the icon box. */
 export const MAX_ICON_LEN = 12;
+/** A poster title is one line under the masthead, not a subtitle. */
+export const MAX_TITLE_LEN = 60;
+/** The proxy URL `POST /api/montree/classroom-jobs/icon` hands back — see
+ *  `isSafeImageUrl`. A job icon travels inside the same small poster blob as
+ *  everything else here, so it is bounded far tighter than a raw upload URL
+ *  would need to be. */
+export const MAX_IMAGE_URL_LEN = 500;
+/** A storage object key, not a URL — see `isSafeImagePath`. */
+export const MAX_IMAGE_PATH_LEN = 300;
+
+/** What a poster's masthead reads when no room has typed its own. */
+export const DEFAULT_POSTER_TITLE = 'Our Classroom Jobs';
 
 /**
  * The curated Montessori starting set — the twelve jobs a 3–6 room actually
@@ -115,6 +146,40 @@ export function isJobsChildId(value: unknown): value is string {
 }
 
 /**
+ * A URL safe to drop straight into an `<img src>` for a job's icon.
+ *
+ * 🚨 THE UPLOAD ROUTE HANDS BACK A SITE-RELATIVE PROXY PATH — the house rule
+ * for every uploaded file in this codebase (see `getProxyUrl` and
+ * `BrandKit.logoUrl`), never a raw Supabase URL. So both forms are accepted,
+ * same posture as `isSafeLogoUrl` in lib/montree/brand-kit/types.ts: an
+ * absolute `https://` URL, or a same-origin path starting with a single `/`
+ * (protocol-relative `//host/...` is rejected — it is not ours). Bare `http`
+ * is refused outright, tighter than the brand kit's gate, because nothing
+ * that serves this feature's uploads is ever plain http. Never `javascript:`,
+ * never `data:`, and never anything carrying a quote, parenthesis, backslash,
+ * whitespace or angle bracket — the characters an injected URL would need to
+ * break out of its context.
+ */
+function isSafeImageUrl(v: unknown): v is string {
+  if (typeof v !== 'string' || v.length === 0 || v.length > MAX_IMAGE_URL_LEN) return false;
+  if (/["'()\\<>\s]/.test(v)) return false;
+  if (v.startsWith('/')) return !v.startsWith('//');
+  return /^https:\/\//i.test(v);
+}
+
+/** A storage object key, NEVER an `<img src>` path: no leading slash (it is
+ *  joined onto a folder, not treated as absolute), no `..` (no walking out of
+ *  the folder the route scrubs it against), and nothing outside the narrow
+ *  charset a storage key is ever built from. */
+const IMAGE_PATH_RE = /^[A-Za-z0-9_.\-/]+$/;
+
+function isSafeImagePath(v: unknown): v is string {
+  if (typeof v !== 'string' || v.length === 0 || v.length > MAX_IMAGE_PATH_LEN) return false;
+  if (v.startsWith('/') || v.includes('..')) return false;
+  return IMAGE_PATH_RE.test(v);
+}
+
+/**
  * The gate. Anything that is not recognisably a JobsPoster becomes `null`, and
  * a `null` poster means "this room has not saved one".
  *
@@ -156,6 +221,15 @@ export function parseJobsPoster(raw: unknown): JobsPoster | null {
       // mystery nobody in the room can read.
       if (!name) continue;
 
+      // 🚨 THE TWO FIELDS ARE VALIDATED AS ONE PAIR: either both are safe and
+      // both are kept, or neither is. An `imageUrl` with no matching
+      // `imagePath` cannot be cleaned up when it is later replaced or removed,
+      // and an `imagePath` with no `imageUrl` has nothing safe to print — so a
+      // half-valid pair is worth exactly as little as a wholly invalid one.
+      // The job itself always survives; only the picture is dropped, and the
+      // card falls back to its emoji.
+      const imageValid = isSafeImageUrl(e.imageUrl) && isSafeImagePath(e.imagePath);
+
       jobs.push({
         id,
         icon: cleanText(e.icon, MAX_ICON_LEN),
@@ -163,14 +237,23 @@ export function parseJobsPoster(raw: unknown): JobsPoster | null {
         // Absent means yes — a saved job is a wanted job.
         active: e.active !== false,
         childId: isJobsChildId(e.childId) ? e.childId : null,
+        ...(imageValid
+          ? { imageUrl: e.imageUrl as string, imagePath: e.imagePath as string }
+          : {}),
       });
     }
 
     if (jobs.length === 0) return null;
 
+    // A blank or whitespace-only title is not a chosen title — `cleanText`
+    // trims before slicing, so " " comes back as "", and "" reads as absent
+    // rather than as a poster deliberately headed with nothing.
+    const title = cleanText(o.title, MAX_TITLE_LEN) || undefined;
+
     return {
       version: JOBS_POSTER_VERSION,
       jobs,
+      title,
       updatedAt:
         typeof o.updatedAt === 'string' && o.updatedAt.length <= 40 ? o.updatedAt : undefined,
     };
