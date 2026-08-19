@@ -47,6 +47,15 @@ import {
   MAX_ZOOM,
 } from '@/lib/montree/classroom-jobs/crop-geometry';
 import {
+  PAGE_MARGIN_MM as PORTRAIT_MARGIN_MM,
+  PAGE_W_MM as PORTRAIT_W_MM,
+  PAGE_H_MM as PORTRAIT_H_MM,
+  CARD_GAP_MM,
+  CARD_W_MM,
+  computeNamesLayout,
+  namesSheetCount,
+} from '@/lib/montree/classroom-jobs/poster-layout';
+import {
   DEFAULT_JOBS,
   DEFAULT_POSTER_TITLE,
   JOBS_POSTER_VERSION,
@@ -159,16 +168,22 @@ const COPY: Record<string, string> = {
 // A4 is 210×297mm. The content box below is the page minus its margins, and
 // every width on this sheet is measured against it — a poster that is 2mm too
 // wide does not warn, it silently drops a column onto a second sheet.
+//
+// 🚨 PORTRAIT_MARGIN_MM/PORTRAIT_W_MM/PORTRAIT_H_MM ARE IMPORTED, NOT
+// REDECLARED — see the `poster-layout.ts` import above (aliased from that
+// module's `PAGE_*` names). Slots mode's own landscape geometry stays here,
+// since only the names-mode sizing needed extracting into a pure, testable
+// module.
 
-const PORTRAIT_MARGIN_MM = 12;
 const LANDSCAPE_MARGIN_MM = 10;
-const PORTRAIT_W_MM = 210 - PORTRAIT_MARGIN_MM * 2; // 186
-const PORTRAIT_H_MM = 297 - PORTRAIT_MARGIN_MM * 2; // 273
 const LANDSCAPE_W_MM = 297 - LANDSCAPE_MARGIN_MM * 2; // 277
 const LANDSCAPE_H_MM = 210 - LANDSCAPE_MARGIN_MM * 2; // 190
 
-/** Roughly what the masthead costs on the first sheet. Used only by the sheet
- *  estimate, which is a promise to the teacher, not a layout constraint. */
+/** Roughly what the masthead costs on the first sheet, for SLOTS MODE's
+ *  estimate only — names mode now derives its own masthead footprint
+ *  precisely via `mastheadHeightMM` in poster-layout.ts. Used only by the
+ *  sheet estimate, which is a promise to the teacher, not a layout
+ *  constraint. */
 const HEAD_H_MM = 32;
 
 // ── the slots ───────────────────────────────────────────────────────────────
@@ -191,11 +206,10 @@ const STRIP_SIZES: Record<
   small: { width: 120, height: 22, label: 56, landscape: false },
 };
 
-/** Names mode: two columns inside the portrait content box. */
-const CARD_GAP_MM = 5;
-const CARD_W_MM = (PORTRAIT_W_MM - CARD_GAP_MM) / 2; // 90.5
-const CARD_H_MM = 34;
+/** Slots mode only — names mode's card gap/width now come from
+ *  poster-layout.ts (imported above) alongside its dynamic card HEIGHT. */
 const SLOT_GAP_MM = 4;
+
 
 // ── the icon cropper ─────────────────────────────────────────────────────
 // CSS pixels for the interactive frame; the tiny live preview mirrors it at
@@ -305,18 +319,29 @@ function posterCss(mode: PosterMode, slotSize: SlotSize): string {
 }
 
 /* ── names mode ─────────────────────────────────────────────────────────── */
+/* 🚨 EVERY SIZE BELOW IS A FRACTION OF --jp-card-h, NEVER A FIXED MM VALUE.
+   --jp-card-h is the one DYNAMIC value in this stylesheet: computed per
+   render by computeNamesLayout off the room's own active job count (see
+   posterVars where it is set), and passed in through React's style prop
+   as a CSS custom property — never string-built into this template from
+   anything a teacher typed. Screen preview and print share this same rule
+   set, so what a teacher approves on screen is the size that prints. See
+   lib/montree/classroom-jobs/poster-layout.ts for the fraction table and why
+   each number is what it is (the founder's Aug 2026 hierarchy brief: job
+   picture biggest, child photo second, child name readable from 2-3m, job
+   label modest). */
 .jp-grid {
   display: grid;
   grid-template-columns: repeat(2, ${CARD_W_MM}mm);
   gap: ${CARD_GAP_MM}mm;
 }
 .jp-card {
-  height: ${CARD_H_MM}mm;
+  height: var(--jp-card-h);
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  gap: 3.5mm;
-  padding: 0 4mm;
+  gap: calc(var(--jp-card-h) * 0.06);
+  padding: calc(var(--jp-card-h) * 0.08);
   border: 0.5mm solid var(--jp-border);
   border-radius: 3mm;
   background: var(--jp-wash);
@@ -325,7 +350,23 @@ function posterCss(mode: PosterMode, slotSize: SlotSize): string {
   print-color-adjust: exact;
 }
 .jp-icon { flex: 0 0 auto; line-height: 1; text-align: center; }
-.jp-card .jp-icon { width: 12mm; font-size: 20pt; }
+/* The job picture: the loudest element on the card, a square that fills the
+   card's own inner height between its top/bottom padding (padding is 0.08H
+   on every side, so the square left over is exactly H − 2×0.08H = 0.84H).
+   The emoji fallback centers in this same square on a soft wash background;
+   an uploaded picture fills it edge to edge instead (object-fit: cover, see
+   .jp-icon-img below, which wins on specificity over the plain 2mm radius
+   slots mode also uses this class for). */
+.jp-card .jp-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--jp-card-h) * 0.84);
+  height: calc(var(--jp-card-h) * 0.84);
+  border-radius: calc(var(--jp-card-h) * 0.84 * 0.12);
+  background: var(--jp-wash);
+  font-size: calc(var(--jp-card-h) * 0.84 * 0.62);
+}
 /* A teacher-uploaded picture in place of the emoji. Always an <img>, never a
    CSS background — see the header note on why. Sized to the same footprint
    the emoji occupies at each mode's scale, with print-color-adjust so the
@@ -337,10 +378,14 @@ function posterCss(mode: PosterMode, slotSize: SlotSize): string {
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
-.jp-card .jp-icon.jp-icon-img { height: 12mm; }
+.jp-card .jp-icon.jp-icon-img {
+  border-radius: calc(var(--jp-card-h) * 0.84 * 0.12);
+}
 .jp-cardtext { flex: 1 1 auto; min-width: 0; }
+/* The job label — mostly for the adults, so it stays modest even as the
+   picture and the name above/below it get much larger. */
 .jp-job {
-  font-size: 7.5pt;
+  font-size: max(4.2mm, calc(var(--jp-card-h) * 0.13));
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -349,10 +394,12 @@ function posterCss(mode: PosterMode, slotSize: SlotSize): string {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* The child's name — the second-loudest element after the two pictures,
+   sized to read from 2-3m across a classroom. */
 .jp-child {
   margin-top: 0.6mm;
-  font-size: 17pt;
-  font-weight: 600;
+  font-size: max(6mm, calc(var(--jp-card-h) * 0.20));
+  font-weight: 700;
   line-height: 1.3;
   color: var(--jp-ink);
   white-space: nowrap;
@@ -361,9 +408,8 @@ function posterCss(mode: PosterMode, slotSize: SlotSize): string {
 }
 /* The assigned child's roster photo, printed beside their name — only when
    the poster's "Show child photos" toggle is on and the roster actually has
-   a photo for that child. Fits comfortably inside the ${CARD_H_MM}mm card:
-   an 17mm circle plus its name still clears the card's own padding. Always
-   an <img>, never a CSS background, same reasoning as .jp-icon-img. */
+   a photo for that child. Always an <img>, never a CSS background, same
+   reasoning as .jp-icon-img. */
 .jp-childrow {
   display: flex;
   align-items: center;
@@ -373,8 +419,8 @@ function posterCss(mode: PosterMode, slotSize: SlotSize): string {
 .jp-childrow .jp-child { margin-top: 0; }
 .jp-childphoto {
   flex: 0 0 auto;
-  width: 17mm;
-  height: 17mm;
+  width: calc(var(--jp-card-h) * 0.42);
+  height: calc(var(--jp-card-h) * 0.42);
   border-radius: 50%;
   object-fit: cover;
   -webkit-print-color-adjust: exact;
@@ -384,8 +430,8 @@ function posterCss(mode: PosterMode, slotSize: SlotSize): string {
    still works on the wall while the teacher decides, and a marker finishes it. */
 .jp-blank {
   display: block;
-  height: 7mm;
-  margin-top: 1mm;
+  height: max(6mm, calc(var(--jp-card-h) * 0.20));
+  margin-top: calc(var(--jp-card-h) * 0.03);
   border-bottom: 0.4mm solid var(--jp-border);
 }
 
@@ -529,16 +575,21 @@ function cropModalCss(): string {
  * a layout constraint — a chart of twelve 34mm slots is 400mm of strip and no
  * orientation makes that one page. Telling a teacher before they print beats
  * them finding out at the printer.
+ *
+ * 🚨 NAMES MODE DELEGATES TO `namesSheetCount` (poster-layout.ts) — that
+ * module owns the adaptive card-height math this estimate must stay honest
+ * about; duplicating the arithmetic here is exactly how the two would drift.
  */
-function sheetEstimate(mode: PosterMode, slotSize: SlotSize, count: number): number {
+function sheetEstimate(
+  mode: PosterMode,
+  slotSize: SlotSize,
+  count: number,
+  hasRoom: boolean
+): number {
   if (count <= 0) return 1;
 
   if (mode === 'names') {
-    const rowH = CARD_H_MM + CARD_GAP_MM;
-    const first = Math.max(1, Math.floor((PORTRAIT_H_MM - HEAD_H_MM) / rowH));
-    const rest = Math.max(1, Math.floor(PORTRAIT_H_MM / rowH));
-    const rows = Math.ceil(count / 2);
-    return rows <= first ? 1 : 1 + Math.ceil((rows - first) / rest);
+    return namesSheetCount(count, hasRoom);
   }
 
   const size = STRIP_SIZES[slotSize];
@@ -743,7 +794,7 @@ export default function ClassroomJobsTool({
   }, [activeJobs]);
 
   const dirty = savedRef.current !== signature(jobs, title, showChildPhotos);
-  const sheets = sheetEstimate(mode, slotSize, activeJobs.length);
+  const sheets = sheetEstimate(mode, slotSize, activeJobs.length, !!classroomName);
 
   /**
    * 🚨 A JOB WITH NO NAME IS DROPPED BY THE PARSER, NOT SAVED EMPTY — which is
@@ -1101,6 +1152,13 @@ export default function ClassroomJobsTool({
   const tokens = kit ? kit.tokens : PLAIN_TOKENS;
   const watermarkOpacity = kit && kit.logoUrl ? tokens.watermarkOpacity : 0;
 
+  /** Names mode's card height for THIS render — see poster-layout.ts. Passed
+   *  through as a CSS custom property (`--jp-card-h` below), never as a
+   *  string built into the stylesheet itself: the one dynamic length on an
+   *  otherwise static print sheet. Harmless to compute even in slots mode —
+   *  nothing there reads the variable. */
+  const namesLayout = computeNamesLayout(activeJobs.length, !!classroomName);
+
   const posterVars = {
     '--jp-ink': safeColor(tokens.ink, PLAIN_TOKENS.ink),
     '--jp-accent': safeColor(tokens.accent, PLAIN_TOKENS.accent),
@@ -1108,6 +1166,7 @@ export default function ClassroomJobsTool({
     '--jp-wash': safeColor(tokens.wash, PLAIN_TOKENS.wash),
     '--jp-watermark': String(Math.max(0, Math.min(0.2, watermarkOpacity || 0))),
     '--jp-display': "var(--font-lora), 'Lora', Georgia, 'Times New Roman', serif",
+    '--jp-card-h': `${namesLayout.cardH}mm`,
   } as CSSProperties;
 
   // The translated starting title, and what actually prints: a blank or
