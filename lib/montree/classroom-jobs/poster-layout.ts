@@ -4,37 +4,26 @@
 // I/O, no React, just the arithmetic a printed wall poster depends on.
 // ============================================================================
 //
-// Design brief (the founder's, Aug 2026, corrected): a kindergarten wall
-// poster read by non-reading children needs a visual hierarchy — JOB PICTURE
-// biggest, CHILD PHOTO second, CHILD NAME readable from 2-3m, JOB LABEL
-// modest (mostly for the adults). Every size on a printed card is expressed
-// as a fraction of ONE number, the card's own height (`cardH`) — see
-// `ClassroomJobsTool.tsx`'s `posterCss()`, where each fraction becomes a CSS
-// `calc()` off a `--jp-card-h` custom property.
+// Design brief (the founder's, Aug 2026, corrected twice): a kindergarten
+// wall poster read by non-reading children needs a visual hierarchy — JOB
+// PICTURE biggest, CHILD PHOTO second, CHILD NAME readable from 2-3m, JOB
+// LABEL modest. Every size on a printed card is expressed as a fraction of
+// ONE number, the card's own height (`cardH`) — see `ClassroomJobsTool.tsx`'s
+// `posterCss()`, where each fraction becomes a CSS `calc()` off a
+// `--jp-card-h` custom property.
 //
-// ROUND 8 OF THIS FILE BUDGETED HEIGHT AND IGNORED WIDTH. At cardH=80 in a
-// 90.5mm-wide 2-column card, an 0.84H (67mm) square picture left ~10mm for
-// everything else — label clipped to one letter, photo crushed to a sliver,
-// name invisible. This round fixes that by making the LAYOUT ITSELF switch
-// on job count, not just the numbers inside one fixed layout:
-//
-//   n <= 3  -> ONE COLUMN, full-width (186mm) cards, three horizontal zones:
-//              job picture (left) | job label + child name (middle, flexes) |
-//              child photo circle (right, own zone -- never squeezed by text).
-//   n >= 4  -> TWO COLUMNS, 90.5mm cards, job picture (left) | a right column
-//              that STACKS label / photo / name top-to-bottom instead of
-//              racing them for width -- the 52mm height cap on this regime is
-//              exactly what keeps that stack always narrower than it is tall,
-//              so cardH can never again outrun what 90.5mm can hold sideways.
-//
-// Every element that used to be sized off height alone now also has its own
-// width budget asserted in this file's throwaway harness (see the mission
-// report) -- for each layout at its min and max cardH, the sum of the FIXED
-// -size zones (pictures, photo circles, padding, gaps) must fit inside the
-// card's width, leaving a non-negative remainder for the flexible text zone.
-// That check is what would have caught round 8.
+// ROUND 8 BUDGETED HEIGHT AND IGNORED WIDTH. ROUND 9 FIXED THE ZONE WIDTHS
+// BUT STILL SIZED TYPE OFF CARDH ALONE, NEVER THE STRING. "LINE LEADER" and
+// "BATHROOM HELPER" clipped to "LINE …" / "BATH…" the moment a job's real
+// name ran longer than whatever cardH-derived font the CSS assumed — a fixed
+// font-size has no idea how long the string sitting inside it is. This round
+// adds LENGTH-AWARE TYPE SIZING (`fontFor`, below): the actual font-size for
+// a job's label and a child's name is now computed PER CARD, in JS, from the
+// real string length and the real zone width available to it — shrinking
+// toward a floor as text runs long, with word-wrap to a second line (never a
+// silent clip) as the final fallback once even the floor won't fit.
 
-/** A4 portrait content box, in millimetres -- the page minus its margins.
+/** A4 portrait content box, in millimetres — the page minus its margins.
  *  Mirrors PORTRAIT_MARGIN_MM/PORTRAIT_W_MM/PORTRAIT_H_MM in
  *  ClassroomJobsTool.tsx, which imports these three under those names so the
  *  two never have a chance to drift apart. */
@@ -49,27 +38,21 @@ export const CARD_GAP_MM = 5;
 const GRID_COLUMNS = 2;
 export const CARD_W_MM = (PAGE_W_MM - CARD_GAP_MM) / GRID_COLUMNS; // 90.5
 
-/** One-column (n <= 3) regime's card width: the full content width -- a small
- *  chart's cards read as wall-poster-sized rows, not a stretched single
- *  column of the old 90.5mm card. */
+/** One-column (n <= 3) regime's card width: the full content width. */
 export const WIDE_CARD_W_MM = PAGE_W_MM; // 186
 
-/** Two-column regime's height clamp. The 52mm cap (down from round 8's 80mm)
- *  is the width fix: at 52mm tall the right column's label+photo+name stack
- *  always has more height to spend than the 90.5mm card has width to run out
- *  of, so a two-column card can never again re-create the round 8 crush. */
+/** Two-column regime's height clamp. The 52mm cap keeps the right column's
+ *  label+photo+name stack always narrower than it is tall, so a two-column
+ *  card can never run its picture and photo circle out of width the way
+ *  round 8's fixed 80mm cap did. */
 export const GRID_MIN_H_MM = 34;
 export const GRID_MAX_H_MM = 52;
 
-/** One-column regime's height clamp -- full-width cards can afford to be
- *  taller, since nothing beside the picture is fighting it for horizontal
- *  room anymore. */
+/** One-column regime's height clamp. */
 export const WIDE_MIN_H_MM = 60;
 export const WIDE_MAX_H_MM = 90;
 
-// -- the masthead, derived rather than guessed (unchanged from round 8) ----
-// Every value below mirrors a rule posterCss() actually sets on .jp-head
-// and its children in ClassroomJobsTool.tsx -- see that function's own CSS.
+// -- the masthead, derived rather than guessed (unchanged since round 8) ---
 const EMBLEM_H_MM = 16;
 const HEAD_PADDING_BOTTOM_MM = 3;
 const HEAD_MARGIN_BOTTOM_MM = 6;
@@ -84,7 +67,7 @@ const PT_TO_MM = 25.4 / 72;
 /**
  * The masthead's own footprint in millimetres: its text stack (or the
  * emblem, whichever is taller), plus the padding/border/margin .jp-head
- * adds beneath it. A measurement, not a round number.
+ * adds beneath it.
  */
 export function mastheadHeightMM(hasRoom: boolean): number {
   const titleH = TITLE_FONT_PT * TITLE_LINE_HEIGHT * PT_TO_MM;
@@ -105,32 +88,27 @@ function normalizeCount(activeCount: number): number {
 export interface NamesLayout {
   /** 1 for a small chart (n <= 3, full-width cards), 2 otherwise. */
   columns: 1 | 2;
-  /** The width every card renders at, in millimetres -- 186 for columns=1,
-   *  90.5 for columns=2. */
+  /** The width every card renders at, in millimetres. */
   cardW: number;
-  /** The height every card renders at, in millimetres -- clamped to this
+  /** The height every card renders at, in millimetres — clamped to this
    *  regime's own [min, max]. */
   cardH: number;
-  /** ceil(activeCount / columns), floored at 1 so an empty chart still has a
-   *  legal (if unused) layout. */
+  /** ceil(activeCount / columns), floored at 1. */
   rows: number;
-  /** How many A4 sheets this chart prints on. Always 1 for the one-column
-   *  regime (n <= 3 never has enough rows to force the height clamp) -- see
-   *  this file's harness for why that is provably true, not just observed. */
+  /** How many A4 sheets this chart prints on. */
   sheets: number;
 }
 
 /**
  * The one function that turns "how many active jobs" into "how big is each
- * card, and how many of them fit in a row." Never throws and never returns a
- * non-finite number.
+ * card, and how many of them fit in a row."
  */
 export function computeNamesLayout(activeCount: number, hasRoom: boolean): NamesLayout {
   const n = normalizeCount(activeCount);
   const available = PAGE_H_MM - mastheadHeightMM(hasRoom);
 
   if (n > 0 && n <= 3) {
-    const rows = n; // one column => one row per active job
+    const rows = n;
     const rawCardH = Math.floor(available / rows) - CARD_GAP_MM;
     const cardH = clamp(WIDE_MIN_H_MM, rawCardH, WIDE_MAX_H_MM);
     return { columns: 1, cardW: WIDE_CARD_W_MM, cardH, rows, sheets: 1 };
@@ -144,9 +122,6 @@ export function computeNamesLayout(activeCount: number, hasRoom: boolean): Names
   return { columns: 2, cardW: CARD_W_MM, cardH, rows, sheets };
 }
 
-/** Paginates the two-column regime at its 34mm floor, exactly the way the
- *  fixed-height layout this replaces always did once a chart stopped fitting
- *  one sheet. */
 function gridSheets(rows: number, hasRoom: boolean): number {
   const rowH = GRID_MIN_H_MM + CARD_GAP_MM;
   const first = Math.max(1, Math.floor((PAGE_H_MM - mastheadHeightMM(hasRoom)) / rowH));
@@ -154,11 +129,6 @@ function gridSheets(rows: number, hasRoom: boolean): number {
   return rows <= first ? 1 : 1 + Math.ceil((rows - first) / rest);
 }
 
-/**
- * How many A4 sheets the names-mode chart comes out on. Thin wrapper kept so
- * ClassroomJobsTool.tsx's sheetEstimate doesn't need to know which regime a
- * job count falls into.
- */
 export function namesSheetCount(activeCount: number, hasRoom: boolean): number {
   if (normalizeCount(activeCount) === 0) return 1;
   return computeNamesLayout(activeCount, hasRoom).sheets;
@@ -166,43 +136,64 @@ export function namesSheetCount(activeCount: number, hasRoom: boolean): number {
 
 // -- per-element size tables -------------------------------------------------
 // One source of truth for every fraction posterCss() turns into a
-// calc(var(--jp-card-h) * ...) rule, so the harness can assert the same
-// numbers the browser will actually render -- including the width budgets
-// round 8 never checked.
+// calc(var(--jp-card-h) * ...) rule (geometry) or a per-card --jp-*-fs custom
+// property (type — see fontFor below). ROUND 9's wide-regime allocation gave
+// the picture+photo circle so much of the card's width that "LINE LEADER"
+// had ~44mm left to print in; this round's 0.72H/0.44H split leaves the
+// middle zone ~62mm at H=90 while the picture (64.8mm) is still the loudest
+// element on the card.
 
 const WIDE_PAD_FRAC = 0.06;
-const WIDE_ZONE_GAP_FRAC = 0.04; // between icon | mid | photo (two gaps)
+const WIDE_ZONE_GAP_FRAC = 0.045; // between icon | mid | photo (two gaps)
+const WIDE_PICTURE_FRAC = 0.72; // of cardH directly, not (H - 2*pad)
 const WIDE_PICTURE_RADIUS_FRAC = 0.1; // of the picture's own side
 const WIDE_ICON_FONT_FRAC = 0.62; // of the picture's own side
-const WIDE_LABEL_FRAC = 0.11;
-const WIDE_LABEL_CAP_MM = 10;
-const WIDE_NAME_FRAC = 0.22;
-const WIDE_NAME_CAP_MM = 20;
-const WIDE_PHOTO_FRAC = 0.5;
-const WIDE_PHOTO_CAP_MM = 45;
+const WIDE_PHOTO_FRAC = 0.44; // of cardH directly
+const WIDE_LABEL_BASE_FRAC = 0.075;
+const WIDE_LABEL_FLOOR_MM = 4.2;
+const WIDE_NAME_BASE_FRAC = 0.18;
+const WIDE_NAME_FLOOR_MM = 9;
 
 export interface WideCardSizes {
   pad: number;
   zoneGap: number;
   pictureSide: number;
   pictureRadius: number;
-  labelFontMM: number;
-  nameFontMM: number;
   photoDiameter: number;
+  labelBaseMM: number;
+  labelFloorMM: number;
+  nameBaseMM: number;
+  nameFloorMM: number;
+  /** The label/name column's available width when this job's photo circle
+   *  DOES render this card (child assigned, "show photos" on, roster has a
+   *  photo for them). */
+  midZoneWidthWithPhoto: number;
+  /** ...and when it does not: one flex item and one gap fewer, so the middle
+   *  zone reclaims the width the circle would otherwise have used. */
+  midZoneWidthNoPhoto: number;
 }
 
-/** Every size on a one-column (n <= 3) card, at a given cardH. */
+/** Every geometry size on a one-column (n <= 3) card, at a given cardH.
+ *  Font sizes are NOT here — see fontFor, which needs the actual string. */
 export function wideCardSizes(cardH: number): WideCardSizes {
   const pad = cardH * WIDE_PAD_FRAC;
-  const pictureSide = cardH - 2 * pad;
+  const zoneGap = cardH * WIDE_ZONE_GAP_FRAC;
+  const pictureSide = cardH * WIDE_PICTURE_FRAC;
+  const photoDiameter = cardH * WIDE_PHOTO_FRAC;
+  const fixedWithPhoto = pad * 2 + pictureSide + photoDiameter + zoneGap * 2;
+  const fixedNoPhoto = pad * 2 + pictureSide + zoneGap;
   return {
     pad,
-    zoneGap: cardH * WIDE_ZONE_GAP_FRAC,
+    zoneGap,
     pictureSide,
     pictureRadius: pictureSide * WIDE_PICTURE_RADIUS_FRAC,
-    labelFontMM: Math.min(WIDE_LABEL_CAP_MM, cardH * WIDE_LABEL_FRAC),
-    nameFontMM: Math.min(WIDE_NAME_CAP_MM, cardH * WIDE_NAME_FRAC),
-    photoDiameter: Math.min(WIDE_PHOTO_CAP_MM, cardH * WIDE_PHOTO_FRAC),
+    photoDiameter,
+    labelBaseMM: cardH * WIDE_LABEL_BASE_FRAC,
+    labelFloorMM: WIDE_LABEL_FLOOR_MM,
+    nameBaseMM: cardH * WIDE_NAME_BASE_FRAC,
+    nameFloorMM: WIDE_NAME_FLOOR_MM,
+    midZoneWidthWithPhoto: Math.max(0, WIDE_CARD_W_MM - fixedWithPhoto),
+    midZoneWidthNoPhoto: Math.max(0, WIDE_CARD_W_MM - fixedNoPhoto),
   };
 }
 
@@ -211,10 +202,10 @@ const GRID_ICON_GAP_FRAC = 0.05; // between icon and the right column
 const GRID_STACK_GAP_FRAC = 0.03; // between label/photo/name (two gaps)
 const GRID_PICTURE_RADIUS_FRAC = 0.1;
 const GRID_ICON_FONT_FRAC = 0.62;
-const GRID_LABEL_FRAC = 0.11;
-const GRID_LABEL_FLOOR_MM = 4.2;
 const GRID_PHOTO_FRAC = 0.34;
-const GRID_NAME_FRAC = 0.16;
+const GRID_LABEL_BASE_FRAC = 0.11;
+const GRID_LABEL_FLOOR_MM = 4.2;
+const GRID_NAME_BASE_FRAC = 0.16;
 const GRID_NAME_FLOOR_MM = 6;
 
 export interface GridCardSizes {
@@ -223,29 +214,79 @@ export interface GridCardSizes {
   stackGap: number;
   pictureSide: number;
   pictureRadius: number;
-  labelFontMM: number;
   photoDiameter: number;
-  nameFontMM: number;
+  labelBaseMM: number;
+  labelFloorMM: number;
+  nameBaseMM: number;
+  nameFloorMM: number;
+  /** The right column's available width — the SAME zone the label and the
+   *  name each individually have (they stack, not share, so neither has to
+   *  divide this width with the other). */
+  rightColWidth: number;
 }
 
-/** Every size on a two-column (n >= 4) card, at a given cardH. */
+/** Every geometry size on a two-column (n >= 4) card, at a given cardH. */
 export function gridCardSizes(cardH: number): GridCardSizes {
   const pad = cardH * GRID_PAD_FRAC;
+  const iconGap = cardH * GRID_ICON_GAP_FRAC;
   const pictureSide = cardH - 2 * pad;
+  const rightColWidth = Math.max(0, CARD_W_MM - 2 * pad - pictureSide - iconGap);
   return {
     pad,
-    iconGap: cardH * GRID_ICON_GAP_FRAC,
+    iconGap,
     stackGap: cardH * GRID_STACK_GAP_FRAC,
     pictureSide,
     pictureRadius: pictureSide * GRID_PICTURE_RADIUS_FRAC,
-    labelFontMM: Math.max(GRID_LABEL_FLOOR_MM, cardH * GRID_LABEL_FRAC),
     photoDiameter: cardH * GRID_PHOTO_FRAC,
-    nameFontMM: Math.max(GRID_NAME_FLOOR_MM, cardH * GRID_NAME_FRAC),
+    labelBaseMM: cardH * GRID_LABEL_BASE_FRAC,
+    labelFloorMM: GRID_LABEL_FLOOR_MM,
+    nameBaseMM: cardH * GRID_NAME_BASE_FRAC,
+    nameFloorMM: GRID_NAME_FLOOR_MM,
+    rightColWidth,
   };
 }
 
 // Icon font-size fractions exported so posterCss()'s emoji-fallback rule can
-// share the exact ratio the harness checks, rather than a second guess
-// living only in the stylesheet.
+// share the exact ratio (both unchanged from round 9).
 export const WIDE_ICON_FONT_OF_SIDE = WIDE_ICON_FONT_FRAC;
 export const GRID_ICON_FONT_OF_SIDE = GRID_ICON_FONT_FRAC;
+
+// -- length-aware type sizing -------------------------------------------------
+// The actual fix for round 9's clipped text: a font-size that is NOT purely
+// a function of cardH, but of the real string sitting inside it. Computed
+// per card, in JS, from job.name.length / the assigned child's first-name
+// length — then passed to React as a NUMBER through inline CSS custom
+// properties (--jp-label-fs, --jp-name-fs), the same safety posture as
+// --jp-card-h: a computed length, never a string built from what a teacher
+// typed, ever reaches the stylesheet.
+
+/** How many millimetres of line-box one character costs, roughly, at 1mm of
+ *  font-size — calibrated conservatively (erring wide) against the actual
+ *  card fonts: uppercase, letterspaced 0.16em for the job label; bold,
+ *  ordinary tracking for the child's name. Shared by both regimes — the
+ *  type styles are identical, only the zone each sits in differs. */
+export const LABEL_CHAR_K = 0.72;
+export const NAME_CHAR_K = 0.55;
+
+/** How many characters, AT THE BASE FONT SIZE, fit across a zone this wide —
+ *  the length past which `fontFor` starts shrinking. */
+export function maxCharsFor(zoneWidthMM: number, k: number, baseMM: number): number {
+  if (baseMM <= 0 || k <= 0) return 0;
+  return Math.floor(zoneWidthMM / (k * baseMM));
+}
+
+/**
+ * The one function that turns "how long is this string" into "what font-size
+ * does it get." Short text (at or under `maxChars`) prints at `baseMM`, full
+ * size. Longer text shrinks in direct proportion to how far over the
+ * character budget it runs — and is never allowed below `floorMM`, no
+ * matter how long the string is. A string that still cannot fit one line
+ * even at the floor is CSS's problem from here, not this function's: see
+ * `.jp-job`/`.jp-child`'s line-clamp:2 in ClassroomJobsTool.tsx's
+ * posterCss(), which wraps to a second line before it ever ellipsizes.
+ */
+export function fontFor(textLen: number, baseMM: number, maxChars: number, floorMM: number): number {
+  const len = textLen > 0 ? textLen : 1;
+  const scaled = baseMM * Math.min(1, maxChars / len);
+  return Math.max(floorMM, scaled);
+}
