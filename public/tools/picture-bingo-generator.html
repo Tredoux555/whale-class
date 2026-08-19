@@ -98,6 +98,50 @@
     color: #1f2937;
   }
   .duplex-calibration .unit { opacity: 0.7; }
+
+  /* Plain-language nudge pad — replaces the old X/Y number inputs. Laid
+     out as a compact directional pad: ▲ over, ◀ status ▶ in the middle
+     row, ▼ under. */
+  .duplex-nudge-pad {
+    display: inline-grid;
+    grid-template-columns: 28px auto 28px;
+    grid-template-areas:
+      ".    up      ."
+      "left status right"
+      ".    down    .";
+    gap: 3px;
+    align-items: center;
+    justify-items: center;
+  }
+  .duplex-nudge-btn {
+    width: 28px;
+    height: 24px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.14);
+    color: white;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  .duplex-nudge-btn:hover { background: rgba(255,255,255,0.28); }
+  .duplex-nudge-btn.nudge-up { grid-area: up; }
+  .duplex-nudge-btn.nudge-left { grid-area: left; }
+  .duplex-nudge-btn.nudge-right { grid-area: right; }
+  .duplex-nudge-btn.nudge-down { grid-area: down; }
+  .duplex-nudge-status {
+    grid-area: status;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    padding: 0 4px;
+    min-width: 84px;
+    text-align: center;
+  }
+
   .duplex-reset-btn {
     padding: 4px 10px;
     border-radius: 6px;
@@ -114,6 +158,85 @@
     opacity: 0.7;
     line-height: 1.4;
   }
+
+  /* 🛟 Troubleshooting — a small help button in the mode-tabs row that
+     opens a plain-language popup, mainly walking a teacher through the
+     Duplex Calibration box above when their printer's back-page words
+     don't line up with the front-page pictures. */
+  .help-btn {
+    margin-left: auto;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.1);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    align-self: center;
+  }
+  .help-btn:hover { background: rgba(255,255,255,0.2); }
+
+  .troubleshoot-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .troubleshoot-overlay.open { display: flex; }
+
+  .troubleshoot-modal {
+    background: white;
+    color: #1f2937;
+    border-radius: 16px;
+    max-width: 560px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .troubleshoot-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    border-bottom: 1px solid #e5e7eb;
+    position: sticky;
+    top: 0;
+    background: white;
+  }
+  .troubleshoot-header h3 { font-size: 18px; font-weight: 700; }
+  .troubleshoot-close {
+    border: none;
+    background: #f3f4f6;
+    color: #4b5563;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+  }
+  .troubleshoot-close:hover { background: #e5e7eb; }
+  .troubleshoot-body { padding: 20px 22px 24px; font-size: 14px; line-height: 1.55; }
+  .troubleshoot-body h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f766e;
+    margin: 18px 0 6px;
+  }
+  .troubleshoot-body h4:first-child { margin-top: 0; }
+  .troubleshoot-body p { margin-bottom: 8px; color: #374151; }
+  .troubleshoot-body ol, .troubleshoot-body ul {
+    margin: 0 0 8px 20px;
+    color: #374151;
+  }
+  .troubleshoot-body li { margin-bottom: 4px; }
 
   .mode-content { display: none; }
   .mode-content.active { display: block; }
@@ -614,7 +737,7 @@
   .section-label.calling-label { color: #b45309; border-color: #fbbf24; }
 
   @media print {
-    .toolbar, .section-label { display: none !important; }
+    .toolbar, .section-label, .troubleshoot-overlay { display: none !important; }
     body { background: white; }
     .page { box-shadow: none; margin: 0; border-radius: 0; }
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
@@ -632,24 +755,58 @@
     <button class="mode-tab active" onclick="switchMode('preset')">CVC Word Sets</button>
     <button class="mode-tab" onclick="switchMode('custom')">Custom Bingo</button>
     <button class="mode-tab" onclick="switchMode('bank')">📸 Picture Bank</button>
+    <button type="button" class="help-btn" onclick="openTroubleshooting()">❓ Troubleshooting</button>
+  </div>
+
+  <!-- 🛟 Troubleshooting popup — plain-language printing help, mainly the
+       Duplex Calibration walkthrough. It's a fixed overlay rather than a
+       descendant of .toolbar, so it needs its own print-hide rule (see the
+       @media print block above) rather than inheriting .toolbar's. -->
+  <div class="troubleshoot-overlay" id="troubleshootOverlay" onclick="if (event.target === this) closeTroubleshooting();">
+    <div class="troubleshoot-modal">
+      <div class="troubleshoot-header">
+        <h3>🛟 Troubleshooting</h3>
+        <button type="button" class="troubleshoot-close" onclick="closeTroubleshooting()">✕</button>
+      </div>
+      <div class="troubleshoot-body">
+        <h4>Words on the back don't line up with the pictures on front</h4>
+        <p>This is normal — every printer's duplex (double-sided) unit has its own tiny bit of mechanical play, usually just a millimeter or two, and it's different on every machine.</p>
+        <ol>
+          <li>Print one test page of Calling Cards.</li>
+          <li>Check how far off the words are from the pictures, and in which direction.</li>
+          <li>Use the <strong>🎯 Duplex Calibration</strong> box above the tabs — click the arrow pointing the way the word needs to move (0.5mm per click), then reprint and check again.</li>
+          <li>Once it lines up, you're done — it's saved automatically on this computer, so you won't need to do it again on this printer.</li>
+        </ol>
+        <h4>Before you print, double check</h4>
+        <ul>
+          <li>Duplex / double-sided printing is turned on, flipping on the <strong>long edge</strong> (usually the automatic default).</li>
+          <li>Print scale is set to <strong>100% / Actual Size</strong> — not "Fit to page". Scaling the print breaks the millimeter-accurate alignment.</li>
+          <li>"Background graphics" (sometimes called "Print backgrounds") is turned on in the print dialog, or the colored card borders won't show up.</li>
+        </ul>
+        <h4>Cutting the cards apart</h4>
+        <p>Cut along the diamond-shaped notches where the borders of adjacent cards meet — that's the seam between one card and the next.</p>
+      </div>
+    </div>
   </div>
 
   <!-- 🎯 Duplex calibration — one shared control for all 3 modes, since
        it's a per-printer setting, not a per-word-set one. -->
   <div class="duplex-calibration" id="duplexCalibration">
     <span class="duplex-calibration-label">🎯 Duplex Calibration</span>
-    <label>
-      <span>X</span>
-      <input type="number" id="duplexOffsetX" value="0" min="-3" max="3" step="0.5" oninput="updateDuplexOffsetX(this.value)">
-      <span class="unit">mm</span>
-    </label>
-    <label>
-      <span>Y</span>
-      <input type="number" id="duplexOffsetY" value="0" min="-3" max="3" step="0.5" oninput="updateDuplexOffsetY(this.value)">
-      <span class="unit">mm</span>
-    </label>
+    <!-- Plain-language nudge pad — click the arrow pointing the direction
+         the BACK WORD needs to move, instead of typing signed X/Y
+         millimeters. Each click is a 0.5mm step; nudgeDuplex() in the
+         script below does the same clamped math the old number inputs
+         did, just triggered by direction instead of typed sign. -->
+    <div class="duplex-nudge-pad">
+      <button type="button" class="duplex-nudge-btn nudge-up" onclick="nudgeDuplex(0, -0.5)" title="Move word up" aria-label="Move word up">▲</button>
+      <button type="button" class="duplex-nudge-btn nudge-left" onclick="nudgeDuplex(-0.5, 0)" title="Move word left" aria-label="Move word left">◀</button>
+      <span class="duplex-nudge-status" id="duplexStatus">Not adjusted</span>
+      <button type="button" class="duplex-nudge-btn nudge-right" onclick="nudgeDuplex(0.5, 0)" title="Move word right" aria-label="Move word right">▶</button>
+      <button type="button" class="duplex-nudge-btn nudge-down" onclick="nudgeDuplex(0, 0.5)" title="Move word down" aria-label="Move word down">▼</button>
+    </div>
     <button type="button" class="duplex-reset-btn" onclick="resetDuplexCalibration()">Reset</button>
-    <span class="duplex-calibration-hint">Print duplex with <strong>flip on the LONG edge</strong> (your printer's automatic default). If the words on the back land a mm or two off from the pictures on the front, nudge X/Y here once — it's saved on this device for next time. +X moves the word right, +Y moves it down (held picture-side up).</span>
+    <span class="duplex-calibration-hint">Print duplex with <strong>flip on the LONG edge</strong> (your printer's automatic default). If the words on the back land a little off from the pictures on the front, click the arrow pointing the way the word needs to move, reprint a test page, and repeat until it lines up. It's saved on this device for next time — you'll only need to do this once per printer.</span>
   </div>
 
   <!-- PRESET MODE -->
@@ -910,10 +1067,7 @@ function loadDuplexCalibration() {
   } catch (err) {
     // Corrupt or unavailable storage — safe to ignore, defaults to 0mm.
   }
-  const xInput = document.getElementById('duplexOffsetX');
-  const yInput = document.getElementById('duplexOffsetY');
-  if (xInput) xInput.value = duplexOffsetX;
-  if (yInput) yInput.value = duplexOffsetY;
+  refreshDuplexStatus();
 }
 
 function saveDuplexCalibration() {
@@ -924,24 +1078,45 @@ function saveDuplexCalibration() {
   }
 }
 
-function updateDuplexOffsetX(value) {
-  duplexOffsetX = clampDuplexOffset(parseFloat(value) || 0);
-  saveDuplexCalibration();
+// Plain-language readout for the nudge pad — "1mm right, 0.5mm down"
+// instead of raw X/Y numbers, since most teachers don't think in X/Y.
+function duplexStatusText() {
+  if (duplexOffsetX === 0 && duplexOffsetY === 0) return 'Not adjusted';
+  const parts = [];
+  if (duplexOffsetX !== 0) parts.push(Math.abs(duplexOffsetX) + 'mm ' + (duplexOffsetX > 0 ? 'right' : 'left'));
+  if (duplexOffsetY !== 0) parts.push(Math.abs(duplexOffsetY) + 'mm ' + (duplexOffsetY > 0 ? 'down' : 'up'));
+  return parts.join(', ');
 }
 
-function updateDuplexOffsetY(value) {
-  duplexOffsetY = clampDuplexOffset(parseFloat(value) || 0);
+function refreshDuplexStatus() {
+  const status = document.getElementById('duplexStatus');
+  if (status) status.textContent = duplexStatusText();
+}
+
+// Click handler for the ▲▼◀▶ nudge pad buttons — dx/dy are the same
+// signed mm deltas the old X/Y number inputs took, just supplied by the
+// button (0.5mm per click) instead of typed in.
+function nudgeDuplex(dx, dy) {
+  duplexOffsetX = clampDuplexOffset(duplexOffsetX + dx);
+  duplexOffsetY = clampDuplexOffset(duplexOffsetY + dy);
   saveDuplexCalibration();
+  refreshDuplexStatus();
 }
 
 function resetDuplexCalibration() {
   duplexOffsetX = 0;
   duplexOffsetY = 0;
   saveDuplexCalibration();
-  const xInput = document.getElementById('duplexOffsetX');
-  const yInput = document.getElementById('duplexOffsetY');
-  if (xInput) xInput.value = 0;
-  if (yInput) yInput.value = 0;
+  refreshDuplexStatus();
+}
+
+// ===== 🛟 TROUBLESHOOTING POPUP =====
+function openTroubleshooting() {
+  document.getElementById('troubleshootOverlay').classList.add('open');
+}
+
+function closeTroubleshooting() {
+  document.getElementById('troubleshootOverlay').classList.remove('open');
 }
 
 // ===== MODE SWITCHING =====
