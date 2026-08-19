@@ -232,7 +232,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS uniq_montree_class_credits_ledger_refund
 CREATE OR REPLACE VIEW montree_class_credit_balances AS
 SELECT
   child_id,
-  MIN(parent_id)                                    AS any_parent_id,
+  -- MIN() has no uuid overload in Postgres — aggregate via text cast.
+  (MIN(parent_id::text))::uuid                      AS any_parent_id,
   COALESCE(SUM(delta), 0)::integer                  AS balance,
   COUNT(*) FILTER (WHERE reason = 'class_booked')    AS classes_booked,
   COUNT(*) FILTER (WHERE reason = 'class_no_show')   AS no_shows,
