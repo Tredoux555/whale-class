@@ -81,6 +81,11 @@
     color: white;
     white-space: nowrap;
   }
+  .duplex-calibration-sublabel {
+    font-weight: 500;
+    opacity: 0.75;
+    white-space: normal;
+  }
   .duplex-calibration label {
     display: flex;
     align-items: center;
@@ -771,10 +776,11 @@
       <div class="troubleshoot-body">
         <h4>Words on the back don't line up with the pictures on front</h4>
         <p>This is normal — every printer's duplex (double-sided) unit has its own tiny bit of mechanical play, usually just a millimeter or two, and it's different on every machine.</p>
+        <p><strong>The picture side (front) is always the fixed reference — it never moves.</strong> The word side (back) is the one that shifts. So think of it as moving the words to meet the pictures, never the other way around.</p>
         <ol>
           <li>Print one test page of Calling Cards.</li>
           <li>Check how far off the words are from the pictures, and in which direction.</li>
-          <li>Use the <strong>🎯 Duplex Calibration</strong> box above the tabs — click the arrow pointing the way the word needs to move (0.5mm per click), then reprint and check again.</li>
+          <li>Use the <strong>🎯 Duplex Calibration</strong> box above the tabs — click the arrow pointing the way the <strong>words</strong> need to move (0.5mm per click), then reprint and check again.</li>
           <li>Once it lines up, you're done — it's saved automatically on this computer, so you won't need to do it again on this printer.</li>
         </ol>
         <h4>Before you print, double check</h4>
@@ -792,12 +798,18 @@
   <!-- 🎯 Duplex calibration — one shared control for all 3 modes, since
        it's a per-printer setting, not a per-word-set one. -->
   <div class="duplex-calibration" id="duplexCalibration">
-    <span class="duplex-calibration-label">🎯 Duplex Calibration</span>
+    <span class="duplex-calibration-label">🎯 Duplex Calibration <span class="duplex-calibration-sublabel">(moves the WORD side only — the picture side never moves)</span></span>
     <!-- Plain-language nudge pad — click the arrow pointing the direction
          the BACK WORD needs to move, instead of typing signed X/Y
          millimeters. Each click is a 0.5mm step; nudgeDuplex() in the
          script below does the same clamped math the old number inputs
-         did, just triggered by direction instead of typed sign. -->
+         did, just triggered by direction instead of typed sign.
+         IMPORTANT (kept in sync with the sublabel + hint text below, and
+         the Troubleshooting popup): the picture side (front) is always
+         the fixed reference the word side gets nudged TOWARD. Only the
+         back page's transform ever changes — see the backPage.style.
+         transform line in generateCallingCardsCore for where that's
+         actually applied. -->
     <div class="duplex-nudge-pad">
       <button type="button" class="duplex-nudge-btn nudge-up" onclick="nudgeDuplex(0, -0.5)" title="Move word up" aria-label="Move word up">▲</button>
       <button type="button" class="duplex-nudge-btn nudge-left" onclick="nudgeDuplex(-0.5, 0)" title="Move word left" aria-label="Move word left">◀</button>
@@ -806,7 +818,7 @@
       <button type="button" class="duplex-nudge-btn nudge-down" onclick="nudgeDuplex(0, 0.5)" title="Move word down" aria-label="Move word down">▼</button>
     </div>
     <button type="button" class="duplex-reset-btn" onclick="resetDuplexCalibration()">Reset</button>
-    <span class="duplex-calibration-hint">Print duplex with <strong>flip on the LONG edge</strong> (your printer's automatic default). If the words on the back land a little off from the pictures on the front, click the arrow pointing the way the word needs to move, reprint a test page, and repeat until it lines up. It's saved on this device for next time — you'll only need to do this once per printer.</span>
+    <span class="duplex-calibration-hint">Print duplex with <strong>flip on the LONG edge</strong> (your printer's automatic default). The <strong>picture side (front) is the fixed reference — it never moves.</strong> If the words on the back land a little off from the pictures, click the arrow pointing the way the <strong>words</strong> need to move to meet the pictures, reprint a test page, and repeat until it lines up. It's saved on this device for next time — you'll only need to do this once per printer.</span>
   </div>
 
   <!-- PRESET MODE -->
