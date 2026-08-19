@@ -25,10 +25,17 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { resolveAppointmentsParent } from '@/lib/montree/appointments/parent-access';
 import { isFeatureEnabled } from '@/lib/montree/features/server';
+import {
+  resolveDplParent,
+  withDplCors,
+  dplOptionsHandler,
+} from '@/lib/montree/dark-phonics-live/app-auth';
 
 export const dynamic = 'force-dynamic';
+
+/** Standalone-app preflight. No-op for the website (which never preflights this). */
+export const OPTIONS = dplOptionsHandler;
 
 const FEATURE_KEY = 'dark_phonics_live';
 const LEDGER_TABLE = 'montree_class_credits_ledger';
@@ -137,6 +144,12 @@ function toDto(row: AppointmentRow, names: Map<string, string>): AppointmentDto 
 }
 
 export async function GET(request: NextRequest) {
+  // withDplCors is a no-op unless the caller is an allow-listed app origin, so
+  // every browser response is byte-identical to before.
+  return withDplCors(await handleGET(request), request);
+}
+
+async function handleGET(request: NextRequest) {
   try {
     const supabase = getSupabase();
     const asTeacher = ['teacher', 'staff'].includes(
@@ -182,7 +195,8 @@ export async function GET(request: NextRequest) {
       rows = candidates.filter((a) => booked.has(a.id));
     } else {
       // --- parent: their own classes -------------------------------------------
-      const parentResult = await resolveAppointmentsParent(supabase);
+      // Bearer (app) or cookie (website) — same return shape either way.
+      const parentResult = await resolveDplParent(request, supabase);
       if (parentResult instanceof NextResponse) return parentResult;
       const parent = parentResult;
 

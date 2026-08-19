@@ -18,12 +18,19 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { resolveAppointmentsParent } from '@/lib/montree/appointments/parent-access';
 import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { DARK_PHONICS_LESSON_COUNT, rawLessonNumber } from '@/lib/montree/dark-phonics/live-lesson';
 import { RAW } from '@/lib/montree/dark-phonics/lessons';
+import {
+  resolveDplParent,
+  withDplCors,
+  dplOptionsHandler,
+} from '@/lib/montree/dark-phonics-live/app-auth';
 
 export const dynamic = 'force-dynamic';
+
+/** Standalone-app preflight. No-op for the website (which never preflights this). */
+export const OPTIONS = dplOptionsHandler;
 
 const FEATURE_KEY = 'dark_phonics_live';
 const RECAPS_TABLE = 'montree_class_recaps';
@@ -122,6 +129,15 @@ export async function POST(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
+  // Staff-only handler (unchanged); CORS is stamped for a packaged teacher
+  // shell and stays a no-op for the browser.
+  return withDplCors(await handlePOST(request, context), request);
+}
+
+async function handlePOST(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
   const { id: appointmentId } = await context.params;
 
   try {
@@ -217,6 +233,15 @@ export async function GET(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
+  // withDplCors is a no-op unless the caller is an allow-listed app origin, so
+  // every browser response is byte-identical to before.
+  return withDplCors(await handleGET(request, context), request);
+}
+
+async function handleGET(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
   const { id: appointmentId } = await context.params;
 
   try {
@@ -243,7 +268,8 @@ export async function GET(
         schoolId = staffResult.schoolId;
       }
     } else {
-      const parentResult = await resolveAppointmentsParent(supabase);
+      // Bearer (app) or cookie (website) — same return shape either way.
+      const parentResult = await resolveDplParent(request, supabase);
       if (
         !(parentResult instanceof NextResponse) &&
         (!appointment.parent_id || appointment.parent_id === parentResult.parentId)

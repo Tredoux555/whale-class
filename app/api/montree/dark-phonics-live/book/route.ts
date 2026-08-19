@@ -48,11 +48,18 @@ import { randomBytes } from 'crypto';
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { getSupabase } from '@/lib/supabase-client';
-import { resolveAppointmentsParent } from '@/lib/montree/appointments/parent-access';
 import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { getCreditBalance, spendCreditForBooking } from '@/lib/montree/credits/ledger';
+import {
+  resolveDplParent,
+  withDplCors,
+  dplOptionsHandler,
+} from '@/lib/montree/dark-phonics-live/app-auth';
 
 export const dynamic = 'force-dynamic';
+
+/** Standalone-app preflight — the app's cross-origin POST triggers one. */
+export const OPTIONS = dplOptionsHandler;
 
 const FEATURE_KEY = 'dark_phonics_live';
 /** Contract: 1-on-1, 25-minute classes. */
@@ -65,18 +72,27 @@ interface BookBody {
 }
 
 export async function POST(request: NextRequest) {
+  // withDplCors is a no-op unless the caller is an allow-listed app origin, so
+  // every browser response is byte-identical to before.
+  return withDplCors(await handlePOST(request), request);
+}
+
+async function handlePOST(request: NextRequest) {
   try {
     const supabase = getSupabase();
 
     // --- 1. parent auth -----------------------------------------------------
-    // resolveAppointmentsParent() returns either the resolved parent or an
+    // resolveDplParent() accepts EITHER an `Authorization: Bearer <jwt>` header
+    // (standalone app) or the parent session cookie (website), and with no
+    // bearer header it delegates straight to resolveAppointmentsParent().
+    // Either way it returns either the resolved parent or an
     // already-built NextResponse (401/403/404) — read from
     // lib/montree/appointments/parent-access.ts directly, not guessed. NOTE:
     // it internally gates on the *'appointments'* feature flag (a different,
     // pre-existing flag), so a school with 'appointments' off will 404 here
     // before this route's own 'dark_phonics_live' check ever runs. That's a
     // real dependency worth knowing about, not a bug.
-    const parentResult = await resolveAppointmentsParent(supabase);
+    const parentResult = await resolveDplParent(request, supabase);
     if (parentResult instanceof NextResponse) return parentResult;
     const parent = parentResult; // { parentId, parentName, schoolId, childIds }
 

@@ -17,7 +17,6 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { resolveAppointmentsParent } from '@/lib/montree/appointments/parent-access';
 import { isFeatureEnabled } from '@/lib/montree/features/server';
 import {
   getOrCreateWhiteboardRoom,
@@ -25,8 +24,16 @@ import {
   whiteboardRoleFor,
   WhiteboardError,
 } from '@/lib/montree/agora/whiteboard';
+import {
+  resolveDplParent,
+  withDplCors,
+  dplOptionsHandler,
+} from '@/lib/montree/dark-phonics-live/app-auth';
 
 export const dynamic = 'force-dynamic';
+
+/** Standalone-app preflight — the app's cross-origin POST triggers one. */
+export const OPTIONS = dplOptionsHandler;
 
 const FEATURE_KEY = 'dark_phonics_live';
 
@@ -44,9 +51,10 @@ interface ResolvedActor {
  * not guessed). Both resolvers there return a discriminated union — either
  * the resolved identity, or an already-built NextResponse (401/403/404) that
  * the caller returns as-is. `verifySchoolRequest(request)` reads the
- * `montree-auth` cookie; `resolveAppointmentsParent(supabase)` reads the
- * `montree_parent_session` cookie internally via `verifyParentSession()` (no
- * request param — it's edge/server-context based, not request-based).
+ * `montree-auth` cookie; `resolveDplParent(request, supabase)` accepts either
+ * an `Authorization: Bearer <jwt>` header (standalone app) or, with no bearer
+ * header, delegates to `resolveAppointmentsParent(supabase)` which reads the
+ * `montree_parent_session` cookie internally via `verifyParentSession()`.
  */
 async function resolveActor(
   supabase: SupabaseClient,
@@ -70,7 +78,8 @@ async function resolveActor(
     // no hint / ambiguous → fall through to parent auth below
   }
 
-  const parentResult = await resolveAppointmentsParent(supabase);
+  // Bearer (app) or cookie (website) — same return shape either way.
+  const parentResult = await resolveDplParent(request, supabase);
   if (parentResult instanceof NextResponse) return parentResult;
   const parent = parentResult;
   if (appointment.parent_id && appointment.parent_id !== parent.parentId) {
@@ -80,6 +89,15 @@ async function resolveActor(
 }
 
 export async function POST(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  // withDplCors is a no-op unless the caller is an allow-listed app origin, so
+  // every browser response is byte-identical to before.
+  return withDplCors(await handlePOST(request, context), request);
+}
+
+async function handlePOST(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {

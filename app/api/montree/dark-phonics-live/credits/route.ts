@@ -18,11 +18,18 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { getSupabase } from '@/lib/supabase-client';
-import { resolveAppointmentsParent } from '@/lib/montree/appointments/parent-access';
 import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { getCreditBalance, listLedgerForChild } from '@/lib/montree/credits/ledger';
+import {
+  resolveDplParent,
+  withDplCors,
+  dplOptionsHandler,
+} from '@/lib/montree/dark-phonics-live/app-auth';
 
 export const dynamic = 'force-dynamic';
+
+/** Standalone-app preflight. No-op for the website (which never preflights this). */
+export const OPTIONS = dplOptionsHandler;
 
 const FEATURE_KEY = 'dark_phonics_live';
 const LEDGER_LIMIT = 50;
@@ -30,11 +37,18 @@ const LEDGER_LIMIT = 50;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function GET(request: NextRequest) {
+  // withDplCors is a no-op unless the caller is an allow-listed app origin, so
+  // every browser response is byte-identical to before.
+  return withDplCors(await handleGET(request), request);
+}
+
+async function handleGET(request: NextRequest) {
   try {
     const supabase = getSupabase();
 
     // --- 1. parent auth ------------------------------------------------------
-    const parentResult = await resolveAppointmentsParent(supabase);
+    // Bearer (app) or cookie (website) — same return shape either way.
+    const parentResult = await resolveDplParent(request, supabase);
     if (parentResult instanceof NextResponse) return parentResult;
     const parent = parentResult;
 

@@ -1,0 +1,351 @@
+diff --git a/app/api/montree/appointments/[id]/live-state/route.ts b/app/api/montree/appointments/[id]/live-state/route.ts
+index 453cc8e86..8f579774a 100644
+--- a/app/api/montree/appointments/[id]/live-state/route.ts
++++ b/app/api/montree/appointments/[id]/live-state/route.ts
+@@ -28,12 +28,19 @@ import type { SupabaseClient } from '@supabase/supabase-js';
+ 
+ import { getSupabase } from '@/lib/supabase-client';
+ import { verifySchoolRequest } from '@/lib/montree/verify-request';
+-import { resolveAppointmentsParent } from '@/lib/montree/appointments/parent-access';
+ import { isFeatureEnabled } from '@/lib/montree/features/server';
+ import { DARK_PHONICS_LESSON_COUNT } from '@/lib/montree/dark-phonics/live-lesson';
++import {
++  resolveDplParent,
++  withDplCors,
++  dplOptionsHandler,
++} from '@/lib/montree/dark-phonics-live/app-auth';
+ 
+ export const dynamic = 'force-dynamic';
+ 
++/** Standalone-app preflight. No-op for the website (which never preflights this). */
++export const OPTIONS = dplOptionsHandler;
++
+ const FEATURE_KEY = 'dark_phonics_live';
+ const LIVE_STATE_TABLE = 'montree_class_live_state';
+ const RECAPS_TABLE = 'montree_class_recaps';
+@@ -184,7 +191,8 @@ async function authorizeRead(
+       schoolId = staffResult.schoolId;
+     }
+   } else {
+-    const parentResult = await resolveAppointmentsParent(supabase);
++    // Bearer (app) or cookie (website) — same return shape either way.
++    const parentResult = await resolveDplParent(request, supabase);
+     if (
+       !(parentResult instanceof NextResponse) &&
+       (!appointment.parent_id || appointment.parent_id === parentResult.parentId)
+@@ -207,6 +215,15 @@ async function authorizeRead(
+ export async function GET(
+   request: NextRequest,
+   context: { params: Promise<{ id: string }> }
++) {
++  // withDplCors is a no-op unless the caller is an allow-listed app origin, so
++  // every browser response is byte-identical to before.
++  return withDplCors(await handleGET(request, context), request);
++}
++
++async function handleGET(
++  request: NextRequest,
++  context: { params: Promise<{ id: string }> }
+ ) {
+   const { id: appointmentId } = await context.params;
+   if (!UUID_RE.test(appointmentId)) {
+@@ -351,6 +368,15 @@ function validatePatch(
+ export async function PATCH(
+   request: NextRequest,
+   context: { params: Promise<{ id: string }> }
++) {
++  // Staff-only handler (unchanged); CORS is stamped for a packaged teacher
++  // shell and stays a no-op for the browser.
++  return withDplCors(await handlePATCH(request, context), request);
++}
++
++async function handlePATCH(
++  request: NextRequest,
++  context: { params: Promise<{ id: string }> }
+ ) {
+   const { id: appointmentId } = await context.params;
+   if (!UUID_RE.test(appointmentId)) {
+diff --git a/app/api/montree/appointments/[id]/recap/route.ts b/app/api/montree/appointments/[id]/recap/route.ts
+index f592f8bea..6172f3b7a 100644
+--- a/app/api/montree/appointments/[id]/recap/route.ts
++++ b/app/api/montree/appointments/[id]/recap/route.ts
+@@ -18,13 +18,20 @@ import type { SupabaseClient } from '@supabase/supabase-js';
+ 
+ import { getSupabase } from '@/lib/supabase-client';
+ import { verifySchoolRequest } from '@/lib/montree/verify-request';
+-import { resolveAppointmentsParent } from '@/lib/montree/appointments/parent-access';
+ import { isFeatureEnabled } from '@/lib/montree/features/server';
+ import { DARK_PHONICS_LESSON_COUNT, rawLessonNumber } from '@/lib/montree/dark-phonics/live-lesson';
+ import { RAW } from '@/lib/montree/dark-phonics/lessons';
++import {
++  resolveDplParent,
++  withDplCors,
++  dplOptionsHandler,
++} from '@/lib/montree/dark-phonics-live/app-auth';
+ 
+ export const dynamic = 'force-dynamic';
+ 
++/** Standalone-app preflight. No-op for the website (which never preflights this). */
++export const OPTIONS = dplOptionsHandler;
++
+ const FEATURE_KEY = 'dark_phonics_live';
+ const RECAPS_TABLE = 'montree_class_recaps';
+ 
+@@ -121,6 +128,15 @@ function validateBody(body: RecapBody): { ok: true; value: Required<Omit<RecapBo
+ export async function POST(
+   request: NextRequest,
+   context: { params: Promise<{ id: string }> }
++) {
++  // Staff-only handler (unchanged); CORS is stamped for a packaged teacher
++  // shell and stays a no-op for the browser.
++  return withDplCors(await handlePOST(request, context), request);
++}
++
++async function handlePOST(
++  request: NextRequest,
++  context: { params: Promise<{ id: string }> }
+ ) {
+   const { id: appointmentId } = await context.params;
+ 
+@@ -216,6 +232,15 @@ export async function POST(
+ export async function GET(
+   request: NextRequest,
+   context: { params: Promise<{ id: string }> }
++) {
++  // withDplCors is a no-op unless the caller is an allow-listed app origin, so
++  // every browser response is byte-identical to before.
++  return withDplCors(await handleGET(request, context), request);
++}
++
++async function handleGET(
++  request: NextRequest,
++  context: { params: Promise<{ id: string }> }
+ ) {
+   const { id: appointmentId } = await context.params;
+ 
+@@ -243,7 +268,8 @@ export async function GET(
+         schoolId = staffResult.schoolId;
+       }
+     } else {
+-      const parentResult = await resolveAppointmentsParent(supabase);
++      // Bearer (app) or cookie (website) — same return shape either way.
++      const parentResult = await resolveDplParent(request, supabase);
+       if (
+         !(parentResult instanceof NextResponse) &&
+         (!appointment.parent_id || appointment.parent_id === parentResult.parentId)
+diff --git a/app/api/montree/appointments/[id]/whiteboard-token/route.ts b/app/api/montree/appointments/[id]/whiteboard-token/route.ts
+index 1b2cb16ce..3b0665217 100644
+--- a/app/api/montree/appointments/[id]/whiteboard-token/route.ts
++++ b/app/api/montree/appointments/[id]/whiteboard-token/route.ts
+@@ -17,7 +17,6 @@ import type { SupabaseClient } from '@supabase/supabase-js';
+ 
+ import { getSupabase } from '@/lib/supabase-client';
+ import { verifySchoolRequest } from '@/lib/montree/verify-request';
+-import { resolveAppointmentsParent } from '@/lib/montree/appointments/parent-access';
+ import { isFeatureEnabled } from '@/lib/montree/features/server';
+ import {
+   getOrCreateWhiteboardRoom,
+@@ -25,9 +24,17 @@ import {
+   whiteboardRoleFor,
+   WhiteboardError,
+ } from '@/lib/montree/agora/whiteboard';
++import {
++  resolveDplParent,
++  withDplCors,
++  dplOptionsHandler,
++} from '@/lib/montree/dark-phonics-live/app-auth';
+ 
+ export const dynamic = 'force-dynamic';
+ 
++/** Standalone-app preflight — the app's cross-origin POST triggers one. */
++export const OPTIONS = dplOptionsHandler;
++
+ const FEATURE_KEY = 'dark_phonics_live';
+ 
+ type ActorKind = 'staff' | 'parent';
+@@ -44,9 +51,10 @@ interface ResolvedActor {
+  * not guessed). Both resolvers there return a discriminated union — either
+  * the resolved identity, or an already-built NextResponse (401/403/404) that
+  * the caller returns as-is. `verifySchoolRequest(request)` reads the
+- * `montree-auth` cookie; `resolveAppointmentsParent(supabase)` reads the
+- * `montree_parent_session` cookie internally via `verifyParentSession()` (no
+- * request param — it's edge/server-context based, not request-based).
++ * `montree-auth` cookie; `resolveDplParent(request, supabase)` accepts either
++ * an `Authorization: Bearer <jwt>` header (standalone app) or, with no bearer
++ * header, delegates to `resolveAppointmentsParent(supabase)` which reads the
++ * `montree_parent_session` cookie internally via `verifyParentSession()`.
+  */
+ async function resolveActor(
+   supabase: SupabaseClient,
+@@ -70,7 +78,8 @@ async function resolveActor(
+     // no hint / ambiguous → fall through to parent auth below
+   }
+ 
+-  const parentResult = await resolveAppointmentsParent(supabase);
++  // Bearer (app) or cookie (website) — same return shape either way.
++  const parentResult = await resolveDplParent(request, supabase);
+   if (parentResult instanceof NextResponse) return parentResult;
+   const parent = parentResult;
+   if (appointment.parent_id && appointment.parent_id !== parent.parentId) {
+@@ -82,6 +91,15 @@ async function resolveActor(
+ export async function POST(
+   request: NextRequest,
+   context: { params: Promise<{ id: string }> }
++) {
++  // withDplCors is a no-op unless the caller is an allow-listed app origin, so
++  // every browser response is byte-identical to before.
++  return withDplCors(await handlePOST(request, context), request);
++}
++
++async function handlePOST(
++  request: NextRequest,
++  context: { params: Promise<{ id: string }> }
+ ) {
+   const { id: appointmentId } = await context.params;
+ 
+diff --git a/app/api/montree/dark-phonics-live/book/route.ts b/app/api/montree/dark-phonics-live/book/route.ts
+index 993fdda28..37b4c06ef 100644
+--- a/app/api/montree/dark-phonics-live/book/route.ts
++++ b/app/api/montree/dark-phonics-live/book/route.ts
+@@ -48,12 +48,19 @@ import { randomBytes } from 'crypto';
+ import { NextResponse, type NextRequest } from 'next/server';
+ 
+ import { getSupabase } from '@/lib/supabase-client';
+-import { resolveAppointmentsParent } from '@/lib/montree/appointments/parent-access';
+ import { isFeatureEnabled } from '@/lib/montree/features/server';
+ import { getCreditBalance, spendCreditForBooking } from '@/lib/montree/credits/ledger';
++import {
++  resolveDplParent,
++  withDplCors,
++  dplOptionsHandler,
++} from '@/lib/montree/dark-phonics-live/app-auth';
+ 
+ export const dynamic = 'force-dynamic';
+ 
++/** Standalone-app preflight — the app's cross-origin POST triggers one. */
++export const OPTIONS = dplOptionsHandler;
++
+ const FEATURE_KEY = 'dark_phonics_live';
+ /** Contract: 1-on-1, 25-minute classes. */
+ const DEFAULT_DURATION_MINUTES = 25;
+@@ -65,18 +72,27 @@ interface BookBody {
+ }
+ 
+ export async function POST(request: NextRequest) {
++  // withDplCors is a no-op unless the caller is an allow-listed app origin, so
++  // every browser response is byte-identical to before.
++  return withDplCors(await handlePOST(request), request);
++}
++
++async function handlePOST(request: NextRequest) {
+   try {
+     const supabase = getSupabase();
+ 
+     // --- 1. parent auth -----------------------------------------------------
+-    // resolveAppointmentsParent() returns either the resolved parent or an
++    // resolveDplParent() accepts EITHER an `Authorization: Bearer <jwt>` header
++    // (standalone app) or the parent session cookie (website), and with no
++    // bearer header it delegates straight to resolveAppointmentsParent().
++    // Either way it returns either the resolved parent or an
+     // already-built NextResponse (401/403/404) — read from
+     // lib/montree/appointments/parent-access.ts directly, not guessed. NOTE:
+     // it internally gates on the *'appointments'* feature flag (a different,
+     // pre-existing flag), so a school with 'appointments' off will 404 here
+     // before this route's own 'dark_phonics_live' check ever runs. That's a
+     // real dependency worth knowing about, not a bug.
+-    const parentResult = await resolveAppointmentsParent(supabase);
++    const parentResult = await resolveDplParent(request, supabase);
+     if (parentResult instanceof NextResponse) return parentResult;
+     const parent = parentResult; // { parentId, parentName, schoolId, childIds }
+ 
+diff --git a/app/api/montree/dark-phonics-live/classes/route.ts b/app/api/montree/dark-phonics-live/classes/route.ts
+index 3c0d020c3..c171ab4fe 100644
+--- a/app/api/montree/dark-phonics-live/classes/route.ts
++++ b/app/api/montree/dark-phonics-live/classes/route.ts
+@@ -25,11 +25,18 @@ import type { SupabaseClient } from '@supabase/supabase-js';
+ 
+ import { getSupabase } from '@/lib/supabase-client';
+ import { verifySchoolRequest } from '@/lib/montree/verify-request';
+-import { resolveAppointmentsParent } from '@/lib/montree/appointments/parent-access';
+ import { isFeatureEnabled } from '@/lib/montree/features/server';
++import {
++  resolveDplParent,
++  withDplCors,
++  dplOptionsHandler,
++} from '@/lib/montree/dark-phonics-live/app-auth';
+ 
+ export const dynamic = 'force-dynamic';
+ 
++/** Standalone-app preflight. No-op for the website (which never preflights this). */
++export const OPTIONS = dplOptionsHandler;
++
+ const FEATURE_KEY = 'dark_phonics_live';
+ const LEDGER_TABLE = 'montree_class_credits_ledger';
+ const RECAPS_TABLE = 'montree_class_recaps';
+@@ -137,6 +144,12 @@ function toDto(row: AppointmentRow, names: Map<string, string>): AppointmentDto
+ }
+ 
+ export async function GET(request: NextRequest) {
++  // withDplCors is a no-op unless the caller is an allow-listed app origin, so
++  // every browser response is byte-identical to before.
++  return withDplCors(await handleGET(request), request);
++}
++
++async function handleGET(request: NextRequest) {
+   try {
+     const supabase = getSupabase();
+     const asTeacher = ['teacher', 'staff'].includes(
+@@ -182,7 +195,8 @@ export async function GET(request: NextRequest) {
+       rows = candidates.filter((a) => booked.has(a.id));
+     } else {
+       // --- parent: their own classes -------------------------------------------
+-      const parentResult = await resolveAppointmentsParent(supabase);
++      // Bearer (app) or cookie (website) — same return shape either way.
++      const parentResult = await resolveDplParent(request, supabase);
+       if (parentResult instanceof NextResponse) return parentResult;
+       const parent = parentResult;
+ 
+diff --git a/app/api/montree/dark-phonics-live/credits/route.ts b/app/api/montree/dark-phonics-live/credits/route.ts
+index 7cee4f6ec..3847ff174 100644
+--- a/app/api/montree/dark-phonics-live/credits/route.ts
++++ b/app/api/montree/dark-phonics-live/credits/route.ts
+@@ -18,23 +18,37 @@
+ import { NextResponse, type NextRequest } from 'next/server';
+ 
+ import { getSupabase } from '@/lib/supabase-client';
+-import { resolveAppointmentsParent } from '@/lib/montree/appointments/parent-access';
+ import { isFeatureEnabled } from '@/lib/montree/features/server';
+ import { getCreditBalance, listLedgerForChild } from '@/lib/montree/credits/ledger';
++import {
++  resolveDplParent,
++  withDplCors,
++  dplOptionsHandler,
++} from '@/lib/montree/dark-phonics-live/app-auth';
+ 
+ export const dynamic = 'force-dynamic';
+ 
++/** Standalone-app preflight. No-op for the website (which never preflights this). */
++export const OPTIONS = dplOptionsHandler;
++
+ const FEATURE_KEY = 'dark_phonics_live';
+ const LEDGER_LIMIT = 50;
+ 
+ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+ 
+ export async function GET(request: NextRequest) {
++  // withDplCors is a no-op unless the caller is an allow-listed app origin, so
++  // every browser response is byte-identical to before.
++  return withDplCors(await handleGET(request), request);
++}
++
++async function handleGET(request: NextRequest) {
+   try {
+     const supabase = getSupabase();
+ 
+     // --- 1. parent auth ------------------------------------------------------
+-    const parentResult = await resolveAppointmentsParent(supabase);
++    // Bearer (app) or cookie (website) — same return shape either way.
++    const parentResult = await resolveDplParent(request, supabase);
+     if (parentResult instanceof NextResponse) return parentResult;
+     const parent = parentResult;
+ 

@@ -513,6 +513,13 @@ export async function middleware(req: NextRequest) {
     '/terms',       // Terms of service — public
     '/support',     // Support page — public (required by App Store; montree.xyz/support)
     '/welcome',     // Outreach landing pages (/welcome/[code]) — cold-email links, must load anonymously
+    // Dark Phonics Live standalone-app distribution. '/dark-phonics-app' is the
+    // poster/QR/WeChat landing page and '/downloads' serves the APK itself —
+    // both are opened cold by a parent with no session, and '.apk' is not in the
+    // static-file extension exclusion above, so without these entries the legacy
+    // Supabase gate below 302s the page AND the download to '/'.
+    '/dark-phonics-app',
+    '/downloads',
     // Potato Snaps (www.teacherpotato.xyz) — own auth system entirely: 6-char
     // class/child codes, own httpOnly cookies, every /api/potato/* route gates
     // itself. Without this entry the legacy Supabase-role gate at the bottom of
