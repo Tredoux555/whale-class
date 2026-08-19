@@ -52,6 +52,7 @@ import {
   PAGE_H_MM as PORTRAIT_H_MM,
   CARD_GAP_MM,
   CARD_W_MM,
+  WIDE_CARD_W_MM,
   computeNamesLayout,
   namesSheetCount,
 } from '@/lib/montree/classroom-jobs/poster-layout';
@@ -326,11 +327,27 @@ function posterCss(mode: PosterMode, slotSize: SlotSize): string {
    as a CSS custom property — never string-built into this template from
    anything a teacher typed. Screen preview and print share this same rule
    set, so what a teacher approves on screen is the size that prints. See
-   lib/montree/classroom-jobs/poster-layout.ts for the fraction table and why
-   each number is what it is (the founder's Aug 2026 hierarchy brief: job
-   picture biggest, child photo second, child name readable from 2-3m, job
-   label modest). */
-.jp-grid {
+   lib/montree/classroom-jobs/poster-layout.ts for the fraction table.
+
+   🚨 THE LAYOUT ITSELF SWITCHES ON JOB COUNT, NOT JUST THE NUMBERS. A small
+   chart (n <= 3, computeNamesLayout's "wide" regime) gets ONE full-width
+   column with three horizontal zones — picture | label+name | photo circle,
+   each its own zone so none of them fight another for width. A larger chart
+   (n >= 4, the "grid" regime) gets the familiar two columns, picture left, a
+   right column that STACKS label / photo / name instead of racing them
+   sideways. The two regimes never mount at once — see the "wide"/"grid"
+   suffix every class below carries, and JobsPosterSheet's own choice of
+   which JSX shape to render for jobs.length via namesLayout.columns. A
+   previous round of this stylesheet sized only off height and let a 90.5mm
+   card's picture and photo circle run each other out of width; every class
+   pair below carries a width budget checked in poster-layout.ts's own
+   throwaway harness specifically to keep that from happening again. */
+.jp-grid--wide {
+  display: grid;
+  grid-template-columns: ${WIDE_CARD_W_MM}mm;
+  gap: ${CARD_GAP_MM}mm;
+}
+.jp-grid--grid {
   display: grid;
   grid-template-columns: repeat(2, ${CARD_W_MM}mm);
   gap: ${CARD_GAP_MM}mm;
@@ -340,52 +357,80 @@ function posterCss(mode: PosterMode, slotSize: SlotSize): string {
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  gap: calc(var(--jp-card-h) * 0.06);
-  padding: calc(var(--jp-card-h) * 0.08);
   border: 0.5mm solid var(--jp-border);
   border-radius: 3mm;
   background: var(--jp-wash);
   break-inside: avoid;
+  overflow: hidden;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
+.jp-card--wide {
+  padding: calc(var(--jp-card-h) * 0.06);
+  gap: calc(var(--jp-card-h) * 0.04);
+}
+.jp-card--grid {
+  padding: calc(var(--jp-card-h) * 0.07);
+  gap: calc(var(--jp-card-h) * 0.05);
+}
 .jp-icon { flex: 0 0 auto; line-height: 1; text-align: center; }
 /* The job picture: the loudest element on the card, a square that fills the
-   card's own inner height between its top/bottom padding (padding is 0.08H
-   on every side, so the square left over is exactly H − 2×0.08H = 0.84H).
-   The emoji fallback centers in this same square on a soft wash background;
-   an uploaded picture fills it edge to edge instead (object-fit: cover, see
-   .jp-icon-img below, which wins on specificity over the plain 2mm radius
-   slots mode also uses this class for). */
-.jp-card .jp-icon {
+   card's own inner height between its top/bottom padding — its side is
+   always exactly H minus twice that regime's own padding, so it is never
+   sized off a number that could disagree with the padding around it. Every
+   dimension here is explicit width AND height (never left to flex to guess),
+   with flex-shrink: 0 so no image can ever be squeezed by a neighbour
+   fighting it for space — the rule this file's whole rewrite exists to
+   enforce. The emoji fallback centers in this same square on a soft wash
+   background; an uploaded picture fills it edge to edge instead (object-fit:
+   cover, see .jp-icon-img below, which wins on specificity over the plain
+   2mm radius slots mode also uses this class for). */
+.jp-card .jp-icon.jp-icon--wide {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: calc(var(--jp-card-h) * 0.84);
-  height: calc(var(--jp-card-h) * 0.84);
-  border-radius: calc(var(--jp-card-h) * 0.84 * 0.12);
+  flex-shrink: 0;
+  width: calc((var(--jp-card-h) - var(--jp-card-h) * 0.12));
+  height: calc((var(--jp-card-h) - var(--jp-card-h) * 0.12));
+  aspect-ratio: 1;
+  border-radius: calc((var(--jp-card-h) - var(--jp-card-h) * 0.12) * 0.1);
   background: var(--jp-wash);
-  font-size: calc(var(--jp-card-h) * 0.84 * 0.62);
+  font-size: calc((var(--jp-card-h) - var(--jp-card-h) * 0.12) * 0.62);
+}
+.jp-card .jp-icon.jp-icon--grid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: calc((var(--jp-card-h) - var(--jp-card-h) * 0.14));
+  height: calc((var(--jp-card-h) - var(--jp-card-h) * 0.14));
+  aspect-ratio: 1;
+  border-radius: calc((var(--jp-card-h) - var(--jp-card-h) * 0.14) * 0.1);
+  background: var(--jp-wash);
+  font-size: calc((var(--jp-card-h) - var(--jp-card-h) * 0.14) * 0.62);
 }
 /* A teacher-uploaded picture in place of the emoji. Always an <img>, never a
    CSS background — see the header note on why. Sized to the same footprint
-   the emoji occupies at each mode's scale, with print-color-adjust so the
+   the emoji occupies at each regime's scale, with print-color-adjust so the
    picture survives "background graphics off" the same way the emblem does. */
 .jp-icon-img {
   display: block;
   object-fit: cover;
+  aspect-ratio: 1;
   border-radius: 2mm;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
-.jp-card .jp-icon.jp-icon-img {
-  border-radius: calc(var(--jp-card-h) * 0.84 * 0.12);
+.jp-card .jp-icon.jp-icon-img.jp-icon--wide {
+  border-radius: calc((var(--jp-card-h) - var(--jp-card-h) * 0.12) * 0.1);
 }
-.jp-cardtext { flex: 1 1 auto; min-width: 0; }
+.jp-card .jp-icon.jp-icon-img.jp-icon--grid {
+  border-radius: calc((var(--jp-card-h) - var(--jp-card-h) * 0.14) * 0.1);
+}
 /* The job label — mostly for the adults, so it stays modest even as the
-   picture and the name above/below it get much larger. */
+   picture and the name near it get much larger. Never wraps: a label that
+   ran to a second line would push the name below it clean out of the card. */
 .jp-job {
-  font-size: max(4.2mm, calc(var(--jp-card-h) * 0.13));
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -394,33 +439,59 @@ function posterCss(mode: PosterMode, slotSize: SlotSize): string {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* The child's name — the second-loudest element after the two pictures,
-   sized to read from 2-3m across a classroom. */
+.jp-job--wide { font-size: min(10mm, calc(var(--jp-card-h) * 0.11)); }
+.jp-job--grid { font-size: max(4.2mm, calc(var(--jp-card-h) * 0.11)); }
+/* The child's name — the loudest text on the card, sized to read from 2-3m
+   across a classroom. */
 .jp-child {
-  margin-top: 0.6mm;
-  font-size: max(6mm, calc(var(--jp-card-h) * 0.20));
   font-weight: 700;
-  line-height: 1.3;
   color: var(--jp-ink);
+}
+.jp-child--wide {
+  margin-top: 0.6mm;
+  font-size: min(20mm, calc(var(--jp-card-h) * 0.22));
+  line-height: 1.15;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* The assigned child's roster photo, printed beside their name — only when
-   the poster's "Show child photos" toggle is on and the roster actually has
-   a photo for that child. Always an <img>, never a CSS background, same
-   reasoning as .jp-icon-img. */
-.jp-childrow {
-  display: flex;
-  align-items: center;
-  gap: 2.5mm;
-  min-width: 0;
+.jp-child--grid {
+  margin-top: 0.4mm;
+  font-size: max(6mm, calc(var(--jp-card-h) * 0.16));
+  line-height: 1.15;
+  /* May wrap to two lines (never more) rather than clip a longer name —
+     the right column has the height to spare; see the stack-fits assertion
+     in poster-layout.ts's harness. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
-.jp-childrow .jp-child { margin-top: 0; }
-.jp-childphoto {
+/* ── the wide (n <= 3) regime's three zones ──────────────────────────────
+   icon | .jp-widemid (flexes, label above name) | .jp-childphoto--wide (its
+   own zone, never sharing width with the text — the exact fix for the crush
+   a fixed-width column caused here before). */
+.jp-widemid {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: calc(var(--jp-card-h) * 0.02);
+}
+/* Photos-off: no photo zone renders at all, so .jp-widemid simply takes the
+   width back — the name is centered in that reclaimed space per the design
+   brief, while an unassigned job (photos still on) keeps its normal
+   left-aligned ruled line, since only the room-wide toggle centers text. */
+.jp-card--wide.jp-nophotos .jp-child--wide,
+.jp-card--wide.jp-nophotos .jp-blank--wide {
+  text-align: center;
+}
+.jp-childphoto--wide {
   flex: 0 0 auto;
-  width: calc(var(--jp-card-h) * 0.42);
-  height: calc(var(--jp-card-h) * 0.42);
+  aspect-ratio: 1;
+  width: min(45mm, calc(var(--jp-card-h) * 0.5));
+  height: min(45mm, calc(var(--jp-card-h) * 0.5));
   border-radius: 50%;
   object-fit: cover;
   -webkit-print-color-adjust: exact;
@@ -428,10 +499,37 @@ function posterCss(mode: PosterMode, slotSize: SlotSize): string {
 }
 /* An unassigned job prints as a ruled line rather than as a gap — the chart
    still works on the wall while the teacher decides, and a marker finishes it. */
-.jp-blank {
+.jp-blank--wide {
   display: block;
-  height: max(6mm, calc(var(--jp-card-h) * 0.20));
-  margin-top: calc(var(--jp-card-h) * 0.03);
+  height: min(20mm, calc(var(--jp-card-h) * 0.22));
+  border-bottom: 0.4mm solid var(--jp-border);
+}
+/* ── the grid (n >= 4) regime's right column ─────────────────────────────
+   icon | .jp-rightcol, which STACKS label / photo / name top-to-bottom
+   instead of putting the photo circle beside the name where it used to get
+   crushed for width. */
+.jp-rightcol {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: calc(var(--jp-card-h) * 0.03);
+}
+.jp-childphoto--grid {
+  flex-shrink: 0;
+  aspect-ratio: 1;
+  width: calc(var(--jp-card-h) * 0.34);
+  height: calc(var(--jp-card-h) * 0.34);
+  border-radius: 50%;
+  object-fit: cover;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.jp-blank--grid {
+  display: block;
+  height: max(6mm, calc(var(--jp-card-h) * 0.16));
   border-bottom: 0.4mm solid var(--jp-border);
 }
 
@@ -1203,6 +1301,7 @@ export default function ClassroomJobsTool({
       title={effectiveTitle}
       roomName={classroomName}
       vars={posterVars}
+      columns={namesLayout.columns}
     />
   );
 
@@ -2164,6 +2263,7 @@ function JobsPosterSheet({
   roomName,
   vars,
   showChildPhotos,
+  columns,
 }: {
   jobs: ClassroomJob[];
   studentById: Map<string, Student>;
@@ -2177,6 +2277,11 @@ function JobsPosterSheet({
   /** Names mode only — slots mode already carries a photo on the printed
    *  strip itself, so this has no effect there. */
   showChildPhotos: boolean;
+  /** Names mode only — which of computeNamesLayout's two regimes this render
+   *  is in: 1 (full-width, three horizontal zones) for a small chart, 2 (the
+   *  familiar two-up grid, right column stacked) otherwise. Ignored in slots
+   *  mode. */
+  columns: 1 | 2;
 }) {
   return (
     <div className={`jp-poster ${quicksand.className}`} style={vars}>
@@ -2207,63 +2312,113 @@ function JobsPosterSheet({
 
       <div className="jp-body">
         {mode === 'names' ? (
-          <div className="jp-grid">
-            {jobs.map((job) => {
-              const child = job.childId ? studentById.get(job.childId) : undefined;
-              return (
-                <div className="jp-card" key={job.id}>
-                  {/* Always rendered, even when empty: the icon column is what
-                      keeps every job name on the same left edge across cards.
-                      An `<img>`, never a CSS background — see the header
-                      note on why. */}
-                  {job.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      className="jp-icon jp-icon-img"
-                      src={job.imageUrl}
-                      alt=""
-                      aria-hidden="true"
-                    />
-                  ) : (
-                    <span className="jp-icon">{job.icon}</span>
-                  )}
-                  <div className="jp-cardtext">
-                    <div className="jp-job" dir="auto">
-                      {job.name}
-                    </div>
-                    {child ? (
-                      showChildPhotos && child.photoUrl ? (
-                        // The roster photo, resolved live by childId — never
-                        // copied into the poster's own saved settings. An
-                        // `<img>`, never a CSS background, same as the job
-                        // icon above.
-                        <div className="jp-childrow">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            className="jp-childphoto"
-                            src={getProxyUrl(child.photoUrl)}
-                            alt=""
-                            aria-hidden="true"
-                          />
-                          <div className="jp-child" dir="auto">
-                            {firstName(child.name)}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="jp-child" dir="auto">
+          columns === 1 ? (
+            // The small-chart (n <= 3) regime: one full-width card per job,
+            // three horizontal zones so the picture, the label+name, and the
+            // photo circle each have their own width to spend rather than
+            // fighting each other for it.
+            <div className="jp-grid--wide">
+              {jobs.map((job) => {
+                const child = job.childId ? studentById.get(job.childId) : undefined;
+                return (
+                  <div
+                    className={`jp-card jp-card--wide${showChildPhotos ? '' : ' jp-nophotos'}`}
+                    key={job.id}
+                  >
+                    {/* Always rendered, even when empty: the icon column is
+                        what keeps every job name on the same left edge across
+                        cards. An `<img>`, never a CSS background — see the
+                        header note on why. */}
+                    {job.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        className="jp-icon jp-icon-img jp-icon--wide"
+                        src={job.imageUrl}
+                        alt=""
+                        aria-hidden="true"
+                      />
+                    ) : (
+                      <span className="jp-icon jp-icon--wide">{job.icon}</span>
+                    )}
+                    <div className="jp-widemid">
+                      <div className="jp-job jp-job--wide" dir="auto">
+                        {job.name}
+                      </div>
+                      {child ? (
+                        <div className="jp-child jp-child--wide" dir="auto">
                           {firstName(child.name)}
                         </div>
-                      )
-                    ) : (
-                      // An unassigned job prints as a line to write on rather
-                      // than as a hole in the chart.
-                      <span className="jp-blank" />
+                      ) : (
+                        // An unassigned job prints as a line to write on
+                        // rather than as a hole in the chart.
+                        <span className="jp-blank jp-blank--wide" />
+                      )}
+                    </div>
+                    {child && showChildPhotos && child.photoUrl && (
+                      // The roster photo, resolved live by childId — never
+                      // copied into the poster's own saved settings. Its own
+                      // zone, not squeezed beside the name. An `<img>`, never
+                      // a CSS background, same as the job icon above.
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        className="jp-childphoto--wide"
+                        src={getProxyUrl(child.photoUrl)}
+                        alt=""
+                        aria-hidden="true"
+                      />
                     )}
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            // The larger-chart (n >= 4) regime: the familiar two-up grid, but
+            // the right column now STACKS label / photo / name top-to-bottom
+            // instead of racing the photo circle against the name for width.
+            <div className="jp-grid--grid">
+              {jobs.map((job) => {
+                const child = job.childId ? studentById.get(job.childId) : undefined;
+                return (
+                  <div className="jp-card jp-card--grid" key={job.id}>
+                    {job.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        className="jp-icon jp-icon-img jp-icon--grid"
+                        src={job.imageUrl}
+                        alt=""
+                        aria-hidden="true"
+                      />
+                    ) : (
+                      <span className="jp-icon jp-icon--grid">{job.icon}</span>
+                    )}
+                    <div className="jp-rightcol">
+                      <div className="jp-job jp-job--grid" dir="auto">
+                        {job.name}
+                      </div>
+                      {child && showChildPhotos && child.photoUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          className="jp-childphoto--grid"
+                          src={getProxyUrl(child.photoUrl)}
+                          alt=""
+                          aria-hidden="true"
+                        />
+                      )}
+                      {child ? (
+                        <div className="jp-child jp-child--grid" dir="auto">
+                          {firstName(child.name)}
+                        </div>
+                      ) : (
+                        // An unassigned job prints as a line to write on
+                        // rather than as a hole in the chart.
+                        <span className="jp-blank jp-blank--grid" />
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )
         ) : (
           <div className="jp-slots">
             {jobs.map((job) => (

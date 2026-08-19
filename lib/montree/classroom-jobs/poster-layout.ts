@@ -4,51 +4,72 @@
 // I/O, no React, just the arithmetic a printed wall poster depends on.
 // ============================================================================
 //
-// Design brief (the founder's, Aug 2026): a kindergarten wall poster read by
-// non-reading children needs a visual hierarchy — JOB PICTURE biggest (how a
-// child who cannot read yet finds their job), CHILD PHOTO second, CHILD NAME
-// readable from 2-3m, JOB LABEL modest (mostly for the adults). Every size on
-// a printed card is expressed as a fraction of ONE number, the card's own
-// height (`cardH`) — see `ClassroomJobsTool.tsx`'s `posterCss()`, where each
-// of those fractions becomes a CSS `calc()` off a `--jp-card-h` custom
-// property. Keeping the fraction table in one place (this file) and the
-// actual pixels in one place (the `<style>` tag) is what keeps the hierarchy
-// from drifting out of proportion with itself as either changes.
+// Design brief (the founder's, Aug 2026, corrected): a kindergarten wall
+// poster read by non-reading children needs a visual hierarchy — JOB PICTURE
+// biggest, CHILD PHOTO second, CHILD NAME readable from 2-3m, JOB LABEL
+// modest (mostly for the adults). Every size on a printed card is expressed
+// as a fraction of ONE number, the card's own height (`cardH`) — see
+// `ClassroomJobsTool.tsx`'s `posterCss()`, where each fraction becomes a CSS
+// `calc()` off a `--jp-card-h` custom property.
 //
-// 🚨 `cardH` IS NOT A CONSTANT ANYMORE. Fixing every jobs chart at one card
-// height (the old 34mm, no matter the room) meant a 2-job room and a 20-job
-// room got the identical tiny card. `computeNamesLayout` derives the height
-// that actually fills the page for THIS room's active job count, so a small
-// chart gets big, warm cards and a large one still fits — falling back to
-// today's natural multi-sheet page-break only once cards would have to drop
-// below the 34mm floor to keep fitting one sheet.
+// ROUND 8 OF THIS FILE BUDGETED HEIGHT AND IGNORED WIDTH. At cardH=80 in a
+// 90.5mm-wide 2-column card, an 0.84H (67mm) square picture left ~10mm for
+// everything else — label clipped to one letter, photo crushed to a sliver,
+// name invisible. This round fixes that by making the LAYOUT ITSELF switch
+// on job count, not just the numbers inside one fixed layout:
+//
+//   n <= 3  -> ONE COLUMN, full-width (186mm) cards, three horizontal zones:
+//              job picture (left) | job label + child name (middle, flexes) |
+//              child photo circle (right, own zone -- never squeezed by text).
+//   n >= 4  -> TWO COLUMNS, 90.5mm cards, job picture (left) | a right column
+//              that STACKS label / photo / name top-to-bottom instead of
+//              racing them for width -- the 52mm height cap on this regime is
+//              exactly what keeps that stack always narrower than it is tall,
+//              so cardH can never again outrun what 90.5mm can hold sideways.
+//
+// Every element that used to be sized off height alone now also has its own
+// width budget asserted in this file's throwaway harness (see the mission
+// report) -- for each layout at its min and max cardH, the sum of the FIXED
+// -size zones (pictures, photo circles, padding, gaps) must fit inside the
+// card's width, leaving a non-negative remainder for the flexible text zone.
+// That check is what would have caught round 8.
 
-/** A4 portrait content box, in millimetres — the page minus its margins.
- *  Mirrors `PORTRAIT_MARGIN_MM`/`PORTRAIT_W_MM`/`PORTRAIT_H_MM` in
+/** A4 portrait content box, in millimetres -- the page minus its margins.
+ *  Mirrors PORTRAIT_MARGIN_MM/PORTRAIT_W_MM/PORTRAIT_H_MM in
  *  ClassroomJobsTool.tsx, which imports these three under those names so the
  *  two never have a chance to drift apart. */
 export const PAGE_MARGIN_MM = 12;
 export const PAGE_W_MM = 210 - PAGE_MARGIN_MM * 2; // 186
 export const PAGE_H_MM = 297 - PAGE_MARGIN_MM * 2; // 273
 
-/** Names mode is always 2 columns — see `computeNamesLayout`'s own note on
- *  why a 1-job chart still gets a column-width card rather than a full-width
- *  one. */
-const COLUMNS = 2;
 export const CARD_GAP_MM = 5;
-export const CARD_W_MM = (PAGE_W_MM - CARD_GAP_MM) / COLUMNS; // 90.5
 
-/** The floor this used to be fixed at, and the ceiling past which a card
- *  stops being "big" and starts being a poster of one job. */
-export const MIN_CARD_H_MM = 34;
-export const MAX_CARD_H_MM = 80;
+/** Two-column (n >= 4) regime's card width: the page split evenly with one
+ *  gap between the columns. */
+const GRID_COLUMNS = 2;
+export const CARD_W_MM = (PAGE_W_MM - CARD_GAP_MM) / GRID_COLUMNS; // 90.5
 
-// ── the masthead, derived rather than guessed ────────────────────────────
-// Every value below mirrors a rule `posterCss()` actually sets on `.jp-head`
-// and its children in ClassroomJobsTool.tsx — see that function's own CSS.
-// Keep the two in sync if either changes; a masthead that grows without this
-// shrinking with it is the exact "guessed constant" bug this file exists to
-// stop doing (the old flat `HEAD_H_MM = 32` estimate this replaces).
+/** One-column (n <= 3) regime's card width: the full content width -- a small
+ *  chart's cards read as wall-poster-sized rows, not a stretched single
+ *  column of the old 90.5mm card. */
+export const WIDE_CARD_W_MM = PAGE_W_MM; // 186
+
+/** Two-column regime's height clamp. The 52mm cap (down from round 8's 80mm)
+ *  is the width fix: at 52mm tall the right column's label+photo+name stack
+ *  always has more height to spend than the 90.5mm card has width to run out
+ *  of, so a two-column card can never again re-create the round 8 crush. */
+export const GRID_MIN_H_MM = 34;
+export const GRID_MAX_H_MM = 52;
+
+/** One-column regime's height clamp -- full-width cards can afford to be
+ *  taller, since nothing beside the picture is fighting it for horizontal
+ *  room anymore. */
+export const WIDE_MIN_H_MM = 60;
+export const WIDE_MAX_H_MM = 90;
+
+// -- the masthead, derived rather than guessed (unchanged from round 8) ----
+// Every value below mirrors a rule posterCss() actually sets on .jp-head
+// and its children in ClassroomJobsTool.tsx -- see that function's own CSS.
 const EMBLEM_H_MM = 16;
 const HEAD_PADDING_BOTTOM_MM = 3;
 const HEAD_MARGIN_BOTTOM_MM = 6;
@@ -57,93 +78,174 @@ const TITLE_FONT_PT = 26;
 const TITLE_LINE_HEIGHT = 1.1;
 const ROOM_FONT_PT = 9.5;
 const ROOM_MARGIN_TOP_MM = 1.6;
-/** Not set explicitly by `.jp-room`, so this is the browser default for a
- *  short single line of that font stack — close enough that the emblem's
- *  own fixed 16mm height is what actually sets the masthead's content
- *  height either way (see `mastheadHeightMM`'s `Math.max`). */
 const ROOM_LINE_HEIGHT = 1.2;
 const PT_TO_MM = 25.4 / 72;
 
 /**
  * The masthead's own footprint in millimetres: its text stack (or the
- * emblem, whichever is taller — they sit side by side, `align-items:
- * center`), plus the padding/border/margin `.jp-head` adds beneath it. A
- * measurement, not a round number — the "derive, don't guess" the design
- * brief asked for.
- *
- * `hasRoom` always meaning "assume the room-name line is present" would
- * slightly undersize the available space for a chart with no room name set;
- * this takes the real value instead so a chart's cards do not visibly resize
- * the moment a teacher types (or clears) the classroom name box.
+ * emblem, whichever is taller), plus the padding/border/margin .jp-head
+ * adds beneath it. A measurement, not a round number.
  */
 export function mastheadHeightMM(hasRoom: boolean): number {
   const titleH = TITLE_FONT_PT * TITLE_LINE_HEIGHT * PT_TO_MM;
   const roomH = hasRoom ? ROOM_MARGIN_TOP_MM + ROOM_FONT_PT * ROOM_LINE_HEIGHT * PT_TO_MM : 0;
   const textStackH = titleH + roomH;
-  // The emblem is 16mm regardless of whether one happens to be uploaded —
-  // sizing as if it might be present avoids cards that would overflow under
-  // the masthead the moment a school adds a logo.
   const contentH = Math.max(EMBLEM_H_MM, textStackH);
   return contentH + HEAD_PADDING_BOTTOM_MM + HEAD_BORDER_MM + HEAD_MARGIN_BOTTOM_MM;
 }
 
+function clamp(min: number, value: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function normalizeCount(activeCount: number): number {
+  return Number.isFinite(activeCount) && activeCount > 0 ? Math.floor(activeCount) : 0;
+}
+
 export interface NamesLayout {
-  /** Always 2 — the grid never reflows to a single wide column, including
-   *  when there is only one active job (it gets a column-width card, not a
-   *  stretched full-width one — `grid-template-columns` in `posterCss()`
-   *  sets a fixed `${CARD_W_MM}mm` per column, never `1fr`). */
-  columns: number;
+  /** 1 for a small chart (n <= 3, full-width cards), 2 otherwise. */
+  columns: 1 | 2;
+  /** The width every card renders at, in millimetres -- 186 for columns=1,
+   *  90.5 for columns=2. */
+  cardW: number;
+  /** The height every card renders at, in millimetres -- clamped to this
+   *  regime's own [min, max]. */
+  cardH: number;
   /** ceil(activeCount / columns), floored at 1 so an empty chart still has a
    *  legal (if unused) layout. */
   rows: number;
-  /** The height every card renders at, in millimetres — clamped to
-   *  [MIN_CARD_H_MM, MAX_CARD_H_MM]. */
-  cardH: number;
-  /** True once `cardH` has hit the 34mm floor — from here the chart
-   *  page-breaks onto further sheets exactly like it always has, rather than
-   *  shrinking cards past the floor to force everything onto one page. */
-  overflowing: boolean;
+  /** How many A4 sheets this chart prints on. Always 1 for the one-column
+   *  regime (n <= 3 never has enough rows to force the height clamp) -- see
+   *  this file's harness for why that is provably true, not just observed. */
+  sheets: number;
 }
 
 /**
  * The one function that turns "how many active jobs" into "how big is each
- * card". Never throws and never returns a non-finite number — a count of 0
- * (or a negative/NaN caller error) still produces a legal layout rather than
- * a divide-by-zero NaN reaching a CSS custom property a browser then has to
- * silently ignore.
+ * card, and how many of them fit in a row." Never throws and never returns a
+ * non-finite number.
  */
 export function computeNamesLayout(activeCount: number, hasRoom: boolean): NamesLayout {
-  const n = Number.isFinite(activeCount) && activeCount > 0 ? Math.floor(activeCount) : 0;
-  const rows = Math.max(1, Math.ceil(n / COLUMNS));
+  const n = normalizeCount(activeCount);
   const available = PAGE_H_MM - mastheadHeightMM(hasRoom);
+
+  if (n > 0 && n <= 3) {
+    const rows = n; // one column => one row per active job
+    const rawCardH = Math.floor(available / rows) - CARD_GAP_MM;
+    const cardH = clamp(WIDE_MIN_H_MM, rawCardH, WIDE_MAX_H_MM);
+    return { columns: 1, cardW: WIDE_CARD_W_MM, cardH, rows, sheets: 1 };
+  }
+
+  const rows = Math.max(1, Math.ceil(n / GRID_COLUMNS));
   const rawCardH = Math.floor(available / rows) - CARD_GAP_MM;
-  const cardH = Math.min(MAX_CARD_H_MM, Math.max(MIN_CARD_H_MM, rawCardH));
-  return {
-    columns: COLUMNS,
-    rows,
-    cardH,
-    overflowing: rawCardH < MIN_CARD_H_MM,
-  };
+  const cardH = clamp(GRID_MIN_H_MM, rawCardH, GRID_MAX_H_MM);
+  const overflowing = rawCardH < GRID_MIN_H_MM;
+  const sheets = overflowing ? gridSheets(rows, hasRoom) : 1;
+  return { columns: 2, cardW: CARD_W_MM, cardH, rows, sheets };
+}
+
+/** Paginates the two-column regime at its 34mm floor, exactly the way the
+ *  fixed-height layout this replaces always did once a chart stopped fitting
+ *  one sheet. */
+function gridSheets(rows: number, hasRoom: boolean): number {
+  const rowH = GRID_MIN_H_MM + CARD_GAP_MM;
+  const first = Math.max(1, Math.floor((PAGE_H_MM - mastheadHeightMM(hasRoom)) / rowH));
+  const rest = Math.max(1, Math.floor(PAGE_H_MM / rowH));
+  return rows <= first ? 1 : 1 + Math.ceil((rows - first) / rest);
 }
 
 /**
- * How many A4 sheets the names-mode chart comes out on, under the new
- * adaptive card height. An honest number shown on screen, not a layout
- * constraint (same posture as the old `sheetEstimate` it replaces the names
- * branch of): a chart is sized to fit one sheet whenever it can, and only
- * once `computeNamesLayout` reports `overflowing` does this fall back to
- * packing rows at the 34mm floor and paginating, exactly the way the old
- * fixed-height estimate always worked.
+ * How many A4 sheets the names-mode chart comes out on. Thin wrapper kept so
+ * ClassroomJobsTool.tsx's sheetEstimate doesn't need to know which regime a
+ * job count falls into.
  */
 export function namesSheetCount(activeCount: number, hasRoom: boolean): number {
-  const n = Number.isFinite(activeCount) && activeCount > 0 ? Math.floor(activeCount) : 0;
-  if (n === 0) return 1;
-
-  const layout = computeNamesLayout(n, hasRoom);
-  if (!layout.overflowing) return 1;
-
-  const rowH = MIN_CARD_H_MM + CARD_GAP_MM;
-  const first = Math.max(1, Math.floor((PAGE_H_MM - mastheadHeightMM(hasRoom)) / rowH));
-  const rest = Math.max(1, Math.floor(PAGE_H_MM / rowH));
-  return layout.rows <= first ? 1 : 1 + Math.ceil((layout.rows - first) / rest);
+  if (normalizeCount(activeCount) === 0) return 1;
+  return computeNamesLayout(activeCount, hasRoom).sheets;
 }
+
+// -- per-element size tables -------------------------------------------------
+// One source of truth for every fraction posterCss() turns into a
+// calc(var(--jp-card-h) * ...) rule, so the harness can assert the same
+// numbers the browser will actually render -- including the width budgets
+// round 8 never checked.
+
+const WIDE_PAD_FRAC = 0.06;
+const WIDE_ZONE_GAP_FRAC = 0.04; // between icon | mid | photo (two gaps)
+const WIDE_PICTURE_RADIUS_FRAC = 0.1; // of the picture's own side
+const WIDE_ICON_FONT_FRAC = 0.62; // of the picture's own side
+const WIDE_LABEL_FRAC = 0.11;
+const WIDE_LABEL_CAP_MM = 10;
+const WIDE_NAME_FRAC = 0.22;
+const WIDE_NAME_CAP_MM = 20;
+const WIDE_PHOTO_FRAC = 0.5;
+const WIDE_PHOTO_CAP_MM = 45;
+
+export interface WideCardSizes {
+  pad: number;
+  zoneGap: number;
+  pictureSide: number;
+  pictureRadius: number;
+  labelFontMM: number;
+  nameFontMM: number;
+  photoDiameter: number;
+}
+
+/** Every size on a one-column (n <= 3) card, at a given cardH. */
+export function wideCardSizes(cardH: number): WideCardSizes {
+  const pad = cardH * WIDE_PAD_FRAC;
+  const pictureSide = cardH - 2 * pad;
+  return {
+    pad,
+    zoneGap: cardH * WIDE_ZONE_GAP_FRAC,
+    pictureSide,
+    pictureRadius: pictureSide * WIDE_PICTURE_RADIUS_FRAC,
+    labelFontMM: Math.min(WIDE_LABEL_CAP_MM, cardH * WIDE_LABEL_FRAC),
+    nameFontMM: Math.min(WIDE_NAME_CAP_MM, cardH * WIDE_NAME_FRAC),
+    photoDiameter: Math.min(WIDE_PHOTO_CAP_MM, cardH * WIDE_PHOTO_FRAC),
+  };
+}
+
+const GRID_PAD_FRAC = 0.07;
+const GRID_ICON_GAP_FRAC = 0.05; // between icon and the right column
+const GRID_STACK_GAP_FRAC = 0.03; // between label/photo/name (two gaps)
+const GRID_PICTURE_RADIUS_FRAC = 0.1;
+const GRID_ICON_FONT_FRAC = 0.62;
+const GRID_LABEL_FRAC = 0.11;
+const GRID_LABEL_FLOOR_MM = 4.2;
+const GRID_PHOTO_FRAC = 0.34;
+const GRID_NAME_FRAC = 0.16;
+const GRID_NAME_FLOOR_MM = 6;
+
+export interface GridCardSizes {
+  pad: number;
+  iconGap: number;
+  stackGap: number;
+  pictureSide: number;
+  pictureRadius: number;
+  labelFontMM: number;
+  photoDiameter: number;
+  nameFontMM: number;
+}
+
+/** Every size on a two-column (n >= 4) card, at a given cardH. */
+export function gridCardSizes(cardH: number): GridCardSizes {
+  const pad = cardH * GRID_PAD_FRAC;
+  const pictureSide = cardH - 2 * pad;
+  return {
+    pad,
+    iconGap: cardH * GRID_ICON_GAP_FRAC,
+    stackGap: cardH * GRID_STACK_GAP_FRAC,
+    pictureSide,
+    pictureRadius: pictureSide * GRID_PICTURE_RADIUS_FRAC,
+    labelFontMM: Math.max(GRID_LABEL_FLOOR_MM, cardH * GRID_LABEL_FRAC),
+    photoDiameter: cardH * GRID_PHOTO_FRAC,
+    nameFontMM: Math.max(GRID_NAME_FLOOR_MM, cardH * GRID_NAME_FRAC),
+  };
+}
+
+// Icon font-size fractions exported so posterCss()'s emoji-fallback rule can
+// share the exact ratio the harness checks, rather than a second guess
+// living only in the stylesheet.
+export const WIDE_ICON_FONT_OF_SIDE = WIDE_ICON_FONT_FRAC;
+export const GRID_ICON_FONT_OF_SIDE = GRID_ICON_FONT_FRAC;
