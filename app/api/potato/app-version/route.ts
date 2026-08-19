@@ -41,10 +41,10 @@ export const OPTIONS = potatoOptionsHandler;
  *  `notes` is shown verbatim in the update prompt; '' hides the notes line.
  * ========================================================================== */
 const ANDROID_RELEASE = {
-  version: '1.0.1',
-  versionCode: 2,
+  version: '1.0.2',
+  versionCode: 3,
   url: 'https://montree.xyz/downloads/potato-snaps.apk',
-  notes: 'Scenes: label what the class was doing, right from the camera.',
+  notes: 'Students: add, rename, photograph and retire the children in your class.',
 } as const;
 
 export async function GET(request: NextRequest) {

@@ -1,5 +1,9 @@
 // /api/potato/children — the roster.
-//   GET   → every active child in the teacher's class
+//   GET   → every active child in the teacher's class.
+//           ?all=1 includes retired ones (the Students admin screen), which is
+//           the ONLY way to offer "Restore" — a child hidden with
+//           isActive:false is otherwise invisible to every caller. Same
+//           convention, same query param, as /scenes?all=1.
 //   POST  { name }                              → add a child
 //   PATCH { id, name?, sortOrder?, isActive? }  → edit / retire a child
 //
@@ -43,12 +47,15 @@ async function handleGET(request: NextRequest) {
   const session = await resolvePotatoTeacher(request);
   if (!session) return NextResponse.json({ error: 'Not signed in' }, { status: 401 });
 
+  // Absent (the website) → active only, exactly as before.
+  const includeHidden = new URL(request.url).searchParams.get('all') === '1';
+
   try {
     const supabase = potatoDb();
     const klass = await loadClass(supabase, session.classId);
     if (!klass) return NextResponse.json({ error: 'Class not found' }, { status: 404 });
 
-    const children = await listChildren(supabase, session.classId);
+    const children = await listChildren(supabase, session.classId, includeHidden);
     return NextResponse.json({
       ok: true,
       class: { id: klass.id, name: klass.name },
@@ -58,6 +65,7 @@ async function handleGET(request: NextRequest) {
         facePath: child.photo_path,
         faceUrl: proxyUrl(child.photo_path),
         sortOrder: child.sort_order ?? 0,
+        isActive: child.is_active !== false,
       })),
     });
   } catch (error) {
@@ -109,7 +117,7 @@ async function handlePOST(request: NextRequest) {
         name,
         sort_order: ((last?.sort_order as number | null) ?? 0) + 1,
       })
-      .select('id, name, photo_path, sort_order')
+      .select('id, name, photo_path, sort_order, is_active')
       .maybeSingle();
     if (error) throw error;
     if (!child) throw new Error('Child row was not returned after insert');
@@ -122,6 +130,7 @@ async function handlePOST(request: NextRequest) {
         facePath: child.photo_path,
         faceUrl: proxyUrl(child.photo_path),
         sortOrder: child.sort_order ?? 0,
+        isActive: child.is_active !== false,
       },
     });
   } catch (error) {
