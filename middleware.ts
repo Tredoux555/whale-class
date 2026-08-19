@@ -526,6 +526,10 @@ export async function middleware(req: NextRequest) {
     // this file silently 302s every anonymous visitor to '/', which reads as
     // "the page doesn't exist". Same reason '/montree' is on this list.
     '/potato',
+    // …and the Potato Snaps standalone-app landing page (poster / QR / WeChat
+    // link, opened cold with no session). '/downloads' is already listed above
+    // for the APK itself, same as Dark Phonics Live.
+    '/potato-app',
     // CMS (Classroom Management System) — the "Harbor" brand surface at
     // /cms/**. Without an entry here the legacy Supabase-role gate at the
     // bottom of this file silently 302s every anonymous visitor to '/' — the

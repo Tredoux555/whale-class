@@ -25,7 +25,12 @@
 // branding. A parent's feed keeps working through the deploy window.
 
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyPotatoTeacher, verifyPotatoParent, UUID_RE } from '@/lib/potato/auth';
+import { verifyPotatoParent, UUID_RE } from '@/lib/potato/auth';
+import {
+  resolvePotatoTeacher,
+  withPotatoCors,
+  potatoOptionsHandler,
+} from '@/lib/potato/app-auth';
 import {
   potatoDb,
   loadClass,
@@ -38,6 +43,9 @@ import {
 import { weekLabel } from '@/lib/potato/week';
 
 export const dynamic = 'force-dynamic';
+
+/** Standalone-app preflight. A no-op for the website, which never preflights. */
+export const OPTIONS = potatoOptionsHandler;
 
 interface JobRow {
   id: string;
@@ -53,6 +61,12 @@ interface JobRow {
 }
 
 export async function GET(request: NextRequest) {
+  // withPotatoCors is a no-op unless the caller is an allow-listed app origin,
+  // so the website's response is byte-identical to before.
+  return withPotatoCors(await handleGET(request), request);
+}
+
+async function handleGET(request: NextRequest) {
   const supabase = potatoDb();
 
   let classId: string;
@@ -60,7 +74,11 @@ export async function GET(request: NextRequest) {
   let childName: string | null = null;
   let isParent = false;
 
-  const teacher = await verifyPotatoTeacher(request);
+  // 🚨 Teacher: cookie OR app bearer. Parent: COOKIE ONLY, deliberately —
+  // v1 of the standalone app is the teacher capture app, so the publish gate
+  // below (a parent sees only films with sent_at set) keeps running on exactly
+  // the code path it was audited on, reached only by a website cookie.
+  const teacher = await resolvePotatoTeacher(request);
   if (teacher) {
     classId = teacher.classId;
     const requested = new URL(request.url).searchParams.get('childId');

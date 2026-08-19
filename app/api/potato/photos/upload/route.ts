@@ -31,7 +31,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'node:crypto';
-import { verifyPotatoTeacher, UUID_RE } from '@/lib/potato/auth';
+import { UUID_RE } from '@/lib/potato/auth';
+import {
+  resolvePotatoTeacher,
+  withPotatoCors,
+  potatoOptionsHandler,
+} from '@/lib/potato/app-auth';
 import {
   potatoDb,
   loadClass,
@@ -45,6 +50,9 @@ import { resolveCapturedAt } from '@/lib/potato/captured-at';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
+
+/** Standalone-app preflight. A no-op for the website, which never preflights. */
+export const OPTIONS = potatoOptionsHandler;
 
 const MAX_BYTES = 10 * 1024 * 1024;
 
@@ -61,7 +69,13 @@ const EXT_BY_MIME: Record<string, string> = {
 };
 
 export async function POST(request: NextRequest) {
-  const session = await verifyPotatoTeacher(request);
+  // withPotatoCors is a no-op unless the caller is an allow-listed app origin,
+  // so the website's response is byte-identical to before.
+  return withPotatoCors(await handlePOST(request), request);
+}
+
+async function handlePOST(request: NextRequest) {
+  const session = await resolvePotatoTeacher(request);
   if (!session) return NextResponse.json({ error: 'Not signed in' }, { status: 401 });
 
   let form: FormData;

@@ -10,16 +10,33 @@
 //            who spots a miss while flipping through the week can fix it there.
 
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyPotatoTeacher, UUID_RE } from '@/lib/potato/auth';
+import { UUID_RE } from '@/lib/potato/auth';
+import {
+  resolvePotatoTeacher,
+  withPotatoCors,
+  potatoOptionsHandler,
+} from '@/lib/potato/app-auth';
 import { potatoDb, loadClass, isSetupPending, POTATO_BUCKET } from '@/lib/potato/db';
 
 export const dynamic = 'force-dynamic';
 
+/** Standalone-app preflight. A no-op for the website, which never preflights. */
+export const OPTIONS = potatoOptionsHandler;
+
 export async function DELETE(
+  request: NextRequest,
+  ctx: { params: Promise<{ id: string }> },
+) {
+  // withPotatoCors is a no-op unless the caller is an allow-listed app origin,
+  // so the website's response is byte-identical to before.
+  return withPotatoCors(await handleDELETE(request, ctx), request);
+}
+
+async function handleDELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await verifyPotatoTeacher(request);
+  const session = await resolvePotatoTeacher(request);
   if (!session) return NextResponse.json({ error: 'Not signed in' }, { status: 401 });
 
   const { id } = await params;
@@ -75,9 +92,16 @@ export async function DELETE(
 
 export async function PATCH(
   request: NextRequest,
+  ctx: { params: Promise<{ id: string }> },
+) {
+  return withPotatoCors(await handlePATCH(request, ctx), request);
+}
+
+async function handlePATCH(
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await verifyPotatoTeacher(request);
+  const session = await resolvePotatoTeacher(request);
   if (!session) return NextResponse.json({ error: 'Not signed in' }, { status: 401 });
 
   const { id } = await params;

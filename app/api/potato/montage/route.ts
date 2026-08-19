@@ -16,7 +16,12 @@
 // Every row in tp_montage_jobs is one deliberate tap. This table IS the ledger.
 
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyPotatoTeacher, UUID_RE } from '@/lib/potato/auth';
+import { UUID_RE } from '@/lib/potato/auth';
+import {
+  resolvePotatoTeacher,
+  withPotatoCors,
+  potatoOptionsHandler,
+} from '@/lib/potato/app-auth';
 import {
   potatoDb,
   loadClass,
@@ -30,8 +35,17 @@ import { resolveWeekStart } from '@/lib/potato/week';
 
 export const dynamic = 'force-dynamic';
 
+/** Standalone-app preflight. A no-op for the website, which never preflights. */
+export const OPTIONS = potatoOptionsHandler;
+
 export async function POST(request: NextRequest) {
-  const session = await verifyPotatoTeacher(request);
+  // withPotatoCors is a no-op unless the caller is an allow-listed app origin,
+  // so the website's response is byte-identical to before.
+  return withPotatoCors(await handlePOST(request), request);
+}
+
+async function handlePOST(request: NextRequest) {
+  const session = await resolvePotatoTeacher(request);
   if (!session) return NextResponse.json({ error: 'Not signed in' }, { status: 401 });
 
   let body: unknown;

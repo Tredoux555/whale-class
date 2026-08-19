@@ -54,6 +54,13 @@ export function normalizeStaffName(raw: unknown): StaffName | null {
 const TTL_DAYS = 3650;
 const TTL_SECONDS = TTL_DAYS * 24 * 60 * 60;
 
+/**
+ * The same TTL, exported so the standalone-app login can report an accurate
+ * `expiresAt` instead of inventing one. Read-only — the number above is still
+ * the single source of truth for what actually gets signed.
+ */
+export const POTATO_TOKEN_TTL_DAYS = TTL_DAYS;
+
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function secretKey(): Uint8Array {
@@ -96,11 +103,18 @@ export async function createTeacherToken(classId: string, staffName?: StaffName)
     .sign(secretKey());
 }
 
-export async function verifyPotatoTeacher(
-  request: NextRequest,
+/**
+ * Verify a RAW teacher token — the envelope-agnostic half of the check below.
+ *
+ * The cookie reader and the standalone app's `Authorization: Bearer` reader
+ * (lib/potato/app-auth.ts) both funnel through here, so there is exactly ONE
+ * implementation of "is this a valid potato_teacher token": same secret, same
+ * `aud`, same UUID shape check, same live-roster re-validation. A bearer token
+ * is not a second credential type — it is the same JWT in a different envelope.
+ */
+export async function verifyPotatoTeacherToken(
+  token: string,
 ): Promise<PotatoTeacherSession | null> {
-  const token = request.cookies.get(TEACHER_COOKIE)?.value;
-  if (!token) return null;
   try {
     const { payload } = await jwtVerify(token, secretKey(), { audience: TEACHER_AUD });
     const classId = payload.classId;
@@ -113,6 +127,14 @@ export async function verifyPotatoTeacher(
   } catch {
     return null;
   }
+}
+
+export async function verifyPotatoTeacher(
+  request: NextRequest,
+): Promise<PotatoTeacherSession | null> {
+  const token = request.cookies.get(TEACHER_COOKIE)?.value;
+  if (!token) return null;
+  return verifyPotatoTeacherToken(token);
 }
 
 export function setTeacherCookie(response: NextResponse, token: string): void {

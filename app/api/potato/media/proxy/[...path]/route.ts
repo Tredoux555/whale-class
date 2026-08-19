@@ -37,6 +37,19 @@
 //    every rendered film readable — via the same `caps.send` probe every
 //    other route uses, so this route never 500s during the deploy window.
 //
+// 5. 🚨 STANDALONE APP — THIS IS THE ONE ROUTE THAT TAKES `?token=`.
+//    A teacher may authenticate here with the cookie, an
+//    `Authorization: Bearer` header, OR a `?token=` query param carrying the
+//    same 'potato-teacher' JWT, because <img>/<video> elements cannot send
+//    headers and blob-fetching every film would cost memory and Range/seek.
+//    The query-param door is accepted NOWHERE else and for the TEACHER
+//    audience only. The log-leak tradeoff (a query string is more loggable
+//    than a header) and why it is acceptable here — private-cache headers are
+//    already set, so no shared cache or CDN ever keeps the URL, and the
+//    credential is the same class-scoped token the app already replays — is
+//    argued in full on resolvePotatoTeacherForMedia in lib/potato/app-auth.ts.
+//    HEAD and Range passthrough are unchanged.
+//
 // Path grammar this route recognises:
 //   class/<classId>/faces/<childId>.jpg
 //   class/<classId>/photos/<yyyy>/<mm>/<uuid>.<ext>
@@ -44,14 +57,24 @@
 //   class/<classId>/intake/<childId>/<face|pickup-N|vaccination|…>.<ext>
 
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyPotatoTeacher, verifyPotatoParent, UUID_RE } from '@/lib/potato/auth';
+import { verifyPotatoParent, UUID_RE } from '@/lib/potato/auth';
+import {
+  resolvePotatoTeacherForMedia,
+  withPotatoCors,
+  potatoCorsHeaders,
+  potatoOptionsHandler,
+} from '@/lib/potato/app-auth';
 import { potatoDb, loadClass, potatoCapabilities, isSetupPending, POTATO_BUCKET } from '@/lib/potato/db';
 
 export const dynamic = 'force-dynamic';
 // Long enough for a parent on a slow phone to finish a film.
 export const maxDuration = 300;
 
-const NOT_FOUND = () => NextResponse.json({ error: 'Not found' }, { status: 404 });
+/** Standalone-app preflight. A no-op for the website, which never preflights. */
+export const OPTIONS = potatoOptionsHandler;
+
+const NOT_FOUND = (request: NextRequest) =>
+  withPotatoCors(NextResponse.json({ error: 'Not found' }, { status: 404 }), request);
 
 async function isAuthorized(request: NextRequest, segments: string[]): Promise<boolean> {
   // class / <classId> / <kind> / …
@@ -78,7 +101,18 @@ async function isAuthorized(request: NextRequest, segments: string[]): Promise<b
     return false;
   }
 
-  const teacher = await verifyPotatoTeacher(request);
+  // 🚨 THE ONLY AUTH CHANGE ON THIS ROUTE. The teacher may prove herself with
+  // the cookie (website), an `Authorization: Bearer` header (app fetch), or —
+  // uniquely here — a `?token=` query param, because <img>/<video> cannot send
+  // headers. All three end in the SAME verifier, same secret, same
+  // 'potato-teacher' aud; see the long tradeoff note on
+  // resolvePotatoTeacherForMedia in lib/potato/app-auth.ts.
+  //
+  // 🚨 The PARENT branch below is untouched and stays cookie-only, so the
+  // send gate (isSentToParent) is reached by exactly the path it always was.
+  // A `?token=` bearing a parent token verifies as nothing here — the teacher
+  // verifier rejects a 'potato-parent' aud outright.
+  const teacher = await resolvePotatoTeacherForMedia(request);
   if (teacher) {
     // A teacher owns everything filed under her own class.
     return teacher.classId === classId;
@@ -159,15 +193,15 @@ async function handle(request: NextRequest, segments: string[], method: 'GET' | 
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseUrl || !serviceKey) {
     console.error('[potato/proxy] Supabase env not configured');
-    return NextResponse.json({ error: 'Not available' }, { status: 503 });
+    return withPotatoCors(NextResponse.json({ error: 'Not available' }, { status: 503 }), request);
   }
 
   const storagePath = segments.join('/');
   if (!storagePath || storagePath.includes('..') || storagePath.startsWith('/')) {
-    return NOT_FOUND();
+    return NOT_FOUND(request);
   }
 
-  if (!(await isAuthorized(request, segments))) return NOT_FOUND();
+  if (!(await isAuthorized(request, segments))) return NOT_FOUND(request);
 
   const upstream =
     `${supabaseUrl}/storage/v1/object/authenticated/${POTATO_BUCKET}/` +
@@ -192,21 +226,34 @@ async function handle(request: NextRequest, segments: string[], method: 'GET' | 
     upstreamResponse = await fetch(upstream, { method, headers, signal: controller.signal });
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
-      return NextResponse.json({ error: 'Upstream timeout' }, { status: 504 });
+      return withPotatoCors(
+        NextResponse.json({ error: 'Upstream timeout' }, { status: 504 }),
+        request,
+      );
     }
     console.error('[potato/proxy] upstream fetch failed:', error);
-    return NextResponse.json({ error: 'Media unavailable' }, { status: 502 });
+    return withPotatoCors(
+      NextResponse.json({ error: 'Media unavailable' }, { status: 502 }),
+      request,
+    );
   } finally {
     clearTimeout(headerTimeout);
   }
 
   if (!upstreamResponse.ok && upstreamResponse.status !== 206) {
     return upstreamResponse.status === 404
-      ? NOT_FOUND()
-      : NextResponse.json({ error: 'Media unavailable' }, { status: 502 });
+      ? NOT_FOUND(request)
+      : withPotatoCors(
+          NextResponse.json({ error: 'Media unavailable' }, { status: 502 }),
+          request,
+        );
   }
 
   const out: Record<string, string> = {
+    // Empty for every website caller (no allow-listed Origin), so the header
+    // set below is unchanged for them. The body streams through a bare
+    // Response, so CORS is merged in here rather than via withPotatoCors.
+    ...potatoCorsHeaders(request),
     'Content-Type': upstreamResponse.headers.get('content-type') || 'application/octet-stream',
     'Accept-Ranges': upstreamResponse.headers.get('accept-ranges') || 'bytes',
     // Private, browser-only. Never a shared cache — see note 2 at the top.
