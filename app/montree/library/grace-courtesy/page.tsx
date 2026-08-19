@@ -223,15 +223,28 @@ const RAW: RawLesson[] = [
     },
     song: true,
   },
+  {
+    n: 4,
+    title: 'Wash Your Hands',
+    why: 'So germs wash away.',
+    cast: ['Cat', 'Ant', 'Apple', 'Star', 'Snake', 'Potato'],
+    book: {
+      slug: 'wash-your-hands',
+      title: 'Wash Your Hands',
+      cover: '/grace-courtesy-books/covers/wash-your-hands.png',
+    },
+    // No song — format dropped songs starting Book 4 (2026-08-18 pivot,
+    // see HANDOFF §2e). `song` omitted, not `false`; same rendering either way.
+  },
 ];
 
 // ─── THE ROAD AHEAD (founder-approved spine, locked Aug 17 2026) ───────────
 // These are PLACEHOLDERS ONLY — approved future rules in production order.
 // They render as muted "coming next" slots, never as lesson cards. When a
-// rule ships (song + book made), move it OUT of UPCOMING into RAW as a real
-// entry. The one-at-a-time / nothing-fake rule for RAW still stands.
+// rule ships (book made — no song required from Book 4 onward, see HANDOFF
+// §2e), move it OUT of UPCOMING into RAW as a real entry. The one-at-a-time
+// / nothing-fake rule for RAW still stands.
 const UPCOMING: { n: number; title: string; why: string }[] = [
-  { n: 4, title: 'Wash Your Hands', why: 'So germs wash away.' },
   { n: 5, title: 'Roll the Mat', why: "So it's ready for a friend." },
   { n: 6, title: 'Push In Your Chair', why: 'So nobody bumps.' },
   { n: 7, title: 'May I Watch?', why: 'Eyes watch. Hands wait.' },
@@ -592,7 +605,7 @@ export default function GraceAndCourtesyPage() {
           </h1>
 
           <p className="text-white/40 mt-5 text-lg max-w-lg mx-auto leading-relaxed">
-            One rule, one why, one song. Built one book at a time &mdash;
+            One rule, one why, one book. Built one book at a time &mdash;
             Book {LESSONS.length} of an ongoing series.
           </p>
 
@@ -620,8 +633,8 @@ export default function GraceAndCourtesyPage() {
               The road ahead
             </div>
             <p className="text-white/20 text-xs mt-1.5 mb-4 text-center sm:text-left">
-              Planned and in order &mdash; each one goes up only when its song
-              and book are real.
+              Planned and in order &mdash; each one goes up only when its book
+              is real.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {UPCOMING.map((item) => (

@@ -14,9 +14,12 @@ Read this file before touching anything under `app/montree/library/grace-courtes
 
 A sibling series to Dark Phonics: same card-per-lesson shape, different subject.
 Dark Phonics teaches a SOUND; Grace & Courtesy teaches a RULE — one rule, a
-one-line WHY, the cast who learn it the hard way, a song, and a storybook.
-Public page, no auth, hardcoded English (same sanctioned i18n exception as
-Dark Phonics / SATPIN): `app/montree/library/grace-courtesy/page.tsx`.
+one-line WHY, the cast who learn it the hard way, and a storybook. Books 1-3
+also shipped with a song; **Book 4 onward drops the song from the format
+entirely** (founder pivot 2026-08-18, see §2e) — "these lessons are better
+taught without the song." Public page, no auth, hardcoded English (same
+sanctioned i18n exception as Dark Phonics / SATPIN):
+`app/montree/library/grace-courtesy/page.tsx`.
 
 Verified live as of 2026-08-17, commit `04c397cf7`.
 
@@ -26,30 +29,33 @@ Numbering starts at 1 and is shown as-is (unlike Dark Phonics' n−4 offset).
 Slugs are the `book.slug` value used everywhere (print PDFs, cover, Picture
 Bank tag suffix). "Song source" reflects what's ACTUALLY verified live in the
 `grace-courtesy` Supabase bucket today (checked via `HEAD` on the media proxy),
-not what the planning doc merely describes.
+not what the planning doc merely describes. **Songs are retired from the
+format starting Book 4 (§2e, 2026-08-18 pivot)** — treat the "Song source"
+column for rows 4-20 as historical/moot, not a to-do; only rows 1-3 describe
+real, shipped songs.
 
 | n | Title | Slug | Song source | State |
 |---|-------|------|-------------|-------|
 | 1 | Walking Feet | `walking-feet` | Live in bucket (`songs/lesson-01.mp3`, 200) | **SHIPPED** |
 | 2 | Indoor Voice | `indoor-voice` | Live in bucket (`songs/lesson-02.mp3`, 200) | **SHIPPED** |
 | 3 | Gentle Hands | `gentle-hands` | Live in bucket (`songs/lesson-03.mp3`, 200) | **SHIPPED** |
-| 4 | Wash Your Hands | `wash-your-hands` | Lyrics written (Jul-16 doc, "Day 5 — Wash, Wash, Wash") — mp3 **NOT yet produced/uploaded** (verified 502 at `songs/lesson-04.mp3` on 2026-08-17) | **NEXT — art done, song pending** |
-| 5 | Roll the Mat | `roll-the-mat` | v3-shaped lyrics written (2026-08-17, ukulele/TPR) — mp3 **NOT yet produced/uploaded** (verified 502 at `songs/lesson-05.mp3` on 2026-08-17) | art done, song pending |
-| 6 | Push In Your Chair | `push-in-your-chair` | Lyrics written (Day 7 — "Push In Your Chair") — mp3 not yet produced | planned |
-| 7 | May I Watch? | `may-i-watch` | Lyrics written (Day 8 — "May I Watch?") — mp3 not yet produced | planned |
-| 8 | Everything Has a Home | `everything-has-a-home` | Lyrics written (Day 9 — "Everything Has a Home") — mp3 not yet produced | planned |
-| 9 | Hello, Hello! | `hello-hello` | Lyrics written (Day 1 — "Hello, Hello!") — mp3 not yet produced | planned |
-| 10 | Please and Thank You | `please-and-thank-you` | Needs NEW lyrics (Suno, locked style v3 -- ukulele/TPR) | planned |
-| 11 | My Turn, Your Turn | `my-turn-your-turn` | Needs NEW lyrics | planned |
-| 12 | Excuse Me | `excuse-me` | Needs NEW lyrics | planned |
-| 13 | Kind Words | `kind-words` | Needs NEW lyrics | planned |
-| 14 | Helping Hands | `helping-hands` | Needs NEW lyrics | planned |
-| 15 | Sorry | `sorry` | Needs NEW lyrics | planned |
-| 16 | Cover Your Cough | `cover-your-cough` | Needs NEW lyrics | planned |
-| 17 | Line Up | `line-up` | Needs NEW lyrics | planned |
-| 18 | Walk Around the Mat | `walk-around-the-mat` | Needs NEW lyrics | planned |
-| 19 | Careful Carrying | `careful-carrying` | Needs NEW lyrics | planned |
-| 20 | The Whale Class Way | `the-whale-class-way` | Lyrics written (Day 10 — recap anthem, ALL rules, one line each) — mp3 not yet produced | planned (finale) |
+| 4 | Wash Your Hands | `wash-your-hands` | N/A — songs retired (2026-08-18 pivot, see §2e) | **SHIPPED (2026-08-19)** |
+| 5 | Roll the Mat | `roll-the-mat` | N/A — songs retired (2026-08-18 pivot, see §2e) | **NEXT — art done, page-08 art + text rework pending** |
+| 6 | Push In Your Chair | `push-in-your-chair` | N/A — songs retired (2026-08-18 pivot, see §2e) | planned |
+| 7 | May I Watch? | `may-i-watch` | N/A — songs retired (2026-08-18 pivot, see §2e) | planned |
+| 8 | Everything Has a Home | `everything-has-a-home` | N/A — songs retired (2026-08-18 pivot, see §2e) | planned |
+| 9 | Hello, Hello! | `hello-hello` | N/A — songs retired (2026-08-18 pivot, see §2e) | planned |
+| 10 | Please and Thank You | `please-and-thank-you` | N/A — songs retired (2026-08-18 pivot, see §2e) | planned |
+| 11 | My Turn, Your Turn | `my-turn-your-turn` | N/A — songs retired (2026-08-18 pivot, see §2e) | planned |
+| 12 | Excuse Me | `excuse-me` | N/A — songs retired (2026-08-18 pivot, see §2e) | planned |
+| 13 | Kind Words | `kind-words` | N/A — songs retired (2026-08-18 pivot, see §2e) | planned |
+| 14 | Helping Hands | `helping-hands` | N/A — songs retired (2026-08-18 pivot, see §2e) | planned |
+| 15 | Sorry | `sorry` | N/A — songs retired (2026-08-18 pivot, see §2e) | planned |
+| 16 | Cover Your Cough | `cover-your-cough` | N/A — songs retired (2026-08-18 pivot, see §2e) | planned |
+| 17 | Line Up | `line-up` | N/A — songs retired (2026-08-18 pivot, see §2e) | planned |
+| 18 | Walk Around the Mat | `walk-around-the-mat` | N/A — songs retired (2026-08-18 pivot, see §2e) | planned |
+| 19 | Careful Carrying | `careful-carrying` | N/A — songs retired (2026-08-18 pivot, see §2e) | planned |
+| 20 | The Whale Class Way | `the-whale-class-way` | N/A — songs retired (2026-08-18 pivot, see §2e) | planned (finale) |
 
 **Correction to a common misconception:** the Jul-16 song-cycle doc
 (`docs/curriculum/GRACE_AND_COURTESY_SONGS_JUL16.md`) describes assets landing
@@ -82,17 +88,13 @@ Art side of the per-book recipe (§4) is done:
   all 8 pages ingested into the Picture Bank (verified via dry run, then live run — 8
   uploaded, 0 failures).
 
-**Still blocking ship (do NOT move this book from `UPCOMING` to `RAW` until both are done):**
-
-1. Song mp3 — lyrics exist (Day 5, "Wash, Wash, Wash" in
-   `GRACE_AND_COURTESY_SONGS_JUL16.md`) but no take has been produced in Suno yet.
-   Generate with the locked Suno style v3 (§5.2), pick a winner, then upload to the
-   `grace-courtesy` Supabase bucket at `songs/lesson-04.mp3` via the dashboard Storage UI
-   (no upload script exists for this — see §4 step 9). Confirmed still 502 as of
-   2026-08-17 09:54 UTC.
-2. Once the song is live, finish recipe steps 11-15: move the `UPCOMING` entry to a real
-   `RawLesson` in `RAW` (`page.tsx`), scoped typecheck, update this table's row 4 to
-   `SHIPPED`, commit, verify live.
+**SHIPPED 2026-08-19.** Page-08 text reworked to "Everyone's happy! Wash
+your hands!" (no song reference) — art unchanged, already showed the full
+cast including Potato gathered together smiling. Draft rebuilt and
+eyeballed (both the art page and the text page render correctly), PDFs
+rebuilt for real, moved from `UPCOMING` to `RAW` in `page.tsx` (no `song`
+field — format dropped songs starting this book, §2e), scoped typecheck
+clean, table row 4 updated. See §2e for the pivot this rides on.
 
 ## 2d. Book 5 (Roll the Mat) — in-progress status (2026-08-17)
 
@@ -111,12 +113,18 @@ Art side of the per-book recipe (§4) is done, same shape as Book 4 (§2b):
 - `KEY_MAP['roll-the-mat']` added; all 8 pages ingested into the Picture
   Bank (dry run then live run -- 8 uploaded, 0 failures).
 
-**Still blocking ship:** song mp3. Lyrics were rewritten in the new v3
-ukulele/TPR style (see §5.2's changelog) rather than reused verbatim from
-the Jul-16 doc's Day 6 (which was v2/dark-trap shaped) -- delivered to
-Tredoux in chat 2026-08-17. Once Suno take is picked and uploaded to
-`songs/lesson-05.mp3` via the Supabase dashboard, finish recipe steps
-11-15 same as Book 4.
+**No longer blocked on a song** (§2e, 2026-08-18 pivot). Remaining steps
+before ship:
+
+1. Page-08 needs BOTH new art and new text — unlike Book 4, the shipped
+   `page-08.png` here has Potato sitting off to the side alone (the old
+   "sat this one out" convention). New convention: Potato joins the group,
+   happy, no song reference. Revised MJ prompt delivered to Tredoux in chat
+   2026-08-18. Once a winner is picked and filed (overwriting `page-08.png`),
+   rebuild.
+2. Once approved: same recipe steps 11-15 as Book 4 (skip the song steps
+   9-10) — move the `UPCOMING` entry to `RAW` (no `song` field), scoped
+   typecheck, update this table's row 5 to `SHIPPED`, commit, verify live.
 
 ## 2c. Founder override (2026-08-17): Book 5 art prep started early
 
@@ -129,6 +137,31 @@ still does not ship (UPCOMING -> RAW) until its song is live; Book 5
 likewise won't ship until both its song and storybook are real. Do not
 treat this as blanket permission to batch further books without asking
 again.
+
+## 2e. Founder pivot (2026-08-18): songs dropped from the format, Book 4 onward
+
+Founder decision: "these lessons are better taught without the song." Scope,
+confirmed explicitly with the founder:
+
+- **Books 1-3** keep their shipped songs untouched — no rework, no takedown.
+- **Book 4 onward**, the song is dropped from the format entirely. The
+  house 7-spread pattern's closing beat (§3, step 7) changes from "Now
+  let's sing it! Potato sat this one out." to a simple happy group line —
+  whole cast, Potato included and happy (not sitting apart), landing the
+  rule, no song reference at all.
+- This **unblocks Books 4 and 5**, which had been held out of `RAW` solely
+  because their songs weren't produced yet (see the old §2b/§2d text this
+  section replaces). With the song requirement gone, both ship as soon as
+  their page-08 (the closing beat) is reworked to the new convention — see
+  §2b and §2d for what's left for each.
+- **Book 6 onward:** write the closing beat to the new convention from the
+  start — no future book's page-08 should use the old "sing it" framing.
+- §5 ("Song production for books 10-19") and the Suno v3 style lock (§5.2)
+  are **RETIRED** as of this pivot — no further song lyrics/production work
+  is planned for Book 4 onward. The v3 lyrics already written for Books 4,
+  5, and 6 (2026-08-17) are not being used.
+- Status table's "Song source" column (§2) is historical for rows 1-3 only;
+  rows 4-20 are marked N/A.
 
 ## 3. The locked rules
 
@@ -161,6 +194,32 @@ again.
   art. The moment a book's song + storybook are real, its entry is REMOVED
   from `UPCOMING` and a new full `RawLesson` object is added to `RAW`. Never
   fake an entry in `RAW` to make progress look further along than it is.
+- **The consequence beat is slapstick, not real pain -- but it's not fake
+  cheer either.** (Standing rule, 2026-08-17; refined same day after a
+  first pass overcorrected.) Two different characters, two different
+  registers:
+  - **The rule-breaker (usually Potato)** stays cheerful/oblivious WHILE
+    breaking the rule -- that obliviousness is the comedic engine, and
+    it's what makes the "Oh, Potato" correction land as gentle rather than
+    punishing.
+  - **Whoever's on the receiving end of the mishap** reacts HONESTLY:
+    surprise, dizziness, disgust, mild dismay are all fine and expected
+    (see Book 3's Snake "wobbling dizzy" with ink stars circling its head
+    after being squeezed too tight, or Book 4's Star/Ant recoiling from
+    the dirty apple). What's off-limits is either extreme -- they should
+    NOT look like they're enjoying the mishap (reads as fake/insincere,
+    e.g. a bumped Ant throwing its arms up in a "whoa, cheerful!" pose),
+    and they should NOT look genuinely hurt, scared, or in pain (no
+    hands-clutching-an-injury poses, no crying, no distress). Target the
+    same cartoon-startle register as the dizzy-stars Snake -- surprised,
+    not happy, not hurt.
+  Book 6's "somebody bumped" page went through both failure modes in one
+  session: first pass read as genuine pain (Ant with hands on its head,
+  stumbling), the correction overcorrected into fake cheer (Ant throwing
+  its arms up smiling like it enjoyed being bumped). The version that
+  stuck: Ant tumbling backward in surprise, arms flailing, startled
+  wide-eyed expression, tiny ink stars/motion lines circling its head --
+  not smiling, not distressed.
 - **Why-lines stay short and punchy** — one line, matches the tone of the
   15 existing `UPCOMING` why-lines and the 3 shipped ones ("So we don't
   CRASH.", "So friends can think.", "So friends feel safe.").
@@ -175,9 +234,14 @@ again.
   4. "Oh, Potato. `<rule stated as the fix>`."
   5. Correct practice line.
   6. A second positive line, landing the rule.
-  7. "Now let's sing it! (Potato sat this one out.)" — hands off to the song.
-     (Potato deliberately sits out the song page in all 3 shipped books —
-     keep this beat unless there's a strong reason to break it.)
+  7. **(Book 4 onward, see §2e)** A short closing line — the whole cast,
+     Potato included, happy, landing the rule one more time. No song
+     reference. E.g. "Everyone's happy! Wash your hands!" Potato joins the
+     group in the art too (not sitting apart).
+     **(Books 1-3 only, historical)** "Now let's sing it! (Potato sat this
+     one out.)" — hands off to the song. Potato deliberately sat out the
+     song page in these 3 shipped books; this convention is retired for
+     Book 4 onward, not reused.
 
 ## 4. The per-book recipe
 
@@ -238,8 +302,10 @@ When Tredoux says "build book N", run this checklist top to bottom.
    - Idempotent — safe to re-run. Tags land as `grace-courtesy-book`,
      `grace-courtesy-book-<slug>`, the key word, `book-page`. This is what
      makes the page's "Book pictures" grid + "Create materials" hand-off work.
-9. **Upload the song mp3 + song card png to the `grace-courtesy` Supabase
-   bucket.** There is no checked-in upload script for this (checked — none
+9. **(Books 1-3 only — RETIRED for Book 4 onward, see §2e. Skip straight
+   from step 8 to step 11 for new books.)** Upload the song mp3 + song card
+   png to the `grace-courtesy` Supabase bucket. There is no checked-in
+   upload script for this (checked — none
    exists for either Grace & Courtesy or Dark Phonics songs); the historical
    `publish-grace-courtesy-book1.mjs` script that DID write to this bucket
    was deliberately removed in commit `b889a8565` once the storybook moved to
@@ -252,16 +318,19 @@ When Tredoux says "build book N", run this checklist top to bottom.
    Confirm afterward with the `curl -sI` check from §2.
 10. **Bump cache-busters if replacing an existing file in place.** `page.tsx`
     top-of-file constants:
-    - `SONG_VERSION` — bump if you overwrite an already-uploaded
-      `songs/lesson-NN.mp3` (new books don't need this — only re-recordings).
+    - `SONG_VERSION` — Books 1-3 only (§2e retired the song for Book 4
+      onward); bump if you overwrite an already-uploaded `songs/lesson-NN.mp3`.
     - `STORYBOOK_PRINT_VERSION` — bump if you overwrite an existing book's
-      print PDFs (again, new books don't need this).
+      print PDFs (e.g. reworking a page-08 after this ships once — new
+      books don't need this on first ship).
     A brand-new book number needs neither bump — the URLs are new, so
     there's nothing stale to bust.
 11. **Move the entry from `UPCOMING` to `RAW` in `page.tsx`.** Delete the
     `{ n, title, why }` line from `UPCOMING`, add a full `RawLesson` object
-    to the end of `RAW` (n, title, why, cast, book: {slug, title, cover},
-    song: true).
+    to the end of `RAW` (n, title, why, cast, book: {slug, title, cover}).
+    **Book 4 onward: omit the `song` field entirely** (it's optional —
+    `false`/absent skips the audio row cleanly, no code change needed).
+    `song: true` is only for Books 1-3's real, shipped songs.
 12. **Run a scoped typecheck + lint** on `page.tsx` before committing (the
     base `tsconfig.json`'s `"@/*"` path maps to a nonexistent `./src/*` —
     a scoped tsconfig for this file needs `paths` overridden to map `"@/*"`
@@ -275,10 +344,16 @@ When Tredoux says "build book N", run this checklist top to bottom.
     the upload script, the new art in `phonics-images/`, the new print PDFs
     + cover in `public/`, and this handoff file. Never `git add -A`.
 15. **Verify live** at `montree.xyz/montree/library/grace-courtesy` — the
-    new card renders with a working song player, working print PDF links,
-    and a populated book-pictures grid.
+    new card renders with working print PDF links and a populated
+    book-pictures grid (plus a working song player, Books 1-3 only).
 
-## 5. Song production for books 10–19
+## 5. Song production for books 10–19 — RETIRED (2026-08-18, see §2e)
+
+**This whole section is retired.** Songs are dropped from the format for
+Book 4 onward — there is no song production step in the per-book recipe
+anymore (§4 skips steps 9-10 for new books). Kept below only as a historical
+record of the v2/v3 style locks, in case a future founder decision revives
+songs for some other purpose. Do not use this section to plan new work.
 
 Books 10–19 have no lyrics yet — the Jul-16 doc's 10-song cycle only covers
 what became books 1–4, 9, 20's material (Days 1–10 map onto rules Hello,

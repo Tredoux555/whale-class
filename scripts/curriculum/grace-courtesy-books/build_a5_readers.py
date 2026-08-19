@@ -217,7 +217,7 @@ BOOKS = [
             ('Oh, Potato. Wash your hands.', 'page-05.png'),
             ('Soap and water. Scrub, scrub, scrub.', 'page-06.png'),
             ('Rinse and dry. Nice and clean!', 'page-07.png'),
-            ('Now let’s sing it! (Potato sat this one out.)', 'page-08.png'),
+            ('Everyone’s happy! Wash your hands!', 'page-08.png'),
         ],
     ),
     dict(
