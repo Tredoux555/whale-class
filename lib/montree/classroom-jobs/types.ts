@@ -62,6 +62,14 @@ export interface JobsPoster {
    *  storing the default as text, so a later locale change of the default
    *  moves every room that never customised theirs. */
   title?: string;
+  /** Print a round roster photo beside each assigned child's name (names mode
+   *  only — slots mode already carries a photo on the printed strip itself).
+   *  Absent means yes, same "a saved poster is a wanted poster" idiom as
+   *  `ClassroomJob.active`: an old poster that predates this field prints
+   *  photos rather than silently losing them. Nothing photo-shaped is ever
+   *  stored alongside this flag — the photo itself is resolved at render time
+   *  from the roster fetch, by `childId`, never copied into this blob. */
+  showChildPhotos?: boolean;
   /** ISO stamp of the save that produced this. Advisory only. */
   updatedAt?: string;
 }
@@ -254,6 +262,12 @@ export function parseJobsPoster(raw: unknown): JobsPoster | null {
       version: JOBS_POSTER_VERSION,
       jobs,
       title,
+      // Absent (or anything that is not the literal boolean `false`) means
+      // yes — same idiom as `ClassroomJob.active` above, and for the same
+      // reason: a poster saved before this field existed must keep printing
+      // photos, not have them switched off underneath the room that never
+      // asked for that.
+      showChildPhotos: o.showChildPhotos !== false,
       updatedAt:
         typeof o.updatedAt === 'string' && o.updatedAt.length <= 40 ? o.updatedAt : undefined,
     };

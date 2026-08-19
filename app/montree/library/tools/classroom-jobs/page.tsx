@@ -39,6 +39,7 @@ import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
 import { getSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
 import { isBrandKitActive, PLAIN_TOKENS, type BrandKit } from '@/lib/montree/brand-kit/types';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import {
   computeCropGeometry,
   defaultCoverOffset,
@@ -63,10 +64,22 @@ import { Quicksand } from 'next/font/google';
 
 const quicksand = Quicksand({ subsets: ['latin'], weight: ['500', '600', '700'] });
 
-type Student = { id: string; name: string };
+/** `photoUrl` mirrors `montree_children.photo_url` from `GET /api/montree/
+ *  children` — a raw storage path/URL that must go through `getProxyUrl`
+ *  before it reaches an `<img src>` (same rule Helper Name Strips follows for
+ *  the same field). Never stored on the poster — see `JobsPoster.showChildPhotos`. */
+type Student = { id: string; name: string; photoUrl?: string };
 type PosterMode = 'names' | 'slots';
 type SlotSize = 'poster' | 'small';
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
+/** What the crop modal is cropping FOR — a job's own icon (uploads through
+ *  `/api/montree/classroom-jobs/icon`, exported as PNG) or a child's roster
+ *  photo (uploads through `/api/montree/children/[childId]/photo`, the SAME
+ *  route the child's own profile page uses, exported as JPEG to match what
+ *  that route expects). One modal, two destinations. */
+type CropTarget =
+  | { kind: 'jobIcon'; job: ClassroomJob }
+  | { kind: 'childPhoto'; childId: string; childName: string };
 
 /**
  * 🚨 THE COPY, AND WHY IT LIVES HERE. Montree's i18n hook is strict across all
@@ -95,6 +108,11 @@ const COPY: Record<string, string> = {
   'classroomJobs.cropCancel': 'Cancel',
   'classroomJobs.cropUse': 'Use picture',
   'classroomJobs.cropLoadError': 'Could not load this picture for cropping — try uploading it again.',
+  'classroomJobs.showChildPhotos': 'Show child photos on the poster',
+  'classroomJobs.childPhotosHint':
+    'Photos come from your class list. Add one here and it saves to the class list too — Helper Name Strips and class documents pick it up automatically.',
+  'classroomJobs.addChildPhoto': 'Add photo',
+  'classroomJobs.cropChildPhotoTitle': 'Add a photo',
   'classroomJobs.modeLabel': 'Poster style',
   'classroomJobs.modeNames': 'Names printed on',
   'classroomJobs.modeNamesHint': 'A4 portrait · a card per job, each with a child’s name',
@@ -341,6 +359,27 @@ function posterCss(mode: PosterMode, slotSize: SlotSize): string {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* The assigned child's roster photo, printed beside their name — only when
+   the poster's "Show child photos" toggle is on and the roster actually has
+   a photo for that child. Fits comfortably inside the ${CARD_H_MM}mm card:
+   an 17mm circle plus its name still clears the card's own padding. Always
+   an <img>, never a CSS background, same reasoning as .jp-icon-img. */
+.jp-childrow {
+  display: flex;
+  align-items: center;
+  gap: 2.5mm;
+  min-width: 0;
+}
+.jp-childrow .jp-child { margin-top: 0; }
+.jp-childphoto {
+  flex: 0 0 auto;
+  width: 17mm;
+  height: 17mm;
+  border-radius: 50%;
+  object-fit: cover;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
 /* An unassigned job prints as a ruled line rather than as a gap — the chart
    still works on the wall while the teacher decides, and a marker finishes it. */
 .jp-blank {
@@ -511,10 +550,10 @@ function sheetEstimate(mode: PosterMode, slotSize: SlotSize, count: number): num
 }
 
 /** A stable string for "has this chart changed since it was saved" — the
- *  title travels in the same signature as the jobs, so editing one dirties
- *  the chart exactly like editing the other. */
-function signature(jobs: ClassroomJob[], title: string): string {
-  return JSON.stringify({ jobs, title });
+ *  title and the photo toggle travel in the same signature as the jobs, so
+ *  editing any one of them dirties the chart exactly like editing another. */
+function signature(jobs: ClassroomJob[], title: string, showChildPhotos: boolean): string {
+  return JSON.stringify({ jobs, title, showChildPhotos });
 }
 
 export default function ClassroomJobsPage() {
@@ -528,6 +567,10 @@ export default function ClassroomJobsPage() {
    *  itself here: that would make a later locale change of the default stop
    *  reaching rooms that never customised theirs. */
   const [title, setTitle] = useState('');
+  /** Print a photo beside each assigned child's name — see
+   *  `JobsPoster.showChildPhotos`. Defaults to true so a room that has never
+   *  saved a poster (and so has never seen this toggle) still gets photos. */
+  const [showChildPhotos, setShowChildPhotos] = useState(true);
   const [students, setStudents] = useState<Student[]>([]);
   const [brandKit, setBrandKit] = useState<BrandKit | null>(null);
   const [classroomId, setClassroomId] = useState('');
@@ -541,14 +584,20 @@ export default function ClassroomJobsPage() {
   /** The job currently mid-upload, if any — drives the spinner/disabled state
    *  on exactly that row's icon menu, never the whole list. */
   const [iconUploadingId, setIconUploadingId] = useState<string | null>(null);
+  /** The CHILD currently mid-upload, if any — the same idea as
+   *  `iconUploadingId`, one namespace over. Job ids and child ids never
+   *  collide (job ids are slugs like `line_leader`/`custom-…`; child ids are
+   *  UUIDs), so the two states never need to agree with each other. */
+  const [childPhotoUploadingId, setChildPhotoUploadingId] = useState<string | null>(null);
   const [iconError, setIconError] = useState('');
-  /** The job currently open in the crop modal, and the URL it is cropping —
-   *  `revoke: true` when that URL is a local `URL.createObjectURL(file)` this
-   *  page must free once the modal closes (a freshly picked file); `false`
-   *  when it is the job's own already-uploaded `imageUrl` ("Adjust picture"),
-   *  which this page did not create and must not revoke. */
+  /** The crop modal's target and the URL it is cropping — `revoke: true`
+   *  when that URL is a local `URL.createObjectURL(file)` this page must
+   *  free once the modal closes (a freshly picked file, either a job icon or
+   *  a child's first photo); `false` when it is a job's own already-uploaded
+   *  `imageUrl` ("Adjust picture"), which this page did not create and must
+   *  not revoke. */
   const [cropState, setCropState] = useState<{
-    job: ClassroomJob;
+    target: CropTarget;
     imageUrl: string;
     revoke: boolean;
   } | null>(null);
@@ -601,8 +650,16 @@ export default function ClassroomJobsPage() {
         if (cancelled) return;
 
         const childrenData = await childrenRes.json();
-        const kids: Student[] = ((childrenData.children || []) as Student[])
-          .map((c) => ({ id: c.id, name: c.name }))
+        // 🚨 THE API'S OWN FIELD IS `photo_url` (snake_case, a raw storage
+        // path/URL) — the same shape Helper Name Strips reads off this exact
+        // endpoint. Renamed to `photoUrl` here to match this file's own
+        // camelCase convention (`imageUrl`/`imagePath` on a job); `getProxyUrl`
+        // is applied at the point of render, never here, so a student held in
+        // state never carries an already-resolved URL that could go stale.
+        const kids: Student[] = (
+          (childrenData.children || []) as { id: string; name: string; photo_url?: string }[]
+        )
+          .map((c) => ({ id: c.id, name: c.name, photoUrl: c.photo_url || undefined }))
           .sort((a, b) => a.name.localeCompare(b.name));
         if (!cancelled) setStudents(kids);
 
@@ -628,10 +685,13 @@ export default function ClassroomJobsPage() {
           if (!cancelled) {
             setJobs(parsed.jobs);
             setTitle(parsed.title ?? '');
+            setShowChildPhotos(parsed.showChildPhotos !== false);
             setIsStartingSet(jobsData.isDefault !== false);
             setCanSave(jobsData.available !== false);
             savedRef.current =
-              jobsData.isDefault === false ? signature(parsed.jobs, parsed.title ?? '') : '';
+              jobsData.isDefault === false
+                ? signature(parsed.jobs, parsed.title ?? '', parsed.showChildPhotos !== false)
+                : '';
           }
         }
       } catch {
@@ -668,7 +728,7 @@ export default function ClassroomJobsPage() {
     return new Set([...counts.entries()].filter(([, n]) => n > 1).map(([id]) => id));
   }, [activeJobs]);
 
-  const dirty = savedRef.current !== signature(jobs, title);
+  const dirty = savedRef.current !== signature(jobs, title, showChildPhotos);
   const sheets = sheetEstimate(mode, slotSize, activeJobs.length);
 
   /**
@@ -808,7 +868,7 @@ export default function ClassroomJobsPage() {
         method: 'POST',
         body: JSON.stringify({
           classroomId,
-          poster: { version: JOBS_POSTER_VERSION, jobs, title },
+          poster: { version: JOBS_POSTER_VERSION, jobs, title, showChildPhotos },
         }),
       });
       if (!res.ok) throw new Error(`save failed: ${res.status}`);
@@ -818,16 +878,22 @@ export default function ClassroomJobsPage() {
       // storage folder, so echoing the local list back would show a name, or
       // a picture, the saved chart no longer holds.
       const saved: JobsPoster =
-        parseJobsPoster(data.poster) ?? { version: JOBS_POSTER_VERSION, jobs, title };
+        parseJobsPoster(data.poster) ?? {
+          version: JOBS_POSTER_VERSION,
+          jobs,
+          title,
+          showChildPhotos,
+        };
       setJobs(saved.jobs);
       setTitle(saved.title ?? '');
-      savedRef.current = signature(saved.jobs, saved.title ?? '');
+      setShowChildPhotos(saved.showChildPhotos !== false);
+      savedRef.current = signature(saved.jobs, saved.title ?? '', saved.showChildPhotos !== false);
       setIsStartingSet(false);
       setSaveState('saved');
     } catch {
       setSaveState('error');
     }
-  }, [classroomId, canSave, jobs, title]);
+  }, [classroomId, canSave, jobs, title, showChildPhotos]);
 
   /**
    * Upload a job's icon picture and, on success, set it on the job in state —
@@ -897,14 +963,28 @@ export default function ClassroomJobsPage() {
   /** A freshly picked file opens the cropper on a local object URL — nothing
    *  is uploaded until the teacher confirms the crop. */
   const openCropForFile = useCallback((job: ClassroomJob, file: File) => {
-    setCropState({ job, imageUrl: URL.createObjectURL(file), revoke: true });
+    setCropState({
+      target: { kind: 'jobIcon', job },
+      imageUrl: URL.createObjectURL(file),
+      revoke: true,
+    });
   }, []);
 
   /** "Adjust picture" re-opens the cropper on the job's OWN already-uploaded
    *  image — nothing local to revoke when this one closes. */
   const openCropForExisting = useCallback((job: ClassroomJob) => {
     if (!job.imageUrl) return;
-    setCropState({ job, imageUrl: job.imageUrl, revoke: false });
+    setCropState({ target: { kind: 'jobIcon', job }, imageUrl: job.imageUrl, revoke: false });
+  }, []);
+
+  /** The one-click upload for a child with no roster photo yet — always a
+   *  freshly picked file, always a local object URL to revoke on close. */
+  const openCropForChildPhoto = useCallback((student: Student, file: File) => {
+    setCropState({
+      target: { kind: 'childPhoto', childId: student.id, childName: student.name },
+      imageUrl: URL.createObjectURL(file),
+      revoke: true,
+    });
   }, []);
 
   const closeCrop = useCallback(() => {
@@ -915,23 +995,70 @@ export default function ClassroomJobsPage() {
   }, []);
 
   /**
+   * Upload a child's roster photo through the SAME route the child's own
+   * profile page uses — `POST /api/montree/children/[childId]/photo`, field
+   * name `photo`. This writes `montree_children.photo_url` directly: nothing
+   * about this poster's own save is involved, and nothing photo-shaped is
+   * ever written into `settings.jobs_poster`. The room's `students` list is
+   * patched in place with the URL the route hands back so the new photo
+   * shows immediately, without a second network round trip to re-fetch the
+   * roster.
+   */
+  const uploadChildPhoto = useCallback(
+    async (student: Student, file: File) => {
+      setIconError('');
+      setChildPhotoUploadingId(student.id);
+      try {
+        const fd = new FormData();
+        fd.append('photo', file);
+        const res = await montreeApi(
+          `/api/montree/children/${encodeURIComponent(student.id)}/photo`,
+          { method: 'POST', body: fd }
+        );
+        if (!res.ok) throw new Error(`upload failed: ${res.status}`);
+        const data = (await res.json()) as { photo_url?: string };
+        if (!data.photo_url) throw new Error('bad response');
+        const photoUrl = data.photo_url;
+        setStudents((prev) =>
+          prev.map((s) => (s.id === student.id ? { ...s, photoUrl } : s))
+        );
+      } catch {
+        setIconError(tx('classroomJobs.iconUploadFailed'));
+      } finally {
+        setChildPhotoUploadingId(null);
+      }
+    },
+    [tx]
+  );
+
+  /**
    * The crop modal hands back a blob and nothing else — this feeds it through
-   * the EXISTING upload path exactly as a plain file pick always has, so the
-   * spinner, the error banner and the replace-cleanup DELETE all come free.
-   * `cropState.job` is the snapshot taken when the modal opened; its
-   * `imagePath` (if any) is what `uploadJobIcon` cleans up once the new
-   * picture is safely stored — a re-crop of an existing picture is a
-   * replacement like any other.
+   * whichever upload path the modal was opened for. `cropState.target` is the
+   * snapshot taken when the modal opened: for a job icon, its `imagePath` (if
+   * any) is what `uploadJobIcon` cleans up once the new picture is safely
+   * stored — a re-crop of an existing picture is a replacement like any
+   * other. For a child photo there is nothing to clean up: the upload route
+   * overwrites the same stable storage path every time.
    */
   const handleCropped = useCallback(
     (blob: Blob) => {
       if (!cropState) return;
-      const { job } = cropState;
+      const { target } = cropState;
       closeCrop();
-      const file = new File([blob], `${job.id}.png`, { type: 'image/png' });
-      void uploadJobIcon(job, file);
+      if (target.kind === 'jobIcon') {
+        const file = new File([blob], `${target.job.id}.png`, { type: 'image/png' });
+        void uploadJobIcon(target.job, file);
+      } else {
+        // JPEG, not PNG — `/api/montree/children/[childId]/photo` hardcodes
+        // `image/jpeg` on the stored object regardless of what it is handed,
+        // so the export format is chosen to match what actually gets stored
+        // rather than leaving a PNG's bytes mislabelled as a JPEG.
+        const file = new File([blob], `${target.childId}.jpg`, { type: 'image/jpeg' });
+        const student = students.find((s) => s.id === target.childId);
+        if (student) void uploadChildPhoto(student, file);
+      }
     },
-    [cropState, closeCrop, uploadJobIcon]
+    [cropState, closeCrop, uploadJobIcon, uploadChildPhoto, students]
   );
 
   /** Built once rather than per row — every JobRow shows the same six. */
@@ -947,6 +1074,7 @@ export default function ClassroomJobsPage() {
       adjustPicture: tx('classroomJobs.adjustPicture'),
       removePicture: tx('classroomJobs.removePicture'),
       uploading: tx('classroomJobs.uploading'),
+      addChildPhoto: tx('classroomJobs.addChildPhoto'),
     }),
     [tx]
   );
@@ -976,9 +1104,14 @@ export default function ClassroomJobsPage() {
   const effectiveTitle = title.trim() ? title.trim() : defaultTitle;
 
   /** Built once, same as `rowLabels` — the crop modal shows the same five
-   *  strings regardless of which job opened it. */
+   *  strings regardless of which job (or child) opened it, except its own
+   *  heading: a child's first photo reads "Add a photo" rather than the
+   *  job-icon wording. */
   const cropLabels = {
-    title: tx('classroomJobs.cropTitle'),
+    title:
+      cropState?.target.kind === 'childPhoto'
+        ? tx('classroomJobs.cropChildPhotoTitle')
+        : tx('classroomJobs.cropTitle'),
     zoom: tx('classroomJobs.cropZoom'),
     cancel: tx('classroomJobs.cropCancel'),
     use: tx('classroomJobs.cropUse'),
@@ -993,6 +1126,7 @@ export default function ClassroomJobsPage() {
       slotSize={slotSize}
       logoUrl={kit?.logoUrl ?? null}
       showWatermark={watermarkOpacity > 0}
+      showChildPhotos={showChildPhotos}
       title={effectiveTitle}
       roomName={classroomName}
       vars={posterVars}
@@ -1137,6 +1271,22 @@ export default function ClassroomJobsPage() {
                 ? tx('classroomJobs.sheetOne')
                 : tx('classroomJobs.sheetMany').replace('{n}', String(sheets))}
             </p>
+
+            <label className="flex items-center gap-2 mt-3 text-sm text-white/70">
+              <input
+                type="checkbox"
+                checked={showChildPhotos}
+                onChange={(e) => {
+                  setSaveState('idle');
+                  setShowChildPhotos(e.target.checked);
+                }}
+                className="w-4 h-4 accent-[#34d399]"
+              />
+              {tx('classroomJobs.showChildPhotos')}
+            </label>
+            {showChildPhotos && (
+              <p className="text-xs text-white/40 mt-1.5">{tx('classroomJobs.childPhotosHint')}</p>
+            )}
           </section>
 
           {/* Jobs */}
@@ -1186,6 +1336,10 @@ export default function ClassroomJobsPage() {
                     onPickFile={(file) => openCropForFile(job, file)}
                     onAdjustPicture={() => openCropForExisting(job)}
                     onRemoveIcon={() => removeJobIcon(job)}
+                    showChildPhotos={showChildPhotos}
+                    childPhotoUploadingId={childPhotoUploadingId}
+                    addChildPhotoLabel={rowLabels.addChildPhoto}
+                    onAddChildPhoto={(student, file) => openCropForChildPhoto(student, file)}
                   />
                 ))}
               </div>
@@ -1284,6 +1438,7 @@ export default function ClassroomJobsPage() {
             onCancel={closeCrop}
             onUse={handleCropped}
             labels={cropLabels}
+            exportMimeType={cropState.target.kind === 'childPhoto' ? 'image/jpeg' : 'image/png'}
           />
         )}
       </div>
@@ -1336,6 +1491,10 @@ function JobRow({
   onPickFile,
   onAdjustPicture,
   onRemoveIcon,
+  showChildPhotos,
+  childPhotoUploadingId,
+  addChildPhotoLabel,
+  onAddChildPhoto,
 }: {
   job: ClassroomJob;
   index: number;
@@ -1368,6 +1527,16 @@ function JobRow({
    *  image. Only ever offered when `job.imageUrl` is set. */
   onAdjustPicture: () => void;
   onRemoveIcon: () => void;
+  /** Mirrors the poster's own toggle — hides the assigned child's avatar from
+   *  this row entirely when off, same as it hides them from print. */
+  showChildPhotos: boolean;
+  /** The id of the child whose roster photo is mid-upload, or null — drives
+   *  the spinner on that one child's avatar only. */
+  childPhotoUploadingId: string | null;
+  addChildPhotoLabel: string;
+  /** A file was just picked for the ASSIGNED child's roster photo — opens the
+   *  cropper on it. Uploading writes the class roster, not the poster. */
+  onAddChildPhoto: (student: Student, file: File) => void;
 }) {
   const held = job.childId ? students.find((s) => s.id === job.childId) : undefined;
 
@@ -1530,24 +1699,107 @@ function JobRow({
           </button>
         </div>
       ) : (
-        <select
-          value={job.childId ?? ''}
-          onChange={(e) => onPatch(job.id, { childId: e.target.value || null })}
-          className="w-full rounded-lg bg-[#0f2417] border border-[rgba(52,211,153,0.15)] text-white/90 text-sm px-2.5 py-1.5"
-        >
-          <option value="">{unassignedLabel}</option>
-          {students.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
+        <div className="flex items-center gap-2">
+          {showChildPhotos && held && (
+            <ChildAvatar
+              student={held}
+              size={28}
+              uploading={childPhotoUploadingId === held.id}
+              addLabel={addChildPhotoLabel}
+              onAddPhoto={(file) => onAddChildPhoto(held, file)}
+            />
+          )}
+          <select
+            value={job.childId ?? ''}
+            onChange={(e) => onPatch(job.id, { childId: e.target.value || null })}
+            className="flex-1 min-w-0 rounded-lg bg-[#0f2417] border border-[rgba(52,211,153,0.15)] text-white/90 text-sm px-2.5 py-1.5"
+          >
+            <option value="">{unassignedLabel}</option>
+            {students.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </div>
       )}
 
       {warn && held && (
         <p className="text-xs text-amber-300/90">
           ⚠ {firstName(held.name)} {warnText}
         </p>
+      )}
+    </div>
+  );
+}
+
+// A round avatar for an assigned child — the roster photo when there is one,
+// dropping back to an initial-letter circle otherwise, with a small "+"
+// affordance on the fallback so a teacher can add a photo without leaving
+// this page. Screen-only, so plain Tailwind utilities rather than the
+// print/posterCss string. The photo itself is never stored on the poster: it
+// is resolved from the roster fetch by childId on every render, same as
+// helper-strips' own PhotoOrInitials.
+function ChildAvatar({
+  student,
+  size,
+  uploading,
+  addLabel,
+  onAddPhoto,
+}: {
+  student: Student;
+  size: number;
+  uploading: boolean;
+  addLabel: string;
+  onAddPhoto: (file: File) => void;
+}) {
+  const [failed, setFailed] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const initial = student.name.trim().charAt(0).toUpperCase() || '?';
+  const showPhoto = !!student.photoUrl && !failed;
+
+  return (
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
+      <div
+        className="rounded-full overflow-hidden border border-[rgba(52,211,153,0.25)] bg-white/[0.08] flex items-center justify-center"
+        style={{ width: size, height: size }}
+      >
+        {showPhoto ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={getProxyUrl(student.photoUrl as string)}
+            alt=""
+            className="w-full h-full object-cover"
+            onError={() => setFailed(true)}
+          />
+        ) : (
+          <span className="text-xs font-semibold text-white/70">{initial}</span>
+        )}
+      </div>
+      {!showPhoto && (
+        <>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            title={addLabel}
+            aria-label={addLabel}
+            className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#34d399] text-[#06110b] text-[10px] leading-none flex items-center justify-center border border-[#0f2417]"
+          >
+            {uploading ? '…' : '+'}
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = '';
+              if (file) onAddPhoto(file);
+            }}
+          />
+        </>
       )}
     </div>
   );
@@ -1569,11 +1821,17 @@ function IconCropModal({
   onCancel,
   onUse,
   labels,
+  exportMimeType = 'image/png',
 }: {
   imageUrl: string;
   onCancel: () => void;
   onUse: (blob: Blob) => void;
   labels: { title: string; zoom: string; cancel: string; use: string; loadError: string };
+  /** 'image/png' for job icons (transparency-friendly), 'image/jpeg' for
+   *  child photos — the child-photo upload endpoint always labels the bytes
+   *  it stores as JPEG, so exporting PNG bytes there would mislabel the
+   *  file. Defaults to PNG to keep every existing call site unchanged. */
+  exportMimeType?: string;
 }) {
   const imgRef = useRef<HTMLImageElement>(null);
   /** The raw pointer position at the start of the current drag — null when
@@ -1699,14 +1957,19 @@ function IconCropModal({
         CROP_EXPORT_PX,
         CROP_EXPORT_PX
       );
-      canvas.toBlob((blob) => {
+      const onBlob = (blob: Blob | null) => {
         setExporting(false);
         if (blob) {
           onUse(blob);
         } else {
           setLoadFailed(true);
         }
-      }, 'image/png');
+      };
+      if (exportMimeType === 'image/jpeg') {
+        canvas.toBlob(onBlob, 'image/jpeg', 0.92);
+      } else {
+        canvas.toBlob(onBlob, exportMimeType);
+      }
     } catch {
       // A tainted canvas (a cross-origin image the server did not send CORS
       // headers for) throws HERE rather than handing back a blob — same
@@ -1715,7 +1978,7 @@ function IconCropModal({
       setExporting(false);
       setLoadFailed(true);
     }
-  }, [geometry, onUse]);
+  }, [geometry, onUse, exportMimeType]);
 
   const framePx = (n: number) => (imgSize ? (n * CROP_PREVIEW_PX) / CROP_FRAME_PX : 0);
 
@@ -1827,6 +2090,7 @@ function JobsPosterSheet({
   title,
   roomName,
   vars,
+  showChildPhotos,
 }: {
   jobs: ClassroomJob[];
   studentById: Map<string, Student>;
@@ -1837,6 +2101,9 @@ function JobsPosterSheet({
   title: string;
   roomName: string;
   vars: CSSProperties;
+  /** Names mode only — slots mode already carries a photo on the printed
+   *  strip itself, so this has no effect there. */
+  showChildPhotos: boolean;
 }) {
   return (
     <div className={`jp-poster ${quicksand.className}`} style={vars}>
@@ -1892,9 +2159,28 @@ function JobsPosterSheet({
                       {job.name}
                     </div>
                     {child ? (
-                      <div className="jp-child" dir="auto">
-                        {firstName(child.name)}
-                      </div>
+                      showChildPhotos && child.photoUrl ? (
+                        // The roster photo, resolved live by childId — never
+                        // copied into the poster's own saved settings. An
+                        // `<img>`, never a CSS background, same as the job
+                        // icon above.
+                        <div className="jp-childrow">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            className="jp-childphoto"
+                            src={getProxyUrl(child.photoUrl)}
+                            alt=""
+                            aria-hidden="true"
+                          />
+                          <div className="jp-child" dir="auto">
+                            {firstName(child.name)}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="jp-child" dir="auto">
+                          {firstName(child.name)}
+                        </div>
+                      )
                     ) : (
                       // An unassigned job prints as a line to write on rather
                       // than as a hole in the chart.
