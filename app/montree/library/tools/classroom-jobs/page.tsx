@@ -25,12 +25,26 @@
 // worse than no crest. Same call, same reason, as DocumentPaper.
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, useRef, type CSSProperties } from 'react';
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
 import { getSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
 import { isBrandKitActive, PLAIN_TOKENS, type BrandKit } from '@/lib/montree/brand-kit/types';
+import {
+  computeCropGeometry,
+  defaultCoverOffset,
+  MIN_ZOOM,
+  MAX_ZOOM,
+} from '@/lib/montree/classroom-jobs/crop-geometry';
 import {
   DEFAULT_JOBS,
   DEFAULT_POSTER_TITLE,
@@ -72,9 +86,15 @@ const COPY: Record<string, string> = {
   'classroomJobs.titleLabel': 'Poster title',
   'classroomJobs.titleHint': 'Prints on the masthead. Leave it blank to use the starting title.',
   'classroomJobs.uploadPicture': 'Upload picture',
+  'classroomJobs.adjustPicture': 'Adjust picture',
   'classroomJobs.removePicture': 'Remove picture',
   'classroomJobs.uploading': 'Uploading…',
   'classroomJobs.iconUploadFailed': 'Could not upload the picture — try again',
+  'classroomJobs.cropTitle': 'Adjust your picture',
+  'classroomJobs.cropZoom': 'Zoom',
+  'classroomJobs.cropCancel': 'Cancel',
+  'classroomJobs.cropUse': 'Use picture',
+  'classroomJobs.cropLoadError': 'Could not load this picture for cropping — try uploading it again.',
   'classroomJobs.modeLabel': 'Poster style',
   'classroomJobs.modeNames': 'Names printed on',
   'classroomJobs.modeNamesHint': 'A4 portrait · a card per job, each with a child’s name',
@@ -158,6 +178,17 @@ const CARD_GAP_MM = 5;
 const CARD_W_MM = (PORTRAIT_W_MM - CARD_GAP_MM) / 2; // 90.5
 const CARD_H_MM = 34;
 const SLOT_GAP_MM = 4;
+
+// ── the icon cropper ─────────────────────────────────────────────────────
+// CSS pixels for the interactive frame; the tiny live preview mirrors it at
+// icon scale (44px — the same footprint the job row's own thumbnail uses).
+const CROP_FRAME_PX = 240;
+const CROP_PREVIEW_PX = 44;
+/** What actually gets uploaded: a 512×512 PNG of the framed region — small
+ *  and clean regardless of what the teacher originally picked (a multi-MB
+ *  JPG comes out the other side as a few hundred KB PNG at most), comfortably
+ *  inside the icon route's existing 4MB cap. */
+const CROP_EXPORT_PX = 512;
 
 /** 6-digit hex or `transparent` only — the same narrow gate brand-kit/css.ts
  *  applies at ITS point of injection. These values arrive over JSON and end up
@@ -356,6 +387,105 @@ function posterCss(mode: PosterMode, slotSize: SlotSize): string {
 }
 
 /**
+ * The icon cropper's own CSS. Geometry-only, same as `posterCss` — every
+ * position and size below comes from `CROP_FRAME_PX`/`CROP_PREVIEW_PX`, never
+ * from anything a teacher's picture supplies. Concatenated onto `posterCss`'s
+ * output at the ONE top-level `<style>` tag this page renders (see the
+ * styled-jsx law note at the bottom of the file) — never a second tag, and
+ * never conditional on whether the modal happens to be open right now.
+ *
+ * 🚨 `print:hidden` NEVER APPLIES TO A `<style>` TAG. The modal itself is only
+ * ever mounted inside the screen-only branch of the page, so this CSS simply
+ * has nothing to match during a print — it does not need its own guard.
+ */
+function cropModalCss(): string {
+  return `
+.jp-crop-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(4, 12, 8, 0.72);
+}
+.jp-crop-panel {
+  width: min(320px, 100%);
+  background: #0f2417;
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+.jp-crop-title {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+}
+.jp-crop-frame {
+  width: ${CROP_FRAME_PX}px;
+  height: ${CROP_FRAME_PX}px;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  touch-action: none;
+  cursor: grab;
+}
+.jp-crop-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: none;
+  user-select: none;
+  pointer-events: none;
+}
+.jp-crop-zoomrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+}
+.jp-crop-zoomrow input[type='range'] { flex: 1 1 auto; }
+.jp-crop-previewrow { display: flex; justify-content: center; margin-top: 14px; }
+.jp-crop-preview {
+  width: ${CROP_PREVIEW_PX}px;
+  height: ${CROP_PREVIEW_PX}px;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  background: rgba(255, 255, 255, 0.04);
+}
+.jp-crop-preview img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: none;
+  pointer-events: none;
+}
+.jp-crop-error {
+  font-size: 12px;
+  color: #fca5a5;
+  padding: 24px 0;
+  text-align: center;
+}
+.jp-crop-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+`;
+}
+
+/**
  * How many A4 sheets this comes out on. An honest number shown on screen, not
  * a layout constraint — a chart of twelve 34mm slots is 400mm of strip and no
  * orientation makes that one page. Telling a teacher before they print beats
@@ -412,6 +542,16 @@ export default function ClassroomJobsPage() {
    *  on exactly that row's icon menu, never the whole list. */
   const [iconUploadingId, setIconUploadingId] = useState<string | null>(null);
   const [iconError, setIconError] = useState('');
+  /** The job currently open in the crop modal, and the URL it is cropping —
+   *  `revoke: true` when that URL is a local `URL.createObjectURL(file)` this
+   *  page must free once the modal closes (a freshly picked file); `false`
+   *  when it is the job's own already-uploaded `imageUrl` ("Adjust picture"),
+   *  which this page did not create and must not revoke. */
+  const [cropState, setCropState] = useState<{
+    job: ClassroomJob;
+    imageUrl: string;
+    revoke: boolean;
+  } | null>(null);
 
   /** The signature of what the server last confirmed. Compared against the
    *  live chart to answer "unsaved changes" without a second copy of the list. */
@@ -754,6 +894,46 @@ export default function ClassroomJobsPage() {
     [classroomId]
   );
 
+  /** A freshly picked file opens the cropper on a local object URL — nothing
+   *  is uploaded until the teacher confirms the crop. */
+  const openCropForFile = useCallback((job: ClassroomJob, file: File) => {
+    setCropState({ job, imageUrl: URL.createObjectURL(file), revoke: true });
+  }, []);
+
+  /** "Adjust picture" re-opens the cropper on the job's OWN already-uploaded
+   *  image — nothing local to revoke when this one closes. */
+  const openCropForExisting = useCallback((job: ClassroomJob) => {
+    if (!job.imageUrl) return;
+    setCropState({ job, imageUrl: job.imageUrl, revoke: false });
+  }, []);
+
+  const closeCrop = useCallback(() => {
+    setCropState((prev) => {
+      if (prev?.revoke) URL.revokeObjectURL(prev.imageUrl);
+      return null;
+    });
+  }, []);
+
+  /**
+   * The crop modal hands back a blob and nothing else — this feeds it through
+   * the EXISTING upload path exactly as a plain file pick always has, so the
+   * spinner, the error banner and the replace-cleanup DELETE all come free.
+   * `cropState.job` is the snapshot taken when the modal opened; its
+   * `imagePath` (if any) is what `uploadJobIcon` cleans up once the new
+   * picture is safely stored — a re-crop of an existing picture is a
+   * replacement like any other.
+   */
+  const handleCropped = useCallback(
+    (blob: Blob) => {
+      if (!cropState) return;
+      const { job } = cropState;
+      closeCrop();
+      const file = new File([blob], `${job.id}.png`, { type: 'image/png' });
+      void uploadJobIcon(job, file);
+    },
+    [cropState, closeCrop, uploadJobIcon]
+  );
+
   /** Built once rather than per row — every JobRow shows the same six. */
   const rowLabels = useMemo(
     () => ({
@@ -764,6 +944,7 @@ export default function ClassroomJobsPage() {
       moveUp: tx('classroomJobs.moveUp'),
       moveDown: tx('classroomJobs.moveDown'),
       uploadPicture: tx('classroomJobs.uploadPicture'),
+      adjustPicture: tx('classroomJobs.adjustPicture'),
       removePicture: tx('classroomJobs.removePicture'),
       uploading: tx('classroomJobs.uploading'),
     }),
@@ -793,6 +974,16 @@ export default function ClassroomJobsPage() {
   // headed with nothing.
   const defaultTitle = tx('classroomJobs.posterTitle', DEFAULT_POSTER_TITLE);
   const effectiveTitle = title.trim() ? title.trim() : defaultTitle;
+
+  /** Built once, same as `rowLabels` — the crop modal shows the same five
+   *  strings regardless of which job opened it. */
+  const cropLabels = {
+    title: tx('classroomJobs.cropTitle'),
+    zoom: tx('classroomJobs.cropZoom'),
+    cancel: tx('classroomJobs.cropCancel'),
+    use: tx('classroomJobs.cropUse'),
+    loadError: tx('classroomJobs.cropLoadError'),
+  };
 
   const sheet = (
     <JobsPosterSheet
@@ -992,7 +1183,8 @@ export default function ClassroomJobsPage() {
                     onRemove={removeJob}
                     onMove={moveJob}
                     uploading={iconUploadingId === job.id}
-                    onUploadIcon={(file) => uploadJobIcon(job, file)}
+                    onPickFile={(file) => openCropForFile(job, file)}
+                    onAdjustPicture={() => openCropForExisting(job)}
                     onRemoveIcon={() => removeJobIcon(job)}
                   />
                 ))}
@@ -1083,6 +1275,17 @@ export default function ClassroomJobsPage() {
             )}
           </section>
         </main>
+
+        {/* The icon cropper — mounted only inside this print:hidden branch,
+            so it never has anything to hide from the print stylesheet. */}
+        {cropState && (
+          <IconCropModal
+            imageUrl={cropState.imageUrl}
+            onCancel={closeCrop}
+            onUse={handleCropped}
+            labels={cropLabels}
+          />
+        )}
       </div>
 
       {/* Print-only layout */}
@@ -1094,8 +1297,15 @@ export default function ClassroomJobsPage() {
         rather than styled-jsx because `@page` has to change with the chosen
         mode, and because nothing in it is school-supplied: the colours travel
         as CSS custom properties on the element, not as CSS text.
+
+        🚨 STILL THE ONE TOP-LEVEL <style> TAG. The crop modal's CSS is
+        concatenated onto the SAME string rather than given a tag of its own —
+        `cropModalCss()` has no dependency on `mode`/`slotSize` and is present
+        regardless of whether the modal happens to be open, so folding it in
+        here costs nothing and keeps the "one style tag" rule intact even
+        though the modal itself only mounts conditionally.
       */}
-      <style dangerouslySetInnerHTML={{ __html: posterCss(mode, slotSize) }} />
+      <style dangerouslySetInnerHTML={{ __html: posterCss(mode, slotSize) + cropModalCss() }} />
     </>
   );
 }
@@ -1123,7 +1333,8 @@ function JobRow({
   onRemove,
   onMove,
   uploading,
-  onUploadIcon,
+  onPickFile,
+  onAdjustPicture,
   onRemoveIcon,
 }: {
   job: ClassroomJob;
@@ -1141,6 +1352,7 @@ function JobRow({
     moveUp: string;
     moveDown: string;
     uploadPicture: string;
+    adjustPicture: string;
     removePicture: string;
     uploading: string;
   };
@@ -1150,7 +1362,11 @@ function JobRow({
   /** True while THIS job's picture is mid-upload — drives the spinner/disabled
    *  state on this row's menu alone. */
   uploading: boolean;
-  onUploadIcon: (file: File) => void;
+  /** A file was just picked — opens the cropper on it, uploads nothing yet. */
+  onPickFile: (file: File) => void;
+  /** "Adjust picture" — opens the cropper on the job's OWN already-uploaded
+   *  image. Only ever offered when `job.imageUrl` is set. */
+  onAdjustPicture: () => void;
   onRemoveIcon: () => void;
 }) {
   const held = job.childId ? students.find((s) => s.id === job.childId) : undefined;
@@ -1230,6 +1446,19 @@ function JobRow({
                 <button
                   type="button"
                   onClick={() => {
+                    onAdjustPicture();
+                    setIconMenuOpen(false);
+                  }}
+                  disabled={uploading}
+                  className="btn btn-ghost btn-sm w-full justify-start"
+                >
+                  {labels.adjustPicture}
+                </button>
+              )}
+              {job.imageUrl && (
+                <button
+                  type="button"
+                  onClick={() => {
                     onRemoveIcon();
                     setIconMenuOpen(false);
                   }}
@@ -1250,7 +1479,7 @@ function JobRow({
               const file = e.target.files?.[0];
               e.target.value = '';
               setIconMenuOpen(false);
-              if (file) onUploadIcon(file);
+              if (file) onPickFile(file);
             }}
           />
         </div>
@@ -1320,6 +1549,266 @@ function JobRow({
           ⚠ {firstName(held.name)} {warnText}
         </p>
       )}
+    </div>
+  );
+}
+
+// ── the icon cropper ─────────────────────────────────────────────────────────
+// A hand-rolled square cropper — no new dependency, same ethos as the canvas
+// work in lib/montree/brand-kit/extract.ts: a plain `<canvas>`, pointer events
+// for pan, a range input for zoom, and `computeCropGeometry` doing every bit
+// of the actual math so this component only ever renders numbers it did not
+// have to derive itself.
+//
+// Opens over EITHER a freshly picked file's object URL, or an already-uploaded
+// job picture's own `imageUrl` ("Adjust picture") — the caller decides which,
+// this component only ever sees "an image URL to crop".
+
+function IconCropModal({
+  imageUrl,
+  onCancel,
+  onUse,
+  labels,
+}: {
+  imageUrl: string;
+  onCancel: () => void;
+  onUse: (blob: Blob) => void;
+  labels: { title: string; zoom: string; cancel: string; use: string; loadError: string };
+}) {
+  const imgRef = useRef<HTMLImageElement>(null);
+  /** The raw pointer position at the start of the current drag — null when
+   *  not dragging. Only ever read to compute the NEXT delta; the accumulated
+   *  position lives in `offset` below. */
+  const dragRef = useRef<{ x: number; y: number } | null>(null);
+
+  const [imgSize, setImgSize] = useState<{ w: number; h: number } | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [zoom, setZoom] = useState(1);
+  /** Absolute image position in frame-space CSS pixels — always the CLAMPED
+   *  value `computeCropGeometry` last returned, never a raw delta. See that
+   *  function's own note on why this avoids a "dead zone" on reversed drags. */
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [exporting, setExporting] = useState(false);
+
+  // ESC closes the modal — the only keyboard affordance this needs; Cancel
+  // does the same thing with a pointer.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onCancel();
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onCancel]);
+
+  const handleImageLoad = useCallback(() => {
+    const img = imgRef.current;
+    if (!img) return;
+    const w = img.naturalWidth || 1;
+    const h = img.naturalHeight || 1;
+    setImgSize({ w, h });
+    setZoom(1);
+    setOffset(defaultCoverOffset(w, h, CROP_FRAME_PX));
+  }, []);
+
+  const geometry = imgSize
+    ? computeCropGeometry({
+        imgW: imgSize.w,
+        imgH: imgSize.h,
+        frame: CROP_FRAME_PX,
+        zoom,
+        offsetX: offset.x,
+        offsetY: offset.y,
+      })
+    : null;
+
+  const applyZoom = useCallback(
+    (nextZoom: number) => {
+      setZoom(nextZoom);
+      setOffset((prev) => {
+        if (!imgSize) return prev;
+        const g = computeCropGeometry({
+          imgW: imgSize.w,
+          imgH: imgSize.h,
+          frame: CROP_FRAME_PX,
+          zoom: nextZoom,
+          offsetX: prev.x,
+          offsetY: prev.y,
+        });
+        return { x: g.offsetX, y: g.offsetY };
+      });
+    },
+    [imgSize]
+  );
+
+  const applyDrag = useCallback(
+    (dx: number, dy: number) => {
+      setOffset((prev) => {
+        if (!imgSize) return prev;
+        const g = computeCropGeometry({
+          imgW: imgSize.w,
+          imgH: imgSize.h,
+          frame: CROP_FRAME_PX,
+          zoom,
+          offsetX: prev.x + dx,
+          offsetY: prev.y + dy,
+        });
+        return { x: g.offsetX, y: g.offsetY };
+      });
+    },
+    [imgSize, zoom]
+  );
+
+  // Pointer Events unify mouse and touch — one handler pair, not a separate
+  // mouse/touchmove set, and `touch-action: none` on the frame (see
+  // cropModalCss) stops the page from also trying to scroll under the drag.
+  const onPointerDown = useCallback((e: ReactPointerEvent<HTMLDivElement>) => {
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    dragRef.current = { x: e.clientX, y: e.clientY };
+  }, []);
+  const onPointerMove = useCallback(
+    (e: ReactPointerEvent<HTMLDivElement>) => {
+      if (!dragRef.current) return;
+      const dx = e.clientX - dragRef.current.x;
+      const dy = e.clientY - dragRef.current.y;
+      dragRef.current = { x: e.clientX, y: e.clientY };
+      applyDrag(dx, dy);
+    },
+    [applyDrag]
+  );
+  const onPointerUp = useCallback(() => {
+    dragRef.current = null;
+  }, []);
+
+  const handleUse = useCallback(() => {
+    if (!imgRef.current || !geometry) return;
+    setExporting(true);
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = CROP_EXPORT_PX;
+      canvas.height = CROP_EXPORT_PX;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('no 2d context');
+      ctx.drawImage(
+        imgRef.current,
+        geometry.sourceX,
+        geometry.sourceY,
+        geometry.sourceSize,
+        geometry.sourceSize,
+        0,
+        0,
+        CROP_EXPORT_PX,
+        CROP_EXPORT_PX
+      );
+      canvas.toBlob((blob) => {
+        setExporting(false);
+        if (blob) {
+          onUse(blob);
+        } else {
+          setLoadFailed(true);
+        }
+      }, 'image/png');
+    } catch {
+      // A tainted canvas (a cross-origin image the server did not send CORS
+      // headers for) throws HERE rather than handing back a blob — same
+      // failure as `toBlob` returning null, same recovery: ask the teacher to
+      // re-upload rather than fail silently or crash the page.
+      setExporting(false);
+      setLoadFailed(true);
+    }
+  }, [geometry, onUse]);
+
+  const framePx = (n: number) => (imgSize ? (n * CROP_PREVIEW_PX) / CROP_FRAME_PX : 0);
+
+  return (
+    <div className="jp-crop-overlay" role="dialog" aria-modal="true" aria-label={labels.title}>
+      <div className="jp-crop-panel">
+        <h3 className="jp-crop-title">{labels.title}</h3>
+
+        {loadFailed ? (
+          <p className="jp-crop-error">{labels.loadError}</p>
+        ) : (
+          <>
+            <div
+              className="jp-crop-frame"
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onPointerLeave={onPointerUp}
+              onPointerCancel={onPointerUp}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                ref={imgRef}
+                src={imageUrl}
+                alt=""
+                crossOrigin="anonymous"
+                draggable={false}
+                onLoad={handleImageLoad}
+                onError={() => setLoadFailed(true)}
+                className="jp-crop-img"
+                style={
+                  geometry && imgSize
+                    ? {
+                        width: `${imgSize.w * geometry.scale}px`,
+                        height: `${imgSize.h * geometry.scale}px`,
+                        transform: `translate(${geometry.offsetX}px, ${geometry.offsetY}px)`,
+                      }
+                    : undefined
+                }
+              />
+            </div>
+
+            <label className="jp-crop-zoomrow">
+              <span>{labels.zoom}</span>
+              <input
+                type="range"
+                min={MIN_ZOOM}
+                max={MAX_ZOOM}
+                step={0.01}
+                value={zoom}
+                disabled={!imgSize}
+                onChange={(e) => applyZoom(Number(e.target.value))}
+              />
+            </label>
+
+            {/* The live preview at the icon's own footprint — exactly the
+                same framing, scaled down, so what a teacher sees here is what
+                prints on the poster. */}
+            <div className="jp-crop-previewrow">
+              <div className="jp-crop-preview" aria-hidden="true">
+                {geometry && imgSize && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={imageUrl}
+                    alt=""
+                    crossOrigin="anonymous"
+                    draggable={false}
+                    style={{
+                      width: `${framePx(imgSize.w * geometry.scale)}px`,
+                      height: `${framePx(imgSize.h * geometry.scale)}px`,
+                      transform: `translate(${framePx(geometry.offsetX)}px, ${framePx(geometry.offsetY)}px)`,
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+          </>
+        )}
+
+        <div className="jp-crop-actions">
+          <button type="button" onClick={onCancel} className="btn btn-ghost btn-sm">
+            {labels.cancel}
+          </button>
+          <button
+            type="button"
+            onClick={handleUse}
+            disabled={!geometry || exporting || loadFailed}
+            className="btn btn-primary btn-sm"
+          >
+            {labels.use}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
