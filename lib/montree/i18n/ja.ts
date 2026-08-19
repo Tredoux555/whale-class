@@ -1584,6 +1584,8 @@ export const ja: Record<string, string> = {
   'tools.helper_strips_desc': 'クラスの当番ポスター用、写真付きの切り取り名前カード',
   'tools.classroom_jobs': 'クラスのお仕事ボード',
   'tools.classroom_jobs_desc': '当番ごとに子どもの名前を入れて印刷できる当番表',
+  'tools.classroom_helpers': 'お当番係',
+  'tools.classroom_helpers_desc': '当番表とお当番名前カードを、ひとつにまとめました',
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': '受付サインシート',

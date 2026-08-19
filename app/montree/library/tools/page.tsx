@@ -128,18 +128,11 @@ const TOOLS = [
     gradient: 'from-emerald-500 to-green-600',
   },
   {
-    href: '/montree/library/tools/classroom-jobs',
+    href: '/montree/library/tools/classroom-helpers',
     icon: '🪧',
-    titleKey: 'tools.classroom_jobs',
-    descKey: 'tools.classroom_jobs_desc',
+    titleKey: 'tools.classroom_helpers',
+    descKey: 'tools.classroom_helpers_desc',
     gradient: 'from-sky-600 to-indigo-700',
-  },
-  {
-    href: '/montree/library/tools/helper-strips',
-    icon: '✂️',
-    titleKey: 'tools.helper_strips',
-    descKey: 'tools.helper_strips_desc',
-    gradient: 'from-sky-500 to-blue-700',
   },
   {
     href: '/montree/library/tools/daily-schedule',

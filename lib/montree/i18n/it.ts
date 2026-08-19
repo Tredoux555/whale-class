@@ -1584,6 +1584,8 @@ export const it: Record<string, string> = {
   'tools.helper_strips_desc': 'Strisce di nome ritagliabili con foto per il poster degli Incarichi di Classe',
   'tools.classroom_jobs': 'Cartellone degli incarichi',
   'tools.classroom_jobs_desc': 'Un cartellone stampabile degli incarichi con un bambino per ciascuno',
+  'tools.classroom_helpers': 'Aiutanti di Classe',
+  'tools.classroom_helpers_desc': 'Il cartellone degli incarichi e le strisce nome degli aiutanti, tutto in un unico posto',
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Foglio Firme',

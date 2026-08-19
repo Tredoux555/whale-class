@@ -1870,6 +1870,8 @@ export const en = {
   'tools.helper_strips_desc': 'Cut-out name strips with photos for the Classroom Jobs poster',
   'tools.classroom_jobs': 'Classroom Jobs Poster',
   'tools.classroom_jobs_desc': 'A printable jobs chart with a child on every job',
+  'tools.classroom_helpers': 'Classroom Helpers',
+  'tools.classroom_helpers_desc': 'The jobs poster and helper name strips, together in one place',
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Sign-In Sheet',

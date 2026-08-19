@@ -1584,6 +1584,8 @@ export const de: Record<string, string> = {
   'tools.helper_strips_desc': 'Ausschneidbare Namensstreifen mit Fotos für das Klassendienst-Poster',
   'tools.classroom_jobs': 'Ämterplan der Klasse',
   'tools.classroom_jobs_desc': 'Eine druckbare Ämtertafel mit einem Kind für jedes Amt',
+  'tools.classroom_helpers': 'Klassendienste',
+  'tools.classroom_helpers_desc': 'Das Ämterposter und die Helfer-Namensstreifen, alles an einem Ort',
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Anwesenheitsliste',

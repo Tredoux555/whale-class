@@ -1649,6 +1649,8 @@ export const es: Record<string, string> = {
   'tools.helper_strips_desc': 'Tiras de nombre recortables con fotos para el póster de Tareas de Clase',
   'tools.classroom_jobs': 'Cartel de responsabilidades',
   'tools.classroom_jobs_desc': 'Un cartel imprimible de responsabilidades con un niño asignado a cada una',
+  'tools.classroom_helpers': 'Ayudantes de Clase',
+  'tools.classroom_helpers_desc': 'El cartel de tareas y las tiras de nombre para ayudantes, todo en un solo lugar',
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Hoja de Registro',

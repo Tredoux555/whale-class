@@ -1584,6 +1584,8 @@ export const pt: Record<string, string> = {
   'tools.helper_strips_desc': 'Tiras de nome recortáveis com fotos para o cartaz de Tarefas da Turma',
   'tools.classroom_jobs': 'Cartaz de tarefas da turma',
   'tools.classroom_jobs_desc': 'Um cartaz imprimível de tarefas com uma criança em cada função',
+  'tools.classroom_helpers': 'Ajudantes da Turma',
+  'tools.classroom_helpers_desc': 'O cartaz de tarefas e as tiras de nome dos ajudantes, tudo em um só lugar',
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Folha de Presença',

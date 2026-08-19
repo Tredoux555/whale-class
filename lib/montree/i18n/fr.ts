@@ -1584,6 +1584,8 @@ export const fr: Record<string, string> = {
   'tools.helper_strips_desc': "Bandes de nom découpables avec photos pour l'affiche des Tâches de Classe",
   'tools.classroom_jobs': 'Tableau des responsabilités',
   'tools.classroom_jobs_desc': 'Un tableau imprimable des responsabilités, avec un enfant pour chacune',
+  'tools.classroom_helpers': 'Aides de Classe',
+  'tools.classroom_helpers_desc': "L'affiche des tâches et les bandes de nom des responsables, réunies au même endroit",
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Feuille de Présence',

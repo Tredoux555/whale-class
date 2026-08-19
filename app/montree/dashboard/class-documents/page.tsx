@@ -29,7 +29,6 @@ import {
   Tag,
   ClipboardList,
   Cake,
-  Scissors,
   ListChecks,
   LayoutGrid,
 } from 'lucide-react';
@@ -103,8 +102,7 @@ const COPY: Record<string, string> = {
   'classDocs.tools.labels': 'Name Labels & Tags',
   'classDocs.tools.signInSheet': 'Sign-In Sheet',
   'classDocs.tools.birthdays': 'Birthday Board & Cards',
-  'classDocs.tools.classroomJobs': 'Classroom Jobs Poster',
-  'classDocs.tools.helperStrips': 'Helper Name Strips',
+  'classDocs.tools.classroomHelpers': 'Classroom Helpers',
   'classDocs.tools.cardGenerator': 'Card Generator',
   'classDocs.tools.all': 'All tools →',
   'classDocs.brand.title': 'Class emblem',
@@ -153,10 +151,9 @@ const CREATION_TOOLS: { key: string; href: string; Icon: typeof Tag }[] = [
   { key: 'classDocs.tools.labels', href: '/montree/dashboard/labels', Icon: Tag },
   { key: 'classDocs.tools.signInSheet', href: '/montree/library/tools/sign-in-sheet', Icon: ClipboardList },
   { key: 'classDocs.tools.birthdays', href: '/montree/library/tools/birthdays', Icon: Cake },
-  // The chart and the strips that pop into it — kept next to each other on
-  // purpose, because a teacher who prints one wants the other.
-  { key: 'classDocs.tools.classroomJobs', href: '/montree/library/tools/classroom-jobs', Icon: ListChecks },
-  { key: 'classDocs.tools.helperStrips', href: '/montree/library/tools/helper-strips', Icon: Scissors },
+  // The jobs poster and the name strips that pop into it — now one tool
+  // with a tab switcher, so one row here takes a teacher straight to either.
+  { key: 'classDocs.tools.classroomHelpers', href: '/montree/library/tools/classroom-helpers', Icon: ListChecks },
   { key: 'classDocs.tools.cardGenerator', href: '/montree/library/tools/card-generator', Icon: LayoutGrid },
   { key: 'classDocs.tools.all', href: '/montree/library/tools', Icon: Wand2 },
 ];

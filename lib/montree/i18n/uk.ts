@@ -1584,6 +1584,8 @@ export const uk: Record<string, string> = {
   'tools.helper_strips_desc': 'Смужки з іменем і фото для плаката "Чергування в класі" (для вирізання)',
   'tools.classroom_jobs': 'Плакат класних обов’язків',
   'tools.classroom_jobs_desc': 'Друкований плакат обов’язків, де до кожного призначено дитину',
+  'tools.classroom_helpers': 'Чергові в класі',
+  'tools.classroom_helpers_desc': 'Плакат чергувань та іменні смужки для чергових, все в одному місці',
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Лист реєстрації',

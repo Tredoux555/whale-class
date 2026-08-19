@@ -1584,6 +1584,8 @@ export const nl: Record<string, string> = {
   'tools.helper_strips_desc': "Uitknipbare naamstrookjes met foto's voor het Klassendienst-poster",
   'tools.classroom_jobs': 'Takenposter van de klas',
   'tools.classroom_jobs_desc': 'Een printbare takenkaart met bij elke taak een kind',
+  'tools.classroom_helpers': 'Klassendienst Hulpjes',
+  'tools.classroom_helpers_desc': "Het takenposter en de naamstrookjes voor hulpjes, allemaal op één plek",
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Aanwezigheidslijst',

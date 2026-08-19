@@ -1830,6 +1830,8 @@ export const zh = {
   'tools.helper_strips_desc': '带照片的可剪裁姓名条，用于"班级值日"海报',
   'tools.classroom_jobs': '班级值日表',
   'tools.classroom_jobs_desc': '可打印的值日岗位表，每个岗位都写上孩子的名字',
+  'tools.classroom_helpers': '班级值日助手',
+  'tools.classroom_helpers_desc': '值日岗位表和可剪裁姓名条，都在同一个地方',
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': '签到表',

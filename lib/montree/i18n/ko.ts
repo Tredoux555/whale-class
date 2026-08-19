@@ -1584,6 +1584,8 @@ export const ko: Record<string, string> = {
   'tools.helper_strips_desc': '학급 당번 포스터용 사진이 있는 오려낼 이름표',
   'tools.classroom_jobs': '학급 역할 포스터',
   'tools.classroom_jobs_desc': '역할마다 아이 이름을 넣어 인쇄할 수 있는 역할 게시판',
+  'tools.classroom_helpers': '학급 도우미',
+  'tools.classroom_helpers_desc': '역할 게시판과 도우미 이름표를 한곳에서 관리하세요',
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': '출석 서명지',

@@ -1584,6 +1584,8 @@ export const ru: Record<string, string> = {
   'tools.helper_strips_desc': 'Вырезные именные полоски с фото для плаката "Дежурства по классу"',
   'tools.classroom_jobs': 'Плакат классных обязанностей',
   'tools.classroom_jobs_desc': 'Печатный плакат обязанностей, где к каждой закреплён ребёнок',
+  'tools.classroom_helpers': 'Дежурства по классу',
+  'tools.classroom_helpers_desc': 'Плакат обязанностей и именные полоски для дежурных — всё в одном месте',
   'tools.daily_schedule': 'Daily Schedule',
   'tools.daily_schedule_desc': 'One picture and one big label per part of the day - print, cut, and stick on the wall',
   'tools.sign_in_sheet': 'Лист регистрации',
