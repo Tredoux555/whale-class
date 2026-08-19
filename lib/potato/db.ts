@@ -122,6 +122,22 @@ interface Capabilities {
    * upload for a column that has nothing to do with whether the photo saves.
    */
   attribution: boolean;
+  /**
+   * v1.0.1 "Scenes" — tp_scenes exists and tp_photos.scene_id exists
+   * (migration 335). Probed on tp_photos.scene_id alone, because the column
+   * and the table land in the SAME migration: if the column is missing the
+   * table is missing too, and probing the table directly would raise 42P01
+   * (a hard error) instead of the soft 42703 this whole mechanism runs on.
+   *
+   * The degrade is the same shape as `attribution`: an upload that names a
+   * scene before 335 is pasted still SAVES THE PHOTO, unlabelled, and says so
+   * by returning `sceneId: null`. Losing a label is a shrug; losing the shot a
+   * teacher just took is not. The genuinely new surfaces (the /scenes routes,
+   * and a PATCH whose whole purpose is to move a photo between scenes) return
+   * setup_pending instead, because for them there is nothing honest to
+   * degrade to.
+   */
+  scenes: boolean;
 }
 
 const NEGATIVE_TTL_MS = 30_000;
@@ -147,16 +163,18 @@ export async function potatoCapabilities(supabase: UntypedClient): Promise<Capab
       capsCache.value.jobs &&
       capsCache.value.classes &&
       capsCache.value.send &&
-      capsCache.value.attribution;
+      capsCache.value.attribution &&
+      capsCache.value.scenes;
     if (fresh || now - capsCache.at < NEGATIVE_TTL_MS) return capsCache.value;
   }
-  const [jobs, classes, send, attribution] = await Promise.all([
+  const [jobs, classes, send, attribution, scenes] = await Promise.all([
     probeColumn(supabase, 'tp_montage_jobs', 'kind, excused_child_ids'),
     probeColumn(supabase, 'tp_classes', 'school_name, school_logo_path, emblem_path'),
     probeColumn(supabase, 'tp_montage_jobs', 'sent_at'),
     probeColumn(supabase, 'tp_photos', 'uploaded_by'),
+    probeColumn(supabase, 'tp_photos', 'scene_id'),
   ]);
-  const value: Capabilities = { jobs, classes, send, attribution };
+  const value: Capabilities = { jobs, classes, send, attribution, scenes };
   capsCache = { value, at: now };
   return value;
 }
@@ -344,6 +362,156 @@ export async function loadWeekPhotos(
   }
 
   return { weekStart, startIso: range.startIso, endIso: range.endIso, photos, byChild, tagsByPhoto };
+}
+
+// ------------------------------------------------------------------ scenes --
+
+/**
+ * A scene is a per-class activity label ("Outdoor time"). See migration 335 for
+ * why children are attached to scenes THROUGH photos rather than through an
+ * attendance table.
+ *
+ * 🚨 Every function below assumes potatoCapabilities().scenes is true. Callers
+ * check that first and either degrade (uploads: save the photo unlabelled) or
+ * return setup_pending (the /scenes routes) — none of them let a pre-migration
+ * 42703 reach a teacher as a 500.
+ */
+export interface PotatoScene {
+  id: string;
+  class_id: string;
+  name: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+const SCENE_COLUMNS = 'id, class_id, name, is_active, created_at';
+
+/** The name shown on a chip, after trimming. Empty means "the teacher typed nothing". */
+export const SCENE_NAME_MAX = 60;
+
+export function cleanSceneName(raw: unknown): string {
+  return typeof raw === 'string' ? raw.trim() : '';
+}
+
+/**
+ * Oldest first, deliberately: the capture chip row must not reshuffle under a
+ * teacher's thumb every time she adds a scene. New scenes append to the end.
+ */
+export async function listScenes(
+  supabase: UntypedClient,
+  classId: string,
+  includeInactive = false,
+): Promise<PotatoScene[]> {
+  let query = supabase.from('tp_scenes').select(SCENE_COLUMNS).eq('class_id', classId);
+  if (!includeInactive) query = query.eq('is_active', true);
+  const { data, error } = await query.order('created_at', { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as PotatoScene[];
+}
+
+/**
+ * Class-ownership gate, same rule as loadOwnedChild: existence is never
+ * ownership. The class id comes from the session, never from the request.
+ */
+export async function loadOwnedScene(
+  supabase: UntypedClient,
+  classId: string,
+  sceneId: string,
+): Promise<PotatoScene | null> {
+  const { data, error } = await supabase
+    .from('tp_scenes')
+    .select(SCENE_COLUMNS)
+    .eq('id', sceneId)
+    .eq('class_id', classId)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as PotatoScene) ?? null;
+}
+
+/**
+ * Is this name already taken by a LIVE scene in this class? Case-insensitive,
+ * because "Outdoor time" and "outdoor time" are the same scene to a human.
+ * `exceptId` lets a rename keep its own name.
+ *
+ * This is the friendly check; uq_tp_scenes_class_name_active is the real one,
+ * and both ends map to the same 409 (see the routes' 23505 handling).
+ */
+export async function findActiveSceneByName(
+  supabase: UntypedClient,
+  classId: string,
+  name: string,
+  exceptId?: string,
+): Promise<PotatoScene | null> {
+  const { data, error } = await supabase
+    .from('tp_scenes')
+    .select(SCENE_COLUMNS)
+    .eq('class_id', classId)
+    .eq('is_active', true)
+    // ilike with the name escaped would be the alternative; eq on a folded
+    // column is not available without a generated column, so the comparison is
+    // done here, on a list that is a handful of rows per class.
+    .limit(200);
+  if (error) throw error;
+  const folded = name.trim().toLowerCase();
+  const hit = ((data ?? []) as PotatoScene[]).find(
+    (scene) => scene.name.trim().toLowerCase() === folded && scene.id !== exceptId,
+  );
+  return hit ?? null;
+}
+
+/**
+ * scene id → how many photos in this class carry it.
+ *
+ * One cheap `head: true` count per scene rather than one big scan of
+ * tp_photos: a class has a handful of scenes and, by the end of a year,
+ * thousands of photos. Counting in Postgres keeps the payload at zero rows and
+ * sidesteps the `.in()` truncation trap this file warns about elsewhere.
+ */
+export async function scenePhotoCounts(
+  supabase: UntypedClient,
+  classId: string,
+  sceneIds: string[],
+): Promise<Map<string, number>> {
+  const counts = new Map<string, number>(sceneIds.map((id) => [id, 0]));
+  if (sceneIds.length === 0) return counts;
+  await Promise.all(
+    sceneIds.map(async (sceneId) => {
+      const { count, error } = await supabase
+        .from('tp_photos')
+        .select('id', { count: 'exact', head: true })
+        .eq('class_id', classId)
+        .eq('scene_id', sceneId);
+      if (error) throw error;
+      counts.set(sceneId, count ?? 0);
+    }),
+  );
+  return counts;
+}
+
+/**
+ * photo id → its scene id (or null). Chunked like every other `.in()` in this
+ * file — a silently truncated list here would blank out a photo's label rather
+ * than fail, which is the worst kind of bug.
+ */
+export async function scenesForPhotos(
+  supabase: UntypedClient,
+  classId: string,
+  photoIds: string[],
+): Promise<Map<string, string | null>> {
+  const byPhoto = new Map<string, string | null>(photoIds.map((id) => [id, null]));
+  for (let i = 0; i < photoIds.length; i += PAGE) {
+    const chunk = photoIds.slice(i, i + PAGE);
+    const { data, error } = await supabase
+      .from('tp_photos')
+      .select('id, scene_id')
+      .eq('class_id', classId)
+      .in('id', chunk);
+    if (error) throw error;
+    for (const row of (data ?? []) as { id: string; scene_id: string | null }[]) {
+      byPhoto.set(row.id, row.scene_id ?? null);
+    }
+  }
+  return byPhoto;
 }
 
 // ------------------------------------------------------------------- proxy --

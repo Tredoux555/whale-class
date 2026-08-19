@@ -4109,3 +4109,13 @@ Tredoux performs exactly two manual actions, both because they require his priva
 2. **Publishing / deploying** — double-clicking a prepared one-click `.command` file (e.g. PUBLISH_DIRECTOR_PLATFORM.command). Going live requires pushing to his private GitHub over SSH, which needs his GitHub credentials + network. The cloud sandbox has no access to his GitHub; the on-device bash has no network; and macOS blocks automated typing into Terminal. So the assistant CANNOT push for him — it must prepare a surgical, ready-to-run publish file (stages ONLY the changed files, never `git add -A`, since the working tree usually has unrelated work-in-progress), make it executable + clear quarantine, then Tredoux double-clicks it.
 
 For every future build: after shipping files to disk, ALWAYS (a) give the SQL in chat, and (b) prepare + arm the one-click publish file and tell him exactly where to double-click. Never leave "it's saved but not live" as a silent gap — he is not a coder and will assume saved = live.
+
+## HARD RULE — Model delegation (set by Tredoux, 2026-08-19)
+The orchestrating/main session NEVER does hands-on work itself. It only
+directs, decides, and verifies verdicts. ALL work is delegated:
+- Sonnet: scouting, research, audits, verification, mechanical ops (file
+  moves, SQL runs, git commits, deploys, browser checks).
+- Opus: building — code, migrations, apps, anything creative/constructive.
+Agent reports must be TERSE (hard line caps) to keep the director's context
+flat. This applies to every future session in this repo. No exceptions
+without Tredoux saying so in that session.

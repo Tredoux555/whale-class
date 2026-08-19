@@ -5,6 +5,7 @@
 //   childIds    — JSON array of tp_children ids, at least one
 //   capturedAt  — OPTIONAL ISO instant: when the shutter actually fired
 //   clientId    — OPTIONAL uuid from the device queue, stable across retries
+//   sceneId     — OPTIONAL tp_scenes uuid: what the class was doing (v1.0.1)
 //
 // A photo with no children tagged counts for nobody and can never reach a
 // film, so it is rejected rather than silently stored.
@@ -28,6 +29,17 @@
 // the storage object name from the client's stable id makes that retry
 // recognisable: the same path means the same capture, so we return the row we
 // already have instead of inserting a duplicate.
+//
+// 🚨 WHY sceneId IS OPTIONAL, AND WHY A BAD ONE IS NOT FATAL-BY-DEFAULT
+// The scene is a label; the photograph is the thing. An absent field means the
+// teacher did not pick a scene (old clients never send it at all — they are
+// untouched). A field that IS sent gets validated properly: it must be a uuid,
+// it must be a scene in HER class, and it must still be live — a request that
+// names somebody else's scene is refused, never silently stored. The one case
+// that degrades instead of failing is the deploy window: if migration 335 has
+// not been pasted yet the `scenes` capability is false, and the photo saves
+// unlabelled with `sceneId: null` in the response, rather than a teacher's
+// morning of shots bouncing off a column that does not exist yet.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'node:crypto';
@@ -44,6 +56,7 @@ import {
   proxyUrl,
   POTATO_BUCKET,
   potatoCapabilities,
+  loadOwnedScene,
 } from '@/lib/potato/db';
 import { storageDateFolders } from '@/lib/potato/week';
 import { resolveCapturedAt } from '@/lib/potato/captured-at';
@@ -58,6 +71,19 @@ const MAX_BYTES = 10 * 1024 * 1024;
 
 /** Whatever the client sends becomes part of a storage path — keep it boring. */
 const CLIENT_ID_RE = /^[A-Za-z0-9][A-Za-z0-9-]{7,63}$/;
+
+/**
+ * What every read of tp_photos in this route comes back as. `scene_id` is
+ * optional because the select list is built at runtime from the capability
+ * probe — supabase-js can only infer a row type from a LITERAL select list, so
+ * a runtime one is cast here instead, once, in one place.
+ */
+interface PhotoRow {
+  id: string;
+  storage_path: string;
+  captured_at: string;
+  scene_id?: string | null;
+}
 
 const EXT_BY_MIME: Record<string, string> = {
   'image/jpeg': 'jpg',
@@ -122,6 +148,17 @@ async function handlePOST(request: NextRequest) {
   const clientId =
     typeof rawClientId === 'string' && CLIENT_ID_RE.test(rawClientId) ? rawClientId : null;
 
+  // ---- sceneId: optional, validated below against the caller's own class ---
+  // An empty string is treated as "not sent" — a multipart form that always
+  // includes the field is easier for the app than one that conditionally omits
+  // it, so "" must mean the same thing as absent: no scene.
+  const rawSceneId = form.get('sceneId');
+  const sceneIdWanted =
+    typeof rawSceneId === 'string' && rawSceneId.trim() !== '' ? rawSceneId.trim() : null;
+  if (sceneIdWanted && !UUID_RE.test(sceneIdWanted)) {
+    return NextResponse.json({ error: 'Invalid sceneId' }, { status: 400 });
+  }
+
   const supabase = potatoDb();
   let storagePath: string | null = null;
   let photoId: string | null = null;
@@ -143,6 +180,41 @@ async function handlePOST(request: NextRequest) {
       return NextResponse.json({ error: 'One of those children isn’t in this class.' }, { status: 403 });
     }
 
+    // v1.4 (uploaded_by) and v1.0.1 (scene_id) both ride on this one probe —
+    // hoisted above the upload so the scene can be validated, and the
+    // idempotency read can ask for scene_id, before a byte is written.
+    const caps = await potatoCapabilities(supabase);
+    // Typed as `string`, not as the literal union: supabase-js parses a literal
+    // select list at compile time, and a UNION of two lists is exactly what
+    // produces the ParserError noise already visible in lib/potato/db.ts.
+    const photoColumns: string = caps.scenes
+      ? 'id, storage_path, captured_at, scene_id'
+      : 'id, storage_path, captured_at';
+
+    // 🚨 Class ownership on the scene too, and it must still be live: a chip
+    // the teacher can no longer see is not a chip she can tag with. Both are
+    // one row's worth of check, and skipping either would let a crafted
+    // request file this class's photo under another class's label.
+    let scene: { id: string; name: string } | null = null;
+    if (sceneIdWanted && caps.scenes) {
+      const found = await loadOwnedScene(supabase, session.classId, sceneIdWanted);
+      if (!found) return NextResponse.json({ error: 'Scene not found' }, { status: 404 });
+      if (found.is_active === false) {
+        return NextResponse.json({ error: 'That scene is hidden.' }, { status: 409 });
+      }
+      scene = { id: found.id, name: found.name };
+    }
+
+    // Every response below reports the scene the ROW actually carries, not the
+    // one the request asked for — on the duplicate paths those can differ, and
+    // the client's chip must follow the database, not its own optimism.
+    const sceneLabel = async (rowSceneId: string | null | undefined) => {
+      if (!rowSceneId) return { sceneId: null as string | null, sceneName: null as string | null };
+      if (scene && scene.id === rowSceneId) return { sceneId: scene.id, sceneName: scene.name };
+      const found = await loadOwnedScene(supabase, session.classId, rowSceneId);
+      return { sceneId: rowSceneId as string | null, sceneName: found?.name ?? null };
+    };
+
     // Folders follow the CLASS calendar at the moment of CAPTURE, so a Friday
     // photo uploaded on Monday still files under Friday's month.
     const { yyyy, mm } = storageDateFolders(klass.tz, capturedAt);
@@ -151,13 +223,14 @@ async function handlePOST(request: NextRequest) {
 
     // Idempotency: if this exact capture already landed, the retry is a no-op.
     if (clientId) {
-      const { data: already, error: alreadyError } = await supabase
+      const { data: alreadyRaw, error: alreadyError } = await supabase
         .from('tp_photos')
-        .select('id, storage_path, captured_at')
+        .select(photoColumns)
         .eq('class_id', session.classId)
         .eq('storage_path', storagePath)
         .maybeSingle();
       if (alreadyError) throw alreadyError;
+      const already = alreadyRaw as PhotoRow | null;
       if (already) {
         return NextResponse.json({
           ok: true,
@@ -167,6 +240,7 @@ async function handlePOST(request: NextRequest) {
             url: proxyUrl(already.storage_path),
             capturedAt: already.captured_at,
             childIds: ownedIds,
+            ...(await sceneLabel(already.scene_id)),
           },
         });
       }
@@ -182,18 +256,19 @@ async function handlePOST(request: NextRequest) {
 
     // v1.4: stamp who took it — feature-detected, so an upload before
     // migration 333 is pasted still saves the photo, just without a name.
-    const caps = await potatoCapabilities(supabase);
+    // v1.0.1: same treatment for the scene (migration 335).
     const insertRow: Record<string, unknown> = {
       class_id: session.classId,
       storage_path: storagePath,
       captured_at: capturedAt.toISOString(),
     };
     if (caps.attribution && session.staffName) insertRow.uploaded_by = session.staffName;
+    if (caps.scenes && scene) insertRow.scene_id = scene.id;
 
-    const { data: photo, error: insertError } = await supabase
+    const { data: photoRaw, error: insertError } = await supabase
       .from('tp_photos')
       .insert(insertRow)
-      .select('id, storage_path, captured_at')
+      .select(photoColumns)
       .maybeSingle();
     if (insertError) {
       // 🚨 AUDIT FIX (v1.2, HIGH): the SELECT-then-INSERT idempotency check
@@ -212,13 +287,14 @@ async function handlePOST(request: NextRequest) {
         // never let the generic catch below delete that object out from under
         // whichever request actually won the race.
         storagePath = null;
-        const { data: winner, error: winnerError } = await supabase
+        const { data: winnerRaw, error: winnerError } = await supabase
           .from('tp_photos')
-          .select('id, storage_path, captured_at')
+          .select(photoColumns)
           .eq('class_id', session.classId)
           .eq('storage_path', conflictingPath)
           .maybeSingle();
         if (winnerError) throw winnerError;
+        const winner = winnerRaw as PhotoRow | null;
         if (winner) {
           return NextResponse.json({
             ok: true,
@@ -229,12 +305,14 @@ async function handlePOST(request: NextRequest) {
               url: proxyUrl(winner.storage_path),
               capturedAt: winner.captured_at,
               childIds: ownedIds,
+              ...(await sceneLabel(winner.scene_id)),
             },
           });
         }
       }
       throw insertError;
     }
+    const photo = photoRaw as PhotoRow | null;
     if (!photo) throw new Error('Photo row was not returned after insert');
     photoId = photo.id;
 
@@ -254,6 +332,9 @@ async function handlePOST(request: NextRequest) {
         url: proxyUrl(photo.storage_path),
         capturedAt: photo.captured_at,
         childIds: ownedIds,
+        // null when she picked no scene AND when migration 335 has not landed
+        // yet — the client treats both the same way: an unlabelled photo.
+        ...(await sceneLabel(caps.scenes ? photo.scene_id : null)),
       },
     });
   } catch (error) {
