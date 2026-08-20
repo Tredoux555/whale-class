@@ -469,12 +469,19 @@ function posterCss(mode: PosterMode, slotSize: SlotSize): string {
 }
 /* The child's name — the loudest text on the card, sized to read from 2-3m
    across a classroom. Font-size is --jp-name-fs, same per-card computation
-   as the label above; same wrap-before-ellipsis rule. */
+   as the label above; same wrap-before-ellipsis rule.
+
+   🚨 LINE-HEIGHT IS 1.22, NOT 1.05 — a lowercase name (unlike the all-caps
+   label above it) has descenders, and this rounded display font's "y"/"g"/
+   "j" clipped at the box edge when this shared the label's tighter 1.05.
+   1.22 is the SAME number poster-layout.ts's NAME_LINE_HEIGHT uses for its
+   own stack-height budgeting, so a name box never asks for less room on
+   screen than the harness proved it needs. */
 .jp-child {
   font-size: var(--jp-name-fs);
   font-weight: 700;
   color: var(--jp-ink);
-  line-height: 1.05;
+  line-height: 1.22;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;

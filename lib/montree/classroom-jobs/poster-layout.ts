@@ -268,6 +268,17 @@ export const GRID_ICON_FONT_OF_SIDE = GRID_ICON_FONT_FRAC;
 export const LABEL_CHAR_K = 0.72;
 export const NAME_CHAR_K = 0.55;
 
+/** .jp-child's actual CSS line-height (see ClassroomJobsTool.tsx's
+ *  posterCss) — 1.22, not the label's tighter 1.05, because a lowercase
+ *  name has descenders ("y", "g", "j") that this rounded display font
+ *  clips without the extra headroom. Any stack-height budget in this file
+ *  (or its harness) that includes a name box must use THIS number, not
+ *  guess a line-height of its own, or the two could silently drift apart
+ *  the way the un-exported guess this replaces briefly did. The label's
+ *  own 1.05 stays a local literal in posterCss()/the harness — it has no
+ *  descenders to budget for, so there is nothing here worth a name for. */
+export const NAME_LINE_HEIGHT = 1.22;
+
 /** How many characters, AT THE BASE FONT SIZE, fit across a zone this wide —
  *  the length past which `fontFor` starts shrinking. */
 export function maxCharsFor(zoneWidthMM: number, k: number, baseMM: number): number {
