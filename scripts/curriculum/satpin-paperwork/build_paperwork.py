@@ -232,12 +232,23 @@ def page_sequencing(c, cfg, art, page_no, page_total):
 
 
 def page_match(c, cfg, art, page_no, page_total):
+    # 2026-08-20: wording changed from "Read the words. Draw a line to the
+    # picture." — children at these lessons cannot yet read most of these
+    # words; matching (not reading) is the skill this page actually trains.
     page_chrome(c, cfg, 'Match',
-                'Read the words. Draw a line to the picture.',
+                'Match the words to the pictures. Draw a line.',
                 page_no, page_total)
 
     by_order = {p['order']: p for p in cfg['pages']}
     right_order = cfg['matchDisplayOrder']
+    # Both columns are addressed in *order* space. The left column used to be
+    # indexed by array position (cfg['pages'][i]) while the right column was
+    # indexed by order value (matchDisplayOrder[i]); the two only agree while
+    # pages[] happens to be stored sorted with orders 1..n, so any book whose
+    # pages[] were reordered or renumbered would have silently paired
+    # sentences against the wrong pictures. Sorting once removes that trap.
+    left_order = [p['order'] for p in sorted(cfg['pages'],
+                                             key=lambda p: p['order'])]
 
     n = len(cfg['pages'])                          # locked satpin books: 5;
                                                     # Dark Phonics books: 3-4
@@ -254,7 +265,7 @@ def page_match(c, cfg, art, page_no, page_total):
         ytop = top - i * pitch
         ymid = ytop - imh / 2
 
-        s = by_order[cfg['pages'][i]['order']]['sentence']
+        s = by_order[left_order[i]]['sentence']
         size = fit(c, s, 'WordRg', 14, dot_l - M - 6 * mm)
         c.setFont('WordRg', size)
         c.setFillColorRGB(*INK)

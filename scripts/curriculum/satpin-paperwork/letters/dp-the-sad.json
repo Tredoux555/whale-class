@@ -82,9 +82,9 @@
       "imageArt": "../dinosaur-on-a-drum/p4-dinosaur.png"
     },
     {
-      "question": "was the sloth sad?",
+      "question": "was the owl sad?",
       "answer": false,
-      "imageArt": "../snake-in-my-sock/p4-sloth.png"
+      "imageArt": "../owl-ate-an-orange/p1-owl.png"
     },
     {
       "question": "was the cow sad?",
@@ -100,6 +100,7 @@
   "_notes": {
     "generated": "Generated 2026-08-08 for the 13-book the-sat cast paperwork rollout, following dp-the-spat.json / dp-the-pit.json conventions -- do not hand-edit blindly, keep in sync with books_def.py's the-sad entry.",
     "recap": "pages[] selects a 4-page subset of this book's 6-strong the-sat cast (ant, snake, cat) plus a 4th page -- the book's own potato finale sentence where the book resolves one (e.g. \"The potato didn't chase the rat!\"), or another cast page where the potato page is an unresolved cliffhanger ('And the...?!', no text) or where its sentence doesn't carry the target word. apple/sun/star (or the extra p9 beat on the-cot/the-kit) sit out, same exclusion rule as dp-the-pit. Recap (style='drop') pages are always excluded.",
-    "yesno": "10 items (5 true, 5 false) per Tredoux's 2026-08-08 brief -- widening from dp-the-spat/dp-the-pit's 4-item convention (which build_paperwork.py still chunks correctly at 5/page). 5 true from this book's own cast pages; 5 false either the book's own potato page answering false to the book's question (when the story itself says the potato does NOT do the action), or borrowed decoy words/art from other Dark Phonics books via a relative ../<slug>/ imageArt path -- verified those source files exist."
+    "yesno": "10 items (5 true, 5 false) per Tredoux's 2026-08-08 brief -- widening from dp-the-spat/dp-the-pit's 4-item convention (which build_paperwork.py still chunks correctly at 5/page). 5 true from this book's own cast pages; 5 false either the book's own potato page answering false to the book's question (when the story itself says the potato does NOT do the action), or borrowed decoy words/art from other Dark Phonics books via a relative ../<slug>/ imageArt path -- verified those source files exist.",
+    "fable-2026-08-20": "2026-08-20: sloth decoy replaced (art removed in snake-book cast rebuild) — Fable fleet fix, per standard borrow convention. Tredoux to review. Same dead ../snake-in-my-sock/p4-sloth.png reference the-rat carried (not in the original brief, found by preflight — the pack could not be rebuilt at all until it was fixed). Used owl (../owl-ate-an-orange/p1-owl.png); fox is already a decoy on this sheet."
   }
 }

@@ -397,7 +397,15 @@ def trace_page(c, cfg, idx, total, sentence, art_path):
 
     # ---- trace it — exact existing format, untouched ----------------------
     section_label(c, MG, TRACE_TOP + 9.5 * mm, 'trace it')
-    u, rows = sf.fit_wrap(sentence, CW - 4 * mm, TRACE_U, maxlines=2,
+    # 2026-08-20 FIX: the traced sentence gets exactly ONE writing line,
+    # shrunk until it fits. It used to be allowed to wrap onto two lines
+    # (maxlines=2) — and because the page only ever draws two writing lines,
+    # any sentence long enough to wrap silently ate the second one and the
+    # "NOW YOU" independent-practice section vanished from the page (whole
+    # books lost it: the-pit, the-mat, the-cot, the-egg, the-mud, the-rat).
+    # The second line belongs to the child and is never surrendered; long
+    # sentences pay for it in x-height instead.
+    u, rows = sf.fit_wrap(sentence, CW - 4 * mm, TRACE_U, maxlines=1,
                           tracking=0.12)
     base = TRACE_TOP - 2 * u
     # always two writing lines: whatever the tracing does not use is left blank

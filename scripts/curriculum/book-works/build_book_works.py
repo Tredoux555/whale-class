@@ -197,6 +197,54 @@ def load_easy_reader(slug):
     return reader['title'], rows, [], 'easy-reader'
 
 
+def continuation_case(fragment):
+    """A spread's `text` continues the sentence its `nar` started, so it must
+    not carry a capital -- books_def.py's own locked TEXT RULE #1 ("on a page
+    with a `nar`, `text` starts lowercase -- it is never a fresh sentence").
+
+    A few pre-rule books (the-pit, the-sat, the-spat) still store the
+    capitalised form, which printed mid-sentence capitals on the works
+    sheets: "The ant Sat in the pit!". Lower the leading letter here so the
+    works agree with the book's rule and with the letter JSONs (which already
+    read "The ant sat in the pit!").
+
+    Deliberately narrow: an ALL-CAPS opening word is a shouted target word
+    (e.g. 'SOCK!'), a house convention that is left exactly as it is.
+    """
+    if not fragment:
+        return fragment
+    first = fragment.split(' ', 1)[0].strip('!?.,')
+    if len(first) > 1 and first.isupper():
+        return fragment
+    return fragment[0].lower() + fragment[1:]
+
+
+# Pre-decodable books (lessons 1-2). Their books_def spreads are phoneme play
+# ('Sss- SUN!', 'Sss- SOAP!') and, for ant-on-my-apple, absent altogether, so
+# neither yields the decodable sentence set the four works need. Their letter
+# JSONs do carry it (pages[].sentence + pages[].art), so these two build from
+# there instead. Everything else keeps its existing source untouched.
+DP_JSON_SLUGS = {'snake-in-my-sock', 'ant-on-my-apple'}
+DP_LETTERS_DIR = os.path.join(REPO, 'scripts', 'curriculum',
+                              'satpin-paperwork', 'letters')
+
+
+def load_dp_json(slug):
+    path = os.path.join(DP_LETTERS_DIR, 'dp-%s.json' % slug)
+    if not os.path.exists(path):
+        return None
+    with open(path) as f:
+        cfg = json.load(f)
+    art_dir = os.path.join(REPO, cfg['artDir'])
+    rows = []
+    for p in sorted(cfg['pages'], key=lambda q: q['order']):
+        art = os.path.join(art_dir, p['art'])
+        if not os.path.exists(art):
+            raise FileNotFoundError('cannot resolve art path: %r' % art)
+        rows.append({'text': p['sentence'], 'art': art})
+    return cfg['bookTitle'], rows, [], 'dp-letter-json'
+
+
 def load_letterbook(slug):
     from books_def import BOOKS  # noqa: E402  (sys.path set up above)
     book = next((b for b in BOOKS if b['slug'] == slug), None)
@@ -219,7 +267,7 @@ def load_letterbook(slug):
         else:
             text_joined = text or ''
         if nar_clean and text_joined:
-            sentence = nar_clean + ' ' + text_joined
+            sentence = nar_clean + ' ' + continuation_case(text_joined)
         elif text_joined:
             sentence = text_joined
         else:
@@ -240,6 +288,10 @@ def load_letterbook(slug):
 
 
 def load_book(slug):
+    if slug in DP_JSON_SLUGS:
+        result = load_dp_json(slug)
+        if result is not None:
+            return result
     result = load_easy_reader(slug)
     if result is not None:
         return result
