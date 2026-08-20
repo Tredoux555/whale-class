@@ -484,6 +484,7 @@ export async function middleware(req: NextRequest) {
   const publicPaths = [
     '/',           // Home page - MUST be accessible
     '/games',      // Games hub and all game routes
+    '/play',       // Weekly parent-facing games page — QR/WeChat links, no login
     '/debug',      // Debug pages
     '/story',      // Story system (has its own auth)
     '/riddick',    // Riddick's sanctuary door (story-admin auth via the form)
