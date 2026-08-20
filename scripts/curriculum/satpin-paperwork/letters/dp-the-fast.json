@@ -1,0 +1,76 @@
+{
+  "letter": "f",
+  "week": 19,
+  "slug": "dp-the-fast",
+  "bookSlug": "the-fast",
+  "bookTitle": "The ___ Is Fast!",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-the-fast.py",
+  "artDir": "phonics-images/dark-phonics-books/the-fast",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "ant",
+      "sentence": "The ant is fast!",
+      "art": "p2-ant.png"
+    },
+    {
+      "order": 2,
+      "word": "sun",
+      "sentence": "The sun is fast!",
+      "art": "p4-sun.png"
+    },
+    {
+      "order": 3,
+      "word": "snake",
+      "sentence": "The snake is fast!",
+      "art": "p6-snake.png"
+    },
+    {
+      "order": 4,
+      "word": "cat",
+      "sentence": "The cat is fast!",
+      "art": "p7-cat.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    3,
+    1,
+    4,
+    2
+  ],
+  "matchDisplayOrder": [
+    2,
+    4,
+    1,
+    3
+  ],
+  "yesno": [
+    {
+      "question": "is the ant fast?",
+      "answer": true,
+      "imageArt": "p2-ant.png"
+    },
+    {
+      "question": "is the frog fast?",
+      "answer": false,
+      "imageArt": "../frog-on-the-fan/p1-frog.png"
+    },
+    {
+      "question": "is the snake fast?",
+      "answer": true,
+      "imageArt": "p6-snake.png"
+    },
+    {
+      "question": "is the fox fast?",
+      "answer": false,
+      "imageArt": "../fox-in-a-box/p1-fox.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Generated 2026-08-20 from KEY-WORD-BOOK-MAP.md (approved) for the 8-book letter-gap run (n=23,24,25,26,27,29,30,31). Lesson n=23, display week 19 (= n - 4). Sentences are verbatim from the map; do not hand-edit blindly -- change the map first, then regenerate. Tredoux to review.",
+    "conventions": "Follows dp-the-pit.json / dp-the-nap.json / dp-snake-in-my-sock.json exactly. 9-page book: p1-fan.png (frame), p2-ant, p3-apple, p4-sun, p5-star, p6-snake, p7-cat, p8-recap.png, p9-potato.png, plus cover.png -- the the-pit slot layout. pages[] is single-topic cast entries only: four of the six cast pages (ant, sun, snake, cat), varied across the run for works variety. The frame page, p8-recap (style='drop') and p9-potato are excluded from pages[] per the established exclusion rule.",
+    "recap": "Recap page text (excluded from pages[]): \"The ant, the apple, the sun, the star, the snake and the cat: fast, fast, fast!\" Potato page text (excluded from pages[]): \"The potato is not fast.\" Frame page text: \"The fan is fast!\"",
+    "yesno": "4 items on the dp-snake-in-my-sock convention (not the 10-item the-sat/the-nap widening): 2 true from this book's own pages, 2 false borrowing a word and that word's own page art from another Dark Phonics book via a ../<slug>/ relative imageArt path, asked in this book's own question frame (\"is the ___ fast?\") derived from the title pattern. Every borrowed path was verified against the live asset universe (content.json + assets-manifest.json); no sloth, no dead assets. Authored, not derived -- Tredoux to review."
+  }
+}

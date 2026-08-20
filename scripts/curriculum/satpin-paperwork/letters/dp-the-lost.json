@@ -1,0 +1,76 @@
+{
+  "letter": "l",
+  "week": 20,
+  "slug": "dp-the-lost",
+  "bookSlug": "the-lost",
+  "bookTitle": "The ___ Is Lost!",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-the-lost.py",
+  "artDir": "phonics-images/dark-phonics-books/the-lost",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "ant",
+      "sentence": "The ant is lost and sad.",
+      "art": "p2-ant.png"
+    },
+    {
+      "order": 2,
+      "word": "apple",
+      "sentence": "The apple is lost and sad.",
+      "art": "p3-apple.png"
+    },
+    {
+      "order": 3,
+      "word": "star",
+      "sentence": "The star is lost and sad.",
+      "art": "p5-star.png"
+    },
+    {
+      "order": 4,
+      "word": "cat",
+      "sentence": "The cat is lost and sad.",
+      "art": "p7-cat.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    2,
+    4,
+    1,
+    3
+  ],
+  "matchDisplayOrder": [
+    4,
+    1,
+    3,
+    2
+  ],
+  "yesno": [
+    {
+      "question": "is the ant lost?",
+      "answer": true,
+      "imageArt": "p2-ant.png"
+    },
+    {
+      "question": "is the monkey lost?",
+      "answer": false,
+      "imageArt": "../monkey-in-my-mug/p4-monkey.png"
+    },
+    {
+      "question": "is the cat lost?",
+      "answer": true,
+      "imageArt": "p7-cat.png"
+    },
+    {
+      "question": "is the bear lost?",
+      "answer": false,
+      "imageArt": "../bear-in-the-boat/p4-bear.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Generated 2026-08-20 from KEY-WORD-BOOK-MAP.md (approved) for the 8-book letter-gap run (n=23,24,25,26,27,29,30,31). Lesson n=24, display week 20 (= n - 4). Sentences are verbatim from the map; do not hand-edit blindly -- change the map first, then regenerate. Tredoux to review.",
+    "conventions": "Follows dp-the-pit.json / dp-the-nap.json / dp-snake-in-my-sock.json exactly. 9-page book: p1-fog.png (frame), p2-ant, p3-apple, p4-sun, p5-star, p6-snake, p7-cat, p8-recap.png, p9-potato.png, plus cover.png -- the the-pit slot layout. pages[] is single-topic cast entries only: four of the six cast pages (ant, apple, star, cat), varied across the run for works variety. The frame page, p8-recap (style='drop') and p9-potato are excluded from pages[] per the established exclusion rule.",
+    "recap": "Recap page text (excluded from pages[]): \"The ant, the apple, the sun, the star, the snake and the cat: lost, lost, lost!\" Potato page text (excluded from pages[]): \"The potato is not lost. He is in his deck chair!\" Frame page text: \"The fog is big and bad!\"",
+    "yesno": "4 items on the dp-snake-in-my-sock convention (not the 10-item the-sat/the-nap widening): 2 true from this book's own pages, 2 false borrowing a word and that word's own page art from another Dark Phonics book via a ../<slug>/ relative imageArt path, asked in this book's own question frame (\"is the ___ lost?\") derived from the title pattern. Every borrowed path was verified against the live asset universe (content.json + assets-manifest.json); no sloth, no dead assets. Authored, not derived -- Tredoux to review."
+  }
+}

@@ -1,0 +1,6 @@
+# Apply: lessons-spine-extension.patch
+
+WHEN — only after all 8 covers exist at `public/dark-phonics-books/covers/{the-fast,the-lost,the-jump,the-vest,the-swim,the-yam,the-zip,the-quilt}.png`; each books[] entry hard-references its cover, so applying earlier ships 8 broken images on the library page. Page art (`public/phonics-images/dark-phonics-books/<slug>/p1..p9,cover.png`) should land in the same pass. `materials: false` is set on all 8, so no paperwork pack is required yet.
+HOW — from the repo root: `git apply --check scripts/curriculum/satpin-paperwork/spine/lessons-spine-extension.patch && git apply scripts/…/lessons-spine-extension.patch` (base = `lib/montree/dark-phonics/lessons.ts` as of 2026-08-20, 174 lines; verified with `git apply --check` and `patch -p1 --dry-run`, and `tsc --noEmit --strict` clean after apply).
+WHAT — extends `decodable` at n=23,24,25,26,27,29,30,31 with the map's NEW words (existing words retained, never replaced) and adds one `books[]` entry per lesson. n=28 (x) is untouched — it keeps the `fox-in-a-box` reader and gets no new book.
+THEN — copy `letters/dp-*.json` into `scripts/curriculum/satpin-paperwork/letters/`, add the eight `shims/dp-<slug>.py`, regenerate paperwork (`build_paperwork.py`) and the app content bundle (`build_content.py`), then re-run `python3 verify.py` and confirm 8× PASS before committing.

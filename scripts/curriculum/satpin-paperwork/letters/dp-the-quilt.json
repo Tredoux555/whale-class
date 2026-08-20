@@ -1,0 +1,76 @@
+{
+  "letter": "qu",
+  "week": 27,
+  "slug": "dp-the-quilt",
+  "bookSlug": "the-quilt",
+  "bookTitle": "The ___ Is under the Quilt!",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-the-quilt.py",
+  "artDir": "phonics-images/dark-phonics-books/the-quilt",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "ant",
+      "sentence": "The ant is under a big red quilt and naps.",
+      "art": "p2-ant.png"
+    },
+    {
+      "order": 2,
+      "word": "sun",
+      "sentence": "The sun is under a big red quilt and naps.",
+      "art": "p4-sun.png"
+    },
+    {
+      "order": 3,
+      "word": "star",
+      "sentence": "The star is under a big red quilt and naps.",
+      "art": "p5-star.png"
+    },
+    {
+      "order": 4,
+      "word": "cat",
+      "sentence": "The cat is under a big red quilt and naps.",
+      "art": "p7-cat.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    3,
+    2,
+    1,
+    4
+  ],
+  "matchDisplayOrder": [
+    2,
+    3,
+    4,
+    1
+  ],
+  "yesno": [
+    {
+      "question": "is the sun under the quilt?",
+      "answer": true,
+      "imageArt": "p4-sun.png"
+    },
+    {
+      "question": "is the queen under the quilt?",
+      "answer": false,
+      "imageArt": "../queen-on-the-quilt/p4-queen.png"
+    },
+    {
+      "question": "is the cat under the quilt?",
+      "answer": true,
+      "imageArt": "p7-cat.png"
+    },
+    {
+      "question": "is the duck under the quilt?",
+      "answer": false,
+      "imageArt": "../on-a-rock/p1-duck.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Generated 2026-08-20 from KEY-WORD-BOOK-MAP.md (approved) for the 8-book letter-gap run (n=23,24,25,26,27,29,30,31). Lesson n=31, display week 27 (= n - 4). Sentences are verbatim from the map; do not hand-edit blindly -- change the map first, then regenerate. Tredoux to review.",
+    "conventions": "Follows dp-the-pit.json / dp-the-nap.json / dp-snake-in-my-sock.json exactly. 9-page book: p1-quilt.png (frame), p2-ant, p3-apple, p4-sun, p5-star, p6-snake, p7-cat, p8-recap.png, p9-potato.png, plus cover.png -- the the-pit slot layout. pages[] is single-topic cast entries only: four of the six cast pages (ant, sun, star, cat), varied across the run for works variety. The frame page, p8-recap (style='drop') and p9-potato are excluded from pages[] per the established exclusion rule.",
+    "recap": "Recap page text (excluded from pages[]): \"The ant, the apple, the sun, the star, the snake and the cat: quilt, quilt, quilt!\" Potato page text (excluded from pages[]): \"The potato is not under it. Just a nap in his deck chair!\" Frame page text: \"Quick! Get under a big red quilt!\"",
+    "yesno": "4 items on the dp-snake-in-my-sock convention (not the 10-item the-sat/the-nap widening): 2 true from this book's own pages, 2 false borrowing a word and that word's own page art from another Dark Phonics book via a ../<slug>/ relative imageArt path, asked in this book's own question frame (\"is the ___ under the quilt?\") derived from the title pattern. Every borrowed path was verified against the live asset universe (content.json + assets-manifest.json); no sloth, no dead assets. Authored, not derived -- Tredoux to review."
+  }
+}

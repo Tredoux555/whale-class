@@ -1,0 +1,76 @@
+{
+  "letter": "z",
+  "week": 26,
+  "slug": "dp-the-zip",
+  "bookSlug": "the-zip",
+  "bookTitle": "The ___ Zips!",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-the-zip.py",
+  "artDir": "phonics-images/dark-phonics-books/the-zip",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "ant",
+      "sentence": "The ant zips up a big red bag and runs.",
+      "art": "p2-ant.png"
+    },
+    {
+      "order": 2,
+      "word": "apple",
+      "sentence": "The apple zips up a big red bag and runs.",
+      "art": "p3-apple.png"
+    },
+    {
+      "order": 3,
+      "word": "star",
+      "sentence": "The star zips up a big red bag and runs.",
+      "art": "p5-star.png"
+    },
+    {
+      "order": 4,
+      "word": "snake",
+      "sentence": "The snake zips up a big red bag and runs.",
+      "art": "p6-snake.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    4,
+    1,
+    2,
+    3
+  ],
+  "matchDisplayOrder": [
+    1,
+    4,
+    3,
+    2
+  ],
+  "yesno": [
+    {
+      "question": "did the ant zip up the bag?",
+      "answer": true,
+      "imageArt": "p2-ant.png"
+    },
+    {
+      "question": "did the zebra zip up the bag?",
+      "answer": false,
+      "imageArt": "../zzz-at-the-zoo/p1-zebra.png"
+    },
+    {
+      "question": "did the star zip up the bag?",
+      "answer": true,
+      "imageArt": "p5-star.png"
+    },
+    {
+      "question": "did the robot zip up the bag?",
+      "answer": false,
+      "imageArt": "../rabbit-in-the-rocket/p2-robot.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Generated 2026-08-20 from KEY-WORD-BOOK-MAP.md (approved) for the 8-book letter-gap run (n=23,24,25,26,27,29,30,31). Lesson n=30, display week 26 (= n - 4). Sentences are verbatim from the map; do not hand-edit blindly -- change the map first, then regenerate. Tredoux to review.",
+    "conventions": "Follows dp-the-pit.json / dp-the-nap.json / dp-snake-in-my-sock.json exactly. 9-page book: p1-bug.png (frame), p2-ant, p3-apple, p4-sun, p5-star, p6-snake, p7-cat, p8-recap.png, p9-potato.png, plus cover.png -- the the-pit slot layout. pages[] is single-topic cast entries only: four of the six cast pages (ant, apple, star, snake), varied across the run for works variety. The frame page, p8-recap (style='drop') and p9-potato are excluded from pages[] per the established exclusion rule.",
+    "recap": "Recap page text (excluded from pages[]): \"The ant, the apple, the sun, the star, the snake and the cat: zip, zip, zip!\" Potato page text (excluded from pages[]): \"The potato did not zip. He is in his deck chair.\" Frame page text: \"A bug zips up a big red bag!\"",
+    "yesno": "4 items on the dp-snake-in-my-sock convention (not the 10-item the-sat/the-nap widening): 2 true from this book's own pages, 2 false borrowing a word and that word's own page art from another Dark Phonics book via a ../<slug>/ relative imageArt path, asked in this book's own question frame (\"did the ___ zip up the bag?\") derived from the title pattern. Every borrowed path was verified against the live asset universe (content.json + assets-manifest.json); no sloth, no dead assets. Authored, not derived -- Tredoux to review."
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "letter": "v",
+  "week": 22,
+  "slug": "dp-the-vest",
+  "bookSlug": "the-vest",
+  "bookTitle": "The ___ Has a Vest!",
+  "bookScript": "scripts/curriculum/satpin-paperwork/shims/dp-the-vest.py",
+  "artDir": "phonics-images/dark-phonics-books/the-vest",
+  "photoDir": "docs/picture-bank/photos",
+  "pages": [
+    {
+      "order": 1,
+      "word": "ant",
+      "sentence": "The ant has a big red vest on.",
+      "art": "p2-ant.png"
+    },
+    {
+      "order": 2,
+      "word": "apple",
+      "sentence": "The apple has a big red vest on.",
+      "art": "p3-apple.png"
+    },
+    {
+      "order": 3,
+      "word": "sun",
+      "sentence": "The sun has a big red vest on.",
+      "art": "p4-sun.png"
+    },
+    {
+      "order": 4,
+      "word": "cat",
+      "sentence": "The cat has a big red vest on.",
+      "art": "p7-cat.png"
+    }
+  ],
+  "sequencingDisplayOrder": [
+    1,
+    4,
+    2,
+    3
+  ],
+  "matchDisplayOrder": [
+    3,
+    2,
+    4,
+    1
+  ],
+  "yesno": [
+    {
+      "question": "has the ant got a vest on?",
+      "answer": true,
+      "imageArt": "p2-ant.png"
+    },
+    {
+      "question": "has the volcano got a vest on?",
+      "answer": false,
+      "imageArt": "../volcano-in-the-van/p4-volcano.png"
+    },
+    {
+      "question": "has the sun got a vest on?",
+      "answer": true,
+      "imageArt": "p4-sun.png"
+    },
+    {
+      "question": "has the octopus got a vest on?",
+      "answer": false,
+      "imageArt": "../owl-ate-an-orange/p4-octopus.png"
+    }
+  ],
+  "_notes": {
+    "generated": "Generated 2026-08-20 from KEY-WORD-BOOK-MAP.md (approved) for the 8-book letter-gap run (n=23,24,25,26,27,29,30,31). Lesson n=26, display week 22 (= n - 4). Sentences are verbatim from the map; do not hand-edit blindly -- change the map first, then regenerate. Tredoux to review.",
+    "conventions": "Follows dp-the-pit.json / dp-the-nap.json / dp-snake-in-my-sock.json exactly. 9-page book: p1-vest.png (frame), p2-ant, p3-apple, p4-sun, p5-star, p6-snake, p7-cat, p8-recap.png, p9-potato.png, plus cover.png -- the the-pit slot layout. pages[] is single-topic cast entries only: four of the six cast pages (ant, apple, sun, cat), varied across the run for works variety. The frame page, p8-recap (style='drop') and p9-potato are excluded from pages[] per the established exclusion rule.",
+    "recap": "Recap page text (excluded from pages[]): \"The ant, the apple, the sun, the star, the snake and the cat: vest, vest, vest!\" Potato page text (excluded from pages[]): \"The potato has not got a vest.\" Frame page text: \"The vest is big and red!\"",
+    "yesno": "4 items on the dp-snake-in-my-sock convention (not the 10-item the-sat/the-nap widening): 2 true from this book's own pages, 2 false borrowing a word and that word's own page art from another Dark Phonics book via a ../<slug>/ relative imageArt path, asked in this book's own question frame (\"has the ___ got a vest on?\") derived from the title pattern. Every borrowed path was verified against the live asset universe (content.json + assets-manifest.json); no sloth, no dead assets. Authored, not derived -- Tredoux to review."
+  }
+}

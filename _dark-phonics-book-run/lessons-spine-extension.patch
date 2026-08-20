@@ -1,0 +1,42 @@
+--- a/lib/montree/dark-phonics/lessons.ts
++++ b/lib/montree/dark-phonics/lessons.ts
+@@ -140,15 +140,31 @@
+   { n: 22, sound: 'b', title: 'B for the Bobbing Boat', catchphrase: '“big baby burp!”', decodable: ['bed', 'bug'], words: ['baby'], reader: { slug: 'hen-in-bed', title: 'Hen in Bed', works: true, materials: true }, books: [
+     { slug: 'the-bug', title: 'The ___ Saw a Bug!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each spots a bug. The bug then spots the potato, relaxing in his deck chair with an ice-cold drink, and the two are happy to meet.', cover: '/dark-phonics-books/covers/the-bug.png', materials: true, works: true },
+   ] },
+-  { n: 23, sound: 'f', title: 'Ffff Like a Fan', catchphrase: '“funny fox in my fan!”', decodable: ['fan', 'off'], words: ['fox', 'fan'] },
+-  { n: 24, sound: 'l', title: 'La-La-La Goes L', catchphrase: '“lazy lion licks!”', decodable: ['log', 'run', 'croc'], words: ['lion'] },
+-  { n: 25, sound: 'j', title: 'Jump for J', catchphrase: '“jump in the jelly jam!”', decodable: ['jug', 'jam'], words: ['jam'] },
+-  { n: 26, sound: 'v', title: 'Vvvv Goes the Van', catchphrase: '“vroom-vroom van!”', decodable: ['van'], words: ['van'] },
+-  { n: 27, sound: 'w', title: 'W for the Windy Day', catchphrase: '“wiggly wet worm!”', decodable: ['wig'], words: ['worm'] },
++  { n: 23, sound: 'f', title: 'Ffff Like a Fan', catchphrase: '“funny fox in my fan!”', decodable: ['fan', 'off', 'fast', 'fun', 'fog', 'fit'], words: ['fox', 'fan'], books: [
++    { slug: 'the-fast', title: 'The ___ Is Fast!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — all racing past a whirring fan. The potato isn’t fast; he hasn’t left his deck chair.', cover: '/dark-phonics-books/covers/the-fast.png', materials: false },
++  ] },
++  { n: 24, sound: 'l', title: 'La-La-La Goes L', catchphrase: '“lazy lion licks!”', decodable: ['log', 'run', 'croc', 'lost', 'lid', 'lap', 'leg'], words: ['lion'], books: [
++    { slug: 'the-lost', title: 'The ___ Is Lost!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — every one of them lost in a big bad fog. The potato isn’t lost; he’s exactly where he always is, in his deck chair.', cover: '/dark-phonics-books/covers/the-lost.png', materials: false },
++  ] },
++  { n: 25, sound: 'j', title: 'Jump for J', catchphrase: '“jump in the jelly jam!”', decodable: ['jug', 'jam', 'jump', 'jet', 'jig', 'job'], words: ['jam'], books: [
++    { slug: 'the-jump', title: 'The ___ Can Jump!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — all jumping on a big log. The potato can’t jump, so he naps instead.', cover: '/dark-phonics-books/covers/the-jump.png', materials: false },
++  ] },
++  { n: 26, sound: 'v', title: 'Vvvv Goes the Van', catchphrase: '“vroom-vroom van!”', decodable: ['van', 'vest', 'vet', 'vat'], words: ['van'], books: [
++    { slug: 'the-vest', title: 'The ___ Has a Vest!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each in a big red vest. The potato hasn’t got one, and doesn’t seem to mind.', cover: '/dark-phonics-books/covers/the-vest.png', materials: false },
++  ] },
++  { n: 27, sound: 'w', title: 'W for the Windy Day', catchphrase: '“wiggly wet worm!”', decodable: ['wig', 'swim', 'wet', 'win', 'web'], words: ['worm'], books: [
++    { slug: 'the-swim', title: 'The ___ Can Swim!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — all six in one big wet tub. The potato can’t swim; he’s just wet, and that’s that.', cover: '/dark-phonics-books/covers/the-swim.png', materials: false },
++  ] },
+   { n: 28, sound: 'x', title: 'X Marks the Box', catchphrase: '“six fox in a box!”', decodable: ['box', 'fox'], words: ['fox', 'box'], reader: { slug: 'fox-in-a-box', title: 'Fox in a Box', works: true, materials: true, materialsSlug: 'fox-in-a-box-reader' } },
+-  { n: 29, sound: 'y', title: 'Yes! Yum! Y!', catchphrase: '“yummy yellow yo-yo!”', decodable: ['yam', 'big'], words: ['yoyo'] },
+-  { n: 30, sound: 'z', title: 'Zzz Like a Buzzing Bee', catchphrase: '“zippy zebra, zzz!”', decodable: ['zip', 'bag'], words: ['zebra'] },
+-  { n: 31, sound: 'qu', title: 'The Queen Says Qu', catchphrase: '“quick quacky duck!”', decodable: ['quilt', 'squid'], words: ['duck'] },
++  { n: 29, sound: 'y', title: 'Yes! Yum! Y!', catchphrase: '“yummy yellow yo-yo!”', decodable: ['yam', 'big', 'yum', 'yes', 'yet'], words: ['yoyo'], books: [
++    { slug: 'the-yam', title: 'The ___ Has a Yam!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each with a yam. Yum! The potato is not a yam, and would like that noted.', cover: '/dark-phonics-books/covers/the-yam.png', materials: false },
++  ] },
++  { n: 30, sound: 'z', title: 'Zzz Like a Buzzing Bee', catchphrase: '“zippy zebra, zzz!”', decodable: ['zip', 'bag', 'zips', 'zap', 'zig', 'zag'], words: ['zebra'], books: [
++    { slug: 'the-zip', title: 'The ___ Zips!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — each zipping up a big red bag and running. The potato didn’t zip; he’s in his deck chair. Opens on the first page the child reads start to finish, alone.', cover: '/dark-phonics-books/covers/the-zip.png', materials: false },
++  ] },
++  { n: 31, sound: 'qu', title: 'The Queen Says Qu', catchphrase: '“quick quacky duck!”', decodable: ['quilt', 'squid', 'quick', 'quit', 'quiz', 'quack'], words: ['duck'], books: [
++    { slug: 'the-quilt', title: 'The ___ Is under the Quilt!', description: 'The-sat cast returns: ant, apple, sun, star, snake, cat — all six under one big red quilt, with the potato napping on top of it. The letters-arc finale.', cover: '/dark-phonics-books/covers/the-quilt.png', materials: false },
++  ] },
+   { n: 32, sound: 'review', title: 'All Our Sounds', catchphrase: '“cat, pig, dog - woof!”', words: ['cat', 'pig', 'dog'] },
+   { n: 33, sound: 'review', title: 'The Five Little Vowels', catchphrase: '“a, e, i, o, u... achoo!”' },
+   { n: 34, sound: 'review', title: 'We Know the Alphabet', catchphrase: '“a to z, easy-peasy!”' },
