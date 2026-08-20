@@ -301,3 +301,74 @@ export function fontFor(textLen: number, baseMM: number, maxChars: number, floor
   const scaled = baseMM * Math.min(1, maxChars / len);
   return Math.max(floorMM, scaled);
 }
+
+
+// ── the swap-cards system ────────────────────────────────────────────────
+// Mode 2's replacement, Aug 2026: print the poster ONCE (job tiles with an
+// empty slot) and ONE photo card per child in the roster, ONCE — a teacher
+// laminates both and physically swaps a child's card into a job's slot each
+// week. No reprinting, ever, unlike the label-strip system it replaces.
+// Every size below is a FIXED millimetre value, not a fraction of anything —
+// interchangeability is the whole point, so a card cut this week must still
+// drop into any slot printed any other week.
+
+/** The child card: 60×74mm, independent of job count. */
+export const SWAP_CARD_W_MM = 60;
+export const SWAP_CARD_H_MM = 74;
+export const SWAP_CARD_PAD_MM = 3;
+/** The name/photo zone inside the card's border+padding — 60 − 2×3. */
+export const SWAP_CARD_ZONE_MM = SWAP_CARD_W_MM - 2 * SWAP_CARD_PAD_MM; // 54
+export const SWAP_CARD_PHOTO_MM = 54;
+export const SWAP_CARD_NAME_BASE_MM = 8;
+export const SWAP_CARD_NAME_FLOOR_MM = 5;
+/** Between the name line and the photo square. */
+export const SWAP_CARD_INNER_GAP_MM = 2;
+
+/** The slot a card drops into: card + ~1mm tolerance on every side, so a
+ *  laminated card (which is very slightly thicker than the paper it was cut
+ *  from) still seats without forcing. */
+export const SWAP_SLOT_W_MM = SWAP_CARD_W_MM + 2; // 62
+export const SWAP_SLOT_H_MM = SWAP_CARD_H_MM + 2; // 76
+
+/** The poster tile: fixed 90mm tall, one column, two tiles per A4 sheet —
+ *  unlike names mode's cards, this never adapts to job count, because a
+ *  slot's own size cannot change without breaking the cards already cut for
+ *  it. */
+export const SWAP_TILE_H_MM = 90;
+export const SWAP_TILE_PAD_MM = 3;
+/** Between the job label and the picture beneath it. */
+export const SWAP_TILE_INNER_GAP_MM = 2;
+/** Between the left (label+picture) block and the slot, in the same row. */
+export const SWAP_PAIR_GAP_MM = 12;
+/** Between the two tiles stacked on one sheet. */
+export const SWAP_TILE_GAP_MM = 8;
+export const SWAP_PICTURE_MM = 64;
+export const SWAP_LABEL_BASE_MM = 6;
+export const SWAP_LABEL_FLOOR_MM = 4.2;
+
+/** The cards sheet: A4 portrait, a plain 3×3 grid, no masthead — it exists to
+ *  be cut apart, so a title on it would only ever get thrown away with the
+ *  trimmings. */
+export const CARDS_COLS = 3;
+export const CARDS_ROWS = 3;
+export const CARDS_PER_SHEET = CARDS_COLS * CARDS_ROWS; // 9
+export const SWAP_CARD_GAP_MM = 3;
+
+/** How many A4 sheets the swap poster's job tiles print on — always exactly
+ *  two tiles per sheet (see SWAP_TILE_H_MM's own note on why this never
+ *  adapts), so this is `ceil(n/2)` with no masthead/overflow arithmetic to
+ *  get wrong: two 90mm tiles plus their gap (188mm) fit even the FIRST
+ *  sheet's masthead-reduced ~247mm, so a third tile never has room to
+ *  squeeze on regardless of which sheet it would land on. */
+export function swapPosterSheets(activeJobCount: number): number {
+  const n = normalizeCount(activeJobCount);
+  if (n === 0) return 1;
+  return Math.max(1, Math.ceil(n / 2));
+}
+
+/** How many A4 sheets the roster's photo cards print on, at 9 per sheet. */
+export function swapCardsSheets(rosterCount: number): number {
+  const n = normalizeCount(rosterCount);
+  if (n === 0) return 1;
+  return Math.max(1, Math.ceil(n / CARDS_PER_SHEET));
+}

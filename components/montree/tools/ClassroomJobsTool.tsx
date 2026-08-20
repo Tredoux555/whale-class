@@ -1,13 +1,15 @@
 // components/montree/tools/ClassroomJobsTool.tsx
 // The Classroom Jobs Poster — one printable chart for the wall, with a child
-// on every job. Sibling of the Helper Name Strips tool, and deliberately its
-// other half: this page prints the CHART, that one prints the STRIPS that pop
-// into the chart's slots.
+// on every job. Sibling of the Helper Name Strips tool (which serves
+// store-bought label-strip posters, and stays untouched by this file).
 //
-// 🚨 THE TWO SLOT SIZES ARE HELPER-STRIPS' OWN SIZES, TO THE MILLIMETRE. They
-// are mirrored in STRIP_SIZES below from that tool's SIZE_CONFIG (poster
-// 180×34mm, small 120×22mm). If either changes there, it changes here — a slot
-// that is "about right" is a slot the strip does not sit in.
+// 🚨 MODE 2 IS "SWAP CARDS", NOT LABEL STRIPS. Print the poster ONCE (a tile
+// per job, each with an empty card-shaped slot) and ONE photo card per child
+// in the roster, ONCE — a teacher laminates both and physically swaps a
+// child's card into a job's slot each week. Nothing ever reprints. Every
+// swap-mode size lives in poster-layout.ts's "swap-cards system" section, as
+// a fixed millimetre value rather than a fraction of anything — a card cut
+// this week must still drop into a slot printed any other week.
 //
 // 🚨 THE BRAND KIT IS READ AS TOKENS, NOT THROUGH `brandKitCss()`. That
 // stylesheet themes the SHARED class-document markup: every selector in it is
@@ -49,7 +51,6 @@ import {
 import {
   PAGE_MARGIN_MM as PORTRAIT_MARGIN_MM,
   PAGE_W_MM as PORTRAIT_W_MM,
-  PAGE_H_MM as PORTRAIT_H_MM,
   CARD_GAP_MM,
   CARD_W_MM,
   WIDE_CARD_W_MM,
@@ -61,6 +62,30 @@ import {
   maxCharsFor,
   LABEL_CHAR_K,
   NAME_CHAR_K,
+  NAME_LINE_HEIGHT,
+  SWAP_CARD_W_MM,
+  SWAP_CARD_H_MM,
+  SWAP_CARD_PAD_MM,
+  SWAP_CARD_ZONE_MM,
+  SWAP_CARD_PHOTO_MM,
+  SWAP_CARD_NAME_BASE_MM,
+  SWAP_CARD_NAME_FLOOR_MM,
+  SWAP_CARD_INNER_GAP_MM,
+  SWAP_SLOT_W_MM,
+  SWAP_SLOT_H_MM,
+  SWAP_TILE_H_MM,
+  SWAP_TILE_PAD_MM,
+  SWAP_TILE_INNER_GAP_MM,
+  SWAP_PAIR_GAP_MM,
+  SWAP_TILE_GAP_MM,
+  SWAP_PICTURE_MM,
+  SWAP_LABEL_BASE_MM,
+  SWAP_LABEL_FLOOR_MM,
+  CARDS_COLS,
+  CARDS_ROWS,
+  SWAP_CARD_GAP_MM,
+  swapPosterSheets,
+  swapCardsSheets,
 } from '@/lib/montree/classroom-jobs/poster-layout';
 import {
   DEFAULT_JOBS,
@@ -85,8 +110,11 @@ const quicksand = Quicksand({ subsets: ['latin'], weight: ['500', '600', '700'] 
  *  before it reaches an `<img src>` (same rule Helper Name Strips follows for
  *  the same field). Never stored on the poster — see `JobsPoster.showChildPhotos`. */
 type Student = { id: string; name: string; photoUrl?: string };
-type PosterMode = 'names' | 'slots';
-type SlotSize = 'poster' | 'small';
+type PosterMode = 'names' | 'swap';
+/** Which section(s) of swap mode actually render — on screen AND in print,
+ *  same "what a teacher approves is what prints" rule every other dynamic
+ *  value on this sheet follows. Ignored in names mode. */
+type PrintScope = 'both' | 'poster' | 'cards';
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 /** What the crop modal is cropping FOR — a job's own icon (uploads through
  *  `/api/montree/classroom-jobs/icon`, exported as PNG) or a child's roster
@@ -132,13 +160,15 @@ const COPY: Record<string, string> = {
   'classroomJobs.modeLabel': 'Poster style',
   'classroomJobs.modeNames': 'Names printed on',
   'classroomJobs.modeNamesHint': 'A4 portrait · a card per job, each with a child’s name',
-  'classroomJobs.modeSlots': 'For name strips',
-  'classroomJobs.modeSlotsHint':
-    'Empty slots sized for the Helper Name Strips — print once, swap the strips each week',
-  'classroomJobs.slotSizeLabel': 'Strip size',
-  'classroomJobs.slotSizePoster': 'Poster strips · 180×34mm · A4 landscape',
-  'classroomJobs.slotSizeSmall': 'Small strips · 120×22mm · A4 portrait',
-  'classroomJobs.stripsLink': 'Print the name strips →',
+  'classroomJobs.modeSwap': 'Swap cards',
+  'classroomJobs.modeSwapHint':
+    'Print the poster once + a photo card per child. Swap the cards each week — nothing to reprint.',
+  'classroomJobs.printScopeLabel': 'What to print',
+  'classroomJobs.printScopeBoth': 'Poster + cards',
+  'classroomJobs.printScopePoster': 'Poster only',
+  'classroomJobs.printScopeCards': 'Cards only',
+  'classroomJobs.swapSlotHint': "Child's card goes here",
+  'classroomJobs.swapSheets': 'Poster: {poster} sheets · Cards: {cards} sheets',
   'classroomJobs.jobsLabel': 'Jobs',
   'classroomJobs.addJob': 'Add a job',
   'classroomJobs.shuffle': 'Shuffle',
@@ -176,47 +206,11 @@ const COPY: Record<string, string> = {
 // every width on this sheet is measured against it — a poster that is 2mm too
 // wide does not warn, it silently drops a column onto a second sheet.
 //
-// 🚨 PORTRAIT_MARGIN_MM/PORTRAIT_W_MM/PORTRAIT_H_MM ARE IMPORTED, NOT
-// REDECLARED — see the `poster-layout.ts` import above (aliased from that
-// module's `PAGE_*` names). Slots mode's own landscape geometry stays here,
-// since only the names-mode sizing needed extracting into a pure, testable
-// module.
-
-const LANDSCAPE_MARGIN_MM = 10;
-const LANDSCAPE_W_MM = 297 - LANDSCAPE_MARGIN_MM * 2; // 277
-const LANDSCAPE_H_MM = 210 - LANDSCAPE_MARGIN_MM * 2; // 190
-
-/** Roughly what the masthead costs on the first sheet, for SLOTS MODE's
- *  estimate only — names mode now derives its own masthead footprint
- *  precisely via `mastheadHeightMM` in poster-layout.ts. Used only by the
- *  sheet estimate, which is a promise to the teacher, not a layout
- *  constraint. */
-const HEAD_H_MM = 32;
-
-// ── the slots ───────────────────────────────────────────────────────────────
-/**
- * 🚨 MIRRORS `SIZE_CONFIG` IN app/montree/library/tools/helper-strips/page.tsx.
- * `width`/`height` are that tool's strip footprint EXACTLY, so a strip printed
- * at 100% drops into a slot printed at 100%.
- *
- * The orientation is not a preference, it is arithmetic. A 180mm slot plus any
- * legible job label does not fit inside A4 portrait's 186mm content box, so the
- * poster-size chart is landscape; the 120mm strip leaves room for a label in
- * portrait and stacks nearly twice as many rows per sheet, so the small chart
- * is portrait.
- */
-const STRIP_SIZES: Record<
-  SlotSize,
-  { width: number; height: number; label: number; landscape: boolean }
-> = {
-  poster: { width: 180, height: 34, label: 88, landscape: true },
-  small: { width: 120, height: 22, label: 56, landscape: false },
-};
-
-/** Slots mode only — names mode's card gap/width now come from
- *  poster-layout.ts (imported above) alongside its dynamic card HEIGHT. */
-const SLOT_GAP_MM = 4;
-
+// 🚨 PORTRAIT_MARGIN_MM/PORTRAIT_W_MM ARE IMPORTED, NOT REDECLARED — see the
+// `poster-layout.ts` import above (aliased from that module's `PAGE_*`
+// names). Both modes are A4 portrait now that swap mode's poster tiles
+// replaced the old landscape "poster strips" slot size, so this file no
+// longer has a second orientation of its own to declare.
 
 // ── the icon cropper ─────────────────────────────────────────────────────
 // CSS pixels for the interactive frame; the tiny live preview mirrors it at
@@ -258,14 +252,10 @@ function firstName(name: string): string {
  * hijack every other print in the repo. Same rule, same reason, as
  * components/cms/documents/print-css.ts.
  */
-function posterCss(mode: PosterMode, slotSize: SlotSize): string {
-  const landscape = mode === 'slots' && STRIP_SIZES[slotSize].landscape;
-  const margin = landscape ? LANDSCAPE_MARGIN_MM : PORTRAIT_MARGIN_MM;
-  const width = landscape ? LANDSCAPE_W_MM : PORTRAIT_W_MM;
-
+function posterCss(): string {
   return `
 .jp-poster {
-  width: ${width}mm;
+  width: ${PORTRAIT_W_MM}mm;
   max-width: 100%;
   margin: 0 auto;
   position: relative;
@@ -286,7 +276,8 @@ function posterCss(mode: PosterMode, slotSize: SlotSize): string {
   print-color-adjust: exact;
 }
 .jp-poster > .jp-head,
-.jp-poster > .jp-body { position: relative; z-index: 1; }
+.jp-poster > .jp-body,
+.jp-poster > .jp-cardssheet { position: relative; z-index: 1; }
 
 .jp-head {
   display: flex;
@@ -556,34 +547,170 @@ function posterCss(mode: PosterMode, slotSize: SlotSize): string {
   border-bottom: 0.4mm solid var(--jp-border);
 }
 
-/* ── slots mode ─────────────────────────────────────────────────────────── */
-.jp-slots { display: flex; flex-direction: column; gap: ${SLOT_GAP_MM}mm; }
-.jp-slotrow { display: flex; align-items: center; gap: 5mm; break-inside: avoid; }
-.jp-slotlabel { display: flex; align-items: center; gap: 3mm; flex: 0 0 auto; min-width: 0; }
-.jp-slotname {
-  font-size: 11pt;
+/* ── swap mode ──────────────────────────────────────────────────────────── */
+/* Print the poster ONCE (a tile per job, an empty card-shaped slot) and ONE
+   photo card per child, ONCE — a teacher laminates both and swaps a child's
+   card into a job's slot each week. Every size below is a FIXED millimetre
+   value from poster-layout.ts's "swap-cards system", not a fraction of
+   anything: a card cut this term must still drop into a slot printed any
+   other term. Assigned/unassigned makes no visual difference here — a
+   tile's slot is always empty; that is the whole system. */
+.jp-swaptiles { display: flex; flex-direction: column; gap: ${SWAP_TILE_GAP_MM}mm; }
+.jp-swaptile {
+  height: ${SWAP_TILE_H_MM}mm;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${SWAP_PAIR_GAP_MM}mm;
+  padding: ${SWAP_TILE_PAD_MM}mm 0;
+  break-inside: avoid;
+}
+/* Label ABOVE picture, per the founder's colleague's design — the opposite
+   stacking order from every OTHER label/picture pairing on this poster,
+   which is deliberate here, not a copy-paste slip. */
+.jp-swapleft {
+  flex: 0 0 auto;
+  width: ${SWAP_PICTURE_MM}mm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${SWAP_TILE_INNER_GAP_MM}mm;
+}
+.jp-swaplabel {
+  font-size: var(--jp-label-fs);
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
+  text-align: center;
   color: var(--jp-accent);
-  white-space: nowrap;
+  line-height: 1.05;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* The slot itself. Dashed, because it is a place to put something rather than
-   a box around something — the same language the label maker's cut guides use. */
-.jp-slot {
+.jp-swappic {
   flex: 0 0 auto;
-  box-sizing: border-box;
-  border: 0.5mm dashed var(--jp-border);
-  border-radius: 3mm;
+  width: ${SWAP_PICTURE_MM}mm;
+  height: ${SWAP_PICTURE_MM}mm;
+  aspect-ratio: 1;
+  border-radius: 4mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: var(--jp-wash);
+  font-size: ${SWAP_PICTURE_MM * 0.55}mm;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.jp-swappic-img {
+  display: block;
+  object-fit: cover;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+/* The slot itself. Dashed, because it is a place to put something rather
+   than a box around something — the same language the label maker's cut
+   guides use — with a faint hint of what belongs in it. */
+.jp-swapslot {
+  flex: 0 0 auto;
+  width: ${SWAP_SLOT_W_MM}mm;
+  height: ${SWAP_SLOT_H_MM}mm;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0.5mm dashed var(--jp-border);
+  border-radius: 4mm;
+  background: var(--jp-wash);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.jp-swaphint {
+  font-size: 7.5pt;
+  color: var(--jp-border);
+  text-align: center;
+  padding: 0 4mm;
+}
+
+/* ── the cards sheet ────────────────────────────────────────────────────── */
+/* One photo card per child in the roster, 3×3 to a sheet, no masthead — it
+   exists to be cut apart, so a title on it would only get thrown away with
+   the trimmings. .jp-cards-pagebreak is added only when a poster section
+   printed before this one (see JobsPosterSheet) — the FIRST thing printed
+   never forces a page break in front of itself. */
+.jp-cardssheet {
+  display: grid;
+  grid-template-columns: repeat(${CARDS_COLS}, ${SWAP_CARD_W_MM}mm);
+  grid-template-rows: repeat(${CARDS_ROWS}, ${SWAP_CARD_H_MM}mm);
+  gap: ${SWAP_CARD_GAP_MM}mm;
+  justify-content: center;
+}
+.jp-cardssheet.jp-cards-pagebreak { break-before: page; }
+.jp-card60 {
+  width: ${SWAP_CARD_W_MM}mm;
+  height: ${SWAP_CARD_H_MM}mm;
+  box-sizing: border-box;
+  border: 0.8mm solid var(--jp-accent);
+  border-radius: 3mm;
+  padding: ${SWAP_CARD_PAD_MM}mm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${SWAP_CARD_INNER_GAP_MM}mm;
+  break-inside: avoid;
+  background: #fff;
+  /* Light dashed cut guides. Offset (1.5mm) is exactly half the grid gap
+     (3mm), so two neighbouring cards' guides meet in the middle of the gap
+     between them rather than overlapping either card. */
+  outline: 0.3mm dashed var(--jp-border);
+  outline-offset: 1.5mm;
+}
+.jp-card60-name {
+  font-size: var(--jp-cardname-fs);
+  font-weight: 700;
+  color: var(--jp-ink);
+  line-height: ${NAME_LINE_HEIGHT};
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.jp-card60-photo {
+  flex: 0 0 auto;
+  width: ${SWAP_CARD_PHOTO_MM}mm;
+  height: ${SWAP_CARD_PHOTO_MM}mm;
+  aspect-ratio: 1;
+  border-radius: 2mm;
+  object-fit: cover;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+/* No photo on the roster: a soft wash square with a large initial letter —
+   the same fallback language the child-picker's own avatar uses, a square
+   instead of that avatar's circle to match this card's own corners. */
+.jp-card60-fallback {
+  flex: 0 0 auto;
+  width: ${SWAP_CARD_PHOTO_MM}mm;
+  height: ${SWAP_CARD_PHOTO_MM}mm;
+  aspect-ratio: 1;
+  border-radius: 2mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--jp-wash);
+  color: var(--jp-accent);
+  font-weight: 700;
+  font-size: 22mm;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
 
 @media print {
-  @page { size: A4 ${landscape ? 'landscape' : 'portrait'}; margin: ${margin}mm; }
+  @page { size: A4 portrait; margin: ${PORTRAIT_MARGIN_MM}mm; }
   body {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
@@ -691,36 +818,6 @@ function cropModalCss(): string {
 `;
 }
 
-/**
- * How many A4 sheets this comes out on. An honest number shown on screen, not
- * a layout constraint — a chart of twelve 34mm slots is 400mm of strip and no
- * orientation makes that one page. Telling a teacher before they print beats
- * them finding out at the printer.
- *
- * 🚨 NAMES MODE DELEGATES TO `namesSheetCount` (poster-layout.ts) — that
- * module owns the adaptive card-height math this estimate must stay honest
- * about; duplicating the arithmetic here is exactly how the two would drift.
- */
-function sheetEstimate(
-  mode: PosterMode,
-  slotSize: SlotSize,
-  count: number,
-  hasRoom: boolean
-): number {
-  if (count <= 0) return 1;
-
-  if (mode === 'names') {
-    return namesSheetCount(count, hasRoom);
-  }
-
-  const size = STRIP_SIZES[slotSize];
-  const rowH = size.height + SLOT_GAP_MM;
-  const pageH = size.landscape ? LANDSCAPE_H_MM : PORTRAIT_H_MM;
-  const first = Math.max(1, Math.floor((pageH - HEAD_H_MM) / rowH));
-  const rest = Math.max(1, Math.floor(pageH / rowH));
-  return count <= first ? 1 : 1 + Math.ceil((count - first) / rest);
-}
-
 /** A stable string for "has this chart changed since it was saved" — the
  *  title and the photo toggle travel in the same signature as the jobs, so
  *  editing any one of them dirties the chart exactly like editing another. */
@@ -733,16 +830,21 @@ function signature(jobs: ClassroomJob[], title: string, showChildPhotos: boolean
  * thin redirect to /montree/library/tools/classroom-helpers?tab=poster) so
  * this tool can also mount as the "Jobs poster" tab of the combined
  * Classroom Helpers page. Body is otherwise byte-equivalent: same COPY map,
- * same fetches, same state, same top-level print `<style>` tag. The only
- * behavioural change is `onSwitchToStrips` — the wrapping page owns tab
- * state now, so "Print the name strips →" switches tabs there instead of
- * navigating to the old standalone helper-strips route.
+ * same fetches, same state, same top-level print `<style>` tag.
+ *
+ * 🚨 `onSwitchToStrips` IS NOW UNUSED HERE, ON PURPOSE — mode 2's old
+ * "Print the name strips →" cross-link is gone (swap mode has no relationship
+ * to the Helper Name Strips tab), but the wrapping page's call site is out of
+ * scope for this file to change, so the prop stays required and is
+ * deliberately voided rather than silently dropped or renamed away from
+ * eslint's `no-unused-vars`.
  */
 export default function ClassroomJobsTool({
   onSwitchToStrips,
 }: {
   onSwitchToStrips: () => void;
 }) {
+  void onSwitchToStrips;
   const { t } = useI18n();
   const router = useRouter();
 
@@ -766,7 +868,9 @@ export default function ClassroomJobsTool({
   const [isStartingSet, setIsStartingSet] = useState(true);
   const [canSave, setCanSave] = useState(true);
   const [mode, setMode] = useState<PosterMode>('names');
-  const [slotSize, setSlotSize] = useState<SlotSize>('poster');
+  /** Which section(s) of swap mode render, on screen and in print alike —
+   *  see the `PrintScope` type. Ignored entirely in names mode. */
+  const [printScope, setPrintScope] = useState<PrintScope>('both');
   /** The job currently mid-upload, if any — drives the spinner/disabled state
    *  on exactly that row's icon menu, never the whole list. */
   const [iconUploadingId, setIconUploadingId] = useState<string | null>(null);
@@ -915,7 +1019,15 @@ export default function ClassroomJobsTool({
   }, [activeJobs]);
 
   const dirty = savedRef.current !== signature(jobs, title, showChildPhotos);
-  const sheets = sheetEstimate(mode, slotSize, activeJobs.length, !!classroomName);
+  /** 🚨 NAMES MODE DELEGATES TO `namesSheetCount` (poster-layout.ts) — that
+   *  module owns the adaptive card-height math this estimate must stay
+   *  honest about. Swap mode's poster and cards sheets are independent
+   *  prints (one chart, one roster) so each gets its own honest count. */
+  const sheets =
+    mode === 'names'
+      ? namesSheetCount(activeJobs.length, !!classroomName)
+      : swapPosterSheets(activeJobs.length);
+  const cardsSheets = swapCardsSheets(students.length);
 
   /**
    * 🚨 A JOB WITH NO NAME IS DROPPED BY THE PARSER, NOT SAVED EMPTY — which is
@@ -1316,8 +1428,9 @@ export default function ClassroomJobsTool({
     <JobsPosterSheet
       jobs={activeJobs}
       studentById={studentById}
+      students={students}
       mode={mode}
-      slotSize={slotSize}
+      printScope={printScope}
       logoUrl={kit?.logoUrl ?? null}
       showWatermark={watermarkOpacity > 0}
       showChildPhotos={showChildPhotos}
@@ -1354,28 +1467,22 @@ export default function ClassroomJobsTool({
           }}
         />
 
-        <div className="relative bg-[rgba(7,18,12,0.9)] border-b border-[rgba(52,211,153,0.15)] px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2 min-w-0">
-            <button
-              onClick={() => router.push('/montree/library/tools')}
-              className="btn btn-ghost btn-icon btn-sm"
-            >
-              ←
-            </button>
-            <span className="text-xl">🪧</span>
-            <h1 className="font-bold text-white/95 truncate">{tx('classroomJobs.title')}</h1>
-          </div>
-          <button
-            onClick={() => window.print()}
-            disabled={activeJobs.length === 0}
-            className="btn btn-primary btn-sm"
-          >
-            🖨️ {t('common.print')}
-          </button>
-        </div>
+        {/* 🚨 NO HEADER BAR HERE. This tool is mounted inside the Classroom
+            Helpers page, which owns the one back arrow, the title and the
+            Montree home affordance. A second bar here meant two ← buttons
+            stacked on the same screen. Print moved into the body below. */}
 
         <main className="relative p-4 max-w-3xl mx-auto space-y-6">
-          <p className="text-sm text-white/60">{tx('classroomJobs.subtitle')}</p>
+          <div className="flex items-start justify-between gap-3">
+            <p className="text-sm text-white/60">{tx('classroomJobs.subtitle')}</p>
+            <button
+              onClick={() => window.print()}
+              disabled={activeJobs.length === 0}
+              className="btn btn-primary btn-sm shrink-0"
+            >
+              🖨️ {t('common.print')}
+            </button>
+          </div>
 
           {!canSave && (
             <p className="text-sm text-amber-300/80">{tx('classroomJobs.notAvailable')}</p>
@@ -1408,7 +1515,7 @@ export default function ClassroomJobsTool({
               {tx('classroomJobs.modeLabel')}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {(['names', 'slots'] as PosterMode[]).map((opt) => (
+              {(['names', 'swap'] as PosterMode[]).map((opt) => (
                 <button
                   key={opt}
                   onClick={() => setMode(opt)}
@@ -1423,65 +1530,71 @@ export default function ClassroomJobsTool({
                   >
                     {opt === 'names'
                       ? tx('classroomJobs.modeNames')
-                      : tx('classroomJobs.modeSlots')}
+                      : tx('classroomJobs.modeSwap')}
                   </div>
                   <div className="text-xs text-white/45 mt-1">
                     {opt === 'names'
                       ? tx('classroomJobs.modeNamesHint')
-                      : tx('classroomJobs.modeSlotsHint')}
+                      : tx('classroomJobs.modeSwapHint')}
                   </div>
                 </button>
               ))}
             </div>
 
-            {mode === 'slots' && (
+            {mode === 'swap' && (
               <div className="mt-3 space-y-2">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {(['poster', 'small'] as SlotSize[]).map((opt) => (
+                <div className="grid grid-cols-3 gap-2">
+                  {(['both', 'poster', 'cards'] as PrintScope[]).map((opt) => (
                     <button
                       key={opt}
-                      onClick={() => setSlotSize(opt)}
-                      className={`p-3 rounded-xl border-2 text-left text-sm font-medium transition-all ${
-                        slotSize === opt
+                      onClick={() => setPrintScope(opt)}
+                      className={`px-2 py-2 rounded-lg border-2 text-center text-xs font-medium transition-all ${
+                        printScope === opt
                           ? 'border-[#34d399] bg-[rgba(52,211,153,0.1)] text-white/95'
                           : 'border-[rgba(52,211,153,0.15)] bg-white/[0.06] text-white/70 hover:border-[rgba(52,211,153,0.3)]'
                       }`}
                     >
-                      {opt === 'poster'
-                        ? tx('classroomJobs.slotSizePoster')
-                        : tx('classroomJobs.slotSizeSmall')}
+                      {opt === 'both'
+                        ? tx('classroomJobs.printScopeBoth')
+                        : opt === 'poster'
+                          ? tx('classroomJobs.printScopePoster')
+                          : tx('classroomJobs.printScopeCards')}
                     </button>
                   ))}
                 </div>
-                <button
-                  onClick={onSwitchToStrips}
-                  className="btn btn-ghost btn-sm"
-                >
-                  ✂️ {tx('classroomJobs.stripsLink')}
-                </button>
               </div>
             )}
 
             <p className="text-xs text-white/40 mt-3">
-              {sheets === 1
-                ? tx('classroomJobs.sheetOne')
-                : tx('classroomJobs.sheetMany').replace('{n}', String(sheets))}
+              {mode === 'swap'
+                ? tx('classroomJobs.swapSheets')
+                    .replace('{poster}', String(sheets))
+                    .replace('{cards}', String(cardsSheets))
+                : sheets === 1
+                  ? tx('classroomJobs.sheetOne')
+                  : tx('classroomJobs.sheetMany').replace('{n}', String(sheets))}
             </p>
 
-            <label className="flex items-center gap-2 mt-3 text-sm text-white/70">
-              <input
-                type="checkbox"
-                checked={showChildPhotos}
-                onChange={(e) => {
-                  setSaveState('idle');
-                  setShowChildPhotos(e.target.checked);
-                }}
-                className="w-4 h-4 accent-[#34d399]"
-              />
-              {tx('classroomJobs.showChildPhotos')}
-            </label>
-            {showChildPhotos && (
-              <p className="text-xs text-white/40 mt-1.5">{tx('classroomJobs.childPhotosHint')}</p>
+            {mode !== 'swap' && (
+              <>
+                <label className="flex items-center gap-2 mt-3 text-sm text-white/70">
+                  <input
+                    type="checkbox"
+                    checked={showChildPhotos}
+                    onChange={(e) => {
+                      setSaveState('idle');
+                      setShowChildPhotos(e.target.checked);
+                    }}
+                    className="w-4 h-4 accent-[#34d399]"
+                  />
+                  {tx('classroomJobs.showChildPhotos')}
+                </label>
+                {showChildPhotos && (
+                  <p className="text-xs text-white/40 mt-1.5">
+                    {tx('classroomJobs.childPhotosHint')}
+                  </p>
+                )}
+              </>
             )}
           </section>
 
@@ -1651,12 +1764,12 @@ export default function ClassroomJobsTool({
 
         🚨 STILL THE ONE TOP-LEVEL <style> TAG. The crop modal's CSS is
         concatenated onto the SAME string rather than given a tag of its own —
-        `cropModalCss()` has no dependency on `mode`/`slotSize` and is present
+        `cropModalCss()` has no dependency on `mode`/`printScope` and is present
         regardless of whether the modal happens to be open, so folding it in
         here costs nothing and keeps the "one style tag" rule intact even
         though the modal itself only mounts conditionally.
       */}
-      <style dangerouslySetInnerHTML={{ __html: posterCss(mode, slotSize) + cropModalCss() }} />
+      <style dangerouslySetInnerHTML={{ __html: posterCss() + cropModalCss() }} />
     </>
   );
 }
@@ -2279,8 +2392,9 @@ function IconCropModal({
 function JobsPosterSheet({
   jobs,
   studentById,
+  students,
   mode,
-  slotSize,
+  printScope,
   logoUrl,
   showWatermark,
   title,
@@ -2292,57 +2406,74 @@ function JobsPosterSheet({
 }: {
   jobs: ClassroomJob[];
   studentById: Map<string, Student>;
+  /** Swap mode only — the whole roster, not just assigned children. Every
+   *  child in the room gets a card whether or not they currently hold a job,
+   *  because the card outlives any one term's assignments. Ignored in names
+   *  mode. */
+  students: Student[];
   mode: PosterMode;
-  slotSize: SlotSize;
+  /** Swap mode only — which section(s) actually mount, matching what the
+   *  teacher sees on screen to what prints. Ignored in names mode. */
+  printScope: PrintScope;
   logoUrl: string | null;
   showWatermark: boolean;
   title: string;
   roomName: string;
   vars: CSSProperties;
-  /** Names mode only — slots mode already carries a photo on the printed
-   *  strip itself, so this has no effect there. */
+  /** Names mode only — swap mode's cards always carry a photo (or the
+   *  initial-letter fallback), so this has no effect there. */
   showChildPhotos: boolean;
   /** Names mode only — which of computeNamesLayout's two regimes this render
    *  is in: 1 (full-width, three horizontal zones) for a small chart, 2 (the
-   *  familiar two-up grid, right column stacked) otherwise. Ignored in slots
+   *  familiar two-up grid, right column stacked) otherwise. Ignored in swap
    *  mode. */
   columns: 1 | 2;
   /** Names mode only — the SAME number `vars['--jp-card-h']` was built from,
    *  passed a second time as a plain number so wideCardSizes/gridCardSizes
    *  can compute each card's real zone width for its length-aware
    *  --jp-label-fs/--jp-name-fs (see the "names mode" comment in posterCss).
-   *  Ignored in slots mode. */
+   *  Ignored in swap mode. */
   cardH: number;
 }) {
+  /** Swap mode's poster and cards sheets are two independent prints (one
+   *  chart, one roster) that the teacher can choose between via the
+   *  printScope pills — "what a teacher approves on screen is what prints"
+   *  applies here exactly as it does to any other conditional-mount section
+   *  on this tool. Names mode has no such split: it always shows its one
+   *  chart. */
+  const showPoster = mode === 'names' || printScope !== 'cards';
+  const showCards = mode === 'swap' && printScope !== 'poster';
   return (
     <div className={`jp-poster ${quicksand.className}`} style={vars}>
-      {/* The ghost. First child so it sits behind everything that follows;
-          decorative, so it carries no alt text — the room is already named in
-          words on the masthead. */}
-      {showWatermark && logoUrl && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img className="jp-watermark" src={logoUrl} alt="" aria-hidden="true" />
-      )}
-
-      <header className="jp-head">
-        {logoUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img className="jp-emblem" src={logoUrl} alt="" aria-hidden="true" />
-        )}
-        <div className="jp-headtext">
-          <h2 className="jp-title" dir="auto">
-            {title}
-          </h2>
-          {roomName && (
-            <p className="jp-room" dir="auto">
-              {roomName}
-            </p>
+      {showPoster && (
+        <>
+          {/* The ghost. First child so it sits behind everything that
+              follows; decorative, so it carries no alt text — the room is
+              already named in words on the masthead. */}
+          {showWatermark && logoUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img className="jp-watermark" src={logoUrl} alt="" aria-hidden="true" />
           )}
-        </div>
-      </header>
 
-      <div className="jp-body">
-        {mode === 'names' ? (
+          <header className="jp-head">
+            {logoUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img className="jp-emblem" src={logoUrl} alt="" aria-hidden="true" />
+            )}
+            <div className="jp-headtext">
+              <h2 className="jp-title" dir="auto">
+                {title}
+              </h2>
+              {roomName && (
+                <p className="jp-room" dir="auto">
+                  {roomName}
+                </p>
+              )}
+            </div>
+          </header>
+
+          <div className="jp-body">
+            {mode === 'names' ? (
           columns === 1 ? (
             // The small-chart (n <= 3) regime: one full-width card per job,
             // three horizontal zones so the picture, the label+name, and the
@@ -2513,46 +2644,100 @@ function JobsPosterSheet({
               );
             })()
           )
-        ) : (
-          <div className="jp-slots">
-            {jobs.map((job) => (
-              <div className="jp-slotrow" key={job.id}>
-                <div
-                  className="jp-slotlabel"
-                  style={{ flex: `0 0 ${STRIP_SIZES[slotSize].label}mm` }}
-                >
-                  {job.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      className="jp-icon jp-icon-img"
-                      style={{ width: '9mm', height: '9mm' }}
-                      src={job.imageUrl}
-                      alt=""
-                      aria-hidden="true"
-                    />
-                  ) : (
-                    <span className="jp-icon" style={{ width: '9mm', fontSize: '15pt' }}>
-                      {job.icon}
-                    </span>
-                  )}
-                  <span className="jp-slotname" style={{ minWidth: 0 }} dir="auto">
-                    {job.name}
-                  </span>
-                </div>
-                {/* The empty slot, at exactly the Helper Name Strips footprint
-                    for this size — see STRIP_SIZES. */}
-                <div
-                  className="jp-slot"
-                  style={{
-                    width: `${STRIP_SIZES[slotSize].width}mm`,
-                    height: `${STRIP_SIZES[slotSize].height}mm`,
-                  }}
-                />
+            ) : (
+              // Swap mode's poster: a fixed-geometry tile per job, always —
+              // whether the job is assigned makes no visual difference, since
+              // the slot is always empty (that's the whole system). Every
+              // tile's label font is computed HERE, per job, from the real
+              // string length against the real 64mm picture-zone width, same
+              // length-aware pattern as names mode's labels.
+              <div className="jp-swaptiles">
+                {jobs.map((job) => {
+                  const labelFs = fontFor(
+                    job.name.length,
+                    SWAP_LABEL_BASE_MM,
+                    maxCharsFor(SWAP_PICTURE_MM, LABEL_CHAR_K, SWAP_LABEL_BASE_MM),
+                    SWAP_LABEL_FLOOR_MM
+                  );
+                  const tileVars = { '--jp-label-fs': `${labelFs}mm` } as CSSProperties;
+                  return (
+                    <div className="jp-swaptile" key={job.id}>
+                      <div className="jp-swapleft" style={tileVars}>
+                        <div className="jp-swaplabel" dir="auto">
+                          {job.name}
+                        </div>
+                        <div className="jp-swappic">
+                          {job.imageUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              className="jp-swappic-img"
+                              src={job.imageUrl}
+                              alt=""
+                              aria-hidden="true"
+                            />
+                          ) : (
+                            <span aria-hidden="true">{job.icon}</span>
+                          )}
+                        </div>
+                      </div>
+                      {/* The empty slot — a child's card (60x74mm) plus ~1mm
+                          tolerance each side. Always empty on the printed
+                          poster; the teacher slots a laminated card in by
+                          hand and swaps it week to week. */}
+                      <div className="jp-swapslot">
+                        <span className="jp-swaphint">
+                          {COPY['classroomJobs.swapSlotHint']}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            ))}
+            )}
           </div>
-        )}
-      </div>
+        </>
+      )}
+
+      {showCards && (
+        // The card sheet: one 60x74mm card per child in the WHOLE roster
+        // (not just assigned children) — a card outlives any one term's
+        // assignments, so every child gets one. `jp-cards-pagebreak` forces
+        // this section onto its own sheet only when a poster section is also
+        // rendering above it; "cards only" scope needs no leading blank page.
+        <div className={`jp-cardssheet${showPoster ? ' jp-cards-pagebreak' : ''}`}>
+          {students.map((child) => {
+            const name = firstName(child.name);
+            const nameFs = fontFor(
+              name.length,
+              SWAP_CARD_NAME_BASE_MM,
+              maxCharsFor(SWAP_CARD_ZONE_MM, NAME_CHAR_K, SWAP_CARD_NAME_BASE_MM),
+              SWAP_CARD_NAME_FLOOR_MM
+            );
+            const cardVars = { '--jp-cardname-fs': `${nameFs}mm` } as CSSProperties;
+            const initial = child.name.trim().charAt(0).toUpperCase() || '?';
+            return (
+              <div className="jp-card60" style={cardVars} key={child.id}>
+                <div className="jp-card60-name" dir="auto">
+                  {name}
+                </div>
+                {child.photoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    className="jp-card60-photo"
+                    src={getProxyUrl(child.photoUrl as string)}
+                    alt=""
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <div className="jp-card60-fallback" aria-hidden="true">
+                    {initial}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
