@@ -268,8 +268,7 @@ export default function Home() {
                 on the right of the header exactly where PSS used to. */}
             <Link href="/play" className="btn btn-gold btn-md">
               <span>🎲</span>
-              <span>亲子游戏</span>
-              <span className="hidden sm:inline">Games</span>
+              <span>Games</span>
             </Link>
           </div>
         </div>
