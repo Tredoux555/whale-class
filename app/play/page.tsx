@@ -147,7 +147,41 @@ export default function PlayPage() {
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-6 pb-12 space-y-8">
-        {/* ── THIS WEEK — the loudest thing on the page ───────────────────── */}
+        {/* ── THE INTERACTIVE PLAYER — the loudest card on the page ────────
+            The classroom lesson itself, shipped as ONE self-contained static
+            HTML file in public/apps. Deliberately a plain <a>, not next/link:
+            this is a static asset, not an app-router route, so <Link> would
+            try to client-navigate to a page that does not exist. */}
+        <section>
+          <a
+            href="/apps/dark-phonics-lesson-player.html"
+            className="block rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-900 to-violet-800 text-white shadow-2xl ring-4 ring-amber-300/70 px-5 py-6 active:scale-[0.99] transition-transform"
+          >
+            <div className="flex items-start gap-4">
+              <span
+                className="w-14 h-14 shrink-0 rounded-2xl bg-amber-300 text-slate-900 flex items-center justify-center text-3xl shadow-md"
+                aria-hidden="true"
+              >
+                🎬
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-bold uppercase tracking-widest text-amber-300">
+                  New
+                </p>
+                <h2 className="text-2xl font-black leading-tight">Interactive Lesson Player</h2>
+                <p className="mt-2 text-base text-indigo-100 leading-relaxed">
+                  The classroom lesson, playable at home — teacher-paced screens, songs, and the
+                  full illustrated cards. Lessons 1–4 open now.
+                </p>
+              </div>
+            </div>
+            <span className="mt-5 flex items-center justify-center gap-2 rounded-2xl bg-amber-300 text-slate-900 font-black px-5 py-4 text-lg shadow-md">
+              Open the player <span aria-hidden="true">→</span>
+            </span>
+          </a>
+        </section>
+
+        {/* ── THIS WEEK ───────────────────────────────────────────────────── */}
         {current && (
           <section>
             <h2 className="text-xs font-bold uppercase tracking-widest text-blue-500 mb-2">

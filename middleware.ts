@@ -521,6 +521,13 @@ export async function middleware(req: NextRequest) {
     // Supabase gate below 302s the page AND the download to '/'.
     '/dark-phonics-app',
     '/downloads',
+    // Standalone self-contained HTML apps served straight out of public/apps —
+    // today the Dark Phonics interactive lesson player, linked from /play and
+    // opened cold by a parent with no session. The matcher below already
+    // excludes '.html', so the player file itself never reaches this function;
+    // this entry is the belt to that braces, and covers any non-.html sibling
+    // (e.g. a manifest or a data file) added under /apps later.
+    '/apps',
     // Potato Snaps (www.teacherpotato.xyz) — own auth system entirely: 6-char
     // class/child codes, own httpOnly cookies, every /api/potato/* route gates
     // itself. Without this entry the legacy Supabase-role gate at the bottom of

@@ -192,6 +192,40 @@ export default async function PlayWeekPage({ params }: PageProps) {
           <h1 className="text-3xl font-black text-slate-900 leading-tight">{info.title}</h1>
         </div>
 
+        {/* THE INTERACTIVE PLAYER — weeks 1–4 only, because those are the only
+            lessons the player currently ships. Raise the bound as more are
+            built.
+            🚨 The player has NO URL-based lesson selection — no ?lesson=n, no
+            hash route — so every week links to the same front door and the
+            parent picks the lesson inside it. If it ever gains a deep-link
+            parameter, append it here.
+            Plain <a>, not next/link: this is a static file in public/apps, not
+            an app-router route. */}
+        {info.week <= 4 && (
+          <a
+            href="/apps/dark-phonics-lesson-player.html"
+            className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-900 to-violet-800 text-white shadow-lg ring-2 ring-amber-300/70 px-4 py-3 active:scale-[0.99] transition-transform"
+          >
+            <span
+              className="w-10 h-10 shrink-0 rounded-xl bg-amber-300 text-slate-900 flex items-center justify-center text-lg font-black"
+              aria-hidden="true"
+            >
+              ▶
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-bold leading-snug">
+                Play this lesson in the Interactive Player
+              </span>
+              <span className="block text-sm text-indigo-200">
+                The classroom screens, songs and cards — lessons 1–4.
+              </span>
+            </span>
+            <span className="text-amber-300 text-xl shrink-0" aria-hidden="true">
+              ›
+            </span>
+          </a>
+        )}
+
         {/* (a) THE SONG — the hook of Dark Phonics. Falls back to the song
             card picture in the browser if the mp4 isn't uploaded yet. */}
         <Card title="This week’s song">
