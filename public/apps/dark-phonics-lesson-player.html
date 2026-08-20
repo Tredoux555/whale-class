@@ -77,6 +77,9 @@
   /* ---------- song ---------- */
   .songwrap{display:flex;gap:26px;align-items:center;justify-content:center;width:100%;max-width:1050px;}
   .songcard{width:min(46vh,44%);border-radius:20px;box-shadow:0 8px 26px rgba(60,40,20,.22);}
+  .songvid{width:min(100%,940px);max-height:68vh;border-radius:20px;background:#000;display:block;margin:0 auto;
+           box-shadow:0 8px 26px rgba(60,40,20,.22);}
+  .songfb{display:none;gap:26px;align-items:center;justify-content:center;width:100%;}
   .songside{text-align:center;max-width:380px;}
   .bigplay{width:112px;height:112px;border-radius:50%;background:var(--green);border:none;color:#fff;font-size:44px;
     box-shadow:0 8px 22px rgba(63,191,127,.45);cursor:pointer;transition:transform .12s;font-family:inherit;}
@@ -253,6 +256,8 @@
   @media (max-aspect-ratio: 1/1){
     .songwrap{flex-direction:column;gap:14px;}
     .songcard{width:min(40vh,74%);}
+    .songfb.on{flex-direction:column;gap:14px;}
+    .songvid{max-height:52vh;}
     .mgrid{gap:22px;}
     .letterhero{flex-direction:column;gap:10px;}
     .glyphbig{font-size:clamp(90px,20vh,190px);}
@@ -303,6 +308,7 @@ const DATA = {"lessons":[{"id":"s","n":5,"display":1,"sound":"s","title":"The Sn
 
 const LESSONS = DATA.lessons, LOCKED = DATA.locked, LETTERS = DATA.letters;
 const REMOTE_SONG = n => `https://montree.xyz/api/montree/media/proxy/songs/lesson-${String(n).padStart(2,'0')}.mp3?bucket=dark-phonics`;
+const REMOTE_VIDEO = n => `https://montree.xyz/api/montree/media/proxy/videos/lesson-${String(n).padStart(2,'0')}.mp4?bucket=dark-phonics`;
 
 /* ============================================================
    ENGINE
@@ -474,7 +480,7 @@ function home(){
   });
   w.appendChild(lg);
   stage.appendChild(w);
-  const vm=document.createElement('div'); vm.className='vmark'; vm.textContent='v2.1';
+  const vm=document.createElement('div'); vm.className='vmark'; vm.textContent='v2.2-web';
   stage.appendChild(vm);
 }
 
@@ -489,14 +495,28 @@ RENDER.song = st => {
   const w=document.createElement('div'); w.className='step';
   const hasLocal = !!(L.songAudio && ASSETS[L.songAudio]);
   w.innerHTML=`<div class="songwrap">
-    <img class="songcard" src="${IMG(L.songCard)}" alt="">
-    <div class="songside">
-      <h1>🎵 Song time!</h1>
-      <p class="sub">${L.catch}</p>
-      <button class="bigplay" id="playbtn">▶</button>
-      <div class="songnote" id="songnote">${hasLocal?'' : 'Song not embedded on this build — trying montree.xyz… or just sing it from the card!'}</div>
+    <video class="songvid" id="songvid" controls playsinline webkit-playsinline preload="metadata"
+           poster="${IMG(L.songCard)}" src="${REMOTE_VIDEO(L.n)}"></video>
+    <div class="songfb" id="songfb">
+      <img class="songcard" src="${IMG(L.songCard)}" alt="">
+      <div class="songside">
+        <h1>🎵 Song time!</h1>
+        <p class="sub">${L.catch}</p>
+        <button class="bigplay" id="playbtn">▶</button>
+        <div class="songnote" id="songnote">${hasLocal?'' : 'Song not embedded on this build — trying montree.xyz… or just sing it from the card!'}</div>
+      </div>
     </div></div>`;
   stage.appendChild(w);
+  /* video is primary; audio card is the fallback if the video cannot load */
+  const vid = w.querySelector('#songvid'), fb = w.querySelector('#songfb');
+  const showFallback = drop => { if(!alive()) return;
+    if(drop){ try{ vid.pause(); }catch(e){} vid.remove(); }
+    fb.style.display='flex'; fb.classList.add('on'); };
+  vid.addEventListener('error', ()=>showFallback(true));
+  vid.addEventListener('ended', ()=>{ if(alive()) markDone(); });
+  vid.addEventListener('play', ()=>{ if(currentAudio && currentAudio!==vid){ try{ currentAudio.pause(); }catch(e){} } currentAudio = vid; });
+  const vwd = setTimeout(()=>{ if(alive() && vid.isConnected && vid.readyState===0) showFallback(false); }, 9000);
+  vid.addEventListener('loadedmetadata', ()=>clearTimeout(vwd), {once:true});
   const btn = w.querySelector('#playbtn');
   let audio=null, playing=false;
   btn.onclick=()=>{
