@@ -13,13 +13,16 @@ phonics library page): the word cards used to ship as their own
 sentence-strips.pdf, sized so each row wrapped independently and every card
 had to be trimmed out by hand. They now render as one touching-border grid
 (see grid_metrics()) and live as trailing page(s) INSIDE build-it-sheet.pdf
-— one document, not two, still exactly the slot size on both. Separately,
-the plain-A4-landscape tracing-workbook.pdf (cover + one page per sentence,
-one dotted TRACE IT line + one blank "NOW YOU" line) is retired in favour
-of the A5 take-home booklet from build_a5_booklet.py — picture-forward,
-sentence traced across two lines at a shared phrase-break, cover + closing
-page, two A5 pages per landscape-A4 sheet (cut down the centre, no fold).
-It keeps the 'tracing-workbook.pdf' filename so nothing else has to change.
+— one document, not two, still exactly the slot size on both.
+
+tracing-workbook.pdf is no longer built by this script (was, briefly, via a
+bespoke build_a5_booklet.py layout — retired the same day per Tredoux: "why
+not follow this exact same build ... keep the exact same media"). It's now
+built by duplicating the real book's own saddle-stitch A5 reader build
+(same cover, half-title, scene art, back cover as <slug>-A5-booklet-print.pdf)
+with only the text pages swapped for traced guides — see
+scripts/curriculum/dark-phonics-storybooks/build_a5_tracing.py, which writes
+straight into this same public/dark-phonics-materials/<slug>/ folder.
 
     build-it-sheet.pdf     the cut-out-and-stick work, PLUS the cut-out word
                            cards. Landscape A4 page(s): every sentence's
@@ -32,21 +35,17 @@ It keeps the 'tracing-workbook.pdf' filename so nothing else has to change.
                            fits its slot exactly no matter which row it came
                            from.
 
-    tracing-workbook.pdf   the A5 take-home booklet (see
-                           build_a5_booklet.py for the page-by-page design).
-
-Model, cards and tracing all still come from `stroke_font` — one
-single-stroke alphabet, so the shapes the child reads, builds and traces are
-the same shapes. The story is never duplicated here: spreads are imported
-live from the book's own build script (`bookScript` in the letter JSON) and
-the sentence is `nar` (minus its trailing ellipsis) joined to the shouted
-word.
+Model and cards both come from `stroke_font` — the same single-stroke
+alphabet the tracing booklet's traced letters use, so the shapes the child
+reads, builds and traces are the same shapes. The story is never duplicated
+here: spreads are imported live from the book's own build script
+(`bookScript` in the letter JSON) and the sentence is `nar` (minus its
+trailing ellipsis) joined to the shouted word.
 
     python3 build_tracing.py --letter n
     python3 build_tracing.py --letter i --repo-root /path/to/montree --out /tmp/out
 
-Outputs (fixed names): build-it-sheet.pdf   (build-it pages + word-card grid)
-                       tracing-workbook.pdf (A5 booklet)
+Output (fixed name): build-it-sheet.pdf (build-it pages + word-card grid)
 """
 import argparse
 import importlib.util
@@ -64,7 +63,6 @@ from reportlab.pdfgen import canvas as rl_canvas
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import stroke_font as sf                                          # noqa: E402
-import build_a5_booklet as a5booklet                               # noqa: E402
 
 # ---------------------------------------------------------------- fonts ----
 F = os.environ.get('MONTREE_CANVAS_FONTS',
@@ -651,38 +649,28 @@ def build(cfg, repo_root, outdir):
         if not os.path.exists(a):
             raise SystemExit('missing art: ' + a)
 
-    cover_art, closing_art = a5booklet.resolve_art(cfg, book, spreads, arts,
-                                                    art_dir)
-
     card_u, col_widths = grid_metrics(sentences)
 
-    # ---- (A) build-it sheet (+ trailing word-card grid) ------------------
+    # ---- build-it sheet (+ trailing word-card grid) -----------------------
     bs, bs_pages = build_sheet_pdf(cfg, sentences, arts, card_u, col_widths,
                                    os.path.join(outdir, 'build-it-sheet.pdf'))
 
-    # ---- (B) tracing workbook = the A5 take-home booklet ------------------
-    # Same filename as before (nothing else has to change); content is now
-    # build_a5_booklet's cover + one page per sentence + closing page, two
-    # A5 pages per landscape-A4 sheet. See build_a5_booklet.py.
-    wb = os.path.join(outdir, 'tracing-workbook.pdf')
-    page_fns = a5booklet.page_functions(cfg, sentences, arts, cover_art,
-                                        closing_art)
-    c = rl_canvas.Canvas(wb, pagesize=landscape(A4))
-    c.setTitle('%s — trace and build booklet (A5)' % cfg['bookTitle'])
-    n_sheets = a5booklet.write_booklet(c, page_fns)
-    c.save()
+    # tracing-workbook.pdf is no longer built here (2026-08-21, take 2): it
+    # now comes from duplicating the real book's OWN saddle-stitch A5 build
+    # (cover / half-title / art pages / back cover all identical to
+    # <slug>-A5-booklet-print.pdf) instead of a bespoke layout — see
+    # scripts/curriculum/dark-phonics-storybooks/build_a5_tracing.py, which
+    # writes straight to this same materials folder.
 
     if sf.MISSING:
         print('WARNING unmapped characters:', sorted(sf.MISSING))
     print('build-it-sheet.pdf   ->', bs, '(%d page%s, incl. word-card grid)'
           % (bs_pages, '' if bs_pages == 1 else 's'))
-    print('tracing-workbook.pdf ->', wb, '(%d sheets, %d pages)'
-          % (n_sheets, len(page_fns)))
     print('card x-height %.2f mm, card height %.0f mm'
           % (card_u / mm, SLOT_H / mm))
     for i, s in enumerate(sentences, 1):
         print('  p%d  %s' % (i, s))
-    return bs, wb
+    return bs
 
 
 def main():
