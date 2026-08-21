@@ -1,35 +1,39 @@
 # -*- coding: utf-8 -*-
-"""Montree Phonics — build-it sheet + child-written tracing book + sentence
-strips.
+"""Montree Phonics — build-it sheet (+ cut-out word cards) and the A5
+trace-and-build take-home booklet.
 
 FORMAT CHANGE per Tredoux 2026-07-30 (supersedes part of the 2026-07-29
 locked format): READ IT + BUILD IT + TRACE IT used to share one page. They
-are now split onto two different deliverables so the two activities (cut,
-stick, and rebuild vs. sit down and write) don't compete for the same sheet:
+were split onto two deliverables so the two activities (cut, stick, and
+rebuild vs. sit down and write) don't compete for the same sheet.
 
-    build-it-sheet.pdf     the cut-out-and-stick work. One page (two if a
-                           book's sentences are too long to sit comfortably
-                           on one): every sentence's solid READ IT model with
-                           its dashed BUILD IT card slots directly beneath —
-                           slots are exactly the sentence-strips word-card
-                           size, unchanged. The spread's scene art sits top
-                           right of each row (2026-07-30 addendum: the sheet
-                           went out without it and Tredoux caught the gap),
-                           same picture the tracing book uses for that
-                           sentence, boxed 3:2 and never wider than the old
-                           58×38mm thumbnail reference.
+FORMAT CHANGE per Tredoux 2026-08-21 (weekly-materials cleanup — vocab
+cards and three-part cards dropped from the set entirely; see the dark
+phonics library page): the word cards used to ship as their own
+sentence-strips.pdf, sized so each row wrapped independently and every card
+had to be trimmed out by hand. They now render as one touching-border grid
+(see grid_metrics()) and live as trailing page(s) INSIDE build-it-sheet.pdf
+— one document, not two, still exactly the slot size on both. Separately,
+the plain-A4-landscape tracing-workbook.pdf (cover + one page per sentence,
+one dotted TRACE IT line + one blank "NOW YOU" line) is retired in favour
+of the A5 take-home booklet from build_a5_booklet.py — picture-forward,
+sentence traced across two lines at a shared phrase-break, cover + closing
+page, two A5 pages per landscape-A4 sheet (cut down the centre, no fold).
+It keeps the 'tracing-workbook.pdf' filename so nothing else has to change.
 
-    tracing-workbook.pdf   the book the child writes themselves, "as if they
-                           were writing the book". Cover ("written by ___"),
-                           then one page per sentence: the scene art, big —
-                           a proper book-page illustration, not a thumbnail —
-                           and the whole sentence in the exact TRACE IT
-                           format (dotted skeleton on the same three-line
-                           guide, same x-height, auto-derived red/blue
-                           stroke-order arrows). No model line, no slots.
+    build-it-sheet.pdf     the cut-out-and-stick work, PLUS the cut-out word
+                           cards. Landscape A4 page(s): every sentence's
+                           solid READ IT model with its dashed BUILD IT card
+                           slots directly beneath (scene art top right of
+                           each row) — then, as trailing portrait-A4 page(s),
+                           the same cards as one edge-to-edge cut grid, sized
+                           from the exact same column widths as the dashed
+                           slots above (grid_metrics()), so a cut-out card
+                           fits its slot exactly no matter which row it came
+                           from.
 
-    sentence-strips.pdf    unchanged: the word cards the build-it sheet's
-                           slots are sized to.
+    tracing-workbook.pdf   the A5 take-home booklet (see
+                           build_a5_booklet.py for the page-by-page design).
 
 Model, cards and tracing all still come from `stroke_font` — one
 single-stroke alphabet, so the shapes the child reads, builds and traces are
@@ -41,9 +45,8 @@ word.
     python3 build_tracing.py --letter n
     python3 build_tracing.py --letter i --repo-root /path/to/montree --out /tmp/out
 
-Outputs (fixed names): build-it-sheet.pdf
-                       tracing-workbook.pdf
-                       sentence-strips.pdf
+Outputs (fixed names): build-it-sheet.pdf   (build-it pages + word-card grid)
+                       tracing-workbook.pdf (A5 booklet)
 """
 import argparse
 import importlib.util
@@ -61,6 +64,7 @@ from reportlab.pdfgen import canvas as rl_canvas
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import stroke_font as sf                                          # noqa: E402
+import build_a5_booklet as a5booklet                               # noqa: E402
 
 # ---------------------------------------------------------------- fonts ----
 F = os.environ.get('MONTREE_CANVAS_FONTS',
@@ -108,6 +112,12 @@ FOOT_RULE = MG + 6 * mm
 
 CARD_PAD   = 7 * mm                    # card padding either side of the word
 CARD_U_MAX = 5.6 * mm                  # card x-height ceiling
+
+# ---- sentence-strips sheet (portrait A4) -----------------------------
+# Pulled up here (used by grid_metrics below) from where the strips builder
+# used to define them locally, just above strips_pdf().
+SPW, SPH = A4
+SMG = 12 * mm
 
 # ---- book-page illustration (tracing book) --------------------------------
 # Freed up by dropping the model sentence + slots from this page: the picture
@@ -268,6 +278,39 @@ def card_metrics(sentences):
     return u
 
 
+def column_widths(sentences, u):
+    """Per-column card width across the whole book: every card in a given
+    word position (An / [swap word] / on / my / apple! ...) is exactly as
+    wide as the widest word that ever lands there. That's what lets the same
+    size work both as a build-it-sheet slot AND a sentence-strip cut cell in
+    every row, instead of each row sizing its own cards independently."""
+    rows = [s.split(' ') for s in sentences]
+    ncols = max(len(r) for r in rows)
+    return [max(card_width(r[j], u) for r in rows if j < len(r))
+            for j in range(ncols)]
+
+
+def grid_metrics(sentences):
+    """Shared card grid for the whole book: the largest x-height `u` (up to
+    CARD_U_MAX) whose per-column widths (a) keep every card <= 74mm, (b) let
+    every row still fit the build-it-sheet's content width CW, and (c) let a
+    FULL row of cards fit the narrower portrait strips sheet with zero gap
+    between them — that last constraint is what makes an edge-to-edge cut
+    grid possible (2026-08-21 format change, replaces the old per-row
+    word-wrapping sentence-strips layout)."""
+    strips_scw = SPW - 2 * SMG
+    u = CARD_U_MAX
+    while u > 2.5 * mm:
+        cw = column_widths(sentences, u)
+        widest = max(cw)
+        row_w = [sum(cw[:len(s.split(' '))])
+                 + SLOT_GAP * (len(s.split(' ')) - 1) for s in sentences]
+        if widest <= 74 * mm and max(row_w) <= CW and sum(cw) <= strips_scw:
+            break
+        u -= 0.1 * mm
+    return u, column_widths(sentences, u)
+
+
 # ------------------------------------------------------------ page parts ---
 def chrome(c, cfg, right_text):
     tracked(c, MG, HEAD_Y, 'M O N T R E E   P H O N I C S', 'Label', 8.0, 0.26,
@@ -307,7 +350,7 @@ def row_height(sentence):
     return row_art_zone(sentence) + SLOT_H
 
 
-def build_row(c, band_top, band_bottom, sentence, card_u, art_path):
+def build_row(c, band_top, band_bottom, sentence, card_u, col_widths, art_path):
     """One sentence: solid READ IT model, dashed BUILD IT slots beneath,
     centred vertically inside [band_bottom, band_top]. The scene art sits top
     right of the row, spanning the same zone as the model + 'build it' label
@@ -321,7 +364,11 @@ def build_row(c, band_top, band_bottom, sentence, card_u, art_path):
     extra = art_zone - label_zone          # slack the art forces open, if any
 
     words = sentence.split(' ')
-    widths = [card_width(w, card_u) for w in words]
+    # slot widths come from the book-wide column grid (not this row's own
+    # word widths) so every cut-out card fits its slot exactly, whether the
+    # card was cut from THIS row or a longer/shorter one elsewhere in the
+    # book — see grid_metrics().
+    widths = col_widths[:len(words)]
     total_w = sum(widths) + SLOT_GAP * (len(words) - 1)
 
     row_total = art_zone + SLOT_H
@@ -357,19 +404,20 @@ def build_row(c, band_top, band_bottom, sentence, card_u, art_path):
         x += cw + SLOT_GAP
 
 
-def build_sheet_page(c, cfg, sentences, arts, page_no, total_pages, card_u):
+def build_sheet_page(c, cfg, sentences, arts, page_no, total_pages, card_u,
+                     col_widths):
     chrome(c, cfg, '%s  ·  build it  ·  sheet %d of %d'
            % (cfg['bookTitle'], page_no, total_pages))
     n = len(sentences)
     band_h = (BS_CONTENT_TOP - BS_CONTENT_BOT) / n
     for i, (sentence, art_path) in enumerate(zip(sentences, arts)):
         top = BS_CONTENT_TOP - i * band_h
-        build_row(c, top, top - band_h, sentence, card_u, art_path)
+        build_row(c, top, top - band_h, sentence, card_u, col_widths, art_path)
     footer(c, 'Montree Phonics  ·  build it  ·  letter %s' % cfg['letter'],
           'sheet %d / %d' % (page_no, total_pages))
 
 
-def build_sheet_pdf(cfg, sentences, arts, card_u, out):
+def build_sheet_pdf(cfg, sentences, arts, card_u, col_widths, out):
     content_h = BS_CONTENT_TOP - BS_CONTENT_BOT
     worst_row = max(row_height(s) for s in sentences) + BS_ROW_AIR
     rows_per_page = max(1, int(content_h // worst_row))
@@ -381,10 +429,21 @@ def build_sheet_pdf(cfg, sentences, arts, card_u, out):
     for p in range(n_pages):
         chunk = sentences[p * per_page:(p + 1) * per_page]
         arts_chunk = arts[p * per_page:(p + 1) * per_page]
-        build_sheet_page(c, cfg, chunk, arts_chunk, p + 1, n_pages, card_u)
+        build_sheet_page(c, cfg, chunk, arts_chunk, p + 1, n_pages, card_u,
+                         col_widths)
         c.showPage()
+
+    # ---- trailing page(s): the cut-out word-card grid, same document -----
+    # 2026-08-21: sentence-strips.pdf folded into this file per Tredoux —
+    # one "build it" download instead of two. Portrait, so switch the page
+    # size before drawing; strips_draw() calls its own footer but not
+    # showPage(), matching the pattern above.
+    c.setPageSize(A4)
+    strips_draw(c, cfg, sentences, card_u, col_widths)
+    c.showPage()
+
     c.save()
-    return out, n_pages
+    return out, n_pages + 1
 
 
 # --------------------------------------------------- (B) tracing book -----
@@ -493,17 +552,29 @@ def cover_page(c, cfg, art_path):
                  'cut the word cards from sentence-strips.pdf')
 
 
-# ---------------------------------------------------------- strips sheet ---
-SPW, SPH = A4                          # portrait, 210 x 297
-SMG = 12 * mm
-
-
-def strips_pdf(cfg, sentences, card_u, out):
-    c = rl_canvas.Canvas(out, pagesize=A4)
-    c.setTitle('%s — sentence strips' % cfg['bookTitle'])
+# ------------------------------------------------------- word-card grid ---
+# 2026-08-21 format change per Tredoux: word cards used to size themselves
+# per row and sit with air between them, so every single card had to be
+# trimmed out by hand. They now render as one touching-border grid — every
+# card in a column shares col_widths[j] (see grid_metrics()), every row
+# shares SLOT_H, zero gap anywhere — so the whole sheet comes apart with a
+# small number of full-length straight cuts: across for strips, then down
+# for individual cards (optionally through a stack of several strips at
+# once). Card sizes stay in lockstep with the build-it-sheet's dashed slots
+# because both now come from the same grid_metrics() column widths.
+#
+# Draws onto whatever page is CURRENT on `c` — the caller (build_sheet_pdf)
+# sizes that page portrait A4 and calls showPage() after, so this lives as
+# trailing page(s) inside build-it-sheet.pdf instead of its own file.
+# Assumes the grid fits one page, true for every book so far (build-it-sheet
+# itself only starts a 2nd landscape page past ~5 longer sentences, and the
+# portrait grid has much more headroom than that per row).
+def strips_draw(c, cfg, sentences, card_u, col_widths):
+    rows = [s.split(' ') for s in sentences]
+    ncols = max(len(r) for r in rows)
     scw = SPW - 2 * SMG
-    y = [0.0]
-    page = [1]
+    grid_w = sum(col_widths[:ncols])
+    grid_x0 = SMG + (scw - grid_w) / 2   # centre the grid in the margins
 
     def header():
         tracked(c, SMG, SPH - SMG - 4 * mm, 'M O N T R E E   P H O N I C S',
@@ -516,62 +587,55 @@ def strips_pdf(cfg, sentences, card_u, out):
         c.setFont('Label', 8)
         c.setFillColorRGB(*GREY)
         c.drawString(SMG, SPH - SMG - 15.5 * mm,
-                     'Cut on the lines. Every card fits a slot on its workbook '
-                     'page — velcro the back.')
-        y[0] = SPH - SMG - 24 * mm
+                     'Cut straight across each row, then straight down each '
+                     'column — every card lines up on both cuts.')
+        ref = '   '.join('%d. %s' % (i, s) for i, s in enumerate(sentences, 1))
+        c.setFont('Label', 6.6)
+        c.setFillColorRGB(*FAINT)
+        c.drawString(SMG, SPH - SMG - 20.5 * mm, ref)
 
-    def footer():
-        hairline(c, SMG, SMG + 6 * mm, SPW - SMG)
+    def footer(grid_bottom):
+        foot_y = grid_bottom - 9 * mm
+        hairline(c, SMG, foot_y, SPW - SMG)
         c.setFont('Label', 7)
         c.setFillColorRGB(*FAINT)
-        c.drawString(SMG, SMG + 1.6 * mm,
-                     'Montree Phonics  ·  sentence strips  ·  letter %s'
+        c.drawString(SMG, foot_y - 4.4 * mm,
+                     'Montree Phonics  ·  word cards  ·  letter %s'
                      % cfg['letter'])
-        c.drawRightString(SPW - SMG, SMG + 1.6 * mm, 'sheet %d' % page[0])
+        c.drawRightString(SPW - SMG, foot_y - 4.4 * mm, cfg['bookTitle'])
 
     header()
-    for n, s in enumerate(sentences, 1):
-        words = s.split(' ')
-        rows, cur, curw = [], [], 0.0
-        for w in words:
-            cwid = card_width(w, card_u)
-            add = cwid + (SLOT_GAP if cur else 0)
-            if cur and curw + add > scw:
-                rows.append(cur)
-                cur, curw = [(w, cwid)], cwid
-            else:
-                cur.append((w, cwid))
-                curw += add
-        if cur:
-            rows.append(cur)
+    grid_top = SPH - SMG - 24 * mm
+    grid_h = SLOT_H * len(rows)
+    grid_bottom = grid_top - grid_h
 
-        need = 6 * mm + len(rows) * (SLOT_H + SLOT_GAP)
-        if y[0] - need < SMG + 9 * mm:
-            footer()
-            c.showPage()
-            page[0] += 1
-            header()
+    # word text, one card at a time
+    for i, words in enumerate(rows):
+        row_top = grid_top - i * SLOT_H
+        row_bot = row_top - SLOT_H
+        x = grid_x0
+        for j, w in enumerate(words):
+            cw = col_widths[j]
+            sf.draw_solid(c, w, x + (cw - sf.text_width(w, card_u, 0.08)) / 2,
+                          row_bot + SLOT_H / 2 - card_u * 0.42, card_u,
+                          tracking=0.08, weight=0.12, color=INK)
+            x += cw
 
-        tracked(c, SMG, y[0], 'P A G E   %d   ·   %s' % (n, s), 'LabelB', 7.0,
-                0.08, RED)
-        y[0] -= 6 * mm
-        for row in rows:
-            x = SMG
-            for w, cwid in row:
-                c.setStrokeColorRGB(0, 0, 0)
-                c.setLineWidth(0.6)
-                c.setDash()
-                c.rect(x, y[0] - SLOT_H, cwid, SLOT_H, stroke=1, fill=0)
-                sf.draw_solid(c, w,
-                              x + (cwid - sf.text_width(w, card_u, 0.08)) / 2,
-                              y[0] - SLOT_H / 2 - card_u * 0.42, card_u,
-                              tracking=0.08, weight=0.12, color=INK)
-                x += cwid + SLOT_GAP
-            y[0] -= SLOT_H + SLOT_GAP
-        y[0] -= 3 * mm
-    footer()
-    c.save()
-    return out
+    # grid lines: one continuous stroke per cut, not one rect per card, so
+    # every shared edge is a single line instead of two overlapping ones
+    c.setStrokeColorRGB(0, 0, 0)
+    c.setLineWidth(0.6)
+    c.setDash()
+    for i in range(len(rows) + 1):
+        yy = grid_top - i * SLOT_H
+        c.line(grid_x0, yy, grid_x0 + grid_w, yy)
+    xx = grid_x0
+    c.line(xx, grid_top, xx, grid_bottom)
+    for j in range(ncols):
+        xx += col_widths[j]
+        c.line(xx, grid_top, xx, grid_bottom)
+
+    footer(grid_bottom)
 
 
 # ----------------------------------------------------------------- build ---
@@ -587,44 +651,38 @@ def build(cfg, repo_root, outdir):
         if not os.path.exists(a):
             raise SystemExit('missing art: ' + a)
 
-    cover_name = (cfg.get('workbook') or {}).get('coverArt') \
-        or os.path.basename(book.get('cover') or spreads[0]['art'])
-    cover_art = os.path.join(art_dir, cover_name)
-    if not os.path.exists(cover_art):
-        cover_art = arts[0]
+    cover_art, closing_art = a5booklet.resolve_art(cfg, book, spreads, arts,
+                                                    art_dir)
 
-    card_u = card_metrics(sentences)
+    card_u, col_widths = grid_metrics(sentences)
 
-    # ---- (A) build-it sheet -------------------------------------------
-    bs, bs_pages = build_sheet_pdf(cfg, sentences, arts, card_u,
+    # ---- (A) build-it sheet (+ trailing word-card grid) ------------------
+    bs, bs_pages = build_sheet_pdf(cfg, sentences, arts, card_u, col_widths,
                                    os.path.join(outdir, 'build-it-sheet.pdf'))
 
-    # ---- (B) tracing book — cover + one page per sentence, trace-it only
+    # ---- (B) tracing workbook = the A5 take-home booklet ------------------
+    # Same filename as before (nothing else has to change); content is now
+    # build_a5_booklet's cover + one page per sentence + closing page, two
+    # A5 pages per landscape-A4 sheet. See build_a5_booklet.py.
     wb = os.path.join(outdir, 'tracing-workbook.pdf')
+    page_fns = a5booklet.page_functions(cfg, sentences, arts, cover_art,
+                                        closing_art)
     c = rl_canvas.Canvas(wb, pagesize=landscape(A4))
-    c.setTitle('%s — trace and build workbook' % cfg['bookTitle'])
-    cover_page(c, cfg, cover_art)
-    c.showPage()
-    for i, (s, a) in enumerate(zip(sentences, arts), 1):
-        trace_page(c, cfg, i, len(sentences), s, a)
-        c.showPage()
+    c.setTitle('%s — trace and build booklet (A5)' % cfg['bookTitle'])
+    n_sheets = a5booklet.write_booklet(c, page_fns)
     c.save()
-
-    # ---- sentence strips (unchanged) -----------------------------------
-    st = strips_pdf(cfg, sentences, card_u,
-                    os.path.join(outdir, 'sentence-strips.pdf'))
 
     if sf.MISSING:
         print('WARNING unmapped characters:', sorted(sf.MISSING))
-    print('build-it-sheet.pdf   ->', bs, '(%d page%s)'
+    print('build-it-sheet.pdf   ->', bs, '(%d page%s, incl. word-card grid)'
           % (bs_pages, '' if bs_pages == 1 else 's'))
-    print('tracing-workbook.pdf ->', wb, '(%d pages)' % (len(sentences) + 1))
-    print('sentence-strips.pdf  ->', st)
+    print('tracing-workbook.pdf ->', wb, '(%d sheets, %d pages)'
+          % (n_sheets, len(page_fns)))
     print('card x-height %.2f mm, card height %.0f mm'
           % (card_u / mm, SLOT_H / mm))
     for i, s in enumerate(sentences, 1):
         print('  p%d  %s' % (i, s))
-    return bs, wb, st
+    return bs, wb
 
 
 def main():

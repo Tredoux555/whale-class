@@ -700,19 +700,19 @@ export default function DarkPhonicsPage() {
                     </Row>
                   )}
 
-                  {/* PRINTABLES — flashcard deck + vocab card pack, plus the
-                      full paperwork/three-part-card family for the letter books
-                      that have one (public/dark-phonics-materials/<slug>/,
-                      built by the satpin printable generators — the-spat and
-                      the-pit today). */}
-                  {has('flashcards', l.n) || (l.words && l.words.length > 0) || (l.books && l.books.length > 0) || l.reader?.materials ? (
+                  {/* PRINTABLES — flashcard deck, plus the paperwork/build-it/
+                      tracing family for the letter books that have one
+                      (public/dark-phonics-materials/<slug>/, built by the
+                      satpin printable generators — the-spat and the-pit
+                      today). 2026-08-21: vocab cards and three-part cards
+                      dropped from the set per Tredoux; sentence strips are
+                      no longer their own pill — they're now the trailing
+                      page(s) of build-it-sheet.pdf. */}
+                  {has('flashcards', l.n) || (l.books && l.books.length > 0) || l.reader?.materials ? (
                     <Row accent={l.accent} label="Printables">
                       <div className="flex flex-wrap gap-2">
                         {has('flashcards', l.n) && (
                           <Pill href={media(`flashcards/lesson-${nn(l.n)}.pdf`)}>Letter card PDF</Pill>
-                        )}
-                        {l.words && l.words.length > 0 && (
-                          <Pill href={media(`vocab-packs/lesson-${nn(l.n)}.pdf`)}>Vocab cards</Pill>
                         )}
                         {[
                           ...(l.books?.filter(b => b.materials !== false) ?? []),
@@ -724,10 +724,6 @@ export default function DarkPhonicsPage() {
                             <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
                             <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/build-it-sheet.pdf`)}>Build-it sheet</Pill>
                             <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/tracing-workbook.pdf`)}>Tracing workbook</Pill>
-                            <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/sentence-strips.pdf`)}>Sentence strips</Pill>
-                            <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/three-part-cards-control.pdf`)}>Three-part cards · Control</Pill>
-                            <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/three-part-cards-pictures.pdf`)}>Three-part cards · Pictures</Pill>
-                            <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/three-part-cards-labels.pdf`)}>Three-part cards · Labels</Pill>
                           </React.Fragment>
                         ))}
                       </div>
