@@ -28,7 +28,7 @@ import { notFound } from 'next/navigation';
 import { nn } from '@/lib/montree/dark-phonics/lessons';
 import { getLiveLesson, lessonPictureUrl, mediaProxyUrl } from '@/lib/montree/dark-phonics/live-lesson';
 import { TOTAL_WEEKS, formatUnlockDate, weekForLesson } from '@/lib/games/weekly-schedule';
-import { BookCover, LessonSong } from '../../_components/LessonMedia';
+import { BookCover, LessonSong, SpokenLetter, SpokenWord } from '../../_components/LessonMedia';
 
 // The unlock instant must be evaluated per request, never baked into a static
 // HTML file at build time.
@@ -241,7 +241,12 @@ export default async function PlayWeekPage({ params }: PageProps) {
 
         {/* (b) THE SOUND — big enough to read across a kitchen table. */}
         <section className="rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg px-6 py-8 text-center">
-          <div className="text-6xl font-black tracking-tight leading-none">{big}</div>
+          <SpokenLetter
+            sound={info.sound}
+            className="text-6xl font-black tracking-tight leading-none"
+          >
+            {big}
+          </SpokenLetter>
           {phoneme && <div className="mt-3 text-3xl font-bold text-blue-100">{phoneme}</div>}
           <p className="mt-4 text-lg text-blue-50">{info.catchphrase}</p>
         </section>
@@ -251,12 +256,11 @@ export default async function PlayWeekPage({ params }: PageProps) {
           <Card title="Words to practice">
             <div className="flex flex-wrap gap-2">
               {words.map((w) => (
-                <span
+                <SpokenWord
                   key={w}
+                  word={w}
                   className="px-4 py-2 rounded-2xl bg-blue-50 border border-blue-100 text-lg font-bold text-blue-800"
-                >
-                  {w}
-                </span>
+                />
               ))}
             </div>
             <p className="mt-3 text-sm text-slate-500 leading-relaxed">

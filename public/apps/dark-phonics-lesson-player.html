@@ -238,6 +238,11 @@
   .chip.read{border-color:var(--amber);background:#fffaf0;box-shadow:0 0 0 4px rgba(242,177,53,.22),0 6px 16px rgba(242,177,53,.3);}
   .hearts{margin-top:14px;color:#8b8098;font-size:clamp(14px,2vh,19px);display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;}
   .hchip{padding:7px 18px;border-radius:14px;background:#fff;border:3px dashed #e3b9c6;color:#c2597c;font-weight:bold;font-size:clamp(18px,3vh,28px);cursor:pointer;}
+  /* v2.3 — voice bank: a quiet "tap me, I talk" mark, and a pulse while it does */
+  .spk{font-size:.55em;opacity:.4;margin-left:.34em;vertical-align:.08em;}
+  .chip.saying,.hchip.saying,.glyphbig.saying{animation:sayPulse .5s ease-in-out infinite alternate;}
+  .chip.saying .spk,.hchip.saying .spk{opacity:.95;}
+  @keyframes sayPulse{from{transform:scale(1);}to{transform:scale(1.06);}}
 
   /* ---------- star ---------- */
   .starwrap{text-align:center;}
@@ -309,6 +314,22 @@ const DATA = {"lessons":[{"id":"s","n":5,"display":1,"sound":"s","title":"The Sn
 const LESSONS = DATA.lessons, LOCKED = DATA.locked, LETTERS = DATA.letters;
 const REMOTE_SONG = n => `https://montree.xyz/api/montree/media/proxy/songs/lesson-${String(n).padStart(2,'0')}.mp3?bucket=dark-phonics`;
 const REMOTE_VIDEO = n => `https://montree.xyz/api/montree/media/proxy/videos/lesson-${String(n).padStart(2,'0')}.mp4?bucket=dark-phonics`;
+/* ── ElevenLabs voice bank (v2.3-web) ──────────────────────────────────
+   Real recorded words and letter sounds, served out of the same public
+   `dark-phonics` bucket and the same media proxy the songs and films
+   already use above — so the CSP media-src allowance and the China edge
+   cache both cover it with no new plumbing.
+   Only ~12 words are embedded in ASSETS; the other ~170 used to fall back
+   to the browser's robot voice. Now they get a real teacher. A word the
+   bank never recorded simply 404s and the caller drops back quietly —
+   embedded clip, then speech. The class never sees an error. */
+const BANK = p => `https://montree.xyz/api/montree/media/proxy/dark-phonics-audio/${p}?bucket=dark-phonics`;
+const REMOTE_WORD = w => BANK(`words/${encodeURIComponent(String(w||'').toLowerCase())}.mp3`);
+const REMOTE_SOUND = s => {
+  const k = String(s||'').toLowerCase();
+  if(k==='sh'||k==='th'||k==='ch') return BANK(`phonemes/${k}.mp3`);
+  return /^[a-z]$/.test(k) ? BANK(`letters/${k}.mp3`) : null;
+};
 
 /* ============================================================
    ENGINE
@@ -334,6 +355,27 @@ function play(key, cb){
   a.play().catch(()=>{ if(cb) cb(); });
   return a;
 }
+/* ---------- voice bank playback (v2.3) ----------
+   ONE shared element, so two fast taps never talk over each other, and the
+   step-change teardown in go() (which pauses currentAudio) silences this too.
+   `el` gets a .saying pulse for as long as it plays. onFail fires on a 404 or
+   a network miss, so every caller can drop back to what it used to do — an
+   embedded clip, or the speech voice. Nothing is ever shown to the child. */
+let bankAudio = null;
+function playBank(src, el, onEnd, onFail){
+  if(!src){ if(onFail) onFail(); else if(onEnd) onEnd(); return; }
+  if(currentAudio){ try{ currentAudio.pause(); }catch(e){} currentAudio = null; }
+  if(bankAudio){ try{ bankAudio.pause(); }catch(e){} }
+  const a = bankAudio = new Audio(src);
+  currentAudio = a;
+  let settled = false;
+  const clear = () => { if(el) el.classList.remove('saying'); };
+  if(el) el.classList.add('saying');
+  const fail = () => { if(settled) return; settled = true; clear(); if(onFail) onFail(); else if(onEnd) onEnd(); };
+  a.addEventListener('ended', ()=>{ if(settled) return; settled = true; clear(); if(onEnd) onEnd(); }, {once:true});
+  a.addEventListener('error', fail, {once:true});
+  a.play().catch(fail);
+}
 const CHEERS = ['yes','correct','good-job'];
 function cheerSound(){ play(CHEERS[Math.floor(Math.random()*CHEERS.length)]); }
 function speak(text, rate=0.75){
@@ -348,7 +390,10 @@ function speak(text, rate=0.75){
 function sayWord(word){
   if(!word) return;
   const k='w:'+word.toLowerCase();
-  if(ASSETS[k]) play(k); else speak(word);
+  /* v2.3: only ~12 words ship embedded; the rest now come from the recorded
+     bank, and the robot voice is the last resort rather than the first. */
+  if(ASSETS[k]) play(k);
+  else playBank(REMOTE_WORD(word), null, null, ()=>speak(word));
 }
 /* say a word and call back when it is finished (mp3 if staged, else the voice) */
 function sayWordCb(word, cb){
@@ -359,15 +404,21 @@ function sayWordCb(word, cb){
   /* watchdog: a read-back must never stall on an audio element that
      forgets to fire "ended" — the child would simply be left waiting. */
   if(ASSETS[k]){ play(k, fin); setTimeout(fin, 1900); }
-  else { speak(word, 0.8); setTimeout(fin, 640); }
+  /* v2.3: bank take first — same watchdog rule, a stalled element must never
+     leave the child waiting — and the speech voice only if the bank has none. */
+  else {
+    playBank(REMOTE_WORD(word), null, fin, ()=>{ speak(word, 0.8); setTimeout(fin, 640); });
+    setTimeout(fin, 2600);
+  }
 }
 /* blend the letters, then the whole word */
-function blendWord(word, gap){
+function blendWord(word, gap, el){
   const seq = word.toLowerCase().split('');
   let i=0;
+  if(el) el.classList.add('saying');   /* v2.3: pulse across the whole chain */
   function nx(){
     if(i<seq.length){ const k='snd_'+seq[i]; i++; play(k,()=>setTimeout(nx, gap==null?120:gap)); }
-    else setTimeout(()=>sayWord(word),180);
+    else setTimeout(()=>{ sayWord(word); if(el) setTimeout(()=>el.classList.remove('saying'), 1600); },180);
   }
   nx();
 }
@@ -480,7 +531,7 @@ function home(){
   });
   w.appendChild(lg);
   stage.appendChild(w);
-  const vm=document.createElement('div'); vm.className='vmark'; vm.textContent='v2.2-web';
+  const vm=document.createElement('div'); vm.className='vmark'; vm.textContent='v2.3-web';
   stage.appendChild(vm);
 }
 
@@ -698,8 +749,15 @@ RENDER.letter = st => {
         ${st.hunt?'<button class="tbtn primary" id="startHunt">Start the hunt →</button>':''}
       </div></div>`;
   stage.appendChild(w);
-  w.querySelector('#glyph').onclick=()=>play('snd_'+st.letter);
-  play('snd_'+st.letter);
+  /* v2.3: the big letter speaks from the recorded bank (letters/, or
+     phonemes/ for sh|th|ch). Arrival and tap use the SAME helper on purpose —
+     one voice per sound; two different voices for one letter confuses a four
+     year old far more than 200ms of latency ever will. Offline, the error
+     handler falls straight back to the embedded clip. */
+  const gl = w.querySelector('#glyph');
+  const sayLetter = ()=> playBank(REMOTE_SOUND(st.letter), gl, null, ()=>play('snd_'+st.letter));
+  gl.onclick = sayLetter;
+  sayLetter();
   if(!st.hunt){ markDone(); return; }
   w.querySelector('#startHunt').onclick=()=>{
     stage.innerHTML='';
@@ -734,8 +792,10 @@ RENDER.whichletter = st => {
         <button class="tbtn primary" id="startGame">Play: which letter? →</button>
       </div></div>`;
   stage.appendChild(w);
-  w.querySelector('#glyph').onclick=()=>play('snd_'+st.newLetter);
-  play('snd_'+st.newLetter);
+  const gl = w.querySelector('#glyph');   /* v2.3: bank sound, embedded clip as fallback */
+  const sayLetter = ()=> playBank(REMOTE_SOUND(st.newLetter), gl, null, ()=>play('snd_'+st.newLetter));
+  gl.onclick = sayLetter;
+  sayLetter();
   w.querySelector('#startGame').onclick=()=>{
     stage.innerHTML='';
     const g=document.createElement('div'); g.className='step';
@@ -1141,9 +1201,11 @@ RENDER.ledger = st => {
   const shelf=w.querySelector('#shelf');
   let readCount=0;
   st.words.forEach(word=>{
-    const c=document.createElement('div'); c.className='chip'; c.textContent=word;
+    const c=document.createElement('div'); c.className='chip';
+    c.textContent=word;
+    c.insertAdjacentHTML('beforeend','<span class="spk">\u{1F50A}</span>');  /* v2.3: it talks — say so */
     c.onclick=()=>{
-      blendWord(word);
+      blendWord(word, null, c);
       if(!c.classList.contains('read')){
         c.classList.add('read'); readCount++; burst(20);
         if(readCount===st.words.length){ markDone(); cheer('Look at your shelf!'); }
@@ -1153,8 +1215,11 @@ RENDER.ledger = st => {
   });
   const hrow=w.querySelector('#hrow');
   if(hrow) st.hearts.forEach(h=>{
-    const c=document.createElement('span'); c.className='hchip'; c.textContent=h;
-    c.onclick=()=>sayWord(h);
+    const c=document.createElement('span'); c.className='hchip';
+    c.textContent=h;
+    c.insertAdjacentHTML('beforeend','<span class="spk">\u{1F50A}</span>');
+    /* a heart word is never blended — it goes straight to the recorded take */
+    c.onclick=()=>playBank(REMOTE_WORD(h), c, null, ()=>sayWord(h));
     hrow.appendChild(c);
   });
 };
