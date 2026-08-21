@@ -251,7 +251,8 @@ const nextConfig: NextConfig = {
               // <video src="http://127.0.0.1:8787/api/media">; a <video> element's src is governed by
               // media-src (NOT connect-src), so the loopback origins must be listed here too or Chrome
               // blocks playback. Same operator-own-machine / loopback rationale as connect-src above.
-              "media-src 'self' blob: https://dmfncjjtsoxrnvcdnvjq.supabase.co http://127.0.0.1:8787 http://localhost:8787",
+              // montree.xyz → dark-phonics-lesson-player.html plays <video src="https://montree.xyz/api/montree/media/proxy/videos/...">; without this the media-src block rejects it (MediaError code 4).
+              "media-src 'self' blob: https://dmfncjjtsoxrnvcdnvjq.supabase.co https://montree.xyz http://127.0.0.1:8787 http://localhost:8787",
               // worker-src 'self' blob: required by Agora SDK for its audio-processing AudioWorklet
               "worker-src 'self' blob:",
               "frame-ancestors 'none'",
