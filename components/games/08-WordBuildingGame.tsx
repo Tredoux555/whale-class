@@ -250,7 +250,7 @@ const WordBuildingGame: React.FC = () => {
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <Link href="/games"
+          <Link href="/montree/dashboard/games"
             className="btn btn-secondary btn-md">
             ← Back
           </Link>

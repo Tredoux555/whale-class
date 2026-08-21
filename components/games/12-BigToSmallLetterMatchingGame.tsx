@@ -199,7 +199,7 @@ const BigToSmallLetterMatchingGame: React.FC = () => {
               className="w-full py-4 bg-green-500 hover:bg-green-600 text-white rounded-2xl font-bold text-xl transition-colors shadow-lg">
               🔄 Play Again
             </button>
-            <Link href="/games" 
+            <Link href="/montree/dashboard/games" 
               className="block w-full py-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-2xl font-bold text-xl transition-colors">
               ← All Games
             </Link>
@@ -217,7 +217,7 @@ const BigToSmallLetterMatchingGame: React.FC = () => {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <Link href="/games" 
+          <Link href="/montree/dashboard/games" 
             className="text-white font-bold bg-white/20 px-4 py-2 rounded-xl hover:bg-white/30 transition-colors">
             ← Back
           </Link>

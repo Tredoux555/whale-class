@@ -27,7 +27,7 @@ interface Stats {
 const QUICK_ACTIONS = [
   { id: 'classroom', title: 'Classroom', href: '/admin/classroom', icon: '🎯', gradient: 'from-emerald-500 to-teal-500', desc: 'Track progress' },
   { id: 'handbook', title: 'Handbook', href: '/admin/handbook', icon: '📚', gradient: 'from-indigo-500 to-purple-500', desc: '213 works' },
-  { id: 'games', title: 'Games', href: '/games', icon: '🎮', gradient: 'from-pink-500 to-rose-500', desc: 'Play & learn' },
+  { id: 'games', title: 'Games', href: '/montree/dashboard/games', icon: '🎮', gradient: 'from-pink-500 to-rose-500', desc: 'Play & learn' },
   { id: 'weekly', title: 'Weekly Planning', href: '/admin/weekly-planning', icon: '📅', gradient: 'from-cyan-500 to-blue-500', desc: 'Upload plans' },
 ];
 

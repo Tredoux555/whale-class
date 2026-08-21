@@ -11,7 +11,7 @@ export default function GrammarSymbolsPage() {
       onComplete={() => {
         // Optionally track completion
       }}
-      onBack={() => router.push('/games')}
+      onBack={() => router.push('/montree/dashboard/games')}
     />
   );
 }

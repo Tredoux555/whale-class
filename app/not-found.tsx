@@ -27,7 +27,7 @@ export default function NotFound() {
             <span>Teacher Login</span>
           </Link>
           <Link
-            href="/games"
+            href="/play"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors shadow-sm border border-gray-200"
           >
             <span>🎮</span>

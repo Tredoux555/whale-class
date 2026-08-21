@@ -221,7 +221,7 @@ export default function ISpyBeginningGame() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-500 via-orange-500 to-red-500">
         <header className="p-4">
-          <Link href="/games/sound-games" className="flex items-center gap-2 text-white/80 hover:text-white">
+          <Link href="/montree/dashboard/games/sound-games" className="flex items-center gap-2 text-white/80 hover:text-white">
             <span className="text-2xl">←</span>
             <span>Back to Sound Games</span>
           </Link>
@@ -316,7 +316,7 @@ export default function ISpyBeginningGame() {
             <button onClick={() => startGame(selectedPhase!)} className="btn btn-primary btn-lg btn-full max-w-sm mx-auto" >
               Play Again! 🔄
             </button>
-            <Link href="/games/sound-games" className="btn btn-secondary btn-lg btn-full max-w-sm mx-auto" >
+            <Link href="/montree/dashboard/games/sound-games" className="btn btn-secondary btn-lg btn-full max-w-sm mx-auto" >
               Back to Sound Games
             </Link>
           </div>
@@ -329,7 +329,7 @@ export default function ISpyBeginningGame() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-500 via-orange-500 to-red-500">
       <header className="p-4 flex items-center justify-between">
-        <Link href="/games/sound-games" className="text-white/80 hover:text-white text-2xl">←</Link>
+        <Link href="/montree/dashboard/games/sound-games" className="text-white/80 hover:text-white text-2xl">←</Link>
         <div className="flex items-center gap-6">
           <div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
             <span className="text-white font-bold">⭐ {score}/{totalRounds}</span>

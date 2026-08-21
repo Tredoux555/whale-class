@@ -230,7 +230,7 @@ export default function AdminGameStatsPage() {
             <p className="text-sm text-gray-400">See class-level game stats</p>
           </Link>
           <Link 
-            href="/games"
+            href="/montree/dashboard/games"
             className="bg-gray-800 rounded-xl p-5 border border-gray-700 hover:border-green-500 transition-colors group"
           >
             <div className="text-2xl mb-2">🎮</div>

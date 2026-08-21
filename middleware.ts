@@ -483,7 +483,6 @@ export async function middleware(req: NextRequest) {
   // These routes should load directly without any authentication checks
   const publicPaths = [
     '/',           // Home page - MUST be accessible
-    '/games',      // Games hub and all game routes
     '/play',       // Weekly parent-facing games page — QR/WeChat links, no login
     '/debug',      // Debug pages
     '/story',      // Story system (has its own auth)
@@ -745,7 +744,7 @@ export const config = {
     // below, so without this they still triggered a middleware invocation for
     // every public media request. The in-function early-return above is the
     // real safety net; this keeps them from invoking middleware at all.
-    '/((?!api|_next/static|_next/image|favicon.ico|games|dark-phonics-books|dark-phonics-materials|satpin-books|satpin-materials|shelf-packs|montree-splash-video\\.mp4|montree-splash-video-zh\\.mp4|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html|avif|json|webmanifest)$).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|dark-phonics-books|dark-phonics-materials|satpin-books|satpin-materials|shelf-packs|montree-splash-video\\.mp4|montree-splash-video-zh\\.mp4|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html|avif|json|webmanifest)$).*)',
     // Whale admin API routes — middleware enforces admin JWT auth
     '/api/whale/:path*',
     // 🚨 Session 113 V2 Whale-Class admin audit CRITICAL — also gate

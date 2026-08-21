@@ -138,7 +138,7 @@ const SentenceBuilderGame: React.FC = () => {
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <Link href="/games" className="text-white font-bold bg-white/20 px-4 py-2 rounded-xl hover:bg-white/30">← Back</Link>
+          <Link href="/montree/dashboard/games" className="text-white font-bold bg-white/20 px-4 py-2 rounded-xl hover:bg-white/30">← Back</Link>
           <div className="text-white font-bold bg-white/20 px-4 py-2 rounded-xl">⭐ {score}</div>
         </div>
 

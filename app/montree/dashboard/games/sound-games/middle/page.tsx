@@ -171,7 +171,7 @@ export default function MiddleSoundGame() {
             Start Playing! 🎮
           </button>
 
-          <Link href="/games/sound-games" className="block mt-4 text-white/70 hover:text-white">
+          <Link href="/montree/dashboard/games/sound-games" className="block mt-4 text-white/70 hover:text-white">
             ← Back to Sound Games
           </Link>
         </div>
@@ -197,7 +197,7 @@ export default function MiddleSoundGame() {
             <button onClick={startGame} className="btn btn-primary btn-lg btn-full max-w-sm mx-auto">
               Play Again! 🔄
             </button>
-            <Link href="/games/sound-games" className="btn btn-secondary btn-lg btn-full max-w-sm mx-auto">
+            <Link href="/montree/dashboard/games/sound-games" className="btn btn-secondary btn-lg btn-full max-w-sm mx-auto">
               Back to Sound Games
             </Link>
           </div>
@@ -210,7 +210,7 @@ export default function MiddleSoundGame() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500">
       <header className="p-4 flex items-center justify-between">
-        <Link href="/games/sound-games" className="text-white/80 text-2xl">←</Link>
+        <Link href="/montree/dashboard/games/sound-games" className="text-white/80 text-2xl">←</Link>
         <div className="bg-white/20 rounded-full px-4 py-2">
           <span className="text-white font-bold">⭐ {score}/{totalRounds}</span>
         </div>

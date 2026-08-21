@@ -347,7 +347,7 @@ function ToolsTab({ school }: { school: School | null }) {
       name: 'Learning Games',
       icon: '🎮',
       description: 'Number & letter tracing',
-      href: '/games',
+      href: '/montree/dashboard/games',
       color: 'bg-orange-50 text-orange-600',
     },
     {

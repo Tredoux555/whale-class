@@ -491,7 +491,7 @@ const LetterTracerNew: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 p-4">
       <div className="max-w-md mx-auto">
         <div className="flex items-center justify-between mb-4">
-          <Link href="/games" className="text-indigo-600 font-bold text-lg">← Games</Link>
+          <Link href="/montree/dashboard/games" className="text-indigo-600 font-bold text-lg">← Games</Link>
           <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-lg">
             <Sparkles className="text-yellow-500" size={20} />
             <span className="font-bold text-indigo-600 text-lg">{score}</span>

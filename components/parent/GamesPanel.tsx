@@ -111,7 +111,7 @@ export default function GamesPanel({ childId }: Props) {
 
         {/* View All Button */}
         <Link
-          href="/games"
+          href="/play"
           className="mt-4 block w-full py-3 text-center bg-indigo-500 text-white rounded-xl font-medium hover:bg-indigo-600 transition-colors"
         >
           View All Games 🎮

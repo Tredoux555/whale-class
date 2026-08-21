@@ -295,7 +295,7 @@ export default function NumberTraceGame() {
 
   const handleBack = async () => {
     await endGameSession();
-    router.push('/games');
+    router.push('/montree/dashboard/games');
   };
 
   if (gamePhase === 'complete') {
