@@ -129,25 +129,29 @@ book (F is next in the letter sequence):
    that one Pill 404 on click (e.g. the-bug currently ships without the three-part-cards
    trio, which needs the separate DB-backed `make-material.mjs` tool, not this pipeline).
 
-## 🕊 GRACE & COURTESY BOOK SERIES (locked 2026-08-17)
+## 🕊 GRACE & COURTESY BOOK SERIES (locked 2026-08-17, re-architected 2026-08-19)
 
-Sibling series to Dark Phonics at `/montree/library/grace-courtesy` — one
-classroom rule per book (rule + one-line why + cast who learn it the hard
-way + song + storybook), instead of one sound per book. Hardcoded English,
-public, no i18n keys — same sanctioned exception as Dark Phonics/SATPIN.
+Sibling series to Dark Phonics at `/montree/library/grace-courtesy` —
+classroom rules taught through storybooks. Hardcoded English, public, no
+i18n keys — same sanctioned exception as Dark Phonics/SATPIN.
 
-**🚨 READ `docs/curriculum/grace-courtesy/HANDOFF_GRACE_COURTESY_SERIES.md`
-FIRST, EVERY TIME, before touching this series.** It is the living canonical
-handoff — status table for all 20 books, the per-book build recipe, and the
-"which book is NEXT" marker. This CLAUDE.md section is a pointer only; the
-handoff is the source of truth and gets updated every time a book ships.
+**🚨 READ `docs/curriculum/grace-courtesy/HANDOFF_GRACE_COURTESY_V2_REGROUPED.md`
+FIRST, EVERY TIME, before touching this series.** As of 2026-08-19 the
+series is 6 combined storybooks (each teaching 3-4 related rules as one
+continuous story, no songs) plus a standalone recap finale — NOT 20
+one-rule-per-book entries. That V2 file is the living canonical handoff:
+full locked text for every book, the cast rotation table, the language
+design system, and current build status. The older
+`HANDOFF_GRACE_COURTESY_SERIES.md` is superseded (kept only for reusable
+art-style/repo mechanics) — do not follow its book list or recipe.
 
-**State as of 2026-08-17:** 3 of 20 books shipped (Walking Feet, Indoor
-Voice, Gentle Hands). Book 4, **Wash Your Hands**, is NEXT. The full 20-book
-spine is founder-locked and lives as placeholder slots in the page's
-`UPCOMING` const — **the only way a book ships is moving its entry OUT of
-`UPCOMING` and INTO the real `RAW` array**, never faking a `RAW` entry ahead
-of real assets. One book at a time.
+**State as of 2026-08-19:** full rebuild in progress. Book 1, **How I
+Move**, has its MJ prompt pack delivered and is the current focus — see
+the V2 handoff §7 for exact status and next steps. Old single-rule Books
+1-6 (3 shipped, 1 shipped-then-retired, 2 unfinished) are write-offs under
+this pivot; don't build on them. **The only way a book ships is moving its
+entry OUT of `UPCOMING` and INTO the real `RAW` array**, never faking a
+`RAW` entry ahead of real assets. One book at a time.
 
 Cast is fixed (Cat, Ant, Apple, Star, Snake, Potato — reused from Dark
 Phonics' "the-sat" book, verbatim-repeated descriptors); art style is the

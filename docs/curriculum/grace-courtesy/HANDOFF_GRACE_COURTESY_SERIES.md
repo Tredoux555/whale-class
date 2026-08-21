@@ -1,5 +1,15 @@
 # Grace & Courtesy Book Series — Canonical Handoff
 
+> **⚠️ SUPERSEDED 2026-08-19.** The one-rule-per-book architecture this
+> file describes is retired. Read
+> `docs/curriculum/grace-courtesy/HANDOFF_GRACE_COURTESY_V2_REGROUPED.md`
+> first — it's the current source of truth (6 combined books + 1 recap
+> finale, full locked text, cast-rotation table, Book 1's MJ prompt pack
+> ready to run). This file is kept only for its still-valid repo mechanics
+> (art style, cast descriptors, git/Desktop Commander rules) — its book
+> list, its `BOOKS`/`KEY_MAP`/`RAW` entries, and its whole book model are
+> obsolete.
+
 **This file is LIVING.** Every session that ships a book updates the status table
 and the "NEXT" marker in the SAME commit that ships the book. Do not let this
 document drift from the live page — if you build a book, you edit this file too.
