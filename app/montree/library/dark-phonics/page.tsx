@@ -373,20 +373,6 @@ export default function DarkPhonicsPage() {
     );
   };
 
-  /** Printable book-works row — the 4 manipulative print-and-cut works
-   *  (public/dark-phonics-books/works/<slug>/), where built. */
-  const WorksRow = ({ slug }: { slug: string }) => (
-    <div className="mt-4">
-      <div className="text-white/25 text-[10px] tracking-wider uppercase mb-2 text-left">Printable works</div>
-      <div className="flex flex-wrap gap-2">
-        <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work1-picture-match.pdf`)}>Picture match</Pill>
-        <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work2-sentence-picture-match.pdf`)}>Sentence + picture</Pill>
-        <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work3-sentence-builder-guided.pdf`)}>Sentence builder · guided</Pill>
-        <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work4-sentence-builder-free.pdf`)}>Sentence builder · free</Pill>
-      </div>
-    </div>
-  );
-
   /**
    * The decodable ledger — what the child can actually READ by this lesson.
    * NEW words (this lesson's reader) are highlighted in the reader red;
@@ -665,23 +651,16 @@ export default function DarkPhonicsPage() {
                           <div className="text-white/35 text-xs mt-0.5 leading-relaxed">
                             {book.description ?? 'Initial-sound pattern book — the child shouts the picture word.'}
                           </div>
-                          {/* Read-along / Print booklet A5 moved down into the
-                              Printables row, 2026-08-21 per Tredoux — every
-                              downloadable for this book lives in one place. */}
-                          {TRACING_BOOKLET_SLUGS.has(book.slug) && (
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-tracing-booklet-print.pdf`)}>Tracing booklet A5</Pill>
-                              <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-sentence-tracing-booklet-print.pdf`)}>Sentence tracing A5</Pill>
-                            </div>
-                          )}
+                          {/* Tracing booklet A5 (word-level) and every other
+                              download for this book now live in the single
+                              Printables row below — 2026-08-22 per Tredoux,
+                              one row per book, no split/duplicate pills. */}
                         </div>
                       </div>
 
                       {/* Book scene pictures + their own hand-off */}
                       <BookPictureRow slug={book.slug} accent={l.accent} />
 
-                      {/* Printable book-works, where built */}
-                      {book.works && <WorksRow slug={book.slug} />}
                     </Row>
                   ))}
 
@@ -693,23 +672,23 @@ export default function DarkPhonicsPage() {
                           📗 {l.reader.title}
                         </Pill>
                       </div>
-
-                      {/* Printable book-works, where built */}
-                      {l.reader.works && <WorksRow slug={l.reader.slug} />}
                     </Row>
                   )}
 
-                  {/* PRINTABLES — flashcard deck, the book's own read-along /
-                      print booklet, plus the paperwork/build-it/tracing
-                      family for the letter books that have one
-                      (public/dark-phonics-materials/<slug>/, built by the
-                      satpin printable generators — the-spat and the-pit
-                      today). 2026-08-21: vocab cards and three-part cards
-                      dropped from the set per Tredoux; sentence strips are
-                      no longer their own pill — they're now the trailing
-                      page(s) of build-it-sheet.pdf. Read-along / Print
-                      booklet A5 moved down here from the Story book row so
-                      every download for the book lives in one place. */}
+                  {/* PRINTABLES — every download for this lesson's book(s)
+                      and/or reader in ONE row: flashcard deck, read-along,
+                      print booklet, the word-level tracing booklet (the 16
+                      sat-cast letter books only — TRACING_BOOKLET_SLUGS), the
+                      paperwork/build-it/tracing-workbook family
+                      (public/dark-phonics-materials/<slug>/), and the 4
+                      manipulative book-works (public/dark-phonics-books/works/
+                      <slug>/) where built. 2026-08-22 per Tredoux: this used
+                      to be split across a duplicate pill up in the Story book
+                      row plus a separate "Printable works" box below it —
+                      folded into one so every book looks like ant-on-my-apple.
+                      Vocab cards and three-part cards stay dropped from the
+                      set; sentence strips are the trailing page(s) of
+                      build-it-sheet.pdf, not their own pill. */}
                   {has('flashcards', l.n) || (l.books && l.books.length > 0) || l.reader?.materials ? (
                     <Row accent={l.accent} label="Printables">
                       <div className="flex flex-wrap gap-2">
@@ -720,11 +699,22 @@ export default function DarkPhonicsPage() {
                           <React.Fragment key={book.slug}>
                             <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-reading.pdf`)}>Read-along</Pill>
                             <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-booklet-print.pdf`)}>Print booklet A5</Pill>
+                            {TRACING_BOOKLET_SLUGS.has(book.slug) && (
+                              <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-tracing-booklet-print.pdf`)}>Tracing booklet A5</Pill>
+                            )}
                             {book.materials !== false && (
                               <>
                                 <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
                                 <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/build-it-sheet.pdf`)}>Build-it sheet</Pill>
                                 <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/tracing-workbook.pdf`)}>Tracing workbook</Pill>
+                              </>
+                            )}
+                            {book.works && (
+                              <>
+                                <Pill href={printPdf(`/dark-phonics-books/works/${book.slug}/${book.slug}-work1-picture-match.pdf`)}>Picture match</Pill>
+                                <Pill href={printPdf(`/dark-phonics-books/works/${book.slug}/${book.slug}-work2-sentence-picture-match.pdf`)}>Sentence + picture</Pill>
+                                <Pill href={printPdf(`/dark-phonics-books/works/${book.slug}/${book.slug}-work3-sentence-builder-guided.pdf`)}>Sentence builder · guided</Pill>
+                                <Pill href={printPdf(`/dark-phonics-books/works/${book.slug}/${book.slug}-work4-sentence-builder-free.pdf`)}>Sentence builder · free</Pill>
                               </>
                             )}
                           </React.Fragment>
@@ -734,6 +724,14 @@ export default function DarkPhonicsPage() {
                             <Pill href={printPdf(`/dark-phonics-materials/${l.reader.materialsSlug ?? l.reader.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
                             <Pill href={printPdf(`/dark-phonics-materials/${l.reader.materialsSlug ?? l.reader.slug}/build-it-sheet.pdf`)}>Build-it sheet</Pill>
                             <Pill href={printPdf(`/dark-phonics-materials/${l.reader.materialsSlug ?? l.reader.slug}/tracing-workbook.pdf`)}>Tracing workbook</Pill>
+                          </React.Fragment>
+                        )}
+                        {l.reader?.works && (
+                          <React.Fragment key={`${l.reader.slug}-works`}>
+                            <Pill href={printPdf(`/dark-phonics-books/works/${l.reader.slug}/${l.reader.slug}-work1-picture-match.pdf`)}>Picture match</Pill>
+                            <Pill href={printPdf(`/dark-phonics-books/works/${l.reader.slug}/${l.reader.slug}-work2-sentence-picture-match.pdf`)}>Sentence + picture</Pill>
+                            <Pill href={printPdf(`/dark-phonics-books/works/${l.reader.slug}/${l.reader.slug}-work3-sentence-builder-guided.pdf`)}>Sentence builder · guided</Pill>
+                            <Pill href={printPdf(`/dark-phonics-books/works/${l.reader.slug}/${l.reader.slug}-work4-sentence-builder-free.pdf`)}>Sentence builder · free</Pill>
                           </React.Fragment>
                         )}
                       </div>
