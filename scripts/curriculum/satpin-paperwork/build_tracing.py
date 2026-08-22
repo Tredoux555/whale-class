@@ -54,6 +54,7 @@ import os
 import sys
 import types
 
+from PIL import Image, ImageDraw
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
@@ -225,8 +226,26 @@ def hairline(c, x1, y, x2, color=HAIR, width=0.5):
     c.line(x1, y, x2, y)
 
 
+def whiten_bg(pil_img, thresh=18):
+    """Flood-fill the image's own four corners to pure white. 2026-08-22 per
+    Tredoux: dropping the hairline frame around scene art (see
+    draw_image_contained below) exposed that several source illustrations'
+    'white' background is actually a subtly warm/grey off-white (RGB
+    ~230-250, invisible against itself) -- which then shows as a faint,
+    unintentional box the instant it sits frameless on the page's TRUE
+    white. Flood fill (not a global threshold) only touches the
+    background's own contiguous region, so a legitimately near-white
+    highlight inside the illustration itself (an eye, a fleck of fur) is
+    left alone."""
+    img = pil_img.convert('RGB')
+    w, h = img.size
+    for seed in ((1, 1), (w - 2, 1), (1, h - 2), (w - 2, h - 2)):
+        ImageDraw.floodfill(img, seed, (255, 255, 255), thresh=thresh)
+    return img
+
+
 def draw_image_contained(c, path, x, y, w, h, frame=True):
-    img = ImageReader(path)
+    img = ImageReader(whiten_bg(Image.open(path)))
     iw, ih = img.getSize()
     ar = ih / iw
     dw, dh = w, w * ar
@@ -387,7 +406,15 @@ def build_row(c, band_top, band_bottom, sentence, card_u, col_widths, art_path):
     # (3:2, same ratio as the box) image inside whatever slack that leaves
     art_x = PW - MG - BS_ART_W
     slot_top = row_top - art_zone
-    draw_image_contained(c, art_path, art_x, slot_top, BS_ART_W, art_zone)
+    # 2026-08-22 per Tredoux: no frame here. Every scene image is drawn on a
+    # pure white square with generous built-in padding around the actual
+    # illustration (see phonics-images/.../p*.png) -- a hairline box around
+    # the FITTED image bounds was mostly enclosing blank white space, which
+    # read as a pasted-on placeholder rather than art sitting on the page.
+    # Dropping the frame lets the illustration sit directly on the page's
+    # own white, seamlessly, with nothing but its own linework to look at.
+    draw_image_contained(c, art_path, art_x, slot_top, BS_ART_W, art_zone,
+                        frame=False)
 
     build_label_y = model_bottom - BS_MODEL_GAP - extra
     section_label(c, MG, build_label_y, 'build it')
@@ -607,20 +634,37 @@ def strips_draw(c, cfg, sentences, card_u, col_widths):
     grid_h = SLOT_H * len(rows)
     grid_bottom = grid_top - grid_h
 
-    # word text, one card at a time
+    # word text, one card at a time -- centred on the word's TRUE ink
+    # bounding box (stroke_font.text_ink_bounds), not on text_width()'s
+    # advance box or a fixed baseline offset. 2026-08-22 per Tredoux
+    # ("words aren't all perfectly centred"): the old fixed `card_u * 0.42`
+    # baseline assumed every word's ink fills the same vertical band --
+    # false the moment ascenders/descenders differ ('The'/'snake'/'sat!'
+    # reach the full 2.0 cap-height via T/h/k/!, 'ant'/'cat'/'star' top out
+    # at t's 1.78 ascender) -- so full-cap-height words crowded the top
+    # border while shorter words sat visibly lower, and left/right bearing
+    # differences between glyphs put some words visibly off-centre
+    # horizontally too. Ink-bbox centring is exact for every word, on both
+    # axes, by construction.
     for i, words in enumerate(rows):
         row_top = grid_top - i * SLOT_H
         row_bot = row_top - SLOT_H
         x = grid_x0
         for j, w in enumerate(words):
             cw = col_widths[j]
-            sf.draw_solid(c, w, x + (cw - sf.text_width(w, card_u, 0.08)) / 2,
-                          row_bot + SLOT_H / 2 - card_u * 0.42, card_u,
+            x0, x1, y0, y1 = sf.text_ink_bounds(w, tracking=0.08)
+            pen_x = x + cw / 2 - (x0 + x1) / 2 * card_u
+            baseline_y = row_bot + SLOT_H / 2 - (y0 + y1) / 2 * card_u
+            sf.draw_solid(c, w, pen_x, baseline_y, card_u,
                           tracking=0.08, weight=0.12, color=INK)
             x += cw
 
     # grid lines: one continuous stroke per cut, not one rect per card, so
-    # every shared edge is a single line instead of two overlapping ones
+    # every shared edge is a single line instead of two overlapping ones --
+    # every card touches its neighbours on every side, so the whole sheet
+    # comes apart with a small number of full-length straight cuts (across
+    # for strips, then down for individual cards), never a fiddly trim
+    # around each card's own outline.
     c.setStrokeColorRGB(0, 0, 0)
     c.setLineWidth(0.6)
     c.setDash()

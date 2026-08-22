@@ -322,6 +322,36 @@ def layout(text, tracking=0.0):
     return out
 
 
+def text_ink_bounds(text, tracking=0.0):
+    """True ink bounding box of `text` in em units (pen starts at x=0,
+    baseline=0, x-height=1.0): (min_x, max_x, min_y, max_y). Unlike
+    text_width() -- which measures the ADVANCE box (includes each glyph's
+    left/right bearing, a font-design convention, not where the ink
+    actually is) -- this walks every stroke/dot of every glyph and returns
+    where the ink itself starts and stops. Use this to centre a word
+    inside a fixed box (a card, a slot): centring on text_width() assumes
+    every word's ink fills its advance box the same way, which is false
+    the moment ascenders/descenders differ between words (e.g. 'The' or
+    'snake' reach the full 2.0 cap-height via T/h/k, while 'ant' or 'cat'
+    top out at t's 1.78 ascender and 'a'/'n'/'c' never leave the 0-1.0
+    x-height band) -- exactly the mismatch that made word cards drift
+    off-centre and tall words crowd the card's top border."""
+    xs, ys = [], []
+    for ch, pen in layout(text, tracking):
+        for stroke in GLYPH[ch][1]:
+            flat = _flatten(stroke)
+            if isinstance(flat, tuple) and flat[0] == 'dot':
+                xs.append(pen + flat[1] + SIDE)
+                ys.append(flat[2])
+            else:
+                for px, py in flat:
+                    xs.append(pen + px + SIDE)
+                    ys.append(py)
+    if not xs:
+        return (0.0, 0.0, 0.0, 1.0)
+    return (min(xs), max(xs), min(ys), max(ys))
+
+
 def wrap(text, size, maxw, tracking=0.0, lines=2):
     """Greedy word wrap into at most `lines`; returns None if it will not fit."""
     words, rows, cur = text.split(' '), [], ''

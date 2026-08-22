@@ -60,7 +60,7 @@ const media = (path: string, v?: number) =>
  * rebuild project touches every book eventually); a stale value here is
  * exactly the "book still shows the old art" bug filed 2026-08-02.
  */
-const STORYBOOK_PRINT_VERSION = 18; // bumped 2026-08-22: all 17 sat-cast letter-book tracing-workbook.pdf files rebuilt in word mode (single traced hero word, sized to match each book's own real reveal-page word exactly, no empty write row, no "TRACE IT" label — see build_tracing_booklet.py)
+const STORYBOOK_PRINT_VERSION = 19; // bumped 2026-08-22: all 30 books/readers' build-it-sheet.pdf word-card grids rebuilt — cards now centre each word on its true ink bounding box (stroke_font.text_ink_bounds) instead of a fixed baseline guess, fixing inconsistent/crowded centering while keeping the original touching-border one-cut grid untouched — see build_tracing.py strips_draw()
 const printPdf = (path: string) => `${path}?v=${STORYBOOK_PRINT_VERSION}`;
 
 // NOTE: the 16 sat-cast letter books each also have a word-level A5 tracing
