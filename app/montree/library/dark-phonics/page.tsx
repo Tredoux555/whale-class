@@ -63,17 +63,16 @@ const media = (path: string, v?: number) =>
 const STORYBOOK_PRINT_VERSION = 14; // bumped 2026-08-22: build-it-sheet.pdf (word-card grid merged in) and tracing-workbook.pdf (real A5 reader rebuild) republished for the-tall
 const printPdf = (path: string) => `${path}?v=${STORYBOOK_PRINT_VERSION}`;
 
-// Sat-cast letter books with a built companion A5 tracing booklet
-// (public/dark-phonics-books/print/<slug>-A5-tracing-booklet-print.pdf),
-// via scripts/curriculum/flashcards/build_tracing_booklet.py --all. Excludes
-// the-tall (not part of the sat-cast chain, see is_sat_cast_letter_book() in
-// that script) and the non-sat-cast pattern books (snake-in-my-sock,
-// ant-on-my-apple), which don't have one.
-const TRACING_BOOKLET_SLUGS = new Set([
-  'the-sat', 'the-spat', 'the-pit', 'the-pat', 'the-nap', 'the-mat',
-  'the-sad', 'the-dig', 'the-dog', 'the-cot', 'the-kit', 'the-egg',
-  'the-mud', 'the-rat', 'the-hot', 'the-bug',
-]);
+// NOTE: the 16 sat-cast letter books each also have a word-level A5 tracing
+// booklet (public/dark-phonics-books/print/<slug>-A5-tracing-booklet-print.pdf,
+// built via scripts/curriculum/flashcards/build_tracing_booklet.py --all) and
+// many books/readers have a 4-piece "book-works" pack
+// (public/dark-phonics-books/works/<slug>/). 2026-08-22 per Tredoux: neither
+// is linked from this page — archived, not deleted, so the Printables row
+// stays the same clean set (Letter card PDF / Read-along / Print booklet A5
+// / Paperwork pack / Build-it sheet / Tracing workbook) on every book. The
+// old TRACING_BOOKLET_SLUGS gate that used to surface the tracing booklet
+// pill was removed along with it.
 
 /** Trimmed-down photo-bank row — only the fields this page renders/forwards. */
 interface BankPhoto {
@@ -677,18 +676,19 @@ export default function DarkPhonicsPage() {
 
                   {/* PRINTABLES — every download for this lesson's book(s)
                       and/or reader in ONE row: flashcard deck, read-along,
-                      print booklet, the word-level tracing booklet (the 16
-                      sat-cast letter books only — TRACING_BOOKLET_SLUGS), the
-                      paperwork/build-it/tracing-workbook family
-                      (public/dark-phonics-materials/<slug>/), and the 4
-                      manipulative book-works (public/dark-phonics-books/works/
-                      <slug>/) where built. 2026-08-22 per Tredoux: this used
-                      to be split across a duplicate pill up in the Story book
-                      row plus a separate "Printable works" box below it —
-                      folded into one so every book looks like ant-on-my-apple.
-                      Vocab cards and three-part cards stay dropped from the
-                      set; sentence strips are the trailing page(s) of
-                      build-it-sheet.pdf, not their own pill. */}
+                      print booklet, and the paperwork/build-it/tracing-
+                      workbook family (public/dark-phonics-materials/<slug>/).
+                      2026-08-22 per Tredoux: kept to exactly this clean set on
+                      every book, matching ant-on-my-apple. The word-level
+                      tracing booklet (public/dark-phonics-books/print/
+                      <slug>-A5-tracing-booklet-print.pdf, sat-cast books only)
+                      and the 4 manipulative book-works
+                      (public/dark-phonics-books/works/<slug>/, `works: true`
+                      books) are intentionally NOT rendered here — archived,
+                      not deleted: the files stay put, just no longer linked
+                      from the page. Vocab cards and three-part cards stay
+                      dropped from the set; sentence strips are the trailing
+                      page(s) of build-it-sheet.pdf, not their own pill. */}
                   {has('flashcards', l.n) || (l.books && l.books.length > 0) || l.reader?.materials ? (
                     <Row accent={l.accent} label="Printables">
                       <div className="flex flex-wrap gap-2">
@@ -699,22 +699,11 @@ export default function DarkPhonicsPage() {
                           <React.Fragment key={book.slug}>
                             <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-reading.pdf`)}>Read-along</Pill>
                             <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-booklet-print.pdf`)}>Print booklet A5</Pill>
-                            {TRACING_BOOKLET_SLUGS.has(book.slug) && (
-                              <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-tracing-booklet-print.pdf`)}>Tracing booklet A5</Pill>
-                            )}
                             {book.materials !== false && (
                               <>
                                 <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
                                 <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/build-it-sheet.pdf`)}>Build-it sheet</Pill>
                                 <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/tracing-workbook.pdf`)}>Tracing workbook</Pill>
-                              </>
-                            )}
-                            {book.works && (
-                              <>
-                                <Pill href={printPdf(`/dark-phonics-books/works/${book.slug}/${book.slug}-work1-picture-match.pdf`)}>Picture match</Pill>
-                                <Pill href={printPdf(`/dark-phonics-books/works/${book.slug}/${book.slug}-work2-sentence-picture-match.pdf`)}>Sentence + picture</Pill>
-                                <Pill href={printPdf(`/dark-phonics-books/works/${book.slug}/${book.slug}-work3-sentence-builder-guided.pdf`)}>Sentence builder · guided</Pill>
-                                <Pill href={printPdf(`/dark-phonics-books/works/${book.slug}/${book.slug}-work4-sentence-builder-free.pdf`)}>Sentence builder · free</Pill>
                               </>
                             )}
                           </React.Fragment>
@@ -724,14 +713,6 @@ export default function DarkPhonicsPage() {
                             <Pill href={printPdf(`/dark-phonics-materials/${l.reader.materialsSlug ?? l.reader.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
                             <Pill href={printPdf(`/dark-phonics-materials/${l.reader.materialsSlug ?? l.reader.slug}/build-it-sheet.pdf`)}>Build-it sheet</Pill>
                             <Pill href={printPdf(`/dark-phonics-materials/${l.reader.materialsSlug ?? l.reader.slug}/tracing-workbook.pdf`)}>Tracing workbook</Pill>
-                          </React.Fragment>
-                        )}
-                        {l.reader?.works && (
-                          <React.Fragment key={`${l.reader.slug}-works`}>
-                            <Pill href={printPdf(`/dark-phonics-books/works/${l.reader.slug}/${l.reader.slug}-work1-picture-match.pdf`)}>Picture match</Pill>
-                            <Pill href={printPdf(`/dark-phonics-books/works/${l.reader.slug}/${l.reader.slug}-work2-sentence-picture-match.pdf`)}>Sentence + picture</Pill>
-                            <Pill href={printPdf(`/dark-phonics-books/works/${l.reader.slug}/${l.reader.slug}-work3-sentence-builder-guided.pdf`)}>Sentence builder · guided</Pill>
-                            <Pill href={printPdf(`/dark-phonics-books/works/${l.reader.slug}/${l.reader.slug}-work4-sentence-builder-free.pdf`)}>Sentence builder · free</Pill>
                           </React.Fragment>
                         )}
                       </div>
