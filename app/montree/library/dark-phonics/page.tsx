@@ -60,7 +60,7 @@ const media = (path: string, v?: number) =>
  * rebuild project touches every book eventually); a stale value here is
  * exactly the "book still shows the old art" bug filed 2026-08-02.
  */
-const STORYBOOK_PRINT_VERSION = 15; // bumped 2026-08-22: build-it-sheet.pdf (word-card grid merged in) and tracing-workbook.pdf (real A5 reader rebuild) republished for the-spat
+const STORYBOOK_PRINT_VERSION = 16; // bumped 2026-08-22: build-it-sheet.pdf and tracing-workbook.pdf republished for the-pat, the-pit, the-nap, the-mat, the-sad, the-dig, the-dog, the-cot, the-kit, the-egg, the-mud, the-rat, the-hot, the-bug
 const printPdf = (path: string) => `${path}?v=${STORYBOOK_PRINT_VERSION}`;
 
 // NOTE: the 16 sat-cast letter books each also have a word-level A5 tracing
