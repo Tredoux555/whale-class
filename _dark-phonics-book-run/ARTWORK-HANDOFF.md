@@ -10,10 +10,21 @@ Dark Phonics is a phonics reading curriculum for 3–6 year olds. Each lesson te
 - **sun** — a bright cheerful sun with a wobbly hand-drawn outline and big round googly eyes.
 - **star** — a smiling golden five-pointed star with big round googly eyes.
 - **snake** — a friendly green snake with a slim curving neck, big round googly eyes, and a wide happy smile.
-- **cat** — a grey striped cat with big round googly eyes and a long striped tail.
-- **potato** (the recurring gag character, ALWAYS the same) — a round brown potato with two small eye-sprouts and big round googly eyes, wearing tiny round sunglasses, leaning back happily in a small striped wooden deck chair, with a tall glass of ice-cold lemonade (ice cubes, bendy straw) on a little side table beside him.
+- **cat** — a shaggy tabby cat with golden-amber fur and bold black stripes, big round googly eyes, lean legs (never round/chubby-bodied), and a long striped tail.
+- **potato** (the recurring gag character, ALWAYS the same) — a round tan-brown potato character with two small googly eyes and round tinted spectacles with thin frames covering most of the upper face (no eye-sprouts, no separate sunglasses), leaning back happily in a small striped wooden deck chair, with a tall glass of ice-cold lemonade (ice cubes, bendy straw) on a little side table beside him.
 
 **House art style formula (append to every prompt, verbatim):** colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background, expressive big googly eyes on every character/object. **Aspect ratio 1:1 always** (add `--ar 1:1` in Midjourney). **No photos, no photorealism.** **No text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark ever rendered in the image** — the words appear as separate typeset text laid over the art later, not baked into the picture.
+
+**PRINT-TEXT RULE (locked 2026-08-22, applies to every book below — the "Caption" fields in each table are pre-simplification art-prompt drafts, NOT the print text; use this rule instead when building the actual PDF):**
+Every page (except recap and potato) renders as a two-line split: a short grey/black lead-in ending in "…" (`nar`), then one big bold shout word (`text`) — and that shout word is ALWAYS the book's target sound-word, ALWAYS the last word of the sentence, nothing trails after it. Cut every sentence down to the shortest possible grammatical frame that still ends on the bare target word — drop colors, locations, second clauses, "and ___", exclamation lists, everything not load-bearing. Examples of the fix already made once (do not repeat the mistake): "The ant is lost and sad." is WRONG — the extra qualifier breaks the rule; "The ant is… lost!" is correct. Recap page is always the target word alone, repeated 3x on one line, red, no decrescendo ("Lost! Lost! Lost!"), never the long "the ant, the apple..." list sentence and no second smaller line. Potato page is always a simple one-line negation ending in the target word ("The potato is not lost.").
+
+Corrected minimal captions for the remaining un-built books (Book 3 onward), superseding the "Caption:" fields in their tables below:
+- **the-jump** (target: jump) — frame: "The log is big. Jump!" · cast: "The ant/sun/star/snake can jump!" · recap: "Jump! Jump! Jump!" (one line, red) · potato: "The potato can not jump."
+- **the-vest** (target: vest) — frame: "A big red… vest!" · cast: "The ant/apple/sun/cat has a vest!" · recap: "Vest! Vest! Vest!" (one line, red) · potato: "The potato has not got a vest."
+- **the-swim** (target: swim) — frame: "The tub is big. Let's swim!" · cast: "The ant/star/snake/cat can swim!" · recap: "Swim! Swim! Swim!" (one line, red) · potato: "The potato can not swim."
+- **the-yam** (target: yam) — frame: "A big red… yam!" · cast: "The ant/apple/sun/star has a yam!" · recap: "Yam! Yam! Yam!" (one line, red) · potato: "The potato is not a yam!" (already ended correctly, unchanged)
+- **the-zip** (target: zip) — frame: "The bag needs a… zip!" · cast: "The ant/apple/star/snake can zip!" · recap: "Zip! Zip! Zip!" (one line, red) · potato: "The potato did not zip."
+- **the-quilt** (target: quilt) — frame: "Quick! Get under a… quilt!" · cast: "The ant/sun/star/cat is under a quilt!" · recap: "Quilt! Quilt! Quilt!" (one line, red) · potato: "The potato is not under the quilt." (original "…under it. Just a nap…" broke the rule — fixed here)
 
 **Deliverable:** for each of the 8 books below, generate `cover.png` + `p1` through `p9` (10 files total, 80 files overall) and save them into `phonics-images/dark-phonics-books/<slug>/` with the EXACT filenames given in each table — the build pipeline joins art to text by filename, so a typo or wrong extension breaks the book.
 
@@ -52,18 +63,25 @@ Premise: everyone is lost and sad in a big fog; the potato is never lost, he's e
 Note: only 4 of 6 cast pages are built per book (varies which four, per the source data below) — p4-sun.png and p6-snake.png are NOT built for this book; do not generate them.
 
 ## Book 3 — `the-jump` — *The ___ Can Jump!*
-Premise: everyone jumps on a big log; the potato can't jump, so he naps instead.
+Premise: everyone bounces on a big trampoline; the potato can't jump, so he naps instead.
+
+Revised 2026-08-22: swapped the frame object from a static log to a trampoline —
+reads the "jump" concept far better (everyone mid-bounce off one shared object,
+not hopping over an obstacle) and the frame narration is teacher-read, not
+child-decoded, so the longer word costs nothing pedagogically.
 
 | filename | scene | MJ prompt seed |
 |---|---|---|
-| p1-log.png | frame: the log | A big rounded brown tree log with visible bark rings, lying on the ground, big round googly eyes on one end, [HOUSE STYLE]. Caption: "The log is big. Jump on it!" |
-| p2-ant.png | ant jumping | The ant cast character mid-air, jumping onto the log, arms/legs spread, [HOUSE STYLE]. Caption: "The ant can jump on a log." |
-| p4-sun.png | sun jumping | The sun cast character mid-air above the log, bouncing, [HOUSE STYLE]. Caption: "The sun can jump on a log." |
-| p5-star.png | star jumping | The star cast character mid-air above the log, [HOUSE STYLE]. Caption: "The star can jump on a log." |
-| p6-snake.png | snake jumping | The snake cast character coiled and springing up off the log like a spring, [HOUSE STYLE]. Caption: "The snake can jump on a log." |
-| p8-recap.png | all six together | Ant, apple, sun, star, snake, and cat all mid-jump over the log at once, [HOUSE STYLE]. Caption: "The ant, the apple, the sun, the star, the snake and the cat: jump, jump, jump!" |
-| p9-potato.png | the gag | The potato cast character asleep in his deck chair, lemonade beside him, little "Zzz" motion implied only visually (no text), the log sitting untouched nearby, [HOUSE STYLE]. Caption: "The potato can not jump. He can nap!" |
-| cover.png | hero/title scene | The whole cast leaping over the big log in a joyful row, [HOUSE STYLE]. Title-worthy, high-energy jumping composition. |
+| p1-trampoline.png | frame: the trampoline | A big round trampoline with a black jumping mat and springs around the rim, seen from a slight angle, big round googly eyes on the trampoline's frame, [HOUSE STYLE]. |
+| p2-ant.png | ant bouncing | The ant cast character mid-air, bouncing high off the trampoline, arms/legs spread, [HOUSE STYLE]. |
+| p4-sun.png | sun bouncing | The sun cast character mid-air, bouncing high off the trampoline, [HOUSE STYLE]. |
+| p5-star.png | star bouncing | The star cast character mid-air, bouncing high off the trampoline, [HOUSE STYLE]. |
+| p6-snake.png | snake bouncing | The snake cast character coiled and springing straight up off the trampoline like a spring, [HOUSE STYLE]. |
+| p8-recap.png | all six together | Ant, apple, sun, star, snake, and cat all caught mid-air bouncing together off the trampoline at once, [HOUSE STYLE]. |
+| p9-potato.png | the gag | The potato cast character asleep in his deck chair, lemonade beside him, a small gentle spiral doodle near his head implying sleep (no text), the trampoline sitting untouched nearby, [HOUSE STYLE]. |
+| cover.png | hero/title scene | The whole cast bouncing together off the trampoline at different heights, [HOUSE STYLE]. Title-worthy, high-energy jumping composition. |
+
+PRINT TEXT (per the locked PRINT-TEXT RULE above): frame "The trampoline is big." (grey) -> "Jump!" (shout) · cast "The ant/sun/star/snake can..." -> "jump!" · recap "Jump! Jump! Jump!" (one line, red) · potato "The potato can not jump."
 
 Note: p3-apple.png and p7-cat.png are NOT built for this book.
 

@@ -23,7 +23,7 @@ def make_text_page(spec):
             nsize = 34 if has_text else 48
             nsize = min(fit(c, max(lines, key=len), 'Nar', nsize, PW-2*M), nsize)
             yy = (PH*0.68 if has_text else PH*0.55) + (len(lines)-1)*nsize*1.30
-            c.setFillColorRGB(*GREY)
+            c.setFillColorRGB(*INK)
             for ln in lines:
                 c.setFont('Nar', nsize)
                 c.drawCentredString(PW/2, yy, ln)
@@ -31,12 +31,19 @@ def make_text_page(spec):
         if not has_text:
             return
         style = spec.get('style', 'normal')
-        tlines = spec['text'] if isinstance(spec['text'], list) else [spec['text']]
-        base = int(spec.get('size', 54 if max(len(l) for l in tlines) > 10 else 72) * 1.25)
-        size = min(fit(c, max(tlines, key=len), 'Word', base, PW-2*M), base)
+        raw = spec['text'] if isinstance(spec['text'], list) else [spec['text']]
+        # Each line is either a plain string (rendered at full size) or a
+        # (text, size_mult) tuple -- lets a caller fade repeated-word lines
+        # down in a decrescendo (e.g. ('Fast! Fast! Fast!', 1.0),
+        # ('Fast! Fast!', 0.75)) without disturbing any existing plain-string
+        # caller, which still renders every line at one uniform size.
+        tlines = [(t, 1.0) if isinstance(t, str) else t for t in raw]
+        texts = [t for t, _ in tlines]
+        base = int(spec.get('size', 54 if max(len(t) for t in texts) > 10 else 72) * 1.25)
+        size = min(fit(c, max(texts, key=len), 'Word', base, PW-2*M), base)
         yy = y_word + (len(tlines)-1)*size*0.62
-        for ln in tlines:
-            c.setFont('Word', size)
+        for ln, mult in tlines:
+            c.setFont('Word', size*mult)
             c.setFillColorRGB(*(RED if style == 'drop' else INK))
             c.drawCentredString(PW/2, yy, ln)
             yy -= size*1.24

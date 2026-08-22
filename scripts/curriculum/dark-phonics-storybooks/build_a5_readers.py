@@ -94,7 +94,9 @@ NUMWORDS = ['ZERO', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN',
             'EIGHT', 'NINE', 'TEN', 'ELEVEN', 'TWELVE', 'THIRTEEN', 'FOURTEEN',
             'FIFTEEN', 'SIXTEEN', 'SEVENTEEN', 'EIGHTEEN', 'NINETEEN', 'TWENTY',
             'TWENTY-ONE', 'TWENTY-TWO', 'TWENTY-THREE', 'TWENTY-FOUR',
-            'TWENTY-FIVE', 'TWENTY-SIX', 'TWENTY-SEVEN']
+            'TWENTY-FIVE', 'TWENTY-SIX', 'TWENTY-SEVEN', 'TWENTY-EIGHT',
+            'TWENTY-NINE', 'THIRTY', 'THIRTY-ONE', 'THIRTY-TWO', 'THIRTY-THREE',
+            'THIRTY-FOUR', 'THIRTY-FIVE']
 
 
 # --- composed pages (monkeypatched onto dpbuild, painters untouched) -------
@@ -150,6 +152,27 @@ COVERS = {
     'yak-on-the-yacht':        (['A Yak on', 'the Yacht'], 'Yak', 44, 'yak · yam · yo-yo · yarn'),
     'zzz-at-the-zoo':          (['Zzz at the Zoo'], 'Zoo', 44, 'zebra · zipper · zucchini · zeppelin'),
     'queen-on-the-quilt':      (['A Queen on', 'the Quilt'], 'Queen', 42, 'quill · quarter · quail · queen'),
+    # --- 8-book letter-gap run (n=23-31), cast-repeat pattern: same six cast
+    # members take a turn each page, the shout word is the new sound word.
+    #
+    # LOCKED TEXT RULE (2026-08-22) -- do not drift from this on books 3-8:
+    # every cast/frame page is nar="<lead-in>..." + text="<target>!", and the
+    # target word is ALWAYS the literal last word of the sentence, nothing
+    # trails after it. Cut every sentence to the shortest grammatical frame
+    # that still ends bare on the target -- no colors, no locations, no
+    # second clauses, no "and ...". (First the-lost draft broke this with
+    # "The ant is lost and sad." -- wrong. "The ant is... lost!" -- right.)
+    # Recap page = target word 3x on one line, red ('drop' style), no
+    # decrescendo, no second smaller line -- never the long cast-list
+    # sentence. Potato page = one simple negation line ending on the target
+    # word. See _dark-phonics-book-run/ARTWORK-HANDOFF.md's "PRINT-TEXT RULE"
+    # section for the pre-worked minimal captions for the-jump/vest/swim/
+    # yam/zip/quilt -- use those verbatim, don't re-derive from the
+    # "Caption:" fields in that doc's per-book tables (those are stale
+    # pre-simplification art-prompt drafts).
+    'the-fast':                (['Fast!'], 'Fast', 50, 'fast · fun · fog · fit'),
+    'the-lost':                (['Lost!'], 'Lost', 50, 'lost · lid · lap · leg'),
+    'the-jump':                (['Jump!'], 'Jump', 50, 'jump · jet · jig · job'),
 }
 
 # Books whose target sound sits at the END of the picture words.
@@ -347,6 +370,35 @@ SPLITS = {
         ('', 'A queen on the quilt!', 100),
         ('', ['A quill, a quarter,', 'a quail, and a queen', 'on the quilt?!'], 100),
     ],
+    'the-fast': [
+        ('The fan is…', 'fast!', 92),
+        ('The ant is…', 'fast!', 92),
+        ('The apple is…', 'fast!', 92),
+        ('The sun is…', 'fast!', 92),
+        ('The star is…', 'fast!', 92),
+        ('The snake is…', 'fast!', 92),
+        ('The cat is…', 'fast!', 92),
+        ('', [('Fast! Fast! Fast!', 1.0), ('Fast! Fast!', 0.75)], 100, 'drop'),
+        ('', 'The potato is not fast.', 100),
+    ],
+    'the-lost': [
+        ('The sun is…', 'lost!', 92),
+        ('The ant is…', 'lost!', 92),
+        ('The apple is…', 'lost!', 92),
+        ('The star is…', 'lost!', 92),
+        ('The cat is…', 'lost!', 92),
+        ('', 'Lost! Lost! Lost!', 100, 'drop'),
+        ('', 'The potato is not lost.', 100),
+    ],
+    'the-jump': [
+        ('The trampoline is big.', 'Jump!', 92),
+        ('The ant can…', 'jump!', 92),
+        ('The sun can…', 'jump!', 92),
+        ('The star can…', 'jump!', 92),
+        ('The snake can…', 'jump!', 92),
+        ('', 'Jump! Jump! Jump!', 100, 'drop'),
+        ('The potato can…', 'jump!', 92),
+    ],
 }
 
 
@@ -365,8 +417,10 @@ def make_book(entry):
     recap_key = next(p['key'] for p in pages if 'recap' in p['key'])
 
     spreads = []
-    for p, (nar, shout, size) in zip(pages, splits):
-        spreads.append(dict(nar=nar, text=shout, size=size, art=art[p['key']]))
+    for p, split in zip(pages, splits):
+        nar, shout, size = split[0], split[1], split[2]
+        style = split[3] if len(split) > 3 else 'normal'
+        spreads.append(dict(nar=nar, text=shout, size=size, style=style, art=art[p['key']]))
 
     letter = entry['letter']
     note = ('End-sound book — the child shouts the picture word.'

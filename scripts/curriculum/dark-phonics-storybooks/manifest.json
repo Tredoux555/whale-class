@@ -144,7 +144,7 @@
         },
         {
           "key": "p5-recap",
-          "text": "And now the pig is\u2026 sick!",
+          "text": "And now the pig is… sick!",
           "mj_prompt": "one round pink pig with a gigantic lumpy belly, the shapes of a pineapple, a pen, a pencil, and a frying pan handle all visible pressing out from inside, pig looking green and queasy with dizzy swirl eyes, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         }
       ]
@@ -285,7 +285,7 @@
       "num": 9,
       "letter": "g",
       "slug": "oh-no-goat",
-      "title": "Oh No, Goat\u2026",
+      "title": "Oh No, Goat…",
       "pages": [
         {
           "key": "p1-grapes",
@@ -309,7 +309,7 @@
         },
         {
           "key": "p5-recap",
-          "text": "Oh no, goat\u2026",
+          "text": "Oh no, goat…",
           "mj_prompt": "one goat with a huge lumpy bulging belly happily playing a guitar, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         }
       ]
@@ -643,7 +643,7 @@
       "num": 20,
       "letter": "l",
       "slug": "oh-no-lion",
-      "title": "Oh No, Lion\u2026",
+      "title": "Oh No, Lion…",
       "pages": [
         {
           "key": "p1-lemon",
@@ -667,7 +667,7 @@
         },
         {
           "key": "p5-recap",
-          "text": "Oh no, lion\u2026",
+          "text": "Oh no, lion…",
           "mj_prompt": "a golden lion with its giant silly tongue stuck fast to a wooden ladder, a small green lizard patting its nose, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
         }
       ]
@@ -895,6 +895,122 @@
           "key": "p5-recap",
           "text": "A quill, a quarter, a quail, and a queen on the quilt?!",
           "mj_prompt": "a queen wearing a golden crown asleep on a patchwork quilt, a quail tucked under her crown, a quill and a silver coin nearby, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, big googly eyes, plain white background. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark."
+        }
+      ]
+    },
+    {
+      "num": 28,
+      "letter": "f",
+      "slug": "the-fast",
+      "title": "Fast!",
+      "pages": [
+        {
+          "key": "p1-fan",
+          "text": "The fan is fast!"
+        },
+        {
+          "key": "p2-ant",
+          "text": "The ant is fast!"
+        },
+        {
+          "key": "p3-apple",
+          "text": "The apple is fast!"
+        },
+        {
+          "key": "p4-sun",
+          "text": "The sun is fast!"
+        },
+        {
+          "key": "p5-star",
+          "text": "The star is fast!"
+        },
+        {
+          "key": "p6-snake",
+          "text": "The snake is fast!"
+        },
+        {
+          "key": "p7-cat",
+          "text": "The cat is fast!"
+        },
+        {
+          "key": "p8-recap",
+          "text": "The ant, the apple, the sun, the star, the snake and the cat: fast, fast, fast!"
+        },
+        {
+          "key": "p9-potato",
+          "text": "The potato is not fast."
+        }
+      ]
+    },
+    {
+      "num": 29,
+      "letter": "l",
+      "slug": "the-lost",
+      "title": "Lost!",
+      "pages": [
+        {
+          "key": "p1-fog",
+          "text": "The sun is lost!"
+        },
+        {
+          "key": "p2-ant",
+          "text": "The ant is lost!"
+        },
+        {
+          "key": "p3-apple",
+          "text": "The apple is lost!"
+        },
+        {
+          "key": "p5-star",
+          "text": "The star is lost!"
+        },
+        {
+          "key": "p7-cat",
+          "text": "The cat is lost!"
+        },
+        {
+          "key": "p8-recap",
+          "text": "The ant, the apple, the sun, the star, the snake and the cat: lost, lost, lost!"
+        },
+        {
+          "key": "p9-potato",
+          "text": "The potato is not lost."
+        }
+      ]
+    },
+    {
+      "num": 30,
+      "letter": "j",
+      "slug": "the-jump",
+      "title": "Jump!",
+      "pages": [
+        {
+          "key": "p1-trampoline",
+          "text": "The trampoline is big. Jump!"
+        },
+        {
+          "key": "p2-ant",
+          "text": "The ant can jump!"
+        },
+        {
+          "key": "p4-sun",
+          "text": "The sun can jump!"
+        },
+        {
+          "key": "p5-star",
+          "text": "The star can jump!"
+        },
+        {
+          "key": "p6-snake",
+          "text": "The snake can jump!"
+        },
+        {
+          "key": "p8-recap",
+          "text": "Jump! Jump! Jump!"
+        },
+        {
+          "key": "p9-potato",
+          "text": "The potato can jump!"
         }
       ]
     }
