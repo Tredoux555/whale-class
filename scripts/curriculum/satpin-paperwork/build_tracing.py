@@ -580,14 +580,31 @@ def cover_page(c, cfg, art_path):
 # ------------------------------------------------------- word-card grid ---
 # 2026-08-21 format change per Tredoux: word cards used to size themselves
 # per row and sit with air between them, so every single card had to be
-# trimmed out by hand. They now render as one touching-border grid — every
-# card in a column shares col_widths[j] (see grid_metrics()), every row
-# shares SLOT_H, zero gap anywhere — so the whole sheet comes apart with a
-# small number of full-length straight cuts: across for strips, then down
-# for individual cards (optionally through a stack of several strips at
-# once). Card sizes stay in lockstep with the build-it-sheet's dashed slots
-# because both now come from the same grid_metrics() column widths.
+# trimmed out by hand. They now render as one grid — every card in a column
+# shares col_widths[j] (see grid_metrics()), every row shares SLOT_H — so the
+# whole sheet comes apart with a small number of full-length STRAIGHT cuts:
+# across for strips, then down for individual cards (optionally through a
+# stack of several strips at once). Card sizes stay in lockstep with the
+# build-it-sheet's dashed slots because both come from the same
+# grid_metrics() column widths, minus CARD_GAP (below) on every side.
 #
+# 2026-08-22 per Tredoux ("the tabs that need to be cut out look
+# significantly bigger than where they need to be pasted"): a card cut
+# exactly on a shared, zero-gap line is the SAME size as its BUILD IT slot —
+# a perfectly flush nominal fit leaves no tolerance for scissor drift, paper
+# thickness or lamination, so in practice the cut card comes out bigger than
+# the slot it needs to drop into. Every card is now its own SQUARE-cornered
+# rectangle, inset CARD_GAP from its nominal cell on every side — a cut-out
+# card measures col_widths[j] - 2*CARD_GAP wide by SLOT_H - 2*CARD_GAP tall,
+# always CARD_GAP smaller all round than the dashed BUILD IT slot for that
+# column (drawn at the full nominal size). Square corners (not rounded) are
+# what keeps the straight-cut method intact: every card in a row still
+# shares the exact same top/bottom edge, and every card in a column the same
+# left/right edge, so the sheet still comes apart in a small number of
+# full-length straight cuts — there's just a thin (2*CARD_GAP) waste strip
+# between neighbours now instead of a single shared hairline.
+CARD_GAP = 2.0 * mm
+
 # Draws onto whatever page is CURRENT on `c` — the caller (build_sheet_pdf)
 # sizes that page portrait A4 and calls showPage() after, so this lives as
 # trailing page(s) inside build-it-sheet.pdf instead of its own file.
@@ -659,23 +676,28 @@ def strips_draw(c, cfg, sentences, card_u, col_widths):
                           tracking=0.08, weight=0.12, color=INK)
             x += cw
 
-    # grid lines: one continuous stroke per cut, not one rect per card, so
-    # every shared edge is a single line instead of two overlapping ones --
-    # every card touches its neighbours on every side, so the whole sheet
-    # comes apart with a small number of full-length straight cuts (across
-    # for strips, then down for individual cards), never a fiddly trim
-    # around each card's own outline.
+    # card borders: each card is its own square-cornered rectangle, inset
+    # CARD_GAP from its nominal column/row cell on every side (see CARD_GAP
+    # comment above) -- drawn for every cell in the grid, whether or not
+    # that row has a word there, matching the sheet's existing full-grid
+    # look. Square corners mean every card in a row still shares the same
+    # top/bottom edge and every card in a column the same left/right edge,
+    # so the sheet still comes apart in full-length straight cuts, same as
+    # a shared-line grid -- just with a thin, discardable strip between
+    # neighbours instead of zero gap.
     c.setStrokeColorRGB(0, 0, 0)
     c.setLineWidth(0.6)
     c.setDash()
-    for i in range(len(rows) + 1):
-        yy = grid_top - i * SLOT_H
-        c.line(grid_x0, yy, grid_x0 + grid_w, yy)
-    xx = grid_x0
-    c.line(xx, grid_top, xx, grid_bottom)
-    for j in range(ncols):
-        xx += col_widths[j]
-        c.line(xx, grid_top, xx, grid_bottom)
+    for i in range(len(rows)):
+        row_top = grid_top - i * SLOT_H
+        row_bot = row_top - SLOT_H
+        x = grid_x0
+        for j in range(ncols):
+            cw = col_widths[j]
+            c.rect(x + CARD_GAP, row_bot + CARD_GAP,
+                  cw - 2 * CARD_GAP, SLOT_H - 2 * CARD_GAP,
+                  stroke=1, fill=0)
+            x += cw
 
     footer(grid_bottom)
 
