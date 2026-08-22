@@ -60,7 +60,7 @@ const media = (path: string, v?: number) =>
  * rebuild project touches every book eventually); a stale value here is
  * exactly the "book still shows the old art" bug filed 2026-08-02.
  */
-const STORYBOOK_PRINT_VERSION = 17; // bumped 2026-08-22: build-it-sheet.pdf and tracing-workbook.pdf republished for snake-in-my-sock (real book duplicate, matching ant-on-my-apple)
+const STORYBOOK_PRINT_VERSION = 18; // bumped 2026-08-22: all 17 sat-cast letter-book tracing-workbook.pdf files rebuilt in word mode (single traced hero word, sized to match each book's own real reveal-page word exactly, no empty write row, no "TRACE IT" label — see build_tracing_booklet.py)
 const printPdf = (path: string) => `${path}?v=${STORYBOOK_PRINT_VERSION}`;
 
 // NOTE: the 16 sat-cast letter books each also have a word-level A5 tracing

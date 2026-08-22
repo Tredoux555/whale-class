@@ -44,8 +44,10 @@ Usage:
     python3 build_tracing_booklet.py the-sat --sentences   # advanced edition
 """
 import argparse
+import io
 import os
 import sys
+from collections import Counter
 
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.units import mm
@@ -87,8 +89,18 @@ make_art_page = bb.make_art_page
 TRACE_U    = 10 * mm      # nominal x-height of the traced guide word (A5
                           # page, so smaller than build_tracing.py's 12.5mm
                           # A4-landscape workbook — see report deviation #1).
-                          # This is a ceiling, not a fixed value: see
-                          # compute_trace_u() below for the auto-shrink rule.
+                          # This is the DEFAULT ceiling — used as-is by
+                          # --sentences mode (make_sentence_trace_page()
+                          # below) and by compute_trace_u()'s own default
+                          # arg. Per Tredoux 2026-08-22: word mode no longer
+                          # uses this flat value at all — see
+                          # book_word_xheight() below, which computes each
+                          # book's OWN ceiling to match that book's real
+                          # reveal-page word size exactly (books vary a lot:
+                          # the-sat's "Sat!" renders far bigger in the real
+                          # book than the-pit's "Sat in the pit!", a longer
+                          # phrase at a much smaller size — one flat ceiling
+                          # for every book would mismatch most of them).
 TRACE_TRACK = 0.12        # same letter-tracking build_tracing.py's trace
                           # pages use
 TRACE_GAP  = 6 * mm       # air between the two guide rows
@@ -120,22 +132,75 @@ def target_word(book):
     return word or 'sat'
 
 
-def compute_trace_u(word):
-    """The traced guide word is normally drawn at TRACE_U (10mm) x-height,
-    but longer target words than 'sat' (e.g. 'spat', 'chased', 'toothbrush'
-    on letter T's companion book) can overflow the A5 guide row's usable
-    width (PW - 2*M). Shrink the x-height just enough to fit, measured with
-    stroke_font's own text_width() (the exact metric draw_traced() uses) so
-    the shrink matches the glyphs pixel-for-pixel — never guessed. A small
-    2% safety margin keeps the traced strokes off the guide's end caps.
-    Both guide rows (traced + empty) always use this same returned height,
-    so the three-line school-paper geometry (headline/midline/baseline)
-    stays proportionally identical between the two rows."""
+# Outfit-Bold ('Word' font, the real book's own reveal-word font) glyph
+# metrics: lowercase 'a' yMax / unitsPerEm. This is the font's own rendered
+# overshoot above its baseline for a round lowercase letter with no
+# ascender/descender — i.e. its true visual x-height as printed, not the
+# (slightly smaller) OS/2 sxHeight table value. Cross-checked against a
+# direct pixel measurement of the-sat's real "Sat!" reveal page: the
+# lowercase 'a' there measured 20.57mm at a 115pt fitted size, this ratio
+# predicts 20.12mm at the same size — within 0.5mm (anti-aliasing/threshold
+# noise in the pixel measurement), confirming this is the font's real
+# scaling constant, not a per-book coincidence.
+WORD_FONT_XHEIGHT_RATIO = 496 / 1000.0
+
+# One throwaway canvas, never saved or shown a page, used only for its
+# stringWidth()/fit() font-metrics calls in book_word_xheight() below —
+# same technique build_booklets.fit() itself needs a canvas for.
+_metrics_canvas = rl_canvas.Canvas(io.BytesIO())
+
+
+def book_word_xheight(book):
+    """Per Tredoux 2026-08-22: word mode's traced guide word should be
+    'identical size to the actual booklet' — i.e. match THIS book's own
+    real reveal-page word size exactly, not a single flat ceiling shared by
+    every book. Books vary hugely: the-sat's "Sat!" is a short single word
+    shouted at spec size=92 (fits at ~115pt); the-pit's "Sat in the pit!"
+    is a 4-word phrase at spec size=44 (~55pt) — using the-sat's size for
+    the-pit's traced word would make it print roughly DOUBLE its real size.
+
+    Finds the most common 'size' among this book's main reveal spreads
+    (those with BOTH nar and text — i.e. narrated 'The X… WORD!' pages —
+    excluding the no-nar intro page and the drop/chant finale page, which
+    use their own different, usually smaller, sizes), reproduces
+    build_booklets.make_text_page()'s own base/fit() calculation for a
+    representative spread at that size, and converts the resulting
+    effective font size to an x-height via WORD_FONT_XHEIGHT_RATIO.
+    Raises if the book has no qualifying reveal spread — every sat-cast
+    letter book has at least one, by construction of the format itself."""
+    main = [sp for sp in book['spreads']
+            if sp.get('nar') and sp.get('text') is not None]
+    if not main:
+        raise RuntimeError(
+            'book %r has no nar+text reveal spreads to size the traced '
+            'word against — book_word_xheight() only supports the '
+            'sat-cast letter-book reveal format' % book['slug'])
+    mode_size = Counter(sp.get('size') for sp in main).most_common(1)[0][0]
+    rep = next(sp for sp in main if sp.get('size') == mode_size)
+    lines = rep['text'] if isinstance(rep['text'], list) else [rep['text']]
+    base = int((mode_size or (54 if max(len(l) for l in lines) > 10 else 72))
+               * 1.25)
+    eff_size = min(bb.fit(_metrics_canvas, max(lines, key=len), 'Word',
+                          base, PW - 2 * M), base)
+    return WORD_FONT_XHEIGHT_RATIO * eff_size
+
+
+def compute_trace_u(word, ceiling=TRACE_U):
+    """The traced guide word is normally drawn at `ceiling` x-height (the
+    default, TRACE_U/10mm, for --sentences mode's own celebration-page
+    call; word mode instead passes book_word_xheight(book) — see
+    build_trace_booklet() below), but longer target words than 'sat' (e.g.
+    'spat', 'chased', 'toothbrush' on letter T's companion book) can
+    overflow the A5 guide row's usable width (PW - 2*M). Shrink the
+    x-height just enough to fit, measured with stroke_font's own
+    text_width() (the exact metric draw_traced() uses) so the shrink
+    matches the glyphs pixel-for-pixel — never guessed. A small
+    2% safety margin keeps the traced strokes off the guide's end caps."""
     guide_w = (PW - M) - M
-    w = sf.text_width(word, TRACE_U, TRACE_TRACK)
+    w = sf.text_width(word, ceiling, TRACE_TRACK)
     if w <= guide_w:
-        return TRACE_U
-    return TRACE_U * (guide_w / w) * 0.98
+        return ceiling
+    return ceiling * (guide_w / w) * 0.98
 
 
 def guidelines(c, x0, x1, base, u):
@@ -183,8 +248,10 @@ def make_trace_page(spec, word, u, row1_base, row2_base, celebration=None,
             c.setFillColorRGB(*GREY)
             y_nar = PH * 0.68 if has_text_orig else PH * 0.55
             c.drawCentredString(PW / 2, y_nar, nar_text)
-        draw_tracked(c, PW / 2, row1_base + 2 * u + LABEL_GAP,
-                    'T R A C E   I T', 'Label', 8, 0.3, GREY)
+        # 'TRACE IT' label removed per Tredoux 2026-08-22 — the traced word
+        # is big and obvious enough on its own now that it no longer needs
+        # a caption above it (word mode only; --sentences mode's own label,
+        # below in make_sentence_trace_page(), is untouched).
         draw_guide_row(c, row1_base, u, word)
         if not skip_empty_row:
             draw_guide_row(c, row2_base, u, None)
@@ -366,10 +433,15 @@ def build_trace_booklet(book, outdir, mode='word'):
 
     os.makedirs(outdir, exist_ok=True)
     word = target_word(book)
-    # word mode's fixed x-height/row-base register — also reused, unchanged,
-    # for --sentences mode's final celebration page (see below), since that
-    # one page traces the key word, not the sentence, "as in word mode".
-    word_u = compute_trace_u(word)
+    # Per Tredoux 2026-08-22: word mode's x-height ceiling is now THIS
+    # book's own real-reveal-page size (book_word_xheight()), not a flat
+    # constant — see that function's docstring. --sentences mode's own
+    # celebration page (below) still traces the key word "as in word
+    # mode" but keeps the OLD flat default ceiling (compute_trace_u's
+    # default arg) — that page's sizing wasn't part of today's fix and
+    # is left exactly as it was.
+    word_u = compute_trace_u(word, ceiling=book_word_xheight(book)) \
+        if mode == 'word' else compute_trace_u(word)
     word_row1_base = ROW1_BASE
     word_row2_base = word_row1_base - (3 * word_u + TRACE_GAP)
     spreads = book['spreads']
@@ -388,9 +460,22 @@ def build_trace_booklet(book, outdir, mode='word'):
         is_last = (i == n - 1)
         if mode == 'word':
             celebration = ('I can write %s!' % word) if is_last else None
+            # Per Tredoux 2026-08-22: word mode's traced word is now sized
+            # to match the real book exactly (see TRACE_U above), which no
+            # longer leaves room for the second, empty "write it unaided"
+            # row at the old shared size — skip_empty_row=True on every
+            # word-mode page now (previously only the final celebration
+            # page dropped it). This also makes the --sentences mode
+            # celebration page's own call (below) skip_empty_row=True
+            # already, so word_row2_base is now a dead value everywhere
+            # it's passed — make_trace_page() still takes it positionally,
+            # but nothing draws it any more. Left computed rather than
+            # removed, so re-adding a second row later (a different word
+            # size, a different book) is a one-line change, not a rewire.
             pages.append((make_trace_page(sp, word, word_u, word_row1_base,
                                            word_row2_base,
-                                           celebration=celebration), True))
+                                           celebration=celebration,
+                                           skip_empty_row=True), True))
         elif is_last:
             # Final celebration page: literally word mode's own page
             # painter (same key-word trace row, same celebration-line
