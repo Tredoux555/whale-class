@@ -404,7 +404,16 @@ def build_row(c, band_top, band_bottom, sentence, card_u, col_widths, art_path):
     # card was cut from THIS row or a longer/shorter one elsewhere in the
     # book — see grid_metrics().
     widths = col_widths[:len(words)]
-    total_w = sum(widths) + SLOT_GAP * (len(words) - 1)
+    # Slots are drawn SLOT_MARGIN bigger than their nominal cell on every
+    # side (see SLOT_MARGIN) -- laying them out SLOT_GAP apart as before
+    # would let that inflation eat into the gap, crowding neighbouring
+    # slots together instead of leaving them spaced apart the way words in
+    # a sentence are spaced. Laying slots out slot_step_gap apart instead
+    # (SLOT_GAP plus the 2*SLOT_MARGIN the inflation consumes) means the
+    # inflation exactly cancels out and the visible air between slots is
+    # SLOT_GAP again, same as always.
+    slot_step_gap = SLOT_GAP + 2 * SLOT_MARGIN
+    total_w = sum(widths) + slot_step_gap * (len(words) - 1)
 
     row_total = art_zone + SLOT_H
     band_h = band_top - band_bottom
@@ -449,7 +458,7 @@ def build_row(c, band_top, band_bottom, sentence, card_u, col_widths, art_path):
                    cw + 2 * SLOT_MARGIN, SLOT_H + 2 * SLOT_MARGIN,
                    2.0 * mm, stroke=1, fill=0)
         c.setDash()
-        x += cw + SLOT_GAP
+        x += cw + slot_step_gap
 
 
 def build_sheet_page(c, cfg, sentences, arts, page_no, total_pages, card_u,

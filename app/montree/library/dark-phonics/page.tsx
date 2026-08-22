@@ -60,7 +60,7 @@ const media = (path: string, v?: number) =>
  * rebuild project touches every book eventually); a stale value here is
  * exactly the "book still shows the old art" bug filed 2026-08-02.
  */
-const STORYBOOK_PRINT_VERSION = 21; // bumped 2026-08-22: reverted v20's per-card CARD_GAP (it turned the ~9-cut touching word-card grid into ~14 individual-card cuts — a real regression, caught and fixed same day). The word-card grid is back to the original shared-line, zero-gap, straight-cuts-only version, unchanged. The 2mm paste clearance now comes from the BUILD IT slot instead (SLOT_MARGIN in build_row(), build_tracing.py) — the dashed slot is drawn 2mm bigger than the card's own nominal size on every side, so the untouched full-size card drops in with room to spare
+const STORYBOOK_PRINT_VERSION = 22; // bumped 2026-08-22: v21's SLOT_MARGIN fix (BUILD IT slot drawn 2mm bigger than the card on every side) kept the layout step between slots at the old fixed SLOT_GAP, so the 2mm-per-side inflation ate into that gap and crowded the slots to ~0.5mm apart. Fixed by laying slots out slot_step_gap = SLOT_GAP + 2*SLOT_MARGIN apart instead (build_row(), build_tracing.py), so the inflation cancels out and the visible gap between BUILD IT boxes is back to the original SLOT_GAP (4.5mm), same word-like spacing as before. Cut-out word-card grid (strips_draw) is untouched: still the shared-line touching-border grid, ~9 straight cuts, cards still exactly 2mm smaller than their slot on every side
 const printPdf = (path: string) => `${path}?v=${STORYBOOK_PRINT_VERSION}`;
 
 // NOTE: the 16 sat-cast letter books each also have a word-level A5 tracing
