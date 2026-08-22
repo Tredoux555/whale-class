@@ -372,6 +372,28 @@ export default function DarkPhonicsPage() {
     );
   };
 
+  /** The clean 6-pill Printables set for ONE book: Read-along, Print booklet
+   *  A5, and (where book.materials !== false) Paperwork pack / Build-it
+   *  sheet / Tracing workbook. Letter card PDF is lesson-level, not book-
+   *  level, so it is NOT included here — callers add it separately. Shared
+   *  between the single-book case (no label needed) and the multi-book case
+   *  (n=7 the-sat+the-tall, n=8 the-spat+the-pat — labelled per book so it is
+   *  never ambiguous which pill belongs to which book, 2026-08-22 per
+   *  Tredoux). */
+  const BookPrintablePills = ({ book }: { book: Book }) => (
+    <>
+      <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-reading.pdf`)}>Read-along</Pill>
+      <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-booklet-print.pdf`)}>Print booklet A5</Pill>
+      {book.materials !== false && (
+        <>
+          <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
+          <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/build-it-sheet.pdf`)}>Build-it sheet</Pill>
+          <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/tracing-workbook.pdf`)}>Tracing workbook</Pill>
+        </>
+      )}
+    </>
+  );
+
   /**
    * The decodable ledger — what the child can actually READ by this lesson.
    * NEW words (this lesson's reader) are highlighted in the reader red;
@@ -696,17 +718,20 @@ export default function DarkPhonicsPage() {
                           <Pill href={media(`flashcards/lesson-${nn(l.n)}.pdf`)}>Letter card PDF</Pill>
                         )}
                         {l.books?.map(book => (
-                          <React.Fragment key={book.slug}>
-                            <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-reading.pdf`)}>Read-along</Pill>
-                            <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-booklet-print.pdf`)}>Print booklet A5</Pill>
-                            {book.materials !== false && (
-                              <>
-                                <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
-                                <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/build-it-sheet.pdf`)}>Build-it sheet</Pill>
-                                <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/tracing-workbook.pdf`)}>Tracing workbook</Pill>
-                              </>
-                            )}
-                          </React.Fragment>
+                          l.books!.length > 1 ? (
+                            // Multiple books this lesson (n=7 the-sat + the-tall,
+                            // n=8 the-spat + the-pat) — label each book's group so
+                            // it is never ambiguous which pill belongs to which
+                            // book. w-full forces its own line in the flex-wrap row.
+                            <div key={book.slug} className="w-full flex flex-wrap items-center gap-2">
+                              <span className="text-white/30 text-[11px] font-medium shrink-0">{book.title}</span>
+                              <BookPrintablePills book={book} />
+                            </div>
+                          ) : (
+                            <React.Fragment key={book.slug}>
+                              <BookPrintablePills book={book} />
+                            </React.Fragment>
+                          )
                         ))}
                         {l.reader?.materials && (
                           <React.Fragment key={l.reader.materialsSlug ?? l.reader.slug}>
