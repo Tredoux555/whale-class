@@ -14,10 +14,11 @@ Short map of where the truth lives. When in doubt: **HANDOFF_LATEST.md first.**
   2026). All five Montessori areas now covered by paper-scan reports: printable Montree
   Standard sheet, two-layer Sonnet sheet reading (teach any school's layout + extract
   against it), visual weekly/monthly period reports, all-areas docx. Committed `df9d50ca1`,
-  deployed live (Railway `673d8fac`, verified). ⚠️ **OUTSTANDING: migration 337 (critical
-  live RLS security hole on 7 tables incl. anon-writable org-invites) was written but NOT
-  yet confirmed applied by the owner — verify this before anything else, see the doc's
-  Section 5 for the check query.**
+  deployed live (Railway `673d8fac`, verified). ✅ **CONFIRMED: migration 337 (critical
+  live RLS security hole on 7 tables incl. anon-writable org-invites) was verified applied
+  by the owner on Aug 24, 2026 via SQL query — all 7 tables show `rls_enabled=true`,
+  `policy_count=0`. Handoff closed out; see the doc's Section 9 for the final cleanliness
+  sweep.**
 - `docs/handoffs/HANDOFF_RIDDICK_SANCTUARY.md` — ✅ DEPLOYED (Jun 15, commits
   767ea07d→886fc0cc→7bbee08e). Multi-space personal platform: Riddick = space
   `riddick`, login **R / iddick** at **www.teacherpotato.xyz/riddick** (apex DNS is

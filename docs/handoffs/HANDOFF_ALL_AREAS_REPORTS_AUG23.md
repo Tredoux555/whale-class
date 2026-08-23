@@ -13,9 +13,10 @@ against it), frequency/time/concentration tracking, and visual weekly/monthly pe
 classroom — plus matching all-areas docx generation and a weekly-wrap timezone fix. Built via many
 delegated Sonnet/Opus agent calls, reviewed twice (a build-scoped audit and a whole-repo deep
 audit), committed as `df9d50ca1`, and deployed live on Railway (deployment `673d8fac`, verified).
-**Before anything else: confirm migration 337 (critical RLS fix) has actually been applied — see
-Section 5.** It was written and reviewed but the owner had not yet confirmed running it as of this
-session.
+**Migration 337 (critical RLS fix on 7 tables) is now fully verified applied — see Section 5.**
+The owner ran the check query himself on August 24, 2026 and confirmed all seven tables show
+`rls_enabled = true` and `policy_count = 0`. This handoff is closed out; see Section 9 for the
+final post-fix cleanliness sweep.
 
 ## 2. What was built (Phases 1-8)
 
@@ -117,12 +118,13 @@ From `DEEP_HEALTH_AUDIT_AUG23.md` (whole-repo, run in parallel, unrelated pre-ex
 - Working tree otherwise has pre-existing unrelated untracked/modified files (build artefacts,
   other in-flight docs) - none touched by this build.
 
-## 5. OUTSTANDING - verify migration 337 first
+## 5. ✅ RESOLVED — verified by owner on August 24, 2026 via SQL query, all 7 tables locked down.
 
 `migrations/337_evaluation_org_rls_lockdown.sql` fixes a **live, verified, remotely exploitable**
 RLS hole (anon key can read/write 7 tables, including creating org-invite tokens that grant
-organisation-admin). It was **written and reviewed but not confirmed applied** by the owner as of
-this session. This is the single most important thing to check first, before any other work:
+organisation-admin). The owner ran the SQL query below himself and confirmed all seven rows show
+`rls_enabled = true` and `policy_count = 0` — migration 337 IS applied and verified. Original
+check query kept below for reference:
 
 ```sql
 SELECT c.relname, c.relrowsecurity,
@@ -134,9 +136,10 @@ WHERE n.nspname='public' AND c.relname IN (
   'montree_organizations','montree_organization_admins','montree_org_invites');
 ```
 
-Expect `rls_enabled = true` and `policy_count = 0` on all seven rows. If any row shows
-`policy_count > 0`, run the migration immediately, then re-probe with the `curl` command in the
-migration file's own trailer (anon key, expect 0 rows on all seven).
+Confirmed: `rls_enabled = true` and `policy_count = 0` on all seven rows, as run by the owner on
+August 24, 2026. (For future reference, had any row shown `policy_count > 0`, the fix would have
+been to run the migration immediately, then re-probe with the `curl` command in the migration
+file's own trailer — anon key, expect 0 rows on all seven.)
 
 Also worth a quick manual check (Section 5.1 of the deep audit, not fixable via migration): the
 `montree-media` storage bucket's upload/delete policies in Supabase -> Storage -> Policies - verify
@@ -186,7 +189,7 @@ they carry `TO service_role`, since the same no-`TO`-clause bug pattern caused 3
 ## 8. File map (new/changed, by phase)
 
 - **336 migration**: `migrations/336_sheet_layouts_and_work_sessions.sql`
-- **337 migration (unapplied)**: `migrations/337_evaluation_org_rls_lockdown.sql`
+- **337 migration (✅ applied & verified Aug 24, 2026)**: `migrations/337_evaluation_org_rls_lockdown.sql`
 - **Sheet printer**: `lib/montree/paper-scan/sheet-template.ts`, `app/api/montree/paper-scan/
   sheet/print/route.ts`
 - **Layout learning**: `lib/montree/paper-scan/{layout-types,layout-learner,layout-resolver}.ts`,
@@ -212,3 +215,17 @@ they carry `TO service_role`, since the same no-`TO`-clause bug pattern caused 3
   `app/api/montree/{companion/journey,intelligence/daily-brief,parent/milestones}/route.ts`,
   `app/api/montree/photo-identification/{process,sonnet-review}/route.ts`,
   `app/api/montree/super-admin/photo-debug/[mediaId]/route.ts`
+
+## 9. Closing verification (Aug 23/24)
+
+A final cleanliness sweep was run on the real repo (not just a read-only mount) after migration
+337 was confirmed:
+
+- **Git**: HEAD `3c4c57ce5` on `main` matches `origin/main` — nothing to push, nothing missing.
+- **i18n**: strict check passes 12/12 locales at 100%.
+- **Build junk**: no leftover temp files or "DELETE ME" folders from the Aug 22-23 build.
+- **Orphaned file noted for awareness**: `PUBLISH_DIRECTOR_PLATFORM.command` at repo root —
+  predates this build, an unrelated feature, not touched by it. Left as-is; flagged only so the
+  owner knows it's there.
+
+With this, migration 337 is verified applied and the all-areas reports handoff is closed out.
