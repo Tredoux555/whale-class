@@ -94,3 +94,47 @@ export function messageFrom(error: unknown, fallback = 'Something went wrong.'):
   if (error instanceof Error && error.message) return error.message;
   return fallback;
 }
+
+/**
+ * Build a human filename for a downloaded film, e.g.
+ * "potato-snaps-emma-2026-08-17.mp4". `name` is a display string (a child's
+ * name, or "<class name> · class film") — slugified so spaces/punctuation
+ * never end up in the saved filename. Falls back to a generic name if both
+ * inputs are unusable.
+ */
+export function filmFilename(name: string, weekStart: string): string {
+  const slug = name
+    .toLowerCase()
+    .trim()
+    .replace(/['"]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  const week = /^\d{4}-\d{2}-\d{2}$/.test(weekStart) ? weekStart : '';
+  const parts = [slug, week].filter(Boolean);
+  return parts.length ? `potato-snaps-${parts.join('-')}.mp4` : 'potato-snaps-film.mp4';
+}
+
+/**
+ * Fetch a film through the media proxy and hand it to the browser as a
+ * download — fetch→blob→objectURL→`<a download>` click, rather than a bare
+ * `download` attribute on the URL. That bare-attribute approach is unreliable
+ * inside the installed PWA / Android webview, which is exactly where a
+ * teacher is most likely to be tapping this.
+ */
+export async function downloadFilm(url: string, filename: string): Promise<void> {
+  const response = await fetch(url, { credentials: 'same-origin' });
+  if (!response.ok) {
+    throw new PotatoApiError(`Could not download that film (${response.status}).`, response.status);
+  }
+  const blob = await response.blob();
+  const objectUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = objectUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  // Revoke on the next tick — some browsers need the click's navigation to
+  // actually start before the object URL disappears out from under it.
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+}

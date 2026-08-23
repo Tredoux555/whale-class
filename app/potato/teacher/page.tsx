@@ -34,8 +34,9 @@ import {
   IconBack,
   IconChevron,
   IconEye,
+  IconDownload,
 } from '@/components/potato/PotatoBits';
-import { getJson, postJson, messageFrom, PotatoApiError } from '@/lib/potato/client';
+import { getJson, postJson, messageFrom, PotatoApiError, downloadFilm, filmFilename } from '@/lib/potato/client';
 import { enqueuePhoto } from '@/lib/potato/offline/sync-manager';
 import { usePotatoQueue } from '@/lib/potato/offline/usePotatoQueue';
 import ChildFilmPicker from '@/components/potato/ChildFilmPicker';
@@ -106,6 +107,7 @@ export default function CaptureBoardPage() {
   const [saving, setSaving] = useState(false);
   const [makingFor, setMakingFor] = useState<string | null>(null);
   const [watching, setWatching] = useState<{ name: string; url: string } | null>(null);
+  const [downloading, setDownloading] = useState(false);
 
   // The offline capture queue. Photos live on the device first; this reports
   // what is still owed to the server and surfaces anything it refused.
@@ -128,6 +130,18 @@ export default function CaptureBoardPage() {
   useEffect(() => () => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
   }, []);
+
+  const handleDownloadWatching = useCallback(async () => {
+    if (!watching || downloading) return;
+    setDownloading(true);
+    try {
+      await downloadFilm(watching.url, filmFilename(watching.name, weekStart));
+    } catch (err) {
+      showToast(messageFrom(err, 'Could not download that film.'), true);
+    } finally {
+      setDownloading(false);
+    }
+  }, [watching, downloading, weekStart, showToast]);
 
   const load = useCallback(
     async (week: string, quiet = false) => {
@@ -489,6 +503,7 @@ export default function CaptureBoardPage() {
                 childId: null,
                 title: board.class.name,
                 weekLabel: board.weekLabel,
+                weekStart,
                 photoCount: board.classFilm!.job!.photoCount,
                 videoUrl: board.classFilm!.job!.videoUrl,
                 familyCount: board.children.length,
@@ -529,6 +544,7 @@ export default function CaptureBoardPage() {
                   childId: child.id,
                   title: child.name,
                   weekLabel: board?.weekLabel ?? '',
+                  weekStart,
                   photoCount: child.photoCount,
                   videoUrl: child.latestJob!.videoUrl,
                 })
@@ -567,6 +583,15 @@ export default function CaptureBoardPage() {
               playsInline
               style={{ width: '100%', borderRadius: 18, background: '#0d1b2a', display: 'block' }}
             />
+            <button
+              type="button"
+              className="pt-btn pt-btn--primary pt-btn--md"
+              onClick={handleDownloadWatching}
+              disabled={downloading}
+            >
+              <IconDownload size={16} />
+              {downloading ? 'Downloading…' : 'Download'}
+            </button>
             <button type="button" className="pt-btn pt-btn--ghost pt-btn--md" onClick={() => setWatching(null)}>
               Close
             </button>

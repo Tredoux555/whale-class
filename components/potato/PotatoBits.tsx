@@ -225,6 +225,20 @@ export function IconUpload({ size = 16, color = '#23395B' }: IconProps) {
   );
 }
 
+export function IconDownload({ size = 16, color = '#23395B' }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M12 4.9V16.4m0 0-4.4-4.4M12 16.4l4.4-4.4M4.6 15.6v2.4a2 2 0 0 0 2 2h10.8a2 2 0 0 0 2-2v-2.4"
+        stroke={color}
+        strokeWidth="2.1"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function IconLock({ size = 13, color = '#23395B' }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">

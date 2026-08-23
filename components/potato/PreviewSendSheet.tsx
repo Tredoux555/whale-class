@@ -18,8 +18,8 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { IconX, IconCheck, IconSend, IconRedo, IconLock, Mascot } from '@/components/potato/PotatoBits';
-import { postJson, messageFrom } from '@/lib/potato/client';
+import { IconX, IconCheck, IconSend, IconRedo, IconLock, IconDownload, Mascot } from '@/components/potato/PotatoBits';
+import { postJson, messageFrom, downloadFilm, filmFilename } from '@/lib/potato/client';
 
 export interface PreviewFilm {
   jobId: string;
@@ -36,6 +36,8 @@ export interface PreviewFilm {
   /** "Emma" for a child film, the class name for a class film — display only */
   title: string;
   weekLabel: string;
+  /** raw ISO week-start (e.g. "2026-08-17"), for a human download filename */
+  weekStart?: string;
   photoCount: number;
   videoUrl: string | null;
   /** class films only: how many families this reaches */
@@ -55,6 +57,7 @@ export default function PreviewSendSheet({ film, onClose, onRemake, onSent }: Pr
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -86,6 +89,19 @@ export default function PreviewSendSheet({ film, onClose, onRemake, onSent }: Pr
       setSending(false);
     }
   }, [film.jobId, sending]);
+
+  const download = useCallback(async () => {
+    if (downloading || !film.videoUrl) return;
+    setDownloading(true);
+    setError(null);
+    try {
+      await downloadFilm(film.videoUrl, filmFilename(film.title, film.weekStart ?? ''));
+    } catch (err) {
+      setError(messageFrom(err, 'Could not download that film.'));
+    } finally {
+      setDownloading(false);
+    }
+  }, [downloading, film.videoUrl, film.title, film.weekStart]);
 
   // ---- the sent moment: one warm confirmation, then straight back to work ---
   if (sent) {
@@ -163,6 +179,18 @@ export default function PreviewSendSheet({ film, onClose, onRemake, onSent }: Pr
         {/* Six words. The most important sentence on this screen. */}
         <div className="pt-privatepill">
           <IconLock size={14} color="rgba(35,57,91,.5)" /> Only you can see this
+        </div>
+
+        <div style={{ marginTop: 14 }}>
+          <button
+            type="button"
+            className="pt-btn pt-btn--quiet pt-btn--sm"
+            onClick={download}
+            disabled={downloading || !film.videoUrl}
+          >
+            <IconDownload size={15} color="rgba(35,57,91,.6)" />
+            {downloading ? 'Downloading…' : 'Download'}
+          </button>
         </div>
 
         {error ? (
