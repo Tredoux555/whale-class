@@ -1,5 +1,23 @@
 # Whale / Montree — Latest Handoff
 
+---
+
+## 🔔 UPDATE Aug 23 — All-Areas Reports + Sonnet Sheet Reading shipped; migration 337 outstanding
+
+Same-day build + audit (Aug 22–23, 2026): paper-scan pipeline now covers all five Montessori
+areas (was English-only), with a printable Montree Standard sheet, a two-layer Sonnet sheet-
+reading system (teach any school's layout, then extract against it), and visual weekly/monthly
+period reports per classroom. Committed `df9d50ca1`, deployed live on Railway (`673d8fac`,
+verified). A parallel whole-repo deep audit found and fixed 5 crash bugs, 13 broken schema
+reads, and — **critically** — a live anon-readable/writable RLS hole on 7 tables (including an
+anonymous path to organisation-admin via `montree_org_invites`).
+
+**⚠️ The fix for that RLS hole, `migrations/337_evaluation_org_rls_lockdown.sql`, was written
+but has NOT yet been confirmed applied — verify and run this before any other work.**
+
+Full detail: `docs/handoffs/HANDOFF_ALL_AREAS_REPORTS_AUG23.md` (also indexed at the top of
+`docs/handoffs/_INDEX.md` Section 2). See that doc's Section 5 for the verification query.
+
 ## 📷 Aug 10 (Cowork) — PHOTO ONBOARDING SHIPPED (roster import via photo/PDF/DOCX/XLSX) — LIVE
 
 **What shipped:** teacher uploads a class list (photo, PDF, DOCX, or XLSX) from the dashboard
